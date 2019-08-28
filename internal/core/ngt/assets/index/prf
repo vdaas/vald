@@ -1,0 +1,16 @@
+BatchSizeForCreation	500
+DatabaseType	Memory
+Dimension	6
+DistanceType	L2
+EdgeSizeForCreation	10
+EdgeSizeForSearch	0
+EdgeSizeLimitForCreation	5
+EpsilonForCreation	0.1
+GraphType	ANNG
+IncrimentalEdgeSizeLimitForTruncation	0
+IndexType	GraphAndTree
+ObjectType	Integer-1
+SeedSize	10
+SeedType	RandomNodes
+ThreadPoolSize	32
+TruncationThreadPoolSize	8
