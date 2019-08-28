@@ -1,0 +1,100 @@
+//
+// Copyright (C) 2019 kpango (Yusuke Kato)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+syntax = "proto3";
+
+package agent;
+
+option go_package = "github.com/vdaas/vald/apis/grpc/agent";
+option java_multiple_files = true;
+option java_package = "org.vdaas.vald.agent";
+option java_outer_classname = "ValdAgent";
+
+import "payload.proto";
+import "google/api/annotations.proto";
+import "pb/gql.proto";
+
+service Agent {
+  option (gql.svc_type) = QUERY;
+  rpc Exists(payload.Object.ID) returns (payload.Object.ID) {
+    option (google.api.http).get = "/exists/{id}";
+  }
+
+  rpc Search(payload.Search.Request) returns (payload.Search.Response) {
+    option (google.api.http) = {
+      post : "/search"
+      body : "*"
+    };
+  }
+  rpc SearchByID(payload.Search.IDRequest) returns (payload.Search.Response) {
+    option (google.api.http) = {
+      post : "/search/id"
+      body : "*"
+    };
+  }
+  rpc StreamSearch(stream payload.Search.Request)
+      returns (stream payload.Search.Response) {}
+  rpc StreamSearchByID(stream payload.Search.IDRequest)
+      returns (stream payload.Search.Response) {}
+
+  rpc Insert(payload.Object.Vector) returns (payload.Common.Error) {
+    option (google.api.http) = {
+      post : "/insert"
+      body : "*"
+    };
+    option (gql.rpc_type) = MUTATION;
+  }
+  rpc StreamInsert(stream payload.Object.Vector)
+      returns (stream payload.Common.Error) {}
+  rpc MultiInsert(payload.Object.Vectors) returns (payload.Common.Errors) {}
+
+  rpc Update(payload.Object.Vector) returns (payload.Common.Error) {
+    option (google.api.http) = {
+      post : "/update"
+      body : "*"
+    };
+    option (gql.rpc_type) = MUTATION;
+  }
+  rpc StreamUpdate(stream payload.Object.Vector)
+      returns (stream payload.Common.Error) {}
+  rpc MultiUpdate(payload.Object.Vectors) returns (payload.Common.Errors) {}
+
+  rpc Remove(payload.Object.ID) returns (payload.Common.Error) {
+    option (google.api.http).delete = "/remove/{id}";
+    option (gql.rpc_type) = MUTATION;
+  }
+  rpc StreamRemove(stream payload.Object.ID)
+      returns (stream payload.Common.Error) {}
+  rpc MultiRemove(payload.Object.IDs) returns (payload.Common.Errors) {}
+
+  rpc GetObject(payload.Object.ID) returns (payload.Object.Vector) {
+    option (google.api.http).get = "/object/{id}";
+  }
+  rpc StreamGetObject(stream payload.Object.ID)
+      returns (stream payload.Object.Vector) {}
+
+  rpc CreateIndex(payload.Controll.CreateIndexRequest)
+      returns (payload.Common.Empty) {
+    option (google.api.http).get = "/index/create";
+  }
+  rpc SaveIndex(payload.Common.Empty) returns (payload.Common.Empty) {
+    option (google.api.http).get = "/index/save";
+  }
+  rpc CreateAndSaveIndex(payload.Controll.CreateIndexRequest)
+      returns (payload.Common.Empty) {
+    option (google.api.http).get = "/index/createandsave";
+  }
+}

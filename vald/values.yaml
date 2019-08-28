@@ -1,0 +1,56 @@
+#
+# Copyright (C) 2019 kpango (Yusuke Kato)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+gateway:
+  name: vald-gateway
+  minReplicas: 3
+  maxReplicas: 9
+  image: vdaas/vald-gateway:latest
+  filter:
+    egress:
+      - ""
+    ingress:
+      - ""
+
+agent:
+  name: vald-agent-ngt
+  minReplicas: 20
+  maxReplicas: 300
+  image: vdaas/vald-agent-ngt:latest
+
+discoverer:
+  name: vald-discoverer-k8s
+  minReplicas: 1
+  maxReplicas: 2
+  image: vdaas/vald-discoverer-k8s:latest
+
+backupManager:
+  name: vald-backup-manager-mysql
+  minReplicas: 3
+  maxReplicas: 15
+  image: vdaas/vald-backup-manager-mysql:latest
+
+indexManager:
+  name: vald-index-manager-ngt
+  minReplicas: 1
+  maxReplicas: 2
+  image: vdaas/vald-index-manager-ngt:latest
+
+meta:
+  name: vald-meta-redis
+  minReplicas: 2
+  maxReplicas: 10
+  image: vdaas/vald-meta-redis:latest
