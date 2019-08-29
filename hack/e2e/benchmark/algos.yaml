@@ -1,0 +1,17 @@
+float:
+  any:
+    Vald-NGT:
+      docker-tag: ann-benchmarks-src-ngt
+      module: algorithm.vald_ngt
+      constructor: ValdNGT
+      base-args: ["@metric", Float]
+      run-groups:
+        vald-ngt:
+          args:
+            - search_edge_size: 10
+              creation_edge_size: 20
+              bulk_insert_size: 10
+              host: "127.0.0.1"
+              port: 8082
+  euclidean: {}
+  angular: {}
