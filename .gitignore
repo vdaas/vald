@@ -26,3 +26,6 @@ MNIST/
 NYTimes/
 SIFT/
 *.hdf5
+
+# GraphQL go sources
+apis/graphql/**/*.generated.go

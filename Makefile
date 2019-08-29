@@ -45,6 +45,7 @@ PROTOS := $(shell find apis/proto -type f -regex ".*\.proto")
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
 GRAPHQLS = $(PROTOS:apis/proto/%.proto=apis/graphql/%.pb.graphqls)
+GQLCODES = $(GRAPHQLS:apis/graphql/%.pb.graphqls=apis/graphql/%.generated.go)
 PBDOCS = $(PROTOS:apis/proto/%.proto=apis/docs/%.md)
 
 red    = /bin/echo -e "\x1b[31m\#\# $1\x1b[0m"
@@ -86,8 +87,8 @@ endef
 all:
 
 clean:
-	go clean ./...
-	go clean -modcache
+	# go clean ./...
+	# go clean -modcache
 	rm -rf ./*.log
 	rm -rf ./*.svg
 	rm -rf ./go.mod
@@ -107,7 +108,8 @@ init:
 	GO111MODULE=on go mod init
 	GO111MODULE=on go mod vendor
 
-deps: clean init
+# deps: clean init
+deps:
 	go get github.com/envoyproxy/protoc-gen-validate \
 		github.com/gogo/protobuf/gogoproto \
 		github.com/gogo/protobuf/jsonpb \
@@ -122,6 +124,8 @@ deps: clean init
 	cd /tmp/NGT-${NGT_VERSION}&& cmake .
 	make -j -C /tmp/NGT-${NGT_VERSION}
 	make install -C /tmp/NGT-${NGT_VERSION}
+	rm -rf v${NGT_VERSION}.tar.gz
+	rm -rf /tmp/NGT-${NGT_VERSION}
 
 images:
 	docker build -f dockers/agent/ngt/Dockerfile -t $(REPO)/$(AGENT_IMAGE) .
@@ -168,7 +172,7 @@ proto-all: \
 
 pbgo: $(PBGOS)
 swagger: $(SWAGGERS)
-graphql: $(GRAPHQLS)
+graphql: $(GRAPHQLS) $(GQLCODES)
 pbdoc: $(PBDOCS)
 
 clean-proto-artifacts:
@@ -269,6 +273,10 @@ $(SWAGGERS): proto-deps $(SWAGGERDIRS)
 $(GRAPHQLS): proto-deps $(GRAPHQLDIRS)
 	@$(call green, "generating pb.graphqls files...")
 	$(call protoc-gen, $(patsubst apis/graphql/%.pb.graphqls,apis/proto/%.proto,$@), --gql_out=paths=source_relative:$(dir $@))
+
+(GQLCODES): proto-deps $(GRAPHQLS)
+	@$(call green, "generating graphql generated.go files...")
+	sh hack/graphql/gqlgen.sh $(dir $@) $(patsubst apis/graphql/%.generated.go,apis/graphql/%.pb.graphqls,$@) $@
 
 $(PBDOCS): proto-deps $(PBDOCDIRS)
 	@$(call green, "generating documents files...")
