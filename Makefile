@@ -65,23 +65,26 @@ define mkdir
 	mkdir -p $1
 endef
 
+PROTO_PATHS = \
+	-I ./apis/proto/payload \
+	-I ./apis/proto/agent \
+	-I ./apis/proto/vald \
+	-I ./apis/proto/discoverer \
+	-I ./apis/proto/meta_manager \
+	-I ./apis/proto/egress_filter \
+	-I ./apis/proto/ingress_filter \
+	-I ./apis/proto/backup_manager \
+	-I ./apis/proto/traffic_manager \
+	-I ./apis/proto/replication_manager \
+	-I $(GOPATH)/src/github.com/protocolbuffers/protobuf/src \
+	-I $(GOPATH)/src/github.com/gogo/protobuf/protobuf \
+	-I $(GOPATH)/src/github.com/googleapis/googleapis \
+	-I $(GOPATH)/src/github.com/danielvladco/go-proto-gql \
+	-I $(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
+
 define protoc-gen
 	protoc \
-		-I ./apis/proto/payload \
-		-I ./apis/proto/agent \
-		-I ./apis/proto/vald \
-		-I ./apis/proto/discoverer \
-		-I ./apis/proto/meta_manager \
-		-I ./apis/proto/egress_filter \
-		-I ./apis/proto/ingress_filter \
-		-I ./apis/proto/backup_manager \
-		-I ./apis/proto/traffic_manager \
-		-I ./apis/proto/replication_manager \
-		-I $(GOPATH)/src/github.com/protocolbuffers/protobuf/src \
-		-I $(GOPATH)/src/github.com/gogo/protobuf/protobuf \
-		-I $(GOPATH)/src/github.com/googleapis/googleapis \
-		-I $(GOPATH)/src/github.com/danielvladco/go-proto-gql \
-		-I $(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate \
+		$(PROTO_PATHS) \
 		$2 \
 		$1
 endef
@@ -89,7 +92,7 @@ endef
 all:
 
 clean:
-	# go clean ./...
+	go clean -cache ./...
 	# go clean -modcache
 	rm -rf ./*.log
 	rm -rf ./*.svg
@@ -171,10 +174,11 @@ e2e-bench: pbpy
 
 proto-all: \
     pbgo \
-    swagger \
-    graphql \
+	pbpy \
     pbdoc \
-	pbpy
+    swagger 
+    # swagger \
+    # graphql
 
 pbgo: $(PBGOS)
 swagger: $(SWAGGERS)
