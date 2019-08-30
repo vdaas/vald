@@ -264,7 +264,9 @@ $(PBDOCDIRS):
 
 $(PBGOS): proto-deps $(PBGODIRS)
 	@$(call green, "generating pb.go files...")
-	$(call protoc-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@), --gogofast_out=plugins=grpc:$(GOPATH)/src --validate_out=lang=gogo:$(GOPATH)/src)
+	$(call protoc-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@), --gogofast_out=plugins=grpc:$(GOPATH)/src)
+	# we have to enable validate after https://github.com/envoyproxy/protoc-gen-validate/pull/257 is merged
+	# $(call protoc-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@), --gogofast_out=plugins=grpc:$(GOPATH)/src --validate_out=lang=gogo:$(GOPATH)/src)
 
 $(SWAGGERS): proto-deps $(SWAGGERDIRS)
 	@$(call green, "generating swagger.json files...")
