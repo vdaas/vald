@@ -29,3 +29,5 @@ SIFT/
 
 # GraphQL go sources
 apis/graphql/**/*.generated.go
+
+*.egg-info/
