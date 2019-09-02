@@ -27,6 +27,13 @@ helm install vdaas/vald
 Write example here
 ```
 
+## Architecture Overview
+<div align="center">
+<img src="./assets/Vald Architecture Overview.svg" width="100%">
+</div>
+
+
+
 ## Contribution
 1. Fork it ( https://github.com/vdaas/vald/fork )
 2. Create your feature branch (git checkout -b my-new-feature)
