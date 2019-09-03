@@ -40,7 +40,7 @@ type backoff struct {
 	randFactor            float64
 	initialDuration       float64
 	jittedInitialDuration float64
-	jitterWidthLimit      float64
+	jitterLimit           float64
 	durationLimit         float64
 	maxDuration           float64
 	maxRetryCount         int
@@ -112,7 +112,7 @@ func (b *backoff) Do(ctx context.Context, f func() (interface{}, error)) (res in
 }
 
 func (b *backoff) addJitter(dur float64) float64 {
-	hd := math.Min(dur/10, b.jitterWidthLimit)
+	hd := math.Min(dur/10, b.jitterLimit)
 	return dur + float64(rand.LimitedUint32(uint64(hd))) - hd
 }
 

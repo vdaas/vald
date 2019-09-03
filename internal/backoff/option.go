@@ -36,7 +36,7 @@ var (
 		WithInitialDuration("10ms"),
 		WithBackOffTimeLimit("5m"),
 		WithMaximumDuration("1h"),
-		WithJitterWidthLimit("1m"),
+		WithJitterLimit("1m"),
 		WithBackOffFactor(1.5),
 		WithRetryCount(50),
 		WithEnableErrorLog(),
@@ -63,13 +63,13 @@ func WithMaximumDuration(dur string) Option {
 	}
 }
 
-func WithJitterWidthLimit(dur string) Option {
+func WithJitterLimit(dur string) Option {
 	return func(b *backoff) {
 		d, err := timeutil.Parse(dur)
 		if err != nil {
 			d = time.Minute
 		}
-		b.jitterWidthLimit = float64(d)
+		b.jitterLimit = float64(d)
 	}
 }
 
