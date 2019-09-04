@@ -20,18 +20,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// Package setting stores all server application settings
+// Package rest provides rest api logic
 package rest
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 
-	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
+	"github.com/vdaas/vald/apis/grpc/agent"
+	"github.com/vdaas/vald/apis/grpc/payload"
 )
 
 type Handler interface {
 	Index(w http.ResponseWriter, r *http.Request) error
+	Exists(w http.ResponseWriter, r *http.Request) error
 	Search(w http.ResponseWriter, r *http.Request) error
 	SearchByID(w http.ResponseWriter, r *http.Request) error
 	Insert(w http.ResponseWriter, r *http.Request) error
@@ -46,11 +51,16 @@ type Handler interface {
 }
 
 type handler struct {
-	ngt service.NGT
+	agent agent.AgentServer
 }
 
-func New() Handler {
-	return &handler{}
+func New(opts ...Option) Handler {
+	h := new(handler)
+
+	for _, opt := range append(defaultOpts, opts...) {
+		opt(h)
+	}
+	return h
 }
 
 func (h *handler) Index(w http.ResponseWriter, r *http.Request) error {
@@ -58,46 +68,218 @@ func (h *handler) Index(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (h *handler) Search(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) Search(w http.ResponseWriter, r *http.Request) (err error) {
+	var req *payload.Search_Request
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return err
+	}
+	io.Copy(ioutil.Discard, r.Body)
+	r.Body.Close()
+	res, err := h.agent.Search(r.Context(), req)
+	if err != nil {
+		return err
+	}
+	err = json.NewEncoder(w).Encode(res)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (h *handler) SearchByID(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) SearchByID(w http.ResponseWriter, r *http.Request) (err error) {
+	var req *payload.Search_IDRequest
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return err
+	}
+	io.Copy(ioutil.Discard, r.Body)
+	r.Body.Close()
+	res, err := h.agent.SearchByID(r.Context(), req)
+	if err != nil {
+		return err
+	}
+	err = json.NewEncoder(w).Encode(res)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (h *handler) Insert(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) Insert(w http.ResponseWriter, r *http.Request) (err error) {
+	var req *payload.Object_Vector
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return err
+	}
+	io.Copy(ioutil.Discard, r.Body)
+	r.Body.Close()
+	res, err := h.agent.Insert(r.Context(), req)
+	if err != nil {
+		return err
+	}
+	err = json.NewEncoder(w).Encode(res)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (h *handler) MultiInsert(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) MultiInsert(w http.ResponseWriter, r *http.Request) (err error) {
+	var req *payload.Object_Vectors
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return err
+	}
+	io.Copy(ioutil.Discard, r.Body)
+	r.Body.Close()
+	res, err := h.agent.MultiInsert(r.Context(), req)
+	if err != nil {
+		return err
+	}
+	err = json.NewEncoder(w).Encode(res)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (h *handler) Update(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) Update(w http.ResponseWriter, r *http.Request) (err error) {
+	var req *payload.Object_Vector
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return err
+	}
+	io.Copy(ioutil.Discard, r.Body)
+	r.Body.Close()
+	res, err := h.agent.Update(r.Context(), req)
+	if err != nil {
+		return err
+	}
+	err = json.NewEncoder(w).Encode(res)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (h *handler) MultiUpdate(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) MultiUpdate(w http.ResponseWriter, r *http.Request) (err error) {
+	var req *payload.Object_Vectors
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return err
+	}
+	io.Copy(ioutil.Discard, r.Body)
+	r.Body.Close()
+	res, err := h.agent.MultiUpdate(r.Context(), req)
+	if err != nil {
+		return err
+	}
+	err = json.NewEncoder(w).Encode(res)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (h *handler) Remove(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) Remove(w http.ResponseWriter, r *http.Request) (err error) {
+	var req *payload.Object_ID
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return err
+	}
+	io.Copy(ioutil.Discard, r.Body)
+	r.Body.Close()
+	res, err := h.agent.Remove(r.Context(), req)
+	if err != nil {
+		return err
+	}
+	err = json.NewEncoder(w).Encode(res)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (h *handler) MultiRemove(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) MultiRemove(w http.ResponseWriter, r *http.Request) (err error) {
+	var req *payload.Object_IDs
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return err
+	}
+	io.Copy(ioutil.Discard, r.Body)
+	r.Body.Close()
+	res, err := h.agent.MultiRemove(r.Context(), req)
+	if err != nil {
+		return err
+	}
+	err = json.NewEncoder(w).Encode(res)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (h *handler) CreateIndex(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) CreateIndex(w http.ResponseWriter, r *http.Request) (err error) {
+	var req *payload.Controll_CreateIndexRequest
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return err
+	}
+	io.Copy(ioutil.Discard, r.Body)
+	r.Body.Close()
+	res, err := h.agent.CreateIndex(r.Context(), req)
+	if err != nil {
+		return err
+	}
+	err = json.NewEncoder(w).Encode(res)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (h *handler) SaveIndex(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) SaveIndex(w http.ResponseWriter, r *http.Request) (err error) {
+	io.Copy(ioutil.Discard, r.Body)
+	r.Body.Close()
+	_, err = h.agent.SaveIndex(r.Context(), nil)
+	return
+}
+
+func (h *handler) GetObject(w http.ResponseWriter, r *http.Request) (err error) {
+	var req *payload.Object_ID
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return err
+	}
+	io.Copy(ioutil.Discard, r.Body)
+	r.Body.Close()
+	res, err := h.agent.GetObject(r.Context(), req)
+	if err != nil {
+		return err
+	}
+	err = json.NewEncoder(w).Encode(res)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (h *handler) GetObject(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) Exists(w http.ResponseWriter, r *http.Request) (err error) {
+	var req *payload.Object_ID
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return err
+	}
+	io.Copy(ioutil.Discard, r.Body)
+	r.Body.Close()
+	res, err := h.agent.Exists(r.Context(), req)
+	if err != nil {
+		return err
+	}
+	err = json.NewEncoder(w).Encode(res)
+	if err != nil {
+		return err
+	}
 	return nil
 }
