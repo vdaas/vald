@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/internal/runner"
-	"github.com/vdaas/vald/pkg/proxy/gateway/vald/config"
-	"github.com/vdaas/vald/pkg/proxy/gateway/vald/handler/grpc"
-	"github.com/vdaas/vald/pkg/proxy/gateway/vald/handler/rest"
-	"github.com/vdaas/vald/pkg/proxy/gateway/vald/router"
-	"github.com/vdaas/vald/pkg/proxy/gateway/vald/service"
+	"github.com/vdaas/vald/pkg/agent/ngt/config"
+	"github.com/vdaas/vald/pkg/agent/ngt/handler/grpc"
+	"github.com/vdaas/vald/pkg/agent/ngt/handler/rest"
+	"github.com/vdaas/vald/pkg/agent/ngt/router"
+	"github.com/vdaas/vald/pkg/agent/ngt/service"
 )
 
 type Runner runner.Runner

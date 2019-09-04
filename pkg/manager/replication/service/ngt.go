@@ -32,7 +32,7 @@ import (
 	core "github.com/vdaas/vald/internal/core/ngt"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/pkg/proxy/gateway/vald/model"
+	"github.com/vdaas/vald/pkg/agent/ngt/model"
 )
 
 type NGT interface {
