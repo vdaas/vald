@@ -21,6 +21,6 @@ require (
 	golang.org/x/sys v0.0.0-20190904154756-749cb33beabd
 	gonum.org/v1/hdf5 v0.0.0-20190516085527-847297cb569e
 	google.golang.org/genproto v0.0.0-20190905072037-92dd089d5514
-	google.golang.org/grpc v1.23.0
+	google.golang.org/grpc v1.23.1
 	gopkg.in/yaml.v2 v2.2.2
 )
