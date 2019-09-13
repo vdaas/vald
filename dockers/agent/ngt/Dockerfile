@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+
 FROM golang:1.12-alpine AS builder
 ENV APP_NAME ngt-agent
 
