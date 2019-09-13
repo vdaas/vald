@@ -1,10 +1,25 @@
+//
+// Copyright (C) 2019-2019 kpango (Yusuke Kato)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 package main
 
 import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -32,6 +47,7 @@ var (
 {{.Escape}} See the License for the specific language governing permissions and
 {{.Escape}} limitations under the License.
 {{.Escape}}
+
 `))
 	slushEscape = "//"
 	sharpEscape = "#"
@@ -120,9 +136,9 @@ func readAndRewrite(path string) error {
 	if err != nil {
 		return errors.Errorf("filepath %s, could not open", path)
 	}
-	defer f.Close()
 	fi, err := f.Stat()
 	if err != nil {
+		f.Close()
 		return errors.Errorf("filepath %s, could not open", path)
 	}
 	buf := bytes.NewBuffer(make([]byte, 0, fi.Size()))
@@ -133,27 +149,43 @@ func readAndRewrite(path string) error {
 		Escape:   sharpEscape,
 	}
 	switch filepath.Ext(path) {
-	case ".go":
+	case ".go", ".proto":
 		d.Escape = slushEscape
 	}
-	apache.Execute(buf, d)
 
 	lf := true
+	bf := false
 	sc := bufio.NewScanner(f)
 	for sc.Scan() {
 		line := sc.Text()
+		if filepath.Ext(path) == ".go" && strings.HasPrefix(line, "// +build") {
+			bf = true
+			buf.WriteString(line)
+			buf.WriteString("\n")
+			buf.WriteString("\n")
+			continue
+		}
 		if lf && strings.HasPrefix(line, d.Escape) {
 			continue
-		} else {
+		} else if !bf {
+			apache.Execute(buf, d)
 			lf = false
 		}
 		if !lf {
 			buf.WriteString(line)
 			buf.WriteString("\n")
 		}
+		bf = false
 	}
-	f.Truncate(fi.Size())
-	io.Copy(f, buf)
+	f.Close()
+	os.RemoveAll(path)
+	f, err = os.Create(path)
+	if err != nil {
+		f.Close()
+		return errors.Errorf("filepath %s, could not open", path)
+	}
+	f.Write(buf.Bytes())
+	f.Close()
 
 	return nil
 }
