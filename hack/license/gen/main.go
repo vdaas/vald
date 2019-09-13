@@ -24,6 +24,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"text/template"
 	"time"
 
@@ -156,6 +157,7 @@ func readAndRewrite(path string) error {
 	lf := true
 	bf := false
 	sc := bufio.NewScanner(f)
+	once := sync.Once{}
 	for sc.Scan() {
 		line := sc.Text()
 		if filepath.Ext(path) == ".go" && strings.HasPrefix(line, "// +build") {
@@ -168,7 +170,9 @@ func readAndRewrite(path string) error {
 		if lf && strings.HasPrefix(line, d.Escape) {
 			continue
 		} else if !bf {
-			apache.Execute(buf, d)
+			once.Do(func() {
+				apache.Execute(buf, d)
+			})
 			lf = false
 		}
 		if !lf {
