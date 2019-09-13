@@ -30,6 +30,7 @@ PROXY_IMAGE         = vald-proxy
 DISCOVERER_IMAGE    = vald-discoverer
 KVS_IMAGE           = vald-metadata
 
+K8S_CTRL_RUNTIME_VERSION = v0.2.0
 NGT_VERSION = 1.7.9
 NGT_REPO = github.com/yahoojapan/NGT
 
@@ -89,14 +90,13 @@ define protoc-gen
 		$1
 endef
 
-all:
+all: clean init deps proto-all
 
 clean:
-	go clean -cache ./...
+	# go clean -cache ./...
 	# go clean -modcache
 	rm -rf ./*.log
 	rm -rf ./*.svg
-	rm -rf ./go.mod
 	rm -rf ./go.sum
 	rm -rf bench
 	rm -rf pprof
@@ -110,8 +110,29 @@ bench:
 	go test -count=5 -run=NONE -bench . -benchmem
 
 init:
-	GO111MODULE=on go mod init
 	GO111MODULE=on go mod vendor
+
+kube_deps:
+	rm -rf go.mod \
+		go.sum \
+		vendor \
+		/go/pkg/mod/k8s.io \
+		/go/pkg/mod/sigs.k8s.io \
+		/go/pkg/mod/cache \
+		/go/pkg/sumdb
+	go mod init
+	go get sigs.k8s.io/controller-runtime@${K8S_CTRL_RUNTIME_VERSION}
+	go mod vendor
+	# go get \
+	# k8s.io/api@kubernetes-1.15.3 \
+	# k8s.io/apiextensions-apiserver@kubernetes-1.15.3 \
+	# k8s.io/apimachinery@kubernetes-1.15.3 \
+	# k8s.io/client-go@kubernetes-1.15.3 \
+	# k8s.io/klog@v0.4.0 \
+	# k8s.io/kube-openapi \
+	# k8s.io/utils \
+	# sigs.k8s.io/controller-runtime@v0.2.0 \
+	# sigs.k8s.io/testing_frameworks@v0.1.1
 
 # deps: clean init
 deps:
@@ -121,7 +142,9 @@ deps:
 		github.com/gogo/protobuf/proto \
 		github.com/gogo/protobuf/protoc-gen-gogo \
 		github.com/danielvladco/go-proto-gql \
-		github.com/googleapis/googleapis
+		google.golang.org/genproto/...
+		# github.com/danielvladco/go-proto-gql \
+		# github.com/googleapis/googleapis
 	rm -rf vendor
 	curl -LO https://github.com/yahoojapan/NGT/archive/v${NGT_VERSION}.tar.gz
 	tar zxf v${NGT_VERSION}.tar.gz -C /tmp
@@ -203,9 +226,10 @@ proto-deps: \
     $(GOPATH)/bin/protoc-gen-validate \
     $(GOPATH)/bin/prototool \
     $(GOPATH)/bin/swagger \
-    $(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/google.golang.org/genproto \
     $(GOPATH)/src/github.com/protocolbuffers/protobuf \
 	grpcio-tools
+    # $(GOPATH)/src/github.com/googleapis/googleapis \
 
 $(GOPATH)/src/github.com/protocolbuffers/protobuf:
 	git clone \
