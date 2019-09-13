@@ -13,17 +13,20 @@
     core-bench \
     core-bench-lite \
     core-bench-clean \
+    e2e-bench \
     proto-all \
     pbgo \
     swagger \
     graphql \
     pbdoc \
+    pbpy \
     clean-proto-artifacts \
-    proto-deps
+    proto-deps \
+    grpcio-tools
 
 
 REPO               ?= vdaas
-GOPKG = github.com/${REPO}/vald
+GOPKG               = github.com/${REPO}/vald
 TAG                 = $(shell date -u +%Y%m%d-%H%M%S)
 AGENT_IMAGE         = vald-agnet
 PROXY_IMAGE         = vald-proxy
@@ -197,9 +200,9 @@ e2e-bench: pbpy
 
 proto-all: \
     pbgo \
-	pbpy \
+    pbpy \
     pbdoc \
-    swagger 
+    swagger
     # swagger \
     # graphql
 
@@ -228,8 +231,12 @@ proto-deps: \
     $(GOPATH)/bin/swagger \
 	$(GOPATH)/src/google.golang.org/genproto \
     $(GOPATH)/src/github.com/protocolbuffers/protobuf \
+<<<<<<< HEAD
 	grpcio-tools
     # $(GOPATH)/src/github.com/googleapis/googleapis \
+=======
+    grpcio-tools
+>>>>>>> 4b85f197b67e11ab5010ab5fd791a1f58b6763fb
 
 $(GOPATH)/src/github.com/protocolbuffers/protobuf:
 	git clone \
@@ -327,7 +334,7 @@ $(GRAPHQLS): proto-deps $(GRAPHQLDIRS)
 	@$(call green, "generating pb.graphqls files...")
 	$(call protoc-gen, $(patsubst apis/graphql/%.pb.graphqls,apis/proto/%.proto,$@), --gql_out=paths=source_relative:$(dir $@))
 
-(GQLCODES): proto-deps $(GRAPHQLS)
+$(GQLCODES): proto-deps $(GRAPHQLS)
 	@$(call green, "generating graphql generated.go files...")
 	sh hack/graphql/gqlgen.sh $(dir $@) $(patsubst apis/graphql/%.generated.go,apis/graphql/%.pb.graphqls,$@) $@
 

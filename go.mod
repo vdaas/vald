@@ -21,10 +21,15 @@ require (
 	golang.org/x/tools/gopls v0.1.5 // indirect
 	gonum.org/v1/hdf5 v0.0.0-20190516085527-847297cb569e
 	google.golang.org/genproto v0.0.0-20190905072037-92dd089d5514
+<<<<<<< HEAD
 	google.golang.org/grpc v1.23.0
 	gopkg.in/yaml.v2 v2.2.1
 	k8s.io/api v0.0.0-20190409021203-6e4e0e4f393b
 	k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	sigs.k8s.io/controller-runtime v0.2.0
+=======
+	google.golang.org/grpc v1.23.1
+	gopkg.in/yaml.v2 v2.2.2
+>>>>>>> 4b85f197b67e11ab5010ab5fd791a1f58b6763fb
 )
