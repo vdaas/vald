@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+
 package main
 
 import (
@@ -160,13 +161,15 @@ func readAndRewrite(path string) error {
 	once := sync.Once{}
 	for sc.Scan() {
 		line := sc.Text()
-		if filepath.Ext(path) == ".go" && strings.HasPrefix(line, "// +build") {
+		if filepath.Ext(path) == ".go" && strings.HasPrefix(line, "// +build") ||
+			filepath.Ext(path) == ".py" && strings.HasPrefix(line, "# -*-") {
 			bf = true
 			buf.WriteString(line)
 			buf.WriteString("\n")
 			buf.WriteString("\n")
 			continue
 		}
+
 		if lf && strings.HasPrefix(line, d.Escape) {
 			continue
 		} else if !bf {
