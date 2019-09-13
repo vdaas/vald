@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-// Package pod provides kubernetes pod information and preriodically update
-package pod
+// Package node provides kubernetes node information and preriodically update
+package node
 
 import (
 	"context"
@@ -34,29 +34,28 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-type PodWatcher interface {
+type NodeWatcher interface {
 	k8s.ResourceController
-	GetPods(name string) (pods []Pod, ok bool)
+	GetNodes() []Node
 }
 
 type reconciler struct {
 	mu          sync.RWMutex
-	podList     map[string][]Pod
+	nodes       []Node
 	mgr         manager.Manager
 	name        string
 	onError     func(err error)
-	onReconcile func(podList map[string][]Pod)
+	onReconcile func(nodes []Node)
 }
 
-type Pod struct {
-	Name     string
-	NodeName string
-	IP       string
-	CPU      float64
-	Mem      float64
+type Node struct {
+	Name string
+	IP   string
+	CPU  float64
+	Mem  float64
 }
 
-func New(opts ...Option) PodWatcher {
+func New(opts ...Option) NodeWatcher {
 	r := new(reconciler)
 
 	for _, opt := range opts {
@@ -67,11 +66,9 @@ func New(opts ...Option) PodWatcher {
 }
 
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
-	ps := &corev1.PodList{}
+	ns := &corev1.NodeList{}
 
-	err = r.mgr.GetClient().List(context.TODO(), ps, client.InNamespace(req.Namespace), client.MatchingFields{
-		"status.phase": string(corev1.PodRunning),
-	})
+	err = r.mgr.GetClient().List(context.TODO(), ns, client.InNamespace(req.Namespace))
 
 	if err != nil {
 		if r.onError != nil {
@@ -90,63 +87,37 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		return
 	}
 
-	var (
-		cpuUsage float64
-		memUsage float64
-		pods     = make(map[string][]Pod, len(ps.Items))
-	)
+	nodes := make([]Node, 0, len(ns.Items))
 
-	for _, pod := range ps.Items {
-		cpuUsage = 0.0
-		memUsage = 0.0
-		for _, container := range pod.Spec.Containers {
-			request := container.Resources.Requests
-			limit := container.Resources.Limits
-			cpuUsage += (float64(request.Cpu().Value()) /
-				float64(limit.Cpu().Value())) * 100.0
-			memUsage += (float64(request.Memory().Value()) /
-				float64(limit.Memory().Value())) * 100.0
-		}
-
-		cpuUsage = cpuUsage / float64(len(pod.Spec.Containers))
-		memUsage = memUsage / float64(len(pod.Spec.Containers))
-
-		// pod.GetObjectMeta().GetLabels()["app"]
-		podMetaName := pod.GetObjectMeta().GetName()
-
-		if _, ok := pods[podMetaName]; !ok {
-			pods[podMetaName] = make([]Pod, 0, len(ps.Items))
-		}
-
-		pods[podMetaName] = append(pods[podMetaName], Pod{
-			Name:     pod.GetName(),
-			NodeName: pod.Spec.NodeName,
-			IP:       pod.Status.PodIP,
-			CPU:      cpuUsage,
-			Mem:      memUsage,
+	for _, node := range ns.Items {
+		remain := node.Status.Allocatable
+		limit := node.Status.Capacity
+		nodes = append(nodes, Node{
+			Name: node.GetName(),
+			IP:   node.Status.Addresses[0].Address,
+			CPU: (float64(limit.Cpu().Value()-remain.Cpu().Value()) /
+				float64(limit.Cpu().Value())) * 100.0,
+			Mem: (float64(limit.Memory().Value()-remain.Memory().Value()) /
+				float64(limit.Memory().Value())) * 100.0,
 		})
 	}
 
-	r.podList = make(map[string][]Pod, len(pods))
-
-	for name, pod := range pods {
-		r.mu.Lock()
-		r.podList[name] = pod[0:len(pod)]
-		r.mu.Unlock()
-	}
+	r.mu.Lock()
+	r.nodes = nodes
+	r.mu.Unlock()
 
 	if r.onReconcile != nil {
 		r.mu.RLock()
-		r.onReconcile(r.podList)
+		r.onReconcile(r.nodes)
 		r.mu.RUnlock()
 	}
 
 	return
 }
 
-func (r *reconciler) GetPods(name string) (pods []Pod, ok bool) {
+func (r *reconciler) GetNodes() (nodes []Node) {
 	r.mu.RLock()
-	pods, ok = r.podList[name]
+	nodes = r.nodes
 	r.mu.RUnlock()
 	return
 }

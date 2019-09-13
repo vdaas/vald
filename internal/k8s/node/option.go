@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-// Package pod provides kubernetes pod information and preriodically update
-package pod
+// Package node provides kubernetes node information and preriodically update
+package node
 
 import "sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -46,7 +46,7 @@ func WithOnErrorFunc(f func(err error)) Option {
 	}
 }
 
-func WithOnReconcileFunc(f func(podList map[string][]Pod)) Option {
+func WithOnReconcileFunc(f func(nodes []Node)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
 		return nil
