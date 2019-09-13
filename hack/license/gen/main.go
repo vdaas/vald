@@ -133,7 +133,7 @@ func readAndRewrite(path string) error {
 		Escape:   sharpEscape,
 	}
 	switch filepath.Ext(path) {
-	case ".go", ".py":
+	case ".go":
 		d.Escape = slushEscape
 	}
 	apache.Execute(buf, d)
