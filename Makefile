@@ -50,7 +50,7 @@ PROXY_IMAGE         = vald-proxy
 DISCOVERER_IMAGE    = vald-discoverer
 KVS_IMAGE           = vald-metadata
 
-K8S_CTRL_RUNTIME_VERSION = v0.2.0
+K8S_CTRL_RUNTIME_VERSION = v0.2.1
 NGT_VERSION = 1.7.9
 NGT_REPO = github.com/yahoojapan/NGT
 
