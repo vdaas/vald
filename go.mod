@@ -15,7 +15,7 @@ require (
 	github.com/hashicorp/go-version v1.2.0
 	github.com/iancoleman/strcase v0.0.0-20190422225806-e506e3ef7365 // indirect
 	github.com/kpango/fastime v1.0.15
-	github.com/kpango/gache v1.1.21
+	github.com/kpango/gache v1.1.22
 	github.com/kpango/glg v1.4.6
 	github.com/lyft/protoc-gen-star v0.4.11 // indirect
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
