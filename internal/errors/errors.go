@@ -94,6 +94,10 @@ var (
 
 	ErrTransportRetryable = New("transport is retryable")
 
+	//DB
+
+	ErrAddrsNotFound = New("addrs not found")
+
 	//NGT
 
 	ErrCreateProperty = func(err error) error {

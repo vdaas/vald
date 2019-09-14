@@ -15,3 +15,61 @@
 //
 
 package redis
+
+import (
+	"context"
+	"crypto/tls"
+	"net"
+	"reflect"
+	"time"
+
+	"github.com/go-redis/redis"
+	"github.com/vdaas/vald/internal/errors"
+)
+
+type Redis interface {
+}
+
+type redisClient struct {
+	addrs              []string
+	clusterSlots       func() ([]redis.ClusterSlot, error)
+	db                 int
+	dialTimeout        time.Duration
+	dialer             func(ctx context.Context, network, addr string) (net.Conn, error)
+	idleCheckFrequency time.Duration
+	idleTimeout        time.Duration
+	keyPref            string
+	maxConnAge         time.Duration
+	maxRedirects       int
+	maxRetries         int
+	maxRetryBackoff    time.Duration
+	minIdleConns       int
+	minRetryBackoff    time.Duration
+	onConnect          func(*redis.Conn) error
+	onNewNode          func(*redis.Client)
+	password           string
+	poolSize           int
+	poolTimeout        time.Duration
+	readOnly           bool
+	readTimeout        time.Duration
+	routeByLatency     bool
+	routeRandomly      bool
+	tlsConfig          *tls.Config
+	writeTimeout       time.Duration
+}
+
+func New(opts ...Option) (Redis, error) {
+	r := new(redisClient)
+	for _, opt := range opts {
+		if err := opt(r); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
+	}
+	switch len(r.addrs) {
+	case 0:
+		return nil, errors.ErrAddrsNotFound
+	case 1:
+	default:
+	}
+	return r, nil
+}

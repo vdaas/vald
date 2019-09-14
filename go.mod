@@ -10,6 +10,7 @@ require (
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/getsentry/raven-go v0.2.0 // indirect
+	github.com/go-redis/redis v6.15.5+incompatible
 	github.com/gogo/protobuf v1.3.0
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/go-version v1.2.0
