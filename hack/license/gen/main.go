@@ -179,14 +179,20 @@ func readAndRewrite(path string) error {
 			bf = false
 		}
 	}
-	f.Close()
-	os.RemoveAll(path)
+	err = f.Close()
+	if err != nil {
+		return errors.Errorf("filepath %s, could not close", path)
+	}
+	err = os.RemoveAll(path)
+	if err != nil {
+		return errors.Errorf("filepath %s, could not delete", path)
+	}
 	f, err = os.Create(path)
 	if err != nil {
 		f.Close()
 		return errors.Errorf("filepath %s, could not open", path)
 	}
-	f.Write(buf.Bytes())
+	f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"))
 	f.Close()
 	return nil
 }

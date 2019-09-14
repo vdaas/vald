@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-
 # $1 = directory
 # $2 = schema
 # $3 = target

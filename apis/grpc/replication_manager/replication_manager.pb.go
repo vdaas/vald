@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-
 package replication_manager
 
 import (

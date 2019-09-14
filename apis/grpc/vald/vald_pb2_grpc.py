@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import grpc
 
 import payload_pb2 as payload__pb2

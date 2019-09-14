@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-
 package egress_filter
 
 import (

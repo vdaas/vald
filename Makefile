@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-
 .PHONY: \
 	clean \
 	bench \
@@ -123,14 +122,14 @@ clean:
 		./apis/grpc \
 		./apis/swagger \
 		./bench \
-		./go.mod \
-		./go.sum \
 		./pprof \
 		./vendor \
+		./go.sum \
 		/go/pkg/mod/cache \
 		/go/pkg/mod/k8s.io \
 		/go/pkg/mod/sigs.k8s.io \
 		/go/pkg/sumdb
+		# ./go.mod \
 
 license:
 	go run hack/license/gen/main.go ./
@@ -142,9 +141,10 @@ init:
 	GO111MODULE=on go mod vendor
 
 kube_deps: clean
-	go mod init
+# kube_deps:
+	# go mod init
 	go get sigs.k8s.io/controller-runtime@${K8S_CTRL_RUNTIME_VERSION}
-	go mod vendor
+	# go mod vendor
 	# go get \
 	# k8s.io/api@kubernetes-1.15.3 \
 	# k8s.io/apiextensions-apiserver@kubernetes-1.15.3 \
@@ -166,6 +166,7 @@ deps: kube_deps
 		google.golang.org/genproto/...
 		# github.com/danielvladco/go-proto-gql \
 		# github.com/googleapis/googleapis
+	go mod vendor
 	rm -rf vendor
 	curl -LO https://github.com/yahoojapan/NGT/archive/v${NGT_VERSION}.tar.gz
 	tar zxf v${NGT_VERSION}.tar.gz -C /tmp
