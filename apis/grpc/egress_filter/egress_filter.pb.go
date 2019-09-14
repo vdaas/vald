@@ -15,7 +15,6 @@
 //
 
 
-
 package egress_filter
 
 import (

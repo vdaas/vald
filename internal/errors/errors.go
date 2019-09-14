@@ -15,7 +15,6 @@
 //
 
 
-
 // Package errors provides error types and function
 package errors
 

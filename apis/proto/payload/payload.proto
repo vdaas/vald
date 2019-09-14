@@ -15,7 +15,6 @@
 //
 
 
-
 syntax = "proto3";
 
 package payload;

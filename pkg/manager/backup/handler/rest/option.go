@@ -15,7 +15,6 @@
 //
 
 
-
 // Package rest provides rest api logic
 package rest
 

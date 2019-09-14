@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 // Package node provides kubernetes node information and preriodically update
 package node
 

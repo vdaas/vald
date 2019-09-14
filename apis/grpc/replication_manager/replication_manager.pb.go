@@ -15,7 +15,6 @@
 //
 
 
-
 package replication_manager
 
 import (

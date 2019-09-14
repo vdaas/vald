@@ -15,7 +15,6 @@
 //
 
 
-
 //
 // Copyright (c) 2019 kpango (Yusuke Kato)
 //

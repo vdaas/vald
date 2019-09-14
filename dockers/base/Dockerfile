@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-
 FROM ubuntu:latest AS builder
 
 ENV NGT_VERSION 1.7.9

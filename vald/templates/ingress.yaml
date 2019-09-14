@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "vald.fullname" . -}}
 apiVersion: extensions/v1beta1

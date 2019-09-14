@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-
 bench:
 	go test -count=5 -run=NONE -bench . -benchmem
 

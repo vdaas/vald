@@ -15,7 +15,6 @@
 //
 
 
-
 // Package grpc provides generic functionallity for grpc
 package grpc
 

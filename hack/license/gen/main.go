@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 package main
 
 import (
@@ -47,9 +46,7 @@ var (
 {{.Escape}} WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 {{.Escape}} See the License for the specific language governing permissions and
 {{.Escape}} limitations under the License.
-{{.Escape}}
-
-`))
+{{.Escape}}`))
 	slushEscape = "//"
 	sharpEscape = "#"
 )
@@ -70,13 +67,11 @@ func main() {
 		readAndRewrite(path)
 	}
 }
-
 func dirwalk(dir string) []string {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		panic(err)
 	}
-
 	var paths []string
 	for _, file := range files {
 		if file.IsDir() {
@@ -128,10 +123,8 @@ func dirwalk(dir string) []string {
 			}
 		}
 	}
-
 	return paths
 }
-
 func readAndRewrite(path string) error {
 	f, err := os.Open(path)
 	if err != nil {
@@ -153,7 +146,6 @@ func readAndRewrite(path string) error {
 	case ".go", ".proto":
 		d.Escape = slushEscape
 	}
-
 	lf := true
 	bf := false
 	sc := bufio.NewScanner(f)
@@ -168,21 +160,15 @@ func readAndRewrite(path string) error {
 			buf.WriteString("\n")
 			continue
 		}
-
-		if lf {
-			if strings.HasPrefix(line, d.Escape) {
-				continue
-			} else if line == "" {
-				continue
-			} else if !bf {
-				once.Do(func() {
-					apache.Execute(buf, d)
-				})
-				lf = false
-				buf.WriteString(line)
-				buf.WriteString("\n")
-			}
-		} else {
+		if lf && strings.HasPrefix(line, d.Escape) {
+			continue
+		} else if !bf {
+			once.Do(func() {
+				apache.Execute(buf, d)
+			})
+			lf = false
+		}
+		if !lf {
 			buf.WriteString(line)
 			buf.WriteString("\n")
 		}
@@ -197,6 +183,5 @@ func readAndRewrite(path string) error {
 	}
 	f.Write(buf.Bytes())
 	f.Close()
-
 	return nil
 }

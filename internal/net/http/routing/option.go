@@ -15,7 +15,6 @@
 //
 
 
-
 // Package routing provides implementation of Go API for routing http Handler wrapped by rest.Func
 package routing
 

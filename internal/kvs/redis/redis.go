@@ -12,25 +12,4 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
-
-
-syntax = "proto3";
-
-package discoverer;
-
-option go_package = "github.com/vdaas/vald/apis/grpc/discoverer";
-option java_multiple_files = true;
-option java_package = "org.vdaas.vald.discoverer";
-option java_outer_classname = "Discoverer";
-
-import "payload.proto";
-import "google/api/annotations.proto";
-import "pb/gql.proto";
-
-service Discoverer {
-  option(gql.svc_type) = QUERY;
-  rpc Discover(payload.Common.Empty) returns(payload.Info.Agents) {
-    option(google.api.http).get = "/discover";
-  }
-}
+//package redis

@@ -15,7 +15,6 @@
 //
 
 
-
 // Package ngt provides implementation of Go API for https://github.com/yahoojapan/NGT
 package ngt
 
