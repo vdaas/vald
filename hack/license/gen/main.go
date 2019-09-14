@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-
 package main
 
 import (
@@ -170,15 +169,20 @@ func readAndRewrite(path string) error {
 			continue
 		}
 
-		if lf && strings.HasPrefix(line, d.Escape) {
-			continue
-		} else if !bf {
-			once.Do(func() {
-				apache.Execute(buf, d)
-			})
-			lf = false
-		}
-		if !lf {
+		if lf {
+			if strings.HasPrefix(line, d.Escape) {
+				continue
+			} else if !bf {
+				once.Do(func() {
+					apache.Execute(buf, d)
+				})
+				if line != "" {
+					lf = false
+					buf.WriteString(line)
+					buf.WriteString("\n")
+				}
+			}
+		} else {
 			buf.WriteString(line)
 			buf.WriteString("\n")
 		}
