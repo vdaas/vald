@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+
 .PHONY: \
 	clean \
 	bench \
@@ -113,18 +114,23 @@ endef
 all: clean init deps proto-all
 
 clean:
-	# go clean -cache ./...
-	# go clean -modcache
-	rm -rf ./*.log
-	rm -rf ./*.svg
-	rm -rf ./go.sum
-	rm -rf bench
-	rm -rf pprof
-	rm -rf vendor
-	rm -rf apis/docs
-	rm -rf apis/grpc
-	rm -rf apis/swagger
-	rm -rf apis/graphql
+	go clean -cache -modcache ./...
+	rm -rf \
+		./*.log \
+		./*.svg \
+		./apis/docs \
+		./apis/graphql \
+		./apis/grpc \
+		./apis/swagger \
+		./bench \
+		./go.mod \
+		./go.sum \
+		./pprof \
+		./vendor \
+		/go/pkg/mod/cache \
+		/go/pkg/mod/k8s.io \
+		/go/pkg/mod/sigs.k8s.io \
+		/go/pkg/sumdb
 
 license:
 	go run hack/license/gen/main.go ./
@@ -135,14 +141,7 @@ bench:
 init:
 	GO111MODULE=on go mod vendor
 
-kube_deps:
-	rm -rf go.mod \
-		go.sum \
-		vendor \
-		/go/pkg/mod/k8s.io \
-		/go/pkg/mod/sigs.k8s.io \
-		/go/pkg/mod/cache \
-		/go/pkg/sumdb
+kube_deps: clean
 	go mod init
 	go get sigs.k8s.io/controller-runtime@${K8S_CTRL_RUNTIME_VERSION}
 	go mod vendor
@@ -157,8 +156,7 @@ kube_deps:
 	# sigs.k8s.io/controller-runtime@v0.2.0 \
 	# sigs.k8s.io/testing_frameworks@v0.1.1
 
-# deps: clean init
-deps:
+deps: kube_deps
 	go get github.com/envoyproxy/protoc-gen-validate \
 		github.com/gogo/protobuf/gogoproto \
 		github.com/gogo/protobuf/jsonpb \
@@ -357,3 +355,4 @@ $(GQLCODES): proto-deps $(GRAPHQLS)
 $(PBDOCS): proto-deps $(PBDOCDIRS)
 	@$(call green, "generating documents files...")
 	$(call protoc-gen, $(patsubst apis/docs/%.md,apis/proto/%.proto,$@), --plugin=protoc-gen-doc=$(GOPATH)/bin/protoc-gen-doc --doc_out=$(dir $@))
+
