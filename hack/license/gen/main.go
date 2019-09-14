@@ -172,15 +172,15 @@ func readAndRewrite(path string) error {
 		if lf {
 			if strings.HasPrefix(line, d.Escape) {
 				continue
+			} else if line == "" {
+				continue
 			} else if !bf {
 				once.Do(func() {
 					apache.Execute(buf, d)
 				})
-				if line != "" {
-					lf = false
-					buf.WriteString(line)
-					buf.WriteString("\n")
-				}
+				lf = false
+				buf.WriteString(line)
+				buf.WriteString("\n")
 			}
 		} else {
 			buf.WriteString(line)
