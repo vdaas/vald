@@ -47,7 +47,8 @@ var (
 {{.Escape}} WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 {{.Escape}} See the License for the specific language governing permissions and
 {{.Escape}} limitations under the License.
-{{.Escape}}`))
+{{.Escape}}
+`))
 	slushEscape = "//"
 	sharpEscape = "#"
 )
