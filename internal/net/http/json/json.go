@@ -20,8 +20,10 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/francoispqt/gojay"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/http/rest"
 )
 
@@ -71,6 +73,10 @@ func Handler(w http.ResponseWriter, r *http.Request,
 	return http.StatusOK, nil
 }
 
-func ErrorHandler(w http.ResponseWriter, data RFC7807Error) error {
+func ErrorHandler(w http.ResponseWriter, data RFC7807Error) (err error) {
+	data.Instance, err = os.Hostname()
+	if err != nil {
+		log.Error(err)
+	}
 	return Encode(w, data, data.Status, rest.ProblemJSON, rest.CharsetUTF8)
 }
