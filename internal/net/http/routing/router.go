@@ -52,7 +52,7 @@ func New(opts ...Option) http.Handler {
 
 	rt := mux.NewRouter().StrictSlash(true)
 	for _, route := range r.routes {
-		rt.Handle(route.Pattern, routing(route.Methods, r.timeout, route.HandlerFunc))
+		rt.Handle(route.Pattern, routing(route.Name, route.Pattern, route.Methods, r.timeout, route.HandlerFunc))
 	}
 
 	return rt
@@ -61,7 +61,7 @@ func New(opts ...Option) http.Handler {
 // routing wraps the handler.Func and returns a new http.Handler.
 // routing helps to handle unsupported HTTP method, timeout,
 // and the error returned from the handler.Func.
-func routing(m []string, t time.Duration, h rest.Func) http.Handler {
+func routing(name, path string, m []string, t time.Duration, h rest.Func) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var err error
 		for _, method := range m {
@@ -99,9 +99,14 @@ func routing(m []string, t time.Duration, h rest.Func) http.Handler {
 
 						log.Error(err)
 
-						err = json.ErrorHandler(w, code,
-							fmt.Sprintf("error: %s\t%s", err.Error(),
-								http.StatusText(code)), err)
+						err = json.ErrorHandler(w, json.RFC7807Error{
+							Type:  path,
+							Title: fmt.Sprintf("Error on Handler: %s\tPath: %s\tMethod: %s\t", name, path, method),
+							Detail: fmt.Sprintf("Handler: %s\tPath: %s\tMethod: %s\tStatus: %s\nError: %s",
+								name, path, method, http.StatusText(code), err.Error()),
+							Status: code,
+							Error:  err.Error(),
+						})
 						if err != nil {
 							log.Error(err)
 						}
@@ -115,9 +120,14 @@ func routing(m []string, t time.Duration, h rest.Func) http.Handler {
 						log.Error(err)
 					}
 
-					err = json.ErrorHandler(w, http.StatusRequestTimeout,
-						fmt.Sprintf("server timeout error: %s\t%s", err.Error(),
-							http.StatusText(http.StatusRequestTimeout)), err)
+					err = json.ErrorHandler(w, json.RFC7807Error{
+						Type:  path,
+						Title: fmt.Sprintf("Timeout Error on Handler: %s\tPath: %s\tMethod: %s\t", name, path, method),
+						Detail: fmt.Sprintf("Handler: %s\tPath: %s\tMethod: %s\tStatus: %s\nError: %s",
+							name, path, method, http.StatusText(http.StatusRequestTimeout), err.Error()),
+						Status: http.StatusRequestTimeout,
+						Error:  err.Error(),
+					})
 					if err != nil {
 						log.Error(err)
 					}
@@ -133,13 +143,18 @@ func routing(m []string, t time.Duration, h rest.Func) http.Handler {
 			log.Error(err)
 		}
 
-		err = json.ErrorHandler(w, http.StatusMethodNotAllowed,
-			fmt.Sprintf("Method: %s\t%s",
-				r.Method,
-				http.StatusText(http.StatusMethodNotAllowed)), err)
+		err = json.ErrorHandler(w, json.RFC7807Error{
+			Type:  path,
+			Title: fmt.Sprintf("Invalid Request Method Handler: %s\tPath: %s\tMethod: %s\t", name, path, r.Method),
+			Detail: fmt.Sprintf("Handler: %s\tPath: %s\tMethod: %s\tStatus: %s\nError: %s",
+				name, path, r.Method, http.StatusText(http.StatusMethodNotAllowed), err.Error()),
+			Status: http.StatusMethodNotAllowed,
+			Error:  err.Error(),
+		})
 		if err != nil {
 			log.Error(err)
 		}
+
 	})
 }
 
