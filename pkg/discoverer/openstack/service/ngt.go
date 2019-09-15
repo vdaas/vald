@@ -26,18 +26,20 @@ import (
 	core "github.com/vdaas/vald/internal/core/ngt"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/pkg/agent/ngt/model"
 )
 
 type NGT interface {
-	Search(vec []float64, size int, epsilon, radius float32) ([]Distance, error)
-	SearchByID(uuid string, size int, epsilon, radius float32) ([]Distance, error)
+	Search(vec []float64, size uint32, epsilon, radius float32) ([]model.Distance, error)
+	SearchByID(uuid string, size uint32, epsilon, radius float32) ([]model.Distance, error)
 	Insert(uuid string, vec []float64) (err error)
 	Update(uuid string, vec []float64) (err error)
 	Delete(uuid string) (err error)
 	GetObject(uuid string) (vec []float64, err error)
-	CreateIndex(poolSize int) (err error)
+	CreateIndex(poolSize uint32) (err error)
 	SaveIndex() (err error)
-	CreateAndSaveIndex(poolSize int) (err error)
+	Exists(string) (string, bool)
+	CreateAndSaveIndex(poolSize uint32) (err error)
 	Close()
 }
 
@@ -45,12 +47,6 @@ type ngt struct {
 	ou   gache.Gache // map[oid]uuid
 	uo   gache.Gache // map[uuid]oid
 	core core.NGT
-}
-
-type Distance struct {
-	ID       uint32
-	Distance float32
-	MetaData string
 }
 
 func NewNGT(cfg *config.NGT) (NGT, error) {
@@ -68,6 +64,14 @@ func NewNGT(cfg *config.NGT) (NGT, error) {
 			core.WithCreationEdgeSize(cfg.CreationEdgeSize),
 			core.WithSearchEdgeSize(cfg.SearchEdgeSize),
 		}
+
+		ou = gache.New().
+			SetDefaultExpire(0).
+			DisableExpiredHook()
+
+		uo = gache.New().
+			SetDefaultExpire(0).
+			DisableExpiredHook()
 	)
 
 	if _, err := os.Stat(cfg.IndexPath); os.IsNotExist(err) {
@@ -81,24 +85,20 @@ func NewNGT(cfg *config.NGT) (NGT, error) {
 	}
 
 	return &ngt{
-		ou: gache.New().
-			SetDefaultExpire(0).
-			DisableExpiredHook(),
-		uo: gache.New().
-			SetDefaultExpire(0).
-			DisableExpiredHook(),
+		ou:   ou,
+		uo:   uo,
 		core: n,
 	}, nil
 }
 
-func (n *ngt) Search(vec []float64, size int, epsilon, radius float32) ([]Distance, error) {
-	sr, err := n.core.Search(vec, size, epsilon, radius)
+func (n *ngt) Search(vec []float64, size uint32, epsilon, radius float32) ([]model.Distance, error) {
+	sr, err := n.core.Search(vec, int(size), epsilon, radius)
 	if err != nil {
 		return nil, err
 	}
 
 	var (
-		ds   = make([]Distance, 0, len(sr))
+		ds   = make([]model.Distance, 0, len(sr))
 		errs error
 	)
 
@@ -109,10 +109,9 @@ func (n *ngt) Search(vec []float64, size int, epsilon, radius float32) ([]Distan
 		}
 		key, ok := n.ou.Get(strconv.FormatInt(int64(d.ID), 10))
 		if ok {
-			ds[i] = Distance{
-				ID:       d.ID,
+			ds[i] = model.Distance{
+				ID:       key.(string),
 				Distance: d.Distance,
-				MetaData: key.(string),
 			}
 		} else {
 			log.Warn(errors.ErrUUIDNotFound(d.ID))
@@ -122,7 +121,7 @@ func (n *ngt) Search(vec []float64, size int, epsilon, radius float32) ([]Distan
 	return ds[:len(ds)], errs
 }
 
-func (n *ngt) SearchByID(uuid string, size int, epsilon, radius float32) ([]Distance, error) {
+func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) ([]model.Distance, error) {
 	oid, ok := n.uo.Get(uuid)
 	if !ok {
 		return nil, errors.ErrObjectIDNotFound(uuid)
@@ -148,6 +147,7 @@ func (n *ngt) Insert(uuid string, vec []float64) (err error) {
 	}
 
 	n.uo.SetWithExpire(uuid, oid, 0)
+	n.ou.SetWithExpire(strconv.FormatInt(int64(oid), 10), uuid, 0)
 
 	return nil
 }
@@ -161,35 +161,43 @@ func (n *ngt) Update(uuid string, vec []float64) (err error) {
 	if err != nil {
 		return err
 	}
+
 	n.uo.SetWithExpire(uuid, oid, 0)
+	n.ou.SetWithExpire(strconv.FormatInt(int64(oid), 10), uuid, 0)
 
 	return nil
 }
 
 func (n *ngt) Delete(uuid string) (err error) {
 	i, ok := n.uo.Get(uuid)
-	if !ok || i == 0 {
+	oid := i.(uint)
+	if !ok || oid == 0 {
 		err = errors.ErrObjectIDNotFound(uuid)
 		return err
 	}
-	err = n.core.Remove(i.(uint))
+	err = n.core.Remove(oid)
 	if err != nil {
 		return err
 	}
+
 	n.uo.Delete(uuid)
+	n.ou.Delete(strconv.FormatInt(int64(oid), 10))
+
 	return nil
 }
 
 func (n *ngt) GetObject(uuid string) (vec []float64, err error) {
 	i, ok := n.uo.Get(uuid)
+
 	if !ok || i == 0 {
 		err = errors.ErrObjectIDNotFound(uuid)
 		return nil, err
 	}
+
 	return n.core.GetVector(i.(uint))
 }
 
-func (n *ngt) CreateIndex(poolSize int) (err error) {
+func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 	return n.core.CreateIndex(poolSize)
 }
 
@@ -197,7 +205,7 @@ func (n *ngt) SaveIndex() (err error) {
 	return n.core.SaveIndex()
 }
 
-func (n *ngt) CreateAndSaveIndex(poolSize int) (err error) {
+func (n *ngt) CreateAndSaveIndex(poolSize uint32) (err error) {
 	return n.core.CreateAndSaveIndex(poolSize)
 }
 
@@ -207,4 +215,13 @@ func (n *ngt) Close() {
 	n.ou.Clear()
 	n.uo.Stop()
 	n.uo.Clear()
+}
+
+func (n *ngt) Exists(uuid string) (string, bool) {
+	oid, ok := n.uo.Get(uuid)
+	if !ok {
+		return "", false
+	}
+
+	return oid.(string), true
 }

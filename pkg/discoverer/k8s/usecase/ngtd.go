@@ -20,11 +20,11 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/internal/runner"
-	"github.com/vdaas/vald/pkg/discoverer/k8s/config"
-	"github.com/vdaas/vald/pkg/discoverer/k8s/handler/grpc"
-	"github.com/vdaas/vald/pkg/discoverer/k8s/handler/rest"
-	"github.com/vdaas/vald/pkg/discoverer/k8s/router"
-	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
+	"github.com/vdaas/vald/pkg/agent/ngt/config"
+	"github.com/vdaas/vald/pkg/agent/ngt/handler/grpc"
+	"github.com/vdaas/vald/pkg/agent/ngt/handler/rest"
+	"github.com/vdaas/vald/pkg/agent/ngt/router"
+	"github.com/vdaas/vald/pkg/agent/ngt/service"
 )
 
 type Runner runner.Runner

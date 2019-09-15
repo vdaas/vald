@@ -14,27 +14,36 @@
 // limitations under the License.
 //
 
+// Package main provides program main
 package main
 
 import (
 	"context"
 
-	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/params"
 	"github.com/vdaas/vald/internal/runner"
-	"github.com/vdaas/vald/pkg/proxy/gateway/vald/config"
-	"github.com/vdaas/vald/pkg/proxy/gateway/vald/usecase"
+	"github.com/vdaas/vald/internal/safety"
+	ver "github.com/vdaas/vald/internal/version"
+	"github.com/vdaas/vald/pkg/agent/ngt/config"
+	"github.com/vdaas/vald/pkg/agent/ngt/usecase"
+)
+
+const (
+	// version represent the version
+	version    = "v0.0.1"
+	maxVersion = "v0.0.10"
+	minVersion = "v0.0.0"
 )
 
 func main() {
-	// Try recover befor kill process for dump panic errors
-	defer safety.Recover()
+	defer safety.RecoverWithError(nil)
 
 	log.Init(log.DefaultGlg())
 
 	p, err := params.New(
-		params.WithConfigFileDescription("vald gateway config file path"),
+		params.WithConfigFileDescription("agent config file path"),
 	).Parse()
 
 	if err != nil {
@@ -43,34 +52,30 @@ func main() {
 	}
 
 	if p.ShowVersion() {
-		err = log.Infof("server version -> %s", config.GetVersion())
-		if err != nil {
-			log.Fatal(err)
-		}
+		log.Infof("server version -> %s", version)
 		return
 	}
 
-	var stg config.Data
-	err := config.New(p.ConfigFilePath(), &stg)
+	cfg, err := config.NewConfig(p.ConfigFilePath())
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	if stg.Version != config.GetVersion() {
-		log.Fatal(errors.ErrInvalidConfig)
-		return
-	}
-
-	daemon, err := usecase.New(stg)
+	err = ver.Check(cfg.Version, maxVersion, minVersion)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	errs := runner.Run(context.Background(), daemon)
-	if len(errs) > 0 {
-		log.Fatal(errs)
+	daemon, err := usecase.New(cfg)
+	if err != nil {
+		log.Fatal(err)
 		return
+	}
+
+	err = runner.Run(errgroup.Init(context.Background()), daemon)
+	if err != nil {
+		log.Fatal(err)
 	}
 }

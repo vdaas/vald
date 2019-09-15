@@ -14,19 +14,19 @@
 // limitations under the License.
 //
 
-// Package grpc provides grpc server logic
-package grpc
+// Package rest provides rest api logic
+package rest
 
-import "github.com/vdaas/vald/pkg/agent/ngt/service"
+import "github.com/vdaas/vald/apis/grpc/agent"
 
-type Option func(*server)
+type Option func(*handler)
 
 var (
 	defaultOpts = []Option{}
 )
 
-func WithNGT(n service.NGT) Option {
-	return func(s *server) {
-		s.ngt = n
+func WithAgent(a agent.AgentServer) Option {
+	return func(h *handler) {
+		h.agent = a
 	}
 }

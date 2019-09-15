@@ -14,19 +14,10 @@
 // limitations under the License.
 //
 
-// Package grpc provides grpc server logic
-package grpc
+// Package model defines object structure
+package model
 
-import "github.com/vdaas/vald/pkg/agent/ngt/service"
-
-type Option func(*server)
-
-var (
-	defaultOpts = []Option{}
-)
-
-func WithNGT(n service.NGT) Option {
-	return func(s *server) {
-		s.ngt = n
-	}
+type Distance struct {
+	ID       string
+	Distance float32
 }

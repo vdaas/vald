@@ -19,14 +19,14 @@ package grpc
 
 import (
 	"context"
-	"time"
 
+	"github.com/kpango/fastime"
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/pkg/manager/meta/model"
-	"github.com/vdaas/vald/pkg/manager/meta/service"
+	"github.com/vdaas/vald/pkg/agent/ngt/model"
+	"github.com/vdaas/vald/pkg/agent/ngt/service"
 )
 
 type Server agent.AgentServer
@@ -77,7 +77,7 @@ func toSearchResponse(dists []model.Distance, err error) (*payload.Search_Respon
 		return &payload.Search_Response{
 			Error: &payload.Common_Error{
 				Msg:       err.Error(),
-				Timestamp: time.Now().UnixNano(),
+				Timestamp: fastime.UnixNanoNow(),
 			},
 		}, err
 	}
@@ -116,7 +116,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (*paylo
 	if err != nil {
 		return &payload.Common_Error{
 			Msg:       err.Error(),
-			Timestamp: time.Now().UnixNano(),
+			Timestamp: fastime.UnixNanoNow(),
 		}, err
 	}
 	return nil, nil
@@ -145,7 +145,7 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (*paylo
 	if err != nil {
 		return &payload.Common_Error{
 			Msg:       err.Error(),
-			Timestamp: time.Now().UnixNano(),
+			Timestamp: fastime.UnixNanoNow(),
 		}, err
 	}
 	return nil, nil
@@ -174,7 +174,7 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Co
 	if err != nil {
 		return &payload.Common_Error{
 			Msg:       err.Error(),
-			Timestamp: time.Now().UnixNano(),
+			Timestamp: fastime.UnixNanoNow(),
 		}, err
 	}
 	return nil, nil

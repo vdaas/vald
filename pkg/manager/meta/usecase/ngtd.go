@@ -20,11 +20,11 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/internal/runner"
-	"github.com/vdaas/vald/pkg/manager/meta/config"
-	"github.com/vdaas/vald/pkg/manager/meta/handler/grpc"
-	"github.com/vdaas/vald/pkg/manager/meta/handler/rest"
-	"github.com/vdaas/vald/pkg/manager/meta/router"
-	"github.com/vdaas/vald/pkg/manager/meta/service"
+	"github.com/vdaas/vald/pkg/agent/ngt/config"
+	"github.com/vdaas/vald/pkg/agent/ngt/handler/grpc"
+	"github.com/vdaas/vald/pkg/agent/ngt/handler/rest"
+	"github.com/vdaas/vald/pkg/agent/ngt/router"
+	"github.com/vdaas/vald/pkg/agent/ngt/service"
 )
 
 type Runner runner.Runner

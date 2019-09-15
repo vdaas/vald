@@ -1,1 +1,1 @@
-# Vald Gateway
+# server sample

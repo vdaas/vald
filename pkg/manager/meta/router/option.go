@@ -18,7 +18,7 @@
 package router
 
 import (
-	"github.com/vdaas/vald/pkg/manager/meta/handler/rest"
+	"github.com/vdaas/vald/pkg/agent/ngt/handler/rest"
 )
 
 type Option func(*router)

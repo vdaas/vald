@@ -17,7 +17,7 @@
 // Package grpc provides grpc server logic
 package grpc
 
-import "github.com/vdaas/vald/pkg/manager/meta/service"
+import "github.com/vdaas/vald/pkg/agent/ngt/service"
 
 type Option func(*server)
 
