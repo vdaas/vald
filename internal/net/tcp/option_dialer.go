@@ -18,6 +18,7 @@
 package tcp
 
 import (
+	"crypto/tls"
 	"time"
 
 	"github.com/kpango/gache"
@@ -92,6 +93,12 @@ func WithDialerKeepAlive(dur string) DialerOption {
 			pd = time.Second * 30
 		}
 		d.dialerTimeout = pd
+	}
+}
+
+func WithTLS(cfg *tls.Config) DialerOption {
+	return func(d *dialer) {
+		d.tlsConfig = cfg
 	}
 }
 

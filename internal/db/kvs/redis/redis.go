@@ -28,6 +28,8 @@ import (
 )
 
 type Redis interface {
+	Get(string) *redis.StringCmd
+	MGet(...string) *redis.SliceCmd
 }
 
 type redisClient struct {
@@ -58,7 +60,7 @@ type redisClient struct {
 	writeTimeout       time.Duration
 }
 
-func New(opts ...Option) (Redis, error) {
+func New(ctx context.Context, opts ...Option) (Redis, error) {
 	r := new(redisClient)
 	for _, opt := range opts {
 		if err := opt(r); err != nil {
@@ -69,7 +71,53 @@ func New(opts ...Option) (Redis, error) {
 	case 0:
 		return nil, errors.ErrAddrsNotFound
 	case 1:
+		return redis.NewClient(&redis.Options{
+			Addr:     r.addrs[0],
+			Password: r.password,
+			Dialer: func() (net.Conn, error) {
+				return r.dialer(ctx, "tcp", r.addrs[0])
+			},
+			OnConnect:          r.onConnect,
+			DB:                 r.db,
+			MaxRetries:         r.maxRetries,
+			MinRetryBackoff:    r.minRetryBackoff,
+			MaxRetryBackoff:    r.maxRetryBackoff,
+			DialTimeout:        r.dialTimeout,
+			ReadTimeout:        r.readTimeout,
+			WriteTimeout:       r.writeTimeout,
+			PoolSize:           r.poolSize,
+			MinIdleConns:       r.minIdleConns,
+			MaxConnAge:         r.maxConnAge,
+			PoolTimeout:        r.poolTimeout,
+			IdleTimeout:        r.idleTimeout,
+			IdleCheckFrequency: r.idleCheckFrequency,
+			TLSConfig:          r.tlsConfig,
+		}), nil
 	default:
+		return redis.NewClusterClient(&redis.ClusterOptions{
+			Addrs:              r.addrs,
+			MaxRedirects:       r.maxRedirects,
+			ReadOnly:           r.readOnly,
+			RouteByLatency:     r.routeByLatency,
+			RouteRandomly:      r.routeRandomly,
+			ClusterSlots:       r.clusterSlots,
+			OnNewNode:          r.onNewNode,
+			OnConnect:          r.onConnect,
+			Password:           r.password,
+			MaxRetries:         r.maxRetries,
+			MinRetryBackoff:    r.minRetryBackoff,
+			MaxRetryBackoff:    r.maxRetryBackoff,
+			DialTimeout:        r.dialTimeout,
+			ReadTimeout:        r.readTimeout,
+			WriteTimeout:       r.writeTimeout,
+			PoolSize:           r.poolSize,
+			MinIdleConns:       r.minIdleConns,
+			MaxConnAge:         r.maxConnAge,
+			PoolTimeout:        r.poolTimeout,
+			IdleTimeout:        r.idleTimeout,
+			IdleCheckFrequency: r.idleCheckFrequency,
+			TLSConfig:          r.tlsConfig,
+		}).WithContext(ctx), nil
 	}
-	return r, nil
+	return nil, nil
 }

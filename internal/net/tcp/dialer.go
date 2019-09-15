@@ -40,6 +40,7 @@ package tcp
 
 import (
 	"context"
+	"crypto/tls"
 	"net"
 	"strings"
 	"time"
@@ -49,11 +50,12 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 )
 
-type Dialer func(ctx context.Context, network, host string) (net.Conn, error)
+type Dialer func(ctx context.Context, network, addr string) (net.Conn, error)
 
 type dialer struct {
 	cache              gache.Gache
 	dnsCache           bool
+	tlsConfig          *tls.Config
 	dnsRefreshDuration time.Duration
 	dnsCacheExpiration time.Duration
 	dialerTimeout      time.Duration
@@ -82,7 +84,18 @@ func NewDialer(ctx context.Context, opts ...DialerOption) Dialer {
 	}
 
 	if !d.dnsCache || d.cache == nil {
-		return d.der.DialContext
+		if d.tlsConfig != nil {
+			return func(ctx context.Context, network,
+				addr string) (conn net.Conn, err error) {
+				conn, err = d.der.DialContext(ctx, network, addr)
+				if err != nil {
+					return nil, err
+				}
+				return tls.Client(conn, d.tlsConfig), nil
+			}
+		} else {
+			return d.der.DialContext
+		}
 	}
 
 	if d.dnsRefreshDuration > d.dnsCacheExpiration {
@@ -95,13 +108,13 @@ func NewDialer(ctx context.Context, opts ...DialerOption) Dialer {
 	return d.cachedDialer
 }
 
-func (d *dialer) lookup(ctx context.Context, host string) (ips map[int]string, err error) {
-	cache, ok := d.cache.Get(host)
+func (d *dialer) lookup(ctx context.Context, addr string) (ips map[int]string, err error) {
+	cache, ok := d.cache.Get(addr)
 	if ok {
 		return cache.(map[int]string), nil
 	}
 
-	r, err := d.der.Resolver.LookupIPAddr(ctx, host)
+	r, err := d.der.Resolver.LookupIPAddr(ctx, addr)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +124,7 @@ func (d *dialer) lookup(ctx context.Context, host string) (ips map[int]string, e
 		ips[i] = ip.String()
 	}
 
-	d.cache.SetWithExpire(host, ips,
+	d.cache.SetWithExpire(addr, ips,
 		d.dnsCacheExpiration)
 
 	return ips, nil
@@ -119,9 +132,9 @@ func (d *dialer) lookup(ctx context.Context, host string) (ips map[int]string, e
 
 func (d *dialer) startDialerCache(ctx context.Context) {
 	d.cache.SetDefaultExpire(d.dnsCacheExpiration).
-		SetExpiredHook(func(gctx context.Context, host string) {
+		SetExpiredHook(func(gctx context.Context, addr string) {
 			if err := safety.RecoverFunc(func() (err error) {
-				_, err = d.lookup(gctx, host)
+				_, err = d.lookup(gctx, addr)
 				return err
 			}); err != nil {
 				log.Error(err)
@@ -131,25 +144,31 @@ func (d *dialer) startDialerCache(ctx context.Context) {
 		StartExpired(ctx, d.dnsRefreshDuration)
 }
 
-func (d *dialer) cachedDialer(dctx context.Context, network, host string) (
+func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (
 	conn net.Conn, err error) {
 
-	sep := strings.LastIndex(host, ":")
+	sep := strings.LastIndex(addr, ":")
 
-	ips, err := d.lookup(dctx, host[:sep])
+	ips, err := d.lookup(dctx, addr[:sep])
 	if err == nil {
 		for _, ip := range ips {
-			conn, err = d.der.DialContext(dctx, network,
-				ip+host[sep:])
+			conn, err = d.der.DialContext(dctx, network, ip+addr[sep:])
 			if err == nil {
+				if d.tlsConfig != nil {
+					return tls.Client(conn, d.tlsConfig), nil
+				}
 				return conn, nil
 			}
 			if conn != nil {
 				conn.Close()
 			}
 		}
-		d.cache.Delete(host[:sep])
+		d.cache.Delete(addr[:sep])
 	}
 
-	return d.der.DialContext(dctx, network, host)
+	conn, err = d.der.DialContext(dctx, network, addr)
+	if d.tlsConfig != nil {
+		return tls.Client(conn, d.tlsConfig), nil
+	}
+	return
 }

@@ -17,11 +17,22 @@
 // Package redis provides implementation of Go API for redis interface
 package redis
 
+import "github.com/vdaas/vald/internal/net/tcp"
+
 type Option func(*redisClient) error
 
 var (
 	defaultOpts = []Option{}
 )
+
+func WithDialer(der tcp.Dialer) Option {
+	return func(r *redisClient) error {
+		if der != nil {
+			r.dialer = der
+		}
+		return nil
+	}
+}
 
 func WithAddr(addr string) Option {
 	return func(r *redisClient) error {
