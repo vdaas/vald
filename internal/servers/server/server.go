@@ -79,6 +79,7 @@ type server struct {
 	name string
 	mu   sync.RWMutex
 	wg   sync.WaitGroup
+	eg   errgroup.Group
 	http struct { // REST API
 		srv     *http.Server
 		h       http.Handler
@@ -113,6 +114,10 @@ func New(opts ...Option) (Server, error) {
 
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(srv)
+	}
+	if srv.eg == nil {
+		log.Warn(srv.name)
+		srv.eg = errgroup.Get()
 	}
 
 	if srv.l == nil && (srv.port != 0 || srv.host != "") {
@@ -200,7 +205,7 @@ func (s *server) ListenAndServe() <-chan error {
 		s.mu.Unlock()
 		wg.Add(1)
 		s.wg.Add(1)
-		errgroup.Go(safety.RecoverFunc(func() (err error) {
+		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer s.wg.Done()
 			defer close(ech)
 
@@ -212,7 +217,7 @@ func (s *server) ListenAndServe() <-chan error {
 				}
 			}
 
-			log.Infof("%s server %s starting", s.mode.String(), s.name)
+			log.Infof("%s server %s starting on %s:%d", s.mode.String(), s.name, s.host, s.port)
 			wg.Done()
 			switch s.mode {
 			case REST, GQL:
@@ -246,7 +251,7 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 	if s.preStopFunc != nil {
 		ech := make(chan error, 1)
 		s.wg.Add(1)
-		errgroup.Go(safety.RecoverFunc(func() (err error) {
+		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			log.Infof("server %s executing preStopFunc", s.name)
 			err = s.preStopFunc()
 			ech <- err

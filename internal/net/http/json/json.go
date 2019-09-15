@@ -36,17 +36,25 @@ type RFC7807Error struct {
 	Error    string `json:"error"`
 }
 
-func Encode(w http.ResponseWriter, data interface{}, status int, contentTypes ...string) error {
+func Encode(w io.Writer, data interface{}) (err error) {
+	return gojay.NewEncoder(w).Encode(data)
+}
+
+func Decode(r io.Reader, data interface{}) (err error) {
+	return gojay.NewDecoder(r).Decode(data)
+}
+
+func EncodeResponse(w http.ResponseWriter, data interface{}, status int, contentTypes ...string) error {
 	for _, ct := range contentTypes {
 		w.Header().Add(rest.ContentType, ct)
 	}
 	w.WriteHeader(status)
-	return gojay.NewEncoder(w).Encode(data)
+	return Encode(w, data)
 }
 
-func Decode(r *http.Request, data interface{}) (err error) {
+func DecodeRequest(r *http.Request, data interface{}) (err error) {
 	if r != nil && r.Body != nil {
-		err = gojay.NewDecoder(r.Body).Decode(data)
+		err = Decode(r.Body, data)
 		if err != nil {
 			return err
 		}
@@ -58,7 +66,7 @@ func Decode(r *http.Request, data interface{}) (err error) {
 
 func Handler(w http.ResponseWriter, r *http.Request,
 	data interface{}, logic func() (interface{}, error)) (code int, err error) {
-	err = Decode(r, &data)
+	err = DecodeRequest(r, &data)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
@@ -66,7 +74,7 @@ func Handler(w http.ResponseWriter, r *http.Request,
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	err = Encode(w, res, http.StatusOK, rest.ApplicationJSON, rest.CharsetUTF8)
+	err = EncodeResponse(w, res, http.StatusOK, rest.ApplicationJSON, rest.CharsetUTF8)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -78,5 +86,5 @@ func ErrorHandler(w http.ResponseWriter, data RFC7807Error) (err error) {
 	if err != nil {
 		log.Error(err)
 	}
-	return Encode(w, data, data.Status, rest.ProblemJSON, rest.CharsetUTF8)
+	return EncodeResponse(w, data, data.Status, rest.ProblemJSON, rest.CharsetUTF8)
 }

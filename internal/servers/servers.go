@@ -36,6 +36,7 @@ type Listener interface {
 
 type listener struct {
 	servers map[string]server.Server
+	eg      errgroup.Group
 	sus     []string
 	sds     []string
 	cancel  context.CancelFunc
@@ -91,7 +92,7 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 
 	rctx, l.cancel = context.WithCancel(ctx)
 
-	errgroup.Go(safety.RecoverFunc(func() (err error) {
+	l.eg.Go(safety.RecoverFunc(func() (err error) {
 		for {
 			for i := range echs {
 				select {

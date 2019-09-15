@@ -20,6 +20,7 @@ package servers
 import (
 	"time"
 
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/timeutil"
 )
@@ -27,7 +28,9 @@ import (
 type Option func(*listener)
 
 var (
-	defaultOpts = []Option{}
+	defaultOpts = []Option{
+		WithErrorGroup(errgroup.Get()),
+	}
 )
 
 func WithServer(srv server.Server) Option {
@@ -39,6 +42,12 @@ func WithServer(srv server.Server) Option {
 			l.servers = make(map[string]server.Server)
 		}
 		l.servers[srv.Name()] = srv
+	}
+}
+
+func WithErrorGroup(eg errgroup.Group) Option {
+	return func(l *listener) {
+		l.eg = eg
 	}
 }
 

@@ -19,11 +19,11 @@ package config
 
 import (
 	"bytes"
-	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/vdaas/vald/internal/net/http/json"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -37,7 +37,7 @@ func Read(path string, cfg interface{}) error {
 	case ".yaml":
 		err = yaml.NewDecoder(f).Decode(cfg)
 	case ".json":
-		err = json.NewDecoder(f).Decode(cfg)
+		err = json.Decode(f, cfg)
 	}
 	return err
 }

@@ -37,6 +37,7 @@ import (
 )
 
 type router struct {
+	eg      errgroup.Group
 	timeout time.Duration
 	routes  []Route
 }
@@ -52,7 +53,7 @@ func New(opts ...Option) http.Handler {
 
 	rt := mux.NewRouter().StrictSlash(true)
 	for _, route := range r.routes {
-		rt.Handle(route.Pattern, routing(route.Name, route.Pattern, route.Methods, r.timeout, route.HandlerFunc))
+		rt.Handle(route.Pattern, r.routing(route.Name, route.Pattern, route.Methods, route.HandlerFunc))
 	}
 
 	return rt
@@ -61,7 +62,7 @@ func New(opts ...Option) http.Handler {
 // routing wraps the handler.Func and returns a new http.Handler.
 // routing helps to handle unsupported HTTP method, timeout,
 // and the error returned from the handler.Func.
-func routing(name, path string, m []string, t time.Duration, h rest.Func) http.Handler {
+func (rt *router) routing(name, path string, m []string, h rest.Func) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var err error
 		for _, method := range m {
@@ -69,7 +70,7 @@ func routing(name, path string, m []string, t time.Duration, h rest.Func) http.H
 				// execute only if the request method is inside the method list
 
 				// context for timeout
-				ctx, cancel := context.WithTimeout(r.Context(), t)
+				ctx, cancel := context.WithTimeout(r.Context(), rt.timeout)
 				defer cancel()
 				start := fastime.UnixNanoNow()
 
@@ -79,7 +80,7 @@ func routing(name, path string, m []string, t time.Duration, h rest.Func) http.H
 				sch := make(chan int)
 				defer close(ech)
 				defer close(sch)
-				errgroup.Go(safety.RecoverFunc(func() (err error) {
+				rt.eg.Go(safety.RecoverFunc(func() (err error) {
 					// it is the responsibility for handler to close the request
 					var code int
 					code, err = h(w, r.WithContext(ctx))

@@ -20,6 +20,7 @@ package routing
 import (
 	"time"
 
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
@@ -28,6 +29,7 @@ type Option func(*router)
 var (
 	defaultOpts = []Option{
 		WithTimeout("3s"),
+		WithErrorGroup(errgroup.Get()),
 	}
 )
 
@@ -38,6 +40,12 @@ func WithTimeout(timeout string) Option {
 		if err != nil {
 			r.timeout = time.Second * 3
 		}
+	}
+}
+
+func WithErrorGroup(eg errgroup.Group) Option {
+	return func(r *router) {
+		r.eg = eg
 	}
 }
 

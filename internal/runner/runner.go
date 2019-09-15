@@ -78,7 +78,7 @@ func Run(ctx context.Context, run Runner) (err error) {
 			}
 			err = nil
 			for msg, count := range emap {
-				if msg != "" && strings.HasPrefix(msg, http.ErrServerClosed.Error()) {
+				if msg != "" && !strings.Contains(msg, http.ErrServerClosed.Error()) {
 					err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", msg, count)
 				}
 			}

@@ -45,19 +45,27 @@ var (
 	once     sync.Once
 )
 
-func New(ctx context.Context) (context.Context, Group) {
+func New(ctx context.Context) (Group, context.Context) {
 	egctx, cancel := context.WithCancel(ctx)
-	return egctx, &group{
+	return &group{
 		emap:   make(map[string]struct{}),
 		cancel: cancel,
-	}
+	}, egctx
 }
 
 func Init(ctx context.Context) (egctx context.Context) {
+	egctx = ctx
 	once.Do(func() {
-		egctx, instance = New(ctx)
+		instance, egctx = New(ctx)
 	})
 	return
+}
+
+func Get() Group {
+	if instance == nil {
+		Init(context.Background())
+	}
+	return instance
 }
 
 func Go(f func() error) {

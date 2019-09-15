@@ -20,11 +20,12 @@ package server
 import (
 	"crypto/tls"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"time"
 
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/timeutil"
 	"google.golang.org/grpc"
@@ -35,10 +36,12 @@ type Option func(*server)
 var (
 	defaultOpts = []Option{
 		WithServerMode(REST),
+		WithErrorGroup(errgroup.Get()),
 	}
 	HealthServerOpts = func(name, host, path string, port uint) []Option {
 		return []Option{
 			WithName(name),
+			WithErrorGroup(errgroup.Get()),
 			WithHTTPHandler(func() http.Handler {
 				mux := http.NewServeMux()
 				mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
@@ -87,6 +90,12 @@ func WithPort(port uint) Option {
 func WithName(name string) Option {
 	return func(s *server) {
 		s.name = name
+	}
+}
+
+func WithErrorGroup(eg errgroup.Group) Option {
+	return func(s *server) {
+		s.eg = eg
 	}
 }
 

@@ -21,13 +21,13 @@ import (
 	"context"
 	"io"
 
-	"golang.org/x/sync/errgroup"
+	"github.com/vdaas/vald/internal/errgroup"
 	"google.golang.org/grpc"
 )
 
 func BidirectionalStream(stream grpc.ServerStream,
 	f func(context.Context, interface{}) (interface{}, error)) error {
-	eg, ctx := errgroup.WithContext(stream.Context())
+	eg, ctx := errgroup.New(stream.Context())
 	for {
 		select {
 		case <-ctx.Done():
