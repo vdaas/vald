@@ -31,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/http/json"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/safety"
 )
@@ -75,10 +76,17 @@ func routing(m []string, t time.Duration, h rest.Func) http.Handler {
 				// run the custom handler logic in go routine,
 				// report error to error channel
 				ech := make(chan error)
+				sch := make(chan int)
 				defer close(ech)
-				errgroup.Go(safety.RecoverFunc(func() error {
+				defer close(sch)
+				errgroup.Go(safety.RecoverFunc(func() (err error) {
 					// it is the responsibility for handler to close the request
-					ech <- h(w, r.WithContext(ctx))
+					var code int
+					code, err = h(w, r.WithContext(ctx))
+					if err != nil {
+						sch <- code
+					}
+					ech <- err
 					return nil
 				}))
 
@@ -86,29 +94,33 @@ func routing(m []string, t time.Duration, h rest.Func) http.Handler {
 				case err = <-ech:
 					// handler finished first, may have error returned
 					if err != nil {
+						code := <-sch
 						err = errors.ErrHandler(err)
 
 						log.Error(err)
 
-						http.Error(w,
-							fmt.Sprintf("Error: %s\t%s",
-								err.Error(),
-								http.StatusText(http.StatusInternalServerError)),
-							http.StatusInternalServerError)
+						err = json.ErrorHandler(w, code,
+							fmt.Sprintf("error: %s\t%s", err.Error(),
+								http.StatusText(code)), err)
+						if err != nil {
+							log.Error(err)
+						}
 					}
-
 					return
 				case <-ctx.Done():
 					// timeout passed or parent context canceled first,
 					// it is the responsibility for handler to response to the user
 					err = errors.ErrHandlerTimeout(ctx.Err(), time.Unix(0, fastime.UnixNanoNow()-start))
-					log.Error(err)
+					if err != nil {
+						log.Error(err)
+					}
 
-					http.Error(w,
-						fmt.Sprintf("server timeout error: %s\t%s",
-							err.Error(),
-							http.StatusText(http.StatusRequestTimeout)),
-						http.StatusRequestTimeout)
+					err = json.ErrorHandler(w, http.StatusRequestTimeout,
+						fmt.Sprintf("server timeout error: %s\t%s", err.Error(),
+							http.StatusText(http.StatusRequestTimeout)), err)
+					if err != nil {
+						log.Error(err)
+					}
 					return
 				}
 			}
@@ -121,18 +133,19 @@ func routing(m []string, t time.Duration, h rest.Func) http.Handler {
 			log.Error(err)
 		}
 
-		http.Error(w,
+		err = json.ErrorHandler(w, http.StatusMethodNotAllowed,
 			fmt.Sprintf("Method: %s\t%s",
 				r.Method,
-				http.StatusText(http.StatusMethodNotAllowed)),
-			http.StatusMethodNotAllowed)
+				http.StatusText(http.StatusMethodNotAllowed)), err)
+		if err != nil {
+			log.Error(err)
+		}
 	})
 }
 
 // flushAndClose helps to flush and close a ReadCloser. Used for request body internal.
 // Returns if there is any errors.
 func flushAndClose(rc io.ReadCloser) error {
-
 	if rc != nil {
 		// flush
 		_, err := io.Copy(ioutil.Discard, rc)

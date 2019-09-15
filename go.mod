@@ -9,6 +9,7 @@ require (
 	github.com/danielvladco/go-proto-gql v0.7.3 // indirect
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
+	github.com/francoispqt/gojay v1.2.13
 	github.com/getsentry/raven-go v0.2.0 // indirect
 	github.com/go-redis/redis v6.15.5+incompatible
 	github.com/gogo/protobuf v1.3.0

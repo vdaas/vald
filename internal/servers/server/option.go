@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/timeutil"
 	"google.golang.org/grpc"
 )
@@ -42,6 +43,7 @@ var (
 				mux := http.NewServeMux()
 				mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 					if r.Method == http.MethodGet {
+						w.Header().Set(rest.ContentType, rest.TextPlain+";"+rest.CharsetUTF8)
 						w.WriteHeader(http.StatusOK)
 						_, err := fmt.Fprint(w, http.StatusText(http.StatusOK))
 						if err != nil {

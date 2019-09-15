@@ -24,8 +24,8 @@ package ngt
 import "C"
 import (
 	"strings"
-	"time"
 
+	"github.com/kpango/fastime"
 	"github.com/vdaas/vald/internal/errors"
 )
 
@@ -33,7 +33,7 @@ type Option func(*ngt) error
 
 var (
 	defaultOpts = []Option{
-		WithIndexPath("/tmp/ngt-" + time.Now().Format(time.RFC3339)),
+		WithIndexPath("/tmp/ngt-" + string(fastime.FormattedNow())),
 		WithDimension(0),
 		WithCreationEdgeSize(10),
 		WithSearchEdgeSize(40),

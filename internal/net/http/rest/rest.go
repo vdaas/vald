@@ -17,9 +17,11 @@
 // Package rest provides REST API common logic & variable
 package rest
 
-import "net/http"
+import (
+	"net/http"
+)
 
-type Func func(http.ResponseWriter, *http.Request) error
+type Func func(http.ResponseWriter, *http.Request) (code int, err error)
 
 const (
 	// ContentType represents a HTTP header name "Content-Type"
@@ -27,6 +29,9 @@ const (
 
 	// ApplicationJSON represents a HTTP content type "application/json"
 	ApplicationJSON = "application/json"
+
+	// ProblemJSON represents a HTTP content type "application/problem+json"
+	ProblemJSON = "application/problem+json"
 
 	// TextPlain represents a HTTP content type "text/plain"
 	TextPlain = "text/plain"
@@ -36,8 +41,8 @@ const (
 )
 
 func HandlerToRestFunc(f http.HandlerFunc) Func {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return func(w http.ResponseWriter, r *http.Request) (code int, nil error) {
 		f(w, r)
-		return nil
+		return http.StatusOK, nil
 	}
 }
