@@ -14,15 +14,14 @@
 // limitations under the License.
 //
 
-// Package service manages the main logic of server.
-package service
+// Package starter provides server startup and shutdown flow control
+package starter
 
 import (
 	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/net/http/metrics"
 	"github.com/vdaas/vald/internal/servers"
@@ -36,11 +35,11 @@ type Server servers.Listener
 type srvs struct {
 	rest http.Handler
 	gql  http.Handler
-	grpc agent.AgentServer
+	grpc func(*grpc.Server)
 	cfg  *config.Servers
 }
 
-func NewServer(sopts ...Option) (Server, error) {
+func New(sopts ...Option) (Server, error) {
 	ss := new(srvs)
 	for _, opt := range sopts {
 		opt(ss)
@@ -122,9 +121,7 @@ func (s *srvs) setupAPIs(cfg *tls.Config) ([]servers.Option, error) {
 			}
 			srv, err := server.New(
 				append(sc.Opts(),
-					server.WithGRPCRegistFunc(func(gsrv *grpc.Server) {
-						agent.RegisterAgentServer(gsrv, s.grpc)
-					}),
+					server.WithGRPCRegistFunc(s.grpc),
 					server.WithGRPCOption(gopts[:len(gopts)]...),
 
 					server.WithTLSConfig(cfg),

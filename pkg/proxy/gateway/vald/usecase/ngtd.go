@@ -19,19 +19,22 @@ package usecase
 import (
 	"context"
 
+	"github.com/vdaas/vald/apis/grpc/vald"
 	"github.com/vdaas/vald/internal/runner"
+	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/pkg/proxy/gateway/vald/config"
-	"github.com/vdaas/vald/pkg/proxy/gateway/vald/handler/grpc"
+	handler "github.com/vdaas/vald/pkg/proxy/gateway/vald/handler/grpc"
 	"github.com/vdaas/vald/pkg/proxy/gateway/vald/handler/rest"
 	"github.com/vdaas/vald/pkg/proxy/gateway/vald/router"
 	"github.com/vdaas/vald/pkg/proxy/gateway/vald/service"
+	"google.golang.org/grpc"
 )
 
 type Runner runner.Runner
 
 type run struct {
 	cfg    *config.Data
-	server service.Server
+	server starter.Server
 }
 
 func New(cfg *config.Data) (Runner, error) {
@@ -39,11 +42,11 @@ func New(cfg *config.Data) (Runner, error) {
 	if err != nil {
 		return nil, err
 	}
-	g := grpc.New(grpc.WithNGT(ngt))
+	g := handler.New(handler.WithNGT(ngt))
 
-	srv, err := service.NewServer(
-		service.WithConfig(cfg.Server),
-		service.WithREST(
+	srv, err := starter.New(
+		starter.WithConfig(cfg.Server),
+		starter.WithREST(
 			router.New(
 				router.WithHandler(
 					rest.New(
@@ -52,7 +55,9 @@ func New(cfg *config.Data) (Runner, error) {
 				),
 			),
 		),
-		service.WithGRPC(g),
+		starter.WithGRPC(func(gsrv *grpc.Server) {
+			vald.RegisterValdServer(gsrv, g)
+		}),
 		// TODO add GraphQL handler
 	)
 

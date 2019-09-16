@@ -14,14 +14,14 @@
 // limitations under the License.
 //
 
-// Package service manages the main logic of server.
-package service
+// Package starter provides server startup and shutdown flow control
+package starter
 
 import (
 	"net/http"
 
-	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/internal/config"
+	"google.golang.org/grpc"
 )
 
 type Option func(*srvs)
@@ -32,7 +32,7 @@ func WithConfig(cfg *config.Servers) Option {
 	}
 }
 
-func WithGRPC(srv agent.AgentServer) Option {
+func WithGRPC(srv func(*grpc.Server)) Option {
 	return func(s *srvs) {
 		s.grpc = srv
 	}

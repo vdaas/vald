@@ -21,15 +21,15 @@ import (
 	"context"
 
 	"github.com/kpango/fastime"
-	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/proxy/gateway/vald/model"
 	"github.com/vdaas/vald/pkg/proxy/gateway/vald/service"
 )
 
-type Server agent.AgentServer
+type Server vald.ValdServer
 
 type server struct {
 	ngt service.NGT
@@ -99,13 +99,13 @@ func toSearchResponse(dists []model.Distance, err error) (*payload.Search_Respon
 	return res, nil
 }
 
-func (s *server) StreamSearch(stream agent.Agent_StreamSearchServer) error {
+func (s *server) StreamSearch(stream vald.Vald_StreamSearchServer) error {
 	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
 		return s.Search(ctx, data.(*payload.Search_Request))
 	})
 }
 
-func (s *server) StreamSearchByID(stream agent.Agent_StreamSearchByIDServer) error {
+func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error {
 	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
 		return s.SearchByID(ctx, data.(*payload.Search_IDRequest))
 	})
@@ -122,7 +122,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (*paylo
 	return nil, nil
 }
 
-func (s *server) StreamInsert(stream agent.Agent_StreamInsertServer) error {
+func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
 	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
 		return s.Insert(ctx, data.(*payload.Object_Vector))
 	})
@@ -151,7 +151,7 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (*paylo
 	return nil, nil
 }
 
-func (s *server) StreamUpdate(stream agent.Agent_StreamUpdateServer) error {
+func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
 	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
 		return s.Update(ctx, data.(*payload.Object_Vector))
 	})
@@ -180,7 +180,7 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Co
 	return nil, nil
 }
 
-func (s *server) StreamRemove(stream agent.Agent_StreamRemoveServer) error {
+func (s *server) StreamRemove(stream vald.Vald_StreamRemoveServer) error {
 	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
 		return s.Remove(ctx, data.(*payload.Object_ID))
 	})
@@ -212,16 +212,8 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (*payload
 
 }
 
-func (s *server) StreamGetObject(stream agent.Agent_StreamGetObjectServer) error {
+func (s *server) StreamGetObject(stream vald.Vald_StreamGetObjectServer) error {
 	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
 		return s.GetObject(ctx, data.(*payload.Object_ID))
 	})
-}
-
-func (s *server) CreateIndex(ctx context.Context, c *payload.Controll_CreateIndexRequest) (*payload.Common_Empty, error) {
-	return nil, s.ngt.CreateIndex(c.GetPoolSize())
-}
-
-func (s *server) SaveIndex(context.Context, *payload.Common_Empty) (*payload.Common_Empty, error) {
-	return nil, s.ngt.SaveIndex()
 }
