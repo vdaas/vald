@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2019 kpango (Yusuke Kato)
+// Copyright (C) 2019 kpango (Yusuke Kato)
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -192,7 +192,7 @@ func readAndRewrite(path string) error {
 		f.Close()
 		return errors.Errorf("filepath %s, could not open", path)
 	}
-	f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"))
+	f.WriteString(strings.Replace(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"), "2019-2019", "2019", 1))
 	f.Close()
 	return nil
 }
