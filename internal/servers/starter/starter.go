@@ -19,7 +19,6 @@ package starter
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/vdaas/vald/internal/config"
@@ -33,14 +32,24 @@ import (
 type Server servers.Listener
 
 type srvs struct {
-	rest http.Handler
-	gql  http.Handler
-	grpc func(*grpc.Server)
-	cfg  *config.Servers
+	// rest    http.Handler
+	rest func(cfg *config.Server) []server.Option
+	gql  func(cfg *config.Server) []server.Option
+	// gql     http.Handler
+	// grpc    func(*grpc.Server)
+	grpc    func(cfg *config.Server) []server.Option
+	cfg     *config.Servers
+	pstartf map[string]func() error
+	pstopf  map[string]func() error
 }
 
 func New(sopts ...Option) (Server, error) {
-	ss := new(srvs)
+	ss := &srvs{
+		cfg:     new(config.Servers),
+		pstartf: make(map[string]func() error, len(sopts)),
+		pstopf:  make(map[string]func() error, len(sopts)),
+	}
+
 	for _, opt := range sopts {
 		opt(ss)
 	}
@@ -95,16 +104,10 @@ func (s *srvs) setupAPIs(cfg *tls.Config) ([]servers.Option, error) {
 	for _, sc := range s.cfg.Servers {
 		switch mode := server.Mode(sc.Mode); mode {
 		case server.REST:
+
 			srv, err := server.New(
-				append(sc.Opts(),
-					server.WithHTTPHandler(s.rest),
+				append(append(sc.Opts(), s.rest(sc)...),
 					server.WithTLSConfig(cfg),
-					server.WithPreStartFunc(func() error {
-						return nil
-					}),
-					server.WithPreStopFunction(func() error {
-						return nil
-					}),
 				)...)
 			if err != nil {
 				return nil, err
@@ -120,17 +123,10 @@ func (s *srvs) setupAPIs(cfg *tls.Config) ([]servers.Option, error) {
 				}
 			}
 			srv, err := server.New(
-				append(sc.Opts(),
-					server.WithGRPCRegistFunc(s.grpc),
+				append(append(sc.Opts(), s.grpc(sc)...),
+					// server.WithGRPCRegistFunc(s.grpc),
 					server.WithGRPCOption(gopts[:len(gopts)]...),
-
 					server.WithTLSConfig(cfg),
-					server.WithPreStartFunc(func() error {
-						return nil
-					}),
-					server.WithPreStopFunction(func() error {
-						return nil
-					}),
 				)...)
 			if err != nil {
 				return nil, err
@@ -138,8 +134,7 @@ func (s *srvs) setupAPIs(cfg *tls.Config) ([]servers.Option, error) {
 			opts = append(opts, servers.WithServer(srv))
 		case server.GQL:
 			srv, err := server.New(
-				append(sc.Opts(),
-					server.WithHTTPHandler(s.gql),
+				append(append(sc.Opts(), s.gql(sc)...),
 					server.WithTLSConfig(cfg),
 					server.WithPreStartFunc(func() error {
 						return nil

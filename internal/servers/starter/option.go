@@ -18,10 +18,8 @@
 package starter
 
 import (
-	"net/http"
-
 	"github.com/vdaas/vald/internal/config"
-	"google.golang.org/grpc"
+	"github.com/vdaas/vald/internal/servers/server"
 )
 
 type Option func(*srvs)
@@ -32,20 +30,36 @@ func WithConfig(cfg *config.Servers) Option {
 	}
 }
 
-func WithGRPC(srv func(*grpc.Server)) Option {
+func WithGRPC(opts func(cfg *config.Server) []server.Option) Option {
 	return func(s *srvs) {
-		s.grpc = srv
+		s.grpc = opts
 	}
 }
 
-func WithREST(h http.Handler) Option {
+func WithREST(opts func(cfg *config.Server) []server.Option) Option {
 	return func(s *srvs) {
-		s.rest = h
+		s.rest = opts
 	}
 }
 
-func WithGQL(h http.Handler) Option {
+func WithGQL(opts func(cfg *config.Server) []server.Option) Option {
 	return func(s *srvs) {
-		s.gql = h
+		s.gql = opts
+	}
+}
+
+func WithPreStartFunc(name string, f func() error) Option {
+	return func(s *srvs) {
+		if f != nil && s.pstartf != nil {
+			s.pstartf[name] = f
+		}
+	}
+}
+
+func WithPreStopFunc(name string, f func() error) Option {
+	return func(s *srvs) {
+		if f != nil && s.pstopf != nil {
+			s.pstopf[name] = f
+		}
 	}
 }

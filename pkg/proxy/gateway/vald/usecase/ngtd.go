@@ -20,43 +20,53 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/vald"
+	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/runner"
+	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/pkg/proxy/gateway/vald/config"
-	handler "github.com/vdaas/vald/pkg/proxy/gateway/vald/handler/grpc"
 	"github.com/vdaas/vald/pkg/proxy/gateway/vald/handler/rest"
 	"github.com/vdaas/vald/pkg/proxy/gateway/vald/router"
-	"github.com/vdaas/vald/pkg/proxy/gateway/vald/service"
 	"google.golang.org/grpc"
 )
-
-type Runner runner.Runner
 
 type run struct {
 	cfg    *config.Data
 	server starter.Server
 }
 
-func New(cfg *config.Data) (Runner, error) {
-	ngt, err := service.NewNGT(cfg.NGT)
+func New(cfg *config.Data) (r runner.Runner, err error) {
+	// ngt, err := service.NewNGT(cfg.NGT)
 	if err != nil {
 		return nil, err
 	}
-	g := handler.New(handler.WithNGT(ngt))
+	// g := handler.New(handler.WithNGT(ngt))
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
-		starter.WithREST(
-			router.New(
-				router.WithHandler(
-					rest.New(
-						rest.WithAgent(g),
-					),
-				),
-			),
-		),
-		starter.WithGRPC(func(gsrv *grpc.Server) {
-			vald.RegisterValdServer(gsrv, g)
+		starter.WithREST(func(sc *iconf.Server) []server.Option {
+			return []server.Option{
+				server.WithHTTPHandler(
+					router.New(
+						router.WithHandler(
+							rest.New(
+							// rest.WithAgent(g),
+							),
+						),
+					)),
+			}
+		}),
+		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
+			return []server.Option{
+				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+					// vald.RegisterValdServer(srv, g)
+					vald.RegisterValdServer(srv, nil)
+				}),
+				server.WithPreStopFunction(func() error {
+					// TODO notify another proxy and scheduler
+					return nil
+				}),
+			}
 		}),
 		// TODO add GraphQL handler
 	)

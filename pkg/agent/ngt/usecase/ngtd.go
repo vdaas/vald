@@ -20,7 +20,9 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/agent"
+	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/runner"
+	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/pkg/agent/ngt/config"
 	handler "github.com/vdaas/vald/pkg/agent/ngt/handler/grpc"
@@ -30,14 +32,12 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Runner runner.Runner
-
 type run struct {
 	cfg    *config.Data
 	server starter.Server
 }
 
-func New(cfg *config.Data) (Runner, error) {
+func New(cfg *config.Data) (r runner.Runner, err error) {
 	ngt, err := service.NewNGT(cfg.NGT)
 	if err != nil {
 		return nil, err
@@ -46,17 +46,32 @@ func New(cfg *config.Data) (Runner, error) {
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
-		starter.WithREST(
-			router.New(
-				router.WithHandler(
-					rest.New(
-						rest.WithAgent(g),
-					),
-				),
-			),
-		),
-		starter.WithGRPC(func(gsrv *grpc.Server) {
-			agent.RegisterAgentServer(gsrv, g)
+		starter.WithREST(func(sc *iconf.Server) []server.Option {
+			return []server.Option{
+				server.WithHTTPHandler(
+					router.New(
+						router.WithHandler(
+							rest.New(
+								rest.WithAgent(g),
+							),
+						),
+					)),
+			}
+		}),
+		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
+			return []server.Option{
+				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+					agent.RegisterAgentServer(srv, g)
+				}),
+				server.WithPreStartFunc(func() error {
+					// TODO check unbackupped upstream
+					return nil
+				}),
+				server.WithPreStopFunction(func() error {
+					// TODO backup all index data here
+					return nil
+				}),
+			}
 		}),
 		// TODO add GraphQL handler
 	)
