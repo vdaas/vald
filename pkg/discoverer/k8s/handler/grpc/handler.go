@@ -25,8 +25,8 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/pkg/agent/ngt/model"
-	"github.com/vdaas/vald/pkg/agent/ngt/service"
+	"github.com/vdaas/vald/pkg/discoverer/k8s/model"
+	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
 )
 
 type Server agent.AgentServer

@@ -21,7 +21,7 @@ import (
 	"net/http"
 
 	"github.com/vdaas/vald/internal/net/http/routing"
-	"github.com/vdaas/vald/pkg/agent/ngt/handler/rest"
+	"github.com/vdaas/vald/pkg/discoverer/k8s/handler/rest"
 )
 
 type router struct {

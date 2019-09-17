@@ -18,7 +18,7 @@
 package router
 
 import (
-	"github.com/vdaas/vald/pkg/agent/ngt/handler/rest"
+	"github.com/vdaas/vald/pkg/discoverer/openstack/handler/rest"
 )
 
 type Option func(*router)

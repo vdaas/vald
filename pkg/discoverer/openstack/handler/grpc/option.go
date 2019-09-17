@@ -17,7 +17,7 @@
 // Package grpc provides grpc server logic
 package grpc
 
-import "github.com/vdaas/vald/pkg/agent/ngt/service"
+import "github.com/vdaas/vald/pkg/discoverer/openstack/service"
 
 type Option func(*server)
 
