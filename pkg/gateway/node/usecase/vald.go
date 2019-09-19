@@ -24,9 +24,11 @@ import (
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
-	"github.com/vdaas/vald/pkg/proxy/gateway/vald/config"
-	"github.com/vdaas/vald/pkg/proxy/gateway/vald/handler/rest"
-	"github.com/vdaas/vald/pkg/proxy/gateway/vald/router"
+	"github.com/vdaas/vald/pkg/gateway/vald/config"
+	handler "github.com/vdaas/vald/pkg/gateway/vald/handler/grpc"
+	"github.com/vdaas/vald/pkg/gateway/vald/handler/rest"
+	"github.com/vdaas/vald/pkg/gateway/vald/router"
+	"github.com/vdaas/vald/pkg/gateway/vald/service"
 	"google.golang.org/grpc"
 )
 
@@ -36,11 +38,11 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	// ngt, err := service.NewNGT(cfg.NGT)
+	v, err := service.New(cfg.ValdProxy)
 	if err != nil {
 		return nil, err
 	}
-	// g := handler.New(handler.WithNGT(ngt))
+	g := handler.New(handler.WithProxy(v))
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
@@ -63,7 +65,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 					vald.RegisterValdServer(srv, nil)
 				}),
 				server.WithPreStopFunction(func() error {
-					// TODO notify another proxy and scheduler
+					// TODO notify another gateway and scheduler
 					return nil
 				}),
 			}

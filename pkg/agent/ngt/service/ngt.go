@@ -49,7 +49,7 @@ type ngt struct {
 	core core.NGT
 }
 
-func NewNGT(cfg *config.NGT) (NGT, error) {
+func New(cfg *config.NGT) (NGT, error) {
 
 	var (
 		n   core.NGT

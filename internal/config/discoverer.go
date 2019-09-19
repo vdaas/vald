@@ -14,19 +14,12 @@
 // limitations under the License.
 //
 
-// Package grpc provides grpc server logic
-package grpc
+// Package config providers configuration type and load configuration logic
+package config
 
-import "github.com/vdaas/vald/pkg/proxy/gateway/vald/service"
+type Discoverer struct {
+}
 
-type Option func(*server)
-
-var (
-	defaultOpts = []Option{}
-)
-
-func WithNGT(n service.NGT) Option {
-	return func(s *server) {
-		s.ngt = n
-	}
+func (d *Discoverer) Bind() *Discoverer {
+	return d
 }

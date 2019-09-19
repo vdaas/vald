@@ -64,6 +64,31 @@
         ]
       }
     },
+    "/index/createandsave": {
+      "get": {
+        "operationId": "CreateAndSaveIndex",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/CommonEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "poolSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Agent"
+        ]
+      }
+    },
     "/index/save": {
       "get": {
         "operationId": "SaveIndex",

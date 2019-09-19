@@ -38,7 +38,7 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	ngt, err := service.NewNGT(cfg.NGT)
+	ngt, err := service.New(cfg.NGT)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 								rest.WithAgent(g),
 							),
 						),
-					)),
+					),
+				),
 			}
 		}),
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {

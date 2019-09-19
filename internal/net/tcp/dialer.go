@@ -97,6 +97,9 @@ func NewDialer(ctx context.Context, opts ...DialerOption) Dialer {
 			return d.der.DialContext
 		}
 	}
+	if d.cache == nil {
+		d.cache = gache.New()
+	}
 
 	if d.dnsRefreshDuration > d.dnsCacheExpiration {
 		d.dnsRefreshDuration, d.dnsCacheExpiration =

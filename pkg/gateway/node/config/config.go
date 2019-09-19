@@ -30,8 +30,14 @@ type Data struct {
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
-	// NGT represent ngt core configuration
-	NGT *config.NGT `json:"ngt" yaml:"ngt"`
+	// Discoverer represent agent discoverer service configuration
+	Discoverer *config.Discoverer `json:"discoverer" yaml:"discoverer"`
+
+	// MetaProxy represent metadata gateway configuration
+	Meta *config.MetaProxy `json:"meta" yaml:"meta"`
+
+	// IndexManager represent index manager configuration
+	IndexManager *config.IndexManager `json:"meta" yaml:"meta"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
@@ -44,8 +50,14 @@ func NewConfig(path string) (cfg *Data, err error) {
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()
 	}
-	if cfg.NGT != nil {
-		cfg.NGT = cfg.NGT.Bind()
+	if cfg.Discoverer.Bind() != nil {
+		cfg.Discoverer = cfg.Discoverer.Bind()
+	}
+	if cfg.Meta.Bind() != nil {
+		cfg.Meta = cfg.Meta.Bind()
+	}
+	if cfg.IndexManager.Bind() != nil {
+		cfg.IndexManager = cfg.IndexManager.Bind()
 	}
 
 	return cfg, nil

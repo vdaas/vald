@@ -14,29 +14,16 @@
 // limitations under the License.
 //
 
-// Package router provides implementation of Go API for routing http Handler wrapped by rest.Func
-package router
+package service
 
-import (
-	"github.com/vdaas/vald/pkg/proxy/gateway/vald/handler/rest"
-)
+import "github.com/vdaas/vald/internal/config"
 
-type Option func(*router)
-
-var (
-	defaultOpts = []Option{
-		WithTimeout("3s"),
-	}
-)
-
-func WithHandler(h rest.Handler) Option {
-	return func(r *router) {
-		r.handler = h
-	}
+type ValdProxy interface {
 }
 
-func WithTimeout(timeout string) Option {
-	return func(r *router) {
-		r.timeout = timeout
-	}
+type vp struct {
+}
+
+func New(cfg *config.ValdProxy) (ValdProxy, error) {
+	return new(vp), nil
 }

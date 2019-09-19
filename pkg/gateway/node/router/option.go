@@ -14,10 +14,29 @@
 // limitations under the License.
 //
 
-package service
+// Package router provides implementation of Go API for routing http Handler wrapped by rest.Func
+package router
 
-type AgentClient interface {
+import (
+	"github.com/vdaas/vald/pkg/gateway/vald/handler/rest"
+)
+
+type Option func(*router)
+
+var (
+	defaultOpts = []Option{
+		WithTimeout("3s"),
+	}
+)
+
+func WithHandler(h rest.Handler) Option {
+	return func(r *router) {
+		r.handler = h
+	}
 }
 
-type client struct {
+func WithTimeout(timeout string) Option {
+	return func(r *router) {
+		r.timeout = timeout
+	}
 }

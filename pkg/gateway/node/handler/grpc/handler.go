@@ -20,19 +20,16 @@ package grpc
 import (
 	"context"
 
-	"github.com/kpango/fastime"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/apis/grpc/vald"
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/pkg/proxy/gateway/vald/model"
-	"github.com/vdaas/vald/pkg/proxy/gateway/vald/service"
+	"github.com/vdaas/vald/pkg/gateway/vald/service"
 )
 
 type Server vald.ValdServer
 
 type server struct {
-	ngt service.NGT
+	gateway service.ValdProxy
 }
 
 func New(opts ...Option) Server {
@@ -45,175 +42,77 @@ func New(opts ...Option) Server {
 }
 
 func (s *server) Exists(ctx context.Context, oid *payload.Object_ID) (*payload.Object_ID, error) {
-	id, ok := s.ngt.Exists(oid.GetId())
-	if !ok {
-		return nil, errors.ErrObjectIDNotFound(oid.GetId())
-	}
-	return &payload.Object_ID{
-		Id: id,
-	}, nil
+	return nil, nil
 }
 
 func (s *server) Search(ctx context.Context, req *payload.Search_Request) (*payload.Search_Response, error) {
-	return toSearchResponse(
-		s.ngt.Search(
-			req.GetVector().GetVector(),
-			req.GetConfig().GetNum(),
-			req.GetConfig().GetEpsilon(),
-			req.GetConfig().GetRadius()))
+	return nil, nil
 }
 
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_Response, error) {
-	return toSearchResponse(
-		s.ngt.SearchByID(
-			req.GetId().GetId(),
-			req.GetConfig().GetNum(),
-			req.GetConfig().GetEpsilon(),
-			req.GetConfig().GetRadius()))
-}
-
-func toSearchResponse(dists []model.Distance, err error) (*payload.Search_Response, error) {
-	if err != nil {
-		return &payload.Search_Response{
-			Error: &payload.Common_Error{
-				Msg:       err.Error(),
-				Timestamp: fastime.UnixNanoNow(),
-			},
-		}, err
-	}
-
-	res := &payload.Search_Response{
-		Results: make([]*payload.Object_Distance, 0, len(dists)),
-	}
-
-	for _, dist := range dists {
-		// res.Results = append(res.Results, (*payload.Object_Distance)(unsafe.Pointer(&dist)))
-		res.Results = append(res.Results, &payload.Object_Distance{
-			Id: &payload.Object_ID{
-				Id: dist.ID,
-			},
-			Distance: dist.Distance,
-		})
-	}
-
-	return res, nil
+	return nil, nil
 }
 
 func (s *server) StreamSearch(stream vald.Vald_StreamSearchServer) error {
 	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
-		return s.Search(ctx, data.(*payload.Search_Request))
+		return nil, nil
 	})
 }
 
 func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error {
 	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
-		return s.SearchByID(ctx, data.(*payload.Search_IDRequest))
+		return nil, nil
 	})
 }
 
 func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (*payload.Common_Error, error) {
-	err := s.ngt.Insert(vec.GetId().GetId(), vec.GetVector())
-	if err != nil {
-		return &payload.Common_Error{
-			Msg:       err.Error(),
-			Timestamp: fastime.UnixNanoNow(),
-		}, err
-	}
 	return nil, nil
 }
 
 func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
 	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
-		return s.Insert(ctx, data.(*payload.Object_Vector))
+		return nil, nil
 	})
 }
 
 func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Common_Errors, err error) {
-	res = new(payload.Common_Errors)
-	for _, vec := range vecs.GetVectors() {
-		r, ierr := s.Insert(ctx, vec)
-		if ierr != nil {
-			err = errors.Wrap(err, ierr.Error())
-			res.Errors = append(res.Errors, r)
-		}
-	}
-	return
+	return nil, nil
 }
 
 func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (*payload.Common_Error, error) {
-	err := s.ngt.Update(vec.GetId().GetId(), vec.GetVector())
-	if err != nil {
-		return &payload.Common_Error{
-			Msg:       err.Error(),
-			Timestamp: fastime.UnixNanoNow(),
-		}, err
-	}
 	return nil, nil
 }
 
 func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
 	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
-		return s.Update(ctx, data.(*payload.Object_Vector))
+		return nil, nil
 	})
 }
 
 func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Common_Errors, err error) {
-	res = new(payload.Common_Errors)
-	for _, vec := range vecs.GetVectors() {
-		r, ierr := s.Update(ctx, vec)
-		if ierr != nil {
-			err = errors.Wrap(err, ierr.Error())
-			res.Errors = append(res.Errors, r)
-		}
-	}
-	return
+	return nil, nil
 }
 
 func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Common_Error, error) {
-	err := s.ngt.Delete(id.GetId())
-	if err != nil {
-		return &payload.Common_Error{
-			Msg:       err.Error(),
-			Timestamp: fastime.UnixNanoNow(),
-		}, err
-	}
 	return nil, nil
 }
 
 func (s *server) StreamRemove(stream vald.Vald_StreamRemoveServer) error {
 	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
-		return s.Remove(ctx, data.(*payload.Object_ID))
+		return nil, nil
 	})
 }
 
 func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res *payload.Common_Errors, err error) {
-	res = new(payload.Common_Errors)
-	for _, id := range ids.GetIds() {
-		r, ierr := s.Remove(ctx, id)
-		if ierr != nil {
-			err = errors.Wrap(err, ierr.Error())
-			res.Errors = append(res.Errors, r)
-		}
-	}
-	return
+	return nil, nil
 }
 
 func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (*payload.Object_Vector, error) {
-	vec, err := s.ngt.GetObject(id.GetId())
-	if err != nil {
-		return nil, err
-	}
-	return &payload.Object_Vector{
-		Id: &payload.Object_ID{
-			Id: id.GetId(),
-		},
-		Vector: vec,
-	}, nil
-
+	return nil, nil
 }
 
 func (s *server) StreamGetObject(stream vald.Vald_StreamGetObjectServer) error {
 	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
-		return s.GetObject(ctx, data.(*payload.Object_ID))
+		return nil, nil
 	})
 }

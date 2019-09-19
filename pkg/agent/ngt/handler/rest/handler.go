@@ -41,6 +41,7 @@ type Handler interface {
 	MultiRemove(w http.ResponseWriter, r *http.Request) (int, error)
 	CreateIndex(w http.ResponseWriter, r *http.Request) (int, error)
 	SaveIndex(w http.ResponseWriter, r *http.Request) (int, error)
+	CreateAndSaveIndex(w http.ResponseWriter, r *http.Request) (int, error)
 	GetObject(w http.ResponseWriter, r *http.Request) (int, error)
 }
 
@@ -130,6 +131,17 @@ func (h *handler) SaveIndex(w http.ResponseWriter, r *http.Request) (code int, e
 	r.Body.Close()
 	_, err = h.agent.SaveIndex(r.Context(), nil)
 	return
+}
+
+func (h *handler) CreateAndSaveIndex(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Controll_CreateIndexRequest
+	return json.Handler(w, r, req, func() (res interface{}, err error) {
+		_, err = h.agent.CreateIndex(r.Context(), req)
+		if err != nil {
+			return nil, err
+		}
+		return h.agent.SaveIndex(r.Context(), nil)
+	})
 }
 
 func (h *handler) GetObject(w http.ResponseWriter, r *http.Request) (code int, err error) {

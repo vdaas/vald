@@ -225,3 +225,7 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Controll_CreateInde
 func (s *server) SaveIndex(context.Context, *payload.Common_Empty) (*payload.Common_Empty, error) {
 	return nil, s.ngt.SaveIndex()
 }
+
+func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Controll_CreateIndexRequest) (*payload.Common_Empty, error) {
+	return nil, s.ngt.CreateAndSaveIndex(c.GetPoolSize())
+}
