@@ -1,3 +1,0 @@
-[submodule "hack/e2e/benchmark/libs/ann-benchmarks/ann-benchmarks"]
-	path = hack/e2e/benchmark/libs/ann-benchmarks/ann-benchmarks
-	url = https://github.com/erikbern/ann-benchmarks

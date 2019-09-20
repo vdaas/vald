@@ -6,8 +6,6 @@ package agent
 import (
 	context "context"
 	fmt "fmt"
-	math "math"
-
 	_ "github.com/danielvladco/go-proto-gql/pb"
 	proto "github.com/gogo/protobuf/proto"
 	payload "github.com/vdaas/vald/apis/grpc/payload"
@@ -15,6 +13,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -26,7 +25,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
 func init() { proto.RegisterFile("agent.proto", fileDescriptor_56ede974c0020f77) }
 

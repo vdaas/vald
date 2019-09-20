@@ -36,10 +36,8 @@
 	swagger \
 	graphql \
 	pbdoc \
-	pbpy \
 	clean-proto-artifacts \
-	proto-deps \
-	grpcio-tools
+	proto-deps
 
 
 REPO               ?= vdaas
@@ -64,8 +62,6 @@ PBDOCDIRS = $(PROTODIRS:%=apis/docs/%)
 
 PROTOS := $(shell find apis/proto -type f -regex ".*\.proto")
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
-PBPYS = $(PROTOS:apis/proto/%.proto=apis/grpc/%_pb2.py)
-GRPCPYS = $(PROTOS:apis/proto/%.proto=apis/grpc/%_pb2_grpc.py)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
 GRAPHQLS = $(PROTOS:apis/proto/%.proto=apis/graphql/%.pb.graphqls)
 GQLCODES = $(GRAPHQLS:apis/graphql/%.pb.graphqls=apis/graphql/%.generated.go)
@@ -214,12 +210,11 @@ core-bench-lite: create-index
 core-bench-clean:
 	$(MAKE) -C ./hack/core/ngt clean
 
-e2e-bench: pbpy
+e2e-bench:
 	$(MAKE) -C ./hack/e2e/benchmark bench
 
 proto-all: \
 	pbgo \
-	pbpy \
 	pbdoc \
 	swagger
 	# swagger \
@@ -229,7 +224,6 @@ pbgo: $(PBGOS)
 swagger: $(SWAGGERS)
 graphql: $(GRAPHQLS) $(GQLCODES)
 pbdoc: $(PBDOCS)
-pbpy: $(PBPYS) $(GRPCPYS)
 
 clean-proto-artifacts:
 	rm -rf apis/grpc apis/swagger apis/graphql
@@ -250,8 +244,7 @@ proto-deps: \
 	$(GOPATH)/bin/swagger \
 	$(GOPATH)/src/google.golang.org/genproto \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
-	$(GOPATH)/src/github.com/googleapis/googleapis \
-	grpcio-tools
+	$(GOPATH)/src/github.com/googleapis/googleapis
 
 $(GOPATH)/src/github.com/protocolbuffers/protobuf:
 	git clone \
@@ -304,9 +297,6 @@ $(GOPATH)/bin/swagger:
 $(GOPATH)/bin/gqlgen:
 	$(call go-get, github.com/99designs/gqlgen)
 
-grpcio-tools:
-	pip3 install -U grpcio-tools
-
 $(PBGODIRS):
 	$(call mkdir, $@)
 	$(call rm, -rf, $@/*)
@@ -332,14 +322,6 @@ $(PBGOS): proto-deps $(PBGODIRS)
 	$(call protoc-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@), --gogofast_out=plugins=grpc:$(GOPATH)/src)
 	# we have to enable validate after https://github.com/envoyproxy/protoc-gen-validate/pull/257 is merged
 	# $(call protoc-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@), --gogofast_out=plugins=grpc:$(GOPATH)/src --validate_out=lang=gogo:$(GOPATH)/src)
-
-$(PBPYS): proto-deps $(PBGODIRS)
-	@$(call green, "generating pb2.py files...")
-	python3 -m grpc_tools.protoc $(PROTO_PATHS) --python_out=$(dir $@) $(patsubst apis/grpc/%_pb2.py,apis/proto/%.proto,$@)
-
-$(GRPCPYS): proto-deps $(PBGODIRS)
-	@$(call green, "generating pb2_grpc.py files...")
-	python3 -m grpc_tools.protoc $(PROTO_PATHS) --grpc_python_out=$(dir $@) $(patsubst apis/grpc/%_pb2_grpc.py,apis/proto/%.proto,$@)
 
 $(SWAGGERS): proto-deps $(SWAGGERDIRS)
 	@$(call green, "generating swagger.json files...")
