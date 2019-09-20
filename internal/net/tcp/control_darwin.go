@@ -1,4 +1,4 @@
-// +build !windows,!wasm,!js,!darwin
+// +build !linux,!windows,!wasm,!js
 
 //
 // Copyright (C) 2019 kpango (Yusuke Kato)
@@ -47,9 +47,9 @@ func Control(network, address string, c syscall.RawConn) (err error) {
 		if ierr != nil {
 			err = errors.Wrap(err, ierr.Error())
 		}
-		ierr = syscall.SetsockoptInt(f, syscall.IPPROTO_TCP, syscall.TCP_DEFER_ACCEPT, 1)
-		if ierr != nil {
-			err = errors.Wrap(err, ierr.Error())
-		}
+		// ierr = syscall.SetsockoptInt(f, syscall.IPPROTO_TCP, syscall.TCP_DEFER_ACCEPT, 1)
+		// if ierr != nil {
+		// 	err = errors.Wrap(err, ierr.Error())
+		// }
 	})
 }
