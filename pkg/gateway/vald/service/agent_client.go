@@ -21,13 +21,14 @@ import (
 	"log"
 
 	"github.com/vdaas/vald/apis/grpc/agent"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/vald/config"
 	"google.golang.org/grpc"
 )
 
 type ValdProxy interface {
 	GetIPs() []string
-	BroadCast(ctx context.Context, f func(client agent.AgentClient) error) error
+	BroadCast(ctx context.Context, eg errgroup.Group, f func(client agent.AgentClient) error) error
 }
 
 type Agent interface {
@@ -53,7 +54,7 @@ func New(cfg *config.Data) (ValdProxy, error) {
 	return new(vp), nil
 }
 
-func (v *vp) BroadCast(ctx context.Context, f func(client agent.AgentClient) error) error {
+func (v *vp) BroadCast(ctx context.Context, eg errgroup.Group, f func(client agent.AgentClient) error) error {
 	return nil
 }
 

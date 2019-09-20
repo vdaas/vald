@@ -20,18 +20,23 @@ import (
 	"context"
 	"math"
 	"sync/atomic"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/apis/grpc/vald"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/gateway/vald/service"
 )
 
 type Server vald.ValdServer
 
 type server struct {
+	eg      errgroup.Group
 	gateway service.ValdProxy
+	timeout time.Duration
 }
 
 func New(opts ...Option) Server {
@@ -48,93 +53,53 @@ func (s *server) Exists(ctx context.Context, oid *payload.Object_ID) (*payload.O
 }
 
 func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
-	maxDist := uint32(math.MaxUint32)
-	num := int(req.GetConfig().GetNum())
-	res.Results = make([]*payload.Object_Distance, 0, len(s.gateway.GetIPs())*num)
-	dch := make(chan *payload.Object_Distance, cap(res.GetResults())/2)
-	ech := make(chan error, 1)
-	go func() {
-		cl := new(checkList)
-		ech <- s.gateway.BroadCast(ctx, func(ac agent.AgentClient) error {
-			r, err := ac.Search(ctx, req)
-			if err != nil {
-				return err
-			}
-			for _, dist := range r.GetResults() {
-				id := dist.GetId().GetId()
-				if !cl.Exists(id) && dist.GetDistance() < math.Float32frombits(atomic.LoadUint32(&maxDist)) {
-					dch <- dist
-					cl.Check(id)
-				}
-			}
-			return nil
-		})
-	}()
-	for {
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		case err = <-ech:
-			if err != nil {
-				return nil, err
-			}
-			break
-		case dist := <-dch:
-			pos := len(res.GetResults())
-			if pos >= num &&
-				dist.GetDistance() < math.Float32frombits(atomic.LoadUint32(&maxDist)) {
-				atomic.StoreUint32(&maxDist, math.Float32bits(dist.GetDistance()))
-			}
-			for idx := pos; idx >= 0; idx-- {
-				if res.GetResults()[idx].GetDistance() > dist.GetDistance() {
-					pos = idx
-					break
-				}
-			}
-			if pos != 0 {
-				res.Results = append(res.Results[:pos+1], res.Results[pos:]...)
-			}
-			res.Results[pos] = dist
-		}
-	}
-	if len(res.GetResults()) > num && num != 0 {
-		res.Results = res.Results[:num]
-	}
-	return res, nil
+	return s.search(ctx, int(req.GetConfig().GetNum()), func(ac agent.AgentClient) (*payload.Search_Response, error) {
+		return ac.Search(ctx, req)
+	})
 }
 
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (res *payload.Search_Response, err error) {
+	return s.search(ctx, int(req.GetConfig().GetNum()), func(ac agent.AgentClient) (*payload.Search_Response, error) {
+		// TODO rewrite ObjectID
+		return ac.SearchByID(ctx, req)
+	})
+}
+
+func (s *server) search(ctx context.Context, num int, f func(ac agent.AgentClient) (*payload.Search_Response, error)) (res *payload.Search_Response, err error) {
 	maxDist := uint32(math.MaxUint32)
-	num := int(req.GetConfig().GetNum())
 	res.Results = make([]*payload.Object_Distance, 0, len(s.gateway.GetIPs())*num)
 	dch := make(chan *payload.Object_Distance, cap(res.GetResults())/2)
-	ech := make(chan error, 1)
-	go func() {
+	eg, ctx := errgroup.New(ctx)
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
+	eg.Go(safety.RecoverFunc(func() error {
+		defer cancel()
 		cl := new(checkList)
-		ech <- s.gateway.BroadCast(ctx, func(ac agent.AgentClient) error {
-			r, err := ac.SearchByID(ctx, req)
+		return s.gateway.BroadCast(ctx, eg, func(ac agent.AgentClient) error {
+			r, err := f(ac)
 			if err != nil {
 				return err
 			}
 			for _, dist := range r.GetResults() {
 				id := dist.GetId().GetId()
-				if !cl.Exists(id) && dist.GetDistance() < math.Float32frombits(atomic.LoadUint32(&maxDist)) {
-					dch <- dist
-					cl.Check(id)
+				if dist.GetDistance() < math.Float32frombits(atomic.LoadUint32(&maxDist)) {
+					if !cl.Exists(id) {
+						dch <- dist
+						cl.Check(id)
+					}
+					return nil
 				}
 			}
 			return nil
 		})
-	}()
+	}))
 	for {
 		select {
 		case <-ctx.Done():
-			return nil, ctx.Err()
-		case err = <-ech:
-			if err != nil {
-				return nil, err
+			err = s.eg.Wait()
+			if len(res.GetResults()) > num && num != 0 {
+				res.Results = res.Results[:num]
 			}
-			break
+			return res, err
 		case dist := <-dch:
 			pos := len(res.GetResults())
 			if pos >= num &&
@@ -148,15 +113,14 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				}
 			}
 			if pos != 0 {
-				res.Results = append(res.Results[:pos+1], res.Results[pos:]...)
+				res.Results = append(res.GetResults()[:pos+1], res.GetResults()[pos:]...)
+				if len(res.GetResults()) > num && num != 0 {
+					res.Results = res.GetResults()[:num]
+				}
 			}
 			res.Results[pos] = dist
 		}
 	}
-	if len(res.GetResults()) > num && num != 0 {
-		res.Results = res.Results[:num]
-	}
-	return res, nil
 }
 
 func (s *server) StreamSearch(stream vald.Vald_StreamSearchServer) error {
