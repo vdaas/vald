@@ -6,12 +6,11 @@ package payload
 import (
 	encoding_binary "encoding/binary"
 	fmt "fmt"
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	proto "github.com/gogo/protobuf/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
-
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
-	proto "github.com/gogo/protobuf/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -23,7 +22,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
 type Search struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
