@@ -1,4 +1,4 @@
-// +build wasm,js
+// +build wasm,js,!windows,!linux,!darwin
 
 //
 // Copyright (C) 2019 kpango (Yusuke Kato)
