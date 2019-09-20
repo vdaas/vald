@@ -243,6 +243,10 @@
         "epsilon": {
           "type": "number",
           "format": "float"
+        },
+        "timeout": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },

@@ -41,9 +41,10 @@ message Search {
   }
 
   message Config {
-    uint32 num = 1 [(validate.rules).uint32.gte = 1];
+    uint32 num = 1 [ (validate.rules).uint32.gte = 1 ];
     float radius = 2;
     float epsilon = 3;
+    int64 timeout = 4;
   }
 
   message Response {
@@ -58,38 +59,38 @@ message Object {
     float distance = 2;
   }
 
-  message ID { string id = 1 [(validate.rules).string.min_len = 1]; }
+  message ID { string id = 1 [ (validate.rules).string.min_len = 1 ]; }
   message IDs { repeated ID ids = 1; }
 
   message Vector {
     ID id = 1;
-    repeated double vector = 2 [(validate.rules).repeated.min_items = 2];
+    repeated double vector = 2 [ (validate.rules).repeated .min_items = 2 ];
   }
   message Vectors { repeated Vector vectors = 1; }
 }
 
 message Controll {
   message CreateIndexRequest {
-    uint32 pool_size = 1 [(validate.rules).uint32.gte = 0];
+    uint32 pool_size = 1 [ (validate.rules).uint32.gte = 0 ];
   }
 }
 
 message Info {
   message Agent {
-    string ip = 1 [(validate.rules).string.ipv4 = true];
-    uint32 count = 2 [(validate.rules).uint32.gte = 0];
+    string ip = 1 [ (validate.rules).string.ipv4 = true ];
+    uint32 count = 2 [ (validate.rules).uint32.gte = 0 ];
     string state = 3;
     Common.Error error = 4;
   }
   message Agents {
-    repeated Agent Agents = 1 [(validate.rules).repeated.min_items = 1];
+    repeated Agent Agents = 1 [ (validate.rules).repeated .min_items = 1 ];
   }
 }
 
 message Common {
   message Empty {}
   message Error {
-    uint32 code = 1 [(validate.rules).uint32.gte = 0];
+    uint32 code = 1 [ (validate.rules).uint32.gte = 0 ];
     string msg = 2;
     int64 timestamp = 3;
   }

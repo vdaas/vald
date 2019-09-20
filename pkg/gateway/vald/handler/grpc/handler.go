@@ -53,24 +53,29 @@ func (s *server) Exists(ctx context.Context, oid *payload.Object_ID) (*payload.O
 }
 
 func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
-	return s.search(ctx, int(req.GetConfig().GetNum()), func(ac agent.AgentClient) (*payload.Search_Response, error) {
+	return s.search(ctx, int(req.GetConfig().GetNum()), req.GetConfig().GetTimeout(), func(ac agent.AgentClient) (*payload.Search_Response, error) {
 		return ac.Search(ctx, req)
 	})
 }
 
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (res *payload.Search_Response, err error) {
-	return s.search(ctx, int(req.GetConfig().GetNum()), func(ac agent.AgentClient) (*payload.Search_Response, error) {
+	return s.search(ctx, int(req.GetConfig().GetNum()), req.GetConfig().GetTimeout(), func(ac agent.AgentClient) (*payload.Search_Response, error) {
 		// TODO rewrite ObjectID
 		return ac.SearchByID(ctx, req)
 	})
 }
 
-func (s *server) search(ctx context.Context, num int, f func(ac agent.AgentClient) (*payload.Search_Response, error)) (res *payload.Search_Response, err error) {
+func (s *server) search(ctx context.Context, num int, to int64, f func(ac agent.AgentClient) (*payload.Search_Response, error)) (res *payload.Search_Response, err error) {
 	maxDist := uint32(math.MaxUint32)
 	res.Results = make([]*payload.Object_Distance, 0, len(s.gateway.GetIPs())*num)
 	dch := make(chan *payload.Object_Distance, cap(res.GetResults())/2)
 	eg, ctx := errgroup.New(ctx)
-	ctx, cancel := context.WithTimeout(ctx, s.timeout)
+	var cancel context.CancelFunc
+	if to != 0 {
+		ctx, cancel = context.WithTimeout(ctx, time.Duration(to))
+	} else {
+		ctx, cancel = context.WithCancel(ctx)
+	}
 	eg.Go(safety.RecoverFunc(func() error {
 		defer cancel()
 		cl := new(checkList)
@@ -95,7 +100,7 @@ func (s *server) search(ctx context.Context, num int, f func(ac agent.AgentClien
 	for {
 		select {
 		case <-ctx.Done():
-			err = s.eg.Wait()
+			err = eg.Wait()
 			if len(res.GetResults()) > num && num != 0 {
 				res.Results = res.Results[:num]
 			}
@@ -118,7 +123,9 @@ func (s *server) search(ctx context.Context, num int, f func(ac agent.AgentClien
 					res.Results = res.GetResults()[:num]
 				}
 			}
-			res.Results[pos] = dist
+			if pos <= num {
+				res.Results[pos] = dist
+			}
 		}
 	}
 }
