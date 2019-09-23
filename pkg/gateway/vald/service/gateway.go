@@ -26,7 +26,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-type ValdProxy interface {
+type Gateway interface {
 	GetIPs() []string
 	BroadCast(ctx context.Context, eg errgroup.Group, f func(client agent.AgentClient) error) error
 }
@@ -38,7 +38,7 @@ type Agent interface {
 type vp struct {
 }
 
-func New(cfg *config.Data) (ValdProxy, error) {
+func New(cfg *config.Data) (Gateway, error) {
 	ctx := context.Background()
 	opts := []grpc.DialOption{
 		grpc.WithContextDialer(nil),

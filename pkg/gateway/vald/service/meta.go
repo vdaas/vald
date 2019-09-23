@@ -14,22 +14,7 @@
 // limitations under the License.
 //
 
-syntax = "proto3";
+package service
 
-package meta_manager;
-
-option go_package = "github.com/vdaas/vald/apis/grpc/meta";
-option java_multiple_files = true;
-option java_package = "org.vdaas.vald.meta";
-option java_outer_classname = "meta";
-
-import "payload.proto";
-import "google/api/annotations.proto";
-import "pb/gql.proto";
-
-service Meta {
-  option (gql.svc_type) = QUERY;
-  rpc Filter(payload.Search.Result) returns (payload.Search.Result.ID) {
-    option (google.api.http).post = "/meta";
-  }
+type MetaClient interface {
 }

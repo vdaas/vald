@@ -10,7 +10,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limi(tations under the License.
 //
 
 // Package grpc provides grpc server logic
@@ -53,20 +53,22 @@ func (s *server) Exists(ctx context.Context, oid *payload.Object_ID) (*payload.O
 }
 
 func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
-	return s.search(ctx, int(req.GetConfig().GetNum()), req.GetConfig().GetTimeout(), func(ac agent.AgentClient) (*payload.Search_Response, error) {
+	return s.search(ctx, req.GetConfig(), func(ac agent.AgentClient) (*payload.Search_Response, error) {
 		return ac.Search(ctx, req)
 	})
 }
 
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (res *payload.Search_Response, err error) {
-	return s.search(ctx, int(req.GetConfig().GetNum()), req.GetConfig().GetTimeout(), func(ac agent.AgentClient) (*payload.Search_Response, error) {
+	return s.search(ctx, req.GetConfig(), func(ac agent.AgentClient) (*payload.Search_Response, error) {
 		// TODO rewrite ObjectID
 		return ac.SearchByID(ctx, req)
 	})
 }
 
-func (s *server) search(ctx context.Context, num int, to int64, f func(ac agent.AgentClient) (*payload.Search_Response, error)) (res *payload.Search_Response, err error) {
+func (s *server) search(ctx context.Context, cfg *payload.Search_Config, f func(ac agent.AgentClient) (*payload.Search_Response, error)) (res *payload.Search_Response, err error) {
 	maxDist := uint32(math.MaxUint32)
+	num := int(cfg.GetNum())
+	to := cfg.GetTimeout()
 	res.Results = make([]*payload.Object_Distance, 0, len(s.gateway.GetIPs())*num)
 	dch := make(chan *payload.Object_Distance, cap(res.GetResults())/2)
 	eg, ctx := errgroup.New(ctx)
@@ -85,13 +87,13 @@ func (s *server) search(ctx context.Context, num int, to int64, f func(ac agent.
 				return err
 			}
 			for _, dist := range r.GetResults() {
-				id := dist.GetId().GetId()
-				if dist.GetDistance() < math.Float32frombits(atomic.LoadUint32(&maxDist)) {
-					if !cl.Exists(id) {
-						dch <- dist
-						cl.Check(id)
-					}
+				if dist.GetDistance() > math.Float32frombits(atomic.LoadUint32(&maxDist)) {
 					return nil
+				}
+				id := dist.GetId().GetId()
+				if !cl.Exists(id) {
+					dch <- dist
+					cl.Check(id)
 				}
 			}
 			return nil
