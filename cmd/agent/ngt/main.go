@@ -38,11 +38,12 @@ const (
 )
 
 func main() {
-	defer safety.RecoverWithError(nil)
+	var err error
+	defer safety.RecoverWithError(err)
 
 	log.Init(log.DefaultGlg())
 
-	p, err := params.New(
+	p, isHelp, err := params.New(
 		params.WithConfigFileDescription("agent config file path"),
 	).Parse()
 
@@ -51,8 +52,12 @@ func main() {
 		return
 	}
 
+	if isHelp {
+		return
+	}
+
 	if p.ShowVersion() {
-		log.Infof("server version -> %s", version)
+		log.Infof("vald agent ngt server version -> %s", log.Bold(version))
 		return
 	}
 

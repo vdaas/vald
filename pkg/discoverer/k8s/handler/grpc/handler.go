@@ -24,12 +24,10 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 )
 
-type Server discoverer.DiscovererServer
-
 type server struct {
 }
 
-func New(opts ...Option) Server {
+func New(opts ...Option) discoverer.DiscovererServer {
 	s := new(server)
 
 	for _, opt := range append(defaultOpts, opts...) {

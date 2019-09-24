@@ -162,6 +162,7 @@ deps: kube_deps
 		google.golang.org/genproto/...
 		# github.com/danielvladco/go-proto-gql \
 		# github.com/googleapis/googleapis
+	@make proto-all
 	go mod vendor
 	rm -rf vendor
 	curl -LO https://github.com/yahoojapan/NGT/archive/v${NGT_VERSION}.tar.gz

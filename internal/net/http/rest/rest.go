@@ -51,7 +51,7 @@ func HandlerToRestFunc(f http.HandlerFunc) Func {
 	}
 }
 
-func IndexHandler(values json.RawMessage, w http.ResponseWriter, r *http.Request) (cote int, err error) {
+func IndexHandler(values map[string]interface{}, w http.ResponseWriter, r *http.Request) (cote int, err error) {
 	if r == nil {
 		return http.StatusBadRequest, errors.ErrInvalidRequest
 	}
@@ -64,18 +64,18 @@ func IndexHandler(values json.RawMessage, w http.ResponseWriter, r *http.Request
 		r.Body.Close()
 	}
 	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(struct {
-		Host             string          `json:"host"`
-		URI              string          `json:"uri"`
-		URL              string          `json:"url"`
-		Method           string          `json:"method"`
-		Proto            string          `json:"proto"`
-		Header           http.Header     `json:"header"`
-		TransferEncoding []string        `json:"transfer_encoding"`
-		RemoteAddr       string          `json:"remote_addr"`
-		ContentLength    int64           `json:"content_length"`
-		Body             json.RawMessage `json:"body"`
-		Values           json.RawMessage `json:"values"`
+	body, err = json.MarshalIndent(struct {
+		Host             string                 `json:"host"`
+		URI              string                 `json:"uri"`
+		URL              string                 `json:"url"`
+		Method           string                 `json:"method"`
+		Proto            string                 `json:"proto"`
+		Header           http.Header            `json:"header"`
+		TransferEncoding []string               `json:"transfer_encoding"`
+		RemoteAddr       string                 `json:"remote_addr"`
+		ContentLength    int64                  `json:"content_length"`
+		Body             []byte                 `json:"body"`
+		Values           map[string]interface{} `json:"values"`
 	}{
 		Host:             r.Host,
 		URI:              r.RequestURI,
@@ -88,9 +88,10 @@ func IndexHandler(values json.RawMessage, w http.ResponseWriter, r *http.Request
 		ContentLength:    r.ContentLength,
 		Body:             body,
 		Values:           values,
-	})
+	}, "", "\t")
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
+	_, err = w.Write(body)
 	return http.StatusOK, nil
 }

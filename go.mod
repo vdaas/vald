@@ -9,22 +9,22 @@ require (
 	github.com/danielvladco/go-proto-gql v0.7.3 // indirect
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
-	github.com/francoispqt/gojay v1.2.13
+	github.com/francoispqt/gojay v1.2.13 // indirect
 	github.com/getsentry/raven-go v0.2.0 // indirect
 	github.com/go-redis/redis v6.15.5+incompatible
 	github.com/gogo/protobuf v1.3.0
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/go-version v1.2.0
 	github.com/iancoleman/strcase v0.0.0-20190422225806-e506e3ef7365 // indirect
+	github.com/json-iterator/go v1.1.6
 	github.com/kpango/fastime v1.0.15
 	github.com/kpango/gache v1.1.22
 	github.com/kpango/glg v1.4.6
 	github.com/lyft/protoc-gen-star v0.4.11 // indirect
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
-	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20190913121621-c3b328c6e5a7
 	gonum.org/v1/hdf5 v0.0.0-20190516085527-847297cb569e
-	google.golang.org/genproto v0.0.0-20190911173649-1774047e7e51
+	google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
 	google.golang.org/grpc v1.23.1
 	gopkg.in/yaml.v2 v2.2.2
 	k8s.io/api v0.0.0-20190409021203-6e4e0e4f393b

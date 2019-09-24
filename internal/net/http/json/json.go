@@ -22,7 +22,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/francoispqt/gojay"
+	// "github.com/francoispqt/gojay"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/http/rest"
 )
@@ -37,11 +38,11 @@ type RFC7807Error struct {
 }
 
 func Encode(w io.Writer, data interface{}) (err error) {
-	return gojay.NewEncoder(w).Encode(data)
+	return jsoniter.NewEncoder(w).Encode(data)
 }
 
 func Decode(r io.Reader, data interface{}) (err error) {
-	return gojay.NewDecoder(r).Decode(data)
+	return jsoniter.NewDecoder(r).Decode(data)
 }
 
 func EncodeResponse(w http.ResponseWriter, data interface{}, status int, contentTypes ...string) error {

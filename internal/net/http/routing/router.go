@@ -78,16 +78,16 @@ func (rt *router) routing(name, path string, m []string, h rest.Func) http.Handl
 				// report error to error channel
 				ech := make(chan error)
 				sch := make(chan int)
-				defer close(ech)
-				defer close(sch)
 				rt.eg.Go(safety.RecoverFunc(func() (err error) {
+					defer close(ech)
+					defer close(sch)
 					// it is the responsibility for handler to close the request
 					var code int
 					code, err = h(w, r.WithContext(ctx))
+					ech <- err
 					if err != nil {
 						sch <- code
 					}
-					ech <- err
 					return nil
 				}))
 
@@ -97,7 +97,6 @@ func (rt *router) routing(name, path string, m []string, h rest.Func) http.Handl
 					if err != nil {
 						code := <-sch
 						err = errors.ErrHandler(err)
-
 						log.Error(err)
 
 						err = json.ErrorHandler(w, json.RFC7807Error{

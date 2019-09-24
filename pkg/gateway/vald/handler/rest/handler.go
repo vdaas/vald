@@ -18,12 +18,12 @@
 package rest
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/net/http/json"
+	"github.com/vdaas/vald/internal/net/http/rest"
 )
 
 type Handler interface {
@@ -54,8 +54,7 @@ func New(opts ...Option) Handler {
 }
 
 func (h *handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
-	fmt.Fprint(w, r.URL.String())
-	return http.StatusOK, nil
+	return rest.IndexHandler(nil, w, r)
 }
 
 func (h *handler) Search(w http.ResponseWriter, r *http.Request) (code int, err error) {

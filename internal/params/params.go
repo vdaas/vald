@@ -51,7 +51,7 @@ func New(opts ...Option) *parser {
 	return p
 }
 
-func (p *parser) Parse() (*Data, error) {
+func (p *parser) Parse() (*Data, bool, error) {
 
 	f := flag.NewFlagSet(filepath.Base(os.Args[0]), flag.ContinueOnError)
 
@@ -70,10 +70,13 @@ func (p *parser) Parse() (*Data, error) {
 
 	err := f.Parse(os.Args[1:])
 	if err != nil {
-		return nil, errors.ErrArgumentParseFailed(err)
+		if err != flag.ErrHelp {
+			return nil, false, errors.ErrArgumentParseFailed(err)
+		}
+		return d, true, nil
 	}
 
-	return d, nil
+	return d, false, nil
 }
 
 func (d *Data) ConfigFilePath() string {
