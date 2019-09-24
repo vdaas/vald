@@ -68,9 +68,9 @@ func New(opts ...Option) PodWatcher {
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
 	ps := &corev1.PodList{}
 
-	err = r.mgr.GetClient().List(context.TODO(), client.InNamespace(req.Namespace), client.MatchingFields{
+	err = r.mgr.GetClient().List(context.TODO(), ps, client.InNamespace(req.Namespace), client.MatchingFields{
 		"status.phase": string(corev1.PodRunning),
-	}, ps)
+	})
 
 	if err != nil {
 		if r.onError != nil {
@@ -126,19 +126,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		})
 	}
 
-	r.podList = make(map[string][]Pod, len(pods))
-
-	for name, pod := range pods {
-		r.mu.Lock()
-		r.podList[name] = pod[0:len(pod)]
-		r.mu.Unlock()
-	}
-
 	if r.onReconcile != nil {
-		r.mu.RLock()
-		r.onReconcile(r.podList)
-		r.mu.RUnlock()
+		r.onReconcile(pods)
 	}
+
+	r.mu.Lock()
+	r.podList = pods
+	r.mu.Lock()
 
 	return
 }

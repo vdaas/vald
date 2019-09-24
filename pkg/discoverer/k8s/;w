@@ -24,7 +24,6 @@ import (
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/node"
 	"github.com/vdaas/vald/internal/k8s/pod"
-	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/model"
 )
 
@@ -35,36 +34,31 @@ type Discoverer interface {
 }
 
 type discoverer struct {
+	pw   pod.PodWatcher
+	nw   node.NodeWatcher
 	ctrl k8s.Controller
 }
 
 func New(cfg *config.Discoverer) (dsc Discoverer, err error) {
-	var ctrl k8s.Controller
-	ctrl, err = k8s.New(
-		k8s.WithControllerName("vald k8s agent discoverer"),
-		k8s.WithResourceController(pod.New(
+	d := &discoverer{
+		pw: pod.New(
 			pod.WithControllerName("pod discoverer"),
-			pod.WithOnErrorFunc(func(err error) {
-				log.Error(err)
+			pod.WithOnErrorFunc(func(err error){
+
 			}),
-			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
-			}),
-		)),
-		k8s.WithResourceController(node.New(
-			node.WithControllerName("node discoverer"),
-			node.WithOnErrorFunc(func(err error) {
-				log.Error(err)
-			}),
-			node.WithOnReconcileFunc(func(nodes []node.Node) {
-			}),
-		)),
+
+	),
+		nw: node.New(),
+	}
+	d.ctrl, err = k8s.New(
+		k8s.WithControllerName("vald k8s agent discoverer"),
+		k8s.WithResourceController(d.pw),
+		k8s.WithResourceController(d.nw),
 	)
 	if err != nil {
 		return nil, err
 	}
-	return &discoverer{
-		ctrl: ctrl,
-	}, nil
+	return d, nil
 }
 
 func (d *discoverer) GetServers() []model.Server {
