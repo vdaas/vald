@@ -164,8 +164,8 @@ kube_deps:
 deps: \
 	clean \
 	proto-deps \
-	proto-all \
-	kube_deps
+	proto-all
+	# kube_deps
 	go mod vendor
 	rm -rf vendor
 	curl -LO https://github.com/yahoojapan/NGT/archive/v${NGT_VERSION}.tar.gz
