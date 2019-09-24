@@ -22,7 +22,6 @@ import (
 	"net/http"
 	"os"
 
-	// "github.com/francoispqt/gojay"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/http/rest"

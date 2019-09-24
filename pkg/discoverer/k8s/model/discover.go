@@ -17,7 +17,17 @@
 // Package model defines object structure
 package model
 
-type Distance struct {
-	ID       string
-	Distance float32
+type Server struct {
+	Name     string
+	NodeInfo NodeInfo
+	IP       string
+	CPU      float64
+	Mem      float64
+}
+
+type NodeInfo struct {
+	Name string
+	IP   string
+	CPU  float64
+	Mem  float64
 }

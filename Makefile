@@ -48,7 +48,7 @@ PROXY_IMAGE         = vald-proxy
 DISCOVERER_IMAGE    = vald-discoverer
 KVS_IMAGE           = vald-metadata
 
-K8S_CTRL_RUNTIME_VERSION = v0.2.1
+K8S_CTRL_RUNTIME_VERSION = v0.2.2
 NGT_VERSION = 1.7.9
 NGT_REPO = github.com/yahoojapan/NGT
 
@@ -106,7 +106,7 @@ define protoc-gen
 		$1
 endef
 
-all: clean init deps proto-all
+all: clean deps
 
 clean:
 	go clean -cache -modcache ./...
@@ -136,7 +136,7 @@ bench:
 init:
 	GO111MODULE=on go mod vendor
 
-kube_deps: clean
+kube_deps:
 # kube_deps:
 	# go mod init
 	go get sigs.k8s.io/controller-runtime@${K8S_CTRL_RUNTIME_VERSION}
@@ -152,17 +152,11 @@ kube_deps: clean
 	# sigs.k8s.io/controller-runtime@v0.2.0 \
 	# sigs.k8s.io/testing_frameworks@v0.1.1
 
-deps: kube_deps
-	go get github.com/envoyproxy/protoc-gen-validate \
-		github.com/gogo/protobuf/gogoproto \
-		github.com/gogo/protobuf/jsonpb \
-		github.com/gogo/protobuf/proto \
-		github.com/gogo/protobuf/protoc-gen-gogo \
-		github.com/danielvladco/go-proto-gql \
-		google.golang.org/genproto/...
-		# github.com/danielvladco/go-proto-gql \
-		# github.com/googleapis/googleapis
-	@make proto-all
+deps: \
+	clean \
+	proto-deps \
+	proto-all \
+	kube_deps
 	go mod vendor
 	rm -rf vendor
 	curl -LO https://github.com/yahoojapan/NGT/archive/v${NGT_VERSION}.tar.gz
@@ -233,6 +227,7 @@ proto-deps: \
 	$(GOPATH)/bin/gqlgen \
 	$(GOPATH)/bin/protoc-gen-doc \
 	$(GOPATH)/bin/protoc-gen-go \
+	$(GOPATH)/bin/protoc-gen-gogo \
 	$(GOPATH)/bin/protoc-gen-gofast \
 	$(GOPATH)/bin/protoc-gen-gogofast \
 	$(GOPATH)/bin/protoc-gen-gogqlgen \
@@ -259,8 +254,14 @@ $(GOPATH)/src/github.com/googleapis/googleapis:
 		https://github.com/googleapis/googleapis \
 		$(GOPATH)/src/github.com/googleapis/googleapis
 
+$(GOPATH)/src/google.golang.org/genproto:
+	$(call go-get, google.golang.org/genproto/...)
+
 $(GOPATH)/bin/protoc-gen-go:
 	$(call go-get, github.com/golang/protobuf/protoc-gen-go)
+
+$(GOPATH)/bin/protoc-gen-gogo:
+	$(call go-get, github.com/golang/protobuf/protoc-gen-gogo)
 
 $(GOPATH)/bin/protoc-gen-gofast:
 	$(call go-get, github.com/gogo/protobuf/protoc-gen-gofast)
