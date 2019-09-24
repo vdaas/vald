@@ -159,6 +159,6 @@ func (r *reconciler) For() runtime.Object {
 	return new(appsv1.ReplicaSet)
 }
 
-func (r *reconciler) Owns() runtime.Object {
-	return new(corev1.Pod)
-}
+// func (r *reconciler) Owns() runtime.Object {
+// 	return new(corev1.Pod)
+// }

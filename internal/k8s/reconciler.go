@@ -21,7 +21,7 @@ import (
 	"context"
 
 	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -35,13 +35,15 @@ type ResourceController interface {
 	GetName() string
 	NewReconciler(mgr manager.Manager) reconcile.Reconciler
 	For() runtime.Object
-	Owns() runtime.Object
+	// Owns() runtime.Object
 }
 
 type controller struct {
-	name string
-	mgr  manager.Manager
-	rcs  []ResourceController
+	name           string
+	merticsAddr    string
+	leaderElection bool
+	mgr            manager.Manager
+	rcs            []ResourceController
 }
 
 func New(opts ...Option) (cl Controller, err error) {
@@ -54,18 +56,21 @@ func New(opts ...Option) (cl Controller, err error) {
 	if c.mgr == nil {
 		c.mgr, err = manager.New(
 			config.GetConfigOrDie(),
-			manager.Options{})
+			manager.Options{
+				Scheme:             runtime.NewScheme(),
+				LeaderElection:     c.leaderElection,
+				MetricsBindAddress: c.merticsAddr,
+			})
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	for _, rc := range c.rcs {
-		err = ctrl.NewControllerManagedBy(c.mgr).
-			// TODO check interface of kuberntes api
-			// Named(rc.GetName()).
+		err = builder.ControllerManagedBy(c.mgr).
+			Named(rc.GetName()).
 			For(rc.For()).
-			Owns(rc.Owns()).
+			// Owns(rc.Owns()).
 			Complete(rc.NewReconciler(c.mgr))
 		if err != nil {
 			return nil, err
