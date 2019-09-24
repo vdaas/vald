@@ -17,16 +17,13 @@
 // Package grpc provides grpc server logic
 package grpc
 
-import "github.com/vdaas/vald/pkg/discoverer/k8s/service"
-
 type Option func(*server)
 
 var (
 	defaultOpts = []Option{}
 )
 
-func WithNGT(n service.NGT) Option {
+func Sample() Option {
 	return func(s *server) {
-		s.ngt = n
 	}
 }

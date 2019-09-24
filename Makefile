@@ -87,7 +87,7 @@ PROTO_PATHS = \
 	-I ./apis/proto/agent \
 	-I ./apis/proto/vald \
 	-I ./apis/proto/discoverer \
-	-I ./apis/proto/meta_manager \
+	-I ./apis/proto/meta \
 	-I ./apis/proto/egress_filter \
 	-I ./apis/proto/ingress_filter \
 	-I ./apis/proto/backup_manager \

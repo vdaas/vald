@@ -203,15 +203,23 @@
                 </li>
               
                 <li>
+                  <a href="#payload.Discoverer"><span class="badge">M</span>Discoverer</a>
+                </li>
+              
+                <li>
+                  <a href="#payload.Discoverer.Request"><span class="badge">M</span>Discoverer.Request</a>
+                </li>
+              
+                <li>
                   <a href="#payload.Info"><span class="badge">M</span>Info</a>
                 </li>
               
                 <li>
-                  <a href="#payload.Info.Agent"><span class="badge">M</span>Info.Agent</a>
+                  <a href="#payload.Info.Server"><span class="badge">M</span>Info.Server</a>
                 </li>
               
                 <li>
-                  <a href="#payload.Info.Agents"><span class="badge">M</span>Info.Agents</a>
+                  <a href="#payload.Info.Servers"><span class="badge">M</span>Info.Servers</a>
                 </li>
               
                 <li>
@@ -383,14 +391,14 @@
 
         
       
-        <h3 id="payload.Info">Info</h3>
+        <h3 id="payload.Discoverer">Discoverer</h3>
         <p></p>
 
         
 
         
       
-        <h3 id="payload.Info.Agent">Info.Agent</h3>
+        <h3 id="payload.Discoverer.Request">Discoverer.Request</h3>
         <p></p>
 
         
@@ -401,7 +409,59 @@
             <tbody>
               
                 <tr>
+                  <td>name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>node</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="payload.Info">Info</h3>
+        <p></p>
+
+        
+
+        
+      
+        <h3 id="payload.Info.Server">Info.Server</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
                   <td>ip</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>node</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p> </p></td>
@@ -422,6 +482,20 @@
                 </tr>
               
                 <tr>
+                  <td>cpu</td>
+                  <td><a href="#double">double</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>mem</td>
+                  <td><a href="#double">double</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
                   <td>error</td>
                   <td><a href="#payload.Common.Error">Common.Error</a></td>
                   <td></td>
@@ -435,7 +509,7 @@
 
         
       
-        <h3 id="payload.Info.Agents">Info.Agents</h3>
+        <h3 id="payload.Info.Servers">Info.Servers</h3>
         <p></p>
 
         
@@ -446,8 +520,8 @@
             <tbody>
               
                 <tr>
-                  <td>Agents</td>
-                  <td><a href="#payload.Info.Agent">Info.Agent</a></td>
+                  <td>Servers</td>
+                  <td><a href="#payload.Info.Server">Info.Server</a></td>
                   <td>repeated</td>
                   <td><p> </p></td>
                 </tr>

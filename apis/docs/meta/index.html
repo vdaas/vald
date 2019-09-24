@@ -175,14 +175,14 @@
         
           
           <li>
-            <a href="#discoverer.proto">discoverer.proto</a>
+            <a href="#meta.proto">meta.proto</a>
             <ul>
               
               
               
               
                 <li>
-                  <a href="#discoverer.Discoverer"><span class="badge">S</span>Discoverer</a>
+                  <a href="#meta_manager.Meta"><span class="badge">S</span>Meta</a>
                 </li>
               
             </ul>
@@ -195,7 +195,7 @@
     
       
       <div class="file-heading">
-        <h2 id="discoverer.proto">discoverer.proto</h2><a href="#title">Top</a>
+        <h2 id="meta.proto">meta.proto</h2><a href="#title">Top</a>
       </div>
       <p></p>
 
@@ -206,7 +206,7 @@
       
 
       
-        <h3 id="discoverer.Discoverer">Discoverer</h3>
+        <h3 id="meta_manager.Meta">Meta</h3>
         <p></p>
         <table class="enum-table">
           <thead>
@@ -215,9 +215,16 @@
           <tbody>
             
               <tr>
-                <td>Discover</td>
-                <td><a href="#payload.Discoverer.Request">.payload.Discoverer.Request</a></td>
-                <td><a href="#payload.Info.Servers">.payload.Info.Servers</a></td>
+                <td>GetMeta</td>
+                <td><a href="#payload.Object.ID">.payload.Object.ID</a></td>
+                <td><a href="#payload.Object.ID">.payload.Object.ID</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>GetMetas</td>
+                <td><a href="#payload.Object.IDs">.payload.Object.IDs</a></td>
+                <td><a href="#payload.Object.IDs">.payload.Object.IDs</a></td>
                 <td><p></p></td>
               </tr>
             
@@ -242,9 +249,19 @@
               
               
               <tr>
-                <td>Discover</td>
+                <td>GetMeta</td>
                 <td>GET</td>
-                <td>/discover/{name}</td>
+                <td>/meta/{id}</td>
+                <td></td>
+              </tr>
+              
+            
+              
+              
+              <tr>
+                <td>GetMetas</td>
+                <td>POST</td>
+                <td>/meta</td>
                 <td></td>
               </tr>
               

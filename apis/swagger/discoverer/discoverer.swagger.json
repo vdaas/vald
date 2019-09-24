@@ -15,17 +15,31 @@
     "application/json"
   ],
   "paths": {
-    "/discover": {
+    "/discover/{name}": {
       "get": {
         "operationId": "Discover",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/InfoAgents"
+              "$ref": "#/definitions/InfoServers"
             }
           }
         },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "node",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
         "tags": [
           "Discoverer"
         ]
@@ -49,10 +63,16 @@
         }
       }
     },
-    "InfoAgent": {
+    "InfoServer": {
       "type": "object",
       "properties": {
+        "name": {
+          "type": "string"
+        },
         "ip": {
+          "type": "string"
+        },
+        "node": {
           "type": "string"
         },
         "count": {
@@ -62,18 +82,26 @@
         "state": {
           "type": "string"
         },
+        "cpu": {
+          "type": "number",
+          "format": "double"
+        },
+        "mem": {
+          "type": "number",
+          "format": "double"
+        },
         "error": {
           "$ref": "#/definitions/CommonError"
         }
       }
     },
-    "InfoAgents": {
+    "InfoServers": {
       "type": "object",
       "properties": {
-        "Agents": {
+        "Servers": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/InfoAgent"
+            "$ref": "#/definitions/InfoServer"
           }
         }
       }

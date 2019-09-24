@@ -72,6 +72,8 @@ var (
 
 	ErrInvalidAPIConfig = New("invalid api config")
 
+	ErrInvalidRequest = New("invalid request")
+
 	ErrHandler = func(err error) error {
 		return Wrap(err, "handler returned error")
 	}

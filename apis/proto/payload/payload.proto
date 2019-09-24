@@ -75,15 +75,26 @@ message Controll {
   }
 }
 
-message Info {
-  message Agent {
-    string ip = 1 [ (validate.rules).string.ipv4 = true ];
-    uint32 count = 2 [ (validate.rules).uint32.gte = 0 ];
-    string state = 3;
-    Common.Error error = 4;
+message Discoverer {
+  message Request {
+    string name = 1 [ (validate.rules).string.min_len = 1 ];
+    string node = 2;
   }
-  message Agents {
-    repeated Agent Agents = 1 [ (validate.rules).repeated .min_items = 1 ];
+}
+
+message Info {
+  message Server {
+    string name = 1;
+    string ip = 2 [ (validate.rules).string.ipv4 = true ];
+    string node = 3;
+    uint32 count = 4 [ (validate.rules).uint32.gte = 0 ];
+    string state = 5;
+    double cpu = 6;
+    double mem = 7;
+    Common.Error error = 8;
+  }
+  message Servers {
+    repeated Server Servers = 1 [ (validate.rules).repeated .min_items = 1 ];
   }
 }
 

@@ -18,34 +18,21 @@
 package rest
 
 import (
-	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
 
-	"github.com/vdaas/vald/apis/grpc/agent"
+	"github.com/vdaas/vald/apis/grpc/discoverer"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/net/http/json"
+	"github.com/vdaas/vald/internal/net/http/rest"
 )
 
 type Handler interface {
 	Index(w http.ResponseWriter, r *http.Request) (int, error)
-	Exists(w http.ResponseWriter, r *http.Request) (int, error)
-	Search(w http.ResponseWriter, r *http.Request) (int, error)
-	SearchByID(w http.ResponseWriter, r *http.Request) (int, error)
-	Insert(w http.ResponseWriter, r *http.Request) (int, error)
-	MultiInsert(w http.ResponseWriter, r *http.Request) (int, error)
-	Update(w http.ResponseWriter, r *http.Request) (int, error)
-	MultiUpdate(w http.ResponseWriter, r *http.Request) (int, error)
-	Remove(w http.ResponseWriter, r *http.Request) (int, error)
-	MultiRemove(w http.ResponseWriter, r *http.Request) (int, error)
-	CreateIndex(w http.ResponseWriter, r *http.Request) (int, error)
-	SaveIndex(w http.ResponseWriter, r *http.Request) (int, error)
-	GetObject(w http.ResponseWriter, r *http.Request) (int, error)
+	Discover(w http.ResponseWriter, r *http.Request) (int, error)
 }
 
 type handler struct {
-	agent agent.AgentServer
+	dsc discoverer.DiscovererServer
 }
 
 func New(opts ...Option) Handler {
@@ -58,90 +45,12 @@ func New(opts ...Option) Handler {
 }
 
 func (h *handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
-	fmt.Fprint(w, r.URL.String())
-	return http.StatusOK, nil
+	return rest.IndexHandler(nil, w, r)
 }
 
-func (h *handler) Search(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Search_Request
+func (h *handler) Discover(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Discoverer_Request
 	return json.Handler(w, r, req, func() (interface{}, error) {
-		return h.agent.Search(r.Context(), req)
-	})
-}
-
-func (h *handler) SearchByID(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Search_IDRequest
-	return json.Handler(w, r, req, func() (interface{}, error) {
-		return h.agent.SearchByID(r.Context(), req)
-	})
-}
-
-func (h *handler) Insert(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Vector
-	return json.Handler(w, r, req, func() (interface{}, error) {
-		return h.agent.Insert(r.Context(), req)
-	})
-}
-
-func (h *handler) MultiInsert(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Vectors
-	return json.Handler(w, r, req, func() (interface{}, error) {
-		return h.agent.MultiInsert(r.Context(), req)
-	})
-}
-
-func (h *handler) Update(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Vector
-	return json.Handler(w, r, req, func() (interface{}, error) {
-		return h.agent.Update(r.Context(), req)
-	})
-}
-
-func (h *handler) MultiUpdate(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Vectors
-	return json.Handler(w, r, req, func() (interface{}, error) {
-		return h.agent.MultiUpdate(r.Context(), req)
-	})
-}
-
-func (h *handler) Remove(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_ID
-	return json.Handler(w, r, req, func() (interface{}, error) {
-		return h.agent.Remove(r.Context(), req)
-	})
-}
-
-func (h *handler) MultiRemove(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_IDs
-	return json.Handler(w, r, req, func() (interface{}, error) {
-		return h.agent.MultiRemove(r.Context(), req)
-	})
-}
-
-func (h *handler) CreateIndex(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Controll_CreateIndexRequest
-	return json.Handler(w, r, req, func() (interface{}, error) {
-		return h.agent.CreateIndex(r.Context(), req)
-	})
-}
-
-func (h *handler) SaveIndex(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	io.Copy(ioutil.Discard, r.Body)
-	r.Body.Close()
-	_, err = h.agent.SaveIndex(r.Context(), nil)
-	return
-}
-
-func (h *handler) GetObject(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_ID
-	return json.Handler(w, r, req, func() (interface{}, error) {
-		return h.agent.GetObject(r.Context(), req)
-	})
-}
-
-func (h *handler) Exists(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_ID
-	return json.Handler(w, r, req, func() (interface{}, error) {
-		return h.agent.Exists(r.Context(), req)
+		return h.dsc.Discover(r.Context(), req)
 	})
 }

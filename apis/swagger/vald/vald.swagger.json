@@ -261,17 +261,6 @@
         }
       }
     },
-    "SearchRequest": {
-      "type": "object",
-      "properties": {
-        "vector": {
-          "$ref": "#/definitions/ObjectVector"
-        },
-        "config": {
-          "$ref": "#/definitions/SearchConfig"
-        }
-      }
-    },
     "SearchResponse": {
       "type": "object",
       "properties": {
@@ -283,6 +272,17 @@
         },
         "error": {
           "$ref": "#/definitions/CommonError"
+        }
+      }
+    },
+    "payloadSearchRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/ObjectVector"
+        },
+        "config": {
+          "$ref": "#/definitions/SearchConfig"
         }
       }
     },
