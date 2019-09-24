@@ -48,7 +48,12 @@ PROXY_IMAGE         = vald-proxy
 DISCOVERER_IMAGE    = vald-discoverer
 KVS_IMAGE           = vald-metadata
 
-K8S_CTRL_RUNTIME_VERSION = v0.2.2
+K8S_CTRL_RUNTIME_VERSION = v0.1.12
+# K8S_CTRL_RUNTIME_VERSION = v0.2.1
+# K8S_API_VERSION = kubernetes-1.13.3
+# K8S_CLIENT_GO_VERSION = "v11.0.1-0.20190409021438-1a26190bd76a"
+# K8S_CLIENT_GO_VERSION = v12.0.0
+# K8S_CLIENT_GO_VERSION = ${K8S_API_VERSION}
 NGT_VERSION = 1.7.9
 NGT_REPO = github.com/yahoojapan/NGT
 
@@ -111,6 +116,10 @@ all: clean deps
 clean:
 	go clean -cache -modcache ./...
 	rm -rf \
+		/go/pkg/sumdb \
+		/go/pkg/mod/k8s.io \
+		/go/pkg/mod/cache \
+		/go/pkg/mod/sigs.k8s.io \
 		./*.log \
 		./*.svg \
 		./apis/docs \
@@ -137,19 +146,19 @@ init:
 	GO111MODULE=on go mod vendor
 
 kube_deps:
-# kube_deps:
 	# go mod init
-	go get sigs.k8s.io/controller-runtime@${K8S_CTRL_RUNTIME_VERSION}
+	GO111MODULE=on go get -u -v \
+		sigs.k8s.io/controller-runtime@${K8S_CTRL_RUNTIME_VERSION}
+	# GO111MODULE=on go get -u -v \
+	# 	k8s.io/api@${K8S_API_VERSION} \
+	# 	k8s.io/apimachinery@${K8S_API_VERSION} \
+	# 	k8s.io/apiextensions-apiserver@${K8S_API_VERSION} \
+	# 	sigs.k8s.io/controller-runtime@${K8S_CTRL_RUNTIME_VERSION}
+	# 	k8s.io/client-go@${K8S_CLIENT_GO_VERSION} \
 	# go mod vendor
-	# go get \
-	# k8s.io/api@kubernetes-1.15.3 \
-	# k8s.io/apiextensions-apiserver@kubernetes-1.15.3 \
-	# k8s.io/apimachinery@kubernetes-1.15.3 \
-	# k8s.io/client-go@kubernetes-1.15.3 \
 	# k8s.io/klog@v0.4.0 \
 	# k8s.io/kube-openapi \
 	# k8s.io/utils \
-	# sigs.k8s.io/controller-runtime@v0.2.0 \
 	# sigs.k8s.io/testing_frameworks@v0.1.1
 
 deps: \
