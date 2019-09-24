@@ -18,11 +18,7 @@
 package rest
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"net/http"
-
-	"github.com/vdaas/vald/internal/errors"
 )
 
 type Func func(http.ResponseWriter, *http.Request) (code int, err error)
@@ -49,49 +45,4 @@ func HandlerToRestFunc(f http.HandlerFunc) Func {
 		f(w, r)
 		return http.StatusOK, nil
 	}
-}
-
-func IndexHandler(values map[string]interface{}, w http.ResponseWriter, r *http.Request) (cote int, err error) {
-	if r == nil {
-		return http.StatusBadRequest, errors.ErrInvalidRequest
-	}
-	var body []byte
-	if r.Body != nil {
-		body, err = ioutil.ReadAll(r.Body)
-		if err != nil {
-			return http.StatusInternalServerError, errors.ErrInvalidRequest
-		}
-		r.Body.Close()
-	}
-	w.WriteHeader(http.StatusOK)
-	body, err = json.MarshalIndent(struct {
-		Host             string                 `json:"host"`
-		URI              string                 `json:"uri"`
-		URL              string                 `json:"url"`
-		Method           string                 `json:"method"`
-		Proto            string                 `json:"proto"`
-		Header           http.Header            `json:"header"`
-		TransferEncoding []string               `json:"transfer_encoding"`
-		RemoteAddr       string                 `json:"remote_addr"`
-		ContentLength    int64                  `json:"content_length"`
-		Body             []byte                 `json:"body"`
-		Values           map[string]interface{} `json:"values"`
-	}{
-		Host:             r.Host,
-		URI:              r.RequestURI,
-		URL:              r.URL.String(),
-		Method:           r.Method,
-		Proto:            r.Proto,
-		Header:           r.Header,
-		TransferEncoding: r.TransferEncoding,
-		RemoteAddr:       r.RemoteAddr,
-		ContentLength:    r.ContentLength,
-		Body:             body,
-		Values:           values,
-	}, "", "\t")
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-	_, err = w.Write(body)
-	return http.StatusOK, nil
 }

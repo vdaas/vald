@@ -29,3 +29,13 @@ func WithControllerName(name string) Option {
 		return nil
 	}
 }
+
+func WithResourceController(rc ResourceController) Option {
+	return func(c *controller) error {
+		if c.rcs == nil {
+			c.rcs = make([]ResourceController, 0, 1)
+		}
+		c.rcs = append(c.rcs, rc)
+		return nil
+	}
+}

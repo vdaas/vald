@@ -62,7 +62,8 @@ func New(opts ...Option) (cl Controller, err error) {
 
 	for _, rc := range c.rcs {
 		err = ctrl.NewControllerManagedBy(c.mgr).
-			Named(rc.GetName()).
+			// TODO check interface of kuberntes api
+			// Named(rc.GetName()).
 			For(rc.For()).
 			Owns(rc.Owns()).
 			Complete(rc.NewReconciler(c.mgr))

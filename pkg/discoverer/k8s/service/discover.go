@@ -21,7 +21,9 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/internal/config"
-	core "github.com/vdaas/vald/internal/core/ngt"
+	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/k8s/node"
+	"github.com/vdaas/vald/internal/k8s/pod"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/model"
 )
 
@@ -32,10 +34,19 @@ type Discoverer interface {
 }
 
 type discoverer struct {
-	core core.NGT
+	ctrl k8s.Controller
 }
 
 func New(cfg *config.Discoverer) (Discoverer, error) {
+	pw := pod.New()
+	nw := node.New()
+	d := &discoverer{
+		ctrl: k8s.New(
+			k8s.WithControllerName("vald k8s agent discoverer"),
+			k8s.WithResourceController(pw),
+			k8s.WithResourceController(nw),
+		),
+	}
 	return nil, nil
 }
 

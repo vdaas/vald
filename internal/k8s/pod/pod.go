@@ -68,9 +68,9 @@ func New(opts ...Option) PodWatcher {
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
 	ps := &corev1.PodList{}
 
-	err = r.mgr.GetClient().List(context.TODO(), ps, client.InNamespace(req.Namespace), client.MatchingFields{
+	err = r.mgr.GetClient().List(context.TODO(), client.InNamespace(req.Namespace), client.MatchingFields{
 		"status.phase": string(corev1.PodRunning),
-	})
+	}, ps)
 
 	if err != nil {
 		if r.onError != nil {

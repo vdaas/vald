@@ -17,7 +17,7 @@
 // Package rest provides rest api logic
 package rest
 
-import "github.com/vdaas/vald/apis/grpc/agent"
+import "github.com/vdaas/vald/apis/grpc/vald"
 
 type Option func(*handler)
 
@@ -25,8 +25,8 @@ var (
 	defaultOpts = []Option{}
 )
 
-func WithAgent(a agent.AgentServer) Option {
+func WithVald(v vald.ValdServer) Option {
 	return func(h *handler) {
-		h.agent = a
+		h.vald = v
 	}
 }

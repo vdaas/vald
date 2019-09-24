@@ -44,6 +44,10 @@ func Decode(r io.Reader, data interface{}) (err error) {
 	return jsoniter.NewDecoder(r).Decode(data)
 }
 
+func MarshalIndent(data interface{}, pref, ind string) ([]byte, error) {
+	return jsoniter.MarshalIndent(data, pref, ind)
+}
+
 func EncodeResponse(w http.ResponseWriter, data interface{}, status int, contentTypes ...string) error {
 	for _, ct := range contentTypes {
 		w.Header().Add(rest.ContentType, ct)
@@ -53,7 +57,7 @@ func EncodeResponse(w http.ResponseWriter, data interface{}, status int, content
 }
 
 func DecodeRequest(r *http.Request, data interface{}) (err error) {
-	if r != nil && r.Body != nil {
+	if r != nil && r.Body != nil && r.ContentLength != 0 {
 		err = Decode(r.Body, data)
 		if err != nil {
 			return err
