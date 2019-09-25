@@ -22,9 +22,11 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/discoverer"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
 )
 
 type server struct {
+	dsc service.Discoverer
 }
 
 func New(opts ...Option) discoverer.DiscovererServer {
@@ -37,5 +39,24 @@ func New(opts ...Option) discoverer.DiscovererServer {
 }
 
 func (s *server) Discover(ctx context.Context, req *payload.Discoverer_Request) (res *payload.Info_Servers, err error) {
-	return nil, nil
+	srvs := s.dsc.GetServers()
+	res = &payload.Info_Servers{
+		Servers: make([]*payload.Info_Server, 0, len(srvs)),
+	}
+	for _, srv := range srvs {
+		res.Servers = append(res.Servers, &payload.Info_Server{
+			Name: srv.Name,
+			Ip:   srv.IP,
+			Server: &payload.Info_Server{
+				Name: srv.NodeInfo.Name,
+				Ip:   srv.NodeInfo.IP,
+				Cpu:  srv.NodeInfo.CPU,
+				Mem:  srv.NodeInfo.Mem,
+			},
+			Cpu: srv.CPU,
+			Mem: srv.Mem,
+		})
+	}
+	res.Servers = res.Servers[0:len(res.Servers)]
+	return res, nil
 }

@@ -20,12 +20,15 @@ package router
 import (
 	"net/http"
 
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/net/http/middleware"
 	"github.com/vdaas/vald/internal/net/http/routing"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/handler/rest"
 )
 
 type router struct {
 	handler rest.Handler
+	eg      errgroup.Group
 	timeout string
 }
 
@@ -41,6 +44,11 @@ func New(opts ...Option) http.Handler {
 	h := r.handler
 
 	return routing.New(
+		routing.WithMiddleware(
+			middleware.NewTimeout(
+				middleware.WithTimeout(r.timeout),
+				middleware.WithErrorGroup(r.eg),
+			)),
 		routing.WithRoutes([]routing.Route{
 			{
 				"Index",
@@ -51,98 +59,12 @@ func New(opts ...Option) http.Handler {
 				h.Index,
 			},
 			{
-				"Search",
+				"Discover",
 				[]string{
 					http.MethodPost,
 				},
-				"/search",
-				h.Search,
+				"/discoverer",
+				h.Discover,
 			},
-			{
-				"Search By ID",
-				[]string{
-					http.MethodGet,
-				},
-				"/search/{id}",
-				h.SearchByID,
-			},
-			{
-				"Insert",
-				[]string{
-					http.MethodPost,
-				},
-				"/insert",
-				h.Insert,
-			},
-			{
-				"Multiple Insert",
-				[]string{
-					http.MethodPost,
-				},
-				"/insert/multi",
-				h.MultiInsert,
-			},
-			{
-				"Update",
-				[]string{
-					http.MethodPost,
-					http.MethodPatch,
-					http.MethodPut,
-				},
-				"/update",
-				h.Update,
-			},
-			{
-				"Multiple Update",
-				[]string{
-					http.MethodPost,
-					http.MethodPatch,
-					http.MethodPut,
-				},
-				"/update/multi",
-				h.MultiUpdate,
-			},
-			{
-				"Remove",
-				[]string{
-					http.MethodDelete,
-				},
-				"/delete/{id}",
-				h.Remove,
-			},
-			{
-				"Multiple Remove",
-				[]string{
-					http.MethodDelete,
-					http.MethodPost,
-				},
-				"/delete/multi",
-				h.MultiRemove,
-			},
-			{
-				"Create Index",
-				[]string{
-					http.MethodGet,
-				},
-				"/index/create/{pool}",
-				h.CreateIndex,
-			},
-			{
-				"Save Index",
-				[]string{
-					http.MethodGet,
-				},
-				"/index/save",
-				h.SaveIndex,
-			},
-			{
-				"GetObject",
-				[]string{
-					http.MethodGet,
-				},
-				"/object/{id}",
-				h.GetObject,
-			},
-		}...),
-		routing.WithTimeout(r.timeout))
+		}...))
 }

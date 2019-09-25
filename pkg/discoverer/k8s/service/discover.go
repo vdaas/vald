@@ -31,7 +31,6 @@ import (
 type Discoverer interface {
 	GetServers() []model.Server
 	Start(context.Context) <-chan error
-	Stop() error
 }
 
 type discoverer struct {
@@ -73,9 +72,5 @@ func (d *discoverer) GetServers() []model.Server {
 }
 
 func (d *discoverer) Start(ctx context.Context) <-chan error {
-	return nil
-}
-
-func (d *discoverer) Stop() error {
-	return nil
+	return d.ctrl.Start(ctx)
 }

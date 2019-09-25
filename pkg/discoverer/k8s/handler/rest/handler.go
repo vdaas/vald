@@ -22,8 +22,8 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/discoverer"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/net/http/dump"
 	"github.com/vdaas/vald/internal/net/http/json"
-	"github.com/vdaas/vald/internal/net/http/rest"
 )
 
 type Handler interface {
@@ -45,7 +45,10 @@ func New(opts ...Option) Handler {
 }
 
 func (h *handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
-	return rest.IndexHandler(nil, w, r)
+	data := make(map[string]interface{})
+	return json.Handler(w, r, data, func() (interface{}, error) {
+		return dump.Request(nil, data, r)
+	})
 }
 
 func (h *handler) Discover(w http.ResponseWriter, r *http.Request) (code int, err error) {

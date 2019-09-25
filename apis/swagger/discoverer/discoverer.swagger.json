@@ -47,22 +47,6 @@
     }
   },
   "definitions": {
-    "CommonError": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "msg": {
-          "type": "string"
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
     "InfoServer": {
       "type": "object",
       "properties": {
@@ -72,15 +56,8 @@
         "ip": {
           "type": "string"
         },
-        "node": {
-          "type": "string"
-        },
-        "count": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "state": {
-          "type": "string"
+        "server": {
+          "$ref": "#/definitions/InfoServer"
         },
         "cpu": {
           "type": "number",
@@ -89,9 +66,6 @@
         "mem": {
           "type": "number",
           "format": "double"
-        },
-        "error": {
-          "$ref": "#/definitions/CommonError"
         }
       }
     },

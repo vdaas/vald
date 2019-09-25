@@ -19,8 +19,9 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/agent"
+	"github.com/vdaas/vald/apis/grpc/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
@@ -34,15 +35,16 @@ import (
 
 type run struct {
 	cfg    *config.Data
+	dsc    service.Discoverer
 	server starter.Server
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	ngt, err := service.NewNGT(cfg.NGT)
+	dsc, err := service.New(cfg.Discoverer)
 	if err != nil {
 		return nil, err
 	}
-	g := handler.New(handler.WithNGT(ngt))
+	g := handler.New(handler.WithDiscoverer(dsc))
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
@@ -50,9 +52,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			return []server.Option{
 				server.WithHTTPHandler(
 					router.New(
+						router.WithTimeout(sc.HTTP.HandlerTimeout),
+						router.WithErrGroup(errgroup.Get()),
 						router.WithHandler(
 							rest.New(
-								rest.WithAgent(g),
+								rest.WithDiscoverer(g),
 							),
 						),
 					)),
@@ -61,7 +65,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
 			return []server.Option{
 				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-					agent.RegisterAgentServer(srv, g)
+					discoverer.RegisterDiscovererServer(srv, g)
 				}),
 				server.WithPreStartFunc(func() error {
 					// TODO check unbackupped upstream
@@ -82,6 +86,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	return &run{
 		cfg:    cfg,
+		dsc:    dsc,
 		server: srv,
 	}, nil
 }
@@ -91,6 +96,7 @@ func (r *run) PreStart() error {
 }
 
 func (r *run) Start(ctx context.Context) <-chan error {
+
 	return r.server.ListenAndServe(ctx)
 }
 

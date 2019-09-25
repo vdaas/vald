@@ -86,12 +86,9 @@ message Info {
   message Server {
     string name = 1;
     string ip = 2 [ (validate.rules).string.ipv4 = true ];
-    string node = 3;
-    uint32 count = 4 [ (validate.rules).uint32.gte = 0 ];
-    string state = 5;
-    double cpu = 6;
-    double mem = 7;
-    Common.Error error = 8;
+    Server server = 3;
+    double cpu = 4;
+    double mem = 5;
   }
   message Servers {
     repeated Server Servers = 1 [ (validate.rules).repeated .min_items = 1 ];

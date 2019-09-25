@@ -25,7 +25,7 @@ var (
 	defaultOpts = []Option{}
 )
 
-func WithAgent(dsc discoverer.DiscovererServer) Option {
+func WithDiscoverer(dsc discoverer.DiscovererServer) Option {
 	return func(h *handler) {
 		h.dsc = dsc
 	}

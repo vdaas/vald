@@ -17,13 +17,16 @@
 // Package grpc provides grpc server logic
 package grpc
 
+import "github.com/vdaas/vald/pkg/discoverer/k8s/service"
+
 type Option func(*server)
 
 var (
 	defaultOpts = []Option{}
 )
 
-func Sample() Option {
+func WithDiscoverer(dsc service.Discoverer) Option {
 	return func(s *server) {
+		s.dsc = dsc
 	}
 }
