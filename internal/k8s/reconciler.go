@@ -70,7 +70,6 @@ func New(opts ...Option) (cl Controller, err error) {
 		err = builder.ControllerManagedBy(c.mgr).
 			Named(rc.GetName()).
 			For(rc.For()).
-			// Owns(rc.Owns()).
 			Complete(rc.NewReconciler(c.mgr))
 		if err != nil {
 			return nil, err

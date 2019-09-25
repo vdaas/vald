@@ -17,6 +17,8 @@
 // Package k8s provides kubernetes controll functionallity
 package k8s
 
+import "sigs.k8s.io/controller-runtime/pkg/manager"
+
 type Option func(*controller) error
 
 var (
@@ -36,6 +38,34 @@ func WithResourceController(rc ResourceController) Option {
 			c.rcs = make([]ResourceController, 0, 1)
 		}
 		c.rcs = append(c.rcs, rc)
+		return nil
+	}
+}
+
+func WithManager(mgr manager.Manager) Option {
+	return func(c *controller) error {
+		c.mgr = mgr
+		return nil
+	}
+}
+
+func WithMetricsAddress(addr string) Option {
+	return func(c *controller) error {
+		c.merticsAddr = addr
+		return nil
+	}
+}
+
+func WithEnableLeaderElection() Option {
+	return func(c *controller) error {
+		c.leaderElection = true
+		return nil
+	}
+}
+
+func WithDisableLeaderElection() Option {
+	return func(c *controller) error {
+		c.leaderElection = false
 		return nil
 	}
 }
