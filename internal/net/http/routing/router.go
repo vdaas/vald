@@ -18,28 +18,20 @@
 package routing
 
 import (
-	"context"
-	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/kpango/fastime"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/http/json"
+	"github.com/vdaas/vald/internal/net/http/middleware"
 	"github.com/vdaas/vald/internal/net/http/rest"
-	"github.com/vdaas/vald/internal/safety"
 )
 
 type router struct {
-	eg      errgroup.Group
-	timeout time.Duration
-	routes  []Route
+	middlewares []middleware.Wrapper
+	routes      []Route
 }
 
 //New returns Routed http.Handler
@@ -53,7 +45,13 @@ func New(opts ...Option) http.Handler {
 
 	rt := mux.NewRouter().StrictSlash(true)
 	for _, route := range r.routes {
-		rt.Handle(route.Pattern, r.routing(route.Name, route.Pattern, route.Methods, route.HandlerFunc))
+		for _, mw := range r.middlewares {
+			route.HandlerFunc = mw.Wrap(route.HandlerFunc)
+		}
+
+		rt.Handle(route.Pattern,
+			r.routing(route.Name, route.Pattern,
+				route.Methods, route.HandlerFunc))
 	}
 
 	return rt
@@ -62,116 +60,38 @@ func New(opts ...Option) http.Handler {
 // routing wraps the handler.Func and returns a new http.Handler.
 // routing helps to handle unsupported HTTP method, timeout,
 // and the error returned from the handler.Func.
-func (rt *router) routing(name, path string, m []string, h rest.Func) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var err error
-		for _, method := range m {
-			if strings.EqualFold(r.Method, method) {
-				// execute only if the request method is inside the method list
+func (rt *router) routing(
+	name, path string, m []string, h rest.Func) http.Handler {
+	return http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			var (
+				err  error
+				code int
+			)
 
-				// context for timeout
-				ctx, cancel := context.WithTimeout(r.Context(), rt.timeout)
-				defer cancel()
-				start := fastime.UnixNanoNow()
-
-				// run the custom handler logic in go routine,
-				// report error to error channel
-				ech := make(chan error)
-				sch := make(chan int)
-				rt.eg.Go(safety.RecoverFunc(func() (err error) {
-					defer close(ech)
-					defer close(sch)
-					// it is the responsibility for handler to close the request
-					var code int
-					code, err = h(w, r.WithContext(ctx))
-					ech <- err
+			for _, method := range m {
+				if strings.EqualFold(r.Method, method) {
+					// execute only if the request method is inside the method list
+					code, err = h(w, r)
 					if err != nil {
-						sch <- code
-					}
-					return nil
-				}))
-
-				select {
-				case err = <-ech:
-					// handler finished first, may have error returned
-					if err != nil {
-						code := <-sch
-						err = errors.ErrHandler(err)
-						log.Error(err)
-
-						err = json.ErrorHandler(w, json.RFC7807Error{
-							Type:  path,
-							Title: fmt.Sprintf("Error on Handler: %s\tPath: %s\tMethod: %s\t", name, path, method),
-							Detail: fmt.Sprintf("Handler: %s\tPath: %s\tMethod: %s\tStatus: %s\nError: %s",
-								name, path, method, http.StatusText(code), err.Error()),
-							Status: code,
-							Error:  err.Error(),
-						})
+						err = json.ErrorHandler(w, r,
+							err.Error()+" at handler "+name,
+							code,
+							err)
 						if err != nil {
 							log.Error(err)
 						}
 					}
 					return
-				case <-ctx.Done():
-					// timeout passed or parent context canceled first,
-					// it is the responsibility for handler to response to the user
-					err = errors.ErrHandlerTimeout(ctx.Err(), time.Unix(0, fastime.UnixNanoNow()-start))
-					if err != nil {
-						log.Error(err)
-					}
-
-					err = json.ErrorHandler(w, json.RFC7807Error{
-						Type:  path,
-						Title: fmt.Sprintf("Timeout Error on Handler: %s\tPath: %s\tMethod: %s\t", name, path, method),
-						Detail: fmt.Sprintf("Handler: %s\tPath: %s\tMethod: %s\tStatus: %s\nError: %s",
-							name, path, method, http.StatusText(http.StatusRequestTimeout), err.Error()),
-						Status: http.StatusRequestTimeout,
-						Error:  err.Error(),
-					})
-					if err != nil {
-						log.Error(err)
-					}
-					return
 				}
 			}
-		}
 
-		// flush and close the request body; for GET method, r.Body may be nil
-		err = errors.Wrap(err, flushAndClose(r.Body).Error())
-		if err != nil {
-			err = errors.ErrRequestBodyCloseAndFlush(err)
-			log.Error(err)
-		}
-
-		err = json.ErrorHandler(w, json.RFC7807Error{
-			Type:  path,
-			Title: fmt.Sprintf("Invalid Request Method Handler: %s\tPath: %s\tMethod: %s\t", name, path, r.Method),
-			Detail: fmt.Sprintf("Handler: %s\tPath: %s\tMethod: %s\tStatus: %s\nError: %s",
-				name, path, r.Method, http.StatusText(http.StatusMethodNotAllowed), err.Error()),
-			Status: http.StatusMethodNotAllowed,
-			Error:  err.Error(),
+			err = json.ErrorHandler(w, r,
+				"Invalid Request Method",
+				http.StatusMethodNotAllowed,
+				errors.ErrInvalidRequest)
+			if err != nil {
+				log.Error(err)
+			}
 		})
-		if err != nil {
-			log.Error(err)
-		}
-
-	})
-}
-
-// flushAndClose helps to flush and close a ReadCloser. Used for request body internal.
-// Returns if there is any errors.
-func flushAndClose(rc io.ReadCloser) error {
-	if rc != nil {
-		// flush
-		_, err := io.Copy(ioutil.Discard, rc)
-		if err != nil {
-			return errors.ErrRequestBodyFlush(err)
-		}
-		// close
-		err = rc.Close()
-		if err != nil {
-			return errors.ErrRequestBodyClose(err)
-		}
-	}
-	return nil
 }

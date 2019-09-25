@@ -20,12 +20,15 @@ package router
 import (
 	"net/http"
 
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/net/http/middleware"
 	"github.com/vdaas/vald/internal/net/http/routing"
 	"github.com/vdaas/vald/pkg/agent/ngt/handler/rest"
 )
 
 type router struct {
 	handler rest.Handler
+	eg      errgroup.Group
 	timeout string
 }
 
@@ -41,6 +44,11 @@ func New(opts ...Option) http.Handler {
 	h := r.handler
 
 	return routing.New(
+		routing.WithMiddleware(
+			middleware.NewTimeout(
+				middleware.WithTimeout(r.timeout),
+				middleware.WithErrorGroup(r.eg),
+			)),
 		routing.WithRoutes([]routing.Route{
 			{
 				"Index",
@@ -143,6 +151,5 @@ func New(opts ...Option) http.Handler {
 				"/object/{id}",
 				h.GetObject,
 			},
-		}...),
-		routing.WithTimeout(r.timeout))
+		}...))
 }

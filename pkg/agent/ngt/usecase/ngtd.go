@@ -21,6 +21,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/agent"
 	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
@@ -50,6 +51,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			return []server.Option{
 				server.WithHTTPHandler(
 					router.New(
+						router.WithTimeout(sc.HTTP.HandlerTimeout),
+						router.WithErrGroup(errgroup.Get()),
 						router.WithHandler(
 							rest.New(
 								rest.WithAgent(g),

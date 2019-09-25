@@ -28,7 +28,6 @@ import (
 // NewPProfRoutes returns PProf server route&method information from debug flag
 func NewPProfHandler() http.Handler {
 	return routing.New(
-		routing.WithTimeout("5s"),
 		routing.WithRoutes([]routing.Route{
 			{
 				"Debug pprof",

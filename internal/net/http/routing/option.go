@@ -17,35 +17,27 @@
 // Package routing provides implementation of Go API for routing http Handler wrapped by rest.Func
 package routing
 
-import (
-	"time"
-
-	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/timeutil"
-)
+import "github.com/vdaas/vald/internal/net/http/middleware"
 
 type Option func(*router)
 
 var (
-	defaultOpts = []Option{
-		WithTimeout("3s"),
-		WithErrorGroup(errgroup.Get()),
-	}
+	defaultOpts = []Option{}
 )
 
-func WithTimeout(timeout string) Option {
+func WithMiddleware(mw middleware.Wrapper) Option {
 	return func(r *router) {
-		var err error
-		r.timeout, err = timeutil.Parse(timeout)
-		if err != nil {
-			r.timeout = time.Second * 3
-		}
+		r.middlewares = append(r.middlewares, mw)
 	}
 }
 
-func WithErrorGroup(eg errgroup.Group) Option {
+func WithMiddlewares(mws ...middleware.Wrapper) Option {
 	return func(r *router) {
-		r.eg = eg
+		if r.middlewares == nil || len(r.middlewares) == 0 {
+			r.middlewares = mws
+		} else {
+			r.middlewares = append(r.middlewares, mws...)
+		}
 	}
 }
 
@@ -57,6 +49,10 @@ func WithRoute(route Route) Option {
 
 func WithRoutes(routes ...Route) Option {
 	return func(r *router) {
-		r.routes = routes
+		if r.routes == nil || len(r.routes) == 0 {
+			r.routes = routes
+		} else {
+			r.routes = append(r.routes, routes...)
+		}
 	}
 }

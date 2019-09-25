@@ -18,6 +18,7 @@
 package router
 
 import (
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/pkg/agent/ngt/handler/rest"
 )
 
@@ -38,5 +39,11 @@ func WithHandler(h rest.Handler) Option {
 func WithTimeout(timeout string) Option {
 	return func(r *router) {
 		r.timeout = timeout
+	}
+}
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(r *router) {
+		r.eg = eg
 	}
 }

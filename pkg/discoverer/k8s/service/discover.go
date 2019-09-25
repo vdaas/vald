@@ -42,6 +42,7 @@ func New(cfg *config.Discoverer) (dsc Discoverer, err error) {
 	var ctrl k8s.Controller
 	ctrl, err = k8s.New(
 		k8s.WithControllerName("vald k8s agent discoverer"),
+		k8s.WithDisableLeaderElection(),
 		k8s.WithResourceController(pod.New(
 			pod.WithControllerName("pod discoverer"),
 			pod.WithOnErrorFunc(func(err error) {
