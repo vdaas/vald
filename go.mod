@@ -22,7 +22,7 @@ require (
 	golang.org/x/sys v0.0.0-20190804053845-51ab0e2deafa
 	gonum.org/v1/hdf5 v0.0.0-20190920010848-b0d662f53d94
 	google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
-	google.golang.org/grpc v1.23.1
+	google.golang.org/grpc v1.24.0
 	gopkg.in/yaml.v2 v2.2.2
 	k8s.io/api v0.0.0-20190409021203-6e4e0e4f393b
 	k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
