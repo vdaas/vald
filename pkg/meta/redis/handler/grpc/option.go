@@ -14,38 +14,19 @@
 // limitations under the License.
 //
 
-// Package service manages the main logic of server.
-package service
+// Package grpc provides grpc server logic
+package grpc
 
-import (
-	"net/http"
+import "github.com/vdaas/vald/pkg/meta/redis/service"
 
-	"github.com/vdaas/vald/apis/grpc/agent"
-	"github.com/vdaas/vald/internal/config"
+type Option func(*server)
+
+var (
+	defaultOpts = []Option{}
 )
 
-type Option func(*srvs)
-
-func WithConfig(cfg *config.Servers) Option {
-	return func(s *srvs) {
-		s.cfg = cfg
-	}
-}
-
-func WithGRPC(srv agent.AgentServer) Option {
-	return func(s *srvs) {
-		s.grpc = srv
-	}
-}
-
-func WithREST(h http.Handler) Option {
-	return func(s *srvs) {
-		s.rest = h
-	}
-}
-
-func WithGQL(h http.Handler) Option {
-	return func(s *srvs) {
-		s.gql = h
+func WithDiscoverer(dsc service.Discoverer) Option {
+	return func(s *server) {
+		s.dsc = dsc
 	}
 }

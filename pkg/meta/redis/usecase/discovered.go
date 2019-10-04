@@ -24,14 +24,13 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
-	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
-	"github.com/vdaas/vald/pkg/discoverer/k8s/config"
-	handler "github.com/vdaas/vald/pkg/discoverer/k8s/handler/grpc"
-	"github.com/vdaas/vald/pkg/discoverer/k8s/handler/rest"
-	"github.com/vdaas/vald/pkg/discoverer/k8s/router"
-	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
+	"github.com/vdaas/vald/pkg/meta/redis/config"
+	handler "github.com/vdaas/vald/pkg/meta/redis/handler/grpc"
+	"github.com/vdaas/vald/pkg/meta/redis/handler/rest"
+	"github.com/vdaas/vald/pkg/meta/redis/router"
+	"github.com/vdaas/vald/pkg/meta/redis/service"
 	"google.golang.org/grpc"
 )
 
@@ -100,20 +99,18 @@ func (r *run) PreStart() error {
 
 func (r *run) Start(ctx context.Context) <-chan error {
 	ech := make(chan error, 2)
-	errgroup.Get().Go(safety.RecoverFunc(func() error {
+	go func() {
 		log.Info("daemon start")
 		defer close(ech)
 		dech := r.dsc.Start(ctx)
 		sech := r.server.ListenAndServe(ctx)
 		for {
 			select {
-			case <-ctx.Done():
-				return ctx.Err()
 			case ech <- <-dech:
 			case ech <- <-sech:
 			}
 		}
-	}))
+	}()
 	return ech
 }
 

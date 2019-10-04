@@ -29,9 +29,6 @@ type Data struct {
 
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
-
-	// NGT represent ngt core configuration
-	NGT *config.NGT `json:"ngt" yaml:"ngt"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
@@ -40,14 +37,9 @@ func NewConfig(path string) (cfg *Data, err error) {
 	if err != nil {
 		return nil, err
 	}
-
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()
 	}
-	if cfg.NGT != nil {
-		cfg.NGT = cfg.NGT.Bind()
-	}
-
 	return cfg, nil
 }
 

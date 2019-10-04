@@ -17,16 +17,28 @@
 // Package grpc provides grpc server logic
 package grpc
 
-import "github.com/vdaas/vald/pkg/agent/ngt/service"
+import (
+	"context"
 
-type Option func(*server)
-
-var (
-	defaultOpts = []Option{}
+	"github.com/vdaas/vald/apis/grpc/discoverer"
+	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/pkg/meta/redis/service"
 )
 
-func WithNGT(n service.NGT) Option {
-	return func(s *server) {
-		s.ngt = n
+type server struct {
+	dsc service.Discoverer
+}
+
+func New(opts ...Option) discoverer.DiscovererServer {
+	s := new(server)
+
+	for _, opt := range append(defaultOpts, opts...) {
+		opt(s)
 	}
+	return s
+}
+
+func (s *server) Discover(ctx context.Context, req *payload.Discoverer_Request) (
+	res *payload.Info_Servers, err error) {
+	return s.dsc.GetServers(req.GetName(), req.GetNode()), nil
 }

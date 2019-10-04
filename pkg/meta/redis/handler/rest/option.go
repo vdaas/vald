@@ -14,10 +14,19 @@
 // limitations under the License.
 //
 
-// Package model defines object structure
-package model
+// Package rest provides rest api logic
+package rest
 
-type Distance struct {
-	ID       string
-	Distance float32
+import "github.com/vdaas/vald/apis/grpc/discoverer"
+
+type Option func(*handler)
+
+var (
+	defaultOpts = []Option{}
+)
+
+func WithDiscoverer(dsc discoverer.DiscovererServer) Option {
+	return func(h *handler) {
+		h.dsc = dsc
+	}
 }

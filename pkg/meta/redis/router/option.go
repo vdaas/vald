@@ -14,19 +14,36 @@
 // limitations under the License.
 //
 
-// Package rest provides rest api logic
-package rest
+// Package router provides implementation of Go API for routing http Handler wrapped by rest.Func
+package router
 
-import "github.com/vdaas/vald/apis/grpc/agent"
-
-type Option func(*handler)
-
-var (
-	defaultOpts = []Option{}
+import (
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/pkg/meta/redis/handler/rest"
 )
 
-func WithAgent(a agent.AgentServer) Option {
-	return func(h *handler) {
-		h.agent = a
+type Option func(*router)
+
+var (
+	defaultOpts = []Option{
+		WithTimeout("3s"),
+	}
+)
+
+func WithHandler(h rest.Handler) Option {
+	return func(r *router) {
+		r.handler = h
+	}
+}
+
+func WithTimeout(timeout string) Option {
+	return func(r *router) {
+		r.timeout = timeout
+	}
+}
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(r *router) {
+		r.eg = eg
 	}
 }
