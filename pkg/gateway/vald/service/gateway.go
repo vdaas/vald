@@ -54,6 +54,7 @@ type gateway struct {
 	port        int
 	dscDur      time.Duration
 	gopts       []grpc.DialOption
+	copts       []grpc.CallOption
 	dsc         discoverer.DiscovererClient
 	dscHost     string
 	dscPort     int
@@ -122,7 +123,7 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface
 	res, err := g.dsc.Discover(ctx, &payload.Discoverer_Request{
 		Name: g.agentName,
 		Node: "",
-	}, nil)
+	}, g.copts...)
 	if err != nil {
 		return nil, err
 	}

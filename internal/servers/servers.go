@@ -60,10 +60,8 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 		srv server.Server
 	}
 
-	var (
-		echs = make([]sinfo, len(l.servers))
-		rctx context.Context
-	)
+	var rctx context.Context
+	echs := make([]sinfo, len(l.servers))
 
 	for _, name := range l.sus {
 		srv, ok := l.servers[name]
@@ -94,7 +92,7 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 
 	l.eg.Go(safety.RecoverFunc(func() (err error) {
 		for {
-			for i := range echs {
+			for i := range echs[:len(echs)] {
 				select {
 				case <-rctx.Done():
 					err = rctx.Err()

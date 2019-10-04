@@ -20,6 +20,7 @@ package service
 import (
 	"os"
 	"strconv"
+	"sync/atomic"
 
 	"github.com/kpango/gache"
 	"github.com/vdaas/vald/internal/config"
@@ -44,51 +45,42 @@ type NGT interface {
 }
 
 type ngt struct {
+	ic   uint64      // insert count
 	ou   gache.Gache // map[oid]uuid
 	uo   gache.Gache // map[uuid]oid
 	core core.NGT
 }
 
-func New(cfg *config.NGT) (NGT, error) {
+func New(cfg *config.NGT) (nn NGT, err error) {
+	n := new(ngt)
+	opts := []core.Option{
+		core.WithIndexPath(cfg.IndexPath),
+		core.WithDimension(cfg.Dimension),
+		core.WithDistanceTypeByString(cfg.DistanceType),
+		core.WithObjectTypeByString(cfg.ObjectType),
+		core.WithBulkInsertChunkSize(cfg.BulkInsertChunkSize),
+		core.WithCreationEdgeSize(cfg.CreationEdgeSize),
+		core.WithSearchEdgeSize(cfg.SearchEdgeSize),
+	}
 
-	var (
-		n   core.NGT
-		err error
+	n.ou = gache.New().
+		SetDefaultExpire(0).
+		DisableExpiredHook()
+	n.uo = gache.New().
+		SetDefaultExpire(0).
+		DisableExpiredHook()
 
-		opts = []core.Option{
-			core.WithIndexPath(cfg.IndexPath),
-			core.WithDimension(cfg.Dimension),
-			core.WithDistanceTypeByString(cfg.DistanceType),
-			core.WithObjectTypeByString(cfg.ObjectType),
-			core.WithBulkInsertChunkSize(cfg.BulkInsertChunkSize),
-			core.WithCreationEdgeSize(cfg.CreationEdgeSize),
-			core.WithSearchEdgeSize(cfg.SearchEdgeSize),
-		}
-
-		ou = gache.New().
-			SetDefaultExpire(0).
-			DisableExpiredHook()
-
-		uo = gache.New().
-			SetDefaultExpire(0).
-			DisableExpiredHook()
-	)
-
-	if _, err := os.Stat(cfg.IndexPath); os.IsNotExist(err) {
-		n, err = core.New(opts...)
+	if _, err = os.Stat(cfg.IndexPath); os.IsNotExist(err) {
+		n.core, err = core.New(opts...)
 	} else {
-		n, err = core.Load(opts...)
+		n.core, err = core.Load(opts...)
 	}
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &ngt{
-		ou:   ou,
-		uo:   uo,
-		core: n,
-	}, nil
+	return n, nil
 }
 
 func (n *ngt) Search(vec []float64, size uint32, epsilon, radius float32) ([]model.Distance, error) {
@@ -97,10 +89,8 @@ func (n *ngt) Search(vec []float64, size uint32, epsilon, radius float32) ([]mod
 		return nil, err
 	}
 
-	var (
-		ds   = make([]model.Distance, 0, len(sr))
-		errs error
-	)
+	var errs error
+	ds := make([]model.Distance, 0, len(sr))
 
 	for i, d := range sr {
 		if err = d.Error; d.ID == 0 && err != nil {
@@ -146,6 +136,7 @@ func (n *ngt) Insert(uuid string, vec []float64) (err error) {
 		return err
 	}
 
+	atomic.AddUint64(&n.ic, 1)
 	n.uo.SetWithExpire(uuid, oid, 0)
 	n.ou.SetWithExpire(strconv.FormatInt(int64(oid), 10), uuid, 0)
 
@@ -169,6 +160,9 @@ func (n *ngt) Update(uuid string, vec []float64) (err error) {
 }
 
 func (n *ngt) Delete(uuid string) (err error) {
+	if ic := atomic.LoadUint64(&n.ic); ic > 0 {
+		return errors.ErrUncommittedIndexExists(ic)
+	}
 	i, ok := n.uo.Get(uuid)
 	oid := i.(uint)
 	if !ok || oid == 0 {
@@ -198,6 +192,14 @@ func (n *ngt) GetObject(uuid string) (vec []float64, err error) {
 }
 
 func (n *ngt) CreateIndex(poolSize uint32) (err error) {
+	if ic := atomic.LoadUint64(&n.ic); ic == 0 {
+		return errors.ErrUncommittedIndexNotFound
+	}
+	defer func() {
+		if err == nil {
+			atomic.StoreUint64(&n.ic, 0)
+		}
+	}()
 	return n.core.CreateIndex(poolSize)
 }
 
@@ -206,6 +208,14 @@ func (n *ngt) SaveIndex() (err error) {
 }
 
 func (n *ngt) CreateAndSaveIndex(poolSize uint32) (err error) {
+	if ic := atomic.LoadUint64(&n.ic); ic == 0 {
+		return errors.ErrUncommittedIndexNotFound
+	}
+	defer func() {
+		if err == nil {
+			atomic.StoreUint64(&n.ic, 0)
+		}
+	}()
 	return n.core.CreateAndSaveIndex(poolSize)
 }
 

@@ -24,6 +24,9 @@ import (
 
 	gmeta "github.com/vdaas/vald/apis/grpc/meta"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 )
@@ -43,6 +46,8 @@ type meta struct {
 	host  string
 	port  int
 	mc    atomic.Value
+	eg    errgroup.Group
+	bo    backoff.Backoff
 	gopts []grpc.DialOption
 	copts []grpc.CallOption
 }
@@ -70,17 +75,18 @@ func (m *meta) Start(ctx context.Context) <-chan error {
 		m.mc.Store(gmeta.NewMetaClient(conn))
 	}
 	m.mc.Store(gmeta.NewMetaClient(conn))
-	go func() {
+	m.eg.Go(safety.RecoverFunc(func() (err error) {
 		tick := time.NewTicker(m.hcDur)
 		defer tick.Stop()
 		for {
 			select {
 			case <-ctx.Done():
+				return ctx.Err()
 			case <-tick.C:
 				if conn == nil ||
 					conn.GetState() == connectivity.Shutdown ||
 					conn.GetState() == connectivity.TransientFailure {
-					conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", m.host, m.port), m.gopts...)
+					conn, err = grpc.DialContext(ctx, fmt.Sprintf("%s:%d", m.host, m.port), m.gopts...)
 					if err != nil {
 						ech <- err
 					}
@@ -88,7 +94,8 @@ func (m *meta) Start(ctx context.Context) <-chan error {
 				}
 			}
 		}
-	}()
+		return nil
+	}))
 	return ech
 }
 

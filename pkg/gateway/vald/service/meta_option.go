@@ -17,6 +17,15 @@
 // Package service
 package service
 
+import (
+	"time"
+
+	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/timeutil"
+	"google.golang.org/grpc"
+)
+
 type MetaOption func(m *meta) error
 
 var (
@@ -33,6 +42,67 @@ func WithMetaHost(host string) MetaOption {
 func WithMetaPort(port int) MetaOption {
 	return func(m *meta) error {
 		m.port = port
+		return nil
+	}
+}
+
+func WithHealthCheckDuration(dur string) MetaOption {
+	return func(m *meta) error {
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			d = time.Second
+		}
+		m.hcDur = d
+		return nil
+	}
+}
+
+func WithMetaGRPCDialOption(opt grpc.DialOption) MetaOption {
+	return func(m *meta) error {
+		m.gopts = append(m.gopts, opt)
+		return nil
+	}
+}
+
+func WithMetaGRPCDialOptions(opts []grpc.DialOption) MetaOption {
+	return func(m *meta) error {
+		if m.gopts != nil && len(m.gopts) > 0 {
+			m.gopts = append(m.gopts, opts...)
+		} else {
+			m.gopts = opts
+		}
+		return nil
+	}
+}
+
+func WithMetaGRPCCallOption(opt grpc.CallOption) MetaOption {
+	return func(m *meta) error {
+		m.copts = append(m.copts, opt)
+		return nil
+	}
+}
+
+func WithMetaGRPCCallOptions(opts []grpc.CallOption) MetaOption {
+	return func(m *meta) error {
+		if m.copts != nil && len(m.copts) > 0 {
+			m.copts = append(m.copts, opts...)
+		} else {
+			m.copts = opts
+		}
+		return nil
+	}
+}
+
+func withMetaBackoff(bo backoff.Backoff) MetaOption {
+	return func(m *meta) error {
+		m.bo = bo
+		return nil
+	}
+}
+
+func withMetaErrGroup(eg errgroup.Group) MetaOption {
+	return func(m *meta) error {
+		m.eg = eg
 		return nil
 	}
 }

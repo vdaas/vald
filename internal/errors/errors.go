@@ -136,6 +136,12 @@ var (
 		return Wrap(err, "failed to set search edge size")
 	}
 
+	ErrUncommittedIndexExists = func(num uint64) error {
+		return Errorf("%d indexes are not commited", num)
+	}
+
+	ErrUncommittedIndexNotFound = New("uncommitted indexes are not found")
+
 	// ErrCAPINotImplemented raises using not implemented function in C API
 	ErrCAPINotImplemented = New("not implemented in C API")
 
