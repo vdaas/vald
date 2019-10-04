@@ -25,30 +25,35 @@ import (
 	"google.golang.org/grpc"
 )
 
+type ServerStream grpc.ServerStream
+
 func BidirectionalStream(stream grpc.ServerStream,
-	f func(context.Context, interface{}) (interface{}, error)) error {
+	newData func() interface{},
+	f func(context.Context, interface{}) (interface{}, error)) (err error) {
 	eg, ctx := errgroup.New(stream.Context())
 	for {
 		select {
 		case <-ctx.Done():
 			return eg.Wait()
 		default:
-			var data interface{}
-			err := stream.RecvMsg(&data)
+			data := newData()
+			err = stream.RecvMsg(&data)
 			if err != nil {
 				if err == io.EOF {
 					return eg.Wait()
 				}
 				return err
 			}
-
-			eg.Go(func() error {
-				res, err := f(ctx, data)
-				if err != nil {
-					return err
-				}
-				return stream.SendMsg(res)
-			})
+			if data != nil {
+				eg.Go(func() (err error) {
+					var res interface{}
+					res, err = f(ctx, data)
+					if err != nil {
+						return err
+					}
+					return stream.SendMsg(res)
+				})
+			}
 		}
 	}
 }
