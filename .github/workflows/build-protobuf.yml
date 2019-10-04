@@ -22,7 +22,7 @@ jobs:
         with:
           fetch-depth: 1
       - env:
-          GOLANG_VERSION: 1.13
+          GOLANG_VERSION: 1.13.1
         run: |
           echo "Install golang"
           mkdir -p $HOME/local
