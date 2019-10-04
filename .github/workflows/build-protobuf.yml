@@ -1,0 +1,36 @@
+name: build protobuf
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "apis/proto/**"
+  pull_request:
+    paths:
+      - "apis/proto/**"
+
+jobs:
+  build:
+    name: build all
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Install dependencies"
+          sudo apt-get update
+          sudo apt-get install -y libprotobuf-dev libprotoc-dev protobuf-compiler
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - env:
+          GOLANG_VERSION: 1.13.1
+        run: |
+          echo "Install golang"
+          mkdir -p $HOME/local
+          wget https://dl.google.com/go/go${GOLANG_VERSION}.linux-amd64.tar.gz
+          tar xzvf go${GOLANG_VERSION}.linux-amd64.tar.gz
+          mv go $HOME/local/go
+      - run: |
+          echo "build protobuf"
+          export GOPATH=$HOME/go
+          export PATH=$PATH:$HOME/local/go/bin:$HOME/go/bin
+          make
