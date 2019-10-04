@@ -159,25 +159,25 @@ images: \
 	dockers-gateway-vald-image
 
 dockers-base-image-name:
-	echo "$(REPO)/$(BASE_IMAGE)"
+	@echo "$(REPO)/$(BASE_IMAGE)"
 
 dockers-base-image:
 	docker build -f dockers/base/Dockerfile -t $(REPO)/$(BASE_IMAGE) .
 
 dockers-agent-ngt-image-name:
-	echo "$(REPO)/$(AGENT_IMAGE)"
+	@echo "$(REPO)/$(AGENT_IMAGE)"
 
 dockers-agent-ngt-image: dockers-base-image
 	docker build -f dockers/agent/ngt/Dockerfile -t $(REPO)/$(AGENT_IMAGE) .
 
 dockers-discoverer-k8s-image-name:
-	echo "$(REPO)/$(DISCOVERER_IMAGE)"
+	@echo "$(REPO)/$(DISCOVERER_IMAGE)"
 
 dockers-discoverer-k8s-image: dockers-base-image
 	docker build -f dockers/discoverer/k8s/Dockerfile -t $(REPO)/$(DISCOVERER_IMAGE) .
 
 dockers-gateway-vald-image-name:
-	echo "$(REPO)/$(GATEWAY_IMAGE)"
+	@echo "$(REPO)/$(GATEWAY_IMAGE)"
 
 dockers-gateway-vald-image: dockers-base-image
 	docker build -f dockers/gateway/vald/Dockerfile -t $(REPO)/$(GATEWAY_IMAGE) .
