@@ -8,6 +8,10 @@ jobs:
     steps:
       - name: Check out code.
         uses: actions/checkout@v1
+      - name: Install dependencies
+        run: |
+          echo "install dependencies"
+          make ngt
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@v1
         with:
