@@ -61,25 +61,52 @@ type Server struct {
 }
 
 func (s *Servers) Bind() *Servers {
-	for i := range s.Servers {
-		s.Servers[i].Bind()
+	check := make(map[string]struct{}, len(s.Servers)+len(s.HealthCheckServers)+len(s.MetricsServers))
+	for i, srv := range s.Servers {
+		if srv != nil {
+			s.Servers[i].Bind()
+			check[srv.Name] = struct{}{}
+		}
 	}
-	for i := range s.HealthCheckServers {
-		s.HealthCheckServers[i].Bind()
+
+	for i, srv := range s.HealthCheckServers {
+		if srv != nil {
+			s.HealthCheckServers[i].Bind()
+			check[srv.Name] = struct{}{}
+		}
+	}
+
+	for i, srv := range s.MetricsServers {
+		if srv != nil {
+			s.MetricsServers[i].Bind()
+			check[srv.Name] = struct{}{}
+		}
 	}
 
 	s.FullShutdownDuration = GetActualValue(s.FullShutdownDuration)
 
-	for i, ss := range s.StartUpStrategy {
-		s.StartUpStrategy[i] = GetActualValue(ss)
+	sus := make([]string, 0, len(s.StartUpStrategy))
+	for _, ss := range s.StartUpStrategy {
+		if _, ok := check[ss]; ok {
+			sus = append(sus, GetActualValue(ss))
+		}
 	}
+	s.StartUpStrategy = sus[:len(sus)]
 
-	for i, ss := range s.ShutdownStrategy {
-		s.ShutdownStrategy[i] = GetActualValue(ss)
+	sds := make([]string, 0, len(s.ShutdownStrategy))
+	for _, ss := range s.ShutdownStrategy {
+		if _, ok := check[ss]; ok {
+			sds = append(sds, GetActualValue(ss))
+		}
 	}
+	s.ShutdownStrategy = sds[:len(sds)]
 
 	if s.TLS != nil {
 		s.TLS.Bind()
+	} else {
+		s.TLS = &TLS{
+			Enabled: false,
+		}
 	}
 	return s
 }
