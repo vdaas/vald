@@ -1,0 +1,37 @@
+name: 'Build docker image: discoverer-k8s'
+on:
+  push:
+    paths:
+      - 'internal/*'
+      - 'internal/*/*'
+      - 'internal/*/*/*'
+      - 'internal/*/*/*/*'
+      - 'apis/grpc/*/*'
+      - 'pkg/discoverer/k8s/*'
+      - 'pkg/discoverer/k8s/*/*'
+      - 'pkg/discoverer/k8s/*/*/*'
+      - 'cmd/discoverer/k8s/*'
+      - 'dockers/base/Dockerfile'
+      - 'dockers/discoverer/k8s/Dockerfile'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build the Docker image
+      run: |
+        echo 'Build docker image'
+        make dockers-discoverer-k8s-image
+    - name: login to DockerHub
+      run: |
+        echo 'Login to DockerHub'
+        echo ${DOCKERHUB_PASS} | docker login --username ${DOCKERHUB_USER} --password-stdin
+      env:
+        DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+        DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+    - name: push to DockerHub
+      run: |
+        echo 'Push to DockerHub'
+        imagename=`make dockers-discoverer-k8s-image-name`
+        docker push ${imagename}
