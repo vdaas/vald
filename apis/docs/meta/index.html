@@ -216,29 +216,43 @@
             
               <tr>
                 <td>GetMeta</td>
-                <td><a href="#payload.Object.ID">.payload.Object.ID</a></td>
-                <td><a href="#payload.Object.ID">.payload.Object.ID</a></td>
+                <td><a href="#payload.Meta.Key">.payload.Meta.Key</a></td>
+                <td><a href="#payload.Meta.Val">.payload.Meta.Val</a></td>
                 <td><p></p></td>
               </tr>
             
               <tr>
                 <td>GetMetas</td>
-                <td><a href="#payload.Object.IDs">.payload.Object.IDs</a></td>
-                <td><a href="#payload.Object.IDs">.payload.Object.IDs</a></td>
+                <td><a href="#payload.Meta.Keys">.payload.Meta.Keys</a></td>
+                <td><a href="#payload.Meta.Vals">.payload.Meta.Vals</a></td>
                 <td><p></p></td>
               </tr>
             
               <tr>
                 <td>SetMeta</td>
-                <td><a href="#payload.Object.ID">.payload.Object.ID</a></td>
-                <td><a href="#payload.Object.ID">.payload.Object.ID</a></td>
+                <td><a href="#payload.Meta.KeyVal">.payload.Meta.KeyVal</a></td>
+                <td><a href="#payload.Common.Error">.payload.Common.Error</a></td>
                 <td><p></p></td>
               </tr>
             
               <tr>
                 <td>SetMetas</td>
-                <td><a href="#payload.Object.IDs">.payload.Object.IDs</a></td>
-                <td><a href="#payload.Object.IDs">.payload.Object.IDs</a></td>
+                <td><a href="#payload.Meta.KeyVals">.payload.Meta.KeyVals</a></td>
+                <td><a href="#payload.Common.Error">.payload.Common.Error</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>DeleteMeta</td>
+                <td><a href="#payload.Meta.Key">.payload.Meta.Key</a></td>
+                <td><a href="#payload.Meta.Val">.payload.Meta.Val</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>DeleteMetas</td>
+                <td><a href="#payload.Meta.Keys">.payload.Meta.Keys</a></td>
+                <td><a href="#payload.Meta.Vals">.payload.Meta.Vals</a></td>
                 <td><p></p></td>
               </tr>
             
@@ -264,8 +278,8 @@
               
               <tr>
                 <td>GetMeta</td>
-                <td>GET</td>
-                <td>/meta/{id}</td>
+                <td>POST</td>
+                <td>/meta</td>
                 <td></td>
               </tr>
               
@@ -275,7 +289,7 @@
               <tr>
                 <td>GetMetas</td>
                 <td>POST</td>
-                <td>/meta</td>
+                <td>/metas</td>
                 <td></td>
               </tr>
               
@@ -284,8 +298,8 @@
               
               <tr>
                 <td>SetMeta</td>
-                <td>GET</td>
-                <td>/meta/{id}</td>
+                <td>POST</td>
+                <td>/meta</td>
                 <td></td>
               </tr>
               
@@ -295,7 +309,27 @@
               <tr>
                 <td>SetMetas</td>
                 <td>POST</td>
+                <td>/metas</td>
+                <td></td>
+              </tr>
+              
+            
+              
+              
+              <tr>
+                <td>DeleteMeta</td>
+                <td>GET</td>
                 <td>/meta</td>
+                <td></td>
+              </tr>
+              
+            
+              
+              
+              <tr>
+                <td>DeleteMetas</td>
+                <td>POST</td>
+                <td>/metas</td>
                 <td></td>
               </tr>
               

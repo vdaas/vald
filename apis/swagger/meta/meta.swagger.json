@@ -16,13 +16,35 @@
   ],
   "paths": {
     "/meta": {
-      "post": {
-        "operationId": "SetMetas",
+      "get": {
+        "operationId": "DeleteMeta",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/ObjectIDs"
+              "$ref": "#/definitions/MetaVal"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "key.id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Meta"
+        ]
+      },
+      "post": {
+        "operationId": "SetMeta",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/CommonError"
             }
           }
         },
@@ -31,25 +53,17 @@
         ]
       }
     },
-    "/meta/{id}": {
-      "get": {
-        "operationId": "SetMeta",
+    "/metas": {
+      "post": {
+        "operationId": "DeleteMetas",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/ObjectID"
+              "$ref": "#/definitions/MetaVals"
             }
           }
         },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
         "tags": [
           "Meta"
         ]
@@ -57,6 +71,49 @@
     }
   },
   "definitions": {
+    "CommonError": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "MetaKeyVal": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "$ref": "#/definitions/ObjectID"
+        },
+        "val": {
+          "$ref": "#/definitions/ObjectID"
+        }
+      }
+    },
+    "MetaVal": {
+      "type": "object",
+      "properties": {
+        "val": {
+          "$ref": "#/definitions/ObjectID"
+        }
+      }
+    },
+    "MetaVals": {
+      "type": "object",
+      "properties": {
+        "vals": {
+          "$ref": "#/definitions/ObjectIDs"
+        }
+      }
+    },
     "ObjectID": {
       "type": "object",
       "properties": {

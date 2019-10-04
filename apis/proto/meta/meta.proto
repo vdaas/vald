@@ -29,22 +29,22 @@ import "pb/gql.proto";
 
 service Meta {
   option (gql.svc_type) = QUERY;
-  rpc GetMeta(payload.Object.ID) returns (payload.Object.ID) {
-    option (google.api.http).get = "/meta/{id}";
-  }
-  rpc GetMetas(payload.Object.IDs) returns (payload.Object.IDs) {
+  rpc GetMeta(payload.Meta.Key) returns (payload.Meta.Val) {
     option (google.api.http).post = "/meta";
   }
-  rpc SetMeta(payload.Object.ID) returns (payload.Object.ID) {
-    option (google.api.http).get = "/meta/{id}";
+  rpc GetMetas(payload.Meta.Keys) returns (payload.Meta.Vals) {
+    option (google.api.http).post = "/metas";
   }
-  rpc SetMetas(payload.Object.IDs) returns (payload.Object.IDs) {
+  rpc SetMeta(payload.Meta.KeyVal) returns (payload.Common.Error) {
     option (google.api.http).post = "/meta";
   }
-  rpc DeleteMeta(payload.Object.ID) returns (payload.Object.ID) {
-    option (google.api.http).get = "/meta/{id}";
+  rpc SetMetas(payload.Meta.KeyVals) returns (payload.Common.Error) {
+    option (google.api.http).post = "/metas";
   }
-  rpc DeleteMetas(payload.Object.IDs) returns (payload.Object.IDs) {
-    option (google.api.http).post = "/meta";
+  rpc DeleteMeta(payload.Meta.Key) returns (payload.Meta.Val) {
+    option (google.api.http).get = "/meta";
+  }
+  rpc DeleteMetas(payload.Meta.Keys) returns (payload.Meta.Vals) {
+    option (google.api.http).post = "/metas";
   }
 }

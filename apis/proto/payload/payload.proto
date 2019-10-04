@@ -53,6 +53,18 @@ message Search {
   }
 }
 
+message Meta {
+  message Key { Object.ID key = 1; }
+  message Keys { Object.IDs keys = 1; }
+  message Val { Object.ID val = 1; }
+  message Vals { Object.IDs vals = 1; }
+  message KeyVal {
+    Object.ID key = 1;
+    Object.ID val = 2;
+  }
+  message KeyVals { repeated KeyVal kvs = 1; }
+}
+
 message Object {
   message Distance {
     ID id = 1;

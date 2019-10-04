@@ -3,7 +3,7 @@ module github.com/vdaas/vald
 go 1.13
 
 replace (
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20190927123631-a832865fa7ad
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191002192127-34f69633bfdc
 	k8s.io/api => k8s.io/api v0.0.0-20190918195907-bd6ac527cfd2
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20190918201827-3de75813f604
 	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
@@ -28,11 +28,11 @@ require (
 	github.com/kpango/gache v1.1.22
 	github.com/kpango/glg v1.4.6
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
-	golang.org/x/sys v0.0.0-20190927073244-c990c680b611
+	golang.org/x/sys v0.0.0-20191003212358-c178f38b412c
 	gonum.org/v1/hdf5 v0.0.0-20190920010848-b0d662f53d94
-	google.golang.org/genproto v0.0.0-20190927181202-20e1ac93f88c
+	google.golang.org/genproto v0.0.0-20191002211648-c459b9ce5143
 	google.golang.org/grpc v1.24.0
-	gopkg.in/yaml.v2 v2.2.3
+	gopkg.in/yaml.v2 v2.2.4
 	k8s.io/api v0.0.0-20190918195907-bd6ac527cfd2
 	k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
