@@ -2,7 +2,7 @@
 <img src="./assets/logo.svg" width="50%">
 </div>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache2-blue.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
 [![release](https://img.shields.io/github/release/vdaas/vald.svg?style=flat-square)](https://github.com/vdaas/vald/releases/latest)
 [![CircleCI](https://circleci.com/gh/vdaas/vald.svg)](https://circleci.com/gh/vdaas/vald)
 [![codecov](https://codecov.io/gh/vdaas/vald/branch/master/graph/badge.svg?token=2CzooNJtUu&style=flat-square)](https://codecov.io/gh/vdaas/vald)
