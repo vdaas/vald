@@ -144,7 +144,6 @@ deps: \
 	rm -rf vendor
 
 ngt:
-	mkdir -p /usr/local/lib
 	curl -LO https://github.com/yahoojapan/NGT/archive/v${NGT_VERSION}.tar.gz
 	tar zxf v${NGT_VERSION}.tar.gz -C /tmp
 	cd /tmp/NGT-${NGT_VERSION}&& cmake .
