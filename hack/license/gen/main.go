@@ -96,6 +96,7 @@ func dirwalk(dir string) []string {
 			".lock",
 			".md",
 			".md5",
+			".hdf5",
 			".mod",
 			".png",
 			".sum",
