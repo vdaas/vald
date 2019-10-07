@@ -27,7 +27,6 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	core "github.com/vdaas/vald/internal/core/ngt"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/pkg/agent/ngt/model"
 )
 
@@ -106,7 +105,7 @@ func (n *ngt) Search(vec []float64, size uint32, epsilon, radius float32) ([]mod
 				Distance: d.Distance,
 			}
 		} else {
-			log.Warn(errors.ErrUUIDNotFound(d.ID))
+			errs = errors.Wrap(errs, errors.ErrUUIDNotFound(d.ID).Error())
 		}
 	}
 
@@ -127,9 +126,18 @@ func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) ([]m
 }
 
 func (n *ngt) Insert(uuid string, vec []float64) (err error) {
+	if len(uuid) == 0 {
+		err = errors.ErrUUIDNotFound(0)
+		return err
+	}
+
 	i, ok := n.uo.Get(uuid)
-	if ok && i != 0 {
-		err = errors.ErrUUIDAlreadyExists(uuid, i.(uint32))
+	if ok && i != nil {
+		oid, ok := i.(uint)
+		if !ok {
+			oid = 0
+		}
+		err = errors.ErrUUIDAlreadyExists(uuid, oid)
 		return err
 	}
 
@@ -162,6 +170,11 @@ func (n *ngt) Update(uuid string, vec []float64) (err error) {
 }
 
 func (n *ngt) Delete(uuid string) (err error) {
+	if len(uuid) == 0 {
+		err = errors.ErrUUIDNotFound(0)
+		return err
+	}
+
 	if ic := atomic.LoadUint64(&n.ic); ic > 0 {
 		return errors.ErrUncommittedIndexExists(ic)
 	}

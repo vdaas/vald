@@ -145,7 +145,7 @@ var (
 	// ErrCAPINotImplemented raises using not implemented function in C API
 	ErrCAPINotImplemented = New("not implemented in C API")
 
-	ErrUUIDAlreadyExists = func(uuid string, oid uint32) error {
+	ErrUUIDAlreadyExists = func(uuid string, oid uint) error {
 		return Errorf("ngt uuid %s object id %d already exists ", uuid, oid)
 	}
 

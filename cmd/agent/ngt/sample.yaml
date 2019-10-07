@@ -99,7 +99,7 @@ server_config:
     key: /path/to/key
     ca: /path/to/ca
 ngt:
-  index_path: /path/to/index
+  # index_path: /path/to/index
   dimension: 4096
   bulk_insert_chunk_size: 10
   distance_type: l2
