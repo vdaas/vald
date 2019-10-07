@@ -358,3 +358,7 @@ $(GQLCODES): proto-deps $(GRAPHQLS)
 $(PBDOCS): proto-deps $(PBDOCDIRS)
 	@$(call green, "generating documents files...")
 	$(call protoc-gen, $(patsubst apis/docs/%.md,apis/proto/%.proto,$@), --plugin=protoc-gen-doc=$(GOPATH)/bin/protoc-gen-doc --doc_out=$(dir $@))
+
+benchmark-fashion-mnist:
+	rm -r ./index
+	go run cmd/agent/ngt/main.go -f hack/e2e/benchmark/assets/fashion-mnist.yaml

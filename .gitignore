@@ -34,6 +34,7 @@ cmd/**/*
 hack/**/*
 !hack/**/*.*
 !hack/**/*/
+hack/**/*.hdf5
 
 !Makefile
 !LICENSE

@@ -25,6 +25,7 @@ require (
 	github.com/hashicorp/go-version v1.2.0
 	github.com/json-iterator/go v1.1.7
 	github.com/kpango/fastime v1.0.15
+	github.com/kpango/fuid v0.0.0-20190507064958-80435564606b // indirect
 	github.com/kpango/gache v1.1.22
 	github.com/kpango/glg v1.4.6
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
