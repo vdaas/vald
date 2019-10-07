@@ -37,6 +37,7 @@ var (
 		WithDimension(0),
 		WithDefaultRadius(-1.0),
 		WithDefaultEpsilon(0.01),
+		WithDefaultPoolSize(1),
 		WithCreationEdgeSize(10),
 		WithSearchEdgeSize(40),
 		WithObjectType(Float),
@@ -172,6 +173,15 @@ func WithSearchEdgeSize(size int) Option {
 	return func(n *ngt) error {
 		if C.ngt_set_property_edge_size_for_search(n.prop, C.int16_t(size), n.ebuf) == ErrorCode {
 			return errors.ErrFailedToSetSearchEdgeSize(n.newGoError(n.ebuf))
+		}
+		return nil
+	}
+}
+
+func WithDefaultPoolSize(poolSize uint32) Option {
+	return func(n *ngt) error {
+		if poolSize != 0 {
+			n.poolSize = poolSize
 		}
 		return nil
 	}

@@ -82,6 +82,7 @@ type (
 		objectType          objectType
 		radius              float32
 		epsilon             float32
+		poolSize            uint32
 		prop                C.NGTProperty
 		ebuf                C.NGTError // TODO BufferPoolとかにしたほうが良さそう
 		index               C.NGTIndex
@@ -407,6 +408,9 @@ func (n *ngt) CreateAndSaveIndex(poolSize uint32) error {
 
 // CreateIndex creates NGT index.
 func (n *ngt) CreateIndex(poolSize uint32) error {
+	if poolSize == 0{
+		poolSize = n.poolSize
+	}
 	n.mu.Lock()
 	ret := C.ngt_create_index(n.index, C.uint32_t(poolSize), n.ebuf)
 	if ret == ErrorCode {
