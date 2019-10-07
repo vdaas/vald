@@ -28,7 +28,7 @@ require (
 	github.com/kpango/gache v1.1.22
 	github.com/kpango/glg v1.4.6
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
-	golang.org/x/sys v0.0.0-20191003212358-c178f38b412c
+	golang.org/x/sys v0.0.0-20191005200804-aed5e4c7ecf9
 	gonum.org/v1/hdf5 v0.0.0-20190920010848-b0d662f53d94
 	google.golang.org/genproto v0.0.0-20191002211648-c459b9ce5143
 	google.golang.org/grpc v1.24.0

@@ -16,22 +16,6 @@
   ],
   "paths": {},
   "definitions": {
-    "CommonError": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "msg": {
-          "type": "string"
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
     "ObjectDistance": {
       "type": "object",
       "properties": {
@@ -60,9 +44,6 @@
           "items": {
             "$ref": "#/definitions/ObjectDistance"
           }
-        },
-        "error": {
-          "$ref": "#/definitions/CommonError"
         }
       }
     },

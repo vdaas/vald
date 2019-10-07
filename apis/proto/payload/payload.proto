@@ -47,10 +47,7 @@ message Search {
     int64 timeout = 4;
   }
 
-  message Response {
-    repeated Object.Distance results = 1;
-    Common.Error error = 2;
-  }
+  message Response { repeated Object.Distance results = 1; }
 }
 
 message Meta {
@@ -107,12 +104,4 @@ message Info {
   }
 }
 
-message Common {
-  message Empty {}
-  message Error {
-    uint32 code = 1 [ (validate.rules).uint32.gte = 0 ];
-    string msg = 2;
-    int64 timestamp = 3;
-  }
-  message Errors { repeated Error errors = 1; }
-}
+message Empty {}

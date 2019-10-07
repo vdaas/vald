@@ -65,7 +65,7 @@ func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error
 	})
 }
 
-func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (*payload.Common_Error, error) {
+func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (*payload.Empty, error) {
 	return nil, nil
 }
 
@@ -75,11 +75,11 @@ func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
 	})
 }
 
-func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Common_Errors, err error) {
+func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
 	return nil, nil
 }
 
-func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (*payload.Common_Error, error) {
+func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (*payload.Empty, error) {
 	return nil, nil
 }
 
@@ -89,11 +89,11 @@ func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
 	})
 }
 
-func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Common_Errors, err error) {
+func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
 	return nil, nil
 }
 
-func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Common_Error, error) {
+func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Empty, error) {
 	return nil, nil
 }
 
@@ -103,7 +103,7 @@ func (s *server) StreamRemove(stream vald.Vald_StreamRemoveServer) error {
 	})
 }
 
-func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res *payload.Common_Errors, err error) {
+func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res *payload.Empty, err error) {
 	return nil, nil
 }
 

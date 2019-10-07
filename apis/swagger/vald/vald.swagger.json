@@ -46,7 +46,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/CommonError"
+              "$ref": "#/definitions/payloadEmpty"
             }
           }
         },
@@ -96,7 +96,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/CommonError"
+              "$ref": "#/definitions/payloadEmpty"
             }
           }
         },
@@ -146,7 +146,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/CommonError"
+              "$ref": "#/definitions/payloadEmpty"
             }
           }
         },
@@ -167,33 +167,6 @@
     }
   },
   "definitions": {
-    "CommonError": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "msg": {
-          "type": "string"
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
-    "CommonErrors": {
-      "type": "object",
-      "properties": {
-        "errors": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/CommonError"
-          }
-        }
-      }
-    },
     "ObjectDistance": {
       "type": "object",
       "properties": {
@@ -269,11 +242,11 @@
           "items": {
             "$ref": "#/definitions/ObjectDistance"
           }
-        },
-        "error": {
-          "$ref": "#/definitions/CommonError"
         }
       }
+    },
+    "payloadEmpty": {
+      "type": "object"
     },
     "payloadSearchRequest": {
       "type": "object",
@@ -325,18 +298,6 @@
     }
   },
   "x-stream-definitions": {
-    "CommonError": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "$ref": "#/definitions/CommonError"
-        },
-        "error": {
-          "$ref": "#/definitions/runtimeStreamError"
-        }
-      },
-      "title": "Stream result of CommonError"
-    },
     "ObjectVector": {
       "type": "object",
       "properties": {
@@ -360,6 +321,18 @@
         }
       },
       "title": "Stream result of SearchResponse"
+    },
+    "payloadEmpty": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/payloadEmpty"
+        },
+        "error": {
+          "$ref": "#/definitions/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of payloadEmpty"
     }
   }
 }

@@ -50,10 +50,10 @@ models:
     model: github.com/vdaas/vald/apis/grpc/payload.Update_MultiRequest
   Update_RequestInput:
     model: github.com/vdaas/vald/apis/grpc/payload.Update_Request
-  Common_Error:
-    model: github.com/vdaas/vald/apis/grpc/payload.Common_Error
-  Common_Errors:
-    model: github.com/vdaas/vald/apis/grpc/payload.Common_Errors
+  Empty:
+    model: github.com/vdaas/vald/apis/grpc/payload.Empty
+  Empty:
+    model: github.com/vdaas/vald/apis/grpc/payload.Empty
   Object_Data:
     model: github.com/vdaas/vald/apis/grpc/payload.Object_Data
   Object_Distance:

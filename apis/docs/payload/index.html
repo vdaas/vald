@@ -179,22 +179,6 @@
             <ul>
               
                 <li>
-                  <a href="#payload.Common"><span class="badge">M</span>Common</a>
-                </li>
-              
-                <li>
-                  <a href="#payload.Common.Empty"><span class="badge">M</span>Common.Empty</a>
-                </li>
-              
-                <li>
-                  <a href="#payload.Common.Error"><span class="badge">M</span>Common.Error</a>
-                </li>
-              
-                <li>
-                  <a href="#payload.Common.Errors"><span class="badge">M</span>Common.Errors</a>
-                </li>
-              
-                <li>
                   <a href="#payload.Controll"><span class="badge">M</span>Controll</a>
                 </li>
               
@@ -208,6 +192,10 @@
               
                 <li>
                   <a href="#payload.Discoverer.Request"><span class="badge">M</span>Discoverer.Request</a>
+                </li>
+              
+                <li>
+                  <a href="#payload.Empty"><span class="badge">M</span>Empty</a>
                 </li>
               
                 <li>
@@ -312,82 +300,6 @@
       <p></p>
 
       
-        <h3 id="payload.Common">Common</h3>
-        <p></p>
-
-        
-
-        
-      
-        <h3 id="payload.Common.Empty">Common.Empty</h3>
-        <p></p>
-
-        
-
-        
-      
-        <h3 id="payload.Common.Error">Common.Error</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>code</td>
-                  <td><a href="#uint32">uint32</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>msg</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>timestamp</td>
-                  <td><a href="#int64">int64</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="payload.Common.Errors">Common.Errors</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>errors</td>
-                  <td><a href="#payload.Common.Error">Common.Error</a></td>
-                  <td>repeated</td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
         <h3 id="payload.Controll">Controll</h3>
         <p></p>
 
@@ -454,6 +366,13 @@
           </table>
 
           
+
+        
+      
+        <h3 id="payload.Empty">Empty</h3>
+        <p></p>
+
+        
 
         
       
@@ -967,13 +886,6 @@
                   <td>results</td>
                   <td><a href="#payload.Object.Distance">Object.Distance</a></td>
                   <td>repeated</td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>error</td>
-                  <td><a href="#payload.Common.Error">Common.Error</a></td>
-                  <td></td>
                   <td><p> </p></td>
                 </tr>
               

@@ -35,10 +35,10 @@ service Meta {
   rpc GetMetas(payload.Meta.Keys) returns (payload.Meta.Vals) {
     option (google.api.http).post = "/metas";
   }
-  rpc SetMeta(payload.Meta.KeyVal) returns (payload.Common.Error) {
+  rpc SetMeta(payload.Meta.KeyVal) returns (payload.Empty) {
     option (google.api.http).post = "/meta";
   }
-  rpc SetMetas(payload.Meta.KeyVals) returns (payload.Common.Error) {
+  rpc SetMetas(payload.Meta.KeyVals) returns (payload.Empty) {
     option (google.api.http).post = "/metas";
   }
   rpc DeleteMeta(payload.Meta.Key) returns (payload.Meta.Val) {

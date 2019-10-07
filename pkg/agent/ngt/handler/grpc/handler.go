@@ -20,7 +20,6 @@ package grpc
 import (
 	"context"
 
-	"github.com/kpango/fastime"
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errors"
@@ -44,14 +43,15 @@ func New(opts ...Option) Server {
 	return s
 }
 
-func (s *server) Exists(ctx context.Context, oid *payload.Object_ID) (*payload.Object_ID, error) {
-	id, ok := s.ngt.Exists(oid.GetId())
+func (s *server) Exists(ctx context.Context, oid *payload.Object_ID) (res *payload.Object_ID, err error) {
+	res = new(payload.Object_ID)
+	var ok bool
+	res.Id, ok = s.ngt.Exists(oid.GetId())
 	if !ok {
-		return nil, errors.ErrObjectIDNotFound(oid.GetId())
+		err = errors.ErrObjectIDNotFound(oid.GetId())
+		return nil, err
 	}
-	return &payload.Object_ID{
-		Id: id,
-	}, nil
+	return res, nil
 }
 
 func (s *server) Search(ctx context.Context, req *payload.Search_Request) (*payload.Search_Response, error) {
@@ -72,20 +72,12 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			req.GetConfig().GetRadius()))
 }
 
-func toSearchResponse(dists []model.Distance, err error) (*payload.Search_Response, error) {
+func toSearchResponse(dists []model.Distance, err error) (res *payload.Search_Response, rerr error) {
+	res = new(payload.Search_Response)
 	if err != nil {
-		return &payload.Search_Response{
-			Error: &payload.Common_Error{
-				Msg:       err.Error(),
-				Timestamp: fastime.UnixNanoNow(),
-			},
-		}, err
+		return nil, err
 	}
-
-	res := &payload.Search_Response{
-		Results: make([]*payload.Object_Distance, 0, len(dists)),
-	}
-
+	res.Results = make([]*payload.Object_Distance, 0, len(dists))
 	for _, dist := range dists {
 		// res.Results = append(res.Results, (*payload.Object_Distance)(unsafe.Pointer(&dist)))
 		res.Results = append(res.Results, &payload.Object_Distance{
@@ -95,7 +87,6 @@ func toSearchResponse(dists []model.Distance, err error) (*payload.Search_Respon
 			Distance: dist.Distance,
 		})
 	}
-
 	return res, nil
 }
 
@@ -115,15 +106,13 @@ func (s *server) StreamSearchByID(stream agent.Agent_StreamSearchByIDServer) err
 		})
 }
 
-func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (*payload.Common_Error, error) {
-	err := s.ngt.Insert(vec.GetId().GetId(), vec.GetVector())
+func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (res *payload.Empty, err error) {
+	res = new(payload.Empty)
+	err = s.ngt.Insert(vec.GetId().GetId(), vec.GetVector())
 	if err != nil {
-		return &payload.Common_Error{
-			Msg:       err.Error(),
-			Timestamp: fastime.UnixNanoNow(),
-		}, err
+		return nil, err
 	}
-	return nil, nil
+	return res, nil
 }
 
 func (s *server) StreamInsert(stream agent.Agent_StreamInsertServer) error {
@@ -134,27 +123,27 @@ func (s *server) StreamInsert(stream agent.Agent_StreamInsertServer) error {
 		})
 }
 
-func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Common_Errors, err error) {
-	res = new(payload.Common_Errors)
+func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
+	res = new(payload.Empty)
 	for _, vec := range vecs.GetVectors() {
-		r, ierr := s.Insert(ctx, vec)
+		_, ierr := s.Insert(ctx, vec)
 		if ierr != nil {
 			err = errors.Wrap(err, ierr.Error())
-			res.Errors = append(res.Errors, r)
 		}
 	}
-	return
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
-func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (*payload.Common_Error, error) {
-	err := s.ngt.Update(vec.GetId().GetId(), vec.GetVector())
+func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Empty, err error) {
+	res = new(payload.Empty)
+	err = s.ngt.Update(vec.GetId().GetId(), vec.GetVector())
 	if err != nil {
-		return &payload.Common_Error{
-			Msg:       err.Error(),
-			Timestamp: fastime.UnixNanoNow(),
-		}, err
+		return nil, err
 	}
-	return nil, nil
+	return res, nil
 }
 
 func (s *server) StreamUpdate(stream agent.Agent_StreamUpdateServer) error {
@@ -165,27 +154,27 @@ func (s *server) StreamUpdate(stream agent.Agent_StreamUpdateServer) error {
 		})
 }
 
-func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Common_Errors, err error) {
-	res = new(payload.Common_Errors)
+func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
+	res = new(payload.Empty)
 	for _, vec := range vecs.GetVectors() {
-		r, ierr := s.Update(ctx, vec)
+		_, ierr := s.Update(ctx, vec)
 		if ierr != nil {
 			err = errors.Wrap(err, ierr.Error())
-			res.Errors = append(res.Errors, r)
 		}
 	}
-	return
+	if err != nil {
+		return nil, err
+	}
+	return res, err
 }
 
-func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Common_Error, error) {
-	err := s.ngt.Delete(id.GetId())
+func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (res *payload.Empty, err error) {
+	res = new(payload.Empty)
+	err = s.ngt.Delete(id.GetId())
 	if err != nil {
-		return &payload.Common_Error{
-			Msg:       err.Error(),
-			Timestamp: fastime.UnixNanoNow(),
-		}, err
+		return nil, err
 	}
-	return nil, nil
+	return res, nil
 }
 
 func (s *server) StreamRemove(stream agent.Agent_StreamRemoveServer) error {
@@ -196,30 +185,30 @@ func (s *server) StreamRemove(stream agent.Agent_StreamRemoveServer) error {
 		})
 }
 
-func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res *payload.Common_Errors, err error) {
-	res = new(payload.Common_Errors)
+func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res *payload.Empty, err error) {
+	res = new(payload.Empty)
 	for _, id := range ids.GetIds() {
-		r, ierr := s.Remove(ctx, id)
+		_, ierr := s.Remove(ctx, id)
 		if ierr != nil {
 			err = errors.Wrap(err, ierr.Error())
-			res.Errors = append(res.Errors, r)
 		}
 	}
-	return
-}
-
-func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (*payload.Object_Vector, error) {
-	vec, err := s.ngt.GetObject(id.GetId())
 	if err != nil {
 		return nil, err
 	}
-	return &payload.Object_Vector{
-		Id: &payload.Object_ID{
-			Id: id.GetId(),
-		},
-		Vector: vec,
-	}, nil
+	return res, err
+}
 
+func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (res *payload.Object_Vector, err error) {
+	res = new(payload.Object_Vector)
+	res.Id = &payload.Object_ID{
+		Id: id.GetId(),
+	}
+	res.Vector, err = s.ngt.GetObject(id.GetId())
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 func (s *server) StreamGetObject(stream agent.Agent_StreamGetObjectServer) error {
@@ -230,14 +219,29 @@ func (s *server) StreamGetObject(stream agent.Agent_StreamGetObjectServer) error
 		})
 }
 
-func (s *server) CreateIndex(ctx context.Context, c *payload.Controll_CreateIndexRequest) (*payload.Common_Empty, error) {
-	return nil, s.ngt.CreateIndex(c.GetPoolSize())
+func (s *server) CreateIndex(ctx context.Context, c *payload.Controll_CreateIndexRequest) (res *payload.Empty, err error) {
+	res = new(payload.Empty)
+	err = s.ngt.CreateIndex(c.GetPoolSize())
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
-func (s *server) SaveIndex(context.Context, *payload.Common_Empty) (*payload.Common_Empty, error) {
-	return nil, s.ngt.SaveIndex()
+func (s *server) SaveIndex(context.Context, *payload.Empty) (res *payload.Empty, err error) {
+	res = new(payload.Empty)
+	err = s.ngt.SaveIndex()
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
-func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Controll_CreateIndexRequest) (*payload.Common_Empty, error) {
-	return nil, s.ngt.CreateAndSaveIndex(c.GetPoolSize())
+func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Controll_CreateIndexRequest) (res *payload.Empty, err error) {
+	res = new(payload.Empty)
+	err = s.ngt.CreateAndSaveIndex(c.GetPoolSize())
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }

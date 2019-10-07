@@ -30,44 +30,43 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 func init() { proto.RegisterFile("agent.proto", fileDescriptor_56ede974c0020f77) }
 
 var fileDescriptor_56ede974c0020f77 = []byte{
-	// 580 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x95, 0xd1, 0x6a, 0x13, 0x41,
-	0x14, 0x86, 0xbb, 0xc5, 0x46, 0x32, 0x49, 0x5a, 0x99, 0xa6, 0x69, 0x5d, 0x4a, 0x0a, 0x8b, 0x82,
-	0xf4, 0x62, 0x47, 0xf4, 0x4e, 0x04, 0x6d, 0x92, 0x5a, 0x72, 0x11, 0x23, 0x0d, 0x06, 0xf1, 0x6e,
-	0xb2, 0x33, 0x6c, 0x57, 0x76, 0x67, 0xb6, 0x33, 0x93, 0xd0, 0x20, 0xde, 0xf8, 0x0a, 0xbe, 0x48,
-	0x1f, 0xc3, 0x2b, 0x11, 0x7c, 0x81, 0x10, 0x7c, 0x10, 0xd9, 0x99, 0x4d, 0x4c, 0x9a, 0x8d, 0xd2,
-	0xed, 0xe5, 0x9c, 0x73, 0xfe, 0xef, 0x9c, 0xff, 0xc0, 0xcc, 0x80, 0x12, 0xf6, 0x29, 0x53, 0x6e,
-	0x2c, 0xb8, 0xe2, 0x70, 0x4b, 0x1f, 0xec, 0x4a, 0x8c, 0xc7, 0x21, 0xc7, 0xc4, 0x44, 0xed, 0x43,
-	0x9f, 0x73, 0x3f, 0xa4, 0x08, 0xc7, 0x01, 0xc2, 0x8c, 0x71, 0x85, 0x55, 0xc0, 0x99, 0x4c, 0xb3,
-	0xe5, 0x78, 0x80, 0xfc, 0xcb, 0xd0, 0x9c, 0x9e, 0xfd, 0x28, 0x81, 0xad, 0x93, 0x04, 0x02, 0xdf,
-	0x80, 0xc2, 0xe9, 0x55, 0x20, 0x95, 0x84, 0xd0, 0x9d, 0xf1, 0xba, 0x83, 0x4f, 0xd4, 0x53, 0x6e,
-	0xbb, 0x65, 0x67, 0xc4, 0x9c, 0xea, 0xd7, 0x5f, 0xbf, 0xbf, 0x6d, 0x6e, 0xc3, 0x32, 0xa2, 0x5a,
-	0x88, 0x3e, 0x07, 0xe4, 0x0b, 0xec, 0x82, 0x42, 0x8f, 0x62, 0xe1, 0x5d, 0xc0, 0xfd, 0xb9, 0xc6,
-	0x04, 0xdc, 0x73, 0x7a, 0x39, 0xa4, 0x52, 0xd9, 0x07, 0xab, 0x09, 0x19, 0x73, 0x26, 0xa9, 0x03,
-	0x35, 0xb2, 0xec, 0xdc, 0x47, 0x52, 0x67, 0x5e, 0x58, 0xc7, 0xf0, 0x03, 0x00, 0xa6, 0xac, 0x31,
-	0x6e, 0xb7, 0xe0, 0xc3, 0x9b, 0xda, 0x76, 0xeb, 0xff, 0xd8, 0x3d, 0x8d, 0xdd, 0x71, 0x40, 0x8a,
-	0x45, 0x01, 0x49, 0xc8, 0x67, 0xa0, 0xdc, 0x53, 0x82, 0xe2, 0x28, 0xff, 0xc0, 0x1b, 0x4f, 0xac,
-	0xa7, 0x16, 0xec, 0x80, 0x07, 0x8b, 0xa0, 0xfc, 0x83, 0x1a, 0x5c, 0x17, 0x14, 0xda, 0x4c, 0x52,
-	0xa1, 0x60, 0xed, 0xe6, 0xda, 0xfb, 0xd4, 0x53, 0x5c, 0xd8, 0x7b, 0xf3, 0x78, 0x93, 0x47, 0x11,
-	0x67, 0xee, 0xa9, 0x10, 0x5c, 0x38, 0xb5, 0xeb, 0xc9, 0x91, 0x35, 0x5f, 0x61, 0xa0, 0x19, 0x89,
-	0xd1, 0xe6, 0xcc, 0x68, 0x3e, 0xac, 0x99, 0xea, 0x35, 0x28, 0x75, 0x86, 0xa1, 0x0a, 0x52, 0xc6,
-	0x7e, 0x36, 0x43, 0xda, 0xb5, 0x4c, 0x88, 0x74, 0x36, 0x12, 0x5f, 0xef, 0x63, 0x82, 0x15, 0xbd,
-	0x9b, 0xaf, 0xa1, 0x66, 0x2c, 0xf9, 0xca, 0x87, 0x5d, 0xf6, 0x95, 0x32, 0x72, 0xf8, 0xea, 0x80,
-	0xc2, 0x39, 0x8d, 0xf8, 0x88, 0x66, 0x5e, 0x9d, 0x35, 0xcd, 0x0f, 0xe6, 0x9e, 0xb6, 0x8f, 0xcb,
-	0x48, 0x68, 0xbd, 0xb9, 0x41, 0xaf, 0x66, 0xae, 0x6e, 0x0f, 0x35, 0x8e, 0x5e, 0xa6, 0x8e, 0x52,
-	0xfd, 0xee, 0xaa, 0xfe, 0xdf, 0x6e, 0x8a, 0x67, 0x54, 0x99, 0xd2, 0xcc, 0xde, 0x6b, 0xb6, 0xbc,
-	0xf0, 0x1e, 0x70, 0x1d, 0x37, 0x6e, 0x9a, 0x60, 0xc7, 0xb8, 0xc9, 0x07, 0x35, 0x8e, 0x30, 0x28,
-	0x35, 0x05, 0xc5, 0x8a, 0xb6, 0x19, 0xa1, 0x57, 0xf0, 0xd1, 0xc2, 0xf0, 0x4c, 0x09, 0x1e, 0x86,
-	0xee, 0x42, 0x7a, 0x76, 0xcd, 0x56, 0x77, 0x14, 0xc5, 0x6a, 0x3c, 0x7b, 0x0c, 0x60, 0x05, 0x05,
-	0x49, 0x35, 0xf2, 0xb4, 0x12, 0xbe, 0x05, 0xc5, 0x1e, 0x1e, 0xa5, 0x0d, 0xb2, 0xa5, 0xeb, 0x88,
-	0xbb, 0x9a, 0x58, 0x81, 0xa5, 0x94, 0x28, 0xf1, 0x88, 0x42, 0x0e, 0xa0, 0x99, 0xe9, 0x84, 0x91,
-	0xbf, 0xe0, 0x3b, 0x4d, 0x7e, 0xa8, 0xfb, 0xd4, 0x60, 0x75, 0x69, 0x72, 0xcc, 0x48, 0xd2, 0xd0,
-	0xbe, 0x77, 0x3d, 0x39, 0xda, 0x6c, 0xf4, 0xbf, 0x4f, 0xeb, 0xd6, 0xcf, 0x69, 0xdd, 0x9a, 0x4c,
-	0xeb, 0x16, 0xa8, 0x72, 0xe1, 0xbb, 0x23, 0x82, 0xb1, 0x74, 0x47, 0x38, 0x24, 0xae, 0xfe, 0x2f,
-	0x1a, 0xc5, 0x3e, 0x0e, 0x89, 0x7e, 0xf5, 0xdf, 0x59, 0x1f, 0x1f, 0xfb, 0x81, 0xba, 0x18, 0x0e,
-	0x5c, 0x8f, 0x47, 0x48, 0x57, 0xa2, 0xa4, 0x32, 0xf9, 0x3c, 0x24, 0xf2, 0x45, 0xec, 0x21, 0xad,
-	0x19, 0x14, 0xf4, 0x7f, 0xf1, 0xfc, 0x4f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x14, 0x22, 0x90, 0x22,
-	0x80, 0x06, 0x00, 0x00,
+	// 570 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x94, 0xdf, 0x6a, 0x13, 0x41,
+	0x14, 0xc6, 0xdd, 0x62, 0x23, 0x9d, 0xfc, 0xa9, 0x4c, 0x63, 0x5a, 0x97, 0x92, 0x42, 0x50, 0x90,
+	0x5e, 0xec, 0x88, 0x7a, 0x51, 0xc4, 0x0b, 0x9b, 0xa4, 0xad, 0xb9, 0x08, 0x95, 0x06, 0x83, 0xf4,
+	0x6e, 0xb2, 0x33, 0x6c, 0x56, 0x36, 0x33, 0xdb, 0x99, 0x49, 0x68, 0x10, 0x6f, 0x7c, 0x05, 0x5f,
+	0xa4, 0x8f, 0xe1, 0xa5, 0xe0, 0x0b, 0x84, 0xe0, 0x03, 0xf8, 0x08, 0xb2, 0x33, 0x9b, 0x35, 0xd9,
+	0xac, 0x48, 0xf6, 0x72, 0xce, 0x9c, 0xef, 0x37, 0xdf, 0x37, 0x70, 0x0e, 0x28, 0x62, 0x8f, 0x32,
+	0xe5, 0x84, 0x82, 0x2b, 0x0e, 0xb7, 0xf5, 0xc1, 0x2e, 0x87, 0x78, 0x1a, 0x70, 0x4c, 0x4c, 0xd5,
+	0x3e, 0xf4, 0x38, 0xf7, 0x02, 0x8a, 0x70, 0xe8, 0x23, 0xcc, 0x18, 0x57, 0x58, 0xf9, 0x9c, 0xc9,
+	0xf8, 0xb6, 0x14, 0x0e, 0x90, 0x77, 0x13, 0x98, 0xd3, 0x8b, 0xdf, 0x00, 0x6c, 0x9f, 0x46, 0x10,
+	0x78, 0x0e, 0x0a, 0x67, 0xb7, 0xbe, 0x54, 0x12, 0x42, 0x67, 0xc1, 0xbb, 0x1c, 0x7c, 0xa2, 0xae,
+	0x72, 0x3a, 0x6d, 0x3b, 0xa3, 0xd6, 0xa8, 0x7e, 0xfd, 0xf9, 0xeb, 0xdb, 0x56, 0x05, 0x96, 0x10,
+	0xd5, 0x42, 0xf4, 0xd9, 0x27, 0x5f, 0xe0, 0x25, 0x28, 0xf4, 0x28, 0x16, 0xee, 0x10, 0xee, 0x27,
+	0x1a, 0x53, 0x70, 0xae, 0xe8, 0xcd, 0x98, 0x4a, 0x65, 0x1f, 0xac, 0x5f, 0xc8, 0x90, 0x33, 0x49,
+	0x1b, 0x50, 0x23, 0x4b, 0x8d, 0x07, 0x48, 0xea, 0x9b, 0xd7, 0xd6, 0x31, 0xfc, 0x08, 0x80, 0x69,
+	0x6b, 0x4e, 0x3b, 0x6d, 0xf8, 0x38, 0xad, 0xed, 0xb4, 0xff, 0x8f, 0x7d, 0xa4, 0xb1, 0xbb, 0x0d,
+	0x10, 0x63, 0x91, 0x4f, 0x22, 0xf2, 0x05, 0x28, 0xf5, 0x94, 0xa0, 0x78, 0x94, 0xdf, 0xf0, 0xbd,
+	0x67, 0xd6, 0x73, 0x0b, 0x76, 0xc1, 0xc3, 0x65, 0x50, 0x7e, 0xa3, 0x06, 0xf7, 0x0e, 0x14, 0x3a,
+	0x4c, 0x52, 0xa1, 0x60, 0x2d, 0xfd, 0xed, 0x7d, 0xea, 0x2a, 0x2e, 0xec, 0x4a, 0x52, 0x3f, 0x1b,
+	0x85, 0x6a, 0xda, 0xa8, 0xdd, 0xcd, 0x8e, 0xac, 0xe4, 0xef, 0x7c, 0x2d, 0x8e, 0x12, 0xbe, 0x59,
+	0x24, 0xdc, 0x90, 0x67, 0x7c, 0x9c, 0x80, 0x62, 0x77, 0x1c, 0x28, 0x3f, 0x16, 0xef, 0x67, 0x8b,
+	0xe5, 0xba, 0x3a, 0x4a, 0xf0, 0x21, 0x24, 0x58, 0xd1, 0x9c, 0x09, 0xc6, 0x5a, 0xbc, 0x92, 0x60,
+	0x43, 0xde, 0x6a, 0x82, 0x58, 0xbc, 0x41, 0x82, 0x73, 0x50, 0xb8, 0xa2, 0x23, 0x3e, 0xa1, 0x99,
+	0xe3, 0x90, 0xee, 0x3f, 0x48, 0xdc, 0x57, 0x8e, 0x4b, 0x48, 0x68, 0xa1, 0x19, 0x87, 0x93, 0x85,
+	0xff, 0x0d, 0x68, 0xc6, 0xfb, 0xab, 0xd8, 0x7b, 0x2c, 0xdc, 0x5b, 0x17, 0x66, 0xf9, 0xee, 0x82,
+	0x9d, 0x0b, 0xaa, 0x4c, 0x4b, 0xe6, 0x63, 0xff, 0xf8, 0xc0, 0xa5, 0x69, 0xe6, 0xba, 0x6e, 0xec,
+	0xb7, 0xc0, 0xae, 0xb1, 0x9f, 0x0f, 0x6a, 0x92, 0x5c, 0x83, 0x62, 0x4b, 0x50, 0xac, 0x68, 0x87,
+	0x11, 0x7a, 0x0b, 0x9f, 0x24, 0xcd, 0x2d, 0xce, 0x94, 0xe0, 0x41, 0xe0, 0x2c, 0x5d, 0x2f, 0x86,
+	0x24, 0x1d, 0x2d, 0x9e, 0x61, 0x58, 0x46, 0x7e, 0xd4, 0x86, 0x5c, 0x2d, 0x81, 0x6f, 0xc1, 0x4e,
+	0x0f, 0x4f, 0x62, 0x72, 0x4a, 0xb3, 0xc6, 0xd8, 0xd3, 0x8c, 0x32, 0x2c, 0xc6, 0x0c, 0x89, 0x27,
+	0x14, 0x0e, 0x01, 0x34, 0xcf, 0x9f, 0x32, 0xf2, 0x17, 0x95, 0xcf, 0xe4, 0xa1, 0x7e, 0xa0, 0x06,
+	0xab, 0x2b, 0x26, 0x31, 0x23, 0xd1, 0x4b, 0xf6, 0xfd, 0xbb, 0xd9, 0xd1, 0x56, 0xb3, 0xff, 0x7d,
+	0x5e, 0xb7, 0x7e, 0xcc, 0xeb, 0xd6, 0x6c, 0x5e, 0xb7, 0x40, 0x95, 0x0b, 0xcf, 0x99, 0x10, 0x8c,
+	0xa5, 0x33, 0xc1, 0x01, 0x71, 0xf4, 0x46, 0x6f, 0xee, 0xf4, 0x71, 0x40, 0xf4, 0x5e, 0x7e, 0x6f,
+	0x5d, 0x3f, 0xf5, 0x7c, 0x35, 0x1c, 0x0f, 0x1c, 0x97, 0x8f, 0x90, 0xee, 0x44, 0x51, 0x67, 0xb4,
+	0xde, 0x25, 0xf2, 0x44, 0xe8, 0x22, 0xad, 0x19, 0x14, 0xf4, 0x46, 0x7f, 0xf9, 0x27, 0x00, 0x00,
+	0xff, 0xff, 0x65, 0xf2, 0x68, 0xb9, 0x22, 0x06, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -87,20 +86,20 @@ type AgentClient interface {
 	SearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (*payload.Search_Response, error)
 	StreamSearch(ctx context.Context, opts ...grpc.CallOption) (Agent_StreamSearchClient, error)
 	StreamSearchByID(ctx context.Context, opts ...grpc.CallOption) (Agent_StreamSearchByIDClient, error)
-	Insert(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Common_Error, error)
+	Insert(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Empty, error)
 	StreamInsert(ctx context.Context, opts ...grpc.CallOption) (Agent_StreamInsertClient, error)
-	MultiInsert(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Common_Errors, error)
-	Update(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Common_Error, error)
+	MultiInsert(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Empty, error)
+	Update(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Empty, error)
 	StreamUpdate(ctx context.Context, opts ...grpc.CallOption) (Agent_StreamUpdateClient, error)
-	MultiUpdate(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Common_Errors, error)
-	Remove(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Common_Error, error)
+	MultiUpdate(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Empty, error)
+	Remove(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Empty, error)
 	StreamRemove(ctx context.Context, opts ...grpc.CallOption) (Agent_StreamRemoveClient, error)
-	MultiRemove(ctx context.Context, in *payload.Object_IDs, opts ...grpc.CallOption) (*payload.Common_Errors, error)
+	MultiRemove(ctx context.Context, in *payload.Object_IDs, opts ...grpc.CallOption) (*payload.Empty, error)
 	GetObject(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Object_Vector, error)
 	StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (Agent_StreamGetObjectClient, error)
-	CreateIndex(ctx context.Context, in *payload.Controll_CreateIndexRequest, opts ...grpc.CallOption) (*payload.Common_Empty, error)
-	SaveIndex(ctx context.Context, in *payload.Common_Empty, opts ...grpc.CallOption) (*payload.Common_Empty, error)
-	CreateAndSaveIndex(ctx context.Context, in *payload.Controll_CreateIndexRequest, opts ...grpc.CallOption) (*payload.Common_Empty, error)
+	CreateIndex(ctx context.Context, in *payload.Controll_CreateIndexRequest, opts ...grpc.CallOption) (*payload.Empty, error)
+	SaveIndex(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Empty, error)
+	CreateAndSaveIndex(ctx context.Context, in *payload.Controll_CreateIndexRequest, opts ...grpc.CallOption) (*payload.Empty, error)
 }
 
 type agentClient struct {
@@ -200,8 +199,8 @@ func (x *agentStreamSearchByIDClient) Recv() (*payload.Search_Response, error) {
 	return m, nil
 }
 
-func (c *agentClient) Insert(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Common_Error, error) {
-	out := new(payload.Common_Error)
+func (c *agentClient) Insert(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Empty, error) {
+	out := new(payload.Empty)
 	err := c.cc.Invoke(ctx, "/agent.Agent/Insert", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -220,7 +219,7 @@ func (c *agentClient) StreamInsert(ctx context.Context, opts ...grpc.CallOption)
 
 type Agent_StreamInsertClient interface {
 	Send(*payload.Object_Vector) error
-	Recv() (*payload.Common_Error, error)
+	Recv() (*payload.Empty, error)
 	grpc.ClientStream
 }
 
@@ -232,16 +231,16 @@ func (x *agentStreamInsertClient) Send(m *payload.Object_Vector) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *agentStreamInsertClient) Recv() (*payload.Common_Error, error) {
-	m := new(payload.Common_Error)
+func (x *agentStreamInsertClient) Recv() (*payload.Empty, error) {
+	m := new(payload.Empty)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *agentClient) MultiInsert(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Common_Errors, error) {
-	out := new(payload.Common_Errors)
+func (c *agentClient) MultiInsert(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Empty, error) {
+	out := new(payload.Empty)
 	err := c.cc.Invoke(ctx, "/agent.Agent/MultiInsert", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -249,8 +248,8 @@ func (c *agentClient) MultiInsert(ctx context.Context, in *payload.Object_Vector
 	return out, nil
 }
 
-func (c *agentClient) Update(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Common_Error, error) {
-	out := new(payload.Common_Error)
+func (c *agentClient) Update(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Empty, error) {
+	out := new(payload.Empty)
 	err := c.cc.Invoke(ctx, "/agent.Agent/Update", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -269,7 +268,7 @@ func (c *agentClient) StreamUpdate(ctx context.Context, opts ...grpc.CallOption)
 
 type Agent_StreamUpdateClient interface {
 	Send(*payload.Object_Vector) error
-	Recv() (*payload.Common_Error, error)
+	Recv() (*payload.Empty, error)
 	grpc.ClientStream
 }
 
@@ -281,16 +280,16 @@ func (x *agentStreamUpdateClient) Send(m *payload.Object_Vector) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *agentStreamUpdateClient) Recv() (*payload.Common_Error, error) {
-	m := new(payload.Common_Error)
+func (x *agentStreamUpdateClient) Recv() (*payload.Empty, error) {
+	m := new(payload.Empty)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *agentClient) MultiUpdate(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Common_Errors, error) {
-	out := new(payload.Common_Errors)
+func (c *agentClient) MultiUpdate(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Empty, error) {
+	out := new(payload.Empty)
 	err := c.cc.Invoke(ctx, "/agent.Agent/MultiUpdate", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -298,8 +297,8 @@ func (c *agentClient) MultiUpdate(ctx context.Context, in *payload.Object_Vector
 	return out, nil
 }
 
-func (c *agentClient) Remove(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Common_Error, error) {
-	out := new(payload.Common_Error)
+func (c *agentClient) Remove(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Empty, error) {
+	out := new(payload.Empty)
 	err := c.cc.Invoke(ctx, "/agent.Agent/Remove", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -318,7 +317,7 @@ func (c *agentClient) StreamRemove(ctx context.Context, opts ...grpc.CallOption)
 
 type Agent_StreamRemoveClient interface {
 	Send(*payload.Object_ID) error
-	Recv() (*payload.Common_Error, error)
+	Recv() (*payload.Empty, error)
 	grpc.ClientStream
 }
 
@@ -330,16 +329,16 @@ func (x *agentStreamRemoveClient) Send(m *payload.Object_ID) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *agentStreamRemoveClient) Recv() (*payload.Common_Error, error) {
-	m := new(payload.Common_Error)
+func (x *agentStreamRemoveClient) Recv() (*payload.Empty, error) {
+	m := new(payload.Empty)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *agentClient) MultiRemove(ctx context.Context, in *payload.Object_IDs, opts ...grpc.CallOption) (*payload.Common_Errors, error) {
-	out := new(payload.Common_Errors)
+func (c *agentClient) MultiRemove(ctx context.Context, in *payload.Object_IDs, opts ...grpc.CallOption) (*payload.Empty, error) {
+	out := new(payload.Empty)
 	err := c.cc.Invoke(ctx, "/agent.Agent/MultiRemove", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -387,8 +386,8 @@ func (x *agentStreamGetObjectClient) Recv() (*payload.Object_Vector, error) {
 	return m, nil
 }
 
-func (c *agentClient) CreateIndex(ctx context.Context, in *payload.Controll_CreateIndexRequest, opts ...grpc.CallOption) (*payload.Common_Empty, error) {
-	out := new(payload.Common_Empty)
+func (c *agentClient) CreateIndex(ctx context.Context, in *payload.Controll_CreateIndexRequest, opts ...grpc.CallOption) (*payload.Empty, error) {
+	out := new(payload.Empty)
 	err := c.cc.Invoke(ctx, "/agent.Agent/CreateIndex", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -396,8 +395,8 @@ func (c *agentClient) CreateIndex(ctx context.Context, in *payload.Controll_Crea
 	return out, nil
 }
 
-func (c *agentClient) SaveIndex(ctx context.Context, in *payload.Common_Empty, opts ...grpc.CallOption) (*payload.Common_Empty, error) {
-	out := new(payload.Common_Empty)
+func (c *agentClient) SaveIndex(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Empty, error) {
+	out := new(payload.Empty)
 	err := c.cc.Invoke(ctx, "/agent.Agent/SaveIndex", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -405,8 +404,8 @@ func (c *agentClient) SaveIndex(ctx context.Context, in *payload.Common_Empty, o
 	return out, nil
 }
 
-func (c *agentClient) CreateAndSaveIndex(ctx context.Context, in *payload.Controll_CreateIndexRequest, opts ...grpc.CallOption) (*payload.Common_Empty, error) {
-	out := new(payload.Common_Empty)
+func (c *agentClient) CreateAndSaveIndex(ctx context.Context, in *payload.Controll_CreateIndexRequest, opts ...grpc.CallOption) (*payload.Empty, error) {
+	out := new(payload.Empty)
 	err := c.cc.Invoke(ctx, "/agent.Agent/CreateAndSaveIndex", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -421,20 +420,20 @@ type AgentServer interface {
 	SearchByID(context.Context, *payload.Search_IDRequest) (*payload.Search_Response, error)
 	StreamSearch(Agent_StreamSearchServer) error
 	StreamSearchByID(Agent_StreamSearchByIDServer) error
-	Insert(context.Context, *payload.Object_Vector) (*payload.Common_Error, error)
+	Insert(context.Context, *payload.Object_Vector) (*payload.Empty, error)
 	StreamInsert(Agent_StreamInsertServer) error
-	MultiInsert(context.Context, *payload.Object_Vectors) (*payload.Common_Errors, error)
-	Update(context.Context, *payload.Object_Vector) (*payload.Common_Error, error)
+	MultiInsert(context.Context, *payload.Object_Vectors) (*payload.Empty, error)
+	Update(context.Context, *payload.Object_Vector) (*payload.Empty, error)
 	StreamUpdate(Agent_StreamUpdateServer) error
-	MultiUpdate(context.Context, *payload.Object_Vectors) (*payload.Common_Errors, error)
-	Remove(context.Context, *payload.Object_ID) (*payload.Common_Error, error)
+	MultiUpdate(context.Context, *payload.Object_Vectors) (*payload.Empty, error)
+	Remove(context.Context, *payload.Object_ID) (*payload.Empty, error)
 	StreamRemove(Agent_StreamRemoveServer) error
-	MultiRemove(context.Context, *payload.Object_IDs) (*payload.Common_Errors, error)
+	MultiRemove(context.Context, *payload.Object_IDs) (*payload.Empty, error)
 	GetObject(context.Context, *payload.Object_ID) (*payload.Object_Vector, error)
 	StreamGetObject(Agent_StreamGetObjectServer) error
-	CreateIndex(context.Context, *payload.Controll_CreateIndexRequest) (*payload.Common_Empty, error)
-	SaveIndex(context.Context, *payload.Common_Empty) (*payload.Common_Empty, error)
-	CreateAndSaveIndex(context.Context, *payload.Controll_CreateIndexRequest) (*payload.Common_Empty, error)
+	CreateIndex(context.Context, *payload.Controll_CreateIndexRequest) (*payload.Empty, error)
+	SaveIndex(context.Context, *payload.Empty) (*payload.Empty, error)
+	CreateAndSaveIndex(context.Context, *payload.Controll_CreateIndexRequest) (*payload.Empty, error)
 }
 
 // UnimplementedAgentServer can be embedded to have forward compatible implementations.
@@ -456,31 +455,31 @@ func (*UnimplementedAgentServer) StreamSearch(srv Agent_StreamSearchServer) erro
 func (*UnimplementedAgentServer) StreamSearchByID(srv Agent_StreamSearchByIDServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamSearchByID not implemented")
 }
-func (*UnimplementedAgentServer) Insert(ctx context.Context, req *payload.Object_Vector) (*payload.Common_Error, error) {
+func (*UnimplementedAgentServer) Insert(ctx context.Context, req *payload.Object_Vector) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Insert not implemented")
 }
 func (*UnimplementedAgentServer) StreamInsert(srv Agent_StreamInsertServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamInsert not implemented")
 }
-func (*UnimplementedAgentServer) MultiInsert(ctx context.Context, req *payload.Object_Vectors) (*payload.Common_Errors, error) {
+func (*UnimplementedAgentServer) MultiInsert(ctx context.Context, req *payload.Object_Vectors) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiInsert not implemented")
 }
-func (*UnimplementedAgentServer) Update(ctx context.Context, req *payload.Object_Vector) (*payload.Common_Error, error) {
+func (*UnimplementedAgentServer) Update(ctx context.Context, req *payload.Object_Vector) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
 func (*UnimplementedAgentServer) StreamUpdate(srv Agent_StreamUpdateServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpdate not implemented")
 }
-func (*UnimplementedAgentServer) MultiUpdate(ctx context.Context, req *payload.Object_Vectors) (*payload.Common_Errors, error) {
+func (*UnimplementedAgentServer) MultiUpdate(ctx context.Context, req *payload.Object_Vectors) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiUpdate not implemented")
 }
-func (*UnimplementedAgentServer) Remove(ctx context.Context, req *payload.Object_ID) (*payload.Common_Error, error) {
+func (*UnimplementedAgentServer) Remove(ctx context.Context, req *payload.Object_ID) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
 }
 func (*UnimplementedAgentServer) StreamRemove(srv Agent_StreamRemoveServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamRemove not implemented")
 }
-func (*UnimplementedAgentServer) MultiRemove(ctx context.Context, req *payload.Object_IDs) (*payload.Common_Errors, error) {
+func (*UnimplementedAgentServer) MultiRemove(ctx context.Context, req *payload.Object_IDs) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiRemove not implemented")
 }
 func (*UnimplementedAgentServer) GetObject(ctx context.Context, req *payload.Object_ID) (*payload.Object_Vector, error) {
@@ -489,13 +488,13 @@ func (*UnimplementedAgentServer) GetObject(ctx context.Context, req *payload.Obj
 func (*UnimplementedAgentServer) StreamGetObject(srv Agent_StreamGetObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamGetObject not implemented")
 }
-func (*UnimplementedAgentServer) CreateIndex(ctx context.Context, req *payload.Controll_CreateIndexRequest) (*payload.Common_Empty, error) {
+func (*UnimplementedAgentServer) CreateIndex(ctx context.Context, req *payload.Controll_CreateIndexRequest) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateIndex not implemented")
 }
-func (*UnimplementedAgentServer) SaveIndex(ctx context.Context, req *payload.Common_Empty) (*payload.Common_Empty, error) {
+func (*UnimplementedAgentServer) SaveIndex(ctx context.Context, req *payload.Empty) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveIndex not implemented")
 }
-func (*UnimplementedAgentServer) CreateAndSaveIndex(ctx context.Context, req *payload.Controll_CreateIndexRequest) (*payload.Common_Empty, error) {
+func (*UnimplementedAgentServer) CreateAndSaveIndex(ctx context.Context, req *payload.Controll_CreateIndexRequest) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateAndSaveIndex not implemented")
 }
 
@@ -632,7 +631,7 @@ func _Agent_StreamInsert_Handler(srv interface{}, stream grpc.ServerStream) erro
 }
 
 type Agent_StreamInsertServer interface {
-	Send(*payload.Common_Error) error
+	Send(*payload.Empty) error
 	Recv() (*payload.Object_Vector, error)
 	grpc.ServerStream
 }
@@ -641,7 +640,7 @@ type agentStreamInsertServer struct {
 	grpc.ServerStream
 }
 
-func (x *agentStreamInsertServer) Send(m *payload.Common_Error) error {
+func (x *agentStreamInsertServer) Send(m *payload.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -694,7 +693,7 @@ func _Agent_StreamUpdate_Handler(srv interface{}, stream grpc.ServerStream) erro
 }
 
 type Agent_StreamUpdateServer interface {
-	Send(*payload.Common_Error) error
+	Send(*payload.Empty) error
 	Recv() (*payload.Object_Vector, error)
 	grpc.ServerStream
 }
@@ -703,7 +702,7 @@ type agentStreamUpdateServer struct {
 	grpc.ServerStream
 }
 
-func (x *agentStreamUpdateServer) Send(m *payload.Common_Error) error {
+func (x *agentStreamUpdateServer) Send(m *payload.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -756,7 +755,7 @@ func _Agent_StreamRemove_Handler(srv interface{}, stream grpc.ServerStream) erro
 }
 
 type Agent_StreamRemoveServer interface {
-	Send(*payload.Common_Error) error
+	Send(*payload.Empty) error
 	Recv() (*payload.Object_ID, error)
 	grpc.ServerStream
 }
@@ -765,7 +764,7 @@ type agentStreamRemoveServer struct {
 	grpc.ServerStream
 }
 
-func (x *agentStreamRemoveServer) Send(m *payload.Common_Error) error {
+func (x *agentStreamRemoveServer) Send(m *payload.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -858,7 +857,7 @@ func _Agent_CreateIndex_Handler(srv interface{}, ctx context.Context, dec func(i
 }
 
 func _Agent_SaveIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Common_Empty)
+	in := new(payload.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -870,7 +869,7 @@ func _Agent_SaveIndex_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: "/agent.Agent/SaveIndex",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentServer).SaveIndex(ctx, req.(*payload.Common_Empty))
+		return srv.(AgentServer).SaveIndex(ctx, req.(*payload.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
