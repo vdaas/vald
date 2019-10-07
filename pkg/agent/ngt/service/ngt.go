@@ -19,15 +19,13 @@ package service
 
 import (
 	"os"
-	"strconv"
-	"sync"
 	"sync/atomic"
 
-	"github.com/kpango/gache"
 	"github.com/vdaas/vald/internal/config"
 	core "github.com/vdaas/vald/internal/core/ngt"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/agent/ngt/model"
+	"github.com/vdaas/vald/pkg/agent/ngt/service/kvs"
 )
 
 type NGT interface {
@@ -39,16 +37,16 @@ type NGT interface {
 	GetObject(uuid string) (vec []float64, err error)
 	CreateIndex(poolSize uint32) (err error)
 	SaveIndex() (err error)
-	Exists(string) (string, bool)
+	Exists(string) (uint32, bool)
 	CreateAndSaveIndex(poolSize uint32) (err error)
+	ObjectCount() uint64
 	Close()
 }
 
 type ngt struct {
-	cflg uint32      // create index flag 0 or 1
-	ic   uint64      // insert count
-	ou   gache.Gache // map[oid]uuid
-	uo   gache.Gache // map[uuid]oid
+	cflg uint32 // create index flag 0 or 1
+	ic   uint64 // insert count
+	kvs  kvs.BidiMap
 	core core.NGT
 }
 
@@ -64,12 +62,7 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 		core.WithSearchEdgeSize(cfg.SearchEdgeSize),
 	}
 
-	n.ou = gache.New().
-		SetDefaultExpire(0).
-		DisableExpiredHook()
-	n.uo = gache.New().
-		SetDefaultExpire(0).
-		DisableExpiredHook()
+	n.kvs = kvs.New()
 
 	if _, err = os.Stat(cfg.IndexPath); os.IsNotExist(err) {
 		n.core, err = core.New(opts...)
@@ -98,10 +91,10 @@ func (n *ngt) Search(vec []float64, size uint32, epsilon, radius float32) ([]mod
 			errs = errors.Wrap(errs, err.Error())
 			continue
 		}
-		key, ok := n.ou.Get(strconv.FormatInt(int64(d.ID), 10))
+		key, ok := n.kvs.GetInverse(d.ID)
 		if ok {
 			ds = append(ds, model.Distance{
-				ID:       key.(string),
+				ID:       key,
 				Distance: d.Distance,
 			})
 		} else {
@@ -113,11 +106,11 @@ func (n *ngt) Search(vec []float64, size uint32, epsilon, radius float32) ([]mod
 }
 
 func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) ([]model.Distance, error) {
-	oid, ok := n.uo.Get(uuid)
+	oid, ok := n.kvs.Get(uuid)
 	if !ok {
 		return nil, errors.ErrObjectIDNotFound(uuid)
 	}
-	vec, err := n.core.GetVector(oid.(uint))
+	vec, err := n.core.GetVector(uint(oid))
 	if err != nil {
 		return nil, errors.ErrObjectNotFound(err, uuid)
 	}
@@ -131,25 +124,20 @@ func (n *ngt) Insert(uuid string, vec []float64) (err error) {
 		return err
 	}
 
-	i, ok := n.uo.Get(uuid)
-	if ok && i != nil {
-		oid, ok := i.(uint)
-		if !ok {
-			oid = 0
-		}
+	id, ok := n.kvs.Get(uuid)
+	oid := uint(id)
+	if ok {
 		err = errors.ErrUUIDAlreadyExists(uuid, oid)
 		return err
 	}
 
-	oid, err := n.core.Insert(vec)
+	oid, err = n.core.Insert(vec)
 	if err != nil {
 		return err
 	}
 
 	atomic.AddUint64(&n.ic, 1)
-	n.uo.SetWithExpire(uuid, oid, 0)
-	n.ou.SetWithExpire(strconv.FormatInt(int64(oid), 10), uuid, 0)
-
+	n.kvs.Set(uuid, uint32(oid))
 	return nil
 }
 
@@ -163,9 +151,7 @@ func (n *ngt) Update(uuid string, vec []float64) (err error) {
 		return err
 	}
 
-	n.uo.SetWithExpire(uuid, oid, 0)
-	n.ou.SetWithExpire(strconv.FormatInt(int64(oid), 10), uuid, 0)
-
+	n.kvs.Set(uuid, uint32(oid))
 	return nil
 }
 
@@ -178,32 +164,28 @@ func (n *ngt) Delete(uuid string) (err error) {
 	if ic := atomic.LoadUint64(&n.ic); ic > 0 {
 		return errors.ErrUncommittedIndexExists(ic)
 	}
-	i, ok := n.uo.Get(uuid)
-	oid := i.(uint)
-	if !ok || oid == 0 {
+	oid, ok := n.kvs.Get(uuid)
+	if !ok {
 		err = errors.ErrObjectIDNotFound(uuid)
 		return err
 	}
-	err = n.core.Remove(oid)
+	err = n.core.Remove(uint(oid))
 	if err != nil {
 		return err
 	}
 
-	n.uo.Delete(uuid)
-	n.ou.Delete(strconv.FormatInt(int64(oid), 10))
+	n.kvs.DeleteInverse(oid)
 
 	return nil
 }
 
 func (n *ngt) GetObject(uuid string) (vec []float64, err error) {
-	i, ok := n.uo.Get(uuid)
-
-	if !ok || i == 0 {
+	oid, ok := n.kvs.Get(uuid)
+	if !ok {
 		err = errors.ErrObjectIDNotFound(uuid)
 		return nil, err
 	}
-
-	return n.core.GetVector(i.(uint))
+	return n.core.GetVector(uint(oid))
 }
 
 func (n *ngt) CreateIndex(poolSize uint32) (err error) {
@@ -243,31 +225,18 @@ func (n *ngt) CreateAndSaveIndex(poolSize uint32) (err error) {
 }
 
 func (n *ngt) Close() {
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		n.core.Close()
-		wg.Done()
-	}()
-	wg.Add(1)
-	go func() {
-		n.ou.Stop()
-		n.ou.Clear()
-		wg.Done()
-	}()
-	wg.Add(1)
-	go func() {
-		n.uo.Stop()
-		n.uo.Clear()
-		wg.Done()
-	}()
+	n.core.Close()
 }
 
-func (n *ngt) Exists(uuid string) (string, bool) {
-	oid, ok := n.uo.Get(uuid)
+func (n *ngt) Exists(uuid string) (uint32, bool) {
+	oid, ok := n.kvs.Get(uuid)
 	if !ok {
-		return "", false
+		return 0, false
 	}
 
-	return oid.(string), true
+	return oid, true
+}
+
+func (n *ngt) ObjectCount() uint64 {
+	return n.kvs.Len()
 }

@@ -14,6 +14,7 @@ replace (
 require (
 	bou.ke/monkey v1.0.1 // indirect
 	github.com/certifi/gocertifi v0.0.0-20190905060710-a5e0173ced67 // indirect
+	github.com/cespare/xxhash v1.1.0
 	github.com/cockroachdb/errors v1.2.3
 	github.com/cockroachdb/logtags v0.0.0-20190617123548-eb05cc24525f // indirect
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
