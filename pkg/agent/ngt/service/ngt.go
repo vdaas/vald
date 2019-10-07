@@ -20,6 +20,7 @@ package service
 import (
 	"os"
 	"strconv"
+	"sync"
 	"sync/atomic"
 
 	"github.com/kpango/gache"
@@ -45,6 +46,7 @@ type NGT interface {
 }
 
 type ngt struct {
+	cflg uint32      // create index flag 0 or 1
 	ic   uint64      // insert count
 	ou   gache.Gache // map[oid]uuid
 	uo   gache.Gache // map[uuid]oid
@@ -197,34 +199,55 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 	}
 	defer func() {
 		if err == nil {
+			// TODO CreateIndexが失敗した場合にObjectSpaceがどうなるか岩崎さんに確認
 			atomic.StoreUint64(&n.ic, 0)
+			atomic.StoreUint32(&n.cflg, 1)
 		}
 	}()
-	return n.core.CreateIndex(poolSize)
+	err = n.core.CreateIndex(poolSize)
+	return
 }
 
 func (n *ngt) SaveIndex() (err error) {
+	if atomic.LoadUint32(&n.cflg) == 0 {
+		return errors.ErrUncommittedIndexExists(atomic.LoadUint64(&n.ic))
+	}
+	defer func() {
+		if err == nil {
+			atomic.StoreUint32(&n.cflg, 0)
+		}
+	}()
 	return n.core.SaveIndex()
 }
 
 func (n *ngt) CreateAndSaveIndex(poolSize uint32) (err error) {
-	if ic := atomic.LoadUint64(&n.ic); ic == 0 {
-		return errors.ErrUncommittedIndexNotFound
+	err = n.CreateIndex(poolSize)
+	if err != nil {
+		return err
 	}
-	defer func() {
-		if err == nil {
-			atomic.StoreUint64(&n.ic, 0)
-		}
-	}()
-	return n.core.CreateAndSaveIndex(poolSize)
+
+	return n.SaveIndex()
 }
 
 func (n *ngt) Close() {
-	n.core.Close()
-	n.ou.Stop()
-	n.ou.Clear()
-	n.uo.Stop()
-	n.uo.Clear()
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		n.core.Close()
+		wg.Done()
+	}()
+	wg.Add(1)
+	go func() {
+		n.ou.Stop()
+		n.ou.Clear()
+		wg.Done()
+	}()
+	wg.Add(1)
+	go func() {
+		n.uo.Stop()
+		n.uo.Clear()
+		wg.Done()
+	}()
 }
 
 func (n *ngt) Exists(uuid string) (string, bool) {
