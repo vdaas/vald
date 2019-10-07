@@ -24,6 +24,7 @@ import (
 
 	// "github.com/pkg/errors"
 	"github.com/cockroachdb/errors"
+	"github.com/cockroachdb/errors/errbase"
 )
 
 var (
@@ -193,6 +194,7 @@ var (
 			}
 			return err
 		}
+		errors.Cause(err)
 		return New(msg)
 	}
 
@@ -219,4 +221,7 @@ var (
 		}
 		return nil
 	}
+
+	UnWrapOnce = errbase.UnwrapOnce
+	UnWrapAll  = errbase.UnwrapAll
 )
