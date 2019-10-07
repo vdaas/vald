@@ -19,6 +19,7 @@ package grpc
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/apis/grpc/payload"
@@ -46,11 +47,12 @@ func New(opts ...Option) Server {
 func (s *server) Exists(ctx context.Context, oid *payload.Object_ID) (res *payload.Object_ID, err error) {
 	res = new(payload.Object_ID)
 	var ok bool
-	res.Id, ok = s.ngt.Exists(oid.GetId())
+	rid, ok := s.ngt.Exists(oid.GetId())
 	if !ok {
 		err = errors.ErrObjectIDNotFound(oid.GetId())
 		return nil, err
 	}
+	res.Id = strconv.Itoa(int(rid))
 	return res, nil
 }
 
