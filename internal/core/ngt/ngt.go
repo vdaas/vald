@@ -81,7 +81,7 @@ type (
 		dimension           C.int32_t
 		objectType          objectType
 		prop                C.NGTProperty
-		ebuf                C.NGTError
+		ebuf                C.NGTError // TODO BufferPoolとかにしたほうが良さそう
 		index               C.NGTIndex
 		ospace              C.NGTObjectSpace
 		mu                  *sync.RWMutex
@@ -118,6 +118,9 @@ const (
 	NormalizedAngle
 	// NormalizedCosine is cosine distance with normalization
 	NormalizedCosine
+
+	// ErrorCode is false
+	ErrorCode = C._Bool(false)
 )
 
 // New returns NGT instance with recreating empty index file
@@ -178,7 +181,7 @@ func (n *ngt) setup() error {
 
 	n.prop = C.ngt_create_property(n.ebuf)
 	if n.prop == nil {
-		return errors.ErrCreateProperty(newGoError(n.ebuf))
+		return errors.ErrCreateProperty(n.newGoError(n.ebuf))
 	}
 	return nil
 }
@@ -203,10 +206,10 @@ func (n *ngt) create() (err error) {
 
 	n.index = C.ngt_create_graph_and_tree(C.CString(n.idxPath), n.prop, n.ebuf)
 	if n.index == nil {
-		return newGoError(n.ebuf)
+		return n.newGoError(n.ebuf)
 	}
 	if C.ngt_save_index(n.index, C.CString(n.idxPath), n.ebuf) == ErrorCode {
-		return newGoError(n.ebuf)
+		return n.newGoError(n.ebuf)
 	}
 	return nil
 }
@@ -218,16 +221,16 @@ func (n *ngt) open() error {
 
 	n.index = C.ngt_open_index(C.CString(n.idxPath), n.ebuf)
 	if n.index == nil {
-		return newGoError(n.ebuf)
+		return n.newGoError(n.ebuf)
 	}
 
 	if C.ngt_get_property(n.index, n.prop, n.ebuf) == ErrorCode {
-		return newGoError(n.ebuf)
+		return n.newGoError(n.ebuf)
 	}
 
 	n.dimension = C.ngt_get_property_dimension(n.prop, n.ebuf)
 	if int(n.dimension) == -1 {
-		return newGoError(n.ebuf)
+		return n.newGoError(n.ebuf)
 	}
 	return nil
 }
@@ -235,7 +238,7 @@ func (n *ngt) open() error {
 func (n *ngt) loadObjectSpace() error {
 	n.ospace = C.ngt_get_object_space(n.index, n.ebuf)
 	if n.ospace == nil {
-		return newGoError(n.ebuf)
+		return n.newGoError(n.ebuf)
 	}
 	return nil
 }
@@ -246,12 +249,13 @@ func (n *ngt) Search(vec []float64, size int, epsilon, radius float32) ([]Search
 	results := C.ngt_create_empty_results(n.ebuf)
 	defer C.ngt_destroy_results(results)
 	if results == nil {
-		return nil, newGoError(n.ebuf)
+		return nil, n.newGoError(n.ebuf)
 	}
 
 	n.mu.RLock()
 
-	ret := C.ngt_search_index(n.index,
+	ret := C.ngt_search_index(
+		n.index,
 		(*C.double)(&vec[0]),
 		n.dimension,
 		// C.size_t(size),
@@ -263,22 +267,25 @@ func (n *ngt) Search(vec []float64, size int, epsilon, radius float32) ([]Search
 		results,
 		n.ebuf)
 
-	n.mu.RUnlock()
-
 	if ret == ErrorCode {
-		return nil, newGoError(n.ebuf)
+		// TODO global lock取るのどうする問題
+		ne := n.ebuf
+		n.mu.RUnlock()
+		return nil, n.newGoError(ne)
 	}
 
-	rsize := int(C.ngt_get_size(results, n.ebuf))
+	n.mu.RUnlock()
+
+	rsize := int(C.ngt_get_result_size(results, n.ebuf))
 	if rsize == -1 {
-		return nil, newGoError(n.ebuf)
+		return nil, n.newGoError(n.ebuf)
 	}
 
 	result := make([]SearchResult, rsize)
 	for i := 0; i < rsize; i++ {
 		d := C.ngt_get_result(results, C.uint32_t(i), n.ebuf)
 		if d.id == 0 && d.distance == 0 {
-			result[i] = SearchResult{0, 0, newGoError(n.ebuf)}
+			result[i] = SearchResult{0, 0, n.newGoError(n.ebuf)}
 		} else {
 			result[i] = SearchResult{uint32(d.id), float32(d.distance), nil}
 		}
@@ -294,7 +301,7 @@ func (n *ngt) Insert(vec []float64) (uint, error) {
 	id := C.ngt_insert_index(n.index, (*C.double)(&vec[0]), C.uint32_t(n.dimension), n.ebuf)
 	n.mu.Unlock()
 	if id == 0 {
-		return 0, newGoError(n.ebuf)
+		return 0, n.newGoError(n.ebuf)
 	}
 
 	return uint(id), nil
@@ -335,7 +342,7 @@ func (n *ngt) BulkInsert(vecs [][]float64) ([]uint, []error) {
 		id = uint(C.ngt_insert_index(n.index, (*C.double)(&vec[0]), C.uint32_t(n.dimension), n.ebuf))
 		// n.mu.Unlock()
 		if id == 0 {
-			errs = append(errs, newGoError(n.ebuf))
+			errs = append(errs, n.newGoError(n.ebuf))
 		} else {
 			ids = append(ids, uint(id))
 		}
@@ -393,10 +400,12 @@ func (n *ngt) CreateAndSaveIndex(poolSize uint32) error {
 func (n *ngt) CreateIndex(poolSize uint32) error {
 	n.mu.Lock()
 	ret := C.ngt_create_index(n.index, C.uint32_t(poolSize), n.ebuf)
-	n.mu.Unlock()
 	if ret == ErrorCode {
-		return newGoError(n.ebuf)
+		ne := n.ebuf
+		n.mu.Unlock()
+		return n.newGoError(ne)
 	}
+	n.mu.Unlock()
 
 	return nil
 }
@@ -405,11 +414,12 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 func (n *ngt) SaveIndex() error {
 	n.mu.RLock()
 	ret := C.ngt_save_index(n.index, C.CString(n.idxPath), n.ebuf)
-	n.mu.RUnlock()
-
 	if ret == ErrorCode {
-		return newGoError(n.ebuf)
+		ne := n.ebuf
+		n.mu.Unlock()
+		return n.newGoError(ne)
 	}
+	n.mu.RUnlock()
 
 	return nil
 }
@@ -418,10 +428,12 @@ func (n *ngt) SaveIndex() error {
 func (n *ngt) Remove(id uint) error {
 	n.mu.Lock()
 	ret := C.ngt_remove_index(n.index, C.ObjectID(id), n.ebuf)
-	n.mu.Unlock()
 	if ret == ErrorCode {
-		return newGoError(n.ebuf)
+		ne := n.ebuf
+		n.mu.Unlock()
+		return n.newGoError(ne)
 	}
+	n.mu.Unlock()
 
 	return nil
 }
@@ -436,7 +448,7 @@ func (n *ngt) GetVector(id uint) ([]float64, error) {
 		results := C.ngt_get_object_as_float(n.ospace, C.ObjectID(id), n.ebuf)
 		n.mu.RUnlock()
 		if results == nil {
-			return nil, newGoError(n.ebuf)
+			return nil, n.newGoError(n.ebuf)
 		}
 		slice := (*[1 << 30]C.float)(unsafe.Pointer(results))[:dimension:dimension]
 		for i := 0; i < dimension; i++ {
@@ -447,7 +459,7 @@ func (n *ngt) GetVector(id uint) ([]float64, error) {
 		results := C.ngt_get_object_as_integer(n.ospace, C.ObjectID(id), n.ebuf)
 		n.mu.RUnlock()
 		if results == nil {
-			return nil, newGoError(n.ebuf)
+			return nil, n.newGoError(n.ebuf)
 		}
 		slice := (*[1 << 30]C.uchar)(unsafe.Pointer(results))[:dimension:dimension]
 		for i := 0; i < dimension; i++ {
@@ -459,11 +471,13 @@ func (n *ngt) GetVector(id uint) ([]float64, error) {
 	return ret, nil
 }
 
-func (n *ngt) refreshEbufIfError(err error) {
-	if err != nil {
-		C.ngt_destroy_error_object(n.ebuf)
-		n.ebuf = C.ngt_create_error_object()
-	}
+func (n *ngt) newGoError(ne C.NGTError) (err error) {
+	n.mu.Lock()
+	err = errors.New(C.GoString(C.ngt_get_error_string(ne)))
+	C.ngt_destroy_error_object(n.ebuf)
+	n.ebuf = C.ngt_create_error_object()
+	n.mu.Lock()
+	return err
 }
 
 // Close NGT index.

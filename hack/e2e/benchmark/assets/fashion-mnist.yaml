@@ -22,9 +22,9 @@ server_config:
     host: 127.0.0.1
     port: 8082
     mode: GRPC
-    probe_wait_time: "3s"
+    probe_wait_time: "0s"
     http:
-      shutdown_duration: "5s"
+      shutdown_duration: "0s"
       handler_timeout: ""
       idle_timeout: ""
       read_header_timeout: ""
@@ -38,7 +38,6 @@ server_config:
   tls:
     enabled: false
 ngt:
-  index_path: ./index
   dimension: 784
   bulk_insert_chunk_size: 10
   distance_type: l2

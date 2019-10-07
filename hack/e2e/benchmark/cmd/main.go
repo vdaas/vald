@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
-	"runtime"
 	"time"
 
 	"github.com/kpango/fuid"
@@ -18,6 +16,7 @@ import (
 func load(path, name string) (vec [][]float64, err error) {
 	f, err := hdf5.OpenFile(path, hdf5.F_ACC_RDONLY)
 	if err != nil {
+		log.Error(path, name)
 		return nil, err
 	}
 	defer func() {
@@ -60,45 +59,51 @@ func main() {
 
 	datasetName := os.Args[1]
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1 * time.Hour)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
 	defer cancel()
 
 	conn, err := grpc.DialContext(ctx, "localhost:8082", grpc.WithInsecure())
 	if err != nil {
 		log.Error(err)
+		return
 	}
 	client := agent.NewAgentClient(conn)
 
-	train, err := load(fmt.Sprintf("assets/%s.hdf5", datasetName), "train")
+	train, err := load(datasetName, "train")
 	if err != nil {
 		log.Error(err)
+		return
 	}
+	start := time.Now()
 	log.Info("insert start")
 	for _, vector := range train {
 		if _, err := client.Insert(ctx, &payload.Object_Vector{
 			Id: &payload.Object_ID{
 				Id: fuid.String(),
 			},
-			Vector:vector,
+			Vector: vector,
 		}); err != nil {
 			log.Error(err)
 		}
 	}
-	log.Info("insert finish")
+	log.Info("insert finish", time.Now().Sub(start))
 
+	start = time.Now()
 	log.Info("indexing start")
 	if _, err := client.CreateIndex(ctx, &payload.Controll_CreateIndexRequest{
-		PoolSize: uint32(runtime.NumCPU()),
+		PoolSize: uint32(10000),
 	}); err != nil {
 		log.Error(err)
 	}
-	log.Info("indexing finish")
+	log.Info("indexing finish", time.Now().Sub(start))
 
-	test, err := load(fmt.Sprintf("assets/%s.hdf5", datasetName), "test")
+	test, err := load(datasetName, "test")
+
 	if err != nil {
 		log.Error(err)
 	}
 
+	start = time.Now()
 	log.Info("search start")
 	for _, vector := range test {
 		req := &payload.Search_Request{
@@ -106,15 +111,18 @@ func main() {
 				Vector: vector,
 			},
 			Config: &payload.Search_Config{
-				Num: 10,
-				Epsilon: 0.1,
+				Num:     10,
+				Radius:  -1.0,
+				Epsilon: 0.01,
 			},
 		}
 		res, err := client.Search(ctx, req)
 		if err != nil {
 			log.Error(err)
 		}
-		log.Info(res.GetResults())
+		if res.GetResults() != nil {
+			log.Info(res.GetResults())
+		}
 	}
-	log.Info("search finish")
+	log.Info("search finish", time.Now().Sub(start))
 }

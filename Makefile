@@ -99,6 +99,16 @@ PROTO_PATHS = \
 	-I $(GOPATH)/src/github.com/danielvladco/go-proto-gql \
 	-I $(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 
+BENCH_DATAS = \
+	fashion-mnist-784-euclidean \
+	glove-25-angular \
+	glove-50-angular \
+	glove-100-angular \
+	glove-200-angular \
+	mnist-784-euclidean \
+	nytimes-256-angular \
+	sift-128-euclidean
+
 define protoc-gen
 	protoc \
 		$(PROTO_PATHS) \
@@ -359,6 +369,14 @@ $(PBDOCS): proto-deps $(PBDOCDIRS)
 	@$(call green, "generating documents files...")
 	$(call protoc-gen, $(patsubst apis/docs/%.md,apis/proto/%.proto,$@), --plugin=protoc-gen-doc=$(GOPATH)/bin/protoc-gen-doc --doc_out=$(dir $@))
 
-benchmark-fashion-mnist:
-	rm -r ./index
+benchmark-agent-start:
+	# rm -r ./index 1>/dev/null 2>/dev/null
+	# CGO_ENABLED=1 CGO_CXXFLAGS="-g -Ofast -march=native" CGO_FFLAGS="-g -Ofast -march=native" CGO_LDFLAGS="-g -Ofast -march=native" GO111MODULE=on GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build --ldflags '-s -w -linkmode "external" -extldflags "-static -fPIC -m64 -pthread -fopenmp -std=c++17 -lstdc++ -lm"' -a -tags "cgo netgo" -trimpath -installsuffix "cgo netgo" -o "agent" "cmd/agent/ngt/main.go"
 	go run cmd/agent/ngt/main.go -f hack/e2e/benchmark/assets/fashion-mnist.yaml
+	# ./agent -f hack/e2e/benchmark/assets/fashion-mnist.yaml
+	# rm -rf ./agent
+
+benchmark-fashion-mnist:
+	go build -ldflags="-w -s" -o ./fmbench hack/e2e/benchmark/cmd/main.go 
+	./fmbench hack/e2e/benchmark/assets/fashion-mnist-784-euclidean.hdf5
+	rm -rf ./fmbench

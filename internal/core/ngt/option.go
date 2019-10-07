@@ -45,6 +45,9 @@ var (
 
 func WithIndexPath(path string) Option {
 	return func(n *ngt) error {
+		if len(path) == 0{
+			return nil
+		}
 		n.idxPath = path
 		return nil
 	}
@@ -60,7 +63,7 @@ func WithBulkInsertChunkSize(size int) Option {
 func WithDimension(size int) Option {
 	return func(n *ngt) error {
 		if C.ngt_set_property_dimension(n.prop, C.int32_t(size), n.ebuf) == ErrorCode {
-			return errors.ErrFailedToSetDimension(newGoError(n.ebuf))
+			return errors.ErrFailedToSetDimension(n.newGoError(n.ebuf))
 		}
 		n.dimension = C.int32_t(size)
 		return nil
@@ -93,30 +96,30 @@ func WithDistanceType(t distanceType) Option {
 		switch t {
 		case L1:
 			if C.ngt_set_property_distance_type_l1(n.prop, n.ebuf) == ErrorCode {
-				return errors.ErrFailedToSetDistanceType(newGoError(n.ebuf), "L1")
+				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "L1")
 			}
 		case L2:
 			if C.ngt_set_property_distance_type_l2(n.prop, n.ebuf) == ErrorCode {
-				return errors.ErrFailedToSetDistanceType(newGoError(n.ebuf), "L2")
+				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "L2")
 			}
 		case Angle:
 			if C.ngt_set_property_distance_type_angle(n.prop, n.ebuf) == ErrorCode {
-				return errors.ErrFailedToSetDistanceType(newGoError(n.ebuf), "Angle")
+				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "Angle")
 			}
 		case Hamming:
 			if C.ngt_set_property_distance_type_hamming(n.prop, n.ebuf) == ErrorCode {
-				return errors.ErrFailedToSetDistanceType(newGoError(n.ebuf), "Hamming")
+				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "Hamming")
 			}
 		case Cosine:
 			if C.ngt_set_property_distance_type_cosine(n.prop, n.ebuf) == ErrorCode {
-				return errors.ErrFailedToSetDistanceType(newGoError(n.ebuf), "Cosine")
+				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "Cosine")
 			}
 		case NormalizedAngle:
 			// TODO: not implemented in C API
-			return errors.ErrFailedToSetDistanceType(newGoError(n.ebuf), "NormalizedAngle")
+			return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "NormalizedAngle")
 		case NormalizedCosine:
 			// TODO: not implemented in C API
-			return errors.ErrFailedToSetDistanceType(newGoError(n.ebuf), "NormalizedCosine")
+			return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "NormalizedCosine")
 		default:
 			return errors.ErrUnsupportedDistanceType
 		}
@@ -126,7 +129,7 @@ func WithDistanceType(t distanceType) Option {
 
 func WithObjectTypeByString(ot string) Option {
 	var o objectType
-	switch strings.NewReplacer("-", "", "_", "", " ", "").Replace(strings.ToLower(ot)) {
+	switch strings.NewReplacer("-", "", "_", "", " ", "", "double", "float").Replace(strings.ToLower(ot)) {
 	case "uint8":
 		o = Uint8
 	case "float":
@@ -140,11 +143,11 @@ func WithObjectType(t objectType) Option {
 		switch t {
 		case Uint8:
 			if C.ngt_set_property_object_type_integer(n.prop, n.ebuf) == ErrorCode {
-				return errors.ErrFailedToSetObjectType(newGoError(n.ebuf), "Uint8")
+				return errors.ErrFailedToSetObjectType(n.newGoError(n.ebuf), "Uint8")
 			}
 		case Float:
 			if C.ngt_set_property_object_type_float(n.prop, n.ebuf) == ErrorCode {
-				return errors.ErrFailedToSetObjectType(newGoError(n.ebuf), "Float")
+				return errors.ErrFailedToSetObjectType(n.newGoError(n.ebuf), "Float")
 			}
 		default:
 			return errors.ErrUnsupportedObjectType
@@ -157,7 +160,7 @@ func WithObjectType(t objectType) Option {
 func WithCreationEdgeSize(size int) Option {
 	return func(n *ngt) error {
 		if C.ngt_set_property_edge_size_for_creation(n.prop, C.int16_t(size), n.ebuf) == ErrorCode {
-			return errors.ErrFailedToSetCreationEdgeSize(newGoError(n.ebuf))
+			return errors.ErrFailedToSetCreationEdgeSize(n.newGoError(n.ebuf))
 		}
 		return nil
 	}
@@ -166,7 +169,7 @@ func WithCreationEdgeSize(size int) Option {
 func WithSearchEdgeSize(size int) Option {
 	return func(n *ngt) error {
 		if C.ngt_set_property_edge_size_for_search(n.prop, C.int16_t(size), n.ebuf) == ErrorCode {
-			return errors.ErrFailedToSetSearchEdgeSize(newGoError(n.ebuf))
+			return errors.ErrFailedToSetSearchEdgeSize(n.newGoError(n.ebuf))
 		}
 		return nil
 	}

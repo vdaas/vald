@@ -93,17 +93,17 @@ func (n *ngt) Search(vec []float64, size uint32, epsilon, radius float32) ([]mod
 	var errs error
 	ds := make([]model.Distance, 0, len(sr))
 
-	for i, d := range sr {
+	for _, d := range sr {
 		if err = d.Error; d.ID == 0 && err != nil {
 			errs = errors.Wrap(errs, err.Error())
 			continue
 		}
 		key, ok := n.ou.Get(strconv.FormatInt(int64(d.ID), 10))
 		if ok {
-			ds[i] = model.Distance{
+			ds = append(ds, model.Distance{
 				ID:       key.(string),
 				Distance: d.Distance,
-			}
+			})
 		} else {
 			errs = errors.Wrap(errs, errors.ErrUUIDNotFound(d.ID).Error())
 		}

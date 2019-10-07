@@ -8,9 +8,7 @@ DATASETS = \
 	nytimes-256-angular \
 	sift-128-euclidean
 
-HDF5 = $(addsuffix .hdf5,$(DATASETS))
-
-%.hdf5:
+%:
 	./download.sh $@
 
-download: $(HDF5)
+download: $(DATASETS)
