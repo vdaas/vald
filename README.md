@@ -4,7 +4,7 @@
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache2-blue.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
 [![release](https://img.shields.io/github/release/vdaas/vald.svg?style=flat-square)](https://github.com/vdaas/vald/releases/latest)
-[![Actions Status](https://xxx.execute-api.us-west-2.amazonaws.com/production/badge/vdaas/vald?style=flat-square)](https://xxx.execute-api.us-west-2.amazonaws.com/production/results/vdaas/vald)
+[![Actions Status](https://github.com/vdaas/vald/workflows/badge.svg)](https://github.com/vdaas/vald/actions)
 [![codecov](https://codecov.io/gh/vdaas/vald/branch/master/graph/badge.svg?token=2CzooNJtUu&style=flat-square)](https://codecov.io/gh/vdaas/vald)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a6e544eee7bc49e08a000bb10ba3deed)](https://www.codacy.com/app/i.can.feel.gravity/vald?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vdaas/vald&amp;utm_campaign=Badge_Grade)
 [![Go Report Card](https://goreportcard.com/badge/github.com/vdaas/vald)](https://goreportcard.com/report/github.com/vdaas/vald)
