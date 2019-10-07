@@ -80,6 +80,8 @@ type (
 		bulkInsertChunkSize int
 		dimension           C.int32_t
 		objectType          objectType
+		radius              float32
+		epsilon             float32
 		prop                C.NGTProperty
 		ebuf                C.NGTError // TODO BufferPoolとかにしたほうが良さそう
 		index               C.NGTIndex
@@ -252,8 +254,15 @@ func (n *ngt) Search(vec []float64, size int, epsilon, radius float32) ([]Search
 		return nil, n.newGoError(n.ebuf)
 	}
 
-	n.mu.RLock()
+	if epsilon == 0{
+		epsilon = n.epsilon
+	}
 
+	if radius == 0{
+		radius = n.radius
+	}
+
+	n.mu.RLock()
 	ret := C.ngt_search_index(
 		n.index,
 		(*C.double)(&vec[0]),

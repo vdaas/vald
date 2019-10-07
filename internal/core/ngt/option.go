@@ -35,6 +35,8 @@ var (
 	defaultOpts = []Option{
 		WithIndexPath("/tmp/ngt-" + string(fastime.FormattedNow())),
 		WithDimension(0),
+		WithDefaultRadius(-1.0),
+		WithDefaultEpsilon(0.01),
 		WithCreationEdgeSize(10),
 		WithSearchEdgeSize(40),
 		WithObjectType(Float),
@@ -45,7 +47,7 @@ var (
 
 func WithIndexPath(path string) Option {
 	return func(n *ngt) error {
-		if len(path) == 0{
+		if len(path) == 0 {
 			return nil
 		}
 		n.idxPath = path
@@ -170,6 +172,24 @@ func WithSearchEdgeSize(size int) Option {
 	return func(n *ngt) error {
 		if C.ngt_set_property_edge_size_for_search(n.prop, C.int16_t(size), n.ebuf) == ErrorCode {
 			return errors.ErrFailedToSetSearchEdgeSize(n.newGoError(n.ebuf))
+		}
+		return nil
+	}
+}
+
+func WithDefaultRadius(radius float32) Option {
+	return func(n *ngt) error {
+		if radius != 0 {
+			n.radius = radius
+		}
+		return nil
+	}
+}
+
+func WithDefaultEpsilon(epsilon float32) Option {
+	return func(n *ngt) error {
+		if epsilon != 0 {
+			n.epsilon = epsilon
 		}
 		return nil
 	}
