@@ -17,6 +17,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"time"
 
@@ -120,6 +121,7 @@ func main() {
 
 	start = time.Now()
 	log.Info("search start")
+	all := make([]*payload.Object_Distance, 0, len(test)*10)
 	for _, vector := range test {
 		req := &payload.Search_Request{
 			Vector: &payload.Object_Vector{
@@ -136,8 +138,10 @@ func main() {
 			log.Error(err)
 		}
 		if res.GetResults() != nil {
-			log.Info(res.GetResults())
+			all = append(all, res.GetResults()...)
 		}
 	}
+	b, _ := json.MarshalIndent(all, "", "\t")
+	log.Info(string(b))
 	log.Info("search finish", time.Now().Sub(start))
 }
