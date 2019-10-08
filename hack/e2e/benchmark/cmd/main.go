@@ -92,16 +92,29 @@ func main() {
 	}
 	start := time.Now()
 	log.Info("insert start")
+	cstream, err := client.StreamInsert(ctx)
+	if err != nil {
+		log.Error(err)
+		return
+	}
 	for _, vector := range train {
-		if _, err := client.Insert(ctx, &payload.Object_Vector{
+		err = cstream.Send(&payload.Object_Vector{
 			Id: &payload.Object_ID{
 				Id: fuid.String(),
 			},
 			Vector: vector,
-		}); err != nil {
+		})
+		// _, err = client.Insert(ctx, &payload.Object_Vector{
+		// 	Id: &payload.Object_ID{
+		// 		Id: fuid.String(),
+		// 	},
+		// 	Vector: vector,
+		// })
+		if err != nil {
 			log.Error(err)
 		}
 	}
+	cstream.CloseSend()
 	log.Info("insert finish", time.Now().Sub(start))
 
 	start = time.Now()

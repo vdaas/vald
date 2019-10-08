@@ -81,7 +81,6 @@ func toSearchResponse(dists []model.Distance, err error) (res *payload.Search_Re
 	}
 	res.Results = make([]*payload.Object_Distance, 0, len(dists))
 	for _, dist := range dists {
-		// res.Results = append(res.Results, (*payload.Object_Distance)(unsafe.Pointer(&dist)))
 		res.Results = append(res.Results, &payload.Object_Distance{
 			Id: &payload.Object_ID{
 				Id: dist.ID,

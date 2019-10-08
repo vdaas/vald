@@ -22,6 +22,7 @@ import (
 	"io"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
 	"google.golang.org/grpc"
 )
 
@@ -37,7 +38,7 @@ func BidirectionalStream(stream grpc.ServerStream,
 			return eg.Wait()
 		default:
 			data := newData()
-			err = stream.RecvMsg(&data)
+			err = stream.RecvMsg(data)
 			if err != nil {
 				if err == io.EOF {
 					return eg.Wait()
@@ -45,6 +46,7 @@ func BidirectionalStream(stream grpc.ServerStream,
 				return err
 			}
 			if data != nil {
+				log.Info(data)
 				eg.Go(func() (err error) {
 					var res interface{}
 					res, err = f(ctx, data)
