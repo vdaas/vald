@@ -46,7 +46,6 @@ func BidirectionalStream(stream grpc.ServerStream,
 				return err
 			}
 			if data != nil {
-				log.Info(data)
 				eg.Go(func() (err error) {
 					var res interface{}
 					res, err = f(ctx, data)
