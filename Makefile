@@ -36,6 +36,7 @@
 	swagger \
 	graphql \
 	pbdoc \
+	bench-datasets \
 	clean-proto-artifacts \
 	proto-deps
 
@@ -66,6 +67,9 @@ SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
 GRAPHQLS = $(PROTOS:apis/proto/%.proto=apis/graphql/%.pb.graphqls)
 GQLCODES = $(GRAPHQLS:apis/graphql/%.pb.graphqls=apis/graphql/%.generated.go)
 PBDOCS = $(PROTOS:apis/proto/%.proto=apis/docs/%.md)
+
+BENCH_DATASET_MD5S := $(shell find hack/e2e/benchmark/assets -type f -regex ".*\.md5")
+BENCH_DATASETS = $(BENCH_DATASET_MD5S:hack/e2e/benchmark/assets/%.md5=hack/e2e/benchmark/assets/%.hdf5)
 
 red    = /bin/echo -e "\x1b[31m\#\# $1\x1b[0m"
 green  = /bin/echo -e "\x1b[32m\#\# $1\x1b[0m"
@@ -98,16 +102,6 @@ PROTO_PATHS = \
 	-I $(GOPATH)/src/github.com/googleapis/googleapis \
 	-I $(GOPATH)/src/github.com/danielvladco/go-proto-gql \
 	-I $(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
-
-BENCH_DATAS = \
-	fashion-mnist-784-euclidean \
-	glove-25-angular \
-	glove-50-angular \
-	glove-100-angular \
-	glove-200-angular \
-	mnist-784-euclidean \
-	nytimes-256-angular \
-	sift-128-euclidean
 
 define protoc-gen
 	protoc \
@@ -240,6 +234,8 @@ swagger: $(SWAGGERS)
 graphql: $(GRAPHQLS) $(GQLCODES)
 pbdoc: $(PBDOCS)
 
+bench-datasets: $(BENCH_DATASETS)
+
 clean-proto-artifacts:
 	rm -rf apis/grpc apis/swagger apis/graphql
 
@@ -368,6 +364,11 @@ $(GQLCODES): proto-deps $(GRAPHQLS)
 $(PBDOCS): proto-deps $(PBDOCDIRS)
 	@$(call green, "generating documents files...")
 	$(call protoc-gen, $(patsubst apis/docs/%.md,apis/proto/%.proto,$@), --plugin=protoc-gen-doc=$(GOPATH)/bin/protoc-gen-doc --doc_out=$(dir $@))
+
+$(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
+	@$(call green, "downloading datasets for benchmark...")
+	curl -fsSLO http://vectors.erikbern.com/$(patsubst hack/e2e/benchmark/assets/%.hdf5,%.hdf5,$@)
+	(cd hack/e2e/benchmark/assets; md5sum -c $(patsubst hack/e2e/benchmark/assets/%.hdf5,%.md5,$@))
 
 benchmark-agent-start:
 	# rm -r ./index 1>/dev/null 2>/dev/null
