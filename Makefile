@@ -37,9 +37,9 @@
 	graphql \
 	pbdoc \
 	bench-datasets \
+	clean-bench-datasets \
 	clean-proto-artifacts \
 	proto-deps
-
 
 REPO               ?= vdaas
 GOPKG               = github.com/${REPO}/vald
@@ -236,6 +236,9 @@ pbdoc: $(PBDOCS)
 
 bench-datasets: $(BENCH_DATASETS)
 
+clean-bench-datasets:
+	rm -rf $(BENCH_DATASETS)
+
 clean-proto-artifacts:
 	rm -rf apis/grpc apis/swagger apis/graphql
 
@@ -367,8 +370,8 @@ $(PBDOCS): proto-deps $(PBDOCDIRS)
 
 $(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
 	@$(call green, "downloading datasets for benchmark...")
-	curl -fsSLO http://vectors.erikbern.com/$(patsubst hack/e2e/benchmark/assets/%.hdf5,%.hdf5,$@)
-	(cd hack/e2e/benchmark/assets; md5sum -c $(patsubst hack/e2e/benchmark/assets/%.hdf5,%.md5,$@))
+	curl -fsSL -o $@ http://vectors.erikbern.com/$(patsubst hack/e2e/benchmark/assets/%.hdf5,%.hdf5,$@)
+	(cd hack/e2e/benchmark/assets; md5sum -c $(patsubst hack/e2e/benchmark/assets/%.hdf5,%.md5,$@) || (rm -f $(patsubst hack/e2e/benchmark/assets/%.hdf5,%.hdf5,$@) && exit 1))
 
 benchmark-agent-start:
 	# rm -r ./index 1>/dev/null 2>/dev/null
@@ -378,6 +381,6 @@ benchmark-agent-start:
 	# rm -rf ./agent
 
 benchmark-fashion-mnist:
-	go build -ldflags="-w -s" -o ./fmbench hack/e2e/benchmark/cmd/main.go 
+	go build -ldflags="-w -s" -o ./fmbench hack/e2e/benchmark/cmd/main.go
 	./fmbench hack/e2e/benchmark/assets/fashion-mnist-784-euclidean.hdf5
 	rm -rf ./fmbench
