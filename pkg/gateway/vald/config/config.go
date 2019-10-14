@@ -30,6 +30,9 @@ type Data struct {
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
+	// Gateway represent agent gateway service configuration
+	Gateway *config.Gateway `json:"discoverer" yaml:"discoverer"`
+
 	// Discoverer represent agent discoverer service configuration
 	Discoverer *config.Discoverer `json:"discoverer" yaml:"discoverer"`
 

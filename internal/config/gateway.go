@@ -17,13 +17,12 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-type Discoverer struct {
-	Host     string
-	Port     int
-	Duration string
+type Gateway struct {
+	AgentPort int
+	AgentName string
 }
 
-func (d *Discoverer) Bind() *Discoverer {
-	d.Host = GetActualValue(d.Host)
-	return d
+func (g *Gateway) Bind() *Gateway {
+	g.AgentName = GetActualValue(g.AgentName)
+	return g
 }

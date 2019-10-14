@@ -57,9 +57,16 @@ func WithDiscoverDuration(dur string) GWOption {
 	}
 }
 
-func WithPort(port int) GWOption {
+func WithAgentName(name string) GWOption {
 	return func(g *gateway) error {
-		g.port = port
+		g.agentName = name
+		return nil
+	}
+}
+
+func WithAgentPort(port int) GWOption {
+	return func(g *gateway) error {
+		g.agentPort = port
 		return nil
 	}
 }

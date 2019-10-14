@@ -182,7 +182,7 @@ func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error
 
 func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *payload.Empty, err error) {
 	vec.Id = &payload.Object_ID{
-		Id: s.metadata.SetMeta(vec.Id.GetId()),
+		Id: s.metadata.SetMeta(ctx, vec.Id.GetId()),
 	}
 	mu := new(sync.Mutex)
 	targets := make([]string, 0, s.replica)
