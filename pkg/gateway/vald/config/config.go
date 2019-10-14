@@ -32,15 +32,6 @@ type Data struct {
 
 	// Gateway represent agent gateway service configuration
 	Gateway *config.Gateway `json:"discoverer" yaml:"discoverer"`
-
-	// Discoverer represent agent discoverer service configuration
-	Discoverer *config.Discoverer `json:"discoverer" yaml:"discoverer"`
-
-	// MetaProxy represent metadata gateway configuration
-	Meta *config.MetaProxy `json:"meta" yaml:"meta"`
-
-	// IndexManager represent index manager configuration
-	IndexManager *config.IndexManager `json:"meta" yaml:"meta"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
@@ -53,14 +44,9 @@ func NewConfig(path string) (cfg *Data, err error) {
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()
 	}
-	if cfg.Discoverer.Bind() != nil {
-		cfg.Discoverer = cfg.Discoverer.Bind()
-	}
-	if cfg.Meta.Bind() != nil {
-		cfg.Meta = cfg.Meta.Bind()
-	}
-	if cfg.IndexManager.Bind() != nil {
-		cfg.IndexManager = cfg.IndexManager.Bind()
+
+	if cfg.Gateway != nil {
+		cfg.Gateway = cfg.Gateway.Bind()
 	}
 
 	return cfg, nil
@@ -140,14 +126,10 @@ func NewConfig(path string) (cfg *Data, err error) {
 // 				CA:      "/path/to/ca",
 // 			},
 // 		},
-// 		NGT: &config.NGT{
-// 			IndexPath:           "/path/to/index",
-// 			Dimension:           4096,
-// 			BulkInsertChunkSize: 10,
-// 			DistanceType:        "l2",
-// 			ObjectType:          "float",
-// 			CreationEdgeSize:    20,
-// 			SearchEdgeSize:      10,
+// 		Gateway: &config.Gateway{
+// 			AgentPort:           8080,
+// 			AgentName:           "vald-agent",
+// 			BackoffEnabled:      false,,
 // 		},
 // 	}
 // 	fmt.Println(config.ToRawYaml(d))

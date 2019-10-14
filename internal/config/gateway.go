@@ -18,11 +18,36 @@
 package config
 
 type Gateway struct {
-	AgentPort int
-	AgentName string
+	// AgentPort represent agent port number
+	AgentPort int `json:"agent_port" yaml:"agent_port"`
+
+	// AgentName represent agents meta_name for service discovery
+	AgentName string `json:"agent_name" yaml:"agent_name"`
+
+	// BackoffEnabled enables backoff algorithms for each external request
+	BackoffEnabled bool `json:"backoff_enabled" yaml:"backoff_enabled"`
+
+	// Discoverer represent agent discoverer service configuration
+	Discoverer *Discoverer `json:"discoverer" yaml:"discoverer"`
+
+	// MetaProxy represent metadata gateway configuration
+	Meta *MetaProxy `json:"meta" yaml:"meta"`
+
+	// IndexManager represent index manager configuration
+	IndexManager *IndexManager `json:"meta" yaml:"meta"`
 }
 
 func (g *Gateway) Bind() *Gateway {
 	g.AgentName = GetActualValue(g.AgentName)
+
+	if g.Discoverer != nil {
+		g.Discoverer = g.Discoverer.Bind()
+	}
+	if g.Meta != nil {
+		g.Meta = g.Meta.Bind()
+	}
+	if g.IndexManager.Bind() != nil {
+		g.IndexManager = g.IndexManager.Bind()
+	}
 	return g
 }
