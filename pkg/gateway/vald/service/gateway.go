@@ -51,7 +51,7 @@ type Gateway interface {
 type gateway struct {
 	agentName   string
 	agentExists map[string]struct{}
-	port        int
+	agentPort   int
 	dscDur      time.Duration
 	gopts       []grpc.DialOption
 	copts       []grpc.CallOption
@@ -162,7 +162,7 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface
 				continue
 			}
 		}
-		conn, err = grpc.DialContext(ctx, fmt.Sprintf("%s:%d", srv.GetIp(), g.port), g.gopts...)
+		conn, err = grpc.DialContext(ctx, fmt.Sprintf("%s:%d", srv.GetIp(), g.agentPort), g.gopts...)
 		if err != nil {
 			ech <- err
 			continue

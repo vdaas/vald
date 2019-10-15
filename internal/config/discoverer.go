@@ -18,8 +18,9 @@
 package config
 
 type Discoverer struct {
-	Host string
-	Port int
+	Host     string
+	Port     int
+	Duration string
 }
 
 func (d *Discoverer) Bind() *Discoverer {
