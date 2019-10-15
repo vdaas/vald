@@ -98,6 +98,7 @@ func dirwalk(dir string) []string {
 			".md5",
 			".hdf5",
 			".mod",
+			".default",
 			".png",
 			".sum",
 			".ssv",
