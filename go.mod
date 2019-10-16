@@ -28,8 +28,10 @@ require (
 	github.com/kpango/fuid v0.0.0-20190507064958-80435564606b
 	github.com/kpango/gache v1.1.23
 	github.com/kpango/glg v1.4.6
+	github.com/schollz/progressbar v1.0.0
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	golang.org/x/sys v0.0.0-20191010194322-b09406accb47
+	gonum.org/v1/gonum v0.0.0-20190331200053-3d26580ed485
 	gonum.org/v1/hdf5 v0.0.0-20190920010848-b0d662f53d94
 	google.golang.org/genproto v0.0.0-20191009194640-548a555dbc03
 	google.golang.org/grpc v1.24.0
