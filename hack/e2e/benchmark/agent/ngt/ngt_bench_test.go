@@ -2,14 +2,13 @@ package ngt
 
 import (
 	"context"
-	"github.com/vdaas/vald/apis/grpc/payload"
 	"io"
 	"os"
-	"sync"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/agent"
+	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/hack/e2e/benchmark/internal"
 	"github.com/vdaas/vald/internal/log"
 	"google.golang.org/grpc"
@@ -103,14 +102,7 @@ func BenchmarkAgentNGTStream(b *testing.B) {
 		if err != nil {
 			bb.Error(err)
 		}
-		wg := &sync.WaitGroup{}
-		wg.Add(1)
-		go func() {
-			start := time.Now()
-			defer func() {
-				bb.Logf("recieve duration: %v", time.Now().Sub(start))
-				wg.Done()
-			}()
+		go func(st agent.Agent_StreamInsertClient) {
 			for {
 				_, err := st.Recv()
 				if err == io.EOF {
@@ -119,7 +111,7 @@ func BenchmarkAgentNGTStream(b *testing.B) {
 					bb.Error(err)
 				}
 			}
-		}()
+		}(st)
 		var t time.Duration
 		bb.ResetTimer()
 		ids, t = internal.Insert(bb, train, func(id string, vector []float64) error {
@@ -129,13 +121,15 @@ func BenchmarkAgentNGTStream(b *testing.B) {
 				},
 				Vector: vector,
 			})
+			if err == io.EOF {
+				return nil
+			}
 			return err
 		})
 		if err := st.CloseSend(); err != nil {
 			bb.Error(err)
 		}
-		bb.Logf("send duration: %v", t)
-		wg.Wait()
+		bb.Logf("duration: %v", t)
 	})
 
 	b.Run("CreateIndex", func(bb *testing.B) {
@@ -154,14 +148,7 @@ func BenchmarkAgentNGTStream(b *testing.B) {
 		if err != nil {
 			bb.Error(err)
 		}
-		wg := &sync.WaitGroup{}
-		wg.Add(1)
-		go func() {
-			start := time.Now()
-			defer func() {
-				bb.Logf("recieve duration: %v", time.Now().Sub(start))
-				wg.Done()
-			}()
+		go func(st agent.Agent_StreamSearchClient) {
 			for {
 				_, err := st.Recv()
 				if err == io.EOF {
@@ -170,7 +157,7 @@ func BenchmarkAgentNGTStream(b *testing.B) {
 					bb.Error(err)
 				}
 			}
-		}()
+		}(st)
 		bb.ResetTimer()
 		t := internal.Search(bb, test, func(vector []float64) error {
 			err := st.Send(&payload.Search_Request{
@@ -183,11 +170,15 @@ func BenchmarkAgentNGTStream(b *testing.B) {
 					Epsilon: 0.01,
 				},
 			})
+			if err == io.EOF {
+				return nil
+			}
 			return err
 		})
-
-		bb.Logf("send duration: %v", t)
-		wg.Wait()
+		if err := st.CloseSend(); err != nil {
+			bb.Error(err)
+		}
+		bb.Logf("duration: %v", t)
 	})
 
 	b.Run("Remove", func(bb * testing.B) {
@@ -195,14 +186,7 @@ func BenchmarkAgentNGTStream(b *testing.B) {
 		if err != nil {
 			bb.Error(err)
 		}
-		wg := &sync.WaitGroup{}
-		wg.Add(1)
-		go func() {
-			start := time.Now()
-			defer func() {
-				bb.Logf("recieve duration: %v", time.Now().Sub(start))
-				wg.Done()
-			}()
+		go func(st agent.Agent_StreamRemoveClient) {
 			for {
 				_, err := st.Recv()
 				if err == io.EOF {
@@ -211,32 +195,35 @@ func BenchmarkAgentNGTStream(b *testing.B) {
 					bb.Error(err)
 				}
 			}
-		}()
+		}(st)
 		bb.ResetTimer()
 		t := internal.Remove(bb, ids[:len(ids)/10], func(id string) error {
 			err := st.Send(&payload.Object_ID{
 				Id: id,
 			})
+			if err == io.EOF {
+				return nil
+			}
 			return err
 		})
+		if err := st.CloseSend(); err != nil {
+			bb.Error(err)
+		}
 
-		bb.Logf("send duration: %v", t)
-		wg.Wait()
+		bb.Logf("duration: %v", t)
 	})
 }
 
 func TestMain(m *testing.M) {
-	log.Init(log.DefaultGlg())
-
-	datasetName := "../../assets/dataset/fashion-mnist-784-euclidean.hdf5"
 	var err error
-	log.Info("start load dataset")
+	datasetName := "../../assets/dataset/fashion-mnist-784-euclidean.hdf5"
+
+	log.Init(log.DefaultGlg())
 	train, test, err = internal.Load(datasetName)
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	log.Info("finish load dataset")
 
 	ret := m.Run()
 	os.Exit(ret)
