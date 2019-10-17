@@ -2,13 +2,12 @@ package internal
 
 import (
 	"testing"
-	"time"
 
 	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/internal/log"
 )
 
-func createIDs(n int) []string {
+func CreateIDs(n int) []string {
 	ids := make([]string, 0, n)
 	for i := 0; i < n; i++ {
 		ids = append(ids, fuid.String())
@@ -16,46 +15,43 @@ func createIDs(n int) []string {
 	return ids
 }
 
-func Insert(tb testing.TB, dataset [][]float64, insert func(string, []float64) error) ([]string, time.Duration) {
-	tb.Helper()
-	ids := createIDs(len(dataset))
-	start := time.Now()
-	for i, vector := range dataset {
-		if err := insert(ids[i], vector); err != nil {
+func Insert(b *testing.B, ids []string, dataset [][]float64, insert func(string, []float64) error) []string {
+	b.Helper()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		idx := i % b.N
+		if err := insert(ids[idx], dataset[idx]); err != nil {
 			log.Error(err)
 		}
 	}
-	return ids, time.Now().Sub(start)
+	return ids
 }
 
-func CreateIndex(tb testing.TB, createIndex func() error) time.Duration {
-	tb.Helper()
-	start := time.Now()
+func CreateIndex(b *testing.B, createIndex func() error) {
+	b.Helper()
+	b.ResetTimer()
 	if err := createIndex(); err != nil {
 		log.Error(err)
 	}
-	return time.Now().Sub(start)
 }
 
-func Search(tb testing.TB, dataset [][]float64, search func([]float64) error) time.Duration {
-	tb.Helper()
-	start := time.Now()
-	for _, vector := range dataset {
-		if err := search(vector); err != nil {
+func Search(b *testing.B, dataset [][]float64, search func([]float64) error) {
+	b.Helper()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		if err := search(dataset[i%b.N]); err != nil {
 			log.Error(err)
 		}
 	}
-	return time.Now().Sub(start)
 }
 
-func Remove(tb testing.TB, dataset []string, remove func(id string) error) time.Duration {
-	tb.Helper()
-
-	start := time.Now()
-	for _, id := range dataset {
-		if err := remove(id); err != nil {
+func Remove(b *testing.B, dataset []string, remove func(id string) error) {
+	b.Helper()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		idx := i % b.N
+		if err := remove(dataset[idx]); err != nil {
 			log.Error(err)
 		}
 	}
-	return time.Now().Sub(start)
 }
