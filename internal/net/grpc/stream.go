@@ -22,6 +22,7 @@ import (
 	"io"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
 	"google.golang.org/grpc"
 )
 
@@ -30,11 +31,16 @@ type ServerStream grpc.ServerStream
 func BidirectionalStream(stream grpc.ServerStream,
 	newData func() interface{},
 	f func(context.Context, interface{}) (interface{}, error)) (err error) {
-	eg, ctx := errgroup.New(stream.Context())
+	ctx, cancel := context.WithCancel(stream.Context())
+	eg, ctx := errgroup.New(ctx)
+	var count uint32
 	for {
 		select {
 		case <-ctx.Done():
-			return eg.Wait()
+			log.Error("canceled")
+			err = eg.Wait()
+			log.Errorf("finished %s", err.Error())
+			return err
 		default:
 			data := newData()
 			err = stream.RecvMsg(data)
@@ -49,6 +55,9 @@ func BidirectionalStream(stream grpc.ServerStream,
 					var res interface{}
 					res, err = f(ctx, data)
 					if err != nil {
+						cancel()
+						// runtime.Gosched()
+						// stream.SendMsg(nil)
 						return err
 					}
 					return stream.SendMsg(res)

@@ -82,7 +82,6 @@ func (n *ngt) Search(vec []float64, size uint32, epsilon, radius float32) ([]mod
 	if err != nil {
 		return nil, err
 	}
-
 	var errs error
 	ds := make([]model.Distance, 0, len(sr))
 
