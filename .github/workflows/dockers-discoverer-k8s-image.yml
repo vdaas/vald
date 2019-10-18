@@ -2,15 +2,10 @@ name: 'Build docker image: discoverer-k8s'
 on:
   push:
     paths:
-      - 'internal/*'
-      - 'internal/*/*'
-      - 'internal/*/*/*'
-      - 'internal/*/*/*/*'
-      - 'apis/grpc/*/*'
-      - 'pkg/discoverer/k8s/*'
-      - 'pkg/discoverer/k8s/*/*'
-      - 'pkg/discoverer/k8s/*/*/*'
-      - 'cmd/discoverer/k8s/*'
+      - 'internal/**'
+      - 'apis/grpc/**'
+      - 'pkg/discoverer/k8s/**'
+      - 'cmd/discoverer/k8s/**'
       - 'dockers/base/Dockerfile'
       - 'dockers/discoverer/k8s/Dockerfile'
 
@@ -30,8 +25,18 @@ jobs:
       env:
         DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
         DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-    - name: push to DockerHub
+    - name: push to DockerHub (master)
+      if: github.ref == 'refs/heads/master'
       run: |
-        echo 'Push to DockerHub'
+        echo 'Push to DockerHub (master)'
         imagename=`make dockers-discoverer-k8s-image-name`
-        docker push ${imagename}
+        docker tag ${imagename} ${imagename}:nightly
+        docker push ${imagename}:nightly
+    - name: push to DockerHub (pull request)
+      if: github.event_name == 'pull_request'
+      run: |
+        echo 'Push to DockerHub (pull request)'
+        imagename=`make dockers-discoverer-k8s-image-name`
+        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+        docker tag ${imagename} ${imagename}:pr-${pr_num}
+        docker push ${imagename}:pr-${pr_num}
