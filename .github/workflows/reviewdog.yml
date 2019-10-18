@@ -16,4 +16,4 @@ jobs:
         uses: reviewdog/action-golangci-lint@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          golangci_lint_flags: "--enable-all --exclude-use-default=false --deadline=30m"
+          golangci_lint_flags: "--enable-all --disable=gochecknoglobals --exclude-use-default=false --deadline=30m"
