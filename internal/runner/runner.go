@@ -47,12 +47,14 @@ func Run(ctx context.Context, run Runner) (err error) {
 	defer cancel()
 
 	ech := run.Start(ctx)
-	sigCh := make(chan os.Signal, 1)
 
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+	sigCh := make(chan os.Signal, 1)
 	defer close(sigCh)
 
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+
 	emap := make(map[string]int)
+
 	for {
 		select {
 		case <-sigCh:

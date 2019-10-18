@@ -20,6 +20,7 @@ package servers
 import (
 	"context"
 	"net/http"
+	"runtime"
 	"strings"
 	"time"
 
@@ -40,7 +41,6 @@ type listener struct {
 	sus     []string
 	sds     []string
 	cancel  context.CancelFunc
-	ech     chan error
 	sddur   time.Duration
 }
 
@@ -49,7 +49,6 @@ func New(opts ...Option) Listener {
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(l)
 	}
-	l.ech = make(chan error, len(l.servers)*10)
 	return l
 }
 
@@ -60,6 +59,7 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 		srv server.Server
 	}
 
+	ech := make(chan error, len(l.servers)*10)
 	var rctx context.Context
 	echs := make([]sinfo, len(l.servers))
 
@@ -67,7 +67,7 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 		srv, ok := l.servers[name]
 
 		if !ok || srv == nil {
-			l.ech <- errors.ErrServerNotFound(name)
+			ech <- errors.ErrServerNotFound(name)
 			continue
 		}
 
@@ -91,6 +91,7 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 	rctx, l.cancel = context.WithCancel(ctx)
 
 	l.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(ech)
 		for {
 			for i := range echs[:len(echs)] {
 				select {
@@ -102,7 +103,7 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 					return nil
 				case err = <-echs[i].ech:
 					if err != nil && err != http.ErrServerClosed {
-						l.ech <- err
+						ech <- err
 					}
 					err = nil
 					echs[i] = sinfo{
@@ -111,9 +112,10 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 					}
 				}
 			}
+			runtime.Gosched()
 		}
 	}))
-	return l.ech
+	return ech
 }
 
 func (l *listener) Shutdown(ctx context.Context) (err error) {

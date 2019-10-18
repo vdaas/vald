@@ -20,6 +20,7 @@ package middleware
 import (
 	"context"
 	"net/http"
+	"runtime"
 	"time"
 
 	"github.com/kpango/fastime"
@@ -57,10 +58,11 @@ func (t *timeout) Wrap(h rest.Func) rest.Func {
 			// it is the responsibility for handler to close the request
 			var code int
 			code, err = h(w, r.WithContext(ctx))
-			ech <- err
 			if err != nil {
 				sch <- code
+				runtime.Gosched()
 			}
+			ech <- err
 			return nil
 		}))
 

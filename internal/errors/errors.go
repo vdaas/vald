@@ -101,6 +101,10 @@ var (
 
 	ErrAgentClientNotConnected = New("agent client not connected")
 
+	ErrgRPCClientConnectionClose = func(name string, err error) error {
+		return Wrapf(err, "%s's gRPC connection close error", name)
+	}
+
 	//DB
 
 	ErrAddrsNotFound = New("addrs not found")

@@ -254,13 +254,15 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			log.Infof("server %s executing preStopFunc", s.name)
 			err = s.preStopFunc()
-			ech <- err
+			if err != nil {
+				ech <- err
+			}
+			close(ech)
 			s.wg.Done()
 			return err
 		}))
 		time.Sleep(s.pwt)
 		err := <-ech
-		close(ech)
 		if err != nil {
 			rerr = err
 		}
