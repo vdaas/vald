@@ -225,8 +225,10 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Controll_CreateInde
 	res = new(payload.Empty)
 	err = s.ngt.CreateIndex(c.GetPoolSize())
 	if err != nil {
+		log.Error(err)
 		return nil, err
 	}
+	log.Info("create index success")
 	return res, nil
 }
 
