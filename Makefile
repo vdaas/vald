@@ -375,7 +375,8 @@ $(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
 	(cd hack/e2e/benchmark/assets; md5sum -c $(patsubst hack/e2e/benchmark/assets/%.hdf5,%.md5,$@) || (rm -f $(patsubst hack/e2e/benchmark/assets/%.hdf5,%.hdf5,$@) && exit 1))
 
 benchmark-agent-start:
-	rm -r /tmp/ngt* 1>/dev/null 2>/dev/null
+	rm -rf ./agent 1>/dev/null 2>/dev/null
+	rm -rf /tmp/ngt* 1>/dev/null 2>/dev/null
 	CGO_ENABLED=1 CGO_CXXFLAGS="-g -Ofast -march=native" CGO_FFLAGS="-g -Ofast -march=native" CGO_LDFLAGS="-g -Ofast -march=native" GO111MODULE=on GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build --ldflags '-s -w -linkmode "external" -extldflags "-static -fPIC -m64 -pthread -fopenmp -std=c++17 -lstdc++ -lm"' -a -tags "cgo netgo" -trimpath -installsuffix "cgo netgo" -o "agent" "cmd/agent/ngt/main.go"
 	./agent -f hack/e2e/benchmark/assets/config/fashion-mnist-784-euclidean.yaml
 	rm -rf ./agent
