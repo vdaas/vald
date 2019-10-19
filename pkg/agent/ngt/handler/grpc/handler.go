@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/agent/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/ngt/service"
@@ -111,7 +112,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (res *p
 	res = new(payload.Empty)
 	err = s.ngt.Insert(vec.GetId().GetId(), vec.GetVector())
 	if err != nil {
-		return nil, err
+		return res, err
 	}
 	return res, nil
 }

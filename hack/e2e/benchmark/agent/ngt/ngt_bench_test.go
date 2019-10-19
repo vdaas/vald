@@ -1,3 +1,18 @@
+//
+// Copyright (C) 2019 kpango (Yusuke Kato)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package ngt
 
 import (
@@ -150,6 +165,7 @@ func BenchmarkAgentNGTStreamSearch(b *testing.B) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
+		defer log.Info("finish Insert")
 		for {
 			select {
 			case <-ctx.Done():
@@ -158,7 +174,6 @@ func BenchmarkAgentNGTStreamSearch(b *testing.B) {
 				_, err := sti.Recv()
 				if err != nil {
 					if err == io.EOF {
-						b.Log("insert finished")
 						break
 					}
 					if !strings.Contains(err.Error(), "already exists") {
@@ -169,6 +184,7 @@ func BenchmarkAgentNGTStreamSearch(b *testing.B) {
 		}
 	}()
 
+	log.Info("start Insert")
 	for i, data := range train {
 		err := sti.Send(&payload.Object_Vector{
 			Id: &payload.Object_ID{
@@ -176,10 +192,12 @@ func BenchmarkAgentNGTStreamSearch(b *testing.B) {
 			},
 			Vector: data,
 		})
-		if err != nil && err != io.EOF {
-			if !strings.Contains(err.Error(), "already exists") {
+		if err != nil {
+			if err != io.EOF {
 				b.Error(err)
 			}
+			// if !strings.Contains(err.Error(), "already exists") {
+			// }
 		}
 	}
 
@@ -187,55 +205,65 @@ func BenchmarkAgentNGTStreamSearch(b *testing.B) {
 		b.Error(err)
 	}
 	cancel()
+
+	log.Info("start Indexing")
 	_, err = client.CreateIndex(context.Background(), &payload.Controll_CreateIndexRequest{
 		PoolSize: 10000,
 	})
 	if err != nil {
 		b.Error(err)
 	}
+	log.Info("finish Indexing")
 
-	st, err := client.StreamSearch(context.Background())
+	ctx, cancel = context.WithCancel(context.Background())
+	st, err := client.StreamSearch(ctx)
 	if err != nil {
 		b.Error(err)
 	}
 
-	ctx, cancel = context.WithCancel(context.Background())
-	go func(st agent.Agent_StreamSearchClient) {
+	go func() {
+		defer log.Info("finish Search")
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			default:
-				res, err := st.Recv()
-				if err == io.EOF {
-					b.Log("search finished")
-					break
-				} else if err != nil {
-					b.Error(err)
-				} else {
-					b.Log(res)
+				_, err := st.Recv()
+				if err != nil {
+					if err == io.EOF {
+						break
+					}
+					if !strings.Contains(err.Error(), "already exists") {
+						b.Error(err)
+					}
 				}
 			}
 		}
-	}(st)
+	}()
 
+	log.Info("start StreamSearch Benchmark")
 	b.ReportAllocs()
 	b.ResetTimer()
-	var counter uint32
 	b.RunParallel(func(pb *testing.PB) {
+		flg := uint64(0)
 		idx := 0
 		for pb.Next() {
-			log.Info(atomic.AddUint32(&counter, 1))
+			if atomic.LoadUint64(&flg) > 0 {
+				continue
+			}
 			err := st.Send(&payload.Search_Request{
 				Vector: &payload.Object_Vector{
 					Vector: train[idx],
 				},
 				Config: searchConfig,
 			})
-			if err != nil && err != io.EOF {
-				if !strings.Contains(err.Error(), "already exists") {
-					b.Error(err)
+			if err != nil {
+				if err == io.EOF {
+					atomic.StoreUint64(&flg, 1)
 				}
+				// if !strings.Contains(err.Error(), "already exists") {
+				b.Error(err)
+				// }
 			}
 			if idx >= len(train)-1 {
 				idx = 0

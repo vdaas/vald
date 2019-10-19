@@ -20,27 +20,25 @@ package grpc
 import (
 	"context"
 	"io"
+	"runtime"
 
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
 )
 
 type ServerStream grpc.ServerStream
 
-func BidirectionalStream(stream grpc.ServerStream,
+func BidirectionalStream(stream ServerStream,
 	newData func() interface{},
 	f func(context.Context, interface{}) (interface{}, error)) (err error) {
-	ctx, cancel := context.WithCancel(stream.Context())
-	eg, ctx := errgroup.New(ctx)
-	var count uint32
+	ctx := stream.Context()
+	eg, ctx := errgroup.New(stream.Context())
+	eg.Limitation(10)
 	for {
 		select {
 		case <-ctx.Done():
-			log.Error("canceled")
-			err = eg.Wait()
-			log.Errorf("finished %s", err.Error())
-			return err
+			return eg.Wait()
 		default:
 			data := newData()
 			err = stream.RecvMsg(data)
@@ -51,17 +49,22 @@ func BidirectionalStream(stream grpc.ServerStream,
 				return err
 			}
 			if data != nil {
-				eg.Go(func() (err error) {
+				eg.Go(safety.RecoverFunc(func() (err error) {
 					var res interface{}
 					res, err = f(ctx, data)
 					if err != nil {
-						cancel()
-						// runtime.Gosched()
-						// stream.SendMsg(nil)
+						runtime.Gosched()
 						return err
 					}
-					return stream.SendMsg(res)
-				})
+					if res != nil {
+						err = stream.SendMsg(res)
+						if err != nil {
+							runtime.Gosched()
+							return err
+						}
+					}
+					return nil
+				}))
 			}
 		}
 	}

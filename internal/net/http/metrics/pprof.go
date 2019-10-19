@@ -70,6 +70,14 @@ func NewPProfHandler() http.Handler {
 				rest.HandlerToRestFunc(pprof.Trace),
 			},
 			{
+				"Debug allocs profile",
+				[]string{
+					http.MethodGet,
+				},
+				"/debug/pprof/allocs",
+				rest.HandlerToRestFunc(pprof.Handler("allocs").ServeHTTP),
+			},
+			{
 				"Debug heap profile",
 				[]string{
 					http.MethodGet,
@@ -100,6 +108,15 @@ func NewPProfHandler() http.Handler {
 				},
 				"/debug/pprof/block",
 				rest.HandlerToRestFunc(pprof.Handler("block").ServeHTTP),
+			},
+
+			{
+				"Debug mutex profile",
+				[]string{
+					http.MethodGet,
+				},
+				"/debug/pprof/mutex",
+				rest.HandlerToRestFunc(pprof.Handler("mutex").ServeHTTP),
 			},
 		}...))
 }
