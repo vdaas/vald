@@ -373,34 +373,35 @@ $(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
 	curl -fsSL -o $@ http://vectors.erikbern.com/$(patsubst hack/e2e/benchmark/assets/%.hdf5,%.hdf5,$@)
 	(cd hack/e2e/benchmark/assets; md5sum -c $(patsubst hack/e2e/benchmark/assets/%.hdf5,%.md5,$@) || (rm -f $(patsubst hack/e2e/benchmark/assets/%.hdf5,%.hdf5,$@) && exit 1))
 
-bench-agent-fashion-mnist:
-	rm -rf /tmp/ngt/fashion-mnist
+bench-agent-stream:
+	rm -rf /tmp/ngt/
 	rm -rf pprof/agent/ngt
-	# mkdir -p /tmp/ngt/fashion-mnist
+	mkdir -p /tmp/ngt
 	mkdir -p pprof/agent/ngt
-	go test -count=5 \
-		-bench=StreamSearch \
+	go test -count=1 \
+		-bench=gRPCStream \
 		-benchmem \
 		-o pprof/agent/ngt/agent.bin \
-		-cpuprofile pprof/agent/ngt/cpu-stream-search.out \
-		-memprofile pprof/agent/ngt/mem-stream-search.out \
+		-cpuprofile pprof/agent/ngt/cpu-stream.out \
+		-memprofile pprof/agent/ngt/mem-stream.out \
 		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go
 	go tool pprof --svg \
 		pprof/agent/ngt/agent.bin \
-		pprof/agent/ngt/cpu-stream-search.out \
-		> pprof/agent/ngt/cpu-stream-search.svg
+		pprof/agent/ngt/cpu-stream.out \
+		> pprof/agent/ngt/cpu-stream.svg
 	go tool pprof --svg \
 		pprof/agent/ngt/agent.bin \
-		pprof/agent/ngt/mem-stream-search.out \
-		> pprof/agent/ngt/mem-stream-search.svg
+		pprof/agent/ngt/mem-stream.out \
+		> pprof/agent/ngt/mem-stream.svg
+	rm -rf /tmp/ngt/
 
-profile-agent-fashion-mnist:
+profile-agent-stream:
 	go tool pprof -http=":6061" \
 		pprof/agent/ngt/agent.bin \
-		pprof/agent/ngt/cpu-stream-search.out &
+		pprof/agent/ngt/cpu-stream.out &
 	go tool pprof -http=":6062" \
 		pprof/agent/ngt/agent.bin \
-		pprof/agent/ngt/mem-stream-search.out
+		pprof/agent/ngt/mem-stream.out
 
 kill-bench:
 	ps aux | grep go | grep -v nvim | grep -v tmux | grep -v gopls | grep -v "rg go" | awk '{print $1}' | xargs kill -9

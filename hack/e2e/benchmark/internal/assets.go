@@ -53,7 +53,6 @@ func loadDataset(f *hdf5.File, name string) (vec [][]float64, err error) {
 		}
 	}
 	return vec, nil
-
 }
 
 func Load(path string) (train [][]float64, test [][]float64, err error) {

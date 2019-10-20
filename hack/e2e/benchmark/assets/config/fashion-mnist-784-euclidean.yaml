@@ -30,25 +30,24 @@ server_config:
       read_header_timeout: ""
       read_timeout: ""
       write_timeout: ""
-  metrics_servers:
-  - name: pprof
+  - name: agent-rest
     host: 127.0.0.1
-    port: 6060
+    port: 8081
     mode: REST
-    probe_wait_time: 0s
+    probe_wait_time: "0s"
     http:
-      shutdown_duration: 0s
+      shutdown_duration: "0s"
       handler_timeout: ""
       idle_timeout: ""
       read_header_timeout: ""
       read_timeout: ""
       write_timeout: ""
   startup_strategy:
-  - metrics_servers
   - agent-grpc
+  - agent-rest
   shutdown_strategy:
   - agent-grpc
-  - metrics_servers
+  - agent-rest
   full_shutdown_duration: 600s
   tls:
     enabled: false
