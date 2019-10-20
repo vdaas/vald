@@ -16,6 +16,8 @@
 package internal
 
 import (
+	"testing"
+
 	"github.com/vdaas/vald/internal/log"
 	"gonum.org/v1/hdf5"
 )
@@ -74,4 +76,13 @@ func Load(path string) (train [][]float64, test [][]float64, err error) {
 		return train, nil, err
 	}
 	return train, test, nil
+}
+
+func LoadDataAndIDs(tb testing.TB, path string) (ids []string, train [][]float64, test [][]float64) {
+	tb.Helper()
+	train, test, err := Load(path)
+	if err != nil {
+		tb.Errorf("failed to load dataset %s", path)
+	}
+	return CreateIDs(len(train)), train, test
 }

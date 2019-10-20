@@ -348,7 +348,6 @@ $(PBPYDIRS):
 
 $(PBGOS): proto-deps $(PBGODIRS)
 	@$(call green, "generating pb.go files...")
-	# $(call protoc-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@), --gogofast_out=plugins=grpc:$(GOPATH)/src)
 	$(call protoc-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@), --gogofast_out=plugins=grpc:$(GOPATH)/src)
 	# we have to enable validate after https://github.com/envoyproxy/protoc-gen-validate/pull/257 is merged
 	# $(call protoc-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@), --gogofast_out=plugins=grpc:$(GOPATH)/src --validate_out=lang=gogo:$(GOPATH)/src)
@@ -374,14 +373,34 @@ $(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
 	curl -fsSL -o $@ http://vectors.erikbern.com/$(patsubst hack/e2e/benchmark/assets/%.hdf5,%.hdf5,$@)
 	(cd hack/e2e/benchmark/assets; md5sum -c $(patsubst hack/e2e/benchmark/assets/%.hdf5,%.md5,$@) || (rm -f $(patsubst hack/e2e/benchmark/assets/%.hdf5,%.hdf5,$@) && exit 1))
 
-benchmark-agent-start:
-	rm -rf ./agent 1>/dev/null 2>/dev/null
-	rm -rf /tmp/ngt* 1>/dev/null 2>/dev/null
-	CGO_ENABLED=1 CGO_CXXFLAGS="-g -Ofast -march=native" CGO_FFLAGS="-g -Ofast -march=native" CGO_LDFLAGS="-g -Ofast -march=native" GO111MODULE=on GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build --ldflags '-s -w -linkmode "external" -extldflags "-static -fPIC -m64 -pthread -fopenmp -std=c++17 -lstdc++ -lm"' -a -tags "cgo netgo" -trimpath -installsuffix "cgo netgo" -o "agent" "cmd/agent/ngt/main.go"
-	./agent -f hack/e2e/benchmark/assets/config/fashion-mnist-784-euclidean.yaml
-	rm -rf ./agent
+bench-agent-fashion-mnist:
+	rm -rf /tmp/ngt/fashion-mnist
+	rm -rf pprof/agent/ngt
+	# mkdir -p /tmp/ngt/fashion-mnist
+	mkdir -p pprof/agent/ngt
+	go test -count=5 \
+		-bench=StreamSearch \
+		-benchmem \
+		-o pprof/agent/ngt/agent.bin \
+		-cpuprofile pprof/agent/ngt/cpu-stream-search.out \
+		-memprofile pprof/agent/ngt/mem-stream-search.out \
+		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go
+	go tool pprof --svg \
+		pprof/agent/ngt/agent.bin \
+		pprof/agent/ngt/cpu-stream-search.out \
+		> pprof/agent/ngt/cpu-stream-search.svg
+	go tool pprof --svg \
+		pprof/agent/ngt/agent.bin \
+		pprof/agent/ngt/mem-stream-search.out \
+		> pprof/agent/ngt/mem-stream-search.svg
 
-benchmark-fashion-mnist:
-	go build -ldflags="-w -s" -o ./fmbench hack/e2e/benchmark/cmd/main.go
-	./fmbench hack/e2e/benchmark/assets/fashion-mnist-784-euclidean.hdf5
-	rm -rf ./fmbench
+profile-agent-fashion-mnist:
+	go tool pprof -http=":6061" \
+		pprof/agent/ngt/agent.bin \
+		pprof/agent/ngt/cpu-stream-search.out &
+	go tool pprof -http=":6062" \
+		pprof/agent/ngt/agent.bin \
+		pprof/agent/ngt/mem-stream-search.out
+
+kill-bench:
+	ps aux | grep go | grep -v nvim | grep -v tmux | grep -v gopls | grep -v "rg go" | awk '{print $1}' | xargs kill -9

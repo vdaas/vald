@@ -20,21 +20,24 @@ import (
 	"io"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/hack/e2e/benchmark/internal"
 	"github.com/vdaas/vald/internal/log"
-	"google.golang.org/grpc"
+)
+
+const (
+	assetDir   = "../../assets"
+	configDir  = assetDir + "/config/"
+	datasetDir = assetDir + "/dataset/"
+
+	fashionMnistConfig  = configDir + "fashion-mnist-784-euclidean.yaml"
+	fashionMnistDataSet = datasetDir + "fashion-mnist-784-euclidean.hdf5"
 )
 
 var (
-	train        [][]float64
-	test         [][]float64
-	ids          []string
-	client       agent.AgentClient
 	searchConfig = &payload.Search_Config{
 		Num:     10,
 		Radius:  -1,
@@ -45,23 +48,12 @@ var (
 func init() {
 	log.Init(log.DefaultGlg())
 
-	conn, err := grpc.Dial("localhost:8082", grpc.WithInsecure())
-	if err != nil {
-		log.Fatal(err)
-	}
-	client = agent.NewAgentClient(conn)
-
-	datasetName := "../../assets/dataset/fashion-mnist-784-euclidean.hdf5"
-	train, test, err = internal.Load(datasetName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ids = internal.CreateIDs(len(train))
 }
 
 func BenchmarkAgentNGTSequentialInsert(b *testing.B) {
-	ids = internal.Insert(b, ids, train, func(id string, vector []float64) error {
+
+	ids, train, test := internal.LoadDataAndIDs(b, fashionMnistDataSet)
+	internal.Insert(b, ids, train, func(id string, vector []float64) error {
 		_, err := client.Insert(context.Background(), &payload.Object_Vector{
 			Id: &payload.Object_ID{
 				Id: id,
@@ -82,6 +74,7 @@ func BenchmarkAgentNGTSequentialCreateIndex(b *testing.B) {
 }
 
 func BenchmarkAgentNGTSequentialSearch(b *testing.B) {
+	ids, train, test := internal.LoadDataAndIDs(b, fashionMnistDataSet)
 	internal.Search(b, test, func(vector []float64) error {
 		_, err := client.Search(context.Background(), &payload.Search_Request{
 			Vector: &payload.Object_Vector{
@@ -94,6 +87,7 @@ func BenchmarkAgentNGTSequentialSearch(b *testing.B) {
 }
 
 func BenchmarkAgentNGTSequentialRemove(b *testing.B) {
+	ids, train, test := internal.LoadDataAndIDs(b, fashionMnistDataSet)
 	internal.Remove(b, ids, func(id string) error {
 		_, err := client.Remove(context.Background(), &payload.Object_ID{
 			Id: id,
@@ -103,11 +97,14 @@ func BenchmarkAgentNGTSequentialRemove(b *testing.B) {
 }
 
 func BenchmarkAgentNGTStreamInsert(b *testing.B) {
+	ids, train, test := internal.LoadDataAndIDs(b, fashionMnistDataSet)
+	rctx, rcancel := context.WithCancel(context.Background())
+	client := internal.NewAgentClient(b, rctx, "localhost", 8082)
 	st, err := client.StreamInsert(context.Background())
 	if err != nil {
 		b.Error(err)
 	}
-	go func(st agent.Agent_StreamInsertClient) {
+	go func() {
 		for {
 			_, err := st.Recv()
 			if err != nil {
@@ -119,7 +116,7 @@ func BenchmarkAgentNGTStreamInsert(b *testing.B) {
 				}
 			}
 		}
-	}(st)
+	}()
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
@@ -149,6 +146,9 @@ func BenchmarkAgentNGTStreamInsert(b *testing.B) {
 }
 
 func BenchmarkAgentNGTStreamCreateIndex(b *testing.B) {
+	rctx, rcancel := context.WithCancel(context.Background())
+	defer rcancel()
+	client := internal.NewAgentClient(b, rctx, "localhost", 8082)
 	internal.CreateIndex(b, func() error {
 		_, err := client.CreateIndex(context.Background(), &payload.Controll_CreateIndexRequest{
 			PoolSize: 10000,
@@ -158,23 +158,41 @@ func BenchmarkAgentNGTStreamCreateIndex(b *testing.B) {
 }
 
 func BenchmarkAgentNGTStreamSearch(b *testing.B) {
+	rctx, rcancel := context.WithCancel(context.Background())
+	defer rcancel()
+
+	internal.StartAgentNGTServer(b, rctx, fashionMnistConfig)
+
+	client := internal.NewAgentClient(b, rctx, "localhost", 8082)
+
 	sti, err := client.StreamInsert(context.Background())
 	if err != nil {
 		b.Error(err)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(rctx)
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
-		defer log.Info("finish Insert")
+		defer wg.Done()
 		for {
 			select {
 			case <-ctx.Done():
+				ctx, cancel = context.WithCancel(rctx)
+				_, err = client.CreateIndex(ctx, &payload.Controll_CreateIndexRequest{
+					PoolSize: 10000,
+				})
+				if err != nil {
+					b.Error(err)
+				}
+				cancel()
 				return
 			default:
 				_, err := sti.Recv()
 				if err != nil {
 					if err == io.EOF {
-						break
+						cancel()
+						continue
 					}
 					if !strings.Contains(err.Error(), "already exists") {
 						b.Error(err)
@@ -184,7 +202,8 @@ func BenchmarkAgentNGTStreamSearch(b *testing.B) {
 		}
 	}()
 
-	log.Info("start Insert")
+	ids, train, test := internal.LoadDataAndIDs(b, fashionMnistDataSet)
+
 	for i, data := range train {
 		err := sti.Send(&payload.Object_Vector{
 			Id: &payload.Object_ID{
@@ -196,87 +215,46 @@ func BenchmarkAgentNGTStreamSearch(b *testing.B) {
 			if err != io.EOF {
 				b.Error(err)
 			}
-			// if !strings.Contains(err.Error(), "already exists") {
-			// }
 		}
 	}
-
 	if err := sti.CloseSend(); err != nil {
 		b.Error(err)
 	}
 	cancel()
 
-	log.Info("start Indexing")
-	_, err = client.CreateIndex(context.Background(), &payload.Controll_CreateIndexRequest{
-		PoolSize: 10000,
-	})
-	if err != nil {
-		b.Error(err)
-	}
-	log.Info("finish Indexing")
-
-	ctx, cancel = context.WithCancel(context.Background())
-	st, err := client.StreamSearch(ctx)
+	st, err := client.StreamSearch(context.Background())
 	if err != nil {
 		b.Error(err)
 	}
 
-	go func() {
-		defer log.Info("finish Search")
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				_, err := st.Recv()
-				if err != nil {
-					if err == io.EOF {
-						break
-					}
-					if !strings.Contains(err.Error(), "already exists") {
-						b.Error(err)
-					}
-				}
-			}
-		}
-	}()
-
-	log.Info("start StreamSearch Benchmark")
+	wg.Wait()
 	b.ReportAllocs()
 	b.ResetTimer()
-	b.RunParallel(func(pb *testing.PB) {
-		flg := uint64(0)
-		idx := 0
-		for pb.Next() {
-			if atomic.LoadUint64(&flg) > 0 {
-				continue
-			}
+	b.Run("StreamSearch", func(bb *testing.B) {
+		for _, data := range test {
 			err := st.Send(&payload.Search_Request{
 				Vector: &payload.Object_Vector{
-					Vector: train[idx],
+					Vector: data,
 				},
 				Config: searchConfig,
 			})
 			if err != nil {
 				if err == io.EOF {
-					atomic.StoreUint64(&flg, 1)
+					return
 				}
-				// if !strings.Contains(err.Error(), "already exists") {
 				b.Error(err)
-				// }
 			}
-			if idx >= len(train)-1 {
-				idx = 0
-			} else {
-				idx++
+			_, err = st.Recv()
+			if err != nil {
+				if err != io.EOF {
+					b.Error(err)
+				}
 			}
 		}
 	})
-
 	if err := st.CloseSend(); err != nil {
 		b.Error(err)
 	}
-	cancel()
 }
 
 func BenchmarkAgentNGTStreamRemove(b *testing.B) {

@@ -53,6 +53,7 @@ server_config:
   tls:
     enabled: false
 ngt:
+  index_path: "/tmp/ngt/fashion-mnist"
   dimension: 784
   bulk_insert_chunk_size: 10
   distance_type: l2
