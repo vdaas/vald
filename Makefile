@@ -379,6 +379,7 @@ bench-agent-stream:
 	mkdir -p /tmp/ngt
 	mkdir -p pprof/agent/ngt
 	go test -count=1 \
+		-timeout=1h \
 		-bench=gRPCStream \
 		-benchmem \
 		-o pprof/agent/ngt/agent.bin \

@@ -17,6 +17,7 @@ package ngt
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"testing"
 
@@ -82,8 +83,9 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 			if err != nil {
 				b.Error(err)
 			}
-
-			b.Run("StreamInsert", func(bb *testing.B) {
+			b.Run(fmt.Sprintf("StreamInsert %d objects", len(train)), func(bb *testing.B) {
+				bb.ReportAllocs()
+				bb.ResetTimer()
 				for i, data := range train {
 					err := sti.Send(&payload.Object_Vector{
 						Id: &payload.Object_ID{
@@ -93,6 +95,7 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 					})
 					if err != nil {
 						if err == io.EOF {
+							log.Error(err)
 							return
 						}
 						bb.Error(err)
@@ -109,6 +112,8 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 				b.Error(err)
 			}
 			b.Run("CreateIndex", func(bb *testing.B) {
+				bb.ReportAllocs()
+				bb.ResetTimer()
 				_, err := client.CreateIndex(ctx, &payload.Controll_CreateIndexRequest{
 					PoolSize: 10000,
 				})
@@ -123,7 +128,10 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 			if err != nil {
 				b.Error(err)
 			}
-			b.Run("StreamSearch", func(bb *testing.B) {
+
+			b.Run(fmt.Sprintf("StreamSearch %d objects", len(test)), func(bb *testing.B) {
+				bb.ReportAllocs()
+				bb.ResetTimer()
 				for _, data := range test {
 					err := st.Send(&payload.Search_Request{
 						Vector: &payload.Object_Vector{
@@ -153,7 +161,10 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 			if err != nil {
 				b.Error(err)
 			}
-			b.Run("StreamRemove", func(bb *testing.B) {
+
+			b.Run(fmt.Sprintf("StreamRemove %d objects", len(ids)/2), func(bb *testing.B) {
+				bb.ReportAllocs()
+				bb.ResetTimer()
 				for _, id := range ids[:len(ids)/2] {
 					err := str.Send(&payload.Object_ID{
 						Id: id,
