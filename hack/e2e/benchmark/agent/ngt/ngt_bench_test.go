@@ -41,12 +41,12 @@ var (
 	dataset = []string{
 		"fashion-mnist-784-euclidean",
 		"mnist-784-euclidean",
-		"sift-128-euclidean",
-		"nytimes-256-angular",
-		"glove-25-angular",
-		"glove-50-angular",
-		"glove-100-angular",
-		"glove-200-angular",
+		// "sift-128-euclidean",
+		// "nytimes-256-angular",
+		// "glove-25-angular",
+		// "glove-50-angular",
+		// "glove-100-angular",
+		// "glove-200-angular",
 	}
 )
 
