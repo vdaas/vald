@@ -75,8 +75,10 @@ GRAPHQLDIRS = $(PROTODIRS:%=apis/graphql/%)
 PBDOCDIRS = $(PROTODIRS:%=apis/docs/%)
 
 BENCH_DATASET_BASE_DIR = hack/e2e/benchmark/assets
-BENCH_DATASET_MD5_DIR = checksum
-BENCH_DATASET_HDF5_DIR = dataset
+BENCH_DATASET_MD5_DIR_NAME = checksum
+BENCH_DATASET_HDF5_DIR_NAME = dataset
+BENCH_DATASET_MD5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_MD5_DIR_NAME)
+BENCH_DATASET_HDF5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR_NAME)
 
 PROTOS := $(shell find apis/proto -type f -regex ".*\.proto")
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
@@ -85,8 +87,8 @@ GRAPHQLS = $(PROTOS:apis/proto/%.proto=apis/graphql/%.pb.graphqls)
 GQLCODES = $(GRAPHQLS:apis/graphql/%.pb.graphqls=apis/graphql/%.generated.go)
 PBDOCS = $(PROTOS:apis/proto/%.proto=apis/docs/%.md)
 
-BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5")
-BENCH_DATASETS = $(BENCH_DATASET_MD5S:$(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_MD5_DIR)/%.md5=$(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR)/%.hdf5)
+BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5")
+BENCH_DATASETS = $(BENCH_DATASET_MD5S:$(BENCH_DATASET_MD5_DIR)/%.md5=$(BENCH_DATASET_HDF5_DIR)/%.hdf5)
 
 red    = /bin/echo -e "\x1b[31m\#\# $1\x1b[0m"
 green  = /bin/echo -e "\x1b[32m\#\# $1\x1b[0m"
@@ -390,13 +392,13 @@ $(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
 	@$(call green, "downloading datasets for benchmark...")
 	curl -fsSL -o $@ http://vectors.erikbern.com/$(patsubst $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
 	(cd hack/e2e/benchmark/assets; \
-	    md5sum -c $(patsubst $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5_DIR)/%.md5,$@) || \
-	    (rm -f $(patsubst $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_HDF5_DIR)/%.hdf5,$@) && exit 1))
+	    md5sum -c $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5_DIR_NAME)/%.md5,$@) || \
+	    (rm -f $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_HDF5_DIR_NAME)/%.hdf5,$@) && exit 1))
 
 bench-agent-stream: \
 	ngt \
-	$(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
-	$(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
+	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
 	rm -rf /tmp/ngt/
 	rm -rf pprof/agent/ngt
 	mkdir -p /tmp/ngt
