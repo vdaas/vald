@@ -111,7 +111,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (res *p
 	res = new(payload.Empty)
 	err = s.ngt.Insert(vec.GetId().GetId(), vec.GetVector())
 	if err != nil {
-		return nil, err
+		return res, err
 	}
 	return res, nil
 }

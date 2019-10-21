@@ -20,24 +20,29 @@ package errgroup
 import (
 	"context"
 	"sync"
+	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
 )
 
 type Group interface {
 	Go(func() error)
+	Limitation(int)
 	Wait() error
 }
 
 type group struct {
+	egctx  context.Context
 	cancel func()
 
 	wg sync.WaitGroup
 
-	cancelOnce sync.Once
-	mu         sync.RWMutex
-	emap       map[string]struct{}
-	err        error
+	limitation       chan struct{}
+	enableLimitation atomic.Value
+	cancelOnce       sync.Once
+	mu               sync.RWMutex
+	emap             map[string]struct{}
+	err              error
 }
 
 var (
@@ -47,10 +52,13 @@ var (
 
 func New(ctx context.Context) (Group, context.Context) {
 	egctx, cancel := context.WithCancel(ctx)
-	return &group{
+	g := &group{
+		egctx:  egctx,
 		emap:   make(map[string]struct{}),
 		cancel: cancel,
-	}, egctx
+	}
+	g.enableLimitation.Store(false)
+	return g, egctx
 }
 
 func Init(ctx context.Context) (egctx context.Context) {
@@ -72,23 +80,53 @@ func Go(f func() error) {
 	instance.Go(f)
 }
 
-func (g *group) Go(f func() error) {
-	g.wg.Add(1)
-
-	go func() {
-		defer g.wg.Done()
-
-		if err := f(); err != nil {
-			g.mu.Lock()
-			g.emap[err.Error()] = struct{}{}
-			g.mu.Unlock()
-			g.cancelOnce.Do(func() {
-				if g.cancel != nil {
-					g.cancel()
-				}
-			})
+func (g *group) Limitation(limit int) {
+	if limit > 0 {
+		if g.limitation != nil {
+			close(g.limitation)
 		}
-	}()
+		g.limitation = make(chan struct{}, limit)
+		g.enableLimitation.Store(true)
+	} else {
+		g.enableLimitation.Store(false)
+	}
+}
+
+func (g *group) Go(f func() error) {
+	if f != nil {
+		g.wg.Add(1)
+		go func() {
+			defer g.wg.Done()
+			if g.enableLimitation.Load().(bool) {
+				select {
+				case g.limitation <- struct{}{}:
+				case <-g.egctx.Done():
+					return
+				}
+			}
+			if err := f(); err != nil {
+				g.mu.Lock()
+				g.emap[err.Error()] = struct{}{}
+				g.mu.Unlock()
+				g.doCancel()
+			}
+			if g.enableLimitation.Load().(bool) {
+				select {
+				case <-g.limitation:
+				case <-g.egctx.Done():
+					return
+				}
+			}
+		}()
+	}
+}
+
+func (g *group) doCancel() {
+	g.cancelOnce.Do(func() {
+		if g.cancel != nil {
+			g.cancel()
+		}
+	})
 }
 
 func Wait() error {
@@ -97,11 +135,11 @@ func Wait() error {
 
 func (g *group) Wait() error {
 	g.wg.Wait()
-	g.cancelOnce.Do(func() {
-		if g.cancel != nil {
-			g.cancel()
-		}
-	})
+	g.doCancel()
+	if g.limitation != nil {
+		close(g.limitation)
+	}
+	g.enableLimitation.Store(false)
 	g.mu.RLock()
 	for msg := range g.emap {
 		g.err = errors.Wrap(g.err, msg)

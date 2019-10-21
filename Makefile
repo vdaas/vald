@@ -373,14 +373,36 @@ $(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
 	curl -fsSL -o $@ http://vectors.erikbern.com/$(patsubst hack/e2e/benchmark/assets/%.hdf5,%.hdf5,$@)
 	(cd hack/e2e/benchmark/assets; md5sum -c $(patsubst hack/e2e/benchmark/assets/%.hdf5,%.md5,$@) || (rm -f $(patsubst hack/e2e/benchmark/assets/%.hdf5,%.hdf5,$@) && exit 1))
 
-benchmark-agent-start:
-	# rm -r ./index 1>/dev/null 2>/dev/null
-	# CGO_ENABLED=1 CGO_CXXFLAGS="-g -Ofast -march=native" CGO_FFLAGS="-g -Ofast -march=native" CGO_LDFLAGS="-g -Ofast -march=native" GO111MODULE=on GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build --ldflags '-s -w -linkmode "external" -extldflags "-static -fPIC -m64 -pthread -fopenmp -std=c++17 -lstdc++ -lm"' -a -tags "cgo netgo" -trimpath -installsuffix "cgo netgo" -o "agent" "cmd/agent/ngt/main.go"
-	go run cmd/agent/ngt/main.go -f hack/e2e/benchmark/assets/fashion-mnist.yaml
-	# ./agent -f hack/e2e/benchmark/assets/fashion-mnist.yaml
-	# rm -rf ./agent
+bench-agent-stream:
+	rm -rf /tmp/ngt/
+	rm -rf pprof/agent/ngt
+	mkdir -p /tmp/ngt
+	mkdir -p pprof/agent/ngt
+	go test -count=1 \
+		-timeout=1h \
+		-bench=gRPCStream \
+		-benchmem \
+		-o pprof/agent/ngt/agent.bin \
+		-cpuprofile pprof/agent/ngt/cpu-stream.out \
+		-memprofile pprof/agent/ngt/mem-stream.out \
+		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go
+	go tool pprof --svg \
+		pprof/agent/ngt/agent.bin \
+		pprof/agent/ngt/cpu-stream.out \
+		> pprof/agent/ngt/cpu-stream.svg
+	go tool pprof --svg \
+		pprof/agent/ngt/agent.bin \
+		pprof/agent/ngt/mem-stream.out \
+		> pprof/agent/ngt/mem-stream.svg
+	rm -rf /tmp/ngt/
 
-benchmark-fashion-mnist:
-	go build -ldflags="-w -s" -o ./fmbench hack/e2e/benchmark/cmd/main.go
-	./fmbench hack/e2e/benchmark/assets/fashion-mnist-784-euclidean.hdf5
-	rm -rf ./fmbench
+profile-agent-stream:
+	go tool pprof -http=":6061" \
+		pprof/agent/ngt/agent.bin \
+		pprof/agent/ngt/cpu-stream.out &
+	go tool pprof -http=":6062" \
+		pprof/agent/ngt/agent.bin \
+		pprof/agent/ngt/mem-stream.out
+
+kill-bench:
+	ps aux | grep go | grep -v nvim | grep -v tmux | grep -v gopls | grep -v "rg go" | awk '{print $1}' | xargs kill -9
