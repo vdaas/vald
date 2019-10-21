@@ -2,15 +2,10 @@ name: 'Build docker image: agent-ngt'
 on:
   push:
     paths:
-      - 'internal/*'
-      - 'internal/*/*'
-      - 'internal/*/*/*'
-      - 'internal/*/*/*/*'
-      - 'apis/grpc/*/*'
-      - 'pkg/agent/ngt/*'
-      - 'pkg/agent/ngt/*/*'
-      - 'pkg/agent/ngt/*/*/*'
-      - 'cmd/agent/ngt/*'
+      - 'internal/**'
+      - 'apis/grpc/**'
+      - 'pkg/agent/ngt/**'
+      - 'cmd/agent/ngt/**'
       - 'dockers/base/Dockerfile'
       - 'dockers/agent/ngt/Dockerfile'
 
@@ -30,8 +25,17 @@ jobs:
       env:
         DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
         DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-    - name: push to DockerHub
+    - name: push to DockerHub (master)
+      if: github.ref == 'refs/heads/master'
       run: |
-        echo 'Push to DockerHub'
+        echo 'Push to DockerHub (master)'
         imagename=`make dockers-agent-ngt-image-name`
-        docker push ${imagename}
+        docker tag ${imagename} ${imagename}:nightly
+        docker push ${imagename}:nightly
+    - name: push to DockerHub (pull request)
+      run: |
+        echo 'Push to DockerHub (pull request)'
+        imagename=`make dockers-agent-ngt-image-name`
+        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+        docker tag ${imagename} ${imagename}:pr-${pr_num}
+        docker push ${imagename}:pr-${pr_num}
