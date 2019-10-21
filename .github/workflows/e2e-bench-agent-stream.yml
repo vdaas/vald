@@ -1,0 +1,30 @@
+name: 'Run e2e bench: bench-agent-stream'
+on:
+  push:
+    paths:
+      - 'internal/**'
+      - 'apis/grpc/**'
+      - 'pkg/agent/ngt/**'
+      - 'cmd/agent/ngt/**'
+  pull_request:
+    paths:
+      - 'internal/**'
+      - 'apis/grpc/**'
+      - 'pkg/agent/ngt/**'
+      - 'cmd/agent/ngt/**'
+
+jobs:
+  bench-agent-stream:
+    name: bench-agent-stream
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+      - name: Install dependencies
+        run: |
+          echo "install dependencies"
+          sudo make ngt
+      - name: bench-agent-stream
+        run: |
+          echo "run bench-agent-stream"
+          make bench-agent-stream
