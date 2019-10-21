@@ -33,6 +33,7 @@ jobs:
         docker tag ${imagename} ${imagename}:nightly
         docker push ${imagename}:nightly
     - name: push to DockerHub (pull request)
+      if: github.event_name == 'pull_request'
       run: |
         echo 'Push to DockerHub (pull request)'
         imagename=`make dockers-agent-ngt-image-name`
