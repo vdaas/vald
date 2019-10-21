@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"runtime"
 	"sort"
 	"sync"
 	"sync/atomic"
@@ -32,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/gateway/vald/model"
 	"google.golang.org/grpc"
@@ -81,7 +83,7 @@ func New(opts ...GWOption) (gw Gateway, err error) {
 }
 
 func (g *gateway) StartDiscoverd(ctx context.Context) <-chan error {
-	ech := make(chan error, 100)
+	ech := make(chan error, 2)
 
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", g.dscHost, g.dscPort), g.gopts...)
 	g.dsc = discoverer.NewDiscovererClient(conn)
@@ -91,27 +93,50 @@ func (g *gateway) StartDiscoverd(ctx context.Context) <-chan error {
 
 	g.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
+		fch := make(chan struct{}, 1)
+		defer close(fch)
 		dt := time.NewTicker(g.dscDur)
 		defer dt.Stop()
+
+		discover := func() error {
+			_, err = g.bo.Do(ctx, func() (_ interface{}, err error) {
+				return g.discover(ctx, ech)
+			})
+			if err != nil {
+				return err
+			} else {
+				runtime.Gosched()
+			}
+			return nil
+		}
+
 		for {
 			select {
 			case <-ctx.Done():
-				g.conns.Range(func(key interface{}, c interface{}) bool {
+				var errs error
+				g.conns.Range(func(name interface{}, c interface{}) bool {
 					err = c.(*grpc.ClientConn).Close()
 					if err != nil {
-						ech <- err
+						errs = errors.Wrap(errs, errors.ErrgRPCClientConnectionClose(name.(string), err).Error())
 					}
-					g.conns.Delete(key)
+					g.conns.Delete(name)
 					return true
 				})
-
+				if errs != nil {
+					ech <- errs
+				}
 				return nil
-			case <-dt.C:
-				_, err = g.bo.Do(ctx, func() (_ interface{}, err error) {
-					return g.discover(ctx, ech)
-				})
+			case <-fch:
+				err = discover()
 				if err != nil {
 					ech <- err
+				}
+			case <-dt.C:
+				err = discover()
+				if err != nil {
+					log.Error(err)
+					time.Sleep(g.dscDur / 5)
+					fch <- struct{}{}
 				}
 			}
 		}
@@ -154,7 +179,7 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface
 				g.conns.Delete(a.Name)
 				err = conn.Close()
 				if err != nil {
-					ech <- err
+					ech <- errors.ErrgRPCClientConnectionClose(a.Name, err)
 				}
 			} else {
 				cur[a.Name] = struct{}{}
@@ -235,6 +260,9 @@ func (g *gateway) DoMulti(ctx context.Context,
 			}
 			_, err = g.bo.Do(ctx, func() (_ interface{}, err error) {
 				err = f(ctx, tgt, ac)
+				if err != nil {
+					runtime.Gosched()
+				}
 				return
 			})
 			return

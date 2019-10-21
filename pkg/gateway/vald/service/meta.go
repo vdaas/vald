@@ -19,6 +19,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"runtime"
 	"sync/atomic"
 	"time"
 
@@ -81,6 +82,7 @@ func (m *meta) Start(ctx context.Context) <-chan error {
 		for {
 			select {
 			case <-ctx.Done():
+				close(ech)
 				return ctx.Err()
 			case <-tick.C:
 				if conn == nil ||
@@ -89,8 +91,10 @@ func (m *meta) Start(ctx context.Context) <-chan error {
 					conn, err = grpc.DialContext(ctx, fmt.Sprintf("%s:%d", m.host, m.port), m.gopts...)
 					if err != nil {
 						ech <- err
+					} else {
+						m.mc.Store(gmeta.NewMetaClient(conn))
+						runtime.Gosched()
 					}
-					m.mc.Store(gmeta.NewMetaClient(conn))
 				}
 			}
 		}

@@ -2,15 +2,10 @@ name: 'Build docker image: gateway-vald'
 on:
   push:
     paths:
-      - 'internal/*'
-      - 'internal/*/*'
-      - 'internal/*/*/*'
-      - 'internal/*/*/*/*'
-      - 'apis/grpc/*/*'
-      - 'pkg/gateway/vald/*'
-      - 'pkg/gateway/vald/*/*'
-      - 'pkg/gateway/vald/*/*/*'
-      - 'cmd/gateway/vald/*'
+      - 'internal/**'
+      - 'apis/grpc/**'
+      - 'pkg/gateway/vald/**'
+      - 'cmd/gateway/vald/**'
       - 'dockers/base/Dockerfile'
       - 'dockers/gateway/vald/Dockerfile'
 
@@ -30,8 +25,18 @@ jobs:
       env:
         DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
         DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-    - name: push to DockerHub
+    - name: push to DockerHub (master)
+      if: github.ref == 'refs/heads/master'
       run: |
-        echo 'Push to DockerHub'
+        echo 'Push to DockerHub (master)'
         imagename=`make dockers-gateway-vald-image-name`
-        docker push ${imagename}
+        docker tag ${imagename} ${imagename}:nightly
+        docker push ${imagename}:nightly
+    - name: push to DockerHub (pull request)
+      if: github.event_name == 'pull_request'
+      run: |
+        echo 'Push to DockerHub (pull request)'
+        imagename=`make dockers-gateway-vald-image-name`
+        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+        docker tag ${imagename} ${imagename}:pr-${pr_num}
+        docker push ${imagename}:pr-${pr_num}

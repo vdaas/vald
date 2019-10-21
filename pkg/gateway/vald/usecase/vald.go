@@ -38,7 +38,7 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	service.New(service.WithDiscoverDuration(cfg.Discoverer.Host))
+	service.New(service.WithDiscoverDuration(cfg.Gateway.Discoverer.Host))
 	v, err := service.New(cfg.ValdProxy)
 	if err != nil {
 		return nil, err

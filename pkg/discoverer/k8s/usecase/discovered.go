@@ -102,12 +102,12 @@ func (r *run) Start(ctx context.Context) <-chan error {
 	ech := make(chan error, 2)
 	errgroup.Get().Go(safety.RecoverFunc(func() error {
 		log.Info("daemon start")
-		defer close(ech)
 		dech := r.dsc.Start(ctx)
 		sech := r.server.ListenAndServe(ctx)
 		for {
 			select {
 			case <-ctx.Done():
+				close(ech)
 				return ctx.Err()
 			case ech <- <-dech:
 			case ech <- <-sech:

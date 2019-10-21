@@ -24,6 +24,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/apis/grpc/vald"
@@ -112,6 +113,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 		select {
 		case <-ctx.Done():
 			err = eg.Wait()
+			close(dch)
 			if len(res.GetResults()) > num && num != 0 {
 				res.Results = res.Results[:num]
 			}
@@ -181,8 +183,13 @@ func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error
 }
 
 func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *payload.Empty, err error) {
+	uuid := fuid.String()
+	err = s.metadata.SetMeta(ctx, vec.Id.GetId(), uuid)
+	if err != nil {
+		return nil, err
+	}
 	vec.Id = &payload.Object_ID{
-		Id: s.metadata.SetMeta(ctx, vec.Id.GetId()),
+		Id: uuid,
 	}
 	mu := new(sync.Mutex)
 	targets := make([]string, 0, s.replica)
