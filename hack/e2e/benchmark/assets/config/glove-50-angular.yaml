@@ -1,0 +1,61 @@
+#
+# Copyright (C) 2019 kpango (Yusuke Kato)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+version: v0.0.0
+server_config:
+  servers:
+  - name: agent-grpc
+    host: 127.0.0.1
+    port: 8082
+    mode: GRPC
+    probe_wait_time: "0s"
+    http:
+      shutdown_duration: "0s"
+      handler_timeout: ""
+      idle_timeout: ""
+      read_header_timeout: ""
+      read_timeout: ""
+      write_timeout: ""
+  - name: agent-rest
+    host: 127.0.0.1
+    port: 8081
+    mode: REST
+    probe_wait_time: "0s"
+    http:
+      shutdown_duration: "0s"
+      handler_timeout: ""
+      idle_timeout: ""
+      read_header_timeout: ""
+      read_timeout: ""
+      write_timeout: ""
+  startup_strategy:
+  - agent-grpc
+  - agent-rest
+  shutdown_strategy:
+  - agent-grpc
+  - agent-rest
+  full_shutdown_duration: 600s
+  tls:
+    enabled: false
+ngt:
+  index_path: "/tmp/ngt/glove-50-angular"
+  dimension: 50
+  bulk_insert_chunk_size: 10
+  distance_type: angle
+  object_type: float
+  creation_edge_size: 20
+  search_edge_size: 10

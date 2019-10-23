@@ -28,7 +28,6 @@ SIFT/
 *.hdf5
 
 # exclude binaries
-*
 cmd/**/*
 !cmd/**/*.*
 !cmd/**/*/
