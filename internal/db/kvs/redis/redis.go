@@ -28,8 +28,10 @@ import (
 )
 
 type Redis interface {
-	Get(string) *redis.StringCmd
-	MGet(...string) *redis.SliceCmd
+	Lister
+	Getter
+	Setter
+	Deleter
 }
 
 type redisClient struct {
@@ -71,6 +73,9 @@ func New(ctx context.Context, opts ...Option) (Redis, error) {
 	case 0:
 		return nil, errors.ErrAddrsNotFound
 	case 1:
+		if len(r.addrs[0]) == 0 {
+			return nil, errors.ErrAddrsNotFound
+		}
 		return redis.NewClient(&redis.Options{
 			Addr:     r.addrs[0],
 			Password: r.password,
