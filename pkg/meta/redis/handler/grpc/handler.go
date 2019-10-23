@@ -18,18 +18,15 @@
 package grpc
 
 import (
-	"context"
-
-	"github.com/vdaas/vald/apis/grpc/discoverer"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/meta"
 	"github.com/vdaas/vald/pkg/meta/redis/service"
 )
 
 type server struct {
-	dsc service.Discoverer
+	r service.Redis
 }
 
-func New(opts ...Option) discoverer.DiscovererServer {
+func New(opts ...Option) meta.MetaServer {
 	s := new(server)
 
 	for _, opt := range append(defaultOpts, opts...) {
@@ -38,7 +35,3 @@ func New(opts ...Option) discoverer.DiscovererServer {
 	return s
 }
 
-func (s *server) Discover(ctx context.Context, req *payload.Discoverer_Request) (
-	res *payload.Info_Servers, err error) {
-	return s.dsc.GetServers(req.GetName(), req.GetNode()), nil
-}

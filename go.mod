@@ -12,7 +12,7 @@ replace (
 )
 
 require (
-	github.com/certifi/gocertifi v0.0.0-20190905060710-a5e0173ced67 // indirect
+	github.com/certifi/gocertifi v0.0.0-20191021191039-0944d244cd40 // indirect
 	github.com/cespare/xxhash v1.1.0
 	github.com/cockroachdb/errors v1.2.3
 	github.com/cockroachdb/logtags v0.0.0-20190617123548-eb05cc24525f // indirect
@@ -29,7 +29,7 @@ require (
 	github.com/kpango/gache v1.1.23
 	github.com/kpango/glg v1.4.6
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
-	golang.org/x/sys v0.0.0-20191018095205-727590c5006e
+	golang.org/x/sys v0.0.0-20191022100944-742c48ecaeb7
 	gonum.org/v1/hdf5 v0.0.0-20190920010848-b0d662f53d94
 	google.golang.org/genproto v0.0.0-20191009194640-548a555dbc03
 	google.golang.org/grpc v1.24.0

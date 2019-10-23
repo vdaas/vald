@@ -15,6 +15,74 @@
     "application/json"
   ],
   "paths": {
+    "/inverse/meta": {
+      "delete": {
+        "operationId": "DeleteMetaInverse",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/MetaKey"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "val.id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Meta"
+        ]
+      },
+      "post": {
+        "operationId": "GetMetaInverse",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/MetaKey"
+            }
+          }
+        },
+        "tags": [
+          "Meta"
+        ]
+      }
+    },
+    "/inverse/metas": {
+      "delete": {
+        "operationId": "DeleteMetasInverse",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/MetaVals"
+            }
+          }
+        },
+        "tags": [
+          "Meta"
+        ]
+      },
+      "post": {
+        "operationId": "GetMetasInverse",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/MetaKeys"
+            }
+          }
+        },
+        "tags": [
+          "Meta"
+        ]
+      }
+    },
     "/meta": {
       "get": {
         "operationId": "DeleteMeta",
@@ -71,6 +139,14 @@
     }
   },
   "definitions": {
+    "MetaKey": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "$ref": "#/definitions/ObjectID"
+        }
+      }
+    },
     "MetaKeyVal": {
       "type": "object",
       "properties": {
@@ -79,6 +155,14 @@
         },
         "val": {
           "$ref": "#/definitions/ObjectID"
+        }
+      }
+    },
+    "MetaKeys": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "$ref": "#/definitions/ObjectIDs"
         }
       }
     },
