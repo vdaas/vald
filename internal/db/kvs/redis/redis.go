@@ -36,6 +36,12 @@ type Redis interface {
 	Deleter
 }
 
+var (
+	a = map[string]func() Redis{
+		"aa": nil,
+	}
+)
+
 type Conn = redis.Conn
 
 type redisClient struct {

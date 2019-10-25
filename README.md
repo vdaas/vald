@@ -48,4 +48,4 @@ Write example here
 [kpango](https://github.com/kpango)
 
 ## LICENSE
-vald released under MIT license, refer [LICENSE](https://github.com/vdaas/vald/blob/master/LICENSE) file.  
+vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas/vald/blob/master/LICENSE) file.  
