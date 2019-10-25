@@ -1,6 +1,16 @@
 name: 'Build docker image: gateway-vald'
 on:
   push:
+    branches:
+      - master
+    paths:
+      - 'internal/**'
+      - 'apis/grpc/**'
+      - 'pkg/gateway/vald/**'
+      - 'cmd/gateway/vald/**'
+      - 'dockers/base/Dockerfile'
+      - 'dockers/gateway/vald/Dockerfile'
+  pull_request:
     paths:
       - 'internal/**'
       - 'apis/grpc/**'
@@ -14,6 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
     - name: Build the Docker image
       run: |
         echo 'Build docker image'
