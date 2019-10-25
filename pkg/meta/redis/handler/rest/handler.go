@@ -20,7 +20,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/vdaas/vald/apis/grpc/discoverer"
+	"github.com/vdaas/vald/apis/grpc/meta"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/net/http/dump"
 	"github.com/vdaas/vald/internal/net/http/json"
@@ -28,11 +28,20 @@ import (
 
 type Handler interface {
 	Index(w http.ResponseWriter, r *http.Request) (int, error)
-	Discover(w http.ResponseWriter, r *http.Request) (int, error)
+	GetMeta(w http.ResponseWriter, r *http.Request) (int, error)
+	GetMetas(w http.ResponseWriter, r *http.Request) (int, error)
+	GetMetaInverse(w http.ResponseWriter, r *http.Request) (int, error)
+	GetMetasInverse(w http.ResponseWriter, r *http.Request) (int, error)
+	SetMeta(w http.ResponseWriter, r *http.Request) (int, error)
+	SetMetas(w http.ResponseWriter, r *http.Request) (int, error)
+	DeleteMeta(w http.ResponseWriter, r *http.Request) (int, error)
+	DeleteMetas(w http.ResponseWriter, r *http.Request) (int, error)
+	DeleteMetaInverse(w http.ResponseWriter, r *http.Request) (int, error)
+	DeleteMetasInverse(w http.ResponseWriter, r *http.Request) (int, error)
 }
 
 type handler struct {
-	dsc discoverer.DiscovererServer
+	meta meta.MetaServer
 }
 
 func New(opts ...Option) Handler {
@@ -51,9 +60,72 @@ func (h *handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
 	})
 }
 
-func (h *handler) Discover(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Discoverer_Request
-	return json.Handler(w, r, req, func() (interface{}, error) {
-		return h.dsc.Discover(r.Context(), req)
+func (h *handler) GetMeta(w http.ResponseWriter, r *http.Request) (int, error) {
+	req := new(payload.Meta_Key)
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.meta.GetMeta(r.Context(), req)
+	})
+}
+
+func (h *handler) GetMetas(w http.ResponseWriter, r *http.Request) (int, error) {
+	req := new(payload.Meta_Keys)
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.meta.GetMetas(r.Context(), req)
+	})
+}
+
+func (h *handler) GetMetaInverse(w http.ResponseWriter, r *http.Request) (int, error) {
+	req := new(payload.Meta_Val)
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.meta.GetMetaInverse(r.Context(), req)
+	})
+}
+
+func (h *handler) GetMetasInverse(w http.ResponseWriter, r *http.Request) (int, error) {
+	req := new(payload.Meta_Vals)
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.meta.GetMetasInverse(r.Context(), req)
+	})
+}
+
+func (h *handler) SetMeta(w http.ResponseWriter, r *http.Request) (int, error) {
+	req := new(payload.Meta_KeyVal)
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.meta.SetMeta(r.Context(), req)
+	})
+}
+
+func (h *handler) SetMetas(w http.ResponseWriter, r *http.Request) (int, error) {
+	req := new(payload.Meta_KeyVals)
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.meta.SetMetas(r.Context(), req)
+	})
+}
+
+func (h *handler) DeleteMeta(w http.ResponseWriter, r *http.Request) (int, error) {
+	req := new(payload.Meta_Key)
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.meta.DeleteMeta(r.Context(), req)
+	})
+}
+
+func (h *handler) DeleteMetas(w http.ResponseWriter, r *http.Request) (int, error) {
+	req := new(payload.Meta_Keys)
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.meta.DeleteMetas(r.Context(), req)
+	})
+}
+
+func (h *handler) DeleteMetaInverse(w http.ResponseWriter, r *http.Request) (int, error) {
+	req := new(payload.Meta_Val)
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.meta.DeleteMetaInverse(r.Context(), req)
+	})
+}
+
+func (h *handler) DeleteMetasInverse(w http.ResponseWriter, r *http.Request) (int, error) {
+	req := new(payload.Meta_Vals)
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.meta.DeleteMetasInverse(r.Context(), req)
 	})
 }

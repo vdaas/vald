@@ -23,16 +23,20 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/go-redis/redis"
+	redis "github.com/go-redis/redis/v7"
 	"github.com/vdaas/vald/internal/errors"
 )
 
 type Redis interface {
+	TxPipeline() redis.Pipeliner
+	Close() error
 	Lister
 	Getter
 	Setter
 	Deleter
 }
+
+type Conn = redis.Conn
 
 type redisClient struct {
 	addrs              []string
@@ -69,6 +73,7 @@ func New(ctx context.Context, opts ...Option) (Redis, error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
+	redis.NewClient(nil)
 	switch len(r.addrs) {
 	case 0:
 		return nil, errors.ErrAddrsNotFound
@@ -77,11 +82,9 @@ func New(ctx context.Context, opts ...Option) (Redis, error) {
 			return nil, errors.ErrAddrsNotFound
 		}
 		return redis.NewClient(&redis.Options{
-			Addr:     r.addrs[0],
-			Password: r.password,
-			Dialer: func() (net.Conn, error) {
-				return r.dialer(ctx, "tcp", r.addrs[0])
-			},
+			Addr:               r.addrs[0],
+			Password:           r.password,
+			Dialer:             r.dialer,
 			OnConnect:          r.onConnect,
 			DB:                 r.db,
 			MaxRetries:         r.maxRetries,
@@ -101,6 +104,7 @@ func New(ctx context.Context, opts ...Option) (Redis, error) {
 	default:
 		return redis.NewClusterClient(&redis.ClusterOptions{
 			Addrs:              r.addrs,
+			Dialer:             r.dialer,
 			MaxRedirects:       r.maxRedirects,
 			ReadOnly:           r.readOnly,
 			RouteByLatency:     r.routeByLatency,

@@ -30,15 +30,16 @@ import (
 )
 
 type Runner interface {
-	PreStart() error
+	PreStart(ctx context.Context) error
 	Start(ctx context.Context) <-chan error
-	PreStop() error
+	PreStop(ctx context.Context) error
 	Stop(ctx context.Context) error
+	PostStop(ctx context.Context) error
 }
 
 func Run(ctx context.Context, run Runner) (err error) {
 
-	err = run.PreStart()
+	err = run.PreStart(ctx)
 	if err != nil {
 		return err
 	}
@@ -54,6 +55,7 @@ func Run(ctx context.Context, run Runner) (err error) {
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
 	emap := make(map[string]int)
+	errs := make([]error, 0, 10)
 
 	for {
 		select {
@@ -62,26 +64,53 @@ func Run(ctx context.Context, run Runner) (err error) {
 			cancel()
 		case err = <-ech:
 			if err != nil {
+				if _, ok := emap[err.Error()]; !ok {
+					errs = append(errs, err)
+				}
 				log.Error(err)
 				emap[err.Error()]++
 			}
 		case <-rctx.Done():
-			err = run.PreStop()
+			err = run.PreStop(ctx)
 			if err != nil {
+				if _, ok := emap[err.Error()]; !ok {
+					errs = append(errs, err)
+				}
+				log.Error(err)
 				emap[err.Error()]++
+
 			}
 			err = run.Stop(ctx)
 			if err != nil {
+				if _, ok := emap[err.Error()]; !ok {
+					errs = append(errs, err)
+				}
+				log.Error(err)
+				emap[err.Error()]++
+			}
+			err = run.PostStop(ctx)
+			if err != nil {
+				if _, ok := emap[err.Error()]; !ok {
+					errs = append(errs, err)
+				}
+				log.Error(err)
 				emap[err.Error()]++
 			}
 			err = errgroup.Wait()
 			if err != nil {
+				if _, ok := emap[err.Error()]; !ok {
+					errs = append(errs, err)
+				}
+				log.Error(err)
 				emap[err.Error()]++
 			}
 			err = nil
-			for msg, count := range emap {
-				if msg != "" && !strings.Contains(msg, http.ErrServerClosed.Error()) {
-					err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", msg, count)
+			for _, ierr := range errs {
+				if ierr != nil {
+					msg := ierr.Error()
+					if msg != "" && !strings.Contains(msg, http.ErrServerClosed.Error()) {
+						err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", msg, emap[msg])
+					}
 				}
 			}
 			if err != nil {

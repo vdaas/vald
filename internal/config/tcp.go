@@ -29,9 +29,13 @@ type TCP struct {
 		KeepAlive        string `yaml:"keep_alive" json:"keep_alive"`
 		DualStackEnabled bool   `yaml:"dual_stack_enabled" json:"dual_stack_enabled"`
 	} `yaml:"dialer" json:"dialer"`
+	TLS *TLS `yaml:"tls" json:"tls"`
 }
 
 func (t *TCP) Bind() *TCP {
+	if t.TLS != nil {
+		t.TLS = t.TLS.Bind()
+	}
 	t.DNS.RefreshDuration = GetActualValue(t.DNS.RefreshDuration)
 	t.DNS.CacheExpiration = GetActualValue(t.DNS.CacheExpiration)
 	t.Dialer.Timeout = GetActualValue(t.Dialer.Timeout)

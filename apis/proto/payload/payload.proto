@@ -51,13 +51,13 @@ message Search {
 }
 
 message Meta {
-  message Key { Object.ID key = 1; }
-  message Keys { Object.IDs keys = 1; }
-  message Val { Object.ID val = 1; }
-  message Vals { Object.IDs vals = 1; }
+  message Key { string key = 1; }
+  message Keys { repeated string keys = 1; }
+  message Val { string val = 1; }
+  message Vals { repeated string vals = 1; }
   message KeyVal {
-    Object.ID key = 1;
-    Object.ID val = 2;
+    string key = 1;
+    string val = 2;
   }
   message KeyVals { repeated KeyVal kvs = 1; }
 }

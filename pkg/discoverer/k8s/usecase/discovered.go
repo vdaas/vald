@@ -93,7 +93,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}, nil
 }
 
-func (r *run) PreStart() error {
+func (r *run) PreStart(ctx context.Context) error {
 	log.Info("daemon start")
 	return nil
 }
@@ -102,12 +102,12 @@ func (r *run) Start(ctx context.Context) <-chan error {
 	ech := make(chan error, 2)
 	errgroup.Get().Go(safety.RecoverFunc(func() error {
 		log.Info("daemon start")
+		defer close(ech)
 		dech := r.dsc.Start(ctx)
 		sech := r.server.ListenAndServe(ctx)
 		for {
 			select {
 			case <-ctx.Done():
-				close(ech)
 				return ctx.Err()
 			case ech <- <-dech:
 			case ech <- <-sech:
@@ -117,10 +117,14 @@ func (r *run) Start(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (r *run) PreStop() error {
+func (r *run) PreStop(ctx context.Context) error {
 	return nil
 }
 
 func (r *run) Stop(ctx context.Context) error {
 	return r.server.Shutdown(ctx)
+}
+
+func (r *run) PostStop(ctx context.Context) error {
+	return nil
 }

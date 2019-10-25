@@ -25,8 +25,8 @@ var (
 	defaultOpts = []Option{}
 )
 
-func WithDiscoverer(dsc service.Discoverer) Option {
+func WithRedis(r service.Redis) Option {
 	return func(s *server) {
-		s.dsc = dsc
+		s.redis = r
 	}
 }

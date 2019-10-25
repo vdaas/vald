@@ -29,6 +29,9 @@ type Data struct {
 
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
+
+	// Redis represent redis configurations
+	Redis *config.Redis `json:"redis_config" yaml:"redis_config"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {

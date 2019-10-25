@@ -32,6 +32,7 @@ var (
 		WithDialerKeepAlive("30s"),
 		WithDialerTimeout("30s"),
 		WithEnableDialerDualStack(),
+		WithDisableDNSCache(),
 	}
 )
 

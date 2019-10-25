@@ -18,12 +18,15 @@
 package grpc
 
 import (
+	"context"
+
 	"github.com/vdaas/vald/apis/grpc/meta"
+	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/pkg/meta/redis/service"
 )
 
 type server struct {
-	r service.Redis
+	redis service.Redis
 }
 
 func New(opts ...Option) meta.MetaServer {
@@ -35,3 +38,103 @@ func New(opts ...Option) meta.MetaServer {
 	return s
 }
 
+func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.Meta_Val, error) {
+	val, err := s.redis.Get(key.GetKey())
+	if err != nil {
+		return nil, err
+	}
+	return &payload.Meta_Val{
+		Val: val,
+	}, nil
+}
+
+func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (*payload.Meta_Vals, error) {
+	vals, err := s.redis.GetMultiple(keys.GetKeys()...)
+	if err != nil {
+		return nil, err
+	}
+	return &payload.Meta_Vals{
+		Vals: vals,
+	}, nil
+}
+
+func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*payload.Meta_Key, error) {
+	key, err := s.redis.GetInverse(val.GetVal())
+	if err != nil {
+		return nil, err
+	}
+	return &payload.Meta_Key{
+		Key: key,
+	}, nil
+}
+
+func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (*payload.Meta_Keys, error) {
+	keys, err := s.redis.GetInverseMultiple(vals.GetVals()...)
+	if err != nil {
+		return nil, err
+	}
+	return &payload.Meta_Keys{
+		Keys: keys,
+	}, nil
+}
+
+func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *payload.Empty, err error) {
+	err = s.redis.Set(kv.GetKey(), kv.GetVal())
+	if err != nil {
+		return nil, err
+	}
+	return new(payload.Empty), nil
+}
+
+func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *payload.Empty, err error) {
+	query := make(map[string]string, len(kvs.GetKvs())/2)
+	for _, kv := range kvs.GetKvs() {
+		query[kv.GetKey()] = kv.GetVal()
+	}
+	err = s.redis.SetMultiple(query)
+	if err != nil {
+		return nil, err
+	}
+	return new(payload.Empty), nil
+
+}
+
+func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payload.Meta_Val, error) {
+	val, err := s.redis.Delete(key.GetKey())
+	if err != nil {
+		return nil, err
+	}
+	return &payload.Meta_Val{
+		Val: val,
+	}, nil
+}
+
+func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (*payload.Meta_Vals, error) {
+	vals, err := s.redis.DeleteMultiple(keys.GetKeys()...)
+	if err != nil {
+		return nil, err
+	}
+	return &payload.Meta_Vals{
+		Vals: vals,
+	}, nil
+}
+
+func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (*payload.Meta_Key, error) {
+	key, err := s.redis.DeleteInverse(val.GetVal())
+	if err != nil {
+		return nil, err
+	}
+	return &payload.Meta_Key{
+		Key: key,
+	}, nil
+}
+
+func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (*payload.Meta_Keys, error) {
+	keys, err := s.redis.DeleteInverseMultiple(vals.GetVals()...)
+	if err != nil {
+		return nil, err
+	}
+	return &payload.Meta_Keys{
+		Keys: keys,
+	}, nil
+}

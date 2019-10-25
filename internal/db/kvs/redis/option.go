@@ -17,7 +17,14 @@
 // Package redis provides implementation of Go API for redis interface
 package redis
 
-import "github.com/vdaas/vald/internal/net/tcp"
+import (
+	"crypto/tls"
+	"time"
+
+	redis "github.com/go-redis/redis/v7"
+	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/timeutil"
+)
 
 type Option func(*redisClient) error
 
@@ -34,19 +41,11 @@ func WithDialer(der tcp.Dialer) Option {
 	}
 }
 
-func WithAddr(addr string) Option {
+func WithAddrs(addrs ...string) Option {
 	return func(r *redisClient) error {
-		if r.addrs == nil {
-			r.addrs = []string{addr}
-		} else {
-			r.addrs = append(r.addrs, addr)
+		if addrs == nil || len(addrs) == 0 {
+			return nil
 		}
-		return nil
-	}
-}
-
-func WithHosts(addrs []string) Option {
-	return func(r *redisClient) error {
 		if r.addrs == nil {
 			r.addrs = addrs
 		} else {
@@ -59,6 +58,235 @@ func WithHosts(addrs []string) Option {
 func WithDB(db int) Option {
 	return func(r *redisClient) error {
 		r.db = db
+		return nil
+	}
+}
+
+func WithClusterSlots(f func() ([]redis.ClusterSlot, error)) Option {
+	return func(r *redisClient) error {
+		if f != nil {
+			r.clusterSlots = f
+		}
+		return nil
+	}
+}
+
+func WithDialTimeout(dur string) Option {
+	return func(r *redisClient) error {
+		if dur == "" {
+			return nil
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			d = time.Minute * 30
+		}
+		r.dialTimeout = d
+		return nil
+	}
+}
+
+func WithIdleCheckFrequency(dur string) Option {
+	return func(r *redisClient) error {
+		if dur == "" {
+			return nil
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			d = time.Minute
+		}
+		r.idleCheckFrequency = d
+		return nil
+	}
+}
+
+func WithIdleTimeout(dur string) Option {
+	return func(r *redisClient) error {
+		if dur == "" {
+			return nil
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			d = time.Minute
+		}
+		r.idleTimeout = d
+		return nil
+	}
+}
+
+func WithKeyPrefix(prefix string) Option {
+	return func(r *redisClient) error {
+		if prefix != "" {
+			r.keyPref = prefix
+		}
+		return nil
+	}
+}
+
+func WithMaximumConnectionAge(dur string) Option {
+	return func(r *redisClient) error {
+		if dur == "" {
+			return nil
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return nil
+		}
+		r.maxConnAge = d
+		return nil
+	}
+}
+
+func WithRedirectLimit(maxRedirects int) Option {
+	return func(r *redisClient) error {
+		r.maxRedirects = maxRedirects
+		return nil
+	}
+}
+
+func WithRetryLimit(maxRetries int) Option {
+	return func(r *redisClient) error {
+		r.maxRetries = maxRetries
+		return nil
+	}
+}
+
+func WithMaximumRetryBackoff(dur string) Option {
+	return func(r *redisClient) error {
+		if dur == "" {
+			return nil
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			d = time.Minute * 2
+		}
+		r.maxRetryBackoff = d
+		return nil
+	}
+}
+
+func WithMinimumIdleConnection(minIdleConns int) Option {
+	return func(r *redisClient) error {
+		r.minIdleConns = minIdleConns
+		return nil
+	}
+}
+
+func WithMinimumRetryBackoff(dur string) Option {
+	return func(r *redisClient) error {
+		if dur == "" {
+			return nil
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			d = time.Millisecond * 5
+		}
+		r.minRetryBackoff = d
+		return nil
+	}
+}
+
+func WithOnConnectFunction(f func(*redis.Conn) error) Option {
+	return func(r *redisClient) error {
+		if f != nil {
+			r.onConnect = f
+		}
+		return nil
+	}
+}
+
+func WithOnNewNodeFunction(f func(*redis.Client)) Option {
+	return func(r *redisClient) error {
+		if f != nil {
+			r.onNewNode = f
+		}
+		return nil
+	}
+}
+
+func WithPassword(password string) Option {
+	return func(r *redisClient) error {
+		if password != "" {
+			r.password = password
+		}
+		return nil
+	}
+}
+
+func WithPoolSize(poolSize int) Option {
+	return func(r *redisClient) error {
+		r.poolSize = poolSize
+		return nil
+	}
+}
+
+func WithPoolTimeout(dur string) Option {
+	return func(r *redisClient) error {
+		if dur == "" {
+			return nil
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			d = time.Minute * 5
+		}
+		r.poolTimeout = d
+		return nil
+	}
+}
+
+func WithReadOnlyFlag(readOnly bool) Option {
+	return func(r *redisClient) error {
+		r.readOnly = readOnly
+		return nil
+	}
+}
+
+func WithReadTimeout(dur string) Option {
+	return func(r *redisClient) error {
+		if dur == "" {
+			return nil
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			d = time.Minute
+		}
+		r.readTimeout = d
+		return nil
+	}
+}
+
+func WithRouteByLatencyFlag(routeByLatency bool) Option {
+	return func(r *redisClient) error {
+		r.routeByLatency = routeByLatency
+		return nil
+	}
+}
+
+func WithRouteRandomlyFlag(routeRandomly bool) Option {
+	return func(r *redisClient) error {
+		r.routeRandomly = routeRandomly
+		return nil
+	}
+}
+
+func WithTLSConfig(cfg *tls.Config) Option {
+	return func(r *redisClient) error {
+		if cfg != nil {
+			r.tlsConfig = cfg
+		}
+		return nil
+	}
+}
+
+func WithWriteTimeout(dur string) Option {
+	return func(r *redisClient) error {
+		if dur == "" {
+			return nil
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			d = time.Minute
+		}
+		r.writeTimeout = d
 		return nil
 	}
 }

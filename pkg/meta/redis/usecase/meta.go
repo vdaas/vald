@@ -19,11 +19,12 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/discoverer"
+	"github.com/vdaas/vald/apis/grpc/meta"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/pkg/meta/redis/config"
@@ -36,16 +37,16 @@ import (
 
 type run struct {
 	cfg    *config.Data
-	dsc    service.Discoverer
+	rd     service.Redis
 	server starter.Server
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	dsc, err := service.New()
+	rd, err := service.New(cfg.Redis)
 	if err != nil {
 		return nil, err
 	}
-	g := handler.New(handler.WithDiscoverer(dsc))
+	g := handler.New(handler.WithRedis(rd))
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
@@ -57,7 +58,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 						router.WithErrGroup(errgroup.Get()),
 						router.WithHandler(
 							rest.New(
-								rest.WithDiscoverer(g),
+								rest.WithMeta(g),
 							),
 						),
 					)),
@@ -66,7 +67,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
 			return []server.Option{
 				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-					discoverer.RegisterDiscovererServer(srv, g)
+					meta.RegisterMetaServer(srv, g)
 				}),
 				server.WithPreStartFunc(func() error {
 					// TODO check unbackupped upstream
@@ -87,37 +88,46 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	return &run{
 		cfg:    cfg,
-		dsc:    dsc,
+		rd:     rd,
 		server: srv,
 	}, nil
 }
 
-func (r *run) PreStart() error {
-	log.Info("daemon start")
+func (r *run) PreStart(ctx context.Context) error {
+	log.Info("daemon pre-start")
+	err := r.rd.Connect(ctx)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func (r *run) Start(ctx context.Context) <-chan error {
 	ech := make(chan error, 2)
-	go func() {
+	errgroup.Get().Go(safety.RecoverFunc(func() error {
 		log.Info("daemon start")
 		defer close(ech)
-		dech := r.dsc.Start(ctx)
 		sech := r.server.ListenAndServe(ctx)
 		for {
 			select {
-			case ech <- <-dech:
+			case <-ctx.Done():
+				return ctx.Err()
 			case ech <- <-sech:
 			}
 		}
-	}()
+	}))
 	return ech
 }
 
-func (r *run) PreStop() error {
+func (r *run) PreStop(ctx context.Context) error {
 	return nil
 }
 
 func (r *run) Stop(ctx context.Context) error {
 	return r.server.Shutdown(ctx)
 }
+
+func (r *run) PostStop(ctx context.Context) error {
+	return r.rd.Disconnect()
+}
+

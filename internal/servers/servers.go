@@ -20,7 +20,6 @@ package servers
 import (
 	"context"
 	"net/http"
-	"runtime"
 	"strings"
 	"time"
 
@@ -40,7 +39,6 @@ type listener struct {
 	eg      errgroup.Group
 	sus     []string
 	sds     []string
-	cancel  context.CancelFunc
 	sddur   time.Duration
 }
 
@@ -54,14 +52,7 @@ func New(opts ...Option) Listener {
 
 func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 
-	type sinfo struct {
-		ech <-chan error
-		srv server.Server
-	}
-
 	ech := make(chan error, len(l.servers)*10)
-	var rctx context.Context
-	echs := make([]sinfo, len(l.servers))
 
 	for _, name := range l.sus {
 		srv, ok := l.servers[name]
@@ -72,56 +63,39 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 		}
 
 		if !l.servers[name].IsRunning() {
-			echs = append(echs, sinfo{
-				ech: l.servers[name].ListenAndServe(),
-				srv: l.servers[name],
-			})
+			err := l.servers[name].ListenAndServe(ech)
+			if err != nil {
+				ech <- err
+			}
 		}
 	}
 
 	for name := range l.servers {
 		if !l.servers[name].IsRunning() {
-			echs = append(echs, sinfo{
-				ech: l.servers[name].ListenAndServe(),
-				srv: l.servers[name],
-			})
+			err := l.servers[name].ListenAndServe(ech)
+			if err != nil {
+				ech <- err
+			}
 		}
 	}
-
-	rctx, l.cancel = context.WithCancel(ctx)
 
 	l.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 		for {
-			for i := range echs[:len(echs)] {
-				select {
-				case <-rctx.Done():
-					err = rctx.Err()
-					if err != nil && err != context.Canceled {
-						return err
-					}
-					return nil
-				case err = <-echs[i].ech:
-					if err != nil && err != http.ErrServerClosed {
-						ech <- err
-					}
-					err = nil
-					echs[i] = sinfo{
-						ech: echs[i].srv.ListenAndServe(),
-						srv: echs[i].srv,
-					}
+			select {
+			case <-ctx.Done():
+				err = ctx.Err()
+				if err != nil && err != context.Canceled {
+					return err
 				}
+				return nil
 			}
-			runtime.Gosched()
 		}
 	}))
 	return ech
 }
 
 func (l *listener) Shutdown(ctx context.Context) (err error) {
-
-	defer l.cancel()
-
 	ctx, cancel := context.WithTimeout(ctx, l.sddur)
 	defer cancel()
 

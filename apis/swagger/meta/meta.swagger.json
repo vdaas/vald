@@ -28,7 +28,7 @@
         },
         "parameters": [
           {
-            "name": "val.id",
+            "name": "val",
             "in": "query",
             "required": false,
             "type": "string"
@@ -60,10 +60,22 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/MetaVals"
+              "$ref": "#/definitions/MetaKeys"
             }
           }
         },
+        "parameters": [
+          {
+            "name": "vals",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
         "tags": [
           "Meta"
         ]
@@ -96,7 +108,7 @@
         },
         "parameters": [
           {
-            "name": "key.id",
+            "name": "key",
             "in": "query",
             "required": false,
             "type": "string"
@@ -143,7 +155,7 @@
       "type": "object",
       "properties": {
         "key": {
-          "$ref": "#/definitions/ObjectID"
+          "type": "string"
         }
       }
     },
@@ -151,10 +163,10 @@
       "type": "object",
       "properties": {
         "key": {
-          "$ref": "#/definitions/ObjectID"
+          "type": "string"
         },
         "val": {
-          "$ref": "#/definitions/ObjectID"
+          "type": "string"
         }
       }
     },
@@ -162,7 +174,10 @@
       "type": "object",
       "properties": {
         "keys": {
-          "$ref": "#/definitions/ObjectIDs"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -170,7 +185,7 @@
       "type": "object",
       "properties": {
         "val": {
-          "$ref": "#/definitions/ObjectID"
+          "type": "string"
         }
       }
     },
@@ -178,25 +193,9 @@
       "type": "object",
       "properties": {
         "vals": {
-          "$ref": "#/definitions/ObjectIDs"
-        }
-      }
-    },
-    "ObjectID": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      }
-    },
-    "ObjectIDs": {
-      "type": "object",
-      "properties": {
-        "ids": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/ObjectID"
+            "type": "string"
           }
         }
       }

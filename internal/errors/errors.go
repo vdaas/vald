@@ -28,6 +28,12 @@ import (
 )
 
 var (
+
+	// Redis
+	ErrRedisInvalidKVVKIndex = func(kv, vk int) error {
+		return Errorf("kv index and vk index must be defferent.\t(kv: %d,\tvk: %d)", kv, vk)
+	}
+
 	ErrInvalidConfigVersion = func(cur, con string) error {
 		return Errorf("invalid config version %s not satisfies version constraints %s", cur, con)
 	}

@@ -56,7 +56,7 @@ service Meta {
   rpc DeleteMetaInverse(payload.Meta.Val) returns (payload.Meta.Key) {
     option (google.api.http).delete = "/inverse/meta";
   }
-  rpc DeleteMetasInverse(payload.Meta.Keys) returns (payload.Meta.Vals) {
+  rpc DeleteMetasInverse(payload.Meta.Vals) returns (payload.Meta.Keys) {
     option (google.api.http).delete = "/inverse/metas";
   }
 }

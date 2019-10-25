@@ -59,12 +59,12 @@ func New(opts ...Option) http.Handler {
 				h.Index,
 			},
 			{
-				"Discover",
+				"GetMeta",
 				[]string{
 					http.MethodPost,
 				},
-				"/discoverer",
-				h.Discover,
+				"/meta",
+				h.GetMeta,
 			},
 		}...))
 }

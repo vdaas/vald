@@ -38,7 +38,7 @@ import (
 type Server interface {
 	Name() string
 	IsRunning() bool
-	ListenAndServe() <-chan error
+	ListenAndServe(chan<- error) error
 	Shutdown(context.Context) error
 }
 
@@ -90,19 +90,21 @@ type server struct {
 		opts []grpc.ServerOption
 		reg  func(*grpc.Server)
 	}
-	l            net.Listener
-	tcfg         *tls.Config
-	pwt          time.Duration // ProbeWaitTime
-	sddur        time.Duration // Shutdown Duration
-	rht          time.Duration // ReadHeaderTimeout
-	rt           time.Duration // ReadTimeout
-	wt           time.Duration // WriteTimeout
-	it           time.Duration // IdleTimeout
-	port         uint
-	host         string
-	running      bool
-	preStartFunc func() error
-	preStopFunc  func() error // PreStopFunction
+	l             net.Listener
+	tcfg          *tls.Config
+	pwt           time.Duration // ProbeWaitTime
+	sddur         time.Duration // Shutdown Duration
+	rht           time.Duration // ReadHeaderTimeout
+	rt            time.Duration // ReadTimeout
+	wt            time.Duration // WriteTimeout
+	it            time.Duration // IdleTimeout
+	port          uint
+	host          string
+	enableRestart bool
+	shuttingDown  bool
+	running       bool
+	preStartFunc  func() error
+	preStopFunc   func() error // PreStopFunction
 }
 
 func New(opts ...Option) (Server, error) {
@@ -196,47 +198,46 @@ func (s *server) Name() string {
 	return s.name
 }
 
-func (s *server) ListenAndServe() <-chan error {
-	ech := make(chan error, 1)
-	var wg sync.WaitGroup
+func (s *server) ListenAndServe(ech chan<- error) (err error) {
 	if !s.IsRunning() {
 		s.mu.Lock()
 		s.running = true
 		s.mu.Unlock()
-		wg.Add(1)
+
+		if s.preStartFunc != nil {
+			log.Infof("server %s executing preStartFunc", s.name)
+			err = s.preStartFunc()
+			if err != nil {
+				return err
+			}
+		}
+
 		s.wg.Add(1)
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer s.wg.Done()
-			defer close(ech)
-
-			if s.preStartFunc != nil {
-				log.Infof("server %s executing preStartFunc", s.name)
-				err = s.preStartFunc()
-				if err != nil {
-					ech <- err
+			for {
+				log.Infof("%s server %s starting on %s:%d", s.mode.String(), s.name, s.host, s.port)
+				switch s.mode {
+				case REST, GQL:
+					err = s.http.starter(s.l)
+					if err != nil && err != http.ErrServerClosed {
+						ech <- err
+					}
+				case GRPC:
+					err = s.grpc.srv.Serve(s.l)
+					if err != nil {
+						ech <- err
+					}
 				}
+				if !s.enableRestart || s.shuttingDown {
+					return
+				}
+				log.Infof("%s server %s stopped", s.mode.String(), s.name)
 			}
-
-			log.Infof("%s server %s starting on %s:%d", s.mode.String(), s.name, s.host, s.port)
-			wg.Done()
-			switch s.mode {
-			case REST, GQL:
-				err = s.http.starter(s.l)
-				if err != nil && err != http.ErrServerClosed {
-					ech <- err
-				}
-			case GRPC:
-				err = s.grpc.srv.Serve(s.l)
-				if err != nil {
-					ech <- err
-				}
-			}
-			log.Infof("%s server %s stopped", s.mode.String(), s.name)
 			return nil
 		}))
 	}
-	wg.Wait()
-	return ech
+	return nil
 }
 
 func (s *server) Shutdown(ctx context.Context) (rerr error) {
