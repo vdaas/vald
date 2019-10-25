@@ -6,6 +6,7 @@ on:
       - 'apis/grpc/**'
       - 'pkg/agent/ngt/**'
       - 'cmd/agent/ngt/**'
+      - 'hack/e2e/benchmark/**'
       - 'resources/GO_VERSION'
       - 'resources/NGT_VERSION'
   pull_request:
@@ -14,6 +15,7 @@ on:
       - 'apis/grpc/**'
       - 'pkg/agent/ngt/**'
       - 'cmd/agent/ngt/**'
+      - 'hack/e2e/benchmark/**'
       - 'resources/GO_VERSION'
       - 'resources/NGT_VERSION'
 
