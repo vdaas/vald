@@ -13,19 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package internal
+package dataset
 
 import (
-	"testing"
+	"fmt"
 
+	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/internal/log"
 	"gonum.org/v1/hdf5"
 )
 
-func loadDataset(f *hdf5.File, name string) (vec [][]float64, err error) {
+func loadDataset(f *hdf5.File, name string) (dim int, vec [][]float64, err error) {
 	dset, err := f.OpenDataset(name)
 	if err != nil {
-		return nil, err
+		return 0,nil, err
 	}
 	defer func() {
 		err = dset.Close()
@@ -36,52 +37,65 @@ func loadDataset(f *hdf5.File, name string) (vec [][]float64, err error) {
 	}()
 	dims, _, err := space.SimpleExtentDims()
 	if err != nil {
-		return nil, err
-	}
-	v := make([]float32, space.SimpleExtentNPoints())
-	if err := dset.Read(&v); err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
-	row, col := int(dims[0]), int(dims[1])
+	var row int
+	row, dim = int(dims[0]), int(dims[1])
+	v := make([]float32, space.SimpleExtentNPoints())
+	if err := dset.Read(&v); err != nil {
+		return dim,nil, err
+	}
 
 	vec = make([][]float64, row)
 	for i := 0; i < row; i++ {
-		vec[i] = make([]float64, col)
-		for j := 0; j < col; j++ {
-			vec[i][j] = float64(v[i*col+j])
+		vec[i] = make([]float64, dim)
+		for j := 0; j < dim; j++ {
+			vec[i][j] = float64(v[i*dim+j])
 		}
 	}
-	return vec, nil
+	return dim, vec, nil
 }
 
-func Load(path string) (train [][]float64, test [][]float64, err error) {
+func Load(path string) (train [][]float64, test [][]float64, dim int, err error) {
 	f, err := hdf5.OpenFile(path, hdf5.F_ACC_RDONLY)
 	if err != nil {
 		log.Error(path)
-		return nil, nil, err
+		return nil, nil, 0, err
 	}
 	defer func() {
 		err = f.Close()
 	}()
-	train, err = loadDataset(f, "train")
+	var trainDim int
+	trainDim, train, err = loadDataset(f, "train")
 	if err != nil {
 		log.Error(path)
-		return nil, nil, err
+		return nil, nil, 0, err
 	}
-	test, err = loadDataset(f, "test")
+	var testDim int
+	testDim, test, err = loadDataset(f, "test")
 	if err != nil {
 		log.Error(path)
-		return train, nil, err
+		return train, nil, trainDim, err
 	}
-	return train, test, nil
+	if trainDim != testDim {
+		return train, test, 0, fmt.Errorf("test has different dimension from train")
+	}
+	return train, test, trainDim,nil
 }
 
-func LoadDataAndIDs(tb testing.TB, path string) (ids []string, train [][]float64, test [][]float64) {
-	tb.Helper()
-	train, test, err := Load(path)
-	if err != nil {
-		tb.Errorf("failed to load dataset %s", path)
+func CreateIDs(n int) []string {
+	ids := make([]string, 0, n)
+	for i := 0; i < n; i++ {
+		ids = append(ids, fuid.String())
 	}
-	return CreateIDs(len(train)), train, test
+	return ids
+}
+
+func LoadDataAndIDs(path string) (ids []string, train [][]float64, test [][]float64, dim int, err error) {
+	train, test, dim, err = Load(path)
+	if err != nil {
+		return nil, train, test, dim, err
+	}
+	return CreateIDs(len(train)), train, test, dim,nil
 }
