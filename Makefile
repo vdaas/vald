@@ -21,6 +21,8 @@
 	bench \
 	init \
 	deps \
+	go-version \
+	ngt-version \
 	ngt \
 	images \
 	dockers-base-image-name \
@@ -55,7 +57,7 @@
 	kill-bench
 
 REPO               ?= vdaas
-GOPKG               = github.com/${REPO}/vald
+GOPKG               = github.com/$(REPO)/vald
 TAG                 = $(shell date -u +%Y%m%d-%H%M%S)
 BASE_IMAGE          = vald-base
 AGENT_IMAGE         = vald-agent-ngt
@@ -63,10 +65,10 @@ GATEWAY_IMAGE       = vald-gateway
 DISCOVERER_IMAGE    = vald-discoverer-k8s
 KVS_IMAGE           = vald-meta-redis
 
-NGT_VERSION = 1.7.10
+NGT_VERSION := $(shell cat resources/NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
 
-GO_VERSION:=$(shell go version)
+GO_VERSION := $(shell cat resources/GO_VERSION)
 
 PROTODIRS := $(shell ls apis/proto)
 PBGODIRS = $(PROTODIRS:%=apis/grpc/%)
@@ -168,15 +170,21 @@ deps: \
 	go mod vendor
 	rm -rf vendor
 
+go-version:
+	@echo $(GO_VERSION)
+
+ngt-version:
+	@echo $(NGT_VERSION)
+
 ngt: /usr/local/include/NGT/Capi.h
 /usr/local/include/NGT/Capi.h:
-	curl -LO https://github.com/yahoojapan/NGT/archive/v${NGT_VERSION}.tar.gz
-	tar zxf v${NGT_VERSION}.tar.gz -C /tmp
-	cd /tmp/NGT-${NGT_VERSION}&& cmake .
-	make -j -C /tmp/NGT-${NGT_VERSION}
-	make install -C /tmp/NGT-${NGT_VERSION}
-	rm -rf v${NGT_VERSION}.tar.gz
-	rm -rf /tmp/NGT-${NGT_VERSION}
+	curl -LO https://github.com/yahoojapan/NGT/archive/v$(NGT_VERSION).tar.gz
+	tar zxf v$(NGT_VERSION).tar.gz -C /tmp
+	cd /tmp/NGT-$(NGT_VERSION)&& cmake .
+	make -j -C /tmp/NGT-$(NGT_VERSION)
+	make install -C /tmp/NGT-$(NGT_VERSION)
+	rm -rf v$(NGT_VERSION).tar.gz
+	rm -rf /tmp/NGT-$(NGT_VERSION)
 
 images: \
 	dockers-base-image \
