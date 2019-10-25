@@ -51,10 +51,15 @@ type client struct {
 }
 
 func New(cfg *config.Redis) (Redis, error) {
-	c := new(client)
+	c := &client{
+		kvIndex: cfg.KVIndex,
+		vkIndex: cfg.VKIndex,
+	}
+
 	if c.kvIndex == c.vkIndex {
 		return nil, errors.ErrRedisInvalidKVVKIndex(c.kvIndex, c.vkIndex)
 	}
+
 	c.topts = make([]tcp.DialerOption, 0, 8)
 	if cfg.TCP != nil {
 		if cfg.TCP.DNS.CacheEnabled {

@@ -65,6 +65,11 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (
 	res *payload.Search_Response, err error) {
+	val, err := s.metadata.GetMetaInverse(ctx, req.GetId().GetId())
+	if err != nil {
+		return nil, err
+	}
+	req.Id.Id = val.GetKey()
 	return s.search(ctx, req.GetConfig(),
 		func(ctx context.Context, ac agent.AgentClient) (*payload.Search_Response, error) {
 			// TODO rewrite ObjectID
@@ -81,17 +86,17 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	to := cfg.GetTimeout()
 	res.Results = make([]*payload.Object_Distance, 0, s.gateway.GetAgentCount()*num)
 	dch := make(chan *payload.Object_Distance, cap(res.GetResults())/2)
-	eg, ctx := errgroup.New(ctx)
+	eg, ectx := errgroup.New(ctx)
 	var cancel context.CancelFunc
 	if to != 0 {
-		ctx, cancel = context.WithTimeout(ctx, time.Duration(to))
+		ectx, cancel = context.WithTimeout(ectx, time.Duration(to))
 	} else {
-		ctx, cancel = context.WithCancel(ctx)
+		ectx, cancel = context.WithCancel(ectx)
 	}
 	eg.Go(safety.RecoverFunc(func() error {
 		defer cancel()
 		cl := new(checkList)
-		return s.gateway.BroadCast(ctx, func(ctx context.Context, target string, ac agent.AgentClient) error {
+		return s.gateway.BroadCast(ectx, func(ctx context.Context, target string, ac agent.AgentClient) error {
 			r, err := f(ctx, ac)
 			if err != nil {
 				return err
@@ -111,7 +116,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	}))
 	for {
 		select {
-		case <-ctx.Done():
+		case <-ectx.Done():
 			err = eg.Wait()
 			close(dch)
 			if len(res.GetResults()) > num && num != 0 {
@@ -122,7 +127,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				keys = append(keys, r.GetId().GetId())
 			}
 			if s.metadata != nil {
-				metas, err := s.metadata.GetMetas(context.TODO(), keys...)
+				metas, err := s.metadata.GetMetas(ctx, keys...)
 				if err == nil {
 					for i, k := range metas {
 						res.Results[i].Id = &payload.Object_ID{

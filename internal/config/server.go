@@ -58,6 +58,7 @@ type Server struct {
 	GRPC struct {
 		Interceptors []string `json:"interceptors" yaml:"interceptors"`
 	} `json:"grpc" yaml:"grpc"`
+	Restart bool `json:"restart" yaml:"restart"`
 }
 
 func (s *Servers) Bind() *Servers {

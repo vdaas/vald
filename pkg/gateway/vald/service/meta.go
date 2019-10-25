@@ -34,12 +34,16 @@ import (
 
 type Meta interface {
 	Start(ctx context.Context) <-chan error
-	GetMeta(context.Context, string) (string, error)
-	GetMetas(context.Context, ...string) ([]string, error)
-	SetMeta(context.Context, string, string) error
-	SetMetas(context.Context, map[string]string) error
-	DelMeta(context.Context, string) error
-	DelMetas(context.Context, ...string) error
+	Get(context.Context, string) (string, error)
+	GetMultiple(context.Context, ...string) ([]string, error)
+	GetInverse(context.Context, string) (string, error)
+	GetInverseMultiple(context.Context, ...string) ([]string, error)
+	Set(context.Context, string, string) error
+	SetMultiple(context.Context, map[string]string) error
+	Delete(context.Context, string) (string, error)
+	DeleteMultiple(context.Context, ...string) ([]string, error)
+	DeleteInverse(context.Context, string) (string, error)
+	DeleteInverseMultiple(context.Context, ...string) ([]string, error)
 }
 
 type meta struct {
