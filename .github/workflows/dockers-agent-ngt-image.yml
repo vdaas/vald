@@ -10,6 +10,8 @@ on:
       - 'cmd/agent/ngt/**'
       - 'dockers/base/Dockerfile'
       - 'dockers/agent/ngt/Dockerfile'
+      - 'resources/GO_VERSION'
+      - 'resources/NGT_VERSION'
   pull_request:
     paths:
       - 'internal/**'
@@ -18,6 +20,8 @@ on:
       - 'cmd/agent/ngt/**'
       - 'dockers/base/Dockerfile'
       - 'dockers/agent/ngt/Dockerfile'
+      - 'resources/GO_VERSION'
+      - 'resources/NGT_VERSION'
 
 jobs:
   build:

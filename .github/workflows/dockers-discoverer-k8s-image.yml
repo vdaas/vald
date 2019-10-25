@@ -10,6 +10,7 @@ on:
       - 'cmd/discoverer/k8s/**'
       - 'dockers/base/Dockerfile'
       - 'dockers/discoverer/k8s/Dockerfile'
+      - 'resources/GO_VERSION'
   pull_request:
     paths:
       - 'internal/**'
@@ -18,6 +19,7 @@ on:
       - 'cmd/discoverer/k8s/**'
       - 'dockers/base/Dockerfile'
       - 'dockers/discoverer/k8s/Dockerfile'
+      - 'resources/GO_VERSION'
 
 jobs:
   build:

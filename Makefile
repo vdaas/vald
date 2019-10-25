@@ -400,7 +400,7 @@ $(PBDOCS): proto-deps $(PBDOCDIRS)
 
 $(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
 	@$(call green, "downloading datasets for benchmark...")
-	curl -fsSL -o $@ http://vectors.erikbern.com/$(patsubst $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
+	curl -fsSL -o $@ http://vectors.erikbern.com/$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
 	(cd hack/e2e/benchmark/assets; \
 	    md5sum -c $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5_DIR_NAME)/%.md5,$@) || \
 	    (rm -f $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_HDF5_DIR_NAME)/%.hdf5,$@) && exit 1))
