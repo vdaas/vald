@@ -24,6 +24,18 @@ jobs:
     steps:
       - name: Check out code.
         uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: Fetch golang version
+        run: |
+          echo "Fetch golang version"
+          GO_VERSION=`make go-version`
+          echo "GO_VERSION=${GO_VERSION}"
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v1
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: Install dependencies
         run: |
           echo "install dependencies"
