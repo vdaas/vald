@@ -52,13 +52,88 @@ var (
 
 func init() {
 	log.Init(log.DefaultGlg())
-
 }
 
 func BenchmarkAgentNGTRESTSequential(b *testing.B) {
 }
 
-func BenchmarkAgentNGTgRPCSequential(b *testing.B) {
+func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
+	rctx, rcancel := context.WithCancel(context.Background())
+	defer rcancel()
+	rb.ReportAllocs()
+	rb.ResetTimer()
+	for _, name := range dataset {
+		rb.Run(name, func (b *testing.B){
+			b.ReportAllocs()
+			b.ResetTimer()
+			ctx, cancel := context.WithCancel(rctx)
+			defer cancel()
+
+			internal.StartAgentNGTServer(b, ctx, configDir+name+".yaml")
+
+			ids, train, test := internal.LoadDataAndIDs(b, datasetDir+name+".hdf5")
+
+			client := internal.NewAgentClient(b, ctx, "localhost", 8082)
+
+			b.Run(fmt.Sprintf("Insert %d objects", len(train)), func(bb *testing.B) {
+				bb.ReportAllocs()
+				bb.ResetTimer()
+				for i, vector := range train {
+					_, err := client.Insert(ctx, &payload.Object_Vector{
+						Id: &payload.Object_ID{
+							Id: ids[i],
+						},
+						Vector: vector,
+					})
+					if err != nil {
+						bb.Error(err)
+					}
+				}
+			})
+
+			b.Run("CreateIndex", func(bb *testing.B) {
+				bb.ReportAllocs()
+				bb.ResetTimer()
+				_, err := client.CreateIndex(ctx, &payload.Controll_CreateIndexRequest{
+					PoolSize: 10000,
+				})
+				if err != nil {
+					if err == io.EOF {
+						return
+					}
+					bb.Error(err)
+				}
+			})
+			b.Run(fmt.Sprintf("StreamSearch %d objects", len(test)), func(bb *testing.B) {
+				bb.ReportAllocs()
+				bb.ResetTimer()
+				for _, data := range test {
+					_, err := client.Search(ctx, &payload.Search_Request{
+						Vector: &payload.Object_Vector{
+							Vector: data,
+						},
+						Config: searchConfig,
+					})
+					if err != nil {
+						bb.Error(err)
+					}
+				}
+			})
+			b.Run(fmt.Sprintf("StreamRemove %d objects", len(ids)/2), func(bb *testing.B) {
+				bb.ReportAllocs()
+				bb.ResetTimer()
+				for _, id := range ids[:len(ids)/2] {
+					_, err := client.Remove(ctx, &payload.Object_ID{
+						Id: id,
+					})
+					if err != nil {
+						bb.Error(err)
+					}
+				}
+			})
+
+		})
+	}
 }
 
 func BenchmarkAgentNGTgRPCStream(rb *testing.B) {

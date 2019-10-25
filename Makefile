@@ -397,6 +397,8 @@ $(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
 	    md5sum -c $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5_DIR_NAME)/%.md5,$@) || \
 	    (rm -f $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_HDF5_DIR_NAME)/%.hdf5,$@) && exit 1))
 
+bench-agent: bench-agent-stream bench-agent-sequential
+
 bench-agent-stream: \
 	ngt \
 	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
@@ -408,6 +410,32 @@ bench-agent-stream: \
 	go test -count=1 \
 		-timeout=1h \
 		-bench=gRPCStream \
+		-benchmem \
+		-o pprof/agent/ngt/agent.bin \
+		-cpuprofile pprof/agent/ngt/cpu-stream.out \
+		-memprofile pprof/agent/ngt/mem-stream.out \
+		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go
+	go tool pprof --svg \
+		pprof/agent/ngt/agent.bin \
+		pprof/agent/ngt/cpu-stream.out \
+		> pprof/agent/ngt/cpu-stream.svg
+	go tool pprof --svg \
+		pprof/agent/ngt/agent.bin \
+		pprof/agent/ngt/mem-stream.out \
+		> pprof/agent/ngt/mem-stream.svg
+	rm -rf /tmp/ngt/
+
+bench-agent-sequential: \
+	ngt \
+	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
+	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	rm -rf /tmp/ngt/
+	rm -rf pprof/agent/ngt
+	mkdir -p /tmp/ngt
+	mkdir -p pprof/agent/ngt
+	go test -count=1 \
+		-timeout=1h \
+		-bench=gRPCSequential \
 		-benchmem \
 		-o pprof/agent/ngt/agent.bin \
 		-cpuprofile pprof/agent/ngt/cpu-stream.out \
