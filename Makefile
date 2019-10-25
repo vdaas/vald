@@ -403,9 +403,7 @@ bench-agent-stream: \
 	ngt \
 	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
 	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
-	rm -rf /tmp/ngt/
 	rm -rf pprof/agent/ngt
-	mkdir -p /tmp/ngt
 	mkdir -p pprof/agent/ngt
 	go test -count=1 \
 		-timeout=1h \
@@ -423,33 +421,29 @@ bench-agent-stream: \
 		pprof/agent/ngt/agent.bin \
 		pprof/agent/ngt/mem-stream.out \
 		> pprof/agent/ngt/mem-stream.svg
-	rm -rf /tmp/ngt/
 
 bench-agent-sequential: \
 	ngt \
 	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
 	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
-	rm -rf /tmp/ngt/
 	rm -rf pprof/agent/ngt
-	mkdir -p /tmp/ngt
 	mkdir -p pprof/agent/ngt
 	go test -count=1 \
 		-timeout=1h \
 		-bench=gRPCSequential \
 		-benchmem \
 		-o pprof/agent/ngt/agent.bin \
-		-cpuprofile pprof/agent/ngt/cpu-stream.out \
-		-memprofile pprof/agent/ngt/mem-stream.out \
+		-cpuprofile pprof/agent/ngt/cpu-sequential.out \
+		-memprofile pprof/agent/ngt/mem-sequential.out \
 		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go
 	go tool pprof --svg \
 		pprof/agent/ngt/agent.bin \
-		pprof/agent/ngt/cpu-stream.out \
-		> pprof/agent/ngt/cpu-stream.svg
+		pprof/agent/ngt/cpu-sequential.out \
+		> pprof/agent/ngt/cpu-sequential.svg
 	go tool pprof --svg \
 		pprof/agent/ngt/agent.bin \
-		pprof/agent/ngt/mem-stream.out \
-		> pprof/agent/ngt/mem-stream.svg
-	rm -rf /tmp/ngt/
+		pprof/agent/ngt/mem-sequential.out \
+		> pprof/agent/ngt/mem-sequential.svg
 
 profile-agent-stream:
 	go tool pprof -http=":6061" \
