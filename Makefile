@@ -406,7 +406,9 @@ $(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
 	    md5sum -c $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5_DIR_NAME)/%.md5,$@) || \
 	    (rm -f $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_HDF5_DIR_NAME)/%.hdf5,$@) && exit 1))
 
-bench-agent: bench-agent-stream bench-agent-sequential
+bench-agent: \
+	bench-agent-stream \
+	bench-agent-sequential
 
 bench-agent-stream: \
 	ngt \
