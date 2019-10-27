@@ -16,7 +16,6 @@
 
 FROM ubuntu:latest AS builder
 
-ENV GO_VERSION 1.13.1
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
 ENV INITRD No
@@ -36,7 +35,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt
-RUN curl -sSL -O "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" \
+COPY resources/GO_VERSION .
+RUN export GO_VERSION=`cat GO_VERSION` \
+    && curl -sSL -O "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" \
     && tar zxf "go${GO_VERSION}.linux-amd64.tar.gz" \
     && rm "go${GO_VERSION}.linux-amd64.tar.gz" \
     && ln -s /opt/go/bin/go /usr/bin/ \

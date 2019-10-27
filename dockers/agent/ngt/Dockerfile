@@ -34,8 +34,9 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 COPY cmd/${PKG} .
 
 WORKDIR /tmp
-ENV NGT_VERSION 1.7.10
-RUN curl -LO "https://github.com/yahoojapan/NGT/archive/v${NGT_VERSION}.tar.gz" \
+COPY resources/NGT_VERSION .
+RUN export NGT_VERSION=`cat NGT_VERSION` \
+    && curl -LO "https://github.com/yahoojapan/NGT/archive/v${NGT_VERSION}.tar.gz" \
     && tar zxf v${NGT_VERSION}.tar.gz -C /tmp \
     && cd /tmp/NGT-${NGT_VERSION}; cmake . \
     && make -j -C /tmp/NGT-${NGT_VERSION} \

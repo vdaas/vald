@@ -1,16 +1,27 @@
 name: 'Build docker image: base'
 on:
   push:
+    branches:
+      - master
     paths:
       - 'go.mod'
       - 'go.sum'
       - 'dockers/base/Dockerfile'
+      - 'resources/GO_VERSION'
+  pull_request:
+    paths:
+      - 'go.mod'
+      - 'go.sum'
+      - 'dockers/base/Dockerfile'
+      - 'resources/GO_VERSION'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
     - name: Build the Docker image
       run: |
         echo 'Build docker image'
