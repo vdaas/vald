@@ -69,7 +69,7 @@ NGT_REPO = github.com/yahoojapan/NGT
 
 GO_VERSION:=$(shell go version)
 
-PROTODIRS := $(shell ls apis/proto)
+PROTODIRS := $(shell find apis/proto ".proto" | grep -v "\.proto" | sed -e "s%apis/proto/%%g" | grep -v "apis/proto")
 PBGODIRS = $(PROTODIRS:%=apis/grpc/%)
 SWAGGERDIRS = $(PROTODIRS:%=apis/swagger/%)
 GRAPHQLDIRS = $(PROTODIRS:%=apis/graphql/%)
@@ -117,7 +117,6 @@ PROTO_PATHS = \
 	-I ./apis/proto/manager/backup \
 	-I ./apis/proto/manager/replication \
 	-I ./apis/proto/manager/traffic \
-	-I ./apis/proto/replication_manager \
 	-I $(GOPATH)/src/github.com/protocolbuffers/protobuf/src \
 	-I $(GOPATH)/src/github.com/gogo/protobuf/protobuf \
 	-I $(GOPATH)/src/github.com/googleapis/googleapis \

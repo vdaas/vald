@@ -175,11 +175,15 @@
         
           
           <li>
-            <a href="#replication_manager.proto">replication_manager.proto</a>
+            <a href="#backup_manager.proto">backup_manager.proto</a>
             <ul>
               
               
               
+              
+                <li>
+                  <a href="#backup_manager.Backup"><span class="badge">S</span>Backup</a>
+                </li>
               
             </ul>
           </li>
@@ -191,7 +195,7 @@
     
       
       <div class="file-heading">
-        <h2 id="replication_manager.proto">replication_manager.proto</h2><a href="#title">Top</a>
+        <h2 id="backup_manager.proto">backup_manager.proto</h2><a href="#title">Top</a>
       </div>
       <p></p>
 
@@ -202,6 +206,129 @@
       
 
       
+        <h3 id="backup_manager.Backup">Backup</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Method Name</td><td>Request Type</td><td>Response Type</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>Insert</td>
+                <td><a href="#payload.Object.Vector">.payload.Object.Vector</a></td>
+                <td><a href="#payload.Empty">.payload.Empty</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>StreamInsert</td>
+                <td><a href="#payload.Object.Vector">.payload.Object.Vector</a> stream</td>
+                <td><a href="#payload.Empty">.payload.Empty</a> stream</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>MultiInsert</td>
+                <td><a href="#payload.Object.Vectors">.payload.Object.Vectors</a></td>
+                <td><a href="#payload.Empty">.payload.Empty</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>Update</td>
+                <td><a href="#payload.Object.Vector">.payload.Object.Vector</a></td>
+                <td><a href="#payload.Empty">.payload.Empty</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>StreamUpdate</td>
+                <td><a href="#payload.Object.Vector">.payload.Object.Vector</a> stream</td>
+                <td><a href="#payload.Empty">.payload.Empty</a> stream</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>MultiUpdate</td>
+                <td><a href="#payload.Object.Vectors">.payload.Object.Vectors</a></td>
+                <td><a href="#payload.Empty">.payload.Empty</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>Remove</td>
+                <td><a href="#payload.Object.ID">.payload.Object.ID</a></td>
+                <td><a href="#payload.Empty">.payload.Empty</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>StreamRemove</td>
+                <td><a href="#payload.Object.ID">.payload.Object.ID</a> stream</td>
+                <td><a href="#payload.Empty">.payload.Empty</a> stream</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>MultiRemove</td>
+                <td><a href="#payload.Object.IDs">.payload.Object.IDs</a></td>
+                <td><a href="#payload.Empty">.payload.Empty</a></td>
+                <td><p></p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+
+        
+          
+          
+          <h4>Methods with HTTP bindings</h4>
+          <table>
+            <thead>
+              <tr>
+                <td>Method Name</td>
+                <td>Method</td>
+                <td>Pattern</td>
+                <td>Body</td>
+              </tr>
+            </thead>
+            <tbody>
+            
+              
+              
+              <tr>
+                <td>Insert</td>
+                <td>POST</td>
+                <td>/insert</td>
+                <td>*</td>
+              </tr>
+              
+            
+              
+              
+              <tr>
+                <td>Update</td>
+                <td>POST</td>
+                <td>/update</td>
+                <td>*</td>
+              </tr>
+              
+            
+              
+              
+              <tr>
+                <td>Remove</td>
+                <td>DELETE</td>
+                <td>/remove/{id}</td>
+                <td></td>
+              </tr>
+              
+            
+            </tbody>
+          </table>
+          
+        
     
 
     <h2 id="scalar-value-types">Scalar Value Types</h2>
