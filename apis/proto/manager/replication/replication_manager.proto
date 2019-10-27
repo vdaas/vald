@@ -16,17 +16,16 @@
 
 syntax = "proto3";
 
-package egress_filter;
+package replication_manager;
 
-option go_package = "github.com/vdaas/vald/apis/grpc/egress_filter";
+option go_package = "github.com/vdaas/vald/apis/grpc/replication_manager";
+
+option java_multiple_files = true;
+option java_package = "org.vdaas.vald.manager.replication";
+option java_outer_classname = "ValdReplicationManager";
 
 import "payload.proto";
 import "google/api/annotations.proto";
 import "pb/gql.proto";
 
-service EgressFilter {
-  option(gql.svc_type) = QUERY;
-  rpc Filter(payload.Search.Response) returns(payload.Search.Response) {}
-  rpc StreamFilter(stream payload.Object.Distance)
-    returns(stream payload.Object.Distance) {}
-}
+service Replication {}

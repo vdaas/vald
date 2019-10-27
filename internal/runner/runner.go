@@ -18,6 +18,7 @@ package runner
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -27,6 +28,8 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/params"
+	ver "github.com/vdaas/vald/internal/version"
 )
 
 type Runner interface {
@@ -37,15 +40,66 @@ type Runner interface {
 	PostStop(ctx context.Context) error
 }
 
+type runner struct {
+	version          string
+	maxVersion       string
+	minVersion       string
+	name             string
+	loadConfig       func(string) (interface{}, string, error)
+	initializeDaemon func(interface{}) (Runner, error)
+}
+
+func Do(ctx context.Context, opts ...Option) error {
+	r := new(runner)
+
+	for _, opt := range append(defaultOpts, opts...) {
+		opt(r)
+	}
+
+	log.Init(log.DefaultGlg())
+
+	p, isHelp, err := params.New(
+		params.WithConfigFileDescription(fmt.Sprintf("%s config file path", r.name)),
+	).Parse()
+
+	if err != nil {
+		return err
+	}
+
+	if isHelp {
+		return nil
+	}
+
+	if p.ShowVersion() {
+		log.Infof("vald %s server version -> %s", r.name, log.Bold(r.version))
+		return nil
+	}
+
+	cfg, version, err := r.loadConfig(p.ConfigFilePath())
+	if err != nil {
+		return err
+	}
+
+	err = ver.Check(version, r.maxVersion, r.minVersion)
+	if err != nil {
+		return err
+	}
+
+	daemon, err := r.initializeDaemon(cfg)
+	if err != nil {
+		return err
+	}
+
+	return Run(ctx, daemon)
+}
+
 func Run(ctx context.Context, run Runner) (err error) {
+	ctx = errgroup.Init(ctx)
 
 	err = run.PreStart(ctx)
 	if err != nil {
 		return err
 	}
-
-	rctx, cancel := context.WithCancel(ctx)
-	defer cancel()
 
 	ech := run.Start(ctx)
 
@@ -56,6 +110,9 @@ func Run(ctx context.Context, run Runner) (err error) {
 
 	emap := make(map[string]int)
 	errs := make([]error, 0, 10)
+
+	rctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
 	for {
 		select {

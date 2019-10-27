@@ -20,12 +20,9 @@ package main
 import (
 	"context"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/params"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
-	ver "github.com/vdaas/vald/internal/version"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/config"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/usecase"
 )
@@ -41,46 +38,22 @@ func main() {
 	var err error
 	defer safety.RecoverWithError(err)
 
-	log.Init(log.DefaultGlg())
-
-	p, isHelp, err := params.New(
-		params.WithConfigFileDescription("discoverer config file path"),
-	).Parse()
-
-	if err != nil {
+	if err = runner.Do(
+		context.Background(),
+		runner.WithName("k8s discoverer"),
+		runner.WithVersion(version, maxVersion, minVersion),
+		runner.WithConfigLoader(func(path string) (interface{}, string, error) {
+			cfg, err := config.NewConfig(path)
+			if err != nil {
+				return nil, "", err
+			}
+			return cfg, cfg.Version, err
+		}),
+		runner.WithDaemonInitializer(func(cfg interface{}) (runner.Runner, error) {
+			return usecase.New(cfg.(*config.Data))
+		}),
+	); err != nil {
 		log.Fatal(err)
 		return
-	}
-
-	if isHelp {
-		return
-	}
-
-	if p.ShowVersion() {
-		log.Infof("vald k8s discoverer server version -> %s", log.Bold(version))
-		return
-	}
-
-	cfg, err := config.NewConfig(p.ConfigFilePath())
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	err = ver.Check(cfg.Version, maxVersion, minVersion)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	daemon, err := usecase.New(cfg)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	err = runner.Run(errgroup.Init(context.Background()), daemon)
-	if err != nil {
-		log.Fatal(err)
 	}
 }

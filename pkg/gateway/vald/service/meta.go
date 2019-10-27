@@ -66,8 +66,6 @@ func NewMeta(opts ...MetaOption) (mi Meta, err error) {
 		}
 	}
 
-	mi = m
-
 	return m, nil
 }
 
@@ -107,96 +105,104 @@ func (m *meta) Start(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (m *meta) GetMeta(ctx context.Context, key string) (val string, err error) {
-	ids, err := m.mc.Load().(gmeta.MetaClient).GetMeta(ctx, &payload.Meta_Key{
-		Key: &payload.Object_ID{
-			Id: key,
-		},
+func (m *meta) Get(ctx context.Context, key string) (string, error) {
+	val, err := m.mc.Load().(gmeta.MetaClient).GetMeta(ctx, &payload.Meta_Key{
+		Key: key,
 	}, m.copts...)
 	if err != nil {
 		return "", err
 	}
-	return ids.Val.GetId(), nil
+	return val.GetVal(), nil
 }
 
-func (m *meta) GetMetas(ctx context.Context, keys ...string) (vals []string, err error) {
-	ids, err := m.mc.Load().(gmeta.MetaClient).GetMetas(ctx, &payload.Meta_Keys{
-		Keys: &payload.Object_IDs{
-			Ids: func() []*payload.Object_ID {
-				ids := make([]*payload.Object_ID, 0, len(keys))
-				for _, key := range keys {
-					ids = append(ids, &payload.Object_ID{
-						Id: key,
-					})
-				}
-				return ids
-			}(),
-		},
+func (m *meta) GetMultiple(ctx context.Context, keys ...string) ([]string, error) {
+	vals, err := m.mc.Load().(gmeta.MetaClient).GetMetas(ctx, &payload.Meta_Keys{
+		Keys: keys,
 	}, m.copts...)
 	if err != nil {
 		return nil, err
 	}
-	vals = make([]string, 0, len(ids.Vals.Ids))
-	for _, id := range ids.Vals.Ids {
-		vals = append(vals, id.GetId())
+	return vals.GetVals(), nil
+}
+
+func (m *meta) GetInverse(ctx context.Context, val string) (string, error) {
+	key, err := m.mc.Load().(gmeta.MetaClient).GetMetaInverse(ctx, &payload.Meta_Val{
+		Val: val,
+	}, m.copts...)
+	if err != nil {
+		return "", err
 	}
-	return vals, nil
+	return key.GetKey(), nil
 }
 
-func (m *meta) SetMeta(ctx context.Context, key, val string) error {
+func (m *meta) GetInverseMultiple(ctx context.Context, vals ...string) ([]string, error) {
+	keys, err := m.mc.Load().(gmeta.MetaClient).GetMetasInverse(ctx, &payload.Meta_Vals{
+		Vals: vals,
+	}, m.copts...)
+	if err != nil {
+		return nil, err
+	}
+	return keys.GetKeys(), nil
+}
+
+func (m *meta) Set(ctx context.Context, key, val string) error {
 	_, err := m.mc.Load().(gmeta.MetaClient).SetMeta(ctx, &payload.Meta_KeyVal{
-		Key: &payload.Object_ID{
-			Id: key,
-		},
-		Val: &payload.Object_ID{
-			Id: val,
-		},
+		Key: key,
+		Val: val,
 	}, m.copts...)
 	return err
 }
 
-func (m *meta) SetMetas(ctx context.Context, kvs map[string]string) error {
+func (m *meta) SetMultiple(ctx context.Context, kvs map[string]string) error {
+	data := make([]*payload.Meta_KeyVal, len(kvs))
+	for k, v := range kvs {
+		data = append(data, &payload.Meta_KeyVal{
+			Key: k,
+			Val: v,
+		})
+	}
 	_, err := m.mc.Load().(gmeta.MetaClient).SetMetas(ctx, &payload.Meta_KeyVals{
-		Kvs: func() []*payload.Meta_KeyVal {
-			data := make([]*payload.Meta_KeyVal, 0, len(kvs))
-			for k, v := range kvs {
-				data = append(data, &payload.Meta_KeyVal{
-					Key: &payload.Object_ID{
-						Id: k,
-					},
-					Val: &payload.Object_ID{
-						Id: v,
-					},
-				})
-			}
-			return data
-		}(),
-	}, m.copts...)
+		Kvs: data,
+	})
 	return err
 }
 
-func (m *meta) DelMeta(ctx context.Context, key string) error {
-	_, err := m.mc.Load().(gmeta.MetaClient).DeleteMeta(ctx, &payload.Meta_Key{
-		Key: &payload.Object_ID{
-			Id: key,
-		},
+func (m *meta) Delete(ctx context.Context, key string) (string, error) {
+	val, err := m.mc.Load().(gmeta.MetaClient).DeleteMeta(ctx, &payload.Meta_Key{
+		Key: key,
 	}, m.copts...)
-	return err
+	if err != nil {
+		return "", err
+	}
+	return val.GetVal(), nil
 }
 
-func (m *meta) DelMetas(ctx context.Context, keys ...string) error {
-	_, err := m.mc.Load().(gmeta.MetaClient).GetMetas(ctx, &payload.Meta_Keys{
-		Keys: &payload.Object_IDs{
-			Ids: func() []*payload.Object_ID {
-				ids := make([]*payload.Object_ID, 0, len(keys))
-				for _, key := range keys {
-					ids = append(ids, &payload.Object_ID{
-						Id: key,
-					})
-				}
-				return ids
-			}(),
-		},
+func (m *meta) DeleteMultiple(ctx context.Context, keys ...string) ([]string, error) {
+	vals, err := m.mc.Load().(gmeta.MetaClient).DeleteMetas(ctx, &payload.Meta_Keys{
+		Keys: keys,
 	}, m.copts...)
-	return err
+	if err != nil {
+		return nil, err
+	}
+	return vals.GetVals(), nil
+}
+
+func (m *meta) DeleteInverse(ctx context.Context, val string) (string, error) {
+	key, err := m.mc.Load().(gmeta.MetaClient).DeleteMetaInverse(ctx, &payload.Meta_Val{
+		Val: val,
+	}, m.copts...)
+	if err != nil {
+		return "", err
+	}
+	return key.GetKey(), nil
+}
+
+func (m *meta) DeleteInverseMultiple(ctx context.Context, vals ...string) ([]string, error) {
+	keys, err := m.mc.Load().(gmeta.MetaClient).DeleteMetasInverse(ctx, &payload.Meta_Vals{
+		Vals: vals,
+	}, m.copts...)
+	if err != nil {
+		return nil, err
+	}
+	return keys.GetKeys(), nil
 }

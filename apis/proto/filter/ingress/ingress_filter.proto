@@ -18,7 +18,13 @@ syntax = "proto3";
 
 package ingress_filter;
 
-option go_package = "github.com/vdaas/vald/apis/grpc/ingress_filter";
+option go_package = "github.com/vdaas/vald/apis/grpc/filter/ingress";
+option java_multiple_files = true;
+option java_package = "org.vdaas.vald.filter.ingress";
+option java_outer_classname = "ValdIngressFilter";
 
+import "payload.proto";
 import "google/api/annotations.proto";
 import "pb/gql.proto";
+
+service IngressFilter {}
