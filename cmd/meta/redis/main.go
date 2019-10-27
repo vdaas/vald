@@ -23,8 +23,8 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/pkg/agent/ngt/config"
-	"github.com/vdaas/vald/pkg/agent/ngt/usecase"
+	"github.com/vdaas/vald/pkg/meta/redis/config"
+	"github.com/vdaas/vald/pkg/meta/redis/usecase"
 )
 
 const (
@@ -40,7 +40,7 @@ func main() {
 
 	if err = runner.Do(
 		context.Background(),
-		runner.WithName("agent ngt"),
+		runner.WithName("redis-meta"),
 		runner.WithVersion(version, maxVersion, minVersion),
 		runner.WithConfigLoader(func(path string) (interface{}, string, error) {
 			cfg, err := config.NewConfig(path)

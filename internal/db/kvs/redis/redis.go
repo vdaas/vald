@@ -73,7 +73,6 @@ func New(ctx context.Context, opts ...Option) (Redis, error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
-	redis.NewClient(nil)
 	switch len(r.addrs) {
 	case 0:
 		return nil, errors.ErrAddrsNotFound

@@ -56,21 +56,22 @@
 	profile-agent-stream \
 	kill-bench
 
-REPO               ?= vdaas
-GOPKG               = github.com/$(REPO)/vald
-TAG                 = $(shell date -u +%Y%m%d-%H%M%S)
-BASE_IMAGE          = vald-base
-AGENT_IMAGE         = vald-agent-ngt
-GATEWAY_IMAGE       = vald-gateway
-DISCOVERER_IMAGE    = vald-discoverer-k8s
-KVS_IMAGE           = vald-meta-redis
+REPO                   ?= vdaas
+GOPKG                   = github.com/${REPO}/vald
+TAG                     = $(shell date -u +%Y%m%d-%H%M%S)
+BASE_IMAGE              = vald-base
+AGENT_IMAGE             = vald-agent-ngt
+GATEWAY_IMAGE           = vald-gateway
+DISCOVERER_IMAGE        = vald-discoverer-k8s
+KVS_IMAGE               = vald-meta-redis
+BACKUP_MANAGER_IMAGE    = vald-manager-backup-mysql
 
 NGT_VERSION := $(shell cat resources/NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
 
 GO_VERSION := $(shell cat resources/GO_VERSION)
 
-PROTODIRS := $(shell ls apis/proto)
+PROTODIRS := $(shell find apis/proto ".proto" | grep -v "\.proto" | sed -e "s%apis/proto/%%g" | grep -v "apis/proto")
 PBGODIRS = $(PROTODIRS:%=apis/grpc/%)
 SWAGGERDIRS = $(PROTODIRS:%=apis/swagger/%)
 GRAPHQLDIRS = $(PROTODIRS:%=apis/graphql/%)
@@ -113,11 +114,11 @@ PROTO_PATHS = \
 	-I ./apis/proto/vald \
 	-I ./apis/proto/discoverer \
 	-I ./apis/proto/meta \
-	-I ./apis/proto/egress_filter \
-	-I ./apis/proto/ingress_filter \
-	-I ./apis/proto/backup_manager \
-	-I ./apis/proto/traffic_manager \
-	-I ./apis/proto/replication_manager \
+	-I ./apis/proto/filter/egress \
+	-I ./apis/proto/filter/ingress \
+	-I ./apis/proto/manager/backup \
+	-I ./apis/proto/manager/replication \
+	-I ./apis/proto/manager/traffic \
 	-I $(GOPATH)/src/github.com/protocolbuffers/protobuf/src \
 	-I $(GOPATH)/src/github.com/gogo/protobuf/protobuf \
 	-I $(GOPATH)/src/github.com/googleapis/googleapis \

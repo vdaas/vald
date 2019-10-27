@@ -175,14 +175,14 @@
         
           
           <li>
-            <a href="#meta.proto">meta.proto</a>
+            <a href="#replication_manager.proto">replication_manager.proto</a>
             <ul>
               
               
               
               
                 <li>
-                  <a href="#meta_manager.Meta"><span class="badge">S</span>Meta</a>
+                  <a href="#replication_manager.Replication"><span class="badge">S</span>Replication</a>
                 </li>
               
             </ul>
@@ -195,7 +195,7 @@
     
       
       <div class="file-heading">
-        <h2 id="meta.proto">meta.proto</h2><a href="#title">Top</a>
+        <h2 id="replication_manager.proto">replication_manager.proto</h2><a href="#title">Top</a>
       </div>
       <p></p>
 
@@ -206,7 +206,7 @@
       
 
       
-        <h3 id="meta_manager.Meta">Meta</h3>
+        <h3 id="replication_manager.Replication">Replication</h3>
         <p></p>
         <table class="enum-table">
           <thead>
@@ -214,197 +214,9 @@
           </thead>
           <tbody>
             
-              <tr>
-                <td>GetMeta</td>
-                <td><a href="#payload.Meta.Key">.payload.Meta.Key</a></td>
-                <td><a href="#payload.Meta.Val">.payload.Meta.Val</a></td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>GetMetas</td>
-                <td><a href="#payload.Meta.Keys">.payload.Meta.Keys</a></td>
-                <td><a href="#payload.Meta.Vals">.payload.Meta.Vals</a></td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>GetMetaInverse</td>
-                <td><a href="#payload.Meta.Val">.payload.Meta.Val</a></td>
-                <td><a href="#payload.Meta.Key">.payload.Meta.Key</a></td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>GetMetasInverse</td>
-                <td><a href="#payload.Meta.Vals">.payload.Meta.Vals</a></td>
-                <td><a href="#payload.Meta.Keys">.payload.Meta.Keys</a></td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>SetMeta</td>
-                <td><a href="#payload.Meta.KeyVal">.payload.Meta.KeyVal</a></td>
-                <td><a href="#payload.Empty">.payload.Empty</a></td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>SetMetas</td>
-                <td><a href="#payload.Meta.KeyVals">.payload.Meta.KeyVals</a></td>
-                <td><a href="#payload.Empty">.payload.Empty</a></td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>DeleteMeta</td>
-                <td><a href="#payload.Meta.Key">.payload.Meta.Key</a></td>
-                <td><a href="#payload.Meta.Val">.payload.Meta.Val</a></td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>DeleteMetas</td>
-                <td><a href="#payload.Meta.Keys">.payload.Meta.Keys</a></td>
-                <td><a href="#payload.Meta.Vals">.payload.Meta.Vals</a></td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>DeleteMetaInverse</td>
-                <td><a href="#payload.Meta.Val">.payload.Meta.Val</a></td>
-                <td><a href="#payload.Meta.Key">.payload.Meta.Key</a></td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>DeleteMetasInverse</td>
-                <td><a href="#payload.Meta.Vals">.payload.Meta.Vals</a></td>
-                <td><a href="#payload.Meta.Keys">.payload.Meta.Keys</a></td>
-                <td><p></p></td>
-              </tr>
-            
           </tbody>
         </table>
 
-        
-          
-          
-          <h4>Methods with HTTP bindings</h4>
-          <table>
-            <thead>
-              <tr>
-                <td>Method Name</td>
-                <td>Method</td>
-                <td>Pattern</td>
-                <td>Body</td>
-              </tr>
-            </thead>
-            <tbody>
-            
-              
-              
-              <tr>
-                <td>GetMeta</td>
-                <td>POST</td>
-                <td>/meta</td>
-                <td></td>
-              </tr>
-              
-            
-              
-              
-              <tr>
-                <td>GetMetas</td>
-                <td>POST</td>
-                <td>/metas</td>
-                <td></td>
-              </tr>
-              
-            
-              
-              
-              <tr>
-                <td>GetMetaInverse</td>
-                <td>POST</td>
-                <td>/inverse/meta</td>
-                <td></td>
-              </tr>
-              
-            
-              
-              
-              <tr>
-                <td>GetMetasInverse</td>
-                <td>POST</td>
-                <td>/inverse/metas</td>
-                <td></td>
-              </tr>
-              
-            
-              
-              
-              <tr>
-                <td>SetMeta</td>
-                <td>POST</td>
-                <td>/meta</td>
-                <td></td>
-              </tr>
-              
-            
-              
-              
-              <tr>
-                <td>SetMetas</td>
-                <td>POST</td>
-                <td>/metas</td>
-                <td></td>
-              </tr>
-              
-            
-              
-              
-              <tr>
-                <td>DeleteMeta</td>
-                <td>DELETE</td>
-                <td>/meta</td>
-                <td></td>
-              </tr>
-              
-            
-              
-              
-              <tr>
-                <td>DeleteMetas</td>
-                <td>DELETE</td>
-                <td>/metas</td>
-                <td></td>
-              </tr>
-              
-            
-              
-              
-              <tr>
-                <td>DeleteMetaInverse</td>
-                <td>DELETE</td>
-                <td>/inverse/meta</td>
-                <td></td>
-              </tr>
-              
-            
-              
-              
-              <tr>
-                <td>DeleteMetasInverse</td>
-                <td>DELETE</td>
-                <td>/inverse/metas</td>
-                <td></td>
-              </tr>
-              
-            
-            </tbody>
-          </table>
-          
         
     
 

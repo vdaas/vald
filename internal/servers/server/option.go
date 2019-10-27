@@ -35,6 +35,7 @@ type Option func(*server)
 
 var (
 	defaultOpts = []Option{
+		WithDisableRestart(),
 		WithServerMode(REST),
 		WithErrorGroup(errgroup.Get()),
 	}
@@ -221,5 +222,17 @@ func WithGRPCOption(opts ...grpc.ServerOption) Option {
 func WithGRPCRegistFunc(f func(*grpc.Server)) Option {
 	return func(s *server) {
 		s.grpc.reg = f
+	}
+}
+
+func WithEnableRestart() Option {
+	return func(s *server) {
+		s.enableRestart = true
+	}
+}
+
+func WithDisableRestart() Option {
+	return func(s *server) {
+		s.enableRestart = false
 	}
 }

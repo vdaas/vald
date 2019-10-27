@@ -96,7 +96,7 @@
       }
     },
     "/meta": {
-      "get": {
+      "delete": {
         "operationId": "DeleteMeta",
         "responses": {
           "200": {
@@ -134,13 +134,39 @@
       }
     },
     "/metas": {
-      "post": {
+      "delete": {
         "operationId": "DeleteMetas",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/MetaVals"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "keys",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "Meta"
+        ]
+      },
+      "post": {
+        "operationId": "SetMetas",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/payloadEmpty"
             }
           }
         },

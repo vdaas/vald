@@ -65,6 +65,11 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (
 	res *payload.Search_Response, err error) {
+	val, err := s.metadata.GetInverse(ctx, req.GetId().GetId())
+	if err != nil {
+		return nil, err
+	}
+	req.Id.Id = val
 	return s.search(ctx, req.GetConfig(),
 		func(ctx context.Context, ac agent.AgentClient) (*payload.Search_Response, error) {
 			// TODO rewrite ObjectID
@@ -81,17 +86,17 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	to := cfg.GetTimeout()
 	res.Results = make([]*payload.Object_Distance, 0, s.gateway.GetAgentCount()*num)
 	dch := make(chan *payload.Object_Distance, cap(res.GetResults())/2)
-	eg, ctx := errgroup.New(ctx)
+	eg, ectx := errgroup.New(ctx)
 	var cancel context.CancelFunc
 	if to != 0 {
-		ctx, cancel = context.WithTimeout(ctx, time.Duration(to))
+		ectx, cancel = context.WithTimeout(ectx, time.Duration(to))
 	} else {
-		ctx, cancel = context.WithCancel(ctx)
+		ectx, cancel = context.WithCancel(ectx)
 	}
 	eg.Go(safety.RecoverFunc(func() error {
 		defer cancel()
 		cl := new(checkList)
-		return s.gateway.BroadCast(ctx, func(ctx context.Context, target string, ac agent.AgentClient) error {
+		return s.gateway.BroadCast(ectx, func(ctx context.Context, target string, ac agent.AgentClient) error {
 			r, err := f(ctx, ac)
 			if err != nil {
 				return err
@@ -111,7 +116,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	}))
 	for {
 		select {
-		case <-ctx.Done():
+		case <-ectx.Done():
 			err = eg.Wait()
 			close(dch)
 			if len(res.GetResults()) > num && num != 0 {
@@ -122,7 +127,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				keys = append(keys, r.GetId().GetId())
 			}
 			if s.metadata != nil {
-				metas, err := s.metadata.GetMetas(context.TODO(), keys...)
+				metas, err := s.metadata.GetMultiple(ctx, keys...)
 				if err == nil {
 					for i, k := range metas {
 						res.Results[i].Id = &payload.Object_ID{
@@ -184,7 +189,7 @@ func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error
 
 func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *payload.Empty, err error) {
 	uuid := fuid.String()
-	err = s.metadata.SetMeta(ctx, vec.Id.GetId(), uuid)
+	err = s.metadata.Set(ctx, vec.Id.GetId(), uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -220,8 +225,13 @@ func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
 
 func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
 	for _, vec := range vecs.GetVectors() {
+		uuid := "TODO"
+		err = s.metadata.Set(ctx, uuid, vec.GetId().GetId())
+		if err != nil {
+			return nil, err
+		}
 		vec.Id = &payload.Object_ID{
-			Id: s.metadata.SetMeta(vec.Id.GetId()),
+			Id: uuid,
 		}
 		_, err := s.Insert(ctx, vec)
 		if err != nil {
@@ -232,8 +242,12 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 }
 
 func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (*payload.Empty, error) {
+	uuid, err := s.metadata.GetInverse(ctx, vec.GetId().GetId())
+	if err != nil {
+		return nil, err
+	}
 	vec.Id = &payload.Object_ID{
-		Id: s.metadata.GetMeta(vec.Id.GetId()),
+		Id: uuid,
 	}
 	locs, err := s.backup.GetLocation(vec.GetId().GetId())
 	if err != nil {
@@ -275,7 +289,10 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 }
 
 func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Empty, error) {
-	uuid := s.metadata.GetMeta(id.GetId())
+	uuid, err := s.metadata.Get(ctx, id.GetId())
+	if err != nil {
+		return nil, err
+	}
 	locs, err := s.backup.GetLocation(uuid)
 	if err != nil {
 		return nil, err
@@ -309,8 +326,12 @@ func (s *server) StreamRemove(stream vald.Vald_StreamRemoveServer) error {
 
 func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res *payload.Empty, err error) {
 	for _, id := range ids.GetIds() {
-		_, err := s.Remove(ctx, &payload.Object_ID{
-			Id: s.metadata.GetMeta(id.GetId()),
+		uuid, err := s.metadata.Get(ctx, id.GetId())
+		if err != nil {
+			return nil, err
+		}
+		_, err = s.Remove(ctx, &payload.Object_ID{
+			Id: uuid,
 		})
 		if err != nil {
 			return nil, err

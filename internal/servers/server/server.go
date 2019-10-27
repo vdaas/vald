@@ -216,6 +216,11 @@ func (s *server) ListenAndServe(ech chan<- error) (err error) {
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer s.wg.Done()
 			for {
+				if !s.IsRunning() {
+					s.mu.Lock()
+					s.running = true
+					s.mu.Unlock()
+				}
 				log.Infof("%s server %s starting on %s:%d", s.mode.String(), s.name, s.host, s.port)
 				switch s.mode {
 				case REST, GQL:
@@ -229,9 +234,16 @@ func (s *server) ListenAndServe(ech chan<- error) (err error) {
 						ech <- err
 					}
 				}
+				s.mu.Lock()
+				s.running = false
+				s.mu.Unlock()
+
+				s.mu.RLock()
 				if !s.enableRestart || s.shuttingDown {
+					s.mu.RUnlock()
 					return
 				}
+				s.mu.RUnlock()
 				log.Infof("%s server %s stopped", s.mode.String(), s.name)
 			}
 			return nil
@@ -246,6 +258,7 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 	}
 	s.mu.Lock()
 	s.running = false
+	s.shuttingDown = true
 	s.mu.Unlock()
 
 	log.Warnf("%s server %s shutdown process starting", s.mode.String(), s.name)

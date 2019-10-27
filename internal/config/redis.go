@@ -40,6 +40,8 @@ type Redis struct {
 	TLS                *TLS     `json:"tls" yaml:"tls"`
 	TCP                *TCP     `json:"tcp" yaml:"tcp"`
 	WriteTimeout       string   `json:"write_timeout" yaml:"write_timeout"`
+	KVIndex            int      `json:"kv_index" yaml:"kv_index"`
+	VKIndex            int      `json:"vk_index" yaml:"vk_index"`
 }
 
 func (r *Redis) Bind() *Redis {

@@ -61,10 +61,83 @@ func New(opts ...Option) http.Handler {
 			{
 				"GetMeta",
 				[]string{
-					http.MethodPost,
+					http.MethodGet,
 				},
 				"/meta",
 				h.GetMeta,
+			},
+			{
+				"GetMetas",
+				[]string{
+					http.MethodGet,
+				},
+				"/metas",
+				h.GetMetas,
+			},
+			{
+				"GetMetaInverse",
+				[]string{
+					http.MethodGet,
+				},
+				"/inverse/meta",
+				h.GetMetaInverse,
+			},
+			{
+				"GetMetasInverse",
+				[]string{
+					http.MethodGet,
+				},
+				"/inverse/metas",
+				h.GetMetasInverse,
+			},
+			{
+				"SetMeta",
+				[]string{
+					http.MethodPost,
+				},
+				"/meta",
+				h.SetMeta,
+			},
+
+			{
+				"SetMetas",
+				[]string{
+					http.MethodPost,
+				},
+				"/metas",
+				h.SetMetas,
+			},
+			{
+				"DeleteMeta",
+				[]string{
+					http.MethodPost,
+				},
+				"/meta",
+				h.DeleteMeta,
+			},
+			{
+				"DeleteMetas",
+				[]string{
+					http.MethodPost,
+				},
+				"/metas",
+				h.DeleteMetas,
+			},
+			{
+				"DeleteMetaInverse",
+				[]string{
+					http.MethodPost,
+				},
+				"/inverse/meta",
+				h.DeleteMetaInverse,
+			},
+			{
+				"DeleteMetasInverse",
+				[]string{
+					http.MethodPost,
+				},
+				"/inverse/metas",
+				h.DeleteMetasInverse,
 			},
 		}...))
 }
