@@ -25,8 +25,10 @@ import (
 type Backup interface {
 	GetObject(ctx context.Context, uuid string) (*payload.Object_Vector, error)
 	GetLocation(ctx context.Context, uuid string) ([]string, error)
-	Register(ctx context.Context, vec *payload.Object_Vector, srvs ...string) error
+	Register(ctx context.Context, vec *payload.Object_Vector, ips ...string) error
+	RegisterMultiple(ctx context.Context, vecs *payload.Object_Vectors, ips ...string) error
 	Remove(ctx context.Context, uuid string) error
+	RemoveMultiple(ctx context.Context, uuids ...string) error
 }
 
 type backup struct {

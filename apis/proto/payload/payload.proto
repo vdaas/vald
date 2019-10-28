@@ -102,6 +102,7 @@ message Info {
   message Servers {
     repeated Server Servers = 1 [ (validate.rules).repeated .min_items = 1 ];
   }
+  message IPs { repeated string ip = 1; }
 }
 
 message Empty {}

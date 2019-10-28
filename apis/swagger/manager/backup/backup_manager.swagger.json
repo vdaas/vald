@@ -17,7 +17,7 @@
   "paths": {
     "/insert": {
       "post": {
-        "operationId": "Insert",
+        "operationId": "Register",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -64,32 +64,6 @@
           "Backup"
         ]
       }
-    },
-    "/update": {
-      "post": {
-        "operationId": "Update",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/payloadEmpty"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/ObjectVector"
-            }
-          }
-        ],
-        "tags": [
-          "Backup"
-        ]
-      }
     }
   },
   "definitions": {
@@ -118,57 +92,6 @@
     },
     "payloadEmpty": {
       "type": "object"
-    },
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "runtimeStreamError": {
-      "type": "object",
-      "properties": {
-        "grpcCode": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "httpCode": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        },
-        "httpStatus": {
-          "type": "string"
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/protobufAny"
-          }
-        }
-      }
-    }
-  },
-  "x-stream-definitions": {
-    "payloadEmpty": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "$ref": "#/definitions/payloadEmpty"
-        },
-        "error": {
-          "$ref": "#/definitions/runtimeStreamError"
-        }
-      },
-      "title": "Stream result of payloadEmpty"
     }
   }
 }
