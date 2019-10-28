@@ -425,6 +425,7 @@ bench-agent-stream: \
 		-o pprof/agent/ngt/agent.bin \
 		-cpuprofile pprof/agent/ngt/cpu-stream.out \
 		-memprofile pprof/agent/ngt/mem-stream.out \
+		-race \
 		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go
 	go tool pprof --svg \
 		pprof/agent/ngt/agent.bin \
