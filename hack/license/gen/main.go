@@ -111,6 +111,8 @@ func dirwalk(dir string) []string {
 		default:
 			switch file.Name() {
 			case
+				"GO_VERSION",
+				"NGT_VERSION",
 				"Pipefile",
 				"grp",
 				"src",
