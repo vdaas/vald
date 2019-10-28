@@ -237,11 +237,29 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 }
 
 func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Empty, err error) {
-	_, err = s.Remove(ctx, vec.GetId())
+	uuid := fuid.String()
+	meta := vec.Id.GetId()
+	err = s.metadata.Set(ctx, uuid, meta)
 	if err != nil {
 		return nil, err
 	}
-	_, err = s.Insert(ctx, vec)
+	vec.Id.Id = uuid
+	mu := new(sync.Mutex)
+	targets := make([]string, 0, s.replica)
+	err = s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, ac agent.AgentClient) (err error) {
+		_, err = ac.Update(ctx, vec)
+		if err != nil {
+			return err
+		}
+		mu.Lock()
+		targets = append(targets, target)
+		mu.Unlock()
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	err = s.backup.Register(ctx, vec, targets...)
 	if err != nil {
 		return nil, err
 	}
