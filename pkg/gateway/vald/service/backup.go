@@ -16,9 +16,17 @@
 
 package service
 
+import (
+	"context"
+
+	"github.com/vdaas/vald/apis/grpc/payload"
+)
+
 type Backup interface {
-	GetLocation(string) ([]string, error)
-	Register(string, ...string) error
+	GetObject(ctx context.Context, uuid string) (*payload.Object_Vector, error)
+	GetLocation(ctx context.Context, uuid string) ([]string, error)
+	Register(ctx context.Context, vec *payload.Object_Vector, srvs ...string) error
+	Remove(ctx context.Context, uuid string) error
 }
 
 type backup struct {

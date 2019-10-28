@@ -204,7 +204,6 @@ var (
 			}
 			return err
 		}
-		errors.Cause(err)
 		return New(msg)
 	}
 

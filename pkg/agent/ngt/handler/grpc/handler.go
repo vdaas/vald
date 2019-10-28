@@ -126,16 +126,18 @@ func (s *server) StreamInsert(stream agent.Agent_StreamInsertServer) error {
 
 func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
 	res = new(payload.Empty)
+
+	vmap := make(map[string][]float64, len(vecs.GetVectors()))
 	for _, vec := range vecs.GetVectors() {
-		_, ierr := s.Insert(ctx, vec)
-		if ierr != nil {
-			err = errors.Wrap(err, ierr.Error())
-		}
+		vmap[vec.GetId().GetId()] = vec.GetVector()
 	}
+
+	err = s.ngt.InsertMultiple(vmap)
 	if err != nil {
 		return nil, err
 	}
 	return res, nil
+
 }
 
 func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Empty, err error) {
@@ -157,12 +159,13 @@ func (s *server) StreamUpdate(stream agent.Agent_StreamUpdateServer) error {
 
 func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
 	res = new(payload.Empty)
+
+	vmap := make(map[string][]float64, len(vecs.GetVectors()))
 	for _, vec := range vecs.GetVectors() {
-		_, ierr := s.Update(ctx, vec)
-		if ierr != nil {
-			err = errors.Wrap(err, ierr.Error())
-		}
+		vmap[vec.GetId().GetId()] = vec.GetVector()
 	}
+
+	err = s.ngt.UpdateMultiple(vmap)
 	if err != nil {
 		return nil, err
 	}
@@ -188,16 +191,15 @@ func (s *server) StreamRemove(stream agent.Agent_StreamRemoveServer) error {
 
 func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res *payload.Empty, err error) {
 	res = new(payload.Empty)
+	uuids := make([]string, 0, len(ids.GetIds()))
 	for _, id := range ids.GetIds() {
-		_, ierr := s.Remove(ctx, id)
-		if ierr != nil {
-			err = errors.Wrap(err, ierr.Error())
-		}
+		uuids = append(uuids, id.GetId())
 	}
+	err = s.ngt.DeleteMultiple(uuids...)
 	if err != nil {
 		return nil, err
 	}
-	return res, err
+	return res, nil
 }
 
 func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (res *payload.Object_Vector, err error) {

@@ -53,8 +53,11 @@ func New(opts ...Option) vald.ValdServer {
 	return s
 }
 
-func (s *server) Exists(ctx context.Context, oid *payload.Object_ID) (*payload.Object_ID, error) {
-	return nil, nil
+func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (*payload.Object_ID, error) {
+	uuid, err := s.metadata.GetInverse(ctx, meta.GetId())
+	return &payload.Object_ID{
+		Id: uuid,
+	}, err
 }
 
 func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
@@ -65,11 +68,12 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (
 	res *payload.Search_Response, err error) {
-	val, err := s.metadata.GetInverse(ctx, req.GetId().GetId())
+	meta := req.GetId().GetId()
+	uuid, err := s.metadata.GetInverse(ctx, meta)
 	if err != nil {
 		return nil, err
 	}
-	req.Id.Id = val
+	req.Id.Id = uuid
 	return s.search(ctx, req.GetConfig(),
 		func(ctx context.Context, ac agent.AgentClient) (*payload.Search_Response, error) {
 			// TODO rewrite ObjectID
@@ -122,17 +126,15 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			if len(res.GetResults()) > num && num != 0 {
 				res.Results = res.Results[:num]
 			}
-			keys := make([]string, 0, len(res.Results))
+			uuids := make([]string, 0, len(res.Results))
 			for _, r := range res.Results {
-				keys = append(keys, r.GetId().GetId())
+				uuids = append(uuids, r.GetId().GetId())
 			}
 			if s.metadata != nil {
-				metas, err := s.metadata.GetMultiple(ctx, keys...)
+				metas, err := s.metadata.GetMultiple(ctx, uuids...)
 				if err == nil {
 					for i, k := range metas {
-						res.Results[i].Id = &payload.Object_ID{
-							Id: k,
-						}
+						res.Results[i].Id.Id = k
 					}
 				}
 			}
@@ -144,7 +146,6 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					}
 				}
 			}
-			// TODO metadataを引いてFilterに転送
 			return res, err
 		case dist := <-dch:
 			pos := len(res.GetResults())
@@ -189,13 +190,12 @@ func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error
 
 func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *payload.Empty, err error) {
 	uuid := fuid.String()
-	err = s.metadata.Set(ctx, vec.Id.GetId(), uuid)
+	meta := vec.Id.GetId()
+	err = s.metadata.Set(ctx, uuid, meta)
 	if err != nil {
 		return nil, err
 	}
-	vec.Id = &payload.Object_ID{
-		Id: uuid,
-	}
+	vec.Id.Id = uuid
 	mu := new(sync.Mutex)
 	targets := make([]string, 0, s.replica)
 	err = s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, ac agent.AgentClient) (err error) {
@@ -211,8 +211,11 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	if err != nil {
 		return nil, err
 	}
-	err = s.backup.Register(vec.GetId().GetId(), targets...)
-	return nil, err
+	err = s.backup.Register(ctx, vec, targets...)
+	if err != nil {
+		return nil, err
+	}
+	return new(payload.Empty), nil
 }
 
 func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
@@ -225,49 +228,24 @@ func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
 
 func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
 	for _, vec := range vecs.GetVectors() {
-		uuid := "TODO"
-		err = s.metadata.Set(ctx, uuid, vec.GetId().GetId())
-		if err != nil {
-			return nil, err
-		}
-		vec.Id = &payload.Object_ID{
-			Id: uuid,
-		}
-		_, err := s.Insert(ctx, vec)
+		_, err = s.Insert(ctx, vec)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return nil, nil
+	return new(payload.Empty), nil
 }
 
-func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (*payload.Empty, error) {
-	uuid, err := s.metadata.GetInverse(ctx, vec.GetId().GetId())
+func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Empty, err error) {
+	_, err = s.Remove(ctx, vec.GetId())
 	if err != nil {
 		return nil, err
 	}
-	vec.Id = &payload.Object_ID{
-		Id: uuid,
-	}
-	locs, err := s.backup.GetLocation(vec.GetId().GetId())
+	_, err = s.Insert(ctx, vec)
 	if err != nil {
 		return nil, err
 	}
-	lmap := make(map[string]struct{}, len(locs))
-	for _, loc := range locs {
-		lmap[loc] = struct{}{}
-	}
-	s.gateway.BroadCast(ctx, func(ctx context.Context, target string, ac agent.AgentClient) error {
-		_, ok := lmap[target]
-		if ok {
-			_, err = ac.Update(ctx, vec)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-	return nil, nil
+	return new(payload.Empty), nil
 }
 
 func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
@@ -280,20 +258,25 @@ func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
 
 func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
 	for _, vec := range vecs.GetVectors() {
-		_, err := s.Update(ctx, vec)
+		_, err = s.Remove(ctx, vec.GetId())
+		if err != nil {
+			return nil, err
+		}
+		_, err = s.Insert(ctx, vec)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return nil, err
+	return new(payload.Empty), nil
 }
 
 func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Empty, error) {
-	uuid, err := s.metadata.Get(ctx, id.GetId())
+	meta := id.GetId()
+	uuid, err := s.metadata.GetInverse(ctx, meta)
 	if err != nil {
 		return nil, err
 	}
-	locs, err := s.backup.GetLocation(uuid)
+	locs, err := s.backup.GetLocation(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -301,7 +284,7 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Em
 	for _, loc := range locs {
 		lmap[loc] = struct{}{}
 	}
-	s.gateway.BroadCast(ctx, func(ctx context.Context, target string, ac agent.AgentClient) error {
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, ac agent.AgentClient) error {
 		_, ok := lmap[target]
 		if ok {
 			_, err = ac.Remove(ctx, &payload.Object_ID{
@@ -313,7 +296,15 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Em
 		}
 		return nil
 	})
-	return nil, nil
+	if err != nil {
+		return nil, err
+	}
+	_, err = s.metadata.Delete(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+	err = s.backup.Remove(ctx, uuid)
+	return new(payload.Empty), nil
 }
 
 func (s *server) StreamRemove(stream vald.Vald_StreamRemoveServer) error {
@@ -326,23 +317,25 @@ func (s *server) StreamRemove(stream vald.Vald_StreamRemoveServer) error {
 
 func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res *payload.Empty, err error) {
 	for _, id := range ids.GetIds() {
-		uuid, err := s.metadata.Get(ctx, id.GetId())
-		if err != nil {
-			return nil, err
-		}
-		_, err = s.Remove(ctx, &payload.Object_ID{
-			Id: uuid,
-		})
+		_, err = s.Remove(ctx, id)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return nil, err
+	return new(payload.Empty), nil
 }
 
-func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (*payload.Object_Vector, error) {
-	// TODO get Object from backup
-	return nil, nil
+func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *payload.Object_Vector, err error) {
+	meta := id.GetId()
+	uuid, err := s.metadata.GetInverse(ctx, meta)
+	if err != nil {
+		return nil, err
+	}
+	vec, err = s.backup.GetObject(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+	return vec, nil
 }
 
 func (s *server) StreamGetObject(stream vald.Vald_StreamGetObjectServer) error {

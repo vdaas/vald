@@ -32,8 +32,11 @@ type NGT interface {
 	Search(vec []float64, size uint32, epsilon, radius float32) ([]model.Distance, error)
 	SearchByID(uuid string, size uint32, epsilon, radius float32) ([]model.Distance, error)
 	Insert(uuid string, vec []float64) (err error)
+	InsertMultiple(vecs map[string][]float64) (err error)
 	Update(uuid string, vec []float64) (err error)
+	UpdateMultiple(vecs map[string][]float64) (err error)
 	Delete(uuid string) (err error)
+	DeleteMultiple(uuids ...string) (err error)
 	GetObject(uuid string) (vec []float64, err error)
 	CreateIndex(poolSize uint32) (err error)
 	SaveIndex() (err error)
@@ -140,6 +143,39 @@ func (n *ngt) Insert(uuid string, vec []float64) (err error) {
 	return nil
 }
 
+func (n *ngt) InsertMultiple(vecs map[string][]float64) (err error) {
+	vs := make([][]float64, 0, len(vecs))
+	uuids := make([]string, 0, len(vecs))
+	for uuid, vec := range vecs {
+		if len(uuid) == 0 {
+			err = errors.ErrUUIDNotFound(0)
+			return err
+		}
+		id, ok := n.kvs.Get(uuid)
+		oid := uint(id)
+		if ok {
+			err = errors.ErrUUIDAlreadyExists(uuid, oid)
+			return err
+		}
+		vs = append(vs, vec)
+		uuids = append(uuids, uuid)
+	}
+	var oerr error
+	oids, errs := n.core.BulkInsert(vs)
+	for i, err := range errs {
+		if err == nil {
+			atomic.AddUint64(&n.ic, 1)
+			n.kvs.Set(uuids[i], uint32(oids[i]))
+		} else {
+			oerr = errors.Wrap(oerr, err.Error())
+		}
+	}
+	if oerr != nil {
+		err = oerr
+	}
+	return
+}
+
 func (n *ngt) Update(uuid string, vec []float64) (err error) {
 	err = n.Delete(uuid)
 	if err != nil {
@@ -152,6 +188,48 @@ func (n *ngt) Update(uuid string, vec []float64) (err error) {
 
 	n.kvs.Set(uuid, uint32(oid))
 	return nil
+}
+
+func (n *ngt) UpdateMultiple(vecs map[string][]float64) (err error) {
+	ids := make([]uint, 0, len(vecs))
+	vs := make([][]float64, 0, len(vecs))
+	uuids := make([]string, 0, len(vecs))
+	for uuid, vec := range vecs {
+		if len(uuid) == 0 {
+			err = errors.ErrUUIDNotFound(0)
+			return err
+		}
+		id, ok := n.kvs.Get(uuid)
+		oid := uint(id)
+		if ok {
+			err = errors.ErrUUIDAlreadyExists(uuid, oid)
+			return err
+		}
+		vs = append(vs, vec)
+		uuids = append(uuids, uuid)
+		ids = append(ids, oid)
+	}
+	err = n.core.BulkRemove(ids...)
+	if err != nil {
+		return err
+	}
+	for _, oid := range ids {
+		n.kvs.DeleteInverse(uint32(oid))
+	}
+	var oerr error
+	oids, errs := n.core.BulkInsert(vs)
+	for i, err := range errs {
+		if err == nil {
+			atomic.AddUint64(&n.ic, 1)
+			n.kvs.Set(uuids[i], uint32(oids[i]))
+		} else {
+			oerr = errors.Wrap(oerr, err.Error())
+		}
+	}
+	if oerr != nil {
+		err = oerr
+	}
+	return
 }
 
 func (n *ngt) Delete(uuid string) (err error) {
@@ -175,6 +253,31 @@ func (n *ngt) Delete(uuid string) (err error) {
 
 	n.kvs.DeleteInverse(oid)
 
+	return nil
+}
+
+func (n *ngt) DeleteMultiple(uuids ...string) (err error) {
+	ids := make([]uint, 0, len(uuids))
+	for _, uuid := range uuids {
+		if len(uuid) == 0 {
+			err = errors.ErrUUIDNotFound(0)
+			return err
+		}
+		id, ok := n.kvs.Get(uuid)
+		oid := uint(id)
+		if ok {
+			err = errors.ErrUUIDAlreadyExists(uuid, oid)
+			return err
+		}
+		ids = append(ids, oid)
+	}
+	err = n.core.BulkRemove(ids...)
+	if err != nil {
+		return err
+	}
+	for _, oid := range ids {
+		n.kvs.DeleteInverse(uint32(oid))
+	}
 	return nil
 }
 
@@ -219,7 +322,6 @@ func (n *ngt) CreateAndSaveIndex(poolSize uint32) (err error) {
 	if err != nil {
 		return err
 	}
-
 	return n.SaveIndex()
 }
 
