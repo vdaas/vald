@@ -140,6 +140,7 @@ endef
 define bench-pprof
 	rm -rf $1
 	mkdir -p $1
+	@$(call green, "starting $4 $2 benchmark")
 	go test -count=1 \
 		-timeout=1h \
 		-bench=$3 \
@@ -160,7 +161,7 @@ define bench-pprof
 endef
 
 define profile-web
-	@$(call green, "starting $2 $3 profiler")
+	@$(call green, "starting $3 $2 profiler")
 	go tool pprof -http=$4 \
 		$1/$2.bin \
 		$1/cpu-$3.out &
@@ -475,22 +476,18 @@ bench-agent-sequential-rest: \
 	ngt \
 	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
 	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
-	@$(call green, "starting sequential rest agent benchmark")
 	$(call bench-pprof,pprof/agent/ngt,agent,RESTSequential,sequential-rest,\
 		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
 		 -dataset=fashion-mnist)
 
 profile-agent-stream:
-	@$(call green, "starting stream agent profiler")
 	$(call profile-web,pprof/agent/ngt,agent,stream,":6061",":6062",":6063")
 
 
 profile-agent-sequential-grpc:
-	@$(call green, "starting sequential grpc agent profiler")
 	$(call profile-web,pprof/agent/ngt,agent,sequential-grpc,":6061",":6062",":6063")
 
 profile-agent-sequential-rest:
-	@$(call green, "starting sequential rest agent profiler")
 	$(call profile-web,pprof/agent/ngt,agent,sequential-rest,":6061",":6062",":6063")
 
 

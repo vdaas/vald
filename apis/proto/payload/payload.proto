@@ -76,6 +76,14 @@ message Object {
     repeated double vector = 2 [ (validate.rules).repeated .min_items = 2 ];
   }
   message Vectors { repeated Vector vectors = 1; }
+
+  message MetaVector {
+    string uuid = 1;
+    string meta = 2;
+    Vector vector = 3;
+    repeated string ips = 4;
+  }
+  message MetaVectors { repeated MetaVector vectors = 1; }
 }
 
 message Controll {

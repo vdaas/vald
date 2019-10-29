@@ -3,7 +3,7 @@ module github.com/vdaas/vald
 go 1.13
 
 replace (
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191029031824-8986dd9e96cf
 	k8s.io/api => k8s.io/api v0.0.0-20191016110246-af539daaa43a
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20191016113439-b64f2075a530
 	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20191004115701-31ade1b30762
@@ -29,9 +29,9 @@ require (
 	github.com/kpango/gache v1.1.23
 	github.com/kpango/glg v1.4.6
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
-	golang.org/x/sys v0.0.0-20191027211539-f8518d3b3627
+	golang.org/x/sys v0.0.0-20191028164358-195ce5e7f934
 	gonum.org/v1/hdf5 v0.0.0-20190920010848-b0d662f53d94
-	google.golang.org/genproto v0.0.0-20191009194640-548a555dbc03
+	google.golang.org/genproto v0.0.0-20191028173616-919d9bdd9fe6
 	google.golang.org/grpc v1.24.0
 	gopkg.in/yaml.v2 v2.2.4
 	k8s.io/api v0.0.0-20191016110246-af539daaa43a

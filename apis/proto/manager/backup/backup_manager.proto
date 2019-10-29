@@ -30,15 +30,18 @@ import "pb/gql.proto";
 service Backup {
   option (gql.svc_type) = QUERY;
 
-  rpc Locations(payload.Object.Vector) returns (payload.Empty) {}
-  rpc Register(payload.Object.Vector) returns (payload.Empty) {
+  rpc GetVector(payload.Object.ID) returns (payload.Object.MetaVector) {}
+
+  rpc Locations(payload.Object.ID) returns (payload.Info.IPs) {}
+
+  rpc Register(payload.Object.MetaVector) returns (payload.Empty) {
     option (google.api.http) = {
-      post : "/insert"
+      post : "/register"
       body : "*"
     };
     option (gql.rpc_type) = MUTATION;
   }
-  rpc RegisterMulti(payload.Object.Vectors) returns (payload.Empty) {}
+  rpc RegisterMulti(payload.Object.MetaVectors) returns (payload.Empty) {}
 
   rpc Remove(payload.Object.ID) returns (payload.Empty) {
     option (google.api.http).delete = "/remove/{id}";
