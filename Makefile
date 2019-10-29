@@ -149,7 +149,8 @@ define bench-pprof
 		-cpuprofile $1/cpu-$4.out \
 		-memprofile $1/mem-$4.out \
 		-trace $1/trace-$4.out \
-		$5
+		$5 \
+		| tee $1/result-$4.out
 	go tool pprof --svg \
 		$1/agent.bin \
 		$1/cpu-$4.out \
@@ -458,7 +459,6 @@ bench-agent-stream: \
 	ngt \
 	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
 	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
-	@$(call green, "starting stream agent benchmark")
 	$(call bench-pprof,pprof/agent/ngt,agent,gRPCStream,stream,\
 		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
 		 -dataset=fashion-mnist)
@@ -467,7 +467,6 @@ bench-agent-sequential-grpc: \
 	ngt \
 	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
 	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
-	@$(call green, "starting sequential grpc agent benchmark")
 	$(call bench-pprof,pprof/agent/ngt,agent,gRPCSequential,sequential-grpc,\
 		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
 		 -dataset=fashion-mnist)
