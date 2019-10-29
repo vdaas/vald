@@ -69,9 +69,9 @@ func New(opts ...Option) http.Handler {
 			{
 				"Search By ID",
 				[]string{
-					http.MethodGet,
+					http.MethodPost,
 				},
-				"/search/{id}",
+				"/id/search",
 				h.SearchByID,
 			},
 			{
@@ -115,7 +115,7 @@ func New(opts ...Option) http.Handler {
 				[]string{
 					http.MethodDelete,
 				},
-				"/delete/{id}",
+				"/delete",
 				h.Remove,
 			},
 			{
@@ -130,9 +130,9 @@ func New(opts ...Option) http.Handler {
 			{
 				"Create Index",
 				[]string{
-					http.MethodGet,
+					http.MethodPost,
 				},
-				"/index/create/{pool}",
+				"/index/create",
 				h.CreateIndex,
 			},
 			{

@@ -423,7 +423,8 @@ bench-agent-stream: \
 		-o pprof/agent/ngt/agent.bin \
 		-cpuprofile pprof/agent/ngt/cpu-stream.out \
 		-memprofile pprof/agent/ngt/mem-stream.out \
-		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go
+		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
+		 -dataset=fashion-mnist
 	go tool pprof --svg \
 		pprof/agent/ngt/agent.bin \
 		pprof/agent/ngt/cpu-stream.out \
@@ -433,7 +434,7 @@ bench-agent-stream: \
 		pprof/agent/ngt/mem-stream.out \
 		> pprof/agent/ngt/mem-stream.svg
 
-bench-agent-sequential: \
+bench-agent-sequential-grpc: \
 	ngt \
 	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
 	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
@@ -446,7 +447,8 @@ bench-agent-sequential: \
 		-o pprof/agent/ngt/agent.bin \
 		-cpuprofile pprof/agent/ngt/cpu-sequential.out \
 		-memprofile pprof/agent/ngt/mem-sequential.out \
-		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go
+		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
+		 -dataset=fashion-mnist
 	go tool pprof --svg \
 		pprof/agent/ngt/agent.bin \
 		pprof/agent/ngt/cpu-sequential.out \
@@ -455,6 +457,30 @@ bench-agent-sequential: \
 		pprof/agent/ngt/agent.bin \
 		pprof/agent/ngt/mem-sequential.out \
 		> pprof/agent/ngt/mem-sequential.svg
+
+bench-agent-sequential-rest: \
+	ngt \
+	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
+	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	rm -rf pprof/agent/ngt
+	mkdir -p pprof/agent/ngt
+	go test -count=1 \
+		-timeout=1h \
+		-bench=RESTSequential \
+		-benchmem \
+		-o pprof/agent/ngt/agent.bin \
+		-cpuprofile pprof/agent/ngt/cpu-sequential-rest.out \
+		-memprofile pprof/agent/ngt/mem-sequential-rest.out \
+		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
+		 -dataset=fashion-mnist
+	go tool pprof --svg \
+		pprof/agent/ngt/agent.bin \
+		pprof/agent/ngt/cpu-sequential-rest.out \
+		> pprof/agent/ngt/cpu-sequential-rest.svg
+	go tool pprof --svg \
+		pprof/agent/ngt/agent.bin \
+		pprof/agent/ngt/mem-sequential-rest.out \
+		> pprof/agent/ngt/mem-sequential-rest.svg
 
 profile-agent-stream:
 	go tool pprof -http=":6061" \
