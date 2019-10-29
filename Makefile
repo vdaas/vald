@@ -114,16 +114,7 @@ define mkdir
 endef
 
 PROTO_PATHS = \
-	-I ./apis/proto/payload \
-	-I ./apis/proto/agent \
-	-I ./apis/proto/vald \
-	-I ./apis/proto/discoverer \
-	-I ./apis/proto/meta \
-	-I ./apis/proto/filter/egress \
-	-I ./apis/proto/filter/ingress \
-	-I ./apis/proto/manager/backup \
-	-I ./apis/proto/manager/replication \
-	-I ./apis/proto/manager/traffic \
+	$(PROTODIRS:%=-I ./apis/proto/%) \
 	-I $(GOPATH)/src/github.com/protocolbuffers/protobuf/src \
 	-I $(GOPATH)/src/github.com/gogo/protobuf/protobuf \
 	-I $(GOPATH)/src/github.com/googleapis/googleapis \
@@ -445,7 +436,7 @@ $(PBDOCS): proto-deps $(PBDOCDIRS)
 $(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
 	@$(call green, "downloading datasets for benchmark...")
 	curl -fsSL -o $@ http://vectors.erikbern.com/$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
-	(cd hack/e2e/benchmark/assets; \
+	(cd $(BENCH_DATASET_BASE_DIR); \
 	    md5sum -c $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5_DIR_NAME)/%.md5,$@) || \
 	    (rm -f $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_HDF5_DIR_NAME)/%.hdf5,$@) && exit 1))
 
