@@ -15,7 +15,7 @@
     "application/json"
   ],
   "paths": {
-    "/insert": {
+    "/register": {
       "post": {
         "operationId": "Register",
         "responses": {
@@ -32,7 +32,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ObjectVector"
+              "$ref": "#/definitions/ObjectMetaVector"
             }
           }
         ],
@@ -67,11 +67,42 @@
     }
   },
   "definitions": {
+    "InfoIPs": {
+      "type": "object",
+      "properties": {
+        "ip": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "ObjectID": {
       "type": "object",
       "properties": {
         "id": {
           "type": "string"
+        }
+      }
+    },
+    "ObjectMetaVector": {
+      "type": "object",
+      "properties": {
+        "uuid": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "string"
+        },
+        "vector": {
+          "$ref": "#/definitions/ObjectVector"
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
