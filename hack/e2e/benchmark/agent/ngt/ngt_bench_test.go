@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"flag"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"sort"
 	"strings"
@@ -107,15 +108,31 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					resp, err := http.Post("http://localhost:8081/insert", "application/json", buffers[i])
-					bb.Logf("%#v", resp)
 					if err != nil {
 						bb.Error(err)
 					}
+					_, err = io.Copy(ioutil.Discard, resp.Body)
+					if err != nil {
+						bb.Error(err)
+					}
+					err = resp.Body.Close()
+					if err != nil {
+						bb.Error(err)
+					}
+
 					i++
 				}
 			})
 			for ; i < len(train); i++ {
-				_, err := http.Post("http://localhost:8081/insert", "application/json", buffers[i])
+				resp, err := http.Post("http://localhost:8081/insert", "application/json", buffers[i])
+				if err != nil {
+					b.Error(err)
+				}
+				_, err = io.Copy(ioutil.Discard, resp.Body)
+				if err != nil {
+					b.Error(err)
+				}
+				err = resp.Body.Close()
 				if err != nil {
 					b.Error(err)
 				}
@@ -131,7 +148,15 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 				buffer := bytes.NewBuffer(buf)
 				bb.ReportAllocs()
 				bb.ResetTimer()
-				_, err = http.Post("http://localhost:8081", "application/json", buffer)
+				resp, err := http.Post("http://localhost:8081/index/create", "application/json", buffer)
+				if err != nil {
+					bb.Error(err)
+				}
+				_, err = io.Copy(ioutil.Discard, resp.Body)
+				if err != nil {
+					bb.Error(err)
+				}
+				err = resp.Body.Close()
 				if err != nil {
 					bb.Error(err)
 				}
@@ -156,10 +181,19 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 				bb.ReportAllocs()
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
-					_, err := http.Post("http://localhost:8081/search", "application/json", buffers[i])
+					resp, err := http.Post("http://localhost:8081/search", "application/json", buffers[i])
 					if err != nil {
 						bb.Error(err)
 					}
+					_, err = io.Copy(ioutil.Discard, resp.Body)
+					if err != nil {
+						bb.Error(err)
+					}
+					err = resp.Body.Close()
+					if err != nil {
+						bb.Error(err)
+					}
+
 					i++
 				}
 			})
@@ -180,10 +214,19 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 				bb.ReportAllocs()
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
-					_, err := http.Post("http://localhost:8081/remove", "application/json", buffers[i])
+					resp, err := http.Post("http://localhost:8081/remove", "application/json", buffers[i])
 					if err != nil {
 						bb.Error(err)
 					}
+					_, err = io.Copy(ioutil.Discard, resp.Body)
+					if err != nil {
+						bb.Error(err)
+					}
+					err = resp.Body.Close()
+					if err != nil {
+						bb.Error(err)
+					}
+
 					i++
 				}
 			})

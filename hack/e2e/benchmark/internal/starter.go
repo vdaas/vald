@@ -59,11 +59,11 @@ server_config:
     probe_wait_time: "0s"
     http:
       shutdown_duration: "0s"
-      handler_timeout: ""
-      idle_timeout: ""
-      read_header_timeout: ""
-      read_timeout: ""
-      write_timeout: ""
+      handler_timeout: "60s"
+      idle_timeout: "60s"
+      read_header_timeout: "60s"
+      read_timeout: "60s"
+      write_timeout: "60s"
   startup_strategy:
   - agent-grpc
   - agent-rest
