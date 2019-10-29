@@ -55,77 +55,77 @@ func New(opts ...Option) Handler {
 
 func (h *handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
 	data := make(map[string]interface{})
-	return json.Handler(w, r, data, func() (interface{}, error) {
+	return json.Handler(w, r, &data, func() (interface{}, error) {
 		return dump.Request(nil, data, r)
 	})
 }
 
 func (h *handler) Search(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Search_Request
-	return json.Handler(w, r, req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.Search(r.Context(), req)
 	})
 }
 
 func (h *handler) SearchByID(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Search_IDRequest
-	return json.Handler(w, r, req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.SearchByID(r.Context(), req)
 	})
 }
 
 func (h *handler) Insert(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Object_Vector
-	return json.Handler(w, r, req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.Insert(r.Context(), req)
 	})
 }
 
 func (h *handler) MultiInsert(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Object_Vectors
-	return json.Handler(w, r, req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.MultiInsert(r.Context(), req)
 	})
 }
 
 func (h *handler) Update(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Object_Vector
-	return json.Handler(w, r, req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.Update(r.Context(), req)
 	})
 }
 
 func (h *handler) MultiUpdate(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Object_Vectors
-	return json.Handler(w, r, req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.MultiUpdate(r.Context(), req)
 	})
 }
 
 func (h *handler) Remove(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Object_ID
-	return json.Handler(w, r, req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.Remove(r.Context(), req)
 	})
 }
 
 func (h *handler) MultiRemove(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Object_IDs
-	return json.Handler(w, r, req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.MultiRemove(r.Context(), req)
 	})
 }
 
 func (h *handler) GetObject(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Object_ID
-	return json.Handler(w, r, req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.GetObject(r.Context(), req)
 	})
 }
 
 func (h *handler) Exists(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Object_ID
-	return json.Handler(w, r, req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.Exists(r.Context(), req)
 	})
 }
