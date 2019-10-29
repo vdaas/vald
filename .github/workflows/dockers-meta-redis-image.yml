@@ -1,0 +1,58 @@
+name: 'Build docker image: meta-redis'
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'internal/**'
+      - 'apis/grpc/**'
+      - 'pkg/meta/redis/**'
+      - 'cmd/meta/redis/**'
+      - 'dockers/base/Dockerfile'
+      - 'dockers/meta/redis/Dockerfile'
+      - 'resources/GO_VERSION'
+      - 'resources/NGT_VERSION'
+  pull_request:
+    paths:
+      - 'internal/**'
+      - 'apis/grpc/**'
+      - 'pkg/meta/redis/**'
+      - 'cmd/meta/redis/**'
+      - 'dockers/base/Dockerfile'
+      - 'dockers/meta/redis/Dockerfile'
+      - 'resources/GO_VERSION'
+      - 'resources/NGT_VERSION'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Build the Docker image
+      run: |
+        echo 'Build docker image'
+        make dockers-meta-redis-image
+    - name: login to DockerHub
+      run: |
+        echo 'Login to DockerHub'
+        echo ${DOCKERHUB_PASS} | docker login --username ${DOCKERHUB_USER} --password-stdin
+      env:
+        DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+        DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+    - name: push to DockerHub (master)
+      if: github.ref == 'refs/heads/master'
+      run: |
+        echo 'Push to DockerHub (master)'
+        imagename=`make dockers-meta-redis-image-name`
+        docker tag ${imagename} ${imagename}:nightly
+        docker push ${imagename}:nightly
+    - name: push to DockerHub (pull request)
+      if: github.event_name == 'pull_request'
+      run: |
+        echo 'Push to DockerHub (pull request)'
+        imagename=`make dockers-meta-redis-image-name`
+        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+        docker tag ${imagename} ${imagename}:pr-${pr_num}
+        docker push ${imagename}:pr-${pr_num}
