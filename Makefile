@@ -53,7 +53,11 @@
 	clean-proto-artifacts \
 	proto-deps \
 	bench-agent-stream \
+	bench-agent-sequential-grpc \
+	bench-agent-sequential-rest \
 	profile-agent-stream \
+	profile-agent-sequential-grpc \
+	profile-agent-sequential-rest \
 	kill-bench
 
 REPO                   ?= vdaas
@@ -71,7 +75,7 @@ NGT_REPO = github.com/yahoojapan/NGT
 
 GO_VERSION := $(shell cat resources/GO_VERSION)
 
-PROTODIRS := $(shell find apis/proto ".proto" | grep -v "\.proto" | sed -e "s%apis/proto/%%g" | grep -v "apis/proto")
+PROTODIRS := $(shell find apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto")
 PBGODIRS = $(PROTODIRS:%=apis/grpc/%)
 SWAGGERDIRS = $(PROTODIRS:%=apis/swagger/%)
 GRAPHQLDIRS = $(PROTODIRS:%=apis/graphql/%)
@@ -130,6 +134,37 @@ define protoc-gen
 		$(PROTO_PATHS) \
 		$2 \
 		$1
+endef
+
+define bench-pprof
+	rm -rf $1
+	mkdir -p $1
+	go test -count=1 \
+		-timeout=1h \
+		-bench=$3 \
+		-benchmem \
+		-o $1/$2.bin \
+		-cpuprofile $1/cpu-$4.out \
+		-memprofile $1/mem-$4.out \
+		-race \
+		$5
+	go tool pprof --svg \
+		$1/agent.bin \
+		$1/cpu-$4.out \
+		> $1/cpu-$4.svg
+	go tool pprof --svg \
+		$1/agent.bin \
+		$1/mem-$4.out \
+		> $1/mem-$4.svg
+endef
+
+define profile-web
+	go tool pprof -http=$4 \
+		$1/$2.bin \
+		$1/cpu-$3.out &
+	go tool pprof -http=$5 \
+		$1/$2.bin \
+		$1/mem-$3.out &
 endef
 
 all: clean deps
@@ -408,87 +443,56 @@ $(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
 
 bench-agent: \
 	bench-agent-stream \
-	bench-agent-sequential
+	bench-agent-sequential-grpc \
+	bench-agent-sequential-rest
 
 bench-agent-stream: \
 	ngt \
 	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
 	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
-	rm -rf pprof/agent/ngt
-	mkdir -p pprof/agent/ngt
-	go test -count=1 \
-		-timeout=1h \
-		-bench=gRPCStream \
-		-benchmem \
-		-o pprof/agent/ngt/agent.bin \
-		-cpuprofile pprof/agent/ngt/cpu-stream.out \
-		-memprofile pprof/agent/ngt/mem-stream.out \
+	@$(call green, "starting stream agent benchmark")
+	$(call bench-pprof,pprof/agent/ngt,agent,gRPCStream,stream,\
 		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
-		 -dataset=fashion-mnist
-	go tool pprof --svg \
-		pprof/agent/ngt/agent.bin \
-		pprof/agent/ngt/cpu-stream.out \
-		> pprof/agent/ngt/cpu-stream.svg
-	go tool pprof --svg \
-		pprof/agent/ngt/agent.bin \
-		pprof/agent/ngt/mem-stream.out \
-		> pprof/agent/ngt/mem-stream.svg
+		 -dataset=fashion-mnist)
 
 bench-agent-sequential-grpc: \
 	ngt \
 	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
 	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
-	rm -rf pprof/agent/ngt
-	mkdir -p pprof/agent/ngt
-	go test -count=1 \
-		-timeout=1h \
-		-bench=gRPCSequential \
-		-benchmem \
-		-o pprof/agent/ngt/agent.bin \
-		-cpuprofile pprof/agent/ngt/cpu-sequential.out \
-		-memprofile pprof/agent/ngt/mem-sequential.out \
+	@$(call green, "starting sequential grpc agent benchmark")
+	$(call bench-pprof,pprof/agent/ngt,agent,gRPCSequential,sequential-grpc,\
 		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
-		 -dataset=fashion-mnist
-	go tool pprof --svg \
-		pprof/agent/ngt/agent.bin \
-		pprof/agent/ngt/cpu-sequential.out \
-		> pprof/agent/ngt/cpu-sequential.svg
-	go tool pprof --svg \
-		pprof/agent/ngt/agent.bin \
-		pprof/agent/ngt/mem-sequential.out \
-		> pprof/agent/ngt/mem-sequential.svg
+		 -dataset=fashion-mnist)
 
 bench-agent-sequential-rest: \
 	ngt \
 	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
 	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
-	rm -rf pprof/agent/ngt
-	mkdir -p pprof/agent/ngt
-	go test -count=1 \
-		-timeout=1h \
-		-bench=RESTSequential \
-		-benchmem \
-		-o pprof/agent/ngt/agent.bin \
-		-cpuprofile pprof/agent/ngt/cpu-sequential-rest.out \
-		-memprofile pprof/agent/ngt/mem-sequential-rest.out \
+	@$(call green, "starting sequential rest agent benchmark")
+	$(call bench-pprof,pprof/agent/ngt,agent,RESTSequential,sequential-rest,\
 		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
-		 -dataset=fashion-mnist
-	go tool pprof --svg \
-		pprof/agent/ngt/agent.bin \
-		pprof/agent/ngt/cpu-sequential-rest.out \
-		> pprof/agent/ngt/cpu-sequential-rest.svg
-	go tool pprof --svg \
-		pprof/agent/ngt/agent.bin \
-		pprof/agent/ngt/mem-sequential-rest.out \
-		> pprof/agent/ngt/mem-sequential-rest.svg
+		 -dataset=fashion-mnist)
 
 profile-agent-stream:
-	go tool pprof -http=":6061" \
-		pprof/agent/ngt/agent.bin \
-		pprof/agent/ngt/cpu-stream.out &
-	go tool pprof -http=":6062" \
-		pprof/agent/ngt/agent.bin \
-		pprof/agent/ngt/mem-stream.out
+	@$(call green, "starting stream agent profiler")
+	$(call profile-web,pprof/agent/ngt,agent,stream,":6061",":6062")
+
+
+profile-agent-sequential-grpc:
+	@$(call green, "starting sequential grpc agent profiler")
+	$(call profile-web,pprof/agent/ngt,agent,sequential-grpc,":6061",":6062")
+
+profile-agent-sequential-rest:
+	@$(call green, "starting sequential rest agent profiler")
+	$(call profile-web,pprof/agent/ngt,agent,sequential-rest,":6061",":6062")
+
 
 kill-bench:
-	ps aux | grep go | grep -v nvim | grep -v tmux | grep -v gopls | grep -v "rg go" | awk '{print $1}' | xargs kill -9
+	ps aux  \
+		| grep go  \
+		| grep -v nvim \
+		| grep -v tmux \
+		| grep -v gopls \
+		| grep -v "rg go" \
+		| awk '{print $1}' \
+		| xargs kill -9
