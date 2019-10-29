@@ -71,7 +71,7 @@ NGT_REPO = github.com/yahoojapan/NGT
 
 GO_VERSION := $(shell cat resources/GO_VERSION)
 
-PROTODIRS := $(shell find apis/proto ".proto" | grep -v "\.proto" | sed -e "s%apis/proto/%%g" | grep -v "apis/proto")
+PROTODIRS := $(shell find apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto")
 PBGODIRS = $(PROTODIRS:%=apis/grpc/%)
 SWAGGERDIRS = $(PROTODIRS:%=apis/swagger/%)
 GRAPHQLDIRS = $(PROTODIRS:%=apis/graphql/%)
