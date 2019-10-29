@@ -119,7 +119,7 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request,
 		log.Error(err)
 	}
 
-	res, err := MarshalIndent(data, "", "\t")
+	res, err := MarshalIndent(data, "", "    ")
 	if err != nil {
 		return err
 	}
