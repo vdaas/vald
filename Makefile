@@ -33,6 +33,8 @@
 	dockers-discoverer-k8s-image \
 	dockers-gateway-vald-image-name \
 	dockers-gateway-vald-image \
+	dockers-meta-redis-image-name \
+	dockers-meta-redis-image \
 	profile \
 	test \
 	lint \
@@ -161,7 +163,7 @@ define profile-web
 		$1/$2.bin \
 		$1/mem-$3.out &
 	go tool trace -http=$6 \
-		$1/trace-$3.out 
+		$1/trace-$3.out
 endef
 
 all: clean deps
@@ -225,7 +227,8 @@ images: \
 	dockers-base-image \
 	dockers-agent-ngt-image \
 	dockers-discoverer-k8s-image \
-	dockers-gateway-vald-image
+	dockers-gateway-vald-image \
+	dockers-meta-redis-image
 
 dockers-base-image-name:
 	@echo "$(REPO)/$(BASE_IMAGE)"
@@ -250,6 +253,12 @@ dockers-gateway-vald-image-name:
 
 dockers-gateway-vald-image: dockers-base-image
 	docker build -f dockers/gateway/vald/Dockerfile -t $(REPO)/$(GATEWAY_IMAGE) .
+
+dockers-meta-redis-image-name:
+	@echo "$(REPO)/$(KVS_IMAGE)"
+
+dockers-meta-redis-image: dockers-base-image
+	docker build -f dockers/meta/redis/Dockerfile -t $(REPO)/$(KVS_IMAGE) .
 
 profile: \
 	clean \
