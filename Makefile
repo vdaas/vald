@@ -497,5 +497,6 @@ kill-bench:
 		| grep -v tmux \
 		| grep -v gopls \
 		| grep -v "rg go" \
+		| grep -v "grep go" \
 		| awk '{print $1}' \
 		| xargs kill -9
