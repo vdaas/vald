@@ -482,7 +482,6 @@ bench-agent-sequential-rest: \
 profile-agent-stream:
 	$(call profile-web,pprof/agent/ngt,agent,stream,":6061",":6062",":6063")
 
-
 profile-agent-sequential-grpc:
 	$(call profile-web,pprof/agent/ngt,agent,sequential-grpc,":6061",":6062",":6063")
 
