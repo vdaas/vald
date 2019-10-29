@@ -16,10 +16,12 @@
 package ngt
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"flag"
 	"io"
-	"net/http/httptest"
+	"net/http"
 	"sort"
 	"strings"
 	"sync"
@@ -80,20 +82,111 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 
 			b.ReportAllocs()
 			b.ResetTimer()
-
-			b.ReportAllocs()
-			b.ResetTimer()
 			ctx, cancel := context.WithCancel(rctx)
 			defer cancel()
 
 			internal.StartAgentNGTServer(b, ctx, data)
 
-			w := httptest.NewRecorder()
-			_ = w
+			buffers := make([]*bytes.Buffer, len(train))
+			for i := 0; i < len(train); i++ {
+				buf, err := json.Marshal(&payload.Object_Vector{
+					Id: &payload.Object_ID{
+						Id: ids[i],
+					},
+					Vector: train[i],
+				})
+				if err != nil {
+					b.Error(err)
+				}
+				buffers[i] = bytes.NewBuffer(buf)
+			}
 
-			_ = ids
-			_ = train
-			_ = query
+			i := 0
+			b.Run("Insert objects", func(bb *testing.B) {
+				bb.ReportAllocs()
+				bb.ResetTimer()
+				for n := 0; n < bb.N; n++ {
+					resp, err := http.Post("http://localhost:8081/insert", "application/json", buffers[i])
+					bb.Logf("%#v", resp)
+					if err != nil {
+						bb.Error(err)
+					}
+					i++
+				}
+			})
+			for ; i < len(train); i++ {
+				_, err := http.Post("http://localhost:8081/insert", "application/json", buffers[i])
+				if err != nil {
+					b.Error(err)
+				}
+			}
+
+			b.Run("CreateIndex", func(bb *testing.B) {
+				buf, err := json.Marshal(&payload.Controll_CreateIndexRequest{
+					PoolSize: 10000,
+				})
+				if err != nil {
+					bb.Error(err)
+				}
+				buffer := bytes.NewBuffer(buf)
+				bb.ReportAllocs()
+				bb.ResetTimer()
+				_, err = http.Post("http://localhost:8081", "application/json", buffer)
+				if err != nil {
+					bb.Error(err)
+				}
+			})
+
+			buffers = make([]*bytes.Buffer, len(query))
+			for i := 0; i < len(query); i++ {
+				buf, err := json.Marshal(&payload.Search_Request{
+					Vector: &payload.Object_Vector{
+						Vector: query[i],
+					},
+					Config: searchConfig,
+				})
+				if err != nil {
+					b.Error(err)
+				}
+				buffers[i] = bytes.NewBuffer(buf)
+			}
+
+			i = 0
+			b.Run("Search objects", func(bb *testing.B) {
+				bb.ReportAllocs()
+				bb.ResetTimer()
+				for n := 0; n < bb.N; n++ {
+					_, err := http.Post("http://localhost:8081/search", "application/json", buffers[i])
+					if err != nil {
+						bb.Error(err)
+					}
+					i++
+				}
+			})
+
+			buffers = make([]*bytes.Buffer, len(ids))
+			for i := 0; i < len(ids); i++ {
+				buf, err := json.Marshal(&payload.Object_ID{
+					Id: ids[i],
+				})
+				if err != nil {
+					b.Error(err)
+				}
+				buffers[i] = bytes.NewBuffer(buf)
+			}
+
+			i = 0
+			b.Run("Remove objects", func(bb *testing.B) {
+				bb.ReportAllocs()
+				bb.ResetTimer()
+				for n := 0; n < bb.N; n++ {
+					_, err := http.Post("http://localhost:8081/remove", "application/json", buffers[i])
+					if err != nil {
+						bb.Error(err)
+					}
+					i++
+				}
+			})
 		})
 	}
 }
