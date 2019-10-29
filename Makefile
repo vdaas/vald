@@ -61,14 +61,15 @@
 	kill-bench
 
 REPO                   ?= vdaas
-GOPKG                   = github.com/${REPO}/vald
+NAME                    = vald
+GOPKG                   = github.com/$(REPO)/$(NAME)
 TAG                     = $(shell date -u +%Y%m%d-%H%M%S)
-BASE_IMAGE              = vald-base
-AGENT_IMAGE             = vald-agent-ngt
-GATEWAY_IMAGE           = vald-gateway
-DISCOVERER_IMAGE        = vald-discoverer-k8s
-KVS_IMAGE               = vald-meta-redis
-BACKUP_MANAGER_IMAGE    = vald-manager-backup-mysql
+BASE_IMAGE              = $(NAME)-base
+AGENT_IMAGE             = $(NAME)-agent-ngt
+GATEWAY_IMAGE           = $(NAME)-gateway
+DISCOVERER_IMAGE        = $(NAME)-discoverer-k8s
+KVS_IMAGE               = $(NAME)-meta-redis
+BACKUP_MANAGER_IMAGE    = $(NAME)-manager-backup-mysql
 
 NGT_VERSION := $(shell cat resources/NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
@@ -146,7 +147,7 @@ define bench-pprof
 		-o $1/$2.bin \
 		-cpuprofile $1/cpu-$4.out \
 		-memprofile $1/mem-$4.out \
-		-race \
+		-trace $1/trace-$4.out \
 		$5
 	go tool pprof --svg \
 		$1/agent.bin \
@@ -159,12 +160,15 @@ define bench-pprof
 endef
 
 define profile-web
+	@$(call green, "starting $2 $3 profiler")
 	go tool pprof -http=$4 \
 		$1/$2.bin \
 		$1/cpu-$3.out &
 	go tool pprof -http=$5 \
 		$1/$2.bin \
 		$1/mem-$3.out &
+	go tool trace -http=$6 \
+		$1/trace-$3.out 
 endef
 
 all: clean deps
@@ -192,8 +196,10 @@ license:
 	chmod -R 0644 ./*
 	chmod -R 0644 ./.*
 
-bench:
-	go test -count=5 -run=NONE -bench . -benchmem
+bench: \
+	bench-agent-stream \
+	bench-agent-sequential-grpc \
+	bench-agent-sequential-rest
 
 init:
 	GO111MODULE=on go mod vendor
@@ -252,12 +258,13 @@ dockers-gateway-vald-image-name:
 dockers-gateway-vald-image: dockers-base-image
 	docker build -f dockers/gateway/vald/Dockerfile -t $(REPO)/$(GATEWAY_IMAGE) .
 
-profile: clean
-	mkdir pprof
-	mkdir bench
-	go test -count=10 -run=NONE -bench . -benchmem -o pprof/test.bin -cpuprofile pprof/cpu.out -memprofile pprof/mem.out
-	go tool pprof --svg pprof/test.bin pprof/mem.out > bench/mem.svg
-	go tool pprof --svg pprof/test.bin pprof/cpu.out > bench/cpu.svg
+profile: \
+	clean \
+	deps \
+	bench \
+	profile-agent-stream \
+	profile-agent-sequential-grpc \
+	profile-agent-sequential-rest
 
 test: clean init
 	GO111MODULE=on go test --race -coverprofile=cover.out ./...
@@ -475,16 +482,16 @@ bench-agent-sequential-rest: \
 
 profile-agent-stream:
 	@$(call green, "starting stream agent profiler")
-	$(call profile-web,pprof/agent/ngt,agent,stream,":6061",":6062")
+	$(call profile-web,pprof/agent/ngt,agent,stream,":6061",":6062",":6063")
 
 
 profile-agent-sequential-grpc:
 	@$(call green, "starting sequential grpc agent profiler")
-	$(call profile-web,pprof/agent/ngt,agent,sequential-grpc,":6061",":6062")
+	$(call profile-web,pprof/agent/ngt,agent,sequential-grpc,":6061",":6062",":6063")
 
 profile-agent-sequential-rest:
 	@$(call green, "starting sequential rest agent profiler")
-	$(call profile-web,pprof/agent/ngt,agent,sequential-rest,":6061",":6062")
+	$(call profile-web,pprof/agent/ngt,agent,sequential-rest,":6061",":6062",":6063")
 
 
 kill-bench:
