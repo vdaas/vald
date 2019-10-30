@@ -43,106 +43,53 @@ func New(opts ...Option) http.Handler {
 	return routing.New(
 		routing.WithRoutes([]routing.Route{
 			{
-				"Index",
+				"GetVector",
 				[]string{
 					http.MethodGet,
 				},
-				"/",
-				h.Index,
+				"/vector/{uuid}",
+				h.GetVector,
 			},
 			{
-				"Search",
-				[]string{
-					http.MethodPost,
-				},
-				"/search",
-				h.Search,
-			},
-			{
-				"Search By ID",
+				"Locations",
 				[]string{
 					http.MethodGet,
 				},
-				"/search/{id}",
-				h.SearchByID,
+				"/locations/{uuid}",
+				h.Locations,
 			},
 			{
-				"Insert",
+				"Register",
 				[]string{
 					http.MethodPost,
 				},
-				"/insert",
-				h.Insert,
+				"/register",
+				h.Register,
 			},
 			{
-				"Multiple Insert",
+				"Multiple Register",
 				[]string{
 					http.MethodPost,
 				},
-				"/insert/multi",
-				h.MultiInsert,
-			},
-			{
-				"Update",
-				[]string{
-					http.MethodPost,
-					http.MethodPatch,
-					http.MethodPut,
-				},
-				"/update",
-				h.Update,
-			},
-			{
-				"Multiple Update",
-				[]string{
-					http.MethodPost,
-					http.MethodPatch,
-					http.MethodPut,
-				},
-				"/update/multi",
-				h.MultiUpdate,
+				"/register/multi",
+				h.RegisterMulti,
 			},
 			{
 				"Remove",
 				[]string{
 					http.MethodDelete,
 				},
-				"/delete/{id}",
+				"/delete/{uuid}",
 				h.Remove,
 			},
 			{
-				"Multiple Remove",
+				"Multiple Remoce",
 				[]string{
 					http.MethodDelete,
 					http.MethodPost,
 				},
 				"/delete/multi",
-				h.MultiRemove,
+				h.RemoveMulti,
 			},
-			{
-				"Create Index",
-				[]string{
-					http.MethodGet,
-				},
-				"/index/create/{pool}",
-				h.CreateIndex,
-			},
-			{
-				"Save Index",
-				[]string{
-					http.MethodGet,
-				},
-				"/index/save",
-				h.SaveIndex,
-			},
-			{
-				"GetObject",
-				[]string{
-					http.MethodGet,
-				},
-				"/object/{id}",
-				h.GetObject,
-			},
-		}...),
-		routing.WithTimeout(r.timeout))
+		}...))
 }

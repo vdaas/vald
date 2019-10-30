@@ -115,6 +115,13 @@ var (
 
 	ErrAddrsNotFound = New("addrs not found")
 
+	// MySQL
+	ErrMySQLConnectionClosed = New("MySQL connection closed")
+
+	ErrRequiredElementNotFoundByUUID = func(uuid string) error {
+		return Errorf("Required element not found, uuid: %s", uuid)
+	}
+
 	//NGT
 
 	ErrCreateProperty = func(err error) error {

@@ -35,11 +35,11 @@ type run struct {
 }
 
 func New(cfg *config.Data) (Runner, error) {
-	ngt, err := service.NewNGT(cfg.NGT)
+	mysql, err := service.NewMysql(cfg.Mysql)
 	if err != nil {
 		return nil, err
 	}
-	g := grpc.New(grpc.WithNGT(ngt))
+	g := grpc.New(grpc.WithMysql(mysql))
 
 	srv, err := service.NewServer(
 		service.WithConfig(cfg.Server),
@@ -47,7 +47,7 @@ func New(cfg *config.Data) (Runner, error) {
 			router.New(
 				router.WithHandler(
 					rest.New(
-						rest.WithAgent(g),
+						rest.WithBackup(g),
 					),
 				),
 			),
@@ -66,7 +66,7 @@ func New(cfg *config.Data) (Runner, error) {
 	}, nil
 }
 
-func (r *run) PreStart() error {
+func (r *run) PreStart(ctx context.Context) error {
 	return nil
 }
 
@@ -74,10 +74,14 @@ func (r *run) Start(ctx context.Context) <-chan error {
 	return r.server.ListenAndServe(ctx)
 }
 
-func (r *run) PreStop() error {
+func (r *run) PreStop(ctx context.Context) error {
 	return nil
 }
 
 func (r *run) Stop(ctx context.Context) error {
 	return r.server.Shutdown(ctx)
+}
+
+func (r *run) PostStop(ctx context.Context) error {
+	return nil
 }

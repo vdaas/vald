@@ -14,38 +14,9 @@
 // limitations under the License.
 //
 
-// Package service manages the main logic of server.
-package service
+package mysql
 
-import (
-	"net/http"
-
-	"github.com/vdaas/vald/apis/grpc/manager/backup"
-	"github.com/vdaas/vald/internal/config"
-)
-
-type Option func(*srvs)
-
-func WithConfig(cfg *config.Servers) Option {
-	return func(s *srvs) {
-		s.cfg = cfg
-	}
-}
-
-func WithGRPC(srv backup.BackupServer) Option {
-	return func(s *srvs) {
-		s.grpc = srv
-	}
-}
-
-func WithREST(h http.Handler) Option {
-	return func(s *srvs) {
-		s.rest = h
-	}
-}
-
-func WithGQL(h http.Handler) Option {
-	return func(s *srvs) {
-		s.gql = h
-	}
+type Getter interface {
+	GetMeta(uuid string) (MetaVector, error)
+	GetIPs(uuid string) ([]string, error)
 }

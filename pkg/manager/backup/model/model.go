@@ -14,38 +14,19 @@
 // limitations under the License.
 //
 
-// Package service manages the main logic of server.
-package service
+// Package grpc provides grpc server logic
+package model
 
-import (
-	"net/http"
-
-	"github.com/vdaas/vald/apis/grpc/manager/backup"
-	"github.com/vdaas/vald/internal/config"
-)
-
-type Option func(*srvs)
-
-func WithConfig(cfg *config.Servers) Option {
-	return func(s *srvs) {
-		s.cfg = cfg
-	}
+type MetaVector struct {
+	UUID     string
+	ObjectID string
+	Vector   string
+	Meta     string
+	IPs      []string
 }
 
-func WithGRPC(srv backup.BackupServer) Option {
-	return func(s *srvs) {
-		s.grpc = srv
-	}
-}
-
-func WithREST(h http.Handler) Option {
-	return func(s *srvs) {
-		s.rest = h
-	}
-}
-
-func WithGQL(h http.Handler) Option {
-	return func(s *srvs) {
-		s.gql = h
-	}
-}
+func (m *MetaVector) GetUUID() string     { return m.UUID }
+func (m *MetaVector) GetObjectID() string { return m.ObjectID }
+func (m *MetaVector) GetVector() string   { return m.Vector }
+func (m *MetaVector) GetMeta() string     { return m.Meta }
+func (m *MetaVector) GetIPs() []string    { return m.IPs }

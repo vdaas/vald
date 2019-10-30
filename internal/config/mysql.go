@@ -14,10 +14,18 @@
 // limitations under the License.
 //
 
-// Package model defines object structure
-package model
+// Package config providers configuration type and load configuration logic
+package config
 
-type Distance struct {
-	ID       string
-	Distance float32
+type Mysql struct {
+	DB   string `json:"db" yaml:"db"`
+	Host string `json:"host" yaml:"host"`
+	Port int    `json:"port" yaml:"port"`
+	User string `json:"user" yaml:"user"`
+	Pass string `json:"pass" yaml:"pass"`
+	Name string `json:"name" yaml:"name"`
+}
+
+func (r *Mysql) Bind() *Mysql {
+	return r
 }
