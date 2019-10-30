@@ -35,8 +35,8 @@
 	dockers-gateway-vald-image \
 	dockers-meta-redis-image-name \
 	dockers-meta-redis-image \
-	dockers-manager-backup-image-name \
-	dockers-manager-backup-image \
+	dockers-backup-manager-image-name \
+	dockers-backup-manager-image \
 	profile \
 	test \
 	lint \
