@@ -23,7 +23,7 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/go-version v1.2.0
-	github.com/json-iterator/go v1.1.7
+	github.com/json-iterator/go v1.1.8
 	github.com/kpango/fastime v1.0.15
 	github.com/kpango/fuid v0.0.0-20190507064958-80435564606b
 	github.com/kpango/gache v1.1.23
