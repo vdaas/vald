@@ -55,9 +55,15 @@
 	bench-agent-stream \
 	bench-agent-sequential-grpc \
 	bench-agent-sequential-rest \
+	bench-ngtd-stream \
+	bench-ngtd-sequential-grpc \
+	bench-ngtd-sequential-rest \
 	profile-agent-stream \
 	profile-agent-sequential-grpc \
 	profile-agent-sequential-rest \
+	profile-ngtd-stream \
+	profile-ngtd-sequential-grpc \
+	profile-ngtd-sequential-rest \
 	kill-bench
 
 REPO                   ?= vdaas
