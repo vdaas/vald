@@ -470,6 +470,35 @@ bench-agent-sequential-rest: \
 		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
 		 -dataset=fashion-mnist)
 
+bench-ngtd: \
+	bench-ngtd-stream \
+	bench-ngtd-sequential-grpc \
+	bench-ngtd-sequential-rest
+
+bench-ngtd-stream: \
+	ngt \
+	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
+	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	$(call bench-pprof,pprof/external/ngtd,ngtd,gRPCStream,stream,\
+		./hack/e2e/benchmark/external/ngtd/ngtd_bench_test.go \
+		 -dataset=fashion-mnist)
+
+bench-ngtd-sequential-grpc: \
+	ngt \
+	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
+	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	$(call bench-pprof,pprof/external/ngtd,ngtd,gRPCSequential,sequential-grpc,\
+		./hack/e2e/benchmark/external/ngtd/ngtd_bench_test.go \
+		 -dataset=fashion-mnist)
+
+bench-ngtd-sequential-rest: \
+	ngt \
+	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
+	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	$(call bench-pprof,pprof/external/ngtd,ngtd,RESTSequential,sequential-rest,\
+		./hack/e2e/benchmark/extenal/ngtd/ngtd_bench_test.go \
+		 -dataset=fashion-mnist)
+
 profile-agent-stream:
 	$(call profile-web,pprof/agent/ngt,agent,stream,":6061",":6062",":6063")
 
@@ -478,6 +507,15 @@ profile-agent-sequential-grpc:
 
 profile-agent-sequential-rest:
 	$(call profile-web,pprof/agent/ngt,agent,sequential-rest,":6061",":6062",":6063")
+
+profile-ngtd-stream:
+	$(call profile-web,pprof/external/ngtd,ngtd,stream,":6061",":6062",":6063")
+
+profile-ngtd-sequential-grpc:
+	$(call profile-web,pprof/external/ngtd,ngtd,sequential-grpc,":6061",":6062",":6063")
+
+profile-ngtd-sequential-rest:
+	$(call profile-web,pprof/external/ngtd,ngtd,sequential-rest,":6061",":6062",":6063")
 
 
 kill-bench:

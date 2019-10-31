@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/kpango/glg"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -17,6 +16,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kpango/glg"
 	"github.com/vdaas/vald/hack/e2e/benchmark/internal/dataset"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/yahoojapan/gongt"
