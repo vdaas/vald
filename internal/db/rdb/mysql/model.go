@@ -19,6 +19,8 @@ package mysql
 import (
 	"strconv"
 	"strings"
+
+	dbr "github.com/gocraft/dbr/v2"
 )
 
 const (
@@ -40,10 +42,10 @@ type metaVector struct {
 }
 
 type meta struct {
-	UUID     string `db:"uuid"`
-	ObjectID string `db:"object_id"`
-	Vector   string `db:"vector"`
-	Meta     string `db:"meta"`
+	UUID     string         `db:"uuid"`
+	ObjectID string         `db:"object_id"`
+	Vector   string         `db:"vector"`
+	Meta     dbr.NullString `db:"meta"`
 }
 
 type podIP struct {

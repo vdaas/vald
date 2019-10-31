@@ -90,13 +90,12 @@ func (m *mySQLClient) GetMeta(ctx context.Context, uuid string) (MetaVector, err
 		return nil, errors.ErrMySQLConnectionClosed
 	}
 
-	var metas []meta
-	_, err := m.session.Select(asterisk).From(metaVectorTableName).Where(dbr.Eq(uuidColumnName, uuid)).LoadContext(ctx, &metas)
+	var meta *meta
+	_, err := m.session.Select(asterisk).From(metaVectorTableName).Where(dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &meta)
 	if err != nil {
 		return nil, err
 	}
-
-	if len(metas) > 0 {
+	if meta == nil {
 		return nil, errors.ErrRequiredElementNotFoundByUUID(uuid)
 	}
 
@@ -107,7 +106,7 @@ func (m *mySQLClient) GetMeta(ctx context.Context, uuid string) (MetaVector, err
 	}
 
 	return &metaVector{
-		meta:   metas[0],
+		meta:   *meta,
 		podIPs: podIPs,
 	}, nil
 }
@@ -131,14 +130,30 @@ func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error)
 	return ips, nil
 }
 
+func validateMeta(meta MetaVector) error {
+	if meta.GetObjectID() == "" {
+		return errors.ErrRequiredMemberNotFilled("object_id")
+	}
+	if meta.GetVectorString() == "" {
+		return errors.ErrRequiredMemberNotFilled("vector")
+	}
+	return nil
+}
+
 func setMetaWithTx(ctx context.Context, tx *dbr.Tx, meta MetaVector) error {
-	vector, err := meta.GetVector()
+	err := validateMeta(meta)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.InsertBySql("INSERT INTO meta_vector(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
-		meta.GetUUID(), vector, meta.GetMeta(), vector, meta.GetMeta()).ExecContext(ctx)
+	_, err = tx.InsertBySql("INSERT INTO meta_vector(uuid, object_id, vector, meta) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE object_id =?, vector = ?, meta = ?",
+		meta.GetUUID(),
+		meta.GetObjectID(),
+		meta.GetVectorString(),
+		meta.GetMeta(),
+		meta.GetObjectID(),
+		meta.GetVectorString(),
+		meta.GetMeta()).ExecContext(ctx)
 	if err != nil {
 		return err
 	}

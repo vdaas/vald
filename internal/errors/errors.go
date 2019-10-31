@@ -122,6 +122,10 @@ var (
 		return Errorf("Required element not found, uuid: %s", uuid)
 	}
 
+	ErrRequiredMemberNotFilled = func(member string) error {
+		return Errorf("Required member not filled (member: %s)", member)
+	}
+
 	//NGT
 
 	ErrCreateProperty = func(err error) error {
