@@ -26,6 +26,11 @@ type MySQL struct {
 	Name string `json:"name" yaml:"name"`
 }
 
-func (r *MySQL) Bind() *MySQL {
-	return r
+func (m *MySQL) Bind() *MySQL {
+	m.DB = GetActualValue(m.DB)
+	m.Host = GetActualValue(m.Host)
+	m.User = GetActualValue(m.User)
+	m.Pass = GetActualValue(m.Pass)
+	m.Name = GetActualValue(m.Name)
+	return m
 }
