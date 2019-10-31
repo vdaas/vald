@@ -19,7 +19,6 @@ package usecase
 import (
 	"context"
 	"net"
-	"strings"
 
 	"github.com/vdaas/vald/apis/grpc/vald"
 	iconf "github.com/vdaas/vald/internal/config"
@@ -49,8 +48,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	dialer := tcp.Dialer(nil)
 	gopts := []grpc.DialOption{
 		grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
-			paddr := strings.SplitN(addr, ":", 2)
-			return dialer(ctx, paddr[0], paddr[1])
+			return dialer.GetDialer()(ctx, "tcp", addr)
 		}),
 	}
 	gateway, err := service.New(
