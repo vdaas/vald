@@ -20,6 +20,7 @@ package service
 import (
 	"context"
 	"os"
+	"runtime"
 	"sync/atomic"
 	"time"
 
@@ -27,6 +28,8 @@ import (
 	core "github.com/vdaas/vald/internal/core/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/pkg/agent/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/ngt/service/kvs"
 )
@@ -51,9 +54,11 @@ type NGT interface {
 }
 
 type ngt struct {
-	dps  uint32 // default pool size
-	cflg uint32 // create index flag 0 or 1
-	ic   uint64 // insert count
+	alen int
+	dur  time.Duration // auto indexing check duration
+	dps  uint32        // default pool size
+	cflg uint32        // create index flag 0 or 1
+	ic   uint64        // insert count
 	eg   errgroup.Group
 	kvs  kvs.BidiMap
 	core core.NGT
@@ -78,10 +83,19 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 	} else {
 		n.core, err = core.Load(opts...)
 	}
-
 	if err != nil {
 		return nil, err
 	}
+
+	if cfg.AutoIndexCheckDuration != "" {
+		d, err := timeutil.Parse(cfg.AutoIndexCheckDuration)
+		if err != nil {
+			d = 0
+		}
+		n.dur = d
+	}
+
+	n.alen = cfg.AutoIndexLength
 
 	n.eg = errgroup.Get()
 
@@ -89,19 +103,29 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 }
 
 func (n *ngt) Start(ctx context.Context) <-chan error {
+	if n.dur == 0 || n.alen == 0 {
+		return nil
+	}
 	ech := make(chan error, 2)
-	n.eg.Go(func() error {
-		close(ech)
-		tick := time.NewTicker(time.Second * 10)
+	n.eg.Go(safety.RecoverFunc(func() error {
+		defer close(ech)
+		tick := time.NewTicker(n.dur)
+		defer tick.Stop()
 		for {
 			select {
 			case <-ctx.Done():
 				return nil
 			case <-tick.C:
-				n.CreateIndex(n.dps)
+				if ic := atomic.LoadUint64(&n.ic); int(ic) >= n.alen {
+					err := n.CreateIndex(n.dps)
+					if err != nil {
+						ech <- err
+						runtime.Gosched()
+					}
+				}
 			}
 		}
-	})
+	}))
 	return ech
 }
 
