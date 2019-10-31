@@ -28,7 +28,7 @@ const (
 type MetaVector interface {
 	GetUUID() string
 	GetObjectID() string
-	GetVector() []float64
+	GetVector() ([]float64, error)
 	GetVectorString() string
 	GetMeta() string
 	GetIPs() []string
@@ -53,19 +53,22 @@ type podIP struct {
 
 func (m *metaVector) GetUUID() string     { return m.meta.UUID }
 func (m *metaVector) GetObjectID() string { return m.meta.ObjectID }
-func (m *metaVector) GetVector() []float64 {
+func (m *metaVector) GetVector() ([]float64, error) {
 	ss := strings.Split(m.meta.Vector, comma)
 	vector := make([]float64, 0, len(ss))
 	for _, s := range ss {
-		f, _ := strconv.ParseFloat(s, 64)
+		f, err := strconv.ParseFloat(s, 64)
+		if err != nil {
+			return nil, err
+		}
 		vector = append(vector, f)
 	}
-	return vector
+	return vector, nil
 }
 func (m *metaVector) GetVectorString() string { return m.meta.Vector }
 func (m *metaVector) GetMeta() string         { return m.meta.Meta }
 func (m *metaVector) GetIPs() []string {
-	ips := make([]string, len(m.podIPs))
+	ips := make([]string, 0, len(m.podIPs))
 
 	for _, ip := range m.podIPs {
 		ips = append(ips, ip.IP)

@@ -34,9 +34,9 @@ type MetaVector struct {
 	IPs      []string
 }
 
-func (m *MetaVector) GetUUID() string      { return m.UUID }
-func (m *MetaVector) GetObjectID() string  { return m.ObjectID }
-func (m *MetaVector) GetVector() []float64 { return m.Vector }
+func (m *MetaVector) GetUUID() string               { return m.UUID }
+func (m *MetaVector) GetObjectID() string           { return m.ObjectID }
+func (m *MetaVector) GetVector() ([]float64, error) { return m.Vector, nil }
 func (m *MetaVector) GetVectorString() string {
 	ss := make([]string, 0, len(m.Vector))
 	for _, f := range m.Vector {
