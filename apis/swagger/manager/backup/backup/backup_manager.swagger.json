@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "backup_manager.proto",
+    "title": "backup/backup_manager.proto",
     "version": "version not set"
   },
   "schemes": [
@@ -78,14 +78,6 @@
         }
       }
     },
-    "ObjectID": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      }
-    },
     "ObjectMetaVector": {
       "type": "object",
       "properties": {
@@ -96,27 +88,16 @@
           "type": "string"
         },
         "vector": {
-          "$ref": "#/definitions/ObjectVector"
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "double"
+          }
         },
         "ips": {
           "type": "array",
           "items": {
             "type": "string"
-          }
-        }
-      }
-    },
-    "ObjectVector": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "$ref": "#/definitions/ObjectID"
-        },
-        "vector": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "format": "double"
           }
         }
       }

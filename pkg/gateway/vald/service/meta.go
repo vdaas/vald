@@ -34,16 +34,16 @@ import (
 
 type Meta interface {
 	Start(ctx context.Context) <-chan error
-	Get(context.Context, string) (string, error)
-	GetMultiple(context.Context, ...string) ([]string, error)
-	GetInverse(context.Context, string) (string, error)
-	GetInverseMultiple(context.Context, ...string) ([]string, error)
-	Set(context.Context, string, string) error
-	SetMultiple(context.Context, map[string]string) error
-	Delete(context.Context, string) (string, error)
-	DeleteMultiple(context.Context, ...string) ([]string, error)
-	DeleteInverse(context.Context, string) (string, error)
-	DeleteInverseMultiple(context.Context, ...string) ([]string, error)
+	GetMeta(context.Context, string) (string, error)
+	GetMetas(context.Context, ...string) ([]string, error)
+	GetUUID(context.Context, string) (string, error)
+	GetUUIDs(context.Context, ...string) ([]string, error)
+	SetUUIDandMeta(context.Context, string, string) error
+	SetUUIDandMetas(context.Context, map[string]string) error
+	DeleteMeta(context.Context, string) (string, error)
+	DeleteMetas(context.Context, ...string) ([]string, error)
+	DeleteUUID(context.Context, string) (string, error)
+	DeleteUUIDs(context.Context, ...string) ([]string, error)
 }
 
 type meta struct {
@@ -77,7 +77,6 @@ func (m *meta) Start(ctx context.Context) <-chan error {
 	} else {
 		m.mc.Store(gmeta.NewMetaClient(conn))
 	}
-	m.mc.Store(gmeta.NewMetaClient(conn))
 	m.eg.Go(safety.RecoverFunc(func() (err error) {
 		tick := time.NewTicker(m.hcDur)
 		defer tick.Stop()
@@ -105,7 +104,7 @@ func (m *meta) Start(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (m *meta) Get(ctx context.Context, key string) (string, error) {
+func (m *meta) GetMeta(ctx context.Context, key string) (string, error) {
 	val, err := m.mc.Load().(gmeta.MetaClient).GetMeta(ctx, &payload.Meta_Key{
 		Key: key,
 	}, m.copts...)
@@ -115,7 +114,7 @@ func (m *meta) Get(ctx context.Context, key string) (string, error) {
 	return val.GetVal(), nil
 }
 
-func (m *meta) GetMultiple(ctx context.Context, keys ...string) ([]string, error) {
+func (m *meta) GetMetas(ctx context.Context, keys ...string) ([]string, error) {
 	vals, err := m.mc.Load().(gmeta.MetaClient).GetMetas(ctx, &payload.Meta_Keys{
 		Keys: keys,
 	}, m.copts...)
@@ -125,7 +124,7 @@ func (m *meta) GetMultiple(ctx context.Context, keys ...string) ([]string, error
 	return vals.GetVals(), nil
 }
 
-func (m *meta) GetInverse(ctx context.Context, val string) (string, error) {
+func (m *meta) GetUUID(ctx context.Context, val string) (string, error) {
 	key, err := m.mc.Load().(gmeta.MetaClient).GetMetaInverse(ctx, &payload.Meta_Val{
 		Val: val,
 	}, m.copts...)
@@ -135,7 +134,7 @@ func (m *meta) GetInverse(ctx context.Context, val string) (string, error) {
 	return key.GetKey(), nil
 }
 
-func (m *meta) GetInverseMultiple(ctx context.Context, vals ...string) ([]string, error) {
+func (m *meta) GetUUIDs(ctx context.Context, vals ...string) ([]string, error) {
 	keys, err := m.mc.Load().(gmeta.MetaClient).GetMetasInverse(ctx, &payload.Meta_Vals{
 		Vals: vals,
 	}, m.copts...)
@@ -145,7 +144,7 @@ func (m *meta) GetInverseMultiple(ctx context.Context, vals ...string) ([]string
 	return keys.GetKeys(), nil
 }
 
-func (m *meta) Set(ctx context.Context, key, val string) error {
+func (m *meta) SetUUIDandMeta(ctx context.Context, key, val string) error {
 	_, err := m.mc.Load().(gmeta.MetaClient).SetMeta(ctx, &payload.Meta_KeyVal{
 		Key: key,
 		Val: val,
@@ -153,7 +152,7 @@ func (m *meta) Set(ctx context.Context, key, val string) error {
 	return err
 }
 
-func (m *meta) SetMultiple(ctx context.Context, kvs map[string]string) error {
+func (m *meta) SetUUIDandMetas(ctx context.Context, kvs map[string]string) error {
 	data := make([]*payload.Meta_KeyVal, len(kvs))
 	for k, v := range kvs {
 		data = append(data, &payload.Meta_KeyVal{
@@ -167,7 +166,7 @@ func (m *meta) SetMultiple(ctx context.Context, kvs map[string]string) error {
 	return err
 }
 
-func (m *meta) Delete(ctx context.Context, key string) (string, error) {
+func (m *meta) DeleteMeta(ctx context.Context, key string) (string, error) {
 	val, err := m.mc.Load().(gmeta.MetaClient).DeleteMeta(ctx, &payload.Meta_Key{
 		Key: key,
 	}, m.copts...)
@@ -177,7 +176,7 @@ func (m *meta) Delete(ctx context.Context, key string) (string, error) {
 	return val.GetVal(), nil
 }
 
-func (m *meta) DeleteMultiple(ctx context.Context, keys ...string) ([]string, error) {
+func (m *meta) DeleteMetas(ctx context.Context, keys ...string) ([]string, error) {
 	vals, err := m.mc.Load().(gmeta.MetaClient).DeleteMetas(ctx, &payload.Meta_Keys{
 		Keys: keys,
 	}, m.copts...)
@@ -187,7 +186,7 @@ func (m *meta) DeleteMultiple(ctx context.Context, keys ...string) ([]string, er
 	return vals.GetVals(), nil
 }
 
-func (m *meta) DeleteInverse(ctx context.Context, val string) (string, error) {
+func (m *meta) DeleteUUID(ctx context.Context, val string) (string, error) {
 	key, err := m.mc.Load().(gmeta.MetaClient).DeleteMetaInverse(ctx, &payload.Meta_Val{
 		Val: val,
 	}, m.copts...)
@@ -197,7 +196,7 @@ func (m *meta) DeleteInverse(ctx context.Context, val string) (string, error) {
 	return key.GetKey(), nil
 }
 
-func (m *meta) DeleteInverseMultiple(ctx context.Context, vals ...string) ([]string, error) {
+func (m *meta) DeleteUUIDs(ctx context.Context, vals ...string) ([]string, error) {
 	keys, err := m.mc.Load().(gmeta.MetaClient).DeleteMetasInverse(ctx, &payload.Meta_Vals{
 		Vals: vals,
 	}, m.copts...)

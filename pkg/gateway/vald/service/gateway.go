@@ -247,24 +247,25 @@ func (g *gateway) DoMulti(ctx context.Context,
 		num = agents.Len()
 	}
 	for _, a := range agents[:num] {
-		var ac agent.AgentClient
-		var tgt string
-		c, ok := g.conns.Load(a.Name)
-		if ok {
-			tgt = a.IP
-			ac = agent.NewAgentClient(c.(*grpc.ClientConn))
-		}
+		ag := a
 		eg.Go(safety.RecoverFunc(func() (err error) {
-			if ac == nil {
-				return errors.ErrAgentClientNotConnected
-			}
-			_, err = g.bo.Do(ctx, func() (_ interface{}, err error) {
-				err = f(ctx, tgt, ac)
-				if err != nil {
-					runtime.Gosched()
+			var ac agent.AgentClient
+			var tgt string
+			c, ok := g.conns.Load(ag.Name)
+			if ok {
+				tgt = ag.IP
+				ac = agent.NewAgentClient(c.(*grpc.ClientConn))
+				if ac == nil {
+					return errors.ErrAgentClientNotConnected
 				}
-				return
-			})
+				_, err = g.bo.Do(ctx, func() (_ interface{}, err error) {
+					err = f(ctx, tgt, ac)
+					if err != nil {
+						runtime.Gosched()
+					}
+					return
+				})
+			}
 			return
 		}))
 	}

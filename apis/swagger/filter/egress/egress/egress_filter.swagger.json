@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "egress_filter.proto",
+    "title": "egress/egress_filter.proto",
     "version": "version not set"
   },
   "schemes": [
@@ -20,19 +20,11 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "#/definitions/ObjectID"
+          "type": "string"
         },
         "distance": {
           "type": "number",
           "format": "float"
-        }
-      }
-    },
-    "ObjectID": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
         }
       }
     },

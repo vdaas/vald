@@ -527,6 +527,7 @@ func (n *ngt) Close() {
 		C.free(unsafe.Pointer(&n.dimension))
 		C.free(unsafe.Pointer(&n.prop))
 		C.free(unsafe.Pointer(&n.ebuf))
+		// C.free(unsafe.Pointer(&n.index))
 		C.free(unsafe.Pointer(&n.ospace))
 	}
 }

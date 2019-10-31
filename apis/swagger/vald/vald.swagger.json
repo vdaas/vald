@@ -171,7 +171,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "#/definitions/ObjectID"
+          "type": "string"
         },
         "distance": {
           "type": "number",
@@ -191,7 +191,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "#/definitions/ObjectID"
+          "type": "string"
         },
         "vector": {
           "type": "array",
@@ -227,7 +227,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "#/definitions/ObjectID"
+          "type": "string"
         },
         "config": {
           "$ref": "#/definitions/SearchConfig"
@@ -252,7 +252,11 @@
       "type": "object",
       "properties": {
         "vector": {
-          "$ref": "#/definitions/ObjectVector"
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "double"
+          }
         },
         "config": {
           "$ref": "#/definitions/SearchConfig"

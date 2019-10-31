@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "replication_manager.proto",
+    "title": "traffic/traffic_manager.proto",
     "version": "version not set"
   },
   "schemes": [

@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "ingress_filter.proto",
+    "title": "ingress/ingress_filter.proto",
     "version": "version not set"
   },
   "schemes": [

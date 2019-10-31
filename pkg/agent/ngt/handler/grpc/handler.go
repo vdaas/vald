@@ -59,7 +59,7 @@ func (s *server) Exists(ctx context.Context, oid *payload.Object_ID) (res *paylo
 func (s *server) Search(ctx context.Context, req *payload.Search_Request) (*payload.Search_Response, error) {
 	return toSearchResponse(
 		s.ngt.Search(
-			req.GetVector().GetVector(),
+			req.GetVector(),
 			req.GetConfig().GetNum(),
 			req.GetConfig().GetEpsilon(),
 			req.GetConfig().GetRadius()))
@@ -68,7 +68,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (*payl
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_Response, error) {
 	return toSearchResponse(
 		s.ngt.SearchByID(
-			req.GetId().GetId(),
+			req.GetId(),
 			req.GetConfig().GetNum(),
 			req.GetConfig().GetEpsilon(),
 			req.GetConfig().GetRadius()))
@@ -82,9 +82,7 @@ func toSearchResponse(dists []model.Distance, err error) (res *payload.Search_Re
 	res.Results = make([]*payload.Object_Distance, 0, len(dists))
 	for _, dist := range dists {
 		res.Results = append(res.Results, &payload.Object_Distance{
-			Id: &payload.Object_ID{
-				Id: dist.ID,
-			},
+			Id:       dist.ID,
 			Distance: dist.Distance,
 		})
 	}
@@ -109,7 +107,7 @@ func (s *server) StreamSearchByID(stream agent.Agent_StreamSearchByIDServer) err
 
 func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (res *payload.Empty, err error) {
 	res = new(payload.Empty)
-	err = s.ngt.Insert(vec.GetId().GetId(), vec.GetVector())
+	err = s.ngt.Insert(vec.GetId(), vec.GetVector())
 	if err != nil {
 		return res, err
 	}
@@ -129,7 +127,7 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 
 	vmap := make(map[string][]float64, len(vecs.GetVectors()))
 	for _, vec := range vecs.GetVectors() {
-		vmap[vec.GetId().GetId()] = vec.GetVector()
+		vmap[vec.GetId()] = vec.GetVector()
 	}
 
 	err = s.ngt.InsertMultiple(vmap)
@@ -142,7 +140,7 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 
 func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Empty, err error) {
 	res = new(payload.Empty)
-	err = s.ngt.Update(vec.GetId().GetId(), vec.GetVector())
+	err = s.ngt.Update(vec.GetId(), vec.GetVector())
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +160,7 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 
 	vmap := make(map[string][]float64, len(vecs.GetVectors()))
 	for _, vec := range vecs.GetVectors() {
-		vmap[vec.GetId().GetId()] = vec.GetVector()
+		vmap[vec.GetId()] = vec.GetVector()
 	}
 
 	err = s.ngt.UpdateMultiple(vmap)
@@ -193,7 +191,7 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res 
 	res = new(payload.Empty)
 	uuids := make([]string, 0, len(ids.GetIds()))
 	for _, id := range ids.GetIds() {
-		uuids = append(uuids, id.GetId())
+		uuids = append(uuids, id)
 	}
 	err = s.ngt.DeleteMultiple(uuids...)
 	if err != nil {
@@ -203,15 +201,15 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res 
 }
 
 func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (res *payload.Object_Vector, err error) {
-	res = new(payload.Object_Vector)
-	res.Id = &payload.Object_ID{
-		Id: id.GetId(),
-	}
-	res.Vector, err = s.ngt.GetObject(id.GetId())
+	uuid := id.GetId()
+	vec, err := s.ngt.GetObject(uuid)
 	if err != nil {
 		return nil, err
 	}
-	return res, nil
+	return &payload.Object_Vector{
+		Id:     uuid,
+		Vector: vec,
+	}, nil
 }
 
 func (s *server) StreamGetObject(stream agent.Agent_StreamGetObjectServer) error {
