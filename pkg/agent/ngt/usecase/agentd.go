@@ -23,6 +23,7 @@ import (
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/runner"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/pkg/agent/ngt/config"
@@ -100,7 +101,7 @@ func (r *run) Start(ctx context.Context) <-chan error {
 	ech := make(chan error, 2)
 	nech := r.ngt.Start(ctx)
 	sech := r.server.ListenAndServe(ctx)
-	errgroup.Get().Go(func() error {
+	errgroup.Get().Go(safety.RecoverFunc(func() error {
 		for {
 			select {
 			case <-ctx.Done():
@@ -113,7 +114,7 @@ func (r *run) Start(ctx context.Context) <-chan error {
 				return nil
 			}
 		}
-	})
+	}))
 	return ech
 }
 

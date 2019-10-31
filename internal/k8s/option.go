@@ -17,13 +17,27 @@
 // Package k8s provides kubernetes controll functionallity
 package k8s
 
-import "sigs.k8s.io/controller-runtime/pkg/manager"
+import (
+	"github.com/vdaas/vald/internal/errgroup"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+)
 
 type Option func(*controller) error
 
 var (
-	defaultOpts = []Option{}
+	defaultOpts = []Option{
+		WithErrGroup(errgroup.Get()),
+	}
 )
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(c *controller) error {
+		if eg != nil {
+			c.eg = eg
+		}
+		return nil
+	}
+}
 
 func WithControllerName(name string) Option {
 	return func(c *controller) error {

@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/runner"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/pkg/gateway/vald/config"
@@ -36,6 +37,7 @@ import (
 )
 
 type run struct {
+	eg       errgroup.Group
 	cfg      *config.Data
 	server   starter.Server
 	gateway  service.Gateway
@@ -74,11 +76,13 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
+	eg := errgroup.Get()
+
 	v := handler.New(
 		handler.WithGateway(gateway),
 		handler.WithBackup(backup),
 		handler.WithMeta(meta),
-		handler.WithErrGroup(errgroup.Get()),
+		handler.WithErrGroup(eg),
 	)
 
 	srv, err := starter.New(
@@ -115,6 +119,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
+		eg:     eg,
 		cfg:    cfg,
 		server: srv,
 	}, nil
@@ -130,7 +135,7 @@ func (r *run) Start(ctx context.Context) <-chan error {
 	gech := r.gateway.StartDiscoverd(ctx)
 	mech := r.metadata.Start(ctx)
 	sech := r.server.ListenAndServe(ctx)
-	errgroup.Get().Go(func() error {
+	r.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
 		for {
 			select {
@@ -142,7 +147,7 @@ func (r *run) Start(ctx context.Context) <-chan error {
 			case ech <- <-sech:
 			}
 		}
-	})
+	}))
 	return ech
 }
 

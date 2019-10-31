@@ -21,6 +21,7 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/safety"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -40,6 +41,7 @@ type ResourceController interface {
 }
 
 type controller struct {
+	eg             errgroup.Group
 	name           string
 	merticsAddr    string
 	leaderElection bool
@@ -88,14 +90,14 @@ func (c *controller) Start(ctx context.Context) <-chan error {
 	ech := make(chan error, 1)
 
 	// TODO fieldのerrgroupをつかう
-	errgroup.Get().Go(func() error {
+	c.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
 		err := c.mgr.Start(ctx.Done())
 		if err != nil {
 			ech <- err
 		}
 		return nil
-	})
+	}))
 
 	return ech
 }
