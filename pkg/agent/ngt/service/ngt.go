@@ -18,17 +18,21 @@
 package service
 
 import (
+	"context"
 	"os"
 	"sync/atomic"
+	"time"
 
 	"github.com/vdaas/vald/internal/config"
 	core "github.com/vdaas/vald/internal/core/ngt"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/agent/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/ngt/service/kvs"
 )
 
 type NGT interface {
+	Start(ctx context.Context) <-chan error
 	Search(vec []float64, size uint32, epsilon, radius float32) ([]model.Distance, error)
 	SearchByID(uuid string, size uint32, epsilon, radius float32) ([]model.Distance, error)
 	Insert(uuid string, vec []float64) (err error)
@@ -47,8 +51,10 @@ type NGT interface {
 }
 
 type ngt struct {
+	dps  uint32 // default pool size
 	cflg uint32 // create index flag 0 or 1
 	ic   uint64 // insert count
+	eg   errgroup.Group
 	kvs  kvs.BidiMap
 	core core.NGT
 }
@@ -77,7 +83,26 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 		return nil, err
 	}
 
+	n.eg = errgroup.Get()
+
 	return n, nil
+}
+
+func (n *ngt) Start(ctx context.Context) <-chan error {
+	ech := make(chan error, 2)
+	n.eg.Go(func() error {
+		close(ech)
+		tick := time.NewTicker(time.Second * 10)
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-tick.C:
+				n.CreateIndex(n.dps)
+			}
+		}
+	})
+	return ech
 }
 
 func (n *ngt) Search(vec []float64, size uint32, epsilon, radius float32) ([]model.Distance, error) {

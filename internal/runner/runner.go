@@ -94,14 +94,6 @@ func Do(ctx context.Context, opts ...Option) error {
 }
 
 func Run(ctx context.Context, run Runner) (err error) {
-	ctx = errgroup.Init(ctx)
-
-	err = run.PreStart(ctx)
-	if err != nil {
-		return err
-	}
-
-	ech := run.Start(ctx)
 
 	sigCh := make(chan os.Signal, 1)
 	defer close(sigCh)
@@ -113,6 +105,15 @@ func Run(ctx context.Context, run Runner) (err error) {
 
 	rctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
+	rctx = errgroup.Init(rctx)
+
+	err = run.PreStart(rctx)
+	if err != nil {
+		return err
+	}
+
+	ech := run.Start(rctx)
 
 	for {
 		select {

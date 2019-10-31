@@ -230,7 +230,7 @@ func (s *server) ListenAndServe(ech chan<- error) (err error) {
 					}
 				case GRPC:
 					err = s.grpc.srv.Serve(s.l)
-					if err != nil {
+					if err != nil && err != grpc.ErrServerStopped {
 						ech <- err
 					}
 				}
@@ -293,7 +293,7 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		s.http.srv.SetKeepAlivesEnabled(false)
 
 		err := s.http.srv.Shutdown(sctx)
-		if err != nil && err != http.ErrServerClosed {
+		if err != nil && err != http.ErrServerClosed && err != grpc.ErrServerStopped {
 			rerr = errors.Wrap(rerr, err.Error())
 		}
 

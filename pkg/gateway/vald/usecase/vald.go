@@ -47,6 +47,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	service.New(service.WithDiscoverDuration(cfg.Gateway.Discoverer.Host))
 	dialer := tcp.Dialer(nil)
 	gopts := []grpc.DialOption{
+		grpc.WithInsecure(),
 		grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
 			return dialer.GetDialer()(ctx, "tcp", addr)
 		}),
@@ -61,6 +62,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 	backup, err := service.NewBackup(
+		service.WithBackupGRPCDialOptions(gopts),
 	// service.WithBackupHost(cf)
 	)
 	if err != nil {
@@ -123,7 +125,25 @@ func (r *run) PreStart(ctx context.Context) error {
 }
 
 func (r *run) Start(ctx context.Context) <-chan error {
-	return r.server.ListenAndServe(ctx)
+	ech := make(chan error)
+	bech := r.backup.Start(ctx)
+	gech := r.gateway.StartDiscoverd(ctx)
+	mech := r.metadata.Start(ctx)
+	sech := r.server.ListenAndServe(ctx)
+	errgroup.Get().Go(func() error {
+		defer close(ech)
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case ech <- <-bech:
+			case ech <- <-gech:
+			case ech <- <-mech:
+			case ech <- <-sech:
+			}
+		}
+	})
+	return ech
 }
 
 func (r *run) PreStop(ctx context.Context) error {

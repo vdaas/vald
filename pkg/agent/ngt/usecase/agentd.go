@@ -35,6 +35,7 @@ import (
 
 type run struct {
 	cfg    *config.Data
+	ngt    service.NGT
 	server starter.Server
 }
 
@@ -85,6 +86,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
+		ngt:    ngt,
 		cfg:    cfg,
 		server: srv,
 	}, nil
@@ -95,7 +97,24 @@ func (r *run) PreStart(ctx context.Context) error {
 }
 
 func (r *run) Start(ctx context.Context) <-chan error {
-	return r.server.ListenAndServe(ctx)
+	ech := make(chan error, 2)
+	nech := r.ngt.Start(ctx)
+	sech := r.server.ListenAndServe(ctx)
+	errgroup.Get().Go(func() error {
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case ech <- <-nech:
+			case err := <-sech:
+				if err != nil {
+					ech <- err
+				}
+				return nil
+			}
+		}
+	})
+	return ech
 }
 
 func (r *run) PreStop(ctx context.Context) error {

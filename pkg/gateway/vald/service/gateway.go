@@ -41,6 +41,7 @@ import (
 )
 
 type Gateway interface {
+	StartDiscoverd(ctx context.Context) <-chan error
 	GetAgentCount() int
 	Do(ctx context.Context,
 		f func(ctx context.Context, tgt string, ac agent.AgentClient) error) error

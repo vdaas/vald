@@ -33,6 +33,7 @@ import (
 )
 
 type Backup interface {
+	Start(ctx context.Context) <-chan error
 	GetObject(ctx context.Context, uuid string) (*payload.Object_MetaVector, error)
 	GetLocation(ctx context.Context, uuid string) ([]string, error)
 	Register(ctx context.Context, vec *payload.Object_MetaVector) error

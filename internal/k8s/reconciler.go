@@ -20,6 +20,7 @@ package k8s
 import (
 	"context"
 
+	"github.com/vdaas/vald/internal/errgroup"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -86,13 +87,15 @@ func New(opts ...Option) (cl Controller, err error) {
 func (c *controller) Start(ctx context.Context) <-chan error {
 	ech := make(chan error, 1)
 
-	go func() {
+	// TODO fieldのerrgroupをつかう
+	errgroup.Get().Go(func() error {
 		defer close(ech)
 		err := c.mgr.Start(ctx.Done())
 		if err != nil {
 			ech <- err
 		}
-	}()
+		return nil
+	})
 
 	return ech
 }
