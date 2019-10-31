@@ -83,6 +83,11 @@ message Object {
     repeated string ips = 4;
   }
   message MetaVectors { repeated MetaVector vectors = 1; }
+
+  message IPs {
+    string uuid = 1;
+    repeated string ips =2;
+  }
 }
 
 message Controll {
