@@ -26,13 +26,13 @@ import (
 
 type MySQL interface {
 	Connect(ctx context.Context) error
-	Close() error
-	GetMeta(uuid string) (*model.MetaVector, error)
-	GetIPs(uuid string) ([]string, error)
-	SetMeta(meta model.MetaVector) error
-	SetMetas(metas ...model.MetaVector) error
-	DeleteMeta(uuid string) error
-	DeleteMetas(uuids ...string) error
+	Close(ctx context.Context) error
+	GetMeta(ctx context.Context, uuid string) (*model.MetaVector, error)
+	GetIPs(ctx context.Context, uuid string) ([]string, error)
+	SetMeta(ctx context.Context, meta model.MetaVector) error
+	SetMetas(ctx context.Context, metas ...model.MetaVector) error
+	DeleteMeta(ctx context.Context, uuid string) error
+	DeleteMetas(ctx context.Context, uuids ...string) error
 }
 
 type client struct {
@@ -66,12 +66,12 @@ func (c *client) Connect(ctx context.Context) error {
 	return nil
 }
 
-func (c *client) Close() error {
-	return c.db.Close()
+func (c *client) Close(ctx context.Context) error {
+	return c.db.Close(ctx)
 }
 
-func (c *client) GetMeta(uuid string) (*model.MetaVector, error) {
-	res, err := c.db.GetMeta(uuid)
+func (c *client) GetMeta(ctx context.Context, uuid string) (*model.MetaVector, error) {
+	res, err := c.db.GetMeta(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -85,26 +85,26 @@ func (c *client) GetMeta(uuid string) (*model.MetaVector, error) {
 	}, err
 }
 
-func (c *client) GetIPs(uuid string) ([]string, error) {
-	return c.db.GetIPs(uuid)
+func (c *client) GetIPs(ctx context.Context, uuid string) ([]string, error) {
+	return c.db.GetIPs(ctx, uuid)
 }
 
-func (c *client) SetMeta(meta model.MetaVector) error {
-	return c.db.SetMeta(&meta)
+func (c *client) SetMeta(ctx context.Context, meta model.MetaVector) error {
+	return c.db.SetMeta(ctx, &meta)
 }
 
-func (c *client) SetMetas(metas ...model.MetaVector) error {
+func (c *client) SetMetas(ctx context.Context, metas ...model.MetaVector) error {
 	ms := make([]mysql.MetaVector, 0, len(metas))
 	for _, meta := range metas {
 		ms = append(ms, &meta)
 	}
-	return c.db.SetMetas(ms...)
+	return c.db.SetMetas(ctx, ms...)
 }
 
-func (c *client) DeleteMeta(uuid string) error {
-	return c.db.DeleteMeta(uuid)
+func (c *client) DeleteMeta(ctx context.Context, uuid string) error {
+	return c.db.DeleteMeta(ctx, uuid)
 }
 
-func (c *client) DeleteMetas(uuids ...string) error {
-	return c.db.DeleteMetas(uuids...)
+func (c *client) DeleteMetas(ctx context.Context, uuids ...string) error {
+	return c.db.DeleteMetas(ctx, uuids...)
 }

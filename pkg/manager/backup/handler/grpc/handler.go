@@ -42,7 +42,7 @@ func New(opts ...Option) Server {
 }
 
 func (s *server) GetVector(ctx context.Context, oid *payload.Object_ID) (res *payload.Object_MetaVector, err error) {
-	meta, err := s.mySQL.GetMeta(oid.Id)
+	meta, err := s.mySQL.GetMeta(ctx, oid.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (s *server) GetVector(ctx context.Context, oid *payload.Object_ID) (res *pa
 }
 
 func (s *server) Locations(ctx context.Context, oid *payload.Object_ID) (res *payload.Info_IPs, err error) {
-	ips, err := s.mySQL.GetIPs(oid.Id)
+	ips, err := s.mySQL.GetIPs(ctx, oid.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (s *server) Register(ctx context.Context, meta *payload.Object_MetaVector) 
 		return nil, err
 	}
 
-	err = s.mySQL.SetMeta(*m)
+	err = s.mySQL.SetMeta(ctx, *m)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (s *server) RegisterMulti(ctx context.Context, metas *payload.Object_MetaVe
 		ms = append(ms, *m)
 	}
 
-	err = s.mySQL.SetMetas(ms...)
+	err = s.mySQL.SetMetas(ctx, ms...)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (s *server) RegisterMulti(ctx context.Context, metas *payload.Object_MetaVe
 }
 
 func (s *server) Remove(ctx context.Context, oid *payload.Object_ID) (res *payload.Empty, err error) {
-	err = s.mySQL.DeleteMeta(oid.Id)
+	err = s.mySQL.DeleteMeta(ctx, oid.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (s *server) RemoveMulti(ctx context.Context, oids *payload.Object_IDs) (res
 		uuids = append(uuids, oid.Id)
 	}
 
-	err = s.mySQL.DeleteMetas(uuids...)
+	err = s.mySQL.DeleteMetas(ctx, uuids...)
 	if err != nil {
 		return nil, err
 	}

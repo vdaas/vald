@@ -16,7 +16,9 @@
 
 package mysql
 
+import "context"
+
 type Getter interface {
-	GetMeta(uuid string) (MetaVector, error)
-	GetIPs(uuid string) ([]string, error)
+	GetMeta(ctx context.Context, uuid string) (MetaVector, error)
+	GetIPs(ctx context.Context, uuid string) ([]string, error)
 }

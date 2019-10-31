@@ -16,9 +16,11 @@
 
 package mysql
 
+import "context"
+
 type Setter interface {
-	SetMeta(meta MetaVector) error
-	SetMetas(metas ...MetaVector) error
-	DeleteMeta(uuid string) error
-	DeleteMetas(uuids ...string) error
+	SetMeta(ctx context.Context, meta MetaVector) error
+	SetMetas(ctx context.Context, metas ...MetaVector) error
+	DeleteMeta(ctx context.Context, uuid string) error
+	DeleteMetas(ctx context.Context, uuids ...string) error
 }

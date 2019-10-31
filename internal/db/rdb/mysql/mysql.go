@@ -20,14 +20,23 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"sync/atomic"
 
 	dbr "github.com/gocraft/dbr/v2"
 	"github.com/vdaas/vald/internal/errors"
 )
 
+const (
+	metaVectorTableName = "meta_vector"
+	podIPTableName      = "pod_ip"
+	uuidColumnName      = "uuid"
+	ipColumnName        = "ip"
+	asterisk            = "*"
+)
+
 type MySQL interface {
-	Open() error
-	Close() error
+	Open(ctx context.Context) error
+	Close(ctx context.Context) error
 	Getter
 	Setter
 }
@@ -40,7 +49,7 @@ type mySQLClient struct {
 	pass      string
 	name      string
 	session   *dbr.Session
-	connected bool
+	connected atomic.Value
 }
 
 func New(ctx context.Context, opts ...Option) (MySQL, error) {
@@ -51,7 +60,7 @@ func New(ctx context.Context, opts ...Option) (MySQL, error) {
 		}
 	}
 
-	err := m.Open()
+	err := m.Open(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +68,7 @@ func New(ctx context.Context, opts ...Option) (MySQL, error) {
 	return m, nil
 }
 
-func (m *mySQLClient) Open() error {
+func (m *mySQLClient) Open(ctx context.Context) error {
 	conn, err := dbr.Open(m.db,
 		fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=true&loc=Local",
 			m.user, m.pass, m.host, m.port, m.name), nil)
@@ -68,26 +77,26 @@ func (m *mySQLClient) Open() error {
 	}
 
 	m.session = conn.NewSession(nil)
-	m.connected = true
+	m.connected.Store(true)
 
 	return nil
 }
 
-func (m *mySQLClient) Close() error {
-	if m.connected {
+func (m *mySQLClient) Close(ctx context.Context) error {
+	if m.connected.Load().(bool) {
 		m.session.Close()
-		m.connected = false
+		m.connected.Store(false)
 	}
 	return nil
 }
 
-func (m *mySQLClient) GetMeta(uuid string) (MetaVector, error) {
-	if !m.connected {
+func (m *mySQLClient) GetMeta(ctx context.Context, uuid string) (MetaVector, error) {
+	if !m.connected.Load().(bool) {
 		return nil, errors.ErrMySQLConnectionClosed
 	}
 
 	var metas []meta
-	_, err := m.session.Select("*").From("meta_vector").Where(dbr.Eq("uuid", uuid)).Load(&metas)
+	_, err := m.session.Select(asterisk).From(metaVectorTableName).Where(dbr.Eq(uuidColumnName, uuid)).LoadContext(ctx, &metas)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +106,7 @@ func (m *mySQLClient) GetMeta(uuid string) (MetaVector, error) {
 	}
 
 	var podIPs []podIP
-	_, err = m.session.Select("*").From("pod_ip").Where(dbr.Eq("uuid", uuid)).Load(&podIPs)
+	_, err = m.session.Select(asterisk).From(podIPTableName).Where(dbr.Eq(uuidColumnName, uuid)).LoadContext(ctx, &podIPs)
 	if err != nil {
 		return nil, err
 	}
@@ -108,13 +117,13 @@ func (m *mySQLClient) GetMeta(uuid string) (MetaVector, error) {
 	}, nil
 }
 
-func (m *mySQLClient) GetIPs(uuid string) ([]string, error) {
-	if !m.connected {
+func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error) {
+	if !m.connected.Load().(bool) {
 		return nil, errors.ErrMySQLConnectionClosed
 	}
 
 	var podIPs []podIP
-	_, err := m.session.Select("*").From("pod_ip").Where(dbr.Eq("uuid", uuid)).Load(&podIPs)
+	_, err := m.session.Select(asterisk).From(podIPTableName).Where(dbr.Eq(uuidColumnName, uuid)).LoadContext(ctx, &podIPs)
 	if err != nil {
 		return nil, err
 	}
@@ -127,23 +136,23 @@ func (m *mySQLClient) GetIPs(uuid string) ([]string, error) {
 	return ips, nil
 }
 
-func setMetaWithTx(tx *dbr.Tx, meta MetaVector) error {
+func setMetaWithTx(ctx context.Context, tx *dbr.Tx, meta MetaVector) error {
 	_, err := tx.InsertBySql("INSERT INTO meta_vector(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
-		meta.GetUUID(), meta.GetVector(), meta.GetMeta(), meta.GetVector(), meta.GetMeta()).Exec()
+		meta.GetUUID(), meta.GetVector(), meta.GetMeta(), meta.GetVector(), meta.GetMeta()).ExecContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.DeleteFrom("pod_ip").Where(dbr.Eq("uuid", meta.GetUUID())).Exec()
+	_, err = tx.DeleteFrom(podIPTableName).Where(dbr.Eq(uuidColumnName, meta.GetUUID())).ExecContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	stmt := tx.InsertInto("pod_ip").Columns("uuid", "ip")
+	stmt := tx.InsertInto(podIPTableName).Columns(uuidColumnName, ipColumnName)
 	for _, ip := range meta.GetIPs() {
 		stmt.Record(ip)
 	}
-	_, err = stmt.Exec()
+	_, err = stmt.ExecContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -151,8 +160,8 @@ func setMetaWithTx(tx *dbr.Tx, meta MetaVector) error {
 	return nil
 }
 
-func (m *mySQLClient) SetMeta(meta MetaVector) error {
-	if !m.connected {
+func (m *mySQLClient) SetMeta(ctx context.Context, meta MetaVector) error {
+	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
 	}
 
@@ -162,13 +171,13 @@ func (m *mySQLClient) SetMeta(meta MetaVector) error {
 	}
 	defer tx.RollbackUnlessCommitted()
 
-	err = setMetaWithTx(tx, meta)
+	err = setMetaWithTx(ctx, tx, meta)
 
 	return tx.Commit()
 }
 
-func (m *mySQLClient) SetMetas(metas ...MetaVector) error {
-	if !m.connected {
+func (m *mySQLClient) SetMetas(ctx context.Context, metas ...MetaVector) error {
+	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
 	}
 
@@ -179,7 +188,7 @@ func (m *mySQLClient) SetMetas(metas ...MetaVector) error {
 	defer tx.RollbackUnlessCommitted()
 
 	for _, meta := range metas {
-		err = setMetaWithTx(tx, meta)
+		err = setMetaWithTx(ctx, tx, meta)
 		if err != nil {
 			return err
 		}
@@ -188,13 +197,13 @@ func (m *mySQLClient) SetMetas(metas ...MetaVector) error {
 	return tx.Commit()
 }
 
-func deleteMetaWithTx(tx *dbr.Tx, uuid string) error {
-	_, err := tx.DeleteFrom("meta_vector").Where(dbr.Eq("uuid", uuid)).Exec()
+func deleteMetaWithTx(ctx context.Context, tx *dbr.Tx, uuid string) error {
+	_, err := tx.DeleteFrom(metaVectorTableName).Where(dbr.Eq(uuidColumnName, uuid)).ExecContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.DeleteFrom("pod_ip").Where(dbr.Eq("uuid", uuid)).Exec()
+	_, err = tx.DeleteFrom(podIPTableName).Where(dbr.Eq(uuidColumnName, uuid)).ExecContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -202,8 +211,8 @@ func deleteMetaWithTx(tx *dbr.Tx, uuid string) error {
 	return nil
 }
 
-func (m *mySQLClient) DeleteMeta(uuid string) error {
-	if !m.connected {
+func (m *mySQLClient) DeleteMeta(ctx context.Context, uuid string) error {
+	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
 	}
 
@@ -213,13 +222,13 @@ func (m *mySQLClient) DeleteMeta(uuid string) error {
 	}
 	defer tx.RollbackUnlessCommitted()
 
-	err = deleteMetaWithTx(tx, uuid)
+	err = deleteMetaWithTx(ctx, tx, uuid)
 
 	return tx.Commit()
 }
 
-func (m *mySQLClient) DeleteMetas(uuids ...string) error {
-	if !m.connected {
+func (m *mySQLClient) DeleteMetas(ctx context.Context, uuids ...string) error {
+	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
 	}
 
@@ -230,7 +239,7 @@ func (m *mySQLClient) DeleteMetas(uuids ...string) error {
 	defer tx.RollbackUnlessCommitted()
 
 	for _, uuid := range uuids {
-		err = deleteMetaWithTx(tx, uuid)
+		err = deleteMetaWithTx(ctx, tx, uuid)
 		if err != nil {
 			return err
 		}
