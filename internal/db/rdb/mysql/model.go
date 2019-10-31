@@ -16,10 +16,16 @@
 
 package mysql
 
+import (
+	"encoding/json"
+	"unsafe"
+)
+
 type MetaVector interface {
 	GetUUID() string
 	GetObjectID() string
-	GetVector() string
+	GetVector() []float64
+	GetVectorString() string
 	GetMeta() string
 	GetIPs() []string
 }
@@ -43,8 +49,13 @@ type podIP struct {
 
 func (m *metaVector) GetUUID() string     { return m.meta.UUID }
 func (m *metaVector) GetObjectID() string { return m.meta.ObjectID }
-func (m *metaVector) GetVector() string   { return m.meta.Vector }
-func (m *metaVector) GetMeta() string     { return m.meta.Meta }
+func (m *metaVector) GetVector() []float64 {
+	var vector []float64
+	_ = json.Unmarshal(*(*[]byte)(unsafe.Pointer(&m.meta.Vector)), &vector)
+	return vector
+}
+func (m *metaVector) GetVectorString() string { return m.meta.Vector }
+func (m *metaVector) GetMeta() string         { return m.meta.Meta }
 func (m *metaVector) GetIPs() []string {
 	ips := make([]string, len(m.podIPs))
 

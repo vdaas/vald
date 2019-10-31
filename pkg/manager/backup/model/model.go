@@ -17,16 +17,25 @@
 // Package grpc provides grpc server logic
 package model
 
+import (
+	"encoding/json"
+	"unsafe"
+)
+
 type MetaVector struct {
 	UUID     string
 	ObjectID string
-	Vector   string
+	Vector   []float64
 	Meta     string
 	IPs      []string
 }
 
-func (m *MetaVector) GetUUID() string     { return m.UUID }
-func (m *MetaVector) GetObjectID() string { return m.ObjectID }
-func (m *MetaVector) GetVector() string   { return m.Vector }
-func (m *MetaVector) GetMeta() string     { return m.Meta }
-func (m *MetaVector) GetIPs() []string    { return m.IPs }
+func (m *MetaVector) GetUUID() string      { return m.UUID }
+func (m *MetaVector) GetObjectID() string  { return m.ObjectID }
+func (m *MetaVector) GetVector() []float64 { return m.Vector }
+func (m *MetaVector) GetVectorString() string {
+	vector, _ := json.Marshal(m.Vector)
+	return *(*string)(unsafe.Pointer(&vector))
+}
+func (m *MetaVector) GetMeta() string  { return m.Meta }
+func (m *MetaVector) GetIPs() []string { return m.IPs }

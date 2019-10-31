@@ -19,8 +19,6 @@ package grpc
 
 import (
 	"context"
-	"encoding/json"
-	"unsafe"
 
 	"github.com/vdaas/vald/apis/grpc/manager/backup"
 	"github.com/vdaas/vald/apis/grpc/payload"
@@ -120,13 +118,6 @@ func (s *server) RemoveMulti(ctx context.Context, oids *payload.Object_IDs) (res
 }
 
 func toObjectMetaVector(meta *model.MetaVector) (res *payload.Object_MetaVector, err error) {
-	var vector []float64
-	strVec := meta.GetVector()
-	err = json.Unmarshal(*(*[]byte)(unsafe.Pointer(&strVec)), &vector)
-	if err != nil {
-		return nil, err
-	}
-
 	return &payload.Object_MetaVector{
 		Uuid: meta.GetUUID(),
 		Meta: meta.GetMeta(),
@@ -134,22 +125,17 @@ func toObjectMetaVector(meta *model.MetaVector) (res *payload.Object_MetaVector,
 			Id: &payload.Object_ID{
 				Id: meta.GetObjectID(),
 			},
-			Vector: vector,
+			Vector: meta.GetVector(),
 		},
 		Ips: meta.GetIPs(),
 	}, nil
 }
 
 func toModelMetaVector(obj *payload.Object_MetaVector) (res *model.MetaVector, err error) {
-	vector, err := json.Marshal(obj.Vector.Vector)
-	if err != nil {
-		return nil, err
-	}
-
 	return &model.MetaVector{
 		UUID:     obj.Uuid,
 		ObjectID: obj.Vector.Id.Id,
-		Vector:   *(*string)(unsafe.Pointer(&vector)),
+		Vector:   obj.Vector.Vector,
 		Meta:     obj.Meta,
 		IPs:      obj.Ips,
 	}, nil
