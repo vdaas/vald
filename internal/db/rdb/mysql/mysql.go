@@ -25,14 +25,14 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-type Mysql interface {
+type MySQL interface {
 	Open() error
 	Close() error
 	Getter
 	Setter
 }
 
-type mysqlClient struct {
+type mySQLClient struct {
 	db        string
 	host      string
 	port      int
@@ -43,8 +43,8 @@ type mysqlClient struct {
 	connected bool
 }
 
-func New(ctx context.Context, opts ...Option) (Mysql, error) {
-	m := new(mysqlClient)
+func New(ctx context.Context, opts ...Option) (MySQL, error) {
+	m := new(mySQLClient)
 	for _, opt := range opts {
 		if err := opt(m); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
@@ -59,7 +59,7 @@ func New(ctx context.Context, opts ...Option) (Mysql, error) {
 	return m, nil
 }
 
-func (m *mysqlClient) Open() error {
+func (m *mySQLClient) Open() error {
 	conn, err := dbr.Open(m.db,
 		fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=true&loc=Local",
 			m.user, m.pass, m.host, m.port, m.name), nil)
@@ -73,7 +73,7 @@ func (m *mysqlClient) Open() error {
 	return nil
 }
 
-func (m *mysqlClient) Close() error {
+func (m *mySQLClient) Close() error {
 	if m.connected {
 		m.session.Close()
 		m.connected = false
@@ -81,7 +81,7 @@ func (m *mysqlClient) Close() error {
 	return nil
 }
 
-func (m *mysqlClient) GetMeta(uuid string) (MetaVector, error) {
+func (m *mySQLClient) GetMeta(uuid string) (MetaVector, error) {
 	if !m.connected {
 		return nil, errors.ErrMySQLConnectionClosed
 	}
@@ -108,7 +108,7 @@ func (m *mysqlClient) GetMeta(uuid string) (MetaVector, error) {
 	}, nil
 }
 
-func (m *mysqlClient) GetIPs(uuid string) ([]string, error) {
+func (m *mySQLClient) GetIPs(uuid string) ([]string, error) {
 	if !m.connected {
 		return nil, errors.ErrMySQLConnectionClosed
 	}
@@ -151,7 +151,7 @@ func setMetaWithTx(tx *dbr.Tx, meta MetaVector) error {
 	return nil
 }
 
-func (m *mysqlClient) SetMeta(meta MetaVector) error {
+func (m *mySQLClient) SetMeta(meta MetaVector) error {
 	if !m.connected {
 		return errors.ErrMySQLConnectionClosed
 	}
@@ -167,7 +167,7 @@ func (m *mysqlClient) SetMeta(meta MetaVector) error {
 	return tx.Commit()
 }
 
-func (m *mysqlClient) SetMetas(metas ...MetaVector) error {
+func (m *mySQLClient) SetMetas(metas ...MetaVector) error {
 	if !m.connected {
 		return errors.ErrMySQLConnectionClosed
 	}
@@ -202,7 +202,7 @@ func deleteMetaWithTx(tx *dbr.Tx, uuid string) error {
 	return nil
 }
 
-func (m *mysqlClient) DeleteMeta(uuid string) error {
+func (m *mySQLClient) DeleteMeta(uuid string) error {
 	if !m.connected {
 		return errors.ErrMySQLConnectionClosed
 	}
@@ -218,7 +218,7 @@ func (m *mysqlClient) DeleteMeta(uuid string) error {
 	return tx.Commit()
 }
 
-func (m *mysqlClient) DeleteMetas(uuids ...string) error {
+func (m *mySQLClient) DeleteMetas(uuids ...string) error {
 	if !m.connected {
 		return errors.ErrMySQLConnectionClosed
 	}

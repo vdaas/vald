@@ -25,8 +25,8 @@ var (
 	defaultOpts = []Option{}
 )
 
-func WithMysql(m service.Mysql) Option {
+func WithMySQL(m service.MySQL) Option {
 	return func(s *server) {
-		s.mysql = m
+		s.mySQL = m
 	}
 }

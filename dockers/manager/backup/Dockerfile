@@ -18,8 +18,8 @@ FROM vdaas/vald-base:latest AS builder
 
 ENV ORG vdaas
 ENV REPO vald
-ENV PKG manager/backup
 ENV APP_NAME backup
+ENV PKG manager/${APP_NAME}
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .

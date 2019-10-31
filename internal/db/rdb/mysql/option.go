@@ -16,14 +16,14 @@
 
 package mysql
 
-type Option func(*mysqlClient) error
+type Option func(*mySQLClient) error
 
 var (
 	defaultOpts = []Option{}
 )
 
 func WithDB(db string) Option {
-	return func(m *mysqlClient) error {
+	return func(m *mySQLClient) error {
 		if db != "" {
 			m.db = db
 		}
@@ -32,7 +32,7 @@ func WithDB(db string) Option {
 }
 
 func WithHost(host string) Option {
-	return func(m *mysqlClient) error {
+	return func(m *mySQLClient) error {
 		if host != "" {
 			m.host = host
 		}
@@ -41,14 +41,14 @@ func WithHost(host string) Option {
 }
 
 func WithPort(port int) Option {
-	return func(m *mysqlClient) error {
+	return func(m *mySQLClient) error {
 		m.port = port
 		return nil
 	}
 }
 
 func WithUser(user string) Option {
-	return func(m *mysqlClient) error {
+	return func(m *mySQLClient) error {
 		if user != "" {
 			m.user = user
 		}
@@ -57,7 +57,7 @@ func WithUser(user string) Option {
 }
 
 func WithPass(pass string) Option {
-	return func(m *mysqlClient) error {
+	return func(m *mySQLClient) error {
 		if pass != "" {
 			m.pass = pass
 		}
@@ -66,7 +66,7 @@ func WithPass(pass string) Option {
 }
 
 func WithName(name string) Option {
-	return func(m *mysqlClient) error {
+	return func(m *mySQLClient) error {
 		if name != "" {
 			m.name = name
 		}

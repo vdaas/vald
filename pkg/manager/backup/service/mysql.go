@@ -24,7 +24,7 @@ import (
 	"github.com/vdaas/vald/pkg/manager/backup/model"
 )
 
-type Mysql interface {
+type MySQL interface {
 	Connect(ctx context.Context) error
 	Close() error
 	GetMeta(uuid string) (*model.MetaVector, error)
@@ -36,11 +36,11 @@ type Mysql interface {
 }
 
 type client struct {
-	db   mysql.Mysql
+	db   mysql.MySQL
 	opts []mysql.Option
 }
 
-func NewMysql(cfg *config.Mysql) (Mysql, error) {
+func NewMySQL(cfg *config.MySQL) (MySQL, error) {
 	c := &client{}
 
 	c.opts = make([]mysql.Option, 0, 6)

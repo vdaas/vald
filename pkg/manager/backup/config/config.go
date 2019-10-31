@@ -30,8 +30,8 @@ type Data struct {
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
-	// Mysql represent mysql configurations
-	Mysql *config.Mysql `json:"mysql_config" yaml:"mysql_config"`
+	// MySQL represent MySQL configurations
+	MySQL *config.MySQL `json:"mysql_config" yaml:"mysql_config"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
@@ -45,8 +45,8 @@ func NewConfig(path string) (cfg *Data, err error) {
 		cfg.Server = cfg.Server.Bind()
 	}
 
-	if cfg.Mysql != nil {
-		cfg.Mysql = cfg.Mysql.Bind()
+	if cfg.MySQL != nil {
+		cfg.MySQL = cfg.MySQL.Bind()
 	}
 
 	return cfg, nil

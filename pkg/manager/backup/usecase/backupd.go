@@ -35,11 +35,11 @@ type run struct {
 }
 
 func New(cfg *config.Data) (Runner, error) {
-	mysql, err := service.NewMysql(cfg.Mysql)
+	mySQL, err := service.NewMySQL(cfg.MySQL)
 	if err != nil {
 		return nil, err
 	}
-	g := grpc.New(grpc.WithMysql(mysql))
+	g := grpc.New(grpc.WithMySQL(mySQL))
 
 	srv, err := service.NewServer(
 		service.WithConfig(cfg.Server),

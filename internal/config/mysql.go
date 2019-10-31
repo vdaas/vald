@@ -17,7 +17,7 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-type Mysql struct {
+type MySQL struct {
 	DB   string `json:"db" yaml:"db"`
 	Host string `json:"host" yaml:"host"`
 	Port int    `json:"port" yaml:"port"`
@@ -26,6 +26,6 @@ type Mysql struct {
 	Name string `json:"name" yaml:"name"`
 }
 
-func (r *Mysql) Bind() *Mysql {
+func (r *MySQL) Bind() *MySQL {
 	return r
 }
