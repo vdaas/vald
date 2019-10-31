@@ -18,9 +18,13 @@ package usecase
 
 import (
 	"context"
+	"net"
+	"strings"
 
 	"github.com/vdaas/vald/apis/grpc/vald"
 	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
@@ -33,17 +37,49 @@ import (
 )
 
 type run struct {
-	cfg    *config.Data
-	server starter.Server
+	cfg      *config.Data
+	server   starter.Server
+	gateway  service.Gateway
+	metadata service.Meta
+	backup   service.Backup
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	service.New(service.WithDiscoverDuration(cfg.Gateway.Discoverer.Host))
-	v, err := service.New(cfg.ValdProxy)
+	dialer := tcp.Dialer(nil)
+	gopts := []grpc.DialOption{
+		grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
+			paddr := strings.SplitN(addr, ":", 2)
+			return dialer(ctx, paddr[0], paddr[1])
+		}),
+	}
+	gateway, err := service.New(
+		service.WithAgentName(cfg.Gateway.AgentName),
+		service.WithAgentPort(cfg.Gateway.AgentPort),
+		service.WithGRPCDialOptions(gopts),
+	)
+
 	if err != nil {
 		return nil, err
 	}
-	g := handler.New(handler.WithProxy(v))
+	backup, err := service.NewBackup(
+	// service.WithBackupHost(cf)
+	)
+	if err != nil {
+		return nil, err
+	}
+	meta, err := service.NewMeta(
+	// service.WithBackupHost(cf)
+	)
+	if err != nil {
+		return nil, err
+	}
+	v := handler.New(
+		handler.WithGateway(gateway),
+		handler.WithBackup(backup),
+		handler.WithMeta(meta),
+		handler.WithErrGroup(errgroup.Get()),
+	)
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
@@ -53,7 +89,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 					router.New(
 						router.WithHandler(
 							rest.New(
-							// rest.WithAgent(g),
+								rest.WithVald(v),
 							),
 						),
 					)),
@@ -98,4 +134,8 @@ func (r *run) PreStop(ctx context.Context) error {
 
 func (r *run) Stop(ctx context.Context) error {
 	return r.server.Shutdown(ctx)
+}
+
+func (r *run) PostStop(ctx context.Context) error {
+	return nil
 }

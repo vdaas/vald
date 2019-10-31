@@ -29,7 +29,12 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 )
 
-type Dialer func(ctx context.Context, network, addr string) (net.Conn, error)
+// type Dialer func(ctx context.Context, network, addr string) (net.Conn, error)
+
+type Dialer interface {
+	GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error)
+	StartDialerCache(ctx context.Context)
+}
 
 type dialer struct {
 	cache              gache.Gache
@@ -41,9 +46,10 @@ type dialer struct {
 	dialerKeepAlive    time.Duration
 	dialerDualStack    bool
 	der                *net.Dialer
+	dialer             func(ctx context.Context, network, addr string) (net.Conn, error)
 }
 
-func NewDialer(ctx context.Context, opts ...DialerOption) Dialer {
+func NewDialer(opts ...DialerOption) Dialer {
 
 	d := new(dialer)
 	for _, opt := range append(defaultDialerOptions, opts...) {
@@ -64,7 +70,7 @@ func NewDialer(ctx context.Context, opts ...DialerOption) Dialer {
 
 	if !d.dnsCache || d.cache == nil {
 		if d.tlsConfig != nil {
-			return func(ctx context.Context, network,
+			d.dialer = func(ctx context.Context, network,
 				addr string) (conn net.Conn, err error) {
 				conn, err = d.der.DialContext(ctx, network, addr)
 				if err != nil {
@@ -73,8 +79,9 @@ func NewDialer(ctx context.Context, opts ...DialerOption) Dialer {
 				return tls.Client(conn, d.tlsConfig), nil
 			}
 		} else {
-			return d.der.DialContext
+			d.dialer = d.der.DialContext
 		}
+		return d
 	}
 	if d.cache == nil {
 		d.cache = gache.New()
@@ -85,9 +92,14 @@ func NewDialer(ctx context.Context, opts ...DialerOption) Dialer {
 			d.dnsCacheExpiration, d.dnsRefreshDuration
 	}
 
-	d.startDialerCache(ctx)
+	// return d.cachedDialer
+	d.dialer = d.cachedDialer
 
-	return d.cachedDialer
+	return d
+}
+
+func (d *dialer) GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error) {
+	return d.dialer
 }
 
 func (d *dialer) lookup(ctx context.Context, addr string) (ips map[int]string, err error) {
@@ -112,7 +124,7 @@ func (d *dialer) lookup(ctx context.Context, addr string) (ips map[int]string, e
 	return ips, nil
 }
 
-func (d *dialer) startDialerCache(ctx context.Context) {
+func (d *dialer) StartDialerCache(ctx context.Context) {
 	d.cache.SetDefaultExpire(d.dnsCacheExpiration).
 		SetExpiredHook(func(gctx context.Context, addr string) {
 			if err := safety.RecoverFunc(func() (err error) {

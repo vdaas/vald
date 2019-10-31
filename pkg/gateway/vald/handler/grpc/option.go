@@ -17,16 +17,82 @@
 // Package grpc provides grpc server logic
 package grpc
 
-import "github.com/vdaas/vald/pkg/gateway/vald/service"
+import (
+	"time"
+
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/timeutil"
+	"github.com/vdaas/vald/pkg/gateway/vald/service"
+)
 
 type Option func(*server)
 
 var (
-	defaultOpts = []Option{}
+	defaultOpts = []Option{
+		WithErrGroup(errgroup.Get()),
+		WithReplicationCount(3),
+		WithTimeout("5s"),
+	}
 )
 
 func WithGateway(g service.Gateway) Option {
 	return func(s *server) {
-		s.gateway = g
+		if g != nil {
+			s.gateway = g
+		}
+	}
+}
+
+func WithMeta(m service.Meta) Option {
+	return func(s *server) {
+		if m != nil {
+			s.metadata = m
+		}
+	}
+}
+
+func WithBackup(b service.Backup) Option {
+	return func(s *server) {
+		if b != nil {
+			s.backup = b
+		}
+	}
+}
+
+func WithFilters(filters ...service.Filter) Option {
+	return func(s *server) {
+		if filters != nil {
+			if s.filters != nil && len(s.filters) > 0 {
+				s.filters = append(s.filters, filters...)
+			} else {
+				s.filters = filters
+			}
+		}
+	}
+}
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(s *server) {
+		if eg != nil {
+			s.eg = eg
+		}
+	}
+}
+
+func WithTimeout(dur string) Option {
+	return func(s *server) {
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			d = time.Second * 10
+		}
+		s.timeout = d
+	}
+}
+
+func WithReplicationCount(rep int) Option {
+	return func(s *server) {
+		if rep > 1 {
+			s.replica = rep
+		}
 	}
 }

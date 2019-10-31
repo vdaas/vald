@@ -47,9 +47,29 @@ type Redis struct {
 func (r *Redis) Bind() *Redis {
 	if r.TLS != nil {
 		r.TLS.Bind()
+	} else {
+		r.TLS = new(TLS)
 	}
 	if r.TCP != nil {
 		r.TCP.Bind()
+	} else {
+		r.TCP = new(TCP)
 	}
+
+	for i, addr := range r.Addrs {
+		r.Addrs[i] = GetActualValue(addr)
+	}
+	r.DialTimeout = GetActualValue(r.DialTimeout)
+	r.DialTimeout = GetActualValue(r.DialTimeout)
+	r.IdleCheckFrequency = GetActualValue(r.IdleCheckFrequency)
+	r.IdleTimeout = GetActualValue(r.IdleTimeout)
+	r.KeyPref = GetActualValue(r.KeyPref)
+	r.MaxConnAge = GetActualValue(r.MaxConnAge)
+	r.MaxRetryBackoff = GetActualValue(r.MaxRetryBackoff)
+	r.MinRetryBackoff = GetActualValue(r.MinRetryBackoff)
+	r.Password = GetActualValue(r.Password)
+	r.PoolTimeout = GetActualValue(r.PoolTimeout)
+	r.ReadTimeout = GetActualValue(r.ReadTimeout)
+	r.WriteTimeout = GetActualValue(r.WriteTimeout)
 	return r
 }

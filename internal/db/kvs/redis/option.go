@@ -18,11 +18,12 @@
 package redis
 
 import (
+	"context"
 	"crypto/tls"
+	"net"
 	"time"
 
 	redis "github.com/go-redis/redis/v7"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
@@ -32,7 +33,7 @@ var (
 	defaultOpts = []Option{}
 )
 
-func WithDialer(der tcp.Dialer) Option {
+func WithDialer(der func(ctx context.Context, addr, port string) (net.Conn, error)) Option {
 	return func(r *redisClient) error {
 		if der != nil {
 			r.dialer = der

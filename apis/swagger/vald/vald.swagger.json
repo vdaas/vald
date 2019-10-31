@@ -72,7 +72,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/ObjectVector"
+              "$ref": "#/definitions/ObjectMetaVector"
             }
           }
         },
@@ -184,6 +184,30 @@
       "properties": {
         "id": {
           "type": "string"
+        }
+      }
+    },
+    "ObjectMetaVector": {
+      "type": "object",
+      "properties": {
+        "uuid": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "string"
+        },
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -302,17 +326,17 @@
     }
   },
   "x-stream-definitions": {
-    "ObjectVector": {
+    "ObjectMetaVector": {
       "type": "object",
       "properties": {
         "result": {
-          "$ref": "#/definitions/ObjectVector"
+          "$ref": "#/definitions/ObjectMetaVector"
         },
         "error": {
           "$ref": "#/definitions/runtimeStreamError"
         }
       },
-      "title": "Stream result of ObjectVector"
+      "title": "Stream result of ObjectMetaVector"
     },
     "SearchResponse": {
       "type": "object",

@@ -46,7 +46,7 @@ func WithBackupPort(port int) BackupOption {
 	}
 }
 
-func WithHealthCheckDuration(dur string) BackupOption {
+func WithBackupHealthCheckDuration(dur string) BackupOption {
 	return func(b *backup) error {
 		d, err := timeutil.Parse(dur)
 		if err != nil {

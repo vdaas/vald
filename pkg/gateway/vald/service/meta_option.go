@@ -46,7 +46,7 @@ func WithMetaPort(port int) MetaOption {
 	}
 }
 
-func WithHealthCheckDuration(dur string) MetaOption {
+func WithMetaHealthCheckDuration(dur string) MetaOption {
 	return func(m *meta) error {
 		d, err := timeutil.Parse(dur)
 		if err != nil {

@@ -24,7 +24,6 @@ import (
 	"time"
 
 	gback "github.com/vdaas/vald/apis/grpc/manager/backup"
-	gmeta "github.com/vdaas/vald/apis/grpc/meta"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -33,38 +32,37 @@ import (
 	"google.golang.org/grpc/connectivity"
 )
 
-tMaMaMaMaMaMaMcx[MaMaMa]ype Backup interface {
-	GetObject(ctx conteMaxt.Context, uuid string) (*payload.Object_MetaVector, error)
+type Backup interface {
+	GetObject(ctx context.Context, uuid string) (*payload.Object_MetaVector, error)
 	GetLocation(ctx context.Context, uuid string) ([]string, error)
-	Register(ctx context.Context, vec *payload.Object_Vector, ips ...string) error
-	RegisterMultiple(ctx Macontext.Context, vecs *payload.Object_Vectors, ips ...string) error
+	Register(ctx context.Context, vec *payload.Object_MetaVector) error
+	RegisterMultiple(ctx context.Context, vecs *payload.Object_MetaVectors) error
 	Remove(ctx context.Context, uuid string) error
 	RemoveMultiple(ctx context.Context, uuids ...string) error
-}Ma
+}
 
 type backup struct {
-MaMaMa[Ma]	hcDur time.Duration
+	hcDur time.Duration
 	host  string
 	port  int
-	bc   Ma atomic.Value
+	bc    atomic.Value
 	eg    errgroup.Group
 	bo    backoff.Backoff
-	gopts [Ma
-	[Ma]]grpc.DialOption
+	gopts []grpc.DialOption
 	copts []grpc.CallOption
-}Ma
+}
 
 func NewBackup(opts ...BackupOption) (bu Backup, err error) {
-Ma	b := new(backup)
+	b := new(backup)
 	for _, opt := range append(defaultBackupOpts, opts...) {
 		err = opt(b)
-Ma
-[Ma]if err != nil {
+
+		if err != nil {
 			return nil, err
-Ma		}
+		}
 	}
 
-Ma	return b, nil
+	return b, nil
 }
 
 func (b *backup) Start(ctx context.Context) <-chan error {
@@ -87,6 +85,12 @@ func (b *backup) Start(ctx context.Context) <-chan error {
 				if conn == nil ||
 					conn.GetState() == connectivity.Shutdown ||
 					conn.GetState() == connectivity.TransientFailure {
+					if conn != nil {
+						err = conn.Close()
+						if err != nil {
+							ech <- err
+						}
+					}
 					conn, err = grpc.DialContext(ctx, fmt.Sprintf("%s:%d", b.host, b.port), b.gopts...)
 					if err != nil {
 						ech <- err
@@ -112,17 +116,50 @@ func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Objec
 	return vec, nil
 }
 
-func (b *backup) GetLocation(ctx context.Context, uuid string) ([]string, error) {
-	key, err := m.mc.Load().(gmeta.MetaClient).GetMetaInverse(ctx, &payload.Meta_Val{
-		Val: val,
-	}, m.copts...)
+func (b *backup) GetLocation(ctx context.Context, uuid string) (ipList []string, err error) {
+	ips, err := b.bc.Load().(gback.BackupClient).Locations(ctx, &payload.Object_ID{
+		Id: uuid,
+	}, b.copts...)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return key.GetKey(), nil
+	return ips.GetIp(), nil
 }
 
-func (b *backup) Register(ctx context.Context, vec *payload.Object_Vector, ips ...string) error
-func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Object_Vectors, ips ...string) error
-func (b *backup) Remove(ctx context.Context, uuid string) error
-func (b *backup) RemoveMultiple(ctx context.Context, uuids ...string) error
+func (b *backup) Register(ctx context.Context, vec *payload.Object_MetaVector) error {
+	_, err := b.bc.Load().(gback.BackupClient).Register(ctx, vec, b.copts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Object_MetaVectors) error {
+	_, err := b.bc.Load().(gback.BackupClient).RegisterMulti(ctx, vecs, b.copts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (b *backup) Remove(ctx context.Context, uuid string) error {
+	_, err := b.bc.Load().(gback.BackupClient).Remove(ctx, &payload.Object_ID{
+		Id: uuid,
+	}, b.copts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (b *backup) RemoveMultiple(ctx context.Context, uuids ...string) error {
+	ids := new(payload.Object_IDs)
+	ids.Ids = make([]string, 0, len(uuids))
+	for _, uuid := range uuids {
+		ids.Ids = append(ids.Ids, uuid)
+	}
+	_, err := b.bc.Load().(gback.BackupClient).RemoveMulti(ctx, ids, b.copts...)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}

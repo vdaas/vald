@@ -87,16 +87,19 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 
 	maxDist := uint32(math.MaxUint32)
 	num := int(cfg.GetNum())
-	to := cfg.GetTimeout()
+
 	res.Results = make([]*payload.Object_Distance, 0, s.gateway.GetAgentCount()*num)
 	dch := make(chan *payload.Object_Distance, cap(res.GetResults())/2)
 	eg, ectx := errgroup.New(ctx)
 	var cancel context.CancelFunc
-	if to != 0 {
-		ectx, cancel = context.WithTimeout(ectx, time.Duration(to))
+	var timeout time.Duration
+	if to := cfg.GetTimeout(); to != 0 {
+		timeout = time.Duration(to)
 	} else {
-		ectx, cancel = context.WithCancel(ectx)
+		timeout = s.timeout
 	}
+	ectx, cancel = context.WithTimeout(ectx, timeout)
+
 	eg.Go(safety.RecoverFunc(func() error {
 		defer cancel()
 		cl := new(checkList)
@@ -211,7 +214,12 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	if err != nil {
 		return nil, err
 	}
-	err = s.backup.Register(ctx, vec, targets...)
+	err = s.backup.Register(ctx, &payload.Object_MetaVector{
+		Uuid:   uuid,
+		Meta:   meta,
+		Vector: vec.GetVector(),
+		Ips:    targets,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +260,18 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	if err != nil {
 		return nil, err
 	}
-	err = s.backup.RegisterMultiple(ctx, vecs, targets...)
+	mvecs := new(payload.Object_MetaVectors)
+	mvecs.Vectors = make([]*payload.Object_MetaVector, 0, len(vecs.GetVectors()))
+	for _, vec := range vecs.GetVectors() {
+		uuid := vec.GetId()
+		mvecs.Vectors = append(mvecs.Vectors, &payload.Object_MetaVector{
+			Uuid:   uuid,
+			Meta:   metaMap[uuid],
+			Vector: vec.GetVector(),
+			Ips:    targets,
+		})
+	}
+	err = s.backup.RegisterMultiple(ctx, mvecs)
 	if err != nil {
 		return nil, err
 	}
@@ -260,32 +279,40 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 }
 
 func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Empty, err error) {
-	uuid := fuid.String()
 	meta := vec.GetId()
-	err = s.metadata.SetUUIDandMeta(ctx, uuid, meta)
+	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil {
 		return nil, err
 	}
 	vec.Id = uuid
-	mu := new(sync.Mutex)
-	targets := make([]string, 0, s.replica)
-	err = s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, ac agent.AgentClient) (err error) {
-		_, err = ac.Update(ctx, vec)
-		if err != nil {
-			return err
+	locs, err := s.backup.GetLocation(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+	lmap := make(map[string]struct{}, len(locs))
+	for _, loc := range locs {
+		lmap[loc] = struct{}{}
+	}
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, ac agent.AgentClient) error {
+		_, ok := lmap[target]
+		if ok {
+			_, err = ac.Update(ctx, vec)
+			if err != nil {
+				return err
+			}
 		}
-		mu.Lock()
-		targets = append(targets, target)
-		mu.Unlock()
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	err = s.backup.Register(ctx, vec, targets...)
-	if err != nil {
-		return nil, err
-	}
+	err = s.backup.Register(ctx, &payload.Object_MetaVector{
+		Uuid:   uuid,
+		Meta:   meta,
+		Vector: vec.GetVector(),
+		Ips:    locs,
+	})
+
 	return new(payload.Empty), nil
 }
 
@@ -401,7 +428,7 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res 
 	return new(payload.Empty), nil
 }
 
-func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *payload.Object_Vector, err error) {
+func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *payload.Object_MetaVector, err error) {
 	meta := id.GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil {

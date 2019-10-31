@@ -148,8 +148,10 @@ func (c *client) Disconnect() error {
 }
 
 func (c *client) Connect(ctx context.Context) error {
+	der := tcp.NewDialer(c.topts...)
+	der.StartDialerCache(ctx)
 	r, err := redis.New(ctx, append(c.opts,
-		redis.WithDialer(tcp.NewDialer(ctx, c.topts...)),
+		redis.WithDialer(der.GetDialer()),
 	)...)
 
 	if err != nil {

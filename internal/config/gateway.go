@@ -30,11 +30,11 @@ type Gateway struct {
 	// Discoverer represent agent discoverer service configuration
 	Discoverer *Discoverer `json:"discoverer" yaml:"discoverer"`
 
-	// MetaProxy represent metadata gateway configuration
-	Meta *MetaProxy `json:"meta" yaml:"meta"`
+	// Meta represent meta data service configuration
+	Meta *Meta `json:"meta" yaml:"meta"`
 
-	// IndexManager represent index manager configuration
-	IndexManager *IndexManager `json:"meta" yaml:"meta"`
+	// BackupManager represent backup manager configuration
+	BackupManager *BackupManager `json:"backup" yaml:"backup"`
 }
 
 func (g *Gateway) Bind() *Gateway {
@@ -46,8 +46,8 @@ func (g *Gateway) Bind() *Gateway {
 	if g.Meta != nil {
 		g.Meta = g.Meta.Bind()
 	}
-	if g.IndexManager.Bind() != nil {
-		g.IndexManager = g.IndexManager.Bind()
+	if g.BackupManager.Bind() != nil {
+		g.BackupManager = g.BackupManager.Bind()
 	}
 	return g
 }

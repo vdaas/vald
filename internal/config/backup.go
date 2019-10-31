@@ -17,9 +17,12 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-type MetaProxy struct {
+type BackupManager struct {
+	Host     string
+	Port     int
+	Duration string
 }
 
-func (m *MetaProxy) Bind() *MetaProxy {
-	return m
+func (b *BackupManager) Bind() *BackupManager {
+	return b
 }
