@@ -32,6 +32,7 @@ type Runner runner.Runner
 type run struct {
 	cfg    *config.Data
 	server service.Server
+	mySQL  service.MySQL
 }
 
 func New(cfg *config.Data) (Runner, error) {
@@ -63,11 +64,12 @@ func New(cfg *config.Data) (Runner, error) {
 	return &run{
 		cfg:    cfg,
 		server: srv,
+		mySQL:  mySQL,
 	}, nil
 }
 
 func (r *run) PreStart(ctx context.Context) error {
-	return nil
+	return r.mySQL.Connect(ctx)
 }
 
 func (r *run) Start(ctx context.Context) <-chan error {
@@ -83,5 +85,5 @@ func (r *run) Stop(ctx context.Context) error {
 }
 
 func (r *run) PostStop(ctx context.Context) error {
-	return nil
+	return r.mySQL.Close(ctx)
 }

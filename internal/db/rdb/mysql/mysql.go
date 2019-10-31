@@ -52,17 +52,12 @@ type mySQLClient struct {
 	connected atomic.Value
 }
 
-func New(ctx context.Context, opts ...Option) (MySQL, error) {
+func New(opts ...Option) (MySQL, error) {
 	m := new(mySQLClient)
 	for _, opt := range opts {
 		if err := opt(m); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
-	}
-
-	err := m.Open(ctx)
-	if err != nil {
-		return nil, err
 	}
 
 	return m, nil
@@ -137,8 +132,13 @@ func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error)
 }
 
 func setMetaWithTx(ctx context.Context, tx *dbr.Tx, meta MetaVector) error {
-	_, err := tx.InsertBySql("INSERT INTO meta_vector(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
-		meta.GetUUID(), meta.GetVector(), meta.GetMeta(), meta.GetVector(), meta.GetMeta()).ExecContext(ctx)
+	vector, err := meta.GetVector()
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.InsertBySql("INSERT INTO meta_vector(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
+		meta.GetUUID(), vector, meta.GetMeta(), vector, meta.GetMeta()).ExecContext(ctx)
 	if err != nil {
 		return err
 	}

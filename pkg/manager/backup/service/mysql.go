@@ -36,34 +36,28 @@ type MySQL interface {
 }
 
 type client struct {
-	db   mysql.MySQL
-	opts []mysql.Option
+	db mysql.MySQL
 }
 
 func NewMySQL(cfg *config.MySQL) (MySQL, error) {
-	c := &client{}
-
-	c.opts = make([]mysql.Option, 0, 6)
-	c.opts = append(c.opts,
+	m, err := mysql.New(
 		mysql.WithDB(cfg.DB),
 		mysql.WithHost(cfg.Host),
 		mysql.WithPort(cfg.Port),
 		mysql.WithUser(cfg.User),
 		mysql.WithPass(cfg.Pass),
 		mysql.WithName(cfg.Name))
+	if err != nil {
+		return nil, err
+	}
 
-	return c, nil
+	return &client{
+		db: m,
+	}, nil
 }
 
 func (c *client) Connect(ctx context.Context) error {
-	m, err := mysql.New(ctx, c.opts...)
-	if err != nil {
-		return err
-	}
-
-	c.db = m
-
-	return nil
+	return c.db.Open(ctx)
 }
 
 func (c *client) Close(ctx context.Context) error {
@@ -76,10 +70,15 @@ func (c *client) GetMeta(ctx context.Context, uuid string) (*model.MetaVector, e
 		return nil, err
 	}
 
+	vector, err := res.GetVector()
+	if err != nil {
+		return nil, err
+	}
+
 	return &model.MetaVector{
 		UUID:     res.GetUUID(),
 		ObjectID: res.GetObjectID(),
-		Vector:   res.GetVector(),
+		Vector:   vector,
 		Meta:     res.GetMeta(),
 		IPs:      res.GetIPs(),
 	}, err

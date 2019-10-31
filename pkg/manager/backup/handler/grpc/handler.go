@@ -118,6 +118,11 @@ func (s *server) RemoveMulti(ctx context.Context, oids *payload.Object_IDs) (res
 }
 
 func toObjectMetaVector(meta *model.MetaVector) (res *payload.Object_MetaVector, err error) {
+	vector, err := meta.GetVector()
+	if err != nil {
+		return nil, err
+	}
+
 	return &payload.Object_MetaVector{
 		Uuid: meta.GetUUID(),
 		Meta: meta.GetMeta(),
@@ -125,7 +130,7 @@ func toObjectMetaVector(meta *model.MetaVector) (res *payload.Object_MetaVector,
 			Id: &payload.Object_ID{
 				Id: meta.GetObjectID(),
 			},
-			Vector: meta.GetVector(),
+			Vector: vector,
 		},
 		Ips: meta.GetIPs(),
 	}, nil
