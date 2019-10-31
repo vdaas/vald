@@ -17,8 +17,12 @@
 package mysql
 
 import (
-	"encoding/json"
-	"unsafe"
+	"strconv"
+	"strings"
+)
+
+const (
+	comma = ","
 )
 
 type MetaVector interface {
@@ -50,8 +54,12 @@ type podIP struct {
 func (m *metaVector) GetUUID() string     { return m.meta.UUID }
 func (m *metaVector) GetObjectID() string { return m.meta.ObjectID }
 func (m *metaVector) GetVector() []float64 {
-	var vector []float64
-	_ = json.Unmarshal(*(*[]byte)(unsafe.Pointer(&m.meta.Vector)), &vector)
+	ss := strings.Split(m.meta.Vector, comma)
+	vector := make([]float64, 0, len(ss))
+	for _, s := range ss {
+		f, _ := strconv.ParseFloat(s, 64)
+		vector = append(vector, f)
+	}
 	return vector
 }
 func (m *metaVector) GetVectorString() string { return m.meta.Vector }

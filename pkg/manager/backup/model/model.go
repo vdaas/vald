@@ -18,8 +18,12 @@
 package model
 
 import (
-	"encoding/json"
-	"unsafe"
+	"fmt"
+	"strings"
+)
+
+const (
+	comma = ","
 )
 
 type MetaVector struct {
@@ -34,8 +38,11 @@ func (m *MetaVector) GetUUID() string      { return m.UUID }
 func (m *MetaVector) GetObjectID() string  { return m.ObjectID }
 func (m *MetaVector) GetVector() []float64 { return m.Vector }
 func (m *MetaVector) GetVectorString() string {
-	vector, _ := json.Marshal(m.Vector)
-	return *(*string)(unsafe.Pointer(&vector))
+	ss := make([]string, 0, len(m.Vector))
+	for _, f := range m.Vector {
+		ss = append(ss, fmt.Sprint(f))
+	}
+	return strings.Join(ss, comma)
 }
 func (m *MetaVector) GetMeta() string  { return m.Meta }
 func (m *MetaVector) GetIPs() []string { return m.IPs }
