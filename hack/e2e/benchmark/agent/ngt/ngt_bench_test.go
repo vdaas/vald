@@ -91,9 +91,7 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 			buffers := make([]*bytes.Buffer, len(train))
 			for i := 0; i < len(train); i++ {
 				buf, err := json.Marshal(&payload.Object_Vector{
-					Id: &payload.Object_ID{
-						Id: ids[i],
-					},
+					Id: ids[i],
 					Vector: train[i],
 				})
 				if err != nil {
@@ -165,9 +163,7 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 			buffers = make([]*bytes.Buffer, len(query))
 			for i := 0; i < len(query); i++ {
 				buf, err := json.Marshal(&payload.Search_Request{
-					Vector: &payload.Object_Vector{
-						Vector: query[i],
-					},
+					Vector: query[i],
 					Config: searchConfig,
 				})
 				if err != nil {
@@ -269,9 +265,7 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					_, err := client.Insert(ctx, &payload.Object_Vector{
-						Id: &payload.Object_ID{
-							Id: ids[i],
-						},
+						Id: ids[i],
 						Vector: train[i],
 					})
 					if err != nil {
@@ -282,9 +276,7 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 			})
 			for ; i < len(train); i++ {
 				_, err := client.Insert(ctx, &payload.Object_Vector{
-					Id: &payload.Object_ID{
-						Id: ids[i],
-					},
+					Id: ids[i],
 					Vector: train[i],
 				})
 				if err != nil {
@@ -312,9 +304,7 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					_, err := client.Search(ctx, &payload.Search_Request{
-						Vector: &payload.Object_Vector{
-							Vector: query[i],
-						},
+						Vector: query[i],
 						Config: searchConfig,
 					})
 					if err != nil {
@@ -386,9 +376,7 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					err := sti.Send(&payload.Object_Vector{
-						Id: &payload.Object_ID{
-							Id: ids[i],
-						},
+						Id: ids[i],
 						Vector: train[i % len(train)],
 					})
 					if err != nil {
@@ -413,9 +401,7 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 			})
 			for ; i < len(train); i++ {
 				err := sti.Send(&payload.Object_Vector{
-					Id: &payload.Object_ID{
-						Id: ids[i],
-					},
+					Id: ids[i],
 					Vector: train[i % len(train)],
 				})
 				if err != nil {
@@ -464,9 +450,8 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					err := st.Send(&payload.Search_Request{
-						Vector: &payload.Object_Vector{
-							Vector: query[i % len(query)],
-						},						Config: searchConfig,
+						Vector: query[i % len(query)],
+						Config: searchConfig,
 					})
 					if err != nil {
 						if err == io.EOF {
