@@ -79,9 +79,9 @@ service Vald {
   rpc StreamRemove(stream payload.Object.ID) returns (stream payload.Empty) {}
   rpc MultiRemove(payload.Object.IDs) returns (payload.Empty) {}
 
-  rpc GetObject(payload.Object.ID) returns (payload.Object.MetaVector) {
+  rpc GetObject(payload.Object.ID) returns (payload.Backup.MetaVector) {
     option (google.api.http).get = "/object/{id}";
   }
   rpc StreamGetObject(stream payload.Object.ID)
-      returns (stream payload.Object.MetaVector) {}
+      returns (stream payload.Backup.MetaVector) {}
 }

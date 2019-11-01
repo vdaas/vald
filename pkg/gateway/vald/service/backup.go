@@ -34,10 +34,10 @@ import (
 
 type Backup interface {
 	Start(ctx context.Context) <-chan error
-	GetObject(ctx context.Context, uuid string) (*payload.Object_MetaVector, error)
+	GetObject(ctx context.Context, uuid string) (*payload.Backup_MetaVector, error)
 	GetLocation(ctx context.Context, uuid string) ([]string, error)
-	Register(ctx context.Context, vec *payload.Object_MetaVector) error
-	RegisterMultiple(ctx context.Context, vecs *payload.Object_MetaVectors) error
+	Register(ctx context.Context, vec *payload.Backup_MetaVector) error
+	RegisterMultiple(ctx context.Context, vecs *payload.Backup_MetaVectors) error
 	Remove(ctx context.Context, uuid string) error
 	RemoveMultiple(ctx context.Context, uuids ...string) error
 }
@@ -107,9 +107,9 @@ func (b *backup) Start(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Object_MetaVector, err error) {
-	vec, err = b.bc.Load().(gback.BackupClient).GetVector(ctx, &payload.Object_ID{
-		Id: uuid,
+func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backup_MetaVector, err error) {
+	vec, err = b.bc.Load().(gback.BackupClient).GetVector(ctx, &payload.Backup_GetVector_Request{
+		Uuid: uuid,
 	}, b.copts...)
 	if err != nil {
 		return nil, err
@@ -118,8 +118,8 @@ func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Objec
 }
 
 func (b *backup) GetLocation(ctx context.Context, uuid string) (ipList []string, err error) {
-	ips, err := b.bc.Load().(gback.BackupClient).Locations(ctx, &payload.Object_ID{
-		Id: uuid,
+	ips, err := b.bc.Load().(gback.BackupClient).Locations(ctx, &payload.Backup_Locations_Request{
+		Uuid: uuid,
 	}, b.copts...)
 	if err != nil {
 		return nil, err
@@ -127,7 +127,7 @@ func (b *backup) GetLocation(ctx context.Context, uuid string) (ipList []string,
 	return ips.GetIp(), nil
 }
 
-func (b *backup) Register(ctx context.Context, vec *payload.Object_MetaVector) error {
+func (b *backup) Register(ctx context.Context, vec *payload.Backup_MetaVector) error {
 	_, err := b.bc.Load().(gback.BackupClient).Register(ctx, vec, b.copts...)
 	if err != nil {
 		return err
@@ -135,7 +135,7 @@ func (b *backup) Register(ctx context.Context, vec *payload.Object_MetaVector) e
 	return nil
 }
 
-func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Object_MetaVectors) error {
+func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Backup_MetaVectors) error {
 	_, err := b.bc.Load().(gback.BackupClient).RegisterMulti(ctx, vecs, b.copts...)
 	if err != nil {
 		return err
@@ -143,8 +143,8 @@ func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Object_Meta
 	return nil
 }
 func (b *backup) Remove(ctx context.Context, uuid string) error {
-	_, err := b.bc.Load().(gback.BackupClient).Remove(ctx, &payload.Object_ID{
-		Id: uuid,
+	_, err := b.bc.Load().(gback.BackupClient).Remove(ctx, &payload.Backup_Remove_Request{
+		Uuid: uuid,
 	}, b.copts...)
 	if err != nil {
 		return err
@@ -152,10 +152,10 @@ func (b *backup) Remove(ctx context.Context, uuid string) error {
 	return nil
 }
 func (b *backup) RemoveMultiple(ctx context.Context, uuids ...string) error {
-	ids := new(payload.Object_IDs)
-	ids.Ids = make([]string, 0, len(uuids))
+	ids := new(payload.Backup_Remove_RequestMulti)
+	ids.Uuid = make([]string, 0, len(uuids))
 	for _, uuid := range uuids {
-		ids.Ids = append(ids.Ids, uuid)
+		ids.Uuid = append(ids.Uuid, uuid)
 	}
 	_, err := b.bc.Load().(gback.BackupClient).RemoveMulti(ctx, ids, b.copts...)
 	if err != nil {

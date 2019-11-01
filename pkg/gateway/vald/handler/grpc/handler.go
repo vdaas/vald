@@ -214,7 +214,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	if err != nil {
 		return nil, err
 	}
-	err = s.backup.Register(ctx, &payload.Object_MetaVector{
+	err = s.backup.Register(ctx, &payload.Backup_MetaVector{
 		Uuid:   uuid,
 		Meta:   meta,
 		Vector: vec.GetVector(),
@@ -260,11 +260,11 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	if err != nil {
 		return nil, err
 	}
-	mvecs := new(payload.Object_MetaVectors)
-	mvecs.Vectors = make([]*payload.Object_MetaVector, 0, len(vecs.GetVectors()))
+	mvecs := new(payload.Backup_MetaVectors)
+	mvecs.Vectors = make([]*payload.Backup_MetaVector, 0, len(vecs.GetVectors()))
 	for _, vec := range vecs.GetVectors() {
 		uuid := vec.GetId()
-		mvecs.Vectors = append(mvecs.Vectors, &payload.Object_MetaVector{
+		mvecs.Vectors = append(mvecs.Vectors, &payload.Backup_MetaVector{
 			Uuid:   uuid,
 			Meta:   metaMap[uuid],
 			Vector: vec.GetVector(),
@@ -306,7 +306,7 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 	if err != nil {
 		return nil, err
 	}
-	err = s.backup.Register(ctx, &payload.Object_MetaVector{
+	err = s.backup.Register(ctx, &payload.Backup_MetaVector{
 		Uuid:   uuid,
 		Meta:   meta,
 		Vector: vec.GetVector(),
@@ -428,7 +428,7 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res 
 	return new(payload.Empty), nil
 }
 
-func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *payload.Object_MetaVector, err error) {
+func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *payload.Backup_MetaVector, err error) {
 	meta := id.GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil {
