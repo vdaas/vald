@@ -60,6 +60,9 @@ RUN CGO_ENABLED=1 \
     "cmd/${PKG}/main.go" \
     && upx -9 -o "/usr/bin/${APP_NAME}" "${APP_NAME}"
 
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
+RUN cp sample.yaml /tmp/config.yaml
+
 # Start From Scratch For Running Environment
 FROM scratch
 # Start From Alpine For Debug Environment
@@ -74,5 +77,6 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /etc/passwd /etc/passwd
 # Copy our static executable
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
+COPY --from=builder /tmp/config.yaml /etc/server/config.yaml
 
 ENTRYPOINT ["/go/bin/ngt"]

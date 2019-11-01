@@ -80,6 +80,8 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
+	log.Infof("service %s :%s starting...", r.name, version)
+
 	err = ver.Check(version, r.maxVersion, r.minVersion)
 	if err != nil {
 		return err
@@ -99,10 +101,6 @@ func Run(ctx context.Context, run Runner) (err error) {
 	defer close(sigCh)
 
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-
-	emap := make(map[string]int)
-	errs := make([]error, 0, 10)
-
 	rctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -115,10 +113,13 @@ func Run(ctx context.Context, run Runner) (err error) {
 
 	ech := run.Start(rctx)
 
+	emap := make(map[string]int)
+	errs := make([]error, 0, 10)
+
 	for {
 		select {
-		case <-sigCh:
-			log.Warn("daemon is stopping now...")
+		case sig := <-sigCh:
+			log.Warnf("%s signal received daemon will stopping soon...", sig)
 			cancel()
 		case err = <-ech:
 			if err != nil {

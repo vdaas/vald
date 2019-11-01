@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -28,7 +28,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /liveness
-            port: 3000
+            port: liveness
             scheme: HTTP
           initialDelaySeconds: 3
           timeoutSeconds: 2
@@ -38,7 +38,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /readiness
-            port: 3001
+            port: readiness
             scheme: HTTP
           initialDelaySeconds: 3
           timeoutSeconds: 2
@@ -47,7 +47,20 @@ spec:
           periodSeconds: 3
         name: agent-ngt
         ports:
+        - containerPort: 3000
+          name: liveness
+          protocol: TCP
+        - containerPort: 3001
+          name: readiness
+          protocol: TCP
         - containerPort: 8082
+          name: grpc
+          protocol: TCP
+        - containerPort: 8080
+          name: rest
+          protocol: TCP
+        - containerPort: 6060
+          name: pprof
           protocol: TCP
         resources: {}
         terminationMessagePath: /dev/termination-log

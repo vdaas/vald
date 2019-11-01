@@ -114,7 +114,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 		for {
 			select {
 			case <-ctx.Done():
-				return nil
+				return ctx.Err()
 			case <-tick.C:
 				if ic := atomic.LoadUint64(&n.ic); int(ic) >= n.alen {
 					err := n.CreateIndex(n.dps)

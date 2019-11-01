@@ -33,7 +33,7 @@ data:
           read_timeout: ""
           write_timeout: ""
       health_check_servers:
-      - name: livenesss
+      - name: liveness
         host: 127.0.0.1
         port: 3000
         mode: ""

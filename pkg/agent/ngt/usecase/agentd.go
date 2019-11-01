@@ -35,6 +35,7 @@ import (
 )
 
 type run struct {
+	eg     errgroup.Group
 	cfg    *config.Data
 	ngt    service.NGT
 	server starter.Server
@@ -46,6 +47,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 	g := handler.New(handler.WithNGT(ngt))
+	eg := errgroup.Get()
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
@@ -54,7 +56,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 				server.WithHTTPHandler(
 					router.New(
 						router.WithTimeout(sc.HTTP.HandlerTimeout),
-						router.WithErrGroup(errgroup.Get()),
+						router.WithErrGroup(eg),
 						router.WithHandler(
 							rest.New(
 								rest.WithAgent(g),
@@ -87,6 +89,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
+		eg:     eg,
 		ngt:    ngt,
 		cfg:    cfg,
 		server: srv,
@@ -101,12 +104,15 @@ func (r *run) Start(ctx context.Context) <-chan error {
 	ech := make(chan error, 2)
 	nech := r.ngt.Start(ctx)
 	sech := r.server.ListenAndServe(ctx)
-	errgroup.Get().Go(safety.RecoverFunc(func() error {
+	r.eg.Go(safety.RecoverFunc(func() error {
 		for {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case ech <- <-nech:
+			case err := <-nech:
+				if err != nil {
+					ech <- err
+				}
 			case err := <-sech:
 				if err != nil {
 					ech <- err

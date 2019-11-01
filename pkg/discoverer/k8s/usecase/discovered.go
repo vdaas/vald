@@ -36,6 +36,7 @@ import (
 )
 
 type run struct {
+	eg     errgroup.Group
 	cfg    *config.Data
 	dsc    service.Discoverer
 	server starter.Server
@@ -47,6 +48,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 	g := handler.New(handler.WithDiscoverer(dsc))
+	eg := errgroup.Get()
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
@@ -55,7 +57,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 				server.WithHTTPHandler(
 					router.New(
 						router.WithTimeout(sc.HTTP.HandlerTimeout),
-						router.WithErrGroup(errgroup.Get()),
+						router.WithErrGroup(eg),
 						router.WithHandler(
 							rest.New(
 								rest.WithDiscoverer(g),
@@ -100,7 +102,7 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) <-chan error {
 	ech := make(chan error, 2)
-	errgroup.Get().Go(safety.RecoverFunc(func() error {
+	r.eg.Go(safety.RecoverFunc(func() error {
 		log.Info("daemon start")
 		defer close(ech)
 		dech := r.dsc.Start(ctx)
