@@ -103,6 +103,51 @@ message Discoverer {
   }
 }
 
+message Backup {
+  message GetVector {
+    message Request {
+      string uuid = 1 [ (validate.rules).string.min_len = 1 ];
+    }
+  }
+
+  message Locations {
+    message Request {
+      string uuid = 1 [ (validate.rules).string.min_len = 1 ];
+    }
+  }
+
+  message Remove {
+    message Request {
+      string uuid = 1 [ (validate.rules).string.min_len = 1 ];
+    }
+    message RequestMulti {
+      repeated string uuid = 1 [ (validate.rules).repeated .min_items = 1 ];
+    }
+  }
+
+  message IP {
+    message Register {
+      message Request {
+        string uuid = 1 [ (validate.rules).string.min_len = 1];
+        repeated string ips = 2 [ (validate.rules).repeated .min_items = 1 ];
+      }
+    }
+    message Remove {
+      message Request {
+        repeated string ips = 1 [ (validate.rules).repeated .min_items = 1 ];
+      }
+    }
+  }
+
+  message MetaVector {
+    string uuid = 1;
+    string meta = 2;
+    repeated double vector = 3 [ (validate.rules).repeated .min_items = 2 ];
+    repeated string ips = 4;
+  }
+  message MetaVectors { repeated MetaVector vectors = 1; }
+}
+
 message Info {
   message Server {
     string name = 1;
