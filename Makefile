@@ -151,11 +151,11 @@ define bench-pprof
 		$5 \
 		| tee $1/result-$4.out
 	go tool pprof --svg \
-		$1/agent.bin \
+		$1/$2.bin \
 		$1/cpu-$4.out \
 		> $1/cpu-$4.svg
 	go tool pprof --svg \
-		$1/agent.bin \
+		$1/$2.bin \
 		$1/mem-$4.out \
 		> $1/mem-$4.svg
 endef
@@ -451,7 +451,7 @@ $(PBDOCS): proto-deps $(PBDOCDIRS)
 
 $(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
 	@$(call green, "downloading datasets for benchmark...")
-	curl -fsSL -o $@ http://vectors.erikbern.com/$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
+	curl -fsSL -o $@ http://ann-benchmarks.com/$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
 	(cd $(BENCH_DATASET_BASE_DIR); \
 	    md5sum -c $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5_DIR_NAME)/%.md5,$@) || \
 	    (rm -f $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_HDF5_DIR_NAME)/%.hdf5,$@) && exit 1))

@@ -391,6 +391,7 @@ func BenchmarkNGTDgRPCStream(rb *testing.B) {
 			if err != nil {
 				b.Error(err)
 			}
+
 			wg := &sync.WaitGroup{}
 			i := 0
 			b.Run("Insert objects", func(bb *testing.B) {
@@ -407,24 +408,27 @@ func BenchmarkNGTDgRPCStream(rb *testing.B) {
 					})
 					if err != nil {
 						if err == io.EOF {
-							log.Error(err)
-							return
+							break
 						}
 						bb.Error(err)
 					}
 					wg.Add(1)
 					go func() {
+						defer wg.Done()
 						_, err := sti.Recv()
 						if err != nil {
 							if err != io.EOF {
 								bb.Error(err)
 							}
 						}
-						wg.Done()
 					}()
 					i++
 				}
+				log.Info(bb.N, i)
 			})
+			log.Info("wait")
+			wg.Wait()
+			log.Info("done")
 			for ; i < len(train); i++ {
 				err := sti.Send(&proto.InsertRequest{
 					Id: []byte(ids[i]),
@@ -432,8 +436,7 @@ func BenchmarkNGTDgRPCStream(rb *testing.B) {
 				})
 				if err != nil {
 					if err == io.EOF {
-						log.Error(err)
-						return
+						break
 					}
 					b.Error(err)
 				}
@@ -448,10 +451,10 @@ func BenchmarkNGTDgRPCStream(rb *testing.B) {
 					}
 				}()
 			}
-			wg.Wait()
 			if err := sti.CloseSend(); err != nil {
 				b.Error(err)
 			}
+			wg.Wait()
 			b.Run("CreateIndex", func(bb *testing.B) {
 				bb.ReportAllocs()
 				bb.ResetTimer()
