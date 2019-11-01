@@ -23,4 +23,6 @@ type Setter interface {
 	SetMetas(ctx context.Context, metas ...MetaVector) error
 	DeleteMeta(ctx context.Context, uuid string) error
 	DeleteMetas(ctx context.Context, uuids ...string) error
+	SetIPs(ctx context.Context, uuid string, ips ...string) error
+	RemoveIPs(ctx context.Context, ips ...string) error
 }

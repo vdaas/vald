@@ -32,6 +32,8 @@ type Handler interface {
 	RegisterMulti(w http.ResponseWriter, r *http.Request) (int, error)
 	Remove(w http.ResponseWriter, r *http.Request) (int, error)
 	RemoveMulti(w http.ResponseWriter, r *http.Request) (int, error)
+	RegisterIPs(w http.ResponseWriter, r *http.Request) (int, error)
+	RemoveIPs(w http.ResponseWriter, r *http.Request) (int, error)
 }
 
 type handler struct {
@@ -48,43 +50,57 @@ func New(opts ...Option) Handler {
 }
 
 func (h *handler) GetVector(w http.ResponseWriter, r *http.Request) (int, error) {
-	var req *payload.Object_ID
+	var req *payload.Backup_GetVector_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.backup.GetVector(r.Context(), req)
 	})
 }
 
 func (h *handler) Locations(w http.ResponseWriter, r *http.Request) (int, error) {
-	var req *payload.Object_ID
+	var req *payload.Backup_Locations_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.backup.Locations(r.Context(), req)
 	})
 }
 
 func (h *handler) Register(w http.ResponseWriter, r *http.Request) (int, error) {
-	var req *payload.Object_MetaVector
+	var req *payload.Backup_MetaVector
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.backup.Register(r.Context(), req)
 	})
 }
 
 func (h *handler) RegisterMulti(w http.ResponseWriter, r *http.Request) (int, error) {
-	var req *payload.Object_MetaVectors
+	var req *payload.Backup_MetaVectors
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.backup.RegisterMulti(r.Context(), req)
 	})
 }
 
 func (h *handler) Remove(w http.ResponseWriter, r *http.Request) (int, error) {
-	var req *payload.Object_ID
+	var req *payload.Backup_Remove_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.backup.Remove(r.Context(), req)
 	})
 }
 
 func (h *handler) RemoveMulti(w http.ResponseWriter, r *http.Request) (int, error) {
-	var req *payload.Object_IDs
+	var req *payload.Backup_Remove_RequestMulti
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.backup.RemoveMulti(r.Context(), req)
+	})
+}
+
+func (h *handler) RegisterIPs(w http.ResponseWriter, r *http.Request) (int, error) {
+	var req *payload.Backup_IP_Register_Request
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.backup.RegisterIPs(r.Context(), req)
+	})
+}
+
+func (h *handler) RemoveIPs(w http.ResponseWriter, r *http.Request) (int, error) {
+	var req *payload.Backup_IP_Remove_Request
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.backup.RemoveIPs(r.Context(), req)
 	})
 }

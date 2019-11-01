@@ -131,9 +131,6 @@ func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error)
 }
 
 func validateMeta(meta MetaVector) error {
-	if meta.GetObjectID() == "" {
-		return errors.ErrRequiredMemberNotFilled("object_id")
-	}
 	if meta.GetVectorString() == "" {
 		return errors.ErrRequiredMemberNotFilled("vector")
 	}
@@ -146,12 +143,10 @@ func setMetaWithTx(ctx context.Context, tx *dbr.Tx, meta MetaVector) error {
 		return err
 	}
 
-	_, err = tx.InsertBySql("INSERT INTO meta_vector(uuid, object_id, vector, meta) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE object_id =?, vector = ?, meta = ?",
+	_, err = tx.InsertBySql("INSERT INTO meta_vector(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
 		meta.GetUUID(),
-		meta.GetObjectID(),
 		meta.GetVectorString(),
 		meta.GetMeta(),
-		meta.GetObjectID(),
 		meta.GetVectorString(),
 		meta.GetMeta()).ExecContext(ctx)
 	if err != nil {
@@ -165,7 +160,7 @@ func setMetaWithTx(ctx context.Context, tx *dbr.Tx, meta MetaVector) error {
 
 	stmt := tx.InsertInto(podIPTableName).Columns(uuidColumnName, ipColumnName)
 	for _, ip := range meta.GetIPs() {
-		stmt.Record(ip)
+		stmt.Record(&podIP{UUID: meta.GetUUID(), IP: ip})
 	}
 	_, err = stmt.ExecContext(ctx)
 	if err != nil {
@@ -255,6 +250,50 @@ func (m *mySQLClient) DeleteMetas(ctx context.Context, uuids ...string) error {
 
 	for _, uuid := range uuids {
 		err = deleteMetaWithTx(ctx, tx, uuid)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
+}
+
+func (m *mySQLClient) SetIPs(ctx context.Context, uuid string, ips ...string) error {
+	if !m.connected.Load().(bool) {
+		return errors.ErrMySQLConnectionClosed
+	}
+
+	tx, err := m.session.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.RollbackUnlessCommitted()
+
+	stmt := tx.InsertInto(podIPTableName).Columns(uuidColumnName, ipColumnName)
+	for _, ip := range ips {
+		stmt.Record(&podIP{UUID: uuid, IP: ip})
+	}
+	_, err = stmt.ExecContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func (m *mySQLClient) RemoveIPs(ctx context.Context, ips ...string) error {
+	if !m.connected.Load().(bool) {
+		return errors.ErrMySQLConnectionClosed
+	}
+
+	tx, err := m.session.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.RollbackUnlessCommitted()
+
+	for _, ip := range ips {
+		_, err = tx.DeleteFrom(podIPTableName).Where(dbr.Eq(ipColumnName, ip)).ExecContext(ctx)
 		if err != nil {
 			return err
 		}

@@ -29,7 +29,6 @@ const (
 
 type MetaVector interface {
 	GetUUID() string
-	GetObjectID() string
 	GetVector() ([]float64, error)
 	GetVectorString() string
 	GetMeta() string
@@ -42,10 +41,9 @@ type metaVector struct {
 }
 
 type meta struct {
-	UUID     string         `db:"uuid"`
-	ObjectID string         `db:"object_id"`
-	Vector   string         `db:"vector"`
-	Meta     dbr.NullString `db:"meta"`
+	UUID   string         `db:"uuid"`
+	Vector string         `db:"vector"`
+	Meta   dbr.NullString `db:"meta"`
 }
 
 type podIP struct {
@@ -53,8 +51,7 @@ type podIP struct {
 	IP   string `db:"ip"`
 }
 
-func (m *metaVector) GetUUID() string     { return m.meta.UUID }
-func (m *metaVector) GetObjectID() string { return m.meta.ObjectID }
+func (m *metaVector) GetUUID() string { return m.meta.UUID }
 func (m *metaVector) GetVector() ([]float64, error) {
 	ss := strings.Split(m.meta.Vector, comma)
 	vector := make([]float64, 0, len(ss))
@@ -68,7 +65,7 @@ func (m *metaVector) GetVector() ([]float64, error) {
 	return vector, nil
 }
 func (m *metaVector) GetVectorString() string { return m.meta.Vector }
-func (m *metaVector) GetMeta() string         { return m.meta.Meta }
+func (m *metaVector) GetMeta() string         { return m.meta.Meta.String }
 func (m *metaVector) GetIPs() []string {
 	ips := make([]string, 0, len(m.podIPs))
 

@@ -41,17 +41,17 @@ func New(opts ...Option) Server {
 	return s
 }
 
-func (s *server) GetVector(ctx context.Context, oid *payload.Object_ID) (res *payload.Object_MetaVector, err error) {
-	meta, err := s.mySQL.GetMeta(ctx, oid.Id)
+func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_MetaVector, err error) {
+	meta, err := s.mySQL.GetMeta(ctx, req.Uuid)
 	if err != nil {
 		return nil, err
 	}
 
-	return toObjectMetaVector(meta)
+	return toBackupMetaVector(meta)
 }
 
-func (s *server) Locations(ctx context.Context, oid *payload.Object_ID) (res *payload.Info_IPs, err error) {
-	ips, err := s.mySQL.GetIPs(ctx, oid.Id)
+func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Request) (res *payload.Info_IPs, err error) {
+	ips, err := s.mySQL.GetIPs(ctx, req.Uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (s *server) Locations(ctx context.Context, oid *payload.Object_ID) (res *pa
 	}, nil
 }
 
-func (s *server) Register(ctx context.Context, meta *payload.Object_MetaVector) (res *payload.Empty, err error) {
+func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) (res *payload.Empty, err error) {
 	m, err := toModelMetaVector(meta)
 	if err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func (s *server) Register(ctx context.Context, meta *payload.Object_MetaVector) 
 	return new(payload.Empty), nil
 }
 
-func (s *server) RegisterMulti(ctx context.Context, metas *payload.Object_MetaVectors) (res *payload.Empty, err error) {
+func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) (res *payload.Empty, err error) {
 	var m *model.MetaVector
 	ms := make([]model.MetaVector, 0, len(metas.Vectors))
 	for _, meta := range metas.Vectors {
@@ -94,8 +94,8 @@ func (s *server) RegisterMulti(ctx context.Context, metas *payload.Object_MetaVe
 	return new(payload.Empty), nil
 }
 
-func (s *server) Remove(ctx context.Context, oid *payload.Object_ID) (res *payload.Empty, err error) {
-	err = s.mySQL.DeleteMeta(ctx, oid.Id)
+func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request) (res *payload.Empty, err error) {
+	err = s.mySQL.DeleteMeta(ctx, req.Uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -103,10 +103,10 @@ func (s *server) Remove(ctx context.Context, oid *payload.Object_ID) (res *paylo
 	return new(payload.Empty), nil
 }
 
-func (s *server) RemoveMulti(ctx context.Context, oids *payload.Object_IDs) (res *payload.Empty, err error) {
-	uuids := make([]string, 0, len(oids.Ids))
-	for _, oid := range oids.Ids {
-		uuids = append(uuids, oid.Id)
+func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_RequestMulti) (res *payload.Empty, err error) {
+	uuids := make([]string, 0, len(req.Uuid))
+	for _, uuid := range req.Uuid {
+		uuids = append(uuids, uuid)
 	}
 
 	err = s.mySQL.DeleteMetas(ctx, uuids...)
@@ -117,31 +117,43 @@ func (s *server) RemoveMulti(ctx context.Context, oids *payload.Object_IDs) (res
 	return new(payload.Empty), nil
 }
 
-func toObjectMetaVector(meta *model.MetaVector) (res *payload.Object_MetaVector, err error) {
+func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Register_Request) (res *payload.Empty, err error) {
+	err = s.mySQL.SetIPs(ctx, req.Uuid, req.Ips...)
+	if err != nil {
+		return nil, err
+	}
+
+	return new(payload.Empty), nil
+}
+
+func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Request) (res *payload.Empty, err error) {
+	err = s.mySQL.RemoveIPs(ctx, req.Ips...)
+	if err != nil {
+		return nil, err
+	}
+
+	return new(payload.Empty), nil
+}
+
+func toBackupMetaVector(meta *model.MetaVector) (res *payload.Backup_MetaVector, err error) {
 	vector, err := meta.GetVector()
 	if err != nil {
 		return nil, err
 	}
 
-	return &payload.Object_MetaVector{
-		Uuid: meta.GetUUID(),
-		Meta: meta.GetMeta(),
-		Vector: &payload.Object_Vector{
-			Id: &payload.Object_ID{
-				Id: meta.GetObjectID(),
-			},
-			Vector: vector,
-		},
-		Ips: meta.GetIPs(),
+	return &payload.Backup_MetaVector{
+		Uuid:   meta.GetUUID(),
+		Meta:   meta.GetMeta(),
+		Vector: vector,
+		Ips:    meta.GetIPs(),
 	}, nil
 }
 
-func toModelMetaVector(obj *payload.Object_MetaVector) (res *model.MetaVector, err error) {
+func toModelMetaVector(obj *payload.Backup_MetaVector) (res *model.MetaVector, err error) {
 	return &model.MetaVector{
-		UUID:     obj.Uuid,
-		ObjectID: obj.Vector.Id.Id,
-		Vector:   obj.Vector.Vector,
-		Meta:     obj.Meta,
-		IPs:      obj.Ips,
+		UUID:   obj.Uuid,
+		Vector: obj.Vector,
+		Meta:   obj.Meta,
+		IPs:    obj.Ips,
 	}, nil
 }

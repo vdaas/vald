@@ -33,6 +33,8 @@ type MySQL interface {
 	SetMetas(ctx context.Context, metas ...model.MetaVector) error
 	DeleteMeta(ctx context.Context, uuid string) error
 	DeleteMetas(ctx context.Context, uuids ...string) error
+	SetIPs(ctx context.Context, uuid string, ips ...string) error
+	RemoveIPs(ctx context.Context, ips ...string) error
 }
 
 type client struct {
@@ -76,11 +78,10 @@ func (c *client) GetMeta(ctx context.Context, uuid string) (*model.MetaVector, e
 	}
 
 	return &model.MetaVector{
-		UUID:     res.GetUUID(),
-		ObjectID: res.GetObjectID(),
-		Vector:   vector,
-		Meta:     res.GetMeta(),
-		IPs:      res.GetIPs(),
+		UUID:   res.GetUUID(),
+		Vector: vector,
+		Meta:   res.GetMeta(),
+		IPs:    res.GetIPs(),
 	}, err
 }
 
@@ -106,4 +107,12 @@ func (c *client) DeleteMeta(ctx context.Context, uuid string) error {
 
 func (c *client) DeleteMetas(ctx context.Context, uuids ...string) error {
 	return c.db.DeleteMetas(ctx, uuids...)
+}
+
+func (c *client) SetIPs(ctx context.Context, uuid string, ips ...string) error {
+	return c.db.SetIPs(ctx, uuid, ips...)
+}
+
+func (c *client) RemoveIPs(ctx context.Context, ips ...string) error {
+	return c.db.RemoveIPs(ctx, ips...)
 }
