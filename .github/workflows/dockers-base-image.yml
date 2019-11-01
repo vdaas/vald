@@ -38,6 +38,7 @@ jobs:
       run: |
         echo 'Push to DockerHub (master)'
         imagename=`make dockers-base-image-name`
+        docker push ${imagename}:latest
         docker tag ${imagename} ${imagename}:nightly
         docker push ${imagename}:nightly
     - name: push to DockerHub (pull request)
