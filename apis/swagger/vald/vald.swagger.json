@@ -72,7 +72,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/ObjectMetaVector"
+              "$ref": "#/definitions/BackupMetaVector"
             }
           }
         },
@@ -167,27 +167,7 @@
     }
   },
   "definitions": {
-    "ObjectDistance": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "distance": {
-          "type": "number",
-          "format": "float"
-        }
-      }
-    },
-    "ObjectID": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      }
-    },
-    "ObjectMetaVector": {
+    "BackupMetaVector": {
       "type": "object",
       "properties": {
         "uuid": {
@@ -208,6 +188,26 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "ObjectDistance": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "distance": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "ObjectID": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
         }
       }
     },
@@ -326,17 +326,17 @@
     }
   },
   "x-stream-definitions": {
-    "ObjectMetaVector": {
+    "BackupMetaVector": {
       "type": "object",
       "properties": {
         "result": {
-          "$ref": "#/definitions/ObjectMetaVector"
+          "$ref": "#/definitions/BackupMetaVector"
         },
         "error": {
           "$ref": "#/definitions/runtimeStreamError"
         }
       },
-      "title": "Stream result of ObjectMetaVector"
+      "title": "Stream result of BackupMetaVector"
     },
     "SearchResponse": {
       "type": "object",
