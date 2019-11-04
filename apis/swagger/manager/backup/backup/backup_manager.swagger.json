@@ -15,6 +15,132 @@
     "application/json"
   ],
   "paths": {
+    "/delete/multi": {
+      "post": {
+        "operationId": "RemoveMulti",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/payloadEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RemoveRequestMulti"
+            }
+          }
+        ],
+        "tags": [
+          "Backup"
+        ]
+      }
+    },
+    "/delete/{uuid}": {
+      "delete": {
+        "operationId": "Remove",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/payloadEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Backup"
+        ]
+      }
+    },
+    "/ip": {
+      "post": {
+        "operationId": "RegisterIPs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/payloadEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/IPRegisterRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Backup"
+        ]
+      }
+    },
+    "/ip/delete": {
+      "post": {
+        "operationId": "RemoveIPs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/payloadEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BackupIPRemoveRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Backup"
+        ]
+      }
+    },
+    "/locations/{uuid}": {
+      "get": {
+        "operationId": "Locations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/InfoIPs"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Backup"
+        ]
+      }
+    },
     "/register": {
       "post": {
         "operationId": "Register",
@@ -32,7 +158,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ObjectMetaVector"
+              "$ref": "#/definitions/BackupMetaVector"
             }
           }
         ],
@@ -41,9 +167,9 @@
         ]
       }
     },
-    "/remove/{id}": {
-      "delete": {
-        "operationId": "Remove",
+    "/register/multi": {
+      "post": {
+        "operationId": "RegisterMulti",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -54,7 +180,33 @@
         },
         "parameters": [
           {
-            "name": "id",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BackupMetaVectors"
+            }
+          }
+        ],
+        "tags": [
+          "Backup"
+        ]
+      }
+    },
+    "/vector/{uuid}": {
+      "get": {
+        "operationId": "GetVector",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/BackupMetaVector"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "uuid",
             "in": "path",
             "required": true,
             "type": "string"
@@ -67,10 +219,10 @@
     }
   },
   "definitions": {
-    "InfoIPs": {
+    "BackupIPRemoveRequest": {
       "type": "object",
       "properties": {
-        "ip": {
+        "ips": {
           "type": "array",
           "items": {
             "type": "string"
@@ -78,7 +230,7 @@
         }
       }
     },
-    "ObjectMetaVector": {
+    "BackupMetaVector": {
       "type": "object",
       "properties": {
         "uuid": {
@@ -95,6 +247,53 @@
           }
         },
         "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "BackupMetaVectors": {
+      "type": "object",
+      "properties": {
+        "vectors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BackupMetaVector"
+          }
+        }
+      }
+    },
+    "IPRegisterRequest": {
+      "type": "object",
+      "properties": {
+        "uuid": {
+          "type": "string"
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "InfoIPs": {
+      "type": "object",
+      "properties": {
+        "ip": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "RemoveRequestMulti": {
+      "type": "object",
+      "properties": {
+        "uuid": {
           "type": "array",
           "items": {
             "type": "string"

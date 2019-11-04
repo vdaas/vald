@@ -30,22 +30,56 @@ import "pb/gql.proto";
 service Backup {
   option (gql.svc_type) = QUERY;
 
-  rpc GetVector(payload.Object.ID) returns (payload.Object.MetaVector) {}
+  rpc GetVector(payload.Backup.GetVector.Request) returns (payload.Backup.MetaVector) {
+    option (google.api.http).get = "/vector/{uuid}";
+  }
 
-  rpc Locations(payload.Object.ID) returns (payload.Info.IPs) {}
+  rpc Locations(payload.Backup.Locations.Request) returns (payload.Info.IPs) {
+    option (google.api.http).get = "/locations/{uuid}";
+  }
 
-  rpc Register(payload.Object.MetaVector) returns (payload.Empty) {
+  rpc Register(payload.Backup.MetaVector) returns (payload.Empty) {
     option (google.api.http) = {
       post : "/register"
       body : "*"
     };
     option (gql.rpc_type) = MUTATION;
   }
-  rpc RegisterMulti(payload.Object.MetaVectors) returns (payload.Empty) {}
 
-  rpc Remove(payload.Object.ID) returns (payload.Empty) {
-    option (google.api.http).delete = "/remove/{id}";
+  rpc RegisterMulti(payload.Backup.MetaVectors) returns (payload.Empty) {
+    option (google.api.http) = {
+      post : "/register/multi"
+      body : "*"
+    };
     option (gql.rpc_type) = MUTATION;
   }
-  rpc RemoveMulti(payload.Object.IDs) returns (payload.Empty) {}
+
+  rpc Remove(payload.Backup.Remove.Request) returns (payload.Empty) {
+    option (google.api.http).delete = "/delete/{uuid}";
+    option (gql.rpc_type) = MUTATION;
+  }
+
+  rpc RemoveMulti(payload.Backup.Remove.RequestMulti) returns (payload.Empty) {
+    option (google.api.http) = {
+      post : "/delete/multi"
+      body : "*"
+    };
+    option (gql.rpc_type) = MUTATION;
+  }
+
+  rpc RegisterIPs(payload.Backup.IP.Register.Request) returns (payload.Empty) {
+    option (google.api.http) = {
+      post : "/ip"
+      body : "*"
+    };
+    option (gql.rpc_type) = MUTATION;
+  }
+
+  rpc RemoveIPs(payload.Backup.IP.Remove.Request) returns (payload.Empty) {
+    option (google.api.http) = {
+      post : "/ip/delete"
+      body : "*"
+    };
+    option (gql.rpc_type) = MUTATION;
+  }
 }
