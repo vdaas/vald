@@ -40,7 +40,7 @@ type server struct {
 	metadata service.Meta
 	backup   service.Backup
 	timeout  time.Duration
-	filters  []service.Filter
+	filters  service.Filter
 	replica  int
 }
 
@@ -77,6 +77,12 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	return s.search(ctx, req.GetConfig(),
 		func(ctx context.Context, ac agent.AgentClient) (*payload.Search_Response, error) {
 			// TODO rewrite ObjectID
+			meta := req.GetId()
+			uuid, err := s.metadata.GetUUID(ctx, meta)
+			if err != nil {
+				return nil, err
+			}
+			req.Id = uuid
 			return ac.SearchByID(ctx, req)
 		})
 }
@@ -142,11 +148,9 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				}
 			}
 			if s.filters != nil {
-				for _, filter := range s.filters {
-					res, err = filter.FilterSearch(res)
-					if err != nil {
-						return res, err
-					}
+				res, err = filter.FilterSearch(res)
+				if err != nil {
+					return res, err
 				}
 			}
 			return res, err

@@ -80,8 +80,6 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
-	log.Infof("service %s :%s starting...", r.name, version)
-
 	err = ver.Check(version, r.maxVersion, r.minVersion)
 	if err != nil {
 		return err
@@ -91,6 +89,8 @@ func Do(ctx context.Context, opts ...Option) error {
 	if err != nil {
 		return err
 	}
+
+	log.Infof("service %s :%s starting...", r.name, version)
 
 	return Run(ctx, daemon)
 }

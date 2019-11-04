@@ -38,7 +38,6 @@ type backoff struct {
 	durationLimit         float64
 	maxDuration           float64
 	maxRetryCount         int
-	maxRandomNumber       uint64
 	backoffTimeLimit      time.Duration
 	errLog                bool
 }

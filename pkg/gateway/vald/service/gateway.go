@@ -41,7 +41,7 @@ import (
 )
 
 type Gateway interface {
-	StartDiscoverd(ctx context.Context) <-chan error
+	Start(ctx context.Context) <-chan error
 	GetAgentCount() int
 	Do(ctx context.Context,
 		f func(ctx context.Context, tgt string, ac agent.AgentClient) error) error
@@ -83,10 +83,13 @@ func New(opts ...GWOption) (gw Gateway, err error) {
 	return g, nil
 }
 
-func (g *gateway) StartDiscoverd(ctx context.Context) <-chan error {
+func (g *gateway) Start(ctx context.Context) <-chan error {
 	ech := make(chan error, 2)
 
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", g.dscHost, g.dscPort), g.gopts...)
+	conn, err := grpc.DialContext(ctx,
+		fmt.Sprintf("%s:%d", g.dscHost, g.dscPort),
+		append(g.gopts, grpc.WithBlock())...)
+
 	g.dsc = discoverer.NewDiscovererClient(conn)
 	if err != nil {
 		ech <- err

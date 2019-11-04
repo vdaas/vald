@@ -234,6 +234,7 @@ func (s *server) ListenAndServe(ech chan<- error) (err error) {
 						ech <- err
 					}
 				}
+				err = nil
 				s.mu.Lock()
 				s.running = false
 				s.mu.Unlock()

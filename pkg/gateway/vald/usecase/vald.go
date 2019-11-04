@@ -40,6 +40,7 @@ type run struct {
 	eg       errgroup.Group
 	cfg      *config.Data
 	server   starter.Server
+	filter   service.Filter
 	gateway  service.Gateway
 	metadata service.Meta
 	backup   service.Backup
@@ -132,7 +133,8 @@ func (r *run) PreStart(ctx context.Context) error {
 func (r *run) Start(ctx context.Context) <-chan error {
 	ech := make(chan error)
 	bech := r.backup.Start(ctx)
-	gech := r.gateway.StartDiscoverd(ctx)
+	fech := r.filter.Start(ctx)
+	gech := r.gateway.Start(ctx)
 	mech := r.metadata.Start(ctx)
 	sech := r.server.ListenAndServe(ctx)
 	r.eg.Go(safety.RecoverFunc(func() error {
@@ -142,6 +144,7 @@ func (r *run) Start(ctx context.Context) <-chan error {
 			case <-ctx.Done():
 				return nil
 			case ech <- <-bech:
+			case ech <- <-fech:
 			case ech <- <-gech:
 			case ech <- <-mech:
 			case ech <- <-sech:
