@@ -43,6 +43,11 @@ type Client interface {
 		f func(addr string,
 			conn *grpc.ClientConn,
 			copts ...grpc.CallOption) error) error
+	RangeConcurrent(ctx context.Context,
+		concurrency int,
+		f func(addr string,
+			conn *grpc.ClientConn,
+			copts ...grpc.CallOption) error) error
 	Do(ctx context.Context,
 		addr string, f func(conn *grpc.ClientConn,
 			copts ...grpc.CallOption) (interface{}, error)) (interface{}, error)
@@ -151,6 +156,36 @@ func (g *gRPCClient) Range(ctx context.Context,
 		return true
 	})
 	return rerr
+}
+
+func (g *gRPCClient) RangeConcurrent(ctx context.Context,
+	concurrency int,
+	f func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error) (rerr error) {
+	eg, ctx := errgroup.New(ctx)
+	eg.Limitation(concurrency)
+	g.conns.Range(func(addr string, conn *grpc.ClientConn) bool {
+		eg.Go(func() (err error) {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+				var err error
+				if g.bo != nil {
+					_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
+						return nil, f(addr, conn, g.copts...)
+					})
+				} else {
+					err = f(addr, conn, g.copts...)
+				}
+				if err != nil {
+					return errors.Wrap(rerr, fmt.Sprintf("addr: %s\terror: %s", addr, err.Error()))
+				}
+			}
+			return nil
+		})
+		return true
+	})
+	return eg.Wait()
 }
 
 func (g *gRPCClient) Do(ctx context.Context, addr string,

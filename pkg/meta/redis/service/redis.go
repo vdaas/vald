@@ -20,6 +20,7 @@ package service
 import (
 	"context"
 
+	"github.com/kpango/gache"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/kvs/redis"
 	"github.com/vdaas/vald/internal/errors"
@@ -64,6 +65,7 @@ func New(cfg *config.Redis) (Redis, error) {
 	if cfg.TCP != nil {
 		if cfg.TCP.DNS.CacheEnabled {
 			c.topts = append(c.topts,
+				tcp.WithCache(gache.New()),
 				tcp.WithEnableDNSCache(),
 				tcp.WithDNSCacheExpiration(cfg.TCP.DNS.CacheExpiration),
 				tcp.WithDNSRefreshDuration(cfg.TCP.DNS.RefreshDuration),
