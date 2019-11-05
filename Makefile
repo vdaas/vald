@@ -196,8 +196,6 @@ clean:
 
 license:
 	go run hack/license/gen/main.go ./
-	chmod -R 0644 ./*
-	chmod -R 0644 ./.*
 
 bench: \
 	bench-agent-stream \
