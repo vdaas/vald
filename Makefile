@@ -35,6 +35,8 @@
 	dockers-gateway-vald-image \
 	dockers-meta-redis-image-name \
 	dockers-meta-redis-image \
+	dockers-backup-manager-image-name \
+	dockers-backup-manager-image \
 	profile \
 	test \
 	lint \
@@ -265,6 +267,12 @@ dockers-meta-redis-image-name:
 
 dockers-meta-redis-image: dockers-base-image
 	docker build -f dockers/meta/redis/Dockerfile -t $(REPO)/$(KVS_IMAGE) .
+
+dockers-backup-manager-image-name:
+	@echo "$(REPO)/$(BACKUP_MANAGER_IMAGE)"
+
+dockers-backup-manager-image: dockers-base-image
+	docker build -f dockers/manager/backup/Dockerfile -t $(REPO)/$(BACKUP_MANAGER_IMAGE) .
 
 profile: \
 	clean \

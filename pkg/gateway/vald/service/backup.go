@@ -26,10 +26,10 @@ import (
 
 type Backup interface {
 	Start(ctx context.Context) <-chan error
-	GetObject(ctx context.Context, uuid string) (*payload.Object_MetaVector, error)
+	GetObject(ctx context.Context, uuid string) (*payload.Backup_MetaVector, error)
 	GetLocation(ctx context.Context, uuid string) ([]string, error)
-	Register(ctx context.Context, vec *payload.Object_MetaVector) error
-	RegisterMultiple(ctx context.Context, vecs *payload.Object_MetaVectors) error
+	Register(ctx context.Context, vec *payload.Backup_MetaVector) error
+	RegisterMultiple(ctx context.Context, vecs *payload.Backup_MetaVectors) error
 	Remove(ctx context.Context, uuid string) error
 	RemoveMultiple(ctx context.Context, uuids ...string) error
 }
@@ -56,10 +56,10 @@ func (b *backup) Start(ctx context.Context) <-chan error {
 	return b.client.StartConnectionMonitor(ctx)
 }
 
-func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Object_MetaVector, err error) {
+func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backup_MetaVector, err error) {
 	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
-		vec, err = gback.NewBackupClient(conn).GetVector(ctx, &payload.Object_ID{
-			Id: uuid,
+		vec, err = gback.NewBackupClient(conn).GetVector(ctx, &payload.Backup_GetVector_Request{
+			Uuid: uuid,
 		}, copts...)
 		if err != nil {
 			return nil, err
@@ -71,8 +71,8 @@ func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Objec
 
 func (b *backup) GetLocation(ctx context.Context, uuid string) (ipList []string, err error) {
 	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
-		ips, err := gback.NewBackupClient(conn).Locations(ctx, &payload.Object_ID{
-			Id: uuid,
+		ips, err := gback.NewBackupClient(conn).Locations(ctx, &payload.Backup_Locations_Request{
+			Uuid: uuid,
 		}, copts...)
 		if err != nil {
 			return nil, err
@@ -83,7 +83,7 @@ func (b *backup) GetLocation(ctx context.Context, uuid string) (ipList []string,
 	return
 }
 
-func (b *backup) Register(ctx context.Context, vec *payload.Object_MetaVector) (err error) {
+func (b *backup) Register(ctx context.Context, vec *payload.Backup_MetaVector) (err error) {
 	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = gback.NewBackupClient(conn).Register(ctx, vec, copts...)
 		if err != nil {
@@ -94,7 +94,7 @@ func (b *backup) Register(ctx context.Context, vec *payload.Object_MetaVector) (
 	return
 }
 
-func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Object_MetaVectors) (err error) {
+func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Backup_MetaVectors) (err error) {
 	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = gback.NewBackupClient(conn).RegisterMulti(ctx, vecs, copts...)
 		if err != nil {
@@ -107,8 +107,8 @@ func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Object_Meta
 
 func (b *backup) Remove(ctx context.Context, uuid string) (err error) {
 	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
-		_, err = gback.NewBackupClient(conn).Remove(ctx, &payload.Object_ID{
-			Id: uuid,
+		_, err = gback.NewBackupClient(conn).Remove(ctx, &payload.Backup_Remove_Request{
+			Uuid: uuid,
 		}, copts...)
 		if err != nil {
 			return nil, err
@@ -119,14 +119,10 @@ func (b *backup) Remove(ctx context.Context, uuid string) (err error) {
 }
 
 func (b *backup) RemoveMultiple(ctx context.Context, uuids ...string) (err error) {
-	ids := new(payload.Object_IDs)
-	ids.Ids = make([]string, 0, len(uuids))
-	for _, uuid := range uuids {
-		ids.Ids = append(ids.Ids, uuid)
-	}
-
+	req := new(payload.Backup_Remove_RequestMulti)
+	req.Uuid = uuids
 	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
-		_, err = gback.NewBackupClient(conn).RemoveMulti(ctx, ids, copts...)
+		_, err = gback.NewBackupClient(conn).RemoveMulti(ctx, req, copts...)
 		if err != nil {
 			return nil, err
 		}
