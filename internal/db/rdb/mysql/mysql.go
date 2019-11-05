@@ -182,6 +182,9 @@ func (m *mySQLClient) SetMeta(ctx context.Context, meta MetaVector) error {
 	defer tx.RollbackUnlessCommitted()
 
 	err = setMetaWithTx(ctx, tx, meta)
+	if err != nil {
+		return err
+	}
 
 	return tx.Commit()
 }
@@ -233,6 +236,9 @@ func (m *mySQLClient) DeleteMeta(ctx context.Context, uuid string) error {
 	defer tx.RollbackUnlessCommitted()
 
 	err = deleteMetaWithTx(ctx, tx, uuid)
+	if err != nil {
+		return err
+	}
 
 	return tx.Commit()
 }
