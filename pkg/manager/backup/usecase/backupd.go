@@ -32,14 +32,15 @@ type Runner runner.Runner
 type run struct {
 	cfg    *config.Data
 	server service.Server
+	mySQL  service.MySQL
 }
 
 func New(cfg *config.Data) (Runner, error) {
-	ngt, err := service.NewNGT(cfg.NGT)
+	mySQL, err := service.NewMySQL(cfg.MySQL)
 	if err != nil {
 		return nil, err
 	}
-	g := grpc.New(grpc.WithNGT(ngt))
+	g := grpc.New(grpc.WithMySQL(mySQL))
 
 	srv, err := service.NewServer(
 		service.WithConfig(cfg.Server),
@@ -47,7 +48,7 @@ func New(cfg *config.Data) (Runner, error) {
 			router.New(
 				router.WithHandler(
 					rest.New(
-						rest.WithAgent(g),
+						rest.WithBackup(g),
 					),
 				),
 			),
@@ -63,21 +64,26 @@ func New(cfg *config.Data) (Runner, error) {
 	return &run{
 		cfg:    cfg,
 		server: srv,
+		mySQL:  mySQL,
 	}, nil
 }
 
-func (r *run) PreStart() error {
-	return nil
+func (r *run) PreStart(ctx context.Context) error {
+	return r.mySQL.Connect(ctx)
 }
 
 func (r *run) Start(ctx context.Context) <-chan error {
 	return r.server.ListenAndServe(ctx)
 }
 
-func (r *run) PreStop() error {
+func (r *run) PreStop(ctx context.Context) error {
 	return nil
 }
 
 func (r *run) Stop(ctx context.Context) error {
 	return r.server.Shutdown(ctx)
+}
+
+func (r *run) PostStop(ctx context.Context) error {
+	return r.mySQL.Close(ctx)
 }

@@ -14,38 +14,23 @@
 // limitations under the License.
 //
 
-// Package service manages the main logic of server.
-package service
+// Package config providers configuration type and load configuration logic
+package config
 
-import (
-	"net/http"
-
-	"github.com/vdaas/vald/apis/grpc/manager/backup"
-	"github.com/vdaas/vald/internal/config"
-)
-
-type Option func(*srvs)
-
-func WithConfig(cfg *config.Servers) Option {
-	return func(s *srvs) {
-		s.cfg = cfg
-	}
+type MySQL struct {
+	DB   string `json:"db" yaml:"db"`
+	Host string `json:"host" yaml:"host"`
+	Port int    `json:"port" yaml:"port"`
+	User string `json:"user" yaml:"user"`
+	Pass string `json:"pass" yaml:"pass"`
+	Name string `json:"name" yaml:"name"`
 }
 
-func WithGRPC(srv backup.BackupServer) Option {
-	return func(s *srvs) {
-		s.grpc = srv
-	}
-}
-
-func WithREST(h http.Handler) Option {
-	return func(s *srvs) {
-		s.rest = h
-	}
-}
-
-func WithGQL(h http.Handler) Option {
-	return func(s *srvs) {
-		s.gql = h
-	}
+func (m *MySQL) Bind() *MySQL {
+	m.DB = GetActualValue(m.DB)
+	m.Host = GetActualValue(m.Host)
+	m.User = GetActualValue(m.User)
+	m.Pass = GetActualValue(m.Pass)
+	m.Name = GetActualValue(m.Name)
+	return m
 }
