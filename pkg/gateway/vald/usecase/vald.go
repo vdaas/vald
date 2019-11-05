@@ -57,6 +57,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			return dialer.GetDialer()(ctx, "tcp", addr)
 		}),
 	}
+	bu, err := service.NewBackup(
+		service.WithBackupAddr(cfg.Gateway.BackupManager.Addr),
+	)
 	copts := []grpc.CallOption{}
 	gateway, err := service.NewGateway(
 		service.WithAgentName(cfg.Gateway.AgentName),
