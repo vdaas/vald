@@ -199,23 +199,19 @@ func (c *client) get(prefix, key string) (string, error) {
 
 func (c *client) getMulti(prefix string, keys ...string) (vals []string, err error) {
 	pipe := c.db.TxPipeline()
-	pfxKeys := make([]string, 0, len(keys))
+	ress := make([]redis.StringCmd, 0, len(keys))
 	for _, k := range keys {
-		pfxKeys = append(pfxKeys, appendPrefix(prefix, k))
+		ress = append(ress, pipe.Get(appendPrefix(prefix, k)))
 	}
-	res := pipe.MGet(pfxKeys...)
 	if _, err = pipe.Exec(); err != nil {
 		return nil, err
 	}
-	if err = res.Err(); err != nil {
-		return nil, err
-	}
-	vals = make([]string, 0, len(pfxKeys))
-	for _, r := range res.Val() {
-		val, ok := r.(string)
-		if ok {
-			vals = append(vals, val)
+	vals = make([]string, 0, len(ress))
+	for _, res := range ress {
+		if err = res.Err(); err != nil {
+			continue
 		}
+		vals = append(vals, res.Val())
 	}
 	return vals[:len(vals)], nil
 }
@@ -233,20 +229,24 @@ func (c *client) Set(key, val string) error {
 	return vk.Err()
 }
 
-func (c *client) SetMultiple(kvs map[string]string) error {
-	kvl := make([]interface{}, 0, len(kvs)*4)
+func (c *client) SetMultiple(kvs map[string]string) (err error) {
+	pipe := c.db.TxPipeline()
+	ress := make([]redis.StatusCmd, 0, len(kvs)*2)
 	for k, v := range kvs {
 		if len(k) == 0 || len(v) == 0 {
 			continue
 		}
-		kvl = append(kvl, appendPrefix(c.kvPrefix, k), v, appendPrefix(c.vkPrefix, v), k)
+		ress = append(ress, pipe.Set(appendPrefix(c.kvPrefix, k), v, 0), pipe.Set(appendPrefix(c.vkPrefix, v), k, 0))
 	}
-	pipe := c.db.TxPipeline()
-	kv := pipe.MSet(kvl...)
-	if _, err := pipe.Exec(); err != nil {
+	if _, err = pipe.Exec(); err != nil {
 		return err
 	}
-	return kv.Err()
+	for _, res := range ress {
+		if err = res.Err(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *client) Delete(key string) (string, error) {
@@ -299,19 +299,20 @@ func (c *client) deleteMulti(prefix string, keys ...string) (vals []string, err 
 		pfxInv = c.vkPrefix
 	}
 	pipe := c.db.TxPipeline()
-	pfxKeys := make([]string, 0, len(keys)*2)
+	ress := make([]redis.IntCmd, 0, len(keys)*2)
 	for _, k := range keys {
-		pfxKeys = append(pfxKeys, appendPrefix(prefix, k))
+		ress = append(ress, pipe.Del(appendPrefix(prefix, k)))
 	}
 	for _, v := range vals {
-		pfxKeys = append(pfxKeys, appendPrefix(pfxInv, v))
+		ress = append(ress, pipe.Del(appendPrefix(pfxInv, v)))
 	}
-	k := pipe.Del(pfxKeys...)
 	if _, err = pipe.Exec(); err != nil {
 		return nil, err
 	}
-	if err = k.Err(); err != nil {
-		return nil, err
+	for _, res := range ress {
+		if err = res.Err(); err != nil {
+			continue
+		}
 	}
 	return vals[:len(vals)], nil
 }

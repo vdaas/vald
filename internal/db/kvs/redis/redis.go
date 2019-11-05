@@ -37,6 +37,9 @@ type Redis interface {
 }
 
 type Conn = redis.Conn
+type IntCmd = *redis.IntCmd
+type StringCmd = *redis.StringCmd
+type StatusCmd = *redis.StatusCmd
 
 type redisClient struct {
 	addrs              []string
