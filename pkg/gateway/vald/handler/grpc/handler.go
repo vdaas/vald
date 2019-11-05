@@ -148,7 +148,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				}
 			}
 			if s.filters != nil {
-				res, err = filter.FilterSearch(res)
+				res, err = s.filter.FilterSearch(res)
 				if err != nil {
 					return res, err
 				}

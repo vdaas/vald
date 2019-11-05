@@ -17,14 +17,7 @@
 // Package service
 package service
 
-import (
-	"time"
-
-	"github.com/vdaas/vald/internal/backoff"
-	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/timeutil"
-	"google.golang.org/grpc"
-)
+import "github.com/vdaas/vald/internal/net/grpc"
 
 type BackupOption func(b *backup) error
 
@@ -32,77 +25,18 @@ var (
 	defaultBackupOpts = []BackupOption{}
 )
 
-func WithBackupHost(host string) BackupOption {
+func WithBackupAddr(addr string) BackupOption {
 	return func(b *backup) error {
-		b.host = host
+		b.addr = addr
 		return nil
 	}
 }
 
-func WithBackupPort(port int) BackupOption {
+func WithBackupClient(client grpc.Client) BackupOption {
 	return func(b *backup) error {
-		b.port = port
-		return nil
-	}
-}
-
-func WithBackupHealthCheckDuration(dur string) BackupOption {
-	return func(b *backup) error {
-		d, err := timeutil.Parse(dur)
-		if err != nil {
-			d = time.Second
+		if client != nil {
+			b.client = client
 		}
-		b.hcDur = d
-		return nil
-	}
-}
-
-func WithBackupGRPCDialOption(opt grpc.DialOption) BackupOption {
-	return func(b *backup) error {
-		b.gopts = append(b.gopts, opt)
-		return nil
-	}
-}
-
-func WithBackupGRPCDialOptions(opts []grpc.DialOption) BackupOption {
-	return func(b *backup) error {
-		if b.gopts != nil && len(b.gopts) > 0 {
-			b.gopts = append(b.gopts, opts...)
-		} else {
-			b.gopts = opts
-		}
-		return nil
-	}
-}
-
-func WithBackupGRPCCallOption(opt grpc.CallOption) BackupOption {
-	return func(b *backup) error {
-		b.copts = append(b.copts, opt)
-		return nil
-	}
-}
-
-func WithBackupGRPCCallOptions(opts []grpc.CallOption) BackupOption {
-	return func(b *backup) error {
-		if b.copts != nil && len(b.copts) > 0 {
-			b.copts = append(b.copts, opts...)
-		} else {
-			b.copts = opts
-		}
-		return nil
-	}
-}
-
-func withBackupBackoff(bo backoff.Backoff) BackupOption {
-	return func(b *backup) error {
-		b.bo = bo
-		return nil
-	}
-}
-
-func withBackupErrGroup(eg errgroup.Group) BackupOption {
-	return func(b *backup) error {
-		b.eg = eg
 		return nil
 	}
 }

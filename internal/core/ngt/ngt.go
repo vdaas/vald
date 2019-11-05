@@ -67,7 +67,7 @@ type (
 
 		// Remove removes from NGT index.
 		Remove(id uint) error
-		
+
 		// BulkRemove removes multiple NGT index
 		BulkRemove(ids ...uint) error
 
@@ -80,6 +80,7 @@ type (
 
 	ngt struct {
 		idxPath             string
+		inMemory            bool
 		bulkInsertChunkSize int
 		dimension           C.int32_t
 		objectType          objectType
@@ -209,14 +210,21 @@ func (n *ngt) create() (err error) {
 			return err
 		}
 	}
+	if !n.inMemory {
+		n.index = C.ngt_create_graph_and_tree(C.CString(n.idxPath), n.prop, n.ebuf)
+		if n.index == nil {
+			return n.newGoError(n.ebuf)
+		}
+		if C.ngt_save_index(n.index, C.CString(n.idxPath), n.ebuf) == ErrorCode {
+			return n.newGoError(n.ebuf)
+		}
+	} else {
+		n.index = C.ngt_create_graph_and_tree_in_memory(n.prop, n.ebuf)
+		if n.index == nil {
+			return n.newGoError(n.ebuf)
+		}
+	}
 
-	n.index = C.ngt_create_graph_and_tree(C.CString(n.idxPath), n.prop, n.ebuf)
-	if n.index == nil {
-		return n.newGoError(n.ebuf)
-	}
-	if C.ngt_save_index(n.index, C.CString(n.idxPath), n.ebuf) == ErrorCode {
-		return n.newGoError(n.ebuf)
-	}
 	return nil
 }
 
@@ -259,11 +267,11 @@ func (n *ngt) Search(vec []float64, size int, epsilon, radius float32) ([]Search
 		return nil, n.newGoError(n.ebuf)
 	}
 
-	if epsilon == 0{
+	if epsilon == 0 {
 		epsilon = n.epsilon
 	}
 
-	if radius == 0{
+	if radius == 0 {
 		radius = n.radius
 	}
 
@@ -412,7 +420,7 @@ func (n *ngt) CreateAndSaveIndex(poolSize uint32) error {
 
 // CreateIndex creates NGT index.
 func (n *ngt) CreateIndex(poolSize uint32) error {
-	if poolSize == 0{
+	if poolSize == 0 {
 		poolSize = n.poolSize
 	}
 	n.mu.Lock()
@@ -458,7 +466,7 @@ func (n *ngt) Remove(id uint) error {
 // BulkRemove removes multiple index from NGT index.
 func (n *ngt) BulkRemove(ids ...uint) error {
 	n.mu.Lock()
-	for _, id := range ids{
+	for _, id := range ids {
 		if C.ngt_remove_index(n.index, C.ObjectID(id), n.ebuf) == ErrorCode {
 			ne := n.ebuf
 			n.mu.Unlock()

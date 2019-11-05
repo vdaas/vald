@@ -21,9 +21,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"runtime"
 	"sort"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -34,9 +32,9 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/gateway/vald/model"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 )
 
@@ -52,19 +50,19 @@ type Gateway interface {
 }
 
 type gateway struct {
-	agentName   string
-	agentExists map[string]struct{}
-	agentPort   int
-	dscDur      time.Duration
-	gopts       []grpc.DialOption
-	copts       []grpc.CallOption
-	dsc         discoverer.DiscovererClient
-	dscHost     string
-	dscPort     int
-	conns       sync.Map
-	agents      atomic.Value
-	bo          backoff.Backoff
-	eg          errgroup.Group
+	agentName  string
+	agentPort  int
+	agentAddrs []string
+	agentHcDur string
+	agents     atomic.Value
+	dscAddr    string
+	dscDur     time.Duration
+	dscClient  grpc.Client
+	acClient   grpc.Client
+	gopts      []grpc.DialOption
+	copts      []grpc.CallOption
+	bo         backoff.Backoff
+	eg         errgroup.Group
 }
 
 type client struct {
@@ -84,16 +82,23 @@ func New(opts ...GWOption) (gw Gateway, err error) {
 }
 
 func (g *gateway) Start(ctx context.Context) <-chan error {
-	ech := make(chan error, 2)
+	ech := make(chan error, 3)
+	dech := g.dscClient.StartConnectionMonitor(ctx)
 
-	conn, err := grpc.DialContext(ctx,
-		fmt.Sprintf("%s:%d", g.dscHost, g.dscPort),
-		append(g.gopts, grpc.WithBlock())...)
-
-	g.dsc = discoverer.NewDiscovererClient(conn)
+	var err error
+	g.acClient, err = grpc.New(
+		grpc.WithAddrs(g.agentAddrs...),
+		grpc.WithErrGroup(g.eg),
+		grpc.WithBackoff(g.bo),
+		grpc.WithGRPCCallOptions(g.copts...),
+		grpc.WithGRPCDialOptions(g.gopts...),
+		grpc.WithHealthCheckDuration(g.agentHcDur),
+	)
 	if err != nil {
-		ech <- err
+		return ech
 	}
+
+	aech := g.acClient.StartConnectionMonitor(ctx)
 
 	g.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
@@ -101,42 +106,32 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 		defer close(fch)
 		dt := time.NewTicker(g.dscDur)
 		defer dt.Stop()
-
-		discover := func() error {
-			_, err = g.bo.Do(ctx, func() (_ interface{}, err error) {
-				return g.discover(ctx, ech)
-			})
-			if err != nil {
-				return err
-			} else {
-				runtime.Gosched()
-			}
-			return nil
-		}
-
 		for {
 			select {
 			case <-ctx.Done():
 				var errs error
-				g.conns.Range(func(name interface{}, c interface{}) bool {
-					err = c.(*grpc.ClientConn).Close()
-					if err != nil {
-						errs = errors.Wrap(errs, errors.ErrgRPCClientConnectionClose(name.(string), err).Error())
-					}
-					g.conns.Delete(name)
-					return true
-				})
-				if errs != nil {
-					ech <- errs
+				err = g.dscClient.Close()
+				if err != nil {
+					errs = errors.Wrap(errs, err.Error())
 				}
-				return nil
+				err = g.acClient.Close()
+				if err != nil {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				err = ctx.Err()
+				if err != nil && err != context.Canceled {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				return errs
+			case ech <- <-dech:
+			case ech <- <-aech:
 			case <-fch:
-				err = discover()
+				_, err = g.discover(ctx, ech)
 				if err != nil {
 					ech <- err
 				}
 			case <-dt.C:
-				err = discover()
+				_, err = g.discover(ctx, ech)
 				if err != nil {
 					log.Error(err)
 					time.Sleep(g.dscDur / 5)
@@ -149,13 +144,22 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 }
 
 func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface{}, err error) {
-	res, err := g.dsc.Discover(ctx, &payload.Discoverer_Request{
-		Name: g.agentName,
-		Node: "",
-	}, g.copts...)
+
+	var res *payload.Info_Servers
+	_, err = g.dscClient.Do(ctx, g.dscAddr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		res, err = discoverer.NewDiscovererClient(conn).Discover(ctx, &payload.Discoverer_Request{
+			Name: g.agentName,
+			Node: "",
+		}, copts...)
+		if err != nil {
+			return nil, err
+		}
+		return res, nil
+	})
 	if err != nil {
 		return nil, err
 	}
+
 	srvs := res.GetServers()
 	as := make(model.Agents, 0, len(srvs))
 	cur := make(map[string]struct{}, len(srvs))
@@ -224,55 +228,55 @@ func (g *gateway) BroadCast(ctx context.Context,
 
 func (g *gateway) Do(ctx context.Context,
 	f func(ctx context.Context, target string, ac agent.AgentClient) error) (err error) {
-	_, err = g.bo.Do(ctx, func() (_ interface{}, err error) {
-		var ac agent.AgentClient
-		var tgt string
-		for _, a := range g.agents.Load().(model.Agents) {
-			c, ok := g.conns.Load(a.Name)
-			if ok {
-				ac = agent.NewAgentClient(c.(*grpc.ClientConn))
-				tgt = a.IP
-				break
-			}
-		}
-		if ac == nil {
-			return nil, errors.ErrAgentClientNotConnected
-		}
-		return nil, f(ctx, tgt, ac)
-	})
+	// _, err = g.bo.Do(ctx, func() (_ interface{}, err error) {
+	// 	var ac agent.AgentClient
+	// 	var tgt string
+	// 	for _, a := range g.agents.Load().(model.Agents) {
+	// 		c, ok := g.conns.Load(a.Name)
+	// 		if ok {
+	// 			ac = agent.NewAgentClient(c.(*grpc.ClientConn))
+	// 			tgt = a.IP
+	// 			break
+	// 		}
+	// 	}
+	// 	if ac == nil {
+	// 		return nil, errors.ErrAgentClientNotConnected
+	// 	}
+	// 	return nil, f(ctx, tgt, ac)
+	// })
 	return nil
 }
 
 func (g *gateway) DoMulti(ctx context.Context,
 	num int, f func(ctx context.Context, target string, ac agent.AgentClient) error) error {
 	eg, ctx := errgroup.New(ctx)
-	agents := g.agents.Load().(model.Agents)
-	if num > agents.Len() {
-		num = agents.Len()
-	}
-	for _, a := range agents[:num] {
-		ag := a
-		eg.Go(safety.RecoverFunc(func() (err error) {
-			var ac agent.AgentClient
-			var tgt string
-			c, ok := g.conns.Load(ag.Name)
-			if ok {
-				tgt = ag.IP
-				ac = agent.NewAgentClient(c.(*grpc.ClientConn))
-				if ac == nil {
-					return errors.ErrAgentClientNotConnected
-				}
-				_, err = g.bo.Do(ctx, func() (_ interface{}, err error) {
-					err = f(ctx, tgt, ac)
-					if err != nil {
-						runtime.Gosched()
-					}
-					return
-				})
-			}
-			return
-		}))
-	}
+	// agents := g.agents.Load().(model.Agents)
+	// if num > agents.Len() {
+	// 	num = agents.Len()
+	// }
+	// for _, a := range agents[:num] {
+	// 	ag := a
+	// 	eg.Go(safety.RecoverFunc(func() (err error) {
+	// 		var ac agent.AgentClient
+	// 		var tgt string
+	// 		c, ok := g.conns.Load(ag.Name)
+	// 		if ok {
+	// 			tgt = ag.IP
+	// 			ac = agent.NewAgentClient(c.(*grpc.ClientConn))
+	// 			if ac == nil {
+	// 				return errors.ErrAgentClientNotConnected
+	// 			}
+	// 			_, err = g.bo.Do(ctx, func() (_ interface{}, err error) {
+	// 				err = f(ctx, tgt, ac)
+	// 				if err != nil {
+	// 					runtime.Gosched()
+	// 				}
+	// 				return
+	// 			})
+	// 		}
+	// 		return
+	// 	}))
+	// }
 	return eg.Wait()
 }
 

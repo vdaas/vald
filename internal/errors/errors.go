@@ -111,6 +111,14 @@ var (
 		return Wrapf(err, "%s's gRPC connection close error", name)
 	}
 
+	ErrInvalidGRPCClientConn = func(addr string) error {
+		return Errorf("invalid gRPC client connection to %s", addr)
+	}
+
+	ErrGRPCClientConnNotFound = func(addr string) error {
+		return Errorf("gRPC client connection not found on %s", addr)
+	}
+
 	//DB
 
 	ErrAddrsNotFound = New("addrs not found")
