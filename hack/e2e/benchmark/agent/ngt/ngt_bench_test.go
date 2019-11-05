@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -41,7 +42,9 @@ var (
 		Epsilon: 0.01,
 	}
 	targets []string
+	addresses []string
 	datasetVar string
+	addressVar string
 	once sync.Once
 )
 
@@ -54,23 +57,33 @@ func init() {
 	}
 	sort.Strings(datasetList)
 	flag.StringVar(&datasetVar, "dataset", "", "available dataset(choice with comma)\n" + strings.Join(datasetList, "\n"))
+	flag.StringVar(&addressVar, "address", "", "vald agent address")
 }
 
-func parseArgs() {
+func parseArgs(tb testing.TB) {
+	tb.Helper()
 	once.Do(func() {
 		flag.Parse()
 		targets = strings.Split(strings.TrimSpace(datasetVar), ",")
+		addresses = strings.Split(strings.TrimSpace(addressVar), ",")
+		if len(targets) != len(addresses) {
+			tb.Fatal("address and dataset must have same length.")
+		}
 	})
 }
 
 func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
-	parseArgs()
+	parseArgs(rb)
 	rctx, rcancel := context.WithCancel(context.Background())
 	defer rcancel()
 	rb.ReportAllocs()
 	rb.ResetTimer()
 
-	for _, name := range targets {
+	for N, name := range targets {
+		address := addresses[N]
+		if address == "" {
+			address = "localhost:8081"
+		}
 		if name == "" {
 			continue
 		}
@@ -86,7 +99,9 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 			ctx, cancel := context.WithCancel(rctx)
 			defer cancel()
 
-			internal.StartAgentNGTServer(b, ctx, data)
+			if strings.Contains(address, "localhost") {
+				internal.StartAgentNGTServer(b, ctx, data)
+			}
 
 			buffers := make([]*bytes.Buffer, len(train))
 			for i := 0; i < len(train); i++ {
@@ -101,11 +116,12 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 			}
 
 			i := 0
+			url := fmt.Sprintf("http://%s/insert", address)
 			b.Run("Insert objects", func(bb *testing.B) {
 				bb.ReportAllocs()
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
-					resp, err := http.Post("http://localhost:8081/insert", "application/json", buffers[i])
+					resp, err := http.Post(url, "application/json", buffers[i])
 					if err != nil {
 						bb.Error(err)
 					}
@@ -122,7 +138,7 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 				}
 			})
 			for ; i < len(train); i++ {
-				resp, err := http.Post("http://localhost:8081/insert", "application/json", buffers[i])
+				resp, err := http.Post(url, "application/json", buffers[i])
 				if err != nil {
 					b.Error(err)
 				}
@@ -136,6 +152,7 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 				}
 			}
 
+			url = fmt.Sprintf("http://%s/index/create", address)
 			b.Run("CreateIndex", func(bb *testing.B) {
 				buf, err := json.Marshal(&payload.Controll_CreateIndexRequest{
 					PoolSize: 10000,
@@ -146,7 +163,7 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 				buffer := bytes.NewBuffer(buf)
 				bb.ReportAllocs()
 				bb.ResetTimer()
-				resp, err := http.Post("http://localhost:8081/index/create", "application/json", buffer)
+				resp, err := http.Post(url, "application/json", buffer)
 				if err != nil {
 					bb.Error(err)
 				}
@@ -173,11 +190,12 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 			}
 
 			i = 0
+			url = fmt.Sprintf("http://%s/search", address)
 			b.Run("Search objects", func(bb *testing.B) {
 				bb.ReportAllocs()
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
-					resp, err := http.Post("http://localhost:8081/search", "application/json", buffers[i])
+					resp, err := http.Post(url, "application/json", buffers[i])
 					if err != nil {
 						bb.Error(err)
 					}
@@ -206,11 +224,12 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 			}
 
 			i = 0
+			url = fmt.Sprintf("http://%s/remove", address)
 			b.Run("Remove objects", func(bb *testing.B) {
 				bb.ReportAllocs()
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
-					resp, err := http.Post("http://localhost:8081/remove", "application/json", buffers[i])
+					resp, err := http.Post(url, "application/json", buffers[i])
 					if err != nil {
 						bb.Error(err)
 					}
@@ -231,12 +250,17 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 }
 
 func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
-	parseArgs()
+	parseArgs(rb)
 	rctx, rcancel := context.WithCancel(context.Background())
 	defer rcancel()
 	rb.ReportAllocs()
 	rb.ResetTimer()
-	for _, name := range targets {
+	for N, name := range targets {
+		address := addresses[N]
+		if address == "" {
+			address = "localhost:8082"
+		}
+
 		if name == "" {
 			continue
 		}
@@ -255,9 +279,11 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 			ctx, cancel := context.WithCancel(rctx)
 			defer cancel()
 
-			internal.StartAgentNGTServer(b, ctx, data)
+			if strings.Contains(address, "localhost") {
+				internal.StartAgentNGTServer(b, ctx, data)
+			}
 
-			client := internal.NewAgentClient(b, ctx, "localhost", 8082)
+			client := internal.NewAgentClient(b, ctx, address)
 
 			i := 0
 			b.Run("Insert objects", func(bb *testing.B) {
@@ -333,21 +359,26 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 }
 
 func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
-	parseArgs()
+	parseArgs(rb)
 	rctx, rcancel := context.WithCancel(context.Background())
 	defer rcancel()
 	rb.ReportAllocs()
 	rb.ResetTimer()
-	for _, name := range targets {
+	for N, name := range targets {
+		address := addresses[N]
+		if address == "" {
+			address = "localhost:8081"
+		}
+
 		if name == "" {
 			continue
 		}
 		rb.Run(name, func(b *testing.B) {
 			data := dataset.Data[name](rb)
 			if data == nil {
-				b.Logf("dataset %s is nil", name)
-				return
+				b.Fatalf("dataset %s is nil", name)
 			}
+			b.Logf("benchmark %s", name)
 			ids := data.IDs()
 			train := data.Train()
 			query := data.Query()
@@ -357,9 +388,11 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 			ctx, cancel := context.WithCancel(rctx)
 			defer cancel()
 
-			internal.StartAgentNGTServer(b, ctx, data)
+			if strings.Contains(address, "localhost") {
+				internal.StartAgentNGTServer(b, ctx, data)
+			}
 
-			client := internal.NewAgentClient(b, ctx, "localhost", 8082)
+			client := internal.NewAgentClient(b, ctx, address)
 
 			sti, err := client.StreamInsert(ctx)
 			if err != nil {

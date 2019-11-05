@@ -511,7 +511,7 @@ bench-ngtd-sequential-rest: \
 	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
 	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
 	$(call bench-pprof,pprof/external/ngtd,ngtd,RESTSequential,sequential-rest,\
-		./hack/e2e/benchmark/extenal/ngtd/ngtd_bench_test.go \
+		./hack/e2e/benchmark/external/ngtd/ngtd_bench_test.go \
 		 -dataset=fashion-mnist)
 
 profile-agent-stream:
