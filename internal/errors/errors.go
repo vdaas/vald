@@ -30,8 +30,8 @@ import (
 var (
 
 	// Redis
-	ErrRedisInvalidKVVKIndex = func(kv, vk int) error {
-		return Errorf("kv index and vk index must be defferent.\t(kv: %d,\tvk: %d)", kv, vk)
+	ErrRedisInvalidKVVKPrefix = func(kv, vk string) error {
+		return Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", kv, vk)
 	}
 
 	ErrInvalidConfigVersion = func(cur, con string) error {

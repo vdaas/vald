@@ -131,5 +131,5 @@ redis_config:
       keep_alive: 5m
       dual_stack_enabled: false
   write_timeout: 3s
-  kv_index: 0
-  vk_index: 1
+  kv_prefix: kv
+  vk_prefix: vk

@@ -43,21 +43,27 @@ type Redis interface {
 }
 
 type client struct {
-	db      redis.Redis
-	opts    []redis.Option
-	topts   []tcp.DialerOption
-	kvIndex int
-	vkIndex int
+	db       redis.Redis
+	opts     []redis.Option
+	topts    []tcp.DialerOption
+	kvPrefix string
+	vkPrefix string
 }
 
 func New(cfg *config.Redis) (Redis, error) {
 	c := &client{
-		kvIndex: cfg.KVIndex,
-		vkIndex: cfg.VKIndex,
+		kvPrefix: cfg.KVPrefix,
+		vkPrefix: cfg.VKPrefix,
 	}
 
-	if c.kvIndex == c.vkIndex {
-		return nil, errors.ErrRedisInvalidKVVKIndex(c.kvIndex, c.vkIndex)
+	if c.kvPrefix == "" {
+		c.kvPrefix = "kv"
+	}
+	if c.vkPrefix == "" {
+		c.vkPrefix = "vk"
+	}
+	if c.kvPrefix == c.vkPrefix {
+		return nil, errors.ErrRedisInvalidKVVKPrefix(c.kvPrefix, c.vkPrefix)
 	}
 
 	c.topts = make([]tcp.DialerOption, 0, 8)
@@ -163,42 +169,48 @@ func (c *client) Connect(ctx context.Context) error {
 }
 
 func (c *client) Get(key string) (string, error) {
-	return c.get(c.kvIndex, key)
+	return c.get(c.kvPrefix, key)
 }
 
 func (c *client) GetMultiple(keys ...string) (vals []string, err error) {
-	return c.getMulti(c.kvIndex, keys...)
+	return c.getMulti(c.kvPrefix, keys...)
 }
 
 func (c *client) GetInverse(val string) (string, error) {
-	return c.get(c.vkIndex, val)
+	return c.get(c.vkPrefix, val)
 }
 
 func (c *client) GetInverseMultiple(vals ...string) ([]string, error) {
-	return c.getMulti(c.vkIndex, vals...)
+	return c.getMulti(c.vkPrefix, vals...)
 }
 
-func (c *client) get(idx int, key string) (string, error) {
+func appendPrefix(prefix, key string) string {
+	return prefix + "-" + key
+}
+
+func (c *client) get(prefix, key string) (string, error) {
 	pipe := c.db.TxPipeline()
-	pipe.Select(idx)
-	res := pipe.Get(key)
+	res := pipe.Get(appendPrefix(prefix, key))
 	if _, err := pipe.Exec(); err != nil {
 		return "", err
 	}
 	return res.Result()
 }
 
-func (c *client) getMulti(idx int, keys ...string) (vals []string, err error) {
+func (c *client) getMulti(prefix string, keys ...string) (vals []string, err error) {
 	pipe := c.db.TxPipeline()
-	pipe.Select(idx)
-	res := pipe.MGet(keys...)
+	pfxKeys := make([]string, 0, len(keys))
+	for _, k := range keys {
+		pfxKeys = append(pfxKeys, appendPrefix(prefix, k))
+	}
+	res := pipe.MGet(pfxKeys...)
 	if _, err = pipe.Exec(); err != nil {
 		return nil, err
 	}
 	if err = res.Err(); err != nil {
 		return nil, err
 	}
-	vals = make([]string, 0, len(keys))
+	vals = make([]string, 0, len(pfxKeys))
 	for _, r := range res.Val() {
 		val, ok := r.(string)
 		if ok {
@@ -210,10 +222,8 @@ func (c *client) getMulti(idx int, keys ...string) (vals []string, err error) {
 
 func (c *client) Set(key, val string) error {
 	pipe := c.db.TxPipeline()
-	pipe.Select(c.kvIndex)
-	kv := pipe.Set(key, val, 0)
-	pipe.Select(c.vkIndex)
-	vk := pipe.Set(val, key, 0)
+	kv := pipe.Set(appendPrefix(c.kvPrefix, key), val, 0)
+	vk := pipe.Set(appendPrefix(c.vkPrefix, val), key, 0)
 	if _, err := pipe.Exec(); err != nil {
 		return err
 	}
@@ -224,59 +234,49 @@ func (c *client) Set(key, val string) error {
 }
 
 func (c *client) SetMultiple(kvs map[string]string) error {
-	kvl := make([]interface{}, 0, len(kvs)*2)
-	vkl := make([]interface{}, 0, len(kvs)*2)
+	kvl := make([]interface{}, 0, len(kvs)*4)
 	for k, v := range kvs {
 		if len(k) == 0 || len(v) == 0 {
 			continue
 		}
-		kvl = append(kvl, k, v)
-		vkl = append(kvl, v, k)
+		kvl = append(kvl, appendPrefix(c.kvPrefix, k), v, appendPrefix(c.vkPrefix, v), k)
 	}
 	pipe := c.db.TxPipeline()
-	pipe.Select(c.kvIndex)
 	kv := pipe.MSet(kvl...)
-	pipe.Select(c.vkIndex)
-	vk := pipe.MSet(vkl...)
 	if _, err := pipe.Exec(); err != nil {
 		return err
 	}
-	if err := kv.Err(); err != nil {
-		return err
-	}
-	return vk.Err()
+	return kv.Err()
 }
 
 func (c *client) Delete(key string) (string, error) {
-	return c.delete(c.kvIndex, key)
+	return c.delete(c.kvPrefix, key)
 }
 
 func (c *client) DeleteMultiple(keys ...string) ([]string, error) {
-	return c.deleteMulti(c.kvIndex, keys...)
+	return c.deleteMulti(c.kvPrefix, keys...)
 }
 
 func (c *client) DeleteInverse(val string) (string, error) {
-	return c.delete(c.vkIndex, val)
+	return c.delete(c.vkPrefix, val)
 }
 
 func (c *client) DeleteInverseMultiple(vals ...string) ([]string, error) {
-	return c.deleteMulti(c.vkIndex, vals...)
+	return c.deleteMulti(c.vkPrefix, vals...)
 }
 
-func (c *client) delete(idx int, key string) (val string, err error) {
-	val, err = c.get(idx, key)
+func (c *client) delete(prefix, key string) (val string, err error) {
+	val, err = c.get(prefix, key)
 	if err != nil {
 		return "", err
 	}
-	idxInv := c.kvIndex
-	if c.kvIndex == idx {
-		idxInv = c.vkIndex
+	pfxInv := c.kvPrefix
+	if c.kvPrefix == prefix {
+		pfxInv = c.vkPrefix
 	}
 	pipe := c.db.TxPipeline()
-	pipe.Select(idx)
-	k := pipe.Del(key)
-	pipe.Select(idxInv)
-	v := pipe.Del(val)
+	k := pipe.Del(appendPrefix(prefix, key))
+	v := pipe.Del(appendPrefix(pfxInv, val))
 	if _, err = pipe.Exec(); err != nil {
 		return "", err
 	}
@@ -289,27 +289,28 @@ func (c *client) delete(idx int, key string) (val string, err error) {
 	return val, nil
 }
 
-func (c *client) deleteMulti(idx int, keys ...string) (vals []string, err error) {
-	vals, err = c.getMulti(idx, keys...)
+func (c *client) deleteMulti(prefix string, keys ...string) (vals []string, err error) {
+	vals, err = c.getMulti(prefix, keys...)
 	if err != nil {
 		return nil, err
 	}
-	idxInv := c.kvIndex
-	if c.kvIndex == idx {
-		idxInv = c.vkIndex
+	pfxInv := c.kvPrefix
+	if c.kvPrefix == prefix {
+		pfxInv = c.vkPrefix
 	}
 	pipe := c.db.TxPipeline()
-	pipe.Select(idx)
-	k := pipe.Del(keys...)
-	pipe.Select(idxInv)
-	v := pipe.Del(vals...)
+	pfxKeys := make([]string, 0, len(keys)*2)
+	for _, k := range keys {
+		pfxKeys = append(pfxKeys, appendPrefix(prefix, k))
+	}
+	for _, v := range vals {
+		pfxKeys = append(pfxKeys, appendPrefix(pfxInv, v))
+	}
+	k := pipe.Del(pfxKeys...)
 	if _, err = pipe.Exec(); err != nil {
 		return nil, err
 	}
 	if err = k.Err(); err != nil {
-		return nil, err
-	}
-	if err = v.Err(); err != nil {
 		return nil, err
 	}
 	return vals[:len(vals)], nil
