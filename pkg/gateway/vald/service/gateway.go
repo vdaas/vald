@@ -69,7 +69,7 @@ type client struct {
 	closer io.Closer
 }
 
-func New(opts ...GWOption) (gw Gateway, err error) {
+func NewGateway(opts ...GWOption) (gw Gateway, err error) {
 	g := new(gateway)
 	for _, opt := range opts {
 		err = opt(g)
@@ -228,6 +228,9 @@ func (g *gateway) Do(ctx context.Context,
 	f func(ctx context.Context, target string, ac agent.AgentClient) error) (err error) {
 	addr := fmt.Sprintf("%s:%d", g.agents.Load().(model.Agents)[0].IP, g.agentPort)
 	_, err = g.acClient.Do(ctx, addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		if conn == nil {
+			return nil, errors.ErrAgentClientNotConnected
+		}
 		return nil, f(ctx, addr, agent.NewAgentClient(conn))
 	})
 	return err
@@ -238,21 +241,13 @@ func (g *gateway) DoMulti(ctx context.Context,
 	var cur uint32
 	limit := uint32(num)
 	return g.acClient.RangeConcurrent(ctx, 0, func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-		if atomic.AddUint32(&cur, 1) > limit {
-			return nil
-		}
 		if conn == nil {
 			return errors.ErrAgentClientNotConnected
 		}
-		ac := agent.NewAgentClient(conn)
-		_, err := g.bo.Do(ctx, func() (_ interface{}, err error) {
-			err = f(ctx, addr, ac)
-			if err != nil {
-				runtime.Gosched()
-			}
-			return
-		})
-		return err
+		if atomic.AddUint32(&cur, 1) > limit {
+			return nil
+		}
+		return f(ctx, addr, agent.NewAgentClient(conn))
 	})
 }
 

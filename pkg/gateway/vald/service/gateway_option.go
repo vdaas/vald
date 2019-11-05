@@ -18,6 +18,7 @@
 package service
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/vdaas/vald/internal/backoff"
@@ -32,16 +33,16 @@ var (
 	defaultGWOpts = []GWOption{}
 )
 
-func WithDiscoverHost(host string) GWOption {
+func WithDiscovererAddr(addr string) GWOption {
 	return func(g *gateway) error {
-		g.dscHost = host
+		g.dscAddr = addr
 		return nil
 	}
 }
 
-func WithDiscoverPort(port int) GWOption {
+func WithDiscovererHostPort(host string, port int) GWOption {
 	return func(g *gateway) error {
-		g.dscPort = port
+		g.dscAddr = fmt.Sprintf("%s:%d", host, port)
 		return nil
 	}
 }
@@ -53,6 +54,13 @@ func WithDiscoverDuration(dur string) GWOption {
 			d = time.Second
 		}
 		g.dscDur = d
+		return nil
+	}
+}
+
+func WithAgentHealthCheckDuration(dur string) GWOption {
+	return func(g *gateway) error {
+		g.agentHcDur = dur
 		return nil
 	}
 }

@@ -20,6 +20,7 @@ import (
 	"context"
 	"net"
 
+	"github.com/kpango/gache"
 	"github.com/vdaas/vald/apis/grpc/vald"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -47,15 +48,17 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	service.New(service.WithDiscoverDuration(cfg.Gateway.Discoverer.Host))
-	dialer := tcp.Dialer(nil)
+	dialer := tcp.Dialer(
+		tcp.WithCache(gache.New()),
+	)
 	gopts := []grpc.DialOption{
 		grpc.WithInsecure(),
 		grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
 			return dialer.GetDialer()(ctx, "tcp", addr)
 		}),
 	}
-	gateway, err := service.New(
+	copts := []grpc.CallOption{}
+	gateway, err := service.NewGateway(
 		service.WithAgentName(cfg.Gateway.AgentName),
 		service.WithAgentPort(cfg.Gateway.AgentPort),
 		service.WithGRPCDialOptions(gopts),
