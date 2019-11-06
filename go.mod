@@ -34,7 +34,7 @@ require (
 	golang.org/x/sys v0.0.0-20191104094858-e8c54fb511f6
 	gonum.org/v1/hdf5 v0.0.0-20191104203554-24a3eb0810ad
 	google.golang.org/genproto v0.0.0-20191028173616-919d9bdd9fe6
-	google.golang.org/grpc v1.24.0
+	google.golang.org/grpc v1.25.0
 	gopkg.in/yaml.v2 v2.2.5
 	k8s.io/api v0.0.0-20191016110246-af539daaa43a
 	k8s.io/apimachinery v0.0.0-20191004115701-31ade1b30762
