@@ -25,10 +25,10 @@ DISCOVERER_IMAGE        = $(NAME)-discoverer-k8s
 KVS_IMAGE               = $(NAME)-meta-redis
 BACKUP_MANAGER_IMAGE    = $(NAME)-manager-backup-mysql
 
-NGT_VERSION := $(shell cat resources/NGT_VERSION)
+NGT_VERSION := $(shell cat versions/NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
 
-GO_VERSION := $(shell cat resources/GO_VERSION)
+GO_VERSION := $(shell cat versions/GO_VERSION)
 
 MAKEFILES := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
 
