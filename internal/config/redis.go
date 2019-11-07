@@ -42,6 +42,7 @@ type Redis struct {
 	WriteTimeout       string   `json:"write_timeout" yaml:"write_timeout"`
 	KVPrefix           string   `json:"kv_prefix" yaml:"kv_prefix"`
 	VKPrefix           string   `json:"vk_prefix" yaml:"vk_prefix"`
+	PrefixDelimiter    string   `json:"prefix_delimiter" yaml:"prefix_delimiter"`
 }
 
 func (r *Redis) Bind() *Redis {
@@ -71,5 +72,8 @@ func (r *Redis) Bind() *Redis {
 	r.PoolTimeout = GetActualValue(r.PoolTimeout)
 	r.ReadTimeout = GetActualValue(r.ReadTimeout)
 	r.WriteTimeout = GetActualValue(r.WriteTimeout)
+	r.KVPrefix = GetActualValue(r.KVPrefix)
+	r.VKPrefix = GetActualValue(r.VKPrefix)
+	r.PrefixDelimiter = GetActualValue(r.PrefixDelimiter)
 	return r
 }
