@@ -33,7 +33,7 @@ jobs:
     - name: Build the Docker image
       run: |
         echo 'Build docker image'
-        make dockers-backup-manager-image
+        make docker/build/backup-manager
     - name: login to DockerHub
       run: |
         echo 'Login to DockerHub'
@@ -45,14 +45,14 @@ jobs:
       if: github.ref == 'refs/heads/master'
       run: |
         echo 'Push to DockerHub (master)'
-        imagename=`make dockers-backup-manager-image-name`
+        imagename=`make docker/name/backup-manager`
         docker tag ${imagename} ${imagename}:nightly
         docker push ${imagename}:nightly
     - name: push to DockerHub (pull request)
       if: github.event_name == 'pull_request'
       run: |
         echo 'Push to DockerHub (pull request)'
-        imagename=`make dockers-backup-manager-image-name`
+        imagename=`make docker/name/backup-manager`
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
         docker tag ${imagename} ${imagename}:pr-${pr_num}
         docker push ${imagename}:pr-${pr_num}

@@ -33,7 +33,7 @@ jobs:
     - name: Build the Docker image
       run: |
         echo 'Build docker image'
-        make dockers-meta-redis-image
+        make docker/build/meta-redis
     - name: login to DockerHub
       run: |
         echo 'Login to DockerHub'
@@ -45,14 +45,14 @@ jobs:
       if: github.ref == 'refs/heads/master'
       run: |
         echo 'Push to DockerHub (master)'
-        imagename=`make dockers-meta-redis-image-name`
+        imagename=`make docker/name/meta-redis`
         docker tag ${imagename} ${imagename}:nightly
         docker push ${imagename}:nightly
     - name: push to DockerHub (pull request)
       if: github.event_name == 'pull_request'
       run: |
         echo 'Push to DockerHub (pull request)'
-        imagename=`make dockers-meta-redis-image-name`
+        imagename=`make docker/name/meta-redis`
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
         docker tag ${imagename} ${imagename}:pr-${pr_num}
         docker push ${imagename}:pr-${pr_num}

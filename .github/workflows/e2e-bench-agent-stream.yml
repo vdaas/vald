@@ -35,7 +35,7 @@ jobs:
       - name: Fetch golang version
         run: |
           echo "Fetch golang version"
-          GO_VERSION=`make go-version`
+          GO_VERSION=`make version/go`
           echo "GO_VERSION=${GO_VERSION}"
           echo "::set-output name=version::${GO_VERSION}"
         id: golang_version
@@ -47,9 +47,9 @@ jobs:
           echo "install dependencies"
           sudo apt-get update
           sudo apt-get install -y libhdf5-dev graphviz
-          sudo make ngt
+          sudo make ngt/install
       - name: bench-agent-stream
         run: |
           echo "run bench-agent-stream"
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-          make bench-agent-stream
+          make bench/agent/stream

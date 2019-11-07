@@ -27,7 +27,7 @@ jobs:
       - name: Fetch golang version
         run: |
           echo "Fetch golang version"
-          GO_VERSION=`make go-version`
+          GO_VERSION=`make version/go`
           echo "GO_VERSION=${GO_VERSION}"
           echo "::set-output name=version::${GO_VERSION}"
         id: golang_version
@@ -38,4 +38,4 @@ jobs:
           echo "build protobuf"
           export GOPATH=$HOME/go
           export PATH=$PATH:$HOME/go/bin
-          make proto-all
+          make proto/all

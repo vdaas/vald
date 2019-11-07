@@ -13,7 +13,7 @@ jobs:
       - name: Install dependencies
         run: |
           echo "install dependencies"
-          sudo make ngt
+          sudo make ngt/install
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@v1
         with:
