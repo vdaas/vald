@@ -30,7 +30,7 @@ NGT_REPO = github.com/yahoojapan/NGT
 
 GO_VERSION := $(shell cat versions/GO_VERSION)
 
-MAKEFILES := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
+MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
 
 PROTODIRS := $(shell find apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto")
 PBGODIRS = $(PROTODIRS:%=apis/grpc/%)
@@ -81,7 +81,7 @@ help:
 	    printf "  \x1b[32;01m%-35s\x1b[0m %s\n", helpCommand, helpMessage; \
 	  } \
 	} \
-	{ lastLine = $$0 }' $(MAKEFILES) | sort -u
+	{ lastLine = $$0 }' $(MAKELISTS) | sort -u
 	@printf "\n"
 
 .PHONY: clean
