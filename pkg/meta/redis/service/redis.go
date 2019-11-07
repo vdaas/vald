@@ -204,18 +204,18 @@ func (c *client) get(prefix, key string) (string, error) {
 
 func (c *client) getMulti(prefix string, keys ...string) (vals []string, err error) {
 	pipe := c.db.TxPipeline()
-	ress := make([]redis.StringCmd, 0, len(keys))
+	ress := make(map[string]redis.StringCmd, len(keys))
 	for _, k := range keys {
-		ress = append(ress, pipe.Get(c.appendPrefix(prefix, k)))
+		ress[k] = pipe.Get(c.appendPrefix(prefix, k))
 	}
 	if _, err = pipe.Exec(); err != nil {
 		return nil, err
 	}
 	var errs error
 	vals = make([]string, 0, len(ress))
-	for _, res := range ress {
+	for k, res := range ress {
 		if err = res.Err(); err != nil {
-			errs = errors.Wrap(errs, err.Error())
+			errs = errors.Wrap(errs, errors.ErrRedisFetchingValueFailed(k, err.Error()).Error())
 			continue
 		}
 		vals = append(vals, res.Val())
@@ -238,20 +238,23 @@ func (c *client) Set(key, val string) error {
 
 func (c *client) SetMultiple(kvs map[string]string) (err error) {
 	pipe := c.db.TxPipeline()
-	ress := make([]redis.StatusCmd, 0, len(kvs)*2)
+	ress := make(map[string]redis.StatusCmd, len(kvs)*2)
 	for k, v := range kvs {
 		if len(k) == 0 || len(v) == 0 {
 			continue
 		}
-		ress = append(ress, pipe.Set(c.appendPrefix(c.kvPrefix, k), v, 0), pipe.Set(c.appendPrefix(c.vkPrefix, v), k, 0))
+		kvKey := c.appendPrefix(c.kvPrefix, k)
+		vkKey := c.appendPrefix(c.vkPrefix, v)
+		ress[kvKey] = pipe.Set(kvKey, v, 0)
+		ress[vkKey] = pipe.Set(vkKey, k, 0)
 	}
 	if _, err = pipe.Exec(); err != nil {
 		return err
 	}
 	var errs error
-	for _, res := range ress {
+	for k, res := range ress {
 		if err = res.Err(); err != nil {
-			errs = errors.Wrap(errs, err.Error())
+			errs = errors.Wrap(errs, errors.ErrRedisSettingKeyValueFailed(k, err.Error()).Error())
 		}
 	}
 	return errs
@@ -299,20 +302,22 @@ func (c *client) deleteMulti(pfx, pfxInv string, keys ...string) (vals []string,
 		return nil, err
 	}
 	pipe := c.db.TxPipeline()
-	ress := make([]redis.IntCmd, 0, len(keys)*2)
+	ress := make(map[string]redis.IntCmd, len(keys)*2)
 	for _, k := range keys {
-		ress = append(ress, pipe.Del(c.appendPrefix(pfx, k)))
+		key := c.appendPrefix(pfx, k)
+		ress[key] = pipe.Del(key)
 	}
 	for _, v := range vals {
-		ress = append(ress, pipe.Del(c.appendPrefix(pfxInv, v)))
+		key := c.appendPrefix(pfxInv, v)
+		ress[key] = pipe.Del(key)
 	}
 	if _, err = pipe.Exec(); err != nil {
 		return nil, err
 	}
 	var errs error
-	for _, res := range ress {
+	for k, res := range ress {
 		if err = res.Err(); err != nil {
-			errs = errors.Wrap(errs, err.Error())
+			errs = errors.Wrap(errs, errors.ErrRedisDeleteKeyFailed(k, err.Error()).Error())
 			continue
 		}
 	}
