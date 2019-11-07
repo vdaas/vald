@@ -24,6 +24,11 @@ pbdoc: $(PBDOCS)
 proto/clean:
 	rm -rf apis/grpc apis/swagger apis/graphql apis/docs
 
+.PHONY: proto/paths/print
+## print proto paths
+proto/paths/print:
+	@echo $(PROTO_PATHS)
+
 .PHONY: proto/deps
 ## install protobuf dependencies
 proto/deps: \

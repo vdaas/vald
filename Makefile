@@ -55,12 +55,12 @@ BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.
 BENCH_DATASETS = $(BENCH_DATASET_MD5S:$(BENCH_DATASET_MD5_DIR)/%.md5=$(BENCH_DATASET_HDF5_DIR)/%.hdf5)
 
 PROTO_PATHS = \
-	$(PROTODIRS:%=-I ./apis/proto/%) \
-	-I $(GOPATH)/src/github.com/protocolbuffers/protobuf/src \
-	-I $(GOPATH)/src/github.com/gogo/protobuf/protobuf \
-	-I $(GOPATH)/src/github.com/googleapis/googleapis \
-	-I $(GOPATH)/src/github.com/danielvladco/go-proto-gql \
-	-I $(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
+	$(PROTODIRS:%=./apis/proto/%) \
+	$(GOPATH)/src/github.com/protocolbuffers/protobuf/src \
+	$(GOPATH)/src/github.com/gogo/protobuf/protobuf \
+	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/danielvladco/go-proto-gql \
+	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 
 include Makefile.d/functions.mk
 

@@ -15,7 +15,7 @@ endef
 
 define protoc-gen
 	protoc \
-		$(PROTO_PATHS) \
+		$(PROTO_PATHS:%=-I %) \
 		$2 \
 		$1
 endef
