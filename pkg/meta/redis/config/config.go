@@ -43,6 +43,9 @@ func NewConfig(path string) (cfg *Data, err error) {
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()
 	}
+	if cfg.Redis != nil {
+		cfg.Redis = cfg.Redis.Bind()
+	}
 	return cfg, nil
 }
 
