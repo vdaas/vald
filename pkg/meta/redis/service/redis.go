@@ -215,7 +215,7 @@ func (c *client) getMulti(prefix string, keys ...string) (vals []string, err err
 	vals = make([]string, 0, len(ress))
 	for k, res := range ress {
 		if err = res.Err(); err != nil {
-			errs = errors.Wrap(errs, errors.ErrRedisFetchingValueFailed(k, err.Error()).Error())
+			errs = errors.Wrap(errs, errors.ErrRedisGetOperationFailed(k, err).Error())
 			continue
 		}
 		vals = append(vals, res.Val())
@@ -254,7 +254,7 @@ func (c *client) SetMultiple(kvs map[string]string) (err error) {
 	var errs error
 	for k, res := range ress {
 		if err = res.Err(); err != nil {
-			errs = errors.Wrap(errs, errors.ErrRedisSettingKeyValueFailed(k, err.Error()).Error())
+			errs = errors.Wrap(errs, errors.ErrRedisSetOperationFailed(k, err).Error())
 		}
 	}
 	return errs
@@ -317,7 +317,7 @@ func (c *client) deleteMulti(pfx, pfxInv string, keys ...string) (vals []string,
 	var errs error
 	for k, res := range ress {
 		if err = res.Err(); err != nil {
-			errs = errors.Wrap(errs, errors.ErrRedisDeleteKeyFailed(k, err.Error()).Error())
+			errs = errors.Wrap(errs, errors.ErrRedisDeleteOperationFailed(k, err).Error())
 			continue
 		}
 	}

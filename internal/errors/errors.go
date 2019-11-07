@@ -34,16 +34,16 @@ var (
 		return Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", kv, vk)
 	}
 
-	ErrRedisFetchingValueFailed = func(key string, msg string) error {
-		return Errorf("Failed to fetch key (%s) caused by: %s", key, msg)
+	ErrRedisGetOperationFailed = func(key string, err error) error {
+		return Wrapf(err, "Failed to fetch key (%s)", key)
 	}
 
-	ErrRedisSettingKeyValueFailed = func(key string, msg string) error {
-		return Errorf("Failed to set key (%s) caused by: %s", key, msg)
+	ErrRedisSetOperationFailed = func(key string, err error) error {
+		return Wrapf(err, "Failed to set key (%s)", key)
 	}
 
-	ErrRedisDeleteKeyFailed = func(key string, msg string) error {
-		return Errorf("Failed to delete key (%s) caused by: %s", key, msg)
+	ErrRedisDeleteOperationFailed = func(key string, err error) error {
+		return Wrapf(err, "Failed to delete key (%s)", key)
 	}
 
 	ErrInvalidConfigVersion = func(cur, con string) error {
