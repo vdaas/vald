@@ -40,8 +40,9 @@ type Redis struct {
 	TLS                *TLS     `json:"tls" yaml:"tls"`
 	TCP                *TCP     `json:"tcp" yaml:"tcp"`
 	WriteTimeout       string   `json:"write_timeout" yaml:"write_timeout"`
-	KVIndex            int      `json:"kv_index" yaml:"kv_index"`
-	VKIndex            int      `json:"vk_index" yaml:"vk_index"`
+	KVPrefix           string   `json:"kv_prefix" yaml:"kv_prefix"`
+	VKPrefix           string   `json:"vk_prefix" yaml:"vk_prefix"`
+	PrefixDelimiter    string   `json:"prefix_delimiter" yaml:"prefix_delimiter"`
 }
 
 func (r *Redis) Bind() *Redis {
@@ -71,5 +72,8 @@ func (r *Redis) Bind() *Redis {
 	r.PoolTimeout = GetActualValue(r.PoolTimeout)
 	r.ReadTimeout = GetActualValue(r.ReadTimeout)
 	r.WriteTimeout = GetActualValue(r.WriteTimeout)
+	r.KVPrefix = GetActualValue(r.KVPrefix)
+	r.VKPrefix = GetActualValue(r.VKPrefix)
+	r.PrefixDelimiter = GetActualValue(r.PrefixDelimiter)
 	return r
 }

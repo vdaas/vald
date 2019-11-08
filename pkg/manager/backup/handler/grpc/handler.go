@@ -19,20 +19,17 @@ package grpc
 
 import (
 	"context"
-	"time"
 
-	"github.com/vdaas/vald/apis/grpc/agent"
+	"github.com/vdaas/vald/apis/grpc/manager/backup"
 	"github.com/vdaas/vald/apis/grpc/payload"
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/manager/backup/model"
 	"github.com/vdaas/vald/pkg/manager/backup/service"
 )
 
-type Server agent.AgentServer
+type Server backup.BackupServer
 
 type server struct {
-	ngt service.NGT
+	mySQL service.MySQL
 }
 
 func New(opts ...Option) Server {
@@ -44,184 +41,119 @@ func New(opts ...Option) Server {
 	return s
 }
 
-func (s *server) Exists(ctx context.Context, oid *payload.Object_ID) (*payload.Object_ID, error) {
-	id, ok := s.ngt.Exists(oid.GetId())
-	if !ok {
-		return nil, errors.ErrObjectIDNotFound(oid.GetId())
-	}
-	return &payload.Object_ID{
-		Id: id,
-	}, nil
-}
-
-func (s *server) Search(ctx context.Context, req *payload.Search_Request) (*payload.Search_Response, error) {
-	return toSearchResponse(
-		s.ngt.Search(
-			req.GetVector().GetVector(),
-			req.GetConfig().GetNum(),
-			req.GetConfig().GetEpsilon(),
-			req.GetConfig().GetRadius()))
-}
-
-func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_Response, error) {
-	return toSearchResponse(
-		s.ngt.SearchByID(
-			req.GetId().GetId(),
-			req.GetConfig().GetNum(),
-			req.GetConfig().GetEpsilon(),
-			req.GetConfig().GetRadius()))
-}
-
-func toSearchResponse(dists []model.Distance, err error) (*payload.Search_Response, error) {
-	if err != nil {
-		return &payload.Search_Response{
-			Error: &payload.Empty{
-				Msg:       err.Error(),
-				Timestamp: time.Now().UnixNano(),
-			},
-		}, err
-	}
-
-	res := &payload.Search_Response{
-		Results: make([]*payload.Object_Distance, 0, len(dists)),
-	}
-
-	for _, dist := range dists {
-		// res.Results = append(res.Results, (*payload.Object_Distance)(unsafe.Pointer(&dist)))
-		res.Results = append(res.Results, &payload.Object_Distance{
-			Id: &payload.Object_ID{
-				Id: dist.ID,
-			},
-			Distance: dist.Distance,
-		})
-	}
-
-	return res, nil
-}
-
-func (s *server) StreamSearch(stream agent.Agent_StreamSearchServer) error {
-	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
-		return s.Search(ctx, data.(*payload.Search_Request))
-	})
-}
-
-func (s *server) StreamSearchByID(stream agent.Agent_StreamSearchByIDServer) error {
-	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
-		return s.SearchByID(ctx, data.(*payload.Search_IDRequest))
-	})
-}
-
-func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (*payload.Empty, error) {
-	err := s.ngt.Insert(vec.GetId().GetId(), vec.GetVector())
-	if err != nil {
-		return &payload.Empty{
-			Msg:       err.Error(),
-			Timestamp: time.Now().UnixNano(),
-		}, err
-	}
-	return nil, nil
-}
-
-func (s *server) StreamInsert(stream agent.Agent_StreamInsertServer) error {
-	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
-		return s.Insert(ctx, data.(*payload.Object_Vector))
-	})
-}
-
-func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
-	res = new(payload.Empty)
-	for _, vec := range vecs.GetVectors() {
-		r, ierr := s.Insert(ctx, vec)
-		if ierr != nil {
-			err = errors.Wrap(err, ierr.Error())
-			res.Errors = append(res.Errors, r)
-		}
-	}
-	return
-}
-
-func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (*payload.Empty, error) {
-	err := s.ngt.Update(vec.GetId().GetId(), vec.GetVector())
-	if err != nil {
-		return &payload.Empty{
-			Msg:       err.Error(),
-			Timestamp: time.Now().UnixNano(),
-		}, err
-	}
-	return nil, nil
-}
-
-func (s *server) StreamUpdate(stream agent.Agent_StreamUpdateServer) error {
-	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
-		return s.Update(ctx, data.(*payload.Object_Vector))
-	})
-}
-
-func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
-	res = new(payload.Empty)
-	for _, vec := range vecs.GetVectors() {
-		r, ierr := s.Update(ctx, vec)
-		if ierr != nil {
-			err = errors.Wrap(err, ierr.Error())
-			res.Errors = append(res.Errors, r)
-		}
-	}
-	return
-}
-
-func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Empty, error) {
-	err := s.ngt.Delete(id.GetId())
-	if err != nil {
-		return &payload.Empty{
-			Msg:       err.Error(),
-			Timestamp: time.Now().UnixNano(),
-		}, err
-	}
-	return nil, nil
-}
-
-func (s *server) StreamRemove(stream agent.Agent_StreamRemoveServer) error {
-	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
-		return s.Remove(ctx, data.(*payload.Object_ID))
-	})
-}
-
-func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res *payload.Empty, err error) {
-	res = new(payload.Empty)
-	for _, id := range ids.GetIds() {
-		r, ierr := s.Remove(ctx, id)
-		if ierr != nil {
-			err = errors.Wrap(err, ierr.Error())
-			res.Errors = append(res.Errors, r)
-		}
-	}
-	return
-}
-
-func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (*payload.Object_Vector, error) {
-	vec, err := s.ngt.GetObject(id.GetId())
+func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_MetaVector, err error) {
+	meta, err := s.mySQL.GetMeta(ctx, req.Uuid)
 	if err != nil {
 		return nil, err
 	}
-	return &payload.Object_Vector{
-		Id: &payload.Object_ID{
-			Id: id.GetId(),
-		},
-		Vector: vec,
+
+	return toBackupMetaVector(meta)
+}
+
+func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Request) (res *payload.Info_IPs, err error) {
+	ips, err := s.mySQL.GetIPs(ctx, req.Uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	return &payload.Info_IPs{
+		Ip: ips,
 	}, nil
-
 }
 
-func (s *server) StreamGetObject(stream agent.Agent_StreamGetObjectServer) error {
-	return grpc.BidirectionalStream(stream, func(ctx context.Context, data interface{}) (interface{}, error) {
-		return s.GetObject(ctx, data.(*payload.Object_ID))
-	})
+func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) (res *payload.Empty, err error) {
+	m, err := toModelMetaVector(meta)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.mySQL.SetMeta(ctx, *m)
+	if err != nil {
+		return nil, err
+	}
+
+	return new(payload.Empty), nil
 }
 
-func (s *server) CreateIndex(ctx context.Context, c *payload.Controll_CreateIndexRequest) (*payload.Empty, error) {
-	return nil, s.ngt.CreateIndex(c.GetPoolSize())
+func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) (res *payload.Empty, err error) {
+	var m *model.MetaVector
+	ms := make([]model.MetaVector, 0, len(metas.Vectors))
+	for _, meta := range metas.Vectors {
+		m, err = toModelMetaVector(meta)
+		if err != nil {
+			return nil, err
+		}
+		ms = append(ms, *m)
+	}
+
+	err = s.mySQL.SetMetas(ctx, ms...)
+	if err != nil {
+		return nil, err
+	}
+
+	return new(payload.Empty), nil
 }
 
-func (s *server) SaveIndex(context.Context, *payload.Empty) (*payload.Empty, error) {
-	return nil, s.ngt.SaveIndex()
+func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request) (res *payload.Empty, err error) {
+	err = s.mySQL.DeleteMeta(ctx, req.Uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	return new(payload.Empty), nil
+}
+
+func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_RequestMulti) (res *payload.Empty, err error) {
+	uuids := make([]string, 0, len(req.Uuid))
+	for _, uuid := range req.Uuid {
+		uuids = append(uuids, uuid)
+	}
+
+	err = s.mySQL.DeleteMetas(ctx, uuids...)
+	if err != nil {
+		return nil, err
+	}
+
+	return new(payload.Empty), nil
+}
+
+func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Register_Request) (res *payload.Empty, err error) {
+	err = s.mySQL.SetIPs(ctx, req.Uuid, req.Ips...)
+	if err != nil {
+		return nil, err
+	}
+
+	return new(payload.Empty), nil
+}
+
+func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Request) (res *payload.Empty, err error) {
+	err = s.mySQL.RemoveIPs(ctx, req.Ips...)
+	if err != nil {
+		return nil, err
+	}
+
+	return new(payload.Empty), nil
+}
+
+func toBackupMetaVector(meta *model.MetaVector) (res *payload.Backup_MetaVector, err error) {
+	vector, err := meta.GetVector()
+	if err != nil {
+		return nil, err
+	}
+
+	return &payload.Backup_MetaVector{
+		Uuid:   meta.GetUUID(),
+		Meta:   meta.GetMeta(),
+		Vector: vector,
+		Ips:    meta.GetIPs(),
+	}, nil
+}
+
+func toModelMetaVector(obj *payload.Backup_MetaVector) (res *model.MetaVector, err error) {
+	return &model.MetaVector{
+		UUID:   obj.Uuid,
+		Vector: obj.Vector,
+		Meta:   obj.Meta,
+		IPs:    obj.Ips,
+	}, nil
 }

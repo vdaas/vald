@@ -18,18 +18,10 @@ package service
 
 import (
 	"context"
-	"fmt"
-	"runtime"
-	"sync/atomic"
-	"time"
 
 	gmeta "github.com/vdaas/vald/apis/grpc/meta"
 	"github.com/vdaas/vald/apis/grpc/payload"
-	"github.com/vdaas/vald/internal/backoff"
-	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/safety"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/connectivity"
+	"github.com/vdaas/vald/internal/net/grpc"
 )
 
 type Meta interface {
@@ -47,14 +39,8 @@ type Meta interface {
 }
 
 type meta struct {
-	hcDur time.Duration
-	host  string
-	port  int
-	mc    atomic.Value
-	eg    errgroup.Group
-	bo    backoff.Backoff
-	gopts []grpc.DialOption
-	copts []grpc.CallOption
+	addr   string
+	client grpc.Client
 }
 
 func NewMeta(opts ...MetaOption) (mi Meta, err error) {
@@ -70,89 +56,86 @@ func NewMeta(opts ...MetaOption) (mi Meta, err error) {
 }
 
 func (m *meta) Start(ctx context.Context) <-chan error {
-	ech := make(chan error)
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", m.host, m.port), m.gopts...)
-	if err != nil {
-		ech <- err
-	} else {
-		m.mc.Store(gmeta.NewMetaClient(conn))
-	}
-	m.eg.Go(safety.RecoverFunc(func() (err error) {
-		tick := time.NewTicker(m.hcDur)
-		defer tick.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				close(ech)
-				return ctx.Err()
-			case <-tick.C:
-				if conn == nil ||
-					conn.GetState() == connectivity.Shutdown ||
-					conn.GetState() == connectivity.TransientFailure {
-					conn, err = grpc.DialContext(ctx, fmt.Sprintf("%s:%d", m.host, m.port), m.gopts...)
-					if err != nil {
-						ech <- err
-					} else {
-						m.mc.Store(gmeta.NewMetaClient(conn))
-						runtime.Gosched()
-					}
-				}
-			}
-		}
-		return nil
-	}))
-	return ech
+	return m.client.StartConnectionMonitor(ctx)
 }
 
-func (m *meta) GetMeta(ctx context.Context, key string) (string, error) {
-	val, err := m.mc.Load().(gmeta.MetaClient).GetMeta(ctx, &payload.Meta_Key{
-		Key: key,
-	}, m.copts...)
+func (m *meta) GetMeta(ctx context.Context, key string) (v string, err error) {
+	val, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		val, err := gmeta.NewMetaClient(conn).GetMeta(ctx, &payload.Meta_Key{
+			Key: key,
+		}, copts...)
+		if err != nil {
+			return nil, err
+		}
+		return val.GetVal(), nil
+	})
 	if err != nil {
 		return "", err
 	}
-	return val.GetVal(), nil
+	return val.(string), nil
 }
 
 func (m *meta) GetMetas(ctx context.Context, keys ...string) ([]string, error) {
-	vals, err := m.mc.Load().(gmeta.MetaClient).GetMetas(ctx, &payload.Meta_Keys{
-		Keys: keys,
-	}, m.copts...)
+	vals, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		vals, err := gmeta.NewMetaClient(conn).GetMetas(ctx, &payload.Meta_Keys{
+			Keys: keys,
+		}, copts...)
+		if err != nil {
+			return nil, err
+		}
+		return vals.GetVals(), nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	return vals.GetVals(), nil
+	return vals.([]string), nil
 }
 
 func (m *meta) GetUUID(ctx context.Context, val string) (string, error) {
-	key, err := m.mc.Load().(gmeta.MetaClient).GetMetaInverse(ctx, &payload.Meta_Val{
-		Val: val,
-	}, m.copts...)
+	key, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		key, err := gmeta.NewMetaClient(conn).GetMetaInverse(ctx, &payload.Meta_Val{
+			Val: val,
+		}, copts...)
+		if err != nil {
+			return nil, err
+		}
+		return key.GetKey(), nil
+	})
 	if err != nil {
 		return "", err
 	}
-	return key.GetKey(), nil
+	return key.(string), nil
 }
 
 func (m *meta) GetUUIDs(ctx context.Context, vals ...string) ([]string, error) {
-	keys, err := m.mc.Load().(gmeta.MetaClient).GetMetasInverse(ctx, &payload.Meta_Vals{
-		Vals: vals,
-	}, m.copts...)
+	keys, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		keys, err := gmeta.NewMetaClient(conn).GetMetasInverse(ctx, &payload.Meta_Vals{
+			Vals: vals,
+		}, copts...)
+		if err != nil {
+			return nil, err
+		}
+		return keys.GetKeys(), nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	return keys.GetKeys(), nil
+	return keys.([]string), nil
 }
 
-func (m *meta) SetUUIDandMeta(ctx context.Context, key, val string) error {
-	_, err := m.mc.Load().(gmeta.MetaClient).SetMeta(ctx, &payload.Meta_KeyVal{
-		Key: key,
-		Val: val,
-	}, m.copts...)
-	return err
+func (m *meta) SetUUIDandMeta(ctx context.Context, key, val string) (err error) {
+	_, err = m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		_, err := gmeta.NewMetaClient(conn).SetMeta(ctx, &payload.Meta_KeyVal{
+			Key: key,
+			Val: val,
+		}, copts...)
+
+		return nil, err
+	})
+	return
 }
 
-func (m *meta) SetUUIDandMetas(ctx context.Context, kvs map[string]string) error {
+func (m *meta) SetUUIDandMetas(ctx context.Context, kvs map[string]string) (err error) {
 	data := make([]*payload.Meta_KeyVal, len(kvs))
 	for k, v := range kvs {
 		data = append(data, &payload.Meta_KeyVal{
@@ -160,48 +143,76 @@ func (m *meta) SetUUIDandMetas(ctx context.Context, kvs map[string]string) error
 			Val: v,
 		})
 	}
-	_, err := m.mc.Load().(gmeta.MetaClient).SetMetas(ctx, &payload.Meta_KeyVals{
-		Kvs: data,
+	_, err = m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		_, err := gmeta.NewMetaClient(conn).SetMetas(ctx, &payload.Meta_KeyVals{
+			Kvs: data,
+		}, copts...)
+
+		return nil, err
 	})
-	return err
+	return
 }
 
-func (m *meta) DeleteMeta(ctx context.Context, key string) (string, error) {
-	val, err := m.mc.Load().(gmeta.MetaClient).DeleteMeta(ctx, &payload.Meta_Key{
-		Key: key,
-	}, m.copts...)
+func (m *meta) DeleteMeta(ctx context.Context, key string) (v string, err error) {
+	val, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		val, err := gmeta.NewMetaClient(conn).DeleteMeta(ctx, &payload.Meta_Key{
+			Key: key,
+		}, copts...)
+		if err != nil {
+			return nil, err
+		}
+		return val.GetVal(), nil
+	})
 	if err != nil {
 		return "", err
 	}
-	return val.GetVal(), nil
+	return val.(string), nil
 }
 
 func (m *meta) DeleteMetas(ctx context.Context, keys ...string) ([]string, error) {
-	vals, err := m.mc.Load().(gmeta.MetaClient).DeleteMetas(ctx, &payload.Meta_Keys{
-		Keys: keys,
-	}, m.copts...)
+	vals, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		vals, err := gmeta.NewMetaClient(conn).DeleteMetas(ctx, &payload.Meta_Keys{
+			Keys: keys,
+		}, copts...)
+		if err != nil {
+			return nil, err
+		}
+		return vals.GetVals(), nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	return vals.GetVals(), nil
+	return vals.([]string), nil
 }
 
 func (m *meta) DeleteUUID(ctx context.Context, val string) (string, error) {
-	key, err := m.mc.Load().(gmeta.MetaClient).DeleteMetaInverse(ctx, &payload.Meta_Val{
-		Val: val,
-	}, m.copts...)
+	key, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		key, err := gmeta.NewMetaClient(conn).DeleteMetaInverse(ctx, &payload.Meta_Val{
+			Val: val,
+		}, copts...)
+		if err != nil {
+			return nil, err
+		}
+		return key.GetKey(), nil
+	})
 	if err != nil {
 		return "", err
 	}
-	return key.GetKey(), nil
+	return key.(string), nil
 }
 
 func (m *meta) DeleteUUIDs(ctx context.Context, vals ...string) ([]string, error) {
-	keys, err := m.mc.Load().(gmeta.MetaClient).DeleteMetasInverse(ctx, &payload.Meta_Vals{
-		Vals: vals,
-	}, m.copts...)
+	keys, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		keys, err := gmeta.NewMetaClient(conn).DeleteMetasInverse(ctx, &payload.Meta_Vals{
+			Vals: vals,
+		}, copts...)
+		if err != nil {
+			return nil, err
+		}
+		return keys.GetKeys(), nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	return keys.GetKeys(), nil
+	return keys.([]string), nil
 }

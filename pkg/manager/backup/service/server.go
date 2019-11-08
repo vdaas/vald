@@ -22,7 +22,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/vdaas/vald/apis/grpc/agent"
+	"github.com/vdaas/vald/apis/grpc/manager/backup"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/net/http/metrics"
 	"github.com/vdaas/vald/internal/servers"
@@ -36,7 +36,7 @@ type Server servers.Listener
 type srvs struct {
 	rest http.Handler
 	gql  http.Handler
-	grpc agent.AgentServer
+	grpc backup.BackupServer
 	cfg  *config.Servers
 }
 
@@ -123,7 +123,7 @@ func (s *srvs) setupAPIs(cfg *tls.Config) ([]servers.Option, error) {
 			srv, err := server.New(
 				append(sc.Opts(),
 					server.WithGRPCRegistFunc(func(gsrv *grpc.Server) {
-						agent.RegisterAgentServer(gsrv, s.grpc)
+						backup.RegisterBackupServer(gsrv, s.grpc)
 					}),
 					server.WithGRPCOption(gopts[:len(gopts)]...),
 

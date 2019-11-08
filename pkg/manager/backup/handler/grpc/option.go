@@ -25,8 +25,8 @@ var (
 	defaultOpts = []Option{}
 )
 
-func WithNGT(n service.NGT) Option {
+func WithMySQL(m service.MySQL) Option {
 	return func(s *server) {
-		s.ngt = n
+		s.mySQL = m
 	}
 }

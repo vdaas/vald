@@ -34,7 +34,7 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 COPY cmd/${PKG} .
 
 WORKDIR /tmp
-COPY resources/NGT_VERSION .
+COPY versions/NGT_VERSION .
 RUN export NGT_VERSION=`cat NGT_VERSION` \
     && curl -LO "https://github.com/yahoojapan/NGT/archive/v${NGT_VERSION}.tar.gz" \
     && tar zxf v${NGT_VERSION}.tar.gz -C /tmp \

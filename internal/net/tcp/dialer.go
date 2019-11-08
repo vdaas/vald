@@ -125,17 +125,19 @@ func (d *dialer) lookup(ctx context.Context, addr string) (ips map[int]string, e
 }
 
 func (d *dialer) StartDialerCache(ctx context.Context) {
-	d.cache.SetDefaultExpire(d.dnsCacheExpiration).
-		SetExpiredHook(func(gctx context.Context, addr string) {
-			if err := safety.RecoverFunc(func() (err error) {
-				_, err = d.lookup(gctx, addr)
-				return err
-			}); err != nil {
-				log.Error(err)
-			}
-		}).
-		EnableExpiredHook().
-		StartExpired(ctx, d.dnsRefreshDuration)
+	if d.dnsCache && d.cache != nil {
+		d.cache.SetDefaultExpire(d.dnsCacheExpiration).
+			SetExpiredHook(func(gctx context.Context, addr string) {
+				if err := safety.RecoverFunc(func() (err error) {
+					_, err = d.lookup(gctx, addr)
+					return err
+				}); err != nil {
+					log.Error(err)
+				}
+			}).
+			EnableExpiredHook().
+			StartExpired(ctx, d.dnsRefreshDuration)
+	}
 }
 
 func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (

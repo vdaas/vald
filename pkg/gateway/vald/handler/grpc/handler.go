@@ -20,6 +20,7 @@ package grpc
 import (
 	"context"
 	"math"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -40,7 +41,7 @@ type server struct {
 	metadata service.Meta
 	backup   service.Backup
 	timeout  time.Duration
-	filters  service.Filter
+	filter   service.Filter
 	replica  int
 }
 
@@ -147,11 +148,12 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					}
 				}
 			}
-			if s.filters != nil {
-				res, err = filter.FilterSearch(res)
+			if s.filter != nil {
+				r, err := s.filter.FilterSearch(ctx, res)
 				if err != nil {
 					return res, err
 				}
+				res = r
 			}
 			return res, err
 		case dist := <-dch:
@@ -210,6 +212,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 		if err != nil {
 			return err
 		}
+		target = strings.SplitN(target, ":", 2)[0]
 		mu.Lock()
 		targets = append(targets, target)
 		mu.Unlock()
@@ -252,6 +255,7 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		if err != nil {
 			return err
 		}
+		target = strings.SplitN(target, ":", 2)[0]
 		mu.Lock()
 		targets = append(targets, target)
 		mu.Unlock()
@@ -298,6 +302,7 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 		lmap[loc] = struct{}{}
 	}
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, ac agent.AgentClient) error {
+		target = strings.SplitN(target, ":", 2)[0]
 		_, ok := lmap[target]
 		if ok {
 			_, err = ac.Update(ctx, vec)

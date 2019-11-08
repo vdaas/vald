@@ -17,12 +17,21 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+import "fmt"
+
 type BackupManager struct {
-	Host     string
-	Port     int
-	Duration string
+	Host   string      `json:"host" yaml:"host"`
+	Port   int         `json:"port" yaml:"port"`
+	Addr   string      `json:"addr" yaml:"addr"`
+	Client *GRPCClient `json:"client" yaml:"client"`
 }
 
 func (b *BackupManager) Bind() *BackupManager {
+	if len(b.Addr) == 0 {
+		b.Addr = fmt.Sprintf("%s, %d", b.Host, b.Port)
+	}
+	if b.Client != nil {
+		b.Client = b.Client.Bind()
+	}
 	return b
 }

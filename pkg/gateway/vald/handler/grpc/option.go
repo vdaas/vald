@@ -59,14 +59,10 @@ func WithBackup(b service.Backup) Option {
 	}
 }
 
-func WithFilters(filters ...service.Filter) Option {
+func WithFilters(filter service.Filter) Option {
 	return func(s *server) {
-		if filters != nil {
-			if s.filters != nil && len(s.filters) > 0 {
-				s.filters = append(s.filters, filters...)
-			} else {
-				s.filters = filters
-			}
+		if filter != nil {
+			s.filter = filter
 		}
 	}
 }

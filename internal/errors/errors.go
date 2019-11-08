@@ -30,8 +30,20 @@ import (
 var (
 
 	// Redis
-	ErrRedisInvalidKVVKIndex = func(kv, vk int) error {
-		return Errorf("kv index and vk index must be defferent.\t(kv: %d,\tvk: %d)", kv, vk)
+	ErrRedisInvalidKVVKPrefix = func(kv, vk string) error {
+		return Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", kv, vk)
+	}
+
+	ErrRedisGetOperationFailed = func(key string, err error) error {
+		return Wrapf(err, "Failed to fetch key (%s)", key)
+	}
+
+	ErrRedisSetOperationFailed = func(key string, err error) error {
+		return Wrapf(err, "Failed to set key (%s)", key)
+	}
+
+	ErrRedisDeleteOperationFailed = func(key string, err error) error {
+		return Wrapf(err, "Failed to delete key (%s)", key)
 	}
 
 	ErrInvalidConfigVersion = func(cur, con string) error {
@@ -111,9 +123,28 @@ var (
 		return Wrapf(err, "%s's gRPC connection close error", name)
 	}
 
+	ErrInvalidGRPCClientConn = func(addr string) error {
+		return Errorf("invalid gRPC client connection to %s", addr)
+	}
+
+	ErrGRPCClientConnNotFound = func(addr string) error {
+		return Errorf("gRPC client connection not found on %s", addr)
+	}
+
 	//DB
 
 	ErrAddrsNotFound = New("addrs not found")
+
+	// MySQL
+	ErrMySQLConnectionClosed = New("MySQL connection closed")
+
+	ErrRequiredElementNotFoundByUUID = func(uuid string) error {
+		return Errorf("Required element not found, uuid: %s", uuid)
+	}
+
+	ErrRequiredMemberNotFilled = func(member string) error {
+		return Errorf("Required member not filled (member: %s)", member)
+	}
 
 	//NGT
 

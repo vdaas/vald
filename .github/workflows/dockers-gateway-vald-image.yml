@@ -31,7 +31,7 @@ jobs:
     - name: Build the Docker image
       run: |
         echo 'Build docker image'
-        make dockers-gateway-vald-image
+        make docker/build/gateway-vald
     - name: login to DockerHub
       run: |
         echo 'Login to DockerHub'
@@ -43,14 +43,14 @@ jobs:
       if: github.ref == 'refs/heads/master'
       run: |
         echo 'Push to DockerHub (master)'
-        imagename=`make dockers-gateway-vald-image-name`
+        imagename=`make docker/name/gateway-vald`
         docker tag ${imagename} ${imagename}:nightly
         docker push ${imagename}:nightly
     - name: push to DockerHub (pull request)
       if: github.event_name == 'pull_request'
       run: |
         echo 'Push to DockerHub (pull request)'
-        imagename=`make dockers-gateway-vald-image-name`
+        imagename=`make docker/name/gateway-vald`
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
         docker tag ${imagename} ${imagename}:pr-${pr_num}
         docker push ${imagename}:pr-${pr_num}

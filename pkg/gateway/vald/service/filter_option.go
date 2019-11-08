@@ -17,14 +17,7 @@
 // Package service
 package service
 
-import (
-	"time"
-
-	"github.com/vdaas/vald/internal/backoff"
-	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/timeutil"
-	"google.golang.org/grpc"
-)
+import "github.com/vdaas/vald/internal/net/grpc"
 
 type FilterOption func(f *filter) error
 
@@ -32,70 +25,11 @@ var (
 	defaultFilterOpts = []FilterOption{}
 )
 
-func WithFilterTargets(addrs ...string) FilterOption {
+func WithFilterClient(client grpc.Client) FilterOption {
 	return func(f *filter) error {
-		f.addrs = addrs
-		return nil
-	}
-}
-
-func WithFilterHealthCheckDuration(dur string) FilterOption {
-	return func(f *filter) error {
-		d, err := timeutil.Parse(dur)
-		if err != nil {
-			d = time.Second
+		if client != nil {
+			f.client = client
 		}
-		f.hcDur = d
-		return nil
-	}
-}
-
-func WithFilterGRPCDialOption(opt grpc.DialOption) FilterOption {
-	return func(f *filter) error {
-		f.gopts = append(f.gopts, opt)
-		return nil
-	}
-}
-
-func WithFilterGRPCDialOptions(opts ...grpc.DialOption) FilterOption {
-	return func(f *filter) error {
-		if f.gopts != nil && len(f.gopts) > 0 {
-			f.gopts = append(f.gopts, opts...)
-		} else {
-			f.gopts = opts
-		}
-		return nil
-	}
-}
-
-func WithFilterGRPCCallOption(opt grpc.CallOption) FilterOption {
-	return func(f *filter) error {
-		f.copts = append(f.copts, opt)
-		return nil
-	}
-}
-
-func WithFilterGRPCCallOptions(opts ...grpc.CallOption) FilterOption {
-	return func(f *filter) error {
-		if f.copts != nil && len(f.copts) > 0 {
-			f.copts = append(f.copts, opts...)
-		} else {
-			f.copts = opts
-		}
-		return nil
-	}
-}
-
-func withFilterBackoff(bo backoff.Backoff) FilterOption {
-	return func(f *filter) error {
-		f.bo = bo
-		return nil
-	}
-}
-
-func withFilterErrGroup(eg errgroup.Group) FilterOption {
-	return func(f *filter) error {
-		f.eg = eg
 		return nil
 	}
 }

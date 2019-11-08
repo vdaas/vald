@@ -45,6 +45,9 @@ type NGT struct {
 
 	// AutoIndexLength represent auto index length limit
 	AutoIndexLength int `yaml:"auto_index_length" json:"auto_index_length"`
+
+	// EnableInMemoryMode enables on memory ngt indexing mode
+	EnableInMemoryMode bool `yaml:"enable_in_memory_mode" json:"enable_in_memory_mode"`
 }
 
 func (n *NGT) Bind() *NGT {

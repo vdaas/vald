@@ -20,7 +20,7 @@ package service
 import (
 	"net/http"
 
-	"github.com/vdaas/vald/apis/grpc/agent"
+	"github.com/vdaas/vald/apis/grpc/manager/backup"
 	"github.com/vdaas/vald/internal/config"
 )
 
@@ -32,7 +32,7 @@ func WithConfig(cfg *config.Servers) Option {
 	}
 }
 
-func WithGRPC(srv agent.AgentServer) Option {
+func WithGRPC(srv backup.BackupServer) Option {
 	return func(s *srvs) {
 		s.grpc = srv
 	}
