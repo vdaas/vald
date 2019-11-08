@@ -23,7 +23,12 @@ type Client struct {
 }
 
 func (c *Client) Bind() *Client {
-	c.TCP.Bind()
-	c.Transport.Bind()
+	if c.TCP != nil {
+		c.TCP.Bind()
+	}
+
+	if c.Transport != nil {
+		c.Transport.Bind()
+	}
 	return c
 }

@@ -47,18 +47,40 @@ type Server struct {
 	Port          uint   `json:"port" yaml:"port"`
 	Mode          string `json:"mode" yaml:"mode"` // gRPC, REST, GraphQL
 	ProbeWaitTime string `json:"probe_wait_time" yaml:"probe_wait_time"`
-	HTTP          struct {
-		ShutdownDuration  string `json:"shutdown_duration" yaml:"shutdown_duration"`
-		HandlerTimeout    string `json:"handler_timeout" yaml:"handler_timeout"`
-		IdleTimeout       string `json:"idle_timeout" yaml:"idle_timeout"`
-		ReadHeaderTimeout string `json:"read_header_timeout" yaml:"read_header_timeout"`
-		ReadTimeout       string `json:"read_timeout" yaml:"read_timeout"`
-		WriteTimeout      string `json:"write_timeout" yaml:"write_timeout"`
-	} `json:"http" yaml:"http"`
-	GRPC struct {
-		Interceptors []string `json:"interceptors" yaml:"interceptors"`
-	} `json:"grpc" yaml:"grpc"`
-	Restart bool `json:"restart" yaml:"restart"`
+	HTTP          *HTTP  `json:"http" yaml:"http"`
+	GRPC          *GRPC  `json:"grpc" yaml:"grpc"`
+	Restart       bool   `json:"restart" yaml:"restart"`
+}
+
+type HTTP struct {
+	ShutdownDuration  string `json:"shutdown_duration" yaml:"shutdown_duration"`
+	HandlerTimeout    string `json:"handler_timeout" yaml:"handler_timeout"`
+	IdleTimeout       string `json:"idle_timeout" yaml:"idle_timeout"`
+	ReadHeaderTimeout string `json:"read_header_timeout" yaml:"read_header_timeout"`
+	ReadTimeout       string `json:"read_timeout" yaml:"read_timeout"`
+	WriteTimeout      string `json:"write_timeout" yaml:"write_timeout"`
+}
+
+type GRPC struct {
+	MaxReceiveMessageSize int            `json:"max_receive_message_size" yaml:"max_receive_message_size"`
+	MaxSendMessageSize    int            `json:"max_send_message_size" yaml:"max_send_message_size"`
+	InitialWindowSize     int32          `json:"initial_window_size" yaml:"initial_window_size"`
+	InitialConnWindowSize int32          `json:"initial_conn_window_size" yaml:"initial_conn_window_size"`
+	Keepalive             *GRPCKeepalive `json:"keepalive" yaml:"keepalive"`
+	WriteBufferSize       int            `json:"write_buffer_size" yaml:"write_buffer_size"`
+	ReadBufferSize        int            `json:"read_buffer_size" yaml:"read_buffer_size"`
+	ConnectionTimeout     string         `json:"connection_timeout" yaml:"connection_timeout"`
+	MaxHeaderListSize     uint32         `json:"max_header_list_size" yaml:"max_header_list_size"`
+	HeaderTableSize       uint32         `json:"header_table_size" yaml:"header_table_size"`
+	Interceptors          []string       `json:"interceptors" yaml:"interceptors"`
+}
+
+type GRPCKeepalive struct {
+	MaxIdleConnIdle string `json:"max_idle_conn_idle" yaml:"max_idle_conn_idle"`
+	MaxConnAge      string `json:"max_conn_age" yaml:"max_conn_age"`
+	MaxConnAgeGrace string `json:"max_conn_age_grace" yaml:"max_conn_age_grace"`
+	Time            string `json:"time" yaml:"time"`
+	Timeout         string `json:"timeout" yaml:"timeout"`
 }
 
 func (s *Servers) Bind() *Servers {
