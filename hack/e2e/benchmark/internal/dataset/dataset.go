@@ -50,6 +50,7 @@ var (
 			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "fashion-mnist-784-euclidean.hdf5")
 			if err != nil {
 				tb.Error(err)
+				return nil
 			}
 			return &dataset{
 				train: train,
@@ -66,6 +67,7 @@ var (
 			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "mnist-784-euclidean.hdf5")
 			if err != nil {
 				tb.Error(err)
+				return nil
 			}
 			return &dataset{
 				train: train,
@@ -82,6 +84,7 @@ var (
 			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "glove-25-angular.hdf5")
 			if err != nil {
 				tb.Error(err)
+				return nil
 			}
 			return &dataset{
 				train: train,
@@ -95,27 +98,122 @@ var (
 		},
 		"glove-50": func(tb testing.TB) Dataset {
 			tb.Helper()
-			return nil
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "glove-50-angular.hdf5")
+			if err != nil {
+				tb.Error(err)
+				return nil
+			}
+			return &dataset{
+				train: train,
+				query: query,
+				ids: ids,
+				name: "glove-50",
+				dimension: dim,
+				distanceType: "cosine",
+				objectType: "float",
+			}
 		},
 		"glove-100": func(tb testing.TB) Dataset {
 			tb.Helper()
-			return nil
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "glove-100-angular.hdf5")
+			if err != nil {
+				tb.Error(err)
+				return nil
+			}
+			return &dataset{
+				train: train,
+				query: query,
+				ids: ids,
+				name: "glove-100",
+				dimension: dim,
+				distanceType: "cosine",
+				objectType: "float",
+			}
 		},
 		"glove-200": func(tb testing.TB) Dataset {
 			tb.Helper()
-			return nil
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "glove-200-angular.hdf5")
+			if err != nil {
+				tb.Error(err)
+				return nil
+			}
+			return &dataset{
+				train: train,
+				query: query,
+				ids: ids,
+				name: "glove-200",
+				dimension: dim,
+				distanceType: "cosine",
+				objectType: "float",
+			}
 		},
 		"nytimes": func(tb testing.TB) Dataset {
 			tb.Helper()
-			return nil
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "nytimes-256-angular.hdf5")
+			if err != nil {
+				tb.Error(err)
+				return nil
+			}
+			return &dataset{
+				train: train,
+				query: query,
+				ids: ids,
+				name: "nytimes",
+				dimension: dim,
+				distanceType: "cosine",
+				objectType: "float",
+			}
 		},
 		"sift": func(tb testing.TB) Dataset {
 			tb.Helper()
-			return nil
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "sift-128-euclidean.hdf5")
+			if err != nil {
+				tb.Error(err)
+				return nil
+			}
+			return &dataset{
+				train: train,
+				query: query,
+				ids: ids,
+				name: "sift",
+				dimension: dim,
+				distanceType: "l2",
+				objectType: "float",
+			}
 		},
 		"gist": func(tb testing.TB) Dataset {
 			tb.Helper()
-			return nil
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "gist-960-euclidean.hdf5")
+			if err != nil {
+				tb.Error(err)
+				return nil
+			}
+			return &dataset{
+				train: train,
+				query: query,
+				ids: ids,
+				name: "gist",
+				dimension: dim,
+				distanceType: "l2",
+				objectType: "float",
+			}
+		},
+		"kosarak": func(tb testing.TB) Dataset {
+			tb.Helper()
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "kosarak-jaccard.hdf5")
+			if err != nil {
+				tb.Error(err)
+				return nil
+			}
+			return &dataset{
+				train: train,
+				query: query,
+				ids: ids,
+				name: "kosarak",
+				dimension: dim,
+				distanceType: "jaccard",
+				objectType: "float",
+			}
 		},
 	}
 )

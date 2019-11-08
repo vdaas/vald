@@ -17,7 +17,6 @@ package internal
 
 import (
 	"context"
-	"fmt"
 	"github.com/vdaas/vald/internal/log"
 	"os"
 	"strings"
@@ -32,7 +31,7 @@ import (
 	"github.com/vdaas/vald/pkg/agent/ngt/config"
 	"github.com/vdaas/vald/pkg/agent/ngt/usecase"
 	"google.golang.org/grpc"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -129,11 +128,11 @@ func StartAgentNGTServer(tb testing.TB, ctx context.Context, d dataset.Dataset) 
 	time.Sleep(time.Second * 5)
 }
 
-func NewAgentClient(tb testing.TB, ctx context.Context, host string, port int) agent.AgentClient {
+func NewAgentClient(tb testing.TB, ctx context.Context, address string) agent.AgentClient {
 	tb.Helper()
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", host, port), grpc.WithInsecure())
+	conn, err := grpc.DialContext(ctx, address, grpc.WithInsecure())
 	if err != nil {
-		tb.Errorf("failed to connect %s:%d \t %s", host, port, err.Error())
+		tb.Errorf("failed to connect %s \t %s", address, err.Error())
 		return nil
 	}
 	return agent.NewAgentClient(conn)

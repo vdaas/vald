@@ -1,6 +1,6 @@
 $(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
 	@$(call green, "downloading datasets for benchmark...")
-	curl -fsSL -o $@ http://vectors.erikbern.com/$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
+	curl -fsSL -o $@ http://ann-benchmarks.com/$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
 	(cd $(BENCH_DATASET_BASE_DIR); \
 	    md5sum -c $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5_DIR_NAME)/%.md5,$@) || \
 	    (rm -f $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_HDF5_DIR_NAME)/%.hdf5,$@) && exit 1))
@@ -110,7 +110,7 @@ bench/ngtd/sequential/rest: \
 	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
 	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
 	$(call bench-pprof,pprof/external/ngtd,ngtd,RESTSequential,sequential-rest,\
-		./hack/e2e/benchmark/extenal/ngtd/ngtd_bench_test.go \
+		./hack/e2e/benchmark/external/ngtd/ngtd_bench_test.go \
 		 -dataset=fashion-mnist)
 
 .PHONY: profile

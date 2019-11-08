@@ -35,11 +35,11 @@ define bench-pprof
 		$5 \
 		| tee $1/result-$4.out
 	go tool pprof --svg \
-		$1/agent.bin \
+		$1/$2.bin \
 		$1/cpu-$4.out \
 		> $1/cpu-$4.svg
 	go tool pprof --svg \
-		$1/agent.bin \
+		$1/$2.bin \
 		$1/mem-$4.out \
 		> $1/mem-$4.svg
 endef
