@@ -20,6 +20,7 @@ package servers
 import (
 	"context"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 
@@ -46,6 +47,11 @@ func New(opts ...Option) Listener {
 	l := new(listener)
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(l)
+	}
+
+	if l.sus != nil && len(l.sus) != 0 && (l.sds == nil || len(l.sds) == 0) {
+		copy(l.sds, l.sus)
+		sort.Sort(sort.Reverse(sort.StringSlice(l.sds)))
 	}
 	return l
 }
