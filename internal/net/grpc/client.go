@@ -65,18 +65,15 @@ type gRPCClient struct {
 	bo    backoff.Backoff
 }
 
-func New(opts ...Option) (c Client, err error) {
+func New(opts ...Option) (c Client) {
 	g := new(gRPCClient)
 	for _, opt := range append(defaultOpts, opts...) {
-		err = opt(g)
-		if err != nil {
-			return nil, err
-		}
+		opt(g)
 	}
 
 	g.fch = make(chan string, len(g.addrs))
 
-	return g, nil
+	return g
 }
 
 func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {

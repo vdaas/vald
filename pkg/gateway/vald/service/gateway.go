@@ -59,7 +59,6 @@ type gateway struct {
 	dscDur     time.Duration
 	dscClient  grpc.Client
 	acClient   grpc.Client
-	gopts      []grpc.DialOption
 	copts      []grpc.CallOption
 	bo         backoff.Backoff
 	eg         errgroup.Group

@@ -23,8 +23,8 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/timeutil"
-	"google.golang.org/grpc"
 )
 
 type GWOption func(g *gateway) error
@@ -32,6 +32,13 @@ type GWOption func(g *gateway) error
 var (
 	defaultGWOpts = []GWOption{}
 )
+
+func WithDiscovererClient(client grpc.Client) GWOption {
+	return func(g *gateway) error {
+		g.dscClient = client
+		return nil
+	}
+}
 
 func WithDiscovererAddr(addr string) GWOption {
 	return func(g *gateway) error {
@@ -75,24 +82,6 @@ func WithAgentName(name string) GWOption {
 func WithAgentPort(port int) GWOption {
 	return func(g *gateway) error {
 		g.agentPort = port
-		return nil
-	}
-}
-
-func WithGRPCDialOption(opt grpc.DialOption) GWOption {
-	return func(g *gateway) error {
-		g.gopts = append(g.gopts, opt)
-		return nil
-	}
-}
-
-func WithGRPCDialOptions(opts []grpc.DialOption) GWOption {
-	return func(g *gateway) error {
-		if g.gopts != nil && len(g.gopts) > 0 {
-			g.gopts = append(g.gopts, opts...)
-		} else {
-			g.gopts = opts
-		}
 		return nil
 	}
 }

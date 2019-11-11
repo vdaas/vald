@@ -102,7 +102,6 @@ clean:
 		./go.sum \
 		./go.mod
 	cp ./hack/go.mod.default ./go.mod
-		# ./go.mod \
 
 .PHONY: license
 ## add license to files

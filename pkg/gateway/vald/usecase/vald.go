@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/vald"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
+	igrpc "github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -48,32 +49,50 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	dialer := tcp.Dialer(
+	dialer := tcp.NewDialer(
 		tcp.WithCache(gache.New()),
 	)
+
+	eg := errgroup.Get()
+
 	gopts := []grpc.DialOption{
 		grpc.WithInsecure(),
 		grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
 			return dialer.GetDialer()(ctx, "tcp", addr)
 		}),
 	}
+	copts := []grpc.CallOption{
+		grpc.MaxCallRecvMsgSize(0),
+	}
+
 	bu, err := service.NewBackup(
 		service.WithBackupAddr(cfg.Gateway.BackupManager.Addr),
+		service.WithBackupClient(
+			igrpc.New(
+				igrpc.WithAddrs(cfg.Gateway.BackupManager.Addr),
+				igrpc.WithErrGroup(eg),
+				igrpc.WithDialOptions(gopts),
+				igrpc.WithCallOptions(copts),
+			),
+		),
 	)
-	copts := []grpc.CallOption{}
-	gateway, err := service.NewGateway(
-		service.WithAgentName(cfg.Gateway.AgentName),
-		service.WithAgentPort(cfg.Gateway.AgentPort),
-		service.WithGRPCDialOptions(gopts),
-	)
-
 	if err != nil {
 		return nil, err
 	}
-	backup, err := service.NewBackup(
-		service.WithBackupGRPCDialOptions(gopts),
-	// service.WithBackupHost(cf)
+	gateway, err := service.NewGateway(
+		service.WithAgentName(cfg.Gateway.AgentName),
+		service.WithAgentPort(cfg.Gateway.AgentPort),
+		service.WithDiscoverClient(
+			igrpc.New(
+				igrpc.WithAddrs(cfg.Gateway.Discoverer.Addr),
+				igrpc.WithErrGroup(eg),
+				igrpc.WithDialOptions(gopts),
+				igrpc.WithCallOptions(copts),
+			),
+		),
+		service.WithGRPCDialOptions(gopts),
 	)
+
 	if err != nil {
 		return nil, err
 	}
@@ -83,11 +102,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-	eg := errgroup.Get()
 
 	v := handler.New(
 		handler.WithGateway(gateway),
-		handler.WithBackup(backup),
+		handler.WithBackup(bu),
 		handler.WithMeta(meta),
 		handler.WithErrGroup(eg),
 	)

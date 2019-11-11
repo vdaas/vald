@@ -26,7 +26,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Option func(*gRPCClient) error
+type Option func(*gRPCClient)
 
 var (
 	defaultOpts = []Option{
@@ -36,63 +36,63 @@ var (
 )
 
 func WithAddrs(addrs ...string) Option {
-	return func(g *gRPCClient) error {
+	return func(g *gRPCClient) {
 		if g.addrs == nil || len(g.addrs) == 0 {
 			g.addrs = addrs
 		} else {
 			g.addrs = append(g.addrs, addrs...)
 		}
-		return nil
+		return
 	}
 }
 
 func WithHealthCheckDuration(dur string) Option {
-	return func(g *gRPCClient) error {
+	return func(g *gRPCClient) {
 		d, err := timeutil.Parse(dur)
 		if err != nil {
 			d = time.Second
 		}
 		g.hcDur = d
-		return nil
+		return
 	}
 }
 
-func WithGRPCDialOptions(opts ...grpc.DialOption) Option {
-	return func(g *gRPCClient) error {
+func WithDialOptions(opts ...grpc.DialOption) Option {
+	return func(g *gRPCClient) {
 		if g.gopts != nil && len(g.gopts) > 0 {
 			g.gopts = append(g.gopts, opts...)
 		} else {
 			g.gopts = opts
 		}
-		return nil
+		return
 	}
 }
 
-func WithGRPCCallOptions(opts ...grpc.CallOption) Option {
-	return func(g *gRPCClient) error {
+func WithCallOptions(opts ...grpc.CallOption) Option {
+	return func(g *gRPCClient) {
 		if g.copts != nil && len(g.copts) > 0 {
 			g.copts = append(g.copts, opts...)
 		} else {
 			g.copts = opts
 		}
-		return nil
+		return
 	}
 }
 
 func WithErrGroup(eg errgroup.Group) Option {
-	return func(g *gRPCClient) error {
+	return func(g *gRPCClient) {
 		if eg != nil {
 			g.eg = eg
 		}
-		return nil
+		return
 	}
 }
 
 func WithBackoff(bo backoff.Backoff) Option {
-	return func(g *gRPCClient) error {
+	return func(g *gRPCClient) {
 		if bo != nil {
 			g.bo = bo
 		}
-		return nil
+		return
 	}
 }

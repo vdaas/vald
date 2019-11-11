@@ -17,7 +17,10 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+import "fmt"
+
 type Discoverer struct {
+	Addr     string
 	Host     string
 	Port     int
 	Duration string
@@ -25,5 +28,9 @@ type Discoverer struct {
 
 func (d *Discoverer) Bind() *Discoverer {
 	d.Host = GetActualValue(d.Host)
+	d.Addr = GetActualValue(d.Addr)
+	if len(d.Addr) == 0 && len(d.Host) != 0 {
+		d.Addr = fmt.Sprintf("%s:%d", d.Host, d.Port)
+	}
 	return d
 }
