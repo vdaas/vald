@@ -20,7 +20,6 @@ package errors
 import (
 	"reflect"
 	"runtime"
-	"time"
 
 	// "github.com/pkg/errors"
 	"github.com/cockroachdb/errors"
@@ -28,13 +27,6 @@ import (
 )
 
 var (
-	// ErrTLSDisabled is error variable, it's replesents config error that tls is disabled by config
-	ErrTLSDisabled = New("tls feature is disabled")
-
-	// ErrTLSCertOrKeyNotFound is error variable, it's replesents tls cert or key not found error
-	ErrTLSCertOrKeyNotFound = New("cert or key file path not found")
-
-	ErrCertificationFailed = New("certification failed")
 
 	ErrTimeoutParseFailed = func(timeout string) error {
 		return Errorf("invalid timeout value: %s\t:timeout parse error out put failed", timeout)
@@ -53,10 +45,6 @@ var (
 		return Wrap(err, "argument parse failed")
 	}
 
-	ErrDaemonStopFailed = func(err error) error {
-		return Wrap(err, "failed to stop daemon")
-	}
-
 	ErrBackoffTimeout = func(err error) error {
 		return Wrap(err, "backoff timeout by limitation")
 	}
@@ -64,35 +52,6 @@ var (
 	ErrInvalidTypeConversion = func(i interface{}, tgt interface{}) error {
 		return Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt))
 	}
-
-	// HTTP
-
-	ErrInvalidAPIConfig = New("invalid api config")
-
-	ErrInvalidRequest = New("invalid request")
-
-	ErrHandler = func(err error) error {
-		return Wrap(err, "handler returned error")
-	}
-
-	ErrHandlerTimeout = func(err error, t time.Time) error {
-		return Wrapf(err, "handler timeout %v", t)
-	}
-
-	ErrRequestBodyCloseAndFlush = func(err error) error {
-		return Wrap(err, "request body flush & close failed")
-	}
-
-	ErrRequestBodyClose = func(err error) error {
-		return Wrap(err, "request body close failed")
-	}
-
-	ErrRequestBodyFlush = func(err error) error {
-		return Wrap(err, "request body flush failed")
-	}
-
-	ErrTransportRetryable = New("transport is retryable")
-
 
 	New = func(msg string) error {
 		if msg == "" {
@@ -129,7 +88,7 @@ var (
 	}
 
 	Errorf = func(format string, args ...interface{}) error {
-		if format != "" && len(args) > 0 {
+		if format != "" && args != nil && len(args) > 0 {
 			return errors.Errorf(format, args...)
 		}
 		return nil
