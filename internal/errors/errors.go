@@ -27,7 +27,6 @@ import (
 )
 
 var (
-
 	ErrTimeoutParseFailed = func(timeout string) error {
 		return Errorf("invalid timeout value: %s\t:timeout parse error out put failed", timeout)
 	}

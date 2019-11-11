@@ -61,6 +61,7 @@ type gateway struct {
 	dscClient  grpc.Client
 	acClient   grpc.Client
 	copts      []grpc.CallOption
+	gopts      []grpc.DialOption
 	bo         backoff.Backoff
 	eg         errgroup.Group
 }
@@ -90,17 +91,14 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 		ech <- err
 	}
 
-	g.acClient, err = grpc.New(
+	g.acClient = grpc.New(
 		grpc.WithAddrs(g.agentAddrs...),
 		grpc.WithErrGroup(g.eg),
 		grpc.WithBackoff(g.bo),
-		grpc.WithGRPCCallOptions(g.copts...),
-		grpc.WithGRPCDialOptions(g.gopts...),
+		grpc.WithCallOptions(g.copts...),
+		grpc.WithDialOptions(g.gopts...),
 		grpc.WithHealthCheckDuration(g.agentHcDur),
 	)
-	if err != nil {
-		ech <- err
-	}
 
 	aech := g.acClient.StartConnectionMonitor(ctx)
 

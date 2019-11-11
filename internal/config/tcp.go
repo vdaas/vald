@@ -19,26 +19,44 @@ package config
 
 // TCP represent the TCP configuration for server.
 type TCP struct {
-	DNS struct {
-		CacheEnabled    bool   `yaml:"cache_enabled" json:"cache_enabled"`
-		RefreshDuration string `yaml:"refresh_duration" json:"refresh_duration"`
-		CacheExpiration string `yaml:"cache_expiration" json:"cache_expiration"`
-	} `yaml:"dns" json:"dns"`
-	Dialer struct {
-		Timeout          string `yaml:"timeout" json:"timeout"`
-		KeepAlive        string `yaml:"keep_alive" json:"keep_alive"`
-		DualStackEnabled bool   `yaml:"dual_stack_enabled" json:"dual_stack_enabled"`
-	} `yaml:"dialer" json:"dialer"`
-	TLS *TLS `yaml:"tls" json:"tls"`
+	DNS    *DNS    `yaml:"dns" json:"dns"`
+	Dialer *Dialer `yaml:"dialer" json:"dialer"`
+	TLS    *TLS    `yaml:"tls" json:"tls"`
+}
+
+type Dialer struct {
+	Timeout          string `yaml:"timeout" json:"timeout"`
+	KeepAlive        string `yaml:"keep_alive" json:"keep_alive"`
+	DualStackEnabled bool   `yaml:"dual_stack_enabled" json:"dual_stack_enabled"`
+}
+
+type DNS struct {
+	CacheEnabled    bool   `yaml:"cache_enabled" json:"cache_enabled"`
+	RefreshDuration string `yaml:"refresh_duration" json:"refresh_duration"`
+	CacheExpiration string `yaml:"cache_expiration" json:"cache_expiration"`
+}
+
+func (d *DNS) Bind() *DNS {
+	d.RefreshDuration = GetActualValue(d.RefreshDuration)
+	d.CacheExpiration = GetActualValue(d.CacheExpiration)
+	return d
+}
+
+func (d *Dialer) Bind() *Dialer {
+	d.Timeout = GetActualValue(d.Timeout)
+	d.KeepAlive = GetActualValue(d.KeepAlive)
+	return d
 }
 
 func (t *TCP) Bind() *TCP {
 	if t.TLS != nil {
 		t.TLS = t.TLS.Bind()
 	}
-	t.DNS.RefreshDuration = GetActualValue(t.DNS.RefreshDuration)
-	t.DNS.CacheExpiration = GetActualValue(t.DNS.CacheExpiration)
-	t.Dialer.Timeout = GetActualValue(t.Dialer.Timeout)
-	t.Dialer.KeepAlive = GetActualValue(t.Dialer.KeepAlive)
+	if t.DNS != nil {
+		t.DNS = t.DNS.Bind()
+	}
+	if t.Dialer != nil {
+		t.Dialer = t.Dialer.Bind()
+	}
 	return t
 }

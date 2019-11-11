@@ -72,6 +72,28 @@ func WithAgentHealthCheckDuration(dur string) GWOption {
 	}
 }
 
+func WithDialOptions(opts ...grpc.DialOption) GWOption {
+	return func(g *gateway) error {
+		if g.gopts != nil && len(g.gopts) > 0 {
+			g.gopts = append(g.gopts, opts...)
+		} else {
+			g.gopts = opts
+		}
+		return nil
+	}
+}
+
+func WithCallOptions(opts ...grpc.CallOption) GWOption {
+	return func(g *gateway) error {
+		if g.copts != nil && len(g.copts) > 0 {
+			g.copts = append(g.copts, opts...)
+		} else {
+			g.copts = opts
+		}
+		return nil
+	}
+}
+
 func WithAgentName(name string) GWOption {
 	return func(g *gateway) error {
 		g.agentName = name

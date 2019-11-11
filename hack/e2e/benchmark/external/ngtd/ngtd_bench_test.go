@@ -44,13 +44,13 @@ import (
 
 const (
 	baseDir = "/tmp/ngtd/"
-	port = 8200
+	port    = 8200
 )
 
 var (
-	targets []string
+	targets    []string
 	datasetVar string
-	once sync.Once
+	once       sync.Once
 )
 
 func init() {
@@ -68,7 +68,7 @@ func init() {
 		datasetList = append(datasetList, "\t"+key)
 	}
 	sort.Strings(datasetList)
-	flag.StringVar(&datasetVar, "dataset", "", "available dataset(choice with comma)\n" + strings.Join(datasetList, "\n"))
+	flag.StringVar(&datasetVar, "dataset", "", "available dataset(choice with comma)\n"+strings.Join(datasetList, "\n"))
 }
 
 func parseArgs() {
@@ -85,7 +85,7 @@ func StartNGTD(tb testing.TB, t ngtd.ServerType, dim int) func() {
 	if err != nil {
 		tb.Error(err)
 	}
-	n, err := ngtd.NewNGTD(baseDir + "ngt", db, port)
+	n, err := ngtd.NewNGTD(baseDir+"ngt", db, port)
 	if err != nil {
 		tb.Error(err)
 	}
@@ -132,7 +132,7 @@ func BenchmarkNGTDRESTSequential(rb *testing.B) {
 			for i := 0; i < len(train); i++ {
 				buf, err := json.Marshal(&model.InsertRequest{
 					Vector: train[i],
-					ID: ids[i],
+					ID:     ids[i],
 				})
 				if err != nil {
 					b.Error(err)
@@ -201,9 +201,9 @@ func BenchmarkNGTDRESTSequential(rb *testing.B) {
 			buffers = make([]*bytes.Buffer, len(query))
 			for i := 0; i < len(query); i++ {
 				buf, err := json.Marshal(&model.SearchRequest{
-					ID: ids[i],
-					Vector: train[i],
-					Size: 10,
+					ID:      ids[i],
+					Vector:  train[i],
+					Size:    10,
 					Epsilon: 0.01,
 				})
 				if err != nil {
@@ -270,7 +270,7 @@ func BenchmarkNGTDgRPCSequential(rb *testing.B) {
 		if name == "" {
 			continue
 		}
-		rb.Run(name, func (b *testing.B){
+		rb.Run(name, func(b *testing.B) {
 			data := dataset.Data[name](rb)
 			if data == nil {
 				b.Logf("dataset %s is nil", name)
@@ -300,7 +300,7 @@ func BenchmarkNGTDgRPCSequential(rb *testing.B) {
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					_, err := client.Insert(ctx, &proto.InsertRequest{
-						Id: []byte(ids[i]),
+						Id:     []byte(ids[i]),
 						Vector: train[i],
 					})
 					if err != nil {
@@ -311,7 +311,7 @@ func BenchmarkNGTDgRPCSequential(rb *testing.B) {
 			})
 			for ; i < len(train); i++ {
 				_, err := client.Insert(ctx, &proto.InsertRequest{
-					Id: []byte(ids[i]),
+					Id:     []byte(ids[i]),
 					Vector: train[i],
 				})
 				if err != nil {
@@ -339,9 +339,9 @@ func BenchmarkNGTDgRPCSequential(rb *testing.B) {
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					_, err := client.Search(ctx, &proto.SearchRequest{
-						Vector: query[i],
+						Vector:  query[i],
 						Epsilon: 0.01,
-						Size_: 10,
+						Size_:   10,
 					})
 					if err != nil {
 						bb.Error(err)
@@ -410,7 +410,7 @@ func BenchmarkNGTDgRPCStream(rb *testing.B) {
 			wg := &sync.WaitGroup{}
 			i := 0
 			b.Run("Insert objects", func(bb *testing.B) {
-				if bb.N + i >= len(ids) {
+				if bb.N+i >= len(ids) {
 					ids = append(ids, dataset.CreateIDs(len(train))...)
 				}
 
@@ -418,8 +418,8 @@ func BenchmarkNGTDgRPCStream(rb *testing.B) {
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					err := sti.Send(&proto.InsertRequest{
-						Id: []byte(ids[i]),
-						Vector: train[i % len(train)],
+						Id:     []byte(ids[i]),
+						Vector: train[i%len(train)],
 					})
 					if err != nil {
 						if err == io.EOF {
@@ -446,8 +446,8 @@ func BenchmarkNGTDgRPCStream(rb *testing.B) {
 			log.Info("done")
 			for ; i < len(train); i++ {
 				err := sti.Send(&proto.InsertRequest{
-					Id: []byte(ids[i]),
-					Vector: train[i % len(train)],
+					Id:     []byte(ids[i]),
+					Vector: train[i%len(train)],
 				})
 				if err != nil {
 					if err == io.EOF {
@@ -494,8 +494,8 @@ func BenchmarkNGTDgRPCStream(rb *testing.B) {
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					err := st.Send(&proto.SearchRequest{
-						Vector: query[i % len(query)],
-						Size_: 10,
+						Vector:  query[i%len(query)],
+						Size_:   10,
 						Epsilon: 0.01,
 					})
 					if err != nil {
@@ -528,7 +528,7 @@ func BenchmarkNGTDgRPCStream(rb *testing.B) {
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					err := str.Send(&proto.RemoveRequest{
-						Id: []byte(ids[i % len(ids)]),
+						Id: []byte(ids[i%len(ids)]),
 					})
 					if err != nil {
 						if err == io.EOF {

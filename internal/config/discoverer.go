@@ -20,10 +20,12 @@ package config
 import "fmt"
 
 type Discoverer struct {
-	Addr     string
-	Host     string
-	Port     int
-	Duration string
+	Addr           string      `json:"addr" yaml:"addr"`
+	Host           string      `json:"host" yaml:"host"`
+	Port           int         `json:"port" yaml:"port"`
+	Duration       string      `json:"duration" yaml:"duration"`
+	DiscoverClient *GRPCClient `json:"discover_client" yaml:"discover_client"`
+	AgentClient    *GRPCClient `json:"agent_client" yaml:"agent_client"`
 }
 
 func (d *Discoverer) Bind() *Discoverer {
@@ -31,6 +33,13 @@ func (d *Discoverer) Bind() *Discoverer {
 	d.Addr = GetActualValue(d.Addr)
 	if len(d.Addr) == 0 && len(d.Host) != 0 {
 		d.Addr = fmt.Sprintf("%s:%d", d.Host, d.Port)
+	}
+	d.Duration = GetActualValue(d.Duration)
+	if d.DiscoverClient != nil {
+		d.DiscoverClient.Bind()
+	}
+	if d.AgentClient != nil {
+		d.AgentClient.Bind()
 	}
 	return d
 }

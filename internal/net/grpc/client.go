@@ -140,7 +140,11 @@ func (g *gRPCClient) Range(ctx context.Context,
 			var err error
 			if g.bo != nil {
 				_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-					return nil, f(addr, conn, g.copts...)
+					err = f(addr, conn, g.copts...)
+					if err != nil {
+						err = g.Connect(ctx, addr)
+					}
+					return
 				})
 			} else {
 				err = f(addr, conn, g.copts...)
@@ -169,7 +173,11 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 				var err error
 				if g.bo != nil {
 					_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-						return nil, f(addr, conn, g.copts...)
+						err = f(addr, conn, g.copts...)
+						if err != nil {
+							err = g.Connect(ctx, addr)
+						}
+						return
 					})
 				} else {
 					err = f(addr, conn, g.copts...)
@@ -194,7 +202,12 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 	}
 	if g.bo != nil {
 		data, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-			return f(conn, g.copts...)
+			r, err = f(conn, g.copts...)
+			if err != nil {
+				err = g.Connect(ctx, addr)
+				return nil, err
+			}
+			return r, nil
 		})
 	} else {
 		data, err = f(conn, g.copts...)
@@ -206,6 +219,16 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 }
 
 func (g *gRPCClient) Connect(ctx context.Context, addr string) error {
+	conn, ok := g.conns.Load(addr)
+	if ok {
+		if conn == nil ||
+			conn.GetState() == connectivity.Shutdown ||
+			conn.GetState() == connectivity.TransientFailure {
+			g.Disconnect(addr)
+		} else {
+			return nil
+		}
+	}
 	conn, err := grpc.DialContext(ctx, addr, g.gopts...)
 	if err != nil {
 		go func() {

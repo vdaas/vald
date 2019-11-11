@@ -27,8 +27,10 @@ type BackupManager struct {
 }
 
 func (b *BackupManager) Bind() *BackupManager {
-	if len(b.Addr) == 0 {
-		b.Addr = fmt.Sprintf("%s, %d", b.Host, b.Port)
+	b.Host = GetActualValue(b.Host)
+	b.Addr = GetActualValue(b.Addr)
+	if len(b.Addr) == 0 && len(b.Host) != 0 {
+		b.Addr = fmt.Sprintf("%s:%d", b.Host, b.Port)
 	}
 	if b.Client != nil {
 		b.Client = b.Client.Bind()

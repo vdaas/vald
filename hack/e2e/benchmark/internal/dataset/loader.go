@@ -26,7 +26,7 @@ import (
 func loadDataset(f *hdf5.File, name string) (dim int, vec [][]float64, err error) {
 	dset, err := f.OpenDataset(name)
 	if err != nil {
-		return 0,nil, err
+		return 0, nil, err
 	}
 	defer func() {
 		err = dset.Close()
@@ -44,7 +44,7 @@ func loadDataset(f *hdf5.File, name string) (dim int, vec [][]float64, err error
 	row, dim = int(dims[0]), int(dims[1])
 	v := make([]float32, space.SimpleExtentNPoints())
 	if err := dset.Read(&v); err != nil {
-		return dim,nil, err
+		return dim, nil, err
 	}
 
 	vec = make([][]float64, row)
@@ -81,7 +81,7 @@ func Load(path string) (train [][]float64, test [][]float64, dim int, err error)
 	if trainDim != testDim {
 		return train, test, 0, fmt.Errorf("test has different dimension from train")
 	}
-	return train, test, trainDim,nil
+	return train, test, trainDim, nil
 }
 
 func CreateIDs(n int) []string {
@@ -97,5 +97,5 @@ func LoadDataAndIDs(path string) (ids []string, train [][]float64, test [][]floa
 	if err != nil {
 		return nil, train, test, dim, err
 	}
-	return CreateIDs(len(train)), train, test, dim,nil
+	return CreateIDs(len(train)), train, test, dim, nil
 }

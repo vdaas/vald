@@ -41,11 +41,11 @@ var (
 		Radius:  -1,
 		Epsilon: 0.01,
 	}
-	targets []string
-	addresses []string
+	targets    []string
+	addresses  []string
 	datasetVar string
 	addressVar string
-	once sync.Once
+	once       sync.Once
 )
 
 func init() {
@@ -56,7 +56,7 @@ func init() {
 		datasetList = append(datasetList, "\t"+key)
 	}
 	sort.Strings(datasetList)
-	flag.StringVar(&datasetVar, "dataset", "", "available dataset(choice with comma)\n" + strings.Join(datasetList, "\n"))
+	flag.StringVar(&datasetVar, "dataset", "", "available dataset(choice with comma)\n"+strings.Join(datasetList, "\n"))
 	flag.StringVar(&addressVar, "address", "", "vald agent address")
 }
 
@@ -106,7 +106,7 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 			buffers := make([]*bytes.Buffer, len(train))
 			for i := 0; i < len(train); i++ {
 				buf, err := json.Marshal(&payload.Object_Vector{
-					Id: ids[i],
+					Id:     ids[i],
 					Vector: train[i],
 				})
 				if err != nil {
@@ -264,7 +264,7 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 		if name == "" {
 			continue
 		}
-		rb.Run(name, func (b *testing.B){
+		rb.Run(name, func(b *testing.B) {
 			data := dataset.Data[name](rb)
 			if data == nil {
 				b.Logf("dataset %s is nil", name)
@@ -291,7 +291,7 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					_, err := client.Insert(ctx, &payload.Object_Vector{
-						Id: ids[i],
+						Id:     ids[i],
 						Vector: train[i],
 					})
 					if err != nil {
@@ -302,7 +302,7 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 			})
 			for ; i < len(train); i++ {
 				_, err := client.Insert(ctx, &payload.Object_Vector{
-					Id: ids[i],
+					Id:     ids[i],
 					Vector: train[i],
 				})
 				if err != nil {
@@ -401,7 +401,7 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 			wg := &sync.WaitGroup{}
 			i := 0
 			b.Run("Insert objects", func(bb *testing.B) {
-				if bb.N + i >= len(ids) {
+				if bb.N+i >= len(ids) {
 					ids = append(ids, dataset.CreateIDs(len(train))...)
 				}
 
@@ -409,8 +409,8 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					err := sti.Send(&payload.Object_Vector{
-						Id: ids[i],
-						Vector: train[i % len(train)],
+						Id:     ids[i],
+						Vector: train[i%len(train)],
 					})
 					if err != nil {
 						if err == io.EOF {
@@ -434,8 +434,8 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 			})
 			for ; i < len(train); i++ {
 				err := sti.Send(&payload.Object_Vector{
-					Id: ids[i],
-					Vector: train[i % len(train)],
+					Id:     ids[i],
+					Vector: train[i%len(train)],
 				})
 				if err != nil {
 					if err == io.EOF {
@@ -483,7 +483,7 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					err := st.Send(&payload.Search_Request{
-						Vector: query[i % len(query)],
+						Vector: query[i%len(query)],
 						Config: searchConfig,
 					})
 					if err != nil {
@@ -516,7 +516,7 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					err := str.Send(&payload.Object_ID{
-						Id: ids[i % len(ids)],
+						Id: ids[i%len(ids)],
 					})
 					if err != nil {
 						if err == io.EOF {

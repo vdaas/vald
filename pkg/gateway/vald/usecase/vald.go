@@ -71,8 +71,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			igrpc.New(
 				igrpc.WithAddrs(cfg.Gateway.BackupManager.Addr),
 				igrpc.WithErrGroup(eg),
-				igrpc.WithDialOptions(gopts),
-				igrpc.WithCallOptions(copts),
+				igrpc.WithDialOptions(gopts...),
+				igrpc.WithCallOptions(copts...),
 			),
 		),
 	)
@@ -82,15 +82,16 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	gateway, err := service.NewGateway(
 		service.WithAgentName(cfg.Gateway.AgentName),
 		service.WithAgentPort(cfg.Gateway.AgentPort),
-		service.WithDiscoverClient(
+		service.WithDiscovererClient(
 			igrpc.New(
 				igrpc.WithAddrs(cfg.Gateway.Discoverer.Addr),
 				igrpc.WithErrGroup(eg),
-				igrpc.WithDialOptions(gopts),
-				igrpc.WithCallOptions(copts),
+				igrpc.WithDialOptions(gopts...),
+				igrpc.WithCallOptions(copts...),
 			),
 		),
-		service.WithGRPCDialOptions(gopts),
+		service.WithDialOptions(gopts...),
+		service.WithCallOptions(copts...),
 	)
 
 	if err != nil {
@@ -121,7 +122,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 								rest.WithVald(v),
 							),
 						),
-					)),
+					),
+				),
 			}
 		}),
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {

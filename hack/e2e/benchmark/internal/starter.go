@@ -83,9 +83,10 @@ ngt:
 `
 	baseDir = "/tmp/ngt/"
 )
+
 var (
 	baseCfg config.Data
-	once sync.Once
+	once    sync.Once
 )
 
 func init() {
