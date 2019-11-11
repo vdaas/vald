@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -65,31 +64,9 @@ func WithDiscoverDuration(dur string) GWOption {
 	}
 }
 
-func WithAgentHealthCheckDuration(dur string) GWOption {
+func WithAgentOptions(opts ...grpc.Option) GWOption {
 	return func(g *gateway) error {
-		g.agentHcDur = dur
-		return nil
-	}
-}
-
-func WithDialOptions(opts ...grpc.DialOption) GWOption {
-	return func(g *gateway) error {
-		if g.gopts != nil && len(g.gopts) > 0 {
-			g.gopts = append(g.gopts, opts...)
-		} else {
-			g.gopts = opts
-		}
-		return nil
-	}
-}
-
-func WithCallOptions(opts ...grpc.CallOption) GWOption {
-	return func(g *gateway) error {
-		if g.copts != nil && len(g.copts) > 0 {
-			g.copts = append(g.copts, opts...)
-		} else {
-			g.copts = opts
-		}
+		g.agentOpts = append(g.agentOpts, opts...)
 		return nil
 	}
 }
@@ -108,14 +85,7 @@ func WithAgentPort(port int) GWOption {
 	}
 }
 
-func withBackoff(bo backoff.Backoff) GWOption {
-	return func(g *gateway) error {
-		g.bo = bo
-		return nil
-	}
-}
-
-func withErrGroup(eg errgroup.Group) GWOption {
+func WithErrGroup(eg errgroup.Group) GWOption {
 	return func(g *gateway) error {
 		g.eg = eg
 		return nil

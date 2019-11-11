@@ -78,13 +78,15 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			igrpc.WithErrGroup(eg),
 		)...,
 	)
-	aClient := igrpc.New(
-		append(cfg.Gateway.Discoverer.AgentClient.Opts(),
+	agentOpts := cfg.Gateway.Discoverer.AgentClient.Opts()
+	agentClient := igrpc.New(
+		append(agentOpts,
 			igrpc.WithErrGroup(eg),
 		)...,
 	)
 
 	gateway, err = service.NewGateway(
+		service.WithErrGroup(eg),
 		service.WithAgentName(cfg.Gateway.AgentName),
 		service.WithAgentPort(cfg.Gateway.AgentPort),
 		service.WithDiscovererClient(dscClient),
@@ -92,10 +94,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			cfg.Gateway.Discoverer.Host,
 			cfg.Gateway.Discoverer.Port,
 		),
-		service.WithDialOptions(aClient.GetDialOption()...),
-		service.WithCallOptions(aClient.GetCallOption()...),
+		service.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
+		service.WithAgentOptions(agentOpts...),
 	)
-	aClient.Close()
+	agentClient.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +124,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			service.WithFilterClient(
 				igrpc.New(
 					append(cfg.Gateway.Meta.Client.Opts(),
-						igrpc.WithAddrs(cfg.Gateway.EgressFilter.Client.Addrs...),
 						igrpc.WithErrGroup(eg),
 					)...,
 				),

@@ -30,7 +30,6 @@ import (
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/apis/grpc/discoverer"
 	"github.com/vdaas/vald/apis/grpc/payload"
-	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -60,9 +59,7 @@ type gateway struct {
 	dscDur     time.Duration
 	dscClient  grpc.Client
 	acClient   grpc.Client
-	copts      []grpc.CallOption
-	gopts      []grpc.DialOption
-	bo         backoff.Backoff
+	agentOpts  []grpc.Option
 	eg         errgroup.Group
 }
 
@@ -92,12 +89,11 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 	}
 
 	g.acClient = grpc.New(
-		grpc.WithAddrs(g.agentAddrs...),
-		grpc.WithErrGroup(g.eg),
-		grpc.WithBackoff(g.bo),
-		grpc.WithCallOptions(g.copts...),
-		grpc.WithDialOptions(g.gopts...),
-		grpc.WithHealthCheckDuration(g.agentHcDur),
+		append(
+			g.agentOpts,
+			grpc.WithAddrs(g.agentAddrs...),
+			grpc.WithErrGroup(g.eg),
+		)...,
 	)
 
 	aech := g.acClient.StartConnectionMonitor(ctx)
