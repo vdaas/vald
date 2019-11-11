@@ -17,7 +17,6 @@ package internal
 
 import (
 	"context"
-	"github.com/vdaas/vald/internal/log"
 	"os"
 	"strings"
 	"sync"
@@ -27,6 +26,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/hack/e2e/benchmark/internal/dataset"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/pkg/agent/ngt/config"
 	"github.com/vdaas/vald/pkg/agent/ngt/usecase"

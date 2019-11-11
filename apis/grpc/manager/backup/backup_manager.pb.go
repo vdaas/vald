@@ -19,6 +19,8 @@ package backup
 import (
 	context "context"
 	fmt "fmt"
+	math "math"
+
 	_ "github.com/danielvladco/go-proto-gql/pb"
 	proto "github.com/gogo/protobuf/proto"
 	payload "github.com/vdaas/vald/apis/grpc/payload"
@@ -26,7 +28,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
