@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"reflect"
 	"runtime"
 	"sort"
 	"sync/atomic"
@@ -71,9 +72,8 @@ type client struct {
 func NewGateway(opts ...GWOption) (gw Gateway, err error) {
 	g := new(gateway)
 	for _, opt := range opts {
-		err = opt(g)
-		if err != nil {
-			return nil, err
+		if err := opt(g); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
 

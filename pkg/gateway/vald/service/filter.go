@@ -18,6 +18,7 @@ package service
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/vdaas/vald/apis/grpc/filter/egress"
 	"github.com/vdaas/vald/apis/grpc/payload"
@@ -37,11 +38,10 @@ type filter struct {
 func NewFilter(opts ...FilterOption) (ef Filter, err error) {
 	f := new(filter)
 	for _, opt := range append(defaultFilterOpts, opts...) {
-		err = opt(f)
-
-		if err != nil {
-			return nil, err
+		if err := opt(f); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
+
 	}
 
 	return f, nil

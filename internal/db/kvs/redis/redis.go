@@ -78,10 +78,10 @@ func New(ctx context.Context, opts ...Option) (Redis, error) {
 	}
 	switch len(r.addrs) {
 	case 0:
-		return nil, errors.ErrAddrsNotFound
+		return nil, errors.ErrRedisAddrsNotFound
 	case 1:
 		if len(r.addrs[0]) == 0 {
-			return nil, errors.ErrAddrsNotFound
+			return nil, errors.ErrRedisAddrsNotFound
 		}
 		return redis.NewClient(&redis.Options{
 			Addr:               r.addrs[0],

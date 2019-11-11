@@ -19,8 +19,10 @@ package k8s
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/safety"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -53,7 +55,9 @@ func New(opts ...Option) (cl Controller, err error) {
 	c := new(controller)
 
 	for _, opt := range opts {
-		opt(c)
+		if err := opt(c); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
 	}
 
 	if c.mgr == nil {

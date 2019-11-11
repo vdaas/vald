@@ -18,9 +18,11 @@ package service
 
 import (
 	"context"
+	"reflect"
 
 	gmeta "github.com/vdaas/vald/apis/grpc/meta"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 )
 
@@ -46,9 +48,8 @@ type meta struct {
 func NewMeta(opts ...MetaOption) (mi Meta, err error) {
 	m := new(meta)
 	for _, opt := range opts {
-		err = opt(m)
-		if err != nil {
-			return nil, err
+		if err = opt(m); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
 

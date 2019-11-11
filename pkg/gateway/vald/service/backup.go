@@ -18,9 +18,11 @@ package service
 
 import (
 	"context"
+	"reflect"
 
 	gback "github.com/vdaas/vald/apis/grpc/manager/backup"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 )
 
@@ -42,10 +44,8 @@ type backup struct {
 func NewBackup(opts ...BackupOption) (bu Backup, err error) {
 	b := new(backup)
 	for _, opt := range append(defaultBackupOpts, opts...) {
-		err = opt(b)
-
-		if err != nil {
-			return nil, err
+		if err := opt(b); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
 
