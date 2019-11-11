@@ -23,19 +23,20 @@ type Meta struct {
 	Host     string      `json:"host" yaml:"host"`
 	Port     int         `json:"port" yaml:"port"`
 	Duration string      `json:"duration" yaml:"duration"`
-	Addr     string      `json:"addr" yaml:"addr"`
 	Client   *GRPCClient `json:"client" yaml:"client"`
 }
 
 func (m *Meta) Bind() *Meta {
 	m.Host = GetActualValue(m.Host)
-	m.Addr = GetActualValue(m.Addr)
-	if len(m.Addr) == 0 && len(m.Host) != 0 {
-		m.Addr = fmt.Sprintf("%s:%d", m.Host, m.Port)
-	}
+	
 	m.Duration = GetActualValue(m.Duration)
 	if m.Client != nil {
 		m.Client.Bind()
+	}else{
+		m.Client = newGRPCClientConfig()
+	}
+	if len(m.Host) != 0 {
+		m.Client.Addrs = append(m.Client.Addrs, fmt.Sprintf("%s:%d", m.Host, m.Port))
 	}
 	return m
 }

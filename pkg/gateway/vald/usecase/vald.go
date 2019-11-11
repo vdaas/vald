@@ -18,14 +18,11 @@ package usecase
 
 import (
 	"context"
-	"net"
 
-	"github.com/kpango/gache"
 	"github.com/vdaas/vald/apis/grpc/vald"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	igrpc "github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -49,60 +46,70 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	dialer := tcp.NewDialer(
-		tcp.WithCache(gache.New()),
-	)
-
 	eg := errgroup.Get()
-
-	gopts := []grpc.DialOption{
-		grpc.WithInsecure(),
-		grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
-			return dialer.GetDialer()(ctx, "tcp", addr)
-		}),
-	}
-	copts := []grpc.CallOption{
-		grpc.MaxCallRecvMsgSize(0),
-	}
 
 	bu, err := service.NewBackup(
 		service.WithBackupAddr(cfg.Gateway.BackupManager.Addr),
 		service.WithBackupClient(
 			igrpc.New(
-				igrpc.WithAddrs(cfg.Gateway.BackupManager.Addr),
-				igrpc.WithErrGroup(eg),
-				igrpc.WithDialOptions(gopts...),
-				igrpc.WithCallOptions(copts...),
+				append(cfg.Gateway.BackupManager.Client.Opts(),
+					igrpc.WithAddrs(cfg.Gateway.BackupManager.Addr),
+					igrpc.WithErrGroup(eg),
+				)...,
 			),
 		),
 	)
 	if err != nil {
 		return nil, err
 	}
+	dscClient := igrpc.New(
+				append(cfg.Gateway.Discoverer.DiscoverClient.Opts(),
+				igrpc.WithAddrs(cfg.Gateway.Discoverer.Addr),
+				igrpc.WithErrGroup(eg),
+				)...,
+			)
+	aClient := igrpc.New(
+				append(cfg.Gateway.Discoverer.AgentClient.Opts(),
+				)...,
+			)
+	defer aClient.Close()
+
 	gateway, err := service.NewGateway(
 		service.WithAgentName(cfg.Gateway.AgentName),
 		service.WithAgentPort(cfg.Gateway.AgentPort),
-		service.WithDiscovererClient(
+		service.WithDiscovererClient( dscClient),
+		service.WithDialOptions(aClient.GetDialOption()...),
+		service.WithCallOptions(aClient.GetCallOption()...),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	meta, err := service.NewMeta(
+		service.WithMetaAddr(cfg.Gateway.Meta.Addr),
+		service.WithMetaClient(
 			igrpc.New(
-				igrpc.WithAddrs(cfg.Gateway.Discoverer.Addr),
-				igrpc.WithErrGroup(eg),
-				igrpc.WithDialOptions(gopts...),
-				igrpc.WithCallOptions(copts...),
+				append(cfg.Gateway.Meta.Client.Opts(),
+					igrpc.WithAddrs(cfg.Gateway.Meta.Addr),
+					igrpc.WithErrGroup(eg),
+				)...,
 			),
 		),
-		service.WithDialOptions(gopts...),
-		service.WithCallOptions(copts...),
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	if err != nil {
-		return nil, err
-	}
-	meta, err := service.NewMeta(
-	// service.WithBackupHost(cf)
+	filter, err := service.NewFilter(
+		service.WithFilterClient(
+				igrpc.New(
+				append(cfg.Gateway.Meta.Client.Opts(),
+					igrpc.WithAddrs(cfg.Gateway.Meta.Addr),
+					igrpc.WithErrGroup(eg),
+				)...,
+			),		
+		)
 	)
-	if err != nil {
-		return nil, err
-	}
 
 	v := handler.New(
 		handler.WithGateway(gateway),
@@ -140,7 +147,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 		// TODO add GraphQL handler
 	)
-
 	if err != nil {
 		return nil, err
 	}

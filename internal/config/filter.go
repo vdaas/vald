@@ -14,31 +14,16 @@
 // limitations under the License.
 //
 
-// Package transport provides http transport roundtrip option
-package transport
+// Package config providers configuration type and load configuration logic
+package config
 
-import (
-	"net/http"
-
-	"github.com/vdaas/vald/internal/backoff"
-)
-
-type Option func(*ert)
-
-var (
-	defaultOpts = []Option{
-		WithRoundTripper(http.DefaultTransport),
-	}
-)
-
-func WithRoundTripper(tr http.RoundTripper) Option {
-	return func(e *ert) {
-		e.transport = tr
-	}
+type EgressFilter struct {
+	Client *GRPCClient `json:"client" yaml:"client"`
 }
 
-func WithBackoff(bo backoff.Backoff) Option {
-	return func(e *ert) {
-		e.bo = bo
+func (e *EgressFilter) Bind() *EgressFilter {
+	if e.Client != nil{
+		e.Client.Bind()
 	}
+	return e
 }

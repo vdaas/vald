@@ -17,6 +17,8 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+import "github.com/vdaas/vald/internal/tls"
+
 // TLS represent the TLS configuration for server.
 type TLS struct {
 	// Enable represent the server enable TLS or not.
@@ -37,4 +39,12 @@ func (t *TLS) Bind() *TLS {
 	t.Key = GetActualValue(t.Key)
 	t.CA = GetActualValue(t.CA)
 	return t
+}
+
+func (t *TLS) Opts() []tls.Option {
+	return []tls.Option{
+		tls.WithCa(t.CA),
+		tls.WithCert(t.Cert),
+		tls.WithKey(t.Key),
+	}
 }

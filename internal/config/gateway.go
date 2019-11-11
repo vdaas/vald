@@ -35,6 +35,8 @@ type Gateway struct {
 
 	// BackupManager represent backup manager configuration
 	BackupManager *BackupManager `json:"backup" yaml:"backup"`
+
+	EgressFilter *EgressFilter `json:"egress_filter" yaml:"egress_filter"`
 }
 
 func (g *Gateway) Bind() *Gateway {
@@ -46,8 +48,12 @@ func (g *Gateway) Bind() *Gateway {
 	if g.Meta != nil {
 		g.Meta = g.Meta.Bind()
 	}
-	if g.BackupManager.Bind() != nil {
+	if g.BackupManager != nil {
 		g.BackupManager = g.BackupManager.Bind()
+	}
+
+	if g.EgressFilter != nil{
+		g.EgressFilter = g.EgressFilter.Bind()
 	}
 	return g
 }

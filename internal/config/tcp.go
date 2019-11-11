@@ -17,6 +17,11 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+import (
+	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/tls"
+)
+
 // TCP represent the TCP configuration for server.
 type TCP struct {
 	DNS    *DNS    `yaml:"dns" json:"dns"`
@@ -59,4 +64,42 @@ func (t *TCP) Bind() *TCP {
 		t.Dialer = t.Dialer.Bind()
 	}
 	return t
+}
+
+func (t *TCP) Opts() []tcp.DialerOption {
+	opts := make([]tcp.DialerOption, 0, 0)
+	if t.DNS != nil {
+		opts = append(opts,
+			tcp.WithDNSCacheExpiration(t.DNS.CacheExpiration),
+			tcp.WithDNSRefreshDuration(t.DNS.RefreshDuration),
+		)
+		if t.DNS.CacheEnabled {
+			opts = append(opts,
+				tcp.WithEnableDNSCache(),
+			)
+		}
+	}
+
+	if t.Dialer != nil {
+		opts = append(opts,
+			tcp.WithDialerKeepAlive(t.Dialer.KeepAlive),
+			tcp.WithDialerTimeout(t.Dialer.Timeout),
+		)
+		if t.Dialer.DualStackEnabled {
+			opts = append(opts,
+				tcp.WithEnableDialerDualStack(),
+			)
+		}
+	}
+
+	if t.TLS != nil && t.TLS.Enabled {
+		cfg, err := tls.New(t.TLS.Opts()...)
+		if err == nil {
+			opts = append(opts,
+				tcp.WithTLS(cfg),
+			)
+		}
+	}
+
+	return opts
 }

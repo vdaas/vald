@@ -22,18 +22,18 @@ import "fmt"
 type BackupManager struct {
 	Host   string      `json:"host" yaml:"host"`
 	Port   int         `json:"port" yaml:"port"`
-	Addr   string      `json:"addr" yaml:"addr"`
 	Client *GRPCClient `json:"client" yaml:"client"`
 }
 
 func (b *BackupManager) Bind() *BackupManager {
 	b.Host = GetActualValue(b.Host)
-	b.Addr = GetActualValue(b.Addr)
-	if len(b.Addr) == 0 && len(b.Host) != 0 {
-		b.Addr = fmt.Sprintf("%s:%d", b.Host, b.Port)
-	}
 	if b.Client != nil {
 		b.Client = b.Client.Bind()
+	} else {
+		b.Client =newGRPCClientConfig() 
+	}
+	if len(b.Host) != 0 {
+		b.Client.Addrs = append(b.Client.Addrs, fmt.Sprintf("%s:%d", b.Host, b.Port))
 	}
 	return b
 }

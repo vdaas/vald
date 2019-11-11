@@ -37,24 +37,12 @@ type RoundTripper struct {
 	ForceAttemptHTTP2     bool   `yaml:"force_attempt_http_2" json:"force_attempt_http_2"`
 }
 
-type Backoff struct {
-	// Algorithm  string // linear backoff
-	Factor     float64 `yaml:"factor" json:"factor"`
-	RetryCount int     `yaml:"retry_count" json:"retry_count"`
-	TimeLimit  string  `yaml:"time_limit" json:"time_limit"`
-}
-
 func (r *RoundTripper) Bind() *RoundTripper {
 	r.TLSHandshakeTimeout = GetActualValue(r.TLSHandshakeTimeout)
 	r.IdleConnTimeout = GetActualValue(r.IdleConnTimeout)
 	r.ResponseHeaderTimeout = GetActualValue(r.ResponseHeaderTimeout)
 	r.ExpectContinueTimeout = GetActualValue(r.ExpectContinueTimeout)
 	return r
-}
-
-func (b *Backoff) Bind() *Backoff {
-	b.TimeLimit = GetActualValue(b.TimeLimit)
-	return b
 }
 
 func (t *Transport) Bind() *Transport {

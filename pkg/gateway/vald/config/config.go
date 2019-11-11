@@ -33,8 +33,6 @@ type Data struct {
 	// Gateway represent agent gateway service configuration
 	Gateway *config.Gateway `json:"discoverer" yaml:"discoverer"`
 
-	// BackupManager manages backup functionallity
-	BackupManager *config.BackupManager `json:"backup_manager" yaml:"backup_manager"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
@@ -50,10 +48,6 @@ func NewConfig(path string) (cfg *Data, err error) {
 
 	if cfg.Gateway != nil {
 		cfg.Gateway = cfg.Gateway.Bind()
-	}
-
-	if cfg.BackupManager != nil {
-		cfg.BackupManager = cfg.BackupManager.Bind()
 	}
 
 	return cfg, nil

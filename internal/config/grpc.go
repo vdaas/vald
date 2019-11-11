@@ -17,10 +17,19 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+import (
+	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/tcp"
+)
+
 type GRPCClient struct {
+	Addrs               []string    `json:"addrs" yaml:"addrs"`
 	HealthCheckDuration string      `json:"health_check_duration" yaml:"health_check_duration"`
+	Backoff             *Backoff    `json:"backoff" yaml:"backoff"`
 	CallOption          *CallOption `json:"call_option" yaml:"call_option"`
 	DialOption          *DialOption `json:"dial_option" yaml:"dial_option"`
+	TLS                 *TLS        `json:"tls" yaml:"tls"`
 }
 
 type CallOption struct {
@@ -37,7 +46,7 @@ type DialOption struct {
 	InitialConnectionWindowSize int                  `json:"initial_connection_window_size" yaml:"initial_connection_window_size"`
 	MaxMsgSize                  int                  `json:"max_msg_size" yaml:"max_msg_size"`
 	MaxBackoffDelay             string               `json:"max_backoff_delay" yaml:"max_backoff_delay"`
-	EnableBackofff              bool                 `json:"enable_backofff" yaml:"enable_backofff"`
+	EnableBackoff               bool                 `json:"enable_backoff" yaml:"enable_backoff"`
 	Insecure                    bool                 `json:"insecure" yaml:"insecure"`
 	Timeout                     string               `json:"timeout" yaml:"timeout"`
 	Dialer                      *TCP                 `json:"dialer" yaml:"dialer"`
@@ -45,13 +54,29 @@ type DialOption struct {
 }
 
 type GRPCClientKeepalive struct {
-	MinPingTime         string `json:"min_ping_time" yaml:"min_ping_time"`
+	Time                string `json:"time" yaml:"time"`
 	Timeout             string `json:"timeout" yaml:"timeout"`
 	PermitWithoutStream bool   `json:"permit_without_stream" yaml:"permit_without_stream"`
 }
 
+func newGRPCClientConfig()*GRPCClient{
+	return &GRPCClient{
+		DialOption: &DialOption{
+			Insecure: true,
+		},
+	}
+}
+
 func (g *GRPCClient) Bind() *GRPCClient {
 	g.HealthCheckDuration = GetActualValue(g.HealthCheckDuration)
+
+	for i, addr := range g.Addrs{
+		g.Addrs[i] = GetActualValue(addr)
+	}
+
+	if g.Backoff != nil {
+		g.Backoff.Bind()
+	}
 
 	if g.CallOption != nil {
 		g.CallOption.Bind()
@@ -59,12 +84,24 @@ func (g *GRPCClient) Bind() *GRPCClient {
 
 	if g.DialOption != nil {
 		g.DialOption.Bind()
+	} else {
+		g.DialOption = new(DialOption)
 	}
+
+	if g.TLS != nil {
+		g.TLS.Bind()
+	} else {
+		g.TLS = &TLS{
+			Enabled: false,
+		}
+		g.DialOption.Insecure = true
+	}
+
 	return g
 }
 
 func (g *GRPCClientKeepalive) Bind() *GRPCClientKeepalive {
-	g.MinPingTime = GetActualValue(g.MinPingTime)
+	g.Time = GetActualValue(g.Time)
 	g.Timeout = GetActualValue(g.Timeout)
 	return g
 }
@@ -77,4 +114,68 @@ func (d *DialOption) Bind() *DialOption {
 	d.MaxBackoffDelay = GetActualValue(d.MaxBackoffDelay)
 	d.Timeout = GetActualValue(d.Timeout)
 	return d
+}
+
+func (g *GRPCClient) Opts() []grpc.Option {
+	opts := make([]grpc.Option, 0, 0)
+	opts = append(opts,
+		grpc.WithHealthCheckDuration(g.HealthCheckDuration),
+	)
+	if g.Addrs != nil && len(g.Addrs)!=0{
+		opts = append(opts,
+			grpc.WithAddrs(g.Addrs...),
+		)
+	}
+	if g.Backoff != nil {
+		opts = append(opts,
+			grpc.WithBackoff(
+				backoff.New(g.Backoff.Opts()...),
+			),
+		)
+	}
+	if g.CallOption != nil {
+		opts = append(opts,
+			grpc.WithWaitForReady(g.CallOption.WaitForReady),
+			grpc.WithMaxRetryRPCBufferSize(g.CallOption.MaxRetryRPCBufferSize),
+			grpc.WithMaxRecvMsgSize(g.CallOption.MaxRecvMsgSize),
+			grpc.WithMaxSendMsgSize(g.CallOption.MaxSendMsgSize),
+		)
+	}
+
+	if g.DialOption != nil {
+		opts = append(opts,
+			grpc.WithWriteBufferSize(g.DialOption.WriteBufferSize),
+			grpc.WithReadBufferSize(g.DialOption.WriteBufferSize),
+			grpc.WithInitialWindowSize(g.DialOption.InitialWindowSize),
+			grpc.WithInitialConnectionWindowSize(g.DialOption.InitialWindowSize),
+			grpc.WithMaxMsgSize(g.DialOption.MaxMsgSize),
+			grpc.WithMaxBackoffDelay(g.DialOption.MaxBackoffDelay),
+			grpc.WithInsecure(g.DialOption.Insecure),
+			grpc.WithDialTimeout(g.DialOption.Timeout),
+		)
+
+		if g.DialOption.Dialer != nil {
+			opts = append(opts,
+				grpc.WithDialer(
+					tcp.NewDialer(g.DialOption.Dialer.Opts()...),
+				),
+			)
+		}
+
+		if g.DialOption.KeepAlive != nil {
+			opts = append(opts,
+				grpc.WithKeepaliveParams(
+					g.DialOption.KeepAlive.Time,
+					g.DialOption.KeepAlive.Timeout,
+					g.DialOption.KeepAlive.PermitWithoutStream,
+				),
+			)
+		}
+	}
+
+	if g.TLS != nil {
+
+	}
+
+	return opts
 }

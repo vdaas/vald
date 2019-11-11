@@ -41,35 +41,42 @@ func NewExpBackoff(opts ...Option) http.RoundTripper {
 }
 
 func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
-	r, err := e.bo.Do(req.Context(), func() (interface{}, error) {
-		res, err := e.transport.RoundTrip(req)
-		if err == nil {
-			return res, nil
-		}
-		if res != nil {
-			io.Copy(ioutil.Discard, res.Body)
-			res.Body.Close()
-		}
-		switch res.StatusCode {
-		case http.StatusTooManyRequests,
-			http.StatusInternalServerError,
-			http.StatusServiceUnavailable,
-			http.StatusMovedPermanently,
-			http.StatusBadGateway,
-			http.StatusGatewayTimeout:
-			return nil, errors.ErrTransportRetryable
-		}
-		return res, nil
+	if e.bo == nil {
+		return e.roundTrip(req)
+	}
+	var r interface{}
+	r, err = e.bo.Do(req.Context(), func() (interface{}, error) {
+		return e.roundTrip(req)
 	})
-
 	if err != nil {
 		return nil, err
 	}
 
-	res, ok := r.(*http.Response)
+	var ok bool
+	res, ok = r.(*http.Response)
 	if !ok {
 		return nil, errors.ErrInvalidTypeConversion(r, res)
 	}
+	return res, nil
+}
 
+func (e *ert) roundTrip(req *http.Request) (res *http.Response, err error) {
+	res, err = e.transport.RoundTrip(req)
+	if err == nil {
+		return res, nil
+	}
+	if res != nil {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}
+	switch res.StatusCode {
+	case http.StatusTooManyRequests,
+		http.StatusInternalServerError,
+		http.StatusServiceUnavailable,
+		http.StatusMovedPermanently,
+		http.StatusBadGateway,
+		http.StatusGatewayTimeout:
+		return nil, errors.ErrTransportRetryable
+	}
 	return res, nil
 }
