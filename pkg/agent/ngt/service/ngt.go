@@ -67,6 +67,7 @@ type ngt struct {
 func New(cfg *config.NGT) (nn NGT, err error) {
 	n := new(ngt)
 	opts := []core.Option{
+		core.WithInMemoryMode(cfg.EnableInMemoryMode),
 		core.WithIndexPath(cfg.IndexPath),
 		core.WithDimension(cfg.Dimension),
 		core.WithDistanceTypeByString(cfg.DistanceType),

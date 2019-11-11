@@ -46,6 +46,13 @@ var (
 	}
 )
 
+func WithInMemoryMode(flg bool) Option {
+	return func(n *ngt) error {
+		n.inMemory = flg
+		return nil
+	}
+}
+
 func WithIndexPath(path string) Option {
 	return func(n *ngt) error {
 		if len(path) == 0 {
