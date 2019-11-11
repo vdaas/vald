@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/vald"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	igrpc "github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -48,12 +49,22 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	bu, err := service.NewBackup(
-		service.WithBackupAddr(cfg.Gateway.BackupManager.Addr),
+	var (
+		filter   service.Filter
+		gateway  service.Gateway
+		metadata service.Meta
+		backup   service.Backup
+	)
+
+	if addrs := cfg.Gateway.BackupManager.Client.Addrs; addrs == nil || len(addrs) == 0 {
+		return nil, errors.ErrInvalidBackupConfig
+	}
+
+	backup, err = service.NewBackup(
+		service.WithBackupAddr(cfg.Gateway.BackupManager.Client.Addrs[0]),
 		service.WithBackupClient(
 			igrpc.New(
 				append(cfg.Gateway.BackupManager.Client.Opts(),
-					igrpc.WithAddrs(cfg.Gateway.BackupManager.Addr),
 					igrpc.WithErrGroup(eg),
 				)...,
 			),
@@ -63,34 +74,40 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 	dscClient := igrpc.New(
-				append(cfg.Gateway.Discoverer.DiscoverClient.Opts(),
-				igrpc.WithAddrs(cfg.Gateway.Discoverer.Addr),
-				igrpc.WithErrGroup(eg),
-				)...,
-			)
+		append(cfg.Gateway.Discoverer.DiscoverClient.Opts(),
+			igrpc.WithErrGroup(eg),
+		)...,
+	)
 	aClient := igrpc.New(
-				append(cfg.Gateway.Discoverer.AgentClient.Opts(),
-				)...,
-			)
-	defer aClient.Close()
+		append(cfg.Gateway.Discoverer.AgentClient.Opts(),
+			igrpc.WithErrGroup(eg),
+		)...,
+	)
 
-	gateway, err := service.NewGateway(
+	gateway, err = service.NewGateway(
 		service.WithAgentName(cfg.Gateway.AgentName),
 		service.WithAgentPort(cfg.Gateway.AgentPort),
-		service.WithDiscovererClient( dscClient),
+		service.WithDiscovererClient(dscClient),
+		service.WithDiscovererHostPort(
+			cfg.Gateway.Discoverer.Host,
+			cfg.Gateway.Discoverer.Port,
+		),
 		service.WithDialOptions(aClient.GetDialOption()...),
 		service.WithCallOptions(aClient.GetCallOption()...),
 	)
+	aClient.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	meta, err := service.NewMeta(
-		service.WithMetaAddr(cfg.Gateway.Meta.Addr),
+	if addrs := cfg.Gateway.Meta.Client.Addrs; addrs == nil || len(addrs) == 0 {
+		return nil, errors.ErrInvalidMetaDataConfig
+	}
+	metadata, err = service.NewMeta(
+		service.WithMetaAddr(cfg.Gateway.Meta.Client.Addrs[0]),
 		service.WithMetaClient(
 			igrpc.New(
 				append(cfg.Gateway.Meta.Client.Opts(),
-					igrpc.WithAddrs(cfg.Gateway.Meta.Addr),
 					igrpc.WithErrGroup(eg),
 				)...,
 			),
@@ -100,21 +117,24 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	filter, err := service.NewFilter(
-		service.WithFilterClient(
+	if addrs := cfg.Gateway.EgressFilter.Client.Addrs; addrs != nil && len(addrs) != 0 {
+		filter, err = service.NewFilter(
+			service.WithFilterClient(
 				igrpc.New(
-				append(cfg.Gateway.Meta.Client.Opts(),
-					igrpc.WithAddrs(cfg.Gateway.Meta.Addr),
-					igrpc.WithErrGroup(eg),
-				)...,
-			),		
+					append(cfg.Gateway.Meta.Client.Opts(),
+						igrpc.WithAddrs(cfg.Gateway.EgressFilter.Client.Addrs...),
+						igrpc.WithErrGroup(eg),
+					)...,
+				),
+			),
 		)
-	)
+	}
 
 	v := handler.New(
 		handler.WithGateway(gateway),
-		handler.WithBackup(bu),
-		handler.WithMeta(meta),
+		handler.WithBackup(backup),
+		handler.WithMeta(metadata),
+		handler.WithFilters(filter),
 		handler.WithErrGroup(eg),
 	)
 

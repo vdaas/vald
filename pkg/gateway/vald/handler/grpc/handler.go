@@ -221,14 +221,16 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	if err != nil {
 		return nil, err
 	}
-	err = s.backup.Register(ctx, &payload.Backup_MetaVector{
-		Uuid:   uuid,
-		Meta:   meta,
-		Vector: vec.GetVector(),
-		Ips:    targets,
-	})
-	if err != nil {
-		return nil, err
+	if s.backup!= nil{
+		err = s.backup.Register(ctx, &payload.Backup_MetaVector{
+			Uuid:   uuid,
+			Meta:   meta,
+			Vector: vec.GetVector(),
+			Ips:    targets,
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 	return new(payload.Empty), nil
 }
@@ -268,20 +270,23 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	if err != nil {
 		return nil, err
 	}
-	mvecs := new(payload.Backup_MetaVectors)
-	mvecs.Vectors = make([]*payload.Backup_MetaVector, 0, len(vecs.GetVectors()))
-	for _, vec := range vecs.GetVectors() {
-		uuid := vec.GetId()
-		mvecs.Vectors = append(mvecs.Vectors, &payload.Backup_MetaVector{
-			Uuid:   uuid,
-			Meta:   metaMap[uuid],
-			Vector: vec.GetVector(),
-			Ips:    targets,
-		})
-	}
-	err = s.backup.RegisterMultiple(ctx, mvecs)
-	if err != nil {
-		return nil, err
+
+	if s.backup!= nil{
+		mvecs := new(payload.Backup_MetaVectors)
+		mvecs.Vectors = make([]*payload.Backup_MetaVector, 0, len(vecs.GetVectors()))
+		for _, vec := range vecs.GetVectors() {
+			uuid := vec.GetId()
+			mvecs.Vectors = append(mvecs.Vectors, &payload.Backup_MetaVector{
+				Uuid:   uuid,
+				Meta:   metaMap[uuid],
+				Vector: vec.GetVector(),
+				Ips:    targets,
+			})
+		}
+		err = s.backup.RegisterMultiple(ctx, mvecs)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return new(payload.Empty), nil
 }
