@@ -119,11 +119,15 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	if addrs := cfg.Gateway.EgressFilter.Client.Addrs; addrs != nil && len(addrs) != 0 {
+	ef := cfg.Gateway.EgressFilter
+	if  ef != nil && 
+		ef.Client != nil &&
+		ef.Client.Addrs != nil && 
+		len(ef.Client.Addrs) != 0 {
 		filter, err = service.NewFilter(
 			service.WithFilterClient(
 				igrpc.New(
-					append(cfg.Gateway.Meta.Client.Opts(),
+					append(ef.Client.Opts(),
 						igrpc.WithErrGroup(eg),
 					)...,
 				),

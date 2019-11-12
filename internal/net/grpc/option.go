@@ -202,7 +202,7 @@ func WithDialTimeout(dur string) Option {
 	return func(g *gRPCClient) {
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			d = time.Second
+			return
 		}
 		g.gopts = append(g.gopts,
 			grpc.WithTimeout(d),
@@ -218,11 +218,11 @@ func WithKeepaliveParams(t, to string, permitWithoutStream bool) Option {
 		}
 		td, err := timeutil.Parse(t)
 		if err != nil {
-			td = time.Second
+			return
 		}
 		tod, err := timeutil.Parse(t)
 		if err != nil {
-			tod = time.Second
+			return
 		}
 		g.gopts = append(g.gopts,
 			grpc.WithKeepaliveParams(

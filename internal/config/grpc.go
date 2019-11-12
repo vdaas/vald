@@ -126,7 +126,9 @@ func (g *GRPCClient) Opts() []grpc.Option {
 			grpc.WithAddrs(g.Addrs...),
 		)
 	}
-	if g.Backoff != nil {
+	if g.Backoff != nil &&
+		len(g.Backoff.InitialDuration)!=0 &&
+		g.Backoff.RetryCount> 2{
 		opts = append(opts,
 			grpc.WithBackoff(
 				backoff.New(g.Backoff.Opts()...),
@@ -154,7 +156,8 @@ func (g *GRPCClient) Opts() []grpc.Option {
 			grpc.WithDialTimeout(g.DialOption.Timeout),
 		)
 
-		if g.DialOption.Dialer != nil {
+		if g.DialOption.Dialer != nil &&
+			len(g.DialOption.Dialer.Dialer.Timeout)!=0{
 			opts = append(opts,
 				grpc.WithDialer(
 					tcp.NewDialer(g.DialOption.Dialer.Opts()...),

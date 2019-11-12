@@ -31,7 +31,7 @@ type Data struct {
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
 	// Gateway represent agent gateway service configuration
-	Gateway *config.Gateway `json:"discoverer" yaml:"discoverer"`
+	Gateway *config.Gateway `json:"gateway" yaml:"gateway"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
