@@ -89,6 +89,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
+		eg:     eg,
 		cfg:    cfg,
 		dsc:    dsc,
 		server: srv,
