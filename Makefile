@@ -150,17 +150,24 @@ test: clean init
 lint:
 	gometalinter --enable-all . | rg -v comment
 
-.PHONY: contributors
-## show contributors
-contributors:
-	git log --format='%aN <%aE>' | sort -fu > CONTRIBUTORS
-
 .PHONY: coverage
 ## calculate coverages
 coverage:
 	go test -v -race -covermode=atomic -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out -o coverage.html
 	rm -f coverage.out
+
+.PHONY: readme/update/authors
+## update authors in README
+readme/update/authors:
+	$(eval AUTHORS = $(shell awk '{printf "- [%s]\\(https:\\/\\/github.com\\/%s\\)\\n", $$1, $$1}' authors))
+	sed -i -e ':lbl1;N;s/## Author.*## Contributor/## Author\n\n$(AUTHORS)\n## Contributor/;b lbl1;' README.md
+
+.PHONY: readme/update/contributors
+## update contributors in README
+readme/update/contributors:
+	$(eval CONTRIBUTORS = $(shell awk '{printf "- [%s]\\(https:\\/\\/github.com\\/%s\\)\\n", $$1, $$1}' contributors))
+	sed -i -e ':lbl1;N;s/## Contributor.*## LICENSE/## Contributor\n\n$(CONTRIBUTORS)\n## LICENSE/;b lbl1;' README.md
 
 include Makefile.d/bench.mk
 include Makefile.d/docker.mk

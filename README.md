@@ -60,11 +60,12 @@ make git/hooks/init
 
 ## Author
 
-[kpango](https://github.com/kpango)
+- [kpango](https://github.com/kpango)
+- [kou-m](https://github.com/kou-m)
+- [rinx](https://github.com/rinx)
 
 ## Contributor
 
-[kpango](https://github.com/kpango)
 
 ## LICENSE
 
