@@ -60,7 +60,7 @@ func New(opts ...Option) NodeWatcher {
 		opt(r)
 	}
 
-	return nil
+	return r
 }
 
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {

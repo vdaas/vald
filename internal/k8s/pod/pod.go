@@ -62,7 +62,7 @@ func New(opts ...Option) PodWatcher {
 		opt(r)
 	}
 
-	return nil
+	return r
 }
 
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
