@@ -18,8 +18,8 @@ FROM vdaas/vald-base:latest AS builder
 
 ENV ORG vdaas
 ENV REPO vald
-ENV APP_NAME backup
-ENV PKG manager/${APP_NAME}
+ENV APP_NAME mysql
+ENV PKG manager/backup/${APP_NAME}
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
@@ -50,7 +50,7 @@ FROM scratch
 # Start From Alpine For Debug Environment
 # FROM alpine:latest
 
-ENV APP_NAME backup
+ENV APP_NAME mysql
 
 # Copy certificates for SSL/TLS
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
