@@ -20,11 +20,11 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/internal/runner"
-	"github.com/vdaas/vald/pkg/manager/backup/config"
-	"github.com/vdaas/vald/pkg/manager/backup/handler/grpc"
-	"github.com/vdaas/vald/pkg/manager/backup/handler/rest"
-	"github.com/vdaas/vald/pkg/manager/backup/router"
-	"github.com/vdaas/vald/pkg/manager/backup/service"
+	"github.com/vdaas/vald/pkg/manager/backup/mysql/config"
+	"github.com/vdaas/vald/pkg/manager/backup/mysql/handler/grpc"
+	"github.com/vdaas/vald/pkg/manager/backup/mysql/handler/rest"
+	"github.com/vdaas/vald/pkg/manager/backup/mysql/router"
+	"github.com/vdaas/vald/pkg/manager/backup/mysql/service"
 )
 
 type Runner runner.Runner

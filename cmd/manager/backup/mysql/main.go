@@ -23,8 +23,8 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/pkg/manager/backup/config"
-	"github.com/vdaas/vald/pkg/manager/backup/usecase"
+	"github.com/vdaas/vald/pkg/manager/backup/mysql/config"
+	"github.com/vdaas/vald/pkg/manager/backup/mysql/usecase"
 )
 
 const (

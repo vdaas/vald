@@ -22,8 +22,8 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/manager/backup"
 	"github.com/vdaas/vald/apis/grpc/payload"
-	"github.com/vdaas/vald/pkg/manager/backup/model"
-	"github.com/vdaas/vald/pkg/manager/backup/service"
+	"github.com/vdaas/vald/pkg/manager/backup/mysql/model"
+	"github.com/vdaas/vald/pkg/manager/backup/mysql/service"
 )
 
 type Server backup.BackupServer

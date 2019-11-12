@@ -14,19 +14,29 @@
 // limitations under the License.
 //
 
-// Package grpc provides grpc server logic
-package grpc
+// Package router provides implementation of Go API for routing http Handler wrapped by rest.Func
+package router
 
-import "github.com/vdaas/vald/pkg/manager/backup/service"
-
-type Option func(*server)
-
-var (
-	defaultOpts = []Option{}
+import (
+	"github.com/vdaas/vald/pkg/manager/backup/mysql/handler/rest"
 )
 
-func WithMySQL(m service.MySQL) Option {
-	return func(s *server) {
-		s.mySQL = m
+type Option func(*router)
+
+var (
+	defaultOpts = []Option{
+		WithTimeout("3s"),
+	}
+)
+
+func WithHandler(h rest.Handler) Option {
+	return func(r *router) {
+		r.handler = h
+	}
+}
+
+func WithTimeout(timeout string) Option {
+	return func(r *router) {
+		r.timeout = timeout
 	}
 }

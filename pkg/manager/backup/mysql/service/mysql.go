@@ -21,7 +21,7 @@ import (
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/rdb/mysql"
-	"github.com/vdaas/vald/pkg/manager/backup/model"
+	"github.com/vdaas/vald/pkg/manager/backup/mysql/model"
 )
 
 type MySQL interface {
