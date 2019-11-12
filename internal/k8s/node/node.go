@@ -128,6 +128,7 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil {
 		r.mgr = mgr
 	}
+	corev1.AddToScheme(r.mgr.GetScheme())
 	return r
 }
 
