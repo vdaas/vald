@@ -78,12 +78,14 @@ func New(opts ...Option) (cl Controller, err error) {
 	}
 
 	for _, rc := range c.rcs {
-		err = builder.ControllerManagedBy(c.mgr).
-			Named(rc.GetName()).
-			For(rc.For()).
-			Complete(rc.NewReconciler(c.mgr))
-		if err != nil {
-			return nil, err
+		if rc != nil {
+			err = builder.ControllerManagedBy(c.mgr).
+				Named(rc.GetName()).
+				For(rc.For()).
+				Complete(rc.NewReconciler(c.mgr))
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
