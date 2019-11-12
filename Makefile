@@ -164,4 +164,5 @@ coverage:
 
 include Makefile.d/bench.mk
 include Makefile.d/docker.mk
+include Makefile.d/git.mk
 include Makefile.d/proto.mk

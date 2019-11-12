@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# goimports
+find ./ -type f -regex ".*\.go" | xargs goimports -w
+
+# golangci-lint
+golangci-lint run --enable-all --disable=gochecknoglobals --exclude-use-default=false ./...
+
+# go build
+go build ./...
