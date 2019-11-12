@@ -21,7 +21,7 @@ docker/build: \
 	docker/build/discoverer-k8s \
 	docker/build/gateway-vald \
 	docker/build/meta-redis \
-	docker/name/backup-manager-mysql
+	docker/build/backup-manager-mysql
 
 .PHONY: docker/name/base
 docker/name/base:
@@ -69,10 +69,10 @@ docker/build/meta-redis: docker/build/base
 	docker build -f dockers/meta/redis/Dockerfile -t $(REPO)/$(KVS_IMAGE) .
 
 .PHONY: docker/name/backup-manager-mysql
-docker/name/backup-manager:
+docker/name/backup-manager-mysql:
 	@echo "$(REPO)/$(BACKUP_MANAGER_IMAGE)"
 
 .PHONY: docker/build/backup-manager-mysql
 ## build backup-manager image
-docker/build/backup-manager: docker/build/base
-	docker build -f dockers/manager/backup/Dockerfile -t $(REPO)/$(BACKUP_MANAGER_IMAGE) .
+docker/build/backup-manager-mysql: docker/build/base
+	docker build -f dockers/manager/backup/mysql/Dockerfile -t $(REPO)/$(BACKUP_MANAGER_IMAGE) .
