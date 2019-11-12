@@ -33,6 +33,7 @@ cmd/**/*
 !cmd/**/*.*
 !cmd/**/*/
 hack/**/*
+!hack/**
 !hack/**/*.*
 !hack/**/*/
 hack/**/*.hdf5
