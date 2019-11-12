@@ -59,4 +59,4 @@ COPY --from=builder /etc/passwd /etc/passwd
 # Copy our static executable
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 
-ENTRYPOINT ["/go/bin/backup"]
+ENTRYPOINT ["/go/bin/mysql"]
