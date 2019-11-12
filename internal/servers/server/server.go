@@ -33,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
+	keepalive "google.golang.org/grpc/keepalive"
 )
 
 type Server interface {
@@ -86,9 +87,10 @@ type server struct {
 		starter func(net.Listener) error
 	}
 	grpc struct { // gRPC API
-		srv  *grpc.Server
-		opts []grpc.ServerOption
-		reg  func(*grpc.Server)
+		srv       *grpc.Server
+		keepAlive *grpcKeepAlive
+		opts      []grpc.ServerOption
+		reg       func(*grpc.Server)
 	}
 	l             net.Listener
 	tcfg          *tls.Config
@@ -105,6 +107,14 @@ type server struct {
 	running       bool
 	preStartFunc  func() error
 	preStopFunc   func() error // PreStopFunction
+}
+
+type grpcKeepAlive struct {
+	maxConnIdle     time.Duration
+	maxConnAge      time.Duration
+	maxConnAgeGrace time.Duration
+	t               time.Duration
+	timeout         time.Duration
 }
 
 func New(opts ...Option) (Server, error) {
@@ -174,9 +184,23 @@ func New(opts ...Option) (Server, error) {
 		}
 		srv.http.srv.SetKeepAlivesEnabled(true)
 	case GRPC:
+
 		if srv.grpc.reg == nil {
 			return nil, errors.ErrInvalidAPIConfig
 		}
+
+		if srv.grpc.keepAlive != nil {
+			srv.grpc.opts = append(srv.grpc.opts,
+				grpc.KeepaliveParams(keepalive.ServerParameters{
+					MaxConnectionIdle:     srv.grpc.keepAlive.maxConnIdle,
+					MaxConnectionAge:      srv.grpc.keepAlive.maxConnAge,
+					MaxConnectionAgeGrace: srv.grpc.keepAlive.maxConnAgeGrace,
+					Time:                  srv.grpc.keepAlive.t,
+					Timeout:               srv.grpc.keepAlive.timeout,
+				}),
+			)
+		}
+
 		if srv.grpc.srv == nil {
 			srv.grpc.srv = grpc.NewServer(
 				srv.grpc.opts...,

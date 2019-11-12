@@ -14,9 +14,18 @@
 // limitations under the License.
 //
 
-// Package errors provides error types and function
-package errors
+package main
 
-var (
-	ErrInvalidBackupConfig = New("invalid backup config")
+import (
+	"fmt"
+
+	fuzz "github.com/google/gofuzz"
+	conf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/pkg/agent/ngt/config"
 )
+
+func main() {
+	cfg := config.Data{}
+	fuzz.New().Fuzz(&cfg)
+	fmt.Println(conf.ToRawYaml(cfg))
+}

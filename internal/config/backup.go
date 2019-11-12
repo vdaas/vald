@@ -30,7 +30,7 @@ func (b *BackupManager) Bind() *BackupManager {
 	if b.Client != nil {
 		b.Client = b.Client.Bind()
 	} else {
-		b.Client =newGRPCClientConfig() 
+		b.Client = newGRPCClientConfig()
 	}
 	if len(b.Host) != 0 {
 		b.Client.Addrs = append(b.Client.Addrs, fmt.Sprintf("%s:%d", b.Host, b.Port))

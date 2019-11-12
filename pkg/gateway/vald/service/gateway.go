@@ -53,7 +53,6 @@ type gateway struct {
 	agentName  string
 	agentPort  int
 	agentAddrs []string
-	agentHcDur string
 	agents     atomic.Value
 	dscAddr    string
 	dscDur     time.Duration

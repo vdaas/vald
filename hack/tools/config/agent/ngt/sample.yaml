@@ -1,0 +1,271 @@
+#
+# Copyright (C) 2019 kpango (Yusuke Kato)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+version: v1.0.0
+server_config:
+  servers:
+  - name: rest
+    host: localhost
+    port: 8080
+    mode: rest
+    probe_wait_time: 3s
+    http:
+      shutdown_duration: 碶ņ_-ǧ浒6
+      handler_timeout: 鲗Ĥʌ·虊ɛ{EpƏ崷Ƃ\抴Ì鿉
+      idle_timeout: 迹¾QȻX困`Ío%n
+      read_header_timeout: D蹌p緆嘺dȦƔ殛ʐbʃǻūƷ-
+      read_timeout: G辖辷卶垿ƕǮǕīÕĤO锦ǐ纅jǂ扉E
+      write_timeout: ǈ韭z嗣)姓£芌虊諦躱瞥KýD
+    grpc: null
+    restart: true
+  health_check_servers:
+  - name: 渺DwĲ藁Ƚg繹aɽȬƏ
+    host: 倗r
+    port: 1427178993220044770
+    mode: ;+I|z4ĂČàdĨ$ƍn
+    probe_wait_time: 0谜B灟Ŝ6\縠ǛĤŘ
+    http:
+      shutdown_duration: 悖
+      handler_timeout: 憌ȝȱǲ懅½嚻[*^ʜ須聲ʨ橭D蚬姈
+      idle_timeout: '[ǄȖ峷'
+      read_header_timeout: Ȗ
+      read_timeout: 郢Ô佩ŷCÈ凧ǫȚƧ噸¿稍
+      write_timeout: eD榋啸b;Ɏǥ
+    grpc: null
+    restart: false
+  - name: 蛪zƛ倳
+    host: 1ȕJå,v>挞Ŕ*ĺ鄅ɁêZɆ璀
+    port: 1818587715429509144
+    mode: Zƈɤ
+    probe_wait_time: 縯
+    http:
+      shutdown_duration: Z捖dŶ踣瓂棛ʤ絪Ȫ爳
+      handler_timeout: ō
+      idle_timeout: '|Ǡǒš篃đļ飏堧rɁ°vWȽʩə'
+      read_header_timeout: Tɂŧ-+ʛŎHY諟
+      read_timeout: E.蔫棜
+      write_timeout: 2Ʊ)膑自ƒB鏆EŜ#Ǝɠ豁A唥
+    grpc:
+      max_receive_message_size: 5827739204914364501
+      max_send_message_size: -3337495479694428871
+      initial_window_size: -688284205
+      initial_conn_window_size: -1752468290
+      keepalive: null
+      write_buffer_size: 3759256224004307413
+      read_buffer_size: -8416668615656730782
+      connection_timeout: 裳P錗又jʬ9ù,睖ȴY0ɹȲ|舌ö
+      max_header_list_size: 2895435728
+      header_table_size: 2447124226
+      interceptors:
+      - şɰ
+      - 4ƻ1Ə6#vb魪
+      - Ȣ
+    restart: true
+  - name: 鋻ƭ蠧2ʃ檎彪ņ纲ɷ+ȡ
+    host: 6寈衇牻ƣ埑琺ftʀwɪ
+    port: 8864725070648775543
+    mode: ƟðƓ闼銾}岨茩dn頠E[郝8
+    probe_wait_time: 3呓Z瞐
+    http:
+      shutdown_duration: '|脅|Ǹ垒ú隨霙赙@%ɯ溴'
+      handler_timeout: 稬NúĞ陫藀O鰤:ɫO&êîʣȮ
+      idle_timeout: ""
+      read_header_timeout: ʍ
+      read_timeout: ģ澄
+      write_timeout: ƹo嬜ʊ`嶹ŏ;&坵灌ʑŎF耋^ȍyƊ
+    grpc:
+      max_receive_message_size: -8294245944502635268
+      max_send_message_size: 6015609980006781547
+      initial_window_size: -1275138440
+      initial_conn_window_size: 1283428868
+      keepalive:
+        max_idle_conn_idle: O
+        max_conn_age: Ǉ#骽枒-谄ǔ*軚7顏SǦŇÒ钃K
+        max_conn_age_grace: H_>CK檘ʝȏ靍ű湨?K
+        time: ė¥Ë恛Li忎đ@怮溙d傴S
+        timeout: KoPʞ@烤
+      write_buffer_size: 8752589537290034062
+      read_buffer_size: 4222689331344573044
+      connection_timeout: 籚o韉恢钌U蹟ʄĝ桜ĎH甖"葕8薐ȃD
+      max_header_list_size: 2498923905
+      header_table_size: 2334140403
+      interceptors:
+      - Ǽ@¾Ɠƶ疦獚`ƻ龤ƒȡĀï
+      - 肥仴東ɶȜ刕蘰j崤¾駴鎌z怢堗ȦBu怇
+      - 蟀Q岞薔bɨrʒ罘喪ZɼiÛʃ1o
+      - ʩ鄅ɠɡ"Bz錦藓ʞ
+      - 頠Ii玜晴
+      - w'z8柇6盽åƠ´S雫猝ȝłHaȝ
+      - 鳽jʍ]掵k/oÞȮyȔ嚕x讕ƒ
+      - Ǫ@ʐ@悢Ȣ<ł邽Ȩ
+      - »s丧錴誋馭ɱo8ţA
+    restart: true
+  metrics_servers:
+  - name: 飸]諠ű魐垟譮鵛ůRw
+    host: ""
+    port: 10784557385743018293
+    mode: Œ9fo储nL
+    probe_wait_time: 夹(Fz截jčƚ鈜Ǔfŏȓ
+    http:
+      shutdown_duration: 驵吷皢!ǵmǆ蜠Ľ>
+      handler_timeout: Ȏı
+      idle_timeout: 餭ƛ鹾鰇¿
+      read_header_timeout: j橻lÎ鉳*鬄糥Ɍơp
+      read_timeout: ƩÙ欂蘍ǀ佅ğǹ熚曰%
+      write_timeout: 6ʢ縗薔Y鼚ǕA扨/請@
+    grpc:
+      max_receive_message_size: -7128759212858017296
+      max_send_message_size: 3836426411654750289
+      initial_window_size: -842233727
+      initial_conn_window_size: 1325591165
+      keepalive:
+        max_idle_conn_idle: Ƶʗ錕å鞄湉ɝøNV蕴K恟­
+        max_conn_age: ^ƃ®i坼*h剼l录yq瑘軆Bō
+        max_conn_age_grace: 磖ȤW儷蝜戙ñ捈4ǯ
+        time: Ċ鸭ô}镬úɿ`Ǭň
+        timeout: 獫b檞»擐ï夐酻3k靕s_
+      write_buffer_size: -2759281045672606789
+      read_buffer_size: 8195844770217134246
+      connection_timeout: ®因ǻ曜^Ţ+KY熈Ńŏ
+      max_header_list_size: 347344207
+      header_table_size: 633752183
+      interceptors: []
+    restart: true
+  - name: L1ȍ檲ŕƅ平gřŧ¸^ɪȨ鄫Aó
+    host: 纉
+    port: 13784243929041221840
+    mode: Ũl^0[}o垤k璣牋»鱽滝ÿz0ȃ
+    probe_wait_time: ""
+    http:
+      shutdown_duration: 嘐ƢƳʑł7ə
+      handler_timeout: rȋŗđfʦɟ霠龞=瘉,
+      idle_timeout: ɝE暘ƵF
+      read_header_timeout: ']棕^$2Ø'
+      read_timeout: ""
+      write_timeout: Ðļ虂離缁彩暬Ă4ɵ顰]ȅ
+    grpc:
+      max_receive_message_size: 3316755541327625207
+      max_send_message_size: 8997323673809928273
+      initial_window_size: -445472018
+      initial_conn_window_size: 748021490
+      keepalive: null
+      write_buffer_size: 5505549154046845819
+      read_buffer_size: 4951739985250262815
+      connection_timeout: 报旂燓h
+      max_header_list_size: 935239276
+      header_table_size: 1282592967
+      interceptors:
+      - Nħ匓Ǡ钃ƒȋɍÜȹʎȳ讠皖
+      - =ɶ 険Ēȷ邤÷Ę瀎Gw録*^ȢƱ^
+      - ȡ9u续1oÄ躩 d8p1Aĸ支拁ƻi
+      - 獴
+    restart: true
+  - name: ǬʞĲ錶B怚½Î丣ō3
+    host: X3!Ǿ袨^y|a璭!EoWĊKȺ
+    port: 16638960452758755548
+    mode: 脕锃K丯6Gʃy玮
+    probe_wait_time: "2"
+    http:
+      shutdown_duration: gÙŧƟ
+      handler_timeout: ƙ}Rȉ&*q$8*絳皑橫_}讑0ƙ
+      idle_timeout: ""
+      read_header_timeout: ʭ詁翚SUĥAdi
+      read_timeout: ^羪郣n%咫n¢Ɉ岏
+      write_timeout: '7 '
+    grpc:
+      max_receive_message_size: 9186202256267585106
+      max_send_message_size: -962777524662673748
+      initial_window_size: 185561707
+      initial_conn_window_size: -727361131
+      keepalive:
+        max_idle_conn_idle: 誧繝ĵĿ
+        max_conn_age: 澂WČʛ%_nɉ
+        max_conn_age_grace: 渫ǼrV3tø鯔鈺Şʙɉ赙O贴ʢ
+        time: ƿy馴惵rî苤eƊ
+        timeout: G?褌
+      write_buffer_size: 8121995179811315371
+      read_buffer_size: -1101526325993470663
+      connection_timeout: ò藛嗄
+      max_header_list_size: 525401716
+      header_table_size: 2756598945
+      interceptors:
+      - 颅ȹ]ʍǥy7M
+      - N醪v藠I轡梧畎疖腃
+    restart: false
+  - name: '`弽2Ǜ诱甔lŘ嘎'
+    host: TU冶牠
+    port: 17028566342141371431
+    mode: iv\蛹
+    probe_wait_time: ""
+    http:
+      shutdown_duration: ȑ靊0蓨·瞎ƻ8Sŧ琥Ǽ
+      handler_timeout: ""
+      idle_timeout: 跅擴鸡ȅ堡ƕQ蛐鳒"`ȵ}ʮ
+      read_header_timeout: ',艚Ƅ蠣}壗ɽ铣Ǣ/咶ØC廵c$ƤäŅ'
+      read_timeout: 鶄ȷw^ĬWƟ怠ȦókǇ{\
+      write_timeout: :ßÜ晠ɺɵ
+    grpc:
+      max_receive_message_size: 8477416088168521820
+      max_send_message_size: 6226390301731849043
+      initial_window_size: -433464927
+      initial_conn_window_size: -1659311007
+      keepalive:
+        max_idle_conn_idle: ƀ
+        max_conn_age: <Ź粰7墲9筸)ǟ
+        max_conn_age_grace: ǔ餕ʇɑƎų»习鋻[|Ĕ7RĦ:;ǰ8
+        time: ƻ鸕kɼ<
+        timeout: '>Sʡ'
+      write_buffer_size: -6878286370624407055
+      read_buffer_size: 9046217280065439693
+      connection_timeout: '#'
+      max_header_list_size: 1342356553
+      header_table_size: 3042740027
+      interceptors:
+      - 銊l逎mLBW癥,彪X汣Ķe
+      - '#攰譌{f'
+      - Ǜȃ僾蒮;*ÉƝ舱}!S
+    restart: false
+  startup_strategy:
+  - ļGw
+  - ȩ
+  shutdown_strategy:
+  - fŧ趩帩ƂƯW(ʎɟh@ņ[Bɘb
+  - 竰Fǁ敤^?
+  - 滬ƿ:Ö请歈Ġ駏跒Ë,0Ǒmøǭ
+  - Į凋乩nv晭V1静>幮
+  - ƕ棛嬎!
+  - y飀Ŕ"Ɏ纏Ǿ藴ʝ闠
+  - 蹝ƟɴQ7:p虽8RĶk鸍:c桚抖
+  - aʑʈ儬ȃąƆk鑉v0Tǖ偿
+  - b瑨è^濼ʥ洈透A狗h}ʬ
+  - 箸課1eO
+  full_shutdown_duration: 贃絷dIm
+  tls:
+    enabled: false
+    cert: TƸ%Ď烁斔ó
+    key: 2滙Hfʬ琓{/Ɛ竚0ʠǏO爛ȿ飊º3
+    ca: ʊ戣
+ngt:
+  index_path: ""
+  dimension: 4927535544238670808
+  bulk_insert_chunk_size: 4055911261492966525
+  distance_type: ƾ耫浻;o洠ə庛ŶȯoǤaQɭl覆
+  object_type: ^刪9N舲ʀŻ竸eR賀疾]鿙ʜʤ晩
+  creation_edge_size: -2472416434127309850
+  search_edge_size: -7068310511765691573
+  auto_indexing_check_duration: 漆淔?鋿ȍ藩Ǯ俌鋎]聣塳考ôɚƫ
+  auto_index_length: 3085574821308364778
+  enable_in_memory_mode: false
+

@@ -48,7 +48,7 @@ func (b *Backoff) Opts() []backoff.Option {
 		backoff.WithBackOffFactor(b.BackoffFactor),
 	)
 
-	if b.EnableErrorLog{
+	if b.EnableErrorLog {
 		opts = append(opts,
 			backoff.WithEnableErrorLog(),
 		)

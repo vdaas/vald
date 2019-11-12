@@ -51,8 +51,8 @@ type Client interface {
 	Do(ctx context.Context,
 		addr string, f func(conn *grpc.ClientConn,
 			copts ...grpc.CallOption) (interface{}, error)) (interface{}, error)
-	GetDialOption()[]grpc.DialOption
-	GetCallOption()[]grpc.CallOption
+	GetDialOption() []grpc.DialOption
+	GetCallOption() []grpc.CallOption
 	Close() error
 }
 
@@ -220,12 +220,11 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 	return
 }
 
-
-func (g *gRPCClient) GetDialOption()[]grpc.DialOption{
+func (g *gRPCClient) GetDialOption() []grpc.DialOption {
 	return g.gopts
 }
 
-func (g *gRPCClient) GetCallOption()[]grpc.CallOption{
+func (g *gRPCClient) GetCallOption() []grpc.CallOption {
 	return g.copts
 }
 

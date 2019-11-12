@@ -4,7 +4,7 @@ go 1.13
 
 replace (
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191108234033-bd318be0434a
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191111213947-16651526fdb4
 	k8s.io/api => k8s.io/api v0.0.0-20191016110246-af539daaa43a
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20191016113439-b64f2075a530
 	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20191004115701-31ade1b30762
@@ -23,6 +23,7 @@ require (
 	github.com/go-redis/redis/v7 v7.0.0-beta.4
 	github.com/gocraft/dbr/v2 v2.6.3
 	github.com/gogo/protobuf v1.3.1
+	github.com/google/gofuzz v1.0.0
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/go-version v1.2.0
 	github.com/json-iterator/go v1.1.8

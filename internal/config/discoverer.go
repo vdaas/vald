@@ -40,7 +40,7 @@ func (d *Discoverer) Bind() *Discoverer {
 	}
 	if d.AgentClient != nil {
 		d.AgentClient.Bind()
-	}else{
+	} else {
 		d.AgentClient = newGRPCClientConfig()
 	}
 	return d

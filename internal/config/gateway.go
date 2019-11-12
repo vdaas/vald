@@ -52,7 +52,7 @@ func (g *Gateway) Bind() *Gateway {
 		g.BackupManager = g.BackupManager.Bind()
 	}
 
-	if g.EgressFilter != nil{
+	if g.EgressFilter != nil {
 		g.EgressFilter = g.EgressFilter.Bind()
 	}
 	return g

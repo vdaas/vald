@@ -55,6 +55,7 @@ type NGT interface {
 
 type ngt struct {
 	alen int
+	lim  time.Duration // auto indexing time limit
 	dur  time.Duration // auto indexing check duration
 	dps  uint32        // default pool size
 	cflg uint32        // create index flag 0 or 1
@@ -96,6 +97,14 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 		n.dur = d
 	}
 
+	if cfg.AutoIndexLimit != "" {
+		d, err := timeutil.Parse(cfg.AutoIndexLimit)
+		if err != nil {
+			d = 0
+		}
+		n.lim = d
+	}
+
 	n.alen = cfg.AutoIndexLength
 
 	n.eg = errgroup.Get()
@@ -111,7 +120,9 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 	n.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
 		tick := time.NewTicker(n.dur)
+		limit := time.NewTicker(n.lim)
 		defer tick.Stop()
+		defer limit.Stop()
 		for {
 			select {
 			case <-ctx.Done():
@@ -123,6 +134,12 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 						ech <- err
 						runtime.Gosched()
 					}
+				}
+			case <-limit.C:
+				err := n.CreateIndex(n.dps)
+				if err != nil {
+					ech <- err
+					runtime.Gosched()
 				}
 			}
 		}

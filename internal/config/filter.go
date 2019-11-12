@@ -22,7 +22,7 @@ type EgressFilter struct {
 }
 
 func (e *EgressFilter) Bind() *EgressFilter {
-	if e.Client != nil{
+	if e.Client != nil {
 		e.Client.Bind()
 	}
 	return e

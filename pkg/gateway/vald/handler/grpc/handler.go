@@ -221,7 +221,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	if err != nil {
 		return nil, err
 	}
-	if s.backup!= nil{
+	if s.backup != nil {
 		err = s.backup.Register(ctx, &payload.Backup_MetaVector{
 			Uuid:   uuid,
 			Meta:   meta,
@@ -271,7 +271,7 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		return nil, err
 	}
 
-	if s.backup!= nil{
+	if s.backup != nil {
 		mvecs := new(payload.Backup_MetaVectors)
 		mvecs.Vectors = make([]*payload.Backup_MetaVector, 0, len(vecs.GetVectors()))
 		for _, vec := range vecs.GetVectors() {

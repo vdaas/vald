@@ -40,13 +40,24 @@ data:
         port: 8082
         mode: GRPC
         probe_wait_time: "3s"
-        http:
-          shutdown_duration: "5s"
-          handler_timeout: ""
-          idle_timeout: ""
-          read_header_timeout: ""
-          read_timeout: ""
-          write_timeout: ""
+        grpc:
+          max_receive_message_size: 0
+          max_send_message_size: 0
+          initial_window_size: 0
+          initial_conn_window_size: 0
+          keepalive:
+            max_idle_conn_idle: O
+            max_conn_age: ""
+            max_conn_age_grace: ""
+            time: ""
+            timeout: ""
+          write_buffer_size: 0
+          read_buffer_size: 0
+          connection_timeout: ""
+          max_header_list_size: 0
+          header_table_size: 0
+          interceptors: []
+        restart: true
       health_check_servers:
       - name: liveness
         host: 127.0.0.1
@@ -105,6 +116,9 @@ data:
         ca: /path/to/ca
     ngt:
       # index_path: /path/to/index
+      auto_index_limit: 10m
+      auto_index_check_duration: 1m
+      auto_index_length: 100
       dimension: 4096
       bulk_insert_chunk_size: 10
       distance_type: l2

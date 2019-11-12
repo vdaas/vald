@@ -32,7 +32,6 @@ type Data struct {
 
 	// Gateway represent agent gateway service configuration
 	Gateway *config.Gateway `json:"discoverer" yaml:"discoverer"`
-
 }
 
 func NewConfig(path string) (cfg *Data, err error) {

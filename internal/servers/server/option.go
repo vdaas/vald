@@ -236,3 +236,153 @@ func WithDisableRestart() Option {
 		s.enableRestart = false
 	}
 }
+
+func WithGRPCMaxReceiveMessageSize(size int) Option {
+	return func(s *server) {
+		if size > 0 {
+			s.grpc.opts = append(s.grpc.opts, grpc.MaxRecvMsgSize(size))
+		}
+	}
+}
+func WithGRPCMaxSendMessageSize(size int) Option {
+	return func(s *server) {
+		if size > 0 {
+			s.grpc.opts = append(s.grpc.opts, grpc.MaxSendMsgSize(size))
+		}
+	}
+}
+func WithGRPCInitialWindowSize(size int) Option {
+	return func(s *server) {
+		if size > 0 {
+			s.grpc.opts = append(s.grpc.opts, grpc.InitialWindowSize(int32(size)))
+		}
+	}
+}
+func WithGRPCInitialConnWindowSize(size int) Option {
+	return func(s *server) {
+		if size > 0 {
+			s.grpc.opts = append(s.grpc.opts, grpc.InitialConnWindowSize(int32(size)))
+		}
+	}
+}
+
+func WithGRPCKeepaliveMaxConnIdle(max string) Option {
+	return func(s *server) {
+		if len(max) == 0 {
+			return
+		}
+		d, err := timeutil.Parse(max)
+		if err != nil {
+			return
+		}
+		if s.grpc.keepAlive == nil {
+			s.grpc.keepAlive = new(grpcKeepAlive)
+		}
+		s.grpc.keepAlive.maxConnIdle = d
+	}
+}
+func WithGRPCKeepaliveMaxConnAge(max string) Option {
+	return func(s *server) {
+		if len(max) == 0 {
+			return
+		}
+		d, err := timeutil.Parse(max)
+		if err != nil {
+			return
+		}
+		if s.grpc.keepAlive == nil {
+			s.grpc.keepAlive = new(grpcKeepAlive)
+		}
+		s.grpc.keepAlive.maxConnAge = d
+	}
+}
+func WithGRPCKeepaliveMaxConnAgeGrace(max string) Option {
+	return func(s *server) {
+		if len(max) == 0 {
+			return
+		}
+		d, err := timeutil.Parse(max)
+		if err != nil {
+			return
+		}
+		if s.grpc.keepAlive == nil {
+			s.grpc.keepAlive = new(grpcKeepAlive)
+		}
+		s.grpc.keepAlive.maxConnAgeGrace = d
+	}
+}
+func WithGRPCKeepaliveTime(dur string) Option {
+	return func(s *server) {
+		if len(dur) == 0 {
+			return
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return
+		}
+		if s.grpc.keepAlive == nil {
+			s.grpc.keepAlive = new(grpcKeepAlive)
+		}
+		s.grpc.keepAlive.t = d
+	}
+}
+func WithGRPCKeepaliveTimeout(dur string) Option {
+	return func(s *server) {
+		if len(dur) == 0 {
+			return
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return
+		}
+		if s.grpc.keepAlive == nil {
+			s.grpc.keepAlive = new(grpcKeepAlive)
+		}
+		s.grpc.keepAlive.timeout = d
+	}
+}
+func WithGRPCWriteBufferSize(size int) Option {
+	return func(s *server) {
+		if size > 0 {
+			s.grpc.opts = append(s.grpc.opts, grpc.WriteBufferSize(size))
+		}
+	}
+}
+func WithGRPCReadBufferSize(size int) Option {
+	return func(s *server) {
+		if size > 0 {
+			s.grpc.opts = append(s.grpc.opts, grpc.ReadBufferSize(size))
+		}
+	}
+}
+func WithGRPCConnectionTimeout(to string) Option {
+	return func(s *server) {
+		if len(to) == 0 {
+			return
+		}
+		d, err := timeutil.Parse(to)
+		if err != nil {
+			return
+		}
+		s.grpc.opts = append(s.grpc.opts, grpc.ConnectionTimeout(d))
+	}
+}
+func WithGRPCMaxHeaderListSize(size int) Option {
+	return func(s *server) {
+		if size > 0 {
+			s.grpc.opts = append(s.grpc.opts, grpc.MaxHeaderListSize(uint32(size)))
+		}
+	}
+}
+func WithGRPCHeaderTableSize(size int) Option {
+	return func(s *server) {
+		if size > 0 {
+			s.grpc.opts = append(s.grpc.opts, grpc.HeaderTableSize(uint32(size)))
+		}
+	}
+}
+func WithGRPCInterceptors(name ...string) Option {
+	return func(s *server) {
+		// s.grpc.opts = append(s.grpc.opts, grpc.UnaryInterceptor(uint32(size)))
+	}
+}

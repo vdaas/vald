@@ -59,7 +59,7 @@ type GRPCClientKeepalive struct {
 	PermitWithoutStream bool   `json:"permit_without_stream" yaml:"permit_without_stream"`
 }
 
-func newGRPCClientConfig()*GRPCClient{
+func newGRPCClientConfig() *GRPCClient {
 	return &GRPCClient{
 		DialOption: &DialOption{
 			Insecure: true,
@@ -70,7 +70,7 @@ func newGRPCClientConfig()*GRPCClient{
 func (g *GRPCClient) Bind() *GRPCClient {
 	g.HealthCheckDuration = GetActualValue(g.HealthCheckDuration)
 
-	for i, addr := range g.Addrs{
+	for i, addr := range g.Addrs {
 		g.Addrs[i] = GetActualValue(addr)
 	}
 
@@ -121,7 +121,7 @@ func (g *GRPCClient) Opts() []grpc.Option {
 	opts = append(opts,
 		grpc.WithHealthCheckDuration(g.HealthCheckDuration),
 	)
-	if g.Addrs != nil && len(g.Addrs)!=0{
+	if g.Addrs != nil && len(g.Addrs) != 0 {
 		opts = append(opts,
 			grpc.WithAddrs(g.Addrs...),
 		)

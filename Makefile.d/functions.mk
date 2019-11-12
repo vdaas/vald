@@ -21,6 +21,10 @@ pink   = /bin/echo -e "\x1b[35m\#\# $1\x1b[0m"
 cyan   = /bin/echo -e "\x1b[36m\#\# $1\x1b[0m"
 
 define go-get
+	GO111MODULE=on go get -u $1
+endef
+
+define go-get-no-mod
 	GO111MODULE=off go get -u $1
 endef
 

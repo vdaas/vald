@@ -80,52 +80,52 @@ $(GOPATH)/src/github.com/googleapis/googleapis:
 		$(GOPATH)/src/github.com/googleapis/googleapis
 
 $(GOPATH)/src/google.golang.org/genproto:
-	$(call go-get, google.golang.org/genproto/...)
+	$(call go-get-no-mod, google.golang.org/genproto/...)
 
 $(GOPATH)/bin/protoc-gen-go:
-	$(call go-get, github.com/golang/protobuf/protoc-gen-go)
+	$(call go-get-no-mod, github.com/golang/protobuf/protoc-gen-go)
 
 $(GOPATH)/bin/protoc-gen-gogo:
-	$(call go-get, github.com/gogo/protobuf/protoc-gen-gogo)
+	$(call go-get-no-mod, github.com/gogo/protobuf/protoc-gen-gogo)
 
 $(GOPATH)/bin/protoc-gen-gofast:
-	$(call go-get, github.com/gogo/protobuf/protoc-gen-gofast)
+	$(call go-get-no-mod, github.com/gogo/protobuf/protoc-gen-gofast)
 
 $(GOPATH)/bin/protoc-gen-gogofast:
-	$(call go-get, github.com/gogo/protobuf/protoc-gen-gogofast)
+	$(call go-get-no-mod, github.com/gogo/protobuf/protoc-gen-gogofast)
 
 $(GOPATH)/bin/protoc-gen-gogofaster:
-	$(call go-get, github.com/gogo/protobuf/protoc-gen-gogofaster)
+	$(call go-get-no-mod, github.com/gogo/protobuf/protoc-gen-gogofaster)
 
 $(GOPATH)/bin/protoc-gen-gogoslick:
-	$(call go-get, github.com/gogo/protobuf/protoc-gen-gogoslick)
+	$(call go-get-no-mod, github.com/gogo/protobuf/protoc-gen-gogoslick)
 
 $(GOPATH)/bin/protoc-gen-grpc-gateway:
-	$(call go-get, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway)
+	$(call go-get-no-mod, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway)
 
 $(GOPATH)/bin/protoc-gen-swagger:
-	$(call go-get, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger)
+	$(call go-get-no-mod, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger)
 
 $(GOPATH)/bin/protoc-gen-gql:
-	$(call go-get, github.com/danielvladco/go-proto-gql/protoc-gen-gql)
+	$(call go-get-no-mod, github.com/danielvladco/go-proto-gql/protoc-gen-gql)
 
 $(GOPATH)/bin/protoc-gen-gogqlgen:
-	$(call go-get, github.com/danielvladco/go-proto-gql/protoc-gen-gogqlgen)
+	$(call go-get-no-mod, github.com/danielvladco/go-proto-gql/protoc-gen-gogqlgen)
 
 $(GOPATH)/bin/protoc-gen-gqlgencfg:
-	$(call go-get, github.com/danielvladco/go-proto-gql/protoc-gen-gqlgencfg)
+	$(call go-get-no-mod, github.com/danielvladco/go-proto-gql/protoc-gen-gqlgencfg)
 
 $(GOPATH)/bin/protoc-gen-validate:
-	$(call go-get, github.com/envoyproxy/protoc-gen-validate)
+	$(call go-get-no-mod, github.com/envoyproxy/protoc-gen-validate)
 
 $(GOPATH)/bin/prototool:
-	$(call go-get, github.com/uber/prototool/cmd/prototool)
+	$(call go-get-no-mod, github.com/uber/prototool/cmd/prototool)
 
 $(GOPATH)/bin/protoc-gen-doc:
-	$(call go-get, github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc)
+	$(call go-get-no-mod, github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc)
 
 $(GOPATH)/bin/swagger:
-	$(call go-get, github.com/go-swagger/go-swagger/cmd/swagger)
+	$(call go-get-no-mod, github.com/go-swagger/go-swagger/cmd/swagger)
 
 $(GOPATH)/bin/gqlgen:
 	$(call go-get, github.com/99designs/gqlgen)

@@ -28,11 +28,11 @@ type Meta struct {
 
 func (m *Meta) Bind() *Meta {
 	m.Host = GetActualValue(m.Host)
-	
+
 	m.Duration = GetActualValue(m.Duration)
 	if m.Client != nil {
 		m.Client.Bind()
-	}else{
+	} else {
 		m.Client = newGRPCClientConfig()
 	}
 	if len(m.Host) != 0 {

@@ -76,7 +76,7 @@ type GRPC struct {
 }
 
 type GRPCKeepalive struct {
-	MaxIdleConnIdle string `json:"max_idle_conn_idle" yaml:"max_idle_conn_idle"`
+	MaxConnIdle     string `json:"max_conn_idle" yaml:"max_conn_idle"`
 	MaxConnAge      string `json:"max_conn_age" yaml:"max_conn_age"`
 	MaxConnAgeGrace string `json:"max_conn_age_grace" yaml:"max_conn_age_grace"`
 	Time            string `json:"time" yaml:"time"`
@@ -134,17 +134,46 @@ func (s *Servers) Bind() *Servers {
 	return s
 }
 
+func (h *HTTP) Bind() *HTTP {
+	h.HandlerTimeout = GetActualValue(h.HandlerTimeout)
+	h.ShutdownDuration = GetActualValue(h.ShutdownDuration)
+	h.ReadHeaderTimeout = GetActualValue(h.ReadHeaderTimeout)
+	h.ReadTimeout = GetActualValue(h.ReadTimeout)
+	h.WriteTimeout = GetActualValue(h.WriteTimeout)
+	h.IdleTimeout = GetActualValue(h.IdleTimeout)
+	return h
+}
+
+func (g *GRPC) Bind() *GRPC {
+	g.ConnectionTimeout = GetActualValue(g.ConnectionTimeout)
+	for i, ic := range g.Interceptors {
+		g.Interceptors[i] = GetActualValue(ic)
+	}
+	return g
+}
+
+func (k *GRPCKeepalive) Bind() *GRPCKeepalive {
+	k.MaxConnIdle = GetActualValue(k.MaxConnIdle)
+	k.MaxConnAge = GetActualValue(k.MaxConnAge)
+	k.MaxConnAgeGrace = GetActualValue(k.MaxConnAgeGrace)
+	k.Time = GetActualValue(k.Time)
+	k.Timeout = GetActualValue(k.Timeout)
+	return k
+}
+
 func (s *Server) Bind() *Server {
 	s.Name = GetActualValue(s.Name)
 	s.Host = GetActualValue(s.Host)
 	s.Mode = GetActualValue(s.Mode)
 	s.ProbeWaitTime = GetActualValue(s.ProbeWaitTime)
-	s.HTTP.HandlerTimeout = GetActualValue(s.HTTP.HandlerTimeout)
-	s.HTTP.ShutdownDuration = GetActualValue(s.HTTP.ShutdownDuration)
-	s.HTTP.ReadHeaderTimeout = GetActualValue(s.HTTP.ReadHeaderTimeout)
-	s.HTTP.ReadTimeout = GetActualValue(s.HTTP.ReadTimeout)
-	s.HTTP.WriteTimeout = GetActualValue(s.HTTP.WriteTimeout)
-	s.HTTP.IdleTimeout = GetActualValue(s.HTTP.IdleTimeout)
+
+	if s.HTTP != nil {
+		s.HTTP.Bind()
+	}
+
+	if s.GRPC != nil {
+		s.GRPC.Bind()
+	}
 	return s
 }
 
@@ -159,18 +188,25 @@ func (s *Server) Opts() []server.Option {
 
 	switch mode := server.Mode(s.Mode); mode {
 	case server.REST, server.GQL:
-		opts = append(opts,
-			server.WithReadHeaderTimeout(s.HTTP.ReadHeaderTimeout),
-			server.WithReadTimeout(s.HTTP.ReadTimeout),
-			server.WithWriteTimeout(s.HTTP.WriteTimeout),
-			server.WithIdleTimeout(s.HTTP.IdleTimeout),
-			server.WithShutdownDuration(s.HTTP.ShutdownDuration),
-			server.WithServerMode(mode),
-		)
+		if s.HTTP != nil {
+			opts = append(opts,
+				server.WithReadHeaderTimeout(s.HTTP.ReadHeaderTimeout),
+				server.WithReadTimeout(s.HTTP.ReadTimeout),
+				server.WithWriteTimeout(s.HTTP.WriteTimeout),
+				server.WithIdleTimeout(s.HTTP.IdleTimeout),
+				server.WithShutdownDuration(s.HTTP.ShutdownDuration),
+				server.WithServerMode(mode),
+			)
+		}
 	case server.GRPC:
 		opts = append(opts,
 			server.WithServerMode(mode),
 		)
+		if s.GRPC != nil {
+			opts = append(opts,
+				server.WithServerMode(mode),
+			)
+		}
 	}
 
 	return opts
