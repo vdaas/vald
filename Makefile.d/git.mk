@@ -22,3 +22,4 @@ git/config/init:
 ## add configs for registering pre-defined git hooks
 git/hooks/init:
 	ln -sf ../../hack/git/hooks/pre-commit .git/hooks/pre-commit
+	chmod a+x .git/hooks/pre-commit
