@@ -72,8 +72,8 @@ func New(opts ...Option) (cl Controller, err error) {
 			cfg,
 			manager.Options{
 				// Scheme:             runtime.NewScheme(),
-				LeaderElection:     c.leaderElection,
-				MetricsBindAddress: c.merticsAddr,
+				// LeaderElection:     c.leaderElection,
+				// MetricsBindAddress: c.merticsAddr,
 			},
 		)
 		if err != nil {
