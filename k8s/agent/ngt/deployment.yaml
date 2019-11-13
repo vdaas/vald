@@ -38,7 +38,7 @@ spec:
         app: agent-ngt
     spec:
       containers:
-      - image: vdaas/vald-agent-ngt:latest
+      - image: vdaas/vald-agent-ngt:nightly
         imagePullPolicy: Always 
         # livenessProbe:
         #   httpGet:

@@ -68,7 +68,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	ps := &corev1.PodList{}
 
 	err = r.mgr.GetClient().List(context.TODO(), ps, client.InNamespace(req.Namespace), client.MatchingFields{
-		"items.[].status.phase": string(corev1.PodRunning),
+		"items[].status.phase": string(corev1.PodRunning),
 	})
 
 	if err != nil {
