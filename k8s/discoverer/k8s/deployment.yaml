@@ -38,7 +38,7 @@ spec:
         app: discoverer-k8s
     spec:
       containers:
-      - image: vdaas/vald-discoverer-k8s:latest
+      - image: vdaas/vald-discoverer-k8s:nightly
         imagePullPolicy: Always 
         # livenessProbe:
         #   httpGet:
