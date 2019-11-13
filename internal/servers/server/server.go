@@ -132,7 +132,7 @@ func New(opts ...Option) (Server, error) {
 		srv.eg = errgroup.Get()
 	}
 
-	if srv.lc == nil && (srv.port != 0 || srv.host != "") {
+	if srv.lc == nil{
 		srv.lc = &net.ListenConfig{
 			Control: tcp.Control,
 		}
