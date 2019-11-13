@@ -17,15 +17,15 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: agent-ngt
-  name: agent-ngt
+    app: discoverer-k8s
+  name: discoverer-k8s
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
   revisionHistoryLimit: 2
   selector:
     matchLabels:
-      app: agent-ngt
+      app: discoverer-k8s
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -35,10 +35,10 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app: agent-ngt
+        app: discoverer-k8s
     spec:
       containers:
-      - image: vdaas/vald-agent-ngt:latest
+      - image: vdaas/vald-discoverer-k8s:latest
         imagePullPolicy: Always 
         # livenessProbe:
         #   httpGet:
@@ -60,7 +60,7 @@ spec:
         #   successThreshold: 1
         #   failureThreshold: 2
         #   periodSeconds: 3
-        name: agent-ngt
+        name: discoverer-k8s
         ports:
         - containerPort: 3000
           name: liveness
@@ -71,9 +71,9 @@ spec:
         - containerPort: 8082
           name: grpc
           protocol: TCP
-        - containerPort: 8080
-          name: rest
-          protocol: TCP
+        # - containerPort: 8080
+        #   name: rest
+        #   protocol: TCP
         - containerPort: 6060
           name: pprof
           protocol: TCP
@@ -82,7 +82,7 @@ spec:
         terminationMessagePolicy: File
         volumeMounts:
         - mountPath: /etc/server/
-          name: agent-ngt-config
+          name: discoverer-k8s-config
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -91,6 +91,6 @@ spec:
       volumes:
       - configMap:
           defaultMode: 420
-          name: agent-ngt-config
-        name: agent-ngt-config
+          name: discoverer-k8s-config
+        name: discoverer-k8s-config
 status:
