@@ -69,7 +69,7 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 		}
 
 		if !l.servers[name].IsRunning() {
-			err := l.servers[name].ListenAndServe(ech)
+			err := l.servers[name].ListenAndServe(ctx, ech)
 			if err != nil {
 				ech <- err
 			}
@@ -78,7 +78,7 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 
 	for name := range l.servers {
 		if !l.servers[name].IsRunning() {
-			err := l.servers[name].ListenAndServe(ech)
+			err := l.servers[name].ListenAndServe(ctx, ech)
 			if err != nil {
 				ech <- err
 			}

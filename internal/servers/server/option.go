@@ -172,10 +172,10 @@ func WithIdleTimeout(dur string) Option {
 	}
 }
 
-func WithListener(l net.Listener) Option {
+func WithListenConfig(lc *net.ListenConfig) Option {
 	return func(s *server) {
-		if l != nil {
-			s.l = l
+		if lc != nil {
+			s.lc = lc
 		}
 	}
 }
