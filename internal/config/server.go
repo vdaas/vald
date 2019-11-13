@@ -64,14 +64,14 @@ type HTTP struct {
 type GRPC struct {
 	MaxReceiveMessageSize int            `json:"max_receive_message_size" yaml:"max_receive_message_size"`
 	MaxSendMessageSize    int            `json:"max_send_message_size" yaml:"max_send_message_size"`
-	InitialWindowSize     int32          `json:"initial_window_size" yaml:"initial_window_size"`
-	InitialConnWindowSize int32          `json:"initial_conn_window_size" yaml:"initial_conn_window_size"`
+	InitialWindowSize     int            `json:"initial_window_size" yaml:"initial_window_size"`
+	InitialConnWindowSize int            `json:"initial_conn_window_size" yaml:"initial_conn_window_size"`
 	Keepalive             *GRPCKeepalive `json:"keepalive" yaml:"keepalive"`
 	WriteBufferSize       int            `json:"write_buffer_size" yaml:"write_buffer_size"`
 	ReadBufferSize        int            `json:"read_buffer_size" yaml:"read_buffer_size"`
 	ConnectionTimeout     string         `json:"connection_timeout" yaml:"connection_timeout"`
-	MaxHeaderListSize     uint32         `json:"max_header_list_size" yaml:"max_header_list_size"`
-	HeaderTableSize       uint32         `json:"header_table_size" yaml:"header_table_size"`
+	MaxHeaderListSize     int            `json:"max_header_list_size" yaml:"max_header_list_size"`
+	HeaderTableSize       int            `json:"header_table_size" yaml:"header_table_size"`
 	Interceptors          []string       `json:"interceptors" yaml:"interceptors"`
 }
 
@@ -188,6 +188,9 @@ func (s *Server) Opts() []server.Option {
 
 	switch mode := server.Mode(s.Mode); mode {
 	case server.REST, server.GQL:
+		opts = append(opts,
+			server.WithServerMode(mode),
+		)
 		if s.HTTP != nil {
 			opts = append(opts,
 				server.WithReadHeaderTimeout(s.HTTP.ReadHeaderTimeout),
@@ -195,7 +198,6 @@ func (s *Server) Opts() []server.Option {
 				server.WithWriteTimeout(s.HTTP.WriteTimeout),
 				server.WithIdleTimeout(s.HTTP.IdleTimeout),
 				server.WithShutdownDuration(s.HTTP.ShutdownDuration),
-				server.WithServerMode(mode),
 			)
 		}
 	case server.GRPC:
@@ -205,7 +207,26 @@ func (s *Server) Opts() []server.Option {
 		if s.GRPC != nil {
 			opts = append(opts,
 				server.WithServerMode(mode),
+				server.WithGRPCMaxReceiveMessageSize(s.GRPC.MaxReceiveMessageSize),
+				server.WithGRPCMaxSendMessageSize(s.GRPC.MaxSendMessageSize),
+				server.WithGRPCInitialWindowSize(s.GRPC.InitialWindowSize),
+				server.WithGRPCInitialConnWindowSize(s.GRPC.InitialConnWindowSize),
+				server.WithGRPCWriteBufferSize(s.GRPC.WriteBufferSize),
+				server.WithGRPCReadBufferSize(s.GRPC.ReadBufferSize),
+				server.WithGRPCConnectionTimeout(s.GRPC.ConnectionTimeout),
+				server.WithGRPCMaxHeaderListSize(s.GRPC.MaxHeaderListSize),
+				server.WithGRPCHeaderTableSize(s.GRPC.HeaderTableSize),
+				server.WithGRPCInterceptors(s.GRPC.Interceptors...),
 			)
+			if s.GRPC.Keepalive != nil {
+				opts = append(opts,
+					server.WithGRPCKeepaliveMaxConnIdle(s.GRPC.Keepalive.MaxConnIdle),
+					server.WithGRPCKeepaliveMaxConnAge(s.GRPC.Keepalive.MaxConnAge),
+					server.WithGRPCKeepaliveMaxConnAgeGrace(s.GRPC.Keepalive.MaxConnAgeGrace),
+					server.WithGRPCKeepaliveTime(s.GRPC.Keepalive.Time),
+					server.WithGRPCKeepaliveTimeout(s.GRPC.Keepalive.Timeout),
+				)
+			}
 		}
 	}
 

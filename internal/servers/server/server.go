@@ -39,7 +39,7 @@ import (
 type Server interface {
 	Name() string
 	IsRunning() bool
-	ListenAndServe(chan<- error) error
+	ListenAndServe(context.Context, chan<- error) error
 	Shutdown(context.Context) error
 }
 
@@ -92,7 +92,7 @@ type server struct {
 		opts      []grpc.ServerOption
 		reg       func(*grpc.Server)
 	}
-	l             net.Listener
+	lc            *net.ListenConfig
 	tcfg          *tls.Config
 	pwt           time.Duration // ProbeWaitTime
 	sddur         time.Duration // Shutdown Duration
@@ -132,24 +132,10 @@ func New(opts ...Option) (Server, error) {
 		srv.eg = errgroup.Get()
 	}
 
-	if srv.l == nil && (srv.port != 0 || srv.host != "") {
-		var err error
-		srv.l, err = (&net.ListenConfig{
+	if srv.lc == nil && (srv.port != 0 || srv.host != "") {
+		srv.lc = &net.ListenConfig{
 			Control: tcp.Control,
-		}).Listen(context.Background(), "tcp",
-			fmt.Sprintf("%s:%d", srv.host, srv.port))
-
-		if err != nil {
-			return nil, err
 		}
-
-		if srv.tcfg != nil {
-			srv.l = tls.NewListener(srv.l, srv.tcfg)
-		}
-	}
-
-	if srv.l == nil {
-		return nil, errors.ErrInvalidAPIConfig
 	}
 
 	switch srv.mode {
@@ -222,7 +208,7 @@ func (s *server) Name() string {
 	return s.name
 }
 
-func (s *server) ListenAndServe(ech chan<- error) (err error) {
+func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err error) {
 	if !s.IsRunning() {
 		s.mu.Lock()
 		s.running = true
@@ -236,6 +222,19 @@ func (s *server) ListenAndServe(ech chan<- error) (err error) {
 			}
 		}
 
+		l, err := s.lc.Listen(ctx, "tcp", fmt.Sprintf("%s:%d", s.host, s.port))
+		if err != nil {
+			return err
+		}
+
+		if s.tcfg != nil {
+			l = tls.NewListener(l, s.tcfg)
+		}
+
+		if l == nil {
+			return errors.ErrInvalidAPIConfig
+		}
+
 		s.wg.Add(1)
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer s.wg.Done()
@@ -245,15 +244,17 @@ func (s *server) ListenAndServe(ech chan<- error) (err error) {
 					s.running = true
 					s.mu.Unlock()
 				}
+
 				log.Infof("%s server %s starting on %s:%d", s.mode.String(), s.name, s.host, s.port)
+
 				switch s.mode {
 				case REST, GQL:
-					err = s.http.starter(s.l)
+					err = s.http.starter(l)
 					if err != nil && err != http.ErrServerClosed {
 						ech <- err
 					}
 				case GRPC:
-					err = s.grpc.srv.Serve(s.l)
+					err = s.grpc.srv.Serve(l)
 					if err != nil && err != grpc.ErrServerStopped {
 						ech <- err
 					}

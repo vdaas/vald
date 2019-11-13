@@ -120,9 +120,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	ef := cfg.Gateway.EgressFilter
-	if  ef != nil && 
+	if ef != nil &&
 		ef.Client != nil &&
-		ef.Client.Addrs != nil && 
+		ef.Client.Addrs != nil &&
 		len(ef.Client.Addrs) != 0 {
 		filter, err = service.NewFilter(
 			service.WithFilterClient(
