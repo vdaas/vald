@@ -87,14 +87,12 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 
 	l.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
-		select {
-		case <-ctx.Done():
-			err = ctx.Err()
-			if err != nil && err != context.Canceled {
-				return err
-			}
-			return nil
+		<-ctx.Done()
+		err = ctx.Err()
+		if err != nil && err != context.Canceled {
+			return err
 		}
+		return nil
 	}))
 	return ech
 }
