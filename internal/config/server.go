@@ -114,7 +114,7 @@ func (s *Servers) Bind() *Servers {
 			sus = append(sus, GetActualValue(ss))
 		}
 	}
-	s.StartUpStrategy = sus[:len(sus)]
+	s.StartUpStrategy = sus
 
 	sds := make([]string, 0, len(s.ShutdownStrategy))
 	for _, ss := range s.ShutdownStrategy {
@@ -122,7 +122,7 @@ func (s *Servers) Bind() *Servers {
 			sds = append(sds, GetActualValue(ss))
 		}
 	}
-	s.ShutdownStrategy = sds[:len(sds)]
+	s.ShutdownStrategy = sds
 
 	if s.TLS != nil {
 		s.TLS.Bind()

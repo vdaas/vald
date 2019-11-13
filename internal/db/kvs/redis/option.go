@@ -44,7 +44,7 @@ func WithDialer(der func(ctx context.Context, addr, port string) (net.Conn, erro
 
 func WithAddrs(addrs ...string) Option {
 	return func(r *redisClient) error {
-		if addrs == nil || len(addrs) == 0 {
+		if len(addrs) == 0 {
 			return nil
 		}
 		if r.addrs == nil {

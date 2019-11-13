@@ -171,7 +171,7 @@ func (n *ngt) Search(vec []float64, size uint32, epsilon, radius float32) ([]mod
 		}
 	}
 
-	return ds[:len(ds)], errs
+	return ds, errs
 }
 
 func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) ([]model.Distance, error) {

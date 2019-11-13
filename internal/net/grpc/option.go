@@ -46,7 +46,6 @@ func WithAddrs(addrs ...string) Option {
 		} else {
 			g.addrs = append(g.addrs, addrs...)
 		}
-		return
 	}
 }
 
@@ -57,7 +56,6 @@ func WithHealthCheckDuration(dur string) Option {
 			d = time.Second
 		}
 		g.hcDur = d
-		return
 	}
 }
 
@@ -68,7 +66,6 @@ func WithDialOptions(opts ...grpc.DialOption) Option {
 		} else {
 			g.gopts = opts
 		}
-		return
 	}
 }
 
@@ -81,7 +78,6 @@ func WithMaxBackoffDelay(dur string) Option {
 		g.gopts = append(g.gopts,
 			grpc.WithBackoffMaxDelay(d),
 		)
-		return
 	}
 }
 
@@ -92,7 +88,6 @@ func WithCallOptions(opts ...grpc.CallOption) Option {
 		} else {
 			g.copts = opts
 		}
-		return
 	}
 }
 
@@ -101,7 +96,6 @@ func WithErrGroup(eg errgroup.Group) Option {
 		if eg != nil {
 			g.eg = eg
 		}
-		return
 	}
 }
 
@@ -110,7 +104,6 @@ func WithBackoff(bo backoff.Backoff) Option {
 		if bo != nil {
 			g.bo = bo
 		}
-		return
 	}
 }
 
@@ -119,7 +112,6 @@ func WithWaitForReady(flg bool) Option {
 		g.copts = append(g.copts,
 			grpc.WaitForReady(flg),
 		)
-		return
 	}
 }
 func WithMaxRetryRPCBufferSize(size int) Option {
@@ -127,7 +119,6 @@ func WithMaxRetryRPCBufferSize(size int) Option {
 		g.copts = append(g.copts,
 			grpc.MaxRetryRPCBufferSize(size),
 		)
-		return
 	}
 }
 func WithMaxRecvMsgSize(size int) Option {
@@ -135,7 +126,6 @@ func WithMaxRecvMsgSize(size int) Option {
 		g.copts = append(g.copts,
 			grpc.MaxCallRecvMsgSize(size),
 		)
-		return
 	}
 }
 func WithMaxSendMsgSize(size int) Option {
@@ -143,7 +133,6 @@ func WithMaxSendMsgSize(size int) Option {
 		g.copts = append(g.copts,
 			grpc.MaxCallSendMsgSize(size),
 		)
-		return
 	}
 }
 func WithWriteBufferSize(size int) Option {
@@ -151,7 +140,6 @@ func WithWriteBufferSize(size int) Option {
 		g.gopts = append(g.gopts,
 			grpc.WithWriteBufferSize(size),
 		)
-		return
 	}
 }
 func WithReadBufferSize(size int) Option {
@@ -159,7 +147,6 @@ func WithReadBufferSize(size int) Option {
 		g.gopts = append(g.gopts,
 			grpc.WithReadBufferSize(size),
 		)
-		return
 	}
 }
 func WithInitialWindowSize(size int) Option {
@@ -167,7 +154,6 @@ func WithInitialWindowSize(size int) Option {
 		g.gopts = append(g.gopts,
 			grpc.WithInitialWindowSize(int32(size)),
 		)
-		return
 	}
 }
 func WithInitialConnectionWindowSize(size int) Option {
@@ -175,7 +161,6 @@ func WithInitialConnectionWindowSize(size int) Option {
 		g.gopts = append(g.gopts,
 			grpc.WithInitialConnWindowSize(int32(size)),
 		)
-		return
 	}
 }
 func WithMaxMsgSize(size int) Option {
@@ -183,7 +168,6 @@ func WithMaxMsgSize(size int) Option {
 		g.gopts = append(g.gopts,
 			grpc.WithMaxMsgSize(size),
 		)
-		return
 	}
 }
 
@@ -194,7 +178,6 @@ func WithInsecure(flg bool) Option {
 				grpc.WithInsecure(),
 			)
 		}
-		return
 	}
 }
 
@@ -207,7 +190,6 @@ func WithDialTimeout(dur string) Option {
 		g.gopts = append(g.gopts,
 			grpc.WithTimeout(d),
 		)
-		return
 	}
 }
 
@@ -233,7 +215,6 @@ func WithKeepaliveParams(t, to string, permitWithoutStream bool) Option {
 				},
 			),
 		)
-		return
 	}
 }
 
@@ -246,6 +227,5 @@ func WithDialer(der tcp.Dialer) Option {
 				}),
 			)
 		}
-		return
 	}
 }

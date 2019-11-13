@@ -56,7 +56,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		backup   service.Backup
 	)
 
-	if addrs := cfg.Gateway.BackupManager.Client.Addrs; addrs == nil || len(addrs) == 0 {
+	if addrs := cfg.Gateway.BackupManager.Client.Addrs; len(addrs) == 0 {
 		return nil, errors.ErrInvalidBackupConfig
 	}
 
@@ -102,7 +102,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	if addrs := cfg.Gateway.Meta.Client.Addrs; addrs == nil || len(addrs) == 0 {
+	if addrs := cfg.Gateway.Meta.Client.Addrs; len(addrs) == 0 {
 		return nil, errors.ErrInvalidMetaDataConfig
 	}
 	metadata, err = service.NewMeta(

@@ -104,12 +104,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request)
 }
 
 func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_RequestMulti) (res *payload.Empty, err error) {
-	uuids := make([]string, 0, len(req.Uuid))
-	for _, uuid := range req.Uuid {
-		uuids = append(uuids, uuid)
-	}
-
-	err = s.mySQL.DeleteMetas(ctx, uuids...)
+	err = s.mySQL.DeleteMetas(ctx, req.GetUuid()...)
 	if err != nil {
 		return nil, err
 	}
