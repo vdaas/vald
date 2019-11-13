@@ -65,13 +65,17 @@ func New(opts ...Option) (cl Controller, err error) {
 		if err != nil {
 			return nil, err
 		}
+		if cfg == nil{
+			return nil, errors.ErrInvalidReconcilerConfig
+		}
 		c.mgr, err = manager.New(
 			cfg,
 			manager.Options{
 				Scheme:             runtime.NewScheme(),
 				LeaderElection:     c.leaderElection,
 				MetricsBindAddress: c.merticsAddr,
-			})
+			},
+		)
 		if err != nil {
 			return nil, err
 		}
