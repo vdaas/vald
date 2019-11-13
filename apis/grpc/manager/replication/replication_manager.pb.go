@@ -19,13 +19,12 @@ package replication
 import (
 	context "context"
 	fmt "fmt"
-	math "math"
-
 	_ "github.com/danielvladco/go-proto-gql/pb"
 	proto "github.com/gogo/protobuf/proto"
 	_ "github.com/vdaas/vald/apis/grpc/payload"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

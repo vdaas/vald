@@ -13,15 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
-metadata:
-  name: discoverer
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: discoverer
-subjects:
-- kind: ServiceAccount
-  name: default
-  namespace: default
+version: ""
+server_config: null
+mysql_config:
+  db: vald
+  host: localhost
+  port: 3306
+  user: vald-user
+  pass: _MYSQL_PASSWORD_
+  name: vald
+
