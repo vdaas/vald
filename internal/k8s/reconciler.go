@@ -65,7 +65,7 @@ func New(opts ...Option) (cl Controller, err error) {
 		if err != nil {
 			return nil, err
 		}
-		if cfg == nil{
+		if cfg == nil {
 			return nil, errors.ErrInvalidReconcilerConfig
 		}
 		c.mgr, err = manager.New(
