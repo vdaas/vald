@@ -72,6 +72,36 @@ func New(opts ...Option) (*Config, error) {
 	return c.cfg, nil
 }
 
+func NewClientConfig(opts ...Option) (*Config, error) {
+	var err error
+	c := new(credentials)
+
+	for _, opt := range append(defaultOpts, opts...) {
+		if err := opt(c); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
+	}
+
+	if c.ca != "" {
+		pool, err := NewX509CertPool(c.ca)
+		if err != nil {
+			return nil, err
+		}
+		c.cfg.RootCAs = pool
+	}
+
+	if c.cert != "" && c.key != "" {
+		c.cfg.Certificates = make([]tls.Certificate, 1)
+		c.cfg.Certificates[0], err = tls.LoadX509KeyPair(c.cert, c.key)
+		if err != nil {
+			return nil, err
+		}
+		c.cfg.BuildNameToCertificate()
+	}
+
+	return c.cfg, nil
+}
+
 // NewX509CertPool returns *x509.CertPool struct or error.
 // The CertPool will read the certificate from the path, and append the content to the system certificate pool, and return.
 func NewX509CertPool(path string) (*x509.CertPool, error) {

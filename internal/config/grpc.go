@@ -178,8 +178,8 @@ func (g *GRPCClient) Opts() []grpc.Option {
 	}
 
 	if g.TLS != nil && g.TLS.Enabled {
-		cfg, err := tls.New(g.TLS.Opts()...)
-		if err != nil {
+		cfg, err := tls.NewClientConfig(g.TLS.Opts()...)
+		if err == nil && cfg != nil{
 			opts = append(opts,
 				grpc.WithTLSConfig(cfg),
 			)
