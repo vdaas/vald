@@ -36,7 +36,12 @@ const (
 
 func main() {
 	var err error
-	defer safety.RecoverWithError(err)
+	defer func() {
+		err = safety.RecoverWithError(err)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	if err = runner.Do(
 		context.Background(),

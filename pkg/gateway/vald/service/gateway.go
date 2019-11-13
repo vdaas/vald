@@ -20,7 +20,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"io"
 	"reflect"
 	"runtime"
 	"sort"
@@ -62,13 +61,9 @@ type gateway struct {
 	eg         errgroup.Group
 }
 
-type client struct {
-	closer io.Closer
-}
-
 func NewGateway(opts ...GWOption) (gw Gateway, err error) {
 	g := new(gateway)
-	for _, opt := range opts {
+	for _, opt := range append(defaultGWOpts, opts...) {
 		if err := opt(g); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

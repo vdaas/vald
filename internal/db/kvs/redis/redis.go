@@ -71,7 +71,7 @@ type redisClient struct {
 
 func New(ctx context.Context, opts ...Option) (Redis, error) {
 	r := new(redisClient)
-	for _, opt := range opts {
+	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(r); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

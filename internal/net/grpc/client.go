@@ -127,7 +127,6 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 				})
 			}
 		}
-		return nil
 	}))
 	return ech
 }

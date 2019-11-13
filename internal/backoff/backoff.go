@@ -31,7 +31,6 @@ import (
 type backoff struct {
 	wg                    sync.WaitGroup
 	backoffFactor         float64
-	randFactor            float64
 	initialDuration       float64
 	jittedInitialDuration float64
 	jitterLimit           float64
