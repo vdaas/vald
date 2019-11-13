@@ -21,6 +21,7 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 type GRPCClient struct {
@@ -176,8 +177,13 @@ func (g *GRPCClient) Opts() []grpc.Option {
 		}
 	}
 
-	if g.TLS != nil {
-
+	if g.TLS != nil && g.TLS.Enabled {
+		cfg, err := tls.New(g.TLS.Opts()...)
+		if err != nil {
+			opts = append(opts,
+				grpc.WithTLSConfig(cfg),
+			)
+		}
 	}
 
 	return opts

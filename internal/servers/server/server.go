@@ -33,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	keepalive "google.golang.org/grpc/keepalive"
 )
 
@@ -184,6 +185,12 @@ func New(opts ...Option) (Server, error) {
 					Time:                  srv.grpc.keepAlive.t,
 					Timeout:               srv.grpc.keepAlive.timeout,
 				}),
+			)
+		}
+
+		if srv.tcfg != nil {
+			srv.grpc.opts = append(srv.grpc.opts,
+				grpc.Creds(credentials.NewTLS(srv.tcfg)),
 			)
 		}
 

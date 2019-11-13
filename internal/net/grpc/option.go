@@ -19,6 +19,7 @@ package grpc
 
 import (
 	"context"
+	"crypto/tls"
 	"net"
 	"time"
 
@@ -27,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/timeutil"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
 )
 
@@ -225,6 +227,16 @@ func WithDialer(der tcp.Dialer) Option {
 				grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
 					return der.GetDialer()(ctx, "tcp", addr)
 				}),
+			)
+		}
+	}
+}
+
+func WithTLSConfig(cfg *tls.Config) Option {
+	return func(g *gRPCClient) {
+		if cfg != nil {
+			g.gopts = append(g.gopts,
+				grpc.WithTransportCredentials(credentials.NewTLS(cfg)),
 			)
 		}
 	}
