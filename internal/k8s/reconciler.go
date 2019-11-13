@@ -71,7 +71,7 @@ func New(opts ...Option) (cl Controller, err error) {
 		c.mgr, err = manager.New(
 			cfg,
 			manager.Options{
-				Scheme:             runtime.NewScheme(),
+				// Scheme:             runtime.NewScheme(),
 				LeaderElection:     c.leaderElection,
 				MetricsBindAddress: c.merticsAddr,
 			},
