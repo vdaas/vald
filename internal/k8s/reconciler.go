@@ -54,7 +54,7 @@ type controller struct {
 func New(opts ...Option) (cl Controller, err error) {
 	c := new(controller)
 
-	for _, opt := range opts {
+	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -95,7 +95,6 @@ func New(opts ...Option) (cl Controller, err error) {
 func (c *controller) Start(ctx context.Context) <-chan error {
 	ech := make(chan error, 1)
 
-	// TODO fieldのerrgroupをつかう
 	c.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
 		err := c.mgr.Start(ctx.Done())
