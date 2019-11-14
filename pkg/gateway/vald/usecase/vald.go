@@ -194,6 +194,7 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) <-chan error {
 	ech := make(chan error)
+	log.Info("start vald gateway")
 	bech := r.backup.Start(ctx)
 	log.Info("backup started")
 	fech := r.filter.Start(ctx)
