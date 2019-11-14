@@ -125,6 +125,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 					if conn == nil ||
 						conn.GetState() == connectivity.Shutdown ||
 						conn.GetState() == connectivity.TransientFailure {
+						log.Infof("reconnect to %s", addr)
 						err = g.Disconnect(addr)
 						if err != nil {
 							ech <- err
