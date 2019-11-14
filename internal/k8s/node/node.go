@@ -55,7 +55,7 @@ type Node struct {
 func New(opts ...Option) NodeWatcher {
 	r := new(reconciler)
 
-	for _, opt := range opts {
+	for _, opt := range append(defaultOpts, opts...) {
 		opt(r)
 	}
 
@@ -127,7 +127,7 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil {
 		r.mgr = mgr
 	}
-	corev1.AddToScheme(r.mgr.GetScheme())
+	_ = corev1.AddToScheme(r.mgr.GetScheme())
 	return r
 }
 

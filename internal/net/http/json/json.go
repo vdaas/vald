@@ -126,6 +126,6 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request,
 	w.Header().Add(rest.ContentType, rest.ProblemJSON)
 	w.Header().Add(rest.ContentType, rest.CharsetUTF8)
 	w.WriteHeader(code)
-	w.Write(res)
+	_, _ = w.Write(res)
 	return nil
 }

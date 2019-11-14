@@ -53,7 +53,7 @@ func (f *filter) Start(ctx context.Context) <-chan error {
 
 func (f *filter) FilterSearch(ctx context.Context, res *payload.Search_Response) (*payload.Search_Response, error) {
 	var rerr error
-	f.client.Range(ctx,
+	_ = f.client.Range(ctx,
 		func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			r, err := egress.NewEgressFilterClient(conn).Filter(ctx, res, copts...)
 			if err != nil {

@@ -97,7 +97,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
 		service.WithAgentOptions(agentOpts...),
 	)
-	agentClient.Close()
+	_ = agentClient.Close()
 	if err != nil {
 		return nil, err
 	}

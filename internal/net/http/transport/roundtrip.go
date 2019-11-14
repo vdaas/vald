@@ -66,8 +66,8 @@ func (e *ert) roundTrip(req *http.Request) (res *http.Response, err error) {
 		return res, nil
 	}
 	if res != nil {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
+		_, _ = io.Copy(ioutil.Discard, res.Body)
+		_ = res.Body.Close()
 	}
 	switch res.StatusCode {
 	case http.StatusTooManyRequests,

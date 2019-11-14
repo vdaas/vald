@@ -97,9 +97,11 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 
 	g.eg.Go(safety.RecoverFunc(func() (err error) {
 		tick := time.NewTicker(g.hcDur)
-		defer close(ech)
-		defer g.Close()
-		defer tick.Stop()
+		defer func() {
+			close(ech)
+			_ = g.Close()
+			tick.Stop()
+		}()
 		for {
 			select {
 			case <-ctx.Done():
@@ -233,7 +235,9 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string) error {
 		if conn == nil ||
 			conn.GetState() == connectivity.Shutdown ||
 			conn.GetState() == connectivity.TransientFailure {
-			g.Disconnect(addr)
+			if err := g.Disconnect(addr); err != nil {
+				return err
+			}
 		} else {
 			return nil
 		}
@@ -266,7 +270,9 @@ func (g *gRPCClient) Disconnect(addr string) error {
 func (g *gRPCClient) Close() error {
 	g.conns.Range(func(addr string, conn *grpc.ClientConn) bool {
 		if conn != nil {
-			g.Disconnect(addr)
+			if err := g.Disconnect(addr); err != nil {
+				return false
+			}
 		}
 		return true
 	})

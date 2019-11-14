@@ -17,7 +17,7 @@
 // Package redis provides implementation of Go API for redis interface
 package cassandra
 
-type Option func(*client) error
+type Option func(*client)
 
 var (
 	defaultOpts = []Option{}

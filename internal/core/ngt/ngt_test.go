@@ -27,8 +27,7 @@ import (
 )
 
 const (
-	index    = "./assets/index"
-	poolSize = 2
+	index = "./assets/index"
 )
 
 func TestCreate(t *testing.T) {
@@ -36,7 +35,7 @@ func TestCreate(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unexpected error: TestCreate(%v)", err)
 	}
-	defer os.RemoveAll(tmpdir)
+	defer func() { _ = os.RemoveAll(tmpdir) }()
 
 	ngt, err := New(
 		WithIndexPath(tmpdir),
@@ -67,7 +66,7 @@ func TestInsert(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unexpected error: TestInsert(%v)", err)
 	}
-	defer os.RemoveAll(tmpdir)
+	defer func() { _ = os.RemoveAll(tmpdir) }()
 
 	ngt, err := New(
 		WithIndexPath(tmpdir),
@@ -108,7 +107,7 @@ func TestInsertCommit(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unexpected error: TestInsertCommit(%v)", err)
 	}
-	defer os.RemoveAll(tmpdir)
+	defer func() { _ = os.RemoveAll(tmpdir) }()
 
 	ngt, err := New(
 		WithIndexPath(tmpdir),
@@ -154,7 +153,7 @@ func TestBulkInsert(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unexpected error: TestBulkInsert(%v)", err)
 	}
-	defer os.RemoveAll(tmpdir)
+	defer func() { _ = os.RemoveAll(tmpdir) }()
 
 	ngt, err := New(
 		WithIndexPath(tmpdir),
@@ -200,7 +199,7 @@ func TestBulkInsertCommit(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unexpected error: TestBulkInsert(%v)", err)
 	}
-	defer os.RemoveAll(tmpdir)
+	defer func() { _ = os.RemoveAll(tmpdir) }()
 
 	ngt, err := New(
 		WithIndexPath(tmpdir),
@@ -273,7 +272,7 @@ func TestRemove(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unexpected error: TestRemove(%v)", err)
 	}
-	defer os.RemoveAll(tmpdir)
+	defer func() { _ = os.RemoveAll(tmpdir) }()
 
 	if err := exec.Command("cp", "-r", index, tmpdir).Run(); err != nil {
 		t.Errorf("Unexpected error: TestRemove(%v)", err)

@@ -29,5 +29,11 @@ type client struct {
 }
 
 func New(ctx context.Context, opts ...Option) (Cassandra, error) {
+	c := new(client)
+
+	for _, opt := range append(defaultOpts, opts...) {
+		opt(c)
+	}
+
 	return nil, nil
 }

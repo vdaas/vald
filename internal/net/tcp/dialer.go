@@ -156,7 +156,7 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (
 				return conn, nil
 			}
 			if conn != nil {
-				conn.Close()
+				_ = conn.Close()
 			}
 		}
 		d.cache.Delete(addr[:sep])

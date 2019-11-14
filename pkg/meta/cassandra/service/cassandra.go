@@ -21,8 +21,6 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/internal/config"
-	"github.com/vdaas/vald/internal/db/nosql/cassandra"
-	"github.com/vdaas/vald/internal/net/tcp"
 )
 
 type Cassandra interface {
@@ -41,9 +39,9 @@ type Cassandra interface {
 }
 
 type client struct {
-	db              cassandra.Cassandra
-	opts            []cassandra.Option
-	topts           []tcp.DialerOption
+	// db              cassandra.Cassandra
+	// opts            []cassandra.Option
+	// topts           []tcp.DialerOption
 	kvPrefix        string // TODO cassandraの場合はprefixではなくtable 変えてもいいかもね
 	vkPrefix        string
 	prefixDelimiter string

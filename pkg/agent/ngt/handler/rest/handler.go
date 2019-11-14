@@ -129,8 +129,8 @@ func (h *handler) CreateIndex(w http.ResponseWriter, r *http.Request) (code int,
 }
 
 func (h *handler) SaveIndex(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	io.Copy(ioutil.Discard, r.Body)
-	r.Body.Close()
+	_, _ = io.Copy(ioutil.Discard, r.Body)
+	_ = r.Body.Close()
 	_, err = h.agent.SaveIndex(r.Context(), nil)
 	return
 }

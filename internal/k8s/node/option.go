@@ -19,36 +19,32 @@ package node
 
 import "sigs.k8s.io/controller-runtime/pkg/manager"
 
-type Option func(*reconciler) error
+type Option func(*reconciler)
 
 var (
 	defaultOpts = []Option{}
 )
 
 func WithControllerName(name string) Option {
-	return func(r *reconciler) error {
+	return func(r *reconciler) {
 		r.name = name
-		return nil
 	}
 }
 
 func WithManager(mgr manager.Manager) Option {
-	return func(r *reconciler) error {
+	return func(r *reconciler) {
 		r.mgr = mgr
-		return nil
 	}
 }
 
 func WithOnErrorFunc(f func(err error)) Option {
-	return func(r *reconciler) error {
+	return func(r *reconciler) {
 		r.onError = f
-		return nil
 	}
 }
 
 func WithOnReconcileFunc(f func(nodes []Node)) Option {
-	return func(r *reconciler) error {
+	return func(r *reconciler) {
 		r.onReconcile = f
-		return nil
 	}
 }

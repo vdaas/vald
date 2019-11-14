@@ -79,7 +79,9 @@ func (m *mySQLClient) Open(ctx context.Context) error {
 
 func (m *mySQLClient) Close(ctx context.Context) error {
 	if m.connected.Load().(bool) {
-		m.session.Close()
+		if err := m.session.Close(); err != nil {
+			return err
+		}
 		m.connected.Store(false)
 	}
 	return nil

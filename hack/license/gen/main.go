@@ -66,7 +66,7 @@ func main() {
 	}
 	for _, path := range dirwalk(os.Args[1]) {
 		fmt.Println(path)
-		readAndRewrite(path)
+		_ = readAndRewrite(path)
 	}
 }
 func dirwalk(dir string) []string {
@@ -137,7 +137,7 @@ func readAndRewrite(path string) error {
 	}
 	fi, err := f.Stat()
 	if err != nil {
-		f.Close()
+		_ = f.Close()
 		return errors.Errorf("filepath %s, could not open", path)
 	}
 	buf := bytes.NewBuffer(make([]byte, 0, fi.Size()))
@@ -148,7 +148,7 @@ func readAndRewrite(path string) error {
 		Escape:   sharpEscape,
 	}
 	if fi.Name() == "LICENSE" {
-		license.Execute(buf, d)
+		_ = license.Execute(buf, d)
 	} else {
 		switch filepath.Ext(path) {
 		case ".go", ".proto":
@@ -172,7 +172,7 @@ func readAndRewrite(path string) error {
 				continue
 			} else if !bf {
 				once.Do(func() {
-					apache.Execute(buf, d)
+					_ = apache.Execute(buf, d)
 				})
 				lf = false
 			}
@@ -193,12 +193,15 @@ func readAndRewrite(path string) error {
 	}
 	f, err = os.Create(path)
 	if err != nil {
-		f.Close()
+		_ = f.Close()
 		return errors.Errorf("filepath %s, could not open", path)
 	}
-	f.WriteString(strings.Replace(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"), "2019-2019", "2019", 1))
-	f.Close()
-	return nil
+	_, err = f.WriteString(strings.Replace(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"), "2019-2019", "2019", 1))
+	if err != nil {
+		_ = f.Close()
+		return err
+	}
+	return f.Close()
 }
 
 var (

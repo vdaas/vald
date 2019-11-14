@@ -57,6 +57,6 @@ func checkPrefixAndSuffix(str, pref, suf string) bool {
 
 func ToRawYaml(data interface{}) string {
 	buf := bytes.NewBuffer(nil)
-	yaml.NewEncoder(buf).Encode(data)
+	_ = yaml.NewEncoder(buf).Encode(data)
 	return buf.String()
 }

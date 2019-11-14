@@ -29,7 +29,7 @@ func TestNextDuration(t *testing.T) {
 	log.Init(log.DefaultGlg())
 	t.Run("Text NextDuration", func(t *testing.T) {
 		bo := New()
-		bo.Do(context.Background(), func() (interface{}, error) {
+		_, _ = bo.Do(context.Background(), func() (interface{}, error) {
 			return nil, errors.New("what a fuck")
 		})
 	})
