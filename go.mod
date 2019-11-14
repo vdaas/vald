@@ -21,6 +21,7 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/getsentry/raven-go v0.2.0 // indirect
 	github.com/go-redis/redis/v7 v7.0.0-beta.4
+	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gocraft/dbr/v2 v2.6.3
 	github.com/gogo/protobuf v1.3.1
 	github.com/google/gofuzz v1.0.0
@@ -33,7 +34,7 @@ require (
 	github.com/kpango/glg v1.4.6
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
-	golang.org/x/sys v0.0.0-20191112214154-59a1497f0cea
+	golang.org/x/sys v0.0.0-20191113165036-4c7a9d0fe056
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	google.golang.org/genproto v0.0.0-20191108220845-16a3f7862a1a
 	google.golang.org/grpc v1.25.1
