@@ -37,7 +37,7 @@ data:
           write_timeout: 1s
       - name: manager-backup-mysql-grpc
         host: 127.0.0.1
-        port: 8082
+        port: 8081
         mode: GRPC
         probe_wait_time: "3s"
         grpc:
@@ -115,10 +115,10 @@ data:
         key: /path/to/key
         ca: /path/to/ca
     mysql_config:
-      db: vald
-      host: localhost
+      db: mysql
+      host: mysql.default.svc.cluster.local
       port: 3306
-      user: vald-user
-      pass: _MYSQL_PASSWORD_
+      user: root
+      pass: password
       name: vald
 

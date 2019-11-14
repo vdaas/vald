@@ -37,7 +37,7 @@ data:
           write_timeout: 1s
       - name: meta-grpc
         host: 127.0.0.1
-        port: 8082
+        port: 8081
         mode: GRPC
         probe_wait_time: "3s"
         grpc:
@@ -157,4 +157,5 @@ data:
           ca: /path/to/ca
       kv_prefix: ""
       vk_prefix: ""
-      prefix_delimiter: "
+      prefix_delimiter: ""
+

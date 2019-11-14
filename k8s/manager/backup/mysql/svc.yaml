@@ -16,13 +16,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis
-  labels:
-    app: redis
+  name: manager-backup-mysql
 spec:
   ports:
-  - port: 6379
-    targetPort: 6379
+  - port: 8081
+    name: grpc
+  - port: 8080
+    name: rest
+  - port: 6060
+    name: pprof
   selector:
-    app: redis
+    app: manager-backup-mysql
   clusterIP: None

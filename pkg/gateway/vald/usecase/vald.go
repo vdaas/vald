@@ -161,8 +161,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
 			return []server.Option{
 				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-					// vald.RegisterValdServer(srv, g)
-					vald.RegisterValdServer(srv, nil)
+					vald.RegisterValdServer(srv, v)
 				}),
 				server.WithPreStopFunction(func() error {
 					// TODO notify another gateway and scheduler

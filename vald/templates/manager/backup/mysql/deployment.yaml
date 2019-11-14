@@ -68,7 +68,7 @@ spec:
         - containerPort: 3001
           name: readiness
           protocol: TCP
-        - containerPort: 8082
+        - containerPort: 8081
           name: grpc
           protocol: TCP
         - containerPort: 8080

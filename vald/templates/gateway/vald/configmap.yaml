@@ -37,7 +37,7 @@ data:
           write_timeout: 1s
       - name: gateway-grpc
         host: 127.0.0.1
-        port: 8082
+        port: 8081
         mode: GRPC
         probe_wait_time: "3s"
         grpc:
