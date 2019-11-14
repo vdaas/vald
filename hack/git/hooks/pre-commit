@@ -1,10 +1,12 @@
 #!/bin/sh
 
-# goimports
-find ./ -type f -regex ".*\.go" | xargs goimports -w
+if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then
+    # goimports
+    find ./ -type f -regex ".*\.go" | xargs goimports -w
 
-# golangci-lint
-golangci-lint run --enable-all --disable=gochecknoglobals --exclude-use-default=false ./...
+    # golangci-lint
+    golangci-lint run --enable-all --disable=gochecknoglobals --exclude-use-default=false ./...
 
-# go build
-go build ./...
+    # go build
+    go build ./...
+fi
