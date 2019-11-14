@@ -97,10 +97,11 @@ func (g *group) Go(f func() error) {
 		g.wg.Add(1)
 		go func() {
 			defer g.wg.Done()
-			if g.enableLimitation.Load().(bool) {
+			limited := g.enableLimitation.Load().(bool)
+			if limited {
 				select {
-				case g.limitation <- struct{}{}:
 				case <-g.egctx.Done():
+				case g.limitation <- struct{}{}:
 					return
 				}
 			}
@@ -110,7 +111,7 @@ func (g *group) Go(f func() error) {
 				g.mu.Unlock()
 				g.doCancel()
 			}
-			if g.enableLimitation.Load().(bool) {
+			if limited {
 				select {
 				case <-g.limitation:
 				case <-g.egctx.Done():

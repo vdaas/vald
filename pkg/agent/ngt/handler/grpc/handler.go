@@ -189,11 +189,7 @@ func (s *server) StreamRemove(stream agent.Agent_StreamRemoveServer) error {
 
 func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res *payload.Empty, err error) {
 	res = new(payload.Empty)
-	uuids := make([]string, 0, len(ids.GetIds()))
-	for _, id := range ids.GetIds() {
-		uuids = append(uuids, id)
-	}
-	err = s.ngt.DeleteMultiple(uuids...)
+	err = s.ngt.DeleteMultiple(ids.GetIds()...)
 	if err != nil {
 		return nil, err
 	}

@@ -54,7 +54,7 @@ type mySQLClient struct {
 
 func New(opts ...Option) (MySQL, error) {
 	m := new(mySQLClient)
-	for _, opt := range opts {
+	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(m); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

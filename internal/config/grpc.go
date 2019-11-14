@@ -21,6 +21,7 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 type GRPCClient struct {
@@ -127,8 +128,8 @@ func (g *GRPCClient) Opts() []grpc.Option {
 		)
 	}
 	if g.Backoff != nil &&
-		len(g.Backoff.InitialDuration)!=0 &&
-		g.Backoff.RetryCount> 2{
+		len(g.Backoff.InitialDuration) != 0 &&
+		g.Backoff.RetryCount > 2 {
 		opts = append(opts,
 			grpc.WithBackoff(
 				backoff.New(g.Backoff.Opts()...),
@@ -157,7 +158,7 @@ func (g *GRPCClient) Opts() []grpc.Option {
 		)
 
 		if g.DialOption.Dialer != nil &&
-			len(g.DialOption.Dialer.Dialer.Timeout)!=0{
+			len(g.DialOption.Dialer.Dialer.Timeout) != 0 {
 			opts = append(opts,
 				grpc.WithDialer(
 					tcp.NewDialer(g.DialOption.Dialer.Opts()...),
@@ -176,8 +177,13 @@ func (g *GRPCClient) Opts() []grpc.Option {
 		}
 	}
 
-	if g.TLS != nil {
-
+	if g.TLS != nil && g.TLS.Enabled {
+		cfg, err := tls.NewClientConfig(g.TLS.Opts()...)
+		if err == nil && cfg != nil {
+			opts = append(opts,
+				grpc.WithTLSConfig(cfg),
+			)
+		}
 	}
 
 	return opts

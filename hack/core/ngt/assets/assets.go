@@ -98,5 +98,5 @@ func CreateIndex(indexName string, loader func() ([][]float64, error), opts ...n
 	for _, v := range vectors {
 		n.Insert(v)
 	}
-	return n.CreateAndSaveIndex(runtime.NumCPU())
+	return n.CreateAndSaveIndex(uint32(runtime.NumCPU()))
 }

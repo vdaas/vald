@@ -67,9 +67,7 @@ func New(opts ...Option) PodWatcher {
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
 	ps := &corev1.PodList{}
 
-	err = r.mgr.GetClient().List(context.TODO(), ps, client.InNamespace(req.Namespace), client.MatchingFields{
-		"status.phase": string(corev1.PodRunning),
-	})
+	err = r.mgr.GetClient().List(context.TODO(), ps, client.InNamespace(req.Namespace))
 
 	if err != nil {
 		if r.onError != nil {
@@ -95,34 +93,36 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	)
 
 	for _, pod := range ps.Items {
-		cpuUsage = 0.0
-		memUsage = 0.0
-		for _, container := range pod.Spec.Containers {
-			request := container.Resources.Requests
-			limit := container.Resources.Limits
-			cpuUsage += (float64(request.Cpu().Value()) /
-				float64(limit.Cpu().Value())) * 100.0
-			memUsage += (float64(request.Memory().Value()) /
-				float64(limit.Memory().Value())) * 100.0
+		if pod.Status.Phase == corev1.PodRunning {
+			cpuUsage = 0.0
+			memUsage = 0.0
+			for _, container := range pod.Spec.Containers {
+				request := container.Resources.Requests
+				limit := container.Resources.Limits
+				cpuUsage += (float64(request.Cpu().Value()) /
+					float64(limit.Cpu().Value())) * 100.0
+				memUsage += (float64(request.Memory().Value()) /
+					float64(limit.Memory().Value())) * 100.0
+			}
+
+			cpuUsage = cpuUsage / float64(len(pod.Spec.Containers))
+			memUsage = memUsage / float64(len(pod.Spec.Containers))
+
+			// pod.GetObjectMeta().GetLabels()["app"]
+			podMetaName := pod.GetObjectMeta().GetName()
+
+			if _, ok := pods[podMetaName]; !ok {
+				pods[podMetaName] = make([]Pod, 0, len(ps.Items))
+			}
+
+			pods[podMetaName] = append(pods[podMetaName], Pod{
+				Name:     pod.GetName(),
+				NodeName: pod.Spec.NodeName,
+				IP:       pod.Status.PodIP,
+				CPU:      cpuUsage,
+				Mem:      memUsage,
+			})
 		}
-
-		cpuUsage = cpuUsage / float64(len(pod.Spec.Containers))
-		memUsage = memUsage / float64(len(pod.Spec.Containers))
-
-		// pod.GetObjectMeta().GetLabels()["app"]
-		podMetaName := pod.GetObjectMeta().GetName()
-
-		if _, ok := pods[podMetaName]; !ok {
-			pods[podMetaName] = make([]Pod, 0, len(ps.Items))
-		}
-
-		pods[podMetaName] = append(pods[podMetaName], Pod{
-			Name:     pod.GetName(),
-			NodeName: pod.Spec.NodeName,
-			IP:       pod.Status.PodIP,
-			CPU:      cpuUsage,
-			Mem:      memUsage,
-		})
 	}
 
 	if r.onReconcile != nil {

@@ -167,7 +167,9 @@ func Run(ctx context.Context, run Runner) (err error) {
 			for _, ierr := range errs {
 				if ierr != nil {
 					msg := ierr.Error()
-					if msg != "" && !strings.Contains(msg, http.ErrServerClosed.Error()) {
+					if msg != "" &&
+						!strings.Contains(msg, http.ErrServerClosed.Error()) &&
+						!strings.Contains(msg, context.Canceled.Error()) {
 						err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", msg, emap[msg])
 					}
 				}

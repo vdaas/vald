@@ -15,3 +15,7 @@
 //
 
 package main
+
+func main() {
+
+}

@@ -26,17 +26,13 @@ import (
 	"github.com/vdaas/vald/internal/servers"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/tls"
-	"google.golang.org/grpc"
 )
 
 type Server servers.Listener
 
 type srvs struct {
-	// rest    http.Handler
-	rest func(cfg *config.Server) []server.Option
-	gql  func(cfg *config.Server) []server.Option
-	// gql     http.Handler
-	// grpc    func(*grpc.Server)
+	rest    func(cfg *config.Server) []server.Option
+	gql     func(cfg *config.Server) []server.Option
 	grpc    func(cfg *config.Server) []server.Option
 	cfg     *config.Servers
 	pstartf map[string]func() error
@@ -104,7 +100,6 @@ func (s *srvs) setupAPIs(cfg *tls.Config) ([]servers.Option, error) {
 	for _, sc := range s.cfg.Servers {
 		switch mode := server.Mode(sc.Mode); mode {
 		case server.REST:
-
 			srv, err := server.New(
 				append(append(sc.Opts(), s.rest(sc)...),
 					server.WithTLSConfig(cfg),
@@ -114,18 +109,8 @@ func (s *srvs) setupAPIs(cfg *tls.Config) ([]servers.Option, error) {
 			}
 			opts = append(opts, servers.WithServer(srv))
 		case server.GRPC:
-			gopts := make([]grpc.ServerOption, 0, len(sc.GRPC.Interceptors))
-			for _, ic := range sc.GRPC.Interceptors {
-				switch strings.ToLower(ic) {
-				case "valid", "validate", "validation":
-					// TODO create interceptor in internal
-					// TODO add grpc interceptor in internal
-				}
-			}
 			srv, err := server.New(
 				append(append(sc.Opts(), s.grpc(sc)...),
-					// server.WithGRPCRegistFunc(s.grpc),
-					server.WithGRPCOption(gopts[:len(gopts)]...),
 					server.WithTLSConfig(cfg),
 				)...)
 			if err != nil {

@@ -47,7 +47,7 @@ type meta struct {
 
 func NewMeta(opts ...MetaOption) (mi Meta, err error) {
 	m := new(meta)
-	for _, opt := range opts {
+	for _, opt := range append(defaultMetaOpts, opts...) {
 		if err = opt(m); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

@@ -69,7 +69,7 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 		}
 
 		if !l.servers[name].IsRunning() {
-			err := l.servers[name].ListenAndServe(ech)
+			err := l.servers[name].ListenAndServe(ctx, ech)
 			if err != nil {
 				ech <- err
 			}
@@ -78,7 +78,7 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 
 	for name := range l.servers {
 		if !l.servers[name].IsRunning() {
-			err := l.servers[name].ListenAndServe(ech)
+			err := l.servers[name].ListenAndServe(ctx, ech)
 			if err != nil {
 				ech <- err
 			}
@@ -87,16 +87,12 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 
 	l.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
-		for {
-			select {
-			case <-ctx.Done():
-				err = ctx.Err()
-				if err != nil && err != context.Canceled {
-					return err
-				}
-				return nil
-			}
+		<-ctx.Done()
+		err = ctx.Err()
+		if err != nil && err != context.Canceled {
+			return err
 		}
+		return nil
 	}))
 	return ech
 }
