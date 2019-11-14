@@ -89,12 +89,13 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 
 	conns := 0
 	for _, addr := range g.addrs {
-		conn, err := grpc.DialContext(ctx, addr,
-			append(g.gopts, grpc.WithBlock())...)
+		log.Debugf("connecting to %s", addr)
+		conn, err := grpc.DialContext(ctx, addr, g.gopts...)
+		// append(g.gopts, grpc.WithBlock())...)
 		if err != nil {
 			ech <- err
 		} else {
-			log.Infof("connected to %s", addr)
+			log.Debugf("connected to %s", addr)
 			g.conns.Store(addr, conn)
 			conns++
 		}
