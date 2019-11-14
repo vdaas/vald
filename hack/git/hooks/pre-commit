@@ -14,11 +14,13 @@
 # limitations under the License.
 #
 
-# goimports
-find ./ -type f -regex ".*\.go" | xargs goimports -w
+if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then
+    # goimports
+    find ./ -type f -regex ".*\.go" | xargs goimports -w
 
-# golangci-lint
-golangci-lint run --fast --disable=gochecknoglobals --fix --color always -j 16 --skip-dirs apis/grpc --exclude-use-default=false ./...
+    # golangci-lint
+    golangci-lint run --fast --disable=gochecknoglobals --fix --color always -j 16 --skip-dirs apis/grpc --exclude-use-default=false ./...
 
-# go build
-go build ./...
+    # go build
+    go build ./...
+fi
