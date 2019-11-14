@@ -24,7 +24,7 @@ data:
     server_config:
       servers:
       - name: agent-rest
-        host: 127.0.0.1
+        host: 0.0.0.0
         port: 8080
         mode: REST
         probe_wait_time: 3s
@@ -36,7 +36,7 @@ data:
           read_timeout: 1s
           write_timeout: 1s
       - name: agent-grpc
-        host: 127.0.0.1
+        host: 0.0.0.0
         port: 8082
         mode: GRPC
         probe_wait_time: "3s"
@@ -60,7 +60,7 @@ data:
         restart: true
       health_check_servers:
       - name: liveness
-        host: 127.0.0.1
+        host: 0.0.0.0
         port: 3000
         mode: ""
         probe_wait_time: "3s"
@@ -72,7 +72,7 @@ data:
           read_timeout: ""
           write_timeout: ""
       - name: readiness
-        host: 127.0.0.1
+        host: 0.0.0.0
         port: 3001
         mode: ""
         probe_wait_time: "3s"
@@ -85,7 +85,7 @@ data:
           write_timeout: ""
       metrics_servers:
       - name: pprof
-        host: 127.0.0.1
+        host: 0.0.0.0
         port: 6060
         mode: REST
         probe_wait_time: 3s

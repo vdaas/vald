@@ -23,7 +23,6 @@ import (
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
 	igrpc "github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -188,29 +187,23 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 }
 
 func (r *run) PreStart(ctx context.Context) error {
-	log.Debug("prestart")
 	return nil
 }
 
 func (r *run) Start(ctx context.Context) <-chan error {
 	ech := make(chan error)
 	var bech, fech, mech, gech, sech <-chan error
-	log.Debug("start vald gateway")
 	if r.backup != nil {
 		bech = r.backup.Start(ctx)
-		log.Debug("backup started")
 	}
 	if r.filter != nil {
 		fech = r.filter.Start(ctx)
-		log.Debug("filter started")
 	}
 	if r.metadata != nil {
 		mech = r.metadata.Start(ctx)
-		log.Debug("metadata started")
 	}
 	if r.gateway != nil {
 		gech = r.gateway.Start(ctx)
-		log.Debug("gateway started")
 	}
 	sech = r.server.ListenAndServe(ctx)
 	r.eg.Go(safety.RecoverFunc(func() error {

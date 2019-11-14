@@ -36,7 +36,7 @@ require (
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
 	golang.org/x/sys v0.0.0-20191113165036-4c7a9d0fe056
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
-	google.golang.org/genproto v0.0.0-20191108220845-16a3f7862a1a
+	google.golang.org/genproto v0.0.0-20191114150713-6bbd007550de
 	google.golang.org/grpc v1.25.1
 	gopkg.in/yaml.v2 v2.2.5
 	k8s.io/api v0.0.0-20191016110246-af539daaa43a

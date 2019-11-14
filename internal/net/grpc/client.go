@@ -81,7 +81,6 @@ func New(opts ...Option) (c Client) {
 
 func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 	if g.addrs == nil || len(g.addrs) == 0 {
-		log.Debug(g)
 		return nil
 	}
 
@@ -89,20 +88,17 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 
 	conns := 0
 	for _, addr := range g.addrs {
-		log.Debugf("connecting to %s", addr)
-		conn, err := grpc.DialContext(ctx, addr, g.gopts...)
-		// append(g.gopts, grpc.WithBlock())...)
+		conn, err := grpc.DialContext(ctx, addr,
+			append(g.gopts, grpc.WithBlock())...)
 		if err != nil {
 			ech <- err
 		} else {
-			log.Debugf("connected to %s", addr)
 			g.conns.Store(addr, conn)
 			conns++
 		}
 	}
 
 	if conns == 0 {
-		log.Debug("connection not found")
 		return ech
 	}
 
