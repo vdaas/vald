@@ -176,9 +176,13 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
-		eg:     eg,
-		cfg:    cfg,
-		server: srv,
+		eg:       eg,
+		cfg:      cfg,
+		server:   srv,
+		filter:   filter,
+		gateway:  gateway,
+		metadata: metadata,
+		backup:   backup,
 	}, nil
 }
 
