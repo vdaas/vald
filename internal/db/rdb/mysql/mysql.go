@@ -22,6 +22,7 @@ import (
 	"reflect"
 	"sync/atomic"
 
+	_ "github.com/go-sql-driver/mysql"
 	dbr "github.com/gocraft/dbr/v2"
 	"github.com/vdaas/vald/internal/errors"
 )
