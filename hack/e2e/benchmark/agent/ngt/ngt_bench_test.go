@@ -388,7 +388,9 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 			ctx, cancel := context.WithCancel(rctx)
 			defer cancel()
 
-			if strings.Contains(address, "localhost") {
+			if strings.Contains(address, "localhost") ||
+				strings.Contains(address, "127.0.0.1") ||
+				strings.Contains(address, "0.0.0.0") {
 				internal.StartAgentNGTServer(b, ctx, data)
 			}
 
