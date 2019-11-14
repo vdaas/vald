@@ -23,6 +23,7 @@ import (
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	igrpc "github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -187,15 +188,20 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 }
 
 func (r *run) PreStart(ctx context.Context) error {
+	log.Info("prestart")
 	return nil
 }
 
 func (r *run) Start(ctx context.Context) <-chan error {
 	ech := make(chan error)
 	bech := r.backup.Start(ctx)
+	log.Info("backup started")
 	fech := r.filter.Start(ctx)
-	gech := r.gateway.Start(ctx)
+	log.Info("filter started")
 	mech := r.metadata.Start(ctx)
+	log.Info("metadata started")
+	gech := r.gateway.Start(ctx)
+	log.Info("gateway started")
 	sech := r.server.ListenAndServe(ctx)
 	r.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
