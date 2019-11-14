@@ -24,3 +24,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: vald
+  namespace: default

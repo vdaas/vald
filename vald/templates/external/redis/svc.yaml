@@ -25,3 +25,4 @@ spec:
     targetPort: 6379
   selector:
     app: redis
+  clusterIP: None

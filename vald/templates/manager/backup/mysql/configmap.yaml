@@ -115,10 +115,10 @@ data:
         key: /path/to/key
         ca: /path/to/ca
     mysql_config:
-      db: vald
-      host: localhost
+      db: mysql
+      host: mysql.default.svc.cluster.local
       port: 3306
-      user: vald-user
-      pass: _MYSQL_PASSWORD_
+      user: root
+      pass: password
       name: vald
 

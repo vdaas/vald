@@ -18,7 +18,7 @@ kind: ConfigMap
 metadata:
   name: mysql-config
 data:
-  init.sql: |
+  initdb.sql: |
     ---
     DROP SCHEMA IF EXISTS `vald` ;
     CREATE SCHEMA IF NOT EXISTS `vald` DEFAULT CHARACTER SET utf8 ;

@@ -115,11 +115,11 @@ data:
         key: /path/to/key
         ca: /path/to/ca
     gateway:
-      agent_port: 8080
+      agent_port: 8081
       agent_name: agent-ngt
       discoverer:
         host: discoverer-k8s.default.svc.cluster.local
-        port: 8080
+        port: 8081
         duration: "2s"
         discover_client:
           addrs: []
@@ -220,8 +220,8 @@ data:
             key: /path/to/key
             ca: /path/to/ca
       meta:
-        host: meta.default.svc.cluster.local
-        port: 8080
+        host: meta-redis.default.svc.cluster.local
+        port: 8081
         duration: "2s"
         client:
           addrs: []
@@ -273,8 +273,8 @@ data:
             key: /path/to/key
             ca: /path/to/ca
       backup:
-        host: backup.default.svc.cluster.local
-        port: 8080
+        host: manager-backup-mysql.default.svc.cluster.local
+        port: 8081
         duration: "2s"
         client:
           addrs: []
