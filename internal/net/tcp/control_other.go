@@ -1,7 +1,7 @@
 // +build wasm,js,!windows,!linux,!darwin
 
 //
-// Copyright (C) 2019 kpango (Yusuke Kato)
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
