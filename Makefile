@@ -29,6 +29,7 @@ NGT_VERSION := $(shell cat versions/NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
 
 GO_VERSION := $(shell cat versions/GO_VERSION)
+GOPATH := $(shell go env GOPATH)
 
 MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
 
