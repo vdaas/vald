@@ -21,7 +21,7 @@ package vald;
 option go_package = "github.com/vdaas/vald/apis/grpc/vald";
 option java_multiple_files = true;
 option java_package = "org.vdaas.vald";
-option java_outer_classname = "Vald";
+option java_outer_classname = "ValdApi";
 
 import "payload.proto";
 import "google/api/annotations.proto";
