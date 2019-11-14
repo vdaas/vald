@@ -50,7 +50,7 @@ func NewConfig(path string) (cfg *Data, err error) {
 		cfg.Gateway = cfg.Gateway.Bind()
 	}
 
-	log.Info(config.ToRawYaml(cfg.Gateway))
+	log.Debug(config.ToRawYaml(cfg.Gateway))
 
 	return cfg, nil
 }
