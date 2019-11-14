@@ -19,6 +19,7 @@ package config
 
 import (
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/log"
 )
 
 // Config represent a application setting data content (config.yaml).
@@ -48,6 +49,8 @@ func NewConfig(path string) (cfg *Data, err error) {
 	if cfg.Gateway != nil {
 		cfg.Gateway = cfg.Gateway.Bind()
 	}
+
+	log.Info(config.ToRawYaml(cfg.Gateway))
 
 	return cfg, nil
 }
