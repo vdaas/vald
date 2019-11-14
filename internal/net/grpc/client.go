@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
@@ -91,6 +92,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 		if err != nil {
 			ech <- err
 		} else {
+			log.Infof("connected to %s", addr)
 			g.conns.Store(addr, conn)
 		}
 	}
