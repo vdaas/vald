@@ -188,22 +188,31 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 }
 
 func (r *run) PreStart(ctx context.Context) error {
-	log.Info("prestart")
+	log.Debug("prestart")
 	return nil
 }
 
 func (r *run) Start(ctx context.Context) <-chan error {
 	ech := make(chan error)
-	log.Info("start vald gateway")
-	bech := r.backup.Start(ctx)
-	log.Info("backup started")
-	fech := r.filter.Start(ctx)
-	log.Info("filter started")
-	mech := r.metadata.Start(ctx)
-	log.Info("metadata started")
-	gech := r.gateway.Start(ctx)
-	log.Info("gateway started")
-	sech := r.server.ListenAndServe(ctx)
+	var bech, fech, mech, gech, sech <-chan error
+	log.Debug("start vald gateway")
+	if r.backup != nil {
+		bech = r.backup.Start(ctx)
+		log.Debug("backup started")
+	}
+	if r.filter != nil {
+		fech = r.filter.Start(ctx)
+		log.Debug("filter started")
+	}
+	if r.metadata != nil {
+		mech = r.metadata.Start(ctx)
+		log.Debug("metadata started")
+	}
+	if r.gateway != nil {
+		gech = r.gateway.Start(ctx)
+		log.Debug("gateway started")
+	}
+	sech = r.server.ListenAndServe(ctx)
 	r.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
 		for {
