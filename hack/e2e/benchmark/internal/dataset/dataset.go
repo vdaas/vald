@@ -16,6 +16,9 @@
 package dataset
 
 import (
+	"fmt"
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -44,7 +47,7 @@ const (
 )
 
 var (
-	Data = map[string]func(testing.TB) Dataset{
+	data = map[string]func(testing.TB) Dataset{
 		"fashion-mnist": func(tb testing.TB) Dataset {
 			tb.Helper()
 			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "fashion-mnist-784-euclidean.hdf5")
@@ -217,6 +220,35 @@ var (
 		},
 	}
 )
+
+func identity(dim int) func(tb testing.TB) Dataset {
+	return func(tb testing.TB) Dataset {
+		tb.Helper()
+		ids := CreateIDs(dim)
+		train := make([][]float64, dim)
+		for i := range train {
+			train[i] = make([]float64, dim)
+			train[i][i] = 1
+		}
+		return &dataset{
+			train:        train,
+			query:        train,
+			ids:          ids,
+			name:         fmt.Sprintf("identity-%d", dim),
+			dimension:    dim,
+			distanceType: "l2",
+			objectType:   "float",
+		}
+	}
+}
+
+func Data(name string) func(testing.TB) Dataset {
+	if strings.HasPrefix(name, "identity-") {
+		i, _ := strconv.Atoi(name[10:])
+		return identity(i)
+	}
+	return data[name]
+}
 
 func (d *dataset) Train() [][]float64 {
 	return d.train

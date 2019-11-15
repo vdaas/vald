@@ -23,6 +23,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vdaas/vald/apis/grpc/vald"
+
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/hack/e2e/benchmark/internal/dataset"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -137,4 +139,14 @@ func NewAgentClient(tb testing.TB, ctx context.Context, address string) agent.Ag
 		return nil
 	}
 	return agent.NewAgentClient(conn)
+}
+
+func NewValdClient(tb testing.TB, ctx context.Context, address string) vald.ValdClient {
+	tb.Helper()
+	conn, err := grpc.DialContext(ctx, address, grpc.WithInsecure())
+	if err != nil {
+		tb.Errorf("failed to connect %s \t %s", address, err.Error())
+		return nil
+	}
+	return vald.NewValdClient(conn)
 }
