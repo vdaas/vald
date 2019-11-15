@@ -143,7 +143,7 @@ func NewAgentClient(tb testing.TB, ctx context.Context, address string) agent.Ag
 
 func NewValdClient(tb testing.TB, ctx context.Context, address string) vald.ValdClient {
 	tb.Helper()
-	conn, err := grpc.DialContext(ctx, address, grpc.WithInsecure())
+	conn, err := grpc.DialContext(ctx, address, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		tb.Errorf("failed to connect %s \t %s", address, err.Error())
 		return nil

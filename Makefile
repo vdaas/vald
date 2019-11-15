@@ -55,6 +55,9 @@ PBDOCS = $(PROTOS:apis/proto/%.proto=apis/docs/%.md)
 BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5")
 BENCH_DATASETS = $(BENCH_DATASET_MD5S:$(BENCH_DATASET_MD5_DIR)/%.md5=$(BENCH_DATASET_HDF5_DIR)/%.hdf5)
 
+DATASET_ARGS ?= identity-128
+ADDRESS_ARGS ?= ""
+
 PROTO_PATHS = \
 	$(PROTODIRS:%=./apis/proto/%) \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf/src \

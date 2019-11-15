@@ -13,21 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-$(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
-	@$(call green, "downloading datasets for benchmark...")
+$(BENCH_DATASET_ARGS): $(BENCH_DATASET_MD5S)
+	@$(call green, "downloading DATASET_ARGS for benchmark...")
 	curl -fsSL -o $@ http://ann-benchmarks.com/$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
 	(cd $(BENCH_DATASET_BASE_DIR); \
 	    md5sum -c $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5_DIR_NAME)/%.md5,$@) || \
 	    (rm -f $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_HDF5_DIR_NAME)/%.hdf5,$@) && exit 1))
 
-.PHONY: bench/datasets
-## fetch datasets for benchmark
-bench/datasets: $(BENCH_DATASETS)
+.PHONY: bench/DATASET_ARGS
+## fetch DATASET_ARGS for benchmark
+bench/DATASET_ARGS: $(BENCH_DATASET_ARGS)
 
-.PHONY: bench/datasets/clean
-## clean datasets for benchmark
-bench/datasets/clean:
-	rm -rf $(BENCH_DATASETS)
+.PHONY: bench/DATASET_ARGS/clean
+## clean DATASET_ARGS for benchmark
+bench/DATASET_ARGS/clean:
+	rm -rf $(BENCH_DATASET_ARGS)
 
 .PHONY: bench/create-index
 bench/create-index:
@@ -69,30 +69,24 @@ bench/agent: \
 
 .PHONY: bench/agent/stream
 bench/agent/stream: \
-	ngt/install \
-	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
-	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	ngt/install
 	$(call bench-pprof,pprof/agent/ngt,agent,gRPCStream,stream,\
 		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
-		 -dataset=fashion-mnist)
+		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/agent/sequential/grpc
 bench/agent/sequential/grpc: \
-	ngt/install \
-	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
-	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	ngt/install
 	$(call bench-pprof,pprof/agent/ngt,agent,gRPCSequential,sequential-grpc,\
 		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
-		 -dataset=fashion-mnist)
+		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/agent/sequential/rest
 bench/agent/sequential/rest: \
-	ngt/install \
-	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
-	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	ngt/install
 	$(call bench-pprof,pprof/agent/ngt,agent,RESTSequential,sequential-rest,\
 		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
-		 -dataset=fashion-mnist)
+		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/ngtd
 ## run benchmarks for NGTD
@@ -103,37 +97,31 @@ bench/ngtd: \
 
 .PHONY: bench/ngtd/stream
 bench/ngtd/stream: \
-	ngt/install \
-	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
-	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	ngt/install
 	$(call bench-pprof,pprof/external/ngtd,ngtd,gRPCStream,stream,\
 		./hack/e2e/benchmark/external/ngtd/ngtd_bench_test.go \
-		 -dataset=fashion-mnist)
+		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/ngtd/sequential/grpc
 bench/ngtd/sequential/grpc: \
-	ngt/install \
-	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
-	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	ngt/install
 	$(call bench-pprof,pprof/external/ngtd,ngtd,gRPCSequential,sequential-grpc,\
 		./hack/e2e/benchmark/external/ngtd/ngtd_bench_test.go \
-		 -dataset=fashion-mnist)
+		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/ngtd/sequential/rest
 bench/ngtd/sequential/rest: \
-	ngt/install \
-	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
-	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	ngt/install
 	$(call bench-pprof,pprof/external/ngtd,ngtd,RESTSequential,sequential-rest,\
 		./hack/e2e/benchmark/external/ngtd/ngtd_bench_test.go \
-		 -dataset=fashion-mnist)
+		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/gateway/sequential
 bench/gateway/sequential: \
 	ngt/install
 	$(call bench-pprof,pprof/gateway/vald,vald,Sequential,sequential,\
 		./hack/e2e/benchmark/gateway/vald/vald_bench_test.go \
-		 -dataset=identity-429 -address=vdaas.org:8081)
+		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: profile
 ## execute profile
