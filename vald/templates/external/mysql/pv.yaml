@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{- if .Values.mysql.enabled }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -27,3 +28,4 @@ spec:
     - ReadWriteOnce
   hostPath:
     path: "/mnt/data"
+{{- end }}

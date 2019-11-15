@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{- if .Values.redis.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -38,7 +39,7 @@ spec:
     spec:
       containers:
       - image: redis:latest
-        imagePullPolicy: Always 
+        imagePullPolicy: Always
         name: redis
         ports:
         - containerPort: 6379
@@ -55,3 +56,4 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
+{{- end }}

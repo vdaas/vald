@@ -18,7 +18,25 @@ gateway:
   name: vald-gateway
   minReplicas: 3
   maxReplicas: 9
-  image: vdaas/vald-gateway:latest
+  image:
+    repository: vdaas/vald-gateway
+    tag: nightly
+    pullPolicy: Always
+  servers:
+    prefix: gateway
+    rest:
+      enabled: true
+    grpc:
+      enabled: true
+    liveness:
+      enabled: false
+    readiness:
+      enabled: false
+    metrics:
+      enabled: false
+    full_shutdown_duration: 600s
+    tls:
+      enabled: false
   filter:
     egress:
       - ""
@@ -29,28 +47,136 @@ agent:
   name: vald-agent-ngt
   minReplicas: 20
   maxReplicas: 300
-  image: vdaas/vald-agent-ngt:latest
+  image:
+    repository: vdaas/vald-agent-ngt
+    tag: nightly
+    pullPolicy: Always
+  servers:
+    prefix: agent
+    rest:
+      enabled: true
+    grpc:
+      enabled: true
+    liveness:
+      enabled: false
+    readiness:
+      enabled: false
+    metrics:
+      enabled: false
+    full_shutdown_duration: 600s
+    tls:
+      enabled: false
+  ngt:
+    # index_path: /path/to/index
+    auto_index_limit: 10m
+    auto_index_check_duration: 1m
+    auto_index_length: 100
+    dimension: 4096
+    bulk_insert_chunk_size: 10
+    distance_type: l2
+    object_type: float
+    creation_edge_size: 20
+    search_edge_size: 10
+    enable_in_memory_mode: true
 
 discoverer:
   name: vald-discoverer-k8s
   minReplicas: 1
   maxReplicas: 2
-  image: vdaas/vald-discoverer-k8s:latest
+  image:
+    repository: vdaas/vald-discoverer-k8s
+    tag: nightly
+    pullPolicy: Always
+  servers:
+    prefix: discoverer
+    rest:
+      enabled: true
+    grpc:
+      enabled: true
+    liveness:
+      enabled: false
+    readiness:
+      enabled: false
+    metrics:
+      enabled: false
+    full_shutdown_duration: 600s
+    tls:
+      enabled: false
 
 backupManager:
-  name: vald-backup-manager-mysql
+  name: vald-manager-backup-mysql
   minReplicas: 3
   maxReplicas: 15
-  image: vdaas/vald-backup-manager-mysql:latest
+  image:
+    repository: vdaas/vald-manager-backup-mysql
+    tag: nightly
+    pullPolicy: Always
+  servers:
+    prefix: backup-manager
+    rest:
+      enabled: true
+    grpc:
+      enabled: true
+    liveness:
+      enabled: false
+    readiness:
+      enabled: false
+    metrics:
+      enabled: false
+    full_shutdown_duration: 600s
+    tls:
+      enabled: false
 
 indexManager:
   name: vald-index-manager-ngt
   minReplicas: 1
   maxReplicas: 2
-  image: vdaas/vald-index-manager-ngt:latest
+  image:
+    repository: vdaas/vald-index-manager-ngt
+    tag: nightly
+    pullPolicy: Always
+  servers:
+    prefix: index-manager
+    rest:
+      enabled: true
+    grpc:
+      enabled: true
+    liveness:
+      enabled: false
+    readiness:
+      enabled: false
+    metrics:
+      enabled: false
+    full_shutdown_duration: 600s
+    tls:
+      enabled: false
 
 meta:
   name: vald-meta-redis
   minReplicas: 2
   maxReplicas: 10
-  image: vdaas/vald-meta-redis:latest
+  image:
+    repository: vdaas/vald-meta-redis
+    tag: nightly
+    pullPolicy: Always
+  servers:
+    prefix: meta
+    rest:
+      enabled: true
+    grpc:
+      enabled: true
+    liveness:
+      enabled: false
+    readiness:
+      enabled: false
+    metrics:
+      enabled: false
+    full_shutdown_duration: 600s
+    tls:
+      enabled: false
+
+mysql:
+  enabled: false
+
+redis:
+  enabled: false

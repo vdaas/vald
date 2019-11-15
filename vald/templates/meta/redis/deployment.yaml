@@ -16,16 +16,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: {{.Values.meta.name }}
   labels:
-    app: meta-redis
-  name: meta-redis
+    app: {{ .Values.meta.name }}
 spec:
   progressDeadlineSeconds: 600
-  replicas: 1
+  replicas: {{ .Values.meta.minReplicas }}
   revisionHistoryLimit: 2
   selector:
     matchLabels:
-      app: meta-redis
+      app: {{ .Values.meta.name }}
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -35,62 +35,63 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app: meta-redis
+        app: {{ .Values.meta.name }}
     spec:
       containers:
-      - image: vdaas/vald-meta-redis:nightly
-        imagePullPolicy: Always 
-        # livenessProbe:
-        #   httpGet:
-        #     path: /liveness
-        #     port: liveness
-        #     scheme: HTTP
-        #   initialDelaySeconds: 5
-        #   timeoutSeconds: 2
-        #   successThreshold: 1
-        #   failureThreshold: 2
-        #   periodSeconds: 3
-        # readinessProbe:
-        #   httpGet:
-        #     path: /readiness
-        #     port: readiness
-        #     scheme: HTTP
-        #   initialDelaySeconds: 10
-        #   timeoutSeconds: 2
-        #   successThreshold: 1
-        #   failureThreshold: 2
-        #   periodSeconds: 3
-        name: meta-redis
-        ports:
-        - containerPort: 3000
-          name: liveness
-          protocol: TCP
-        - containerPort: 3001
-          name: readiness
-          protocol: TCP
-        - containerPort: 8081
-          name: grpc
-          protocol: TCP
-        - containerPort: 8080
-          name: rest
-          protocol: TCP
-        - containerPort: 6060
-          name: pprof
-          protocol: TCP
-        resources: {}
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /etc/server/
-          name: meta-redis-config
+        - name: {{ .Values.meta.name }}
+          image: "{{ .Values.meta.image.repository }}:{{ .Values.meta.image.tag }}"
+          imagePullPolicy: {{ .Values.meta.image.pullPolicy }}
+          # livenessProbe:
+          #   httpGet:
+          #     path: /liveness
+          #     port: liveness
+          #     scheme: HTTP
+          #   initialDelaySeconds: 5
+          #   timeoutSeconds: 2
+          #   successThreshold: 1
+          #   failureThreshold: 2
+          #   periodSeconds: 3
+          # readinessProbe:
+          #   httpGet:
+          #     path: /readiness
+          #     port: readiness
+          #     scheme: HTTP
+          #   initialDelaySeconds: 10
+          #   timeoutSeconds: 2
+          #   successThreshold: 1
+          #   failureThreshold: 2
+          #   periodSeconds: 3
+          ports:
+            - name: liveness
+              containerPort: 3000
+              protocol: TCP
+            - name: readiness
+              containerPort: 3001
+              protocol: TCP
+            - name: rest
+              containerPort: 8080
+              protocol: TCP
+            - name: grpc
+              containerPort: 8082
+              protocol: TCP
+            - name: pprof
+              containerPort: 6060
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.meta.resources | nindent 12 }}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - name: {{ .Values.meta.name }}-config
+              mountPath: /etc/server/
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
       volumes:
-      - configMap:
+      - name: {{ .Values.meta.name }}-config
+        configMap:
           defaultMode: 420
-          name: meta-redis-config
-        name: meta-redis-config
+          name: {{ .Values.meta.name }}-config
 status:

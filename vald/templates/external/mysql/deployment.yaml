@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{- if .Values.mysql.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -35,7 +36,7 @@ spec:
     spec:
       containers:
       - image: mysql:latest
-        imagePullPolicy: Always 
+        imagePullPolicy: Always
         env:
         - name: MYSQL_ROOT_PASSWORD
           value: password
@@ -67,3 +68,4 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
+{{- end }}
