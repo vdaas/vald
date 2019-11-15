@@ -5,10 +5,10 @@ go 1.13
 replace (
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191112222119-e1110fd1c708
-	k8s.io/api => k8s.io/api v0.0.0-20191016110246-af539daaa43a
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20191016113439-b64f2075a530
+	k8s.io/api => k8s.io/api v0.0.0-20191114100237-2cd11237263f
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20191114105316-e8706470940d
 	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20191004115701-31ade1b30762
-	k8s.io/client-go => k8s.io/client-go v0.0.0-20191016110837-54936ba21026
+	k8s.io/client-go => k8s.io/client-go v0.0.0-20191114101336-8cba805ad12d
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.3.0
 )
 
@@ -39,8 +39,8 @@ require (
 	google.golang.org/genproto v0.0.0-20191114150713-6bbd007550de
 	google.golang.org/grpc v1.25.1
 	gopkg.in/yaml.v2 v2.2.5
-	k8s.io/api v0.0.0-20191016110246-af539daaa43a
+	k8s.io/api v0.0.0-20191114100237-2cd11237263f
 	k8s.io/apimachinery v0.0.0-20191004115701-31ade1b30762
-	k8s.io/client-go v0.0.0-20191016110837-54936ba21026
+	k8s.io/client-go v0.0.0-20191114101336-8cba805ad12d
 	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
 )
