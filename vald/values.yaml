@@ -18,25 +18,25 @@ defaults:
   server_config:
     servers:
       rest:
-        enabled: true
+        enabled: false
         host: 0.0.0.0
         port: 8080
       grpc:
-        enabled: true
+        enabled: false
         host: 0.0.0.0
         port: 8081
     healths:
       liveness:
-        enabled: true
+        enabled: false
         host: 0.0.0.0
         port: 3000
       readiness:
-        enabled: true
+        enabled: false
         host: 0.0.0.0
         port: 3001
     metrics:
       pprof:
-        enabled: true
+        enabled: false
         host: 0.0.0.0
         port: 6060
     full_shutdown_duration: 600s

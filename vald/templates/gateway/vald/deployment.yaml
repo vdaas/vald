@@ -41,42 +41,8 @@ spec:
         - name: {{ .Values.gateway.name }}
           image: "{{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag }}"
           imagePullPolicy: {{ .Values.gateway.image.pullPolicy }}
-          # livenessProbe:
-          #   httpGet:
-          #     path: /liveness
-          #     port: liveness
-          #     scheme: HTTP
-          #   initialDelaySeconds: 5
-          #   timeoutSeconds: 2
-          #   successThreshold: 1
-          #   failureThreshold: 2
-          #   periodSeconds: 3
-          # readinessProbe:
-          #   httpGet:
-          #     path: /readiness
-          #     port: readiness
-          #     scheme: HTTP
-          #   initialDelaySeconds: 10
-          #   timeoutSeconds: 2
-          #   successThreshold: 1
-          #   failureThreshold: 2
-          #   periodSeconds: 3
-          ports:
-            - name: liveness
-              containerPort: 3000
-              protocol: TCP
-            - name: readiness
-              containerPort: 3001
-              protocol: TCP
-            - name: rest
-              containerPort: 8080
-              protocol: TCP
-            - name: grpc
-              containerPort: 8082
-              protocol: TCP
-            - name: pprof
-              containerPort: 6060
-              protocol: TCP
+          {{- $servers := dict "Values" .Values.gateway.server_config "default" .Values.defaults.server_config }}
+          {{- include "vald.containerPorts" $servers | nindent 10}}
           resources:
             {{- toYaml .Values.gateway.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log

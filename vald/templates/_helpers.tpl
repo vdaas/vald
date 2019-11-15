@@ -45,6 +45,67 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
 {{/*
+Container ports
+*/}}
+{{- define "vald.containerPorts" -}}
+{{- $livenessEnabled := default .default.healths.liveness.enabled .Values.healths.liveness.enabled }}
+{{- if $livenessEnabled }}
+livenessProbe:
+  httpGet:
+    path: /liveness
+    port: liveness
+    scheme: HTTP
+  initialDelaySeconds: 5
+  timeoutSeconds: 2
+  successThreshold: 1
+  failureThreshold: 2
+  periodSeconds: 3
+{{- end }}
+{{- $readinessEnabled := default .default.healths.readiness.enabled .Values.healths.readiness.enabled }}
+{{- if $readinessEnabled }}
+readinessProbe:
+  httpGet:
+    path: /readiness
+    port: readiness
+    scheme: HTTP
+  initialDelaySeconds: 10
+  timeoutSeconds: 2
+  successThreshold: 1
+  failureThreshold: 2
+  periodSeconds: 3
+{{- end }}
+ports:
+  {{- if $livenessEnabled }}
+  - name: liveness
+    protocol: TCP
+    containerPort: {{ default .default.healths.liveness.port .Values.healths.liveness.port }}
+  {{- end }}
+  {{- if $readinessEnabled }}
+  - name: readiness
+    protocol: TCP
+    containerPort: {{ default .default.healths.readiness.port .Values.healths.readiness.port }}
+  {{- end }}
+  {{- $restEnabled := default .default.servers.rest.enabled .Values.servers.rest.enabled }}
+  {{- if $restEnabled }}
+  - name: rest
+    protocol: TCP
+    containerPort: {{ default .default.servers.rest.port .Values.servers.rest.port }}
+  {{- end }}
+  {{- $grpcEnabled := default .default.servers.grpc.enabled .Values.servers.grpc.enabled }}
+  {{- if $grpcEnabled }}
+  - name: grpc
+    protocol: TCP
+    containerPort: {{ default .default.servers.grpc.port .Values.servers.grpc.port }}
+  {{- end }}
+  {{- $pprofEnabled := default .default.metrics.pprof.enabled .Values.metrics.pprof.enabled }}
+  {{- if $pprofEnabled }}
+  - name: pprof
+    protocol: TCP
+    containerPort: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
+  {{- end }}
+{{- end -}}
+
+{{/*
 Server configures that inserted into server_config
 */}}
 {{- define "vald.servers" -}}
