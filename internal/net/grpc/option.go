@@ -118,58 +118,74 @@ func WithWaitForReady(flg bool) Option {
 }
 func WithMaxRetryRPCBufferSize(size int) Option {
 	return func(g *gRPCClient) {
-		g.copts = append(g.copts,
-			grpc.MaxRetryRPCBufferSize(size),
-		)
+		if size > 1 {
+			g.copts = append(g.copts,
+				grpc.MaxRetryRPCBufferSize(size),
+			)
+		}
 	}
 }
 func WithMaxRecvMsgSize(size int) Option {
 	return func(g *gRPCClient) {
-		g.copts = append(g.copts,
-			grpc.MaxCallRecvMsgSize(size),
-		)
+		if size > 1 {
+			g.copts = append(g.copts,
+				grpc.MaxCallRecvMsgSize(size),
+			)
+		}
 	}
 }
 func WithMaxSendMsgSize(size int) Option {
 	return func(g *gRPCClient) {
-		g.copts = append(g.copts,
-			grpc.MaxCallSendMsgSize(size),
-		)
+		if size > 1 {
+			g.copts = append(g.copts,
+				grpc.MaxCallSendMsgSize(size),
+			)
+		}
 	}
 }
 func WithWriteBufferSize(size int) Option {
 	return func(g *gRPCClient) {
-		g.gopts = append(g.gopts,
-			grpc.WithWriteBufferSize(size),
-		)
+		if size > 1 {
+			g.gopts = append(g.gopts,
+				grpc.WithWriteBufferSize(size),
+			)
+		}
 	}
 }
 func WithReadBufferSize(size int) Option {
 	return func(g *gRPCClient) {
-		g.gopts = append(g.gopts,
-			grpc.WithReadBufferSize(size),
-		)
+		if size > 1 {
+			g.gopts = append(g.gopts,
+				grpc.WithReadBufferSize(size),
+			)
+		}
 	}
 }
 func WithInitialWindowSize(size int) Option {
 	return func(g *gRPCClient) {
-		g.gopts = append(g.gopts,
-			grpc.WithInitialWindowSize(int32(size)),
-		)
+		if size > 1 {
+			g.gopts = append(g.gopts,
+				grpc.WithInitialWindowSize(int32(size)),
+			)
+		}
 	}
 }
 func WithInitialConnectionWindowSize(size int) Option {
 	return func(g *gRPCClient) {
-		g.gopts = append(g.gopts,
-			grpc.WithInitialConnWindowSize(int32(size)),
-		)
+		if size > 1 {
+			g.gopts = append(g.gopts,
+				grpc.WithInitialConnWindowSize(int32(size)),
+			)
+		}
 	}
 }
 func WithMaxMsgSize(size int) Option {
 	return func(g *gRPCClient) {
-		g.gopts = append(g.gopts,
-			grpc.WithMaxMsgSize(size),
-		)
+		if size > 1 {
+			g.gopts = append(g.gopts,
+				grpc.WithMaxMsgSize(size),
+			)
+		}
 	}
 }
 
