@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/apis/grpc/vald"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/gateway/vald/service"
@@ -198,10 +199,12 @@ func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error
 }
 
 func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *payload.Empty, err error) {
+	log.Debug(vec)
 	uuid := fuid.String()
 	meta := vec.GetId()
 	err = s.metadata.SetUUIDandMeta(ctx, uuid, meta)
 	if err != nil {
+		log.Error(err)
 		return nil, err
 	}
 	vec.Id = uuid
@@ -210,6 +213,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	err = s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, ac agent.AgentClient) (err error) {
 		_, err = ac.Insert(ctx, vec)
 		if err != nil {
+			log.Error(err)
 			return err
 		}
 		target = strings.SplitN(target, ":", 2)[0]
@@ -219,6 +223,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 		return nil
 	})
 	if err != nil {
+		log.Error(err)
 		return nil, err
 	}
 	if s.backup != nil {
@@ -229,6 +234,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 			Ips:    targets,
 		})
 		if err != nil {
+			log.Error(err)
 			return nil, err
 		}
 	}
