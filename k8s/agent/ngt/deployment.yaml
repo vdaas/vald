@@ -21,7 +21,7 @@ metadata:
   name: agent-ngt
 spec:
   progressDeadlineSeconds: 600
-  replicas: 1
+  replicas: 5
   revisionHistoryLimit: 2
   selector:
     matchLabels:

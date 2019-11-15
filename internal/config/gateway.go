@@ -24,6 +24,9 @@ type Gateway struct {
 	// AgentName represent agents meta_name for service discovery
 	AgentName string `json:"agent_name" yaml:"agent_name"`
 
+	// IndexReplica represents index replication count
+	IndexReplica int `json:"index_replica" yaml:"index_replica"`
+
 	// Discoverer represent agent discoverer service configuration
 	Discoverer *Discoverer `json:"discoverer" yaml:"discoverer"`
 

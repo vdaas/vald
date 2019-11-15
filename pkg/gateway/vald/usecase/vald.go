@@ -141,6 +141,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		handler.WithMeta(metadata),
 		handler.WithFilters(filter),
 		handler.WithErrGroup(eg),
+		handler.WithReplicationCount(cfg.Gateway.IndexReplica),
 	)
 
 	srv, err := starter.New(
