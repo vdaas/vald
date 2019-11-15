@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-$(BENCH_DATASET_ARGS): $(BENCH_DATASET_MD5S)
+$(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
 	@$(call green, "downloading datasets for benchmark...")
 	curl -fsSL -o $@ http://ann-benchmarks.com/$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
 	(cd $(BENCH_DATASET_BASE_DIR); \
@@ -22,7 +22,7 @@ $(BENCH_DATASET_ARGS): $(BENCH_DATASET_MD5S)
 
 .PHONY: bench/datasets
 ## fetch datasets for benchmark
-bench/datasets: $(BENCH_DATASET_ARGS)
+bench/datasets: $(BENCH_DATASETS)
 
 .PHONY: bench/datasets/clean
 ## clean datasets for benchmark
