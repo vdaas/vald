@@ -14,20 +14,20 @@
 # limitations under the License.
 #
 $(BENCH_DATASET_ARGS): $(BENCH_DATASET_MD5S)
-	@$(call green, "downloading DATASET_ARGS for benchmark...")
+	@$(call green, "downloading datasets for benchmark...")
 	curl -fsSL -o $@ http://ann-benchmarks.com/$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
 	(cd $(BENCH_DATASET_BASE_DIR); \
 	    md5sum -c $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5_DIR_NAME)/%.md5,$@) || \
 	    (rm -f $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_HDF5_DIR_NAME)/%.hdf5,$@) && exit 1))
 
-.PHONY: bench/DATASET_ARGS
-## fetch DATASET_ARGS for benchmark
-bench/DATASET_ARGS: $(BENCH_DATASET_ARGS)
+.PHONY: bench/datasets
+## fetch datasets for benchmark
+bench/datasets: $(BENCH_DATASET_ARGS)
 
-.PHONY: bench/DATASET_ARGS/clean
-## clean DATASET_ARGS for benchmark
-bench/DATASET_ARGS/clean:
-	rm -rf $(BENCH_DATASET_ARGS)
+.PHONY: bench/datasets/clean
+## clean datasets for benchmark
+bench/datasets/clean:
+	rm -rf $(BENCH_DATASETS)
 
 .PHONY: bench/create-index
 bench/create-index:
