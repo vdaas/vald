@@ -30,7 +30,7 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `vald`.`pod_ip` (
     `uuid` VARCHAR(255) NOT NULL,
     `ip` VARCHAR(64) NOT NULL,
-    PRIMARY KEY (`uuid`),
+    PRIMARY KEY (`uuid`, `ip`),
     INDEX `ip_index` (`ip` ASC)
 )
 ENGINE = InnoDB;
