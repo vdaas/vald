@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/grpc-backend: "true"
+  labels:
+    name: gateway-ingress
+    app: gateway-ingress
+  name: gateway-ingress
+  namespace: default
+spec:
+  rules:
+  - host: vald.gateway.vdaas.co.jp
+    http:
+      paths:
+      - backend:
+          serviceName: gateway
+          servicePort: grpc
