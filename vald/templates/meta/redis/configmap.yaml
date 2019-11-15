@@ -22,7 +22,8 @@ data:
     ---
     version: v0.0.0
     server_config:
-      {{- include "vald.servers" .Values.meta.servers | nindent 6}}
+      {{- $servers := dict "Values" .Values.meta.server_config "default" .Values.defaults.server_config }}
+      {{- include "vald.servers" $servers | nindent 6 }}
     redis_config:
       addrs:
       - redis.default.svc.cluster.local

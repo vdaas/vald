@@ -22,10 +22,11 @@ data:
     ---
     version: v0.0.0
     server_config:
-      {{- include "vald.servers" .Values.gateway.servers | nindent 6 }}
+      {{- $servers := dict "Values" .Values.gateway.server_config "default" .Values.defaults.server_config }}
+      {{- include "vald.servers" $servers | nindent 6 }}
     gateway:
-      agent_port: 8081
-      agent_name: agent-ngt
+      agent_port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.agent.server_config.servers.grpc.port }}
+      agent_name: {{ .Values.agent.name }}
       index_replica: 5
       discoverer:
         host: discoverer-k8s.default.svc.cluster.local

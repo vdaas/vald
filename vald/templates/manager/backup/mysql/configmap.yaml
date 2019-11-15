@@ -22,7 +22,8 @@ data:
     ---
     version: v0.0.0
     server_config:
-      {{- include "vald.servers" .Values.backupManager.servers | nindent 6 }}
+      {{- $servers := dict "Values" .Values.backupManager.server_config "default" .Values.defaults.server_config }}
+      {{- include "vald.servers" $servers | nindent 6 }}
     mysql_config:
       db: mysql
       host: mysql.default.svc.cluster.local

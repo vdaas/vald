@@ -49,10 +49,11 @@ Server configures that inserted into server_config
 */}}
 {{- define "vald.servers" -}}
 servers:
-  {{- if .rest.enabled }}
-  - name: {{ .prefix }}-rest
-    host: {{ .rest.host | default "0.0.0.0" }}
-    port: {{ .rest.port | default 8080 }}
+  {{- $restEnabled := default .default.servers.rest.enabled .Values.servers.rest.enabled }}
+  {{- if $restEnabled }}
+  - name: {{ .Values.prefix }}-rest
+    host: {{ default .default.servers.rest.host .Values.servers.rest.host }}
+    port: {{ default .default.servers.rest.port .Values.servers.rest.port }}
     mode: REST
     probe_wait_time: 3s
     http:
@@ -63,10 +64,11 @@ servers:
       read_timeout: 1s
       write_timeout: 1s
   {{- end }}
-  {{- if .grpc.enabled }}
-  - name: {{ .prefix }}-grpc
-    host: {{ .grpc.host | default "0.0.0.0" }}
-    port: {{ .grpc.port | default 8082 }}
+  {{- $grpcEnabled := default .default.servers.grpc.enabled .Values.servers.grpc.enabled }}
+  {{- if $grpcEnabled }}
+  - name: {{ .Values.prefix }}-grpc
+    host: {{ default .default.servers.grpc.host .Values.servers.grpc.host }}
+    port: {{ default .default.servers.grpc.port .Values.servers.grpc.port }}
     mode: GRPC
     probe_wait_time: "3s"
     grpc:
@@ -89,10 +91,11 @@ servers:
     restart: true
   {{- end }}
 health_check_servers:
-  {{- if .liveness.enabled }}
-  - name: {{ .prefix }}-liveness
-    host: {{ .liveness.host | default "0.0.0.0" }}
-    port: {{ .liveness.port | default 3000 }}
+  {{- $livenessEnabled := default .default.healths.liveness.enabled .Values.healths.liveness.enabled }}
+  {{- if $livenessEnabled }}
+  - name: {{ .Values.prefix }}-liveness
+    host: {{ default .default.healths.liveness.host .Values.healths.liveness.host }}
+    port: {{ default .default.healths.liveness.port .Values.healths.liveness.port }}
     mode: ""
     probe_wait_time: "3s"
     http:
@@ -103,10 +106,11 @@ health_check_servers:
       read_timeout: ""
       write_timeout: ""
   {{- end }}
-  {{- if .readiness.enabled }}
-  - name: {{ .prefix }}-readiness
-    host: {{ .readiness.host | default "0.0.0.0" }}
-    port: {{ .readiness.port | default 3001 }}
+  {{- $readinessEnabled := default .default.healths.readiness.enabled .Values.healths.readiness.enabled }}
+  {{- if $readinessEnabled }}
+  - name: {{ .Values.prefix }}-readiness
+    host: {{ default .default.healths.readiness.host .Values.healths.readiness.host }}
+    port: {{ default .default.healths.readiness.port .Values.healths.readiness.port }}
     mode: ""
     probe_wait_time: "3s"
     http:
@@ -118,10 +122,11 @@ health_check_servers:
       write_timeout: ""
   {{- end }}
 metrics_servers:
-  {{- if .metrics.enabled }}
-  - name: {{ .prefix }}-pprof
-    host: {{ .metrics.host | default "0.0.0.0" }}
-    port: {{ .metrics.port | default 6060 }}
+  {{- $pprofEnabled := default .default.metrics.pprof.enabled .Values.metrics.pprof.enabled }}
+  {{- if $pprofEnabled }}
+  - name: {{ .Values.prefix }}-pprof
+    host: {{ default .default.metrics.pprof.host .Values.metrics.pprof.host }}
+    port: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
     mode: REST
     probe_wait_time: 3s
     http:
@@ -133,25 +138,25 @@ metrics_servers:
       write_timeout: 1s
   {{- end }}
 startup_strategy:
-  {{- if .liveness.enabled }}
-  - {{ .prefix }}-liveness
+  {{- if $livenessEnabled }}
+  - {{ .Values.prefix }}-liveness
   {{- end }}
-  {{- if .metrics.enabled }}
-  - {{ .prefix }}-pprof
+  {{- if $pprofEnabled }}
+  - {{ .Values.prefix }}-pprof
   {{- end }}
-  {{- if .grpc.enabled }}
-  - {{ .prefix }}-grpc
+  {{- if $grpcEnabled }}
+  - {{ .Values.prefix }}-grpc
   {{- end }}
-  {{- if .rest.enabled }}
-  - {{ .prefix }}-rest
+  {{- if $restEnabled }}
+  - {{ .Values.prefix }}-rest
   {{- end }}
-  {{- if .readiness.enabled }}
-  - {{ .prefix }}-readiness
+  {{- if $readinessEnabled }}
+  - {{ .Values.prefix }}-readiness
   {{- end }}
-full_shutdown_duration: {{ .full_shutdown_duration | default "600s" }}
+full_shutdown_duration: {{ default .default.full_shutdown_duration .Values.full_shutdown_duration }}
 tls:
-  enabled: {{ .tls.enabled | default false }}
-  cert: /path/to/cert
-  key: /path/to/key
-  ca: /path/to/ca
+  enabled: {{ default .default.tls.enabled .Values.tls.enabled }}
+  cert: {{ default .default.tls.cert .Values.tls.cert }}
+  key: {{ default .default.tls.key .Values.tls.key }}
+  ca: {{ default .default.tls.ca .Values.tls.ca }}
 {{- end -}}

@@ -14,6 +14,38 @@
 # limitations under the License.
 #
 
+defaults:
+  server_config:
+    servers:
+      rest:
+        enabled: true
+        host: 0.0.0.0
+        port: 8080
+      grpc:
+        enabled: true
+        host: 0.0.0.0
+        port: 8081
+    healths:
+      liveness:
+        enabled: true
+        host: 0.0.0.0
+        port: 3000
+      readiness:
+        enabled: true
+        host: 0.0.0.0
+        port: 3001
+    metrics:
+      pprof:
+        enabled: true
+        host: 0.0.0.0
+        port: 6060
+    full_shutdown_duration: 600s
+    tls:
+      enabled: false
+      cert: /path/to/cert
+      key: /path/to/key
+      ca: /path/to/ca
+
 gateway:
   name: vald-gateway
   minReplicas: 3
@@ -22,18 +54,21 @@ gateway:
     repository: vdaas/vald-gateway
     tag: nightly
     pullPolicy: Always
-  servers:
+  server_config:
     prefix: gateway
-    rest:
-      enabled: true
-    grpc:
-      enabled: true
-    liveness:
-      enabled: false
-    readiness:
-      enabled: false
+    servers:
+      rest:
+        enabled: true
+      grpc:
+        enabled: true
+    healths:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false
     metrics:
-      enabled: false
+      pprof:
+        enabled: true
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -51,18 +86,21 @@ agent:
     repository: vdaas/vald-agent-ngt
     tag: nightly
     pullPolicy: Always
-  servers:
+  server_config:
     prefix: agent
-    rest:
-      enabled: true
-    grpc:
-      enabled: true
-    liveness:
-      enabled: false
-    readiness:
-      enabled: false
+    servers:
+      rest:
+        enabled: true
+      grpc:
+        enabled: true
+    healths:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false
     metrics:
-      enabled: false
+      pprof:
+        enabled: true
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -87,18 +125,21 @@ discoverer:
     repository: vdaas/vald-discoverer-k8s
     tag: nightly
     pullPolicy: Always
-  servers:
+  server_config:
     prefix: discoverer
-    rest:
-      enabled: true
-    grpc:
-      enabled: true
-    liveness:
-      enabled: false
-    readiness:
-      enabled: false
+    servers:
+      rest:
+        enabled: true
+      grpc:
+        enabled: true
+    healths:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false
     metrics:
-      enabled: false
+      pprof:
+        enabled: true
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -111,18 +152,21 @@ backupManager:
     repository: vdaas/vald-manager-backup-mysql
     tag: nightly
     pullPolicy: Always
-  servers:
+  server_config:
     prefix: backup-manager
-    rest:
-      enabled: true
-    grpc:
-      enabled: true
-    liveness:
-      enabled: false
-    readiness:
-      enabled: false
+    servers:
+      rest:
+        enabled: true
+      grpc:
+        enabled: true
+    healths:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false
     metrics:
-      enabled: false
+      pprof:
+        enabled: true
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -135,18 +179,21 @@ indexManager:
     repository: vdaas/vald-index-manager-ngt
     tag: nightly
     pullPolicy: Always
-  servers:
+  server_config:
     prefix: index-manager
-    rest:
-      enabled: true
-    grpc:
-      enabled: true
-    liveness:
-      enabled: false
-    readiness:
-      enabled: false
+    servers:
+      rest:
+        enabled: true
+      grpc:
+        enabled: true
+    healths:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false
     metrics:
-      enabled: false
+      pprof:
+        enabled: true
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -159,18 +206,21 @@ meta:
     repository: vdaas/vald-meta-redis
     tag: nightly
     pullPolicy: Always
-  servers:
+  server_config:
     prefix: meta
-    rest:
-      enabled: true
-    grpc:
-      enabled: true
-    liveness:
-      enabled: false
-    readiness:
-      enabled: false
+    servers:
+      rest:
+        enabled: true
+      grpc:
+        enabled: true
+    healths:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false
     metrics:
-      enabled: false
+      pprof:
+        enabled: true
     full_shutdown_duration: 600s
     tls:
       enabled: false
