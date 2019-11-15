@@ -17,12 +17,12 @@
 ## start kind (kubernetes in docker) cluster
 kind/start:
 	kind create cluster --name vald
-	export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
+	export KUBECONFIG="$(shell kind get kubeconfig-path --name="kind")"
 
 .PHONY: kind/login
 ## login kind (kubernetes in docker) cluster
 kind/login:
-	export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
+	export KUBECONFIG="$(shell kind get kubeconfig-path --name="kind")"
 
 .PHONY: kind/stop
 ## stop kind (kubernetes in docker) cluster
