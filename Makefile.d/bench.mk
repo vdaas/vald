@@ -128,6 +128,13 @@ bench/ngtd/sequential/rest: \
 		./hack/e2e/benchmark/external/ngtd/ngtd_bench_test.go \
 		 -dataset=fashion-mnist)
 
+.PHONY: bench/gateway/sequential
+bench/gateway/sequential: \
+	ngt/install
+	$(call bench-pprof,pprof/gateway/vald,vald,Sequential,sequential,\
+		./hack/e2e/benchmark/gateway/vald/vald_bench_test.go \
+		 -dataset=identity-429 -address=vdaas.org:8081)
+
 .PHONY: profile
 ## execute profile
 profile: \

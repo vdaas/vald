@@ -1,32 +1,13 @@
-//
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-package ngt
+package vald
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"flag"
-	"fmt"
 	"io"
-	"io/ioutil"
-	"net/http"
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/hack/e2e/benchmark/internal"
@@ -42,16 +23,19 @@ var (
 	}
 	targets    []string
 	addresses  []string
+	wait       time.Duration
 	datasetVar string
 	addressVar string
 	once       sync.Once
+	waitVar    int64
 )
 
 func init() {
 	log.Init(log.DefaultGlg())
 
 	flag.StringVar(&datasetVar, "dataset", "", "available dataset(choice with comma)")
-	flag.StringVar(&addressVar, "address", "", "vald agent address")
+	flag.StringVar(&addressVar, "address", "", "vald gateway address")
+	flag.Int64Var(&waitVar, "wait", 30, "indexing wait time(secs)")
 }
 
 func parseArgs(tb testing.TB) {
@@ -63,184 +47,8 @@ func parseArgs(tb testing.TB) {
 		if len(targets) != len(addresses) {
 			tb.Fatal("address and dataset must have same length.")
 		}
+		wait = time.Duration(waitVar) * time.Second
 	})
-}
-
-func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
-	parseArgs(rb)
-	rctx, rcancel := context.WithCancel(context.Background())
-	defer rcancel()
-	rb.ReportAllocs()
-	rb.ResetTimer()
-
-	for N, name := range targets {
-		address := addresses[N]
-		if address == "" {
-			address = "localhost:8081"
-		}
-		if name == "" {
-			continue
-		}
-
-		rb.Run(name, func(b *testing.B) {
-			data := dataset.Data(name)(rb)
-			ids := data.IDs()
-			train := data.Train()
-			query := data.Query()
-
-			b.ReportAllocs()
-			b.ResetTimer()
-			ctx, cancel := context.WithCancel(rctx)
-			defer cancel()
-
-			if strings.Contains(address, "localhost") {
-				internal.StartAgentNGTServer(b, ctx, data)
-			}
-
-			buffers := make([]*bytes.Buffer, len(train))
-			for i := 0; i < len(train); i++ {
-				buf, err := json.Marshal(&payload.Object_Vector{
-					Id:     ids[i],
-					Vector: train[i],
-				})
-				if err != nil {
-					b.Error(err)
-				}
-				buffers[i] = bytes.NewBuffer(buf)
-			}
-
-			i := 0
-			url := fmt.Sprintf("http://%s/insert", address)
-			b.Run("Insert objects", func(bb *testing.B) {
-				bb.ReportAllocs()
-				bb.ResetTimer()
-				for n := 0; n < bb.N; n++ {
-					resp, err := http.Post(url, "application/json", buffers[i])
-					if err != nil {
-						bb.Error(err)
-					}
-					_, err = io.Copy(ioutil.Discard, resp.Body)
-					if err != nil {
-						bb.Error(err)
-					}
-					err = resp.Body.Close()
-					if err != nil {
-						bb.Error(err)
-					}
-
-					i++
-				}
-			})
-			for ; i < len(train); i++ {
-				resp, err := http.Post(url, "application/json", buffers[i])
-				if err != nil {
-					b.Error(err)
-				}
-				_, err = io.Copy(ioutil.Discard, resp.Body)
-				if err != nil {
-					b.Error(err)
-				}
-				err = resp.Body.Close()
-				if err != nil {
-					b.Error(err)
-				}
-			}
-
-			url = fmt.Sprintf("http://%s/index/create", address)
-			b.Run("CreateIndex", func(bb *testing.B) {
-				buf, err := json.Marshal(&payload.Controll_CreateIndexRequest{
-					PoolSize: 10000,
-				})
-				if err != nil {
-					bb.Error(err)
-				}
-				buffer := bytes.NewBuffer(buf)
-				bb.ReportAllocs()
-				bb.ResetTimer()
-				resp, err := http.Post(url, "application/json", buffer)
-				if err != nil {
-					bb.Error(err)
-				}
-				_, err = io.Copy(ioutil.Discard, resp.Body)
-				if err != nil {
-					bb.Error(err)
-				}
-				err = resp.Body.Close()
-				if err != nil {
-					bb.Error(err)
-				}
-			})
-
-			buffers = make([]*bytes.Buffer, len(query))
-			for i := 0; i < len(query); i++ {
-				buf, err := json.Marshal(&payload.Search_Request{
-					Vector: query[i],
-					Config: searchConfig,
-				})
-				if err != nil {
-					b.Error(err)
-				}
-				buffers[i] = bytes.NewBuffer(buf)
-			}
-
-			i = 0
-			url = fmt.Sprintf("http://%s/search", address)
-			b.Run("Search objects", func(bb *testing.B) {
-				bb.ReportAllocs()
-				bb.ResetTimer()
-				for n := 0; n < bb.N; n++ {
-					resp, err := http.Post(url, "application/json", buffers[i])
-					if err != nil {
-						bb.Error(err)
-					}
-					_, err = io.Copy(ioutil.Discard, resp.Body)
-					if err != nil {
-						bb.Error(err)
-					}
-					err = resp.Body.Close()
-					if err != nil {
-						bb.Error(err)
-					}
-
-					i++
-				}
-			})
-
-			buffers = make([]*bytes.Buffer, len(ids))
-			for i := 0; i < len(ids); i++ {
-				buf, err := json.Marshal(&payload.Object_ID{
-					Id: ids[i],
-				})
-				if err != nil {
-					b.Error(err)
-				}
-				buffers[i] = bytes.NewBuffer(buf)
-			}
-
-			i = 0
-			url = fmt.Sprintf("http://%s/remove", address)
-			b.Run("Remove objects", func(bb *testing.B) {
-				bb.ReportAllocs()
-				bb.ResetTimer()
-				for n := 0; n < bb.N; n++ {
-					resp, err := http.Post(url, "application/json", buffers[i])
-					if err != nil {
-						bb.Error(err)
-					}
-					_, err = io.Copy(ioutil.Discard, resp.Body)
-					if err != nil {
-						bb.Error(err)
-					}
-					err = resp.Body.Close()
-					if err != nil {
-						bb.Error(err)
-					}
-
-					i++
-				}
-			})
-		})
-	}
 }
 
 func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
@@ -250,11 +58,6 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 	rb.ReportAllocs()
 	rb.ResetTimer()
 	for N, name := range targets {
-		address := addresses[N]
-		if address == "" {
-			address = "localhost:8082"
-		}
-
 		if name == "" {
 			continue
 		}
@@ -273,11 +76,7 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 			ctx, cancel := context.WithCancel(rctx)
 			defer cancel()
 
-			if strings.Contains(address, "localhost") {
-				internal.StartAgentNGTServer(b, ctx, data)
-			}
-
-			client := internal.NewAgentClient(b, ctx, address)
+			client := internal.NewValdClient(b, ctx, addresses[N])
 
 			i := 0
 			b.Run("Insert objects", func(bb *testing.B) {
@@ -304,19 +103,7 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 				}
 			}
 
-			b.Run("CreateIndex", func(bb *testing.B) {
-				bb.ReportAllocs()
-				bb.ResetTimer()
-				_, err := client.CreateIndex(ctx, &payload.Controll_CreateIndexRequest{
-					PoolSize: 10000,
-				})
-				if err != nil {
-					if err == io.EOF {
-						return
-					}
-					bb.Error(err)
-				}
-			})
+			time.Sleep(wait)
 
 			i = 0
 			b.Run("Search objects", func(bb *testing.B) {
@@ -359,11 +146,6 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 	rb.ReportAllocs()
 	rb.ResetTimer()
 	for N, name := range targets {
-		address := addresses[N]
-		if address == "" {
-			address = "localhost:8082"
-		}
-
 		if name == "" {
 			continue
 		}
@@ -382,13 +164,7 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 			ctx, cancel := context.WithCancel(rctx)
 			defer cancel()
 
-			if strings.Contains(address, "localhost") ||
-				strings.Contains(address, "127.0.0.1") ||
-				strings.Contains(address, "0.0.0.0") {
-				internal.StartAgentNGTServer(b, ctx, data)
-			}
-
-			client := internal.NewAgentClient(b, ctx, address)
+			client := internal.NewAgentClient(b, ctx, addresses[N])
 
 			sti, err := client.StreamInsert(ctx)
 			if err != nil {
