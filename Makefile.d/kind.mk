@@ -16,13 +16,22 @@
 .PHONY: kind/start
 ## start kind (kubernetes in docker) cluster
 kind/start:
+<<<<<<< HEAD
 	kind create cluster --name $(NAME)
 	export KUBECONFIG="$(kind get kubeconfig-path --name=$(NAME))"
+=======
+	kind create cluster --name vald
+	export KUBECONFIG="$(shell kind get kubeconfig-path --name="kind")"
+>>>>>>> 8ce8c6d46716604d8c644fa1cb44550255f22e49
 
 .PHONY: kind/login
 ## login kind (kubernetes in docker) cluster
 kind/login:
+<<<<<<< HEAD
 	export KUBECONFIG="$(kind get kubeconfig-path --name=$(NAME))"
+=======
+	export KUBECONFIG="$(shell kind get kubeconfig-path --name="kind")"
+>>>>>>> 8ce8c6d46716604d8c644fa1cb44550255f22e49
 
 .PHONY: kind/stop
 ## stop kind (kubernetes in docker) cluster
