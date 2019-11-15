@@ -367,7 +367,7 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 	for N, name := range targets {
 		address := addresses[N]
 		if address == "" {
-			address = "localhost:8081"
+			address = "localhost:8082"
 		}
 
 		if name == "" {
