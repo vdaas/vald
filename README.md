@@ -12,7 +12,7 @@
 [![GoDoc](http://godoc.org/github.com/vdaas/vald?status.svg)](http://godoc.org/github.com/vdaas/vald)
 
 [![Build docker image: agent-ngt](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20agent-ngt/badge.svg)](https://hub.docker.com/r/vdaas/vald-agent-ngt)
-[![Build docker image: backup-manager](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20backup-manager/badge.svg)](https://hub.docker.com/r/vdaas/vald-manager-backup-mysql)
+[![Build docker image: backup-manager-mysql](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20backup-manager-mysql/badge.svg)](https://hub.docker.com/r/vdaas/vald-manager-backup-mysql)
 [![Build docker image: discoverer-k8s](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20discoverer-k8s/badge.svg)](https://hub.docker.com/r/vdaas/vald-discoverer-k8s)
 [![Build docker image: gateway-vald](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20gateway-vald/badge.svg)](https://hub.docker.com/r/vdaas/vald-gateway)
 [![Build docker image: meta-redis](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20meta-redis/badge.svg)](https://hub.docker.com/r/vdaas/vald-meta-redis)
