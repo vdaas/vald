@@ -69,30 +69,24 @@ bench/agent: \
 
 .PHONY: bench/agent/stream
 bench/agent/stream: \
-	ngt/install \
-	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
-	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	ngt/install
 	$(call bench-pprof,pprof/agent/ngt,agent,gRPCStream,stream,\
 		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
-		 -dataset=fashion-mnist)
+		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/agent/sequential/grpc
 bench/agent/sequential/grpc: \
-	ngt/install \
-	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
-	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	ngt/install
 	$(call bench-pprof,pprof/agent/ngt,agent,gRPCSequential,sequential-grpc,\
 		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
-		 -dataset=fashion-mnist)
+		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/agent/sequential/rest
 bench/agent/sequential/rest: \
-	ngt/install \
-	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
-	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	ngt/install
 	$(call bench-pprof,pprof/agent/ngt,agent,RESTSequential,sequential-rest,\
 		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
-		 -dataset=fashion-mnist)
+		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/ngtd
 ## run benchmarks for NGTD
@@ -103,37 +97,31 @@ bench/ngtd: \
 
 .PHONY: bench/ngtd/stream
 bench/ngtd/stream: \
-	ngt/install \
-	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
-	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	ngt/install
 	$(call bench-pprof,pprof/external/ngtd,ngtd,gRPCStream,stream,\
 		./hack/e2e/benchmark/external/ngtd/ngtd_bench_test.go \
-		 -dataset=fashion-mnist)
+		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/ngtd/sequential/grpc
 bench/ngtd/sequential/grpc: \
-	ngt/install \
-	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
-	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	ngt/install
 	$(call bench-pprof,pprof/external/ngtd,ngtd,gRPCSequential,sequential-grpc,\
 		./hack/e2e/benchmark/external/ngtd/ngtd_bench_test.go \
-		 -dataset=fashion-mnist)
+		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/ngtd/sequential/rest
 bench/ngtd/sequential/rest: \
-	ngt/install \
-	$(BENCH_DATASET_HDF5_DIR)/fashion-mnist-784-euclidean.hdf5 \
-	$(BENCH_DATASET_HDF5_DIR)/mnist-784-euclidean.hdf5
+	ngt/install
 	$(call bench-pprof,pprof/external/ngtd,ngtd,RESTSequential,sequential-rest,\
 		./hack/e2e/benchmark/external/ngtd/ngtd_bench_test.go \
-		 -dataset=fashion-mnist)
+		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/gateway/sequential
 bench/gateway/sequential: \
 	ngt/install
 	$(call bench-pprof,pprof/gateway/vald,vald,Sequential,sequential,\
 		./hack/e2e/benchmark/gateway/vald/vald_bench_test.go \
-		 -dataset=identity-429 -address=vdaas.org:8081)
+		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: profile
 ## execute profile

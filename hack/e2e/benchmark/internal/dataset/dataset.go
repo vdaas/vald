@@ -244,7 +244,7 @@ func identity(dim int) func(tb testing.TB) Dataset {
 
 func Data(name string) func(testing.TB) Dataset {
 	if strings.HasPrefix(name, "identity-") {
-		i, _ := strconv.Atoi(name[10:])
+		i, _ := strconv.Atoi(name[9:])
 		return identity(i)
 	}
 	return data[name]

@@ -66,7 +66,7 @@ func parseArgs(tb testing.TB) {
 	})
 }
 
-func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
+func BenchmarkValdGatewaySequential(rb *testing.B) {
 	parseArgs(rb)
 	rctx, rcancel := context.WithCancel(context.Background())
 	defer rcancel()
@@ -154,7 +154,7 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 	}
 }
 
-func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
+func BenchmarkValdGatewayStream(rb *testing.B) {
 	parseArgs(rb)
 	rctx, rcancel := context.WithCancel(context.Background())
 	defer rcancel()
