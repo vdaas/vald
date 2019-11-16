@@ -120,8 +120,9 @@ init: \
 .PHONY: update
 ## update deps, license, and run goimports
 update: \
-	clear \
+	clean \
 	deps \
+	proto/all \
 	license \
 	update/goimports
 
@@ -133,7 +134,7 @@ update/goimports:
 .PHONY: deps
 ## install dependencies
 deps: \
-	proto/deps \
+	proto/deps
 	go mod tidy
 	go mod vendor
 	rm -rf vendor
