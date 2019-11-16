@@ -117,6 +117,19 @@ init: \
 	deps \
 	ngt/install
 
+.PHONY: update
+## update deps, license, and run goimports
+update: \
+	clear \
+	deps \
+	license \
+	update/goimports
+
+.PHONY: update/goimports
+## run goimports for all go files
+update/goimports:
+	find ./ -type f -regex ".*\.go" | xargs goimports -w
+
 .PHONY: deps
 ## install dependencies
 deps: \
@@ -149,7 +162,7 @@ ngt/install: /usr/local/include/NGT/Capi.h
 
 .PHONY: test
 ## run tests
-test: clean
+test:
 	GO111MODULE=on go test --race -coverprofile=cover.out ./...
 
 .PHONY: lint
