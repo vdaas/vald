@@ -17,6 +17,7 @@
 ## add git configs required for development
 git/config/init:
 	git config commit.template ".commit_template"
+	git config core.fileMode false
 
 .PHONY: git/hooks/init
 ## add configs for registering pre-defined git hooks

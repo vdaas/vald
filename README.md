@@ -46,8 +46,7 @@ Write example here
 Before your first commit to this repository, it is strongly recommended to run the commands below.
 
 ```shell
-make git/config/init
-make git/hooks/init
+make init
 ```
 
 ## Contribution

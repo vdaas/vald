@@ -109,12 +109,18 @@ clean:
 license:
 	go run hack/license/gen/main.go ./
 
+.PHONY: init
+## initialize development environment
+init: \
+	git/config/init \
+	git/hooks/init \
+	deps \
+	ngt/install
+
 .PHONY: deps
 ## install dependencies
 deps: \
-	clean \
 	proto/deps \
-	proto/all
 	go mod tidy
 	go mod vendor
 	rm -rf vendor
@@ -143,7 +149,7 @@ ngt/install: /usr/local/include/NGT/Capi.h
 
 .PHONY: test
 ## run tests
-test: clean init
+test: clean
 	GO111MODULE=on go test --race -coverprofile=cover.out ./...
 
 .PHONY: lint
