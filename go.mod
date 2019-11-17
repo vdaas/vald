@@ -4,12 +4,12 @@ go 1.13
 
 replace (
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191112222119-e1110fd1c708
-	k8s.io/api => k8s.io/api v0.0.0-20191114100237-2cd11237263f
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20191114105316-e8706470940d
-	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20191004115701-31ade1b30762
-	k8s.io/client-go => k8s.io/client-go v0.0.0-20191114101336-8cba805ad12d
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.3.0
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191117063200-497ca9f6d64f
+	k8s.io/api => k8s.io/api v0.0.0-20191114100352-16d7abae0d2a
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20191114105449-027877536833
+	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20191028221656-72ed19daf4bb
+	k8s.io/client-go => k8s.io/client-go v0.0.0-20191114101535-6c5935290e33
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.4.0
 )
 
 require (
@@ -17,10 +17,13 @@ require (
 	github.com/cespare/xxhash v1.1.0
 	github.com/cockroachdb/errors v1.2.3
 	github.com/cockroachdb/logtags v0.0.0-20190617123548-eb05cc24525f // indirect
+	github.com/danielvladco/go-proto-gql/pb v0.6.1
+	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/getsentry/raven-go v0.2.0 // indirect
 	github.com/go-redis/redis/v7 v7.0.0-beta.4
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gocraft/dbr/v2 v2.6.3
+	github.com/gogo/protobuf v1.3.1
 	github.com/google/gofuzz v1.0.0
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/go-version v1.2.0
@@ -29,15 +32,15 @@ require (
 	github.com/kpango/fuid v0.0.0-20190507064958-80435564606b
 	github.com/kpango/gache v1.1.23
 	github.com/kpango/glg v1.4.6
-	github.com/vdaas/vald/apis v0.0.0-20191116110024-e4d8aeefc026
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
 	golang.org/x/sys v0.0.0-20191115151921-52ab43148777
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
+	google.golang.org/genproto v0.0.0-20191115221424-83cc0476cb11
 	google.golang.org/grpc v1.25.1
 	gopkg.in/yaml.v2 v2.2.5
-	k8s.io/api v0.0.0-20191114100237-2cd11237263f
-	k8s.io/apimachinery v0.0.0-20191004115701-31ade1b30762
-	k8s.io/client-go v0.0.0-20191114101336-8cba805ad12d
+	k8s.io/api v0.0.0-20191114100352-16d7abae0d2a
+	k8s.io/apimachinery v0.0.0-20191028221656-72ed19daf4bb
+	k8s.io/client-go v0.0.0-20191114101535-6c5935290e33
 	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
 )
