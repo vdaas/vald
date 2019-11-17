@@ -30,6 +30,7 @@ NGT_REPO = github.com/yahoojapan/NGT
 
 GO_VERSION := $(shell cat versions/GO_VERSION)
 GOPATH := $(shell go env GOPATH)
+GOCACHE := $(shell go env GOCACHE)
 
 MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
 
@@ -91,7 +92,7 @@ help:
 .PHONY: clean
 ## clean
 clean:
-	# go clean -cache -modcache ./...
+	go clean -cache -modcache -testcache -i -r
 	rm -rf \
 		/go/pkg \
 		./*.log \
@@ -103,6 +104,7 @@ clean:
 		./bench \
 		./pprof \
 		./vendor \
+		./$(GOCACHE) \
 		./go.sum \
 		./go.mod
 	cp ./hack/go.mod.default ./go.mod
