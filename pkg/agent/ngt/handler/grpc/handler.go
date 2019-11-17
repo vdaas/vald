@@ -242,3 +242,7 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Controll_Cre
 	}
 	return res, nil
 }
+
+func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.Info_Index, err error) {
+	return nil, nil
+}

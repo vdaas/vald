@@ -92,21 +92,15 @@ message Discoverer {
 
 message Backup {
   message GetVector {
-    message Request {
-      string uuid = 1 [ (validate.rules).string.min_len = 1 ];
-    }
+    message Request { string uuid = 1 [ (validate.rules).string.min_len = 1 ]; }
   }
 
   message Locations {
-    message Request {
-      string uuid = 1 [ (validate.rules).string.min_len = 1 ];
-    }
+    message Request { string uuid = 1 [ (validate.rules).string.min_len = 1 ]; }
   }
 
   message Remove {
-    message Request {
-      string uuid = 1 [ (validate.rules).string.min_len = 1 ];
-    }
+    message Request { string uuid = 1 [ (validate.rules).string.min_len = 1 ]; }
     message RequestMulti {
       repeated string uuid = 1 [ (validate.rules).repeated .min_items = 1 ];
     }
@@ -115,7 +109,7 @@ message Backup {
   message IP {
     message Register {
       message Request {
-        string uuid = 1 [ (validate.rules).string.min_len = 1];
+        string uuid = 1 [ (validate.rules).string.min_len = 1 ];
         repeated string ips = 2 [ (validate.rules).repeated .min_items = 1 ];
       }
     }
@@ -136,6 +130,12 @@ message Backup {
 }
 
 message Info {
+  message Index {
+    uint32 count = 1;
+    uint32 uncommitted_index = 2;
+    repeated string uuids = 3;
+    repeated string uncommitted_uuid = 4;
+  }
   message Server {
     string name = 1;
     string ip = 2 [ (validate.rules).string.ipv4 = true ];

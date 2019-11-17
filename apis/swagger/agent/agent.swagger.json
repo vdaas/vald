@@ -85,6 +85,22 @@
         ]
       }
     },
+    "/index/info": {
+      "get": {
+        "operationId": "IndexInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/InfoIndex"
+            }
+          }
+        },
+        "tags": [
+          "Agent"
+        ]
+      }
+    },
     "/index/save": {
       "get": {
         "operationId": "SaveIndex",
@@ -255,6 +271,31 @@
     }
   },
   "definitions": {
+    "InfoIndex": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "uncommittedIndex": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "uuids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "uncommittedUuid": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "ObjectDistance": {
       "type": "object",
       "properties": {

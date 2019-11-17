@@ -76,8 +76,7 @@ service Agent {
     option (google.api.http).delete = "/remove/{id}";
     option (gql.rpc_type) = MUTATION;
   }
-  rpc StreamRemove(stream payload.Object.ID)
-      returns (stream payload.Empty) {}
+  rpc StreamRemove(stream payload.Object.ID) returns (stream payload.Empty) {}
   rpc MultiRemove(payload.Object.IDs) returns (payload.Empty) {}
 
   rpc GetObject(payload.Object.ID) returns (payload.Object.Vector) {
@@ -86,8 +85,7 @@ service Agent {
   rpc StreamGetObject(stream payload.Object.ID)
       returns (stream payload.Object.Vector) {}
 
-  rpc CreateIndex(payload.Controll.CreateIndexRequest)
-      returns (payload.Empty) {
+  rpc CreateIndex(payload.Controll.CreateIndexRequest) returns (payload.Empty) {
     option (google.api.http).get = "/index/create";
   }
   rpc SaveIndex(payload.Empty) returns (payload.Empty) {
@@ -96,5 +94,8 @@ service Agent {
   rpc CreateAndSaveIndex(payload.Controll.CreateIndexRequest)
       returns (payload.Empty) {
     option (google.api.http).get = "/index/createandsave";
+  }
+  rpc IndexInfo(payload.Empty) returns (payload.Info.Index) {
+    option (google.api.http).get = "/index/info";
   }
 }
