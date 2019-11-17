@@ -49,15 +49,15 @@ type Gateway interface {
 }
 
 type gateway struct {
-	agentName  string
-	agentPort  int
-	agents     atomic.Value
-	dscAddr    string
-	dscDur     time.Duration
-	dscClient  grpc.Client
-	acClient   grpc.Client
-	agentOpts  []grpc.Option
-	eg         errgroup.Group
+	agentName string
+	agentPort int
+	agents    atomic.Value
+	dscAddr   string
+	dscDur    time.Duration
+	dscClient grpc.Client
+	acClient  grpc.Client
+	agentOpts []grpc.Option
+	eg        errgroup.Group
 }
 
 func NewGateway(opts ...GWOption) (gw Gateway, err error) {
@@ -82,7 +82,7 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 	}
 	as := g.agents.Load().(model.Agents)
 	addrs := make([]string, 0, len(as))
-	for _, a := range as{
+	for _, a := range as {
 		addrs = append(addrs, a.IP)
 	}
 
