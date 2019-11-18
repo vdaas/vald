@@ -16,20 +16,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: manager-backup-mysql
+  name: {{ .Values.backupManager.name }}
 spec:
-  ports:
-  - port: 8081
-    name: grpc
-    targetPort: 8081
-    protocol: TCP
-  - port: 8080
-    name: rest
-    targetPort: 8080
-    protocol: TCP
-  - port: 6060
-    name: pprof
-    targetPort: 6060
+  {{- $servers := dict "Values" .Values.backupManager.server_config "default" .Values.defaults.server_config }}
+  {{- include "vald.servicePorts" $servers | nindent 2 }}
   selector:
-    app: manager-backup-mysql
+    app: {{ .Values.backupManager.name }}
   clusterIP: None

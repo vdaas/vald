@@ -105,6 +105,28 @@ ports:
   {{- end }}
 {{- end -}}
 
+{/*
+Service ports
+*/}
+{{- define "vald.servicePorts" -}}
+ports:
+  {{- $restEnabled := default .default.servers.rest.enabled .Values.servers.rest.enabled }}
+  {{- if $restEnabled }}
+  - name: rest
+    port: {{ default .default.servers.rest.port .Values.servers.rest.port }}
+  {{- end }}
+  {{- $grpcEnabled := default .default.servers.grpc.enabled .Values.servers.grpc.enabled }}
+  {{- if $grpcEnabled }}
+  - name: grpc
+    port: {{ default .default.servers.grpc.port .Values.servers.grpc.port }}
+  {{- end }}
+  {{- $pprofEnabled := default .default.metrics.pprof.enabled .Values.metrics.pprof.enabled }}
+  {{- if $pprofEnabled }}
+  - name: pprof
+    port: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
+  {{- end }}
+{{- end -}}
+
 {{/*
 Server configures that inserted into server_config
 */}}

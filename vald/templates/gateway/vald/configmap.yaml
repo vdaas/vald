@@ -30,7 +30,7 @@ data:
       index_replica: 5
       discoverer:
         host: discoverer-k8s.default.svc.cluster.local
-        port: 8081
+        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.discoverer.server_config.servers.grpc.port }}
         duration: "2s"
         discover_client:
           addrs: []
@@ -132,7 +132,7 @@ data:
             ca: /path/to/ca
       meta:
         host: meta-redis.default.svc.cluster.local
-        port: 8081
+        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.meta.server_config.servers.grpc.port }}
         duration: "2s"
         client:
           addrs: []
@@ -185,7 +185,7 @@ data:
             ca: /path/to/ca
       backup:
         host: manager-backup-mysql.default.svc.cluster.local
-        port: 8081
+        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.backupManager.server_config.servers.grpc.port }}
         duration: "2s"
         client:
           addrs: []
