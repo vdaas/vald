@@ -102,7 +102,6 @@ func (g *group) Go(f func() error) {
 				select {
 				case <-g.egctx.Done():
 				case g.limitation <- struct{}{}:
-					return
 				}
 			}
 			if err := f(); err != nil {
@@ -113,9 +112,8 @@ func (g *group) Go(f func() error) {
 			}
 			if limited {
 				select {
-				case <-g.limitation:
+				case _ = <-g.limitation:
 				case <-g.egctx.Done():
-					return
 				}
 			}
 		}()
