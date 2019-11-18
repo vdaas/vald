@@ -39,10 +39,10 @@ spec:
         imagePullPolicy: Always
         env:
         - name: MYSQL_ROOT_PASSWORD
-          value: password
+          value: {{ .Values.mysql.pass }}
         name: mysql
         ports:
-        - containerPort: 3306
+        - containerPort: {{ .Values.mysql.port }}
           name: mysql
           protocol: TCP
         resources:
