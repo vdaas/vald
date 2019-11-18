@@ -26,45 +26,45 @@ data:
       {{- include "vald.servers" $servers | nindent 6 }}
     redis_config:
       addrs:
-      - redis.default.svc.cluster.local
-      db: 0
-      dial_timeout: 5s
-      idle_check_frequency: 1m
-      idle_timeout: 5m
-      key_pref: ""
-      max_conn_age: 0s
-      max_redirects: 3
-      max_retries: 0
-      max_retry_backoff: 512ms
-      min_idle_conns: 0
-      min_retry_backoff: 8ms
-      password: ""
-      pool_size: 10
-      pool_timeout: 4s
-      read_only: false
-      read_timeout: 3s
-      write_timeout: 3s
-      route_by_latency: false
-      route_randomly: true
+        {{- toYaml .Values.redis.addrs | nindent 8 }}
+      db: {{ .Values.redis.db }}
+      dial_timeout: {{ .Values.redis.dial_timeout }}
+      idle_check_frequency: {{ .Values.redis.idle_check_frequency }}
+      idle_timeout: {{ .Values.redis.idle_timeout }}
+      key_pref: {{ .Values.redis.key_pref }}
+      max_conn_age: {{ .Values.redis.max_conn_age }}
+      max_redirects: {{ .Values.redis.max_redirects }}
+      max_retries: {{ .Values.redis.max_retries }}
+      max_retry_backoff: {{ .Values.redis.max_retry_backoff }}
+      min_idle_conns: {{ .Values.redis.min_idle_conns }}
+      min_retry_backoff: {{ .Values.redis.min_retry_backoff }}
+      password: "{{ .Values.redis.password }}"
+      pool_size: {{ .Values.redis.pool_size }}
+      pool_timeout: {{ .Values.redis.pool_timeout }}
+      read_only: {{ .Values.redis.read_only }}
+      read_timeout: {{ .Values.redis.read_timeout }}
+      write_timeout: {{ .Values.redis.write_timeout }}
+      route_by_latency: {{ .Values.redis.route_by_latency }}
+      route_randomly: {{ .Values.redis.route_randomly }}
       tls:
-        enabled: false
-        cert: /path/to/cert
-        key: /path/to/key
-        ca: /path/to/ca
+        enabled: {{ .Values.redis.tls.enabled }}
+        cert: {{ default .Values.defaults.server_config.tls.cert .Values.redis.tls.cert }}
+        key: {{ default .Values.defaults.server_config.tls.key .Values.redis.tls.key }}
+        ca: {{ default .Values.defaults.server_config.tls.ca .Values.redis.tls.ca }}
       tcp:
         dns:
-          cache_enabled: true
-          refresh_duration: 1h
-          cache_expiration: 24h
+          cache_enabled: {{ .Values.redis.tcp.dns.cache_enabled }}
+          refresh_duration: {{ .Values.redis.tcp.dns.refresh_duration }}
+          cache_expiration: {{ .Values.redis.tcp.dns.cache_expiration }}
         dialer:
-          timeout: 5s
-          keep_alive: 5m
-          dual_stack_enabled: false
+          timeout: {{ .Values.redis.tcp.dialer.timeout }}
+          keep_alive: {{ .Values.redis.tcp.dialer.keep_alive }}
+          dual_stack_enabled: {{ .Values.redis.tcp.dialer.dual_stack_enabled }}
         tls:
-          enabled: false
-          cert: /path/to/cert
-          key: /path/to/key
-          ca: /path/to/ca
-      kv_prefix: ""
-      vk_prefix: ""
-      prefix_delimiter: ""
+          enabled: {{ .Values.redis.tcp.tls.enabled }}
+          cert: {{ default .Values.defaults.server_config.tls.cert .Values.redis.tcp.tls.cert }}
+          key: {{ default .Values.defaults.server_config.tls.key .Values.redis.tcp.tls.key }}
+          ca: {{ default .Values.defaults.server_config.tls.ca .Values.redis.tcp.tls.ca }}
+      kv_prefix: "{{ .Values.redis.kv_prefix }}"
+      vk_prefix: "{{ .Values.redis.vk_prefix }}"
+      prefix_delimiter: "{{ .Values.redis.prefix_delimiter }}"

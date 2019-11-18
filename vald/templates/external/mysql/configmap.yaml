@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{- if .Values.mysql.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -20,10 +21,10 @@ metadata:
 data:
   initdb.sql: |
     ---
-    DROP SCHEMA IF EXISTS `vald` ;
-    CREATE SCHEMA IF NOT EXISTS `vald` DEFAULT CHARACTER SET utf8 ;
-    USE `vald` ;
-    CREATE TABLE IF NOT EXISTS `vald`.`meta_vector` (
+    DROP SCHEMA IF EXISTS `{{ .Values.mysql.name }}` ;
+    CREATE SCHEMA IF NOT EXISTS `{{ .Values.mysql.name }}` DEFAULT CHARACTER SET utf8 ;
+    USE `{{ .Values.mysql.name }}` ;
+    CREATE TABLE IF NOT EXISTS `{{ .Values.mysql.name }}`.`meta_vector` (
         `uuid` VARCHAR(255) NOT NULL,
         `vector` TEXT NOT NULL,
         `meta` VARCHAR(1024) NOT NULL,
@@ -32,10 +33,11 @@ data:
     )
     ENGINE = InnoDB;
 
-    CREATE TABLE IF NOT EXISTS `vald`.`pod_ip` (
+    CREATE TABLE IF NOT EXISTS `{{ .Values.mysql.name }}`.`pod_ip` (
         `uuid` VARCHAR(255) NOT NULL,
         `ip` VARCHAR(64) NOT NULL,
         PRIMARY KEY (`uuid`, `ip`),
         INDEX `ip_index` (`ip` ASC)
     )
     ENGINE = InnoDB;
+{{- end }}

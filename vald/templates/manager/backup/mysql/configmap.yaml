@@ -26,8 +26,8 @@ data:
       {{- include "vald.servers" $servers | nindent 6 }}
     mysql_config:
       db: mysql
-      host: mysql.default.svc.cluster.local
-      port: 3306
-      user: root
-      pass: password
-      name: vald
+      host: {{ .Values.mysql.host }}
+      port: {{ .Values.mysql.port }}
+      user: {{ .Values.mysql.user }}
+      pass: {{ .Values.mysql.pass }}
+      name: {{ .Values.mysql.name }}

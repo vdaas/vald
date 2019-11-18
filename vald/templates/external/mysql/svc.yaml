@@ -20,7 +20,7 @@ metadata:
   name: mysql
 spec:
   ports:
-  - port: 3306
+  - port: {{ .Values.mysql.port }}
   selector:
     app: mysql
   clusterIP: None

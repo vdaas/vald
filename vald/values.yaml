@@ -171,6 +171,14 @@ backupManager:
     tls:
       enabled: false
 
+mysql:
+  enabled: false
+  host: mysql.default.svc.cluster.local
+  port: 3306
+  user: root
+  pass: password
+  name: vald
+
 indexManager:
   name: vald-index-manager-ngt
   minReplicas: 1
@@ -225,8 +233,42 @@ meta:
     tls:
       enabled: false
 
-mysql:
-  enabled: false
-
 redis:
   enabled: false
+  addrs:
+    - redis.default.svc.cluster.local
+  db: 0
+  dial_timeout: 5s
+  idle_check_frequency: 1m
+  idle_timeout: 5m
+  key_pref: ""
+  max_conn_age: 0s
+  max_redirects: 3
+  max_retries: 0
+  max_retry_backoff: 512ms
+  min_idle_conns: 0
+  min_retry_backoff: 8ms
+  password: ""
+  pool_size: 10
+  pool_timeout: 4s
+  read_only: false
+  read_timeout: 3s
+  write_timeout: 3s
+  route_by_latency: false
+  route_randomly: true
+  tls:
+    enabled: false
+  tcp:
+    dns:
+      cache_enabled: true
+      refresh_duration: 1h
+      cache_expiration: 24h
+    dialer:
+      timeout: 5s
+      keep_alive: 5m
+      dual_stack_enabled: false
+    tls:
+      enabled: false
+  kv_prefix: ""
+  vk_prefix: ""
+  prefix_delimiter: ""
