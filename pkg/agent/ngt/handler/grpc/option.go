@@ -33,7 +33,7 @@ func WithNGT(n service.NGT) Option {
 	}
 }
 
-func WithStreamConcurrency(c int)Option{
+func WithStreamConcurrency(c int) Option {
 	return func(s *server) {
 		s.streamConcurrency = c
 	}

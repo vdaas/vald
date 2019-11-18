@@ -33,7 +33,7 @@ func BidirectionalStream(stream grpc.ServerStream,
 	f func(context.Context, interface{}) (interface{}, error)) (err error) {
 	ctx := stream.Context()
 	eg, ctx := errgroup.New(stream.Context())
-	if concurrency > 0{
+	if concurrency > 0 {
 		eg.Limitation(concurrency)
 	}
 	for {
