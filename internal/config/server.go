@@ -62,17 +62,18 @@ type HTTP struct {
 }
 
 type GRPC struct {
-	MaxReceiveMessageSize int            `json:"max_receive_message_size" yaml:"max_receive_message_size"`
-	MaxSendMessageSize    int            `json:"max_send_message_size" yaml:"max_send_message_size"`
-	InitialWindowSize     int            `json:"initial_window_size" yaml:"initial_window_size"`
-	InitialConnWindowSize int            `json:"initial_conn_window_size" yaml:"initial_conn_window_size"`
-	Keepalive             *GRPCKeepalive `json:"keepalive" yaml:"keepalive"`
-	WriteBufferSize       int            `json:"write_buffer_size" yaml:"write_buffer_size"`
-	ReadBufferSize        int            `json:"read_buffer_size" yaml:"read_buffer_size"`
-	ConnectionTimeout     string         `json:"connection_timeout" yaml:"connection_timeout"`
-	MaxHeaderListSize     int            `json:"max_header_list_size" yaml:"max_header_list_size"`
-	HeaderTableSize       int            `json:"header_table_size" yaml:"header_table_size"`
-	Interceptors          []string       `json:"interceptors" yaml:"interceptors"`
+	BidirectionalStreamConcurrency int            `json:"bidirectional_stream_concurrency" yaml:"bidirectional_stream_concurrency"`
+	MaxReceiveMessageSize          int            `json:"max_receive_message_size" yaml:"max_receive_message_size"`
+	MaxSendMessageSize             int            `json:"max_send_message_size" yaml:"max_send_message_size"`
+	InitialWindowSize              int            `json:"initial_window_size" yaml:"initial_window_size"`
+	InitialConnWindowSize          int            `json:"initial_conn_window_size" yaml:"initial_conn_window_size"`
+	Keepalive                      *GRPCKeepalive `json:"keepalive" yaml:"keepalive"`
+	WriteBufferSize                int            `json:"write_buffer_size" yaml:"write_buffer_size"`
+	ReadBufferSize                 int            `json:"read_buffer_size" yaml:"read_buffer_size"`
+	ConnectionTimeout              string         `json:"connection_timeout" yaml:"connection_timeout"`
+	MaxHeaderListSize              int            `json:"max_header_list_size" yaml:"max_header_list_size"`
+	HeaderTableSize                int            `json:"header_table_size" yaml:"header_table_size"`
+	Interceptors                   []string       `json:"interceptors" yaml:"interceptors"`
 }
 
 type GRPCKeepalive struct {

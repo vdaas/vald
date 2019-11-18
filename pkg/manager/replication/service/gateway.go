@@ -49,16 +49,15 @@ type Gateway interface {
 }
 
 type gateway struct {
-	agentName  string
-	agentPort  int
-	agentAddrs []string
-	agents     atomic.Value
-	dscAddr    string
-	dscDur     time.Duration
-	dscClient  grpc.Client
-	acClient   grpc.Client
-	agentOpts  []grpc.Option
-	eg         errgroup.Group
+	agentName string
+	agentPort int
+	agents    atomic.Value
+	dscAddr   string
+	dscDur    time.Duration
+	dscClient grpc.Client
+	acClient  grpc.Client
+	agentOpts []grpc.Option
+	eg        errgroup.Group
 }
 
 func NewGateway(opts ...GWOption) (gw Gateway, err error) {
@@ -81,11 +80,16 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 	if err != nil {
 		ech <- err
 	}
+	as := g.agents.Load().(model.Agents)
+	addrs := make([]string, 0, len(as))
+	for _, a := range as {
+		addrs = append(addrs, a.IP)
+	}
 
 	g.acClient = grpc.New(
 		append(
 			g.agentOpts,
-			grpc.WithAddrs(g.agentAddrs...),
+			grpc.WithAddrs(addrs...),
 			grpc.WithErrGroup(g.eg),
 		)...,
 	)
@@ -154,9 +158,10 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface
 		return nil, err
 	}
 
-	g.agentAddrs = g.agentAddrs[:0]
-
 	srvs := res.GetServers()
+	if len(srvs) == 0 {
+		return nil, errors.ErrAgentAddrCouldNotDiscover
+	}
 	as := make(model.Agents, 0, len(srvs))
 	cur := make(map[string]struct{}, len(srvs))
 	for _, srv := range srvs {
@@ -165,7 +170,6 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface
 			host = new(payload.Info_Server)
 		}
 		addr := fmt.Sprintf("%s:%d", srv.GetIp(), g.agentPort)
-		g.agentAddrs = append(g.agentAddrs, addr)
 		as = append(as, model.Agent{
 			IP:       srv.GetIp(),
 			Name:     srv.GetName(),

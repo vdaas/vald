@@ -37,13 +37,14 @@ import (
 )
 
 type server struct {
-	eg       errgroup.Group
-	gateway  service.Gateway
-	metadata service.Meta
-	backup   service.Backup
-	timeout  time.Duration
-	filter   service.Filter
-	replica  int
+	eg                errgroup.Group
+	gateway           service.Gateway
+	metadata          service.Meta
+	backup            service.Backup
+	timeout           time.Duration
+	filter            service.Filter
+	replica           int
+	streamConcurrency int
 }
 
 func New(opts ...Option) vald.ValdServer {
@@ -183,7 +184,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 }
 
 func (s *server) StreamSearch(stream vald.Vald_StreamSearchServer) error {
-	return grpc.BidirectionalStream(stream,
+	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Search_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			return s.Search(ctx, data.(*payload.Search_Request))
@@ -191,7 +192,7 @@ func (s *server) StreamSearch(stream vald.Vald_StreamSearchServer) error {
 }
 
 func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error {
-	return grpc.BidirectionalStream(stream,
+	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Search_IDRequest) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			return s.SearchByID(ctx, data.(*payload.Search_IDRequest))
@@ -242,7 +243,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 }
 
 func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
-	return grpc.BidirectionalStream(stream,
+	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_Vector) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			return s.Insert(ctx, data.(*payload.Object_Vector))
@@ -337,7 +338,7 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 }
 
 func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
-	return grpc.BidirectionalStream(stream,
+	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_Vector) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			return s.Update(ctx, data.(*payload.Object_Vector))
@@ -400,7 +401,7 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Em
 }
 
 func (s *server) StreamRemove(stream vald.Vald_StreamRemoveServer) error {
-	return grpc.BidirectionalStream(stream,
+	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_ID) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			return s.Remove(ctx, data.(*payload.Object_ID))
@@ -462,7 +463,7 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *pay
 }
 
 func (s *server) StreamGetObject(stream vald.Vald_StreamGetObjectServer) error {
-	return grpc.BidirectionalStream(stream,
+	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_ID) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			return s.GetObject(ctx, data.(*payload.Object_ID))

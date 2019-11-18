@@ -27,14 +27,15 @@ import (
 	"google.golang.org/grpc"
 )
 
-type ServerStream grpc.ServerStream
-
-func BidirectionalStream(stream ServerStream,
+func BidirectionalStream(stream grpc.ServerStream,
+	concurrency int,
 	newData func() interface{},
 	f func(context.Context, interface{}) (interface{}, error)) (err error) {
 	ctx := stream.Context()
 	eg, ctx := errgroup.New(stream.Context())
-	eg.Limitation(10)
+	if concurrency > 0{
+		eg.Limitation(concurrency)
+	}
 	for {
 		select {
 		case <-ctx.Done():

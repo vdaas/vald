@@ -31,6 +31,7 @@ var (
 	defaultOpts = []Option{
 		WithErrGroup(errgroup.Get()),
 		WithReplicationCount(3),
+		WithStreamConcurrency(20),
 		WithTimeout("5s"),
 	}
 )
@@ -90,5 +91,11 @@ func WithReplicationCount(rep int) Option {
 		if rep > 1 {
 			s.replica = rep
 		}
+	}
+}
+
+func WithStreamConcurrency(c int)Option{
+	return func(s *server) {
+		s.streamConcurrency = c
 	}
 }

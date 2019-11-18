@@ -42,6 +42,7 @@ type group struct {
 	cancelOnce       sync.Once
 	mu               sync.RWMutex
 	emap             map[string]struct{}
+	errs             []error
 	err              error
 }
 
@@ -101,13 +102,20 @@ func (g *group) Go(f func() error) {
 			if limited {
 				select {
 				case <-g.egctx.Done():
+					return
 				case g.limitation <- struct{}{}:
 				}
 			}
 			if err := f(); err != nil {
-				g.mu.Lock()
-				g.emap[err.Error()] = struct{}{}
-				g.mu.Unlock()
+				g.mu.RLock()
+				_, ok := g.emap[err.Error()]
+				g.mu.RUnlock()
+				if !ok {
+					g.mu.Lock()
+					g.errs = append(g.errs, err)
+					g.emap[err.Error()] = struct{}{}
+					g.mu.Unlock()
+				}
 				g.doCancel()
 			}
 			if limited {
@@ -140,8 +148,8 @@ func (g *group) Wait() error {
 	}
 	g.enableLimitation.Store(false)
 	g.mu.RLock()
-	for msg := range g.emap {
-		g.err = errors.Wrap(g.err, msg)
+	for _, err := range g.errs {
+		g.err = errors.Wrap(g.err, err.Error())
 	}
 	g.mu.RUnlock()
 	return g.err

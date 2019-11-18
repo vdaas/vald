@@ -22,11 +22,19 @@ import "github.com/vdaas/vald/pkg/agent/ngt/service"
 type Option func(*server)
 
 var (
-	defaultOpts = []Option{}
+	defaultOpts = []Option{
+		WithStreamConcurrency(20),
+	}
 )
 
 func WithNGT(n service.NGT) Option {
 	return func(s *server) {
 		s.ngt = n
+	}
+}
+
+func WithStreamConcurrency(c int)Option{
+	return func(s *server) {
+		s.streamConcurrency = c
 	}
 }
