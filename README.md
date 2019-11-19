@@ -16,6 +16,7 @@
 [![Build docker image: discoverer-k8s](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20discoverer-k8s/badge.svg)](https://hub.docker.com/r/vdaas/vald-discoverer-k8s)
 [![Build docker image: gateway-vald](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20gateway-vald/badge.svg)](https://hub.docker.com/r/vdaas/vald-gateway)
 [![Build docker image: meta-redis](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20meta-redis/badge.svg)](https://hub.docker.com/r/vdaas/vald-meta-redis)
+[![Build docker image: meta-cassandra](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20meta-cassandra/badge.svg)](https://hub.docker.com/r/vdaas/vald-meta-cassandra)
 
 vald is high scalable distributed high-speed approximate nearest neighbor search engine
 
