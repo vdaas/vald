@@ -23,6 +23,7 @@ AGENT_IMAGE             = $(NAME)-agent-ngt
 GATEWAY_IMAGE           = $(NAME)-gateway
 DISCOVERER_IMAGE        = $(NAME)-discoverer-k8s
 KVS_IMAGE               = $(NAME)-meta-redis
+NOSQL_IMAGE             = $(NAME)-meta-cassandra
 BACKUP_MANAGER_IMAGE    = $(NAME)-manager-backup-mysql
 
 NGT_VERSION := $(shell cat versions/NGT_VERSION)
