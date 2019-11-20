@@ -38,7 +38,7 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	google.golang.org/genproto v0.0.0-20191115221424-83cc0476cb11
 	google.golang.org/grpc v1.25.1
-	gopkg.in/yaml.v2 v2.2.5
+	gopkg.in/yaml.v2 v2.2.7
 	k8s.io/api v0.0.0-20191114100352-16d7abae0d2a
 	k8s.io/apimachinery v0.0.0-20191028221656-72ed19daf4bb
 	k8s.io/client-go v0.0.0-20191114101535-6c5935290e33
