@@ -25,8 +25,8 @@ import (
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/log"
 
-	corev1 "k8s.io/api/core/v1"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -156,6 +156,7 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 		r.mgr = mgr
 	}
 	corev1.AddToScheme(r.mgr.GetScheme())
+	appsv1.AddToScheme(r.mgr.GetScheme())
 	return r
 }
 
