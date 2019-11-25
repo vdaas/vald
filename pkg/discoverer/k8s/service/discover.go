@@ -19,6 +19,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"sync"
 
 	"github.com/vdaas/vald/apis/grpc/payload"
@@ -51,7 +52,8 @@ func New() (dsc Discoverer, err error) {
 				log.Error(err)
 			}),
 			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
-				log.Debug(podList)
+				b, _:=json.Marshal(podList)
+				log.Debug(string(b))
 				for name, pods := range podList {
 					if len(pods) > d.maxServers {
 						d.maxServers = len(pods)
