@@ -30,6 +30,7 @@ spec:
   - port: 6060
     name: pprof
     targetPort: 6060
+    protocol: TCP
   selector:
     app: meta-redis
   clusterIP: None

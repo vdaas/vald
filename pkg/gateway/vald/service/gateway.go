@@ -78,6 +78,7 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 	var err error
 	_, err = g.discover(ctx, ech)
 	if err != nil {
+		log.Error(err)
 		ech <- err
 	}
 	as := g.agents.Load().(model.Agents)

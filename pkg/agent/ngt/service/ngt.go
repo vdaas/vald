@@ -61,8 +61,16 @@ type ngt struct {
 	cflg uint32        // create index flag 0 or 1
 	ic   uint64        // insert count
 	eg   errgroup.Group
+	ivc  *vcaches // insertion vector cache
+	dvc  *vcaches // deletion vector cache
 	kvs  kvs.BidiMap
 	core core.NGT
+	dcd  bool // disable commit daemon
+}
+
+type vcache struct {
+	vector []float64
+	date   int64
 }
 
 func New(cfg *config.NGT) (nn NGT, err error) {
@@ -109,11 +117,15 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 
 	n.eg = errgroup.Get()
 
+	if n.dur == 0 || n.alen == 0 {
+		n.dcd = true
+	}
+
 	return n, nil
 }
 
 func (n *ngt) Start(ctx context.Context) <-chan error {
-	if n.dur == 0 || n.alen == 0 {
+	if n.dcd {
 		return nil
 	}
 	ech := make(chan error, 2)
@@ -199,6 +211,9 @@ func (n *ngt) Insert(uuid string, vec []float64) (err error) {
 		err = errors.ErrUUIDAlreadyExists(uuid, oid)
 		return err
 	}
+
+	n.ivc.Store(uuid, vcache{
+	})
 
 	oid, err = n.core.Insert(vec)
 	if err != nil {
