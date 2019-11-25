@@ -18,11 +18,12 @@
 package pod
 
 import (
-	"sync"
 	"context"
+	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/log"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -85,6 +86,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		}
 		return
 	}
+	log.Debug(ps)
 
 	var (
 		cpuUsage float64
