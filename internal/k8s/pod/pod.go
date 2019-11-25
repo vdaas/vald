@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 
 	corev1 "k8s.io/api/core/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -159,8 +160,7 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 }
 
 func (r *reconciler) For() runtime.Object {
-	// return new(corev1.PodList)
-	return new(corev1.Pod)
+	return new(appsv1.ReplicaSet)
 }
 
 func (r *reconciler) Owns() runtime.Object {
