@@ -18,6 +18,7 @@ package cassandra
 
 import (
 	"context"
+	"crypto/tls"
 	"reflect"
 	"time"
 
@@ -42,30 +43,51 @@ type Cassandra interface {
 }
 
 type client struct {
-	hosts                  []string
-	cqlVersion             string
-	timeout                time.Duration
-	connectTimeout         time.Duration
-	port                   int
-	numConns               int
-	consistency            gocql.Consistency
-	maxPreparedStmts       int
-	maxRoutingKeyInfo      int
-	pageSize               int
-	defaultTimestamp       bool
-	maxWaitSchemaAgreement time.Duration
-	reconnectInterval      time.Duration
-	reconnectionPolicy     struct {
+	hosts          []string
+	cqlVersion     string
+	protoVersion   int
+	timeout        time.Duration
+	connectTimeout time.Duration
+	port           int
+	keyspace       string
+	numConns       int
+	consistency    gocql.Consistency
+	compressor     gocql.Compressor
+	username       string
+	password       string
+	authProvider   func(h *gocql.HostInfo) (gocql.Authenticator, error)
+	retryPolicy    struct {
+		numRetries  int
+		minDuration time.Duration
+		maxDuration time.Duration
+	}
+	reconnectionPolicy struct {
 		initialInterval time.Duration
 		maxRetries      int
 	}
-	writeCoalesceWaitTime time.Duration
-	keyspace              string
-	kvTable               string
-	vkTable               string
-
-	username string
-	password string
+	socketKeepalive          time.Duration
+	maxPreparedStmts         int
+	maxRoutingKeyInfo        int
+	pageSize                 int
+	serialConsistency        gocql.SerialConsistency
+	tls                      *tls.Config
+	tlsCertPath              string
+	tlsKeyPath               string
+	tlsCAPath                string
+	enableHostVerification   bool
+	defaultTimestamp         bool
+	reconnectInterval        time.Duration
+	maxWaitSchemaAgreement   time.Duration
+	ignorePeerAddr           bool
+	disableInitialHostLookup bool
+	disableNodeStatusEvents  bool
+	disableTopologyEvents    bool
+	disableSchemaEvents      bool
+	disableSkipMetadata      bool
+	defaultIdempotence       bool
+	writeCoalesceWaitTime    time.Duration
+	kvTable                  string
+	vkTable                  string
 
 	cluster *gocql.ClusterConfig
 	session *gocql.Session
@@ -79,32 +101,70 @@ func New(opts ...Option) (Cassandra, error) {
 		}
 	}
 
-	// FIXME: curretly only support fields in https://github.com/gocql/gocql/blob/ae2f7fc85f32248f9341a280ccdad16b44581f36/cluster.go#L162-L177
 	c.cluster = &gocql.ClusterConfig{
-		Hosts:                  c.hosts,
-		CQLVersion:             c.cqlVersion,
-		Timeout:                c.timeout,
-		ConnectTimeout:         c.connectTimeout,
-		Port:                   c.port,
-		NumConns:               c.numConns,
-		Consistency:            c.consistency,
-		MaxPreparedStmts:       c.maxPreparedStmts,
-		MaxRoutingKeyInfo:      c.maxRoutingKeyInfo,
-		PageSize:               c.pageSize,
-		DefaultTimestamp:       c.defaultTimestamp,
-		MaxWaitSchemaAgreement: c.maxWaitSchemaAgreement,
-		ReconnectInterval:      c.reconnectInterval,
-		ConvictionPolicy:       &gocql.SimpleConvictionPolicy{},
-		ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{
-			MaxRetries:      c.reconnectionPolicy.maxRetries,
-			InitialInterval: c.reconnectionPolicy.initialInterval,
-		},
-		WriteCoalesceWaitTime: c.writeCoalesceWaitTime,
-		Keyspace:              c.keyspace,
+		Hosts:          c.hosts,
+		CQLVersion:     c.cqlVersion,
+		ProtoVersion:   c.protoVersion,
+		Timeout:        c.timeout,
+		ConnectTimeout: c.connectTimeout,
+		Port:           c.port,
+		Keyspace:       c.keyspace,
+		NumConns:       c.numConns,
+		Consistency:    c.consistency,
+		Compressor:     c.compressor,
 		Authenticator: &gocql.PasswordAuthenticator{
 			Username: c.username,
 			Password: c.password,
 		},
+		AuthProvider: c.authProvider,
+		RetryPolicy: &gocql.ExponentialBackoffRetryPolicy{
+			NumRetries: c.retryPolicy.numRetries,
+			Min:        c.retryPolicy.minDuration,
+			Max:        c.retryPolicy.maxDuration,
+		},
+		ConvictionPolicy: &gocql.SimpleConvictionPolicy{},
+		ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{
+			MaxRetries:      c.reconnectionPolicy.maxRetries,
+			InitialInterval: c.reconnectionPolicy.initialInterval,
+		},
+		SocketKeepalive:   c.socketKeepalive,
+		MaxPreparedStmts:  c.maxPreparedStmts,
+		MaxRoutingKeyInfo: c.maxRoutingKeyInfo,
+		PageSize:          c.pageSize,
+		SerialConsistency: c.serialConsistency,
+		SslOpts: &gocql.SslOptions{
+			Config:                 c.tls,
+			CertPath:               c.tlsCertPath,
+			KeyPath:                c.tlsKeyPath,
+			CaPath:                 c.tlsCAPath,
+			EnableHostVerification: c.enableHostVerification,
+		},
+		DefaultTimestamp: c.defaultTimestamp,
+		PoolConfig: gocql.PoolConfig{
+			HostSelectionPolicy: gocql.RoundRobinHostPolicy(),
+		},
+		ReconnectInterval:      c.reconnectInterval,
+		MaxWaitSchemaAgreement: c.maxWaitSchemaAgreement,
+		// HostFilter
+		// AddressTranslator
+		IgnorePeerAddr:           c.ignorePeerAddr,
+		DisableInitialHostLookup: c.disableInitialHostLookup,
+		Events: struct {
+			DisableNodeStatusEvents bool
+			DisableTopologyEvents   bool
+			DisableSchemaEvents     bool
+		}{
+			DisableNodeStatusEvents: c.disableNodeStatusEvents,
+			DisableTopologyEvents:   c.disableTopologyEvents,
+			DisableSchemaEvents:     c.disableSchemaEvents,
+		},
+		DisableSkipMetadata: c.disableSkipMetadata,
+		// QueryObserver
+		// BatchObserver
+		// ConnectObserver
+		// FrameHeaderObserver
+		DefaultIdempotence:    c.defaultIdempotence,
+		WriteCoalesceWaitTime: c.writeCoalesceWaitTime,
 	}
 
 	return c, nil
@@ -154,7 +214,7 @@ func (c *client) GetKey(value string) (string, error) {
 
 func (c *client) MultiGetValue(keys ...string) ([]string, error) {
 	var keyvals []struct {
-		Uuid string
+		UUID string
 		Meta string
 	}
 	stmt, names := qb.Select(c.kvTable).Columns(uuidColumn, metaColumn).Where(qb.In(uuidColumn)).ToCql()
@@ -167,7 +227,7 @@ func (c *client) MultiGetValue(keys ...string) ([]string, error) {
 
 	kvs := make(map[string]string, len(keyvals))
 	for _, keyval := range keyvals {
-		kvs[keyval.Uuid] = keyval.Meta
+		kvs[keyval.UUID] = keyval.Meta
 	}
 
 	values := make([]string, 0, len(keyvals))
@@ -180,7 +240,7 @@ func (c *client) MultiGetValue(keys ...string) ([]string, error) {
 
 func (c *client) MultiGetKey(values ...string) ([]string, error) {
 	var keyvals []struct {
-		Uuid string
+		UUID string
 		Meta string
 	}
 	stmt, names := qb.Select(c.vkTable).Columns(uuidColumn, metaColumn).Where(qb.In(metaColumn)).ToCql()
@@ -193,7 +253,7 @@ func (c *client) MultiGetKey(values ...string) ([]string, error) {
 
 	kvs := make(map[string]string, len(keyvals))
 	for _, keyval := range keyvals {
-		kvs[keyval.Meta] = keyval.Uuid
+		kvs[keyval.Meta] = keyval.UUID
 	}
 
 	keys := make([]string, 0, len(keyvals))

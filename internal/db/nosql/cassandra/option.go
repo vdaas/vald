@@ -18,6 +18,7 @@
 package cassandra
 
 import (
+	"crypto/tls"
 	"time"
 
 	"github.com/gocql/gocql"
@@ -48,6 +49,13 @@ func WithHosts(hosts ...string) Option {
 func WithCQLVersion(version string) Option {
 	return func(c *client) error {
 		c.cqlVersion = version
+		return nil
+	}
+}
+
+func WithProtoVersion(version int) Option {
+	return func(c *client) error {
+		c.protoVersion = version
 		return nil
 	}
 }
@@ -87,6 +95,13 @@ func WithPort(port int) Option {
 	}
 }
 
+func WithKeyspace(keyspace string) Option {
+	return func(c *client) error {
+		c.keyspace = keyspace
+		return nil
+	}
+}
+
 func WithNumConns(numConns int) Option {
 	return func(c *client) error {
 		c.numConns = numConns
@@ -117,6 +132,92 @@ func WithConsistency(consistency string) Option {
 	}
 }
 
+func WithCompressor(compressor gocql.Compressor) Option {
+	return func(c *client) error {
+		c.compressor = compressor
+		return nil
+	}
+}
+
+func WithUsername(username string) Option {
+	return func(c *client) error {
+		c.username = username
+		return nil
+	}
+}
+
+func WithPassword(password string) Option {
+	return func(c *client) error {
+		c.password = password
+		return nil
+	}
+}
+
+func WithAuthProvider(authProvider func(h *gocql.HostInfo) (gocql.Authenticator, error)) Option {
+	return func(c *client) error {
+		c.authProvider = authProvider
+		return nil
+	}
+}
+
+func WithRetryPolicyNumRetries(n int) Option {
+	return func(c *client) error {
+		c.retryPolicy.numRetries = n
+		return nil
+	}
+}
+
+func WithRetryPolicyMinDuration(minDuration string) Option {
+	return func(c *client) error {
+		d, err := timeutil.Parse(minDuration)
+		if err != nil {
+			return err
+		}
+		c.retryPolicy.minDuration = d
+		return nil
+	}
+}
+
+func WithRetryPolicyMaxDuration(maxDuration string) Option {
+	return func(c *client) error {
+		d, err := timeutil.Parse(maxDuration)
+		if err != nil {
+			return err
+		}
+		c.retryPolicy.maxDuration = d
+		return nil
+	}
+}
+
+func WithReconnectionPolicyInitialInterval(initialInterval string) Option {
+	return func(c *client) error {
+		d, err := timeutil.Parse(initialInterval)
+		if err != nil {
+			return err
+		}
+		c.reconnectionPolicy.initialInterval = d
+		return nil
+	}
+}
+
+func WithReconnectionPolicyMaxRetries(maxRetries int) Option {
+	return func(c *client) error {
+		c.reconnectionPolicy.maxRetries = maxRetries
+		return nil
+	}
+}
+
+func WithSocketKeepalive(socketKeepalive string) Option {
+	return func(c *client) error {
+		d, err := timeutil.Parse(socketKeepalive)
+		if err != nil {
+			return err
+		}
+		c.socketKeepalive = d
+		return nil
+	}
+}
+
 func WithMaxPreparedStmts(maxPreparedStmts int) Option {
 	return func(c *client) error {
 		c.maxPreparedStmts = maxPreparedStmts
@@ -134,6 +235,48 @@ func WithMaxRoutingKeyInfo(maxRoutingKeyInfo int) Option {
 func WithPageSize(pageSize int) Option {
 	return func(c *client) error {
 		c.pageSize = pageSize
+		return nil
+	}
+}
+
+func WithSerialConsistency(consistency gocql.SerialConsistency) Option {
+	return func(c *client) error {
+		c.serialConsistency = consistency
+		return nil
+	}
+}
+
+func WithTLS(tls *tls.Config) Option {
+	return func(c *client) error {
+		c.tls = tls
+		return nil
+	}
+}
+
+func WithTLSCertPath(certPath string) Option {
+	return func(c *client) error {
+		c.tlsCertPath = certPath
+		return nil
+	}
+}
+
+func WithTLSKeyPath(keyPath string) Option {
+	return func(c *client) error {
+		c.tlsKeyPath = keyPath
+		return nil
+	}
+}
+
+func WithTLSCAPath(caPath string) Option {
+	return func(c *client) error {
+		c.tlsCAPath = caPath
+		return nil
+	}
+}
+
+func WithEnableHostVerification(enableHostVerification bool) Option {
+	return func(c *client) error {
+		c.enableHostVerification = enableHostVerification
 		return nil
 	}
 }
@@ -167,20 +310,51 @@ func WithReconnectInterval(reconnectInterval string) Option {
 	}
 }
 
-func WithReconnectionPolicyInitialInterval(initialInterval string) Option {
+func WithIgnorePeerAddr(ignorePeerAddr bool) Option {
 	return func(c *client) error {
-		d, err := timeutil.Parse(initialInterval)
-		if err != nil {
-			return err
-		}
-		c.reconnectionPolicy.initialInterval = d
+		c.ignorePeerAddr = ignorePeerAddr
 		return nil
 	}
 }
 
-func WithReconnectionPolicyMaxRetries(maxRetries int) Option {
+func WithDisableInitialHostLookup(disableInitialHostLookup bool) Option {
 	return func(c *client) error {
-		c.reconnectionPolicy.maxRetries = maxRetries
+		c.disableInitialHostLookup = disableInitialHostLookup
+		return nil
+	}
+}
+
+func WithDisableNodeStatusEvents(disableNodeStatusEvents bool) Option {
+	return func(c *client) error {
+		c.disableNodeStatusEvents = disableNodeStatusEvents
+		return nil
+	}
+}
+
+func WithDisableTopologyEvents(disableTopologyEvents bool) Option {
+	return func(c *client) error {
+		c.disableTopologyEvents = disableTopologyEvents
+		return nil
+	}
+}
+
+func WithDisableSchemaEvents(disableSchemaEvents bool) Option {
+	return func(c *client) error {
+		c.disableSchemaEvents = disableSchemaEvents
+		return nil
+	}
+}
+
+func WithDisableSkipMetadata(disableSkipMetadata bool) Option {
+	return func(c *client) error {
+		c.disableSkipMetadata = disableSkipMetadata
+		return nil
+	}
+}
+
+func WithDefaultIdempotence(defaultIdempotence bool) Option {
+	return func(c *client) error {
+		c.defaultIdempotence = defaultIdempotence
 		return nil
 	}
 }
@@ -196,13 +370,6 @@ func WithWriteCoalesceWaitTime(writeCoalesceWaitTime string) Option {
 	}
 }
 
-func WithKeyspace(keyspace string) Option {
-	return func(c *client) error {
-		c.keyspace = keyspace
-		return nil
-	}
-}
-
 func WithKVTable(kvTable string) Option {
 	return func(c *client) error {
 		c.kvTable = kvTable
@@ -213,20 +380,6 @@ func WithKVTable(kvTable string) Option {
 func WithVKTable(vkTable string) Option {
 	return func(c *client) error {
 		c.vkTable = vkTable
-		return nil
-	}
-}
-
-func WithUsername(username string) Option {
-	return func(c *client) error {
-		c.username = username
-		return nil
-	}
-}
-
-func WithPassword(password string) Option {
-	return func(c *client) error {
-		c.password = password
 		return nil
 	}
 }
