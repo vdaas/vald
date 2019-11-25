@@ -28,6 +28,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -67,8 +68,8 @@ func New(opts ...Option) PodWatcher {
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
 	ps := &corev1.PodList{}
 
-	// err = r.mgr.GetClient().List(context.TODO(), ps, client.InNamespace(req.Namespace))
-	err = r.mgr.GetClient().Get(context.TODO(), req.NamespacedName, ps)
+	err = r.mgr.GetClient().List(context.TODO(), ps, client.InNamespace(req.Namespace))
+	// err = r.mgr.GetClient().Get(context.TODO(), req.NamespacedName, ps)
 
 	if err != nil {
 		if r.onError != nil {
@@ -158,7 +159,8 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 }
 
 func (r *reconciler) For() runtime.Object {
-	return new(corev1.PodList)
+	// return new(corev1.PodList)
+	return new(corev1.Pod)
 }
 
 func (r *reconciler) Owns() runtime.Object {
