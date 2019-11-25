@@ -52,7 +52,7 @@ func New() (dsc Discoverer, err error) {
 				log.Error(err)
 			}),
 			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
-				b, _:=json.Marshal(podList)
+				b, _ := json.Marshal(podList)
 				log.Debug(string(b))
 				for name, pods := range podList {
 					if len(pods) > d.maxServers {

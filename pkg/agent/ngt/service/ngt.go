@@ -212,8 +212,7 @@ func (n *ngt) Insert(uuid string, vec []float64) (err error) {
 		return err
 	}
 
-	n.ivc.Store(uuid, vcache{
-	})
+	n.ivc.Store(uuid, vcache{})
 
 	oid, err = n.core.Insert(vec)
 	if err != nil {
