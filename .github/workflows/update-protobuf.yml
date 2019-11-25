@@ -1,0 +1,34 @@
+name: update protobuf
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "apis/proto/**"
+
+jobs:
+  dispatches:
+    name: Dispatches
+    runs-on: ubuntu-latest
+    steps:
+      - name: client-go
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.DISPATCH_USER }}
+          repository: vdaas/vald-client-go
+          event-type: update-protobuf
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+      - name: client-java
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.DISPATCH_USER }}
+          repository: vdaas/vald-client-java
+          event-type: update-protobuf
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+      - name: client-python
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.DISPATCH_USER }}
+          repository: vdaas/vald-client-python
+          event-type: update-protobuf
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'

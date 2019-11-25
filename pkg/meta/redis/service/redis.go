@@ -215,12 +215,12 @@ func (c *client) getMulti(prefix string, keys ...string) (vals []string, err err
 	}
 	var errs error
 	vals = make([]string, 0, len(ress))
-	for k, res := range ress {
-		if err = res.Err(); err != nil {
+	for _, k := range keys {
+		if err = ress[k].Err(); err != nil {
 			errs = errors.Wrap(errs, errors.ErrRedisGetOperationFailed(k, err).Error())
 			continue
 		}
-		vals = append(vals, res.Val())
+		vals = append(vals, ress[k].Val())
 	}
 	return vals[:len(vals)], errs
 }

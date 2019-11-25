@@ -181,7 +181,6 @@ lint:
 coverage:
 	go test -v -race -covermode=atomic -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out -o coverage.html
-	rm -f coverage.out
 
 .PHONY: readme/update/authors
 ## update authors in README
