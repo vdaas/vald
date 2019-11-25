@@ -39,7 +39,7 @@ type ResourceController interface {
 	GetName() string
 	NewReconciler(mgr manager.Manager) reconcile.Reconciler
 	For() runtime.Object
-	// Owns() runtime.Object
+	Owns() runtime.Object
 }
 
 type controller struct {
@@ -86,6 +86,7 @@ func New(opts ...Option) (cl Controller, err error) {
 			err = builder.ControllerManagedBy(c.mgr).
 				Named(rc.GetName()).
 				For(rc.For()).
+				Owns(rc.Owns()).
 				Complete(rc.NewReconciler(c.mgr))
 			if err != nil {
 				return nil, err

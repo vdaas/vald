@@ -132,9 +132,9 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 }
 
 func (r *reconciler) For() runtime.Object {
-	return new(corev1.Node)
+	return new(corev1.NodeList)
 }
 
-// func (r *reconciler) Owns() runtime.Object {
-// 	return new(corev1.Pod)
-// }
+func (r *reconciler) Owns() runtime.Object {
+	return new(corev1.Node)
+}
