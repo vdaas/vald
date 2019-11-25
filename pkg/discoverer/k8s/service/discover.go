@@ -51,6 +51,7 @@ func New() (dsc Discoverer, err error) {
 				log.Error(err)
 			}),
 			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
+				log.Debug(podList)
 				for name, pods := range podList {
 					if len(pods) > d.maxServers {
 						d.maxServers = len(pods)
@@ -65,6 +66,7 @@ func New() (dsc Discoverer, err error) {
 				log.Error(err)
 			}),
 			node.WithOnReconcileFunc(func(nodes []node.Node) {
+				log.Debug(nodes)
 				for _, n := range nodes {
 					d.nodes.Store(n.Name, n)
 				}
