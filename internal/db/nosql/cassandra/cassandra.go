@@ -153,26 +153,52 @@ func (c *client) GetKey(value string) (string, error) {
 }
 
 func (c *client) MultiGetValue(keys ...string) ([]string, error) {
-	var values []string
-	stmt, names := qb.Select(c.kvTable).Columns(metaColumn).Where(qb.In(uuidColumn)).ToCql()
+	var keyvals []struct {
+		Uuid string
+		Meta string
+	}
+	stmt, names := qb.Select(c.kvTable).Columns(uuidColumn, metaColumn).Where(qb.In(uuidColumn)).ToCql()
 	q := gocqlx.Query(c.session.Query(stmt), names).BindMap(qb.M{
 		uuidColumn: keys,
 	})
-	if err := q.SelectRelease(&values); err != nil {
+	if err := q.SelectRelease(&keyvals); err != nil {
 		return nil, err
+	}
+
+	kvs := make(map[string]string, len(keyvals))
+	for _, keyval := range keyvals {
+		kvs[keyval.Uuid] = keyval.Meta
+	}
+
+	values := make([]string, 0, len(keyvals))
+	for _, key := range keys {
+		values = append(values, kvs[key])
 	}
 
 	return values, nil
 }
 
 func (c *client) MultiGetKey(values ...string) ([]string, error) {
-	var keys []string
-	stmt, names := qb.Select(c.vkTable).Columns(uuidColumn).Where(qb.In(metaColumn)).ToCql()
+	var keyvals []struct {
+		Uuid string
+		Meta string
+	}
+	stmt, names := qb.Select(c.vkTable).Columns(uuidColumn, metaColumn).Where(qb.In(metaColumn)).ToCql()
 	q := gocqlx.Query(c.session.Query(stmt), names).BindMap(qb.M{
 		metaColumn: values,
 	})
-	if err := q.SelectRelease(&keys); err != nil {
+	if err := q.SelectRelease(&keyvals); err != nil {
 		return nil, err
+	}
+
+	kvs := make(map[string]string, len(keyvals))
+	for _, keyval := range keyvals {
+		kvs[keyval.Meta] = keyval.Uuid
+	}
+
+	keys := make([]string, 0, len(keyvals))
+	for _, value := range values {
+		keys = append(keys, kvs[value])
 	}
 
 	return keys, nil
