@@ -132,7 +132,7 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 }
 
 func (r *reconciler) For() runtime.Object {
-	return new(corev1.NodeList)
+	return new(corev1.Node)
 }
 
 func (r *reconciler) Owns() runtime.Object {
