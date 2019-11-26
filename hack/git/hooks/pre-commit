@@ -18,8 +18,10 @@ if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then
     # goimports
     find ./ -type f -regex ".*\.go" | xargs goimports -w
 
-    # golangci-lint
-    golangci-lint run --fast --disable=gochecknoglobals --fix --color always -j 16 --skip-dirs apis/grpc --exclude-use-default=false ./...
+    if [ `git rev-parse --abbrev-ref HEAD` = "master" ]; then
+        # golangci-lint
+        golangci-lint run --fast --disable=gochecknoglobals --fix --color always -j 16 --skip-dirs apis/grpc --exclude-use-default=false ./...
+    fi
 
     # go build
     go build ./...
