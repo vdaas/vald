@@ -74,6 +74,8 @@ func New(opts ...Option) (c Client) {
 		opt(g)
 	}
 
+	log.Info(g.addrs)
+
 	return g
 }
 
