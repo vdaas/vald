@@ -155,7 +155,6 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 }
 
 func (g *gateway) discoverByDNS(ctx context.Context, ech chan<- error) (ret interface{}, err error) {
-		log.Debug(g.agentARecord)
 	ips, err := net.LookupIP(g.agentARecord)
 	if err != nil {
 		ech <- err
@@ -166,7 +165,6 @@ func (g *gateway) discoverByDNS(ctx context.Context, ech chan<- error) (ret inte
 		ech <- errors.ErrAgentAddrCouldNotDiscover
 		return nil, errors.ErrAgentAddrCouldNotDiscover
 	}
-	log.Debug(ips)
 
 	as := make(model.Agents, 0, len(ips))
 	cur := make(map[string]struct{}, len(ips))
@@ -175,6 +173,7 @@ func (g *gateway) discoverByDNS(ctx context.Context, ech chan<- error) (ret inte
 		if err != nil {
 			return nil, err
 		}
+		log.Debugf("ip: %s,\thost:%s", ip.String(), host)
 		as = append(as, model.Agent{
 			IP:   ip.String(),
 			Name: host[0],
