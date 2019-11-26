@@ -100,7 +100,6 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 			fmt.Sprintf("%s:%d", a.IP, g.agentPort),
 		)
 	}
-	log.Debug(addrs)
 
 	g.acClient = grpc.New(
 		append(
@@ -174,7 +173,6 @@ func (g *gateway) discoverByDNS(ctx context.Context, ech chan<- error) (ret inte
 		if err != nil {
 			return nil, err
 		}
-		log.Debugf("ip: %s,\thost:%s", ip.String(), host)
 		as = append(as, model.Agent{
 			IP:   ip.String(),
 			Name: host[0],

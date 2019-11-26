@@ -75,8 +75,6 @@ func New(opts ...Option) (c Client) {
 		opt(g)
 	}
 
-	log.Info(g.addrs)
-
 	g.fch = make(chan string, len(g.addrs))
 
 	return g
@@ -94,6 +92,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 		conn, err := grpc.DialContext(ctx, addr,
 			append(g.gopts, grpc.WithBlock())...)
 		if err != nil {
+			log.Error(err)
 			ech <- err
 		} else {
 			g.conns.Store(addr, conn)
