@@ -115,7 +115,7 @@ data:
         key: /path/to/key
         ca: /path/to/ca
     gateway:
-      agent_port: 8081
+      agent_port: 8082
       agent_name: agent-ngt
       agent_dns: agent-ngt.default.svc.cluster.local
       index_replica: 5

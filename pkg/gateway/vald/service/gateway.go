@@ -81,7 +81,6 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 	discover := g.discover
 	_, err = discover(ctx, ech)
 	if err != nil {
-		log.Error(err)
 		g.dscClient.Close()
 		ech <- err
 		discover = g.discoverByDNS

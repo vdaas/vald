@@ -74,8 +74,6 @@ func New(opts ...Option) (c Client) {
 		opt(g)
 	}
 
-	log.Info(g.addrs)
-
 	return g
 }
 
@@ -86,8 +84,6 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 
 	ech := make(chan error, len(g.addrs))
 
-	log.Debug(g.addrs)
-
 	conns := 0
 	for _, addr := range g.addrs {
 		if len(addr) != 0 {
@@ -97,12 +93,9 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 				log.Error(err)
 				ech <- err
 			} else {
-				log.Info(addr)
 				g.conns.Store(addr, conn)
 				conns++
 			}
-		}else{
-			log.Debug(g.addrs)
 		}
 	}
 
