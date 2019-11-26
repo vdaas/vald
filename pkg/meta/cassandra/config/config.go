@@ -28,10 +28,10 @@ type Data struct {
 	Version string `json:"version" yaml:"version"`
 
 	// Server represent all server configurations
-	Server *config.Servers `json:"servers" yaml:"servers"`
+	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
 	// Cassandra represent cassandra configurations
-	Cassandra *config.Cassandra `json:"cassandra" yaml:"cassandra"`
+	Cassandra *config.Cassandra `json:"cassandra_config" yaml:"cassandra_config"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
