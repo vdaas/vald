@@ -117,6 +117,7 @@ data:
     gateway:
       agent_port: 8081
       agent_name: agent-ngt
+      agent_dns: agent-ngt.default.svc.cluster.local
       index_replica: 5
       discoverer:
         host: discoverer-k8s.default.svc.cluster.local

@@ -89,6 +89,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithErrGroup(eg),
 		service.WithAgentName(cfg.Gateway.AgentName),
 		service.WithAgentPort(cfg.Gateway.AgentPort),
+		service.WithAgentServiceDNSARecord(cfg.Gateway.AgentDNS),
 		service.WithDiscovererClient(dscClient),
 		service.WithDiscovererHostPort(
 			cfg.Gateway.Discoverer.Host,

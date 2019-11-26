@@ -24,6 +24,9 @@ type Gateway struct {
 	// AgentName represent agents meta_name for service discovery
 	AgentName string `json:"agent_name" yaml:"agent_name"`
 
+	// AgentDNS represent agents dns A record for service discovery
+	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
+
 	// IndexReplica represents index replication count
 	IndexReplica int `json:"index_replica" yaml:"index_replica"`
 
@@ -36,11 +39,14 @@ type Gateway struct {
 	// BackupManager represent backup manager configuration
 	BackupManager *BackupManager `json:"backup" yaml:"backup"`
 
+	// EgressFilter represents egress filter configuration
 	EgressFilter *EgressFilter `json:"egress_filter" yaml:"egress_filter"`
 }
 
 func (g *Gateway) Bind() *Gateway {
 	g.AgentName = GetActualValue(g.AgentName)
+
+	g.AgentDNS = GetActualValue(g.AgentDNS)
 
 	if g.Discoverer != nil {
 		g.Discoverer = g.Discoverer.Bind()
