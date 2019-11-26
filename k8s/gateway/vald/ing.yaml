@@ -27,7 +27,7 @@ metadata:
   namespace: default
 spec:
   rules:
-  - host: vald.gateway.vdaas.co.jp
+  - host: vald.gateway.vdaas.org
     http:
       paths:
       - backend:
