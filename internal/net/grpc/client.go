@@ -58,7 +58,6 @@ type Client interface {
 }
 
 type gRPCClient struct {
-	fch   chan string
 	addrs []string
 	conns gRPCConns
 	hcDur time.Duration
@@ -75,8 +74,6 @@ func New(opts ...Option) (c Client) {
 		opt(g)
 	}
 
-	g.fch = make(chan string, len(g.addrs))
-
 	return g
 }
 
@@ -89,15 +86,17 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 
 	conns := 0
 	for _, addr := range g.addrs {
-		conn, err := grpc.DialContext(ctx, addr,
-			append(g.gopts, grpc.WithBlock())...)
-		if err != nil {
-			log.Error(err)
-			ech <- err
-		} else {
-			log.Info(addr)
-			g.conns.Store(addr, conn)
-			conns++
+		if len(addr) != 0 {
+			conn, err := grpc.DialContext(ctx, addr,
+				append(g.gopts, grpc.WithBlock())...)
+			if err != nil {
+				log.Error(err)
+				ech <- err
+			} else {
+				log.Info(addr)
+				g.conns.Store(addr, conn)
+				conns++
+			}
 		}
 	}
 
@@ -114,30 +113,31 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case addr := <-g.fch:
-				err = g.Connect(ctx, addr)
-				if err != nil {
-					ech <- err
-				}
 			case <-tick.C:
+				reconnList := make([]string, 0, len(g.addrs))
 				g.conns.Range(func(addr string, conn *grpc.ClientConn) bool {
-					if conn == nil ||
+					if len(addr) != 0 && (conn == nil ||
 						conn.GetState() == connectivity.Shutdown ||
-						conn.GetState() == connectivity.TransientFailure {
-						log.Infof("reconnect to %s", addr)
-						err = g.Disconnect(addr)
-						if err != nil {
-							ech <- err
-						}
-						err = g.Connect(ctx, addr)
-						if err != nil {
-							ech <- err
-						}
-					}else{
-						log.Info(addr)
+						conn.GetState() == connectivity.TransientFailure) {
+						reconnList = append(reconnList, addr)
 					}
 					return true
 				})
+
+				for _, addr := range reconnList {
+					if g.bo != nil {
+						_, err = g.bo.Do(ctx, func() (interface{}, error) {
+							err = g.Connect(ctx, addr)
+							return nil, err
+						})
+					} else {
+						err = g.Connect(ctx, addr)
+					}
+					if err != nil {
+						log.Error(err)
+						ech <- err
+					}
+				}
 			}
 		}
 	}))
@@ -155,9 +155,6 @@ func (g *gRPCClient) Range(ctx context.Context,
 			if g.bo != nil {
 				_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
 					err = f(addr, conn, g.copts...)
-					if err != nil {
-						err = g.Connect(ctx, addr)
-					}
 					return
 				})
 			} else {
@@ -188,9 +185,6 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 				if g.bo != nil {
 					_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
 						err = f(addr, conn, g.copts...)
-						if err != nil {
-							err = g.Connect(ctx, addr)
-						}
 						return
 					})
 				} else {
@@ -253,10 +247,6 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string) error {
 	}
 	conn, err := grpc.DialContext(ctx, addr, g.gopts...)
 	if err != nil {
-		go func() {
-			time.Sleep(time.Second)
-			g.fch <- addr
-		}()
 		runtime.Gosched()
 		return err
 	}
@@ -283,6 +273,5 @@ func (g *gRPCClient) Close() error {
 		}
 		return true
 	})
-	close(g.fch)
 	return nil
 }
