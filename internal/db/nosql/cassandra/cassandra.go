@@ -132,14 +132,7 @@ func New(opts ...Option) (Cassandra, error) {
 		MaxRoutingKeyInfo: c.maxRoutingKeyInfo,
 		PageSize:          c.pageSize,
 		SerialConsistency: c.serialConsistency,
-		SslOpts: &gocql.SslOptions{
-			Config:                 c.tls,
-			CertPath:               c.tlsCertPath,
-			KeyPath:                c.tlsKeyPath,
-			CaPath:                 c.tlsCAPath,
-			EnableHostVerification: c.enableHostVerification,
-		},
-		DefaultTimestamp: c.defaultTimestamp,
+		DefaultTimestamp:  c.defaultTimestamp,
 		PoolConfig: gocql.PoolConfig{
 			HostSelectionPolicy: gocql.RoundRobinHostPolicy(),
 		},
@@ -165,6 +158,16 @@ func New(opts ...Option) (Cassandra, error) {
 		// FrameHeaderObserver
 		DefaultIdempotence:    c.defaultIdempotence,
 		WriteCoalesceWaitTime: c.writeCoalesceWaitTime,
+	}
+
+	if c.tls != nil {
+		c.cluster.SslOpts = &gocql.SslOptions{
+			Config:                 c.tls,
+			CertPath:               c.tlsCertPath,
+			KeyPath:                c.tlsKeyPath,
+			CaPath:                 c.tlsCAPath,
+			EnableHostVerification: c.enableHostVerification,
+		}
 	}
 
 	return c, nil

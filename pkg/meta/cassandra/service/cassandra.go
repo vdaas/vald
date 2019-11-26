@@ -46,15 +46,6 @@ type client struct {
 }
 
 func New(cfg *config.Cassandra) (Cassandra, error) {
-	tcfg, err := tls.New(
-		tls.WithCert(cfg.TLS.Cert),
-		tls.WithKey(cfg.TLS.Key),
-		tls.WithCa(cfg.TLS.CA),
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	opts := []cassandra.Option{
 		cassandra.WithHosts(cfg.Hosts...),
 		cassandra.WithCQLVersion(cfg.CQLVersion),
@@ -76,10 +67,6 @@ func New(cfg *config.Cassandra) (Cassandra, error) {
 		cassandra.WithMaxPreparedStmts(cfg.MaxPreparedStmts),
 		cassandra.WithMaxRoutingKeyInfo(cfg.MaxRoutingKeyInfo),
 		cassandra.WithPageSize(cfg.PageSize),
-		cassandra.WithTLS(tcfg),
-		cassandra.WithTLSCertPath(cfg.TLS.Cert),
-		cassandra.WithTLSKeyPath(cfg.TLS.Key),
-		cassandra.WithTLSCAPath(cfg.TLS.CA),
 		cassandra.WithEnableHostVerification(cfg.EnableHostVerification),
 		cassandra.WithDefaultTimestamp(cfg.DefaultTimestamp),
 		cassandra.WithReconnectInterval(cfg.ReconnectInterval),
@@ -94,6 +81,26 @@ func New(cfg *config.Cassandra) (Cassandra, error) {
 		cassandra.WithKVTable(cfg.KVTable),
 		cassandra.WithVKTable(cfg.VKTable),
 	}
+
+	if cfg.TLS != nil && cfg.TLS.Enabled {
+		tcfg, err := tls.New(
+			tls.WithCert(cfg.TLS.Cert),
+			tls.WithKey(cfg.TLS.Key),
+			tls.WithCa(cfg.TLS.CA),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(
+			opts,
+			cassandra.WithTLS(tcfg),
+			cassandra.WithTLSCertPath(cfg.TLS.Cert),
+			cassandra.WithTLSKeyPath(cfg.TLS.Key),
+			cassandra.WithTLSCAPath(cfg.TLS.CA),
+		)
+	}
+
 	db, err := cassandra.New(opts...)
 	if err != nil {
 		return nil, err

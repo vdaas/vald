@@ -100,25 +100,43 @@ server_config:
     ca: /path/to/ca
 cassandra_config:
   hosts:
-    - "localhost"
-  cql_version: "3.0.0"
-  timeout: "600ms"
-  connect_timeout: "600ms"
+    - localhost
+  cql_version: 3.0.0
+  proto_version: 0
+  timeout: 600ms
+  connect_timeout: 600ms
   port: 9042
+  keyspace: vald
   num_conns: 2
   consistency:  quorum
+  username: ""
+  password: ""
+  retry_policy:
+    num_retries: 3
+    min_duration: 1s
+    max_duration: 30s
+  reconnection_policy:
+    max_retries: 3
+    initial_interval: 1m
+  socket_keepalive: 0s
   max_prepared_stmts: 1000
   max_routing_key_info: 1000
   page_size: 5000
+  tls:
+    enabled: false
+    cert: /path/to/cert
+    key: /path/to/key
+    ca: /path/to/ca
+  enable_host_verification: false
   default_timestamp: true
-  max_wait_schema_agreement: "1m"
-  reconnect_interval: "1m"
-  reconnection_policy:
-    max_retries: 3
-    initial_interval: "1m"
-  write_coalesce_wait_time: "200ms"
-  keyspace: "vald"
-  kv_table: "kv"
-  vk_table: "vk"
-  username: ""
-  password: ""
+  reconnect_interval: 1m
+  max_wait_schema_agreement: 1m
+  ignore_peer_addr: false
+  disable_initial_host_lookup: false
+  disable_node_status_events: false
+  disable_topology_events: false
+  disable_skip_metadata: false
+  default_idempotence: false
+  write_coalesce_wait_time: 200ms
+  kv_table: kv
+  vk_table: vk
