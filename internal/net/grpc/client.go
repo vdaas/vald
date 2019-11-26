@@ -86,6 +86,8 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 
 	ech := make(chan error, len(g.addrs))
 
+	log.Debug(g.addrs)
+
 	conns := 0
 	for _, addr := range g.addrs {
 		if len(addr) != 0 {

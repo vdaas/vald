@@ -43,7 +43,7 @@ var (
 
 func WithAddrs(addrs ...string) Option {
 	return func(g *gRPCClient) {
-		if len(addrs) ==0{
+		if len(addrs) == 0 {
 			return
 		}
 		if g.addrs == nil || len(g.addrs) == 0 {
