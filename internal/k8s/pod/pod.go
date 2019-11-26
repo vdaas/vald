@@ -19,6 +19,7 @@ package pod
 
 import (
 	"context"
+	"encoding/json"
 	"sync"
 	"time"
 
@@ -88,13 +89,15 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		}
 		return
 	}
-	log.Debug(ps)
 
 	var (
 		cpuUsage float64
 		memUsage float64
 		pods     = make(map[string][]Pod, len(ps.Items))
 	)
+
+	b, _ := json.Marshal(ps.Items)
+	log.Debug(string(b))
 
 	for _, pod := range ps.Items {
 		if pod.Status.Phase == corev1.PodRunning {
