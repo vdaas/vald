@@ -31,8 +31,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 type PodWatcher interface {
@@ -164,9 +166,15 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 }
 
 func (r *reconciler) For() runtime.Object {
-	return new(appsv1.ReplicaSet)
+	// return new(appsv1.ReplicaSet)
+	return nil
 }
 
 func (r *reconciler) Owns() runtime.Object {
-	return new(corev1.Pod)
+	// return new(corev1.Pod)
+	return nil
+}
+
+func (r *reconciler) Watches() (*source.Kind,handler.EventHandler) {
+	return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
 }

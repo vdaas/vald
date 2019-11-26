@@ -27,8 +27,10 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 type NodeWatcher interface {
@@ -132,9 +134,15 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 }
 
 func (r *reconciler) For() runtime.Object {
-	return new(corev1.Node)
+	// return new(corev1.Node)
+	return nil
 }
 
 func (r *reconciler) Owns() runtime.Object {
-	return new(corev1.Node)
+	// return new(corev1.Node)
+	return nil
+}
+
+func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
+	return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
 }

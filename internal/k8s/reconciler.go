@@ -27,8 +27,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 type Controller interface {
@@ -40,6 +42,7 @@ type ResourceController interface {
 	NewReconciler(mgr manager.Manager) reconcile.Reconciler
 	For() runtime.Object
 	Owns() runtime.Object
+	Watches() (*source.Kind, handler.EventHandler)
 }
 
 type controller struct {
@@ -83,11 +86,23 @@ func New(opts ...Option) (cl Controller, err error) {
 
 	for _, rc := range c.rcs {
 		if rc != nil {
-			err = builder.ControllerManagedBy(c.mgr).
-				Named(rc.GetName()).
-				For(rc.For()).
-				Owns(rc.Owns()).
-				Complete(rc.NewReconciler(c.mgr))
+			bc := builder.ControllerManagedBy(c.mgr).Named(rc.GetName())
+			f := rc.For()
+			if f != nil {
+				bc = bc.For(f)
+			}
+			o := rc.Owns()
+			if o != nil {
+				bc = bc.Owns(o)
+			}
+			src, h := rc.Watches()
+			if src != nil {
+				if h ==nil{
+					h = &handler.EnqueueRequestForObject{}
+				}
+				bc = bc.Watches(src, h)
+			}
+			err = bc.Complete(rc.NewReconciler(c.mgr))
 			if err != nil {
 				return nil, err
 			}
