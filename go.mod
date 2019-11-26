@@ -4,7 +4,7 @@ go 1.13
 
 replace (
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191117063200-497ca9f6d64f
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191122220453-ac88ee75c92c
 	k8s.io/api => k8s.io/api v0.0.0-20191114100352-16d7abae0d2a
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20191114105449-027877536833
 	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20191028221656-72ed19daf4bb
@@ -34,7 +34,7 @@ require (
 	github.com/kpango/glg v1.4.6
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
-	golang.org/x/sys v0.0.0-20191115151921-52ab43148777
+	golang.org/x/sys v0.0.0-20191120155948-bd437916bb0e
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	google.golang.org/genproto v0.0.0-20191115221424-83cc0476cb11
 	google.golang.org/grpc v1.25.1
