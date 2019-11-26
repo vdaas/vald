@@ -6,6 +6,7 @@ on:
     paths:
       - 'internal/**'
       - '!internal/db/**'
+      - '!internal/k8s/**'
       - 'apis/grpc/**'
       - 'pkg/agent/ngt/**'
       - 'cmd/agent/ngt/**'
@@ -17,6 +18,7 @@ on:
     paths:
       - 'internal/**'
       - '!internal/db/**'
+      - '!internal/k8s/**'
       - 'apis/grpc/**'
       - 'pkg/agent/ngt/**'
       - 'cmd/agent/ngt/**'
