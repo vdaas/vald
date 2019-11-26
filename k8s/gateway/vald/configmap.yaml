@@ -213,7 +213,7 @@ data:
                 key: /path/to/key
                 ca: /path/to/ca
             keep_alive:
-              time: ""
+              time: "60s"
               timeout: ""
               permit_without_stream: false
           tls:

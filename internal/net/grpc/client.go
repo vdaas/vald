@@ -70,9 +70,12 @@ type gRPCClient struct {
 
 func New(opts ...Option) (c Client) {
 	g := new(gRPCClient)
+
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(g)
 	}
+
+	log.Info(g.addrs)
 
 	g.fch = make(chan string, len(g.addrs))
 
