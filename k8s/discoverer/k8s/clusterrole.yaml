@@ -26,6 +26,7 @@ rules:
   - services
   - endpoints
   - pods
+  - replicasets
   verbs:
   - get
   - list
