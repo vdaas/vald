@@ -73,7 +73,7 @@ func (rt *router) routing(
 				if strings.EqualFold(r.Method, method) {
 					// execute only if the request method is inside the method list
 					code, err = h(w, r)
-					if err != nil {
+					if err != nil && code != http.StatusServiceUnavailable {
 						err = json.ErrorHandler(w, r,
 							err.Error()+" at handler "+name,
 							code,

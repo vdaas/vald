@@ -20,9 +20,9 @@ package config
 import "fmt"
 
 type Meta struct {
-	Host     string      `json:"host" yaml:"host"`
-	Port     int         `json:"port" yaml:"port"`
-	Client   *GRPCClient `json:"client" yaml:"client"`
+	Host   string      `json:"host" yaml:"host"`
+	Port   int         `json:"port" yaml:"port"`
+	Client *GRPCClient `json:"client" yaml:"client"`
 }
 
 func (m *Meta) Bind() *Meta {

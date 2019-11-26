@@ -92,7 +92,7 @@ func Handler(w http.ResponseWriter, r *http.Request,
 	err = EncodeResponse(w, res, http.StatusOK,
 		rest.ApplicationJSON, rest.CharsetUTF8)
 	if err != nil {
-		return http.StatusInternalServerError, err
+		return http.StatusServiceUnavailable, err
 	}
 	return http.StatusOK, nil
 }
