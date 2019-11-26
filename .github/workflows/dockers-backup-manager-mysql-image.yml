@@ -5,6 +5,9 @@ on:
       - master
     paths:
       - 'internal/**'
+      - '!internal/db/**'
+      - 'internal/db/rdb/mysql/**'
+      - '!internal/k8s/**'
       - 'apis/grpc/**'
       - 'pkg/manager/backup/mysql/**'
       - 'cmd/manager/backup/mysql/**'
@@ -15,6 +18,9 @@ on:
   pull_request:
     paths:
       - 'internal/**'
+      - '!internal/db/**'
+      - 'internal/db/rdb/mysql/**'
+      - '!internal/k8s/**'
       - 'apis/grpc/**'
       - 'pkg/manager/backup/mysql/**'
       - 'cmd/manager/backup/mysql/**'

@@ -5,6 +5,7 @@ on:
       - master
     paths:
       - 'internal/**'
+      - '!internal/db/**'
       - 'apis/grpc/**'
       - 'pkg/discoverer/k8s/**'
       - 'cmd/discoverer/k8s/**'
@@ -14,6 +15,7 @@ on:
   pull_request:
     paths:
       - 'internal/**'
+      - '!internal/db/**'
       - 'apis/grpc/**'
       - 'pkg/discoverer/k8s/**'
       - 'cmd/discoverer/k8s/**'
