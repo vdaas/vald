@@ -85,6 +85,13 @@ func WithAgentPort(port int) GWOption {
 	}
 }
 
+func WithAgentServiceDNSARecord(a string) GWOption {
+	return func(g *gateway) error {
+		g.agentARecord = a
+		return nil
+	}
+}
+
 func WithErrGroup(eg errgroup.Group) GWOption {
 	return func(g *gateway) error {
 		g.eg = eg

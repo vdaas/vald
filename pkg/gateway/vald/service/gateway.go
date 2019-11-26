@@ -20,6 +20,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"net"
 	"reflect"
 	"runtime"
 	"sort"
@@ -49,15 +50,16 @@ type Gateway interface {
 }
 
 type gateway struct {
-	agentName string
-	agentPort int
-	agents    atomic.Value
-	dscAddr   string
-	dscDur    time.Duration
-	dscClient grpc.Client
-	acClient  grpc.Client
-	agentOpts []grpc.Option
-	eg        errgroup.Group
+	agentName    string
+	agentPort    int
+	agentARecord string
+	agents       atomic.Value
+	dscAddr      string
+	dscDur       time.Duration
+	dscClient    grpc.Client
+	acClient     grpc.Client
+	agentOpts    []grpc.Option
+	eg           errgroup.Group
 }
 
 func NewGateway(opts ...GWOption) (gw Gateway, err error) {
@@ -76,11 +78,21 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 	dech := g.dscClient.StartConnectionMonitor(ctx)
 
 	var err error
-	_, err = g.discover(ctx, ech)
+	discover := g.discover
+	_, err = discover(ctx, ech)
 	if err != nil {
 		log.Error(err)
+		g.dscClient.Close()
 		ech <- err
+		discover = g.discoverByDNS
+		_, err = discover(ctx, ech)
+		if err != nil {
+			log.Error(err)
+			ech <- err
+			return nil
+		}
 	}
+
 	as := g.agents.Load().(model.Agents)
 	addrs := make([]string, 0, len(as))
 	for _, a := range as {
@@ -123,12 +135,12 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 			case ech <- <-dech:
 			case ech <- <-aech:
 			case <-fch:
-				_, err = g.discover(ctx, ech)
+				_, err = discover(ctx, ech)
 				if err != nil {
 					ech <- err
 				}
 			case <-dt.C:
-				_, err = g.discover(ctx, ech)
+				_, err = discover(ctx, ech)
 				if err != nil {
 					log.Error(err)
 					time.Sleep(g.dscDur / 5)
@@ -138,6 +150,55 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 		}
 	}))
 	return ech
+}
+
+func (g *gateway) discoverByDNS(ctx context.Context, ech chan<- error) (ret interface{}, err error) {
+	ips, err := net.LookupIP(g.agentARecord)
+	if err != nil {
+		ech <- err
+		return nil, err
+	}
+	if len(ips) == 0 {
+		return nil, errors.ErrAgentAddrCouldNotDiscover
+	}
+	as := make(model.Agents, 0, len(ips))
+	cur := make(map[string]struct{}, len(ips))
+	for _, ip := range ips {
+		host, err := net.LookupAddr(ip.String())
+		if err != nil {
+			return nil, err
+		}
+		as = append(as, model.Agent{
+			IP:   ip.String(),
+			Name: host[0],
+		})
+		cur[fmt.Sprintf("%s:%d", ip.String(), g.agentPort)] = struct{}{}
+	}
+
+	g.agents.Store(as)
+
+	err = g.acClient.Range(ctx,
+		func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			_, ok := cur[addr]
+			delete(cur, addr)
+			if !ok {
+				return g.acClient.Disconnect(addr)
+			}
+			return nil
+		})
+	if err != nil {
+		ech <- err
+		err = nil
+	}
+
+	for addr := range cur {
+		err = g.acClient.Connect(ctx, addr)
+		if err != nil {
+			ech <- err
+			err = nil
+		}
+	}
+	return nil, nil
 }
 
 func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface{}, err error) {
