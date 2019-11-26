@@ -96,7 +96,9 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 	as := g.agents.Load().(model.Agents)
 	addrs := make([]string, 0, len(as))
 	for _, a := range as {
-		addrs = append(addrs, a.IP)
+		addrs = append(addrs,
+			fmt.Sprintf("%s:%d", a.IP, g.agentPort),
+		)
 	}
 
 	g.acClient = grpc.New(
@@ -158,9 +160,11 @@ func (g *gateway) discoverByDNS(ctx context.Context, ech chan<- error) (ret inte
 		ech <- err
 		return nil, err
 	}
+
 	if len(ips) == 0 {
 		return nil, errors.ErrAgentAddrCouldNotDiscover
 	}
+
 	as := make(model.Agents, 0, len(ips))
 	cur := make(map[string]struct{}, len(ips))
 	for _, ip := range ips {
@@ -177,27 +181,30 @@ func (g *gateway) discoverByDNS(ctx context.Context, ech chan<- error) (ret inte
 
 	g.agents.Store(as)
 
-	err = g.acClient.Range(ctx,
-		func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			_, ok := cur[addr]
-			delete(cur, addr)
-			if !ok {
-				return g.acClient.Disconnect(addr)
-			}
-			return nil
-		})
-	if err != nil {
-		ech <- err
-		err = nil
-	}
-
-	for addr := range cur {
-		err = g.acClient.Connect(ctx, addr)
+	if g.acClient != nil {
+		err = g.acClient.Range(ctx,
+			func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+				_, ok := cur[addr]
+				delete(cur, addr)
+				if !ok {
+					return g.acClient.Disconnect(addr)
+				}
+				return nil
+			})
 		if err != nil {
 			ech <- err
 			err = nil
 		}
+
+		for addr := range cur {
+			err = g.acClient.Connect(ctx, addr)
+			if err != nil {
+				ech <- err
+				err = nil
+			}
+		}
 	}
+
 	return nil, nil
 }
 
@@ -248,25 +255,27 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface
 	sort.Sort(as)
 	g.agents.Store(as)
 
-	err = g.acClient.Range(ctx,
-		func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			_, ok := cur[addr]
-			delete(cur, addr)
-			if !ok {
-				return g.acClient.Disconnect(addr)
-			}
-			return nil
-		})
-	if err != nil {
-		ech <- err
-		err = nil
-	}
-
-	for addr := range cur {
-		err = g.acClient.Connect(ctx, addr)
+	if g.acClient != nil {
+		err = g.acClient.Range(ctx,
+			func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+				_, ok := cur[addr]
+				delete(cur, addr)
+				if !ok {
+					return g.acClient.Disconnect(addr)
+				}
+				return nil
+			})
 		if err != nil {
 			ech <- err
 			err = nil
+		}
+
+		for addr := range cur {
+			err = g.acClient.Connect(ctx, addr)
+			if err != nil {
+				ech <- err
+				err = nil
+			}
 		}
 	}
 	return nil, nil
