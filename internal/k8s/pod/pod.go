@@ -175,6 +175,6 @@ func (r *reconciler) Owns() runtime.Object {
 	return nil
 }
 
-func (r *reconciler) Watches() (*source.Kind,handler.EventHandler) {
+func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
 	return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
 }

@@ -97,7 +97,7 @@ func New(opts ...Option) (cl Controller, err error) {
 			}
 			src, h := rc.Watches()
 			if src != nil {
-				if h ==nil{
+				if h == nil {
 					h = &handler.EnqueueRequestForObject{}
 				}
 				bc = bc.Watches(src, h)

@@ -134,15 +134,16 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 }
 
 func (r *reconciler) For() runtime.Object {
-	// return new(corev1.Node)
-	return nil
+	return new(corev1.Node)
+	// return nil
 }
 
 func (r *reconciler) Owns() runtime.Object {
-	// return new(corev1.Node)
-	return nil
+	return new(corev1.Node)
+	// return nil
 }
 
 func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
-	return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
+	// return &source.Kind{Type: new(corev1.Node)}, &handler.EnqueueRequestForObject{}
+	return nil, nil
 }
