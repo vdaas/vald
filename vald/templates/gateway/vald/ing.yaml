@@ -21,15 +21,15 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/grpc-backend: "true"
   labels:
-    name: gateway-ingress
-    app: gateway-ingress
-  name: gateway-ingress
+    name: {{ .Values.gateway.name }}-ingress
+    app: {{ .Values.gateway.name }}-ingress
+  name: {{ .Values.gateway.name }}-ingress
   namespace: default
 spec:
   rules:
-  - host: vald.gateway.vdaas.co.jp
+  - host: {{ .Values.gateway.ingress.host }}
     http:
       paths:
       - backend:
-          serviceName: gateway
+          serviceName: {{ .Values.gateway.name }}
           servicePort: grpc

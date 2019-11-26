@@ -77,6 +77,8 @@ gateway:
       - ""
     ingress:
       - ""
+  ingress:
+    host: vald.gateway.vdaas.co.jp
 
 agent:
   name: vald-agent-ngt
