@@ -79,12 +79,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		)...,
 	)
 	agentOpts := cfg.Gateway.Discoverer.AgentClient.Opts()
-	agentClient := igrpc.New(
-		append(agentOpts,
-			igrpc.WithErrGroup(eg),
-		)...,
-	)
-
 	gateway, err = service.NewGateway(
 		service.WithErrGroup(eg),
 		service.WithAgentName(cfg.Gateway.AgentName),
@@ -98,7 +92,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
 		service.WithAgentOptions(agentOpts...),
 	)
-	agentClient.Close()
 	if err != nil {
 		return nil, err
 	}
