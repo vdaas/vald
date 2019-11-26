@@ -99,6 +99,8 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 				g.conns.Store(addr, conn)
 				conns++
 			}
+		}else{
+			log.Debug(g.addrs)
 		}
 	}
 
