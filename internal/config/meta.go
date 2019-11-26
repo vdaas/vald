@@ -22,14 +22,12 @@ import "fmt"
 type Meta struct {
 	Host     string      `json:"host" yaml:"host"`
 	Port     int         `json:"port" yaml:"port"`
-	Duration string      `json:"duration" yaml:"duration"`
 	Client   *GRPCClient `json:"client" yaml:"client"`
 }
 
 func (m *Meta) Bind() *Meta {
 	m.Host = GetActualValue(m.Host)
 
-	m.Duration = GetActualValue(m.Duration)
 	if m.Client != nil {
 		m.Client.Bind()
 	} else {

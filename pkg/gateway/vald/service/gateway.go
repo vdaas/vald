@@ -162,6 +162,8 @@ func (g *gateway) discoverByDNS(ctx context.Context, ech chan<- error) (ret inte
 	}
 
 	if len(ips) == 0 {
+		log.Debug(g.agentARecord)
+		ech <- errors.ErrAgentAddrCouldNotDiscover
 		return nil, errors.ErrAgentAddrCouldNotDiscover
 	}
 

@@ -18,19 +18,6 @@ kind: Service
 metadata:
   name: agent-ngt
 spec:
-  ports:
-  - port: 8081
-    name: grpc
-    targetPort: 8081
-    protocol: TCP
-  - port: 8080
-    name: rest
-    targetPort: 8080
-    protocol: TCP
-  - port: 6060
-    name: pprof
-    targetPort: 6060
-    protocol: TCP
   selector:
     app: agent-ngt
   clusterIP: None

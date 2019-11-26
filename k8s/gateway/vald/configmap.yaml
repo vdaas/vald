@@ -122,10 +122,10 @@ data:
       discoverer:
         host: discoverer-k8s.default.svc.cluster.local
         port: 8081
-        duration: "2s"
+        duration: "5s"
         discover_client:
           addrs: []
-          health_check_duration: "1s"
+          health_check_duration: "5s"
           backoff:
             initial_duration: ""
             backoff_time_limit: ""
@@ -174,7 +174,7 @@ data:
             ca: /path/to/ca
         agent_client:
           addrs: []
-          health_check_duration: "1s"
+          health_check_duration: "5s"
           backoff:
             initial_duration: ""
             backoff_time_limit: ""
@@ -224,10 +224,9 @@ data:
       meta:
         host: meta-redis.default.svc.cluster.local
         port: 8081
-        duration: "2s"
         client:
           addrs: []
-          health_check_duration: "1s"
+          health_check_duration: "5s"
           backoff:
             initial_duration: ""
             backoff_time_limit: ""
@@ -277,10 +276,9 @@ data:
       backup:
         host: manager-backup-mysql.default.svc.cluster.local
         port: 8081
-        duration: "2s"
         client:
           addrs: []
-          health_check_duration: "1s"
+          health_check_duration: "5s"
           backoff:
             initial_duration: ""
             backoff_time_limit: ""
