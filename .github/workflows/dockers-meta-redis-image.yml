@@ -5,6 +5,8 @@ on:
       - master
     paths:
       - 'internal/**'
+      - '!internal/db/**'
+      - 'internal/db/kvs/redis/**'
       - 'apis/grpc/**'
       - 'pkg/meta/redis/**'
       - 'cmd/meta/redis/**'
@@ -15,6 +17,8 @@ on:
   pull_request:
     paths:
       - 'internal/**'
+      - '!internal/db/**'
+      - 'internal/db/kvs/redis/**'
       - 'apis/grpc/**'
       - 'pkg/meta/redis/**'
       - 'cmd/meta/redis/**'

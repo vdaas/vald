@@ -5,6 +5,7 @@ on:
       - master
     paths:
       - 'internal/**'
+      - '!internal/db/**'
       - 'apis/grpc/**'
       - 'pkg/gateway/vald/**'
       - 'cmd/gateway/vald/**'
@@ -14,6 +15,7 @@ on:
   pull_request:
     paths:
       - 'internal/**'
+      - '!internal/db/**'
       - 'apis/grpc/**'
       - 'pkg/gateway/vald/**'
       - 'cmd/gateway/vald/**'

@@ -5,6 +5,7 @@ on:
       - master
     paths:
       - 'internal/**'
+      - '!internal/db/**'
       - 'apis/grpc/**'
       - 'pkg/agent/ngt/**'
       - 'cmd/agent/ngt/**'
@@ -15,6 +16,7 @@ on:
   pull_request:
     paths:
       - 'internal/**'
+      - '!internal/db/**'
       - 'apis/grpc/**'
       - 'pkg/agent/ngt/**'
       - 'cmd/agent/ngt/**'
