@@ -100,6 +100,7 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 			fmt.Sprintf("%s:%d", a.IP, g.agentPort),
 		)
 	}
+	log.Debug(addrs)
 
 	g.acClient = grpc.New(
 		append(
