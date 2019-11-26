@@ -95,6 +95,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 			log.Error(err)
 			ech <- err
 		} else {
+			log.Info(addr)
 			g.conns.Store(addr, conn)
 			conns++
 		}
@@ -132,6 +133,8 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 						if err != nil {
 							ech <- err
 						}
+					}else{
+						log.Info(addr)
 					}
 					return true
 				})
