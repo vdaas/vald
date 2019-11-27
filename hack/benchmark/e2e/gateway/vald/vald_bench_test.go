@@ -25,8 +25,8 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/payload"
-	"github.com/vdaas/vald/hack/e2e/benchmark/internal"
-	"github.com/vdaas/vald/hack/e2e/benchmark/internal/dataset"
+	"github.com/vdaas/vald/hack/benchmark/e2e/internal"
+	"github.com/vdaas/vald/hack/benchmark/internal/dataset"
 	"github.com/vdaas/vald/internal/log"
 )
 

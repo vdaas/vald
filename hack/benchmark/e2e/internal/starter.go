@@ -23,10 +23,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/apis/grpc/vald"
-
 	"github.com/vdaas/vald/apis/grpc/agent"
-	"github.com/vdaas/vald/hack/e2e/benchmark/internal/dataset"
+	"github.com/vdaas/vald/apis/grpc/vald"
+	"github.com/vdaas/vald/hack/benchmark/internal/dataset"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"

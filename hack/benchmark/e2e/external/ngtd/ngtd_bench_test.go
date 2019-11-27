@@ -25,14 +25,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"sort"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/kpango/glg"
-	"github.com/vdaas/vald/hack/e2e/benchmark/internal/dataset"
+	"github.com/vdaas/vald/hack/benchmark/internal/dataset"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/yahoojapan/gongt"
 	"github.com/yahoojapan/ngtd"
@@ -63,12 +62,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	datasetList := make([]string, 0, len(dataset.Data))
-	for key := range dataset.Data {
-		datasetList = append(datasetList, "\t"+key)
-	}
-	sort.Strings(datasetList)
-	flag.StringVar(&datasetVar, "dataset", "", "available dataset(choice with comma)\n"+strings.Join(datasetList, "\n"))
+	flag.StringVar(&datasetVar, "dataset", "", "list available dataset(choice with comma)")
 }
 
 func parseArgs() {
@@ -121,7 +115,7 @@ func BenchmarkNGTDRESTSequential(rb *testing.B) {
 		}
 
 		rb.Run(name, func(b *testing.B) {
-			data := dataset.Data[name](rb)
+			data := dataset.Data(name)(rb)
 			ids := data.IDs()
 			train := data.Train()
 			query := data.Query()
@@ -271,7 +265,7 @@ func BenchmarkNGTDgRPCSequential(rb *testing.B) {
 			continue
 		}
 		rb.Run(name, func(b *testing.B) {
-			data := dataset.Data[name](rb)
+			data := dataset.Data(name)(rb)
 			if data == nil {
 				b.Logf("dataset %s is nil", name)
 				return
@@ -379,7 +373,7 @@ func BenchmarkNGTDgRPCStream(rb *testing.B) {
 			continue
 		}
 		rb.Run(name, func(b *testing.B) {
-			data := dataset.Data[name](rb)
+			data := dataset.Data(name)(rb)
 			if data == nil {
 				b.Logf("dataset %s is nil", name)
 				return
