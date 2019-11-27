@@ -120,6 +120,12 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 	if n.dur == 0 || n.alen == 0 {
 		n.dcd = true
 	}
+	if n.ivc == nil{
+		n.ivc = new(vcaches)
+	}
+	if n.dvc == nil{
+		n.dvc = new(vcaches)
+	}
 
 	return n, nil
 }

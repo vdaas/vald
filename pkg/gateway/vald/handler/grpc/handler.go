@@ -163,13 +163,11 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				dist.GetDistance() < math.Float32frombits(atomic.LoadUint32(&maxDist)) {
 				atomic.StoreUint32(&maxDist, math.Float32bits(dist.GetDistance()))
 			}
-
-			pos := len(res.GetResults()) - 1
-			switch {
-			case pos <= -1:
+			switch len(res.GetResults()){
+			case 0:
 				res.Results[0]=dist
 				continue
-			case pos == 0:
+			case 1:
 				if res.GetResults()[0].GetDistance() <= dist.GetDistance() {
 					res.Results = append(res.Results, dist)
 				}else{
@@ -178,6 +176,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				continue
 			}
 
+			pos := len(res.GetResults()) - 1
 			for idx := pos; idx >= 0; idx-- {
 				if res.GetResults()[idx].GetDistance() <= dist.GetDistance() {
 					pos = idx
