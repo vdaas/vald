@@ -165,7 +165,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			}
 			switch len(res.GetResults()) {
 			case 0:
-				res.Results[0] = dist
+				res.Results = append(res.Results, dist)
 				continue
 			case 1:
 				if res.GetResults()[0].GetDistance() <= dist.GetDistance() {
