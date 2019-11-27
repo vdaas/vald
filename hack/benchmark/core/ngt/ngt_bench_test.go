@@ -31,15 +31,15 @@ import (
 )
 
 const (
-	size = 10
+	size    = 10
 	epsilon = 0.1
-	radius = -1
+	radius  = -1
 )
 
 var (
-	targets []string
+	targets    []string
 	datasetVar string
-	once sync.Once
+	once       sync.Once
 )
 
 func init() {
@@ -49,7 +49,7 @@ func init() {
 }
 
 func parseArgs(tb testing.TB) {
-	once.Do(func(){
+	once.Do(func() {
 		flag.Parse()
 		targets = strings.Split(strings.TrimSpace(datasetVar), ",")
 	})

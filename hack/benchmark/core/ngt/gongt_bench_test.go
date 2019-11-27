@@ -31,14 +31,14 @@ import (
 )
 
 const (
-	size = 10
+	size    = 10
 	epsilon = 0.1
 )
 
 var (
-	targets []string
+	targets    []string
 	datasetVar string
-	once sync.Once
+	once       sync.Once
 )
 
 func init() {
