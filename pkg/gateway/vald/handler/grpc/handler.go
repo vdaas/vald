@@ -159,25 +159,41 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			}
 			return res, err
 		case dist := <-dch:
-			pos := len(res.GetResults())
-			if pos >= num &&
+			if len(res.GetResults()) >= num &&
 				dist.GetDistance() < math.Float32frombits(atomic.LoadUint32(&maxDist)) {
 				atomic.StoreUint32(&maxDist, math.Float32bits(dist.GetDistance()))
 			}
+
+			pos := len(res.GetResults()) - 1
+			switch {
+			case pos <= -1:
+				res.Results[0]=dist
+				continue
+			case pos == 0:
+				if res.GetResults()[0].GetDistance() <= dist.GetDistance() {
+					res.Results = append(res.Results, dist)
+				}else{
+					res.Results = append([]*payload.Object_Distance{dist}, res.Results[0])
+				}
+				continue
+			}
+
 			for idx := pos; idx >= 0; idx-- {
-				if res.GetResults()[idx].GetDistance() > dist.GetDistance() {
+				if res.GetResults()[idx].GetDistance() <= dist.GetDistance() {
 					pos = idx
 					break
 				}
 			}
-			if pos != 0 {
-				res.Results = append(res.GetResults()[:pos+1], res.GetResults()[pos:]...)
+
+			switch {
+			case pos == 0:
+				res.Results = append([]*payload.Object_Distance{dist}, res.Results...)
+			case pos > 0:
+				res.Results = append(res.GetResults()[:pos], res.GetResults()[pos-1:]...)
+				res.Results[pos] = dist
 				if len(res.GetResults()) > num && num != 0 {
 					res.Results = res.GetResults()[:num]
 				}
-			}
-			if pos <= num {
-				res.Results[pos] = dist
 			}
 		}
 	}
