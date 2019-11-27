@@ -96,7 +96,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 
 	maxDist := uint32(math.MaxUint32)
 	num := int(cfg.GetNum())
-
+	res = new(payload.Search_Response)
 	res.Results = make([]*payload.Object_Distance, 0, s.gateway.GetAgentCount()*num)
 	dch := make(chan *payload.Object_Distance, cap(res.GetResults())/2)
 	eg, ectx := errgroup.New(ctx)
