@@ -177,7 +177,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			}
 
 			pos := len(res.GetResults())
-			for idx := pos; idx >= 0; idx-- {
+			for idx := pos; idx >= 1; idx-- {
 				if res.GetResults()[idx-1].GetDistance() <= dist.GetDistance() {
 					pos = idx - 1
 					break
