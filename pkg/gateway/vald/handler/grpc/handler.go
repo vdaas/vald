@@ -200,7 +200,6 @@ func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error
 }
 
 func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *payload.Empty, err error) {
-	log.Debug(vec)
 	uuid := fuid.String()
 	meta := vec.GetId()
 	err = s.metadata.SetUUIDandMeta(ctx, uuid, meta)

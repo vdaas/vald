@@ -19,12 +19,10 @@ package pod
 
 import (
 	"context"
-	"encoding/json"
 	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
-	"github.com/vdaas/vald/internal/log"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -97,9 +95,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		memUsage float64
 		pods     = make(map[string][]Pod, len(ps.Items))
 	)
-
-	b, _ := json.Marshal(ps.Items)
-	log.Debug(string(b))
 
 	for _, pod := range ps.Items {
 		if pod.Status.Phase == corev1.PodRunning {
