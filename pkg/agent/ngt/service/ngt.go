@@ -120,10 +120,10 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 	if n.dur == 0 || n.alen == 0 {
 		n.dcd = true
 	}
-	if n.ivc == nil{
+	if n.ivc == nil {
 		n.ivc = new(vcaches)
 	}
-	if n.dvc == nil{
+	if n.dvc == nil {
 		n.dvc = new(vcaches)
 	}
 
@@ -170,6 +170,7 @@ func (n *ngt) Search(vec []float64, size uint32, epsilon, radius float32) ([]mod
 	if err != nil {
 		return nil, err
 	}
+
 	var errs error
 	ds := make([]model.Distance, 0, len(sr))
 
@@ -197,6 +198,7 @@ func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) ([]m
 	if !ok {
 		return nil, errors.ErrObjectIDNotFound(uuid)
 	}
+
 	vec, err := n.core.GetVector(uint(oid))
 	if err != nil {
 		return nil, errors.ErrObjectNotFound(err, uuid)
@@ -218,7 +220,7 @@ func (n *ngt) Insert(uuid string, vec []float64) (err error) {
 		return err
 	}
 
-	n.ivc.Store(uuid, vcache{})
+	// n.ivc.Store(uuid, vcache{})
 
 	oid, err = n.core.Insert(vec)
 	if err != nil {
