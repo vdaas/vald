@@ -30,7 +30,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/hack/benchmark/e2e/internal"
-	"github.com/vdaas/vald/hack/benchmark/internal/dataset"
+	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/internal/log"
 )
 
@@ -83,7 +83,7 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 		}
 
 		rb.Run(name, func(b *testing.B) {
-			data := dataset.Data(name)(rb)
+			data := assets.Data(name)(rb)
 			ids := data.IDs()
 			train := data.Train()
 			query := data.Query()
@@ -112,6 +112,10 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 			i := 0
 			url := fmt.Sprintf("http://%s/insert", address)
 			b.Run("Insert objects", func(bb *testing.B) {
+				for bb.N+i >= len(ids) {
+					ids = append(ids, assets.CreateIDs(len(train))...)
+				}
+
 				bb.ReportAllocs()
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
@@ -259,9 +263,9 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 			continue
 		}
 		rb.Run(name, func(b *testing.B) {
-			data := dataset.Data(name)(rb)
+			data := assets.Data(name)(rb)
 			if data == nil {
-				b.Logf("dataset %s is nil", name)
+				b.Logf("assets %s is nil", name)
 				return
 			}
 			ids := data.IDs()
@@ -281,12 +285,16 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 
 			i := 0
 			b.Run("Insert objects", func(bb *testing.B) {
+				for bb.N+i >= len(ids) {
+					ids = append(ids, assets.CreateIDs(len(train))...)
+				}
+
 				bb.ReportAllocs()
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					_, err := client.Insert(ctx, &payload.Object_Vector{
 						Id:     ids[i],
-						Vector: train[i],
+						Vector: train[i%len(train)],
 					})
 					if err != nil {
 						bb.Error(err)
@@ -324,7 +332,7 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					_, err := client.Search(ctx, &payload.Search_Request{
-						Vector: query[i],
+						Vector: query[i%len(query)],
 						Config: searchConfig,
 					})
 					if err != nil {
@@ -368,9 +376,9 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 			continue
 		}
 		rb.Run(name, func(b *testing.B) {
-			data := dataset.Data(name)(rb)
+			data := assets.Data(name)(rb)
 			if data == nil {
-				b.Fatalf("dataset %s is nil", name)
+				b.Fatalf("assets %s is nil", name)
 			}
 			b.Logf("benchmark %s", name)
 			ids := data.IDs()
@@ -397,8 +405,8 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 			wg := &sync.WaitGroup{}
 			i := 0
 			b.Run("Insert objects", func(bb *testing.B) {
-				if bb.N+i >= len(ids) {
-					ids = append(ids, dataset.CreateIDs(len(train))...)
+				for bb.N+i >= len(ids) {
+					ids = append(ids, assets.CreateIDs(len(train))...)
 				}
 
 				bb.ReportAllocs()

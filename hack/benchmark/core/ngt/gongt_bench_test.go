@@ -25,7 +25,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/vdaas/vald/hack/benchmark/internal/dataset"
+	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/yahoojapan/gongt"
 )
@@ -61,14 +61,14 @@ func BenchmarkGoNGTSequential(b *testing.B) {
 
 	for _, target := range targets {
 		b.Run(target, func(bb *testing.B) {
-			tmpdir, err := ioutil.TempDir(target, "tmpdir")
+			tmpdir, err := ioutil.TempDir("", "tmpdir")
 			if err != nil {
 				bb.Error(err)
 			}
 			defer os.RemoveAll(tmpdir)
 
-			d := dataset.Data(target)(b)
-			n := gongt.New(tmpdir).SetObjectType(gongt.Float).SetDimension(d.Dimension()).Open()
+			d := assets.Data(target)(b)
+			n := gongt.SetIndexPath(tmpdir).SetObjectType(gongt.Float).SetDimension(d.Dimension()).Open()
 			defer n.Close()
 
 			bb.Run("Insert", func(sb *testing.B) {
@@ -116,14 +116,14 @@ func BenchmarkGoNGTParallel(b *testing.B) {
 
 	for _, target := range targets {
 		b.Run(target, func(bb *testing.B) {
-			tmpdir, err := ioutil.TempDir(target, "tmpdir")
+			tmpdir, err := ioutil.TempDir("", "tmpdir")
 			if err != nil {
 				bb.Error(err)
 			}
 			defer os.RemoveAll(tmpdir)
 
-			d := dataset.Data(target)(b)
-			n := gongt.New(tmpdir).SetObjectType(gongt.Float).SetDimension(d.Dimension()).Open()
+			d := assets.Data(target)(b)
+			n := gongt.SetIndexPath(tmpdir).SetObjectType(gongt.Float).SetDimension(d.Dimension()).Open()
 			defer n.Close()
 
 			bb.Run("Insert", func(sb *testing.B) {

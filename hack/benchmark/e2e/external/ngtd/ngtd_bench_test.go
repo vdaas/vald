@@ -31,7 +31,7 @@ import (
 	"time"
 
 	"github.com/kpango/glg"
-	"github.com/vdaas/vald/hack/benchmark/internal/dataset"
+	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/yahoojapan/gongt"
 	"github.com/yahoojapan/ngtd"
@@ -62,7 +62,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	flag.StringVar(&datasetVar, "dataset", "", "list available dataset(choice with comma)")
+	flag.StringVar(&datasetVar, "assets", "", "list available assets(choice with comma)")
 }
 
 func parseArgs() {
@@ -115,7 +115,7 @@ func BenchmarkNGTDRESTSequential(rb *testing.B) {
 		}
 
 		rb.Run(name, func(b *testing.B) {
-			data := dataset.Data(name)(rb)
+			data := assets.Data(name)(rb)
 			ids := data.IDs()
 			train := data.Train()
 			query := data.Query()
@@ -265,9 +265,9 @@ func BenchmarkNGTDgRPCSequential(rb *testing.B) {
 			continue
 		}
 		rb.Run(name, func(b *testing.B) {
-			data := dataset.Data(name)(rb)
+			data := assets.Data(name)(rb)
 			if data == nil {
-				b.Logf("dataset %s is nil", name)
+				b.Logf("assets %s is nil", name)
 				return
 			}
 			ids := data.IDs()
@@ -373,9 +373,9 @@ func BenchmarkNGTDgRPCStream(rb *testing.B) {
 			continue
 		}
 		rb.Run(name, func(b *testing.B) {
-			data := dataset.Data(name)(rb)
+			data := assets.Data(name)(rb)
 			if data == nil {
-				b.Logf("dataset %s is nil", name)
+				b.Logf("assets %s is nil", name)
 				return
 			}
 			ids := data.IDs()
@@ -405,7 +405,7 @@ func BenchmarkNGTDgRPCStream(rb *testing.B) {
 			i := 0
 			b.Run("Insert objects", func(bb *testing.B) {
 				if bb.N+i >= len(ids) {
-					ids = append(ids, dataset.CreateIDs(len(train))...)
+					ids = append(ids, assets.CreateIDs(len(train))...)
 				}
 
 				bb.ReportAllocs()

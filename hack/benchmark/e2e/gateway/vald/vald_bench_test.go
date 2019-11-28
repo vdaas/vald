@@ -26,7 +26,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/hack/benchmark/e2e/internal"
-	"github.com/vdaas/vald/hack/benchmark/internal/dataset"
+	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/internal/log"
 )
 
@@ -77,9 +77,9 @@ func BenchmarkValdGatewaySequential(rb *testing.B) {
 			continue
 		}
 		rb.Run(name, func(b *testing.B) {
-			data := dataset.Data(name)(rb)
+			data := assets.Data(name)(rb)
 			if data == nil {
-				b.Logf("dataset %s is nil", name)
+				b.Logf("assets %s is nil", name)
 				return
 			}
 			ids := data.IDs()
@@ -165,9 +165,9 @@ func BenchmarkValdGatewayStream(rb *testing.B) {
 			continue
 		}
 		rb.Run(name, func(b *testing.B) {
-			data := dataset.Data(name)(rb)
+			data := assets.Data(name)(rb)
 			if data == nil {
-				b.Fatalf("dataset %s is nil", name)
+				b.Fatalf("assets %s is nil", name)
 			}
 			b.Logf("benchmark %s", name)
 			ids := data.IDs()
@@ -189,7 +189,7 @@ func BenchmarkValdGatewayStream(rb *testing.B) {
 			i := 0
 			b.Run("Insert objects", func(bb *testing.B) {
 				if bb.N+i >= len(ids) {
-					ids = append(ids, dataset.CreateIDs(len(train))...)
+					ids = append(ids, assets.CreateIDs(len(train))...)
 				}
 
 				bb.ReportAllocs()

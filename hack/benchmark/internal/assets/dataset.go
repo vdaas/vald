@@ -13,10 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package dataset
+package assets
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -42,15 +44,11 @@ type dataset struct {
 	objectType   string
 }
 
-const (
-	datasetDir = "../../assets/dataset/"
-)
-
 var (
 	data = map[string]func(testing.TB) Dataset{
 		"fashion-mnist": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "fashion-mnist-784-euclidean.hdf5")
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "fashion-mnist-784-euclidean.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -67,7 +65,7 @@ var (
 		},
 		"mnist": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "mnist-784-euclidean.hdf5")
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "mnist-784-euclidean.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -84,7 +82,7 @@ var (
 		},
 		"glove-25": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "glove-25-angular.hdf5")
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "glove-25-angular.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -101,7 +99,7 @@ var (
 		},
 		"glove-50": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "glove-50-angular.hdf5")
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "glove-50-angular.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -118,7 +116,7 @@ var (
 		},
 		"glove-100": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "glove-100-angular.hdf5")
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "glove-100-angular.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -135,7 +133,7 @@ var (
 		},
 		"glove-200": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "glove-200-angular.hdf5")
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "glove-200-angular.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -152,7 +150,7 @@ var (
 		},
 		"nytimes": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "nytimes-256-angular.hdf5")
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "nytimes-256-angular.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -169,7 +167,7 @@ var (
 		},
 		"sift": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "sift-128-euclidean.hdf5")
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "sift-128-euclidean.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -186,7 +184,7 @@ var (
 		},
 		"gist": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "gist-960-euclidean.hdf5")
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "gist-960-euclidean.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -203,7 +201,7 @@ var (
 		},
 		"kosarak": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir + "kosarak-jaccard.hdf5")
+			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "/kosarak-jaccard.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -240,6 +238,25 @@ func identity(dim int) func(tb testing.TB) Dataset {
 			objectType:   "float",
 		}
 	}
+}
+
+func datasetDir(tb testing.TB) string {
+	tb.Helper()
+	wd, err := os.Getwd()
+	if err != nil {
+		tb.Error(err)
+	}
+	root := func(cur string) string {
+		for {
+			parent := filepath.Dir(cur)
+			if strings.HasSuffix(parent, "vald/hack") {
+				return parent
+			} else {
+				cur = parent
+			}
+		}
+	}(wd)
+	return filepath.Join(root, "benchmark/assets/dataset") + "/"
 }
 
 func Data(name string) func(testing.TB) Dataset {

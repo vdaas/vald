@@ -25,7 +25,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/apis/grpc/vald"
-	"github.com/vdaas/vald/hack/benchmark/internal/dataset"
+	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
@@ -99,7 +99,7 @@ func init() {
 	}
 }
 
-func StartAgentNGTServer(tb testing.TB, ctx context.Context, d dataset.Dataset) {
+func StartAgentNGTServer(tb testing.TB, ctx context.Context, d assets.Dataset) {
 	tb.Helper()
 
 	once.Do(func() {

@@ -25,7 +25,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/vdaas/vald/hack/benchmark/internal/dataset"
+	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/internal/core/ngt"
 	"github.com/vdaas/vald/internal/log"
 )
@@ -60,8 +60,8 @@ func BenchmarkNGTSequential(b *testing.B) {
 
 	for _, target := range targets {
 		b.Run(target, func(bb *testing.B) {
-			d := dataset.Data(target)(b)
-			tmpdir, err := ioutil.TempDir(target, "tmpdir")
+			d := assets.Data(target)(b)
+			tmpdir, err := ioutil.TempDir("", "tmpdir")
 			if err != nil {
 				bb.Error(err)
 			}
@@ -119,7 +119,7 @@ func BenchmarkNGTParallel(b *testing.B) {
 	parseArgs(b)
 
 	for _, target := range targets {
-		d := dataset.Data(target)(b)
+		d := assets.Data(target)(b)
 		b.Run(target, func(bb *testing.B) {
 			tmpdir, err := ioutil.TempDir("", "tmpdir")
 			if err != nil {
@@ -135,7 +135,7 @@ func BenchmarkNGTParallel(b *testing.B) {
 			if err != nil {
 				bb.Error(err)
 			}
-			defer n.Close()
+			// defer n.Close()
 
 			bb.Run("InsertParallel", func(sb *testing.B) {
 				train := d.Train()
