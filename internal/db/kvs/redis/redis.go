@@ -27,6 +27,10 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
+var (
+	Nil = redis.Nil
+)
+
 type Redis interface {
 	TxPipeline() redis.Pipeliner
 	Close() error
