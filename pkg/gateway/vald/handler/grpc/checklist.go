@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package handler
+package grpc
 
 import (
 	"sync"
