@@ -197,7 +197,12 @@ func (c *client) GetValue(key string) (string, error) {
 		uuidColumn: key,
 	})
 	if err := q.GetRelease(&value); err != nil {
-		return "", err
+		switch err {
+		case gocql.ErrNotFound:
+			return "", errors.NewErrCassandraNotFound(key)
+		default:
+			return "", err
+		}
 	}
 	return value, nil
 }
@@ -210,7 +215,12 @@ func (c *client) GetKey(value string) (string, error) {
 		metaColumn: value,
 	})
 	if err := q.GetRelease(&key); err != nil {
-		return "", err
+		switch err {
+		case gocql.ErrNotFound:
+			return "", errors.NewErrCassandraNotFound(value)
+		default:
+			return "", err
+		}
 	}
 	return key, nil
 }

@@ -26,6 +26,12 @@ var (
 		return Errorf("consistetncy type %q is not defined", consistency)
 	}
 
+	NewErrCassandraNotFound = func(key string) error {
+		return &ErrCassandraNotFound{
+			err: Errorf("error cassandra key '%s' not found", key),
+		}
+	}
+
 	ErrCassandraGetOperationFailed = func(key string, err error) error {
 		return Wrapf(err, "Failed to fetch key (%s)", key)
 	}
@@ -38,3 +44,11 @@ var (
 		return Wrapf(err, "Failed to delete key (%s)", key)
 	}
 )
+
+type ErrCassandraNotFound struct {
+	err error
+}
+
+func (e *ErrCassandraNotFound) Error() string {
+	return e.err.Error()
+}
