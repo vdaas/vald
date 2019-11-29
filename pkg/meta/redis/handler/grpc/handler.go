@@ -31,6 +31,15 @@ type server struct {
 	redis service.Redis
 }
 
+type errDetail struct {
+	method string
+	key    string
+	val    string
+	keys   []string
+	vals   []string
+	kvs    map[string]string
+}
+
 func New(opts ...Option) meta.MetaServer {
 	s := new(server)
 
@@ -43,11 +52,12 @@ func New(opts ...Option) meta.MetaServer {
 func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.Meta_Val, error) {
 	val, err := s.redis.Get(key.GetKey())
 	if err != nil {
+		detail := errDetail{method: "GetMeta", key: key.GetKey()}
 		switch err.(type) {
 		case *errors.ErrRedisNotFound:
-			return nil, status.WrapWithNotFound(err)
+			return nil, status.WrapWithNotFound("Redis entry not found", &detail, err)
 		default:
-			return nil, status.WrapWithUnknown(err)
+			return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
 		}
 	}
 	return &payload.Meta_Val{
@@ -58,7 +68,7 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (*payload.Meta_Vals, error) {
 	vals, err := s.redis.GetMultiple(keys.GetKeys()...)
 	if err != nil {
-		return nil, status.WrapWithUnknown(err)
+		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "GetMetas", keys: keys.GetKeys()}, err)
 	}
 	return &payload.Meta_Vals{
 		Vals: vals,
@@ -68,11 +78,12 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (*payloa
 func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*payload.Meta_Key, error) {
 	key, err := s.redis.GetInverse(val.GetVal())
 	if err != nil {
+		detail := errDetail{method: "GetMetaInverse", val: val.GetVal()}
 		switch err.(type) {
 		case *errors.ErrRedisNotFound:
-			return nil, status.WrapWithNotFound(err)
+			return nil, status.WrapWithNotFound("Redis entry not found", &detail, err)
 		default:
-			return nil, status.WrapWithUnknown(err)
+			return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
 		}
 	}
 	return &payload.Meta_Key{
@@ -83,7 +94,7 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (*payload.Meta_Keys, error) {
 	keys, err := s.redis.GetInverseMultiple(vals.GetVals()...)
 	if err != nil {
-		return nil, status.WrapWithUnknown(err)
+		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "GetMetasInverse", vals: vals.GetVals()}, err)
 	}
 	return &payload.Meta_Keys{
 		Keys: keys,
@@ -93,7 +104,7 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *payload.Empty, err error) {
 	err = s.redis.Set(kv.GetKey(), kv.GetVal())
 	if err != nil {
-		return nil, status.WrapWithUnknown(err)
+		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "SetMeta", key: kv.GetKey(), val: kv.GetVal()}, err)
 	}
 	return new(payload.Empty), nil
 }
@@ -105,7 +116,7 @@ func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *pa
 	}
 	err = s.redis.SetMultiple(query)
 	if err != nil {
-		return nil, status.WrapWithUnknown(err)
+		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "SetMetas", kvs: query}, err)
 	}
 	return new(payload.Empty), nil
 
@@ -114,11 +125,12 @@ func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *pa
 func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payload.Meta_Val, error) {
 	val, err := s.redis.Delete(key.GetKey())
 	if err != nil {
+		detail := errDetail{method: "DeleteMeta", key: key.GetKey()}
 		switch err.(type) {
 		case *errors.ErrRedisNotFound:
-			return nil, status.WrapWithNotFound(err)
+			return nil, status.WrapWithNotFound("Redis entry not found", &detail, err)
 		default:
-			return nil, status.WrapWithUnknown(err)
+			return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
 		}
 	}
 	return &payload.Meta_Val{
@@ -129,7 +141,7 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (*payload.Meta_Vals, error) {
 	vals, err := s.redis.DeleteMultiple(keys.GetKeys()...)
 	if err != nil {
-		return nil, status.WrapWithUnknown(err)
+		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "DeleteMetas", keys: keys.GetKeys()}, err)
 	}
 	return &payload.Meta_Vals{
 		Vals: vals,
@@ -139,11 +151,12 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (*pay
 func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (*payload.Meta_Key, error) {
 	key, err := s.redis.DeleteInverse(val.GetVal())
 	if err != nil {
+		detail := errDetail{method: "DeleteMetaInverse", val: val.GetVal()}
 		switch err.(type) {
 		case *errors.ErrRedisNotFound:
-			return nil, status.WrapWithNotFound(err)
+			return nil, status.WrapWithNotFound("Redis entry not found", &detail, err)
 		default:
-			return nil, status.WrapWithUnknown(err)
+			return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
 		}
 	}
 	return &payload.Meta_Key{
@@ -154,7 +167,7 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (*payload.Meta_Keys, error) {
 	keys, err := s.redis.DeleteInverseMultiple(vals.GetVals()...)
 	if err != nil {
-		return nil, status.WrapWithUnknown(err)
+		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "DeleteMetasInverse", vals: vals.GetVals()}, err)
 	}
 	return &payload.Meta_Keys{
 		Keys: keys,

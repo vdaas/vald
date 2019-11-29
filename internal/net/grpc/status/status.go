@@ -18,70 +18,100 @@
 package status
 
 import (
+	"fmt"
+	"os"
+
+	"github.com/vdaas/vald/apis/grpc/errors"
+	"github.com/vdaas/vald/internal/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func WrapWithCanceled(err error) error {
-	return status.New(codes.Canceled, err.Error()).Err()
+func newStatus(code codes.Code, msg string, detail interface{}, err error) *status.Status {
+	st := status.New(code, msg)
+
+	data := errors.Errors_RFC7807{
+		Type:   code.String(),
+		Title:  msg,
+		Detail: fmt.Sprintf("%#v", detail),
+		Status: int64(code),
+		Error:  err.Error(),
+	}
+
+	data.Instance, err = os.Hostname()
+	if err != nil {
+		log.Error(err)
+	}
+
+	dst, err := st.WithDetails(&data)
+	if err != nil {
+		log.Error(err)
+		return st
+	}
+
+	return dst
 }
 
-func WrapWithUnknown(err error) error {
-	return status.New(codes.Unknown, err.Error()).Err()
+func WrapWithCanceled(msg string, detail interface{}, err error) error {
+	return newStatus(codes.Canceled, msg, detail, err).Err()
 }
 
-func WrapWithInvalidArgument(err error) error {
-	return status.New(codes.InvalidArgument, err.Error()).Err()
+func WrapWithUnknown(msg string, detail interface{}, err error) error {
+	return newStatus(codes.Unknown, msg, detail, err).Err()
 }
 
-func WrapWithDeadlineExceeded(err error) error {
-	return status.New(codes.DeadlineExceeded, err.Error()).Err()
+func WrapWithInvalidArgument(msg string, detail interface{}, err error) error {
+	return newStatus(codes.InvalidArgument, msg, detail, err).Err()
 }
 
-func WrapWithNotFound(err error) error {
-	return status.New(codes.NotFound, err.Error()).Err()
+func WrapWithDeadlineExceeded(msg string, detail interface{}, err error) error {
+	return newStatus(codes.DeadlineExceeded, msg, detail, err).Err()
 }
 
-func WrapWithAlreadyExists(err error) error {
-	return status.New(codes.AlreadyExists, err.Error()).Err()
+func WrapWithNotFound(msg string, detail interface{}, err error) error {
+	return newStatus(codes.NotFound, msg, detail, err).Err()
 }
 
-func WrapWithPermissionDenied(err error) error {
-	return status.New(codes.PermissionDenied, err.Error()).Err()
+func WrapWithAlreadyExists(msg string, detail interface{}, err error) error {
+	return newStatus(codes.AlreadyExists, msg, detail, err).Err()
 }
 
-func WrapWithResourceExhausted(err error) error {
-	return status.New(codes.ResourceExhausted, err.Error()).Err()
+func WrapWithPermissionDenied(msg string, detail interface{}, err error) error {
+	return newStatus(codes.PermissionDenied, msg, detail, err).Err()
 }
 
-func WrapWithFailedPrecondition(err error) error {
-	return status.New(codes.FailedPrecondition, err.Error()).Err()
+func WrapWithResourceExhausted(msg string, detail interface{}, err error) error {
+	return newStatus(codes.ResourceExhausted, msg, detail, err).Err()
 }
 
-func WrapWithAborted(err error) error {
-	return status.New(codes.Aborted, err.Error()).Err()
+func WrapWithFailedPrecondition(msg string, detail interface{}, err error) error {
+	return newStatus(codes.FailedPrecondition, msg, detail, err).Err()
 }
 
-func WrapWithOutOfRange(err error) error {
-	return status.New(codes.OutOfRange, err.Error()).Err()
+func WrapWithAborted(msg string, detail interface{}, err error) error {
+	return newStatus(codes.Aborted, msg, detail, err).Err()
 }
 
-func WrapWithUnimplemented(err error) error {
-	return status.New(codes.Unimplemented, err.Error()).Err()
+func WrapWithOutOfRange(msg string, detail interface{}, err error) error {
+	return newStatus(codes.OutOfRange, msg, detail, err).Err()
 }
 
-func WrapWithInternal(err error) error {
-	return status.New(codes.Internal, err.Error()).Err()
+func WrapWithUnimplemented(msg string, detail interface{}, err error) error {
+	return newStatus(codes.Unimplemented, msg, detail, err).Err()
 }
 
-func WrapWithUnavailable(err error) error {
-	return status.New(codes.Unavailable, err.Error()).Err()
+func WrapWithInternal(msg string, detail interface{}, err error) error {
+	return newStatus(codes.Internal, msg, detail, err).Err()
 }
 
-func WrapWithDataLoss(err error) error {
-	return status.New(codes.DataLoss, err.Error()).Err()
+func WrapWithUnavailable(msg string, detail interface{}, err error) error {
+	return newStatus(codes.Unavailable, msg, detail, err).Err()
 }
 
-func WrapWithUnauthenticated(err error) error {
-	return status.New(codes.Unauthenticated, err.Error()).Err()
+func WrapWithDataLoss(msg string, detail interface{}, err error) error {
+	return newStatus(codes.DataLoss, msg, detail, err).Err()
+}
+
+func WrapWithUnauthenticated(msg string, detail interface{}, err error) error {
+	return newStatus(codes.Unauthenticated, msg, detail, err).Err()
 }
