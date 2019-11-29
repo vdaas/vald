@@ -17,8 +17,6 @@
 // Package errors provides error types and function
 package errors
 
-import "fmt"
-
 // "github.com/pkg/errors"
 
 var (
@@ -28,9 +26,9 @@ var (
 		return Errorf("consistetncy type %q is not defined", consistency)
 	}
 
-	NewErrCassandraNotFound = func(key string) *ErrCassandraNotFound {
+	NewErrCassandraNotFound = func(err error, key string) error {
 		return &ErrCassandraNotFound{
-			Key: key,
+			err: Wrapf(err, "error cassandra key '%s' not found", key),
 		}
 	}
 
@@ -48,9 +46,9 @@ var (
 )
 
 type ErrCassandraNotFound struct {
-	Key string
+	err error
 }
 
 func (e *ErrCassandraNotFound) Error() string {
-	return fmt.Sprintf("Key '%s' not found", e.Key)
+	return e.err.Error()
 }

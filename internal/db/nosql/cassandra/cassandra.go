@@ -222,7 +222,7 @@ func (c *client) GetValue(key string) (string, error) {
 	if err := q.GetRelease(&value); err != nil {
 		switch err {
 		case ErrNotFound:
-			return "", errors.NewErrCassandraNotFound(key)
+			return "", errors.NewErrCassandraNotFound(err, key)
 		default:
 			return "", err
 		}
@@ -238,7 +238,12 @@ func (c *client) GetKey(value string) (string, error) {
 		metaColumn: value,
 	})
 	if err := q.GetRelease(&key); err != nil {
-		return "", err
+		switch err {
+		case ErrNotFound:
+			return "", errors.NewErrCassandraNotFound(err, value)
+		default:
+			return "", err
+		}
 	}
 	return key, nil
 }

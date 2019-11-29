@@ -17,8 +17,6 @@
 // Package errors provides error types and function
 package errors
 
-import "fmt"
-
 // "github.com/pkg/errors"
 
 var (
@@ -28,8 +26,9 @@ var (
 		return Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", kv, vk)
 	}
 
-	NewErrRedisNotFound = func(key string) *ErrRedisNotFound {
+	NewErrRedisNotFound = func(err error, key string) *ErrRedisNotFound {
 		return &ErrRedisNotFound{
+			Err: err,
 			Key: key,
 		}
 	}
@@ -54,9 +53,10 @@ var (
 )
 
 type ErrRedisNotFound struct {
+	Err error
 	Key string
 }
 
 func (e *ErrRedisNotFound) Error() string {
-	return fmt.Sprintf("Key '%s' not found", e.Key)
+	return Wrapf(e.Err, "Key '%s' not found", e.Key).Error()
 }
