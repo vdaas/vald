@@ -111,7 +111,9 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 
 	eg.Go(safety.RecoverFunc(func() error {
 		defer cancel()
-		cl := new(checkList)
+		// cl := new(checkList)
+		visited := make(map[string]bool, len(res.Results))
+		mu := sync.RWMutex{}
 		return s.gateway.BroadCast(ectx, func(ctx context.Context, target string, ac agent.AgentClient) error {
 			log.Debug(target)
 			r, err := f(ctx, ac)
@@ -124,10 +126,20 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					return nil
 				}
 				id := dist.GetId()
-				if !cl.Exists(id) {
+				mu.RLock()
+				if !visited[id] {
+					mu.RUnlock()
+					mu.Lock()
+					visited[id] = true
+					mu.Unlock()
 					dch <- dist
-					cl.Check(id)
+				} else {
+					mu.RUnlock()
 				}
+				// if !cl.Exists(id) {
+				// 	dch <- dist
+				// 	cl.Check(id)
+				// }
 			}
 			return nil
 		})
@@ -136,7 +148,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 		select {
 		case <-ectx.Done():
 			err = eg.Wait()
-			if err != nil{
+			if err != nil {
 				log.Error(err)
 			}
 			close(dch)
@@ -153,7 +165,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					for i, k := range metas {
 						res.Results[i].Id = k
 					}
-				}else{
+				} else {
 					log.Error(err)
 				}
 			}
