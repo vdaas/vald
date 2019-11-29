@@ -29,29 +29,51 @@ bench/datasets: $(BENCH_DATASETS)
 bench/datasets/clean:
 	rm -rf $(BENCH_DATASETS)
 
-.PHONY: bench/create-index
-bench/create-index:
-	$(MAKE) -C ./hack/core/ngt create
-
 .PHONY: bench/core
+## run benchmark for core
+bench/core: \
+	bench/core/ngt \
+	bench/core/gongt
+
+.PHONY: bench/core/ngt
 ## run benchmark for NGT core
-bench/core: bench/create-index
-	$(MAKE) -C ./hach/core/ngt bench
+bench/core/ngt: \
+	bench/core/ngt/sequential \
+    bench/core/ngt/parallel
 
-.PHONY: bench/core/lite
-## run lite benchmark for NGT core
-bench/core/lite: bench/create-index
-	$(MAKE) -C ./hach/core/ngt bench-lite
+.PHONY: bench/core/ngt/sequential
+## run benchmark for NGT core sequential methods
+bench/core/ngt/sequential:
+	$(call bench-pprof,pprof/core/ngt,core,NGTSequential,ngt,\
+    		./hack/benchmark/core/ngt/ngt_bench_test.go \
+    		-dataset=$(DATASET_ARGS))
 
-.PHONY: bench/core/clean
-## clean results for NGT core benchmark
-bench/core/clean:
-	$(MAKE) -C ./hack/core/ngt clean
+.PHONY: bench/core/ngt/parallel
+## run benchmark for NGT core parallel methods
+bench/core/ngt/parallel:
+	$(call bench-pprof,pprof/core/ngt,core,NGTParallel,ngt,\
+    		./hack/benchmark/core/ngt/ngt_bench_test.go \
+    		-dataset=$(DATASET_ARGS))
 
-.PHONY: bench/e2e
-## run e2e benchmark
-bench/e2e:
-	$(MAKE) -C ./hack/e2e/benchmark bench
+.PHONY: bench/core/gongt
+## run benchmark for gongt core
+bench/core/gongt: \
+	bench/core/gongt/sequential \
+    bench/core/gongt/parallel
+
+.PHONY: bench/core/gongt/sequential
+## run benchmark for gongt core sequential methods
+bench/core/gongt/sequential:
+	$(call bench-pprof,pprof/core/gongt,core,GoNGTSequential,gongt,\
+    		./hack/benchmark/core/ngt/gongt_bench_test.go \
+    		-dataset=$(DATASET_ARGS))
+
+.PHONY: bench/core/gongt/parallel
+## run benchmark for gongt core parallel methods
+bench/core/gongt/parallel:
+	$(call bench-pprof,pprof/core/gongt,core,GoNGTParallel,gongt,\
+    		./hack/benchmark/core/ngt/gongt_bench_test.go \
+    		-dataset=$(DATASET_ARGS))
 
 .PHONY: bench
 ## run benchmarks
@@ -71,21 +93,21 @@ bench/agent: \
 bench/agent/stream: \
 	ngt/install
 	$(call bench-pprof,pprof/agent/ngt,agent,gRPCStream,stream,\
-		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
+		./hack/benchmark/e2e/agent/ngt/ngt_bench_test.go \
 		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/agent/sequential/grpc
 bench/agent/sequential/grpc: \
 	ngt/install
 	$(call bench-pprof,pprof/agent/ngt,agent,gRPCSequential,sequential-grpc,\
-		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
+		./hack/benchmark/e2e/agent/ngt/ngt_bench_test.go \
 		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/agent/sequential/rest
 bench/agent/sequential/rest: \
 	ngt/install
 	$(call bench-pprof,pprof/agent/ngt,agent,RESTSequential,sequential-rest,\
-		./hack/e2e/benchmark/agent/ngt/ngt_bench_test.go \
+		./hack/benchmark/e2e/agent/ngt/ngt_bench_test.go \
 		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/ngtd
@@ -99,28 +121,28 @@ bench/ngtd: \
 bench/ngtd/stream: \
 	ngt/install
 	$(call bench-pprof,pprof/external/ngtd,ngtd,gRPCStream,stream,\
-		./hack/e2e/benchmark/external/ngtd/ngtd_bench_test.go \
+		./hack/benchmark/e2e/external/ngtd/ngtd_bench_test.go \
 		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/ngtd/sequential/grpc
 bench/ngtd/sequential/grpc: \
 	ngt/install
 	$(call bench-pprof,pprof/external/ngtd,ngtd,gRPCSequential,sequential-grpc,\
-		./hack/e2e/benchmark/external/ngtd/ngtd_bench_test.go \
+		./hack/benchmark/e2e/external/ngtd/ngtd_bench_test.go \
 		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/ngtd/sequential/rest
 bench/ngtd/sequential/rest: \
 	ngt/install
 	$(call bench-pprof,pprof/external/ngtd,ngtd,RESTSequential,sequential-rest,\
-		./hack/e2e/benchmark/external/ngtd/ngtd_bench_test.go \
+		./hack/benchmark/e2e/external/ngtd/ngtd_bench_test.go \
 		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/gateway/sequential
 bench/gateway/sequential: \
 	ngt/install
 	$(call bench-pprof,pprof/gateway/vald,vald,Sequential,sequential,\
-		./hack/e2e/benchmark/gateway/vald/vald_bench_test.go \
+		./hack/benchmark/e2e/gateway/vald/vald_bench_test.go \
 		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: profile
