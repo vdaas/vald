@@ -33,29 +33,6 @@ const (
 	metaColumn = "meta"
 )
 
-var (
-	ErrNoHosts              = gocql.ErrNoHosts
-	ErrNoConnectionsStarted = gocql.ErrNoConnectionsStarted
-	ErrHostQueryFailed      = gocql.ErrHostQueryFailed
-
-	ErrQueryArgLength    = gocql.ErrQueryArgLength
-	ErrTimeoutNoResponse = gocql.ErrTimeoutNoResponse
-	ErrTooManyTimeouts   = gocql.ErrTooManyTimeouts
-	ErrConnectionClosed  = gocql.ErrConnectionClosed
-	ErrNoStreams         = gocql.ErrNoStreams
-
-	ErrNotFound             = gocql.ErrNotFound
-	ErrUnavailable          = gocql.ErrUnavailable
-	ErrUnsupported          = gocql.ErrUnsupported
-	ErrTooManyStmts         = gocql.ErrTooManyStmts
-	ErrUseStmt              = gocql.ErrUseStmt
-	ErrSessionClosed        = gocql.ErrSessionClosed
-	ErrNoConnections        = gocql.ErrNoConnections
-	ErrNoKeyspace           = gocql.ErrNoKeyspace
-	ErrKeyspaceDoesNotExist = gocql.ErrKeyspaceDoesNotExist
-	ErrNoMetadata           = gocql.ErrNoMetadata
-)
-
 type Cassandra interface {
 	Open(ctx context.Context) error
 	Close(ctx context.Context) error
@@ -221,7 +198,7 @@ func (c *client) GetValue(key string) (string, error) {
 	})
 	if err := q.GetRelease(&value); err != nil {
 		switch err {
-		case ErrNotFound:
+		case gocql.ErrNotFound:
 			return "", errors.NewErrCassandraNotFound(err, key)
 		default:
 			return "", err
@@ -239,7 +216,7 @@ func (c *client) GetKey(value string) (string, error) {
 	})
 	if err := q.GetRelease(&key); err != nil {
 		switch err {
-		case ErrNotFound:
+		case gocql.ErrNotFound:
 			return "", errors.NewErrCassandraNotFound(err, value)
 		default:
 			return "", err
