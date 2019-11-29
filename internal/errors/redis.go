@@ -26,10 +26,9 @@ var (
 		return Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", kv, vk)
 	}
 
-	NewErrRedisNotFound = func(err error, key string) *ErrRedisNotFound {
+	NewErrRedisNotFound = func(err error, key string) error {
 		return &ErrRedisNotFound{
-			Err: err,
-			Key: key,
+			err: Wrapf(err, "error redis key '%s' not found", key),
 		}
 	}
 
@@ -53,10 +52,9 @@ var (
 )
 
 type ErrRedisNotFound struct {
-	Err error
-	Key string
+	err error
 }
 
 func (e *ErrRedisNotFound) Error() string {
-	return Wrapf(e.Err, "Key '%s' not found", e.Key).Error()
+	return e.err.Error()
 }
