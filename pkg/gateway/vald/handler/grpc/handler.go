@@ -113,8 +113,10 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 		defer cancel()
 		cl := new(checkList)
 		return s.gateway.BroadCast(ectx, func(ctx context.Context, target string, ac agent.AgentClient) error {
+			log.Debug(target)
 			r, err := f(ctx, ac)
 			if err != nil {
+				log.Error(err)
 				return err
 			}
 			for _, dist := range r.GetResults() {
@@ -134,6 +136,9 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 		select {
 		case <-ectx.Done():
 			err = eg.Wait()
+			if err != nil{
+				log.Error(err)
+			}
 			close(dch)
 			if len(res.GetResults()) > num && num != 0 {
 				res.Results = res.Results[:num]
@@ -148,11 +153,14 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					for i, k := range metas {
 						res.Results[i].Id = k
 					}
+				}else{
+					log.Error(err)
 				}
 			}
 			if s.filter != nil {
 				r, err := s.filter.FilterSearch(ctx, res)
 				if err != nil {
+					log.Error(err)
 					return res, err
 				}
 				res = r
