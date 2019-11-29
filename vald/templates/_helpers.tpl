@@ -43,3 +43,203 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
+
+{{/*
+Container ports
+*/}}
+{{- define "vald.containerPorts" -}}
+{{- $livenessEnabled := default .default.healths.liveness.enabled .Values.healths.liveness.enabled }}
+{{- if $livenessEnabled }}
+livenessProbe:
+  httpGet:
+    path: /liveness
+    port: liveness
+    scheme: HTTP
+  initialDelaySeconds: 5
+  timeoutSeconds: 2
+  successThreshold: 1
+  failureThreshold: 2
+  periodSeconds: 3
+{{- end }}
+{{- $readinessEnabled := default .default.healths.readiness.enabled .Values.healths.readiness.enabled }}
+{{- if $readinessEnabled }}
+readinessProbe:
+  httpGet:
+    path: /readiness
+    port: readiness
+    scheme: HTTP
+  initialDelaySeconds: 10
+  timeoutSeconds: 2
+  successThreshold: 1
+  failureThreshold: 2
+  periodSeconds: 3
+{{- end }}
+ports:
+  {{- if $livenessEnabled }}
+  - name: liveness
+    protocol: TCP
+    containerPort: {{ default .default.healths.liveness.port .Values.healths.liveness.port }}
+  {{- end }}
+  {{- if $readinessEnabled }}
+  - name: readiness
+    protocol: TCP
+    containerPort: {{ default .default.healths.readiness.port .Values.healths.readiness.port }}
+  {{- end }}
+  {{- $restEnabled := default .default.servers.rest.enabled .Values.servers.rest.enabled }}
+  {{- if $restEnabled }}
+  - name: rest
+    protocol: TCP
+    containerPort: {{ default .default.servers.rest.port .Values.servers.rest.port }}
+  {{- end }}
+  {{- $grpcEnabled := default .default.servers.grpc.enabled .Values.servers.grpc.enabled }}
+  {{- if $grpcEnabled }}
+  - name: grpc
+    protocol: TCP
+    containerPort: {{ default .default.servers.grpc.port .Values.servers.grpc.port }}
+  {{- end }}
+  {{- $pprofEnabled := default .default.metrics.pprof.enabled .Values.metrics.pprof.enabled }}
+  {{- if $pprofEnabled }}
+  - name: pprof
+    protocol: TCP
+    containerPort: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
+  {{- end }}
+{{- end -}}
+
+{/*
+Service ports
+*/}
+{{- define "vald.servicePorts" -}}
+ports:
+  {{- $restEnabled := default .default.servers.rest.enabled .Values.servers.rest.enabled }}
+  {{- if $restEnabled }}
+  - name: rest
+    port: {{ default .default.servers.rest.port .Values.servers.rest.port }}
+  {{- end }}
+  {{- $grpcEnabled := default .default.servers.grpc.enabled .Values.servers.grpc.enabled }}
+  {{- if $grpcEnabled }}
+  - name: grpc
+    port: {{ default .default.servers.grpc.port .Values.servers.grpc.port }}
+  {{- end }}
+  {{- $pprofEnabled := default .default.metrics.pprof.enabled .Values.metrics.pprof.enabled }}
+  {{- if $pprofEnabled }}
+  - name: pprof
+    port: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
+  {{- end }}
+{{- end -}}
+
+{{/*
+Server configures that inserted into server_config
+*/}}
+{{- define "vald.servers" -}}
+servers:
+  {{- $restEnabled := default .default.servers.rest.enabled .Values.servers.rest.enabled }}
+  {{- if $restEnabled }}
+  - name: {{ .Values.prefix }}-rest
+    host: {{ default .default.servers.rest.host .Values.servers.rest.host }}
+    port: {{ default .default.servers.rest.port .Values.servers.rest.port }}
+    mode: REST
+    probe_wait_time: 3s
+    http:
+      shutdown_duration: 5s
+      handler_timeout: 5s
+      idle_timeout: 2s
+      read_header_timeout: 1s
+      read_timeout: 1s
+      write_timeout: 1s
+  {{- end }}
+  {{- $grpcEnabled := default .default.servers.grpc.enabled .Values.servers.grpc.enabled }}
+  {{- if $grpcEnabled }}
+  - name: {{ .Values.prefix }}-grpc
+    host: {{ default .default.servers.grpc.host .Values.servers.grpc.host }}
+    port: {{ default .default.servers.grpc.port .Values.servers.grpc.port }}
+    mode: GRPC
+    probe_wait_time: "3s"
+    grpc:
+      max_receive_message_size: 0
+      max_send_message_size: 0
+      initial_window_size: 0
+      initial_conn_window_size: 0
+      keepalive:
+        max_idle_conn_idle: O
+        max_conn_age: ""
+        max_conn_age_grace: ""
+        time: ""
+        timeout: ""
+      write_buffer_size: 0
+      read_buffer_size: 0
+      connection_timeout: ""
+      max_header_list_size: 0
+      header_table_size: 0
+      interceptors: []
+    restart: true
+  {{- end }}
+health_check_servers:
+  {{- $livenessEnabled := default .default.healths.liveness.enabled .Values.healths.liveness.enabled }}
+  {{- if $livenessEnabled }}
+  - name: {{ .Values.prefix }}-liveness
+    host: {{ default .default.healths.liveness.host .Values.healths.liveness.host }}
+    port: {{ default .default.healths.liveness.port .Values.healths.liveness.port }}
+    mode: ""
+    probe_wait_time: "3s"
+    http:
+      shutdown_duration: "5s"
+      handler_timeout: ""
+      idle_timeout: ""
+      read_header_timeout: ""
+      read_timeout: ""
+      write_timeout: ""
+  {{- end }}
+  {{- $readinessEnabled := default .default.healths.readiness.enabled .Values.healths.readiness.enabled }}
+  {{- if $readinessEnabled }}
+  - name: {{ .Values.prefix }}-readiness
+    host: {{ default .default.healths.readiness.host .Values.healths.readiness.host }}
+    port: {{ default .default.healths.readiness.port .Values.healths.readiness.port }}
+    mode: ""
+    probe_wait_time: "3s"
+    http:
+      shutdown_duration: "5s"
+      handler_timeout: ""
+      idle_timeout: ""
+      read_header_timeout: ""
+      read_timeout: ""
+      write_timeout: ""
+  {{- end }}
+metrics_servers:
+  {{- $pprofEnabled := default .default.metrics.pprof.enabled .Values.metrics.pprof.enabled }}
+  {{- if $pprofEnabled }}
+  - name: {{ .Values.prefix }}-pprof
+    host: {{ default .default.metrics.pprof.host .Values.metrics.pprof.host }}
+    port: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
+    mode: REST
+    probe_wait_time: 3s
+    http:
+      shutdown_duration: 5s
+      handler_timeout: 5s
+      idle_timeout: 2s
+      read_header_timeout: 1s
+      read_timeout: 1s
+      write_timeout: 1s
+  {{- end }}
+startup_strategy:
+  {{- if $livenessEnabled }}
+  - {{ .Values.prefix }}-liveness
+  {{- end }}
+  {{- if $pprofEnabled }}
+  - {{ .Values.prefix }}-pprof
+  {{- end }}
+  {{- if $grpcEnabled }}
+  - {{ .Values.prefix }}-grpc
+  {{- end }}
+  {{- if $restEnabled }}
+  - {{ .Values.prefix }}-rest
+  {{- end }}
+  {{- if $readinessEnabled }}
+  - {{ .Values.prefix }}-readiness
+  {{- end }}
+full_shutdown_duration: {{ default .default.full_shutdown_duration .Values.full_shutdown_duration }}
+tls:
+  enabled: {{ default .default.tls.enabled .Values.tls.enabled }}
+  cert: {{ default .default.tls.cert .Values.tls.cert }}
+  key: {{ default .default.tls.key .Values.tls.key }}
+  ca: {{ default .default.tls.ca .Values.tls.ca }}
+{{- end -}}
