@@ -4,7 +4,7 @@ go 1.13
 
 replace (
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191122220453-ac88ee75c92c
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191128160524-b544559bb6d1
 	k8s.io/api => k8s.io/api v0.0.0-20191114100352-16d7abae0d2a
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20191114105449-027877536833
 	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20191028221656-72ed19daf4bb
@@ -22,6 +22,7 @@ require (
 	github.com/getsentry/raven-go v0.2.0 // indirect
 	github.com/go-redis/redis/v7 v7.0.0-beta.4
 	github.com/go-sql-driver/mysql v1.4.1
+	github.com/gocql/gocql v0.0.0-20191126110522-1982a06ad6b9
 	github.com/gocraft/dbr/v2 v2.6.3
 	github.com/gogo/protobuf v1.3.1
 	github.com/google/gofuzz v1.0.0
@@ -32,9 +33,10 @@ require (
 	github.com/kpango/fuid v0.0.0-20190507064958-80435564606b
 	github.com/kpango/gache v1.1.23
 	github.com/kpango/glg v1.4.6
+	github.com/scylladb/gocqlx v1.3.1
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
-	golang.org/x/sys v0.0.0-20191120155948-bd437916bb0e
+	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	google.golang.org/genproto v0.0.0-20191115221424-83cc0476cb11
 	google.golang.org/grpc v1.25.1
