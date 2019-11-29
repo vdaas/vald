@@ -100,7 +100,6 @@ clean:
 		./*.svg \
 		./apis/docs \
 		./apis/graphql \
-		./apis/grpc \
 		./apis/swagger \
 		./bench \
 		./pprof \
