@@ -26,9 +26,9 @@ var (
 		return Errorf("consistetncy type %q is not defined", consistency)
 	}
 
-	NewErrCassandraNotFound = func(err error, key string) error {
+	NewErrCassandraNotFound = func(key string) error {
 		return &ErrCassandraNotFound{
-			err: Wrapf(err, "error cassandra key '%s' not found", key),
+			err: Errorf("error cassandra key '%s' not found", key),
 		}
 	}
 

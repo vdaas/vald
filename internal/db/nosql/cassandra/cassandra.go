@@ -199,7 +199,7 @@ func (c *client) GetValue(key string) (string, error) {
 	if err := q.GetRelease(&value); err != nil {
 		switch err {
 		case gocql.ErrNotFound:
-			return "", errors.NewErrCassandraNotFound(err, key)
+			return "", errors.NewErrCassandraNotFound(key)
 		default:
 			return "", err
 		}
@@ -217,7 +217,7 @@ func (c *client) GetKey(value string) (string, error) {
 	if err := q.GetRelease(&key); err != nil {
 		switch err {
 		case gocql.ErrNotFound:
-			return "", errors.NewErrCassandraNotFound(err, value)
+			return "", errors.NewErrCassandraNotFound(value)
 		default:
 			return "", err
 		}

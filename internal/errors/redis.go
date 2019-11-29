@@ -26,9 +26,9 @@ var (
 		return Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", kv, vk)
 	}
 
-	NewErrRedisNotFound = func(err error, key string) error {
+	NewErrRedisNotFound = func(key string) error {
 		return &ErrRedisNotFound{
-			err: Wrapf(err, "error redis key '%s' not found", key),
+			err: Errorf("error redis key '%s' not found", key),
 		}
 	}
 
