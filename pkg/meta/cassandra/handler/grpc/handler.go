@@ -123,7 +123,6 @@ func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *pa
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "SetMetas", kvs: query}, err)
 	}
 	return new(payload.Empty), nil
-
 }
 
 func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payload.Meta_Val, error) {

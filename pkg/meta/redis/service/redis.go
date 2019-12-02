@@ -148,7 +148,6 @@ func New(cfg *config.Redis) (Redis, error) {
 		c.opts = append(c.opts,
 			redis.WithRedirectLimit(cfg.MaxRedirects),
 		)
-
 	} else {
 		c.opts = append(c.opts,
 			redis.WithDB(cfg.DB),
@@ -245,7 +244,7 @@ func (c *client) getMulti(prefix string, keys ...string) (vals []string, err err
 		}
 		vals = append(vals, v)
 	}
-	return vals[:len(vals)], errs
+	return vals[:], errs
 }
 
 func (c *client) Set(key, val string) error {
@@ -346,5 +345,5 @@ func (c *client) deleteMulti(pfx, pfxInv string, keys ...string) (vals []string,
 			continue
 		}
 	}
-	return vals[:len(vals)], errs
+	return vals[:], errs
 }

@@ -143,7 +143,6 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "MultiInsert"}, err)
 	}
 	return res, nil
-
 }
 
 func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Empty, err error) {

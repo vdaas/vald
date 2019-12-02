@@ -93,7 +93,6 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	f func(ctx context.Context, ac agent.AgentClient) (*payload.Search_Response, error)) (
 	res *payload.Search_Response, err error) {
-
 	maxDist := uint32(math.MaxUint32)
 	num := int(cfg.GetNum())
 

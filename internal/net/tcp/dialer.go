@@ -50,7 +50,6 @@ type dialer struct {
 }
 
 func NewDialer(opts ...DialerOption) Dialer {
-
 	d := new(dialer)
 	for _, opt := range append(defaultDialerOptions, opts...) {
 		opt(d)
@@ -143,7 +142,6 @@ func (d *dialer) StartDialerCache(ctx context.Context) {
 
 func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (
 	conn net.Conn, err error) {
-
 	sep := strings.LastIndex(addr, ":")
 
 	ips, err := d.lookup(dctx, addr[:sep])

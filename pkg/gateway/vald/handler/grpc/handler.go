@@ -93,7 +93,6 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	f func(ctx context.Context, ac agent.AgentClient) (*payload.Search_Response, error)) (
 	res *payload.Search_Response, err error) {
-
 	maxDist := uint32(math.MaxUint32)
 	num := int(cfg.GetNum())
 	res = new(payload.Search_Response)
@@ -211,7 +210,6 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			case pos > 0:
 				res.Results = append(res.GetResults()[:pos], res.GetResults()[pos-1:]...)
 				res.Results[pos] = dist
-
 			}
 			if len(res.GetResults()) > num && num != 0 {
 				res.Results = res.GetResults()[:num]

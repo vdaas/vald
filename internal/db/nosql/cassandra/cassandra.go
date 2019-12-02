@@ -316,7 +316,6 @@ func (c *client) Set(key, value string) error {
 }
 
 func (c *client) MultiSet(keyvals map[string]string) error {
-
 	kvi := qb.Insert(c.kvTable).Columns(uuidColumn, metaColumn)
 	vki := qb.Insert(c.vkTable).Columns(uuidColumn, metaColumn)
 

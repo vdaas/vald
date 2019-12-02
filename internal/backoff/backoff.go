@@ -97,10 +97,9 @@ func (b *backoff) Do(ctx context.Context, f func() (interface{}, error)) (res in
 				continue
 			}
 		}
-		return
+		return res, nil
 	}
-
-	return
+	return res, err
 }
 
 func (b *backoff) addJitter(dur float64) float64 {

@@ -119,7 +119,6 @@ type grpcKeepAlive struct {
 }
 
 func New(opts ...Option) (Server, error) {
-
 	srv := new(server)
 
 	srv.mu.Lock()
@@ -337,7 +336,6 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 
 	case GRPC:
 		s.grpc.srv.GracefulStop()
-
 	}
 
 	s.wg.Wait()

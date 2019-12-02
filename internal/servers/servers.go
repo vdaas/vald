@@ -57,7 +57,6 @@ func New(opts ...Option) Listener {
 }
 
 func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
-
 	ech := make(chan error, len(l.servers)*10)
 
 	for _, name := range l.sus {

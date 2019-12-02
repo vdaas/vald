@@ -258,7 +258,6 @@ func (n *ngt) loadObjectSpace() error {
 
 // Search returns search result as []SearchResult
 func (n *ngt) Search(vec []float64, size int, epsilon, radius float32) ([]SearchResult, error) {
-
 	results := C.ngt_create_empty_results(n.ebuf)
 
 	defer C.ngt_destroy_results(results)

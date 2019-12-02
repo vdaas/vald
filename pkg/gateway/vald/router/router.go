@@ -31,7 +31,6 @@ type router struct {
 
 // New returns REST route&method information from handler interface
 func New(opts ...Option) http.Handler {
-
 	r := new(router)
 
 	for _, opt := range append(defaultOpts, opts...) {

@@ -41,7 +41,6 @@ func NewFilter(opts ...FilterOption) (ef Filter, err error) {
 		if err := opt(f); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
-
 	}
 
 	return f, nil

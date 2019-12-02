@@ -51,7 +51,7 @@ var (
 	}
 
 	ErrUncommittedIndexExists = func(num uint64) error {
-		return Errorf("%d indexes are not commited", num)
+		return Errorf("%d indexes are not committed", num)
 	}
 
 	ErrUncommittedIndexNotFound = New("uncommitted indexes are not found")
@@ -76,6 +76,6 @@ var (
 	}
 
 	ErrRemoveRequestedBeforeIndexing = func(oid uint) error {
-		return Errorf("object id %d is not indexed we cannnot remove it", oid)
+		return Errorf("object id %d is not indexed we cannot remove it", oid)
 	}
 )

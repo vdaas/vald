@@ -40,10 +40,6 @@ type entryCheckList struct {
 	p unsafe.Pointer
 }
 
-func newEntryCheckList(i struct{}) *entryCheckList {
-	return &entryCheckList{p: unsafe.Pointer(&i)}
-}
-
 func (m *checkList) Exists(key string) bool {
 	read, _ := m.read.Load().(readOnlyCheckList)
 	e, ok := read.m[key]
@@ -80,15 +76,15 @@ func (m *checkList) Check(key string) {
 		if e.unexpungeLocked() {
 			m.dirty[key] = e
 		}
-		e.storeLocked(&value)
+		atomic.StorePointer(&e.p, unsafe.Pointer(&value))
 	} else if e, ok := m.dirty[key]; ok {
-		e.storeLocked(&value)
+		atomic.StorePointer(&e.p, unsafe.Pointer(&value))
 	} else {
 		if !read.amended {
 			m.dirtyLocked()
 			m.read.Store(readOnlyCheckList{m: read.m, amended: true})
 		}
-		m.dirty[key] = newEntryCheckList(value)
+		m.dirty[key] = &entryCheckList{p: unsafe.Pointer(&value)}
 	}
 	m.mu.Unlock()
 }
@@ -107,10 +103,6 @@ func (e *entryCheckList) tryStore(i *struct{}) bool {
 
 func (e *entryCheckList) unexpungeLocked() (wasExpunged bool) {
 	return atomic.CompareAndSwapPointer(&e.p, expungedCheckList, nil)
-}
-
-func (e *entryCheckList) storeLocked(i *struct{}) {
-	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
 func (m *checkList) missLocked() {

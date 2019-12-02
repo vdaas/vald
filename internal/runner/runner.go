@@ -96,7 +96,6 @@ func Do(ctx context.Context, opts ...Option) error {
 }
 
 func Run(ctx context.Context, run Runner) (err error) {
-
 	sigCh := make(chan os.Signal, 1)
 	defer close(sigCh)
 
@@ -137,7 +136,6 @@ func Run(ctx context.Context, run Runner) (err error) {
 				}
 				log.Error(err)
 				emap[err.Error()]++
-
 			}
 			err = run.Stop(ctx)
 			if err != nil {

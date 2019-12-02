@@ -52,7 +52,6 @@ func New(opts ...Option) *parser {
 }
 
 func (p *parser) Parse() (*Data, bool, error) {
-
 	f := flag.NewFlagSet(filepath.Base(os.Args[0]), flag.ContinueOnError)
 
 	d := new(Data)

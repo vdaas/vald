@@ -174,7 +174,8 @@ test:
 .PHONY: lint
 ## run lints
 lint:
-	gometalinter --enable-all . | rg -v comment
+	$(call go-lint)
+	
 
 .PHONY: coverage
 ## calculate coverages
