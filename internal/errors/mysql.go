@@ -23,13 +23,59 @@ var (
 	// MySQL
 	ErrMySQLConnectionPingFailed = New("error MySQL connection ping failed")
 
+	NewErrMySQLNotFoundIdentity = func() error {
+		return &ErrMySQLNotFoundIdentity{
+			err: New("error mysql element not found"),
+		}
+	}
+
 	ErrMySQLConnectionClosed = New("error MySQL connection closed")
 
 	ErrRequiredElementNotFoundByUUID = func(uuid string) error {
-		return Errorf("error required element not found, uuid: %s", uuid)
+		return Wrapf(NewErrMySQLNotFoundIdentity(), "error required element not found, uuid: %s", uuid)
+	}
+
+	NewErrMySQLInvalidArgumentIdentity = func() error {
+		return &ErrMySQLInvalidArgumentIdentity{
+			err: New("error mysql invalid argument"),
+		}
 	}
 
 	ErrRequiredMemberNotFilled = func(member string) error {
-		return Errorf("error required member not filled (member: %s)", member)
+		return Wrapf(NewErrMySQLInvalidArgumentIdentity(), "error required member not filled (member: %s)", member)
 	}
 )
+
+type ErrMySQLNotFoundIdentity struct {
+	err error
+}
+
+func (e *ErrMySQLNotFoundIdentity) Error() string {
+	return e.err.Error()
+}
+
+func IsErrMySQLNotFound(err error) bool {
+	switch err.(type) {
+	case *ErrMySQLNotFoundIdentity:
+		return true
+	default:
+		return false
+	}
+}
+
+type ErrMySQLInvalidArgumentIdentity struct {
+	err error
+}
+
+func (e *ErrMySQLInvalidArgumentIdentity) Error() string {
+	return e.err.Error()
+}
+
+func IsErrMySQLInvalidArgument(err error) bool {
+	switch err.(type) {
+	case *ErrMySQLInvalidArgumentIdentity:
+		return true
+	default:
+		return false
+	}
+}

@@ -29,7 +29,7 @@ import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
  */
 
 message Errors {
-  message RFC7807 {
+  message RPC {
     string type = 1;
     string title = 2;
     string detail = 3;

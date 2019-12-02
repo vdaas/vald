@@ -30,7 +30,7 @@ import (
 func newStatus(code codes.Code, msg string, detail interface{}, err error) *status.Status {
 	st := status.New(code, msg)
 
-	data := errors.Errors_RFC7807{
+	data := errors.Errors_RPC{
 		Type:   code.String(),
 		Title:  msg,
 		Detail: fmt.Sprintf("%#v", detail),
