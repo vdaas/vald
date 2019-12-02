@@ -202,14 +202,14 @@ func (c *client) get(prefix, key string) (string, error) {
 	res := pipe.Get(c.appendPrefix(prefix, key))
 	if _, err := pipe.Exec(); err != nil {
 		if err == redis.Nil {
-			return "", errors.NewErrRedisNotFound(key)
+			return "", errors.ErrRedisNotFound(key)
 		} else {
 			return "", err
 		}
 	}
 	val, err := res.Result()
 	if err == redis.Nil {
-		return "", errors.NewErrRedisNotFound(key)
+		return "", errors.ErrRedisNotFound(key)
 	}
 	return val, nil
 }
@@ -228,7 +228,11 @@ func (c *client) getMulti(prefix string, keys ...string) (vals []string, err err
 	for _, k := range keys {
 		if err = ress[k].Err(); err != nil {
 			if err == redis.Nil {
-				errs = errors.Wrap(errs, errors.NewErrRedisNotFound(k).Error())
+				if errs != nil {
+					errs = errors.Wrap(errs, errors.ErrRedisNotFound(k).Error())
+				} else {
+					errs = errors.ErrRedisNotFound(k)
+				}
 			} else {
 				errs = errors.Wrap(errs, errors.ErrRedisGetOperationFailed(k, err).Error())
 			}
@@ -236,7 +240,7 @@ func (c *client) getMulti(prefix string, keys ...string) (vals []string, err err
 		}
 		v, err := ress[k].Result()
 		if err != nil {
-			errs = errors.Wrap(errs, errors.NewErrRedisNotFound(k).Error())
+			errs = errors.Wrap(errs, errors.ErrRedisNotFound(k).Error())
 			continue
 		}
 		vals = append(vals, v)

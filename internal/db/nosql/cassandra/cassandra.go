@@ -199,7 +199,7 @@ func (c *client) GetValue(key string) (string, error) {
 	if err := q.GetRelease(&value); err != nil {
 		switch err {
 		case gocql.ErrNotFound:
-			return "", errors.NewErrCassandraNotFound(key)
+			return "", errors.ErrCassandraNotFound(key)
 		default:
 			return "", err
 		}
@@ -217,7 +217,7 @@ func (c *client) GetKey(value string) (string, error) {
 	if err := q.GetRelease(&key); err != nil {
 		switch err {
 		case gocql.ErrNotFound:
-			return "", errors.NewErrCassandraNotFound(value)
+			return "", errors.ErrCassandraNotFound(value)
 		default:
 			return "", err
 		}
@@ -243,12 +243,21 @@ func (c *client) MultiGetValue(keys ...string) ([]string, error) {
 		kvs[keyval.UUID] = keyval.Meta
 	}
 
+	var errs error
 	values := make([]string, 0, len(keyvals))
 	for _, key := range keys {
+		if kvs[key] == "" {
+			if errs != nil {
+				errs = errors.Wrap(errs, errors.ErrCassandraNotFound(key).Error())
+			} else {
+				errs = errors.ErrCassandraNotFound(key)
+			}
+			continue
+		}
 		values = append(values, kvs[key])
 	}
 
-	return values, nil
+	return values, errs
 }
 
 func (c *client) MultiGetKey(values ...string) ([]string, error) {
@@ -269,12 +278,21 @@ func (c *client) MultiGetKey(values ...string) ([]string, error) {
 		kvs[keyval.Meta] = keyval.UUID
 	}
 
+	var errs error
 	keys := make([]string, 0, len(keyvals))
 	for _, value := range values {
+		if kvs[value] == "" {
+			if errs != nil {
+				errs = errors.Wrap(errs, errors.ErrCassandraNotFound(value).Error())
+			} else {
+				errs = errors.ErrCassandraNotFound(value)
+			}
+			continue
+		}
 		keys = append(keys, kvs[value])
 	}
 
-	return keys, nil
+	return keys, errs
 }
 
 func (c *client) Set(key, value string) error {
