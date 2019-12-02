@@ -204,14 +204,16 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 	f func(conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error)) (data interface{}, err error) {
 	conn, ok := g.conns.Load(addr)
-	if !ok {
+	if !ok ||
+		conn == nil ||
+		conn.GetState() == connectivity.Shutdown ||
+		conn.GetState() == connectivity.TransientFailure {
 		return nil, errors.ErrGRPCClientConnNotFound(addr)
 	}
 	if g.bo != nil {
 		data, err = g.bo.Do(ctx, func() (r interface{}, err error) {
 			r, err = f(conn, g.copts...)
 			if err != nil {
-				err = g.Connect(ctx, addr)
 				return nil, err
 			}
 			return r, nil
