@@ -28,9 +28,9 @@ var (
 	defaultOpts = []Option{
 		WithInitialPingDuration("30ms"),
 		WithInitialPingTimeLimit("5m"),
-		WithConnectionLifeTimeLimit("2m"),
-		WithMaxOpenConns(40),
-		WithMaxIdleConns(50),
+		// WithConnectionLifeTimeLimit("2m"),
+		// WithMaxOpenConns(40),
+		// WithMaxIdleConns(50),
 	}
 )
 
