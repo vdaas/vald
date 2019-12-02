@@ -55,13 +55,13 @@ func New(cfg *config.MySQL) (MySQL, error) {
 		mysql.WithUser(cfg.User),
 		mysql.WithPass(cfg.Pass),
 		mysql.WithName(cfg.Name),
+		mysql.WithCharset(cfg.Charset),
+		mysql.WithTimezone(cfg.Timezone),
 		mysql.WithInitialPingTimeLimit(cfg.InitialPingTimeLimit),
 		mysql.WithInitialPingDuration(cfg.InitialPingDuration),
 		mysql.WithConnectionLifeTimeLimit(cfg.ConnMaxLifeTime),
 		mysql.WithMaxIdleConns(cfg.MaxIdleConns),
 		mysql.WithMaxOpenConns(cfg.MaxOpenConns),
-		mysql.WithCharset(cfg.Charset),
-		mysql.WithTimezone(cfg.Timezone),
 	)
 
 	if cfg.TLS != nil && cfg.TLS.Enabled {
