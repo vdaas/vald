@@ -53,6 +53,8 @@ type mySQLClient struct {
 	user                 string
 	pass                 string
 	name                 string
+	charset              string
+	timezone             string
 	initialPingTimeLimit time.Duration
 	initialPingDuration  time.Duration
 	connMaxLifeTime      time.Duration
@@ -90,8 +92,9 @@ func (m *mySQLClient) Open(ctx context.Context) error {
 	}
 
 	conn, err := dbr.Open(m.db,
-		fmt.Sprintf("%s:%s@%s(%s:%d)/%s?charset=utf8mb4&parseTime=true&loc=Local%s",
-			m.user, m.pass, network, m.host, m.port, m.name, addParam), nil)
+		fmt.Sprintf("%s:%s@%s(%s:%d)/%s?charset=%s&parseTime=true&loc=%s%s",
+			m.user, m.pass, network, m.host, m.port, m.name,
+			m.charset, m.timezone, addParam), nil)
 	if err != nil {
 		return err
 	}

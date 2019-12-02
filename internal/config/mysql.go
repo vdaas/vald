@@ -24,6 +24,8 @@ type MySQL struct {
 	User                 string `json:"user" yaml:"user"`
 	Pass                 string `json:"pass" yaml:"pass"`
 	Name                 string `json:"name" yaml:"name"`
+	Charset              string `json:"charset" yaml:"charset"`
+	Timezone             string `json:"timezone" yaml:"timezone"`
 	InitialPingTimeLimit string `json:"initial_ping_time_limit" yaml:"initial_ping_time_limit"`
 	InitialPingDuration  string `json:"initial_ping_duration" yaml:"initial_ping_duration"`
 	ConnMaxLifeTime      string `json:"conn_max_life_time" yaml:"conn_max_life_time"`
@@ -49,6 +51,8 @@ func (m *MySQL) Bind() *MySQL {
 	m.User = GetActualValue(m.User)
 	m.Pass = GetActualValue(m.Pass)
 	m.Name = GetActualValue(m.Name)
+	m.Charset = GetActualValue(m.Charset)
+	m.Timezone = GetActualValue(m.Timezone)
 	m.ConnMaxLifeTime = GetActualValue(m.ConnMaxLifeTime)
 	m.InitialPingTimeLimit = GetActualValue(m.InitialPingTimeLimit)
 	m.InitialPingDuration = GetActualValue(m.InitialPingDuration)

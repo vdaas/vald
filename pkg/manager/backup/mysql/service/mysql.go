@@ -60,6 +60,8 @@ func New(cfg *config.MySQL) (MySQL, error) {
 		mysql.WithConnectionLifeTimeLimit(cfg.ConnMaxLifeTime),
 		mysql.WithMaxIdleConns(cfg.MaxIdleConns),
 		mysql.WithMaxOpenConns(cfg.MaxOpenConns),
+		mysql.WithCharset(cfg.Charset),
+		mysql.WithTimezone(cfg.Timezone),
 	)
 
 	if cfg.TLS != nil && cfg.TLS.Enabled {
@@ -84,11 +86,13 @@ func New(cfg *config.MySQL) (MySQL, error) {
 				tcp.WithDNSRefreshDuration(cfg.TCP.DNS.RefreshDuration),
 			)
 		}
+
 		if cfg.TCP.Dialer.DualStackEnabled {
 			topts = append(topts, tcp.WithEnableDialerDualStack())
 		} else {
 			topts = append(topts, tcp.WithDisableDialerDualStack())
 		}
+
 		if cfg.TCP.TLS != nil && cfg.TCP.TLS.Enabled {
 			tcfg, err := tls.New(
 				tls.WithCert(cfg.TCP.TLS.Cert),

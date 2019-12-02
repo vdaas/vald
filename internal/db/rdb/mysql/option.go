@@ -29,6 +29,8 @@ type Option func(*mySQLClient) error
 
 var (
 	defaultOpts = []Option{
+		WithCharset("utf8mb4"),
+		WithTimezone("Local"),
 		WithInitialPingDuration("30ms"),
 		WithInitialPingTimeLimit("5m"),
 		// WithConnectionLifeTimeLimit("2m"),
@@ -36,6 +38,24 @@ var (
 		// WithMaxIdleConns(50),
 	}
 )
+
+func WithTimezone(tz string) Option {
+	return func(m *mySQLClient) error {
+		if tz != "" {
+			m.timezone = tz
+		}
+		return nil
+	}
+}
+
+func WithCharset(cs string) Option {
+	return func(m *mySQLClient) error {
+		if cs != "" {
+			m.charset = cs
+		}
+		return nil
+	}
+}
 
 func WithDB(db string) Option {
 	return func(m *mySQLClient) error {

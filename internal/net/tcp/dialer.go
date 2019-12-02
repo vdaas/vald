@@ -92,17 +92,18 @@ func NewDialer(opts ...DialerOption) Dialer {
 			d.dnsCacheExpiration, d.dnsRefreshDuration
 	}
 
-	// return d.cachedDialer
 	d.dialer = d.cachedDialer
 
 	return d
 }
 
-func (d *dialer) GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error) {
+func (d *dialer) GetDialer() func(ctx context.Context,
+	network, addr string) (net.Conn, error) {
 	return d.dialer
 }
 
-func (d *dialer) lookup(ctx context.Context, addr string) (ips map[int]string, err error) {
+func (d *dialer) lookup(ctx context.Context,
+	addr string) (ips map[int]string, err error) {
 	cache, ok := d.cache.Get(addr)
 	if ok {
 		return cache.(map[int]string), nil
