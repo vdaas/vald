@@ -18,12 +18,17 @@
 package config
 
 type MySQL struct {
-	DB   string `json:"db" yaml:"db"`
-	Host string `json:"host" yaml:"host"`
-	Port int    `json:"port" yaml:"port"`
-	User string `json:"user" yaml:"user"`
-	Pass string `json:"pass" yaml:"pass"`
-	Name string `json:"name" yaml:"name"`
+	DB                   string `json:"db" yaml:"db"`
+	Host                 string `json:"host" yaml:"host"`
+	Port                 int    `json:"port" yaml:"port"`
+	User                 string `json:"user" yaml:"user"`
+	Pass                 string `json:"pass" yaml:"pass"`
+	Name                 string `json:"name" yaml:"name"`
+	InitialPingTimeLimit string `json:"initial_ping_time_limit" yaml:"initial_ping_time_limit"`
+	InitialPingDuration  string `json:"initial_ping_duration" yaml:"initial_ping_duration"`
+	ConnMaxLifeTime      string `json:"conn_max_life_time" yaml:"conn_max_life_time"`
+	MaxOpenConns         int    `json:"max_open_conns" yaml:"max_open_conns"`
+	MaxIdleConns         int    `json:"max_idle_conns" yaml:"max_idle_conns"`
 }
 
 func (m *MySQL) Bind() *MySQL {
@@ -32,5 +37,8 @@ func (m *MySQL) Bind() *MySQL {
 	m.User = GetActualValue(m.User)
 	m.Pass = GetActualValue(m.Pass)
 	m.Name = GetActualValue(m.Name)
+	m.ConnMaxLifeTime = GetActualValue(m.ConnMaxLifeTime)
+	m.InitialPingTimeLimit = GetActualValue(m.InitialPingTimeLimit)
+	m.InitialPingDuration = GetActualValue(m.InitialPingDuration)
 	return m
 }

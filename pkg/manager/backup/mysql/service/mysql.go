@@ -48,7 +48,14 @@ func NewMySQL(cfg *config.MySQL) (MySQL, error) {
 		mysql.WithPort(cfg.Port),
 		mysql.WithUser(cfg.User),
 		mysql.WithPass(cfg.Pass),
-		mysql.WithName(cfg.Name))
+		mysql.WithName(cfg.Name),
+		mysql.WithInitialPingTimeLimit(cfg.InitialPingTimeLimit),
+		mysql.WithInitialPingDuration(cfg.InitialPingDuration),
+		mysql.WithConnectionLifeTimeLimit(cfg.ConnMaxLifeTime),
+		mysql.WithMaxIdleConns(cfg.MaxIdleConns),
+		mysql.WithMaxOpenConns(cfg.MaxOpenConns),
+	)
+
 	if err != nil {
 		return nil, err
 	}
