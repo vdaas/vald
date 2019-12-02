@@ -20,12 +20,15 @@ package router
 import (
 	"net/http"
 
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/net/http/middleware"
 	"github.com/vdaas/vald/internal/net/http/routing"
 	"github.com/vdaas/vald/pkg/manager/backup/mysql/handler/rest"
 )
 
 type router struct {
 	handler rest.Handler
+	eg      errgroup.Group
 	timeout string
 }
 
@@ -41,15 +44,19 @@ func New(opts ...Option) http.Handler {
 	h := r.handler
 
 	return routing.New(
-		routing.WithRoutes([]routing.Route{
-			{
-				"GetVector",
-				[]string{
-					http.MethodGet,
-				},
-				"/vector/{uuid}",
-				h.GetVector,
+		routing.WithMiddleware(
+			middleware.NewTimeout(
+				middleware.WithTimeout(r.timeout),
+				middleware.WithErrorGroup(r.eg),
+			)),
+		routing.WithRoutes([]routing.Route{{
+			"GetVector",
+			[]string{
+				http.MethodGet,
 			},
+			"/vector/{uuid}",
+			h.GetVector,
+		},
 			{
 				"Locations",
 				[]string{

@@ -18,12 +18,14 @@ package mysql
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
+	"net"
 	"reflect"
 	"sync/atomic"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 	dbr "github.com/gocraft/dbr/v2"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -54,6 +56,8 @@ type mySQLClient struct {
 	initialPingTimeLimit time.Duration
 	initialPingDuration  time.Duration
 	connMaxLifeTime      time.Duration
+	dialer               func(ctx context.Context, network, addr string) (net.Conn, error)
+	tlsConfig            *tls.Config
 	maxOpenConns         int
 	maxIdleConns         int
 	session              *dbr.Session
@@ -72,9 +76,22 @@ func New(opts ...Option) (MySQL, error) {
 }
 
 func (m *mySQLClient) Open(ctx context.Context) error {
+	var addParam string
+	network := "tcp"
+	if m.dialer != nil {
+		mysql.RegisterDialContext(network, func(ctx context.Context, addr string) (net.Conn, error) {
+			return m.dialer(ctx, network, addr)
+		})
+	}
+	if m.tlsConfig != nil {
+		tlsConfName := "tls"
+		mysql.RegisterTLSConfig(tlsConfName, m.tlsConfig)
+		addParam += "&tls=" + tlsConfName
+	}
+
 	conn, err := dbr.Open(m.db,
-		fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=true&loc=Local",
-			m.user, m.pass, m.host, m.port, m.name), nil)
+		fmt.Sprintf("%s:%s@%s(%s:%d)/%s?charset=utf8mb4&parseTime=true&loc=Local%s",
+			m.user, m.pass, network, m.host, m.port, m.name, addParam), nil)
 	if err != nil {
 		return err
 	}

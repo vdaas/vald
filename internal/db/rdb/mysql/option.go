@@ -17,6 +17,9 @@
 package mysql
 
 import (
+	"context"
+	"crypto/tls"
+	"net"
 	"time"
 
 	"github.com/vdaas/vald/internal/timeutil"
@@ -141,6 +144,24 @@ func WithMaxOpenConns(conns int) Option {
 	return func(m *mySQLClient) error {
 		if conns != 0 {
 			m.maxOpenConns = conns
+		}
+		return nil
+	}
+}
+
+func WithTLSConfig(cfg *tls.Config) Option {
+	return func(m *mySQLClient) error {
+		if cfg != nil {
+			m.tlsConfig = cfg
+		}
+		return nil
+	}
+}
+
+func WithDialer(der func(ctx context.Context, addr, port string) (net.Conn, error)) Option {
+	return func(m *mySQLClient) error {
+		if der != nil {
+			m.dialer = der
 		}
 		return nil
 	}

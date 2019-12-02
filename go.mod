@@ -4,6 +4,7 @@ go 1.13
 
 replace (
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
+	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.4.1-0.20191121062641-15462c1d60d4
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191128160524-b544559bb6d1
 	k8s.io/api => k8s.io/api v0.0.0-20191114100352-16d7abae0d2a
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20191114105449-027877536833
@@ -24,11 +25,10 @@ require (
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gocql/gocql v0.0.0-20191126110522-1982a06ad6b9
 	github.com/gocraft/dbr/v2 v2.6.3
-	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+	github.com/gogo/protobuf v1.3.1
 	github.com/google/gofuzz v1.0.0
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/go-version v1.2.0
-	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/json-iterator/go v1.1.8
 	github.com/kpango/fastime v1.0.15
 	github.com/kpango/fuid v0.0.0-20190507064958-80435564606b
@@ -37,9 +37,8 @@ require (
 	github.com/scylladb/gocqlx v1.3.1
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
-	golang.org/x/sys v0.0.0-20190804053845-51ab0e2deafa
+	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
-	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/genproto v0.0.0-20191115221424-83cc0476cb11
 	google.golang.org/grpc v1.25.1
 	gopkg.in/yaml.v2 v2.2.7

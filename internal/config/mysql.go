@@ -29,9 +29,21 @@ type MySQL struct {
 	ConnMaxLifeTime      string `json:"conn_max_life_time" yaml:"conn_max_life_time"`
 	MaxOpenConns         int    `json:"max_open_conns" yaml:"max_open_conns"`
 	MaxIdleConns         int    `json:"max_idle_conns" yaml:"max_idle_conns"`
+	TLS                  *TLS   `json:"tls" yaml:"tls"`
+	TCP                  *TCP   `json:"tcp" yaml:"tcp"`
 }
 
 func (m *MySQL) Bind() *MySQL {
+	if m.TLS != nil {
+		m.TLS.Bind()
+	} else {
+		m.TLS = new(TLS)
+	}
+	if m.TCP != nil {
+		m.TCP.Bind()
+	} else {
+		m.TCP = new(TCP)
+	}
 	m.DB = GetActualValue(m.DB)
 	m.Host = GetActualValue(m.Host)
 	m.User = GetActualValue(m.User)

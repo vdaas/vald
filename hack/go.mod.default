@@ -10,4 +10,5 @@ replace (
 	k8s.io/client-go => k8s.io/client-go kubernetes-1.16.3
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.4.0
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
+	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql master
 )

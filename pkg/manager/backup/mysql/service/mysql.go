@@ -19,8 +19,11 @@ package service
 import (
 	"context"
 
+	"github.com/kpango/gache"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/rdb/mysql"
+	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/tls"
 	"github.com/vdaas/vald/pkg/manager/backup/mysql/model"
 )
 
@@ -38,11 +41,14 @@ type MySQL interface {
 }
 
 type client struct {
-	db mysql.MySQL
+	db  mysql.MySQL
+	der tcp.Dialer
 }
 
-func NewMySQL(cfg *config.MySQL) (MySQL, error) {
-	m, err := mysql.New(
+func New(cfg *config.MySQL) (MySQL, error) {
+	c := new(client)
+
+	opts := append(make([]mysql.Option, 0, 13),
 		mysql.WithDB(cfg.DB),
 		mysql.WithHost(cfg.Host),
 		mysql.WithPort(cfg.Port),
@@ -56,16 +62,66 @@ func NewMySQL(cfg *config.MySQL) (MySQL, error) {
 		mysql.WithMaxOpenConns(cfg.MaxOpenConns),
 	)
 
+	if cfg.TLS != nil && cfg.TLS.Enabled {
+		tcfg, err := tls.New(
+			tls.WithCert(cfg.TLS.Cert),
+			tls.WithKey(cfg.TLS.Key),
+			tls.WithCa(cfg.TLS.CA),
+		)
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, mysql.WithTLSConfig(tcfg))
+	}
+
+	if cfg.TCP != nil {
+		topts := make([]tcp.DialerOption, 0, 8)
+		if cfg.TCP.DNS.CacheEnabled {
+			topts = append(topts,
+				tcp.WithCache(gache.New()),
+				tcp.WithEnableDNSCache(),
+				tcp.WithDNSCacheExpiration(cfg.TCP.DNS.CacheExpiration),
+				tcp.WithDNSRefreshDuration(cfg.TCP.DNS.RefreshDuration),
+			)
+		}
+		if cfg.TCP.Dialer.DualStackEnabled {
+			topts = append(topts, tcp.WithEnableDialerDualStack())
+		} else {
+			topts = append(topts, tcp.WithDisableDialerDualStack())
+		}
+		if cfg.TCP.TLS != nil && cfg.TCP.TLS.Enabled {
+			tcfg, err := tls.New(
+				tls.WithCert(cfg.TCP.TLS.Cert),
+				tls.WithKey(cfg.TCP.TLS.Key),
+				tls.WithCa(cfg.TCP.TLS.CA),
+			)
+			if err != nil {
+				return nil, err
+			}
+			topts = append(topts, tcp.WithTLS(tcfg))
+		}
+		c.der = tcp.NewDialer(append(topts,
+			tcp.WithDialerKeepAlive(cfg.TCP.Dialer.KeepAlive),
+			tcp.WithDialerTimeout(cfg.TCP.Dialer.Timeout),
+		)...)
+		opts = append(opts, mysql.WithDialer(c.der.GetDialer()))
+	}
+
+	m, err := mysql.New(opts...)
+
 	if err != nil {
 		return nil, err
 	}
 
-	return &client{
-		db: m,
-	}, nil
+	c.db = m
+
+	return c, nil
 }
 
 func (c *client) Connect(ctx context.Context) error {
+	if c.der != nil {
+		c.der.StartDialerCache(ctx)
+	}
 	return c.db.Open(ctx)
 }
 
