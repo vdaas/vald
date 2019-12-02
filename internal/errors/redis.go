@@ -49,6 +49,8 @@ var (
 	}
 
 	ErrRedisAddrsNotFound = New("addrs not found")
+
+	ErrRedisConnectionPingFailed = New("error Redis connection ping failed")
 )
 
 type ErrRedisNotFound struct {

@@ -44,19 +44,19 @@ type MySQL interface {
 }
 
 type mySQLClient struct {
-	db              string
-	host            string
-	port            int
-	user            string
-	pass            string
-	name            string
+	db                   string
+	host                 string
+	port                 int
+	user                 string
+	pass                 string
+	name                 string
 	initialPingTimeLimit time.Duration
-	initialPingDuration time.Duration
-	connMaxLifeTime time.Duration
-	maxOpenConns    int
-	maxIdleConns    int
-	session         *dbr.Session
-	connected       atomic.Value
+	initialPingDuration  time.Duration
+	connMaxLifeTime      time.Duration
+	maxOpenConns         int
+	maxIdleConns         int
+	session              *dbr.Session
+	connected            atomic.Value
 }
 
 func New(opts ...Option) (MySQL, error) {
@@ -81,18 +81,18 @@ func (m *mySQLClient) Open(ctx context.Context) error {
 	conn.SetMaxIdleConns(m.maxIdleConns)
 	conn.SetMaxOpenConns(m.maxOpenConns)
 
-	pctx, cancel:= context.WithTimeout(ctx, m.initialPingTimeLimit)
+	pctx, cancel := context.WithTimeout(ctx, m.initialPingTimeLimit)
 	defer cancel()
 	tick := time.NewTicker(m.initialPingDuration)
 	for {
-		select{
-			case <-pctx.Done():
-				return ctx.Err()
-			case <- tick.C:
-				err = conn.PingContext(ctx)
-				if err == nil{
-					break
-				}
+		select {
+		case <-pctx.Done():
+			return errors.Wrap(errors.Wrap(err, errors.ErrMySQLConnectionPingFailed.Error()), ctx.Err().Error())
+		case <-tick.C:
+			err = conn.PingContext(ctx)
+			if err == nil {
+				break
+			}
 		}
 	}
 

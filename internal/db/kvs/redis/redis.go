@@ -33,6 +33,7 @@ var (
 
 type Redis interface {
 	TxPipeline() redis.Pipeliner
+	Ping() *StatusCmd
 	Close() error
 	Lister
 	Getter
@@ -41,42 +42,44 @@ type Redis interface {
 }
 
 type Conn = redis.Conn
-type IntCmd = *redis.IntCmd
-type StringCmd = *redis.StringCmd
-type StatusCmd = *redis.StatusCmd
+type IntCmd = redis.IntCmd
+type StringCmd = redis.StringCmd
+type StatusCmd = redis.StatusCmd
 
 type redisClient struct {
-	addrs              []string
-	clusterSlots       func() ([]redis.ClusterSlot, error)
-	db                 int
-	dialTimeout        time.Duration
-	dialer             func(ctx context.Context, network, addr string) (net.Conn, error)
-	idleCheckFrequency time.Duration
-	idleTimeout        time.Duration
-	keyPref            string
-	maxConnAge         time.Duration
-	maxRedirects       int
-	maxRetries         int
-	maxRetryBackoff    time.Duration
-	minIdleConns       int
-	minRetryBackoff    time.Duration
-	onConnect          func(*redis.Conn) error
-	onNewNode          func(*redis.Client)
-	password           string
-	poolSize           int
-	poolTimeout        time.Duration
-	readOnly           bool
-	readTimeout        time.Duration
-	routeByLatency     bool
-	routeRandomly      bool
-	tlsConfig          *tls.Config
-	writeTimeout       time.Duration
+	addrs                []string
+	clusterSlots         func() ([]redis.ClusterSlot, error)
+	db                   int
+	dialTimeout          time.Duration
+	dialer               func(ctx context.Context, network, addr string) (net.Conn, error)
+	idleCheckFrequency   time.Duration
+	idleTimeout          time.Duration
+	initialPingDuration  time.Duration
+	initialPingTimeLimit time.Duration
+	keyPref              string
+	maxConnAge           time.Duration
+	maxRedirects         int
+	maxRetries           int
+	maxRetryBackoff      time.Duration
+	minIdleConns         int
+	minRetryBackoff      time.Duration
+	onConnect            func(*redis.Conn) error
+	onNewNode            func(*redis.Client)
+	password             string
+	poolSize             int
+	poolTimeout          time.Duration
+	readOnly             bool
+	readTimeout          time.Duration
+	routeByLatency       bool
+	routeRandomly        bool
+	tlsConfig            *tls.Config
+	writeTimeout         time.Duration
 }
 
-func New(ctx context.Context, opts ...Option) (Redis, error) {
+func New(ctx context.Context, opts ...Option) (rc Redis, err error) {
 	r := new(redisClient)
 	for _, opt := range append(defaultOpts, opts...) {
-		if err := opt(r); err != nil {
+		if err = opt(r); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
@@ -87,7 +90,7 @@ func New(ctx context.Context, opts ...Option) (Redis, error) {
 		if len(r.addrs[0]) == 0 {
 			return nil, errors.ErrRedisAddrsNotFound
 		}
-		return redis.NewClient(&redis.Options{
+		rc = redis.NewClient(&redis.Options{
 			Addr:               r.addrs[0],
 			Password:           r.password,
 			Dialer:             r.dialer,
@@ -106,9 +109,9 @@ func New(ctx context.Context, opts ...Option) (Redis, error) {
 			IdleTimeout:        r.idleTimeout,
 			IdleCheckFrequency: r.idleCheckFrequency,
 			TLSConfig:          r.tlsConfig,
-		}), nil
+		})
 	default:
-		return redis.NewClusterClient(&redis.ClusterOptions{
+		rc = redis.NewClusterClient(&redis.ClusterOptions{
 			Addrs:              r.addrs,
 			Dialer:             r.dialer,
 			MaxRedirects:       r.maxRedirects,
@@ -132,7 +135,22 @@ func New(ctx context.Context, opts ...Option) (Redis, error) {
 			IdleTimeout:        r.idleTimeout,
 			IdleCheckFrequency: r.idleCheckFrequency,
 			TLSConfig:          r.tlsConfig,
-		}).WithContext(ctx), nil
+		}).WithContext(ctx)
 	}
-	return nil, nil
+
+	pctx, cancel := context.WithTimeout(ctx, r.initialPingTimeLimit)
+	defer cancel()
+	tick := time.NewTicker(r.initialPingDuration)
+	for {
+		select {
+		case <-pctx.Done():
+			return nil, errors.Wrap(errors.Wrap(err, errors.ErrRedisConnectionPingFailed.Error()), ctx.Err().Error())
+		case <-tick.C:
+			err = rc.Ping().Err()
+			if err == nil {
+				break
+			}
+		}
+	}
+	return rc, nil
 }

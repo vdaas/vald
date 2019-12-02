@@ -128,6 +128,8 @@ func New(cfg *config.Redis) (Redis, error) {
 		redis.WithRouteByLatencyFlag(cfg.RouteByLatency),
 		redis.WithRouteRandomlyFlag(cfg.RouteRandomly),
 		redis.WithWriteTimeout(cfg.WriteTimeout),
+		redis.WithInitialPingDuration(cfg.InitialPingDuration),
+		redis.WithInitialPingTimeLimit(cfg.InitialPingTimeLimit),
 	)
 
 	if cfg.TLS != nil && cfg.TLS.Enabled {
@@ -214,7 +216,7 @@ func (c *client) get(prefix, key string) (string, error) {
 
 func (c *client) getMulti(prefix string, keys ...string) (vals []string, err error) {
 	pipe := c.db.TxPipeline()
-	ress := make(map[string]redis.StringCmd, len(keys))
+	ress := make(map[string]*redis.StringCmd, len(keys))
 	for _, k := range keys {
 		ress[k] = pipe.Get(c.appendPrefix(prefix, k))
 	}
@@ -257,7 +259,7 @@ func (c *client) Set(key, val string) error {
 
 func (c *client) SetMultiple(kvs map[string]string) (err error) {
 	pipe := c.db.TxPipeline()
-	ress := make(map[string]redis.StatusCmd, len(kvs)*2)
+	ress := make(map[string]*redis.StatusCmd, len(kvs)*2)
 	for k, v := range kvs {
 		if len(k) == 0 || len(v) == 0 {
 			continue
@@ -321,7 +323,7 @@ func (c *client) deleteMulti(pfx, pfxInv string, keys ...string) (vals []string,
 		return nil, err
 	}
 	pipe := c.db.TxPipeline()
-	ress := make(map[string]redis.IntCmd, len(keys)*2)
+	ress := make(map[string]*redis.IntCmd, len(keys)*2)
 	for _, k := range keys {
 		key := c.appendPrefix(pfx, k)
 		ress[key] = pipe.Del(key)

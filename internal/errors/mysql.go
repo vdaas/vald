@@ -21,13 +21,15 @@ package errors
 
 var (
 	// MySQL
-	ErrMySQLConnectionClosed = New("MySQL connection closed")
+	ErrMySQLConnectionPingFailed = New("error MySQL connection ping failed")
+
+	ErrMySQLConnectionClosed = New("error MySQL connection closed")
 
 	ErrRequiredElementNotFoundByUUID = func(uuid string) error {
-		return Errorf("Required element not found, uuid: %s", uuid)
+		return Errorf("error required element not found, uuid: %s", uuid)
 	}
 
 	ErrRequiredMemberNotFilled = func(member string) error {
-		return Errorf("Required member not filled (member: %s)", member)
+		return Errorf("error required member not filled (member: %s)", member)
 	}
 )

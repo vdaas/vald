@@ -30,7 +30,10 @@ import (
 type Option func(*redisClient) error
 
 var (
-	defaultOpts = []Option{}
+	defaultOpts = []Option{
+		WithInitialPingDuration("30ms"),
+		WithInitialPingTimeLimit("5m"),
+	}
 )
 
 func WithDialer(der func(ctx context.Context, addr, port string) (net.Conn, error)) Option {
@@ -288,6 +291,34 @@ func WithWriteTimeout(dur string) Option {
 			d = time.Minute
 		}
 		r.writeTimeout = d
+		return nil
+	}
+}
+
+func WithInitialPingTimeLimit(lim string) Option {
+	return func(r *redisClient) error {
+		if lim == "" {
+			return nil
+		}
+		pd, err := timeutil.Parse(lim)
+		if err != nil {
+			pd = time.Second * 30
+		}
+		r.initialPingTimeLimit = pd
+		return nil
+	}
+}
+
+func WithInitialPingDuration(dur string) Option {
+	return func(r *redisClient) error {
+		if dur == "" {
+			return nil
+		}
+		pd, err := timeutil.Parse(dur)
+		if err != nil {
+			pd = time.Millisecond * 50
+		}
+		r.initialPingDuration = pd
 		return nil
 	}
 }
