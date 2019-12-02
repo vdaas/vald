@@ -26,6 +26,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	dbr "github.com/gocraft/dbr/v2"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 )
 
 const (
@@ -92,6 +93,8 @@ func (m *mySQLClient) Open(ctx context.Context) error {
 			err = conn.PingContext(ctx)
 			if err == nil {
 				break
+			} else {
+				log.Error(err)
 			}
 		}
 	}
