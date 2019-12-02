@@ -82,6 +82,13 @@ func (m *mySQLClient) Open(ctx context.Context) error {
 	conn.SetMaxIdleConns(m.maxIdleConns)
 	conn.SetMaxOpenConns(m.maxOpenConns)
 
+	m.session = conn.NewSession(nil)
+	m.connected.Store(true)
+
+	return m.Ping(ctx)
+}
+
+func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 	pctx, cancel := context.WithTimeout(ctx, m.initialPingTimeLimit)
 	defer cancel()
 	tick := time.NewTicker(m.initialPingDuration)
@@ -90,19 +97,13 @@ func (m *mySQLClient) Open(ctx context.Context) error {
 		case <-pctx.Done():
 			return errors.Wrap(errors.Wrap(err, errors.ErrMySQLConnectionPingFailed.Error()), ctx.Err().Error())
 		case <-tick.C:
-			err = conn.PingContext(ctx)
+			err = m.session.PingContext(ctx)
 			if err == nil {
-				break
-			} else {
-				log.Error(err)
+				return nil
 			}
+			log.Error(err)
 		}
 	}
-
-	m.session = conn.NewSession(nil)
-	m.connected.Store(true)
-
-	return nil
 }
 
 func (m *mySQLClient) Close(ctx context.Context) error {
