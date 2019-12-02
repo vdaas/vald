@@ -121,4 +121,22 @@ data:
       user: root
       pass: password
       name: vald
-
+      tls:
+        enabled: false
+        cert: /path/to/cert
+        key: /path/to/key
+        ca: /path/to/ca
+      tcp:
+        dns:
+          cache_enabled: true
+          refresh_duration: 1h
+          cache_expiration: 24h
+        dialer:
+          timeout: 5s
+          keep_alive: 5m
+          dual_stack_enabled: false
+        tls:
+          enabled: false
+          cert: /path/to/cert
+          key: /path/to/key
+          ca: /path/to/ca
