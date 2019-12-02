@@ -16,10 +16,22 @@
 
 package mysql
 
+import (
+	"time"
+
+	"github.com/vdaas/vald/internal/timeutil"
+)
+
 type Option func(*mySQLClient) error
 
 var (
-	defaultOpts = []Option{}
+	defaultOpts = []Option{
+		WithInitialPingDuration("30ms"),
+		WithInitialPingTimeLimit("5m"),
+		WithConnectionLifeTimeLimit("2m"),
+		WithMaxOpenConns(40),
+		WithMaxIdleConns(50),
+	}
 )
 
 func WithDB(db string) Option {
@@ -69,6 +81,66 @@ func WithName(name string) Option {
 	return func(m *mySQLClient) error {
 		if name != "" {
 			m.name = name
+		}
+		return nil
+	}
+}
+
+func WithInitialPingTimeLimit(lim string) Option {
+	return func(m *mySQLClient) error {
+		if lim == "" {
+			return nil
+		}
+		pd, err := timeutil.Parse(lim)
+		if err != nil {
+			pd = time.Second * 30
+		}
+		m.initialPingTimeLimit = pd
+		return nil
+	}
+}
+
+func WithInitialPingDuration(dur string) Option {
+	return func(m *mySQLClient) error {
+		if dur == "" {
+			return nil
+		}
+		pd, err := timeutil.Parse(dur)
+		if err != nil {
+			pd = time.Millisecond * 50
+		}
+		m.initialPingDuration = pd
+		return nil
+	}
+}
+
+func WithConnectionLifeTimeLimit(dur string) Option {
+	return func(m *mySQLClient) error {
+		if dur == "" {
+			return nil
+		}
+		pd, err := timeutil.Parse(dur)
+		if err != nil {
+			pd = time.Second * 30
+		}
+		m.connMaxLifeTime = pd
+		return nil
+	}
+}
+
+func WithMaxIdleConns(conns int) Option {
+	return func(m *mySQLClient) error {
+		if conns != 0 {
+			m.maxIdleConns = conns
+		}
+		return nil
+	}
+}
+
+func WithMaxOpenConns(conns int) Option {
+	return func(m *mySQLClient) error {
+		if conns != 0 {
+			m.maxOpenConns = conns
 		}
 		return nil
 	}

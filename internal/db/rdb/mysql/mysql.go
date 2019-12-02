@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"reflect"
 	"sync/atomic"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	dbr "github.com/gocraft/dbr/v2"
@@ -43,14 +44,19 @@ type MySQL interface {
 }
 
 type mySQLClient struct {
-	db        string
-	host      string
-	port      int
-	user      string
-	pass      string
-	name      string
-	session   *dbr.Session
-	connected atomic.Value
+	db              string
+	host            string
+	port            int
+	user            string
+	pass            string
+	name            string
+	initialPingTimeLimit time.Duration
+	initialPingDuration time.Duration
+	connMaxLifeTime time.Duration
+	maxOpenConns    int
+	maxIdleConns    int
+	session         *dbr.Session
+	connected       atomic.Value
 }
 
 func New(opts ...Option) (MySQL, error) {
@@ -70,6 +76,24 @@ func (m *mySQLClient) Open(ctx context.Context) error {
 			m.user, m.pass, m.host, m.port, m.name), nil)
 	if err != nil {
 		return err
+	}
+	conn.SetConnMaxLifetime(m.connMaxLifeTime)
+	conn.SetMaxIdleConns(m.maxIdleConns)
+	conn.SetMaxOpenConns(m.maxOpenConns)
+
+	pctx, cancel:= context.WithTimeout(ctx, m.initialPingTimeLimit)
+	defer cancel()
+	tick := time.NewTicker(m.initialPingDuration)
+	for {
+		select{
+			case <-pctx.Done():
+				return ctx.Err()
+			case <- tick.C:
+				err = conn.PingContext(ctx)
+				if err == nil{
+					break
+				}
+		}
 	}
 
 	m.session = conn.NewSession(nil)
