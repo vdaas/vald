@@ -26,7 +26,7 @@ require (
 	github.com/gocraft/dbr/v2 v2.6.3
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
 	github.com/google/gofuzz v1.0.0
-	github.com/gorilla/mux v1.7.1
+	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/go-version v1.2.0
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/json-iterator/go v1.1.8
