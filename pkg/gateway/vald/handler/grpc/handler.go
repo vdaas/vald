@@ -305,14 +305,14 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	if err == nil || len(uuids) != 0 {
 		for i, meta := range metas {
 			if len(uuids) > i && len(uuids[i]) != 0 {
-				if err !=nil{
+				if err != nil {
 					err = errors.Wrap(err, errors.ErrMetaDataAlreadyExists(meta, uuids[i]).Error())
-				}else{
+				} else {
 					err = errors.ErrMetaDataAlreadyExists(meta, uuids[i])
 				}
 			}
 		}
-		if err != nil{
+		if err != nil {
 			return nil, err
 		}
 	}

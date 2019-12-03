@@ -18,8 +18,7 @@
 package errors
 
 var (
-	ErrMetaDataAlreadyExists = func(meta , uuid string) error {
+	ErrMetaDataAlreadyExists = func(meta, uuid string) error {
 		return Errorf("vald metadata:\t%s\tuuid:\t%s\talready exists ", meta, uuid)
 	}
-
 )
