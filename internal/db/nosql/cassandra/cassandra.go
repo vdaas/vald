@@ -33,6 +33,10 @@ const (
 	metaColumn = "meta"
 )
 
+var (
+	ErrNotFound = gocql.ErrNotFound
+)
+
 type Cassandra interface {
 	Open(ctx context.Context) error
 	Close(ctx context.Context) error
@@ -40,7 +44,15 @@ type Cassandra interface {
 	Getter
 	Setter
 	Deleter
+	Querier
 }
+
+type Session = gocql.Session
+type Cmp = qb.Cmp
+type BatchBuilder = qb.BatchBuilder
+type InsertBuilder = qb.InsertBuilder
+type DeleteBuilder = qb.DeleteBuilder
+type Queryx = gocqlx.Queryx
 
 type client struct {
 	hosts          []string
@@ -189,6 +201,38 @@ func (c *client) Close(ctx context.Context) error {
 	return nil
 }
 
+func (c *client) Select(table string, columns []string, cmps ...Cmp) (stmt string, names []string) {
+	sb := qb.Select(table).Columns(columns...)
+	for _, cmp := range cmps {
+		sb = sb.Where(cmp)
+	}
+	return sb.ToCql()
+}
+
+func (c *client) Delete(table string, cmps ...Cmp) *DeleteBuilder {
+	db := qb.Delete(table)
+	for _, cmp := range cmps {
+		db = db.Where(cmp)
+	}
+	return db
+}
+
+func (c *client) Insert(table string, columns ...string) *InsertBuilder {
+	return qb.Insert(table).Columns(columns...)
+}
+
+func (c *client) Batch() *BatchBuilder {
+	return qb.Batch()
+}
+
+func (c *client) Query(stmt string, names []string) *Queryx {
+	return gocqlx.Query(c.session.Query(stmt), names)
+}
+
+func (c *client) Eq(column string) Cmp {
+	return qb.Eq(column)
+}
+
 func (c *client) GetValue(key string) (string, error) {
 	var value string
 
@@ -332,7 +376,7 @@ func (c *client) MultiSet(keyvals map[string]string) error {
 	return q.ExecRelease()
 }
 
-func (c *client) Delete(keys ...string) ([]string, error) {
+func (c *client) DeleteByKeys(keys ...string) ([]string, error) {
 	vals, err := c.MultiGetValue(keys...)
 	if err != nil {
 		return nil, err

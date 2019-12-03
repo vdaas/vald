@@ -18,6 +18,7 @@ enabled = true
     "dockers/discoverer/k8s/Dockerfile",
     "dockers/gateway/vald/Dockerfile",
     "dockers/manager/backup/mysql/Dockerfile",
+    "dockers/manager/backup/cassandra/Dockerfile",
     "dockers/meta/cassandra/Dockerfile",
     "dockers/meta/redis/Dockerfile"
   ]

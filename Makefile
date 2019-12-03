@@ -14,17 +14,18 @@
 # limitations under the License.
 #
 
-REPO                   ?= vdaas
-NAME                    = vald
-GOPKG                   = github.com/$(REPO)/$(NAME)
-TAG                     = $(shell date -u +%Y%m%d-%H%M%S)
-BASE_IMAGE              = $(NAME)-base
-AGENT_IMAGE             = $(NAME)-agent-ngt
-GATEWAY_IMAGE           = $(NAME)-gateway
-DISCOVERER_IMAGE        = $(NAME)-discoverer-k8s
-KVS_IMAGE               = $(NAME)-meta-redis
-NOSQL_IMAGE             = $(NAME)-meta-cassandra
-BACKUP_MANAGER_IMAGE    = $(NAME)-manager-backup-mysql
+REPO                          ?= vdaas
+NAME                           = vald
+GOPKG                          = github.com/$(REPO)/$(NAME)
+TAG                            = $(shell date -u +%Y%m%d-%H%M%S)
+BASE_IMAGE                     = $(NAME)-base
+AGENT_IMAGE                    = $(NAME)-agent-ngt
+GATEWAY_IMAGE                  = $(NAME)-gateway
+DISCOVERER_IMAGE               = $(NAME)-discoverer-k8s
+KVS_IMAGE                      = $(NAME)-meta-redis
+NOSQL_IMAGE                    = $(NAME)-meta-cassandra
+BACKUP_MANAGER_MYSQL_IMAGE     = $(NAME)-manager-backup-mysql
+BACKUP_MANAGER_CASSANDRA_IMAGE = $(NAME)-manager-backup-cassandra
 
 NGT_VERSION := $(shell cat versions/NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
@@ -84,7 +85,7 @@ help:
 	    helpMessage = substr(lastLine, RSTART + 3, RLENGTH); \
       gsub("\\\\", "", helpCommand); \
       gsub(":+$$", "", helpCommand); \
-	    printf "  \x1b[32;01m%-35s\x1b[0m %s\n", helpCommand, helpMessage; \
+	    printf "  \x1b[32;01m%-38s\x1b[0m %s\n", helpCommand, helpMessage; \
 	  } \
 	} \
 	{ lastLine = $$0 }' $(MAKELISTS) | sort -u
@@ -175,7 +176,7 @@ test:
 ## run lints
 lint:
 	$(call go-lint)
-	
+
 
 .PHONY: coverage
 ## calculate coverages

@@ -59,11 +59,9 @@ make init
 
 ## Contributor
 
-
 ## LICENSE
 
 vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas/vald/blob/master/LICENSE) file.
-
 
 [![DeepSource](https://static.deepsource.io/deepsource-badge-light.svg)](https://deepsource.io/gh/vdaas/vald/?ref=repository-badge)
 
@@ -91,10 +89,15 @@ vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas
     <td><a href="https://hub.docker.com/r/vdaas/vald-gateway">vdaas/vald-gateway</a></td>
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20gateway-vald/badge.svg"></td>
   <tr>
-    <td>backup manager</td>
+    <td rowspan=2>backup manager</td>
     <td>MySQL</td>
     <td><a href="https://hub.docker.com/r/vdaas/vald-manager-backup-mysql">vdaas/vald-manager-backup-mysql</a></td>
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20backup-manager-mysql/badge.svg"></td>
+  </tr>
+  <tr>
+    <td>Cassandra</td>
+    <td><a href="https://hub.docker.com/r/vdaas/vald-manager-backup-cassandra">vdaas/vald-manager-backup-cassandra</a></td>
+    <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20backup-manager-cassandra/badge.svg"></td>
   </tr>
   <tr>
     <td rowspan=2>meta</td>

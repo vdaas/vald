@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package service manages the main logic of server.
 package service
 
 import (
@@ -24,25 +23,26 @@ import (
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/tls"
+	"github.com/vdaas/vald/pkg/manager/backup/cassandra/model"
 )
 
 type Cassandra interface {
-	Connect(context.Context) error
-	Disconnect(context.Context) error
-	Get(string) (string, error)
-	GetMultiple(...string) ([]string, error)
-	GetInverse(string) (string, error)
-	GetInverseMultiple(...string) ([]string, error)
-	Set(string, string) error
-	SetMultiple(map[string]string) error
-	Delete(string) (string, error)
-	DeleteMultiple(...string) ([]string, error)
-	DeleteInverse(string) (string, error)
-	DeleteInverseMultiple(...string) ([]string, error)
+	Connect(ctx context.Context) error
+	Close(ctx context.Context) error
+	GetMeta(ctx context.Context, uuid string) (*model.MetaVector, error)
+	GetIPs(ctx context.Context, uuid string) ([]string, error)
+	SetMeta(ctx context.Context, meta model.MetaVector) error
+	SetMetas(ctx context.Context, metas ...model.MetaVector) error
+	DeleteMeta(ctx context.Context, uuid string) error
+	DeleteMetas(ctx context.Context, uuids ...string) error
+	SetIPs(ctx context.Context, uuid string, ips ...string) error
+	RemoveIPs(ctx context.Context, ips ...string) error
 }
 
 type client struct {
-	db cassandra.Cassandra
+	db          cassandra.Cassandra
+	metaTable   string
+	metaColumns []string
 }
 
 func New(cfg *config.Cassandra) (Cassandra, error) {
@@ -112,64 +112,88 @@ func (c *client) Connect(ctx context.Context) error {
 	return c.db.Open(ctx)
 }
 
-func (c *client) Disconnect(ctx context.Context) error {
+func (c *client) Close(ctx context.Context) error {
 	return c.db.Close(ctx)
 }
 
-func (c *client) Get(key string) (string, error) {
-	return c.db.GetValue(key)
+func (c *client) getMetaVector(ctx context.Context, uuid string) (*model.MetaVector, error) {
+	var metaVector model.MetaVector
+
+	stmt, names := c.db.Select(c.metaTable, c.metaColumns, c.db.Eq("uuid"))
+	q := c.db.Query(stmt, names).BindMap(map[string]interface{}{"uuid": uuid})
+
+	if err := q.GetRelease(&metaVector); err != nil {
+		switch err {
+		case cassandra.ErrNotFound:
+			return nil, errors.ErrCassandraNotFound(uuid)
+		default:
+			return nil, err
+		}
+	}
+
+	return &metaVector, nil
 }
 
-func (c *client) GetMultiple(keys ...string) (vals []string, err error) {
-	return c.db.MultiGetValue(keys...)
+func (c *client) GetMeta(ctx context.Context, uuid string) (*model.MetaVector, error) {
+	return c.getMetaVector(ctx, uuid)
 }
 
-func (c *client) GetInverse(val string) (string, error) {
-	return c.db.GetKey(val)
-}
-
-func (c *client) GetInverseMultiple(vals ...string) ([]string, error) {
-	return c.db.MultiGetKey(vals...)
-}
-
-func (c *client) Set(key, val string) error {
-	return c.db.Set(key, val)
-}
-
-func (c *client) SetMultiple(kvs map[string]string) (err error) {
-	return c.db.MultiSet(kvs)
-}
-
-func (c *client) Delete(key string) (string, error) {
-	vals, err := c.db.DeleteByKeys(key)
+func (c *client) GetIPs(ctx context.Context, uuid string) ([]string, error) {
+	mv, err := c.getMetaVector(ctx, uuid)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	if len(vals) != 1 {
-		return "", errors.ErrCassandraDeleteOperationFailed(key, nil)
-	}
-
-	return vals[0], nil
+	return mv.GetIPs(), nil
 }
 
-func (c *client) DeleteMultiple(keys ...string) ([]string, error) {
-	return c.db.DeleteByKeys(keys...)
-}
+func (c *client) setMetaVectors(ctx context.Context, mvs ...model.MetaVector) error {
+	ib := c.db.Insert(c.metaTable, c.metaColumns...)
+	bt := c.db.Batch()
 
-func (c *client) DeleteInverse(val string) (string, error) {
-	keys, err := c.db.DeleteByValues(val)
-	if err != nil {
-		return "", err
+	entities := make([]interface{}, 0, len(mvs))
+	for _, mv := range mvs {
+		bt = bt.Add(ib)
+		entities = append(entities, mv)
 	}
 
-	if len(keys) != 1 {
-		return "", errors.ErrCassandraDeleteOperationFailed(val, nil)
-	}
-
-	return keys[0], nil
+	stmt, names := bt.ToCql()
+	return c.db.Query(stmt, names).ExecRelease()
 }
 
-func (c *client) DeleteInverseMultiple(vals ...string) ([]string, error) {
-	return c.db.DeleteByValues(vals...)
+func (c *client) SetMeta(ctx context.Context, meta model.MetaVector) error {
+	return c.setMetaVectors(ctx, meta)
+}
+
+func (c *client) SetMetas(ctx context.Context, metas ...model.MetaVector) error {
+	return c.setMetaVectors(ctx, metas...)
+}
+
+func (c *client) deleteMetaVectors(ctx context.Context, uuids ...string) error {
+	deleteBuilder := c.db.Delete(c.metaTable, c.db.Eq("uuid"))
+	bt := c.db.Batch()
+	bindUUIDs := make([]interface{}, 0, len(uuids))
+	for _, uuid := range uuids {
+		bt.Add(deleteBuilder)
+		bindUUIDs = append(bindUUIDs, uuid)
+	}
+
+	stmt, names := bt.ToCql()
+	return c.db.Query(stmt, names).Bind(bindUUIDs...).ExecRelease()
+}
+
+func (c *client) DeleteMeta(ctx context.Context, uuid string) error {
+	return c.deleteMetaVectors(ctx, uuid)
+}
+
+func (c *client) DeleteMetas(ctx context.Context, uuids ...string) error {
+	return c.deleteMetaVectors(ctx, uuids...)
+}
+
+func (c *client) SetIPs(ctx context.Context, uuid string, ips ...string) error {
+	return nil
+}
+
+func (c *client) RemoveIPs(ctx context.Context, ips ...string) error {
+	return nil
 }

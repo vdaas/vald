@@ -14,9 +14,19 @@
 // limitations under the License.
 //
 
-package cassandra
+// Package rest provides rest api logic
+package rest
 
-type Deleter interface {
-	DeleteByKeys(keys ...string) ([]string, error)
-	DeleteByValues(values ...string) ([]string, error)
+import "github.com/vdaas/vald/apis/grpc/manager/backup"
+
+type Option func(*handler)
+
+var (
+	defaultOpts = []Option{}
+)
+
+func WithBackup(b backup.BackupServer) Option {
+	return func(h *handler) {
+		h.backup = b
+	}
 }

@@ -14,9 +14,19 @@
 // limitations under the License.
 //
 
-package cassandra
+// Package grpc provides grpc server logic
+package grpc
 
-type Deleter interface {
-	DeleteByKeys(keys ...string) ([]string, error)
-	DeleteByValues(values ...string) ([]string, error)
+import "github.com/vdaas/vald/pkg/manager/backup/cassandra/service"
+
+type Option func(*server)
+
+var (
+	defaultOpts = []Option{}
+)
+
+func WithCassandra(c service.Cassandra) Option {
+	return func(s *server) {
+		s.cassandra = c
+	}
 }
