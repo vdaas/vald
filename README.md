@@ -77,12 +77,12 @@ vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas
   <tr>
     <td>agent</td>
     <td>NGT</td>
-    <td><a href="https://hub.docker.com/r/vdaas/vald-agent-ngt">vdaas/agent-ngt</a></td>
+    <td><a href="https://hub.docker.com/r/vdaas/vald-agent-ngt">vdaas/vald-agent-ngt</a></td>
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20agent-ngt/badge.svg"></td>
   <tr>
     <td>discoverer</td>
     <td>K8s</td>
-    <td><a href="https://hub.docker.com/r/vdaas/vald-discoverer-k8s">vdaas/discoverer-k8s</a></td>
+    <td><a href="https://hub.docker.com/r/vdaas/vald-discoverer-k8s">vdaas/vald-discoverer-k8s</a></td>
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20discoverer-k8s/badge.svg"></td>
   </tr>
   <tr>
@@ -93,7 +93,7 @@ vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas
   <tr>
     <td>backup manager</td>
     <td>MySQL</td>
-    <td><a href="https://hub.docker.com/r/vdaas/vald-manager-backup-mysql">vdaas/manager-backup-mysql</a></td>
+    <td><a href="https://hub.docker.com/r/vdaas/vald-manager-backup-mysql">vdaas/vald-manager-backup-mysql</a></td>
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20backup-manager-mysql/badge.svg"></td>
   </tr>
   <tr>
