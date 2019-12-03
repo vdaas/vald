@@ -121,6 +121,9 @@ data:
       user: root
       pass: password
       name: vald
+      conn_max_life_time: 1h
+      max_open_conns: 100
+      max_idle_conns: 100
       tls:
         enabled: false
         cert: /path/to/cert

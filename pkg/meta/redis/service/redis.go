@@ -235,11 +235,13 @@ func (c *client) getMulti(prefix string, keys ...string) (vals []string, err err
 			} else {
 				errs = errors.Wrap(errs, errors.ErrRedisGetOperationFailed(k, err).Error())
 			}
+			vals = append(vals, "")
 			continue
 		}
 		v, err := ress[k].Result()
 		if err != nil {
 			errs = errors.Wrap(errs, errors.ErrRedisNotFound(k).Error())
+			vals = append(vals, "")
 			continue
 		}
 		vals = append(vals, v)

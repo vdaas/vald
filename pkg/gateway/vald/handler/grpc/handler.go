@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/apis/grpc/vald"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
@@ -235,8 +236,13 @@ func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error
 }
 
 func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *payload.Empty, err error) {
-	uuid := fuid.String()
 	meta := vec.GetId()
+	uuid, err := s.metadata.GetUUID(ctx, meta)
+	if err == nil || len(uuid) != 0 {
+		return nil, errors.ErrMetaDataAlreadyExists(meta, uuid)
+	}
+
+	uuid = fuid.String()
 	err = s.metadata.SetUUIDandMeta(ctx, uuid, meta)
 	if err != nil {
 		log.Error(err)
@@ -286,14 +292,34 @@ func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
 
 func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
 	metaMap := make(map[string]string)
+	metas := make([]string, 0, len(vecs.GetVectors()))
 	for i, vec := range vecs.GetVectors() {
 		uuid := fuid.String()
-		metaMap[uuid] = vec.GetId()
+		meta := vec.GetId()
+		metaMap[uuid] = meta
+		metas = append(metas, meta)
 		vecs.Vectors[i].Id = uuid
 	}
+	uuids, err := s.metadata.GetMetas(ctx, metas...)
+
+	if err == nil || len(uuids) != 0 {
+		for i, meta := range metas {
+			if len(uuids) > i && len(uuids[i]) != 0 {
+				if err !=nil{
+					err = errors.Wrap(err, errors.ErrMetaDataAlreadyExists(meta, uuids[i]).Error())
+				}else{
+					err = errors.ErrMetaDataAlreadyExists(meta, uuids[i])
+				}
+			}
+		}
+		if err != nil{
+			return nil, err
+		}
+	}
+
 	mu := new(sync.Mutex)
 	targets := make([]string, 0, s.replica)
-	err = s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, ac agent.AgentClient) (err error) {
+	gerr := s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, ac agent.AgentClient) (err error) {
 		_, err = ac.MultiInsert(ctx, vecs)
 		if err != nil {
 			return err
@@ -304,9 +330,10 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		mu.Unlock()
 		return nil
 	})
-	if err != nil {
-		return nil, err
+	if gerr != nil {
+		return nil, errors.Wrap(gerr, err.Error())
 	}
+
 	err = s.metadata.SetUUIDandMetas(ctx, metaMap)
 	if err != nil {
 		return nil, err
