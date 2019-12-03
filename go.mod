@@ -5,6 +5,7 @@ go 1.13
 replace (
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.4.1-0.20191121062641-15462c1d60d4
+	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.6.0
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191202143827-86a70503ff7e
 	k8s.io/api => k8s.io/api v0.0.0-20191114100352-16d7abae0d2a
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20191114105449-027877536833
