@@ -74,7 +74,7 @@ func New(cfg *config.Redis) (Redis, error) {
 
 	c.topts = make([]tcp.DialerOption, 0, 8)
 	if cfg.TCP != nil {
-		if cfg.TCP.DNS.CacheEnabled {
+		if cfg.TCP.DNS != nil && cfg.TCP.DNS.CacheEnabled {
 			c.topts = append(c.topts,
 				tcp.WithCache(gache.New()),
 				tcp.WithEnableDNSCache(),
@@ -82,7 +82,7 @@ func New(cfg *config.Redis) (Redis, error) {
 				tcp.WithDNSRefreshDuration(cfg.TCP.DNS.RefreshDuration),
 			)
 		}
-		if cfg.TCP.Dialer.DualStackEnabled {
+		if cfg.TCP.Dialer != nil && cfg.TCP.Dialer.DualStackEnabled {
 			c.topts = append(c.topts, tcp.WithEnableDialerDualStack())
 		} else {
 			c.topts = append(c.topts, tcp.WithDisableDialerDualStack())

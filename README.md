@@ -10,14 +10,6 @@
 [![GolangCI](https://golangci.com/badges/github.com/vdaas/vald.svg?style=flat-square)](https://golangci.com/r/github.com/vdaas/vald)
 [![Go Walker](http://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/vdaas/vald)
 [![GoDoc](http://godoc.org/github.com/vdaas/vald?status.svg)](http://godoc.org/github.com/vdaas/vald)
-[![DeepSource](https://static.deepsource.io/deepsource-badge-light.svg)](https://deepsource.io/gh/vdaas/vald/?ref=repository-badge)
-
-[![Build docker image: agent-ngt](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20agent-ngt/badge.svg)](https://hub.docker.com/r/vdaas/vald-agent-ngt)
-[![Build docker image: backup-manager-mysql](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20backup-manager-mysql/badge.svg)](https://hub.docker.com/r/vdaas/vald-manager-backup-mysql)
-[![Build docker image: discoverer-k8s](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20discoverer-k8s/badge.svg)](https://hub.docker.com/r/vdaas/vald-discoverer-k8s)
-[![Build docker image: gateway-vald](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20gateway-vald/badge.svg)](https://hub.docker.com/r/vdaas/vald-gateway)
-[![Build docker image: meta-redis](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20meta-redis/badge.svg)](https://hub.docker.com/r/vdaas/vald-meta-redis)
-[![Build docker image: meta-cassandra](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20meta-cassandra/badge.svg)](https://hub.docker.com/r/vdaas/vald-meta-cassandra)
 
 vald is high scalable distributed high-speed approximate nearest neighbor search engine
 
@@ -71,3 +63,48 @@ make init
 ## LICENSE
 
 vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas/vald/blob/master/LICENSE) file.
+
+
+[![DeepSource](https://static.deepsource.io/deepsource-badge-light.svg)](https://deepsource.io/gh/vdaas/vald/?ref=repository-badge)
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>implementation</th>
+    <th>Docker name</th>
+    <th>Docker build status</th>
+  </tr>
+  <tr>
+    <td>agent</td>
+    <td>NGT</td>
+    <td><a href="https://hub.docker.com/r/vdaas/vald-agent-ngt">vdaas/vald-agent-ngt</a></td>
+    <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20agent-ngt/badge.svg"></td>
+  <tr>
+    <td>discoverer</td>
+    <td>K8s</td>
+    <td><a href="https://hub.docker.com/r/vdaas/vald-discoverer-k8s">vdaas/vald-discoverer-k8s</a></td>
+    <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20discoverer-k8s/badge.svg"></td>
+  </tr>
+  <tr>
+    <td>gateway</td>
+    <td></td>
+    <td><a href="https://hub.docker.com/r/vdaas/vald-gateway">vdaas/vald-gateway</a></td>
+    <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20gateway-vald/badge.svg"></td>
+  <tr>
+    <td>backup manager</td>
+    <td>MySQL</td>
+    <td><a href="https://hub.docker.com/r/vdaas/vald-manager-backup-mysql">vdaas/vald-manager-backup-mysql</a></td>
+    <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20backup-manager-mysql/badge.svg"></td>
+  </tr>
+  <tr>
+    <td rowspan=2>meta</td>
+    <td>Redis</td>
+    <td><a href="https://hub.docker.com/r/vdaas/vald-meta-redis">vdaas/vald-meta-redis</a></td>
+    <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20meta-redis/badge.svg"></td>
+  </tr>
+  <tr>
+    <td>Cassandra</td>
+    <td><a href="https://hub.docker.com/r/vdaas/vald-meta-cassandra">vdaas/vald-meta-cassandra</a></td>
+    <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20meta-cassandra/badge.svg"></td>
+  </tr>
+</table>

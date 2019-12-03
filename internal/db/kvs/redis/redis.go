@@ -138,19 +138,24 @@ func New(ctx context.Context, opts ...Option) (rc Redis, err error) {
 		}).WithContext(ctx)
 	}
 
-	pctx, cancel := context.WithTimeout(ctx, r.initialPingTimeLimit)
-	defer cancel()
-	tick := time.NewTicker(r.initialPingDuration)
-	for {
-		select {
-		case <-pctx.Done():
-			return nil, errors.Wrap(errors.Wrap(err, errors.ErrRedisConnectionPingFailed.Error()), ctx.Err().Error())
-		case <-tick.C:
-			err = rc.Ping().Err()
-			if err == nil {
-				break
+	err = func() (err error) {
+		pctx, cancel := context.WithTimeout(ctx, r.initialPingTimeLimit)
+		defer cancel()
+		tick := time.NewTicker(r.initialPingDuration)
+		for {
+			select {
+			case <-pctx.Done():
+				return errors.Wrap(errors.Wrap(err, errors.ErrRedisConnectionPingFailed.Error()), ctx.Err().Error())
+			case <-tick.C:
+				err = rc.Ping().Err()
+				if err == nil {
+					return nil
+				}
 			}
 		}
+	}()
+	if err != nil {
+		return nil, err
 	}
 	return rc, nil
 }
