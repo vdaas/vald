@@ -4,6 +4,7 @@ on:
     branches:
       - master
     paths:
+      - ".github/workflows/update-protobuf.yml"
       - "apis/proto/**"
 
 jobs:
@@ -12,23 +13,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: client-go
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.DISPATCH_TOKEN }}
-          repository: vdaas/vald-client-go
-          event-type: update-protobuf
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+        run: |
+          curl --fail -u "${USER}:${TOKEN}" -X POST https://api.github.com/repos/${REPO}/dispatches \
+          -H 'Accept: application/vnd.github.everest-preview+json' \
+          --data '{"event_type": "update-protobuf"}'
+        env:
+          REPO: vdaas/vald-client-go
+          USER: ${{ secrets.DISPATCH_USER }}
+          TOKEN: ${{ secrets.DISPATCH_TOKEN }}
       - name: client-java
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.DISPATCH_TOKEN }}
-          repository: vdaas/vald-client-java
-          event-type: update-protobuf
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+        run: |
+          curl --fail -u "${USER}:${TOKEN}" -X POST https://api.github.com/repos/${REPO}/dispatches \
+          -H 'Accept: application/vnd.github.everest-preview+json' \
+          --data '{"event_type": "update-protobuf"}'
+        env:
+          REPO: vdaas/vald-client-java
+          USER: ${{ secrets.DISPATCH_USER }}
+          TOKEN: ${{ secrets.DISPATCH_TOKEN }}
       - name: client-python
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.DISPATCH_TOKEN }}
-          repository: vdaas/vald-client-python
-          event-type: update-protobuf
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+        run: |
+          curl --fail -u "${USER}:${TOKEN}" -X POST https://api.github.com/repos/${REPO}/dispatches \
+          -H 'Accept: application/vnd.github.everest-preview+json' \
+          --data '{"event_type": "update-protobuf"}'
+        env:
+          REPO: vdaas/vald-client-python
+          USER: ${{ secrets.DISPATCH_USER }}
+          TOKEN: ${{ secrets.DISPATCH_TOKEN }}
