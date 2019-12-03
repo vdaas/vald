@@ -40,26 +40,26 @@ spec:
       containers:
       - image: vdaas/vald-agent-ngt:nightly
         imagePullPolicy: Always 
-        # livenessProbe:
-        #   httpGet:
-        #     path: /liveness
-        #     port: liveness
-        #     scheme: HTTP
-        #   initialDelaySeconds: 5
-        #   timeoutSeconds: 2
-        #   successThreshold: 1
-        #   failureThreshold: 2
-        #   periodSeconds: 3
-        # readinessProbe:
-        #   httpGet:
-        #     path: /readiness
-        #     port: readiness
-        #     scheme: HTTP
-        #   initialDelaySeconds: 10
-        #   timeoutSeconds: 2
-        #   successThreshold: 1
-        #   failureThreshold: 2
-        #   periodSeconds: 3
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            port: liveness
+            scheme: HTTP
+          initialDelaySeconds: 15
+          timeoutSeconds: 2
+          successThreshold: 1
+          failureThreshold: 5
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: readiness
+            scheme: HTTP
+          initialDelaySeconds: 15
+          timeoutSeconds: 2
+          successThreshold: 1
+          failureThreshold: 5
+          periodSeconds: 2
         name: agent-ngt
         ports:
         - containerPort: 3000

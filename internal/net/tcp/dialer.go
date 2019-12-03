@@ -144,6 +144,10 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (
 	conn net.Conn, err error) {
 	sep := strings.LastIndex(addr, ":")
 
+	if sep < 0{
+		sep = len(addr)
+	}
+
 	ips, err := d.lookup(dctx, addr[:sep])
 	if err == nil {
 		for _, ip := range ips {
