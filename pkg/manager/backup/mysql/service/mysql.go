@@ -78,7 +78,7 @@ func New(cfg *config.MySQL) (MySQL, error) {
 
 	if cfg.TCP != nil {
 		topts := make([]tcp.DialerOption, 0, 8)
-		if cfg.TCP.DNS.CacheEnabled {
+		if cfg.TCP.DNS != nil && cfg.TCP.DNS.CacheEnabled {
 			topts = append(topts,
 				tcp.WithCache(gache.New()),
 				tcp.WithEnableDNSCache(),
@@ -87,7 +87,7 @@ func New(cfg *config.MySQL) (MySQL, error) {
 			)
 		}
 
-		if cfg.TCP.Dialer.DualStackEnabled {
+		if cfg.TCP.Dialer != nil && cfg.TCP.Dialer.DualStackEnabled {
 			topts = append(topts, tcp.WithEnableDialerDualStack())
 		} else {
 			topts = append(topts, tcp.WithDisableDialerDualStack())
