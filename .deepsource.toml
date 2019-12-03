@@ -6,3 +6,27 @@ enabled = true
 
   [analyzers.meta]
   import_path = "github.com/vdaas/vald"
+
+[[analyzers]]
+name = "docker"
+enabled = true
+
+  [analyzers.meta]
+  dockerfile_paths = [
+    "dockers/base/Dockerfile",
+    "dockers/agent/ngt/Dockerfile",
+    "dockers/discoverer/k8s/Dockerfile",
+    "dockers/gateway/vald/Dockerfile",
+    "dockers/manager/backup/mysql/Dockerfile",
+    "dockers/meta/cassandra/Dockerfile",
+    "dockers/meta/redis/Dockerfile"
+  ]
+
+  trusted_registries = [
+    "docker.io",
+    "hub.docker.com"
+  ]
+
+[[analyzers]]
+name = "test-coverage"
+enabled = true
