@@ -10,6 +10,7 @@
 [![GolangCI](https://golangci.com/badges/github.com/vdaas/vald.svg?style=flat-square)](https://golangci.com/r/github.com/vdaas/vald)
 [![Go Walker](http://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/vdaas/vald)
 [![GoDoc](http://godoc.org/github.com/vdaas/vald?status.svg)](http://godoc.org/github.com/vdaas/vald)
+[![DeepSource](https://static.deepsource.io/deepsource-badge-light.svg)](https://deepsource.io/gh/vdaas/vald/?ref=repository-badge)
 
 [![Build docker image: agent-ngt](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20agent-ngt/badge.svg)](https://hub.docker.com/r/vdaas/vald-agent-ngt)
 [![Build docker image: backup-manager-mysql](https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20backup-manager-mysql/badge.svg)](https://hub.docker.com/r/vdaas/vald-manager-backup-mysql)
