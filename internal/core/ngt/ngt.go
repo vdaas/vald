@@ -355,7 +355,6 @@ func (n *ngt) BulkInsert(vecs [][]float64) ([]uint, []error) {
 	errs := make([]error, 0, len(vecs))
 
 	var id uint
-
 	n.mu.Lock()
 	for _, vec := range vecs {
 		// n.mu.Lock()
@@ -363,9 +362,8 @@ func (n *ngt) BulkInsert(vecs [][]float64) ([]uint, []error) {
 		// n.mu.Unlock()
 		if id == 0 {
 			errs = append(errs, n.newGoError(n.ebuf))
-		} else {
-			ids = append(ids, uint(id))
 		}
+		ids = append(ids, id)
 	}
 	n.mu.Unlock()
 
