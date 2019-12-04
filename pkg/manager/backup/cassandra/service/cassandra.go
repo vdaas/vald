@@ -26,6 +26,17 @@ import (
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/model"
 )
 
+const (
+	uuidColumn   = "uuid"
+	vectorColumn = "vector"
+	metaColumn   = "meta"
+	ipsColumn    = "ips"
+)
+
+var (
+	metaColumns = []string{uuidColumn, vectorColumn, metaColumn, ipsColumn}
+)
+
 type Cassandra interface {
 	Connect(ctx context.Context) error
 	Close(ctx context.Context) error
@@ -40,9 +51,8 @@ type Cassandra interface {
 }
 
 type client struct {
-	db          cassandra.Cassandra
-	metaTable   string
-	metaColumns []string
+	db        cassandra.Cassandra
+	metaTable string
 }
 
 func New(cfg *config.Cassandra) (Cassandra, error) {
@@ -105,7 +115,15 @@ func New(cfg *config.Cassandra) (Cassandra, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &client{db: db}, nil
+
+	if cfg.MetaTable == "" {
+		cfg.MetaTable = "meta_vector"
+	}
+
+	return &client{
+		db:        db,
+		metaTable: cfg.MetaTable,
+	}, nil
 }
 
 func (c *client) Connect(ctx context.Context) error {
@@ -119,10 +137,10 @@ func (c *client) Close(ctx context.Context) error {
 func (c *client) getMetaVector(ctx context.Context, uuid string) (*model.MetaVector, error) {
 	var metaVector model.MetaVector
 
-	stmt, names := c.db.Select(c.metaTable, c.metaColumns, c.db.Eq("uuid"))
-	q := c.db.Query(stmt, names).BindMap(map[string]interface{}{"uuid": uuid})
+	stmt, names := cassandra.Select(c.metaTable, metaColumns, cassandra.Eq(uuidColumn))
+	err := c.db.Query(stmt, names).BindMap(map[string]interface{}{uuidColumn: uuid}).GetRelease(&metaVector)
 
-	if err := q.GetRelease(&metaVector); err != nil {
+	if err != nil {
 		switch err {
 		case cassandra.ErrNotFound:
 			return nil, errors.ErrCassandraNotFound(uuid)
@@ -144,34 +162,36 @@ func (c *client) GetIPs(ctx context.Context, uuid string) ([]string, error) {
 		return nil, err
 	}
 
-	return mv.GetIPs(), nil
+	return mv.IPs, nil
 }
 
-func (c *client) setMetaVectors(ctx context.Context, mvs ...model.MetaVector) error {
-	ib := c.db.Insert(c.metaTable, c.metaColumns...)
-	bt := c.db.Batch()
+func (c *client) SetMeta(ctx context.Context, meta model.MetaVector) error {
+	stmt, names := cassandra.Insert(c.metaTable, metaColumns...).ToCql()
+	return c.db.Query(stmt, names).BindStruct(meta).ExecRelease()
+}
 
-	entities := make([]interface{}, 0, len(mvs))
-	for _, mv := range mvs {
+func (c *client) SetMetas(ctx context.Context, metas ...model.MetaVector) error {
+	ib := cassandra.Insert(c.metaTable, metaColumns...)
+	bt := cassandra.Batch()
+
+	entities := make([]interface{}, 0, len(metas))
+	for _, mv := range metas {
 		bt = bt.Add(ib)
 		entities = append(entities, mv)
 	}
 
 	stmt, names := bt.ToCql()
-	return c.db.Query(stmt, names).ExecRelease()
+	return c.db.Query(stmt, names).Bind(entities).ExecRelease()
 }
 
-func (c *client) SetMeta(ctx context.Context, meta model.MetaVector) error {
-	return c.setMetaVectors(ctx, meta)
+func (c *client) DeleteMeta(ctx context.Context, uuid string) error {
+	stmt, names := cassandra.Delete(c.metaTable, cassandra.Eq(uuidColumn)).ToCql()
+	return c.db.Query(stmt, names).BindMap(map[string]interface{}{uuidColumn: uuid}).ExecRelease()
 }
 
-func (c *client) SetMetas(ctx context.Context, metas ...model.MetaVector) error {
-	return c.setMetaVectors(ctx, metas...)
-}
-
-func (c *client) deleteMetaVectors(ctx context.Context, uuids ...string) error {
-	deleteBuilder := c.db.Delete(c.metaTable, c.db.Eq("uuid"))
-	bt := c.db.Batch()
+func (c *client) DeleteMetas(ctx context.Context, uuids ...string) error {
+	deleteBuilder := cassandra.Delete(c.metaTable, cassandra.Eq(uuidColumn))
+	bt := cassandra.Batch()
 	bindUUIDs := make([]interface{}, 0, len(uuids))
 	for _, uuid := range uuids {
 		bt.Add(deleteBuilder)
@@ -182,18 +202,41 @@ func (c *client) deleteMetaVectors(ctx context.Context, uuids ...string) error {
 	return c.db.Query(stmt, names).Bind(bindUUIDs...).ExecRelease()
 }
 
-func (c *client) DeleteMeta(ctx context.Context, uuid string) error {
-	return c.deleteMetaVectors(ctx, uuid)
-}
-
-func (c *client) DeleteMetas(ctx context.Context, uuids ...string) error {
-	return c.deleteMetaVectors(ctx, uuids...)
-}
-
 func (c *client) SetIPs(ctx context.Context, uuid string, ips ...string) error {
-	return nil
+	stmt, names := cassandra.Update(c.metaTable).AddNamed(ipsColumn, ipsColumn).Where(cassandra.Eq(uuidColumn)).ToCql()
+	return c.db.Query(stmt, names).BindMap(map[string]interface{}{uuidColumn: uuid, ipsColumn: ips}).ExecRelease()
 }
 
 func (c *client) RemoveIPs(ctx context.Context, ips ...string) error {
+	var metaVectors []model.MetaVector
+
+	for _, ip := range ips {
+		stmt, names := cassandra.Select(c.metaTable, []string{uuidColumn, ipsColumn}, cassandra.Contains(ipsColumn))
+		err := c.db.Query(stmt, names).BindMap(map[string]interface{}{ipsColumn: ip}).SelectRelease(&metaVectors)
+		if err != nil {
+			return err
+		}
+
+		for _, mv := range metaVectors {
+			currentIPs := mv.IPs
+			newIPs := make([]string, 0, len(currentIPs)-1)
+			for i, cIP := range currentIPs {
+				if cIP == ip {
+					if i != len(currentIPs) {
+						newIPs = append(newIPs, currentIPs[i+1:]...)
+					}
+					break
+				}
+				newIPs = append(newIPs, cIP)
+			}
+
+			stmt, names = cassandra.Update(c.metaTable).Set(ipsColumn).Where(cassandra.Eq(uuidColumn)).ToCql()
+			err = c.db.Query(stmt, names).BindMap(map[string]interface{}{uuidColumn: mv.UUID, ipsColumn: newIPs}).ExecRelease()
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }

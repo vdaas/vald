@@ -17,10 +17,5 @@
 package cassandra
 
 type Querier interface {
-	Select(table string, columns []string, cmps ...Cmp) (stmt string, names []string)
-	Delete(table string, cmps ...Cmp) *DeleteBuilder
-	Insert(table string, columns ...string) *InsertBuilder
-	Batch() *BatchBuilder
 	Query(stmt string, names []string) *Queryx
-	Eq(column string) Cmp
 }

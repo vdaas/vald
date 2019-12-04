@@ -52,6 +52,7 @@ type Cmp = qb.Cmp
 type BatchBuilder = qb.BatchBuilder
 type InsertBuilder = qb.InsertBuilder
 type DeleteBuilder = qb.DeleteBuilder
+type UpdateBuilder = qb.UpdateBuilder
 type Queryx = gocqlx.Queryx
 
 type client struct {
@@ -201,7 +202,7 @@ func (c *client) Close(ctx context.Context) error {
 	return nil
 }
 
-func (c *client) Select(table string, columns []string, cmps ...Cmp) (stmt string, names []string) {
+func Select(table string, columns []string, cmps ...Cmp) (stmt string, names []string) {
 	sb := qb.Select(table).Columns(columns...)
 	for _, cmp := range cmps {
 		sb = sb.Where(cmp)
@@ -209,7 +210,7 @@ func (c *client) Select(table string, columns []string, cmps ...Cmp) (stmt strin
 	return sb.ToCql()
 }
 
-func (c *client) Delete(table string, cmps ...Cmp) *DeleteBuilder {
+func Delete(table string, cmps ...Cmp) *DeleteBuilder {
 	db := qb.Delete(table)
 	for _, cmp := range cmps {
 		db = db.Where(cmp)
@@ -217,20 +218,28 @@ func (c *client) Delete(table string, cmps ...Cmp) *DeleteBuilder {
 	return db
 }
 
-func (c *client) Insert(table string, columns ...string) *InsertBuilder {
+func Insert(table string, columns ...string) *InsertBuilder {
 	return qb.Insert(table).Columns(columns...)
 }
 
-func (c *client) Batch() *BatchBuilder {
+func Update(table string) *UpdateBuilder {
+	return qb.Update(table)
+}
+
+func Batch() *BatchBuilder {
 	return qb.Batch()
+}
+
+func Eq(column string) Cmp {
+	return qb.Eq(column)
+}
+
+func Contains(column string) Cmp {
+	return qb.Contains(column)
 }
 
 func (c *client) Query(stmt string, names []string) *Queryx {
 	return gocqlx.Query(c.session.Query(stmt), names)
-}
-
-func (c *client) Eq(column string) Cmp {
-	return qb.Eq(column)
 }
 
 func (c *client) GetValue(key string) (string, error) {

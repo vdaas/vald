@@ -145,16 +145,11 @@ func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Re
 }
 
 func toBackupMetaVector(meta *model.MetaVector) (res *payload.Backup_MetaVector, err error) {
-	vector, err := meta.GetVector()
-	if err != nil {
-		return nil, err
-	}
-
 	return &payload.Backup_MetaVector{
-		Uuid:   meta.GetUUID(),
-		Meta:   meta.GetMeta(),
-		Vector: vector,
-		Ips:    meta.GetIPs(),
+		Uuid:   meta.UUID,
+		Meta:   meta.Meta,
+		Vector: meta.Vector,
+		Ips:    meta.IPs,
 	}, nil
 }
 
