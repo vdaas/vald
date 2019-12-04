@@ -35,6 +35,7 @@ GOCACHE := $(shell go env GOCACHE)
 
 MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
 
+ROOTDIR = $(shell git rev-parse --show-toplevel)
 PROTODIRS := $(shell find apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto")
 PBGODIRS = $(PROTODIRS:%=apis/grpc/%)
 SWAGGERDIRS = $(PROTODIRS:%=apis/swagger/%)

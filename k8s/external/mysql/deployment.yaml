@@ -52,9 +52,9 @@ spec:
         terminationMessagePolicy: File
         volumeMounts:
         - name: mysql-persistent-storage
-          mountPath: /var/lib/mysql
+          mountPath: /var/lib/mysql/
         - name: mysql-initdb
-          mountPath: /docker-entrypoint-initdb.d
+          mountPath: /docker-entrypoint-initdb.d/
       volumes:
       - name: mysql-persistent-storage
         persistentVolumeClaim:
