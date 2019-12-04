@@ -93,6 +93,8 @@ var (
 		return nil
 	}
 
+	As = errors.As
+	Is = errors.Is
 	UnWrapOnce = errbase.UnwrapOnce
 	UnWrapAll  = errbase.UnwrapAll
 )

@@ -37,6 +37,17 @@ spec:
       labels:
         app: manager-backup-mysql
     spec:
+      initContainers:
+      - name: wait-for-mysql
+        image: mysql:latest
+        command:
+        - /bin/sh
+        - -c
+        - >
+          set -x;
+          while [ $(mysqladmin -hmysql.default.svc.cluster.local -uroot -ppassword --show-warnings=false ping | grep alive | awk '{print $3}') -ne alive]; do
+            sleep 2;
+          done
       containers:
       - image: vdaas/vald-manager-backup-mysql:nightly
         imagePullPolicy: Always 

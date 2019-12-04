@@ -16,15 +16,14 @@
 .PHONY: k8s/vald/deploy
 ## deploy vald sample cluster to k8s
 k8s/vald/deploy:
+	kubectl apply -f k8s/metrics/metrics-server
 	kubectl create configmap mysql-config --from-file=$(ROOTDIR)/assets/ddl/manager/backup/mysql/ddl.sql
 	kubectl apply -f k8s/manager/backup/mysql
 	kubectl apply -f k8s/external/redis
-	sleep 2
 	kubectl apply -f k8s/agent/ngt
 	kubectl apply -f k8s/discoverer/k8s
 	kubectl apply -f k8s/meta/redis
 	kubectl apply -f k8s/external/mysql
-	sleep 5
 	kubectl apply -f k8s/gateway/vald
 
 .PHONY: k8s/vald/remove
@@ -37,5 +36,6 @@ k8s/vald/remove:
 	kubectl delete -f k8s/external/redis
 	kubectl delete -f k8s/discoverer/k8s
 	kubectl delete -f k8s/agent/ngt
+	kubectl delete -f k8s/metrics/metrics-server
 	kubectl delete configmap mysql-config
 

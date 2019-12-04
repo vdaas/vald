@@ -37,6 +37,17 @@ spec:
       labels:
         app: meta-redis
     spec:
+      initContainers:
+      - name: wait-for-redis
+        image: redis:latest
+        command:
+        - /bin/sh
+        - -c
+        - >
+          set -x;
+          while [ $(redis-cli -h redis.default.svc.cluster.local ) -ne 200]; do
+            sleep 2;
+          done
       containers:
       - image: vdaas/vald-meta-redis:nightly
         imagePullPolicy: Always 
