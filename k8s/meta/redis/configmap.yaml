@@ -116,7 +116,7 @@ data:
         ca: /path/to/ca
     redis_config:
       addrs:
-      - redis.default.svc.cluster.local
+        - redis.default.svc.cluster.local:6379
       db: 0
       dial_timeout: 5s
       idle_check_frequency: 1m
