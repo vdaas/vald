@@ -25,6 +25,7 @@ import (
 
 	redis "github.com/go-redis/redis/v7"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 )
 
 var (
@@ -151,6 +152,7 @@ func New(ctx context.Context, opts ...Option) (rc Redis, err error) {
 				if err == nil {
 					return nil
 				}
+				log.Error(err)
 			}
 		}
 	}()

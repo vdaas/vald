@@ -22,7 +22,6 @@ metadata:
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
-  revisionHistoryLimit: 2
   selector:
     matchLabels:
       app: mysql
@@ -34,6 +33,7 @@ spec:
         app: mysql
     spec:
       containers:
+      # - image: mariadb:latest
       - image: mysql:latest
         imagePullPolicy: Always 
         env:
