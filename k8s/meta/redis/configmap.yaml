@@ -128,7 +128,7 @@ data:
       max_retry_backoff: 512ms
       min_idle_conns: 0
       min_retry_backoff: 8ms
-      password: ""
+      password: _REDIS_PASSWORD_
       pool_size: 10
       pool_timeout: 4s
       read_only: false

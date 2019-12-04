@@ -119,7 +119,7 @@ data:
       host: mysql.default.svc.cluster.local
       port: 3306
       user: root
-      pass: password
+      pass: _MYSQL_PASSWORD_
       name: vald
       conn_max_life_time: 30s
       max_open_conns: 100

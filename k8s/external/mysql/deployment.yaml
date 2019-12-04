@@ -38,7 +38,10 @@ spec:
         imagePullPolicy: Always 
         env:
         - name: MYSQL_ROOT_PASSWORD
-          value: password
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: password
         name: mysql
         ports:
         - containerPort: 3306

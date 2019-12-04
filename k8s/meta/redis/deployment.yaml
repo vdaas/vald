@@ -45,9 +45,15 @@ spec:
         - -c
         - >
           set -x;
-          while [ $(redis-cli -h redis.default.svc.cluster.local ) -ne 200]; do
+          while [ $(redis-cli -h redis.default.svc.cluster.local -a ${REDIS_PASSWORD}) -ne 200]; do
             sleep 2;
           done
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: password
       containers:
       - image: vdaas/vald-meta-redis:nightly
         imagePullPolicy: Always 
@@ -91,6 +97,12 @@ spec:
         resources: {}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: password
         volumeMounts:
         - mountPath: /etc/server/
           name: meta-redis-config

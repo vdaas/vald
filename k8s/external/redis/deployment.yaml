@@ -40,6 +40,8 @@ spec:
       - image: redis:latest
         imagePullPolicy: Always 
         name: redis
+        args:
+        - "--requirepass $(REDIS_PASSWORD)"
         ports:
         - containerPort: 6379
           name: redis
@@ -50,6 +52,12 @@ spec:
             memory: 100Mi
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: password
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
