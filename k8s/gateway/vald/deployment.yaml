@@ -37,6 +37,47 @@ spec:
       labels:
         app: gateway
     spec:
+      initContainers:
+      - name: wait-for-manager-backup-mysql
+        image: busybox
+        command:
+        - /bin/sh
+        - -c
+        - >
+          set -x;
+          while [ $(curl -sw '%{http_code}' "http://manager-backup-mysql.default.svc.cluster.local:3001" -o /dev/null) -ne 200]; do
+            sleep 2;
+          done
+      - name: wait-for-meta-redis
+        image: busybox
+        command:
+        - /bin/sh
+        - -c
+        - >
+          set -x;
+          while [ $(curl -sw '%{http_code}' "http://meta-redis.default.svc.cluster.local:3001" -o /dev/null) -ne 200]; do
+            sleep 2;
+          done
+      # - name: wait-for-discoverer
+      #   image: busybox
+      #   command:
+      #   - /bin/sh
+      #   - -c
+      #   - >
+      #     set -x;
+      #     while [ $(curl -sw '%{http_code}' "http://discoverer-k8s.default.svc.cluster.local:3001" -o /dev/null) -ne 200]; do
+      #       sleep 2;
+      #     done
+      - name: wait-for-agent-ngt
+        image: busybox
+        command:
+        - /bin/sh
+        - -c
+        - >
+          set -x;
+          while [ $(curl -sw '%{http_code}' "http://agent-ngt.default.svc.cluster.local:3001" -o /dev/null) -ne 200]; do
+            sleep 2;
+          done
       containers:
       - image: vdaas/vald-gateway:nightly
         imagePullPolicy: Always 
