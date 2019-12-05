@@ -115,6 +115,66 @@ func BenchmarkNGTSequential(b *testing.B) {
 	}
 }
 
+func BenchmarkNGTSequentialBulk(b *testing.B) {
+	parseArgs(b)
+
+	for _, target := range targets {
+		b.Run(target, func(bb *testing.B) {
+			d := assets.Data(target)(b)
+			tmpdir, err := ioutil.TempDir("", "tmpdir")
+			if err != nil {
+				bb.Error(err)
+			}
+			defer os.RemoveAll(tmpdir)
+
+			n, err := ngt.New(
+				ngt.WithIndexPath(tmpdir),
+				ngt.WithObjectType(ngt.Float),
+				ngt.WithDimension(d.Dimension()),
+			)
+			if err != nil {
+				bb.Error(err)
+			}
+			// defer n.Close()
+
+			bb.Run("BulkInsert", func(sb *testing.B) {
+				train := d.Train()
+				sb.ReportAllocs()
+				sb.ResetTimer()
+				sb.StartTimer()
+				for i := 0; i < sb.N; i++ {
+					_, err = n.BulkInsert(train)
+					if err != nil {
+						sb.Error(err)
+					}
+				}
+				sb.StopTimer()
+			})
+
+			bb.Run("CreateIndex", func(sb *testing.B) {
+				err := n.CreateIndex(10000)
+				if err != nil {
+					sb.Error(err)
+				}
+			})
+
+			bb.Run("Search", func(sb *testing.B) {
+				query := d.Query()
+				sb.ReportAllocs()
+				sb.ResetTimer()
+				sb.StartTimer()
+				for i := 0; i < sb.N; i++ {
+					_, err := n.Search(query[i%len(query)], size, epsilon, radius)
+					if err != nil {
+						sb.Error(err)
+					}
+				}
+				sb.StopTimer()
+			})
+		})
+	}
+}
+
 func BenchmarkNGTParallel(b *testing.B) {
 	parseArgs(b)
 
@@ -147,6 +207,75 @@ func BenchmarkNGTParallel(b *testing.B) {
 					i := 0
 					for pb.Next() {
 						_, err = n.Insert(train[i%len(train)])
+						if err != nil {
+							sb.Error(err)
+						}
+						i++
+					}
+				})
+				sb.StopTimer()
+			})
+
+			bb.Run("CreateIndex", func(sb *testing.B) {
+				err := n.CreateIndex(10000)
+				if err != nil {
+					sb.Error(err)
+				}
+			})
+
+			bb.Run("SearchParallel", func(sb *testing.B) {
+				query := d.Query()
+				sb.ReportAllocs()
+				sb.ResetTimer()
+				sb.StartTimer()
+				sb.RunParallel(func(pb *testing.PB) {
+					i := 0
+					for pb.Next() {
+						_, err = n.Search(query[i%len(query)], size, epsilon, radius)
+						if err != nil {
+							sb.Error(err)
+						}
+						i++
+					}
+				})
+				sb.StopTimer()
+			})
+		})
+	}
+}
+
+func BenchmarkNGTParallelBulk(b *testing.B) {
+	parseArgs(b)
+
+	for _, target := range targets {
+		d := assets.Data(target)(b)
+		b.Run(target, func(bb *testing.B) {
+			tmpdir, err := ioutil.TempDir("", "tmpdir")
+			if err != nil {
+				bb.Error(err)
+			}
+			defer os.RemoveAll(tmpdir)
+
+			n, err := ngt.New(
+				ngt.WithIndexPath(tmpdir),
+				ngt.WithObjectType(ngt.Float),
+				ngt.WithDimension(d.Dimension()),
+			)
+			if err != nil {
+				bb.Error(err)
+			}
+			// defer n.Close()
+
+			bb.Run("BulkInsertParallel", func(sb *testing.B) {
+				train := d.Train()
+
+				sb.ReportAllocs()
+				sb.ResetTimer()
+				sb.StartTimer()
+				sb.RunParallel(func(pb *testing.PB) {
+					i := 0
+					for pb.Next() {
+						_, err = n.BulkInsert(train)
 						if err != nil {
 							sb.Error(err)
 						}
