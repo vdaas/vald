@@ -115,3 +115,13 @@ func WrapWithDataLoss(msg string, detail interface{}, err error) error {
 func WrapWithUnauthenticated(msg string, detail interface{}, err error) error {
 	return newStatus(codes.Unauthenticated, msg, detail, err).Err()
 }
+
+func FromError(err error) *errors.Errors_RPC {
+	for _, detail := range status.Convert(err).Details() {
+		switch t := detail.(type) {
+		case *errors.Errors_RPC:
+			return t
+		}
+	}
+	return nil
+}
