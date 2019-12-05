@@ -141,7 +141,7 @@ func (c *client) SetMultiple(kvs map[string]string) (err error) {
 }
 
 func (c *client) Delete(key string) (string, error) {
-	vals, err := c.db.Delete(key)
+	vals, err := c.db.DeleteByKeys(key)
 	if err != nil {
 		return "", err
 	}
@@ -154,7 +154,7 @@ func (c *client) Delete(key string) (string, error) {
 }
 
 func (c *client) DeleteMultiple(keys ...string) ([]string, error) {
-	return c.db.Delete(keys...)
+	return c.db.DeleteByKeys(keys...)
 }
 
 func (c *client) DeleteInverse(val string) (string, error) {

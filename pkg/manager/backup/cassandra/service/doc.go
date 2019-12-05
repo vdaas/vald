@@ -14,9 +14,5 @@
 // limitations under the License.
 //
 
-package cassandra
-
-type Deleter interface {
-	DeleteByKeys(keys ...string) ([]string, error)
-	DeleteByValues(values ...string) ([]string, error)
-}
+// Package service manages the main logic of server.
+package service

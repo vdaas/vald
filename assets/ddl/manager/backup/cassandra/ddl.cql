@@ -13,33 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: cassandra-initdb
-data:
-  init.cql: |
-    ---
-    CREATE KEYSPACE IF NOT EXISTS vald WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 3};
 
-    CREATE TABLE vald.kv (
-      uuid   text,
-      meta   text,
-      PRIMARY KEY (uuid)
-    );
+CREATE KEYSPACE IF NOT EXISTS vald WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 3};
 
-    CREATE TABLE vald.vk (
-      meta   text,
-      uuid   text,
-      PRIMARY KEY (meta)
-    );
+CREATE TABLE vald.meta_vector (
+  uuid   text,
+  vector list<double>,
+  meta   text,
+  ips    list<text>,
+  PRIMARY KEY (uuid)
+);
 
-    CREATE TABLE vald.meta_vector (
-      uuid   text,
-      vector list<double>,
-      meta   text,
-      ips    list<text>,
-      PRIMARY KEY (uuid)
-    );
-
-    CREATE INDEX ON vald.meta_vector (ips);
+CREATE INDEX ON vald.meta_vector (ips);

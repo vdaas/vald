@@ -79,9 +79,18 @@ docker/build/meta-cassandra: docker/build/base
 
 .PHONY: docker/name/backup-manager-mysql
 docker/name/backup-manager-mysql:
-	@echo "$(REPO)/$(BACKUP_MANAGER_IMAGE)"
+	@echo "$(REPO)/$(BACKUP_MANAGER_MYSQL_IMAGE)"
 
 .PHONY: docker/build/backup-manager-mysql
-## build backup-manager image
+## build backup-manager-mysql image
 docker/build/backup-manager-mysql: docker/build/base
-	docker build -f dockers/manager/backup/mysql/Dockerfile -t $(REPO)/$(BACKUP_MANAGER_IMAGE) .
+	docker build -f dockers/manager/backup/mysql/Dockerfile -t $(REPO)/$(BACKUP_MANAGER_MYSQL_IMAGE) .
+
+.PHONY: docker/name/backup-manager-cassandra
+docker/name/backup-manager-cassandra:
+	@echo "$(REPO)/$(BACKUP_MANAGER_CASSANDRA_IMAGE)"
+
+.PHONY: docker/build/backup-manager-cassandra
+## build backup-manager-cassandra image
+docker/build/backup-manager-cassandra: docker/build/base
+	docker build -f dockers/manager/backup/cassandra/Dockerfile -t $(REPO)/$(BACKUP_MANAGER_CASSANDRA_IMAGE) .

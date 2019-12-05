@@ -14,9 +14,12 @@
 // limitations under the License.
 //
 
-package cassandra
+// Package grpc provides grpc server logic
+package model
 
-type Deleter interface {
-	DeleteByKeys(keys ...string) ([]string, error)
-	DeleteByValues(values ...string) ([]string, error)
+type MetaVector struct {
+	UUID   string    `db:"uuid"`
+	Vector []float64 `db:"vector"`
+	Meta   string    `db:"meta"`
+	IPs    []string  `db:"ips"`
 }

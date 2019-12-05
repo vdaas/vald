@@ -16,7 +16,6 @@
 
 package cassandra
 
-type Deleter interface {
-	DeleteByKeys(keys ...string) ([]string, error)
-	DeleteByValues(values ...string) ([]string, error)
+type Querier interface {
+	Query(stmt string, names []string) *Queryx
 }

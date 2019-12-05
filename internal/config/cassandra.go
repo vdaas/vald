@@ -52,8 +52,12 @@ type Cassandra struct {
 	DefaultIdempotence       bool   `json:"default_idempotence" yaml:"default_idempotence"`
 	WriteCoalesceWaitTime    string `json:"write_coalesce_wait_time" yaml:"write_coalesce_wait_time"`
 
+	// meta
 	KVTable string `json:"kv_table" yaml:"kv_table"`
 	VKTable string `json:"vk_table" yaml:"vk_table"`
+
+	// backup manager
+	MetaTable string `json:"meta_table" yaml:"meta_table"`
 }
 
 type RetryPolicy struct {
@@ -99,6 +103,8 @@ func (c *Cassandra) Bind() *Cassandra {
 
 	c.KVTable = GetActualValue(c.KVTable)
 	c.VKTable = GetActualValue(c.VKTable)
+
+	c.MetaTable = GetActualValue(c.MetaTable)
 
 	return c
 }
