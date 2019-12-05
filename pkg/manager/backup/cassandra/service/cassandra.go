@@ -18,6 +18,7 @@ package service
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
@@ -174,14 +175,18 @@ func (c *client) SetMetas(ctx context.Context, metas ...model.MetaVector) error 
 	ib := cassandra.Insert(c.metaTable, metaColumns...)
 	bt := cassandra.Batch()
 
-	entities := make([]interface{}, 0, len(metas))
-	for _, mv := range metas {
-		bt = bt.Add(ib)
-		entities = append(entities, mv)
+	entities := make(map[string]interface{}, len(metas)*4)
+	for i, mv := range metas {
+		prefix := "p" + strconv.Itoa(i)
+		bt = bt.AddWithPrefix(prefix, ib)
+		entities[prefix+"."+uuidColumn] = mv.UUID
+		entities[prefix+"."+vectorColumn] = mv.Vector
+		entities[prefix+"."+metaColumn] = mv.Meta
+		entities[prefix+"."+ipsColumn] = mv.IPs
 	}
 
 	stmt, names := bt.ToCql()
-	return c.db.Query(stmt, names).Bind(entities).ExecRelease()
+	return c.db.Query(stmt, names).BindMap(entities).ExecRelease()
 }
 
 func (c *client) DeleteMeta(ctx context.Context, uuid string) error {
@@ -192,14 +197,15 @@ func (c *client) DeleteMeta(ctx context.Context, uuid string) error {
 func (c *client) DeleteMetas(ctx context.Context, uuids ...string) error {
 	deleteBuilder := cassandra.Delete(c.metaTable, cassandra.Eq(uuidColumn))
 	bt := cassandra.Batch()
-	bindUUIDs := make([]interface{}, 0, len(uuids))
-	for _, uuid := range uuids {
-		bt.Add(deleteBuilder)
-		bindUUIDs = append(bindUUIDs, uuid)
+	bindUUIDs := make(map[string]interface{}, len(uuids))
+	for i, uuid := range uuids {
+		prefix := "p" + strconv.Itoa(i)
+		bt.AddWithPrefix(prefix, deleteBuilder)
+		bindUUIDs[prefix+"."+uuidColumn] = uuid
 	}
 
 	stmt, names := bt.ToCql()
-	return c.db.Query(stmt, names).Bind(bindUUIDs...).ExecRelease()
+	return c.db.Query(stmt, names).BindMap(bindUUIDs).ExecRelease()
 }
 
 func (c *client) SetIPs(ctx context.Context, uuid string, ips ...string) error {
