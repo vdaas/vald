@@ -175,7 +175,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	eg, ctx := errgroup.New(ctx)
 	eg.Limitation(concurrency)
 	g.conns.Range(func(addr string, conn *grpc.ClientConn) bool {
-		eg.Go(func() (err error) {
+		eg.Go(safety.RecoverFunc(func() (err error) {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
@@ -194,7 +194,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 				}
 			}
 			return nil
-		})
+		}))
 		return true
 	})
 	return eg.Wait()

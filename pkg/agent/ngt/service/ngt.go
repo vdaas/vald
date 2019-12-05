@@ -152,14 +152,14 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			case <-tick.C:
 				if int(atomic.LoadUint64(&n.ic)) >= n.alen {
 					err := n.CreateIndex(n.dps)
-					if err != nil {
+					if err != nil && err != errors.ErrUncommittedIndexNotFound{
 						ech <- err
 						runtime.Gosched()
 					}
 				}
 			case <-limit.C:
 				err := n.CreateIndex(n.dps)
-				if err != nil {
+				if err != nil && err != errors.ErrUncommittedIndexNotFound{
 					ech <- err
 					runtime.Gosched()
 				}
