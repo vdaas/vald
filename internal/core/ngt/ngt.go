@@ -351,7 +351,7 @@ func (n *ngt) InsertCommit(vec []float64, poolSize uint32) (uint, error) {
 // BulkInsert returns NGT object ids.
 // This only stores not indexing, you must call CreateIndex and SaveIndex.
 func (n *ngt) BulkInsert(vecs [][]float64) ([]uint32, error) {
-	ids := make([]uint32, 0, len(vecs))
+	ids := make([]uint32, len(vecs))
 	n.mu.Lock()
 	ok := bool(C.ngt_batch_insert_index(n.index, (*C.float)(unsafe.Pointer(&vecs[0])), C.uint32_t(len(vecs)), (*C.uint32_t)(&ids[0]), n.ebuf))
 	n.mu.Unlock()
