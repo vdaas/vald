@@ -167,9 +167,9 @@ func TestBulkInsert(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		ids, errs := ngt.BulkInsert(tt.vectors)
-		if len(errs) > 0 {
-			t.Errorf("Unexpected error: TestBulkInsert(%v)", errs)
+		ids, err := ngt.BulkInsert(tt.vectors)
+		if err != nil {
+			t.Errorf("Unexpected error: TestBulkInsert(%v)", err)
 		}
 		if !reflect.DeepEqual(ids, tt.wants) {
 			t.Errorf("TestBulkInsert(%v): %v, wanted: %v", tt.vectors, ids, tt.wants)

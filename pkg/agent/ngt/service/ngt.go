@@ -152,14 +152,14 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			case <-tick.C:
 				if int(atomic.LoadUint64(&n.ic)) >= n.alen {
 					err := n.CreateIndex(n.dps)
-					if err != nil && err != errors.ErrUncommittedIndexNotFound{
+					if err != nil && err != errors.ErrUncommittedIndexNotFound {
 						ech <- err
 						runtime.Gosched()
 					}
 				}
 			case <-limit.C:
 				err := n.CreateIndex(n.dps)
-				if err != nil && err != errors.ErrUncommittedIndexNotFound{
+				if err != nil && err != errors.ErrUncommittedIndexNotFound {
 					ech <- err
 					runtime.Gosched()
 				}
@@ -386,13 +386,9 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 		}
 		return true
 	})
-	oids, errs := n.core.BulkInsert(vecs)
-	if errs != nil && len(errs) != 0 {
-		for _, bierr := range errs {
-			if bierr != nil {
-				err = errors.Wrap(err, bierr.Error())
-			}
-		}
+	oids, bierr := n.core.BulkInsert(vecs)
+	if bierr != nil {
+		err = errors.Wrap(err, bierr.Error())
 	}
 	for i, uuid := range uuids {
 		n.ivc.Delete(uuid)

@@ -49,11 +49,11 @@ type (
 
 		// BulkInsert returns NGT object ids.
 		// This only stores not indexing, you must call CreateIndex and SaveIndex.
-		BulkInsert(vecs [][]float64) ([]uint, []error)
+		BulkInsert(vecs [][]float64) ([]uint32, error)
 
 		// BulkInsertCommit returns NGT object ids.
 		// This stores and indexes at the same time.
-		BulkInsertCommit(vecs [][]float64, poolSize uint32) ([]uint, []error)
+		BulkInsertCommit(vecs [][]float64, poolSize uint32) ([]uint32, []error)
 
 		// CreateAndSaveIndex call  CreateIndex and SaveIndex in a row.
 		CreateAndSaveIndex(poolSize uint32) error
@@ -350,58 +350,99 @@ func (n *ngt) InsertCommit(vec []float64, poolSize uint32) (uint, error) {
 
 // BulkInsert returns NGT object ids.
 // This only stores not indexing, you must call CreateIndex and SaveIndex.
-func (n *ngt) BulkInsert(vecs [][]float64) ([]uint, []error) {
-	ids := make([]uint, 0, len(vecs))
-	errs := make([]error, 0, len(vecs))
-
-	var id uint
+func (n *ngt) BulkInsert(vecs [][]float64) ([]uint32, error) {
+	ids := make([]uint32, 0, len(vecs))
 	n.mu.Lock()
-	for _, vec := range vecs {
-		// n.mu.Lock()
-		id = uint(C.ngt_insert_index(n.index, (*C.double)(&vec[0]), C.uint32_t(n.dimension), n.ebuf))
-		// n.mu.Unlock()
-		if id == 0 {
-			errs = append(errs, n.newGoError(n.ebuf))
-		}
-		ids = append(ids, id)
-	}
+	ok := bool(C.ngt_batch_insert_index(n.index, (*C.float)(unsafe.Pointer(&vecs[0])), C.uint32_t(len(vecs)), (*C.uint32_t)(&ids[0]), n.ebuf))
 	n.mu.Unlock()
-
-	return ids, errs
+	if !ok {
+		return nil, n.newGoError(n.ebuf)
+	}
+	// ids := make([]uint, 0, len(vecs))
+	// var id uint
+	// n.mu.Lock()
+	// for _, vec := range vecs {
+	// 	// n.mu.Lock()
+	// 	id = uint(C.ngt_insert_index(n.index, (*C.double)(&vec[0]), C.uint32_t(n.dimension), n.ebuf))
+	// 	// n.mu.Unlock()
+	// 	if id == 0 {
+	// 		errs = append(errs, n.newGoError(n.ebuf))
+	// 	}
+	// 	ids = append(ids, id)
+	// }
+	// n.mu.Unlock()
+	//
+	return ids, nil
 }
 
 // BulkInsertCommit returns NGT object ids.
 // This stores and indexes at the same time.
-func (n *ngt) BulkInsertCommit(vecs [][]float64, poolSize uint32) ([]uint, []error) {
-	ids := make([]uint, 0, len(vecs))
-	errs := make([]error, 0, len(vecs))
-
-	idx := 0
-	var id uint
+func (n *ngt) BulkInsertCommit(vecs [][]float64, poolSize uint32) (ids []uint32, errs []error) {
 	var err error
-
-	for _, vec := range vecs {
-		if id, err = n.Insert(vec); err == nil {
-			ids = append(ids, id)
-			idx++
-			if idx >= n.bulkInsertChunkSize {
-				err = n.CreateAndSaveIndex(poolSize)
-				if err != nil {
-					errs = append(errs, err)
-				}
-				idx = 0
+	if len(vecs) > n.bulkInsertChunkSize {
+		ids = make([]uint32, 0, len(vecs))
+		var bids []uint32
+		for range make([]struct{}, len(vecs)/n.bulkInsertChunkSize+1) {
+			if len(vecs) == 0 {
+				break
 			}
-		} else {
-			errs = append(errs, err)
+			if len(vecs) <= n.bulkInsertChunkSize {
+				bids, err = n.BulkInsert(vecs)
+				vecs = nil
+			} else {
+				bids, err = n.BulkInsert(vecs[:n.bulkInsertChunkSize])
+				vecs = vecs[n.bulkInsertChunkSize:]
+			}
+			if err != nil {
+				errs = append(errs, err)
+				continue
+			}
+			ids = append(ids, bids...)
+			err = n.CreateAndSaveIndex(poolSize)
+			if err != nil {
+				errs = append(errs, err)
+			}
 		}
-	}
-
-	if idx > 0 {
-		err = n.CreateAndSaveIndex(poolSize)
+	} else {
+		ids, err = n.BulkInsert(vecs)
 		if err != nil {
 			errs = append(errs, err)
+		} else {
+			err = n.CreateAndSaveIndex(poolSize)
+			if err != nil {
+				errs = append(errs, err)
+			}
 		}
 	}
+	// ids = make([]uint, 0, len(vecs))
+	// errs = make([]error, 0, len(vecs))
+	//
+	// idx := 0
+	// var id uint
+	// var err error
+	//
+	// for _, vec := range vecs {
+	// 	if id, err = n.Insert(vec); err == nil {
+	// 		ids = append(ids, id)
+	// 		idx++
+	// 		if idx >= n.bulkInsertChunkSize {
+	// 			err = n.CreateAndSaveIndex(poolSize)
+	// 			if err != nil {
+	// 				errs = append(errs, err)
+	// 			}
+	// 			idx = 0
+	// 		}
+	// 	} else {
+	// 		errs = append(errs, err)
+	// 	}
+	// }
+	//
+	// if idx > 0 {
+	// 	err = n.CreateAndSaveIndex(poolSize)
+	// 	if err != nil {
+	// 		errs = append(errs, err)
+	// 	}
+	// }
 	return ids, errs
 }
 
