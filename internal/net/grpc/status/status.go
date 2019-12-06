@@ -18,6 +18,7 @@
 package status
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -40,11 +41,15 @@ func newStatus(code codes.Code, msg string, detail interface{}, err error) *stat
 
 	data.Instance, err = os.Hostname()
 	if err != nil {
+		ebody, _ := json.Marshal(data)
+		log.Debugf("error body: %s, msg: %v", string(ebody), err)
 		log.Error(err)
 	}
 
 	dst, err := st.WithDetails(&data)
 	if err != nil {
+		ebody, _ := json.Marshal(data)
+		log.Debugf("error body: %s, msg: %v", string(ebody), err)
 		log.Error(err)
 		return st
 	}
