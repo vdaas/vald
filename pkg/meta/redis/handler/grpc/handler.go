@@ -108,7 +108,7 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *payload.Empty, err error) {
 	err = s.redis.Set(kv.GetKey(), kv.GetVal())
 	if err != nil {
-		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "SetMeta", key: kv.GetKey(), val: kv.GetVal()}, err)
+		return nil, status.WrapWithUnknown("Unknown error occurred at SetMeta", &errDetail{method: "SetMeta", key: kv.GetKey(), val: kv.GetVal()}, err)
 	}
 	return new(payload.Empty), nil
 }
@@ -120,7 +120,7 @@ func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *pa
 	}
 	err = s.redis.SetMultiple(query)
 	if err != nil {
-		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "SetMetas", kvs: query}, err)
+		return nil, status.WrapWithUnknown("Unknown error occurred at SetMetas", &errDetail{method: "SetMetas", kvs: query}, err)
 	}
 	return new(payload.Empty), nil
 }
