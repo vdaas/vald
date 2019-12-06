@@ -348,7 +348,7 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 				bb.ResetTimer()
 				for n := 0; n < bb.N; n++ {
 					_, err := client.Remove(ctx, &payload.Object_ID{
-						Id: ids[i],
+						Id: ids[i%len(ids)],
 					})
 					if err != nil {
 						bb.Error(err)
