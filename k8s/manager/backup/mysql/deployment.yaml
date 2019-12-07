@@ -62,7 +62,7 @@ spec:
             path: /liveness
             port: liveness
             scheme: HTTP
-          initialDelaySeconds: 3
+          initialDelaySeconds: 5
           timeoutSeconds: 2
           successThreshold: 1
           failureThreshold: 3
@@ -72,7 +72,7 @@ spec:
             path: /readiness
             port: readiness
             scheme: HTTP
-          initialDelaySeconds: 3
+          initialDelaySeconds: 5
           timeoutSeconds: 2
           successThreshold: 2
           failureThreshold: 3

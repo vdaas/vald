@@ -39,3 +39,11 @@ k8s/vald/remove:
 	kubectl delete -f k8s/metrics/metrics-server
 	kubectl delete configmap mysql-config
 
+k8s/linkerd/deploy:
+	linkerd install | kubectl apply -f -
+	kubectl annotate namespace \
+		kubectl config get-contexts --no-headers \
+			"$(kubectl config current-context)"  \ 
+	        | awk "{print \$5}" | sed "s/^$/default/" \
+		linkerd.io/inject=enabled
+	
