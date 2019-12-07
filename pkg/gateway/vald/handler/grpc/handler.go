@@ -75,6 +75,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	meta := req.GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil {
+		log.Errorf("error at SearchByID\t%v", err)
 		return nil, err
 	}
 	req.Id = uuid
@@ -84,6 +85,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			meta := req.GetId()
 			uuid, err := s.metadata.GetUUID(ctx, meta)
 			if err != nil {
+				log.Errorf("error at SearchByID\t%v", err)
 				return nil, err
 			}
 			req.Id = uuid

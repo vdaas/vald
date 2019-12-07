@@ -45,20 +45,20 @@ spec:
             path: /liveness
             port: liveness
             scheme: HTTP
-          initialDelaySeconds: 15
+          initialDelaySeconds: 1
           timeoutSeconds: 2
           successThreshold: 1
-          failureThreshold: 5
+          failureThreshold: 3
           periodSeconds: 3
         readinessProbe:
           httpGet:
             path: /readiness
             port: readiness
             scheme: HTTP
-          initialDelaySeconds: 15
+          initialDelaySeconds: 2
           timeoutSeconds: 2
-          successThreshold: 1
-          failureThreshold: 5
+          successThreshold: 2
+          failureThreshold: 3
           periodSeconds: 2
         name: agent-ngt
         ports:

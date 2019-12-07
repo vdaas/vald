@@ -19,7 +19,6 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"runtime"
 	"time"
 
@@ -161,7 +160,7 @@ func (g *gRPCClient) Range(ctx context.Context,
 			}
 
 			if err != nil {
-				rerr = errors.Wrap(rerr, fmt.Sprintf("addr: %s\terror: %s", addr, err.Error()))
+				rerr = errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
 			}
 		}
 		return true
@@ -190,7 +189,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 					err = f(addr, conn, g.copts...)
 				}
 				if err != nil {
-					return errors.Wrap(rerr, fmt.Sprintf("addr: %s\terror: %s", addr, err.Error()))
+					return errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
 				}
 			}
 			return nil
@@ -222,7 +221,7 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 		data, err = f(conn, g.copts...)
 	}
 	if err != nil {
-		return nil, errors.Errorf("addr: %s\terror: %s", addr, err.Error())
+		return nil, errors.ErrRPCCallFailed(addr, err)
 	}
 	return
 }
