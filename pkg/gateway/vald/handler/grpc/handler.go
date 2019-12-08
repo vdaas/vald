@@ -117,7 +117,6 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 		visited := make(map[string]bool, len(res.Results))
 		mu := sync.RWMutex{}
 		return s.gateway.BroadCast(ectx, func(ctx context.Context, target string, ac agent.AgentClient) error {
-			log.Debug(target)
 			r, err := f(ctx, ac)
 			if err != nil {
 				log.Error(err)
