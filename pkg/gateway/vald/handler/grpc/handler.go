@@ -65,30 +65,21 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (*payload.
 }
 
 func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
-	return s.search(ctx, req.GetConfig(), func(ctx context.Context, ac agent.AgentClient) (*payload.Search_Response, error) {
-		return ac.Search(ctx, req)
-	})
+	return s.search(ctx, req.GetConfig(),
+		func(ctx context.Context, ac agent.AgentClient) (*payload.Search_Response, error) {
+			return ac.Search(ctx, req)
+		})
 }
 
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (
 	res *payload.Search_Response, err error) {
-	meta := req.GetId()
-	uuid, err := s.metadata.GetUUID(ctx, meta)
+	req.Id, err = s.metadata.GetUUID(ctx, req.GetId())
 	if err != nil {
 		log.Errorf("error at SearchByID\t%v", err)
 		return nil, err
 	}
-	req.Id = uuid
 	return s.search(ctx, req.GetConfig(),
 		func(ctx context.Context, ac agent.AgentClient) (*payload.Search_Response, error) {
-			// TODO rewrite ObjectID
-			meta := req.GetId()
-			uuid, err := s.metadata.GetUUID(ctx, meta)
-			if err != nil {
-				log.Errorf("error at SearchByID\t%v", err)
-				return nil, err
-			}
-			req.Id = uuid
 			return ac.SearchByID(ctx, req)
 		})
 }

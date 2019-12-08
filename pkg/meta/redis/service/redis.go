@@ -196,21 +196,24 @@ func (c *client) appendPrefix(prefix, key string) string {
 	return prefix + c.prefixDelimiter + key
 }
 
-func (c *client) get(prefix, key string) (string, error) {
+func (c *client) get(prefix, key string) (val string, err error) {
 	pipe := c.db.TxPipeline()
 	res := pipe.Get(c.appendPrefix(prefix, key))
-	if _, err := pipe.Exec(); err != nil {
+	_, err = pipe.Exec()
+	if err != nil {
 		if err == redis.Nil {
 			return "", errors.ErrRedisNotFound(key)
-		} else {
-			return "", err
 		}
+		return "", errors.ErrRedisGetOperationFailed(key, err)
 	}
-	val, err := res.Result()
-	if err == redis.Nil {
-		return "", errors.ErrRedisNotFound(key)
+	err = res.Err()
+	if err != nil {
+		if err == redis.Nil {
+			return "", errors.ErrRedisNotFound(key)
+		}
+		return "", errors.ErrRedisGetOperationFailed(key, err)
 	}
-	return val, nil
+	return res.Val(), nil
 }
 
 func (c *client) getMulti(prefix string, keys ...string) (vals []string, err error) {
@@ -220,70 +223,79 @@ func (c *client) getMulti(prefix string, keys ...string) (vals []string, err err
 		ress[k] = pipe.Get(c.appendPrefix(prefix, k))
 	}
 	if _, err = pipe.Exec(); err != nil {
+		for _, key := range keys{
+			err = errors.Wrap(errors.ErrRedisGetOperationFailed(key, err), err.Error())
+		}
 		return nil, err
 	}
-	var errs error
 	vals = make([]string, 0, len(ress))
 	for _, k := range keys {
-		if err = ress[k].Err(); err != nil {
+		res := ress[k]
+		err = res.Err()
+		if err != nil {
 			if err == redis.Nil {
-				if errs != nil {
-					errs = errors.Wrap(errs, errors.ErrRedisNotFound(k).Error())
-				} else {
-					errs = errors.ErrRedisNotFound(k)
-				}
+				err = errors.Wrap(err, errors.ErrRedisNotFound(k).Error())
 			} else {
-				errs = errors.Wrap(errs, errors.ErrRedisGetOperationFailed(k, err).Error())
+				err = errors.Wrap(err, errors.ErrRedisGetOperationFailed(k, err).Error())
 			}
 			vals = append(vals, "")
 			continue
 		}
-		v, err := ress[k].Result()
-		if err != nil {
-			errs = errors.Wrap(errs, errors.ErrRedisNotFound(k).Error())
-			vals = append(vals, "")
-			continue
-		}
-		vals = append(vals, v)
+		vals = append(vals, res.Val())
 	}
-	return vals[:], errs
+	return vals[:], err
 }
 
-func (c *client) Set(key, val string) error {
+func (c *client) Set(key, val string) (err error) {
+	kvKey := c.appendPrefix(c.kvPrefix, key)
+	vkKey := c.appendPrefix(c.vkPrefix, val)
 	pipe := c.db.TxPipeline()
-	kv := pipe.Set(c.appendPrefix(c.kvPrefix, key), val, 0)
-	vk := pipe.Set(c.appendPrefix(c.vkPrefix, val), key, 0)
-	if _, err := pipe.Exec(); err != nil {
+	kv := pipe.Set(kvKey, val, 0)
+	vk := pipe.Set(vkKey, key, 0)
+	_, err = pipe.Exec()
+	if err != nil {
 		return err
 	}
-	if err := kv.Err(); err != nil {
-		return err
+	err = kv.Err()
+	if err != nil {
+		return errors.Wrap(c.db.Del(vkKey).Err(), errors.ErrRedisSetOperationFailed(kvKey, err).Error())
 	}
-	return vk.Err()
+	err = vk.Err()
+	if err != nil {
+		return errors.Wrap(c.db.Del(kvKey).Err(), errors.ErrRedisSetOperationFailed(vkKey, err).Error())
+	}
+	return nil
 }
 
 func (c *client) SetMultiple(kvs map[string]string) (err error) {
 	pipe := c.db.TxPipeline()
-	ress := make(map[string]*redis.StatusCmd, len(kvs)*2)
+	vks := make(map[string]string, len(kvs))
+	kvress := make(map[string]*redis.StatusCmd, len(kvs))
+	vkress := make(map[string]*redis.StatusCmd, len(kvs))
 	for k, v := range kvs {
 		if len(k) == 0 || len(v) == 0 {
 			continue
 		}
+		vks[v] = k
 		kvKey := c.appendPrefix(c.kvPrefix, k)
 		vkKey := c.appendPrefix(c.vkPrefix, v)
-		ress[kvKey] = pipe.Set(kvKey, v, 0)
-		ress[vkKey] = pipe.Set(vkKey, k, 0)
+		kvress[vkKey] = pipe.Set(kvKey, v, 0)
+		vkress[kvKey] = pipe.Set(vkKey, k, 0)
 	}
 	if _, err = pipe.Exec(); err != nil {
 		return err
 	}
-	var errs error
-	for k, res := range ress {
+	for vkKey, res := range kvress {
 		if err = res.Err(); err != nil {
-			errs = errors.Wrap(errs, errors.ErrRedisSetOperationFailed(k, err).Error())
+			err = errors.Wrap(c.db.Del(vkKey).Err(), errors.ErrRedisSetOperationFailed(vks[vkKey], err).Error())
 		}
 	}
-	return errs
+	for kvKey, res := range vkress {
+		if err = res.Err(); err != nil {
+			err = errors.Wrap(c.db.Del(kvKey).Err(), errors.ErrRedisSetOperationFailed(kvs[kvKey], err).Error())
+		}
+	}
+	return err
 }
 
 func (c *client) Delete(key string) (string, error) {
@@ -314,10 +326,17 @@ func (c *client) delete(pfx, pfxInv, key string) (val string, err error) {
 		return "", err
 	}
 	if err = k.Err(); err != nil {
-		return "", err
+		if pfx == c.kvPrefix {
+			return "", errors.Wrap(c.Set(key, val), err.Error())
+		}
+		return "", errors.Wrap(c.Set(val, key), err.Error())
 	}
 	if err = v.Err(); err != nil {
-		return "", err
+		if pfx == c.kvPrefix {
+			return "", errors.Wrap(c.Set(key, val), err.Error())
+		}
+		return "", errors.Wrap(c.Set(val, key), err.Error())
+
 	}
 	return val, nil
 }
