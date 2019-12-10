@@ -27,6 +27,8 @@ import (
 type Dataset interface {
 	Train() [][]float64
 	Query() [][]float64
+	Distances() [][]float64
+	Neighbors() [][]int
 	IDs() []string
 	Name() string
 	Dimension() int
@@ -37,6 +39,8 @@ type Dataset interface {
 type dataset struct {
 	train        [][]float64
 	query        [][]float64
+	distances    [][]float64
+	neighbors    [][]int
 	ids          []string
 	name         string
 	dimension    int
@@ -48,7 +52,7 @@ var (
 	data = map[string]func(testing.TB) Dataset{
 		"fashion-mnist": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "fashion-mnist-784-euclidean.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(datasetDir(tb) + "fashion-mnist-784-euclidean.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -56,6 +60,8 @@ var (
 			return &dataset{
 				train:        train,
 				query:        query,
+				distances:distances,
+				neighbors:neighbors,
 				ids:          ids,
 				name:         "fashion-mnist",
 				dimension:    dim,
@@ -65,7 +71,7 @@ var (
 		},
 		"mnist": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "mnist-784-euclidean.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(datasetDir(tb) + "mnist-784-euclidean.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -73,6 +79,8 @@ var (
 			return &dataset{
 				train:        train,
 				query:        query,
+				distances:    distances,
+				neighbors:    neighbors,
 				ids:          ids,
 				name:         "mnist",
 				dimension:    dim,
@@ -82,7 +90,7 @@ var (
 		},
 		"glove-25": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "glove-25-angular.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(datasetDir(tb) + "glove-25-angular.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -90,6 +98,8 @@ var (
 			return &dataset{
 				train:        train,
 				query:        query,
+				distances:    distances,
+				neighbors:    neighbors,
 				ids:          ids,
 				name:         "glove-25",
 				dimension:    dim,
@@ -99,7 +109,7 @@ var (
 		},
 		"glove-50": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "glove-50-angular.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(datasetDir(tb) + "glove-50-angular.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -107,6 +117,8 @@ var (
 			return &dataset{
 				train:        train,
 				query:        query,
+				distances:    distances,
+				neighbors:    neighbors,
 				ids:          ids,
 				name:         "glove-50",
 				dimension:    dim,
@@ -116,7 +128,7 @@ var (
 		},
 		"glove-100": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "glove-100-angular.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(datasetDir(tb) + "glove-100-angular.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -124,6 +136,8 @@ var (
 			return &dataset{
 				train:        train,
 				query:        query,
+				distances:    distances,
+				neighbors:    neighbors,
 				ids:          ids,
 				name:         "glove-100",
 				dimension:    dim,
@@ -133,7 +147,7 @@ var (
 		},
 		"glove-200": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "glove-200-angular.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(datasetDir(tb) + "glove-200-angular.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -141,6 +155,8 @@ var (
 			return &dataset{
 				train:        train,
 				query:        query,
+				distances:    distances,
+				neighbors:    neighbors,
 				ids:          ids,
 				name:         "glove-200",
 				dimension:    dim,
@@ -150,7 +166,7 @@ var (
 		},
 		"nytimes": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "nytimes-256-angular.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(datasetDir(tb) + "nytimes-256-angular.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -158,6 +174,8 @@ var (
 			return &dataset{
 				train:        train,
 				query:        query,
+				distances:    distances,
+				neighbors:    neighbors,
 				ids:          ids,
 				name:         "nytimes",
 				dimension:    dim,
@@ -167,7 +185,7 @@ var (
 		},
 		"sift": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "sift-128-euclidean.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(datasetDir(tb) + "sift-128-euclidean.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -175,6 +193,8 @@ var (
 			return &dataset{
 				train:        train,
 				query:        query,
+				distances:    distances,
+				neighbors:    neighbors,
 				ids:          ids,
 				name:         "sift",
 				dimension:    dim,
@@ -184,7 +204,7 @@ var (
 		},
 		"gist": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "gist-960-euclidean.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(datasetDir(tb) + "gist-960-euclidean.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -192,6 +212,8 @@ var (
 			return &dataset{
 				train:        train,
 				query:        query,
+				distances:    distances,
+				neighbors:    neighbors,
 				ids:          ids,
 				name:         "gist",
 				dimension:    dim,
@@ -201,7 +223,7 @@ var (
 		},
 		"kosarak": func(tb testing.TB) Dataset {
 			tb.Helper()
-			ids, train, query, dim, err := LoadDataAndIDs(datasetDir(tb) + "/kosarak-jaccard.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(datasetDir(tb) + "/kosarak-jaccard.hdf5")
 			if err != nil {
 				tb.Error(err)
 				return nil
@@ -209,6 +231,8 @@ var (
 			return &dataset{
 				train:        train,
 				query:        query,
+				distances:    distances,
+				neighbors:    neighbors,
 				ids:          ids,
 				name:         "kosarak",
 				dimension:    dim,
@@ -222,7 +246,7 @@ var (
 func identity(dim int) func(tb testing.TB) Dataset {
 	return func(tb testing.TB) Dataset {
 		tb.Helper()
-		ids := CreateIDs(dim)
+		ids := CreateSequentialIDs(dim)
 		train := make([][]float64, dim)
 		for i := range train {
 			train[i] = make([]float64, dim)
@@ -273,6 +297,14 @@ func (d *dataset) Train() [][]float64 {
 
 func (d *dataset) Query() [][]float64 {
 	return d.query
+}
+
+func (d *dataset) Distances() [][]float64 {
+	return d.distances
+}
+
+func (d *dataset) Neighbors() [][]int {
+	return d.neighbors
 }
 
 func (d *dataset) IDs() []string {
