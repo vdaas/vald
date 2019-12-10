@@ -21,4 +21,24 @@ var (
 	ErrDaemonStopFailed = func(err error) error {
 		return Wrap(err, "failed to stop daemon")
 	}
+
+	ErrStartFunc = func(name string, err error) error {
+		return Wrapf(err, "error occured in runner.Start at %s", name)
+	}
+
+	ErrPreStopFunc = func(name string, err error) error {
+		return Wrapf(err, "error occured in runner.PreStop at %s", name)
+	}
+
+	ErrStopFunc = func(name string, err error) error {
+		return Wrapf(err, "error occured in runner.Stop at %s", name)
+	}
+
+	ErrPostStopFunc = func(name string, err error) error {
+		return Wrapf(err, "error occured in runner.PostStop at %s", name)
+	}
+
+	ErrRunnerWait = func(name string, err error) error {
+		return Wrapf(err, "error occured in runner.Wait at %s", name)
+	}
 )

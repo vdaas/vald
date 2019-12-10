@@ -51,6 +51,9 @@ func New(opts ...Option) Backoff {
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(b)
 	}
+	if b.backoffFactor < 1 {
+		b.backoffFactor = 1.1
+	}
 	b.durationLimit = b.maxDuration / b.backoffFactor
 	b.jittedInitialDuration = b.addJitter(b.initialDuration)
 
