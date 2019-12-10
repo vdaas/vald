@@ -1,0 +1,27 @@
+name: Run semver
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  semver-auto:
+    name: Run semver-auto
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 0
+      - name: Get latest gitwerk
+        run: |
+          wget "https://github.com/rinx/gitwerk/releases/latest/download/gitwerk-linux-amd64.zip"
+          unzip gitwerk-linux-amd64.zip
+      - name: Run gitwerk semver-auto
+        run: |
+          ./gitwerk semver-auto
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin --tags
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}

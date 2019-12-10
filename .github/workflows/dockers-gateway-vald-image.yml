@@ -63,6 +63,6 @@ jobs:
       run: |
         echo 'Push to DockerHub (tags)'
         imagename=`make docker/name/gateway-vald`
-        tag_name=`cat $GITHUB_REF | sed -e 's:^refs/tags/::'`
+        tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
         docker tag ${imagename} ${imagename}:${tag_name}
         docker push ${imagename}:${tag_name}
