@@ -45,8 +45,16 @@ bench/datasets/md5dir/print:
 bench/datasets/hdf5dir/print:
 	@echo $(BENCH_DATASET_HDF5_DIR)
 
+.PHONY: bench
+## run all benchmarks
+bench: \
+	bench/core \
+	bench/agent \
+	bench/ngtd \
+	bench/gateway
+
 .PHONY: bench/core
-## run benchmark for core
+## run benchmarks for core
 bench/core: \
 	bench/core/ngt \
 	bench/core/gongt
@@ -60,14 +68,14 @@ bench/core/ngt: \
 .PHONY: bench/core/ngt/sequential
 ## run benchmark for NGT core sequential methods
 bench/core/ngt/sequential:
-	$(call bench-pprof,pprof/core/ngt,core,NGTSequential,ngt,\
+	$(call bench-pprof,pprof/core,core,NGTSequential,ngt-sequential,\
     		./hack/benchmark/core/ngt/ngt_bench_test.go \
     		-dataset=$(DATASET_ARGS))
 
 .PHONY: bench/core/ngt/parallel
 ## run benchmark for NGT core parallel methods
 bench/core/ngt/parallel:
-	$(call bench-pprof,pprof/core/ngt,core,NGTParallel,ngt,\
+	$(call bench-pprof,pprof/core,core,NGTParallel,ngt-parallel,\
     		./hack/benchmark/core/ngt/ngt_bench_test.go \
     		-dataset=$(DATASET_ARGS))
 
@@ -80,49 +88,45 @@ bench/core/gongt: \
 .PHONY: bench/core/gongt/sequential
 ## run benchmark for gongt core sequential methods
 bench/core/gongt/sequential:
-	$(call bench-pprof,pprof/core/gongt,core,GoNGTSequential,gongt,\
+	$(call bench-pprof,pprof/core,core,GoNGTSequential,gongt-sequential,\
     		./hack/benchmark/core/ngt/gongt_bench_test.go \
     		-dataset=$(DATASET_ARGS))
 
 .PHONY: bench/core/gongt/parallel
 ## run benchmark for gongt core parallel methods
 bench/core/gongt/parallel:
-	$(call bench-pprof,pprof/core/gongt,core,GoNGTParallel,gongt,\
+	$(call bench-pprof,pprof/core,core,GoNGTParallel,gongt-parallel,\
     		./hack/benchmark/core/ngt/gongt_bench_test.go \
     		-dataset=$(DATASET_ARGS))
 
-.PHONY: bench
-## run benchmarks
-bench: \
-	bench/agent/stream \
-	bench/agent/sequential/grpc \
-	bench/agent/sequential/rest
-
 .PHONY: bench/agent
-## run benchmarks for agent
+## run benchmarks for vald agent
 bench/agent: \
 	bench/agent/stream \
 	bench/agent/sequential/grpc \
 	bench/agent/sequential/rest
 
 .PHONY: bench/agent/stream
+## run benchmark for agent gRPC stream
 bench/agent/stream: \
 	ngt/install
-	$(call bench-pprof,pprof/agent/ngt,agent,gRPCStream,stream,\
+	$(call bench-pprof,pprof/agent,agent,gRPCStream,stream,\
 		./hack/benchmark/e2e/agent/ngt/ngt_bench_test.go \
 		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/agent/sequential/grpc
+## run benchmark for agent gRPC sequential
 bench/agent/sequential/grpc: \
 	ngt/install
-	$(call bench-pprof,pprof/agent/ngt,agent,gRPCSequential,sequential-grpc,\
+	$(call bench-pprof,pprof/agent,agent,gRPCSequential,sequential-grpc,\
 		./hack/benchmark/e2e/agent/ngt/ngt_bench_test.go \
 		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/agent/sequential/rest
+## run benchmark for agent REST
 bench/agent/sequential/rest: \
 	ngt/install
-	$(call bench-pprof,pprof/agent/ngt,agent,RESTSequential,sequential-rest,\
+	$(call bench-pprof,pprof/agent,agent,RESTSequential,sequential-rest,\
 		./hack/benchmark/e2e/agent/ngt/ngt_bench_test.go \
 		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
@@ -134,6 +138,7 @@ bench/ngtd: \
 	bench/ngtd/sequential/rest
 
 .PHONY: bench/ngtd/stream
+## run benchmark for NGTD gRPC stream
 bench/ngtd/stream: \
 	ngt/install
 	$(call bench-pprof,pprof/external/ngtd,ngtd,gRPCStream,stream,\
@@ -141,6 +146,7 @@ bench/ngtd/stream: \
 		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/ngtd/sequential/grpc
+## run benchmark for NGTD gRPC sequential
 bench/ngtd/sequential/grpc: \
 	ngt/install
 	$(call bench-pprof,pprof/external/ngtd,ngtd,gRPCSequential,sequential-grpc,\
@@ -148,13 +154,20 @@ bench/ngtd/sequential/grpc: \
 		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
 .PHONY: bench/ngtd/sequential/rest
+## run benchmark for NGTD REST stream
 bench/ngtd/sequential/rest: \
 	ngt/install
 	$(call bench-pprof,pprof/external/ngtd,ngtd,RESTSequential,sequential-rest,\
 		./hack/benchmark/e2e/external/ngtd/ngtd_bench_test.go \
 		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
+.PHONY: bench/gateway
+## run benchmarks for gateway
+bench/gateway: \
+	bench/gateway/sequential
+
 .PHONY: bench/gateway/sequential
+## run benchmark for gateway sequential
 bench/gateway/sequential: \
 	ngt/install
 	$(call bench-pprof,pprof/gateway/vald,vald,Sequential,sequential,\
