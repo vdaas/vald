@@ -223,7 +223,7 @@ func (c *client) getMulti(prefix string, keys ...string) (vals []string, err err
 		ress[k] = pipe.Get(c.appendPrefix(prefix, k))
 	}
 	if _, err = pipe.Exec(); err != nil {
-		for _, key := range keys{
+		for _, key := range keys {
 			err = errors.Wrap(errors.ErrRedisGetOperationFailed(key, err), err.Error())
 		}
 		return nil, err

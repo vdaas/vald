@@ -144,7 +144,7 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (
 	conn net.Conn, err error) {
 	sep := strings.LastIndex(addr, ":")
 
-	if sep < 0{
+	if sep < 0 {
 		sep = len(addr)
 	}
 

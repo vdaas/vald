@@ -152,7 +152,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				uuids = append(uuids, r.GetId())
 			}
 			if s.metadata != nil {
-                var metas []string
+				var metas []string
 				metas, err := s.metadata.GetMetas(ctx, uuids...)
 				if err == nil {
 					for i, k := range metas {
