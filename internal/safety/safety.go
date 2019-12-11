@@ -27,7 +27,11 @@ import (
 func RecoverFunc(fn func() error) func() error {
 	return func() (err error) {
 		defer func() {
-			err = RecoverWithError(err)
+			if r := recover(); r != nil {
+				log.Warnf("recovered in f %v", r)
+				err = wrapError(r, err)
+				log.Error(err)
+			}
 		}()
 		err = fn()
 		return err
@@ -37,18 +41,23 @@ func RecoverFunc(fn func() error) func() error {
 func RecoverWithError(err error) error {
 	if r := recover(); r != nil {
 		log.Warnf("recovered in f %v", r)
-		switch x := r.(type) {
-		case runtime.Error:
-			err = errors.ErrRuntimeError(err, x)
-			panic(err)
-		case string:
-			err = errors.ErrPanicString(err, x)
-		case error:
-			err = errors.Wrap(err, x.Error())
-		default:
-			err = errors.ErrPanicRecovered(err, x)
-		}
+		err = wrapError(r, err)
 		log.Error(err)
+	}
+	return err
+}
+
+func wrapError(r interface{}, err error) error {
+	switch x := r.(type) {
+	case runtime.Error:
+		err = errors.ErrRuntimeError(err, x)
+		panic(err)
+	case string:
+		err = errors.ErrPanicString(err, x)
+	case error:
+		err = errors.Wrap(err, x.Error())
+	default:
+		err = errors.ErrPanicRecovered(err, x)
 	}
 	return err
 }
