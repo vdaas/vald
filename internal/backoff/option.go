@@ -103,6 +103,6 @@ func WithEnableErrorLog() Option {
 
 func WithDisableErrorLog() Option {
 	return func(b *backoff) {
-		b.errLog = true
+		b.errLog = false
 	}
 }
