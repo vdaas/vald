@@ -36,7 +36,7 @@ func RecoverFunc(fn func() error) func() error {
 
 func RecoverWithError(err error) error {
 	if r := recover(); r != nil {
-		log.Warnf("recovered in f %v", r)
+		log.Warnf("recovered:\t%+v", r)
 		switch x := r.(type) {
 		case runtime.Error:
 			err = errors.ErrRuntimeError(err, x)
