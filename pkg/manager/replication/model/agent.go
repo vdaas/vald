@@ -19,7 +19,7 @@ package model
 
 import (
 	"github.com/vdaas/vald/apis/grpc/agent"
-	"google.golang.org/grpc"
+	"github.com/vdaas/vald/internal/net/grpc"
 )
 
 type Agent struct {
