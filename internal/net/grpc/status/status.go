@@ -29,7 +29,7 @@ import (
 )
 
 func newStatus(code codes.Code, msg string, detail interface{}, err error) *status.Status {
-	if err != nil{
+	if err != nil {
 		log.Error(err)
 	}
 	st := status.New(code, msg)

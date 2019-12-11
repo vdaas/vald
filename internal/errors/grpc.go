@@ -37,7 +37,7 @@ var (
 		return Errorf("gRPC client connection not found on %s", addr)
 	}
 
-	ErrRPCCallFailed = func(addr string, err error)error{
-		return Wrapf(err,"addr: %s", addr)
+	ErrRPCCallFailed = func(addr string, err error) error {
+		return Wrapf(err, "addr: %s", addr)
 	}
 )
