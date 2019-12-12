@@ -23,6 +23,7 @@ import (
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc"
 	igrpc "github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -33,7 +34,6 @@ import (
 	"github.com/vdaas/vald/pkg/manager/index/handler/rest"
 	"github.com/vdaas/vald/pkg/manager/index/router"
 	"github.com/vdaas/vald/pkg/manager/index/service"
-	"google.golang.org/grpc"
 )
 
 type run struct {

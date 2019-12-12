@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/agent"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -31,7 +32,6 @@ import (
 	"github.com/vdaas/vald/pkg/agent/ngt/handler/rest"
 	"github.com/vdaas/vald/pkg/agent/ngt/router"
 	"github.com/vdaas/vald/pkg/agent/ngt/service"
-	"google.golang.org/grpc"
 )
 
 type run struct {
