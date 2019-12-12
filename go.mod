@@ -19,6 +19,7 @@ replace (
 
 require (
 	github.com/DataDog/zstd v1.4.4
+	github.com/blend/go-sdk v2.0.0+incompatible // indirect
 	github.com/certifi/gocertifi v0.0.0-20200104152315-a6d78f326758 // indirect
 	github.com/cespare/xxhash v1.1.0
 	github.com/cockroachdb/errors v1.2.4
@@ -32,6 +33,7 @@ require (
 	github.com/gocql/gocql v0.0.0-00010101000000-000000000000
 	github.com/gocraft/dbr/v2 v2.6.3
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/google/gofuzz v1.0.0
 	github.com/gorilla/mux v1.7.1
 	github.com/hashicorp/go-version v1.2.0
@@ -42,9 +44,10 @@ require (
 	github.com/kpango/glg v1.4.7
 	github.com/pierrec/lz4 v2.4.0+incompatible
 	github.com/scylladb/gocqlx v1.3.2
+	github.com/wcharczuk/go-chart v2.0.1+incompatible
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
-	golang.org/x/sys v0.0.0-20200103143344-a1369afcdac7
+	golang.org/x/sys v0.0.0-20200106162015-b016eb3dc98e
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	google.golang.org/genproto v0.0.0-20191230161307-f3c370f40bfb
 	google.golang.org/grpc v1.26.0

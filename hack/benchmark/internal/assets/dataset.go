@@ -60,8 +60,8 @@ var (
 			return &dataset{
 				train:        train,
 				query:        query,
-				distances:distances,
-				neighbors:neighbors,
+				distances:    distances,
+				neighbors:    neighbors,
 				ids:          ids,
 				name:         "fashion-mnist",
 				dimension:    dim,

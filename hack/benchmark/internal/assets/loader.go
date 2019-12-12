@@ -84,7 +84,7 @@ func Load(path string) (train, test, distances [][]float64, neighbors [][]int, d
 	f, err := hdf5.OpenFile(path, hdf5.F_ACC_RDONLY)
 	if err != nil {
 		log.Error(path)
-		return nil, nil,  nil, nil,0, err
+		return nil, nil, nil, nil, 0, err
 	}
 	defer func() {
 		err = f.Close()
