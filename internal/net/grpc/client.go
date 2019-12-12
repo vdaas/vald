@@ -31,6 +31,7 @@ import (
 	"google.golang.org/grpc/connectivity"
 )
 
+type Server = grpc.Server
 type ClientConn = grpc.ClientConn
 type CallOption = grpc.CallOption
 type DialOption = grpc.DialOption
