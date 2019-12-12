@@ -51,7 +51,7 @@ Please read the [contribution guide](https://github.com/vdaas/vald/blob/master/C
 ## Author
 
 - [kpango](https://github.com/kpango)
-- [kou-m](https://github.com/kou-m)
+- [kmrmt](https://github.com/kmrmt)
 - [rinx](https://github.com/rinx)
 
 ## Contributor
