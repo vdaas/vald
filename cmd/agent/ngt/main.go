@@ -35,29 +35,23 @@ const (
 )
 
 func main() {
-	var err error
-	defer func() {
-		err = safety.RecoverWithError(err)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	if err = runner.Do(
-		context.Background(),
-		runner.WithName("agent ngt"),
-		runner.WithVersion(version, maxVersion, minVersion),
-		runner.WithConfigLoader(func(path string) (interface{}, string, error) {
-			cfg, err := config.NewConfig(path)
-			if err != nil {
-				return nil, "", err
-			}
-			return cfg, cfg.Version, err
-		}),
-		runner.WithDaemonInitializer(func(cfg interface{}) (runner.Runner, error) {
-			return usecase.New(cfg.(*config.Data))
-		}),
-	); err != nil {
+	if err := safety.RecoverFunc(func() error {
+		return runner.Do(
+			context.Background(),
+			runner.WithName("agent ngt"),
+			runner.WithVersion(version, maxVersion, minVersion),
+			runner.WithConfigLoader(func(path string) (interface{}, string, error) {
+				cfg, err := config.NewConfig(path)
+				if err != nil {
+					return nil, "", err
+				}
+				return cfg, cfg.Version, err
+			}),
+			runner.WithDaemonInitializer(func(cfg interface{}) (runner.Runner, error) {
+				return usecase.New(cfg.(*config.Data))
+			}),
+		)
+	})(); err != nil {
 		log.Fatal(err)
 		return
 	}
