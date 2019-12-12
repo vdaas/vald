@@ -192,6 +192,20 @@ profile/ngtd/sequential/grpc:
 profile/ngtd/sequential/rest:
 	$(call profile-web,pprof/external/ngtd,ngtd,sequential-rest,":6061",":6062",":6063")
 
+.PHONY: metrics
+## calculate all metrics
+metrics: \
+	metrics/agent
+
+.PHONY: metrics/agent
+## calculate agent metrics
+metrics/agent: \
+	metrics/agent/ngt
+
+.PHONY: metrics/agent/ngt
+metrics/agent/ngt:
+	go test -v --timeout=1h ./hack/benchmark/e2e/agent/ngt/... -dataset=mnist -num=100 -output=$(PWD)/assets/image/chart.svg
+
 .PHONY: bench/kill
 ## kill all benchmark processes
 bench/kill:
