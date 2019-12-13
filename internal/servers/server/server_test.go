@@ -6,11 +6,11 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 	time "time"
 
 	errgroup "github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/tcp"
 
@@ -127,7 +127,7 @@ func TestMode(t *testing.T) {
 	}
 }
 
-func aTestNew(t *testing.T) {
+func TestNew(t *testing.T) {
 	type args struct {
 		opts []Option
 	}
@@ -135,8 +135,8 @@ func aTestNew(t *testing.T) {
 	type test struct {
 		name      string
 		args      args
-		checkFunc func(got, want *server) error
-		want      *server
+		checkFunc func(got *server) error
+		wantErr   error
 	}
 
 	tests := []test{
@@ -147,121 +147,89 @@ func aTestNew(t *testing.T) {
 
 			hdr := new(handler)
 
-			srv := &http.Server{
-				ReadHeaderTimeout: 1 * time.Second,
-				ReadTimeout:       2 * time.Second,
-				WriteTimeout:      3 * time.Second,
-				IdleTimeout:       4 * time.Second,
-				Handler:           nil,
-			}
-			srv.SetKeepAlivesEnabled(true)
-
-			lsCfg := &net.ListenConfig{
-				Control: tcp.Control,
-			}
-
 			return test{
 				name: "initialize REST server",
 				args: args{
 					opts: []Option{
 						WithHTTPHandler(hdr),
-						WithHTTPServer(srv),
-						WithListenConfig(lsCfg),
-						WithReadHeaderTimeout("1s"),
-						WithReadTimeout("2s"),
-						WithWriteTimeout("3s"),
-						WithIdleTimeout("4s"),
 					},
 				},
-				want: &server{
-					enableRestart: false,
-					mode:          REST,
-					eg:            errgroup.Get(),
-					http: struct {
-						srv     *http.Server
-						h       http.Handler
-						starter func(net.Listener) error
-					}{
-						srv:     srv,
-						h:       hdr,
-						starter: srv.Serve,
-					},
-					lc:  lsCfg,
-					rht: 1 * time.Second,
-					rt:  2 * time.Second,
-					wt:  3 * time.Second,
-					it:  4 * time.Second,
-				},
-				checkFunc: func(got *server, want *server) error {
-					if got, want := got.http.srv, want.http.srv; !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("server.http.srv is wrong. want: %v, got: %v", want, got)
+				checkFunc: func(got *server) error {
+					if got.http.srv == nil {
+						return fmt.Errorf("http srv is nil")
 					}
-
-					if got, want := got.http.h, want.http.h; !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("server.http.h is wrong. want: %v, got: %v", want, got)
-					}
-
-					if got, want := reflect.ValueOf(got.http.starter).Pointer(), reflect.ValueOf(want.http.starter).Pointer(); !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("server.http.starter is wrong. want: %v, got: %v", want, got)
-					}
-
-					if got, want := reflect.ValueOf(got.http.srv).Pointer(), reflect.ValueOf(want.http.srv).Pointer(); !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("server.http.srv is wrong. want: %v, got: %v", want, got)
-					}
-
-					h := struct {
-						srv     *http.Server
-						h       http.Handler
-						starter func(net.Listener) error
-					}{}
-					got.http, want.http = h, h
-
-					if !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("want: %v, got: %v", want, got)
-					}
-
 					return nil
 				},
+				wantErr: nil,
 			}
 		}(),
-
 		func() test {
-			type handler struct {
-				http.Handler
-			}
-
 			return test{
-				name: "initialize gRPC server",
+				name: "return invalid api config error in case of REST server",
 				args: args{
 					opts: []Option{},
 				},
-				want: &server{
-					enableRestart: false,
-					mode:          REST,
-					eg:            errgroup.Get(),
-					grpc: struct {
-						srv       *grpc.Server
-						keepAlive *grpcKeepAlive
-						opts      []grpc.ServerOption
-						reg       func(*grpc.Server)
-					}{},
-				},
-				checkFunc: func(got *server, want *server) error {
-					if !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("want: %v, got: %v", want, got)
+				checkFunc: func(got *server) error {
+					if got != nil {
+						return fmt.Errorf("New return not nil: %v", got)
 					}
 					return nil
 				},
+				wantErr: errors.ErrInvalidAPIConfig,
+			}
+		}(),
+		func() test {
+			fn := func(g *grpc.Server) {}
+
+			return test{
+				name: "initialize of gRPC server is successful",
+				args: args{
+					opts: []Option{
+						WithServerMode(GRPC),
+						WithGRPCRegistFunc(fn),
+					},
+				},
+				checkFunc: func(got *server) error {
+					if got.grpc.srv == nil {
+						return fmt.Errorf("grpc srv is nil")
+					}
+					return nil
+				},
+				wantErr: nil,
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return invalid api config error in case of gRPC server",
+				args: args{
+					opts: []Option{
+						WithServerMode(GRPC),
+					},
+				},
+				checkFunc: func(got *server) error {
+					if got != nil {
+						return fmt.Errorf("New return not nil: %v", got)
+					}
+					return nil
+				},
+				wantErr: errors.ErrInvalidAPIConfig,
 			}
 		}(),
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := New(tt.args.opts...)
+			log.Init(log.DefaultGlg())
+			s, err := New(tt.args.opts...)
 
-			if err := tt.checkFunc(got.(*server), tt.want); err != nil {
-				t.Error(err)
+			if err != tt.wantErr {
+				t.Errorf("New err is wrong. want: %v, got: %v", err, tt.wantErr)
+			}
+
+			if tt.wantErr == nil {
+				if err := tt.checkFunc(s.(*server)); err != nil {
+					t.Error(err)
+				}
 			}
 		})
 	}
