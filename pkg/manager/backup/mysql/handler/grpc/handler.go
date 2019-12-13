@@ -92,10 +92,9 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) 
 }
 
 func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) (res *payload.Empty, err error) {
-	var m *model.MetaVector
 	ms := make([]model.MetaVector, 0, len(metas.Vectors))
 	for _, meta := range metas.Vectors {
-		m, err = toModelMetaVector(meta)
+		m, err := toModelMetaVector(meta)
 		if err != nil {
 			return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "RegisterMulti", uuid: meta.Uuid}, err)
 		}
