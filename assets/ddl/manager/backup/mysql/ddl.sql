@@ -22,15 +22,17 @@ CREATE TABLE IF NOT EXISTS `vald`.`meta_vector` (
     `uuid` VARCHAR(255) NOT NULL,
     `vector` TEXT NOT NULL,
     `meta` VARCHAR(1024) NOT NULL,
+    `id` int NOT NULL AUTO_INCREMENT,
     PRIMARY KEY (`uuid`),
+    UNIQUE INDEX `id_unique` (`id` ASC),
     UNIQUE INDEX `meta_unique` (`meta` ASC)
 )
 ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `vald`.`pod_ip` (
-    `uuid` VARCHAR(255) NOT NULL,
+    `id` int NOT NULL,
     `ip` VARCHAR(64) NOT NULL,
-    PRIMARY KEY (`uuid`, `ip`),
+    PRIMARY KEY (`id`, `ip`),
     INDEX `ip_index` (`ip` ASC)
 )
 ENGINE = InnoDB;
