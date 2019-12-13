@@ -1,0 +1,64 @@
+area/agent:
+  - apis/proto/agent/**/*
+  - apis/grpc/agent/**/*
+  - cmd/agent/**/*
+  - pkg/agent/**/*
+
+area/discoverer:
+  - apis/proto/discoverer/**/*
+  - apis/grpc/discoverer/**/*
+  - cmd/discoverer/**/*
+  - pkg/discoverer/**/*
+
+area/filter/egress:
+  - apis/proto/filter/egress/**/*
+  - apis/grpc/filter/egress/**/*
+  - cmd/filter/egress/**/*
+  - pkg/filter/egress/**/*
+
+area/filter/ingress:
+  - apis/proto/filter/ingress/**/*
+  - apis/grpc/filter/ingress/**/*
+  - cmd/filter/ingress/**/*
+  - pkg/filter/ingress/**/*
+
+area/gateway:
+  - apis/proto/vald/**/*
+  - apis/grpc/vald/**/*
+  - cmd/gateway/**/*
+  - pkg/gateway/**/*
+
+area/manager/backup:
+  - apis/proto/manager/backup/**/*
+  - apis/grpc/manager/backup/**/*
+  - cmd/manager/backup/**/*
+  - pkg/manager/backup/**/*
+
+area/manager/index:
+  - apis/proto/manager/index/**/*
+  - apis/grpc/manager/index/**/*
+  - cmd/manager/index/**/*
+  - pkg/manager/index/**/*
+
+area/manager/replication:
+  - apis/proto/manager/replication/**/*
+  - apis/grpc/manager/replication/**/*
+  - cmd/manager/replication/**/*
+  - pkg/manager/replication/**/*
+
+area/meta:
+  - apis/proto/meta/**/*
+  - apis/grpc/meta/**/*
+  - cmd/meta/**/*
+  - pkg/meta/**/*
+
+area/internal:
+  - internal/**/*
+
+team/set:
+  - **/*_test.go
+
+team/sre:
+  - Makefile
+  - Makefile.d/**/*
+  - .github/**/*
