@@ -321,9 +321,6 @@ func TestName(t *testing.T) {
 	}
 }
 
-// ---------------------------
-// TODO:
-// ---------------------------
 func TestListenAndServe(t *testing.T) {
 	type args struct {
 		ctx   context.Context
@@ -331,16 +328,17 @@ func TestListenAndServe(t *testing.T) {
 	}
 
 	type field struct {
-		running      bool
-		eg           errgroup.Group
-		mode         mode
-		pwt          time.Duration
-		sddur        time.Duration
-		httpSrv      *http.Server
-		grpcSrv      *grpc.Server
-		host         string
-		port         uint
-		preStartFunc func() error
+		running        bool
+		eg             errgroup.Group
+		mode           mode
+		pwt            time.Duration
+		sddur          time.Duration
+		httpSrvStarter func(net.Listener) error
+		grpcSrv        *grpc.Server
+		lc             *net.ListenConfig
+		host           string
+		port           uint
+		preStartFunc   func() error
 	}
 
 	type test struct {
@@ -360,7 +358,7 @@ func TestListenAndServe(t *testing.T) {
 			},
 			checkFunc: func(s *server, got, want error) error {
 				if want != got {
-					t.Errorf("Shutdown returns error: %v", got)
+					t.Errorf("ListenAndServe returns error: %v", got)
 				}
 				return nil
 			},
@@ -373,14 +371,14 @@ func TestListenAndServe(t *testing.T) {
 			return test{
 				name: "prestart error",
 				field: field{
-					running: true,
+					running: false,
 					preStartFunc: func() error {
 						return err
 					},
 				},
 				checkFunc: func(s *server, got, want error) error {
 					if want != got {
-						t.Errorf("Shutdown returns error: %v", got)
+						t.Errorf("ListenAndServe returns error: %v", got)
 					}
 					return nil
 				},
@@ -389,21 +387,63 @@ func TestListenAndServe(t *testing.T) {
 		}(),
 
 		func() test {
+			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(200)
+			})
+
+			srv := &http.Server{
+				Handler: handler,
+			}
+
 			return test{
-				name: "prestart error",
+				name: "serving of REST server is successful",
 				field: field{
-					mode: REST,
-					eg:   errgroup.Get(),
-					host: "vald",
-					port: 8081,
+					mode:           REST,
+					eg:             errgroup.Get(),
+					httpSrvStarter: srv.Serve,
+					host:           "vald",
+					port:           8081,
+					lc: &net.ListenConfig{
+						Control: tcp.Control,
+					},
 					preStartFunc: func() error {
 						return nil
 					},
-					running: true,
+					running: false,
 				},
 				checkFunc: func(s *server, got, want error) error {
 					if want != got {
-						t.Errorf("Shutdown returns error: %v", got)
+						t.Errorf("ListenAndServe returns error: %v", got)
+					}
+					return nil
+				},
+				want: nil,
+			}
+		}(),
+
+		func() test {
+			srv := new(grpc.Server)
+
+			return test{
+				name: "serving of gRPC server is successful",
+				field: field{
+					mode:           GRPC,
+					eg:             errgroup.Get(),
+					httpSrvStarter: srv.Serve,
+					grpcSrv:        srv,
+					host:           "vald",
+					port:           8082,
+					lc: &net.ListenConfig{
+						Control: tcp.Control,
+					},
+					preStartFunc: func() error {
+						return nil
+					},
+					running: false,
+				},
+				checkFunc: func(s *server, got, want error) error {
+					if want != got {
+						t.Errorf("ListenAndServe returns error: %v", got)
 					}
 					return nil
 				},
@@ -429,7 +469,7 @@ func TestListenAndServe(t *testing.T) {
 					h       http.Handler
 					starter func(net.Listener) error
 				}{
-					srv: tt.field.httpSrv,
+					starter: tt.field.httpSrvStarter,
 				},
 				grpc: struct {
 					srv       *grpc.Server
@@ -439,6 +479,7 @@ func TestListenAndServe(t *testing.T) {
 				}{
 					srv: tt.field.grpcSrv,
 				},
+				lc:           tt.field.lc,
 				pwt:          tt.field.pwt,
 				sddur:        tt.field.sddur,
 				running:      tt.field.running,
