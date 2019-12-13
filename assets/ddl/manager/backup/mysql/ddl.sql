@@ -19,12 +19,12 @@ CREATE SCHEMA IF NOT EXISTS `vald` DEFAULT CHARACTER SET utf8 ;
 USE `vald` ;
 
 CREATE TABLE IF NOT EXISTS `vald`.`meta_vector` (
-    `id` int NOT NULL AUTO_INCREMENT,
     `uuid` VARCHAR(255) NOT NULL,
     `vector` TEXT NOT NULL,
     `meta` VARCHAR(1024) NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE INDEX `uuid_unique` (`uuid` ASC),
+    `id` int NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY (`uuid`),
+    UNIQUE INDEX `id_unique` (`id` ASC),
     UNIQUE INDEX `meta_unique` (`meta` ASC)
 )
 ENGINE = InnoDB;

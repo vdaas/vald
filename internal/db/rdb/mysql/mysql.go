@@ -214,12 +214,12 @@ func (m *mySQLClient) SetMeta(ctx context.Context, mv MetaVector) error {
 		return err
 	}
 
-	_, err = tx.DeleteFrom(metaVectorTableName).Where(dbr.Eq(uuidColumnName, mv.GetUUID())).ExecContext(ctx)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.InsertInto(metaVectorTableName).Columns(uuidColumnName, vectorColumnName, metaColumnName).Record(&meta{UUID: mv.GetUUID(), Vector: mv.GetVectorString(), Meta: dbr.NewNullString(mv.GetMeta())}).ExecContext(ctx)
+	_, err = tx.InsertBySql("INSERT INTO meta_vector(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
+		mv.GetUUID(),
+		mv.GetVectorString(),
+		mv.GetMeta(),
+		mv.GetVectorString(),
+		mv.GetMeta()).ExecContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -267,19 +267,15 @@ func (m *mySQLClient) SetMetas(ctx context.Context, metas ...MetaVector) error {
 			return err
 		}
 
-		_, err = tx.DeleteFrom(metaVectorTableName).Where(dbr.Eq(uuidColumnName, meta.GetUUID())).ExecContext(ctx)
+		_, err = tx.InsertBySql("INSERT INTO meta_vector(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
+			meta.GetUUID(),
+			meta.GetVectorString(),
+			meta.GetMeta(),
+			meta.GetVectorString(),
+			meta.GetMeta()).ExecContext(ctx)
 		if err != nil {
 			return err
 		}
-	}
-
-	stmt := tx.InsertInto(metaVectorTableName).Columns(uuidColumnName, vectorColumnName, metaColumnName)
-	for _, m := range metas {
-		stmt = stmt.Record(&meta{UUID: m.GetUUID(), Vector: m.GetVectorString(), Meta: dbr.NewNullString(m.GetMeta())})
-	}
-	stmt.ExecContext(ctx)
-	if err != nil {
-		return err
 	}
 
 	for _, m := range metas {
