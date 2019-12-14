@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/apis/grpc/vald"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
+	config2 "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
@@ -99,7 +100,23 @@ func init() {
 	}
 }
 
-func StartAgentNGTServer(tb testing.TB, ctx context.Context, d assets.Dataset) {
+type Option func(*config.Data) error
+
+func WithCreationEdgeSize(creationEdgeSize int) Option {
+	return func(cfg *config.Data) error {
+		cfg.NGT.CreationEdgeSize = creationEdgeSize
+		return nil
+	}
+}
+
+func WithSearchEdgeSize(searchEdgeSize int) Option {
+	return func(cfg *config.Data) error {
+		cfg.NGT.SearchEdgeSize = searchEdgeSize
+		return nil
+	}
+}
+
+func StartAgentNGTServer(tb testing.TB, ctx context.Context, d assets.Dataset, opts ...Option) []*config2.Server {
 	tb.Helper()
 
 	once.Do(func() {
@@ -114,11 +131,16 @@ func StartAgentNGTServer(tb testing.TB, ctx context.Context, d assets.Dataset) {
 	cfg.NGT.IndexPath = baseDir + d.Name()
 	cfg.NGT.DistanceType = d.DistanceType()
 	cfg.NGT.ObjectType = d.ObjectType()
+	for _, opt := range opts {
+		if err := opt(&cfg); err != nil {
+			tb.Error(err)
+		}
+	}
 
 	daemon, err := usecase.New(&cfg)
 	if err != nil {
 		tb.Errorf("failed create daemon %s", err.Error())
-		return
+		return nil
 	}
 
 	go func() {
@@ -128,6 +150,8 @@ func StartAgentNGTServer(tb testing.TB, ctx context.Context, d assets.Dataset) {
 		}
 	}()
 	time.Sleep(time.Second * 5)
+
+	return cfg.Server.Servers
 }
 
 func NewAgentClient(tb testing.TB, ctx context.Context, address string) agent.AgentClient {
