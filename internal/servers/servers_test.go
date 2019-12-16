@@ -253,7 +253,7 @@ func TestShutdown(t *testing.T) {
 
 				checkFunc: func(got error, want error) error {
 					if got != nil {
-						return fmt.Errorf("Shutdown return error: %v", got)
+						return fmt.Errorf("return error: %v", got)
 					}
 					return nil
 				},
@@ -272,57 +272,50 @@ func TestShutdown(t *testing.T) {
 			},
 			checkFunc: func(got error, want error) error {
 				if got.Error() != want.Error() {
-					return fmt.Errorf("Shutdown is not equals. want: %v, got: %v", want, got)
+					return fmt.Errorf("not equals. want: %v, got: %v", want, got)
 				}
 				return nil
 			},
 			want: errors.ErrServerNotFound("srv1"),
 		},
-		// func() test {
-		// 	srv1 := NewMockServer()
-		// 	srv1.IsRunningFunc = func() bool {
-		// 		return true
-		// 	}
-		// 	srv1.ShutdownFunc = func(context.Context) error {
-		// 		return errors.Wrap(fmt.Errorf("unexpected error"), "faild to shutdown")
-		// 	}
-		//
-		// 	srv2 := NewMockServer()
-		// 	srv2.IsRunningFunc = func() bool {
-		// 		return true
-		// 	}
-		// 	srv2.ShutdownFunc = func(context.Context) error {
-		// 		return nil
-		// 	}
-		//
-		// 	servers := map[string]server.Server{
-		// 		"srv1": srv1,
-		// 		"srv2": srv2,
-		// 	}
-		//
-		// 	sdr := []string{
-		// 		"srv1", "srv2",
-		// 	}
-		//
-		// 	return test{
-		// 		name: "unexpected error",
-		// 		args: args{
-		// 			ctx: context.Background(),
-		// 		},
-		// 		field: field{
-		// 			eg:      errgroup.Get(),
-		// 			servers: servers,
-		// 			sdr:     sdr,
-		// 		},
-		// 		checkFunc: func(got error, want error) error {
-		// 			if got != nil {
-		// 				return fmt.Errorf("Shutdown return error: %v", got)
-		// 			}
-		// 			return nil
-		// 		},
-		// 		want: nil,
-		// 	}
-		// }(),
+		func() test {
+			want := errors.Wrap(fmt.Errorf("unexpected error"), "faild to shutdown")
+
+			srv1 := NewMockServer()
+			srv1.IsRunningFunc = func() bool {
+				return true
+			}
+			srv1.ShutdownFunc = func(context.Context) error {
+				return want
+			}
+
+			servers := map[string]server.Server{
+				"srv1": srv1,
+			}
+
+			sdr := []string{
+				"srv1",
+			}
+
+			return test{
+				name: "unexpected error",
+				args: args{
+					ctx: context.Background(),
+				},
+				field: field{
+					eg:      errgroup.Get(),
+					servers: servers,
+					sdr:     sdr,
+				},
+				checkFunc: func(got error, want error) error {
+					if got.Error() != want.Error() {
+						return fmt.Errorf("not equals. want: %v, got: %v", want, got)
+					}
+					return nil
+				},
+				want: want,
+			}
+		}(),
 	}
 
 	for _, tt := range tests {
