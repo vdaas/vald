@@ -22,23 +22,46 @@ func TestWithServer(t *testing.T) {
 	}
 
 	tests := []test{
-		{
-			name: "set success",
-			args: args{
-				srv: nil,
-			},
-			checkFunc: func(opt Option) error {
-				got := new(listener)
-				opt(got)
+		func() test {
 
-				return nil
-			},
-		},
+			srv := NewMockServer()
+			srv.NameFunc = func() string {
+				return "srv"
+			}
+
+			return test{
+				name: "set success",
+				args: args{
+					srv: srv,
+				},
+				checkFunc: func(opt Option) error {
+					got := new(listener)
+					opt(got)
+
+					if len(got.servers) != 1 {
+						return fmt.Errorf("servers count is wrong. want: %v, got: %v", 1, len(got.servers))
+					}
+
+					if gsrv, ok := got.servers["srv"]; !ok {
+						return fmt.Errorf("servers['srv'] is nothing")
+					} else {
+						if !reflect.DeepEqual(gsrv, srv) {
+							return fmt.Errorf("servers['srv'] is not equals. want: %v, got: %b", srv, gsrv)
+						}
+					}
+
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
+			opt := WithServer(tt.args.srv)
+			if err := tt.checkFunc(opt); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }
