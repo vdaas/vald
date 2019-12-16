@@ -17,181 +17,182 @@ package ngt
 
 import (
 	"context"
+	"encoding/gob"
+	"flag"
 	"fmt"
-	"github.com/vdaas/vald/apis/grpc/agent"
-	"github.com/vdaas/vald/internal/config"
-	"io"
-	"sort"
+	"os"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/hack/benchmark/e2e/internal"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
+	"gopkg.in/yaml.v2"
 )
 
-type Metrics struct {
-	Recall    []time.Duration
-	Qps       []time.Duration
-	BuildTime time.Duration
-}
-
-func (m Metrics) Len() int {
-	return len(m.Recall)
-}
-
-func (m Metrics) Less(i, j int) bool {
-	return m.Recall[i] < m.Recall[j]
-}
-
-func (m Metrics) Swap(i, j int) {
-	m.Recall[i], m.Recall[j] = m.Recall[j], m.Recall[i]
-	m.Qps[i], m.Qps[j] = m.Qps[j], m.Qps[i]
-}
+var (
+	configuration string
+	outputPath    string
+)
 
 type Params struct {
-	Name []string
-	SearchEdgeSize []int
-	CreationEdgeSize []int
-	Epsilon []float32
-	K []int
-	Output string
+	Host string `json:"host" yaml:"host"`
+	Port uint `json:"port" yaml:"port"`
+	DatasetName []string `json:"dataset_name" yaml:"dataset_name"`
+	SearchEdgeSize []int `json:"search_edge_size" yaml:"search_edge_size"`
+	CreationEdgeSize []int `json:"creation_edge_size" yaml:"creation_edge_size"`
+	Epsilon []float32 `json:"epsilon" yaml:"epsilon"`
+	K []int `json:"k" yaml:"k"`
 }
 
-type Param struct {
-	Data assets.Dataset
-	SearchEdgeSize int
-	CreationEdgeSize int
+func (p *Params) Address() string {
+	return fmt.Sprintf("%s:%d", p.Host, p.Port)
+}
+
+type SearchMetrics struct {
+	Recall float64
+	Qps float64
 	Epsilon float32
 	K int
 }
 
-func (p *Param) buildIndex(tb testing.TB, client agent.AgentClient, c context.Context) time.Duration {
-	ctx, cancel := context.WithCancel(c)
-	defer cancel()
+type Metrics struct {
+	BuildTime        int64
+	DatasetName      string
+	SearchEdgeSize   int
+	CreationEdgeSize int
+	Search           []*SearchMetrics
+}
 
-	client := internal.NewAgentClient(tb, ctx, address)
-
-	ids := p.Data.IDs()
-	buildStart := time.Now()
-	for i, v := range p.Data.Train() {
-		_, err := client.Insert(ctx, &payload.Object_Vector{
-			Id:     ids[i],
-			Vector: v,
-		})
-		if err != nil {
-			tb.Error(err)
-		}
-	}
-
-	_, err := client.CreateIndex(ctx, &payload.Controll_CreateIndexRequest{
-		PoolSize: 10000,
-	})
-	if err != nil {
-		if err == io.EOF {
-			return 0
-		}
-		tb.Error(err)
-	}
-	buildEnd := time.Since(buildStart)
-	return buildEnd
+func init() {
+	flag.StringVar(&configuration, "conf", "metrics.yaml", "set metrics configuration file path")
+	flag.StringVar(&outputPath, "output", "metrics.gob", "set result output path")
 }
 
 func TestMetrics(rt *testing.T) {
-	parseArgs(rt)
+	flag.Parse()
+
+	f, err := os.Open(configuration)
+	if err != nil {
+		rt.Fatal(err)
+	}
+	defer f.Close()
+	var p Params
+	if err := yaml.NewDecoder(f).Decode(&p); err != nil {
+		rt.Fatal(err)
+	}
 
 	rctx, rcancel := context.WithCancel(context.Background())
 	defer rcancel()
 
-	for N, name := range targets {
-		address := addresses[N]
-		if address == "" {
-			address = "localhost:8082"
-		}
-
-		if name == "" {
-			continue
-		}
+	metrics := make([]*Metrics, 0, len(p.SearchEdgeSize)*len(p.CreationEdgeSize)*len(p.DatasetName))
+	for _, name := range p.DatasetName {
 		rt.Run(name, func(t *testing.T) {
 			data := assets.Data(name)(t)
+			datasetNeighbors := make([][]string, len(data.Neighbors()))
+			for i, ns := range data.Neighbors() {
+				datasetNeighbors[i] = make([]string, 0, len(ns))
+				for _, n := range ns {
+					datasetNeighbors[i] = append(datasetNeighbors[i], strconv.Itoa(n))
+				}
+			}
 			if data == nil {
 				t.Logf("assets %s is nil", name)
 				return
 			}
 
-			ctx, cancel := context.WithCancel(rctx)
-			defer cancel()
+			for _, searchEdgeSize := range p.SearchEdgeSize {
+				for _, creationEdgeSize := range p.CreationEdgeSize {
+					t.Run(fmt.Sprintf("%d-%d", searchEdgeSize, creationEdgeSize), func(tt *testing.T) {
+						ctx, cancel := context.WithCancel(rctx)
+						defer cancel()
 
-			for i := range searchEdgeSizes {
-				searchEdgeSize := searchEdgeSizes[i]
-				creationEdgeSize := creationEdgeSizes[i]
+						internal.StartAgentNGTServer(t, ctx, data,
+							internal.WithCreationEdgeSize(creationEdgeSize),
+							internal.WithSearchEdgeSize(searchEdgeSize),
+							internal.WithGRPCHost(p.Host),
+							internal.WithGRPCPort(p.Port))
 
-				svrs := internal.StartAgentNGTServer(t, ctx, data,
-					internal.WithCreationEdgeSize(creationEdgeSize),
-					internal.WithSearchEdgeSize(searchEdgeSize))
-				var svr *config.Server = nil
-				for _, s := range svrs {
-					if s.Mode == "GRPC" {
-						svr = s
-						break
-					}
-				}
-				if svr == nil {
-					t.Error("grpc server should running")
-				}
+						client := internal.NewAgentClient(t, ctx, p.Address())
 
-				buildIndex()
-
-				datasetNeighbors := make([][]string, len(data.Neighbors()))
-				for i, ns := range data.Neighbors() {
-					datasetNeighbors[i] = make([]string, 0, len(ns))
-					for _, n := range ns {
-						datasetNeighbors[i] = append(datasetNeighbors[i], strconv.Itoa(n))
-					}
-				}
-				querySize := len(data.Query())
-				recalls := make([]float64, 0, kVar)
-				qpss := make([]float64, 0, kVar)
-				t.Run(fmt.Sprintf("Recall@%d", kVar), func(tt *testing.T) {
-					results := make([][]string, querySize)
-					for _, eps := range epsilons {
-						config := *searchConfig
-						config.Epsilon = eps
-						config.Num = uint32(kVar)
-						var elapsed time.Duration = 0.0
-						for i, v := range data.Query() {
-							start := time.Now()
-							resp, err := client.Search(ctx, &payload.Search_Request{
+						buildStart := time.Now()
+						for i, v := range data.Train() {
+							_, err := client.Insert(ctx, &payload.Object_Vector{
+								Id:     data.IDs()[i],
 								Vector: v,
-								Config: searchConfig,
 							})
-							elapsed += time.Since(start)
 							if err != nil {
 								tt.Error(err)
 							}
-							results[i] = make([]string, len(resp.Results))
-							for j, r := range resp.Results {
-								results[i][j] = r.Id
+						}
+
+						_, err := client.CreateIndex(ctx, &payload.Controll_CreateIndexRequest{
+							PoolSize: 10000,
+						})
+						if err != nil {
+							t.Error(err)
+						}
+						buildEnd := time.Since(buildStart)
+
+						searchMetrics := make([]*SearchMetrics, 0, len(p.Epsilon)*len(p.K))
+						for _, eps := range p.Epsilon {
+							for _, k := range p.K {
+								querySize := len(data.Query())
+								tt.Run(fmt.Sprintf("Recall@%d with %f", k, eps), func(ttt *testing.T) {
+									results := make([][]string, querySize)
+									config := *searchConfig
+									config.Epsilon = eps
+									config.Num = uint32(k)
+									var elapsed time.Duration = 0.0
+									for i, v := range data.Query() {
+										start := time.Now()
+										resp, err := client.Search(ctx, &payload.Search_Request{
+											Vector: v,
+											Config: &config,
+										})
+										elapsed += time.Since(start)
+										if err != nil {
+											ttt.Error(err)
+										}
+										results[i] = make([]string, len(resp.Results))
+										for j, r := range resp.Results {
+											results[i][j] = r.Id
+										}
+									}
+									recall, _, _ := internal.MeanStdRecalls(datasetNeighbors, results, k)
+									qps := 1 / (elapsed.Seconds() / float64(querySize))
+									searchMetrics = append(searchMetrics, &SearchMetrics{
+										Recall: recall,
+										Qps : qps,
+										Epsilon: eps,
+										K : k,
+									})
+								})
 							}
 						}
-						m, std, _ := internal.MeanStdRecalls(datasetNeighbors, results, kVar)
-						recalls = append(recalls, m)
-						qps := 1 / (elapsed.Seconds() / float64(querySize))
-						qpss = append(qpss, qps)
-						tt.Logf("mean: %f, std: %f, qps: %f", m, std, qps)
-					}
-				})
-
-			})
-			m := &Metrics{
-				Recall: recalls,
-				Qps:    qpss,
+						metrics = append(metrics, &Metrics{
+							BuildTime: int64(buildEnd),
+							DatasetName: name,
+							SearchEdgeSize: searchEdgeSize,
+							CreationEdgeSize: creationEdgeSize,
+							Search: searchMetrics,
+						})
+					})
+				}
 			}
-			sort.Sort(m)
-
-
+		})
+	}
+	f, err = os.OpenFile(outputPath, os.O_CREATE | os.O_TRUNC | os.O_WRONLY, os.ModeDevice)
+	if err != nil {
+		rt.Error(err)
+	}
+	defer func() {
+		if err := f.Close(); err != nil {
+			rt.Error(err)
 		}
+	}()
+	if err := gob.NewEncoder(f).Encode(metrics); err != nil {
+		rt.Error(err)
 	}
 }

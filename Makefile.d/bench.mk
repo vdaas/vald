@@ -204,7 +204,7 @@ metrics/agent: \
 
 .PHONY: metrics/agent/ngt
 metrics/agent/ngt:
-	go test -v --timeout=1h ./hack/benchmark/e2e/agent/ngt/... -dataset=mnist -num=100 -output=$(PWD)/assets/image/chart.svg
+	go test -v --timeout=1h ./hack/benchmark/e2e/agent/ngt/... -output=$(ROOTDIR)/metrics.gob
 
 .PHONY: bench/kill
 ## kill all benchmark processes
