@@ -305,6 +305,7 @@ func (c *client) MultiGetValue(keys ...string) ([]string, error) {
 			} else {
 				errs = errors.ErrCassandraNotFound(key)
 			}
+			values = append(values, "")
 			continue
 		}
 		values = append(values, kvs[key])
@@ -340,6 +341,7 @@ func (c *client) MultiGetKey(values ...string) ([]string, error) {
 			} else {
 				errs = errors.ErrCassandraNotFound(value)
 			}
+			keys = append(keys, "")
 			continue
 		}
 		keys = append(keys, kvs[value])
