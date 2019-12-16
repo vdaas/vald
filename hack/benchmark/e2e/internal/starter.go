@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/apis/grpc/vald"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	config2 "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
@@ -37,7 +36,7 @@ import (
 )
 
 const (
-	configration = `
+	configuration = `
 version: v0.0.0
 server_config:
   servers:
@@ -116,11 +115,49 @@ func WithSearchEdgeSize(searchEdgeSize int) Option {
 	}
 }
 
-func StartAgentNGTServer(tb testing.TB, ctx context.Context, d assets.Dataset, opts ...Option) []*config2.Server {
+func withHost(host, typ string) Option {
+	return func(cfg *config.Data) error {
+		for _, svr := range cfg.Server.Servers {
+			if svr.Mode == typ {
+				svr.Host = host
+			}
+		}
+		return nil
+	}
+}
+
+func withPort(port uint, typ string) Option {
+	return func(cfg *config.Data) error {
+		for _, svr := range cfg.Server.Servers {
+			if svr.Mode == typ {
+				svr.Port = port
+			}
+		}
+		return nil
+	}
+}
+
+func WithGRPCHost(host string) Option {
+	return withHost(host, "GRPC")
+}
+
+func WithGRPCPort(port uint) Option {
+	return withPort(port, "GRPC")
+}
+
+func WithRESTHost(host string) Option {
+	return withHost(host, "REST")
+}
+
+func WithRESTPort(port uint) Option {
+	return withPort(port, "REST")
+}
+
+func StartAgentNGTServer(tb testing.TB, ctx context.Context, d assets.Dataset, opts ...Option) {
 	tb.Helper()
 
 	once.Do(func() {
-		sr := strings.NewReader(configration)
+		sr := strings.NewReader(configuration)
 		err := yaml.NewDecoder(sr).Decode(&baseCfg)
 		if err != nil {
 			tb.Errorf("failed to load config %s \t %s", d.Name(), err.Error())
@@ -140,7 +177,7 @@ func StartAgentNGTServer(tb testing.TB, ctx context.Context, d assets.Dataset, o
 	daemon, err := usecase.New(&cfg)
 	if err != nil {
 		tb.Errorf("failed create daemon %s", err.Error())
-		return nil
+		return
 	}
 
 	go func() {
@@ -150,8 +187,6 @@ func StartAgentNGTServer(tb testing.TB, ctx context.Context, d assets.Dataset, o
 		}
 	}()
 	time.Sleep(time.Second * 5)
-
-	return cfg.Server.Servers
 }
 
 func NewAgentClient(tb testing.TB, ctx context.Context, address string) agent.AgentClient {

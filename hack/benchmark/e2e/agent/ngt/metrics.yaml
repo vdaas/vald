@@ -1,0 +1,15 @@
+host: 127.0.0.1
+port: 8082
+dataset_name:
+  - mnist
+  - fashion-mnist
+search_edge_size:
+  - 60
+creation_edge_size:
+  - 20
+epsilon:
+  - 0.1
+  - 0.01
+k:
+  - 10
+  - 100
