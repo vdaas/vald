@@ -50,7 +50,11 @@ func New(opts ...Option) Listener {
 	}
 
 	if l.sus != nil && len(l.sus) != 0 && (l.sds == nil || len(l.sds) == 0) {
-		copy(l.sds, l.sus)
+		s := make([]string, 0, len(l.sus))
+		for _, elm := range l.sus {
+			s = append(s, elm)
+		}
+		l.sds = s
 		sort.Sort(sort.Reverse(sort.StringSlice(l.sds)))
 	}
 	return l
