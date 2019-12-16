@@ -59,9 +59,7 @@ func (r *Redis) Bind() *Redis {
 		r.TCP = new(TCP)
 	}
 
-	for i, addr := range r.Addrs {
-		r.Addrs[i] = GetActualValue(addr)
-	}
+	r.Addrs = GetActualValues(r.Addrs)
 	r.DialTimeout = GetActualValue(r.DialTimeout)
 	r.DialTimeout = GetActualValue(r.DialTimeout)
 	r.IdleCheckFrequency = GetActualValue(r.IdleCheckFrequency)
