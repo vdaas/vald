@@ -153,7 +153,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			}
 			if s.metadata != nil {
 				metas, merr := s.metadata.GetMetas(ctx, uuids...)
-				if err != nil {
+				if merr != nil {
 					log.Error(merr)
 					err = errors.Wrap(err, merr.Error())
 				}

@@ -215,6 +215,7 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface
 			res, err = discoverer.NewDiscovererClient(conn).
 				Discover(ctx, &payload.Discoverer_Request{
 					Name: g.agentName,
+
 					Node: "",
 				}, copts...)
 			if err != nil {

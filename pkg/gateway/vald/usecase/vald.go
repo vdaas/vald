@@ -185,7 +185,7 @@ func (r *run) PreStart(ctx context.Context) error {
 }
 
 func (r *run) Start(ctx context.Context) <-chan error {
-	ech := make(chan error)
+	ech := make(chan error, 5)
 	var bech, fech, mech, gech, sech <-chan error
 	if r.backup != nil {
 		bech = r.backup.Start(ctx)
@@ -200,17 +200,24 @@ func (r *run) Start(ctx context.Context) <-chan error {
 		gech = r.gateway.Start(ctx)
 	}
 	sech = r.server.ListenAndServe(ctx)
-	r.eg.Go(safety.RecoverFunc(func() error {
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 		for {
 			select {
 			case <-ctx.Done():
 				return nil
-			case ech <- <-bech:
-			case ech <- <-fech:
-			case ech <- <-gech:
-			case ech <- <-mech:
-			case ech <- <-sech:
+			case err = <-bech:
+			case err = <-fech:
+			case err = <-gech:
+			case err = <-mech:
+			case err = <-sech:
+			}
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					return nil
+				case ech <- err:
+				}
 			}
 		}
 	}))
