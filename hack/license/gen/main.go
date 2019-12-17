@@ -1,11 +1,11 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,7 +40,7 @@ var (
 {{.Escape}} you may not use this file except in compliance with the License.
 {{.Escape}} You may obtain a copy of the License at
 {{.Escape}}
-{{.Escape}}    http://www.apache.org/licenses/LICENSE-2.0
+{{.Escape}}    https://www.apache.org/licenses/LICENSE-2.0
 {{.Escape}}
 {{.Escape}} Unless required by applicable law or agreed to in writing, software
 {{.Escape}} distributed under the License is distributed on an "AS IS" BASIS,
@@ -113,6 +113,8 @@ func dirwalk(dir string) []string {
 			case
 				"GO_VERSION",
 				"NGT_VERSION",
+				"AUTHORS",
+				"CONTRIBUTORS",
 				"Pipefile",
 				"grp",
 				"src",
@@ -143,7 +145,7 @@ func readAndRewrite(path string) error {
 	buf := bytes.NewBuffer(make([]byte, 0, fi.Size()))
 	d := Data{
 		NickName: "Vdaas.org Vald team",
-		FullName: " kpango, kou-m, rinx ",
+		FullName: " kpango, kmrmt, rinx ",
 		Year:     time.Now().Year(),
 		Escape:   sharpEscape,
 	}
@@ -205,7 +207,7 @@ var (
 	license = template.Must(template.New("LICENSE").Parse(
 		`                                 Apache License
                            Version 2.0, January 2004
-                        http://www.apache.org/licenses/
+                        https://www.apache.org/licenses/
 
    TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
@@ -397,7 +399,7 @@ var (
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+       https://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,

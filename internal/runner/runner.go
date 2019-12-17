@@ -1,11 +1,11 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -92,10 +92,10 @@ func Do(ctx context.Context, opts ...Option) error {
 
 	log.Infof("service %s :%s starting...", r.name, version)
 
-	return Run(ctx, daemon)
+	return Run(ctx, daemon, r.name)
 }
 
-func Run(ctx context.Context, run Runner) (err error) {
+func Run(ctx context.Context, run Runner, name string) (err error) {
 	sigCh := make(chan os.Signal, 1)
 	defer close(sigCh)
 
@@ -123,42 +123,47 @@ func Run(ctx context.Context, run Runner) (err error) {
 		case err = <-ech:
 			if err != nil {
 				if _, ok := emap[err.Error()]; !ok {
-					errs = append(errs, err)
+					e := errors.ErrStartFunc(name, err)
+					errs = append(errs, e)
+					log.Error(err)
 				}
-				log.Error(err)
 				emap[err.Error()]++
 			}
 		case <-rctx.Done():
 			err = run.PreStop(ctx)
 			if err != nil {
 				if _, ok := emap[err.Error()]; !ok {
-					errs = append(errs, err)
+					e := errors.ErrPreStopFunc(name, err)
+					errs = append(errs, e)
+					log.Error(err)
 				}
-				log.Error(err)
 				emap[err.Error()]++
 			}
 			err = run.Stop(ctx)
 			if err != nil {
 				if _, ok := emap[err.Error()]; !ok {
-					errs = append(errs, err)
+					e := errors.ErrStopFunc(name, err)
+					errs = append(errs, e)
+					log.Error(err)
 				}
-				log.Error(err)
 				emap[err.Error()]++
 			}
 			err = run.PostStop(ctx)
 			if err != nil {
 				if _, ok := emap[err.Error()]; !ok {
-					errs = append(errs, err)
+					e := errors.ErrPostStopFunc(name, err)
+					errs = append(errs, e)
+					log.Error(err)
 				}
-				log.Error(err)
 				emap[err.Error()]++
 			}
 			err = errgroup.Wait()
 			if err != nil {
 				if _, ok := emap[err.Error()]; !ok {
-					errs = append(errs, err)
+					e := errors.ErrRunnerWait(name, err)
+					errs = append(errs, e)
+					log.Error(err)
 				}
-				log.Error(err)
 				emap[err.Error()]++
 			}
 			err = nil

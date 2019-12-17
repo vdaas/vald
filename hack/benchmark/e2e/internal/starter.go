@@ -1,11 +1,11 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -122,7 +122,7 @@ func StartAgentNGTServer(tb testing.TB, ctx context.Context, d assets.Dataset) {
 	}
 
 	go func() {
-		err = runner.Run(errgroup.Init(ctx), daemon)
+		err = runner.Run(errgroup.Init(ctx), daemon, "agent-ngt")
 		if err != nil {
 			tb.Errorf("agent runner returned error %s", err.Error())
 		}

@@ -1,11 +1,11 @@
 #
-# Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+# Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+#    https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -127,13 +127,13 @@ data:
           addrs: []
           health_check_duration: "5s"
           backoff:
-            initial_duration: ""
-            backoff_time_limit: ""
-            maximum_duration: ""
-            jitter_limit: ""
-            backoff_factor: 0
-            retry_count: 0
-            enable_error_log: false
+            initial_duration: "5ms"
+            backoff_time_limit: "5s"
+            maximum_duration: "1s"
+            jitter_limit: "100ms"
+            backoff_factor: 1.2
+            retry_count: 20
+            enable_error_log: true
           call_option:
             wait_for_ready: true
             max_retry_rpc_buffer_size: 0
@@ -176,13 +176,117 @@ data:
           addrs: []
           health_check_duration: "5s"
           backoff:
-            initial_duration: ""
-            backoff_time_limit: ""
-            maximum_duration: ""
-            jitter_limit: ""
-            backoff_factor: 0
-            retry_count: 0
-            enable_error_log: false
+            initial_duration: "1ms"
+            backoff_time_limit: "5s"
+            maximum_duration: "1s"
+            jitter_limit: "100ms"
+            backoff_factor: 1.2
+            retry_count: 20
+            enable_error_log: true
+          call_option:
+            wait_for_ready: true
+            max_retry_rpc_buffer_size: 0
+            max_recv_msg_size: 0
+            max_send_msg_size: 0
+          dial_option:
+            write_buffer_size: 0
+            read_buffer_size: 0
+            initial_window_size: 0
+            initial_connection_window_size: 0
+            max_msg_size: 0
+            max_backoff_delay: ""
+            enable_backoff: false
+            insecure: true
+            timeout: ""
+            dialer:
+              dns:
+                cache_enabled: true
+                refresh_duration: "5s"
+                cache_expiration: "24h"
+              dialer:
+                timeout: ""
+                keep_alive: ""
+                dual_stack_enabled: true
+              tls:
+                enabled: false
+                cert: /path/to/cert
+                key: /path/to/key
+                ca: /path/to/ca
+            keep_alive:
+              time: "60s"
+              timeout: ""
+              permit_without_stream: false
+          tls:
+            enabled: false
+            cert: /path/to/cert
+            key: /path/to/key
+            ca: /path/to/ca
+      meta:
+        host: meta-redis.default.svc.cluster.local
+        port: 8081
+        client:
+          addrs: []
+          health_check_duration: "5s"
+          backoff:
+            initial_duration: "5ms"
+            backoff_time_limit: "5s"
+            maximum_duration: "1s"
+            jitter_limit: "100ms"
+            backoff_factor: 1.2
+            retry_count: 20
+            enable_error_log: true
+          call_option:
+            wait_for_ready: true
+            max_retry_rpc_buffer_size: 0
+            max_recv_msg_size: 0
+            max_send_msg_size: 0
+          dial_option:
+            write_buffer_size: 0
+            read_buffer_size: 0
+            initial_window_size: 0
+            initial_connection_window_size: 0
+            max_msg_size: 0
+            max_backoff_delay: ""
+            enable_backoff: false
+            insecure: true
+            timeout: ""
+            dialer:
+              dns:
+                cache_enabled: true
+                refresh_duration: "5s"
+                cache_expiration: "12h"
+              dialer:
+                timeout: ""
+                keep_alive: ""
+                dual_stack_enabled: true
+              tls:
+                enabled: false
+                cert: /path/to/cert
+                key: /path/to/key
+                ca: /path/to/ca
+            keep_alive:
+              time: "60s"
+              timeout: ""
+              permit_without_stream: false
+          tls:
+            enabled: false
+            cert: /path/to/cert
+            key: /path/to/key
+            ca: /path/to/ca
+      backup:
+        host: manager-backup-mysql.default.svc.cluster.local
+        port: 8081
+        client:
+          addrs: []
+          health_check_duration: "5s"
+          backoff:
+            initial_duration: "5ms"
+            backoff_time_limit: "5s"
+            maximum_duration: "1s"
+            jitter_limit: "100ms"
+            backoff_factor: 1.2
+            retry_count: 20
+            enable_error_log: true
           call_option:
             wait_for_ready: true
             max_retry_rpc_buffer_size: 0
@@ -214,110 +318,6 @@ data:
                 ca: /path/to/ca
             keep_alive:
               time: "60s"
-              timeout: ""
-              permit_without_stream: false
-          tls:
-            enabled: false
-            cert: /path/to/cert
-            key: /path/to/key
-            ca: /path/to/ca
-      meta:
-        host: meta-redis.default.svc.cluster.local
-        port: 8081
-        client:
-          addrs: []
-          health_check_duration: "5s"
-          backoff:
-            initial_duration: ""
-            backoff_time_limit: ""
-            maximum_duration: ""
-            jitter_limit: ""
-            backoff_factor: 0
-            retry_count: 0
-            enable_error_log: false
-          call_option:
-            wait_for_ready: true
-            max_retry_rpc_buffer_size: 0
-            max_recv_msg_size: 0
-            max_send_msg_size: 0
-          dial_option:
-            write_buffer_size: 0
-            read_buffer_size: 0
-            initial_window_size: 0
-            initial_connection_window_size: 0
-            max_msg_size: 0
-            max_backoff_delay: ""
-            enable_backoff: false
-            insecure: true
-            timeout: ""
-            dialer:
-              dns:
-                cache_enabled: false
-                refresh_duration: ""
-                cache_expiration: ""
-              dialer:
-                timeout: ""
-                keep_alive: ""
-                dual_stack_enabled: true
-              tls:
-                enabled: false
-                cert: /path/to/cert
-                key: /path/to/key
-                ca: /path/to/ca
-            keep_alive:
-              time: ""
-              timeout: ""
-              permit_without_stream: false
-          tls:
-            enabled: false
-            cert: /path/to/cert
-            key: /path/to/key
-            ca: /path/to/ca
-      backup:
-        host: manager-backup-mysql.default.svc.cluster.local
-        port: 8081
-        client:
-          addrs: []
-          health_check_duration: "5s"
-          backoff:
-            initial_duration: ""
-            backoff_time_limit: ""
-            maximum_duration: ""
-            jitter_limit: ""
-            backoff_factor: 0
-            retry_count: 0
-            enable_error_log: false
-          call_option:
-            wait_for_ready: true
-            max_retry_rpc_buffer_size: 0
-            max_recv_msg_size: 0
-            max_send_msg_size: 0
-          dial_option:
-            write_buffer_size: 0
-            read_buffer_size: 0
-            initial_window_size: 0
-            initial_connection_window_size: 0
-            max_msg_size: 0
-            max_backoff_delay: ""
-            enable_backoff: false
-            insecure: true
-            timeout: ""
-            dialer:
-              dns:
-                cache_enabled: false
-                refresh_duration: ""
-                cache_expiration: ""
-              dialer:
-                timeout: ""
-                keep_alive: ""
-                dual_stack_enabled: true
-              tls:
-                enabled: false
-                cert: /path/to/cert
-                key: /path/to/key
-                ca: /path/to/ca
-            keep_alive:
-              time: ""
               timeout: ""
               permit_without_stream: false
           tls:

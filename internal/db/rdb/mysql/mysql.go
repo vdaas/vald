@@ -1,11 +1,11 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,7 +34,10 @@ import (
 const (
 	metaVectorTableName = "meta_vector"
 	podIPTableName      = "pod_ip"
+	idColumnName        = "id"
 	uuidColumnName      = "uuid"
+	vectorColumnName    = "vector"
+	metaColumnName      = "meta"
 	ipColumnName        = "ip"
 	asterisk            = "*"
 )
@@ -149,7 +152,7 @@ func (m *mySQLClient) GetMeta(ctx context.Context, uuid string) (MetaVector, err
 	}
 
 	var podIPs []podIP
-	_, err = m.session.Select(asterisk).From(podIPTableName).Where(dbr.Eq(uuidColumnName, uuid)).LoadContext(ctx, &podIPs)
+	_, err = m.session.Select(asterisk).From(podIPTableName).Where(dbr.Eq(idColumnName, meta.ID)).LoadContext(ctx, &podIPs)
 	if err != nil {
 		return nil, err
 	}
@@ -165,8 +168,17 @@ func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error)
 		return nil, errors.ErrMySQLConnectionClosed
 	}
 
+	var id int64
+	_, err := m.session.Select(idColumnName).From(metaVectorTableName).Where(dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &id)
+	if err != nil {
+		return nil, err
+	}
+	if id == 0 {
+		return nil, errors.ErrRequiredElementNotFoundByUUID(uuid)
+	}
+
 	var podIPs []podIP
-	_, err := m.session.Select(asterisk).From(podIPTableName).Where(dbr.Eq(uuidColumnName, uuid)).LoadContext(ctx, &podIPs)
+	_, err = m.session.Select(asterisk).From(podIPTableName).Where(dbr.Eq(idColumnName, id)).LoadContext(ctx, &podIPs)
 	if err != nil {
 		return nil, err
 	}
@@ -186,40 +198,7 @@ func validateMeta(meta MetaVector) error {
 	return nil
 }
 
-func setMetaWithTx(ctx context.Context, tx *dbr.Tx, meta MetaVector) error {
-	err := validateMeta(meta)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.InsertBySql("INSERT INTO meta_vector(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
-		meta.GetUUID(),
-		meta.GetVectorString(),
-		meta.GetMeta(),
-		meta.GetVectorString(),
-		meta.GetMeta()).ExecContext(ctx)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.DeleteFrom(podIPTableName).Where(dbr.Eq(uuidColumnName, meta.GetUUID())).ExecContext(ctx)
-	if err != nil {
-		return err
-	}
-
-	stmt := tx.InsertInto(podIPTableName).Columns(uuidColumnName, ipColumnName)
-	for _, ip := range meta.GetIPs() {
-		stmt.Record(&podIP{UUID: meta.GetUUID(), IP: ip})
-	}
-	_, err = stmt.ExecContext(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *mySQLClient) SetMeta(ctx context.Context, meta MetaVector) error {
+func (m *mySQLClient) SetMeta(ctx context.Context, mv MetaVector) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
 	}
@@ -230,7 +209,40 @@ func (m *mySQLClient) SetMeta(ctx context.Context, meta MetaVector) error {
 	}
 	defer tx.RollbackUnlessCommitted()
 
-	err = setMetaWithTx(ctx, tx, meta)
+	err = validateMeta(mv)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.InsertBySql("INSERT INTO meta_vector(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
+		mv.GetUUID(),
+		mv.GetVectorString(),
+		mv.GetMeta(),
+		mv.GetVectorString(),
+		mv.GetMeta()).ExecContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	var id int64
+	_, err = tx.Select(idColumnName).From(metaVectorTableName).Where(dbr.Eq(uuidColumnName, mv.GetUUID())).Limit(1).LoadContext(ctx, &id)
+	if err != nil {
+		return err
+	}
+	if id == 0 {
+		return errors.ErrRequiredElementNotFoundByUUID(mv.GetUUID())
+	}
+
+	_, err = tx.DeleteFrom(podIPTableName).Where(dbr.Eq(idColumnName, id)).ExecContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	stmt := tx.InsertInto(podIPTableName).Columns(idColumnName, ipColumnName)
+	for _, ip := range mv.GetIPs() {
+		stmt.Record(&podIP{ID: id, IP: ip})
+	}
+	_, err = stmt.ExecContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -250,7 +262,42 @@ func (m *mySQLClient) SetMetas(ctx context.Context, metas ...MetaVector) error {
 	defer tx.RollbackUnlessCommitted()
 
 	for _, meta := range metas {
-		err = setMetaWithTx(ctx, tx, meta)
+		err = validateMeta(meta)
+		if err != nil {
+			return err
+		}
+
+		_, err = tx.InsertBySql("INSERT INTO meta_vector(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
+			meta.GetUUID(),
+			meta.GetVectorString(),
+			meta.GetMeta(),
+			meta.GetVectorString(),
+			meta.GetMeta()).ExecContext(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, m := range metas {
+		var id int64
+		_, err = tx.Select(idColumnName).From(metaVectorTableName).Where(dbr.Eq(uuidColumnName, m.GetUUID())).Limit(1).LoadContext(ctx, &id)
+		if err != nil {
+			return err
+		}
+		if id == 0 {
+			return errors.ErrRequiredElementNotFoundByUUID(m.GetUUID())
+		}
+
+		_, err = tx.DeleteFrom(podIPTableName).Where(dbr.Eq(idColumnName, id)).ExecContext(ctx)
+		if err != nil {
+			return err
+		}
+
+		stmt := tx.InsertInto(podIPTableName).Columns(idColumnName, ipColumnName)
+		for _, ip := range m.GetIPs() {
+			stmt.Record(&podIP{ID: id, IP: ip})
+		}
+		_, err = stmt.ExecContext(ctx)
 		if err != nil {
 			return err
 		}
@@ -324,9 +371,18 @@ func (m *mySQLClient) SetIPs(ctx context.Context, uuid string, ips ...string) er
 	}
 	defer tx.RollbackUnlessCommitted()
 
-	stmt := tx.InsertInto(podIPTableName).Columns(uuidColumnName, ipColumnName)
+	var id int64
+	_, err = tx.Select(idColumnName).From(metaVectorTableName).Where(dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &id)
+	if err != nil {
+		return err
+	}
+	if id == 0 {
+		return errors.ErrRequiredElementNotFoundByUUID(uuid)
+	}
+
+	stmt := tx.InsertInto(podIPTableName).Columns(idColumnName, ipColumnName)
 	for _, ip := range ips {
-		stmt.Record(&podIP{UUID: uuid, IP: ip})
+		stmt.Record(&podIP{ID: id, IP: ip})
 	}
 	_, err = stmt.ExecContext(ctx)
 	if err != nil {

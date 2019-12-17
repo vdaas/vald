@@ -21,10 +21,33 @@ Otherwise, when filing an issue, make sure to answer these five questions:
 4. What did you expect to see?
 5. What did you see instead?
 
+## Before contributing code
+
+Follow these steps to make a contribution to any of our open source repositories:
+
+1. Ensure that you have completed our [CLA Agreement](https://cla-assistant.io/vdaas/vald)
+2. Set your name and email (these should match the information on your submitted CLA)
+
+        git config --global user.name "Firstname Lastname"
+        git config --global user.email "your_email@example.com"
+
+
 ## Contributing code
 
-1. Fork it ( https://github.com/vdaas/vald/fork )
+1. Fork the repository ( https://github.com/vdaas/vald/fork )
 2. Create your feature branch (git checkout -b my-new-feature)
-3. Commit your changes (git commit -am 'Add some feature')
-4. Push to the branch (git push origin my-new-feature)
-5. Create new Pull Request
+3. Commit your changes on your branch (git commit -am 'Add some feature')
+4. Run tests (make test)
+5. Push to the forked branch (git push origin my-new-feature)
+6. Create new Pull Request
+
+
+We favor pull requests with very small, single commits with a single purpose.
+
+Your pull request is much more likely to be accepted if:
+
+* Your pull request includes tests
+
+* Your pull request includes benchmark results
+
+* Your pull request is small and focused with a clear message that conveys the intent of your change

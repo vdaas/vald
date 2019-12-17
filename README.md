@@ -3,13 +3,17 @@
 </div>
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache2-blue.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
+[![CLA](https://cla-assistant.io/readme/badge/vdaas/vald?&style=flat-square)](https://cla-assistant.io/vdaas/vald)
 [![release](https://img.shields.io/github/release/vdaas/vald.svg?style=flat-square)](https://github.com/vdaas/vald/releases/latest)
-[![codecov](https://codecov.io/gh/vdaas/vald/branch/master/graph/badge.svg?token=2CzooNJtUu&style=flat-square)](https://codecov.io/gh/vdaas/vald)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a6e544eee7bc49e08a000bb10ba3deed)](https://www.codacy.com/app/i.can.feel.gravity/vald?utm_source=github.com&utm_medium=referral&utm_content=vdaas/vald&utm_campaign=Badge_Grade)
-[![Go Report Card](https://goreportcard.com/badge/github.com/vdaas/vald)](https://goreportcard.com/report/github.com/vdaas/vald)
+[![codecov](https://img.shields.io/codecov/c/github/vdaas/vald.svg?style=flat-square)](https://codecov.io/gh/vdaas/vald)
+[![Codacy Badge](https://img.shields.io/codacy/grade/a6e544eee7bc49e08a000bb10ba3deed?style=flat-square)](https://www.codacy.com/app/i.can.feel.gravity/vald?utm_source=github.com&utm_medium=referral&utm_content=vdaas/vald&utm_campaign=Badge_Grade)
+[![Go Report Card](https://goreportcard.com/badge/github.com/vdaas/vald?style=flat-square)](https://goreportcard.com/report/github.com/vdaas/vald)
 [![GolangCI](https://golangci.com/badges/github.com/vdaas/vald.svg?style=flat-square)](https://golangci.com/r/github.com/vdaas/vald)
-[![Go Walker](http://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/vdaas/vald)
-[![GoDoc](http://godoc.org/github.com/vdaas/vald?status.svg)](http://godoc.org/github.com/vdaas/vald)
+[![Go Walker](https://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/vdaas/vald)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/vdaas/vald)
+[![DepShield Badge](https://depshield.sonatype.org/badges/vdaas/vald/depshield.svg?style=flat-square)](https://depshield.github.io)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fvdaas%2Fvald.svg?type=small&style=flat-square)](https://app.fossa.com/projects/git%2Bgithub.com%2Fvdaas%2Fvald?ref=badge_small)
+
 
 vald is high scalable distributed high-speed approximate nearest neighbor search engine
 
@@ -45,16 +49,12 @@ make init
 
 ## Contribution
 
-1. Fork it ( https://github.com/vdaas/vald/fork )
-2. Create your feature branch (git checkout -b my-new-feature)
-3. Commit your changes (git commit -am 'Add some feature')
-4. Push to the branch (git push origin my-new-feature)
-5. Create new Pull Request
+Please read the [contribution guide](https://github.com/vdaas/vald/blob/master/CONTRIBUTING.md)
 
 ## Author
 
 - [kpango](https://github.com/kpango)
-- [kou-m](https://github.com/kou-m)
+- [kmrmt](https://github.com/kmrmt)
 - [rinx](https://github.com/rinx)
 
 ## Contributor
@@ -111,3 +111,6 @@ vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20meta-cassandra/badge.svg"></td>
   </tr>
 </table>
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fvdaas%2Fvald.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fvdaas%2Fvald?ref=badge_large)

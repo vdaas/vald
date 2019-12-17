@@ -1,11 +1,11 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,7 +37,7 @@ var (
 		return Errorf("gRPC client connection not found on %s", addr)
 	}
 
-	ErrRPCCallFailed = func(addr string, err error)error{
-		return Wrapf(err,"addr: %s", addr)
+	ErrRPCCallFailed = func(addr string, err error) error {
+		return Wrapf(err, "addr: %s", addr)
 	}
 )

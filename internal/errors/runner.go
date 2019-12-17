@@ -1,11 +1,11 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,5 +20,25 @@ package errors
 var (
 	ErrDaemonStopFailed = func(err error) error {
 		return Wrap(err, "failed to stop daemon")
+	}
+
+	ErrStartFunc = func(name string, err error) error {
+		return Wrapf(err, "error occured in runner.Start at %s", name)
+	}
+
+	ErrPreStopFunc = func(name string, err error) error {
+		return Wrapf(err, "error occured in runner.PreStop at %s", name)
+	}
+
+	ErrStopFunc = func(name string, err error) error {
+		return Wrapf(err, "error occured in runner.Stop at %s", name)
+	}
+
+	ErrPostStopFunc = func(name string, err error) error {
+		return Wrapf(err, "error occured in runner.PostStop at %s", name)
+	}
+
+	ErrRunnerWait = func(name string, err error) error {
+		return Wrapf(err, "error occured in runner.Wait at %s", name)
 	}
 )
