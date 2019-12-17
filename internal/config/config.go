@@ -45,9 +45,20 @@ func Read(path string, cfg interface{}) error {
 // GetActualValue returns the environment variable value if the val has prefix and suffix "_", otherwise the val will directly return.
 func GetActualValue(val string) string {
 	if checkPrefixAndSuffix(val, "_", "_") {
-		return os.Getenv(strings.TrimPrefix(strings.TrimSuffix(val, "_"), "_"))
+		return os.ExpandEnv(os.Getenv(strings.TrimPrefix(strings.TrimSuffix(val, "_"), "_")))
 	}
-	return val
+	return os.ExpandEnv(val)
+}
+
+func GetActualValues(vals []string) []string {
+	for i, val := range vals {
+		if checkPrefixAndSuffix(val, "_", "_") {
+			vals[i] = os.ExpandEnv(os.Getenv(strings.TrimPrefix(strings.TrimSuffix(val, "_"), "_")))
+		} else {
+			vals[i] = os.ExpandEnv(val)
+		}
+	}
+	return vals
 }
 
 // checkPrefixAndSuffix checks if the str has prefix and suffix

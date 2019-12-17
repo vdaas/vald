@@ -163,7 +163,8 @@ func (c *client) SetMeta(ctx context.Context, meta model.MetaVector) error {
 func (c *client) SetMetas(ctx context.Context, metas ...model.MetaVector) error {
 	ms := make([]mysql.MetaVector, 0, len(metas))
 	for _, meta := range metas {
-		ms = append(ms, &meta)
+		m := meta
+		ms = append(ms, &m)
 	}
 	return c.db.SetMetas(ctx, ms...)
 }
