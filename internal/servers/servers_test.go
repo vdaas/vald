@@ -162,7 +162,7 @@ func TestListenAndServe(t *testing.T) {
 						return fmt.Errorf("errors count is not equals: want: %v, got: %v", len(werrs), len(gerrs))
 					}
 
-					for i, _ := range werrs {
+					for i := range werrs {
 						if gerrs[i].Error() != werrs[i].Error() {
 							return fmt.Errorf("errors[%d] is not equals: want: %v, got: %v", i, werrs[i], gerrs[i])
 						}
