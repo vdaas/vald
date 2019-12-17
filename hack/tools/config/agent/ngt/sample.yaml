@@ -91,7 +91,7 @@ server_config:
       initial_window_size: -1275138440
       initial_conn_window_size: 1283428868
       keepalive:
-        max_idle_conn_idle: O
+        max_idle_conn_idle: ""
         max_conn_age: Ǉ#骽枒-谄ǔ*軚7顏SǦŇÒ钃K
         max_conn_age_grace: H_>CK檘ʝȏ靍ű湨?K
         time: ė¥Ë恛Li忎đ@怮溙d傴S

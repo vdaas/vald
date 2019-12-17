@@ -160,7 +160,7 @@ servers:
       initial_window_size: 0
       initial_conn_window_size: 0
       keepalive:
-        max_idle_conn_idle: O
+        max_idle_conn_idle: ""
         max_conn_age: ""
         max_conn_age_grace: ""
         time: ""
