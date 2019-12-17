@@ -51,3 +51,12 @@ Your pull request is much more likely to be accepted if:
 * Your pull request includes benchmark results
 
 * Your pull request is small and focused with a clear message that conveys the intent of your change
+
+
+## Branch naming convention
+
+Name your branches with prefixes and descriptions: `[type]/[area]/[description]`
+
+* `type` = feature, bugfix, refactoring, benchmark, ...
+* `area` = gateway, meta, manager-backup, manager-replication, ...
+* `description` = branch description. description must be hyphenated.
