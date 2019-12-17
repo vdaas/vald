@@ -35,7 +35,7 @@ Follow these steps to make a contribution to any of our open source repositories
 ## Contributing code
 
 1. Fork the repository ( https://github.com/vdaas/vald/fork )
-2. Create your feature branch (git checkout -b my-new-feature)
+2. Create your feature branch (git checkout -b [`[type]/[area]/[description]`](#Branch-naming-convention))
 3. Commit your changes on your branch (git commit -am 'Add some feature')
 4. Run tests (make test)
 5. Push to the forked branch (git push origin my-new-feature)
@@ -55,7 +55,7 @@ Your pull request is much more likely to be accepted if:
 
 ## Branch naming convention
 
-Name your branches with prefixes and descriptions: `[type]/[area]/[description]`
+Name your branches with prefixes: `[type]/[area]/[description]`
 
 * `type` = feature, bugfix, refactoring, benchmark, ...
 * `area` = gateway, meta, manager-backup, manager-replication, ...
