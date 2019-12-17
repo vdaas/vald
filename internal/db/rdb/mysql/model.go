@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,14 +41,15 @@ type metaVector struct {
 }
 
 type meta struct {
+	ID     int64          `db:"id"`
 	UUID   string         `db:"uuid"`
 	Vector string         `db:"vector"`
 	Meta   dbr.NullString `db:"meta"`
 }
 
 type podIP struct {
-	UUID string `db:"uuid"`
-	IP   string `db:"ip"`
+	ID int64  `db:"id"`
+	IP string `db:"ip"`
 }
 
 func (m *metaVector) GetUUID() string { return m.meta.UUID }

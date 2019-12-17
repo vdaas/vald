@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -81,15 +81,18 @@ func (m *meta) GetMetas(ctx context.Context, uuids ...string) ([]string, error) 
 		vals, err := gmeta.NewMetaClient(conn).GetMetas(ctx, &payload.Meta_Keys{
 			Keys: uuids,
 		}, copts...)
-		if err != nil {
-			return nil, err
+		if vals != nil {
+			return vals.GetVals(), err
 		}
-		return vals.GetVals(), nil
-	})
-	if err != nil {
 		return nil, err
+	})
+	if vals != nil {
+		vs, ok := vals.([]string)
+		if ok {
+			return vs, err
+		}
 	}
-	return vals.([]string), nil
+	return nil, err
 }
 
 func (m *meta) GetUUID(ctx context.Context, meta string) (string, error) {
@@ -113,15 +116,18 @@ func (m *meta) GetUUIDs(ctx context.Context, metas ...string) ([]string, error) 
 		keys, err := gmeta.NewMetaClient(conn).GetMetasInverse(ctx, &payload.Meta_Vals{
 			Vals: metas,
 		}, copts...)
-		if err != nil {
-			return nil, err
+		if keys != nil {
+			return keys.GetKeys(), err
 		}
-		return keys.GetKeys(), nil
-	})
-	if err != nil {
 		return nil, err
+	})
+	if keys != nil {
+		ks, ok := keys.([]string)
+		if ok {
+			return ks, err
+		}
 	}
-	return keys.([]string), nil
+	return nil, err
 }
 
 func (m *meta) SetUUIDandMeta(ctx context.Context, uuid, meta string) (err error) {

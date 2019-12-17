@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -71,9 +71,7 @@ func newGRPCClientConfig() *GRPCClient {
 func (g *GRPCClient) Bind() *GRPCClient {
 	g.HealthCheckDuration = GetActualValue(g.HealthCheckDuration)
 
-	for i, addr := range g.Addrs {
-		g.Addrs[i] = GetActualValue(addr)
-	}
+	g.Addrs = GetActualValues(g.Addrs)
 
 	if g.Backoff != nil {
 		g.Backoff.Bind()

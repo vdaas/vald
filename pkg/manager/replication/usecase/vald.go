@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import (
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	igrpc "github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -33,7 +33,6 @@ import (
 	"github.com/vdaas/vald/pkg/manager/replication/handler/rest"
 	"github.com/vdaas/vald/pkg/manager/replication/router"
 	"github.com/vdaas/vald/pkg/manager/replication/service"
-	"google.golang.org/grpc"
 )
 
 type run struct {
@@ -63,9 +62,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	backup, err = service.NewBackup(
 		service.WithBackupAddr(cfg.Gateway.BackupManager.Client.Addrs[0]),
 		service.WithBackupClient(
-			igrpc.New(
+			grpc.New(
 				append(cfg.Gateway.BackupManager.Client.Opts(),
-					igrpc.WithErrGroup(eg),
+					grpc.WithErrGroup(eg),
 				)...,
 			),
 		),
@@ -73,15 +72,15 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-	dscClient := igrpc.New(
+	dscClient := grpc.New(
 		append(cfg.Gateway.Discoverer.DiscoverClient.Opts(),
-			igrpc.WithErrGroup(eg),
+			grpc.WithErrGroup(eg),
 		)...,
 	)
 	agentOpts := cfg.Gateway.Discoverer.AgentClient.Opts()
-	agentClient := igrpc.New(
+	agentClient := grpc.New(
 		append(agentOpts,
-			igrpc.WithErrGroup(eg),
+			grpc.WithErrGroup(eg),
 		)...,
 	)
 
@@ -108,9 +107,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	metadata, err = service.NewMeta(
 		service.WithMetaAddr(cfg.Gateway.Meta.Client.Addrs[0]),
 		service.WithMetaClient(
-			igrpc.New(
+			grpc.New(
 				append(cfg.Gateway.Meta.Client.Opts(),
-					igrpc.WithErrGroup(eg),
+					grpc.WithErrGroup(eg),
 				)...,
 			),
 		),
@@ -126,9 +125,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		len(ef.Client.Addrs) != 0 {
 		filter, err = service.NewFilter(
 			service.WithFilterClient(
-				igrpc.New(
+				grpc.New(
 					append(ef.Client.Opts(),
-						igrpc.WithErrGroup(eg),
+						grpc.WithErrGroup(eg),
 					)...,
 				),
 			),

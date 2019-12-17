@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -113,6 +113,8 @@ func dirwalk(dir string) []string {
 			case
 				"GO_VERSION",
 				"NGT_VERSION",
+				"AUTHORS",
+				"CONTRIBUTORS",
 				"Pipefile",
 				"grp",
 				"src",
@@ -143,7 +145,7 @@ func readAndRewrite(path string) error {
 	buf := bytes.NewBuffer(make([]byte, 0, fi.Size()))
 	d := Data{
 		NickName: "Vdaas.org Vald team",
-		FullName: " kpango, kou-m, rinx ",
+		FullName: " kpango, kmrmt, rinx ",
 		Year:     time.Now().Year(),
 		Escape:   sharpEscape,
 	}

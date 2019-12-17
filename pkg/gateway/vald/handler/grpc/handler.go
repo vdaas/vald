@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -152,23 +152,24 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				uuids = append(uuids, r.GetId())
 			}
 			if s.metadata != nil {
-				var metas []string
-				metas, err := s.metadata.GetMetas(ctx, uuids...)
-				if err == nil {
-					for i, k := range metas {
+				metas, merr := s.metadata.GetMetas(ctx, uuids...)
+				if err != nil {
+					log.Error(merr)
+					err = errors.Wrap(err, merr.Error())
+				}
+				for i, k := range metas {
+					if len(k) != 0 {
 						res.Results[i].Id = k
 					}
-				} else {
-					log.Error(err)
 				}
 			}
 			if s.filter != nil {
-				r, err := s.filter.FilterSearch(ctx, res)
-				if err != nil {
-					log.Error(err)
-					return res, err
+				r, ferr := s.filter.FilterSearch(ctx, res)
+				if ferr == nil {
+					res = r
+				} else {
+					err = errors.Wrap(err, ferr.Error())
 				}
-				res = r
 			}
 			return res, err
 		case dist := <-dch:
@@ -293,21 +294,16 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		metas = append(metas, meta)
 		vecs.Vectors[i].Id = uuid
 	}
-	uuids, err := s.metadata.GetMetas(ctx, metas...)
 
-	if err == nil || len(uuids) != 0 {
-		for i, meta := range metas {
-			if len(uuids) > i && len(uuids[i]) != 0 {
-				if err != nil {
-					err = errors.Wrap(err, errors.ErrMetaDataAlreadyExists(meta, uuids[i]).Error())
-				} else {
-					err = errors.ErrMetaDataAlreadyExists(meta, uuids[i])
-				}
-			}
+	uuids, err := s.metadata.GetMetas(ctx, metas...)
+	for i, meta := range metas {
+		if len(uuids) > i && len(uuids[i]) != 0 {
+			err = errors.Wrap(err, errors.ErrMetaDataAlreadyExists(meta, uuids[i]).Error())
 		}
-		if err != nil {
-			return nil, err
-		}
+	}
+
+	if err != nil {
+		return nil, err
 	}
 
 	mu := new(sync.Mutex)

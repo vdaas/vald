@@ -11,6 +11,9 @@
 [![GolangCI](https://golangci.com/badges/github.com/vdaas/vald.svg?style=flat-square)](https://golangci.com/r/github.com/vdaas/vald)
 [![Go Walker](https://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/vdaas/vald)
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/vdaas/vald)
+[![DepShield Badge](https://depshield.sonatype.org/badges/vdaas/vald/depshield.svg?style=flat-square)](https://depshield.github.io)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fvdaas%2Fvald.svg?type=small&style=flat-square)](https://app.fossa.com/projects/git%2Bgithub.com%2Fvdaas%2Fvald?ref=badge_small)
+
 
 vald is high scalable distributed high-speed approximate nearest neighbor search engine
 
@@ -51,7 +54,7 @@ Please read the [contribution guide](https://github.com/vdaas/vald/blob/master/C
 ## Author
 
 - [kpango](https://github.com/kpango)
-- [kou-m](https://github.com/kou-m)
+- [kmrmt](https://github.com/kmrmt)
 - [rinx](https://github.com/rinx)
 
 ## Contributor
@@ -108,3 +111,6 @@ vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20meta-cassandra/badge.svg"></td>
   </tr>
 </table>
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fvdaas%2Fvald.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fvdaas%2Fvald?ref=badge_large)
