@@ -72,9 +72,7 @@ type ReconnectionPolicy struct {
 }
 
 func (c *Cassandra) Bind() *Cassandra {
-	for i, addr := range c.Hosts {
-		c.Hosts[i] = GetActualValue(addr)
-	}
+	c.Hosts = GetActualValues(c.Hosts)
 	c.CQLVersion = GetActualValue(c.CQLVersion)
 	c.Timeout = GetActualValue(c.Timeout)
 	c.ConnectTimeout = GetActualValue(c.ConnectTimeout)

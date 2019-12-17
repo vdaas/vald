@@ -71,9 +71,7 @@ func newGRPCClientConfig() *GRPCClient {
 func (g *GRPCClient) Bind() *GRPCClient {
 	g.HealthCheckDuration = GetActualValue(g.HealthCheckDuration)
 
-	for i, addr := range g.Addrs {
-		g.Addrs[i] = GetActualValue(addr)
-	}
+	g.Addrs = GetActualValues(g.Addrs)
 
 	if g.Backoff != nil {
 		g.Backoff.Bind()

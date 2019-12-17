@@ -41,14 +41,15 @@ type metaVector struct {
 }
 
 type meta struct {
+	ID     int64          `db:"id"`
 	UUID   string         `db:"uuid"`
 	Vector string         `db:"vector"`
 	Meta   dbr.NullString `db:"meta"`
 }
 
 type podIP struct {
-	UUID string `db:"uuid"`
-	IP   string `db:"ip"`
+	ID int64  `db:"id"`
+	IP string `db:"ip"`
 }
 
 func (m *metaVector) GetUUID() string { return m.meta.UUID }
