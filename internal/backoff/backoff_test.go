@@ -19,18 +19,198 @@ package backoff
 
 import (
 	"context"
-	"errors"
+	"fmt"
+	"reflect"
 	"testing"
+	"time"
 
-	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/errors"
 )
 
-func TestNextDuration(t *testing.T) {
-	log.Init(log.DefaultGlg())
-	t.Run("Text NextDuration", func(t *testing.T) {
-		bo := New()
-		bo.Do(context.Background(), func() (interface{}, error) {
-			return nil, errors.New("what a fuck")
+func TestNew(t *testing.T) {
+	type args struct {
+		opts []Option
+	}
+
+	type test struct {
+		name      string
+		args      args
+		want      *backoff
+		checkFunc func(got, want *backoff) error
+	}
+
+	tests := []test{
+		{
+			name: "initialize",
+			want: &backoff{
+				initialDuration:  float64(10 * time.Millisecond),
+				backoffTimeLimit: 5 * time.Minute,
+				maxDuration:      float64(time.Hour),
+				jitterLimit:      float64(time.Minute),
+				backoffFactor:    1.5,
+				maxRetryCount:    50,
+				errLog:           true,
+				durationLimit:    float64(time.Hour) / 1.5,
+			},
+			checkFunc: func(got *backoff, want *backoff) error {
+				got.jittedInitialDuration, want.jittedInitialDuration = 1, 1
+				if !reflect.DeepEqual(got, want) {
+					return fmt.Errorf("not equals. want: %v, got: %v", got, want)
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := New(tt.args.opts...)
+			if err := tt.checkFunc(got.(*backoff), tt.want); err != nil {
+				t.Error(err)
+			}
 		})
-	})
+	}
+}
+
+func TestDo(t *testing.T) {
+	type args struct {
+		fn   func() (interface{}, error)
+		opts []Option
+	}
+
+	type test struct {
+		name      string
+		args      args
+		ctxFn     func() (context.Context, context.CancelFunc)
+		checkFunc func(got, want error) error
+		want      error
+	}
+
+	tests := []test{
+		func() test {
+			cnt := 0
+			fn := func() (interface{}, error) {
+				cnt++
+				if cnt == 2 {
+					return nil, nil
+				}
+				return nil, fmt.Errorf("error (%d)", cnt)
+			}
+
+			return test{
+				name: "backoff is successful",
+				args: args{
+					fn: fn,
+					opts: []Option{
+						WithDisableErrorLog(),
+						WithRetryCount(6),
+					},
+				},
+				ctxFn: func() (context.Context, context.CancelFunc) {
+					return context.WithCancel(context.Background())
+				},
+				checkFunc: func(got, want error) error {
+					if cnt != 2 {
+						return fmt.Errorf("error count is wrong, want: %v, got: %v", 2, cnt)
+					}
+
+					if got != want {
+						return fmt.Errorf("not equals. want: %v, got: %v", want, got)
+					}
+
+					return nil
+				},
+				want: nil,
+			}
+		}(),
+
+		func() test {
+			cnt := 0
+			fn := func() (interface{}, error) {
+				cnt++
+				return nil, fmt.Errorf("error (%d)", cnt)
+			}
+
+			return test{
+				name: "reached max retry",
+				args: args{
+					fn: fn,
+					opts: []Option{
+						WithDisableErrorLog(),
+						WithRetryCount(6),
+					},
+				},
+				ctxFn: func() (context.Context, context.CancelFunc) {
+					return context.WithCancel(context.Background())
+				},
+				checkFunc: func(got, want error) error {
+					if cnt != 7 {
+						return fmt.Errorf("error count is wrong, want: %v, got: %v", 7, cnt)
+					}
+
+					if got.Error() != want.Error() {
+						return fmt.Errorf("not equals. want: %v, got: %v", want, got)
+					}
+
+					return nil
+				},
+				want: fmt.Errorf("error (7)"),
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+
+			cnt := 0
+			fn := func() (interface{}, error) {
+				cnt++
+				if cnt == 2 {
+					cancel()
+				}
+				return nil, fmt.Errorf("error (%d)", cnt)
+			}
+
+			return test{
+				name: "context canceld",
+				args: args{
+					fn: fn,
+					opts: []Option{
+						WithDisableErrorLog(),
+						WithRetryCount(6),
+					},
+				},
+				ctxFn: func() (context.Context, context.CancelFunc) {
+					return ctx, cancel
+				},
+				checkFunc: func(got, want error) error {
+					if cnt != 2 {
+						return fmt.Errorf("error count is wrong, want: %v, got: %v", 2, cnt)
+					}
+
+					if got.Error() != want.Error() {
+						return fmt.Errorf("not equals. want: %v, got: %v", want, got)
+					}
+
+					return nil
+				},
+				want: errors.Wrap(fmt.Errorf("error (2)"), context.Canceled.Error()),
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, cancel := tt.ctxFn()
+			defer cancel()
+
+			_, err := New(tt.args.opts...).Do(ctx, tt.args.fn)
+			if tt.want == nil && err != nil {
+				t.Errorf("Do return err: %v", err)
+			}
+
+			if err := tt.checkFunc(err, tt.want); err != nil {
+				t.Error(err)
+			}
+		})
+	}
 }
