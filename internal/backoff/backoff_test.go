@@ -41,7 +41,7 @@ func TestNew(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "initialize with default option",
+			name: "initialize",
 			want: &backoff{
 				initialDuration:  float64(10 * time.Millisecond),
 				backoffTimeLimit: 5 * time.Minute,
@@ -55,38 +55,7 @@ func TestNew(t *testing.T) {
 			checkFunc: func(got *backoff, want *backoff) error {
 				got.jittedInitialDuration, want.jittedInitialDuration = 1, 1
 				if !reflect.DeepEqual(got, want) {
-					return fmt.Errorf("New() is wrong, want: %v, got: %v", got, want)
-				}
-				return nil
-			},
-		},
-		{
-			name: "initialize with custom option",
-			want: &backoff{
-				initialDuration:  float64(1 * time.Second),
-				backoffTimeLimit: 10 * time.Minute,
-				maxDuration:      float64(30 * time.Minute),
-				jitterLimit:      float64(5 * time.Minute),
-				backoffFactor:    2.0,
-				maxRetryCount:    30,
-				errLog:           false,
-				durationLimit:    float64(30*time.Minute) / 2.0,
-			},
-			args: args{
-				opts: []Option{
-					WithInitialDuration("1s"),
-					WithMaximumDuration("30m"),
-					WithJitterLimit("5m"),
-					WithBackOffFactor(2.0),
-					WithRetryCount(30),
-					WithBackOffTimeLimit("10m"),
-					WithDisableErrorLog(),
-				},
-			},
-			checkFunc: func(got *backoff, want *backoff) error {
-				got.jittedInitialDuration, want.jittedInitialDuration = 1, 1
-				if !reflect.DeepEqual(got, want) {
-					return fmt.Errorf("New() is wrong, want: %v, got: %v", got, want)
+					return fmt.Errorf("not equals. want: %v, got: %v", got, want)
 				}
 				return nil
 			},
