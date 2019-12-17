@@ -13,6 +13,9 @@
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/vdaas/vald)
 [![DepShield Badge](https://depshield.sonatype.org/badges/vdaas/vald/depshield.svg?style=flat-square)](https://depshield.github.io)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fvdaas%2Fvald.svg?type=small&style=flat-square)](https://app.fossa.com/projects/git%2Bgithub.com%2Fvdaas%2Fvald?ref=badge_small)
+[![Total visitor](https://visitor-count-badge.herokuapp.com/total.svg?repo_id=vald)](https://github.com/vdaas/vald/graphs/traffic)
+[![Visitors in today](https://visitor-count-badge.herokuapp.com/today.svg?repo_id=vald)](https://github.com/vdaas/vald/graphs/traffic)
+
 
 
 vald is high scalable distributed high-speed approximate nearest neighbor search engine
