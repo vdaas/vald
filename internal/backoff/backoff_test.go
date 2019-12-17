@@ -174,7 +174,7 @@ func TestDo(t *testing.T) {
 				},
 				checkFunc: func() error {
 					if cnt != 2 {
-						return fmt.Errorf("error count is wrong, want: %v, got: %v", 6, cnt)
+						return fmt.Errorf("error count is wrong, want: %v, got: %v", 2, cnt)
 					}
 					return nil
 				},
