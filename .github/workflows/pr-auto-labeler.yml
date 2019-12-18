@@ -26,7 +26,7 @@ jobs:
                --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
                --header 'content-type: application/json' \
                --data '{
-                 "labels": "$1"
+                 "labels": $1
                }'
         }
 
