@@ -46,6 +46,8 @@ jobs:
           send_labels+=(\"size/L\")
         fi
 
+        git diff
+
         if [ ${#send_labels[@]} -gt 0 ]; then
           str="$(IFS=,; echo "${send_labels[*]}")"
           data="{\"labels\": [$str]}"
