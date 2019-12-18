@@ -9,7 +9,7 @@ jobs:
     - uses: actions/labeler@v2
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
-    - name: add labels to an PR
+    - name: add labels to the PR
       run: |
         add_label() {
           curl --request POST \
@@ -49,11 +49,11 @@ jobs:
         size=`expr ${additions} + ${deletions}`
 
         if [ $size -le 29 ]; then
-          send_labels+=(size/S)
+          send_labels+=("size/S")
         elif [ $size -le 99 ]; then
-          send_labels+=(size/M)
+          send_labels+=("size/M")
         else
-          send_labels+=(size/L)
+          send_labels+=("size/L")
         fi
 
         echo $send_labels
