@@ -48,12 +48,11 @@ jobs:
 
         if [ ${#send_labels[@]} -gt 0 ]; then
           str="$(IFS=,; echo "${send_labels[*]}")"
-          echo "send labels: " $str
+          data="{\"labels\": [$str]}"
+          echo "send data: " $data
           curl --request POST \
                --url https://api.github.com/repos/${{ github.repository }}/issues/${pr_num}/labels \
                --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
                --header 'content-type: application/json' \
-               --data "{
-                 \"labels\": [$str]}
-               }"
+               --data $data
         fi
