@@ -20,15 +20,31 @@ jobs:
             "type/test"
         )
 
+        add_label() {
+          curl --request POST \
+               --url https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${pr_num}/labels \
+               --header 'authorization: Bearer ${GITHUB_TOKEN}' \
+               --header 'content-type: application/json' \
+               --data '{
+                 "labels": "$1"
+               }'
+        }
+
         for label in ${type_labels[@]}
         do
           if [ "`echo ${branch_name} | grep ${label##*/}`" ] ; then
-            curl --request POST \
-                 --url https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${pr_num}/labels \
-                 --header 'authorization: Bearer ${GITHUB_TOKEN}' \
-                 --header 'content-type: application/json' \
-                 --data '{
-                   "labels": "${label}"
-                 }'
+            add_label ${label}
           fi
         done
+
+        additions=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.additions"`
+        deletions=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.deletions"`
+        size=`expr ${additions} + ${deletions}`
+
+        if [ $size -le 29 ]; then
+          add_label size/S
+        elif [ $size -le 99 ]; then
+          add_label size/M
+        else
+          add_label size/L
+        fi
