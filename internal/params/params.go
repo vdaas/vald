@@ -31,16 +31,18 @@ type Data struct {
 }
 
 type parser struct {
-	filePath struct {
-		key         string
-		defaultPath string
-		description string
-	}
-	version struct {
-		key         string
-		defaultFlag bool
-		description string
-	}
+	filePath filePath
+	version  version
+}
+type filePath struct {
+	key         string
+	defaultPath string
+	description string
+}
+type version struct {
+	key         string
+	defaultFlag bool
+	description string
 }
 
 func New(opts ...Option) *parser {
