@@ -22,12 +22,15 @@ jobs:
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
         branch_name=${GITHUB_REF##*/}
         type_labels=(
+            "type/test"
             "type/bug"
             "type/documentation"
             "type/feature"
             "type/refactoring"
             "type/security"
             "type/test"
+            "type/ci"
+            "type/dependency"
         )
 
         for label in ${type_labels[@]}
