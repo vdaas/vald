@@ -20,7 +20,7 @@ jobs:
         }
         
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-        branch_name=${GITHUB_REF##*/}
+        branch_name=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.head.ref"`
         type_labels=(
             "type/test"
             "type/bug"
