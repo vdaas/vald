@@ -6,29 +6,29 @@ jobs:
   pr-auto-labeler:
     name: pr-auto-labeler
     runs-on: ubuntu-latest
-  steps:
-  - name: add labels to an PR
-    run: |
-      pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-      branch_name=${GITHUB_REF##*/}
-      type_labels=(
-          "type/bug"
-          "type/documentation"
-          "type/feature"
-          "type/refactoring"
-          "type/security"
-          "type/test"
-      )
+    steps:
+    - name: add labels to an PR
+      run: |
+        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+        branch_name=${GITHUB_REF##*/}
+        type_labels=(
+            "type/bug"
+            "type/documentation"
+            "type/feature"
+            "type/refactoring"
+            "type/security"
+            "type/test"
+        )
 
-      for label in ${type_labels[@]}
-      do
-        if [ "`echo ${branch_name} | grep ${label##*/}`" ] ; then
-          curl --request POST \
-               --url https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${pr_num}/labels \
-               --header 'authorization: Bearer ${GITHUB_TOKEN}' \
-               --header 'content-type: application/json' \
-               --data '{
-                 "labels": "${label}"
-               }'
-        fi
-      done
+        for label in ${type_labels[@]}
+        do
+          if [ "`echo ${branch_name} | grep ${label##*/}`" ] ; then
+            curl --request POST \
+                 --url https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${pr_num}/labels \
+                 --header 'authorization: Bearer ${GITHUB_TOKEN}' \
+                 --header 'content-type: application/json' \
+                 --data '{
+                   "labels": "${label}"
+                 }'
+          fi
+        done
