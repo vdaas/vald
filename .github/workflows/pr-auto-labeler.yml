@@ -11,7 +11,6 @@ jobs:
       run: |
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
         branch_name=${GITHUB_REF##*/}
-
         type_labels=(
             "type/bug"
             "type/documentation"
