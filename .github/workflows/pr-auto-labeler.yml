@@ -36,6 +36,7 @@ jobs:
         for label in ${type_labels[@]}
         do
           if [ "`echo ${branch_name} | grep ${label##*/}`" ] ; then
+            echo $label
             add_label ${label}
           fi
         done
