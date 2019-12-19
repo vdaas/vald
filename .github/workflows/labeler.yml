@@ -41,17 +41,9 @@ jobs:
           fi
         done
 
-        git diff --shortstat origin/master..ci/pr_auto_labeling 
-        git diff --shortstat origin/master...ci/pr_auto_labeling 
-        git diff --shortstat origin/master ci/pr_auto_labeling 
-        git diff --shortstat ci/pr_auto_labeling origin/master 
-        git diff --shortstat ci/pr_auto_labeling origin/master 
-        git diff --shortstat origin/master...${{ github.head_ref }}
-        git diff --shortstat origin/master..${{ github.head_ref }}
-
         size=0
         # diff=`git diff --shortstat origin/master..ci/pr_auto_labeling --no-merges ':!./*\.yaml' ':!./*\.yml' ':!./*\.svg' ':!apis'`
-        diff=`git diff --shortstat origin/master..ci/pr_auto_labeling --no-merges`
+        diff=`git diff --shortstat origin/master..ci/${branch_name} --no-merges`
         if [ -n "$diff" ]; then
           size=`echo $diff | awk '{print $4+$6}'`
         fi
