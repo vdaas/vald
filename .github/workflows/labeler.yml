@@ -30,7 +30,8 @@ jobs:
         )
         send_labels=()
 
-        git fetch origin master
+        # git fetch origin master
+        git checkout -b master origin/master
         git diff --stat origin/master...HEAD
 
         echo "branch name: " $branch_name
