@@ -13,6 +13,7 @@ jobs:
       uses: actions/checkout@master
       with:
         ref: ${{ github.head_ref }}
+        fetch-depth: 0
     - name: Add labels 
       run: |
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
@@ -30,7 +31,7 @@ jobs:
         )
         send_labels=()
 
-        git fetch origin master:master
+        git fetch origin master
 
         echo "branch name: " $branch_name
         for label in ${type_labels[@]}
@@ -47,6 +48,7 @@ jobs:
         git diff --shortstat ci/pr_auto_labeling origin/master 
         git diff --shortstat origin/master...${{ github.head_ref }}
         git diff --shortstat origin/master..${{ github.head_ref }}
+
         size=0
         # diff=`git diff --shortstat origin/master..ci/pr_auto_labeling --no-merges ':!./*\.yaml' ':!./*\.yml' ':!./*\.svg' ':!apis'`
         diff=`git diff --shortstat origin/master..ci/pr_auto_labeling --no-merges`
