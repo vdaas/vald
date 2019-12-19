@@ -1,3 +1,20 @@
+//
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+// Package tensorflow provides implementation of Go API for extract data to vector
 package tensorflow
 
 import (
@@ -5,14 +22,21 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-type TFModel struct {
-	exportDir string
-	tags      []string
-	options   *tf.SessionOptions
-	model     *tf.SavedModel
+type TF interface {
+	GetVector(feeds []Feed, fetches []Fetch, targets ...*tf.Operation) (values [][][]float64, err error)
+	Close() error
 }
 
-type Options func(*tf.SessionOptions)
+type tensorflow struct {
+	exportDir     string
+	tags          []string
+	operations    []*tf.Operation
+	sessionTarget string
+	sessionConfig []byte
+	options       *tf.SessionOptions
+	graph         *tf.Graph
+	session       *tf.Session
+}
 
 type Feed struct {
 	InputBytes    []byte
@@ -25,70 +49,63 @@ type Fetch struct {
 	OutputIndex   int
 }
 
-func NewTFModel(exportDir string, tags []string, options ...Options) *TFModel {
-	model := TFModel{exportDir, tags, nil, nil}
-	for _, o := range options {
-		o(model.options)
+func New(opts ...Options) (TF, error) {
+	t := new(tensorflow)
+	for _, opt := range append(defaultOpts, opts...) {
+		opt(t)
 	}
-	return &model
-}
 
-func WithOptions(options *tf.SessionOptions) Options {
-	return func(ops *tf.SessionOptions) {
-		options = ops
-	}
-}
-
-func (tfModel *TFModel) LoadModel() error {
-	model, err := tf.LoadSavedModel(tfModel.exportDir, tfModel.tags, tfModel.options)
-	if err != nil {
-		return err
-	}
-	tfModel.model = model
-	return nil
-}
-
-func (tfModel *TFModel) Close() {
-	tfModel.model.Session.Close()
-}
-
-func (tfModel TFModel) GetVector(feeds []Feed, fetches []Fetch, targets []*tf.Operation) ([][][]float64, error) {
-	getFeeds := func(feeds []Feed) (map[tf.Output]*tf.Tensor, error) {
-		result := map[tf.Output]*tf.Tensor{}
-
-		for _, feed := range feeds {
-			inputTensor, err := tf.NewTensor([]string{string(feed.InputBytes)})
-			if err != nil {
-				return nil, err
-			}
-			result[tfModel.model.Graph.Operation(feed.OperationName).Output(feed.OutputIndex)] = inputTensor
+	if t.options == nil && (len(t.sessionTarget) != 0 || t.sessionConfig != nil) {
+		t.options = &tf.SessionOptions{
+			Target: t.sessionTarget,
+			Config: t.sessionConfig,
 		}
-
-		return result, nil
 	}
 
-	input, err := getFeeds(feeds)
+	model, err := tf.LoadSavedModel(t.exportDir, t.tags, t.options)
 	if err != nil {
 		return nil, err
 	}
+	t.graph = model.Graph
+	t.session = model.Session
+	return t, nil
+}
 
-	output := []tf.Output{}
+func (t *tensorflow) Close() error {
+	return t.session.Close()
+}
+
+func (t tensorflow) GetVector(feeds []Feed, fetches []Fetch, targets ...*tf.Operation) (values [][][]float64, err error) {
+	input := make(map[tf.Output]*tf.Tensor, len(feeds))
+	for _, feed := range feeds {
+		inputTensor, err := tf.NewTensor([]string{string(feed.InputBytes)})
+		if err != nil {
+			return nil, err
+		}
+		input[t.graph.Operation(feed.OperationName).Output(feed.OutputIndex)] = inputTensor
+	}
+
+	output := make([]tf.Output, 0, len(fetches))
 	for _, fetch := range fetches {
-		output = append(output, tfModel.model.Graph.Operation(fetch.OperationName).Output(fetch.OutputIndex))
+		output = append(output, t.graph.Operation(fetch.OperationName).Output(fetch.OutputIndex))
 	}
 
-	result, err := tfModel.model.Session.Run(input, output, targets)
+	if targets == nil {
+		targets = t.operations
+	}
+
+	results, err := t.session.Run(input, output, targets)
 	if err != nil {
 		return nil, err
 	}
 
-	values := [][][]float64{}
-	for i := range result {
-		value, ok := result[i].Value().([][]float64)
+	values = make([][][]float64, 0, len(results))
+	for _, result := range results {
+		value, ok := result.Value().([][]float64)
 		if ok {
 			values = append(values, value)
 		} else {
-			return nil, errors.New("cast error")
+			return nil, errors.ErrFailedToCastTF(result.Value())
 		}
 	}
 	return values, nil
