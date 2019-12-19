@@ -12,7 +12,7 @@ jobs:
     - name: Checkout PR branch
       uses: actions/checkout@master
       with:
-        ref: ${{ github.head.ref }}
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Add labels 
       run: |
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
