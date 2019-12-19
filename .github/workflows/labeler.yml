@@ -31,10 +31,10 @@ jobs:
         send_labels=()
 
         git fetch origin master
-        git log HEAD
-        echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-        git diff --stat FETCH_HEAD..HEAD
+        git checkout -b master origin/master
+        git checkout ci/pr_auto_labeling
 
+        git diff --stat master..HEAD
         git branch -a
 
         echo "branch name: " $branch_name
