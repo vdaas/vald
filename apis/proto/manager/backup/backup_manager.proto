@@ -27,7 +27,7 @@ import "payload.proto";
 import "google/api/annotations.proto";
 import "pb/gql.proto";
 
-service Backup {
+service Compress {
   option (gql.svc_type) = QUERY;
 
   rpc GetVector(payload.Backup.GetVector.Request) returns (payload.Backup.MetaVector) {
@@ -47,6 +47,63 @@ service Backup {
   }
 
   rpc RegisterMulti(payload.Backup.MetaVectors) returns (payload.Empty) {
+    option (google.api.http) = {
+      post : "/register/multi"
+      body : "*"
+    };
+    option (gql.rpc_type) = MUTATION;
+  }
+
+  rpc Remove(payload.Backup.Remove.Request) returns (payload.Empty) {
+    option (google.api.http).delete = "/delete/{uuid}";
+    option (gql.rpc_type) = MUTATION;
+  }
+
+  rpc RemoveMulti(payload.Backup.Remove.RequestMulti) returns (payload.Empty) {
+    option (google.api.http) = {
+      post : "/delete/multi"
+      body : "*"
+    };
+    option (gql.rpc_type) = MUTATION;
+  }
+
+  rpc RegisterIPs(payload.Backup.IP.Register.Request) returns (payload.Empty) {
+    option (google.api.http) = {
+      post : "/ip"
+      body : "*"
+    };
+    option (gql.rpc_type) = MUTATION;
+  }
+
+  rpc RemoveIPs(payload.Backup.IP.Remove.Request) returns (payload.Empty) {
+    option (google.api.http) = {
+      post : "/ip/delete"
+      body : "*"
+    };
+    option (gql.rpc_type) = MUTATION;
+  }
+}
+
+service Backup {
+  option (gql.svc_type) = QUERY;
+
+  rpc GetVector(payload.Backup.GetVector.Request) returns (payload.Backup.Compressed.MetaVector) {
+    option (google.api.http).get = "/vector/{uuid}";
+  }
+
+  rpc Locations(payload.Backup.Locations.Request) returns (payload.Info.IPs) {
+    option (google.api.http).get = "/locations/{uuid}";
+  }
+
+  rpc Register(payload.Backup.Compressed.MetaVector) returns (payload.Empty) {
+    option (google.api.http) = {
+      post : "/register"
+      body : "*"
+    };
+    option (gql.rpc_type) = MUTATION;
+  }
+
+  rpc RegisterMulti(payload.Backup.Compressed.MetaVectors) returns (payload.Empty) {
     option (google.api.http) = {
       post : "/register/multi"
       body : "*"

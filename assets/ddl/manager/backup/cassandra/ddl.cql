@@ -18,7 +18,7 @@ CREATE KEYSPACE IF NOT EXISTS vald WITH replication = {'class': 'SimpleStrategy'
 
 CREATE TABLE vald.meta_vector (
   uuid   text,
-  vector list<double>,
+  vector blob,
   meta   text,
   ips    list<text>,
   PRIMARY KEY (uuid)

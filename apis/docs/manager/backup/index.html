@@ -185,6 +185,10 @@
                   <a href="#backup_manager.Backup"><span class="badge">S</span>Backup</a>
                 </li>
               
+                <li>
+                  <a href="#backup_manager.Compress"><span class="badge">S</span>Compress</a>
+                </li>
+              
             </ul>
           </li>
         
@@ -207,6 +211,172 @@
 
       
         <h3 id="backup_manager.Backup">Backup</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Method Name</td><td>Request Type</td><td>Response Type</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>GetVector</td>
+                <td><a href="#payload.Backup.GetVector.Request">.payload.Backup.GetVector.Request</a></td>
+                <td><a href="#payload.Backup.Compressed.MetaVector">.payload.Backup.Compressed.MetaVector</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>Locations</td>
+                <td><a href="#payload.Backup.Locations.Request">.payload.Backup.Locations.Request</a></td>
+                <td><a href="#payload.Info.IPs">.payload.Info.IPs</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>Register</td>
+                <td><a href="#payload.Backup.Compressed.MetaVector">.payload.Backup.Compressed.MetaVector</a></td>
+                <td><a href="#payload.Empty">.payload.Empty</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>RegisterMulti</td>
+                <td><a href="#payload.Backup.Compressed.MetaVectors">.payload.Backup.Compressed.MetaVectors</a></td>
+                <td><a href="#payload.Empty">.payload.Empty</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>Remove</td>
+                <td><a href="#payload.Backup.Remove.Request">.payload.Backup.Remove.Request</a></td>
+                <td><a href="#payload.Empty">.payload.Empty</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>RemoveMulti</td>
+                <td><a href="#payload.Backup.Remove.RequestMulti">.payload.Backup.Remove.RequestMulti</a></td>
+                <td><a href="#payload.Empty">.payload.Empty</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>RegisterIPs</td>
+                <td><a href="#payload.Backup.IP.Register.Request">.payload.Backup.IP.Register.Request</a></td>
+                <td><a href="#payload.Empty">.payload.Empty</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>RemoveIPs</td>
+                <td><a href="#payload.Backup.IP.Remove.Request">.payload.Backup.IP.Remove.Request</a></td>
+                <td><a href="#payload.Empty">.payload.Empty</a></td>
+                <td><p></p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+
+        
+          
+          
+          <h4>Methods with HTTP bindings</h4>
+          <table>
+            <thead>
+              <tr>
+                <td>Method Name</td>
+                <td>Method</td>
+                <td>Pattern</td>
+                <td>Body</td>
+              </tr>
+            </thead>
+            <tbody>
+            
+              
+              
+              <tr>
+                <td>GetVector</td>
+                <td>GET</td>
+                <td>/vector/{uuid}</td>
+                <td></td>
+              </tr>
+              
+            
+              
+              
+              <tr>
+                <td>Locations</td>
+                <td>GET</td>
+                <td>/locations/{uuid}</td>
+                <td></td>
+              </tr>
+              
+            
+              
+              
+              <tr>
+                <td>Register</td>
+                <td>POST</td>
+                <td>/register</td>
+                <td>*</td>
+              </tr>
+              
+            
+              
+              
+              <tr>
+                <td>RegisterMulti</td>
+                <td>POST</td>
+                <td>/register/multi</td>
+                <td>*</td>
+              </tr>
+              
+            
+              
+              
+              <tr>
+                <td>Remove</td>
+                <td>DELETE</td>
+                <td>/delete/{uuid}</td>
+                <td></td>
+              </tr>
+              
+            
+              
+              
+              <tr>
+                <td>RemoveMulti</td>
+                <td>POST</td>
+                <td>/delete/multi</td>
+                <td>*</td>
+              </tr>
+              
+            
+              
+              
+              <tr>
+                <td>RegisterIPs</td>
+                <td>POST</td>
+                <td>/ip</td>
+                <td>*</td>
+              </tr>
+              
+            
+              
+              
+              <tr>
+                <td>RemoveIPs</td>
+                <td>POST</td>
+                <td>/ip/delete</td>
+                <td>*</td>
+              </tr>
+              
+            
+            </tbody>
+          </table>
+          
+        
+        <h3 id="backup_manager.Compress">Compress</h3>
         <p></p>
         <table class="enum-table">
           <thead>

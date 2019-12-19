@@ -17,30 +17,14 @@
 // Package grpc provides grpc server logic
 package model
 
-import (
-	"fmt"
-	"strings"
-)
-
-const (
-	comma = ","
-)
-
 type MetaVector struct {
 	UUID   string
-	Vector []float64
+	Vector []byte
 	Meta   string
 	IPs    []string
 }
 
-func (m *MetaVector) GetUUID() string               { return m.UUID }
-func (m *MetaVector) GetVector() ([]float64, error) { return m.Vector, nil }
-func (m *MetaVector) GetVectorString() string {
-	ss := make([]string, 0, len(m.Vector))
-	for _, f := range m.Vector {
-		ss = append(ss, fmt.Sprint(f))
-	}
-	return strings.Join(ss, comma)
-}
-func (m *MetaVector) GetMeta() string  { return m.Meta }
-func (m *MetaVector) GetIPs() []string { return m.IPs }
+func (m *MetaVector) GetUUID() string   { return m.UUID }
+func (m *MetaVector) GetVector() []byte { return m.Vector }
+func (m *MetaVector) GetMeta() string   { return m.Meta }
+func (m *MetaVector) GetIPs() []string  { return m.IPs }
