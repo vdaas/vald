@@ -40,9 +40,27 @@ jobs:
           fi
         done
 
+        # +++++++++++++++++++++TEST+++++++++++++++++++++
         git diff --stat origin/master..ci/pr_auto_labeling
-        echo "--no-merges"
+        echo ".., --no-merges"
         git diff --stat origin/master..ci/pr_auto_labeling --no-merges
+        echo "..."
+        git diff --stat origin/master...ci/pr_auto_labeling
+        echo "..., --no-merges"
+        git diff --stat origin/master...ci/pr_auto_labeling --no-merges
+        
+        echo "swap"
+        git diff --stat ci/pr_auto_labeling...origin/master
+        
+        echo "swap --no-merges"
+        git diff --stat ci/pr_auto_labeling...origin/master --no-merges
+
+        echo "swap"
+        git diff --stat ci/pr_auto_labeling..origin/master
+        
+        echo "swap --no-merges"
+        git diff --stat ci/pr_auto_labeling..origin/master --no-merges
+        # +++++++++++++++++++++TEST+++++++++++++++++++++
 
         size=0
         # diff=`git diff --shortstat origin/master..ci/pr_auto_labeling --no-merges ':!./*\.yaml' ':!./*\.yml' ':!./*\.svg' ':!apis'`
