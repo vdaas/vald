@@ -30,7 +30,7 @@ jobs:
         )
         send_labels=()
 
-        git fetch origin master
+        # git fetch origin master
         git checkout -b master origin/master
         git checkout ci/pr_auto_labeling
 
