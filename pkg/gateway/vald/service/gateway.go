@@ -79,12 +79,10 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	discover := g.discover
 	if err != nil {
 		g.dscClient.Close()
-		log.Error(err)
 		discover = g.discoverByDNS
 	}
 	_, err = discover(ctx, ech)
 	if err != nil {
-		log.Error(err)
 		g.dscClient.Close()
 		discover = g.discoverByDNS
 		_, err = discover(ctx, ech)
@@ -168,6 +166,8 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 					return finalize()
 				case ech <- err:
 				}
+			}else{
+				log.Debug(g.acClient.GetAddrs())
 			}
 		}
 	}))

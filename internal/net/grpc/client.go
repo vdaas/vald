@@ -53,6 +53,7 @@ type Client interface {
 	Do(ctx context.Context,
 		addr string, f func(conn *grpc.ClientConn,
 			copts ...grpc.CallOption) (interface{}, error)) (interface{}, error)
+	GetAddrs() ([]string, []string)
 	GetDialOption() []grpc.DialOption
 	GetCallOption() []grpc.CallOption
 	Close() error
@@ -276,4 +277,18 @@ func (g *gRPCClient) Close() error {
 		return true
 	})
 	return nil
+}
+
+func (g *gRPCClient) GetAddrs() (connected []string, disconnected []string) {
+	g.conns.Range(func(addr string, conn *grpc.ClientConn) bool {
+		if conn == nil ||
+			conn.GetState() == connectivity.Shutdown ||
+			conn.GetState() == connectivity.TransientFailure {
+			disconnected = append(disconnected, addr)
+		} else {
+			connected = append(connected, addr)
+		}
+		return true
+	})
+	return
 }
