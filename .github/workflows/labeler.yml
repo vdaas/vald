@@ -31,7 +31,7 @@ jobs:
         send_labels=()
 
         git fetch origin master
-        git diff --stat origin/master...ci/pr_auto_labeling
+        git diff --stat origin/master...HEAD
 
         echo "branch name: " $branch_name
         for label in ${type_labels[@]}
