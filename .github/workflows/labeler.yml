@@ -43,7 +43,7 @@ jobs:
 
         size=0
         # diff=`git diff --shortstat origin/master..ci/pr_auto_labeling --no-merges ':!./*\.yaml' ':!./*\.yml' ':!./*\.svg' ':!apis'`
-        diff=`git diff --shortstat origin/master..${branch_name} --no-merges`
+        diff=`git diff --shortstat origin/master..${branch_name} --no-merges ':!./*\.yaml' ':!./*\.yml' ':!./*\.svg' ':!./apis/*'`
         if [ -n "$diff" ]; then
           size=`echo $diff | awk '{print $4+$6}'`
         fi
