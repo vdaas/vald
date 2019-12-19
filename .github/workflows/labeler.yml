@@ -31,11 +31,9 @@ jobs:
         send_labels=()
 
         git fetch origin master
-        git log master
-        echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         git log HEAD
         echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-        git diff master..HEAD
+        git diff --stat origin/master..HEAD
 
         git branch -a
 
