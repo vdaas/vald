@@ -25,7 +25,6 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/runner"
-	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/config"
@@ -105,21 +104,8 @@ func (r *run) PreStart(ctx context.Context) error {
 	return nil
 }
 
-func (r *run) Start(ctx context.Context) <-chan error {
-	ech := make(chan error, 2)
-	r.eg.Go(safety.RecoverFunc(func() error {
-		log.Info("daemon start")
-		defer close(ech)
-		sech := r.server.ListenAndServe(ctx)
-		for {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case ech <- <-sech:
-			}
-		}
-	}))
-	return ech
+func (r *run) Start(ctx context.Context) (<-chan error, error) {
+	return r.server.ListenAndServe(ctx), nil
 }
 
 func (r *run) PreStop(ctx context.Context) error {

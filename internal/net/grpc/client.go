@@ -20,6 +20,7 @@ package grpc
 import (
 	"context"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/vdaas/vald/internal/backoff"
@@ -37,7 +38,7 @@ type CallOption = grpc.CallOption
 type DialOption = grpc.DialOption
 
 type Client interface {
-	StartConnectionMonitor(ctx context.Context) <-chan error
+	StartConnectionMonitor(ctx context.Context) (<-chan error, error)
 	Connect(ctx context.Context, addr string) error
 	Disconnect(addr string) error
 	Range(ctx context.Context,
@@ -52,6 +53,7 @@ type Client interface {
 	Do(ctx context.Context,
 		addr string, f func(conn *grpc.ClientConn,
 			copts ...grpc.CallOption) (interface{}, error)) (interface{}, error)
+	GetAddrs() ([]string, []string)
 	GetDialOption() []grpc.DialOption
 	GetCallOption() []grpc.CallOption
 	Close() error
@@ -77,9 +79,9 @@ func New(opts ...Option) (c Client) {
 	return g
 }
 
-func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
+func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, error) {
 	if g.addrs == nil || len(g.addrs) == 0 {
-		return nil
+		return nil, errors.ErrGRPCTargetAddrNotFound
 	}
 
 	ech := make(chan error, len(g.addrs))
@@ -100,7 +102,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 	}
 
 	if conns == 0 {
-		return ech
+		return nil, errors.ErrGRPCClientConnNotFound(strings.Join(g.addrs, ",\t"))
 	}
 
 	g.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -140,7 +142,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) <-chan error {
 			}
 		}
 	}))
-	return ech
+	return ech, nil
 }
 
 func (g *gRPCClient) Range(ctx context.Context,
@@ -275,4 +277,18 @@ func (g *gRPCClient) Close() error {
 		return true
 	})
 	return nil
+}
+
+func (g *gRPCClient) GetAddrs() (connected []string, disconnected []string) {
+	g.conns.Range(func(addr string, conn *grpc.ClientConn) bool {
+		if conn == nil ||
+			conn.GetState() == connectivity.Shutdown ||
+			conn.GetState() == connectivity.TransientFailure {
+			disconnected = append(disconnected, addr)
+		} else {
+			connected = append(connected, addr)
+		}
+		return true
+	})
+	return
 }

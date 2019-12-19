@@ -18,6 +18,10 @@
 package errors
 
 var (
+	ErrDaemonStartFailed = func(err error) error {
+		return Wrap(err, "failed to start daemon")
+	}
+
 	ErrDaemonStopFailed = func(err error) error {
 		return Wrap(err, "failed to stop daemon")
 	}

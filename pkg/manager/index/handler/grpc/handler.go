@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/apis/grpc/vald"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
@@ -64,28 +65,21 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (*payload.
 }
 
 func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
-	return s.search(ctx, req.GetConfig(), func(ctx context.Context, ac agent.AgentClient) (*payload.Search_Response, error) {
-		return ac.Search(ctx, req)
-	})
+	return s.search(ctx, req.GetConfig(),
+		func(ctx context.Context, ac agent.AgentClient) (*payload.Search_Response, error) {
+			return ac.Search(ctx, req)
+		})
 }
 
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (
 	res *payload.Search_Response, err error) {
-	meta := req.GetId()
-	uuid, err := s.metadata.GetUUID(ctx, meta)
+	req.Id, err = s.metadata.GetUUID(ctx, req.GetId())
 	if err != nil {
+		log.Errorf("error at SearchByID\t%v", err)
 		return nil, err
 	}
-	req.Id = uuid
 	return s.search(ctx, req.GetConfig(),
 		func(ctx context.Context, ac agent.AgentClient) (*payload.Search_Response, error) {
-			// TODO rewrite ObjectID
-			meta := req.GetId()
-			uuid, err := s.metadata.GetUUID(ctx, meta)
-			if err != nil {
-				return nil, err
-			}
-			req.Id = uuid
 			return ac.SearchByID(ctx, req)
 		})
 }
@@ -95,7 +89,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	res *payload.Search_Response, err error) {
 	maxDist := uint32(math.MaxUint32)
 	num := int(cfg.GetNum())
-
+	res = new(payload.Search_Response)
 	res.Results = make([]*payload.Object_Distance, 0, s.gateway.GetAgentCount()*num)
 	dch := make(chan *payload.Object_Distance, cap(res.GetResults())/2)
 	eg, ectx := errgroup.New(ctx)
@@ -110,10 +104,13 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 
 	eg.Go(safety.RecoverFunc(func() error {
 		defer cancel()
-		cl := new(checkList)
+		// cl := new(checkList)
+		visited := make(map[string]bool, len(res.Results))
+		mu := sync.RWMutex{}
 		return s.gateway.BroadCast(ectx, func(ctx context.Context, target string, ac agent.AgentClient) error {
 			r, err := f(ctx, ac)
 			if err != nil {
+				log.Error(err)
 				return err
 			}
 			for _, dist := range r.GetResults() {
@@ -121,10 +118,20 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					return nil
 				}
 				id := dist.GetId()
-				if !cl.Exists(id) {
+				mu.RLock()
+				if !visited[id] {
+					mu.RUnlock()
+					mu.Lock()
+					visited[id] = true
+					mu.Unlock()
 					dch <- dist
-					cl.Check(id)
+				} else {
+					mu.RUnlock()
 				}
+				// if !cl.Exists(id) {
+				// 	dch <- dist
+				// 	cl.Check(id)
+				// }
 			}
 			return nil
 		})
@@ -133,6 +140,9 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 		select {
 		case <-ectx.Done():
 			err = eg.Wait()
+			if err != nil {
+				log.Error(err)
+			}
 			close(dch)
 			if len(res.GetResults()) > num && num != 0 {
 				res.Results = res.Results[:num]
@@ -142,41 +152,62 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				uuids = append(uuids, r.GetId())
 			}
 			if s.metadata != nil {
-				metas, err := s.metadata.GetMetas(ctx, uuids...)
-				if err == nil {
-					for i, k := range metas {
+				metas, merr := s.metadata.GetMetas(ctx, uuids...)
+				if merr != nil {
+					log.Error(merr)
+					err = errors.Wrap(err, merr.Error())
+				}
+				for i, k := range metas {
+					if len(k) != 0 {
 						res.Results[i].Id = k
 					}
 				}
 			}
 			if s.filter != nil {
-				r, err := s.filter.FilterSearch(ctx, res)
-				if err != nil {
-					return res, err
+				r, ferr := s.filter.FilterSearch(ctx, res)
+				if ferr == nil {
+					res = r
+				} else {
+					err = errors.Wrap(err, ferr.Error())
 				}
-				res = r
 			}
 			return res, err
 		case dist := <-dch:
-			pos := len(res.GetResults())
-			if pos >= num &&
+			if len(res.GetResults()) >= num &&
 				dist.GetDistance() < math.Float32frombits(atomic.LoadUint32(&maxDist)) {
 				atomic.StoreUint32(&maxDist, math.Float32bits(dist.GetDistance()))
 			}
-			for idx := pos; idx >= 0; idx-- {
-				if res.GetResults()[idx].GetDistance() > dist.GetDistance() {
-					pos = idx
+			switch len(res.GetResults()) {
+			case 0:
+				res.Results = append(res.Results, dist)
+				continue
+			case 1:
+				if res.GetResults()[0].GetDistance() <= dist.GetDistance() {
+					res.Results = append(res.Results, dist)
+				} else {
+					res.Results = append([]*payload.Object_Distance{dist}, res.Results[0])
+				}
+				continue
+			}
+
+			pos := len(res.GetResults())
+			for idx := pos; idx >= 1; idx-- {
+				if res.GetResults()[idx-1].GetDistance() <= dist.GetDistance() {
+					pos = idx - 1
 					break
 				}
 			}
-			if pos != 0 {
-				res.Results = append(res.GetResults()[:pos+1], res.GetResults()[pos:]...)
-				if len(res.GetResults()) > num && num != 0 {
-					res.Results = res.GetResults()[:num]
-				}
-			}
-			if pos <= num {
+			switch {
+			case pos == 0:
+				res.Results = append([]*payload.Object_Distance{dist}, res.Results...)
+			case pos == len(res.GetResults()):
+				res.Results = append(res.GetResults(), dist)
+			case pos > 0:
+				res.Results = append(res.GetResults()[:pos], res.GetResults()[pos-1:]...)
 				res.Results[pos] = dist
+			}
+			if len(res.GetResults()) > num && num != 0 {
+				res.Results = res.GetResults()[:num]
 			}
 		}
 	}
@@ -199,9 +230,13 @@ func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error
 }
 
 func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *payload.Empty, err error) {
-	log.Debug(vec)
-	uuid := fuid.String()
 	meta := vec.GetId()
+	uuid, err := s.metadata.GetUUID(ctx, meta)
+	if err == nil || len(uuid) != 0 {
+		return nil, errors.ErrMetaDataAlreadyExists(meta, uuid)
+	}
+
+	uuid = fuid.String()
 	err = s.metadata.SetUUIDandMeta(ctx, uuid, meta)
 	if err != nil {
 		log.Error(err)
@@ -251,14 +286,29 @@ func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
 
 func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
 	metaMap := make(map[string]string)
+	metas := make([]string, 0, len(vecs.GetVectors()))
 	for i, vec := range vecs.GetVectors() {
 		uuid := fuid.String()
-		metaMap[uuid] = vec.GetId()
+		meta := vec.GetId()
+		metaMap[uuid] = meta
+		metas = append(metas, meta)
 		vecs.Vectors[i].Id = uuid
 	}
+
+	uuids, err := s.metadata.GetMetas(ctx, metas...)
+	for i, meta := range metas {
+		if len(uuids) > i && len(uuids[i]) != 0 {
+			err = errors.Wrap(err, errors.ErrMetaDataAlreadyExists(meta, uuids[i]).Error())
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
 	mu := new(sync.Mutex)
 	targets := make([]string, 0, s.replica)
-	err = s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, ac agent.AgentClient) (err error) {
+	gerr := s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, ac agent.AgentClient) (err error) {
 		_, err = ac.MultiInsert(ctx, vecs)
 		if err != nil {
 			return err
@@ -269,9 +319,10 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		mu.Unlock()
 		return nil
 	})
-	if err != nil {
-		return nil, err
+	if gerr != nil {
+		return nil, errors.Wrap(gerr, err.Error())
 	}
+
 	err = s.metadata.SetUUIDandMetas(ctx, metaMap)
 	if err != nil {
 		return nil, err
