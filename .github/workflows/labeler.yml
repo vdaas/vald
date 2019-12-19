@@ -9,10 +9,11 @@ jobs:
     - uses: actions/labeler@v2
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
-    - uses: actions/checkout@master
+    - name: Checkout PR branch
+      uses: actions/checkout@master
       with:
-        ref: ${{ github.ref }}
-    - name: add labels to the PR
+        ref: ${{ github.head.ref }}
+    - name: Add labels 
       run: |
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
         branch_name=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.head.ref"`
@@ -49,6 +50,7 @@ jobs:
           send_labels+=(\"size/L\")
         fi
 
+        git branch
         git diff
 
         if [ ${#send_labels[@]} -gt 0 ]; then
