@@ -9,10 +9,6 @@ jobs:
     - uses: actions/labeler@v2
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
-    - name: Checkout Master branch
-      uses: actions/checkout@v2
-      with:
-        ref: master
     - name: Checkout PR branch
       uses: actions/checkout@v2
       with:
@@ -34,6 +30,7 @@ jobs:
         )
         send_labels=()
 
+        git fetch
         git branch -a
 
         echo "branch name: " $branch_name
