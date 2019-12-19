@@ -175,6 +175,7 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (g *gateway) discoverByDNS(ctx context.Context, ech chan<- error) (ret interface{}, err error) {
+	log.Info("starting dns discovery")
 	ips, err := net.LookupIP(g.agentARecord)
 	if err != nil {
 		ech <- err
@@ -182,7 +183,6 @@ func (g *gateway) discoverByDNS(ctx context.Context, ech chan<- error) (ret inte
 	}
 
 	if len(ips) == 0 {
-		ech <- errors.ErrAgentAddrCouldNotDiscover
 		return nil, errors.ErrAgentAddrCouldNotDiscover
 	}
 
@@ -225,11 +225,12 @@ func (g *gateway) discoverByDNS(ctx context.Context, ech chan<- error) (ret inte
 			}
 		}
 	}
-
+	log.Info("finished dns discovery")
 	return nil, nil
 }
 
 func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface{}, err error) {
+	log.Info("starting discoverer discovery")
 	var res *payload.Info_Servers
 	_, err = g.dscClient.Do(ctx, g.dscAddr,
 		func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
@@ -300,6 +301,7 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface
 			}
 		}
 	}
+	log.Info("starting discoverer discovery")
 	return nil, nil
 }
 
