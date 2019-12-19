@@ -27,7 +27,7 @@ import (
 )
 
 type Meta interface {
-	Start(ctx context.Context) <-chan error
+	Start(ctx context.Context) (<-chan error, error)
 	GetMeta(context.Context, string) (string, error)
 	GetMetas(context.Context, ...string) ([]string, error)
 	GetUUID(context.Context, string) (string, error)
@@ -56,12 +56,8 @@ func NewMeta(opts ...MetaOption) (mi Meta, err error) {
 	return m, nil
 }
 
-func (m *meta) Start(ctx context.Context) <-chan error {
-	ech, err := m.client.StartConnectionMonitor(ctx)
-	if err != nil{
-		return nil
-	}
-	return ech
+func (m *meta) Start(ctx context.Context) (<-chan error, error) {
+	return m.client.StartConnectionMonitor(ctx)
 }
 
 func (m *meta) GetMeta(ctx context.Context, uuid string) (v string, err error) {

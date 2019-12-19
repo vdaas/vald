@@ -34,7 +34,7 @@ import (
 
 type Runner interface {
 	PreStart(ctx context.Context) error
-	Start(ctx context.Context) <-chan error
+	Start(ctx context.Context) (<-chan error, error)
 	PreStop(ctx context.Context) error
 	Stop(ctx context.Context) error
 	PostStop(ctx context.Context) error
@@ -110,7 +110,10 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 		return err
 	}
 
-	ech := run.Start(rctx)
+	ech, err := run.Start(rctx)
+	if err != nil {
+		return errors.ErrDaemonStartFailed(err)
+	}
 
 	emap := make(map[string]int)
 	errs := make([]error, 0, 10)

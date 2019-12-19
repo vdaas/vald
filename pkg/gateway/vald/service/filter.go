@@ -27,7 +27,7 @@ import (
 )
 
 type Filter interface {
-	Start(ctx context.Context) <-chan error
+	Start(ctx context.Context) (<-chan error, error)
 	FilterSearch(context.Context, *payload.Search_Response) (*payload.Search_Response, error)
 }
 
@@ -46,12 +46,8 @@ func NewFilter(opts ...FilterOption) (ef Filter, err error) {
 	return f, nil
 }
 
-func (f *filter) Start(ctx context.Context) <-chan error {
-	ech, err := f.client.StartConnectionMonitor(ctx)
-	if err != nil{
-		return nil
-	}
-	return ech
+func (f *filter) Start(ctx context.Context) (<-chan error, error) {
+	return f.client.StartConnectionMonitor(ctx)
 }
 
 func (f *filter) FilterSearch(ctx context.Context, res *payload.Search_Response) (*payload.Search_Response, error) {

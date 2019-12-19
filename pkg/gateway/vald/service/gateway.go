@@ -39,7 +39,7 @@ import (
 )
 
 type Gateway interface {
-	Start(ctx context.Context) <-chan error
+	Start(ctx context.Context) (<-chan error, error)
 	GetAgentCount() int
 	Do(ctx context.Context,
 		f func(ctx context.Context, tgt string, ac agent.AgentClient) error) error
@@ -73,25 +73,25 @@ func NewGateway(opts ...GWOption) (gw Gateway, err error) {
 	return g, nil
 }
 
-func (g *gateway) Start(ctx context.Context) <-chan error {
+func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 10)
 	dech, err := g.dscClient.StartConnectionMonitor(ctx)
 	discover := g.discover
 	if err != nil {
 		g.dscClient.Close()
-		ech <- err
+		log.Error(err)
 		discover = g.discoverByDNS
 	}
 	_, err = discover(ctx, ech)
 	if err != nil {
+		log.Error(err)
 		g.dscClient.Close()
-		ech <- err
 		discover = g.discoverByDNS
 		_, err = discover(ctx, ech)
 		if err != nil {
 			log.Error(err)
-			ech <- err
-			return ech
+			close(ech)
+			return nil, err
 		}
 	}
 
@@ -113,8 +113,8 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 
 	aech, err := g.acClient.StartConnectionMonitor(ctx)
 	if err != nil {
-		ech <- err
-		return ech
+		close(ech)
+		return nil, err
 	}
 
 	g.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -171,7 +171,7 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 			}
 		}
 	}))
-	return ech
+	return ech, nil
 }
 
 func (g *gateway) discoverByDNS(ctx context.Context, ech chan<- error) (ret interface{}, err error) {

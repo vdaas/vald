@@ -27,7 +27,7 @@ import (
 )
 
 type Backup interface {
-	Start(ctx context.Context) <-chan error
+	Start(ctx context.Context) (<-chan error, error)
 	GetObject(ctx context.Context, uuid string) (*payload.Backup_MetaVector, error)
 	GetLocation(ctx context.Context, uuid string) ([]string, error)
 	Register(ctx context.Context, vec *payload.Backup_MetaVector) error
@@ -52,12 +52,8 @@ func NewBackup(opts ...BackupOption) (bu Backup, err error) {
 	return b, nil
 }
 
-func (b *backup) Start(ctx context.Context) <-chan error {
-	ech, err := b.client.StartConnectionMonitor(ctx)
-	if err != nil{
-		return nil
-	}
-	return ech
+func (b *backup) Start(ctx context.Context) (<-chan error, error){
+	return b.client.StartConnectionMonitor(ctx)
 }
 
 func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backup_MetaVector, err error) {
