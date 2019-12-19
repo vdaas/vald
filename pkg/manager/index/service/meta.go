@@ -57,13 +57,17 @@ func NewMeta(opts ...MetaOption) (mi Meta, err error) {
 }
 
 func (m *meta) Start(ctx context.Context) <-chan error {
-	return m.client.StartConnectionMonitor(ctx)
+	ech, err := m.client.StartConnectionMonitor(ctx)
+	if err != nil{
+		return nil
+	}
+	return ech
 }
 
-func (m *meta) GetMeta(ctx context.Context, key string) (v string, err error) {
+func (m *meta) GetMeta(ctx context.Context, uuid string) (v string, err error) {
 	val, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		val, err := gmeta.NewMetaClient(conn).GetMeta(ctx, &payload.Meta_Key{
-			Key: key,
+			Key: uuid,
 		}, copts...)
 		if err != nil {
 			return nil, err
@@ -76,26 +80,29 @@ func (m *meta) GetMeta(ctx context.Context, key string) (v string, err error) {
 	return val.(string), nil
 }
 
-func (m *meta) GetMetas(ctx context.Context, keys ...string) ([]string, error) {
+func (m *meta) GetMetas(ctx context.Context, uuids ...string) ([]string, error) {
 	vals, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		vals, err := gmeta.NewMetaClient(conn).GetMetas(ctx, &payload.Meta_Keys{
-			Keys: keys,
+			Keys: uuids,
 		}, copts...)
-		if err != nil {
-			return nil, err
+		if vals != nil {
+			return vals.GetVals(), err
 		}
-		return vals.GetVals(), nil
-	})
-	if err != nil {
 		return nil, err
+	})
+	if vals != nil {
+		vs, ok := vals.([]string)
+		if ok {
+			return vs, err
+		}
 	}
-	return vals.([]string), nil
+	return nil, err
 }
 
-func (m *meta) GetUUID(ctx context.Context, val string) (string, error) {
+func (m *meta) GetUUID(ctx context.Context, meta string) (string, error) {
 	key, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		key, err := gmeta.NewMetaClient(conn).GetMetaInverse(ctx, &payload.Meta_Val{
-			Val: val,
+			Val: meta,
 		}, copts...)
 		if err != nil {
 			return nil, err
@@ -108,27 +115,30 @@ func (m *meta) GetUUID(ctx context.Context, val string) (string, error) {
 	return key.(string), nil
 }
 
-func (m *meta) GetUUIDs(ctx context.Context, vals ...string) ([]string, error) {
+func (m *meta) GetUUIDs(ctx context.Context, metas ...string) ([]string, error) {
 	keys, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		keys, err := gmeta.NewMetaClient(conn).GetMetasInverse(ctx, &payload.Meta_Vals{
-			Vals: vals,
+			Vals: metas,
 		}, copts...)
-		if err != nil {
-			return nil, err
+		if keys != nil {
+			return keys.GetKeys(), err
 		}
-		return keys.GetKeys(), nil
-	})
-	if err != nil {
 		return nil, err
+	})
+	if keys != nil {
+		ks, ok := keys.([]string)
+		if ok {
+			return ks, err
+		}
 	}
-	return keys.([]string), nil
+	return nil, err
 }
 
-func (m *meta) SetUUIDandMeta(ctx context.Context, key, val string) (err error) {
+func (m *meta) SetUUIDandMeta(ctx context.Context, uuid, meta string) (err error) {
 	_, err = m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		_, err := gmeta.NewMetaClient(conn).SetMeta(ctx, &payload.Meta_KeyVal{
-			Key: key,
-			Val: val,
+			Key: uuid,
+			Val: meta,
 		}, copts...)
 
 		return nil, err
@@ -138,10 +148,10 @@ func (m *meta) SetUUIDandMeta(ctx context.Context, key, val string) (err error) 
 
 func (m *meta) SetUUIDandMetas(ctx context.Context, kvs map[string]string) (err error) {
 	data := make([]*payload.Meta_KeyVal, len(kvs))
-	for k, v := range kvs {
+	for uuid, meta := range kvs {
 		data = append(data, &payload.Meta_KeyVal{
-			Key: k,
-			Val: v,
+			Key: uuid,
+			Val: meta,
 		})
 	}
 	_, err = m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
@@ -154,10 +164,10 @@ func (m *meta) SetUUIDandMetas(ctx context.Context, kvs map[string]string) (err 
 	return
 }
 
-func (m *meta) DeleteMeta(ctx context.Context, key string) (v string, err error) {
+func (m *meta) DeleteMeta(ctx context.Context, uuid string) (v string, err error) {
 	val, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		val, err := gmeta.NewMetaClient(conn).DeleteMeta(ctx, &payload.Meta_Key{
-			Key: key,
+			Key: uuid,
 		}, copts...)
 		if err != nil {
 			return nil, err
@@ -170,10 +180,10 @@ func (m *meta) DeleteMeta(ctx context.Context, key string) (v string, err error)
 	return val.(string), nil
 }
 
-func (m *meta) DeleteMetas(ctx context.Context, keys ...string) ([]string, error) {
+func (m *meta) DeleteMetas(ctx context.Context, uuids ...string) ([]string, error) {
 	vals, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		vals, err := gmeta.NewMetaClient(conn).DeleteMetas(ctx, &payload.Meta_Keys{
-			Keys: keys,
+			Keys: uuids,
 		}, copts...)
 		if err != nil {
 			return nil, err
@@ -186,10 +196,10 @@ func (m *meta) DeleteMetas(ctx context.Context, keys ...string) ([]string, error
 	return vals.([]string), nil
 }
 
-func (m *meta) DeleteUUID(ctx context.Context, val string) (string, error) {
+func (m *meta) DeleteUUID(ctx context.Context, meta string) (string, error) {
 	key, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		key, err := gmeta.NewMetaClient(conn).DeleteMetaInverse(ctx, &payload.Meta_Val{
-			Val: val,
+			Val: meta,
 		}, copts...)
 		if err != nil {
 			return nil, err
@@ -202,10 +212,10 @@ func (m *meta) DeleteUUID(ctx context.Context, val string) (string, error) {
 	return key.(string), nil
 }
 
-func (m *meta) DeleteUUIDs(ctx context.Context, vals ...string) ([]string, error) {
+func (m *meta) DeleteUUIDs(ctx context.Context, metas ...string) ([]string, error) {
 	keys, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		keys, err := gmeta.NewMetaClient(conn).DeleteMetasInverse(ctx, &payload.Meta_Vals{
-			Vals: vals,
+			Vals: metas,
 		}, copts...)
 		if err != nil {
 			return nil, err

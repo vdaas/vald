@@ -47,7 +47,11 @@ func NewFilter(opts ...FilterOption) (ef Filter, err error) {
 }
 
 func (f *filter) Start(ctx context.Context) <-chan error {
-	return f.client.StartConnectionMonitor(ctx)
+	ech, err := f.client.StartConnectionMonitor(ctx)
+	if err != nil{
+		return nil
+	}
+	return ech
 }
 
 func (f *filter) FilterSearch(ctx context.Context, res *payload.Search_Response) (*payload.Search_Response, error) {

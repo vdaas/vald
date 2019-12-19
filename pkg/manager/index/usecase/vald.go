@@ -24,7 +24,6 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-	igrpc "github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -63,9 +62,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	backup, err = service.NewBackup(
 		service.WithBackupAddr(cfg.Gateway.BackupManager.Client.Addrs[0]),
 		service.WithBackupClient(
-			igrpc.New(
+			grpc.New(
 				append(cfg.Gateway.BackupManager.Client.Opts(),
-					igrpc.WithErrGroup(eg),
+					grpc.WithErrGroup(eg),
 				)...,
 			),
 		),
@@ -73,22 +72,17 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-	dscClient := igrpc.New(
+	dscClient := grpc.New(
 		append(cfg.Gateway.Discoverer.DiscoverClient.Opts(),
-			igrpc.WithErrGroup(eg),
+			grpc.WithErrGroup(eg),
 		)...,
 	)
 	agentOpts := cfg.Gateway.Discoverer.AgentClient.Opts()
-	agentClient := igrpc.New(
-		append(agentOpts,
-			igrpc.WithErrGroup(eg),
-		)...,
-	)
-
 	gateway, err = service.NewGateway(
 		service.WithErrGroup(eg),
 		service.WithAgentName(cfg.Gateway.AgentName),
 		service.WithAgentPort(cfg.Gateway.AgentPort),
+		service.WithAgentServiceDNSARecord(cfg.Gateway.AgentDNS),
 		service.WithDiscovererClient(dscClient),
 		service.WithDiscovererHostPort(
 			cfg.Gateway.Discoverer.Host,
@@ -97,7 +91,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
 		service.WithAgentOptions(agentOpts...),
 	)
-	agentClient.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -108,9 +101,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	metadata, err = service.NewMeta(
 		service.WithMetaAddr(cfg.Gateway.Meta.Client.Addrs[0]),
 		service.WithMetaClient(
-			igrpc.New(
+			grpc.New(
 				append(cfg.Gateway.Meta.Client.Opts(),
-					igrpc.WithErrGroup(eg),
+					grpc.WithErrGroup(eg),
 				)...,
 			),
 		),
@@ -126,9 +119,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		len(ef.Client.Addrs) != 0 {
 		filter, err = service.NewFilter(
 			service.WithFilterClient(
-				igrpc.New(
+				grpc.New(
 					append(ef.Client.Opts(),
-						igrpc.WithErrGroup(eg),
+						grpc.WithErrGroup(eg),
 					)...,
 				),
 			),
@@ -192,7 +185,7 @@ func (r *run) PreStart(ctx context.Context) error {
 }
 
 func (r *run) Start(ctx context.Context) <-chan error {
-	ech := make(chan error)
+	ech := make(chan error, 5)
 	var bech, fech, mech, gech, sech <-chan error
 	if r.backup != nil {
 		bech = r.backup.Start(ctx)
@@ -207,17 +200,24 @@ func (r *run) Start(ctx context.Context) <-chan error {
 		gech = r.gateway.Start(ctx)
 	}
 	sech = r.server.ListenAndServe(ctx)
-	r.eg.Go(safety.RecoverFunc(func() error {
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 		for {
 			select {
 			case <-ctx.Done():
 				return nil
-			case ech <- <-bech:
-			case ech <- <-fech:
-			case ech <- <-gech:
-			case ech <- <-mech:
-			case ech <- <-sech:
+			case err = <-bech:
+			case err = <-fech:
+			case err = <-gech:
+			case err = <-mech:
+			case err = <-sech:
+			}
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					return nil
+				case ech <- err:
+				}
 			}
 		}
 	}))

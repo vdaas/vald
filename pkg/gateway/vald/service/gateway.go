@@ -74,11 +74,14 @@ func NewGateway(opts ...GWOption) (gw Gateway, err error) {
 }
 
 func (g *gateway) Start(ctx context.Context) <-chan error {
-	ech := make(chan error, 3)
-	dech := g.dscClient.StartConnectionMonitor(ctx)
-
-	var err error
+	ech := make(chan error, 10)
+	dech, err := g.dscClient.StartConnectionMonitor(ctx)
 	discover := g.discover
+	if err != nil {
+		g.dscClient.Close()
+		ech <- err
+		discover = g.discoverByDNS
+	}
 	_, err = discover(ctx, ech)
 	if err != nil {
 		g.dscClient.Close()
@@ -88,7 +91,7 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 		if err != nil {
 			log.Error(err)
 			ech <- err
-			return nil
+			return ech
 		}
 	}
 
@@ -108,7 +111,11 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 		)...,
 	)
 
-	aech := g.acClient.StartConnectionMonitor(ctx)
+	aech, err := g.acClient.StartConnectionMonitor(ctx)
+	if err != nil {
+		ech <- err
+		return ech
+	}
 
 	g.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
@@ -116,36 +123,50 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 		defer close(fch)
 		dt := time.NewTicker(g.dscDur)
 		defer dt.Stop()
+		finalize := func() (err error) {
+			var errs error
+			err = g.dscClient.Close()
+			if err != nil {
+				errs = errors.Wrap(errs, err.Error())
+			}
+			err = g.acClient.Close()
+			if err != nil {
+				errs = errors.Wrap(errs, err.Error())
+			}
+			err = ctx.Err()
+			if err != nil && err != context.Canceled {
+				errs = errors.Wrap(errs, err.Error())
+			}
+			return errs
+		}
 		for {
 			select {
 			case <-ctx.Done():
-				var errs error
-				err = g.dscClient.Close()
-				if err != nil {
-					errs = errors.Wrap(errs, err.Error())
-				}
-				err = g.acClient.Close()
-				if err != nil {
-					errs = errors.Wrap(errs, err.Error())
-				}
-				err = ctx.Err()
-				if err != nil && err != context.Canceled {
-					errs = errors.Wrap(errs, err.Error())
-				}
-				return errs
-			case ech <- <-dech:
-			case ech <- <-aech:
+				return finalize()
+			case err = <-dech:
+			case err = <-aech:
 			case <-fch:
 				_, err = discover(ctx, ech)
 				if err != nil {
 					ech <- err
+					err = nil
 				}
 			case <-dt.C:
 				_, err = discover(ctx, ech)
 				if err != nil {
+					ech <- err
 					log.Error(err)
+					err = nil
 					time.Sleep(g.dscDur / 5)
 					fch <- struct{}{}
+				}
+			}
+			if err != nil {
+				log.Error(err)
+				select {
+				case <-ctx.Done():
+					return finalize()
+				case ech <- err:
 				}
 			}
 		}

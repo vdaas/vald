@@ -53,7 +53,11 @@ func NewBackup(opts ...BackupOption) (bu Backup, err error) {
 }
 
 func (b *backup) Start(ctx context.Context) <-chan error {
-	return b.client.StartConnectionMonitor(ctx)
+	ech, err := b.client.StartConnectionMonitor(ctx)
+	if err != nil{
+		return nil
+	}
+	return ech
 }
 
 func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backup_MetaVector, err error) {

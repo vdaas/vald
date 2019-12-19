@@ -57,7 +57,11 @@ func NewMeta(opts ...MetaOption) (mi Meta, err error) {
 }
 
 func (m *meta) Start(ctx context.Context) <-chan error {
-	return m.client.StartConnectionMonitor(ctx)
+	ech, err := m.client.StartConnectionMonitor(ctx)
+	if err != nil{
+		return nil
+	}
+	return ech
 }
 
 func (m *meta) GetMeta(ctx context.Context, uuid string) (v string, err error) {
