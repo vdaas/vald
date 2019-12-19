@@ -49,7 +49,7 @@ jobs:
         # diff=`git diff --shortstat origin/master..ci/pr_auto_labeling --no-merges ':!./*\.yaml' ':!./*\.yml' ':!./*\.svg' ':!apis'`
         diff=`git diff --shortstat origin/master...origin/ci/pr_auto_labeling --no-merges`
         if [ -n "$diff" ]; then
-          size=`echo $diff | awk '{print $4+6}'`
+          size=`echo $diff | awk '{print $4+$6}'`
         fi
 
         echo "pull request size: " $size
