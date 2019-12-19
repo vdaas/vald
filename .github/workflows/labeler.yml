@@ -33,6 +33,10 @@ jobs:
         git fetch origin master
         git checkout -b master origin/master
         git checkout ci/pr_auto_labeling
+        git rev-parse ci/pr_auto_labeling
+        git rev-parse HEAD
+
+
 
         git diff --stat master...HEAD
         git branch -a
