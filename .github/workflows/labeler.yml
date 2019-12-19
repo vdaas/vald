@@ -9,10 +9,10 @@ jobs:
     - uses: actions/labeler@v2
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
-    - name: add labels to the PR
-      uses: actions/checkout@master
+    - uses: actions/checkout@master
       with:
         ref: ${{ github.ref }}
+    - name: add labels to the PR
       run: |
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
         branch_name=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.head.ref"`
