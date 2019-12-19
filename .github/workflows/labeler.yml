@@ -33,6 +33,7 @@ jobs:
         git fetch origin master
         git checkout -b master origin/master
         git pull origin master
+        git checkout ci/pr_auto_labeling
 
         git diff --stat master...ci/pr_auto_labeling --no-merges
         git branch -a
