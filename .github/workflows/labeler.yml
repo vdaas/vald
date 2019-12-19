@@ -33,7 +33,7 @@ jobs:
         git fetch origin master
         git log HEAD
         echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-        git diff --stat origin/master..HEAD
+        git diff --stat FETCH_HEAD..HEAD
 
         git branch -a
 
