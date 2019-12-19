@@ -30,6 +30,8 @@ jobs:
         )
         send_labels=()
 
+        git branch -a
+
         echo "branch name: " $branch_name
         for label in ${type_labels[@]}
         do
