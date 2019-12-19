@@ -30,7 +30,7 @@ jobs:
         )
         send_labels=()
 
-        git fetch
+        git fetch origin master
         git branch -a
 
         echo "branch name: " $branch_name
