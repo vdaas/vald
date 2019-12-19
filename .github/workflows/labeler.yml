@@ -30,13 +30,7 @@ jobs:
         )
         send_labels=()
 
-        git branch -a
         git fetch origin master
-        git branch -a
-        git diff --shortstat origin/master...ci/pr_auto_labeling --no-merges
-        echo "aaaaa"
-        git diff --shortstat origin/master...ci/pr_auto_labeling
-        git diff --shortstat origin/master ci/pr_auto_labeling
 
         echo "branch name: " $branch_name
         for label in ${type_labels[@]}
@@ -48,7 +42,7 @@ jobs:
 
         size=0
         # diff=`git diff --shortstat origin/master..ci/pr_auto_labeling --no-merges ':!./*\.yaml' ':!./*\.yml' ':!./*\.svg' ':!apis'`
-        diff=`git diff --shortstat origin/master...origin/ci/pr_auto_labeling --no-merges`
+        diff=`git diff --shortstat origin/master...ci/pr_auto_labeling --no-merges`
         if [ -n "$diff" ]; then
           size=`echo $diff | awk '{print $4+$6}'`
         fi
