@@ -9,3 +9,62 @@ jobs:
     - uses: actions/labeler@v2
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
+    - name: Checkout PR branch
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.head_ref }}
+        fetch-depth: 0
+    - name: Add labels 
+      run: |
+        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+        branch_name=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.head.ref"`
+        type_labels=(
+            "type/test"
+            "type/bug"
+            "type/documentation"
+            "type/feature"
+            "type/refactoring"
+            "type/security"
+            "type/test"
+            "type/ci"
+            "type/dependency"
+        )
+        send_labels=()
+
+        git fetch origin master
+
+        echo "branch name: " $branch_name
+        for label in ${type_labels[@]}
+        do
+          if [ "${branch_name%%/*}" = "${label#type/}" ] ; then
+            send_labels+=(\"$label\")
+          fi
+        done
+
+        size=0
+        diff=`git diff --shortstat origin/master...${branch_name} ':!./*\.yaml' ':!./*\.yml' ':!./*\.svg' ':!./apis/*' ':!./design/*'`
+        if [ -n "$diff" ]; then
+          echo $diff
+          size=`echo $diff | awk '{print $4+$6}'`
+        fi
+
+        echo "pull request size: " $size
+
+        if [ $size -le 29 ]; then
+          send_labels+=(\"size/S\")
+        elif [ $size -le 99 ]; then
+          send_labels+=(\"size/M\")
+        else
+          send_labels+=(\"size/L\")
+        fi
+
+        if [ ${#send_labels[@]} -gt 0 ]; then
+          str="$(IFS=,; echo "${send_labels[*]}")"
+          data="{\"labels\": [$str]}"
+          echo "send data: " $data
+          curl --request POST \
+               --url https://api.github.com/repos/${{ github.repository }}/issues/${pr_num}/labels \
+               --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+               --header 'content-type: application/json' \
+               --data "$data"
+        fi
