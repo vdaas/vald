@@ -38,9 +38,13 @@ jobs:
           fi
         done
 
-        additions=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.additions"`
-        deletions=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.deletions"`
-        size=`expr ${additions} + ${deletions}`
+        size=0
+        diff=`git diff --shortstat origin/master..ci/pr_auto_labeling --no-merges ':!./*\.yaml' ':!./*\.yml' ':!./*\.svg' ':!apis'`
+        if [ -n "$diff" ]; then
+          size=`echo $diff | awk '{print $4+6}'`
+        fi
+
+        echo "pull request size: " $size
 
         if [ $size -le 29 ]; then
           send_labels+=(\"size/S\")
@@ -49,9 +53,6 @@ jobs:
         else
           send_labels+=(\"size/L\")
         fi
-
-        git branch
-        git diff
 
         if [ ${#send_labels[@]} -gt 0 ]; then
           str="$(IFS=,; echo "${send_labels[*]}")"
