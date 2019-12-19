@@ -32,7 +32,8 @@ jobs:
 
         # git checkout -b master origin/master
         # git diff --stat origin/master...HEAD
-        git diff --shortstat master...origin/ci/pr_auto_labeling
+        git branch -a
+        git diff --shortstat master...remotes/origin/ci/pr_auto_labeling
 
         echo "branch name: " $branch_name
         for label in ${type_labels[@]}
