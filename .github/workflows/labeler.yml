@@ -12,7 +12,7 @@ jobs:
     - name: Checkout PR branch
       uses: actions/checkout@master
       with:
-        ref: ci/pr_auto_labeling
+        ref: ${{ github.head_ref }}
     - name: Add labels 
       run: |
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
@@ -44,7 +44,9 @@ jobs:
         git diff --shortstat origin/master...ci/pr_auto_labeling 
         git diff --shortstat origin/master ci/pr_auto_labeling 
         git diff --shortstat ci/pr_auto_labeling origin/master 
-
+        git diff --shortstat ci/pr_auto_labeling origin/master 
+        git diff --shortstat origin/master...${{ github.head_ref }}
+        git diff --shortstat origin/master..${{ github.head_ref }}
         size=0
         # diff=`git diff --shortstat origin/master..ci/pr_auto_labeling --no-merges ':!./*\.yaml' ':!./*\.yml' ':!./*\.svg' ':!apis'`
         diff=`git diff --shortstat origin/master..ci/pr_auto_labeling --no-merges`
