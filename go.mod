@@ -38,6 +38,7 @@ require (
 	github.com/kpango/gache v1.1.23
 	github.com/kpango/glg v1.4.6
 	github.com/scylladb/gocqlx v1.3.1
+	github.com/tensorflow/tensorflow v2.0.0+incompatible
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
 	golang.org/x/sys v0.0.0-20191210023423-ac6580df4449
