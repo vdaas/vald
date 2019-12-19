@@ -36,6 +36,7 @@ jobs:
         git diff --shortstat origin/master...ci/pr_auto_labeling --no-merges
         echo "aaaaa"
         git diff --shortstat origin/master...ci/pr_auto_labeling
+        git diff --shortstat origin/master ci/pr_auto_labeling
 
         echo "branch name: " $branch_name
         for label in ${type_labels[@]}
