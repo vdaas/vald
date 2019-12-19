@@ -10,7 +10,7 @@ jobs:
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
     - name: Checkout PR branch
-      uses: actions/checkout@v2
+      uses: actions/checkout@master
       with:
         ref: ci/pr_auto_labeling
     - name: Add labels 
@@ -30,7 +30,7 @@ jobs:
         )
         send_labels=()
 
-        git fetch origin master
+        git fetch origin master:master
 
         echo "branch name: " $branch_name
         for label in ${type_labels[@]}
@@ -40,6 +40,8 @@ jobs:
           fi
         done
 
+        git diff --shortstat origin/master..ci/pr_auto_labeling 
+        git diff --shortstat origin/master...ci/pr_auto_labeling 
         git diff --shortstat origin/master ci/pr_auto_labeling 
         git diff --shortstat ci/pr_auto_labeling origin/master 
 
