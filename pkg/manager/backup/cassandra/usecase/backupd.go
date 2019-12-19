@@ -104,7 +104,7 @@ func (r *run) PreStart(ctx context.Context) error {
 	return nil
 }
 
-func (r *run) Start(ctx context.Context)( <-chan error, error) {
+func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	return r.server.ListenAndServe(ctx), nil
 }
 

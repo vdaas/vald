@@ -52,7 +52,7 @@ func NewBackup(opts ...BackupOption) (bu Backup, err error) {
 	return b, nil
 }
 
-func (b *backup) Start(ctx context.Context) (<-chan error, error){
+func (b *backup) Start(ctx context.Context) (<-chan error, error) {
 	return b.client.StartConnectionMonitor(ctx)
 }
 
