@@ -25,7 +25,7 @@ type Option func(*tensorflow)
 
 var (
 	defaultOpts = []Option{
-		WithOperations(nil),     // set to default
+		WithOperations(),        // set to default
 		WithSessionOptions(nil), // set to default
 	}
 )
@@ -38,7 +38,7 @@ func WithSessionOptions(opts *tf.SessionOptions) Option {
 
 func WithSessionTarget(tgt string) Option {
 	return func(t *tensorflow) {
-		if len(tgt) != 0{
+		if len(tgt) != 0 {
 			t.sessionTarget = tgt
 		}
 	}
@@ -46,7 +46,7 @@ func WithSessionTarget(tgt string) Option {
 
 func WithSessionConfig(cfg []byte) Option {
 	return func(t *tensorflow) {
-		if cfg != nil
+		if cfg != nil {
 			t.sessionConfig = cfg
 		}
 	}

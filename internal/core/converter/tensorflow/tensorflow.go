@@ -49,7 +49,7 @@ type Fetch struct {
 	OutputIndex   int
 }
 
-func New(opts ...Options) (TF, error) {
+func New(opts ...Option) (TF, error) {
 	t := new(tensorflow)
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(t)
