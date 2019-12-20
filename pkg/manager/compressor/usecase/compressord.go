@@ -19,7 +19,7 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/manager/backup"
+	"github.com/vdaas/vald/apis/grpc/manager/compressor"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -29,11 +29,11 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
-	"github.com/vdaas/vald/pkg/manager/backup/compressor/config"
-	handler "github.com/vdaas/vald/pkg/manager/backup/compressor/handler/grpc"
-	"github.com/vdaas/vald/pkg/manager/backup/compressor/handler/rest"
-	"github.com/vdaas/vald/pkg/manager/backup/compressor/router"
-	"github.com/vdaas/vald/pkg/manager/backup/compressor/service"
+	"github.com/vdaas/vald/pkg/manager/compressor/config"
+	handler "github.com/vdaas/vald/pkg/manager/compressor/handler/grpc"
+	"github.com/vdaas/vald/pkg/manager/compressor/handler/rest"
+	"github.com/vdaas/vald/pkg/manager/compressor/router"
+	"github.com/vdaas/vald/pkg/manager/compressor/service"
 )
 
 type run struct {
@@ -69,7 +69,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	compressor, err := service.NewCompressor(
+	c, err := service.NewCompressor(
 		service.WithCompressAlgorithm(cfg.Compressor.CompressAlgorithm),
 		service.WithLimitation(cfg.Compressor.ConcurrentLimit),
 		service.WithBuffer(cfg.Compressor.Buffer),
@@ -79,7 +79,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 	g := handler.New(
-		handler.WithCompressor(compressor),
+		handler.WithCompressor(c),
 		handler.WithBackup(b),
 	)
 
@@ -93,7 +93,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 						router.WithErrGroup(eg),
 						router.WithHandler(
 							rest.New(
-								rest.WithCompress(g),
+								rest.WithBackup(g),
 							),
 						),
 					)),
@@ -102,7 +102,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
 			return []server.Option{
 				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-					backup.RegisterCompressServer(srv, g)
+					compressor.RegisterBackupServer(srv, g)
 				}),
 				server.WithPreStartFunc(func() error {
 					// TODO check unbackupped upstream
@@ -125,7 +125,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		eg:         eg,
 		cfg:        cfg,
 		backup:     b,
-		compressor: compressor,
+		compressor: c,
 		server:     srv,
 	}, nil
 }

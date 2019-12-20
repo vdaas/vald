@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "backup/backup_manager.proto",
+    "title": "compressor/compressor.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -154,7 +154,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/BackupCompressedMetaVector"
+              "$ref": "#/definitions/payloadBackupMetaVector"
             }
           }
         ],
@@ -180,7 +180,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/BackupCompressedMetaVectors"
+              "$ref": "#/definitions/payloadBackupMetaVectors"
             }
           }
         ],
@@ -196,7 +196,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/BackupCompressedMetaVector"
+              "$ref": "#/definitions/payloadBackupMetaVector"
             }
           }
         },
@@ -215,38 +215,6 @@
     }
   },
   "definitions": {
-    "BackupCompressedMetaVector": {
-      "type": "object",
-      "properties": {
-        "uuid": {
-          "type": "string"
-        },
-        "meta": {
-          "type": "string"
-        },
-        "vector": {
-          "type": "string",
-          "format": "byte"
-        },
-        "ips": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "BackupCompressedMetaVectors": {
-      "type": "object",
-      "properties": {
-        "vectors": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/BackupCompressedMetaVector"
-          }
-        }
-      }
-    },
     "BackupIPRemoveRequest": {
       "type": "object",
       "properties": {
@@ -290,6 +258,41 @@
           "type": "array",
           "items": {
             "type": "string"
+          }
+        }
+      }
+    },
+    "payloadBackupMetaVector": {
+      "type": "object",
+      "properties": {
+        "uuid": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "string"
+        },
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "payloadBackupMetaVectors": {
+      "type": "object",
+      "properties": {
+        "vectors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/payloadBackupMetaVector"
           }
         }
       }

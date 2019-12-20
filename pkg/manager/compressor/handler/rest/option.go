@@ -14,36 +14,19 @@
 // limitations under the License.
 //
 
-// Package router provides implementation of Go API for routing http Handler wrapped by rest.Func
-package router
+// Package rest provides rest api logic
+package rest
 
-import (
-	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/pkg/manager/backup/compressor/handler/rest"
-)
+import "github.com/vdaas/vald/apis/grpc/manager/compressor"
 
-type Option func(*router)
+type Option func(*handler)
 
 var (
-	defaultOpts = []Option{
-		WithTimeout("3s"),
-	}
+	defaultOpts = []Option{}
 )
 
-func WithHandler(h rest.Handler) Option {
-	return func(r *router) {
-		r.handler = h
-	}
-}
-
-func WithTimeout(timeout string) Option {
-	return func(r *router) {
-		r.timeout = timeout
-	}
-}
-
-func WithErrGroup(eg errgroup.Group) Option {
-	return func(r *router) {
-		r.eg = eg
+func WithBackup(b compressor.BackupServer) Option {
+	return func(h *handler) {
+		h.backup = b
 	}
 }

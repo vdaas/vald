@@ -17,15 +17,15 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: manager-backup-compressor
-  name: manager-backup-compressor
+    app: manager-compressor
+  name: manager-compressor
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
   revisionHistoryLimit: 2
   selector:
     matchLabels:
-      app: manager-backup-compressor
+      app: manager-compressor
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -35,10 +35,10 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app: manager-backup-compressor
+        app: manager-compressor
     spec:
       containers:
-      - image: vdaas/vald-manager-backup-compressor:nightly
+      - image: vdaas/vald-manager-compressor:nightly
         imagePullPolicy: Always
         # livenessProbe:
         #   httpGet:
@@ -60,7 +60,7 @@ spec:
         #   successThreshold: 1
         #   failureThreshold: 2
         #   periodSeconds: 3
-        name: manager-backup-compressor
+        name: manager-compressor
         ports:
         - containerPort: 3000
           name: liveness
@@ -82,7 +82,7 @@ spec:
         terminationMessagePolicy: File
         volumeMounts:
         - mountPath: /etc/server/
-          name: manager-backup-compressor-config
+          name: manager-compressor-config
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -91,6 +91,6 @@ spec:
       volumes:
       - configMap:
           defaultMode: 420
-          name: manager-backup-compressor-config
-        name: manager-backup-compressor-config
+          name: manager-compressor-config
+        name: manager-compressor-config
 status:

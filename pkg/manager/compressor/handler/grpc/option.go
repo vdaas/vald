@@ -14,19 +14,25 @@
 // limitations under the License.
 //
 
-// Package rest provides rest api logic
-package rest
+// Package grpc provides grpc server logic
+package grpc
 
-import "github.com/vdaas/vald/apis/grpc/manager/backup"
+import "github.com/vdaas/vald/pkg/manager/compressor/service"
 
-type Option func(*handler)
+type Option func(*server)
 
 var (
 	defaultOpts = []Option{}
 )
 
-func WithCompress(b backup.CompressServer) Option {
-	return func(h *handler) {
-		h.compress = b
+func WithCompressor(c service.Compressor) Option {
+	return func(s *server) {
+		s.compressor = c
+	}
+}
+
+func WithBackup(c service.Backup) Option {
+	return func(s *server) {
+		s.backup = c
 	}
 }

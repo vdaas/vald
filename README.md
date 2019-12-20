@@ -16,8 +16,6 @@
 [![Total visitor](https://visitor-count-badge.herokuapp.com/total.svg?repo_id=vald)](https://github.com/vdaas/vald/graphs/traffic)
 [![Visitors in today](https://visitor-count-badge.herokuapp.com/today.svg?repo_id=vald)](https://github.com/vdaas/vald/graphs/traffic)
 
-
-
 vald is high scalable distributed high-speed approximate nearest neighbor search engine
 
 ## Requirement
@@ -103,10 +101,10 @@ vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20backup-manager-cassandra/badge.svg"></td>
   </tr>
   <tr>
-    <td>backup manager compressor
+    <td>compressor
     <td></td>
-    <td><a href="https://hub.docker.com/r/vdaas/vald-manager-backup-compressor">vdaas/vald-manager-backup-compressor</a></td>
-    <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20backup-manager-compressor/badge.svg"></td>
+    <td><a href="https://hub.docker.com/r/vdaas/vald-manager-compressor">vdaas/vald-manager-compressor</a></td>
+    <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20manager-compressor/badge.svg"></td>
   </tr>
   <tr>
     <td rowspan=2>meta</td>
@@ -120,6 +118,5 @@ vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20meta-cassandra/badge.svg"></td>
   </tr>
 </table>
-
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fvdaas%2Fvald.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fvdaas%2Fvald?ref=badge_large)

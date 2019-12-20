@@ -20,7 +20,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/vdaas/vald/apis/grpc/manager/backup"
+	"github.com/vdaas/vald/apis/grpc/manager/compressor"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/net/http/json"
 )
@@ -37,7 +37,7 @@ type Handler interface {
 }
 
 type handler struct {
-	compress backup.CompressServer
+	backup compressor.BackupServer
 }
 
 func New(opts ...Option) Handler {
@@ -52,55 +52,55 @@ func New(opts ...Option) Handler {
 func (h *handler) GetVector(w http.ResponseWriter, r *http.Request) (int, error) {
 	var req *payload.Backup_GetVector_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
-		return h.compress.GetVector(r.Context(), req)
+		return h.backup.GetVector(r.Context(), req)
 	})
 }
 
 func (h *handler) Locations(w http.ResponseWriter, r *http.Request) (int, error) {
 	var req *payload.Backup_Locations_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
-		return h.compress.Locations(r.Context(), req)
+		return h.backup.Locations(r.Context(), req)
 	})
 }
 
 func (h *handler) Register(w http.ResponseWriter, r *http.Request) (int, error) {
 	var req *payload.Backup_MetaVector
 	return json.Handler(w, r, &req, func() (interface{}, error) {
-		return h.compress.Register(r.Context(), req)
+		return h.backup.Register(r.Context(), req)
 	})
 }
 
 func (h *handler) RegisterMulti(w http.ResponseWriter, r *http.Request) (int, error) {
 	var req *payload.Backup_MetaVectors
 	return json.Handler(w, r, &req, func() (interface{}, error) {
-		return h.compress.RegisterMulti(r.Context(), req)
+		return h.backup.RegisterMulti(r.Context(), req)
 	})
 }
 
 func (h *handler) Remove(w http.ResponseWriter, r *http.Request) (int, error) {
 	var req *payload.Backup_Remove_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
-		return h.compress.Remove(r.Context(), req)
+		return h.backup.Remove(r.Context(), req)
 	})
 }
 
 func (h *handler) RemoveMulti(w http.ResponseWriter, r *http.Request) (int, error) {
 	var req *payload.Backup_Remove_RequestMulti
 	return json.Handler(w, r, &req, func() (interface{}, error) {
-		return h.compress.RemoveMulti(r.Context(), req)
+		return h.backup.RemoveMulti(r.Context(), req)
 	})
 }
 
 func (h *handler) RegisterIPs(w http.ResponseWriter, r *http.Request) (int, error) {
 	var req *payload.Backup_IP_Register_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
-		return h.compress.RegisterIPs(r.Context(), req)
+		return h.backup.RegisterIPs(r.Context(), req)
 	})
 }
 
 func (h *handler) RemoveIPs(w http.ResponseWriter, r *http.Request) (int, error) {
 	var req *payload.Backup_IP_Remove_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
-		return h.compress.RemoveIPs(r.Context(), req)
+		return h.backup.RemoveIPs(r.Context(), req)
 	})
 }

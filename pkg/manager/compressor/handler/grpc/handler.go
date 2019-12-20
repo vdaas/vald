@@ -20,13 +20,13 @@ package grpc
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/manager/backup"
+	"github.com/vdaas/vald/apis/grpc/manager/compressor"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/net/grpc/status"
-	"github.com/vdaas/vald/pkg/manager/backup/compressor/service"
+	"github.com/vdaas/vald/pkg/manager/compressor/service"
 )
 
-type Server backup.CompressServer
+type Server compressor.BackupServer
 
 type server struct {
 	backup     service.Backup

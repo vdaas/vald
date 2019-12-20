@@ -19,7 +19,7 @@ FROM vdaas/vald-base:latest AS builder
 ENV ORG vdaas
 ENV REPO vald
 ENV APP_NAME compressor
-ENV PKG manager/backup/${APP_NAME}
+ENV PKG manager/${APP_NAME}
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .

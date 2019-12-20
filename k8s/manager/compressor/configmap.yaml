@@ -16,14 +16,14 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: manager-backup-compressor-config
+  name: manager-compressor-config
 data:
   config.yaml: |
     ---
     version: v0.0.0
     server_config:
       servers:
-      - name: manager-backup-compressor-rest
+      - name: manager-compressor-rest
         host: 0.0.0.0
         port: 8080
         mode: REST
@@ -35,7 +35,7 @@ data:
           read_header_timeout: 1s
           read_timeout: 1s
           write_timeout: 1s
-      - name: manager-backup-compressor-grpc
+      - name: manager-compressor-grpc
         host: 0.0.0.0
         port: 8081
         mode: GRPC
@@ -99,13 +99,13 @@ data:
       startup_strategy:
       - livenesss
       - pprof
-      - manager-backup-compressor-grpc
-      - manager-backup-compressor-rest
+      - manager-compressor-grpc
+      - manager-compressor-rest
       - readiness
       shutdown_strategy:
       - readiness
-      - manager-backup-compressor-rest
-      - manager-backup-compressor-grpc
+      - manager-compressor-rest
+      - manager-compressor-grpc
       - pprof
       - livenesss
       full_shutdown_duration: 600s

@@ -14,25 +14,36 @@
 // limitations under the License.
 //
 
-// Package grpc provides grpc server logic
-package grpc
+// Package router provides implementation of Go API for routing http Handler wrapped by rest.Func
+package router
 
-import "github.com/vdaas/vald/pkg/manager/backup/compressor/service"
-
-type Option func(*server)
-
-var (
-	defaultOpts = []Option{}
+import (
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/pkg/manager/compressor/handler/rest"
 )
 
-func WithCompressor(c service.Compressor) Option {
-	return func(s *server) {
-		s.compressor = c
+type Option func(*router)
+
+var (
+	defaultOpts = []Option{
+		WithTimeout("3s"),
+	}
+)
+
+func WithHandler(h rest.Handler) Option {
+	return func(r *router) {
+		r.handler = h
 	}
 }
 
-func WithBackup(c service.Backup) Option {
-	return func(s *server) {
-		s.backup = c
+func WithTimeout(timeout string) Option {
+	return func(r *router) {
+		r.timeout = timeout
+	}
+}
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(r *router) {
+		r.eg = eg
 	}
 }

@@ -23,7 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/http/middleware"
 	"github.com/vdaas/vald/internal/net/http/routing"
-	"github.com/vdaas/vald/pkg/manager/backup/compressor/handler/rest"
+	"github.com/vdaas/vald/pkg/manager/compressor/handler/rest"
 )
 
 type router struct {
