@@ -106,3 +106,12 @@ docker/name/manager-compressor:
 ## build manager-compressor image
 docker/build/manager-compressor: docker/build/base
 	docker build -f dockers/manager/compressor/Dockerfile -t $(REPO)/$(MANAGER_COMPRESSOR_IMAGE) .
+
+.PHONY: docker/name/ci-container
+docker/name/ci-container:
+	@echo "$(REPO)/$(CI_CONTAINER_IMAGE)"
+
+.PHONY: docker/build/ci-container
+## build ci-container image
+docker/build/ci-container: docker/build/base
+	docker build -f dockers/ci/base/Dockerfile -t $(REPO)/$(CI_CONTAINER_IMAGE) .
