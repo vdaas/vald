@@ -274,7 +274,7 @@ data:
             key: /path/to/key
             ca: /path/to/ca
       backup:
-        host: manager-backup-mysql.default.svc.cluster.local
+        host: manager-compressor.default.svc.cluster.local
         port: 8081
         client:
           addrs: []
