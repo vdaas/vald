@@ -24,11 +24,32 @@ func TestNew(t *testing.T) {
 		checkFunc func(s Server, err error) error
 	}
 
-	tests := []test{}
+	tests := []test{
+		{
+			name: "initialize is success",
+			args: args{
+				opts: []Option{},
+			},
+			checkFunc: func(s Server, err error) error {
+				if err != nil {
+					return fmt.Errorf("return an error: %v", err)
+				}
+
+				if s == nil {
+					return fmt.Errorf("server is nil")
+				}
+
+				return nil
+			},
+		},
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
+			srv, err := New(tt.args.opts...)
+			if err := tt.checkFunc(srv, err); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }

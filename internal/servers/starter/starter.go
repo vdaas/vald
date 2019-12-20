@@ -62,7 +62,7 @@ func New(sopts ...Option) (Server, error) {
 
 	var cfg *tls.Config
 
-	if ss.cfg.TLS.Enabled {
+	if ss.cfg.TLS != nil && ss.cfg.TLS.Enabled {
 		var err error
 		cfg, err = tls.New(
 			tls.WithCert(ss.cfg.TLS.Cert),
