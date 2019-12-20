@@ -15,35 +15,70 @@
 #
 .PHONY: k8s/vald/deploy
 ## deploy vald sample cluster to k8s
-k8s/vald/deploy:
+k8s/vald/deploy: \
+	k8s/external/mysql/deploy \
+	k8s/external/redis/deploy
 	kubectl apply -f k8s/metrics/metrics-server
-	kubectl create configmap mysql-config --from-file=$(ROOTDIR)/assets/ddl/manager/backup/mysql/ddl.sql
 	kubectl apply -f k8s/manager/backup/mysql
 	kubectl apply -f k8s/external/redis
 	kubectl apply -f k8s/agent/ngt
 	kubectl apply -f k8s/discoverer/k8s
 	kubectl apply -f k8s/meta/redis
-	kubectl apply -f k8s/external/mysql
 	kubectl apply -f k8s/gateway/vald
 
 .PHONY: k8s/vald/remove
 ## remove vald sample cluster from k8s
-k8s/vald/remove:
+k8s/vald/remove: \
+	k8s/external/mysql/remove \
+	k8s/external/redis/remove
 	kubectl delete -f k8s/gateway/vald
 	kubectl delete -f k8s/manager/backup/mysql
-	kubectl delete -f k8s/external/mysql
 	kubectl delete -f k8s/meta/redis
 	kubectl delete -f k8s/external/redis
 	kubectl delete -f k8s/discoverer/k8s
 	kubectl delete -f k8s/agent/ngt
 	kubectl delete -f k8s/metrics/metrics-server
+
+.PHONY: k8s/external/mysql/deploy
+## deploy mysql to k8s
+k8s/external/mysql/deploy:
+	kubectl create configmap mysql-config --from-file=$(ROOTDIR)/assets/ddl/mysql/ddl.sql
+	kubectl apply -f k8s/external/mysql
+
+.PHONY: k8s/external/mysql/remove
+## remove mysql from k8s
+k8s/external/mysql/remove:
+	kubectl delete -f k8s/external/mysql
 	kubectl delete configmap mysql-config
 
+.PHONY: k8s/external/redis/deploy
+## deploy redis to k8s
+k8s/external/redis/deploy:
+	kubectl apply -f k8s/external/redis
+
+.PHONY: k8s/external/redis/remove
+## remove redis from k8s
+k8s/external/redis/remove:
+	kubectl delete -f k8s/external/redis
+
+.PHONY: k8s/external/cassandra/deploy
+## deploy cassandra to k8s
+k8s/external/cassandra/deploy:
+	kubectl create configmap cassandra-initdb --from-file=$(ROOTDIR)/assets/ddl/cassandra/init.cql
+	kubectl apply -f k8s/external/cassandra
+
+.PHONY: k8s/external/cassandra/remove
+## remove cassandra from k8s
+k8s/external/cassandra/remove:
+	kubectl delete -f k8s/external/cassandra
+	kubectl delete configmap cassandra-config
+
+.PHONY: k8s/linkerd/deploy
+## deploy linkerd to k8s
 k8s/linkerd/deploy:
 	linkerd install | kubectl apply -f -
 	kubectl annotate namespace \
 		kubectl config get-contexts --no-headers \
-			"$(kubectl config current-context)"  \ 
-	        | awk "{print \$5}" | sed "s/^$/default/" \
+			"$(kubectl config current-context)"  \
+			| awk "{print \$5}" | sed "s/^$/default/" \
 		linkerd.io/inject=enabled
-	

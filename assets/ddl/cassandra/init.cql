@@ -16,6 +16,22 @@
 
 CREATE KEYSPACE IF NOT EXISTS vald WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 3};
 
+# meta tables
+
+CREATE TABLE vald.kv (
+  uuid   text,
+  meta   text,
+  PRIMARY KEY (uuid)
+);
+
+CREATE TABLE vald.vk (
+  meta   text,
+  uuid   text,
+  PRIMARY KEY (meta)
+);
+
+# backup-manager tables
+
 CREATE TABLE vald.meta_vector (
   uuid   text,
   vector blob,
