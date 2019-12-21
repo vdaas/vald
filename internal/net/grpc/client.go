@@ -148,6 +148,20 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 func (g *gRPCClient) Range(ctx context.Context,
 	f func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error) (rerr error) {
 	g.conns.Range(func(addr string, conn *grpc.ClientConn) bool {
+		f = func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			if len(addr) != 0 && (conn == nil ||
+				conn.GetState() == connectivity.Shutdown ||
+				conn.GetState() == connectivity.TransientFailure) {
+				nconn, err := grpc.DialContext(ctx, addr, g.gopts...)
+				if err != nil {
+					g.conns.Delete(addr)
+					return conn.Close()
+				}
+				g.conns.Store(addr, nconn)
+				conn = nconn
+			}
+			return f(addr, conn, copts...)
+		}
 		select {
 		case <-ctx.Done():
 			return false
@@ -174,6 +188,20 @@ func (g *gRPCClient) Range(ctx context.Context,
 func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	concurrency int,
 	f func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error) (rerr error) {
+	f = func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+		if len(addr) != 0 && (conn == nil ||
+			conn.GetState() == connectivity.Shutdown ||
+			conn.GetState() == connectivity.TransientFailure) {
+			nconn, err := grpc.DialContext(ctx, addr, g.gopts...)
+			if err != nil {
+				g.conns.Delete(addr)
+				return conn.Close()
+			}
+			g.conns.Store(addr, nconn)
+			conn = nconn
+		}
+		return f(addr, conn, copts...)
+	}
 	eg, ctx := errgroup.New(ctx)
 	eg.Limitation(concurrency)
 	g.conns.Range(func(addr string, conn *grpc.ClientConn) bool {
