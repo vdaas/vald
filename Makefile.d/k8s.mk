@@ -89,6 +89,14 @@ k8s/external/cassandra/remove:
 	kubectl delete -f k8s/external/cassandra
 	kubectl delete configmap cassandra-initdb
 
+.PHONY: k8s/external/cassandra/initialize
+## initialize cassandra on k8s
+k8s/external/cassandra/initialize:
+	-kubectl delete -f k8s/jobs/db/initialize/cassandra
+	-kubectl delete configmap cassandra-initdb
+	kubectl create configmap cassandra-initdb --from-file=$(ROOTDIR)/assets/ddl/cassandra/init.cql
+	kubectl apply -f k8s/jobs/db/initialize/cassandra
+
 .PHONY: k8s/linkerd/deploy
 ## deploy linkerd to k8s
 k8s/linkerd/deploy:
