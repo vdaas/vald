@@ -71,7 +71,7 @@ k8s/external/cassandra/deploy:
 ## remove cassandra from k8s
 k8s/external/cassandra/remove:
 	kubectl delete -f k8s/external/cassandra
-	kubectl delete configmap cassandra-config
+	kubectl delete configmap cassandra-initdb
 
 .PHONY: k8s/linkerd/deploy
 ## deploy linkerd to k8s
