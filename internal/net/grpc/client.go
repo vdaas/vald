@@ -21,6 +21,7 @@ import (
 	"context"
 	"runtime"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/backoff"
@@ -39,34 +40,35 @@ type DialOption = grpc.DialOption
 
 type Client interface {
 	StartConnectionMonitor(ctx context.Context) (<-chan error, error)
-	Connect(ctx context.Context, addr string) error
+	Connect(ctx context.Context, addr string, gopts ...DialOption) error
 	Disconnect(addr string) error
 	Range(ctx context.Context,
 		f func(addr string,
-			conn *grpc.ClientConn,
-			copts ...grpc.CallOption) error) error
+			conn *ClientConn,
+			copts ...CallOption) error) error
 	RangeConcurrent(ctx context.Context,
 		concurrency int,
 		f func(addr string,
-			conn *grpc.ClientConn,
-			copts ...grpc.CallOption) error) error
+			conn *ClientConn,
+			copts ...CallOption) error) error
 	Do(ctx context.Context,
-		addr string, f func(conn *grpc.ClientConn,
-			copts ...grpc.CallOption) (interface{}, error)) (interface{}, error)
+		addr string, f func(conn *ClientConn,
+			copts ...CallOption) (interface{}, error)) (interface{}, error)
 	GetAddrs() ([]string, []string)
-	GetDialOption() []grpc.DialOption
-	GetCallOption() []grpc.CallOption
+	GetDialOption() []DialOption
+	GetCallOption() []CallOption
 	Close() error
 }
 
 type gRPCClient struct {
-	addrs []string
-	conns gRPCConns
-	hcDur time.Duration
-	gopts []grpc.DialOption
-	copts []grpc.CallOption
-	eg    errgroup.Group
-	bo    backoff.Backoff
+	addrs       []string
+	clientCount uint64
+	conns       gRPCConns
+	hcDur       time.Duration
+	gopts       []DialOption
+	copts       []CallOption
+	eg          errgroup.Group
+	bo          backoff.Backoff
 }
 
 func New(opts ...Option) (c Client) {
@@ -86,22 +88,17 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 
 	ech := make(chan error, len(g.addrs))
 
-	conns := 0
 	for _, addr := range g.addrs {
 		if len(addr) != 0 {
-			conn, err := grpc.DialContext(ctx, addr,
-				append(g.gopts, grpc.WithBlock())...)
+			err := g.Connect(ctx, addr, grpc.WithBlock())
 			if err != nil {
 				log.Error(err)
 				ech <- err
-			} else {
-				g.conns.Store(addr, conn)
-				conns++
 			}
 		}
 	}
 
-	if conns == 0 {
+	if len(g.addrs) != 0 && atomic.LoadUint64(&g.clientCount) == 0 {
 		return nil, errors.ErrGRPCClientConnNotFound(strings.Join(g.addrs, ",\t"))
 	}
 
@@ -115,11 +112,9 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 			case <-ctx.Done():
 				return ctx.Err()
 			case <-tick.C:
-				reconnList := make([]string, 0, len(g.addrs))
-				g.conns.Range(func(addr string, conn *grpc.ClientConn) bool {
-					if len(addr) != 0 && (conn == nil ||
-						conn.GetState() == connectivity.Shutdown ||
-						conn.GetState() == connectivity.TransientFailure) {
+				reconnList := make([]string, 0, int(atomic.LoadUint64(&g.clientCount)))
+				g.conns.Range(func(addr string, conn *ClientConn) bool {
+					if len(addr) != 0 && !g.isHealthy(conn) {
 						reconnList = append(reconnList, addr)
 					}
 					return true
@@ -128,11 +123,11 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 				for _, addr := range reconnList {
 					if g.bo != nil {
 						_, err = g.bo.Do(ctx, func() (interface{}, error) {
-							err = g.Connect(ctx, addr)
+							_, err := g.reconnect(ctx, addr, nil)
 							return nil, err
 						})
 					} else {
-						err = g.Connect(ctx, addr)
+						_, err = g.reconnect(ctx, addr, nil)
 					}
 					if err != nil {
 						log.Error(err)
@@ -146,19 +141,12 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 }
 
 func (g *gRPCClient) Range(ctx context.Context,
-	f func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error) (rerr error) {
-	g.conns.Range(func(addr string, conn *grpc.ClientConn) bool {
-		f = func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			if len(addr) != 0 && (conn == nil ||
-				conn.GetState() == connectivity.Shutdown ||
-				conn.GetState() == connectivity.TransientFailure) {
-				nconn, err := grpc.DialContext(ctx, addr, g.gopts...)
-				if err != nil {
-					g.conns.Delete(addr)
-					return conn.Close()
-				}
-				g.conns.Store(addr, nconn)
-				conn = nconn
+	f func(addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
+	g.conns.Range(func(addr string, conn *ClientConn) bool {
+		f = func(addr string, conn *ClientConn, copts ...CallOption) (err error) {
+			conn, err = g.reconnect(ctx, addr, conn)
+			if err != nil {
+				return errors.Wrap(err, errors.ErrGRPCClientConnNotFound(addr).Error())
 			}
 			return f(addr, conn, copts...)
 		}
@@ -187,24 +175,17 @@ func (g *gRPCClient) Range(ctx context.Context,
 
 func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	concurrency int,
-	f func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error) (rerr error) {
-	f = func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-		if len(addr) != 0 && (conn == nil ||
-			conn.GetState() == connectivity.Shutdown ||
-			conn.GetState() == connectivity.TransientFailure) {
-			nconn, err := grpc.DialContext(ctx, addr, g.gopts...)
-			if err != nil {
-				g.conns.Delete(addr)
-				return conn.Close()
-			}
-			g.conns.Store(addr, nconn)
-			conn = nconn
+	f func(addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
+	f = func(addr string, conn *ClientConn, copts ...CallOption) (err error) {
+		conn, err = g.reconnect(ctx, addr, conn)
+		if err != nil {
+			return errors.Wrap(err, errors.ErrGRPCClientConnNotFound(addr).Error())
 		}
 		return f(addr, conn, copts...)
 	}
 	eg, ctx := errgroup.New(ctx)
 	eg.Limitation(concurrency)
-	g.conns.Range(func(addr string, conn *grpc.ClientConn) bool {
+	g.conns.Range(func(addr string, conn *ClientConn) bool {
 		eg.Go(safety.RecoverFunc(func() (err error) {
 			select {
 			case <-ctx.Done():
@@ -231,14 +212,15 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 }
 
 func (g *gRPCClient) Do(ctx context.Context, addr string,
-	f func(conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error)) (data interface{}, err error) {
-	conn, ok := g.conns.Load(addr)
-	if !ok ||
-		conn == nil ||
-		conn.GetState() == connectivity.Shutdown ||
-		conn.GetState() == connectivity.TransientFailure {
-		return nil, errors.ErrGRPCClientConnNotFound(addr)
+	f func(conn *ClientConn,
+		copts ...CallOption) (interface{}, error)) (data interface{}, err error) {
+	var conn *ClientConn
+	f = func(_ *ClientConn, copts ...CallOption) (ret interface{}, err error) {
+		conn, err = g.reconnect(ctx, addr, conn)
+		if err != nil {
+			return nil, errors.Wrap(err, errors.ErrGRPCClientConnNotFound(addr).Error())
+		}
+		return f(conn, copts...)
 	}
 	if g.bo != nil {
 		data, err = g.bo.Do(ctx, func() (r interface{}, err error) {
@@ -257,30 +239,29 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 	return
 }
 
-func (g *gRPCClient) GetDialOption() []grpc.DialOption {
+func (g *gRPCClient) GetDialOption() []DialOption {
 	return g.gopts
 }
 
-func (g *gRPCClient) GetCallOption() []grpc.CallOption {
+func (g *gRPCClient) GetCallOption() []CallOption {
 	return g.copts
 }
 
-func (g *gRPCClient) Connect(ctx context.Context, addr string) error {
+func (g *gRPCClient) Connect(ctx context.Context, addr string, gopts ...DialOption) (err error) {
 	conn, ok := g.conns.Load(addr)
 	if ok {
-		if conn == nil ||
-			conn.GetState() == connectivity.Shutdown ||
-			conn.GetState() == connectivity.TransientFailure {
-			g.Disconnect(addr)
-		} else {
+		if g.isHealthy(conn) {
 			return nil
 		}
+		_, err = g.reconnect(ctx, addr, conn)
+		return err
 	}
-	conn, err := grpc.DialContext(ctx, addr, g.gopts...)
+	conn, err = grpc.DialContext(ctx, addr, append(g.gopts, gopts...)...)
 	if err != nil {
 		runtime.Gosched()
 		return err
 	}
+	atomic.AddUint64(&g.clientCount, 1)
 	g.conns.Store(addr, conn)
 	return nil
 }
@@ -291,6 +272,7 @@ func (g *gRPCClient) Disconnect(addr string) error {
 		return errors.ErrGRPCClientConnNotFound(addr)
 	}
 	g.conns.Delete(addr)
+	atomic.AddUint64(&g.clientCount, ^uint64(0))
 	if conn != nil {
 		return conn.Close()
 	}
@@ -298,25 +280,65 @@ func (g *gRPCClient) Disconnect(addr string) error {
 }
 
 func (g *gRPCClient) Close() error {
-	g.conns.Range(func(addr string, conn *grpc.ClientConn) bool {
+	closeList := make([]string, 0, int(atomic.LoadUint64(&g.clientCount)))
+	g.conns.Range(func(addr string, conn *ClientConn) bool {
 		if conn != nil {
-			g.Disconnect(addr)
+			closeList = append(closeList, addr)
 		}
 		return true
 	})
+	for _, addr := range closeList {
+		g.Disconnect(addr)
+	}
 	return nil
 }
 
 func (g *gRPCClient) GetAddrs() (connected []string, disconnected []string) {
-	g.conns.Range(func(addr string, conn *grpc.ClientConn) bool {
-		if conn == nil ||
-			conn.GetState() == connectivity.Shutdown ||
-			conn.GetState() == connectivity.TransientFailure {
-			disconnected = append(disconnected, addr)
-		} else {
+	g.conns.Range(func(addr string, conn *ClientConn) bool {
+		if g.isHealthy(conn) {
 			connected = append(connected, addr)
+		} else {
+			disconnected = append(disconnected, addr)
 		}
 		return true
 	})
 	return
+}
+
+func (g *gRPCClient) isHealthy(conn *ClientConn) bool {
+	return conn != nil &&
+		conn.GetState() != connectivity.Shutdown &&
+		conn.GetState() != connectivity.TransientFailure
+}
+
+func (g *gRPCClient) reconnect(ctx context.Context, addr string, conn *ClientConn) (rconn *ClientConn, err error) {
+	defer func() {
+		if err != nil {
+			g.conns.Delete(addr)
+		}
+	}()
+	if conn == nil {
+		var ok bool
+		conn, ok = g.conns.Load(addr)
+		if !ok {
+			return nil, errors.ErrGRPCClientConnNotFound(addr)
+		}
+	}
+	if g.isHealthy(conn) {
+		return conn, nil
+	}
+	if conn != nil {
+		err = conn.Close()
+		if err != nil {
+			log.Error(err)
+		}
+		conn = nil
+	}
+	conn, err = grpc.DialContext(ctx, addr, g.gopts...)
+	if err != nil {
+		runtime.Gosched()
+		return nil, err
+	}
+	g.conns.Store(addr, conn)
+	return conn, nil
 }

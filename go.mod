@@ -8,7 +8,7 @@ replace (
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.7.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.7.3
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191219195013-becbf705a915
 	k8s.io/api => k8s.io/api v0.16.4
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.16.4
 	k8s.io/apimachinery => k8s.io/apimachinery v0.16.5-beta.1
@@ -32,7 +32,7 @@ require (
 	github.com/google/gofuzz v1.0.0
 	github.com/gorilla/mux v1.7.1
 	github.com/hashicorp/go-version v1.2.0
-	github.com/json-iterator/go v1.1.8
+	github.com/json-iterator/go v1.1.9
 	github.com/kpango/fastime v1.0.15
 	github.com/kpango/fuid v0.0.0-20190507064958-80435564606b
 	github.com/kpango/gache v1.1.23
@@ -40,9 +40,9 @@ require (
 	github.com/scylladb/gocqlx v1.3.1
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
-	golang.org/x/sys v0.0.0-20191218084908-4a24b4065292
+	golang.org/x/sys v0.0.0-20191220220014-0732a990476f
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
-	google.golang.org/genproto v0.0.0-20191216205247-b31c10ee225f
+	google.golang.org/genproto v0.0.0-20191220175831-5c49e3ecc1c1
 	google.golang.org/grpc v1.26.0
 	gopkg.in/yaml.v2 v2.2.7
 	k8s.io/api v0.16.4
