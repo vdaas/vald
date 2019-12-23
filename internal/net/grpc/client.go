@@ -40,7 +40,7 @@ type DialOption = grpc.DialOption
 
 type Client interface {
 	StartConnectionMonitor(ctx context.Context) (<-chan error, error)
-	Connect(ctx context.Context, addr string, gopts ...DialOption) error
+	Connect(ctx context.Context, addr string, dopts ...DialOption) error
 	Disconnect(addr string) error
 	Range(ctx context.Context,
 		f func(addr string,
@@ -65,7 +65,7 @@ type gRPCClient struct {
 	clientCount uint64
 	conns       gRPCConns
 	hcDur       time.Duration
-	gopts       []DialOption
+	dopts       []DialOption
 	copts       []CallOption
 	eg          errgroup.Group
 	bo          backoff.Backoff
@@ -240,14 +240,14 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 }
 
 func (g *gRPCClient) GetDialOption() []DialOption {
-	return g.gopts
+	return g.dopts
 }
 
 func (g *gRPCClient) GetCallOption() []CallOption {
 	return g.copts
 }
 
-func (g *gRPCClient) Connect(ctx context.Context, addr string, gopts ...DialOption) (err error) {
+func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOption) (err error) {
 	conn, ok := g.conns.Load(addr)
 	if ok {
 		if g.isHealthy(conn) {
@@ -256,7 +256,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, gopts ...DialOpti
 		_, err = g.reconnect(ctx, addr, conn)
 		return err
 	}
-	conn, err = grpc.DialContext(ctx, addr, append(g.gopts, gopts...)...)
+	conn, err = grpc.DialContext(ctx, addr, append(g.dopts, dopts...)...)
 	if err != nil {
 		runtime.Gosched()
 		return err
@@ -327,6 +327,9 @@ func (g *gRPCClient) reconnect(ctx context.Context, addr string, conn *ClientCon
 	if g.isHealthy(conn) {
 		return conn, nil
 	}
+	if len(addr) != 0 {
+		g.conns.Delete(addr)
+	}
 	if conn != nil {
 		err = conn.Close()
 		if err != nil {
@@ -334,7 +337,7 @@ func (g *gRPCClient) reconnect(ctx context.Context, addr string, conn *ClientCon
 		}
 		conn = nil
 	}
-	conn, err = grpc.DialContext(ctx, addr, g.gopts...)
+	conn, err = grpc.DialContext(ctx, addr, g.dopts...)
 	if err != nil {
 		runtime.Gosched()
 		return nil, err
