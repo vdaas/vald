@@ -70,6 +70,13 @@ k8s/external/redis/deploy:
 k8s/external/redis/remove:
 	kubectl delete -f k8s/external/redis
 
+.PHONY: k8s/external/redis/initialize
+## initialize redis on k8s
+k8s/external/redis/initialize:
+	-kubectl delete -f k8s/jobs/db/initialize/redis
+	kubectl apply -f k8s/external/redis/secret.yaml
+	kubectl apply -f k8s/jobs/db/initialize/redis
+
 .PHONY: k8s/external/cassandra/deploy
 ## deploy cassandra to k8s
 k8s/external/cassandra/deploy:
