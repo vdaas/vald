@@ -51,6 +51,15 @@ k8s/external/mysql/remove:
 	kubectl delete -f k8s/external/mysql
 	kubectl delete configmap mysql-config
 
+.PHONY: k8s/external/mysql/initialize
+## initialize mysql on k8s
+k8s/external/mysql/initialize:
+	-kubectl delete -f k8s/jobs/db/initialize/mysql
+	-kubectl delete configmap mysql-config
+	kubectl create configmap mysql-config --from-file=$(ROOTDIR)/assets/ddl/mysql/ddl.sql
+	kubectl apply -f k8s/external/mysql/secret.yaml
+	kubectl apply -f k8s/jobs/db/initialize/mysql
+
 .PHONY: k8s/external/redis/deploy
 ## deploy redis to k8s
 k8s/external/redis/deploy:
