@@ -41,6 +41,8 @@ type Runner interface {
 }
 
 type runner struct {
+	buildTime        string
+	commitHash       string
 	version          string
 	maxVersion       string
 	minVersion       string
@@ -72,6 +74,7 @@ func Do(ctx context.Context, opts ...Option) error {
 
 	if p.ShowVersion() {
 		log.Infof("vald %s server version -> %s", r.name, log.Bold(r.version))
+		log.Infof("commit hash -> %s (build time: %s)", r.commitHash, r.buildTime)
 		return nil
 	}
 

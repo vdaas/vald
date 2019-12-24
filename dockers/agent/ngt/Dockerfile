@@ -43,7 +43,11 @@ RUN export NGT_VERSION=`cat NGT_VERSION` \
     && make install -C /tmp/NGT-${NGT_VERSION}
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-RUN CGO_ENABLED=1 \
+COPY versions/VALD_VERSION .
+COPY .git .
+RUN VALD_VERSION=$(cat VALD_VERSION) \
+    && GIT_COMMIT=$(git rev-list -1 HEAD) \
+    && CGO_ENABLED=1 \
     CGO_CXXFLAGS="-g -Ofast -march=native" \
     CGO_FFLAGS="-g -Ofast -march=native" \
     CGO_LDFLAGS="-g -Ofast -march=native" \
@@ -51,7 +55,10 @@ RUN CGO_ENABLED=1 \
     GOOS=$(go env GOOS) \
     GOARCH=$(go env GOARCH) \
     go build \
-    --ldflags '-s -w -linkmode "external" -extldflags "-static -fPIC -m64 -pthread -fopenmp -std=c++17 -lstdc++ -lm"' \
+    --ldflags "-s -w -linkmode 'external' \
+    -extldflags '-static -fPIC -m64 -pthread -fopenmp -std=c++17 -lstdc++ -lm' \
+    -X 'github.com/${ORG}/${REPO}/internal/info.Version=${VALD_VERSION}' \
+    -X 'github.com/${ORG}/${REPO}/internal/info.GitCommit=${GIT_COMMIT}'" \
     -a \
     -tags "cgo netgo" \
     -trimpath \

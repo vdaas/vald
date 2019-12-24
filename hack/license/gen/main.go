@@ -113,6 +113,7 @@ func dirwalk(dir string) []string {
 			case
 				"GO_VERSION",
 				"NGT_VERSION",
+				"VALD_VERSION",
 				"AUTHORS",
 				"CONTRIBUTORS",
 				"Pipefile",
