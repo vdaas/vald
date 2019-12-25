@@ -66,10 +66,10 @@ func WithHealthCheckDuration(dur string) Option {
 
 func WithDialOptions(opts ...grpc.DialOption) Option {
 	return func(g *gRPCClient) {
-		if g.gopts != nil && len(g.gopts) > 0 {
-			g.gopts = append(g.gopts, opts...)
+		if g.dopts != nil && len(g.dopts) > 0 {
+			g.dopts = append(g.dopts, opts...)
 		} else {
-			g.gopts = opts
+			g.dopts = opts
 		}
 	}
 }
@@ -80,7 +80,7 @@ func WithMaxBackoffDelay(dur string) Option {
 		if err != nil {
 			d = time.Second
 		}
-		g.gopts = append(g.gopts,
+		g.dopts = append(g.dopts,
 			grpc.WithBackoffMaxDelay(d),
 		)
 	}
@@ -149,7 +149,7 @@ func WithMaxSendMsgSize(size int) Option {
 func WithWriteBufferSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
-			g.gopts = append(g.gopts,
+			g.dopts = append(g.dopts,
 				grpc.WithWriteBufferSize(size),
 			)
 		}
@@ -158,7 +158,7 @@ func WithWriteBufferSize(size int) Option {
 func WithReadBufferSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
-			g.gopts = append(g.gopts,
+			g.dopts = append(g.dopts,
 				grpc.WithReadBufferSize(size),
 			)
 		}
@@ -167,7 +167,7 @@ func WithReadBufferSize(size int) Option {
 func WithInitialWindowSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
-			g.gopts = append(g.gopts,
+			g.dopts = append(g.dopts,
 				grpc.WithInitialWindowSize(int32(size)),
 			)
 		}
@@ -176,7 +176,7 @@ func WithInitialWindowSize(size int) Option {
 func WithInitialConnectionWindowSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
-			g.gopts = append(g.gopts,
+			g.dopts = append(g.dopts,
 				grpc.WithInitialConnWindowSize(int32(size)),
 			)
 		}
@@ -185,7 +185,7 @@ func WithInitialConnectionWindowSize(size int) Option {
 func WithMaxMsgSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
-			g.gopts = append(g.gopts,
+			g.dopts = append(g.dopts,
 				grpc.WithMaxMsgSize(size),
 			)
 		}
@@ -195,7 +195,7 @@ func WithMaxMsgSize(size int) Option {
 func WithInsecure(flg bool) Option {
 	return func(g *gRPCClient) {
 		if flg {
-			g.gopts = append(g.gopts,
+			g.dopts = append(g.dopts,
 				grpc.WithInsecure(),
 			)
 		}
@@ -208,7 +208,7 @@ func WithDialTimeout(dur string) Option {
 		if err != nil {
 			return
 		}
-		g.gopts = append(g.gopts,
+		g.dopts = append(g.dopts,
 			grpc.WithTimeout(d),
 		)
 	}
@@ -227,7 +227,7 @@ func WithKeepaliveParams(t, to string, permitWithoutStream bool) Option {
 		if err != nil {
 			return
 		}
-		g.gopts = append(g.gopts,
+		g.dopts = append(g.dopts,
 			grpc.WithKeepaliveParams(
 				keepalive.ClientParameters{
 					Time:                td,
@@ -242,7 +242,7 @@ func WithKeepaliveParams(t, to string, permitWithoutStream bool) Option {
 func WithDialer(der tcp.Dialer) Option {
 	return func(g *gRPCClient) {
 		if der != nil {
-			g.gopts = append(g.gopts,
+			g.dopts = append(g.dopts,
 				grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
 					return der.GetDialer()(ctx, "tcp", addr)
 				}),
@@ -254,7 +254,7 @@ func WithDialer(der tcp.Dialer) Option {
 func WithTLSConfig(cfg *tls.Config) Option {
 	return func(g *gRPCClient) {
 		if cfg != nil {
-			g.gopts = append(g.gopts,
+			g.dopts = append(g.dopts,
 				grpc.WithTransportCredentials(credentials.NewTLS(cfg)),
 			)
 		}
