@@ -38,11 +38,11 @@ COPY versions/GO_VERSION .
 COPY versions/VALD_VERSION .
 COPY versions/NGT_VERSION .
 COPY .git .
-RUN GO_VERSION=$(cat GO_VERSION) \
-    && VALD_VERSION=$(cat VALD_VERSION) \
-    && GIT_COMMIT=$(git rev-list -1 HEAD) \
-    && GOOS=$(go env GOOS) \
-    && GOARCH=$(go env GOARCH) \
+RUN GO_VERSION="$(cat GO_VERSION)" \
+    && VALD_VERSION="$(cat VALD_VERSION)" \
+    && GIT_COMMIT="$(git rev-list -1 HEAD)" \
+    && GOOS="$(go env GOOS)" \
+    && GOARCH="$(go env GOARCH)" \
     && CGO_ENABLED=0 \
     && GO111MODULE=on \
     go build \

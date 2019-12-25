@@ -35,10 +35,11 @@ COPY cmd/${PKG} .
 
 WORKDIR /tmp
 COPY versions/NGT_VERSION .
-RUN export NGT_VERSION=$(cat NGT_VERSION) \
+RUN export NGT_VERSION="$(cat NGT_VERSION)" \
     && curl -LO "https://github.com/yahoojapan/NGT/archive/v${NGT_VERSION}.tar.gz" \
     && tar zxf v${NGT_VERSION}.tar.gz -C /tmp \
-    && cd /tmp/NGT-${NGT_VERSION}; cmake . \
+    && cd /tmp/NGT-${NGT_VERSION} \
+    && cmake . \
     && make -j -C /tmp/NGT-${NGT_VERSION} \
     && make install -C /tmp/NGT-${NGT_VERSION}
 
@@ -47,12 +48,12 @@ COPY versions/GO_VERSION .
 COPY versions/VALD_VERSION .
 COPY versions/NGT_VERSION .
 COPY .git .
-RUN GO_VERSION=$(cat GO_VERSION) \
-    && VALD_VERSION=$(cat VALD_VERSION) \
-    && NGT_VERSION=$(cat NGT_VERSION) \
-    && GIT_COMMIT=$(git rev-list -1 HEAD) \
-    && GOOS=$(go env GOOS) \
-    && GOARCH=$(go env GOARCH) \
+RUN GO_VERSION="$(cat GO_VERSION)" \
+    && VALD_VERSION="$(cat VALD_VERSION)" \
+    && NGT_VERSION="$(cat NGT_VERSION)" \
+    && GIT_COMMIT="$(git rev-list -1 HEAD)" \
+    && GOOS="$(go env GOOS)" \
+    && GOARCH="$(go env GOARCH)" \
     && CGO_ENABLED=1 \
     && CGO_CXXFLAGS="-g -Ofast -march=native" \
     CGO_FFLAGS="-g -Ofast -march=native" \

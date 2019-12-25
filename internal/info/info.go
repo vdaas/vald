@@ -26,9 +26,9 @@ import (
 )
 
 var (
-	Version   string = "v0.0.1"
-	GitCommit string = "no commit info available."
-	BuildTime string = time.Now().Format(time.RFC1123)
+	Version   = "v0.0.1"
+	GitCommit = "no commit info available."
+	BuildTime = time.Now().Format(time.RFC1123)
 
 	GoVersion  string
 	GoOS       string
@@ -41,7 +41,7 @@ func ShowVersionInfo(extras map[string]string) func(name string) {
 	return func(name string) {
 		defaultKeys := []string{"version", "commit hash", "build time"}
 		keys := make([]string, 0, len(extras))
-		for k, _ := range extras {
+		for k := range extras {
 			keys = append(keys, k)
 		}
 		sort.Strings(keys)
