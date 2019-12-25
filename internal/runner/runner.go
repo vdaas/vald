@@ -41,14 +41,13 @@ type Runner interface {
 }
 
 type runner struct {
-	buildTime        string
-	commitHash       string
 	version          string
 	maxVersion       string
 	minVersion       string
 	name             string
 	loadConfig       func(string) (interface{}, string, error)
 	initializeDaemon func(interface{}) (Runner, error)
+	showVersionFunc  func(name string)
 }
 
 func Do(ctx context.Context, opts ...Option) error {
@@ -73,8 +72,12 @@ func Do(ctx context.Context, opts ...Option) error {
 	}
 
 	if p.ShowVersion() {
-		log.Infof("vald %s server version -> %s", r.name, log.Bold(r.version))
-		log.Infof("commit hash -> %s (build time: %s)", r.commitHash, r.buildTime)
+		if r.showVersionFunc != nil {
+			r.showVersionFunc(r.name)
+		} else {
+			log.Infof("vald %s server", r.name)
+			log.Infof("version -> %s", log.Bold(r.version))
+		}
 		return nil
 	}
 

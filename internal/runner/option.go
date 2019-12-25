@@ -19,10 +19,6 @@ package runner
 
 type Option func(*runner)
 
-const (
-	defaultCommitHash = "no commit info available."
-)
-
 var (
 	defaultOpts = []Option{}
 )
@@ -49,20 +45,10 @@ func WithVersion(ver, max, min string) Option {
 	}
 }
 
-func WithCommitHash(hash string) Option {
+func WithShowVersionFunc(f func(name string)) Option {
 	return func(r *runner) {
-		if hash != "" {
-			r.commitHash = hash
-		} else {
-			r.commitHash = defaultCommitHash
-		}
-	}
-}
-
-func WithBuildTime(t string) Option {
-	return func(r *runner) {
-		if t != "" {
-			r.buildTime = t
+		if f != nil {
+			r.showVersionFunc = f
 		}
 	}
 }

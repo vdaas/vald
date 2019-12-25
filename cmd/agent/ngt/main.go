@@ -29,7 +29,6 @@ import (
 )
 
 const (
-	// version represent the version
 	maxVersion = "v0.0.10"
 	minVersion = "v0.0.0"
 )
@@ -40,8 +39,13 @@ func main() {
 			context.Background(),
 			runner.WithName("agent ngt"),
 			runner.WithVersion(info.Version, maxVersion, minVersion),
-			runner.WithCommitHash(info.GitCommit),
-			runner.WithBuildTime(info.BuildTime),
+			runner.WithShowVersionFunc(info.ShowVersionInfo(map[string]string{
+				"go version":  info.GoVersion,
+				"os":          info.GoOS,
+				"arch":        info.GoArch,
+				"cgo enabled": info.CGOEnabled,
+				"ngt version": info.NGTVersion,
+			})),
 			runner.WithConfigLoader(func(path string) (interface{}, string, error) {
 				cfg, err := config.NewConfig(path)
 				if err != nil {
