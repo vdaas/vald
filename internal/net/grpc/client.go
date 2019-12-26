@@ -143,7 +143,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 func (g *gRPCClient) Range(ctx context.Context,
 	f func(addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
 	g.conns.Range(func(addr string, conn *ClientConn) bool {
-		f = func(addr string, conn *ClientConn, copts ...CallOption) (err error) {
+		wrapf := func(addr string, conn *ClientConn, copts ...CallOption) (err error) {
 			conn, err = g.reconnect(ctx, addr, conn)
 			if err != nil {
 				return errors.Wrap(err, errors.ErrGRPCClientConnNotFound(addr).Error())
@@ -157,11 +157,11 @@ func (g *gRPCClient) Range(ctx context.Context,
 			var err error
 			if g.bo != nil {
 				_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-					err = f(addr, conn, g.copts...)
+					err = wrapf(addr, conn, g.copts...)
 					return
 				})
 			} else {
-				err = f(addr, conn, g.copts...)
+				err = wrapf(addr, conn, g.copts...)
 			}
 
 			if err != nil {
@@ -176,7 +176,7 @@ func (g *gRPCClient) Range(ctx context.Context,
 func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	concurrency int,
 	f func(addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
-	f = func(addr string, conn *ClientConn, copts ...CallOption) (err error) {
+	wrapf := func(addr string, conn *ClientConn, copts ...CallOption) (err error) {
 		conn, err = g.reconnect(ctx, addr, conn)
 		if err != nil {
 			return errors.Wrap(err, errors.ErrGRPCClientConnNotFound(addr).Error())
@@ -194,11 +194,11 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 				var err error
 				if g.bo != nil {
 					_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-						err = f(addr, conn, g.copts...)
+						err = wrapf(addr, conn, g.copts...)
 						return
 					})
 				} else {
-					err = f(addr, conn, g.copts...)
+					err = wrapf(addr, conn, g.copts...)
 				}
 				if err != nil {
 					return errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
@@ -215,7 +215,7 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 	f func(conn *ClientConn,
 		copts ...CallOption) (interface{}, error)) (data interface{}, err error) {
 	var conn *ClientConn
-	f = func(_ *ClientConn, copts ...CallOption) (ret interface{}, err error) {
+	wrapf := func(_ *ClientConn, copts ...CallOption) (ret interface{}, err error) {
 		conn, err = g.reconnect(ctx, addr, conn)
 		if err != nil {
 			return nil, errors.Wrap(err, errors.ErrGRPCClientConnNotFound(addr).Error())
@@ -224,14 +224,14 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 	}
 	if g.bo != nil {
 		data, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-			r, err = f(conn, g.copts...)
+			r, err = wrapf(conn, g.copts...)
 			if err != nil {
 				return nil, err
 			}
 			return r, nil
 		})
 	} else {
-		data, err = f(conn, g.copts...)
+		data, err = wrapf(conn, g.copts...)
 	}
 	if err != nil {
 		return nil, errors.ErrRPCCallFailed(addr, err)
