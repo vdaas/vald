@@ -79,7 +79,7 @@ spec:
             sleep 2;
           done
       containers:
-      - image: vdaas/vald-gateway:pr-129
+      - image: vdaas/vald-gateway:nightly
         imagePullPolicy: Always 
         livenessProbe:
           httpGet:
