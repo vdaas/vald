@@ -117,7 +117,10 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 				reconnList := make([]string, 0, int(atomic.LoadUint64(&g.clientCount)))
 				g.conns.Range(func(addr string, conn *ClientConn) bool {
 					if len(addr) != 0 && !g.isHealthy(conn) {
+						log.DefaultGlg().Warn("need recconect. addr: %v", addr)
 						reconnList = append(reconnList, addr)
+					} else {
+						log.DefaultGlg().Warn("recconect range ok. addr: %v", addr)
 					}
 					return true
 				})
