@@ -112,6 +112,8 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 			case <-ctx.Done():
 				return ctx.Err()
 			case <-tick.C:
+				log.DefaultGlg().Info("recconect start")
+
 				reconnList := make([]string, 0, int(atomic.LoadUint64(&g.clientCount)))
 				g.conns.Range(func(addr string, conn *ClientConn) bool {
 					if len(addr) != 0 && !g.isHealthy(conn) {
@@ -119,6 +121,8 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 					}
 					return true
 				})
+
+				log.DefaultGlg().Infof("recconect list: %v", reconnList)
 
 				for _, addr := range reconnList {
 					if g.bo != nil {
@@ -312,6 +316,8 @@ func (g *gRPCClient) isHealthy(conn *ClientConn) bool {
 }
 
 func (g *gRPCClient) reconnect(ctx context.Context, addr string, conn *ClientConn) (rconn *ClientConn, err error) {
+	log.DefaultGlg().Infof("recconect addr: %v", addr)
+
 	defer func() {
 		if err != nil {
 			g.conns.Delete(addr)
@@ -325,7 +331,18 @@ func (g *gRPCClient) reconnect(ctx context.Context, addr string, conn *ClientCon
 		}
 	}
 	if g.isHealthy(conn) {
+		if conn != nil {
+			log.DefaultGlg().Infof("status is success: %v", conn.GetState())
+		} else {
+			log.DefaultGlg().Info("conn is nil")
+		}
 		return conn, nil
+	} else {
+		if conn != nil {
+			log.DefaultGlg().Infof("invalid status: %v", conn.GetState())
+		} else {
+			log.DefaultGlg().Info("conn is nil")
+		}
 	}
 	if len(addr) != 0 {
 		g.conns.Delete(addr)
@@ -337,6 +354,9 @@ func (g *gRPCClient) reconnect(ctx context.Context, addr string, conn *ClientCon
 		}
 		conn = nil
 	}
+
+	log.DefaultGlg().Infof("start dial addr: %v", addr)
+
 	conn, err = grpc.DialContext(ctx, addr, g.dopts...)
 	if err != nil {
 		runtime.Gosched()
