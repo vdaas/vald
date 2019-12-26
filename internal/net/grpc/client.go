@@ -254,14 +254,20 @@ func (g *gRPCClient) GetCallOption() []CallOption {
 }
 
 func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOption) (err error) {
+	log.DefaultGlg().Warnf("start connect funcion addr: %v", addr)
 	conn, ok := g.conns.Load(addr)
 	if ok {
+		log.DefaultGlg().Warnf("conn load is succcess. addr: %v", addr)
 		if g.isHealthy(conn) {
 			return nil
 		}
 		_, err = g.reconnect(ctx, addr, conn)
 		return err
+	} else {
+		log.DefaultGlg().Warnf("conn is nothing. addr: %v", addr)
 	}
+
+	log.DefaultGlg().Warnf("Start dial addr: %v", addr)
 	conn, err = grpc.DialContext(ctx, addr, append(g.dopts, dopts...)...)
 	if err != nil {
 		runtime.Gosched()
