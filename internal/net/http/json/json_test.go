@@ -34,7 +34,7 @@ func TestEncode(t *testing.T) {
 			}
 
 			return test{
-				name: "encoding is success",
+				name: "write encoded object",
 				args: args{
 					w:    buf,
 					data: data,
@@ -82,7 +82,7 @@ func TestDecode(t *testing.T) {
 			buf.WriteString(`{"name":"vald"}`)
 
 			return test{
-				name: "decoding is success",
+				name: "read encoded objecg",
 				args: args{
 					r:    buf,
 					data: make(map[string]string, 1),
@@ -130,7 +130,7 @@ func TestMarshalIndent(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "marshal is success",
+				name: "write json object string with indent",
 				args: args{
 					data: map[string]string{
 						"name": "vald",
@@ -182,7 +182,7 @@ func TestEncodeResponse(t *testing.T) {
 			w := new(httptest.ResponseRecorder)
 
 			return test{
-				name: "encode response is success",
+				name: "write encode object",
 				args: args{
 					w:      w,
 					data:   []byte(`{"name":"vald"}`),
@@ -239,7 +239,7 @@ func TestDecodeRequest(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, "/", buf)
 
 			return test{
-				name: "decode request is success",
+				name: "read encoded object",
 				args: args{
 					r:    r,
 					data: make(map[string]string, 1),
@@ -352,7 +352,7 @@ func TestHandler(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, "/", buf)
 
 			return test{
-				name: "request decoder returns error",
+				name: "faild to decode request body",
 				args: args{
 					r: r,
 				},
@@ -405,7 +405,7 @@ func TestHandler(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "request decoder returns error",
+				name: "faild to encode object",
 				args: args{
 					r: func() *http.Request {
 						buf := new(bytes.Buffer)
@@ -472,7 +472,7 @@ func TestErrorHandler(t *testing.T) {
 			}
 
 			return test{
-				name: "error handler is success",
+				name: "write object in the form of a RFC7807",
 				args: args{
 					r:    r,
 					w:    w,
