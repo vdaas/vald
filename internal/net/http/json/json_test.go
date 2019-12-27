@@ -82,7 +82,7 @@ func TestDecode(t *testing.T) {
 			buf.WriteString(`{"name":"vald"}`)
 
 			return test{
-				name: "encoding is success",
+				name: "decoding is success",
 				args: args{
 					r:    buf,
 					data: make(map[string]string, 1),
@@ -130,7 +130,7 @@ func TestMarshalIndent(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "encoding is success",
+				name: "marshal is success",
 				args: args{
 					data: map[string]string{
 						"name": "vald",
@@ -182,7 +182,7 @@ func TestEncodeResponse(t *testing.T) {
 			w := new(httptest.ResponseRecorder)
 
 			return test{
-				name: "success",
+				name: "encode response is success",
 				args: args{
 					w:      w,
 					data:   []byte(`{"name":"vald"}`),
