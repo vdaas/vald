@@ -35,23 +35,40 @@ COPY cmd/${PKG} .
 
 WORKDIR /tmp
 COPY versions/NGT_VERSION .
-RUN export NGT_VERSION=`cat NGT_VERSION` \
+RUN export NGT_VERSION="$(cat NGT_VERSION)" \
     && curl -LO "https://github.com/yahoojapan/NGT/archive/v${NGT_VERSION}.tar.gz" \
-    && tar zxf v${NGT_VERSION}.tar.gz -C /tmp \
-    && cd /tmp/NGT-${NGT_VERSION}; cmake . \
-    && make -j -C /tmp/NGT-${NGT_VERSION} \
-    && make install -C /tmp/NGT-${NGT_VERSION}
+    && tar zxf "v${NGT_VERSION}.tar.gz" -C /tmp \
+    && cd "/tmp/NGT-${NGT_VERSION}" \
+    && cmake . \
+    && make -j -C "/tmp/NGT-${NGT_VERSION}" \
+    && make install -C "/tmp/NGT-${NGT_VERSION}"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-RUN CGO_ENABLED=1 \
-    CGO_CXXFLAGS="-g -Ofast -march=native" \
+COPY versions/GO_VERSION .
+COPY versions/VALD_VERSION .
+COPY versions/NGT_VERSION .
+COPY .git .
+RUN GO_VERSION="$(cat GO_VERSION)" \
+    && VALD_VERSION="$(cat VALD_VERSION)" \
+    && NGT_VERSION="$(cat NGT_VERSION)" \
+    && GIT_COMMIT="$(git rev-list -1 HEAD)" \
+    && GOOS="$(go env GOOS)" \
+    && GOARCH="$(go env GOARCH)" \
+    && CGO_ENABLED=1 \
+    && CGO_CXXFLAGS="-g -Ofast -march=native" \
     CGO_FFLAGS="-g -Ofast -march=native" \
     CGO_LDFLAGS="-g -Ofast -march=native" \
     GO111MODULE=on \
-    GOOS=$(go env GOOS) \
-    GOARCH=$(go env GOARCH) \
     go build \
-    --ldflags '-s -w -linkmode "external" -extldflags "-static -fPIC -m64 -pthread -fopenmp -std=c++17 -lstdc++ -lm"' \
+    --ldflags "-s -w -linkmode 'external' \
+    -extldflags '-static -fPIC -m64 -pthread -fopenmp -std=c++17 -lstdc++ -lm' \
+    -X 'github.com/${ORG}/${REPO}/internal/info.Version=${VALD_VERSION}' \
+    -X 'github.com/${ORG}/${REPO}/internal/info.GitCommit=${GIT_COMMIT}' \
+    -X 'github.com/${ORG}/${REPO}/internal/info.GoVersion=${GO_VERSION}' \
+    -X 'github.com/${ORG}/${REPO}/internal/info.GoOS=${GOOS}' \
+    -X 'github.com/${ORG}/${REPO}/internal/info.GoArch=${GOARCH}' \
+    -X 'github.com/${ORG}/${REPO}/internal/info.CGOEnabled=${CGO_ENABLED}' \
+    -X 'github.com/${ORG}/${REPO}/internal/info.NGTVersion=${NGT_VERSION}'" \
     -a \
     -tags "cgo netgo" \
     -trimpath \

@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /opt
 COPY versions/GO_VERSION .
-RUN export GO_VERSION=`cat GO_VERSION` \
+RUN export GO_VERSION="$(cat GO_VERSION)" \
     && curl -sSL -O "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" \
     && tar zxf "go${GO_VERSION}.linux-amd64.tar.gz" \
     && rm "go${GO_VERSION}.linux-amd64.tar.gz" \

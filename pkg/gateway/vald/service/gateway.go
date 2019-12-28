@@ -166,7 +166,7 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 					return finalize()
 				case ech <- err:
 				}
-			}else{
+			} else {
 				log.Debug(g.acClient.GetAddrs())
 			}
 		}
