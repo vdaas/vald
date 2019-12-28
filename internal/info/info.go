@@ -59,10 +59,12 @@ func ShowVersionInfo(extras map[string]string) func(name string) {
 		infoFormat := fmt.Sprintf("%%-%ds -> %%s", maxlen)
 
 		strs := make([]string, 0, len(keys)+4)
-		strs = append(strs, fmt.Sprintf("\nvald %s server", name))
-		strs = append(strs, fmt.Sprintf(infoFormat, defaultKeys[0], log.Bold(Version)))
-		strs = append(strs, fmt.Sprintf(infoFormat, defaultKeys[1], GitCommit))
-		strs = append(strs, fmt.Sprintf(infoFormat, defaultKeys[2], BuildTime))
+		strs = append(strs,
+			fmt.Sprintf("\nvald %s server", name),
+			fmt.Sprintf(infoFormat, defaultKeys[0], log.Bold(Version)),
+			fmt.Sprintf(infoFormat, defaultKeys[1], GitCommit),
+			fmt.Sprintf(infoFormat, defaultKeys[2], BuildTime),
+		)
 		for _, k := range keys {
 			if k != "" && extras[k] != "" {
 				strs = append(strs, fmt.Sprintf(infoFormat, k, extras[k]))
