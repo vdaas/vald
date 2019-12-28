@@ -20,6 +20,7 @@ package info
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/vdaas/vald/internal/log"
@@ -57,14 +58,17 @@ func ShowVersionInfo(extras map[string]string) func(name string) {
 
 		infoFormat := fmt.Sprintf("%%-%ds -> %%s", maxlen)
 
-		log.Infof("vald %s server", name)
-		log.Infof(infoFormat, defaultKeys[0], log.Bold(Version))
-		log.Infof(infoFormat, defaultKeys[1], GitCommit)
-		log.Infof(infoFormat, defaultKeys[2], BuildTime)
+		strs := make([]string, 0, len(keys)+4)
+		strs = append(strs, fmt.Sprintf("vald %s server", name))
+		strs = append(strs, fmt.Sprintf(infoFormat, defaultKeys[0], log.Bold(Version)))
+		strs = append(strs, fmt.Sprintf(infoFormat, defaultKeys[1], GitCommit))
+		strs = append(strs, fmt.Sprintf(infoFormat, defaultKeys[2], BuildTime))
 		for _, k := range keys {
 			if k != "" && extras[k] != "" {
-				log.Infof(infoFormat, k, extras[k])
+				strs = append(strs, fmt.Sprintf(infoFormat, k, extras[k]))
 			}
 		}
+
+		log.Info(strings.Join(strs, "\n"))
 	}
 }
