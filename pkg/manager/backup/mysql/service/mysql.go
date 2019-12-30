@@ -139,14 +139,9 @@ func (c *client) GetMeta(ctx context.Context, uuid string) (*model.MetaVector, e
 		return nil, err
 	}
 
-	vector, err := res.GetVector()
-	if err != nil {
-		return nil, err
-	}
-
 	return &model.MetaVector{
 		UUID:   res.GetUUID(),
-		Vector: vector,
+		Vector: res.GetVector(),
 		Meta:   res.GetMeta(),
 		IPs:    res.GetIPs(),
 	}, err

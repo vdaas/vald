@@ -17,20 +17,12 @@
 package mysql
 
 import (
-	"strconv"
-	"strings"
-
 	dbr "github.com/gocraft/dbr/v2"
-)
-
-const (
-	comma = ","
 )
 
 type MetaVector interface {
 	GetUUID() string
-	GetVector() ([]float64, error)
-	GetVectorString() string
+	GetVector() []byte
 	GetMeta() string
 	GetIPs() []string
 }
@@ -43,7 +35,7 @@ type metaVector struct {
 type meta struct {
 	ID     int64          `db:"id"`
 	UUID   string         `db:"uuid"`
-	Vector string         `db:"vector"`
+	Vector []byte         `db:"vector"`
 	Meta   dbr.NullString `db:"meta"`
 }
 
@@ -52,21 +44,9 @@ type podIP struct {
 	IP string `db:"ip"`
 }
 
-func (m *metaVector) GetUUID() string { return m.meta.UUID }
-func (m *metaVector) GetVector() ([]float64, error) {
-	ss := strings.Split(m.meta.Vector, comma)
-	vector := make([]float64, 0, len(ss))
-	for _, s := range ss {
-		f, err := strconv.ParseFloat(s, 64)
-		if err != nil {
-			return nil, err
-		}
-		vector = append(vector, f)
-	}
-	return vector, nil
-}
-func (m *metaVector) GetVectorString() string { return m.meta.Vector }
-func (m *metaVector) GetMeta() string         { return m.meta.Meta.String }
+func (m *metaVector) GetUUID() string   { return m.meta.UUID }
+func (m *metaVector) GetVector() []byte { return m.meta.Vector }
+func (m *metaVector) GetMeta() string   { return m.meta.Meta.String }
 func (m *metaVector) GetIPs() []string {
 	ips := make([]string, 0, len(m.podIPs))
 

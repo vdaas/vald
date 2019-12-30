@@ -20,7 +20,7 @@ USE `vald` ;
 
 CREATE TABLE IF NOT EXISTS `vald`.`meta_vector` (
     `uuid` VARCHAR(255) NOT NULL,
-    `vector` TEXT NOT NULL,
+    `vector` BLOB NOT NULL,
     `meta` VARCHAR(1024) NOT NULL,
     `id` int NOT NULL AUTO_INCREMENT,
     PRIMARY KEY (`uuid`),

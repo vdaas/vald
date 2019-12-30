@@ -184,8 +184,8 @@ data:
             key: /path/to/key
             ca: /path/to/ca
       backup:
-        host: {{ .Values.backupManager.name }}.default.svc.cluster.local
-        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.backupManager.server_config.servers.grpc.port }}
+        host: {{ .Values.compressor.name }}.default.svc.cluster.local
+        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.compressor.server_config.servers.grpc.port }}
         duration: "2s"
         client:
           addrs: []

@@ -64,14 +64,14 @@ func (h *handler) Locations(w http.ResponseWriter, r *http.Request) (int, error)
 }
 
 func (h *handler) Register(w http.ResponseWriter, r *http.Request) (int, error) {
-	var req *payload.Backup_MetaVector
+	var req *payload.Backup_Compressed_MetaVector
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.backup.Register(r.Context(), req)
 	})
 }
 
 func (h *handler) RegisterMulti(w http.ResponseWriter, r *http.Request) (int, error) {
-	var req *payload.Backup_MetaVectors
+	var req *payload.Backup_Compressed_MetaVectors
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.backup.RegisterMulti(r.Context(), req)
 	})

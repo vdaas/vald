@@ -13,15 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-CREATE KEYSPACE IF NOT EXISTS vald WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 3};
-
-CREATE TABLE vald.meta_vector (
-  uuid   text,
-  vector list<double>,
-  meta   text,
-  ips    list<text>,
-  PRIMARY KEY (uuid)
-);
-
-CREATE INDEX ON vald.meta_vector (ips);
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.compressor.name }}
+spec:
+  {{- $servers := dict "Values" .Values.compressor.server_config "default" .Values.defaults.server_config }}
+  {{- include "vald.servicePorts" $servers | nindent 2 }}
+  selector:
+    app: {{ .Values.compressor.name }}
+  clusterIP: None

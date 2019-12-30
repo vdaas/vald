@@ -36,7 +36,7 @@ data:
 
     CREATE TABLE vald.meta_vector (
       uuid   text,
-      vector list<double>,
+      vector text,
       meta   text,
       ips    list<text>,
       PRIMARY KEY (uuid)

@@ -127,6 +127,17 @@ message Backup {
     repeated string ips = 4;
   }
   message MetaVectors { repeated MetaVector vectors = 1; }
+
+  message Compressed {
+    message MetaVector {
+      string uuid = 1;
+      string meta = 2;
+      bytes vector = 3;
+      repeated string ips = 4;
+    }
+
+    message MetaVectors { repeated MetaVector vectors = 1; }
+  }
 }
 
 message Info {

@@ -19,6 +19,7 @@ package grpc
 
 import (
 	"context"
+	"encoding/hex"
 
 	"github.com/vdaas/vald/apis/grpc/manager/backup"
 	"github.com/vdaas/vald/apis/grpc/payload"
@@ -49,7 +50,7 @@ func New(opts ...Option) Server {
 	return s
 }
 
-func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_MetaVector, err error) {
+func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_Compressed_MetaVector, err error) {
 	meta, err := s.cassandra.GetMeta(ctx, req.Uuid)
 	if err != nil {
 		detail := errDetail{method: "GetVector", uuid: req.Uuid}
@@ -73,7 +74,7 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 	}, nil
 }
 
-func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) (res *payload.Empty, err error) {
+func (s *server) Register(ctx context.Context, meta *payload.Backup_Compressed_MetaVector) (res *payload.Empty, err error) {
 	m, err := toModelMetaVector(meta)
 	if err != nil {
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "Register", uuid: meta.Uuid}, err)
@@ -88,7 +89,7 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) 
 	return new(payload.Empty), nil
 }
 
-func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) (res *payload.Empty, err error) {
+func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_Compressed_MetaVectors) (res *payload.Empty, err error) {
 	ms := make([]model.MetaVector, 0, len(metas.Vectors))
 	for _, meta := range metas.Vectors {
 		var m *model.MetaVector
@@ -144,19 +145,28 @@ func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Re
 	return new(payload.Empty), nil
 }
 
-func toBackupMetaVector(meta *model.MetaVector) (res *payload.Backup_MetaVector, err error) {
-	return &payload.Backup_MetaVector{
+func toBackupMetaVector(meta *model.MetaVector) (res *payload.Backup_Compressed_MetaVector, err error) {
+	rawBinVec := make([]byte, hex.DecodedLen(len(meta.Vector)))
+	_, err = hex.Decode(rawBinVec, meta.Vector)
+	if err != nil {
+		return nil, err
+	}
+
+	return &payload.Backup_Compressed_MetaVector{
 		Uuid:   meta.UUID,
 		Meta:   meta.Meta,
-		Vector: meta.Vector,
+		Vector: rawBinVec,
 		Ips:    meta.IPs,
 	}, nil
 }
 
-func toModelMetaVector(obj *payload.Backup_MetaVector) (res *model.MetaVector, err error) {
+func toModelMetaVector(obj *payload.Backup_Compressed_MetaVector) (res *model.MetaVector, err error) {
+	hexVec := make([]byte, hex.EncodedLen(len(obj.Vector)))
+	hex.Encode(hexVec, obj.Vector)
+
 	return &model.MetaVector{
 		UUID:   obj.Uuid,
-		Vector: obj.Vector,
+		Vector: hexVec,
 		Meta:   obj.Meta,
 		IPs:    obj.Ips,
 	}, nil

@@ -18,8 +18,8 @@
 package model
 
 type MetaVector struct {
-	UUID   string    `db:"uuid"`
-	Vector []float64 `db:"vector"`
-	Meta   string    `db:"meta"`
-	IPs    []string  `db:"ips"`
+	UUID   string   `db:"uuid"`
+	Vector []byte   `db:"vector"`
+	Meta   string   `db:"meta"`
+	IPs    []string `db:"ips"`
 }

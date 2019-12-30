@@ -21,7 +21,10 @@ docker/build: \
 	docker/build/discoverer-k8s \
 	docker/build/gateway-vald \
 	docker/build/meta-redis \
-	docker/build/backup-manager-mysql
+	docker/build/meta-cassandra \
+	docker/build/backup-manager-mysql \
+	docker/build/backup-manager-cassandra \
+	docker/build/manager-compressor
 
 .PHONY: docker/name/base
 docker/name/base:
@@ -94,3 +97,12 @@ docker/name/backup-manager-cassandra:
 ## build backup-manager-cassandra image
 docker/build/backup-manager-cassandra: docker/build/base
 	docker build -f dockers/manager/backup/cassandra/Dockerfile -t $(REPO)/$(BACKUP_MANAGER_CASSANDRA_IMAGE) .
+
+.PHONY: docker/name/manager-compressor
+docker/name/manager-compressor:
+	@echo "$(REPO)/$(MANAGER_COMPRESSOR_IMAGE)"
+
+.PHONY: docker/build/manager-compressor
+## build manager-compressor image
+docker/build/manager-compressor: docker/build/base
+	docker build -f dockers/manager/compressor/Dockerfile -t $(REPO)/$(MANAGER_COMPRESSOR_IMAGE) .
