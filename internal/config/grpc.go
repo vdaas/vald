@@ -119,7 +119,7 @@ func (d *DialOption) Bind() *DialOption {
 }
 
 func (g *GRPCClient) Opts() []grpc.Option {
-	opts := make([]grpc.Option, 0, 0)
+	opts := make([]grpc.Option, 0, 18)
 	opts = append(opts,
 		grpc.WithHealthCheckDuration(g.HealthCheckDuration),
 	)

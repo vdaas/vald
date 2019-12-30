@@ -43,8 +43,8 @@ type Cassandra interface {
 	Close(ctx context.Context) error
 	GetMeta(ctx context.Context, uuid string) (*model.MetaVector, error)
 	GetIPs(ctx context.Context, uuid string) ([]string, error)
-	SetMeta(ctx context.Context, meta model.MetaVector) error
-	SetMetas(ctx context.Context, metas ...model.MetaVector) error
+	SetMeta(ctx context.Context, meta *model.MetaVector) error
+	SetMetas(ctx context.Context, metas ...*model.MetaVector) error
 	DeleteMeta(ctx context.Context, uuid string) error
 	DeleteMetas(ctx context.Context, uuids ...string) error
 	SetIPs(ctx context.Context, uuid string, ips ...string) error
@@ -166,12 +166,12 @@ func (c *client) GetIPs(ctx context.Context, uuid string) ([]string, error) {
 	return mv.IPs, nil
 }
 
-func (c *client) SetMeta(ctx context.Context, meta model.MetaVector) error {
+func (c *client) SetMeta(ctx context.Context, meta *model.MetaVector) error {
 	stmt, names := cassandra.Insert(c.metaTable, metaColumns...).ToCql()
 	return c.db.Query(stmt, names).BindStruct(meta).ExecRelease()
 }
 
-func (c *client) SetMetas(ctx context.Context, metas ...model.MetaVector) error {
+func (c *client) SetMetas(ctx context.Context, metas ...*model.MetaVector) error {
 	ib := cassandra.Insert(c.metaTable, metaColumns...)
 	bt := cassandra.Batch()
 

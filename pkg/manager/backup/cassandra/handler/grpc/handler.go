@@ -80,7 +80,7 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_Compressed_M
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "Register", uuid: meta.Uuid}, err)
 	}
 
-	err = s.cassandra.SetMeta(ctx, *m)
+	err = s.cassandra.SetMeta(ctx, m)
 	if err != nil {
 		detail := errDetail{method: "Register", uuid: meta.Uuid}
 		return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
@@ -90,14 +90,14 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_Compressed_M
 }
 
 func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_Compressed_MetaVectors) (res *payload.Empty, err error) {
-	ms := make([]model.MetaVector, 0, len(metas.Vectors))
+	ms := make([]*model.MetaVector, 0, len(metas.Vectors))
 	for _, meta := range metas.Vectors {
 		var m *model.MetaVector
 		m, err = toModelMetaVector(meta)
 		if err != nil {
 			return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "RegisterMulti", uuid: meta.Uuid}, err)
 		}
-		ms = append(ms, *m)
+		ms = append(ms, m)
 	}
 
 	err = s.cassandra.SetMetas(ctx, ms...)

@@ -120,7 +120,7 @@ func (g *group) Go(f func() error) {
 			}
 			if limited {
 				select {
-				case _ = <-g.limitation:
+				case <-g.limitation:
 				case <-g.egctx.Done():
 				}
 			}

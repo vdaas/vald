@@ -81,6 +81,11 @@ func WithMaxBackoffDelay(dur string) Option {
 			d = time.Second
 		}
 		g.dopts = append(g.dopts,
+			// grpc.WithConnectParams(grpc.ConnectParams{
+			// 	Backoff: backoff.Config{
+			// 		MaxDelay: d,
+			// 	},
+			// }),
 			grpc.WithBackoffMaxDelay(d),
 		)
 	}
@@ -186,7 +191,7 @@ func WithMaxMsgSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
 			g.dopts = append(g.dopts,
-				grpc.WithMaxMsgSize(size),
+				grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(size)),
 			)
 		}
 	}

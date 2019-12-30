@@ -67,7 +67,7 @@ func (t *TCP) Bind() *TCP {
 }
 
 func (t *TCP) Opts() []tcp.DialerOption {
-	opts := make([]tcp.DialerOption, 0, 0)
+	opts := make([]tcp.DialerOption, 0, 7)
 	if t.DNS != nil {
 		opts = append(opts,
 			tcp.WithDNSCacheExpiration(t.DNS.CacheExpiration),
