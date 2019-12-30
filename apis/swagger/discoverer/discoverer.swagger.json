@@ -68,7 +68,7 @@
     "InfoServers": {
       "type": "object",
       "properties": {
-        "servers": {
+        "Servers": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/InfoServer"
