@@ -126,9 +126,8 @@ func WrapWithUnauthenticated(msg string, detail interface{}, err error) error {
 
 func FromError(err error) *errors.Errors_RPC {
 	for _, detail := range status.Convert(err).Details() {
-		switch t := detail.(type) {
-		case *errors.Errors_RPC:
-			return t
+		if err, ok := detail.(*errors.Errors_RPC); ok {
+			return err
 		}
 	}
 	return nil
