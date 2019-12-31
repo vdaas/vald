@@ -46,12 +46,12 @@ func main() {
 				"cgo enabled": info.CGOEnabled,
 				"ngt version": info.NGTVersion,
 			})),
-			runner.WithConfigLoader(func(path string) (interface{}, string, error) {
+			runner.WithConfigLoader(func(path string) (interface{}, string, string, error) {
 				cfg, err := config.NewConfig(path)
 				if err != nil {
-					return nil, "", err
+					return nil, "", "", err
 				}
-				return cfg, cfg.Version, err
+				return cfg, cfg.Version, cfg.TZ, err
 			}),
 			runner.WithDaemonInitializer(func(cfg interface{}) (runner.Runner, error) {
 				return usecase.New(cfg.(*config.Data))

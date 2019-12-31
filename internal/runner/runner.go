@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/params"
+	"github.com/vdaas/vald/internal/timeutil/location"
 	ver "github.com/vdaas/vald/internal/version"
 )
 
@@ -45,7 +46,8 @@ type runner struct {
 	maxVersion       string
 	minVersion       string
 	name             string
-	loadConfig       func(string) (interface{}, string, error)
+	location         string
+	loadConfig       func(string) (interface{}, string, string, error)
 	initializeDaemon func(interface{}) (Runner, error)
 	showVersionFunc  func(name string)
 }
@@ -81,10 +83,12 @@ func Do(ctx context.Context, opts ...Option) error {
 		return nil
 	}
 
-	cfg, version, err := r.loadConfig(p.ConfigFilePath())
+	cfg, version, loc, err := r.loadConfig(p.ConfigFilePath())
 	if err != nil {
 		return err
 	}
+	// set location temporary for initialization logging
+	location.Set(loc)
 
 	err = ver.Check(version, r.maxVersion, r.minVersion)
 	if err != nil {
@@ -98,6 +102,8 @@ func Do(ctx context.Context, opts ...Option) error {
 
 	log.Infof("service %s :%s starting...", r.name, version)
 
+	// reset timelocation to override external libs & running logging
+	location.Set(loc)
 	return Run(ctx, daemon, r.name)
 }
 

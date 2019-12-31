@@ -27,6 +27,9 @@ type Data struct {
 	// Version represent configuration file version.
 	Version string `json:"version" yaml:"version"`
 
+	// TZ represent system time location .
+	TZ string `json:"time_zone" yaml:"time_zone"`
+
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
@@ -40,6 +43,11 @@ func NewConfig(path string) (cfg *Data, err error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if len(cfg.TZ) != 0 {
+		cfg.TZ = config.GetActualValue(cfg.TZ)
+	}
+
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()
 	}

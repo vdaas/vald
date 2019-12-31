@@ -53,7 +53,7 @@ func WithShowVersionFunc(f func(name string)) Option {
 	}
 }
 
-func WithConfigLoader(f func(string) (interface{}, string, error)) Option {
+func WithConfigLoader(f func(string) (interface{}, string, string, error)) Option {
 	return func(r *runner) {
 		if f != nil {
 			r.loadConfig = f
