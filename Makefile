@@ -163,10 +163,10 @@ ngt/install: /usr/local/include/NGT/Capi.h
 /usr/local/include/NGT/Capi.h:
 	curl -LO https://github.com/yahoojapan/NGT/archive/v$(NGT_VERSION).tar.gz
 	tar zxf v$(NGT_VERSION).tar.gz -C /tmp
+	rm -rf v$(NGT_VERSION).tar.gz
 	cd /tmp/NGT-$(NGT_VERSION)&& cmake .
 	make -j -C /tmp/NGT-$(NGT_VERSION)
 	make install -C /tmp/NGT-$(NGT_VERSION)
-	rm -rf v$(NGT_VERSION).tar.gz
 	rm -rf /tmp/NGT-$(NGT_VERSION)
 
 .PHONY: test
