@@ -2,4 +2,5 @@ service:
   project-path: github.com/vdaas/vald
   prepare:
     - make deps
+    - apt-get update && apt-get install -y cmake
     - make ngt/install
