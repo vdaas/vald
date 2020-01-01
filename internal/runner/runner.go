@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -88,6 +88,7 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 	// set location temporary for initialization logging
+	// _ = loc
 	location.Set(loc)
 
 	err = ver.Check(version, r.maxVersion, r.minVersion)
@@ -100,7 +101,7 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
-	log.Infof("service %s :%s starting...", r.name, version)
+	log.Infof("service %s %s starting...", r.name, version)
 
 	// reset timelocation to override external libs & running logging
 	location.Set(loc)

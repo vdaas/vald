@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,13 +28,9 @@ const (
 	locationGMT   = "GMT"
 )
 
-func init() {
-	time.Local = UTC()
-}
-
 func Set(loc string) {
 	switch strings.ToLower(loc) {
-	case strings.ToLower(locationJST):
+	case strings.ToLower(locationUTC):
 		time.Local = UTC()
 	case strings.ToLower(locationGMT):
 		time.Local = GMT()
