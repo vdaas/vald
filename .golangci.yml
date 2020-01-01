@@ -1,0 +1,5 @@
+service:
+  project-path: github.com/vdaas/vald
+  prepare:
+    - make deps
+    - make ngt/install
