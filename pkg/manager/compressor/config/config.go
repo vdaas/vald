@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,11 +24,7 @@ import (
 // Config represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
-	// Version represent configuration file version.
-	Version string `json:"version" yaml:"version"`
-
-	// TZ represent system time location .
-	TZ string `json:"time_zone" yaml:"time_zone"`
+	config.Default `json:",inline" yaml:",inline"`
 
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
@@ -47,8 +43,8 @@ func NewConfig(path string) (cfg *Data, err error) {
 		return nil, err
 	}
 
-	if len(cfg.TZ) != 0 {
-		cfg.TZ = config.GetActualValue(cfg.TZ)
+	if cfg != nil {
+		cfg.Bind()
 	}
 
 	if cfg.Server != nil {

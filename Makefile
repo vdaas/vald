@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -107,7 +107,7 @@ clean:
 		./bench \
 		./pprof \
 		./vendor \
-		./$(GOCACHE) \
+		$(GOCACHE) \
 		./go.sum \
 		./go.mod
 	cp ./hack/go.mod.default ./go.mod
