@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -145,6 +145,37 @@ discoverer:
     full_shutdown_duration: 600s
     tls:
       enabled: false
+
+compressor:
+  name: vald-manager-compressor
+  minReplicas: 3
+  maxReplicas: 15
+  image:
+    repository: vdaas/vald-manager-compressor
+    tag: nightly
+    pullPolicy: Always
+  server_config:
+    prefix: manager-compressor
+    servers:
+      rest:
+        enabled: true
+      grpc:
+        enabled: true
+    healths:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false
+    metrics:
+      pprof:
+        enabled: true
+    full_shutdown_duration: 600s
+    tls:
+      enabled: false
+  compress:
+    algorithm: lz4
+    concurrent_limit: 10
+    buffer: 100
 
 backupManager:
   name: vald-manager-backup-mysql

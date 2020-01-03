@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -46,12 +46,12 @@ func main() {
 				"cgo enabled": info.CGOEnabled,
 				"ngt version": info.NGTVersion,
 			})),
-			runner.WithConfigLoader(func(path string) (interface{}, string, error) {
+			runner.WithConfigLoader(func(path string) (interface{}, string, string, error) {
 				cfg, err := config.NewConfig(path)
 				if err != nil {
-					return nil, "", err
+					return nil, "", "", err
 				}
-				return cfg, cfg.Version, err
+				return cfg, cfg.Version, cfg.TZ, err
 			}),
 			runner.WithDaemonInitializer(func(cfg interface{}) (runner.Runner, error) {
 				return usecase.New(cfg.(*config.Data))
