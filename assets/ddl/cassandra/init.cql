@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+DROP KEYSPACE IF EXISTS vald;
 CREATE KEYSPACE IF NOT EXISTS vald WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 3};
 
 # meta tables

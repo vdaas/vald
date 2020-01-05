@@ -51,6 +51,15 @@ k8s/external/mysql/remove:
 	kubectl delete -f k8s/external/mysql
 	kubectl delete configmap mysql-config
 
+.PHONY: k8s/external/mysql/initialize
+## initialize mysql on k8s
+k8s/external/mysql/initialize:
+	-kubectl delete -f k8s/jobs/db/initialize/mysql
+	-kubectl delete configmap mysql-config
+	kubectl create configmap mysql-config --from-file=$(ROOTDIR)/assets/ddl/mysql/ddl.sql
+	kubectl apply -f k8s/external/mysql/secret.yaml
+	kubectl apply -f k8s/jobs/db/initialize/mysql
+
 .PHONY: k8s/external/redis/deploy
 ## deploy redis to k8s
 k8s/external/redis/deploy:
@@ -60,6 +69,13 @@ k8s/external/redis/deploy:
 ## remove redis from k8s
 k8s/external/redis/remove:
 	kubectl delete -f k8s/external/redis
+
+.PHONY: k8s/external/redis/initialize
+## initialize redis on k8s
+k8s/external/redis/initialize:
+	-kubectl delete -f k8s/jobs/db/initialize/redis
+	kubectl apply -f k8s/external/redis/secret.yaml
+	kubectl apply -f k8s/jobs/db/initialize/redis
 
 .PHONY: k8s/external/cassandra/deploy
 ## deploy cassandra to k8s
@@ -71,7 +87,15 @@ k8s/external/cassandra/deploy:
 ## remove cassandra from k8s
 k8s/external/cassandra/remove:
 	kubectl delete -f k8s/external/cassandra
-	kubectl delete configmap cassandra-config
+	kubectl delete configmap cassandra-initdb
+
+.PHONY: k8s/external/cassandra/initialize
+## initialize cassandra on k8s
+k8s/external/cassandra/initialize:
+	-kubectl delete -f k8s/jobs/db/initialize/cassandra
+	-kubectl delete configmap cassandra-initdb
+	kubectl create configmap cassandra-initdb --from-file=$(ROOTDIR)/assets/ddl/cassandra/init.cql
+	kubectl apply -f k8s/jobs/db/initialize/cassandra
 
 .PHONY: k8s/linkerd/deploy
 ## deploy linkerd to k8s
