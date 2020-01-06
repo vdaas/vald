@@ -203,8 +203,8 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			case pos == len(res.GetResults()):
 				res.Results = append(res.GetResults(), dist)
 			case pos > 0:
-				res.Results = append(res.GetResults()[:pos], res.GetResults()[pos-1:]...)
-				res.Results[pos] = dist
+				res.Results = append(res.GetResults()[:pos+1], res.GetResults()[pos:]...)
+				res.Results[pos+1] = dist
 			}
 			if len(res.GetResults()) > num && num != 0 {
 				res.Results = res.GetResults()[:num]
