@@ -34,9 +34,9 @@ jobs:
       run: |
         originname=`make docker/name/ci-container`
         imagename=`make docker/name/ci-container | sed -e 's:vdaas:docker.pkg.github.com/vdaas/vald:'`
-        docker tag ${originname} ${imagename}:nightly
+        docker tag ${originname} ${imagename}:latest
         docker push ${imagename}:latest
-        docker tag ${originame} ${imagename}:nightly
+        docker tag ${originname} ${imagename}:nightly
         docker push ${imagename}:nightly
     - name: push to GitHub package registry (pull request)
       if: github.event_name == 'pull_request'
