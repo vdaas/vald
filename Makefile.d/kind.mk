@@ -17,12 +17,13 @@
 ## start kind (kubernetes in docker) cluster
 kind/start:
 	kind create cluster --name vald
-	export KUBECONFIG="$(kind get kubeconfig-path --name=vald)"
+	@echo ""
+	@echo 'Please run `eval "$$(make kind/login)"`'
 
 .PHONY: kind/login
-## login kind (kubernetes in docker) cluster
+## print login command for kind (kubernetes in docker) cluster
 kind/login:
-	export KUBECONFIG="$(kind get kubeconfig-path --name=vald)"
+	@printf 'export KUBECONFIG=%s' `kind get kubeconfig-path --name=vald`
 
 .PHONY: kind/stop
 ## stop kind (kubernetes in docker) cluster

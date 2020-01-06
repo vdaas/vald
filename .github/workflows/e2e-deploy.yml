@@ -1,0 +1,46 @@
+name: 'Run e2e test: Deploy'
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/e2e-deploy.yml'
+      - 'internal/**'
+      - 'apis/grpc/**'
+      - 'pkg/agent/ngt/**'
+      - 'cmd/agent/ngt/**'
+      - 'resources/GO_VERSION'
+      - 'resources/NGT_VERSION'
+      - 'k8s/**'
+  pull_request:
+    paths:
+      - '.github/workflows/e2e-deploy.yml'
+      - 'internal/**'
+      - 'apis/grpc/**'
+      - 'pkg/agent/ngt/**'
+      - 'cmd/agent/ngt/**'
+      - 'resources/GO_VERSION'
+      - 'resources/NGT_VERSION'
+      - 'k8s/**'
+
+jobs:
+  deploy-to-kind:
+    name: Deploy to KinD
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - uses: engineerd/setup-kind@v0.2.0
+        with:
+          skipClusterCreation: true
+      - name: start kind
+        run: |
+          make kind/start
+          kubectl cluster-info
+      - name: deploy vald
+        run: |
+          make k8s/vald/deploy
+          sleep 5
+          kubectl get pods
