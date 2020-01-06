@@ -36,7 +36,6 @@ COPY cmd/${PKG} .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY versions/GO_VERSION .
 COPY versions/VALD_VERSION .
-COPY versions/NGT_VERSION .
 COPY .git .
 RUN GO_VERSION="$(cat GO_VERSION)" \
     && VALD_VERSION="$(cat VALD_VERSION)" \
@@ -46,7 +45,8 @@ RUN GO_VERSION="$(cat GO_VERSION)" \
     && CGO_ENABLED=0 \
     && GO111MODULE=on \
     go build \
-    --ldflags " \
+    --ldflags "-s -w -linkmode 'external' \
+    -extldflags '-static' \
     -X 'github.com/${ORG}/${REPO}/internal/info.Version=${VALD_VERSION}' \
     -X 'github.com/${ORG}/${REPO}/internal/info.GitCommit=${GIT_COMMIT}' \
     -X 'github.com/${ORG}/${REPO}/internal/info.GoVersion=${GO_VERSION}' \

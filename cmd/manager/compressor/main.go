@@ -20,6 +20,7 @@ package main
 import (
 	"context"
 
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -29,7 +30,6 @@ import (
 
 const (
 	// version represent the version
-	version    = "v0.0.1"
 	maxVersion = "v0.0.10"
 	minVersion = "v0.0.0"
 )
@@ -39,7 +39,13 @@ func main() {
 		return runner.Do(
 			context.Background(),
 			runner.WithName("manager-compressor"),
-			runner.WithVersion(version, maxVersion, minVersion),
+			runner.WithVersion(info.Version, maxVersion, minVersion),
+			runner.WithShowVersionFunc(info.ShowVersionInfo(map[string]string{
+				"go version":  info.GoVersion,
+				"os":          info.GoOS,
+				"arch":        info.GoArch,
+				"cgo enabled": info.CGOEnabled,
+			})),
 			runner.WithConfigLoader(func(path string) (interface{}, string, string, error) {
 				cfg, err := config.NewConfig(path)
 				if err != nil {
