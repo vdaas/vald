@@ -13,12 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-$(BENCH_DATASETS): $(BENCH_DATASET_MD5S)
+$(BENCH_DATASETS): $(BENCH_DATASET_MD5S) $(BENCH_DATASET_HDF5_DIR)
 	@$(call green, "downloading datasets for benchmark...")
 	curl -fsSL -o $@ http://ann-benchmarks.com/$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
 	(cd $(BENCH_DATASET_BASE_DIR); \
 	    md5sum -c $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5_DIR_NAME)/%.md5,$@) || \
 	    (rm -f $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_HDF5_DIR_NAME)/%.hdf5,$@) && exit 1))
+
+$(BENCH_DATASET_HDF5_DIR):
+	$(call mkdir, $@)
+	$(call rm, -rf, $@/*)
 
 .PHONY: bench/datasets
 ## fetch datasets for benchmark
@@ -28,6 +32,18 @@ bench/datasets: $(BENCH_DATASETS)
 ## clean datasets for benchmark
 bench/datasets/clean:
 	rm -rf $(BENCH_DATASETS)
+
+.PHONY: bench/datasets/basedir/print
+bench/datasets/basedir/print:
+	@echo $(BENCH_DATASET_BASE_DIR)
+
+.PHONY: bench/datasets/md5dir/print
+bench/datasets/md5dir/print:
+	@echo $(BENCH_DATASET_MD5_DIR)
+
+.PHONY: bench/datasets/hdf5dir/print
+bench/datasets/hdf5dir/print:
+	@echo $(BENCH_DATASET_HDF5_DIR)
 
 .PHONY: bench/core
 ## run benchmark for core
