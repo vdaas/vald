@@ -5,6 +5,7 @@ go 1.13
 replace (
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.4.1-0.20191212001955-b66d043e6c89
+	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200103014340-68f928edb90a
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.7.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.7.3

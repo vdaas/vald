@@ -171,6 +171,8 @@ github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/me
 github.com/gocql/gocql v0.0.0-20190423091413-b99afaf3b163/go.mod h1:4Fw1eo5iaEhDUs8XyuhSVCVy52Jq3L+/3GJgYkwc+/0=
 github.com/gocql/gocql v0.0.0-20191224103530-b7facab47581 h1:qHOqpG/OUdtK0rBme29ybe/NapCX2ppFmL00EcjaCs0=
 github.com/gocql/gocql v0.0.0-20191224103530-b7facab47581/go.mod h1:DL0ekTmBSTdlNF25Orwt/JMzqIq3EJ4MVa/J/uK64OY=
+github.com/gocql/gocql v0.0.0-20200103014340-68f928edb90a h1:f/7VP2EmdQagG92I/75YnM3ZIeCYa61BT2kZoJFptHM=
+github.com/gocql/gocql v0.0.0-20200103014340-68f928edb90a/go.mod h1:DL0ekTmBSTdlNF25Orwt/JMzqIq3EJ4MVa/J/uK64OY=
 github.com/gocraft/dbr/v2 v2.6.3 h1:T5djSa17dYgx/7tKFyGZcnfjFfEdDF6i9pI27vfopSU=
 github.com/gocraft/dbr/v2 v2.6.3/go.mod h1:gKhNOSeil013r91WnpefkahGiB5W/vjBoSYzPlMBoOE=
 github.com/gofrs/flock v0.7.1 h1:DP+LD/t0njgoPBvT5MJLeliUIVQR03hiKR6vezdwHlc=
