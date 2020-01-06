@@ -129,11 +129,11 @@ func TestRouting(t *testing.T) {
 			h := func(w http.ResponseWriter, req *http.Request) (code int, err error) {
 				cnt++
 				w.WriteHeader(http.StatusBadRequest)
-				return http.StatusOK, nil
+				return http.StatusOK, fmt.Errorf("faild")
 			}
 
 			return test{
-				name: "status ok",
+				name: "internal call error",
 				args: args{
 					m: []string{
 						http.MethodGet,
