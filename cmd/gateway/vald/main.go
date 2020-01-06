@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package main
 import (
 	"context"
 
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -28,8 +29,6 @@ import (
 )
 
 const (
-	// version represent the version
-	version    = "v0.0.1"
 	maxVersion = "v0.0.10"
 	minVersion = "v0.0.0"
 )
@@ -39,13 +38,19 @@ func main() {
 		return runner.Do(
 			context.Background(),
 			runner.WithName("gateway vald"),
-			runner.WithVersion(version, maxVersion, minVersion),
-			runner.WithConfigLoader(func(path string) (interface{}, string, error) {
+			runner.WithVersion(info.Version, maxVersion, minVersion),
+			runner.WithShowVersionFunc(info.ShowVersionInfo(map[string]string{
+				"go version":  info.GoVersion,
+				"os":          info.GoOS,
+				"arch":        info.GoArch,
+				"cgo enabled": info.CGOEnabled,
+			})),
+			runner.WithConfigLoader(func(path string) (interface{}, string, string, error) {
 				cfg, err := config.NewConfig(path)
 				if err != nil {
-					return nil, "", err
+					return nil, "", "", err
 				}
-				return cfg, cfg.Version, err
+				return cfg, cfg.Version, cfg.TZ, err
 			}),
 			runner.WithDaemonInitializer(func(cfg interface{}) (runner.Runner, error) {
 				return usecase.New(cfg.(*config.Data))

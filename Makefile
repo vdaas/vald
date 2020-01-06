@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,18 +14,19 @@
 # limitations under the License.
 #
 
-REPO                          ?= vdaas
-NAME                           = vald
-GOPKG                          = github.com/$(REPO)/$(NAME)
-TAG                            = $(shell date -u +%Y%m%d-%H%M%S)
-BASE_IMAGE                     = $(NAME)-base
-AGENT_IMAGE                    = $(NAME)-agent-ngt
-GATEWAY_IMAGE                  = $(NAME)-gateway
-DISCOVERER_IMAGE               = $(NAME)-discoverer-k8s
-KVS_IMAGE                      = $(NAME)-meta-redis
-NOSQL_IMAGE                    = $(NAME)-meta-cassandra
-BACKUP_MANAGER_MYSQL_IMAGE     = $(NAME)-manager-backup-mysql
-BACKUP_MANAGER_CASSANDRA_IMAGE = $(NAME)-manager-backup-cassandra
+REPO                           ?= vdaas
+NAME                            = vald
+GOPKG                           = github.com/$(REPO)/$(NAME)
+TAG                             = $(shell date -u +%Y%m%d-%H%M%S)
+BASE_IMAGE                      = $(NAME)-base
+AGENT_IMAGE                     = $(NAME)-agent-ngt
+GATEWAY_IMAGE                   = $(NAME)-gateway
+DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
+KVS_IMAGE                       = $(NAME)-meta-redis
+NOSQL_IMAGE                     = $(NAME)-meta-cassandra
+BACKUP_MANAGER_MYSQL_IMAGE      = $(NAME)-manager-backup-mysql
+BACKUP_MANAGER_CASSANDRA_IMAGE  = $(NAME)-manager-backup-cassandra
+MANAGER_COMPRESSOR_IMAGE        = $(NAME)-manager-compressor
 
 NGT_VERSION := $(shell cat versions/NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
@@ -106,7 +107,7 @@ clean:
 		./bench \
 		./pprof \
 		./vendor \
-		./$(GOCACHE) \
+		$(GOCACHE) \
 		./go.sum \
 		./go.mod
 	cp ./hack/go.mod.default ./go.mod

@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cassandra-init
+spec:
+  template:
+    spec:
+      containers:
+      - name: cassandra-init
+        image: cassandra:latest
+        imagePullPolicy: Always
+        command:
+          - /bin/sh
+          - -c
+          - |
+            cqlsh -u${CASSANDRA_USER} ${CASSANDRA_HOST} < /initdb/init.cql
+        env:
+        - name: CASSANDRA_HOST
+          value: cassandra.default.svc.cluster.local
+        - name: CASSANDRA_USER
+          value: root
+        volumeMounts:
+          - name: cassandra-initdb
+            mountPath: /initdb
+      restartPolicy: Never
+      volumes:
+        - name: cassandra-initdb
+          configMap:
+            name: cassandra-initdb

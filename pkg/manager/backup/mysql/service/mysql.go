@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ type MySQL interface {
 	Close(ctx context.Context) error
 	GetMeta(ctx context.Context, uuid string) (*model.MetaVector, error)
 	GetIPs(ctx context.Context, uuid string) ([]string, error)
-	SetMeta(ctx context.Context, meta model.MetaVector) error
-	SetMetas(ctx context.Context, metas ...model.MetaVector) error
+	SetMeta(ctx context.Context, meta *model.MetaVector) error
+	SetMetas(ctx context.Context, metas ...*model.MetaVector) error
 	DeleteMeta(ctx context.Context, uuid string) error
 	DeleteMetas(ctx context.Context, uuids ...string) error
 	SetIPs(ctx context.Context, uuid string, ips ...string) error
@@ -139,14 +139,9 @@ func (c *client) GetMeta(ctx context.Context, uuid string) (*model.MetaVector, e
 		return nil, err
 	}
 
-	vector, err := res.GetVector()
-	if err != nil {
-		return nil, err
-	}
-
 	return &model.MetaVector{
 		UUID:   res.GetUUID(),
-		Vector: vector,
+		Vector: res.GetVector(),
 		Meta:   res.GetMeta(),
 		IPs:    res.GetIPs(),
 	}, err
@@ -156,15 +151,15 @@ func (c *client) GetIPs(ctx context.Context, uuid string) ([]string, error) {
 	return c.db.GetIPs(ctx, uuid)
 }
 
-func (c *client) SetMeta(ctx context.Context, meta model.MetaVector) error {
-	return c.db.SetMeta(ctx, &meta)
+func (c *client) SetMeta(ctx context.Context, meta *model.MetaVector) error {
+	return c.db.SetMeta(ctx, meta)
 }
 
-func (c *client) SetMetas(ctx context.Context, metas ...model.MetaVector) error {
+func (c *client) SetMetas(ctx context.Context, metas ...*model.MetaVector) error {
 	ms := make([]mysql.MetaVector, 0, len(metas))
 	for _, meta := range metas {
 		m := meta
-		ms = append(ms, &m)
+		ms = append(ms, m)
 	}
 	return c.db.SetMetas(ctx, ms...)
 }
