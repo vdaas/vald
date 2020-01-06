@@ -26,7 +26,7 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/getsentry/raven-go v0.2.0 // indirect
-	github.com/go-redis/redis/v7 v7.0.0-beta.4
+	github.com/go-redis/redis/v7 v7.0.0-beta.5
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gocql/gocql v0.0.0-20191224103530-b7facab47581
 	github.com/gocraft/dbr/v2 v2.6.3
