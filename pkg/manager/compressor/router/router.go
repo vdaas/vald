@@ -89,7 +89,7 @@ func New(opts ...Option) http.Handler {
 				h.Remove,
 			},
 			{
-				"Multiple Remoce",
+				"Multiple Remove",
 				[]string{
 					http.MethodDelete,
 					http.MethodPost,
