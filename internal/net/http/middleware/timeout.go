@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -50,8 +50,8 @@ func (t *timeout) Wrap(h rest.Func) rest.Func {
 		start := fastime.UnixNanoNow()
 		// run the custom handler logic in go routine,
 		// report error to error channel
-		ech := make(chan error)
-		sch := make(chan int)
+		ech := make(chan error, 1)
+		sch := make(chan int, 1)
 		t.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer close(ech)
 			defer close(sch)
@@ -80,6 +80,5 @@ func (t *timeout) Wrap(h rest.Func) rest.Func {
 			// it is the responsibility for handler to response to the user
 			return http.StatusRequestTimeout, errors.ErrHandlerTimeout(ctx.Err(), time.Unix(0, fastime.UnixNanoNow()-start))
 		}
-		return 0, nil
 	}
 }

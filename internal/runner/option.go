@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -45,7 +45,15 @@ func WithVersion(ver, max, min string) Option {
 	}
 }
 
-func WithConfigLoader(f func(string) (interface{}, string, error)) Option {
+func WithShowVersionFunc(f func(name string)) Option {
+	return func(r *runner) {
+		if f != nil {
+			r.showVersionFunc = f
+		}
+	}
+}
+
+func WithConfigLoader(f func(string) (interface{}, string, string, error)) Option {
 	return func(r *runner) {
 		if f != nil {
 			r.loadConfig = f
