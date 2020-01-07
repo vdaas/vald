@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-red    = /bin/echo -e "\x1b[31m\#\# $1\x1b[0m"
-green  = /bin/echo -e "\x1b[32m\#\# $1\x1b[0m"
-yellow = /bin/echo -e "\x1b[33m\#\# $1\x1b[0m"
-blue   = /bin/echo -e "\x1b[34m\#\# $1\x1b[0m"
-pink   = /bin/echo -e "\x1b[35m\#\# $1\x1b[0m"
-cyan   = /bin/echo -e "\x1b[36m\#\# $1\x1b[0m"
+red    = printf "\x1b[31m\#\# %s\x1b[0m\n" $1
+green  = printf "\x1b[32m\#\# %s\x1b[0m\n" $1
+yellow = printf "\x1b[33m\#\# %s\x1b[0m\n" $1
+blue   = printf "\x1b[34m\#\# %s\x1b[0m\n" $1
+pink   = printf "\x1b[35m\#\# %s\x1b[0m\n" $1
+cyan   = printf "\x1b[36m\#\# %s\x1b[0m\n" $1
 
 define go-get
 	GO111MODULE=on go get -u $1
