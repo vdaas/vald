@@ -57,7 +57,8 @@ func TestRequest(t *testing.T) {
 					return err
 				}
 
-				if got, want := string(b), `{"host":"hoge","uri":"uri","url":"http:","method":"GET","proto":"proto","header":{},"transfer_encoding":["trans1"],"remote_addr":"0.0.0.0","content_length":1234,"body":{"name":"valud"},"values":{"version":"1.0.0"}}`; got != want {
+				str := `{"host":"hoge","uri":"uri","url":"http:","method":"GET","proto":"proto","header":{},"transfer_encoding":["trans1"],"remote_addr":"0.0.0.0","content_length":1234,"body":{"name":"valud"},"values":{"version":"1.0.0"}}`
+				if got, want := string(b), str; got != want {
 					return fmt.Errorf("response not equals. want: %v, got: %v", want, got)
 				}
 
