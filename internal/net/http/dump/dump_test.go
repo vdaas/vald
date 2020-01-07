@@ -25,7 +25,7 @@ func TestRequest(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "returns dump object",
+			name: "returns dumped object",
 			args: args{
 				r: &http.Request{
 					Host:       "hoge",
