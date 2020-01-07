@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -113,6 +113,7 @@ func dirwalk(dir string) []string {
 			case
 				"GO_VERSION",
 				"NGT_VERSION",
+				"VALD_VERSION",
 				"AUTHORS",
 				"CONTRIBUTORS",
 				"Pipefile",
@@ -145,7 +146,7 @@ func readAndRewrite(path string) error {
 	buf := bytes.NewBuffer(make([]byte, 0, fi.Size()))
 	d := Data{
 		NickName: "Vdaas.org Vald team",
-		FullName: " kpango, kmrmt, rinx ",
+		FullName: " kpango, rinx, kmrmt ",
 		Year:     time.Now().Year(),
 		Escape:   sharpEscape,
 	}
@@ -198,7 +199,7 @@ func readAndRewrite(path string) error {
 		f.Close()
 		return errors.Errorf("filepath %s, could not open", path)
 	}
-	f.WriteString(strings.Replace(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"), "2019-2019", "2019", 1))
+	f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"))
 	f.Close()
 	return nil
 }

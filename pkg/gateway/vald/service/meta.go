@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import (
 )
 
 type Meta interface {
-	Start(ctx context.Context) <-chan error
+	Start(ctx context.Context) (<-chan error, error)
 	GetMeta(context.Context, string) (string, error)
 	GetMetas(context.Context, ...string) ([]string, error)
 	GetUUID(context.Context, string) (string, error)
@@ -56,7 +56,7 @@ func NewMeta(opts ...MetaOption) (mi Meta, err error) {
 	return m, nil
 }
 
-func (m *meta) Start(ctx context.Context) <-chan error {
+func (m *meta) Start(ctx context.Context) (<-chan error, error) {
 	return m.client.StartConnectionMonitor(ctx)
 }
 

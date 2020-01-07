@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,6 +27,35 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// Default represent a application setting data content (config.yaml).
+type Default struct {
+	// Version represent configuration file version.
+	Version string `json:"version" yaml:"version"`
+
+	// TZ represent system time location .
+	TZ string `json:"time_zone" yaml:"time_zone"`
+}
+
+func (c *Default) Bind() *Default {
+	c.Version = GetActualValue(c.Version)
+	c.TZ = GetActualValue(c.TZ)
+	return c
+}
+
+func (c *Default) UnmarshalJSON(data []byte) (err error) {
+	ic := new(struct {
+		Ver string `json:"version"`
+		TZ  string `json:"time_zone"`
+	})
+	err = json.Unmarshal(data, &ic)
+	if err != nil {
+		return err
+	}
+	c.Version = ic.Ver
+	c.TZ = ic.TZ
+	return nil
+}
+
 // New returns config struct or error when decode the configuration file to actually *Config struct.
 func Read(path string, cfg interface{}) error {
 	f, err := os.OpenFile(path, os.O_RDONLY, 0600)
@@ -52,11 +81,7 @@ func GetActualValue(val string) string {
 
 func GetActualValues(vals []string) []string {
 	for i, val := range vals {
-		if checkPrefixAndSuffix(val, "_", "_") {
-			vals[i] = os.ExpandEnv(os.Getenv(strings.TrimPrefix(strings.TrimSuffix(val, "_"), "_")))
-		} else {
-			vals[i] = os.ExpandEnv(val)
-		}
+		vals[i] = GetActualValue(val)
 	}
 	return vals
 }

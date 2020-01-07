@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -153,7 +153,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			}
 			if s.metadata != nil {
 				metas, merr := s.metadata.GetMetas(ctx, uuids...)
-				if err != nil {
+				if merr != nil {
 					log.Error(merr)
 					err = errors.Wrap(err, merr.Error())
 				}
@@ -203,8 +203,8 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			case pos == len(res.GetResults()):
 				res.Results = append(res.GetResults(), dist)
 			case pos > 0:
-				res.Results = append(res.GetResults()[:pos], res.GetResults()[pos-1:]...)
-				res.Results[pos] = dist
+				res.Results = append(res.GetResults()[:pos+1], res.GetResults()[pos:]...)
+				res.Results[pos+1] = dist
 			}
 			if len(res.GetResults()) > num && num != 0 {
 				res.Results = res.GetResults()[:num]

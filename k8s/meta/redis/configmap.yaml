@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ data:
   config.yaml: |
     ---
     version: v0.0.0
+    time_zone: Asia/Tokyo
     server_config:
       servers:
       - name: meta-rest
@@ -46,7 +47,7 @@ data:
           initial_window_size: 0
           initial_conn_window_size: 0
           keepalive:
-            max_idle_conn_idle: O
+            max_conn_idle: ""
             max_conn_age: ""
             max_conn_age_grace: ""
             time: ""

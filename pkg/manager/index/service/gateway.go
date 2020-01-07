@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"net"
 	"reflect"
 	"runtime"
 	"sort"
@@ -38,7 +39,7 @@ import (
 )
 
 type Gateway interface {
-	Start(ctx context.Context) <-chan error
+	Start(ctx context.Context) (<-chan error, error)
 	GetAgentCount() int
 	Do(ctx context.Context,
 		f func(ctx context.Context, tgt string, ac agent.AgentClient) error) error
@@ -49,15 +50,16 @@ type Gateway interface {
 }
 
 type gateway struct {
-	agentName string
-	agentPort int
-	agents    atomic.Value
-	dscAddr   string
-	dscDur    time.Duration
-	dscClient grpc.Client
-	acClient  grpc.Client
-	agentOpts []grpc.Option
-	eg        errgroup.Group
+	agentName    string
+	agentPort    int
+	agentARecord string
+	agents       atomic.Value
+	dscAddr      string
+	dscDur       time.Duration
+	dscClient    grpc.Client
+	acClient     grpc.Client
+	agentOpts    []grpc.Option
+	eg           errgroup.Group
 }
 
 func NewGateway(opts ...GWOption) (gw Gateway, err error) {
@@ -71,19 +73,34 @@ func NewGateway(opts ...GWOption) (gw Gateway, err error) {
 	return g, nil
 }
 
-func (g *gateway) Start(ctx context.Context) <-chan error {
-	ech := make(chan error, 3)
-	dech := g.dscClient.StartConnectionMonitor(ctx)
-
-	var err error
-	_, err = g.discover(ctx, ech)
+func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
+	ech := make(chan error, 10)
+	dech, err := g.dscClient.StartConnectionMonitor(ctx)
+	discover := g.discover
 	if err != nil {
-		ech <- err
+		g.dscClient.Close()
+		log.Error(err)
+		discover = g.discoverByDNS
 	}
+	_, err = discover(ctx, ech)
+	if err != nil {
+		log.Error(err)
+		g.dscClient.Close()
+		discover = g.discoverByDNS
+		_, err = discover(ctx, ech)
+		if err != nil {
+			log.Error(err)
+			close(ech)
+			return nil, err
+		}
+	}
+
 	as := g.agents.Load().(model.Agents)
 	addrs := make([]string, 0, len(as))
 	for _, a := range as {
-		addrs = append(addrs, a.IP)
+		addrs = append(addrs,
+			fmt.Sprintf("%s:%d", a.IP, g.agentPort),
+		)
 	}
 
 	g.acClient = grpc.New(
@@ -94,7 +111,11 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 		)...,
 	)
 
-	aech := g.acClient.StartConnectionMonitor(ctx)
+	aech, err := g.acClient.StartConnectionMonitor(ctx)
+	if err != nil {
+		close(ech)
+		return nil, err
+	}
 
 	g.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
@@ -102,41 +123,110 @@ func (g *gateway) Start(ctx context.Context) <-chan error {
 		defer close(fch)
 		dt := time.NewTicker(g.dscDur)
 		defer dt.Stop()
+		finalize := func() (err error) {
+			var errs error
+			err = g.dscClient.Close()
+			if err != nil {
+				errs = errors.Wrap(errs, err.Error())
+			}
+			err = g.acClient.Close()
+			if err != nil {
+				errs = errors.Wrap(errs, err.Error())
+			}
+			err = ctx.Err()
+			if err != nil && err != context.Canceled {
+				errs = errors.Wrap(errs, err.Error())
+			}
+			return errs
+		}
 		for {
 			select {
 			case <-ctx.Done():
-				var errs error
-				err = g.dscClient.Close()
-				if err != nil {
-					errs = errors.Wrap(errs, err.Error())
-				}
-				err = g.acClient.Close()
-				if err != nil {
-					errs = errors.Wrap(errs, err.Error())
-				}
-				err = ctx.Err()
-				if err != nil && err != context.Canceled {
-					errs = errors.Wrap(errs, err.Error())
-				}
-				return errs
-			case ech <- <-dech:
-			case ech <- <-aech:
+				return finalize()
+			case err = <-dech:
+			case err = <-aech:
 			case <-fch:
-				_, err = g.discover(ctx, ech)
+				_, err = discover(ctx, ech)
 				if err != nil {
 					ech <- err
+					err = nil
 				}
 			case <-dt.C:
-				_, err = g.discover(ctx, ech)
+				_, err = discover(ctx, ech)
 				if err != nil {
+					ech <- err
 					log.Error(err)
+					err = nil
 					time.Sleep(g.dscDur / 5)
 					fch <- struct{}{}
 				}
 			}
+			if err != nil {
+				log.Error(err)
+				select {
+				case <-ctx.Done():
+					return finalize()
+				case ech <- err:
+				}
+			}
 		}
 	}))
-	return ech
+	return ech, nil
+}
+
+func (g *gateway) discoverByDNS(ctx context.Context, ech chan<- error) (ret interface{}, err error) {
+	ips, err := net.LookupIP(g.agentARecord)
+	if err != nil {
+		ech <- err
+		return nil, err
+	}
+
+	if len(ips) == 0 {
+		ech <- errors.ErrAgentAddrCouldNotDiscover
+		return nil, errors.ErrAgentAddrCouldNotDiscover
+	}
+
+	as := make(model.Agents, 0, len(ips))
+	cur := make(map[string]struct{}, len(ips))
+	for _, ip := range ips {
+		host, err := net.LookupAddr(ip.String())
+		if err != nil {
+			return nil, err
+		}
+		as = append(as, model.Agent{
+			IP:   ip.String(),
+			Name: host[0],
+		})
+		cur[fmt.Sprintf("%s:%d", ip.String(), g.agentPort)] = struct{}{}
+	}
+
+	g.agents.Store(as)
+
+	if g.acClient != nil {
+		err = g.acClient.Range(ctx,
+			func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+				_, ok := cur[addr]
+				delete(cur, addr)
+				if !ok {
+					return g.acClient.Disconnect(addr)
+				}
+				return nil
+			})
+		if err != nil {
+			ech <- err
+			err = nil
+		}
+
+		for addr := range cur {
+			err = g.acClient.Connect(ctx, addr)
+			if err != nil {
+				ech <- err
+				err = nil
+			}
+		}
+	}
+
+	return nil, nil
 }
 
 func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface{}, err error) {
@@ -146,6 +236,7 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface
 			res, err = discoverer.NewDiscovererClient(conn).
 				Discover(ctx, &payload.Discoverer_Request{
 					Name: g.agentName,
+
 					Node: "",
 				}, copts...)
 			if err != nil {
@@ -186,25 +277,27 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface
 	sort.Sort(as)
 	g.agents.Store(as)
 
-	err = g.acClient.Range(ctx,
-		func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			_, ok := cur[addr]
-			delete(cur, addr)
-			if !ok {
-				return g.acClient.Disconnect(addr)
-			}
-			return nil
-		})
-	if err != nil {
-		ech <- err
-		err = nil
-	}
-
-	for addr := range cur {
-		err = g.acClient.Connect(ctx, addr)
+	if g.acClient != nil {
+		err = g.acClient.Range(ctx,
+			func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+				_, ok := cur[addr]
+				delete(cur, addr)
+				if !ok {
+					return g.acClient.Disconnect(addr)
+				}
+				return nil
+			})
 		if err != nil {
 			ech <- err
 			err = nil
+		}
+
+		for addr := range cur {
+			err = g.acClient.Connect(ctx, addr)
+			if err != nil {
+				ech <- err
+				err = nil
+			}
 		}
 	}
 	return nil, nil

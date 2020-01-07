@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ server_config:
       initial_window_size: -1275138440
       initial_conn_window_size: 1283428868
       keepalive:
-        max_idle_conn_idle: O
+        max_conn_idle: ""
         max_conn_age: Ǉ#骽枒-谄ǔ*軚7顏SǦŇÒ钃K
         max_conn_age_grace: H_>CK檘ʝȏ靍ű湨?K
         time: ė¥Ë恛Li忎đ@怮溙d傴S
@@ -131,7 +131,7 @@ server_config:
       initial_window_size: -842233727
       initial_conn_window_size: 1325591165
       keepalive:
-        max_idle_conn_idle: Ƶʗ錕å鞄湉ɝøNV蕴K恟­
+        max_conn_idle: Ƶʗ錕å鞄湉ɝøNV蕴K恟­
         max_conn_age: ^ƃ®i坼*h剼l录yq瑘軆Bō
         max_conn_age_grace: 磖ȤW儷蝜戙ñ捈4ǯ
         time: Ċ鸭ô}镬úɿ`Ǭň
@@ -190,7 +190,7 @@ server_config:
       initial_window_size: 185561707
       initial_conn_window_size: -727361131
       keepalive:
-        max_idle_conn_idle: 誧繝ĵĿ
+        max_conn_idle: 誧繝ĵĿ
         max_conn_age: 澂WČʛ%_nɉ
         max_conn_age_grace: 渫ǼrV3tø鯔鈺Şʙɉ赙O贴ʢ
         time: ƿy馴惵rî苤eƊ
@@ -222,7 +222,7 @@ server_config:
       initial_window_size: -433464927
       initial_conn_window_size: -1659311007
       keepalive:
-        max_idle_conn_idle: ƀ
+        max_conn_idle: ƀ
         max_conn_age: <Ź粰7墲9筸)ǟ
         max_conn_age_grace: ǔ餕ʇɑƎų»习鋻[|Ĕ7RĦ:;ǰ8
         time: ƻ鸕kɼ<

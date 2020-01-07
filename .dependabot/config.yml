@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,17 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+version: 1
+update_configs:
+  - package_manager: "go:modules"
+    directory: "/"
+    update_schedule: "daily"
 
-CREATE KEYSPACE IF NOT EXISTS vald;
-
-CREATE TABLE vald.kv (
-  uuid   text,
-  meta   text,
-  PRIMARY KEY (uuid)
-);
-
-CREATE TABLE vald.vk (
-  meta   text,
-  uuid   text,
-  PRIMARY KEY (meta)
-);
+    default_reviewers:
+      - "kpango"
+      - "rinx"
+    default_labels:
+      - "type/dependency"
