@@ -50,7 +50,7 @@ func (t *timeout) Wrap(h rest.Func) rest.Func {
 		start := fastime.UnixNanoNow()
 		// run the custom handler logic in go routine,
 		// report error to error channel
-		ech := make(chan error)
+		ech := make(chan error, 1)
 		sch := make(chan int, 1)
 		t.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer close(ech)
