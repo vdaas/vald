@@ -22,18 +22,21 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
+type SessionOptions = tf.SessionOptions
+type Operation = tf.Operation
+
 type TF interface {
-	GetVector(feeds []Feed, fetches []Fetch, targets ...*tf.Operation) (values [][][]float64, err error)
+	GetVector(feeds []Feed, fetches []Fetch, targets ...*Operation) (values [][][]float64, err error)
 	Close() error
 }
 
 type tensorflow struct {
 	exportDir     string
 	tags          []string
-	operations    []*tf.Operation
+	operations    []*Operation
 	sessionTarget string
 	sessionConfig []byte
-	options       *tf.SessionOptions
+	options       *SessionOptions
 	graph         *tf.Graph
 	session       *tf.Session
 }
@@ -75,7 +78,7 @@ func (t *tensorflow) Close() error {
 	return t.session.Close()
 }
 
-func (t tensorflow) GetVector(feeds []Feed, fetches []Fetch, targets ...*tf.Operation) (values [][][]float64, err error) {
+func (t tensorflow) GetVector(feeds []Feed, fetches []Fetch, targets ...*Operation) (values [][][]float64, err error) {
 	input := make(map[tf.Output]*tf.Tensor, len(feeds))
 	for _, feed := range feeds {
 		inputTensor, err := tf.NewTensor([]string{string(feed.InputBytes)})

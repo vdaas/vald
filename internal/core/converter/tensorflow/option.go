@@ -30,7 +30,7 @@ var (
 	}
 )
 
-func WithSessionOptions(opts *tf.SessionOptions) Option {
+func WithSessionOptions(opts *SessionOptions) Option {
 	return func(t *tensorflow) {
 		t.options = opts
 	}
@@ -52,7 +52,7 @@ func WithSessionConfig(cfg []byte) Option {
 	}
 }
 
-func WithOperations(opes ...*tf.Operation) Option {
+func WithOperations(opes ...*Operation) Option {
 	return func(t *tensorflow) {
 		if opes != nil {
 			if t.operations != nil {
