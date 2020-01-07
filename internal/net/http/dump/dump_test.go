@@ -25,7 +25,7 @@ func TestRequest(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "returns object",
+			name: "returns object converted to structure",
 			args: args{
 				r: &http.Request{
 					Host:       "hoge",
