@@ -10,22 +10,16 @@ import (
 )
 
 func TestWithErrorGroup(t *testing.T) {
-	type args struct {
-		dur string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		dur       string
 		checkFunc func(TimeoutOption) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				dur: "10s",
-			},
+			dur:  "10s",
 			checkFunc: func(opt TimeoutOption) error {
 				got := new(timeout)
 				opt(got)
@@ -38,9 +32,7 @@ func TestWithErrorGroup(t *testing.T) {
 		},
 		{
 			name: "set default value",
-			args: args{
-				dur: "ok",
-			},
+			dur:  "ok",
 			checkFunc: func(opt TimeoutOption) error {
 				got := new(timeout)
 				opt(got)
@@ -55,7 +47,7 @@ func TestWithErrorGroup(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithTimeout(tt.args.dur)
+			opt := WithTimeout(tt.dur)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -64,13 +56,9 @@ func TestWithErrorGroup(t *testing.T) {
 }
 
 func TestWithTimeout(t *testing.T) {
-	type args struct {
-		eg errgroup.Group
-	}
-
 	type test struct {
 		name      string
-		args      args
+		eg        errgroup.Group
 		checkFunc func(TimeoutOption) error
 	}
 
@@ -80,9 +68,7 @@ func TestWithTimeout(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					eg: eg,
-				},
+				eg:   eg,
 				checkFunc: func(opt TimeoutOption) error {
 					got := new(timeout)
 					opt(got)
@@ -98,7 +84,7 @@ func TestWithTimeout(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithErrorGroup(tt.args.eg)
+			opt := WithErrorGroup(tt.eg)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
