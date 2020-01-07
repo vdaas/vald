@@ -78,7 +78,7 @@ func (t *tensorflow) Close() error {
 	return t.session.Close()
 }
 
-func (t tensorflow) GetVector(feeds []Feed, fetches []Fetch, targets ...*Operation) (values [][][]float64, err error) {
+func (t *tensorflow) GetVector(feeds []Feed, fetches []Fetch, targets ...*Operation) (values [][][]float64, err error) {
 	input := make(map[tf.Output]*tf.Tensor, len(feeds))
 	for _, feed := range feeds {
 		inputTensor, err := tf.NewTensor([]string{string(feed.InputBytes)})
