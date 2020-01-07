@@ -68,14 +68,14 @@ bench/core/ngt: \
 .PHONY: bench/core/ngt/sequential
 ## run benchmark for NGT core sequential methods
 bench/core/ngt/sequential:
-	$(call bench-pprof,pprof/core,core,NGTSequential,ngt-sequential,\
+	$(call bench-pprof,pprof/core,core,NGTSequential,sequential,\
     		./hack/benchmark/core/ngt/ngt_bench_test.go \
     		-dataset=$(DATASET_ARGS))
 
 .PHONY: bench/core/ngt/parallel
 ## run benchmark for NGT core parallel methods
 bench/core/ngt/parallel:
-	$(call bench-pprof,pprof/core,core,NGTParallel,ngt-parallel,\
+	$(call bench-pprof,pprof/core,core,NGTParallel,parallel,\
     		./hack/benchmark/core/ngt/ngt_bench_test.go \
     		-dataset=$(DATASET_ARGS))
 
@@ -88,14 +88,14 @@ bench/core/gongt: \
 .PHONY: bench/core/gongt/sequential
 ## run benchmark for gongt core sequential methods
 bench/core/gongt/sequential:
-	$(call bench-pprof,pprof/core,core,GoNGTSequential,gongt-sequential,\
+	$(call bench-pprof,pprof/core,core,GoNGTSequential,sequential,\
     		./hack/benchmark/core/ngt/gongt_bench_test.go \
     		-dataset=$(DATASET_ARGS))
 
 .PHONY: bench/core/gongt/parallel
 ## run benchmark for gongt core parallel methods
 bench/core/gongt/parallel:
-	$(call bench-pprof,pprof/core,core,GoNGTParallel,gongt-parallel,\
+	$(call bench-pprof,pprof/core,core,GoNGTParallel,parallel,\
     		./hack/benchmark/core/ngt/gongt_bench_test.go \
     		-dataset=$(DATASET_ARGS))
 
