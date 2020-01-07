@@ -11,7 +11,7 @@ func TestHandlerToRestFunc(t *testing.T) {
 	type test struct {
 		name      string
 		hfn       http.HandlerFunc
-		checkFunc func(f Func) error
+		checkFunc func(Func) error
 	}
 
 	tests := []test{
