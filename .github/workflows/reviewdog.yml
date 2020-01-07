@@ -17,3 +17,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           golangci_lint_flags: "--enable-all --disable=gochecknoglobals --exclude-use-default=false --deadline=30m"
+          reporter: github-pr-review
+          level: warning
