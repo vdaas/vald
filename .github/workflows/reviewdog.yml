@@ -12,10 +12,13 @@ jobs:
         uses: actions/checkout@v1
         with:
           fetch-depth: 1
+      - name: go build
+        run: |
+          go build ./...
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          golangci_lint_flags: "--enable-all --disable=gochecknoglobals --exclude-use-default=false --deadline=30m"
+          golangci_lint_flags: "--enable-all --disable=gochecknoglobals --skip-dirs apis/grpc --exclude-use-default=false --deadline=30m"
           reporter: github-pr-review
           level: warning

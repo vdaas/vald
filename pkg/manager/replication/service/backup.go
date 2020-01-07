@@ -20,7 +20,7 @@ import (
 	"context"
 	"reflect"
 
-	gback "github.com/vdaas/vald/apis/grpc/manager/backup"
+	"github.com/vdaas/vald/apis/grpc/manager/compressor"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -58,7 +58,7 @@ func (b *backup) Start(ctx context.Context) (<-chan error, error) {
 
 func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backup_MetaVector, err error) {
 	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
-		vec, err = gback.NewCompressClient(conn).GetVector(ctx, &payload.Backup_GetVector_Request{
+		vec, err = compressor.NewBackupClient(conn).GetVector(ctx, &payload.Backup_GetVector_Request{
 			Uuid: uuid,
 		}, copts...)
 		if err != nil {
@@ -71,7 +71,7 @@ func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backu
 
 func (b *backup) GetLocation(ctx context.Context, uuid string) (ipList []string, err error) {
 	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
-		ips, err := gback.NewCompressClient(conn).Locations(ctx, &payload.Backup_Locations_Request{
+		ips, err := compressor.NewBackupClient(conn).Locations(ctx, &payload.Backup_Locations_Request{
 			Uuid: uuid,
 		}, copts...)
 		if err != nil {
@@ -85,7 +85,7 @@ func (b *backup) GetLocation(ctx context.Context, uuid string) (ipList []string,
 
 func (b *backup) Register(ctx context.Context, vec *payload.Backup_MetaVector) (err error) {
 	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
-		_, err = gback.NewCompressClient(conn).Register(ctx, vec, copts...)
+		_, err = compressor.NewBackupClient(conn).Register(ctx, vec, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -96,7 +96,7 @@ func (b *backup) Register(ctx context.Context, vec *payload.Backup_MetaVector) (
 
 func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Backup_MetaVectors) (err error) {
 	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
-		_, err = gback.NewCompressClient(conn).RegisterMulti(ctx, vecs, copts...)
+		_, err = compressor.NewBackupClient(conn).RegisterMulti(ctx, vecs, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -107,7 +107,7 @@ func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Backup_Meta
 
 func (b *backup) Remove(ctx context.Context, uuid string) (err error) {
 	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
-		_, err = gback.NewCompressClient(conn).Remove(ctx, &payload.Backup_Remove_Request{
+		_, err = compressor.NewBackupClient(conn).Remove(ctx, &payload.Backup_Remove_Request{
 			Uuid: uuid,
 		}, copts...)
 		if err != nil {
@@ -122,7 +122,7 @@ func (b *backup) RemoveMultiple(ctx context.Context, uuids ...string) (err error
 	req := new(payload.Backup_Remove_RequestMulti)
 	req.Uuid = uuids
 	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
-		_, err = gback.NewCompressClient(conn).RemoveMulti(ctx, req, copts...)
+		_, err = compressor.NewBackupClient(conn).RemoveMulti(ctx, req, copts...)
 		if err != nil {
 			return nil, err
 		}
