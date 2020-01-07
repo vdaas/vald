@@ -66,7 +66,7 @@ func TestRequest(t *testing.T) {
 			},
 		},
 		{
-			name: "request object is nil",
+			name: "returns nil and error",
 			checkFunc: func(res interface{}, err error) error {
 				if got, want := err, errors.ErrInvalidRequest; !errors.Is(got, want) {
 					return fmt.Errorf("err not equals. want: %v, got: %v", want, got)
