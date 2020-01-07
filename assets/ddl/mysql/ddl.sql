@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ USE `vald` ;
 
 CREATE TABLE IF NOT EXISTS `vald`.`meta_vector` (
     `uuid` VARCHAR(255) NOT NULL,
-    `vector` TEXT NOT NULL,
+    `vector` BLOB NOT NULL,
     `meta` VARCHAR(1024) NOT NULL,
     `id` int NOT NULL AUTO_INCREMENT,
     PRIMARY KEY (`uuid`),

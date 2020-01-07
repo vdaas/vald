@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -64,14 +64,14 @@ func (h *handler) Locations(w http.ResponseWriter, r *http.Request) (int, error)
 }
 
 func (h *handler) Register(w http.ResponseWriter, r *http.Request) (int, error) {
-	var req *payload.Backup_MetaVector
+	var req *payload.Backup_Compressed_MetaVector
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.backup.Register(r.Context(), req)
 	})
 }
 
 func (h *handler) RegisterMulti(w http.ResponseWriter, r *http.Request) (int, error) {
-	var req *payload.Backup_MetaVectors
+	var req *payload.Backup_Compressed_MetaVectors
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.backup.RegisterMulti(r.Context(), req)
 	})

@@ -5,15 +5,13 @@ jobs:
   golangci-lint:
     name: runner / golangci-lint
     runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
     steps:
       - name: Check out code.
         uses: actions/checkout@v1
         with:
           fetch-depth: 1
-      - name: Install dependencies
-        run: |
-          echo "install dependencies"
-          sudo make ngt/install
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@v1
         with:

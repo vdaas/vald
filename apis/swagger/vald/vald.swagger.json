@@ -68,7 +68,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/BackupMetaVector"
+              "$ref": "#/definitions/payloadBackupMetaVector"
             }
           }
         },
@@ -163,30 +163,6 @@
     }
   },
   "definitions": {
-    "BackupMetaVector": {
-      "type": "object",
-      "properties": {
-        "uuid": {
-          "type": "string"
-        },
-        "meta": {
-          "type": "string"
-        },
-        "vector": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "format": "double"
-          }
-        },
-        "ips": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "ObjectDistance": {
       "type": "object",
       "properties": {
@@ -265,6 +241,30 @@
         }
       }
     },
+    "payloadBackupMetaVector": {
+      "type": "object",
+      "properties": {
+        "uuid": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "string"
+        },
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "payloadEmpty": {
       "type": "object"
     },
@@ -322,18 +322,6 @@
     }
   },
   "x-stream-definitions": {
-    "BackupMetaVector": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "$ref": "#/definitions/BackupMetaVector"
-        },
-        "error": {
-          "$ref": "#/definitions/runtimeStreamError"
-        }
-      },
-      "title": "Stream result of BackupMetaVector"
-    },
     "SearchResponse": {
       "type": "object",
       "properties": {
@@ -345,6 +333,18 @@
         }
       },
       "title": "Stream result of SearchResponse"
+    },
+    "payloadBackupMetaVector": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/payloadBackupMetaVector"
+        },
+        "error": {
+          "$ref": "#/definitions/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of payloadBackupMetaVector"
     },
     "payloadEmpty": {
       "type": "object",
