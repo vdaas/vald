@@ -20,7 +20,7 @@ k8s/vald/deploy: \
 	k8s/external/redis/deploy
 	kubectl apply -f k8s/metrics/metrics-server
 	kubectl apply -f k8s/manager/backup/mysql
-	kubectl apply -f k8s/external/redis
+	kubectl apply -f k8s/manager/compressor
 	kubectl apply -f k8s/agent/ngt
 	kubectl apply -f k8s/discoverer/k8s
 	kubectl apply -f k8s/meta/redis
@@ -33,8 +33,8 @@ k8s/vald/remove: \
 	k8s/external/redis/remove
 	kubectl delete -f k8s/gateway/vald
 	kubectl delete -f k8s/manager/backup/mysql
+	kubectl delete -f k8s/manager/compressor
 	kubectl delete -f k8s/meta/redis
-	kubectl delete -f k8s/external/redis
 	kubectl delete -f k8s/discoverer/k8s
 	kubectl delete -f k8s/agent/ngt
 	kubectl delete -f k8s/metrics/metrics-server
