@@ -42,8 +42,10 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
+	log.Warn("Will service.New(). backupd.go")
 	m, err := service.New(cfg.MySQL)
 	if err != nil {
+		log.Warnf("service.New() is error: %v. backupd.go", err)
 		return nil, err
 	}
 	g := handler.New(handler.WithMySQL(m))
@@ -99,6 +101,7 @@ func (r *run) PreStart(ctx context.Context) error {
 	log.Info("daemon pre-start")
 	err := r.mySQL.Connect(ctx)
 	if err != nil {
+		log.Warn("r.mysql.Connect is error: %v. backupd.go", err)
 		return err
 	}
 	return nil
