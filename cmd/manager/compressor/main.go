@@ -35,6 +35,7 @@ const (
 )
 
 func main() {
+	println("error occured in hogehoge")
 	if err := safety.RecoverFunc(func() error {
 		return runner.Do(
 			context.Background(),
