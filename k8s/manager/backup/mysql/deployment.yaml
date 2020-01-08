@@ -55,7 +55,7 @@ spec:
               name: mysql-secret
               key: password
       containers:
-      - image: vdaas/vald-manager-backup-mysql:nightly
+      - image: vdaas/vald-manager-backup-mysql:pr-153
         imagePullPolicy: Always 
         livenessProbe:
           httpGet:

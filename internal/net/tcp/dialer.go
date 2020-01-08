@@ -50,6 +50,9 @@ type dialer struct {
 }
 
 func NewDialer(opts ...DialerOption) Dialer {
+	defer func() {
+		log.Warn("NewDialer is success")
+	}()
 	d := new(dialer)
 	for _, opt := range append(defaultDialerOptions, opts...) {
 		opt(d)
@@ -128,6 +131,11 @@ func (d *dialer) StartDialerCache(ctx context.Context) {
 	if d.dnsCache && d.cache != nil {
 		d.cache.SetDefaultExpire(d.dnsCacheExpiration).
 			SetExpiredHook(func(gctx context.Context, addr string) {
+				log.Warn("Lookup...............")
+				log.Warnf("dnsRefreshDuration: %v", d.dnsRefreshDuration)
+				log.Warnf("dnsCacheExpiration: %v", d.dnsCacheExpiration)
+				log.Warnf("dialerKeepAlive: %v", d.dialerKeepAlive)
+				log.Warnf("dialer: %v", d)
 				if err := safety.RecoverFunc(func() (err error) {
 					_, err = d.lookup(gctx, addr)
 					return err
