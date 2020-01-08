@@ -20,9 +20,6 @@ jobs:
           echo "::set-env name=PATH::$PATH:$GOBIN"
       - name: Run golangci-lint
         run: |
-          pwd
-          ls
-          golangci-lint run --out-format line-number ${GOLANGCI_LINT_FLAGS}
           golangci-lint run --out-format line-number ${GOLANGCI_LINT_FLAGS} \
               | reviewdog -f=golangci-lint -name=golangci -reporter=${REPORTER} -level=${LEVEL}
         env:
