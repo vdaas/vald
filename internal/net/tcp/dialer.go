@@ -101,6 +101,7 @@ func NewDialer(opts ...DialerOption) Dialer {
 
 func (d *dialer) GetDialer() func(ctx context.Context,
 	network, addr string) (net.Conn, error) {
+	log.Warn(d.dialer)
 	return d.dialer
 }
 
@@ -156,9 +157,15 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (
 		sep = len(addr)
 	}
 
+	log.Warn("cacheDialer...")
 	ips, err := d.lookup(dctx, addr[:sep])
+	log.Warn("lookup err: %v", err)
+	defer func() {
+		log.Warnf("defer error: %v", err)
+	}()
 	if err == nil {
 		for _, ip := range ips {
+			log.Warn("ip %v", ip)
 			conn, err = d.der.DialContext(dctx, network, ip+addr[sep:])
 			if err == nil {
 				if d.tlsConfig != nil {
@@ -175,6 +182,7 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (
 
 	conn, err = d.der.DialContext(dctx, network, addr)
 	if d.tlsConfig != nil {
+		log.Warn("tls.Client...")
 		return tls.Client(conn, d.tlsConfig), nil
 	}
 	return
