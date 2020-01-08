@@ -34,7 +34,7 @@ func TestEncode(t *testing.T) {
 			}
 
 			return test{
-				name: "write encoded object",
+				name: "returns nil",
 				args: args{
 					w:    buf,
 					data: data,
@@ -52,6 +52,20 @@ func TestEncode(t *testing.T) {
 				},
 			}
 		}(),
+
+		{
+			name: "returns error",
+			args: args{
+				w:    new(bytes.Buffer),
+				data: make(chan struct{}),
+			},
+			checkFunc: func(err error) error {
+				if err == nil {
+					return fmt.Errorf("err is nil")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -82,7 +96,7 @@ func TestDecode(t *testing.T) {
 			buf.WriteString(`{"name":"vald"}`)
 
 			return test{
-				name: "read encoded objecg",
+				name: "returns nil",
 				args: args{
 					r:    buf,
 					data: make(map[string]string, 1),
@@ -96,6 +110,32 @@ func TestDecode(t *testing.T) {
 						"name": "vald",
 					}; !reflect.DeepEqual(got, want) {
 						return fmt.Errorf("read data not equals. want: %v, got: %v", want, got)
+					}
+
+					return nil
+				},
+			}
+		}(),
+
+		func() test {
+			buf := new(bytes.Buffer)
+			buf.WriteString(`1`)
+
+			wantData := make(map[string]string, 1)
+
+			return test{
+				name: "returns error",
+				args: args{
+					r:    buf,
+					data: wantData,
+				},
+				checkFunc: func(err error, data map[string]string) error {
+					if err == nil {
+						return fmt.Errorf("err is nil")
+					}
+
+					if !reflect.DeepEqual(data, wantData) {
+						return fmt.Errorf("data not equals. want: %v, got: %v", wantData, data)
 					}
 
 					return nil
@@ -116,7 +156,7 @@ func TestDecode(t *testing.T) {
 
 func TestMarshalIndent(t *testing.T) {
 	type args struct {
-		data map[string]string
+		data interface{}
 		pref string
 		ind  string
 	}
@@ -130,7 +170,7 @@ func TestMarshalIndent(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "write json object string with indent",
+				name: "returns data and nil",
 				args: args{
 					data: map[string]string{
 						"name": "vald",
@@ -151,6 +191,25 @@ func TestMarshalIndent(t *testing.T) {
 				},
 			}
 		}(),
+
+		{
+			name: "returns error",
+			args: args{
+				data: make(chan struct{}),
+				pref: "",
+				ind:  "",
+			},
+			checkFunc: func(data []byte, err error) error {
+				if err == nil {
+					return fmt.Errorf("err is nil")
+				}
+
+				if len(data) != 0 {
+					return fmt.Errorf("data is not empty")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -182,7 +241,7 @@ func TestEncodeResponse(t *testing.T) {
 			w := new(httptest.ResponseRecorder)
 
 			return test{
-				name: "write encode object",
+				name: "returns nil",
 				args: args{
 					w:      w,
 					data:   []byte(`{"name":"vald"}`),
@@ -204,6 +263,27 @@ func TestEncodeResponse(t *testing.T) {
 						return fmt.Errorf("code not equals. want: %v, got: %v", want, got)
 					}
 
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			w := new(httptest.ResponseRecorder)
+
+			return test{
+				name: "returns error",
+				args: args{
+					w:      w,
+					data:   make(chan struct{}),
+					status: http.StatusOK,
+					contentTypes: []string{
+						"application/json",
+					},
+				},
+				checkFunc: func(err error) error {
+					if err == nil {
+						return fmt.Errorf("err is nil")
+					}
 					return nil
 				},
 			}
@@ -239,7 +319,7 @@ func TestDecodeRequest(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, "/", buf)
 
 			return test{
-				name: "read encoded object",
+				name: "return nil",
 				args: args{
 					r:    r,
 					data: make(map[string]string, 1),
@@ -318,7 +398,7 @@ func TestHandler(t *testing.T) {
 			data := make(map[string]string, 1)
 
 			return test{
-				name: "handler is success",
+				name: "returns 200 status code and nil",
 				args: args{
 					r:    r,
 					w:    w,
@@ -346,6 +426,7 @@ func TestHandler(t *testing.T) {
 				},
 			}
 		}(),
+
 		func() test {
 			buf := new(bytes.Buffer)
 			buf.WriteString(`2`)
@@ -369,10 +450,11 @@ func TestHandler(t *testing.T) {
 				},
 			}
 		}(),
+
 		func() test {
 			wantErr := fmt.Errorf("logic error")
 			return test{
-				name: "logic returns error",
+				name: "faild to logic",
 				args: args{
 					r: func() *http.Request {
 						buf := new(bytes.Buffer)
@@ -403,9 +485,10 @@ func TestHandler(t *testing.T) {
 				},
 			}
 		}(),
+
 		func() test {
 			return test{
-				name: "faild to encode object",
+				name: "faild to encode",
 				args: args{
 					r: func() *http.Request {
 						buf := new(bytes.Buffer)
@@ -472,7 +555,7 @@ func TestErrorHandler(t *testing.T) {
 			}
 
 			return test{
-				name: "write object in the form of a RFC7807",
+				name: "returns nil",
 				args: args{
 					r:    r,
 					w:    w,
@@ -500,7 +583,6 @@ func TestErrorHandler(t *testing.T) {
 	}
 
 	log.Init(log.DefaultGlg())
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := ErrorHandler(tt.args.w, tt.args.r, tt.args.msg, tt.args.code, tt.args.err)
