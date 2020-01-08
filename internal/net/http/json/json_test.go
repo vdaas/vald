@@ -2,14 +2,13 @@ package json
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/http/rest"
 )
@@ -41,11 +40,11 @@ func TestEncode(t *testing.T) {
 				},
 				checkFunc: func(err error) error {
 					if err != nil {
-						return fmt.Errorf("err not equals. want: %v, got: %v", nil, err)
+						return errors.Errorf("err not equals. want: %v, got: %v", nil, err)
 					}
 
 					if got, want := buf.String(), "{\"name\":\"vald\"}\n"; got != want {
-						return fmt.Errorf("output data not equals. want: %v, got: %v", want, got)
+						return errors.Errorf("output data not equals. want: %v, got: %v", want, got)
 					}
 
 					return nil
@@ -61,7 +60,7 @@ func TestEncode(t *testing.T) {
 			},
 			checkFunc: func(err error) error {
 				if err == nil {
-					return fmt.Errorf("err is nil")
+					return errors.New("err is nil")
 				}
 				return nil
 			},
@@ -103,13 +102,13 @@ func TestDecode(t *testing.T) {
 				},
 				checkFunc: func(err error, data map[string]string) error {
 					if err != nil {
-						return fmt.Errorf("err not equals. want: %v, got: %v", nil, err)
+						return errors.Errorf("err not equals. want: %v, got: %v", nil, err)
 					}
 
 					if got, want := data, map[string]string{
 						"name": "vald",
 					}; !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("read data not equals. want: %v, got: %v", want, got)
+						return errors.Errorf("read data not equals. want: %v, got: %v", want, got)
 					}
 
 					return nil
@@ -131,11 +130,11 @@ func TestDecode(t *testing.T) {
 				},
 				checkFunc: func(err error, data map[string]string) error {
 					if err == nil {
-						return fmt.Errorf("err is nil")
+						return errors.New("err is nil")
 					}
 
 					if !reflect.DeepEqual(data, wantData) {
-						return fmt.Errorf("data not equals. want: %v, got: %v", wantData, data)
+						return errors.Errorf("data not equals. want: %v, got: %v", wantData, data)
 					}
 
 					return nil
@@ -180,11 +179,11 @@ func TestMarshalIndent(t *testing.T) {
 				},
 				checkFunc: func(data []byte, err error) error {
 					if err != nil {
-						return fmt.Errorf("err not equals. want: %v, got: %v", nil, err)
+						return errors.Errorf("err not equals. want: %v, got: %v", nil, err)
 					}
 
 					if got, want := data, []byte(`{"name":"vald"}`); !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("data not equals. want: %v, got: %v", string(got), string(want))
+						return errors.Errorf("data not equals. want: %v, got: %v", string(got), string(want))
 					}
 
 					return nil
@@ -201,11 +200,11 @@ func TestMarshalIndent(t *testing.T) {
 			},
 			checkFunc: func(data []byte, err error) error {
 				if err == nil {
-					return fmt.Errorf("err is nil")
+					return errors.New("err is nil")
 				}
 
 				if len(data) != 0 {
-					return fmt.Errorf("data is not empty")
+					return errors.New("data is not empty")
 				}
 				return nil
 			},
@@ -252,15 +251,15 @@ func TestEncodeResponse(t *testing.T) {
 				},
 				checkFunc: func(err error) error {
 					if err != nil {
-						return fmt.Errorf("err not equals. want: %v, got: %v", nil, err)
+						return errors.Errorf("err not equals. want: %v, got: %v", nil, err)
 					}
 
 					if got, want := w.Header().Get(rest.ContentType), "application/json"; got != want {
-						return fmt.Errorf("content-type not equals. want: %v, got: %v", want, got)
+						return errors.Errorf("content-type not equals. want: %v, got: %v", want, got)
 					}
 
 					if got, want := w.Code, 200; got != want {
-						return fmt.Errorf("code not equals. want: %v, got: %v", want, got)
+						return errors.Errorf("code not equals. want: %v, got: %v", want, got)
 					}
 
 					return nil
@@ -283,7 +282,7 @@ func TestEncodeResponse(t *testing.T) {
 				},
 				checkFunc: func(err error) error {
 					if err == nil {
-						return fmt.Errorf("err is nil")
+						return errors.New("err is nil")
 					}
 					return nil
 				},
@@ -327,13 +326,13 @@ func TestDecodeRequest(t *testing.T) {
 				},
 				checkFunc: func(err error, data map[string]string) error {
 					if err != nil {
-						return fmt.Errorf("err not equals. want: %v, got: %v", nil, err)
+						return errors.Errorf("err not equals. want: %v, got: %v", nil, err)
 					}
 
 					if got, want := data, map[string]string{
 						"name": "vald",
 					}; !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("read data not equals. want: %v, got: %v", want, got)
+						return errors.Errorf("read data not equals. want: %v, got: %v", want, got)
 					}
 
 					return nil
@@ -353,7 +352,7 @@ func TestDecodeRequest(t *testing.T) {
 				},
 				checkFunc: func(err error, data map[string]string) error {
 					if err == nil {
-						return fmt.Errorf("err is nil")
+						return errors.New("err is nil")
 					}
 					return nil
 				},
@@ -411,17 +410,17 @@ func TestHandler(t *testing.T) {
 				},
 				checkFunc: func(code int, err error, data map[string]string) error {
 					if err != nil {
-						return fmt.Errorf("err not equals. want: %v, got: %v", nil, err)
+						return errors.Errorf("err not equals. want: %v, got: %v", nil, err)
 					}
 
 					if code != http.StatusOK {
-						return fmt.Errorf("code not equals. want: %v, got: %v", http.StatusOK, code)
+						return errors.Errorf("code not equals. want: %v, got: %v", http.StatusOK, code)
 					}
 
 					if got, want := data, map[string]string{
 						"name": "vald",
 					}; !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("data not equals. want: %v, got: %v", want, got)
+						return errors.Errorf("data not equals. want: %v, got: %v", want, got)
 					}
 
 					return nil
@@ -441,11 +440,11 @@ func TestHandler(t *testing.T) {
 				},
 				checkFunc: func(code int, err error, data map[string]string) error {
 					if err == nil {
-						return fmt.Errorf("err is nil")
+						return errors.New("err is nil")
 					}
 
 					if code != http.StatusBadRequest {
-						return fmt.Errorf("code not equals. want: %v, got: %v", http.StatusBadRequest, code)
+						return errors.Errorf("code not equals. want: %v, got: %v", http.StatusBadRequest, code)
 					}
 
 					return nil
@@ -454,7 +453,7 @@ func TestHandler(t *testing.T) {
 		}(),
 
 		func() test {
-			wantErr := fmt.Errorf("logic error")
+			wantErr := errors.New("logic error")
 			return test{
 				name: "faild to logic",
 				args: args{
@@ -470,17 +469,17 @@ func TestHandler(t *testing.T) {
 				},
 				checkFunc: func(code int, err error, data map[string]string) error {
 					if !errors.Is(err, wantErr) {
-						return fmt.Errorf("err not equals. want: %v, got: %v", wantErr, err)
+						return errors.Errorf("err not equals. want: %v, got: %v", wantErr, err)
 					}
 
 					if code != http.StatusInternalServerError {
-						return fmt.Errorf("code not equals. want: %v, got: %v", http.StatusInternalServerError, code)
+						return errors.Errorf("code not equals. want: %v, got: %v", http.StatusInternalServerError, code)
 					}
 
 					if got, want := data, map[string]string{
 						"name": "vald",
 					}; !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("data not equals. want: %v, got: %v", want, got)
+						return errors.Errorf("data not equals. want: %v, got: %v", want, got)
 					}
 
 					return nil
@@ -505,13 +504,13 @@ func TestHandler(t *testing.T) {
 				},
 				checkFunc: func(code int, err error, data map[string]string) error {
 					if code != http.StatusServiceUnavailable {
-						return fmt.Errorf("code not equals. want: %v, got: %v", http.StatusServiceUnavailable, code)
+						return errors.Errorf("code not equals. want: %v, got: %v", http.StatusServiceUnavailable, code)
 					}
 
 					if got, want := data, map[string]string{
 						"name": "vald",
 					}; !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("data not equals. want: %v, got: %v", want, got)
+						return errors.Errorf("data not equals. want: %v, got: %v", want, got)
 					}
 
 					return nil
@@ -563,20 +562,20 @@ func TestErrorHandler(t *testing.T) {
 					w:    w,
 					msg:  "hello",
 					code: http.StatusInternalServerError,
-					err:  fmt.Errorf("faild to handler"),
+					err:  errors.New("faild to handler"),
 				},
 				checkFunc: func(err error) error {
 					if err != nil {
-						return fmt.Errorf("err not equals. want: %v, got: %v", nil, err)
+						return errors.Errorf("err not equals. want: %v, got: %v", nil, err)
 					}
 
 					if got, want := w.Header()[rest.ContentType],
 						[]string{rest.ProblemJSON, rest.CharsetUTF8}; !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("resp %v header not equals. want: %v, got: %v", rest.ContentType, want, got)
+						return errors.Errorf("resp %v header not equals. want: %v, got: %v", rest.ContentType, want, got)
 					}
 
 					if got, want := w.Code, http.StatusInternalServerError; got != want {
-						return fmt.Errorf("reso code not equals. want: %v, got: %v", http.StatusInternalServerError, got)
+						return errors.Errorf("reso code not equals. want: %v, got: %v", http.StatusInternalServerError, got)
 					}
 					return nil
 				},
