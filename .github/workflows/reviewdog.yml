@@ -21,9 +21,9 @@ jobs:
       - name: Run golangci-lint
         run: |
           golangci-lint run --out-format line-number ${GOLANGCI_LINT_FLAGS} \
-              | reviewdog -f=golangci-lint -name=golangci -reporter=local -level=${LEVEL}
+              | reviewdog -f=golangci-lint -name=golangci -reporter=local -level=${LEVEL} -diff="git diff master"
           golangci-lint run --out-format line-number ${GOLANGCI_LINT_FLAGS} \
-              | reviewdog -f=golangci-lint -name=golangci -reporter=${REPORTER} -level=${LEVEL}
+              | reviewdog -f=golangci-lint -name=golangci -reporter=${REPORTER} -level=${LEVEL} -diff="git diff master"
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GOLANGCI_LINT_FLAGS: "--enable-all --disable=gochecknoglobals --skip-dirs apis/grpc --exclude-use-default=false --deadline=30m"
