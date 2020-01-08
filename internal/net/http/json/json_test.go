@@ -267,6 +267,7 @@ func TestEncodeResponse(t *testing.T) {
 				},
 			}
 		}(),
+
 		func() test {
 			w := new(httptest.ResponseRecorder)
 
@@ -339,6 +340,7 @@ func TestDecodeRequest(t *testing.T) {
 				},
 			}
 		}(),
+
 		func() test {
 			buf := new(bytes.Buffer)
 			buf.WriteString(`10`)
@@ -351,7 +353,7 @@ func TestDecodeRequest(t *testing.T) {
 				},
 				checkFunc: func(err error, data map[string]string) error {
 					if err == nil {
-						return fmt.Errorf("err is nil.")
+						return fmt.Errorf("err is nil")
 					}
 					return nil
 				},
