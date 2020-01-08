@@ -1,22 +1,18 @@
 package transport
 
 import (
-	"fmt"
 	"net/http"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 func TestWithRoundTripper(t *testing.T) {
-	type args struct {
-		tr http.RoundTripper
-	}
-
 	type test struct {
 		name      string
-		args      args
+		tr        http.RoundTripper
 		checkFunc func(Option) error
 	}
 
@@ -26,15 +22,13 @@ func TestWithRoundTripper(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					tr: tr,
-				},
+				tr:   tr,
 				checkFunc: func(opt Option) error {
 					got := new(ert)
 					opt(got)
 
 					if got, want := got.transport, tr; !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 					return nil
 				},
@@ -44,7 +38,7 @@ func TestWithRoundTripper(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithRoundTripper(tt.args.tr)
+			opt := WithRoundTripper(tt.tr)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -53,13 +47,9 @@ func TestWithRoundTripper(t *testing.T) {
 }
 
 func TestWithBackoff(t *testing.T) {
-	type args struct {
-		bo backoff.Backoff
-	}
-
 	type test struct {
 		name      string
-		args      args
+		bo        backoff.Backoff
 		checkFunc func(Option) error
 	}
 
@@ -69,15 +59,13 @@ func TestWithBackoff(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					bo: bo,
-				},
+				bo:   bo,
 				checkFunc: func(opt Option) error {
 					got := new(ert)
 					opt(got)
 
 					if got, want := got.bo, bo; !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 					return nil
 				},
@@ -87,7 +75,7 @@ func TestWithBackoff(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithBackoff(tt.args.bo)
+			opt := WithBackoff(tt.bo)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}

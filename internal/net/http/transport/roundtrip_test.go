@@ -10,16 +10,13 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 func TestNewExpBackoff(t *testing.T) {
-	type args struct {
-		opts []Option
-	}
-
 	type test struct {
 		name        string
-		args        args
+		opts        []Option
 		initialized bool
 	}
 
@@ -32,7 +29,7 @@ func TestNewExpBackoff(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewExpBackoff(tt.args.opts...)
+			got := NewExpBackoff(tt.opts...)
 
 			if (got != nil) != tt.initialized {
 				t.Error("New() is wrong")
@@ -60,11 +57,11 @@ func TestRoundTrip(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			wres := new(http.Response)
+			wantRes := new(http.Response)
 
 			tr := &roundTripMock{
 				RoundTripFunc: func(*http.Request) (*http.Response, error) {
-					return wres, nil
+					return wantRes, nil
 				},
 			}
 
@@ -78,8 +75,8 @@ func TestRoundTrip(t *testing.T) {
 						return fmt.Errorf("error not nil. err: %v", err)
 					}
 
-					if !reflect.DeepEqual(res, wres) {
-						return fmt.Errorf("res not equals. want: %v, got: %v", wres, err)
+					if !reflect.DeepEqual(res, wantRes) {
+						return errors.Errorf("res not equals. want: %v, got: %v", wantRes, err)
 					}
 
 					return nil
@@ -88,11 +85,11 @@ func TestRoundTrip(t *testing.T) {
 		}(),
 
 		func() test {
-			wres := new(http.Response)
+			wantRes := new(http.Response)
 
 			tr := &roundTripMock{
 				RoundTripFunc: func(*http.Request) (*http.Response, error) {
-					return wres, nil
+					return wantRes, nil
 				},
 			}
 
@@ -113,11 +110,11 @@ func TestRoundTrip(t *testing.T) {
 				},
 				checkFunc: func(res *http.Response, err error) error {
 					if err != nil {
-						return fmt.Errorf("error not nil. err: %v", err)
+						return errors.Errorf("error not nil. err: %v", err)
 					}
 
-					if !reflect.DeepEqual(res, wres) {
-						return fmt.Errorf("res not equals. want: %v, got: %v", wres, err)
+					if !reflect.DeepEqual(res, wantRes) {
+						return errors.Errorf("res not equals. want: %v, got: %v", wantRes, err)
 					}
 
 					return nil
@@ -133,7 +130,7 @@ func TestRoundTrip(t *testing.T) {
 
 			tr := &roundTripMock{
 				RoundTripFunc: func(*http.Request) (*http.Response, error) {
-					return res, fmt.Errorf("faild")
+					return res, errors.New("faild")
 				},
 			}
 
@@ -144,7 +141,7 @@ func TestRoundTrip(t *testing.T) {
 			}
 
 			return test{
-				name: "backoff returns an error",
+				name: "returns backoff error",
 				args: args{
 					req: new(http.Request),
 				},
@@ -154,11 +151,11 @@ func TestRoundTrip(t *testing.T) {
 				},
 				checkFunc: func(res *http.Response, err error) error {
 					if err == nil {
-						return fmt.Errorf("err is nil")
+						return errors.New("err is nil")
 					}
 
 					if res != nil {
-						return fmt.Errorf("res not nil. res: %v", res)
+						return errors.Errorf("res not nil. res: %v", res)
 					}
 
 					return nil
@@ -191,11 +188,11 @@ func TestRoundTrip(t *testing.T) {
 				},
 				checkFunc: func(res *http.Response, err error) error {
 					if err == nil {
-						return fmt.Errorf("err is nil")
+						return errors.New("err is nil")
 					}
 
 					if res != nil {
-						return fmt.Errorf("res not nil. res: %v", res)
+						return errors.Errorf("res not nil. res: %v", res)
 					}
 
 					return nil
