@@ -17,10 +17,6 @@
 // Package tensorflow provides implementation of Go API for extract data to vector
 package tensorflow
 
-import (
-	tf "github.com/tensorflow/tensorflow/tensorflow/go"
-)
-
 type Option func(*tensorflow)
 
 var (
