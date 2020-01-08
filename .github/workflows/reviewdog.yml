@@ -21,6 +21,8 @@ jobs:
       - name: Run golangci-lint
         run: |
           golangci-lint run --out-format line-number ${GOLANGCI_LINT_FLAGS} \
+              | reviewdog -f=golangci-lint -name=golangci -reporter=local -level=${LEVEL}
+          golangci-lint run --out-format line-number ${GOLANGCI_LINT_FLAGS} \
               | reviewdog -f=golangci-lint -name=golangci -reporter=${REPORTER} -level=${LEVEL}
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
