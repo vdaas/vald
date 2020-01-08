@@ -2,7 +2,6 @@ package dump
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"testing"
@@ -33,12 +32,14 @@ func TestRequest(t *testing.T) {
 					URL: &url.URL{
 						Scheme: "http",
 					},
-					Method:           http.MethodGet,
-					Proto:            "proto",
-					Header:           http.Header{},
-					TransferEncoding: []string{"trans1"},
-					RemoteAddr:       "0.0.0.0",
-					ContentLength:    1234,
+					Method: http.MethodGet,
+					Proto:  "proto",
+					Header: http.Header{},
+					TransferEncoding: []string{
+						"trans1",
+					},
+					RemoteAddr:    "0.0.0.0",
+					ContentLength: 1234,
 				},
 				body: map[string]interface{}{
 					"name": "vald",
@@ -49,7 +50,7 @@ func TestRequest(t *testing.T) {
 			},
 			checkFunc: func(res interface{}, err error) error {
 				if err != nil {
-					return fmt.Errorf("err is not nil. err: %v", err)
+					return errors.Errorf("err is not nil. err: %v", err)
 				}
 
 				b, err := json.Marshal(res)
@@ -59,7 +60,7 @@ func TestRequest(t *testing.T) {
 
 				str := `{"host":"hoge","uri":"uri","url":"http:","method":"GET","proto":"proto","header":{},"transfer_encoding":["trans1"],"remote_addr":"0.0.0.0","content_length":1234,"body":{"name":"vald"},"values":{"version":"1.0.0"}}`
 				if got, want := string(b), str; got != want {
-					return fmt.Errorf("response not equals. want: %v, got: %v", want, got)
+					return errors.Errorf("response not equals. want: %v, got: %v", want, got)
 				}
 
 				return nil
@@ -69,7 +70,7 @@ func TestRequest(t *testing.T) {
 			name: "returns nil and error",
 			checkFunc: func(res interface{}, err error) error {
 				if got, want := err, errors.ErrInvalidRequest; !errors.Is(got, want) {
-					return fmt.Errorf("err not equals. want: %v, got: %v", want, got)
+					return errors.Errorf("err not equals. want: %v, got: %v", want, got)
 				}
 				return nil
 			},
