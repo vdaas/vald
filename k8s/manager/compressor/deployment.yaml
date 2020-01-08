@@ -37,29 +37,40 @@ spec:
       labels:
         app: manager-compressor
     spec:
+      initContainers:
+      - name: wait-for-manager-backup-mysql
+        image: busybox
+        command:
+        - /bin/sh
+        - -c
+        - >
+          set -x;
+          while [ $(curl -sw '%{http_code}' "http://manager-backup-mysql.default.svc.cluster.local:3001" -o /dev/null) -ne 200]; do
+            sleep 2;
+          done
       containers:
       - image: vdaas/vald-manager-compressor:nightly
         imagePullPolicy: Always
-        # livenessProbe:
-        #   httpGet:
-        #     path: /liveness
-        #     port: liveness
-        #     scheme: HTTP
-        #   initialDelaySeconds: 5
-        #   timeoutSeconds: 2
-        #   successThreshold: 1
-        #   failureThreshold: 2
-        #   periodSeconds: 3
-        # readinessProbe:
-        #   httpGet:
-        #     path: /readiness
-        #     port: readiness
-        #     scheme: HTTP
-        #   initialDelaySeconds: 10
-        #   timeoutSeconds: 2
-        #   successThreshold: 1
-        #   failureThreshold: 2
-        #   periodSeconds: 3
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            port: liveness
+            scheme: HTTP
+          initialDelaySeconds: 5
+          timeoutSeconds: 2
+          successThreshold: 1
+          failureThreshold: 2
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: readiness
+            scheme: HTTP
+          initialDelaySeconds: 10
+          timeoutSeconds: 2
+          successThreshold: 1
+          failureThreshold: 2
+          periodSeconds: 3
         name: manager-compressor
         ports:
         - containerPort: 3000
