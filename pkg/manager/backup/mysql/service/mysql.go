@@ -18,6 +18,7 @@ package service
 
 import (
 	"context"
+	"log"
 
 	"github.com/kpango/gache"
 	"github.com/vdaas/vald/internal/config"
@@ -46,6 +47,7 @@ type client struct {
 }
 
 func New(cfg *config.MySQL) (MySQL, error) {
+	log.Println("New(). service/mysql.go")
 	c := new(client)
 
 	opts := append(make([]mysql.Option, 0, 13),
@@ -114,8 +116,11 @@ func New(cfg *config.MySQL) (MySQL, error) {
 	m, err := mysql.New(opts...)
 
 	if err != nil {
+		log.Printf("mysql.New() error: %v. service/mysql.go", err)
 		return nil, err
 	}
+
+	log.Println("mysql.New is ok. service/mysql.go")
 
 	c.db = m
 
@@ -124,8 +129,10 @@ func New(cfg *config.MySQL) (MySQL, error) {
 
 func (c *client) Connect(ctx context.Context) error {
 	if c.der != nil {
+		log.Println("start dialer cache. service/mysql.go")
 		c.der.StartDialerCache(ctx)
 	}
+	log.Println("will db.Open. service/mysql.go")
 	return c.db.Open(ctx)
 }
 

@@ -70,6 +70,7 @@ type mySQLClient struct {
 }
 
 func New(opts ...Option) (MySQL, error) {
+	log.Warn("New. internal/mysql.go")
 	m := new(mySQLClient)
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(m); err != nil {
@@ -81,10 +82,12 @@ func New(opts ...Option) (MySQL, error) {
 }
 
 func (m *mySQLClient) Open(ctx context.Context) error {
+	log.Warn("Open. service/mysql.go")
 	var addParam string
 	network := "tcp"
 	if m.dialer != nil {
 		mysql.RegisterDialContext(network, func(ctx context.Context, addr string) (net.Conn, error) {
+			log.Warn("RegisterDialalContext inner functin. internal/mysql.go")
 			return m.dialer(ctx, network, addr)
 		})
 	}
@@ -94,11 +97,13 @@ func (m *mySQLClient) Open(ctx context.Context) error {
 		addParam += "&tls=" + tlsConfName
 	}
 
+	log.Warn("Will dbr.Open. internal/mysql.go")
 	conn, err := dbr.Open(m.db,
 		fmt.Sprintf("%s:%s@%s(%s:%d)/%s?charset=%s&parseTime=true&loc=%s%s",
 			m.user, m.pass, network, m.host, m.port, m.name,
 			m.charset, m.timezone, addParam), nil)
 	if err != nil {
+		log.Warnf("dbr.Open. error: %v internal/mysql.go", err)
 		return err
 	}
 	conn.SetConnMaxLifetime(m.connMaxLifeTime)
