@@ -45,6 +45,7 @@ RUN GO_VERSION="$(cat GO_VERSION)" \
     && CGO_ENABLED=0 \
     && GO111MODULE=on \
     go build \
+    -a -tags netgo \
     --ldflags "-s -w -linkmode 'external' \
     -extldflags '-static' \
     -X 'github.com/${ORG}/${REPO}/internal/info.Version=${VALD_VERSION}' \
