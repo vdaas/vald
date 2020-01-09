@@ -22,6 +22,7 @@ import (
 	"crypto/tls"
 	"net"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/kpango/gache"
@@ -57,6 +58,8 @@ func NewDialer(opts ...DialerOption) Dialer {
 	for _, opt := range append(defaultDialerOptions, opts...) {
 		opt(d)
 	}
+
+	_ = syscall.EMFILE
 
 	d.der = &net.Dialer{
 		Timeout:   d.dialerTimeout,
