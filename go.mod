@@ -41,6 +41,7 @@ require (
 	github.com/kpango/gache v1.1.24
 	github.com/kpango/glg v1.4.7
 	github.com/pierrec/lz4 v2.4.0+incompatible
+	github.com/tensorflow/tensorflow v2.0.0+incompatible
 	github.com/scylladb/gocqlx v1.3.3
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
