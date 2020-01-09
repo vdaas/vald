@@ -2,7 +2,6 @@ package servers
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -105,41 +104,31 @@ func TestListenAndServe(t *testing.T) {
 				},
 			}
 
+			srv2Err := errors.New("srv2 error")
 			srv2 := &mockServer{
 				IsRunningFunc: func() bool {
 					return false
 				},
 				ListenAndServeFunc: func(context.Context, chan<- error) error {
-					return nil
-				},
-			}
-
-			srv3Err := errors.New("srv3 error")
-			srv3 := &mockServer{
-				IsRunningFunc: func() bool {
-					return false
-				},
-				ListenAndServeFunc: func(context.Context, chan<- error) error {
-					return srv3Err
+					return srv2Err
 				},
 			}
 
 			servers := map[string]server.Server{
 				"srv1": srv1,
 				"srv2": srv2,
-				"srv3": srv3,
 			}
 
 			sus := []string{
 				"srv1",
 				"srv2",
 				"srv3",
-				"srv4",
 			}
 
-			errCh := make(chan error, len(servers))
-			errCh <- srv3Err
-			errCh <- errors.ErrServerNotFound("srv4")
+			errCh := make(chan error, len(servers)+1)
+			errCh <- srv2Err
+			errCh <- errors.ErrServerNotFound("srv3")
+			errCh <- srv2Err
 			close(errCh)
 
 			return test{
@@ -167,9 +156,6 @@ func TestListenAndServe(t *testing.T) {
 					for err := range want {
 						werrs = append(werrs, err)
 					}
-
-					fmt.Println(gerrs)
-					fmt.Println(werrs)
 
 					if len(werrs) != len(gerrs) {
 						return errors.Errorf("errors count is not equals: want: %v, got: %v", len(werrs), len(gerrs))
@@ -213,7 +199,7 @@ func TestShutdown(t *testing.T) {
 	type field struct {
 		eg      errgroup.Group
 		servers map[string]server.Server
-		sdr     []string
+		sds     []string
 		sddur   time.Duration
 	}
 
@@ -227,20 +213,22 @@ func TestShutdown(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			srv1 := NewMockServer()
-			srv1.IsRunningFunc = func() bool {
-				return true
-			}
-			srv1.ShutdownFunc = func(context.Context) error {
-				return nil
+			srv1 := &mockServer{
+				IsRunningFunc: func() bool {
+					return true
+				},
+				ShutdownFunc: func(context.Context) error {
+					return nil
+				},
 			}
 
-			srv2 := NewMockServer()
-			srv2.IsRunningFunc = func() bool {
-				return true
-			}
-			srv2.ShutdownFunc = func(context.Context) error {
-				return nil
+			srv2 := &mockServer{
+				IsRunningFunc: func() bool {
+					return true
+				},
+				ShutdownFunc: func(context.Context) error {
+					return nil
+				},
 			}
 
 			servers := map[string]server.Server{
@@ -248,8 +236,9 @@ func TestShutdown(t *testing.T) {
 				"srv2": srv2,
 			}
 
-			sdr := []string{
-				"srv1", "srv2",
+			sds := []string{
+				"srv1",
+				"srv2",
 			}
 
 			return test{
@@ -260,12 +249,12 @@ func TestShutdown(t *testing.T) {
 				field: field{
 					eg:      errgroup.Get(),
 					servers: servers,
-					sdr:     sdr,
+					sds:     sds,
 				},
 
-				checkFunc: func(got error, want error) error {
+				checkFunc: func(got, want error) error {
 					if got != nil {
-						return fmt.Errorf("return error: %v", got)
+						return errors.Errorf("return error: %v", got)
 					}
 					return nil
 				},
@@ -280,34 +269,35 @@ func TestShutdown(t *testing.T) {
 			field: field{
 				eg:      errgroup.Get(),
 				servers: map[string]server.Server{},
-				sdr: []string{
+				sds: []string{
 					"srv1",
 				},
 			},
-			checkFunc: func(got error, want error) error {
-				if got.Error() != want.Error() {
-					return fmt.Errorf("not equals. want: %v, got: %v", want, got)
+			checkFunc: func(got, want error) error {
+				if !errors.Is(want, got) {
+					return errors.Errorf("not equals. want: %v, got: %v", want, got)
 				}
 				return nil
 			},
 			want: errors.ErrServerNotFound("srv1"),
 		},
 		func() test {
-			want := errors.Wrap(fmt.Errorf("unexpected error"), "faild to shutdown")
+			want := errors.Wrap(errors.Errorf("unexpected error"), "faild to shutdown")
 
-			srv1 := NewMockServer()
-			srv1.IsRunningFunc = func() bool {
-				return true
-			}
-			srv1.ShutdownFunc = func(context.Context) error {
-				return want
+			srv1 := &mockServer{
+				IsRunningFunc: func() bool {
+					return true
+				},
+				ShutdownFunc: func(context.Context) error {
+					return want
+				},
 			}
 
 			servers := map[string]server.Server{
 				"srv1": srv1,
 			}
 
-			sdr := []string{
+			sds := []string{
 				"srv1",
 			}
 
@@ -319,11 +309,11 @@ func TestShutdown(t *testing.T) {
 				field: field{
 					eg:      errgroup.Get(),
 					servers: servers,
-					sdr:     sdr,
+					sds:     sds,
 				},
-				checkFunc: func(got error, want error) error {
+				checkFunc: func(got, want error) error {
 					if got.Error() != want.Error() {
-						return fmt.Errorf("not equals. want: %v, got: %v", want, got)
+						return errors.Errorf("not equals. want: %v, got: %v", want, got)
 					}
 					return nil
 				},
@@ -340,7 +330,7 @@ func TestShutdown(t *testing.T) {
 			l := &listener{
 				eg:      tt.field.eg,
 				servers: tt.field.servers,
-				sds:     tt.field.sdr,
+				sds:     tt.field.sds,
 				sddur:   tt.field.sddur,
 			}
 

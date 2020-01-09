@@ -5,19 +5,10 @@ import (
 )
 
 type mockServer struct {
-	NameFunc           NameFunc
-	IsRunningFunc      IsRunningFunc
-	ListenAndServeFunc ListenAndServeFunc
-	ShutdownFunc       ShutdownFunc
-}
-
-type NameFunc func() string
-type IsRunningFunc func() bool
-type ListenAndServeFunc func(context.Context, chan<- error) error
-type ShutdownFunc func(context.Context) error
-
-func NewMockServer() *mockServer {
-	return new(mockServer)
+	NameFunc           func() string
+	IsRunningFunc      func() bool
+	ListenAndServeFunc func(context.Context, chan<- error) error
+	ShutdownFunc       func(context.Context) error
 }
 
 func (ms *mockServer) Name() string {

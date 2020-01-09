@@ -19,9 +19,10 @@ func TestWithServer(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			srv := NewMockServer()
-			srv.NameFunc = func() string {
-				return "srv"
+			srv := &mockServer{
+				NameFunc: func() string {
+					return "srv"
+				},
 			}
 
 			return test{
