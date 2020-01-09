@@ -74,6 +74,9 @@ PROTO_PATHS = \
 	$(GOPATH)/src/github.com/danielvladco/go-proto-gql \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 
+COMMA := ,
+SHELL = bash
+
 include Makefile.d/functions.mk
 
 .PHONY: all
