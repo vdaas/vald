@@ -13,13 +13,9 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	type args struct {
-		opts []Option
-	}
-
 	type test struct {
 		name      string
-		args      args
+		opts      []Option
 		checkFunc func(got, want *listener) error
 		want      *listener
 	}
@@ -32,20 +28,18 @@ func TestNew(t *testing.T) {
 			},
 			checkFunc: func(got *listener, want *listener) error {
 				if !reflect.DeepEqual(got, want) {
-					return fmt.Errorf("not equals. want: %v, got: %v", want, got)
+					return errors.Errorf("not equals. want: %v, got: %v", want, got)
 				}
 				return nil
 			},
 		},
 		{
 			name: "initialize with custom options",
-			args: args{
-				opts: []Option{
-					WithStartUpStrategy([]string{
-						"strg_1",
-						"strg_2",
-					}),
-				},
+			opts: []Option{
+				WithStartUpStrategy([]string{
+					"strg_1",
+					"strg_2",
+				}),
 			},
 			want: &listener{
 				eg: errgroup.Get(),
@@ -60,11 +54,11 @@ func TestNew(t *testing.T) {
 			},
 			checkFunc: func(got *listener, want *listener) error {
 				if !reflect.DeepEqual(got.sus, want.sus) {
-					return fmt.Errorf("sus is not equals. want: %v, got: %v", want.sus, got.sus)
+					return errors.Errorf("sus is not equals. want: %v, got: %v", want.sus, got.sus)
 				}
 
 				if !reflect.DeepEqual(got.sds, want.sds) {
-					return fmt.Errorf("sds is not equals. want: %v, got: %v", want.sds, got.sds)
+					return errors.Errorf("sds is not equals. want: %v, got: %v", want.sds, got.sds)
 				}
 				return nil
 			},
@@ -73,8 +67,7 @@ func TestNew(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := New(tt.args.opts...)
-
+			got := New(tt.opts...)
 			if err := tt.checkFunc(got.(*listener), tt.want); err != nil {
 				t.Error(err)
 			}
@@ -103,33 +96,50 @@ func TestListenAndServe(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			srv1 := NewMockServer()
-			srv1.IsRunningFunc = func() bool {
-				return false
-			}
-			srv1.ListenAndServeFunc = func(context.Context, chan<- error) error {
-				return nil
+			srv1 := &mockServer{
+				IsRunningFunc: func() bool {
+					return false
+				},
+				ListenAndServeFunc: func(context.Context, chan<- error) error {
+					return nil
+				},
 			}
 
-			srv2 := NewMockServer()
-			srv2.IsRunningFunc = func() bool {
-				return false
+			srv2 := &mockServer{
+				IsRunningFunc: func() bool {
+					return false
+				},
+				ListenAndServeFunc: func(context.Context, chan<- error) error {
+					return nil
+				},
 			}
-			srv2.ListenAndServeFunc = func(context.Context, chan<- error) error {
-				return nil
+
+			srv3Err := errors.New("srv3 error")
+			srv3 := &mockServer{
+				IsRunningFunc: func() bool {
+					return false
+				},
+				ListenAndServeFunc: func(context.Context, chan<- error) error {
+					return srv3Err
+				},
 			}
 
 			servers := map[string]server.Server{
 				"srv1": srv1,
 				"srv2": srv2,
+				"srv3": srv3,
 			}
 
 			sus := []string{
-				"srv1", "srv3",
+				"srv1",
+				"srv2",
+				"srv3",
+				"srv4",
 			}
 
-			errCh := make(chan error, len(servers)*10)
-			errCh <- errors.ErrServerNotFound("srv3")
+			errCh := make(chan error, len(servers))
+			errCh <- srv3Err
+			errCh <- errors.ErrServerNotFound("srv4")
 			close(errCh)
 
 			return test{
@@ -148,26 +158,28 @@ func TestListenAndServe(t *testing.T) {
 				},
 				want: errCh,
 				checkFunc: func(got <-chan error, want <-chan error) error {
-					gerrs := make([]error, 0, len(servers)*10)
+					gerrs := make([]error, 0, len(servers))
 					for err := range got {
 						gerrs = append(gerrs, err)
 					}
 
-					werrs := make([]error, 0, len(servers)*10)
+					werrs := make([]error, 0, len(servers))
 					for err := range want {
 						werrs = append(werrs, err)
 					}
 
+					fmt.Println(gerrs)
+					fmt.Println(werrs)
+
 					if len(werrs) != len(gerrs) {
-						return fmt.Errorf("errors count is not equals: want: %v, got: %v", len(werrs), len(gerrs))
+						return errors.Errorf("errors count is not equals: want: %v, got: %v", len(werrs), len(gerrs))
 					}
 
 					for i := range werrs {
 						if gerrs[i].Error() != werrs[i].Error() {
-							return fmt.Errorf("errors[%d] is not equals: want: %v, got: %v", i, werrs[i], gerrs[i])
+							return errors.Errorf("errors[%d] is not equals: want: %v, got: %v", i, werrs[i], gerrs[i])
 						}
 					}
-
 					return nil
 				},
 			}
@@ -268,7 +280,9 @@ func TestShutdown(t *testing.T) {
 			field: field{
 				eg:      errgroup.Get(),
 				servers: map[string]server.Server{},
-				sdr:     []string{"srv1"},
+				sdr: []string{
+					"srv1",
+				},
 			},
 			checkFunc: func(got error, want error) error {
 				if got.Error() != want.Error() {

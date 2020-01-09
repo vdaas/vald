@@ -1,29 +1,24 @@
 package servers
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/servers/server"
 )
 
 func TestWithServer(t *testing.T) {
-	type args struct {
-		srv server.Server
-	}
-
 	type test struct {
 		name      string
-		args      args
+		srv       server.Server
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		func() test {
-
 			srv := NewMockServer()
 			srv.NameFunc = func() string {
 				return "srv"
@@ -31,22 +26,20 @@ func TestWithServer(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					srv: srv,
-				},
+				srv:  srv,
 				checkFunc: func(opt Option) error {
 					got := new(listener)
 					opt(got)
 
 					if len(got.servers) != 1 {
-						return fmt.Errorf("servers count is wrong. want: %v, got: %v", 1, len(got.servers))
+						return errors.Errorf("servers count is wrong. want: %v, got: %v", 1, len(got.servers))
 					}
 
 					if gsrv, ok := got.servers["srv"]; !ok {
-						return fmt.Errorf("servers['srv'] is nothing")
+						return errors.New("servers['srv'] is nothing")
 					} else {
 						if !reflect.DeepEqual(gsrv, srv) {
-							return fmt.Errorf("servers['srv'] is not equals. want: %v, got: %b", srv, gsrv)
+							return errors.Errorf("servers['srv'] is not equals. want: %v, got: %b", srv, gsrv)
 						}
 					}
 
@@ -54,11 +47,23 @@ func TestWithServer(t *testing.T) {
 				},
 			}
 		}(),
+		{
+			name: "do nothing",
+			checkFunc: func(opt Option) error {
+				got := new(listener)
+				opt(got)
+
+				if got.servers != nil {
+					return errors.Errorf("server is not nil: %v", got.servers)
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithServer(tt.args.srv)
+			opt := WithServer(tt.srv)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -67,13 +72,9 @@ func TestWithServer(t *testing.T) {
 }
 
 func TestWithErrorGroup(t *testing.T) {
-	type args struct {
-		eg errgroup.Group
-	}
-
 	type test struct {
 		name      string
-		args      args
+		eg        errgroup.Group
 		checkFunc func(opt Option) error
 	}
 
@@ -83,15 +84,13 @@ func TestWithErrorGroup(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					eg: eg,
-				},
+				eg:   eg,
 				checkFunc: func(opt Option) error {
 					got := new(listener)
 					opt(got)
 
 					if !reflect.DeepEqual(got.eg, eg) {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 					return nil
 				},
@@ -101,7 +100,7 @@ func TestWithErrorGroup(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithErrorGroup(tt.args.eg)
+			opt := WithErrorGroup(tt.eg)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -110,28 +109,35 @@ func TestWithErrorGroup(t *testing.T) {
 }
 
 func TestWithShutdownDuration(t *testing.T) {
-	type args struct {
-		dur string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		dur       string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				dur: "10s",
-			},
+			dur:  "10s",
 			checkFunc: func(opt Option) error {
 				got := new(listener)
 				opt(got)
 
 				if !reflect.DeepEqual(got.sddur, 10*time.Second) {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+		{
+			name: "set default value",
+			dur:  "vald",
+			checkFunc: func(opt Option) error {
+				got := new(listener)
+				opt(got)
+
+				if !reflect.DeepEqual(got.sddur, 20*time.Second) {
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -140,7 +146,7 @@ func TestWithShutdownDuration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithShutdownDuration(tt.args.dur)
+			opt := WithShutdownDuration(tt.dur)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -149,13 +155,9 @@ func TestWithShutdownDuration(t *testing.T) {
 }
 
 func TestWithStartUpStrategy(t *testing.T) {
-	type args struct {
-		strg []string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		strg      []string
 		checkFunc func(opt Option) error
 	}
 
@@ -168,15 +170,13 @@ func TestWithStartUpStrategy(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					strg: strg,
-				},
+				strg: strg,
 				checkFunc: func(opt Option) error {
 					got := new(listener)
 					opt(got)
 
 					if !reflect.DeepEqual(got.sus, strg) {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 					return nil
 				},
@@ -186,7 +186,7 @@ func TestWithStartUpStrategy(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithStartUpStrategy(tt.args.strg)
+			opt := WithStartUpStrategy(tt.strg)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -195,13 +195,9 @@ func TestWithStartUpStrategy(t *testing.T) {
 }
 
 func TestWithShutdownStrategy(t *testing.T) {
-	type args struct {
-		strg []string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		strg      []string
 		checkFunc func(opt Option) error
 	}
 
@@ -214,15 +210,13 @@ func TestWithShutdownStrategy(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					strg: strg,
-				},
+				strg: strg,
 				checkFunc: func(opt Option) error {
 					got := new(listener)
 					opt(got)
 
 					if !reflect.DeepEqual(got.sds, strg) {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 					return nil
 				},
@@ -232,7 +226,7 @@ func TestWithShutdownStrategy(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithShutdownStrategy(tt.args.strg)
+			opt := WithShutdownStrategy(tt.strg)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
