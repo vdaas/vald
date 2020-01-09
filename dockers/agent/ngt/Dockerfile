@@ -60,6 +60,7 @@ RUN GO_VERSION="$(cat GO_VERSION)" \
     CGO_LDFLAGS="-g -Ofast -march=native" \
     GO111MODULE=on \
     go build \
+    -a -tags netgo \
     --ldflags "-s -w -linkmode 'external' \
     -extldflags '-static -fPIC -m64 -pthread -fopenmp -std=c++17 -lstdc++ -lm' \
     -X 'github.com/${ORG}/${REPO}/internal/info.Version=${VALD_VERSION}' \
