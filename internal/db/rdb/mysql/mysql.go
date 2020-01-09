@@ -86,9 +86,13 @@ func (m *mySQLClient) Open(ctx context.Context) error {
 	var addParam string
 	network := "tcp"
 	if m.dialer != nil {
+		log.Warn("Will Register")
 		mysql.RegisterDialContext(network, func(ctx context.Context, addr string) (net.Conn, error) {
-			log.Warn("RegisterDialalContext inner functin. internal/mysql.go")
-			return m.dialer(ctx, network, addr)
+			log.Warnf("RegisterDialalContext inner functin. ctx: %v, networl: %v, addr: %v. internal/mysql.go", ctx.Err(), network, addr)
+			cnn, err := m.dialer(ctx, network, addr)
+			log.Warnf("dialied: conn: %v, err: %v", cnn, err)
+
+			return cnn, err
 		})
 	}
 	if m.tlsConfig != nil {
@@ -113,7 +117,11 @@ func (m *mySQLClient) Open(ctx context.Context) error {
 	m.session = conn.NewSession(nil)
 	m.connected.Store(true)
 
-	return m.Ping(ctx)
+	log.Warn("Opeed. internal/db/mysql.go")
+
+	err = m.Ping(ctx)
+	log.Warnf("Ping: %v. internal/db/mysql.go", err)
+	return err
 }
 
 func (m *mySQLClient) Ping(ctx context.Context) (err error) {
