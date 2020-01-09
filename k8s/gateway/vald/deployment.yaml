@@ -38,14 +38,14 @@ spec:
         app: gateway
     spec:
       initContainers:
-      - name: wait-for-manager-backup-mysql
+      - name: wait-for-manager-compressor
         image: busybox
         command:
         - /bin/sh
         - -c
         - >
           set -x;
-          while [ $(curl -sw '%{http_code}' "http://manager-backup-mysql.default.svc.cluster.local:3001" -o /dev/null) -ne 200]; do
+          while [ $(curl -sw '%{http_code}' "http://manager-compressor.default.svc.cluster.local:3001" -o /dev/null) -ne 200]; do
             sleep 2;
           done
       - name: wait-for-meta-redis
@@ -80,7 +80,7 @@ spec:
           done
       containers:
       - image: vdaas/vald-gateway:nightly
-        imagePullPolicy: Always 
+        imagePullPolicy: Always
         livenessProbe:
           httpGet:
             path: /liveness
