@@ -28,7 +28,7 @@ require (
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/getsentry/raven-go v0.2.0 // indirect
 	github.com/go-redis/redis/v7 v7.0.0-beta.5
-	github.com/go-sql-driver/mysql v1.4.1
+	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-00010101000000-000000000000
 	github.com/gocraft/dbr/v2 v2.6.3
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
@@ -41,8 +41,8 @@ require (
 	github.com/kpango/gache v1.1.24
 	github.com/kpango/glg v1.4.7
 	github.com/pierrec/lz4 v2.4.0+incompatible
-	github.com/scylladb/gocqlx v1.3.2
 	github.com/tensorflow/tensorflow v2.0.0+incompatible
+	github.com/scylladb/gocqlx v1.3.3
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
 	golang.org/x/sys v0.0.0-20200103143344-a1369afcdac7
