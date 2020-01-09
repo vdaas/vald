@@ -200,7 +200,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			switch {
 			case pos == 0:
 				res.Results = append([]*payload.Object_Distance{dist}, res.Results...)
-			case pos == len(res.GetResults()):
+			case pos == len(res.GetResults())-1:
 				res.Results = append(res.GetResults(), dist)
 			case pos > 0:
 				res.Results = append(res.GetResults()[:pos+1], res.GetResults()[pos:]...)
