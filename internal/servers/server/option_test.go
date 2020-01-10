@@ -2,7 +2,6 @@ package server
 
 import (
 	"crypto/tls"
-	"fmt"
 	"net"
 	"net/http"
 	"reflect"
@@ -10,32 +9,41 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"google.golang.org/grpc"
 )
 
 func TestWithHost(t *testing.T) {
-	type args struct {
-		host string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		host      string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				host: "host",
-			},
+			host: "host",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if got.host != "host" {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "do nothing",
+			host: "",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.host != "" {
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -44,7 +52,7 @@ func TestWithHost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithHost(tt.args.host)
+			opt := WithHost(tt.host)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -53,28 +61,35 @@ func TestWithHost(t *testing.T) {
 }
 
 func TestWithPort(t *testing.T) {
-	type args struct {
-		port uint
-	}
-
 	type test struct {
 		name      string
-		args      args
+		port      uint
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				port: 8080,
-			},
+			port: 8080,
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if got.port != 8080 {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "do nothing",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.port != 0 {
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -83,7 +98,7 @@ func TestWithPort(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithPort(tt.args.port)
+			opt := WithPort(tt.port)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -92,28 +107,22 @@ func TestWithPort(t *testing.T) {
 }
 
 func TestWithName(t *testing.T) {
-	type args struct {
-		name string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		arg       string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				name: "vald",
-			},
+			arg:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if got.name != "vald" {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -122,7 +131,7 @@ func TestWithName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithName(tt.args.name)
+			opt := WithName(tt.arg)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -131,28 +140,22 @@ func TestWithName(t *testing.T) {
 }
 
 func TestWithErrorGroup(t *testing.T) {
-	type args struct {
-		eg errgroup.Group
-	}
-
 	type test struct {
 		name      string
-		args      args
+		eg        errgroup.Group
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				eg: errgroup.Get(),
-			},
+			eg:   errgroup.Get(),
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if !reflect.DeepEqual(got.eg, errgroup.Get()) {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -161,7 +164,7 @@ func TestWithErrorGroup(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithErrorGroup(tt.args.eg)
+			opt := WithErrorGroup(tt.eg)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -170,13 +173,9 @@ func TestWithErrorGroup(t *testing.T) {
 }
 
 func TestWithPreStartFunc(t *testing.T) {
-	type args struct {
-		fn func() error
-	}
-
 	type test struct {
 		name      string
-		args      args
+		fn        func() error
 		checkFunc func(opt Option) error
 	}
 
@@ -186,15 +185,13 @@ func TestWithPreStartFunc(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					fn: fn,
-				},
+				fn:   fn,
 				checkFunc: func(opt Option) error {
 					got := new(server)
 					opt(got)
 
 					if reflect.ValueOf(got.preStartFunc).Pointer() != reflect.ValueOf(fn).Pointer() {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 					return nil
 				},
@@ -204,7 +201,7 @@ func TestWithPreStartFunc(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithPreStartFunc(tt.args.fn)
+			opt := WithPreStartFunc(tt.fn)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -213,13 +210,9 @@ func TestWithPreStartFunc(t *testing.T) {
 }
 
 func TestWithPreStopFunc(t *testing.T) {
-	type args struct {
-		fn func() error
-	}
-
 	type test struct {
 		name      string
-		args      args
+		fn        func() error
 		checkFunc func(opt Option) error
 	}
 
@@ -229,15 +222,13 @@ func TestWithPreStopFunc(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					fn: fn,
-				},
+				fn:   fn,
 				checkFunc: func(opt Option) error {
 					got := new(server)
 					opt(got)
 
 					if reflect.ValueOf(got.preStopFunc).Pointer() != reflect.ValueOf(fn).Pointer() {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 					return nil
 				},
@@ -247,7 +238,7 @@ func TestWithPreStopFunc(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithPreStopFunction(tt.args.fn)
+			opt := WithPreStopFunction(tt.fn)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -256,28 +247,35 @@ func TestWithPreStopFunc(t *testing.T) {
 }
 
 func TestWithProbeWaitTime(t *testing.T) {
-	type args struct {
-		dur string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		dur       string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				dur: "1s",
-			},
+			dur:  "1s",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if got.pwt != 1*time.Second {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+		{
+			name: "set default value",
+			dur:  "vald",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.pwt != 5*time.Second {
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -286,7 +284,7 @@ func TestWithProbeWaitTime(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithProbeWaitTime(tt.args.dur)
+			opt := WithProbeWaitTime(tt.dur)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -295,28 +293,35 @@ func TestWithProbeWaitTime(t *testing.T) {
 }
 
 func TestWithShutdownDuration(t *testing.T) {
-	type args struct {
-		dur string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		dur       string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				dur: "1s",
-			},
+			dur:  "1s",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if got.sddur != 1*time.Second {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+		{
+			name: "set default value",
+			dur:  "vald",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.sddur != 5*time.Second {
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -325,7 +330,7 @@ func TestWithShutdownDuration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithShutdownDuration(tt.args.dur)
+			opt := WithShutdownDuration(tt.dur)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -334,28 +339,36 @@ func TestWithShutdownDuration(t *testing.T) {
 }
 
 func TestWithReadHeaderTimeout(t *testing.T) {
-	type args struct {
-		dur string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		dur       string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				dur: "1s",
-			},
+			dur:  "1s",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if got.rht != 1*time.Second {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "set default value",
+			dur:  "vald",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.rht != 5*time.Second {
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -364,7 +377,7 @@ func TestWithReadHeaderTimeout(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithReadHeaderTimeout(tt.args.dur)
+			opt := WithReadHeaderTimeout(tt.dur)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -373,28 +386,36 @@ func TestWithReadHeaderTimeout(t *testing.T) {
 }
 
 func TestWithReadTimeout(t *testing.T) {
-	type args struct {
-		dur string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		dur       string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				dur: "1s",
-			},
+			dur:  "1s",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if got.rt != 1*time.Second {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "set default value",
+			dur:  "vald",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.rt != 5*time.Second {
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -403,7 +424,7 @@ func TestWithReadTimeout(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithReadTimeout(tt.args.dur)
+			opt := WithReadTimeout(tt.dur)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -412,28 +433,36 @@ func TestWithReadTimeout(t *testing.T) {
 }
 
 func TestWithWriteTimeout(t *testing.T) {
-	type args struct {
-		dur string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		dur       string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				dur: "1s",
-			},
+			dur:  "1s",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if got.wt != 1*time.Second {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "set default value",
+			dur:  "vald",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.wt != 5*time.Second {
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -442,7 +471,7 @@ func TestWithWriteTimeout(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithWriteTimeout(tt.args.dur)
+			opt := WithWriteTimeout(tt.dur)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -451,28 +480,36 @@ func TestWithWriteTimeout(t *testing.T) {
 }
 
 func TestWithIdleTimeout(t *testing.T) {
-	type args struct {
-		dur string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		dur       string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				dur: "1s",
-			},
+			dur:  "1s",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if got.it != 1*time.Second {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "set default value",
+			dur:  "vald",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.it != 5*time.Second {
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -481,7 +518,7 @@ func TestWithIdleTimeout(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithIdleTimeout(tt.args.dur)
+			opt := WithIdleTimeout(tt.dur)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -490,13 +527,9 @@ func TestWithIdleTimeout(t *testing.T) {
 }
 
 func TestWithListenConfig(t *testing.T) {
-	type args struct {
-		lc *net.ListenConfig
-	}
-
 	type test struct {
 		name      string
-		args      args
+		lc        *net.ListenConfig
 		checkFunc func(opt Option) error
 	}
 
@@ -506,15 +539,13 @@ func TestWithListenConfig(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					lc: lc,
-				},
+				lc:   lc,
 				checkFunc: func(opt Option) error {
 					got := new(server)
 					opt(got)
 
 					if !reflect.DeepEqual(got.lc, lc) {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 					return nil
 				},
@@ -524,7 +555,7 @@ func TestWithListenConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithListenConfig(tt.args.lc)
+			opt := WithListenConfig(tt.lc)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -533,28 +564,22 @@ func TestWithListenConfig(t *testing.T) {
 }
 
 func TestWithServerMode(t *testing.T) {
-	type args struct {
-		m mode
-	}
-
 	type test struct {
 		name      string
-		args      args
+		m         mode
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				m: REST,
-			},
+			m:    REST,
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if got.mode != REST {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -563,7 +588,7 @@ func TestWithServerMode(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithServerMode(tt.args.m)
+			opt := WithServerMode(tt.m)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -572,13 +597,9 @@ func TestWithServerMode(t *testing.T) {
 }
 
 func TestWithTLSConfig(t *testing.T) {
-	type args struct {
-		cfg *tls.Config
-	}
-
 	type test struct {
 		name      string
-		args      args
+		cfg       *tls.Config
 		checkFunc func(opt Option) error
 	}
 
@@ -588,15 +609,13 @@ func TestWithTLSConfig(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					cfg: cfg,
-				},
+				cfg:  cfg,
 				checkFunc: func(opt Option) error {
 					got := new(server)
 					opt(got)
 
 					if !reflect.DeepEqual(got.tcfg, cfg) {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 					return nil
 				},
@@ -606,7 +625,7 @@ func TestWithTLSConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithTLSConfig(tt.args.cfg)
+			opt := WithTLSConfig(tt.cfg)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -619,13 +638,9 @@ func TestWithHTTPHandler(t *testing.T) {
 		http.Handler
 	}
 
-	type args struct {
-		handler http.Handler
-	}
-
 	type test struct {
 		name      string
-		args      args
+		handler   http.Handler
 		checkFunc func(opt Option) error
 	}
 
@@ -634,16 +649,14 @@ func TestWithHTTPHandler(t *testing.T) {
 			hdr := new(handler)
 
 			return test{
-				name: "set success",
-				args: args{
-					handler: hdr,
-				},
+				name:    "set success",
+				handler: hdr,
 				checkFunc: func(opt Option) error {
 					got := new(server)
 					opt(got)
 
 					if reflect.ValueOf(got.http.h).Pointer() != reflect.ValueOf(hdr).Pointer() {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 					return nil
 				},
@@ -653,7 +666,7 @@ func TestWithHTTPHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithHTTPHandler(tt.args.handler)
+			opt := WithHTTPHandler(tt.handler)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -662,13 +675,9 @@ func TestWithHTTPHandler(t *testing.T) {
 }
 
 func TestWithHTTPServer(t *testing.T) {
-	type args struct {
-		srv *http.Server
-	}
-
 	type test struct {
 		name      string
-		args      args
+		srv       *http.Server
 		checkFunc func(opt Option) error
 	}
 
@@ -678,15 +687,13 @@ func TestWithHTTPServer(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					srv: srv,
-				},
+				srv:  srv,
 				checkFunc: func(opt Option) error {
 					got := new(server)
 					opt(got)
 
 					if !reflect.DeepEqual(got.http.srv, srv) {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 					return nil
 				},
@@ -696,7 +703,7 @@ func TestWithHTTPServer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithHTTPServer(tt.args.srv)
+			opt := WithHTTPServer(tt.srv)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -705,13 +712,9 @@ func TestWithHTTPServer(t *testing.T) {
 }
 
 func TestWithGRPCServer(t *testing.T) {
-	type args struct {
-		srv *grpc.Server
-	}
-
 	type test struct {
 		name      string
-		args      args
+		srv       *grpc.Server
 		checkFunc func(opt Option) error
 	}
 
@@ -721,15 +724,13 @@ func TestWithGRPCServer(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					srv: srv,
-				},
+				srv:  srv,
 				checkFunc: func(opt Option) error {
 					got := new(server)
 					opt(got)
 
 					if !reflect.DeepEqual(got.grpc.srv, srv) {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 					return nil
 				},
@@ -739,7 +740,7 @@ func TestWithGRPCServer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCServer(tt.args.srv)
+			opt := WithGRPCServer(tt.srv)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -748,13 +749,9 @@ func TestWithGRPCServer(t *testing.T) {
 }
 
 func TestWithGRPCOption(t *testing.T) {
-	type args struct {
-		opts []grpc.ServerOption
-	}
-
 	type test struct {
 		name      string
-		args      args
+		opts      []grpc.ServerOption
 		checkFunc func(opt Option) error
 	}
 
@@ -764,15 +761,13 @@ func TestWithGRPCOption(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					opts: opts,
-				},
+				opts: opts,
 				checkFunc: func(opt Option) error {
 					got := new(server)
 					opt(got)
 
 					if !reflect.DeepEqual(got.grpc.opts, opts) {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 					return nil
 				},
@@ -782,7 +777,7 @@ func TestWithGRPCOption(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCOption(tt.args.opts...)
+			opt := WithGRPCOption(tt.opts...)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -791,13 +786,9 @@ func TestWithGRPCOption(t *testing.T) {
 }
 
 func TestWithGRPCRegistFunc(t *testing.T) {
-	type args struct {
-		fn func(*grpc.Server)
-	}
-
 	type test struct {
 		name      string
-		args      args
+		fn        func(*grpc.Server)
 		checkFunc func(opt Option) error
 	}
 
@@ -807,15 +798,13 @@ func TestWithGRPCRegistFunc(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					fn: fn,
-				},
+				fn:   fn,
 				checkFunc: func(opt Option) error {
 					got := new(server)
 					opt(got)
 
 					if reflect.ValueOf(got.grpc.reg).Pointer() != reflect.ValueOf(fn).Pointer() {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 					return nil
 				},
@@ -825,7 +814,7 @@ func TestWithGRPCRegistFunc(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCRegistFunc(tt.args.fn)
+			opt := WithGRPCRegistFunc(tt.fn)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -847,7 +836,7 @@ func TestWithEnableRestart(t *testing.T) {
 				opt(got)
 
 				if got.enableRestart != true {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -878,7 +867,7 @@ func TestWithDisableRestart(t *testing.T) {
 				opt(got)
 
 				if got.enableRestart != false {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -896,28 +885,22 @@ func TestWithDisableRestart(t *testing.T) {
 }
 
 func TestWithGRPCMaxReceiveMessageSize(t *testing.T) {
-	type args struct {
-		size int
-	}
-
 	type test struct {
 		name      string
-		args      args
+		size      int
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				size: 1024,
-			},
+			size: 1024,
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if len(got.grpc.opts) != 1 {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -926,7 +909,7 @@ func TestWithGRPCMaxReceiveMessageSize(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCMaxReceiveMessageSize(tt.args.size)
+			opt := WithGRPCMaxReceiveMessageSize(tt.size)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -935,28 +918,22 @@ func TestWithGRPCMaxReceiveMessageSize(t *testing.T) {
 }
 
 func TestWithGRPCMaxSendMessageSize(t *testing.T) {
-	type args struct {
-		size int
-	}
-
 	type test struct {
 		name      string
-		args      args
+		size      int
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				size: 1024,
-			},
+			size: 1024,
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if len(got.grpc.opts) != 1 {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -965,7 +942,7 @@ func TestWithGRPCMaxSendMessageSize(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCMaxSendMessageSize(tt.args.size)
+			opt := WithGRPCMaxSendMessageSize(tt.size)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -974,28 +951,22 @@ func TestWithGRPCMaxSendMessageSize(t *testing.T) {
 }
 
 func TestWithGRPCInitialWindowSize(t *testing.T) {
-	type args struct {
-		size int
-	}
-
 	type test struct {
 		name      string
-		args      args
+		size      int
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				size: 1024,
-			},
+			size: 1024,
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if len(got.grpc.opts) != 1 {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -1004,7 +975,7 @@ func TestWithGRPCInitialWindowSize(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCInitialWindowSize(tt.args.size)
+			opt := WithGRPCInitialWindowSize(tt.size)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -1013,28 +984,22 @@ func TestWithGRPCInitialWindowSize(t *testing.T) {
 }
 
 func TestWithGRPCInitialConnWindowSize(t *testing.T) {
-	type args struct {
-		size int
-	}
-
 	type test struct {
 		name      string
-		args      args
+		size      int
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				size: 1024,
-			},
+			size: 1024,
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if len(got.grpc.opts) != 1 {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -1043,7 +1008,7 @@ func TestWithGRPCInitialConnWindowSize(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCInitialConnWindowSize(tt.args.size)
+			opt := WithGRPCInitialConnWindowSize(tt.size)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -1052,28 +1017,49 @@ func TestWithGRPCInitialConnWindowSize(t *testing.T) {
 }
 
 func TestWithGRPCKeepaliveMaxConnIdle(t *testing.T) {
-	type args struct {
-		max string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		max       string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				max: "10m",
-			},
+			max:  "10m",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if got.grpc.keepAlive.maxConnIdle != 10*time.Minute {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "do nothing when max is empty",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.grpc.keepAlive != nil {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "do nothing when max is invalid",
+			max:  "vald",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.grpc.keepAlive != nil {
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -1082,7 +1068,7 @@ func TestWithGRPCKeepaliveMaxConnIdle(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCKeepaliveMaxConnIdle(tt.args.max)
+			opt := WithGRPCKeepaliveMaxConnIdle(tt.max)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -1091,28 +1077,49 @@ func TestWithGRPCKeepaliveMaxConnIdle(t *testing.T) {
 }
 
 func TestWithGRPCKeepaliveMaxConnAge(t *testing.T) {
-	type args struct {
-		max string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		max       string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				max: "20m",
-			},
+			max:  "20m",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if got.grpc.keepAlive.maxConnAge != 20*time.Minute {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "do nothing when max is empty",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.grpc.keepAlive != nil {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "do nothing when max is invalid",
+			max:  "vald",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.grpc.keepAlive != nil {
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -1121,7 +1128,7 @@ func TestWithGRPCKeepaliveMaxConnAge(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCKeepaliveMaxConnAge(tt.args.max)
+			opt := WithGRPCKeepaliveMaxConnAge(tt.max)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -1130,28 +1137,49 @@ func TestWithGRPCKeepaliveMaxConnAge(t *testing.T) {
 }
 
 func TestWithGRPCKeepaliveMaxConnAgeGrace(t *testing.T) {
-	type args struct {
-		max string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		max       string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				max: "30m",
-			},
+			max:  "30m",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if got.grpc.keepAlive.maxConnAgeGrace != 30*time.Minute {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "do nothing when max is empty",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.grpc.keepAlive != nil {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "do nothing when max is invalid",
+			max:  "vald",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.grpc.keepAlive != nil {
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -1160,7 +1188,7 @@ func TestWithGRPCKeepaliveMaxConnAgeGrace(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCKeepaliveMaxConnAgeGrace(tt.args.max)
+			opt := WithGRPCKeepaliveMaxConnAgeGrace(tt.max)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -1169,28 +1197,49 @@ func TestWithGRPCKeepaliveMaxConnAgeGrace(t *testing.T) {
 }
 
 func TestWithGRPCKeepaliveTime(t *testing.T) {
-	type args struct {
-		dur string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		dur       string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				dur: "40m",
-			},
+			dur:  "40m",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if got.grpc.keepAlive.t != 40*time.Minute {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "do nothing when dur is empty",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.grpc.keepAlive != nil {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "do nothing when dur is invalid",
+			dur:  "vald",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.grpc.keepAlive != nil {
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -1199,7 +1248,7 @@ func TestWithGRPCKeepaliveTime(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCKeepaliveTime(tt.args.dur)
+			opt := WithGRPCKeepaliveTime(tt.dur)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -1208,28 +1257,49 @@ func TestWithGRPCKeepaliveTime(t *testing.T) {
 }
 
 func TestWithGRPCKeepaliveTimeout(t *testing.T) {
-	type args struct {
-		dur string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		dur       string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				dur: "50m",
-			},
+			dur:  "50m",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if got.grpc.keepAlive.timeout != 50*time.Minute {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "do nothing when dur is empty",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.grpc.keepAlive != nil {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "do nothing when dur is invalid",
+			dur:  "vald",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if got.grpc.keepAlive != nil {
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -1238,7 +1308,7 @@ func TestWithGRPCKeepaliveTimeout(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCKeepaliveTimeout(tt.args.dur)
+			opt := WithGRPCKeepaliveTimeout(tt.dur)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -1247,28 +1317,22 @@ func TestWithGRPCKeepaliveTimeout(t *testing.T) {
 }
 
 func TestWithGRPCWriteBufferSize(t *testing.T) {
-	type args struct {
-		size int
-	}
-
 	type test struct {
 		name      string
-		args      args
+		size      int
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				size: 1024,
-			},
+			size: 1024,
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if len(got.grpc.opts) != 1 {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -1277,7 +1341,7 @@ func TestWithGRPCWriteBufferSize(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCWriteBufferSize(tt.args.size)
+			opt := WithGRPCWriteBufferSize(tt.size)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -1286,28 +1350,22 @@ func TestWithGRPCWriteBufferSize(t *testing.T) {
 }
 
 func TestWithGRPCReadBufferSize(t *testing.T) {
-	type args struct {
-		size int
-	}
-
 	type test struct {
 		name      string
-		args      args
+		size      int
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				size: 1024,
-			},
+			size: 1024,
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if len(got.grpc.opts) != 1 {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -1316,7 +1374,7 @@ func TestWithGRPCReadBufferSize(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCReadBufferSize(tt.args.size)
+			opt := WithGRPCReadBufferSize(tt.size)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -1325,28 +1383,49 @@ func TestWithGRPCReadBufferSize(t *testing.T) {
 }
 
 func TestWithGRPCConnectionTimeout(t *testing.T) {
-	type args struct {
-		to string
-	}
-
 	type test struct {
 		name      string
-		args      args
+		to        string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				to: "60m",
-			},
+			to:   "60m",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if len(got.grpc.opts) != 1 {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "do nothing when to is empty",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 0 {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "do nothing when to is invalid",
+			to:   "vald",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 0 {
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -1355,7 +1434,7 @@ func TestWithGRPCConnectionTimeout(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCConnectionTimeout(tt.args.to)
+			opt := WithGRPCConnectionTimeout(tt.to)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -1364,28 +1443,22 @@ func TestWithGRPCConnectionTimeout(t *testing.T) {
 }
 
 func TestWithGRPCMaxHeaderListSize(t *testing.T) {
-	type args struct {
-		size int
-	}
-
 	type test struct {
 		name      string
-		args      args
+		size      int
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				size: 1024,
-			},
+			size: 1024,
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if len(got.grpc.opts) != 1 {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -1394,7 +1467,7 @@ func TestWithGRPCMaxHeaderListSize(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCMaxHeaderListSize(tt.args.size)
+			opt := WithGRPCMaxHeaderListSize(tt.size)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -1403,28 +1476,22 @@ func TestWithGRPCMaxHeaderListSize(t *testing.T) {
 }
 
 func TestWithGRPCHeaderTableSize(t *testing.T) {
-	type args struct {
-		size int
-	}
-
 	type test struct {
 		name      string
-		args      args
+		size      int
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			args: args{
-				size: 1024,
-			},
+			size: 1024,
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
 
 				if len(got.grpc.opts) != 1 {
-					return fmt.Errorf("invalid param was set")
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -1433,38 +1500,7 @@ func TestWithGRPCHeaderTableSize(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCHeaderTableSize(tt.args.size)
-			if err := tt.checkFunc(opt); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
-func TestWithGRPCInterceptors(t *testing.T) {
-	type args struct {
-		names []string
-	}
-
-	type test struct {
-		name      string
-		args      args
-		checkFunc func(opt Option) error
-	}
-
-	tests := []test{
-		{
-			name: "set success",
-			args: args{},
-			checkFunc: func(opt Option) error {
-				return nil
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCInterceptors(tt.args.names...)
+			opt := WithGRPCHeaderTableSize(tt.size)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -1489,15 +1525,15 @@ func TestDefaultOption(t *testing.T) {
 				}
 
 				if got.enableRestart != false {
-					return fmt.Errorf("invalid param (enableRestart) was set")
+					return errors.New("invalid param (enableRestart) was set")
 				}
 
 				if got.mode != REST {
-					return fmt.Errorf("invalid param (mode) was set")
+					return errors.New("invalid param (mode) was set")
 				}
 
 				if !reflect.DeepEqual(got.eg, errgroup.Get()) {
-					return fmt.Errorf("invalid param (eg) was set")
+					return errors.New("invalid param (eg) was set")
 				}
 
 				return nil
@@ -1545,51 +1581,51 @@ func TestDefaultHealthServerOption(t *testing.T) {
 				}
 
 				if got.name != "name" {
-					return fmt.Errorf("invalid param (name) was set")
+					return errors.New("invalid param (name) was set")
 				}
 
 				if !reflect.DeepEqual(got.eg, errgroup.Get()) {
-					return fmt.Errorf("invalid param (eg) was set")
+					return errors.New("invalid param (eg) was set")
 				}
 
 				if got.http.h == nil {
-					return fmt.Errorf("invalid param (http.h) was set")
+					return errors.New("invalid param (http.h) was set")
 				}
 
 				if got.host != "host" {
-					return fmt.Errorf("invalid param (host) was set")
+					return errors.New("invalid param (host) was set")
 				}
 
 				if got.it != 3*time.Second {
-					return fmt.Errorf("invalid param (it) was set")
+					return errors.New("invalid param (it) was set")
 				}
 
 				if got.port != 8080 {
-					return fmt.Errorf("invalid param (port) was set")
+					return errors.New("invalid param (port) was set")
 				}
 
 				if got.pwt != 2*time.Second {
-					return fmt.Errorf("invalid param (pwt) was set")
+					return errors.New("invalid param (pwt) was set")
 				}
 
 				if got.rht != 3*time.Second {
-					return fmt.Errorf("invalid param (rht) was set")
+					return errors.New("invalid param (rht) was set")
 				}
 
 				if got.rt != 2*time.Second {
-					return fmt.Errorf("invalid param (rt) was set")
+					return errors.New("invalid param (rt) was set")
 				}
 
 				if got.mode != REST {
-					return fmt.Errorf("invalid param (mode) was set")
+					return errors.New("invalid param (mode) was set")
 				}
 
 				if got.sddur != 4*time.Second {
-					return fmt.Errorf("invalid param (sddur) was set")
+					return errors.New("invalid param (sddur) was set")
 				}
 
 				if got.wt != 3*time.Second {
-					return fmt.Errorf("invalid param (wt) was set")
+					return errors.New("invalid param (wt) was set")
 				}
 
 				return nil

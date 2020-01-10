@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -79,6 +78,7 @@ func TestMode(t *testing.T) {
 			},
 			want: REST,
 		},
+
 		{
 			name: "REST mode (http)",
 			args: args{
@@ -86,6 +86,7 @@ func TestMode(t *testing.T) {
 			},
 			want: REST,
 		},
+
 		{
 			name: "gRPC mode",
 			args: args{
@@ -93,6 +94,7 @@ func TestMode(t *testing.T) {
 			},
 			want: GRPC,
 		},
+
 		{
 			name: "GraphQL mode (graphql)",
 			args: args{
@@ -100,6 +102,7 @@ func TestMode(t *testing.T) {
 			},
 			want: GQL,
 		},
+
 		{
 			name: "GraphQL mode (gql)",
 			args: args{
@@ -107,6 +110,7 @@ func TestMode(t *testing.T) {
 			},
 			want: GQL,
 		},
+
 		{
 			name: "unknown mode",
 			args: args{
@@ -119,7 +123,6 @@ func TestMode(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := Mode(tt.args.m)
-
 			if tt.want != got {
 				t.Errorf("Mode is wrong. want: %v, got: %v", tt.want, got)
 			}
@@ -128,13 +131,9 @@ func TestMode(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	type args struct {
-		opts []Option
-	}
-
 	type test struct {
 		name      string
-		args      args
+		opts      []Option
 		checkFunc func(got *server) error
 		wantErr   error
 	}
@@ -149,66 +148,61 @@ func TestNew(t *testing.T) {
 
 			return test{
 				name: "initialize REST server",
-				args: args{
-					opts: []Option{
-						WithHTTPHandler(hdr),
-					},
+				opts: []Option{
+					WithHTTPHandler(hdr),
 				},
 				checkFunc: func(got *server) error {
 					if got.http.srv == nil {
-						return fmt.Errorf("http srv is nil")
+						return errors.New("http srv is nil")
 					}
 					return nil
 				},
 				wantErr: nil,
 			}
 		}(),
+
 		func() test {
 			return test{
 				name: "return invalid api config error in case of REST server",
-				args: args{
-					opts: []Option{},
-				},
+				opts: []Option{},
 				checkFunc: func(got *server) error {
 					if got != nil {
-						return fmt.Errorf("New return not nil: %v", got)
+						return errors.Errorf("New return not nil: %v", got)
 					}
 					return nil
 				},
 				wantErr: errors.ErrInvalidAPIConfig,
 			}
 		}(),
+
 		func() test {
 			fn := func(g *grpc.Server) {}
 
 			return test{
 				name: "initialize of gRPC server is successful",
-				args: args{
-					opts: []Option{
-						WithServerMode(GRPC),
-						WithGRPCRegistFunc(fn),
-					},
+				opts: []Option{
+					WithServerMode(GRPC),
+					WithGRPCRegistFunc(fn),
 				},
 				checkFunc: func(got *server) error {
 					if got.grpc.srv == nil {
-						return fmt.Errorf("grpc srv is nil")
+						return errors.New("grpc srv is nil")
 					}
 					return nil
 				},
 				wantErr: nil,
 			}
 		}(),
+
 		func() test {
 			return test{
 				name: "return invalid api config error in case of gRPC server",
-				args: args{
-					opts: []Option{
-						WithServerMode(GRPC),
-					},
+				opts: []Option{
+					WithServerMode(GRPC),
 				},
 				checkFunc: func(got *server) error {
 					if got != nil {
-						return fmt.Errorf("New return not nil: %v", got)
+						return errors.Errorf("New return not nil: %v", got)
 					}
 					return nil
 				},
@@ -220,7 +214,7 @@ func TestNew(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			log.Init(log.DefaultGlg())
-			s, err := New(tt.args.opts...)
+			s, err := New(tt.opts...)
 
 			if err != tt.wantErr {
 				t.Errorf("New err is wrong. want: %v, got: %v", err, tt.wantErr)
@@ -326,7 +320,7 @@ func TestListenAndServe(t *testing.T) {
 			},
 			checkFunc: func(s *server, got, want error) error {
 				if want != got {
-					t.Errorf("ListenAndServe returns error: %v", got)
+					return errors.Errorf("ListenAndServe returns error: %v", got)
 				}
 				return nil
 			},
@@ -334,7 +328,7 @@ func TestListenAndServe(t *testing.T) {
 		},
 
 		func() test {
-			err := fmt.Errorf("faild to prestart")
+			err := errors.New("faild to prestart")
 
 			return test{
 				name: "prestart error",
@@ -346,7 +340,7 @@ func TestListenAndServe(t *testing.T) {
 				},
 				checkFunc: func(s *server, got, want error) error {
 					if want != got {
-						t.Errorf("ListenAndServe returns error: %v", got)
+						return errors.Errorf("ListenAndServe returns error: %v", got)
 					}
 					return nil
 				},
@@ -381,7 +375,7 @@ func TestListenAndServe(t *testing.T) {
 				},
 				checkFunc: func(s *server, got, want error) error {
 					if want != got {
-						t.Errorf("ListenAndServe returns error: %v", got)
+						return errors.Errorf("ListenAndServe returns error: %v", got)
 					}
 					return nil
 				},
@@ -411,7 +405,7 @@ func TestListenAndServe(t *testing.T) {
 				},
 				checkFunc: func(s *server, got, want error) error {
 					if want != got {
-						t.Errorf("ListenAndServe returns error: %v", got)
+						return errors.Errorf("ListenAndServe returns error: %v", got)
 					}
 					return nil
 				},
@@ -492,7 +486,7 @@ func TestShutdown(t *testing.T) {
 			name: "server not running",
 			checkFunc: func(s *server, got, want error) error {
 				if want != got {
-					t.Errorf("Shutdown returns error: %v", got)
+					return errors.Errorf("Shutdown returns error: %v", got)
 				}
 				return nil
 			},
@@ -523,7 +517,7 @@ func TestShutdown(t *testing.T) {
 				},
 				checkFunc: func(s *server, got, want error) error {
 					if want != got {
-						t.Errorf("Shutdown returns error: %v", got)
+						return errors.Errorf("Shutdown returns error: %v", got)
 					}
 					return nil
 				},
@@ -555,7 +549,7 @@ func TestShutdown(t *testing.T) {
 				},
 				checkFunc: func(s *server, got, want error) error {
 					if want != got {
-						t.Errorf("Shutdown returns error: %v", got)
+						return errors.Errorf("Shutdown returns error: %v", got)
 					}
 					return nil
 				},
