@@ -167,29 +167,27 @@ func TestMarshalIndent(t *testing.T) {
 	}
 
 	tests := []test{
-		func() test {
-			return test{
-				name: "returns data and nil",
-				args: args{
-					data: map[string]string{
-						"name": "vald",
-					},
-					pref: "",
-					ind:  "",
+		{
+			name: "returns data and nil",
+			args: args{
+				data: map[string]string{
+					"name": "vald",
 				},
-				checkFunc: func(data []byte, err error) error {
-					if err != nil {
-						return errors.Errorf("err not equals. want: %v, got: %v", nil, err)
-					}
+				pref: "",
+				ind:  "",
+			},
+			checkFunc: func(data []byte, err error) error {
+				if err != nil {
+					return errors.Errorf("err not equals. want: %v, got: %v", nil, err)
+				}
 
-					if got, want := data, []byte(`{"name":"vald"}`); !reflect.DeepEqual(got, want) {
-						return errors.Errorf("data not equals. want: %v, got: %v", string(got), string(want))
-					}
+				if got, want := data, []byte(`{"name":"vald"}`); !reflect.DeepEqual(got, want) {
+					return errors.Errorf("data not equals. want: %v, got: %v", string(got), string(want))
+				}
 
-					return nil
-				},
-			}
-		}(),
+				return nil
+			},
+		},
 
 		{
 			name: "returns error",
@@ -454,14 +452,15 @@ func TestHandler(t *testing.T) {
 
 		func() test {
 			wantErr := errors.New("logic error")
+
+			buf := new(bytes.Buffer)
+			buf.WriteString(`{"name":"vald"}`)
+			r := httptest.NewRequest(http.MethodPost, "/", buf)
+
 			return test{
 				name: "faild to logic",
 				args: args{
-					r: func() *http.Request {
-						buf := new(bytes.Buffer)
-						buf.WriteString(`{"name":"vald"}`)
-						return httptest.NewRequest(http.MethodPost, "/", buf)
-					}(),
+					r:    r,
 					data: make(map[string]string),
 					logic: func() (interface{}, error) {
 						return nil, wantErr
