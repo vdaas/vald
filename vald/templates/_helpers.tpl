@@ -134,7 +134,7 @@ Server configures that inserted into server_config
 servers:
   {{- $restEnabled := default .default.servers.rest.enabled .Values.servers.rest.enabled }}
   {{- if $restEnabled }}
-  - name: {{ .Values.prefix }}-rest
+  - name: rest
     host: {{ default .default.servers.rest.host .Values.servers.rest.host }}
     port: {{ default .default.servers.rest.port .Values.servers.rest.port }}
     mode: REST
@@ -149,7 +149,7 @@ servers:
   {{- end }}
   {{- $grpcEnabled := default .default.servers.grpc.enabled .Values.servers.grpc.enabled }}
   {{- if $grpcEnabled }}
-  - name: {{ .Values.prefix }}-grpc
+  - name: grpc
     host: {{ default .default.servers.grpc.host .Values.servers.grpc.host }}
     port: {{ default .default.servers.grpc.port .Values.servers.grpc.port }}
     mode: GRPC
@@ -176,7 +176,7 @@ servers:
 health_check_servers:
   {{- $livenessEnabled := default .default.healths.liveness.enabled .Values.healths.liveness.enabled }}
   {{- if $livenessEnabled }}
-  - name: {{ .Values.prefix }}-liveness
+  - name: liveness
     host: {{ default .default.healths.liveness.host .Values.healths.liveness.host }}
     port: {{ default .default.healths.liveness.port .Values.healths.liveness.port }}
     mode: ""
@@ -191,7 +191,7 @@ health_check_servers:
   {{- end }}
   {{- $readinessEnabled := default .default.healths.readiness.enabled .Values.healths.readiness.enabled }}
   {{- if $readinessEnabled }}
-  - name: {{ .Values.prefix }}-readiness
+  - name: readiness
     host: {{ default .default.healths.readiness.host .Values.healths.readiness.host }}
     port: {{ default .default.healths.readiness.port .Values.healths.readiness.port }}
     mode: ""
@@ -207,7 +207,7 @@ health_check_servers:
 metrics_servers:
   {{- $pprofEnabled := default .default.metrics.pprof.enabled .Values.metrics.pprof.enabled }}
   {{- if $pprofEnabled }}
-  - name: {{ .Values.prefix }}-pprof
+  - name: pprof
     host: {{ default .default.metrics.pprof.host .Values.metrics.pprof.host }}
     port: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
     mode: REST
@@ -222,19 +222,19 @@ metrics_servers:
   {{- end }}
 startup_strategy:
   {{- if $livenessEnabled }}
-  - {{ .Values.prefix }}-liveness
+  - liveness
   {{- end }}
   {{- if $pprofEnabled }}
-  - {{ .Values.prefix }}-pprof
+  - pprof
   {{- end }}
   {{- if $grpcEnabled }}
-  - {{ .Values.prefix }}-grpc
+  - grpc
   {{- end }}
   {{- if $restEnabled }}
-  - {{ .Values.prefix }}-rest
+  - rest
   {{- end }}
   {{- if $readinessEnabled }}
-  - {{ .Values.prefix }}-readiness
+  - readiness
   {{- end }}
 full_shutdown_duration: {{ default .default.full_shutdown_duration .Values.full_shutdown_duration }}
 tls:
@@ -242,4 +242,94 @@ tls:
   cert: {{ default .default.tls.cert .Values.tls.cert }}
   key: {{ default .default.tls.key .Values.tls.key }}
   ca: {{ default .default.tls.ca .Values.tls.ca }}
+{{- end -}}
+
+{{/*
+gRPC client configuration
+*/}}
+{{- define "vald.grpc.client" -}}
+addrs: {{ default .default.addrs .Values.addrs }}
+health_check_duration: {{ default .default.health_check_duration .Values.health_check_duration }}
+backoff:
+  {{- if .Values.backoff }}
+  initial_duration: {{ default .default.backoff.initial_duration .Values.backoff.initial_duration }}
+  backoff_time_limit: {{ default .default.backoff.backoff_time_limit .Values.backoff.backoff_time_limit }}
+  maximum_duration: {{ default .default.backoff.maximum_duration .Values.backoff.maximum_duration }}
+  jitter_limit: {{ default .default.backoff.jitter_limit .Values.backoff.jitter_limit }}
+  backoff_factor: {{ default .default.backoff.backoff_factor .Values.backoff.backoff_factor }}
+  retry_count: {{ default .default.backoff.retry_count .Values.backoff.retry_count }}
+  enable_error_log: {{ default .default.backoff.enable_error_log .Values.backoff.enable_error_log }}
+  {{- else }}
+  {{- toYaml .default.backoff | nindent 2 }}
+  {{- end }}
+call_option:
+  {{- if .Values.call_option }}
+  wait_for_ready: {{ default .default.call_option.wait_for_ready .Values.call_option.wait_for_ready }}
+  max_retry_rpc_buffer_size: {{ default .default.call_option.max_retry_rpc_buffer_size .Values.call_option.max_retry_rpc_buffer_size }}
+  max_recv_msg_size: {{ default .default.call_option.max_recv_msg_size .Values.call_option.max_recv_msg_size }}
+  max_send_msg_size: {{ default .default.call_option.max_send_msg_size .Values.call_option.max_send_msg_size }}
+  {{- else }}
+  {{- toYaml .default.call_option | nindent 2 }}
+  {{- end }}
+dial_option:
+  {{- if .Values.dial_option }}
+  write_buffer_size: {{ default .default.dial_option.write_buffer_size .Values.dial_option.write_buffer_size }}
+  read_buffer_size: {{ default .default.dial_option.read_buffer_size .Values.dial_option.read_buffer_size }}
+  initial_window_size: {{ default .default.dial_option.initial_window_size .Values.dial_option.initial_window_size }}
+  initial_connection_window_size: {{ default .default.dial_option.initial_connection_window_size .Values.dial_option.initial_connection_window_size }}
+  max_msg_size: {{ default .default.dial_option.max_msg_size .Values.dial_option.max_msg_size }}
+  max_backoff_delay: {{ default .default.dial_option.max_backoff_delay .Values.dial_option.max_backoff_delay }}
+  enable_backoff: {{ default .default.dial_option.enable_backoff .Values.dial_option.enable_backoff }}
+  insecure: {{ default .default.dial_option.insecure .Values.dial_option.insecure }}
+  timeout: {{ default .default.dial_option.timeout .Values.dial_option.timeout }}
+  dialer:
+    {{- if .Values.dial_option.dialer }}
+    dns:
+      {{- if .Values.dial_option.dialer.dns }}
+      cache_enabled: {{ default .default.dial_option.dialer.dns.cache_enabled .Values.dial_option.dialer.dns.cache_enabled }}
+      refresh_duration: {{ default .default.dial_option.dialer.dns.refresh_duration .Values.dial_option.dialer.dns.refresh_duration }}
+      cache_expiration: {{ default .default.dial_option.dialer.dns.cache_expiration .Values.dial_option.dialer.dns.cache_expiration }}
+      {{- else }}
+      {{- toYaml .default.dial_option.dialer.dns | nindent 6 }}
+      {{- end }}
+    dialer:
+      {{- if .Values.dial_option.dialer.dialer }}
+      timeout: {{ default .default.dial_option.dialer.dialer.timeout .Values.dial_option.dialer.dialer.timeout }}
+      keep_alive: {{ default .default.dial_option.dialer.dialer.keep_alive .Values.dial_option.dialer.dialer.keep_alive }}
+      dual_stack_enabled: {{ default .default.dial_option.dialer.dialer.dual_stack_enabled .Values.dial_option.dialer.dialer.dual_stack_enabled }}
+      {{- else }}
+      {{- toYaml .default.dial_option.dialer.dialer | nindent 6 }}
+      {{- end }}
+    tls:
+      {{- if .Values.dial_option.dialer.tls }}
+      enabled: {{ default .default.dial_option.dialer.tls.enabled .Values.dial_option.dialer.tls.enabled }}
+      cert: {{ default .default.dial_option.dialer.tls.cert .Values.dial_option.dialer.tls.cert }}
+      key: {{ default .default.dial_option.dialer.tls.key .Values.dial_option.dialer.tls.key }}
+      ca: {{ default .default.dial_option.dialer.tls.ca .Values.dial_option.dialer.tls.ca }}
+      {{- else }}
+      {{- toYaml .default.dial_option.dialer.tls | nindent 6 }}
+      {{- end }}
+    {{- else }}
+    {{- toYaml .default.dial_option.dialer | nindent 4 }}
+    {{- end }}
+  keep_alive:
+    {{- if .Values.dial_option.keep_alive }}
+    time: {{ default .default.dial_option.keep_alive.time .Values.dial_option.keep_alive.time }}
+    timeout: {{ default .default.dial_option.keep_alive.timeout .Values.dial_option.keep_alive.timeout }}
+    permit_without_stream: {{ default .default.dial_option.keep_alive.permit_without_stream .Values.dial_option.keep_alive.permit_without_stream }}
+    {{- else }}
+    {{- toYaml .default.dial_option.keep_alive | nindent 4 }}
+    {{- end }}
+  {{- else }}
+  {{- toYaml .default.dial_option | nindent 2 }}
+  {{- end }}
+tls:
+  {{- if .Values.tls }}
+  enabled: {{ default .default.tls.enabled .Values.tls.enabled }}
+  cert: {{ default .default.tls.cert .Values.tls.cert }}
+  key: {{ default .default.tls.key .Values.tls.key }}
+  ca: {{ default .default.tls.ca .Values.tls.ca }}
+  {{- else }}
+  {{- toYaml .default.tls | nindent 2 }}
+  {{- end }}
 {{- end -}}

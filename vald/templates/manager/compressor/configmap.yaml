@@ -28,55 +28,7 @@ data:
       host: {{ .Values.backupManager.name }}.default.svc.cluster.local
       port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.backupManager.server_config.servers.grpc.port }}
       client:
-        addrs: []
-        health_check_duration: "5s"
-        backoff:
-          initial_duration: "5ms"
-          backoff_time_limit: "5s"
-          maximum_duration: "1s"
-          jitter_limit: "100ms"
-          backoff_factor: 1.2
-          retry_count: 20
-          enable_error_log: true
-        call_option:
-          wait_for_ready: true
-          max_retry_rpc_buffer_size: 0
-          max_recv_msg_size: 0
-          max_send_msg_size: 0
-        dial_option:
-          write_buffer_size: 0
-          read_buffer_size: 0
-          initial_window_size: 0
-          initial_connection_window_size: 0
-          max_msg_size: 0
-          max_backoff_delay: ""
-          enable_backoff: false
-          insecure: true
-          timeout: ""
-          dialer:
-            dns:
-              cache_enabled: false
-              refresh_duration: ""
-              cache_expiration: ""
-            dialer:
-              timeout: ""
-              keep_alive: ""
-              dual_stack_enabled: true
-            tls:
-              enabled: false
-              cert: /path/to/cert
-              key: /path/to/key
-              ca: /path/to/ca
-          keep_alive:
-            time: "60s"
-            timeout: ""
-            permit_without_stream: false
-        tls:
-          enabled: false
-          cert: /path/to/cert
-          key: /path/to/key
-          ca: /path/to/ca
+        {{- $backupClient := dict "Values" .Values.compressor.backup.client "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $backupClient | nindent 8 }}
     compressor:
-      compress_algorithm: {{ .Values.compressor.compress.algorithm }}
-      concurrent_limit: {{ .Values.compressor.compress.concurrent_limit }}
-      buffer: {{ .Values.compressor.compress.buffer }}
+      {{- toYaml .Values.compressor.compress | nindent 6 }}

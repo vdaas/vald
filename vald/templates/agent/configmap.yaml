@@ -25,16 +25,4 @@ data:
       {{- $servers := dict "Values" .Values.agent.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
     ngt:
-      {{- if .Values.agent.ngt.index_path }}
-      index_path: {{ .Values.agent.ngt.index_path }}
-      {{- end }}
-      auto_index_limit: {{ .Values.agent.ngt.auto_index_limit }}
-      auto_index_check_duration: {{ .Values.agent.ngt.auto_index_check_duration }}
-      auto_index_length: {{ .Values.agent.ngt.auto_index_length }}
-      dimension: {{ .Values.agent.ngt.dimension }}
-      bulk_insert_chunk_size: {{ .Values.agent.ngt.bulk_insert_chunk_size }}
-      distance_type: {{ .Values.agent.ngt.distance_type }}
-      object_type: {{ .Values.agent.ngt.object_type }}
-      creation_edge_size: {{ .Values.agent.ngt.creation_edge_size }}
-      search_edge_size: {{ .Values.agent.ngt.search_edge_size }}
-      enable_in_memory_mode: {{ .Values.agent.ngt.enable_in_memory_mode }}
+      {{- toYaml .Values.agent.ngt | nindent 6 }}
