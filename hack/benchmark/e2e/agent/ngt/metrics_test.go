@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/hack/benchmark/e2e/internal"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
+	"github.com/vdaas/vald/hack/benchmark/metrics"
 	"gopkg.in/yaml.v2"
 )
 
@@ -50,21 +51,6 @@ func (p *Params) Address() string {
 	return fmt.Sprintf("%s:%d", p.Host, p.Port)
 }
 
-type SearchMetrics struct {
-	Recall float64
-	Qps float64
-	Epsilon float32
-	K int
-}
-
-type Metrics struct {
-	BuildTime        int64
-	DatasetName      string
-	SearchEdgeSize   int
-	CreationEdgeSize int
-	Search           []*SearchMetrics
-}
-
 func init() {
 	flag.StringVar(&configuration, "conf", "metrics.yaml", "set metrics configuration file path")
 	flag.StringVar(&outputPath, "output", "metrics.gob", "set result output path")
@@ -73,20 +59,24 @@ func init() {
 func TestMetrics(rt *testing.T) {
 	flag.Parse()
 
-	f, err := os.Open(configuration)
+	input, err := os.Open(configuration)
 	if err != nil {
 		rt.Fatal(err)
 	}
-	defer f.Close()
+	defer func() {
+		if err := input.Close(); err != nil {
+			rt.Error(err)
+		}
+	}()
 	var p Params
-	if err := yaml.NewDecoder(f).Decode(&p); err != nil {
+	if err := yaml.NewDecoder(input).Decode(&p); err != nil {
 		rt.Fatal(err)
 	}
 
 	rctx, rcancel := context.WithCancel(context.Background())
 	defer rcancel()
 
-	metrics := make([]*Metrics, 0, len(p.SearchEdgeSize)*len(p.CreationEdgeSize)*len(p.DatasetName))
+	m := make([]*metrics.Metrics, 0, len(p.SearchEdgeSize)*len(p.CreationEdgeSize)*len(p.DatasetName))
 	for _, name := range p.DatasetName {
 		rt.Run(name, func(t *testing.T) {
 			data := assets.Data(name)(t)
@@ -135,9 +125,9 @@ func TestMetrics(rt *testing.T) {
 						}
 						buildEnd := time.Since(buildStart)
 
-						searchMetrics := make([]*SearchMetrics, 0, len(p.Epsilon)*len(p.K))
-						for _, eps := range p.Epsilon {
-							for _, k := range p.K {
+						for _, k := range p.K {
+							searchMetrics := make([]*metrics.SearchMetrics, 0, len(p.Epsilon))
+							for _, eps := range p.Epsilon {
 								querySize := len(data.Query())
 								tt.Run(fmt.Sprintf("Recall@%d with %f", k, eps), func(ttt *testing.T) {
 									results := make([][]string, querySize)
@@ -162,37 +152,38 @@ func TestMetrics(rt *testing.T) {
 									}
 									recall, _, _ := internal.MeanStdRecalls(datasetNeighbors, results, k)
 									qps := 1 / (elapsed.Seconds() / float64(querySize))
-									searchMetrics = append(searchMetrics, &SearchMetrics{
-										Recall: recall,
-										Qps : qps,
+									searchMetrics = append(searchMetrics, &metrics.SearchMetrics{
+										Recall:  recall,
+										Qps:     qps,
 										Epsilon: eps,
-										K : k,
 									})
+									ttt.Logf("recall: %f, qps: %f", recall, qps)
 								})
 							}
+							m = append(m, &metrics.Metrics{
+								BuildTime:        int64(buildEnd),
+								DatasetName:      name,
+								SearchEdgeSize:   searchEdgeSize,
+								CreationEdgeSize: creationEdgeSize,
+								K:                k,
+								Search:           searchMetrics,
+							})
 						}
-						metrics = append(metrics, &Metrics{
-							BuildTime: int64(buildEnd),
-							DatasetName: name,
-							SearchEdgeSize: searchEdgeSize,
-							CreationEdgeSize: creationEdgeSize,
-							Search: searchMetrics,
-						})
 					})
 				}
 			}
 		})
 	}
-	f, err = os.OpenFile(outputPath, os.O_CREATE | os.O_TRUNC | os.O_WRONLY, os.ModeDevice)
+	output, err := os.OpenFile(outputPath, os.O_CREATE | os.O_TRUNC | os.O_WRONLY, 0644)
 	if err != nil {
 		rt.Error(err)
 	}
 	defer func() {
-		if err := f.Close(); err != nil {
+		if err := output.Close(); err != nil {
 			rt.Error(err)
 		}
 	}()
-	if err := gob.NewEncoder(f).Encode(metrics); err != nil {
+	if err := gob.NewEncoder(output).Encode(m); err != nil {
 		rt.Error(err)
 	}
 }

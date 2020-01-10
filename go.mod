@@ -40,6 +40,7 @@ require (
 	github.com/kpango/fuid v0.0.0-20190507064958-80435564606b
 	github.com/kpango/gache v1.1.24
 	github.com/kpango/glg v1.4.7
+	github.com/lucasb-eyer/go-colorful v1.0.3
 	github.com/pierrec/lz4 v2.4.0+incompatible
 	github.com/scylladb/gocqlx v1.3.3
 	github.com/tensorflow/tensorflow v2.1.0+incompatible
