@@ -380,8 +380,6 @@ func TestHandler(t *testing.T) {
 		name      string
 		args      args
 		checkFunc func(code int, err error, data map[string]string) error
-		want      int
-		wantErr   error
 	}
 
 	tests := []test{
