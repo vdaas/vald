@@ -53,7 +53,7 @@ func TestEncode(t *testing.T) {
 		}(),
 
 		{
-			name: "returns error",
+			name: "returns error when type is invalid",
 			args: args{
 				w:    new(bytes.Buffer),
 				data: make(chan struct{}),
@@ -123,7 +123,7 @@ func TestDecode(t *testing.T) {
 			wantData := make(map[string]string, 1)
 
 			return test{
-				name: "returns error",
+				name: "returns error when type is invalid",
 				args: args{
 					r:    buf,
 					data: wantData,
@@ -190,7 +190,7 @@ func TestMarshalIndent(t *testing.T) {
 		},
 
 		{
-			name: "returns error",
+			name: "returns error when type is invalid",
 			args: args{
 				data: make(chan struct{}),
 				pref: "",
@@ -269,7 +269,7 @@ func TestEncodeResponse(t *testing.T) {
 			w := new(httptest.ResponseRecorder)
 
 			return test{
-				name: "returns error",
+				name: "returns error when type is invalid",
 				args: args{
 					w:      w,
 					data:   make(chan struct{}),
@@ -344,7 +344,7 @@ func TestDecodeRequest(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, "/", buf)
 
 			return test{
-				name: "faild to decode",
+				name: "returns error because of faild to decode",
 				args: args{
 					r: r,
 				},
@@ -395,7 +395,7 @@ func TestHandler(t *testing.T) {
 			data := make(map[string]string, 1)
 
 			return test{
-				name: "returns 200 status code and nil",
+				name: "returns 200 and nil",
 				args: args{
 					r:    r,
 					w:    w,
@@ -430,7 +430,7 @@ func TestHandler(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, "/", buf)
 
 			return test{
-				name: "faild to decode request body",
+				name: "returns error because of faild to decode",
 				args: args{
 					r: r,
 				},
@@ -486,7 +486,7 @@ func TestHandler(t *testing.T) {
 
 		func() test {
 			return test{
-				name: "faild to encode",
+				name: "returns error because of faild to encode",
 				args: args{
 					r: func() *http.Request {
 						buf := new(bytes.Buffer)
