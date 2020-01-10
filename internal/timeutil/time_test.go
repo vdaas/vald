@@ -22,43 +22,58 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	type args struct {
-		t string
-	}
 	tests := []struct {
 		name    string
-		args    args
+		t       string
 		want    time.Duration
 		wantErr bool
 	}{
 		{
-			name: "parse duration success",
-			args: args{
-				t: "1s",
-			},
+			name:    "parse duration success (ns)",
+			t:       "1ns",
+			want:    time.Nanosecond,
+			wantErr: false,
+		},
+		{
+			name:    "parse duration success (ms)",
+			t:       "1ms",
+			want:    time.Millisecond,
+			wantErr: false,
+		},
+		{
+			name:    "parse duration success (s)",
+			t:       "1s",
 			want:    time.Second,
 			wantErr: false,
 		},
 		{
-			name: "parse empty string success",
-			args: args{
-				t: "",
-			},
+			name:    "parse duration success (m)",
+			t:       "1m",
+			want:    time.Minute,
+			wantErr: false,
+		},
+		{
+			name:    "parse duration success (h)",
+			t:       "1h",
+			want:    time.Hour,
+			wantErr: false,
+		},
+		{
+			name:    "parse empty string success",
+			t:       "",
 			want:    0,
 			wantErr: false,
 		},
 		{
-			name: "parse incorrect string return error",
-			args: args{
-				t: "dummystring",
-			},
+			name:    "parse incorrect string return error",
+			t:       "dummystring",
 			want:    0,
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Parse(tt.args.t)
+			got, err := Parse(tt.t)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
 				return
