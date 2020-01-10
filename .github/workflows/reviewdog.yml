@@ -20,8 +20,8 @@ jobs:
           echo "::set-env name=PATH::$PATH:$GOBIN"
       - name: Run golangci-lint
         run: |
-          golangci-lint run --config ./golangci.yml --issues-exit-code 0
-          golangci-lint run --config ./golangci.yml \
+          golangci-lint run --config .golangci.yml --issues-exit-code 0
+          golangci-lint run --config .golangci.yml \
               | reviewdog -f=golangci-lint -name=golangci -reporter=${REPORTER} -level=${LEVEL}
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
