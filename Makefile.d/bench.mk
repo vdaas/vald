@@ -110,7 +110,7 @@ bench/agent: \
 ## run benchmark for agent gRPC stream
 bench/agent/stream: \
 	ngt/install
-	$(call bench-pprof,pprof/agent,agent,gRPCStream,stream,\
+	$(call bench-pprof,pprof/agent/ngt,agent,gRPCStream,stream,\
 		./hack/benchmark/e2e/agent/ngt/ngt_bench_test.go \
 		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
@@ -118,7 +118,7 @@ bench/agent/stream: \
 ## run benchmark for agent gRPC sequential
 bench/agent/sequential/grpc: \
 	ngt/install
-	$(call bench-pprof,pprof/agent,agent,gRPCSequential,sequential-grpc,\
+	$(call bench-pprof,pprof/agent/ngt,agent,gRPCSequential,sequential-grpc,\
 		./hack/benchmark/e2e/agent/ngt/ngt_bench_test.go \
 		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
@@ -126,7 +126,7 @@ bench/agent/sequential/grpc: \
 ## run benchmark for agent REST
 bench/agent/sequential/rest: \
 	ngt/install
-	$(call bench-pprof,pprof/agent,agent,RESTSequential,sequential-rest,\
+	$(call bench-pprof,pprof/agent/ngt,agent,RESTSequential,sequential-rest,\
 		./hack/benchmark/e2e/agent/ngt/ngt_bench_test.go \
 		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
 
