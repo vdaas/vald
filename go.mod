@@ -9,7 +9,7 @@ replace (
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.7.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.7.3
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200108215511-5d647ca15757
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200109152110-61a87790db17
 	k8s.io/api => k8s.io/api v0.16.4
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.16.4
 	k8s.io/apimachinery => k8s.io/apimachinery v0.16.5-beta.1
@@ -48,6 +48,7 @@ require (
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
 	golang.org/x/sys v0.0.0-20200107162124-548cf772de50
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
+	gonum.org/v1/plot v0.0.0-20200108191833-99c418955f1f
 	google.golang.org/genproto v0.0.0-20200108215221-bd8f9a0ef82f
 	google.golang.org/grpc v1.26.0
 	gopkg.in/yaml.v2 v2.2.7

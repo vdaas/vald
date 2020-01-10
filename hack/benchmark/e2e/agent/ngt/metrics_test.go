@@ -1,11 +1,11 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,13 +38,13 @@ var (
 )
 
 type Params struct {
-	Host string `json:"host" yaml:"host"`
-	Port uint `json:"port" yaml:"port"`
-	DatasetName []string `json:"dataset_name" yaml:"dataset_name"`
-	SearchEdgeSize []int `json:"search_edge_size" yaml:"search_edge_size"`
-	CreationEdgeSize []int `json:"creation_edge_size" yaml:"creation_edge_size"`
-	Epsilon []float32 `json:"epsilon" yaml:"epsilon"`
-	K []int `json:"k" yaml:"k"`
+	Host             string    `json:"host" yaml:"host"`
+	Port             uint      `json:"port" yaml:"port"`
+	DatasetName      []string  `json:"dataset_name" yaml:"dataset_name"`
+	SearchEdgeSize   []int     `json:"search_edge_size" yaml:"search_edge_size"`
+	CreationEdgeSize []int     `json:"creation_edge_size" yaml:"creation_edge_size"`
+	Epsilon          []float32 `json:"epsilon" yaml:"epsilon"`
+	K                []int     `json:"k" yaml:"k"`
 }
 
 func (p *Params) Address() string {
@@ -174,7 +174,7 @@ func TestMetrics(rt *testing.T) {
 			}
 		})
 	}
-	output, err := os.OpenFile(outputPath, os.O_CREATE | os.O_TRUNC | os.O_WRONLY, 0644)
+	output, err := os.OpenFile(outputPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		rt.Error(err)
 	}
