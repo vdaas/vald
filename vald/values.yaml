@@ -50,10 +50,22 @@ gateway:
   name: vald-gateway
   minReplicas: 3
   maxReplicas: 9
+  hpa:
+    enabled: false
+    targetCPUUtilizationPercentage: 80
   image:
     repository: vdaas/vald-gateway
     tag: nightly
     pullPolicy: Always
+  initContainers:
+    waitForManagerCompressor:
+      enabled: true
+    waitForMeta:
+      enabled: true
+    waitForDiscoverer:
+      enabled: false
+    waitForAgent:
+      enabled: true
   server_config:
     prefix: gateway
     servers:
@@ -63,9 +75,9 @@ gateway:
         enabled: true
     healths:
       liveness:
-        enabled: false
+        enabled: true
       readiness:
-        enabled: false
+        enabled: true
     metrics:
       pprof:
         enabled: true
@@ -79,11 +91,17 @@ gateway:
       - ""
   ingress:
     host: vald.gateway.vdaas.co.jp
+  resources:
+    requests:
+      cpu: 200m
+    limits:
+      cpu: 500m
 
 agent:
   name: vald-agent-ngt
   minReplicas: 20
   maxReplicas: 300
+  maxUnavailable: 1
   image:
     repository: vdaas/vald-agent-ngt
     tag: nightly
@@ -97,9 +115,9 @@ agent:
         enabled: true
     healths:
       liveness:
-        enabled: false
+        enabled: true
       readiness:
-        enabled: false
+        enabled: true
     metrics:
       pprof:
         enabled: true
@@ -136,9 +154,9 @@ discoverer:
         enabled: true
     healths:
       liveness:
-        enabled: false
+        enabled: true
       readiness:
-        enabled: false
+        enabled: true
     metrics:
       pprof:
         enabled: true
@@ -150,10 +168,16 @@ compressor:
   name: vald-manager-compressor
   minReplicas: 3
   maxReplicas: 15
+  hpa:
+    enabled: false
+    targetCPUUtilizationPercentage: 80
   image:
     repository: vdaas/vald-manager-compressor
     tag: nightly
     pullPolicy: Always
+  initContainers:
+    waitForManagerBackup:
+      enabled: true
   server_config:
     prefix: manager-compressor
     servers:
@@ -163,9 +187,9 @@ compressor:
         enabled: true
     healths:
       liveness:
-        enabled: false
+        enabled: true
       readiness:
-        enabled: false
+        enabled: true
     metrics:
       pprof:
         enabled: true
@@ -176,11 +200,19 @@ compressor:
     algorithm: lz4
     concurrent_limit: 10
     buffer: 100
+  resources:
+    requests:
+      cpu: 200m
+    limits:
+      cpu: 500m
 
 backupManager:
   name: vald-manager-backup-mysql
   minReplicas: 3
   maxReplicas: 15
+  hpa:
+    enabled: false
+    targetCPUUtilizationPercentage: 80
   image:
     repository: vdaas/vald-manager-backup-mysql
     tag: nightly
@@ -194,15 +226,20 @@ backupManager:
         enabled: true
     healths:
       liveness:
-        enabled: false
+        enabled: true
       readiness:
-        enabled: false
+        enabled: true
     metrics:
       pprof:
         enabled: true
     full_shutdown_duration: 600s
     tls:
       enabled: false
+  resources:
+    requests:
+      cpu: 200m
+    limits:
+      cpu: 500m
 
 mysql:
   enabled: false
@@ -229,9 +266,9 @@ indexManager:
         enabled: true
     healths:
       liveness:
-        enabled: false
+        enabled: true
       readiness:
-        enabled: false
+        enabled: true
     metrics:
       pprof:
         enabled: true
@@ -243,6 +280,9 @@ meta:
   name: vald-meta-redis
   minReplicas: 2
   maxReplicas: 10
+  hpa:
+    enabled: false
+    targetCPUUtilizationPercentage: 80
   image:
     repository: vdaas/vald-meta-redis
     tag: nightly
@@ -256,15 +296,20 @@ meta:
         enabled: true
     healths:
       liveness:
-        enabled: false
+        enabled: true
       readiness:
-        enabled: false
+        enabled: true
     metrics:
       pprof:
         enabled: true
     full_shutdown_duration: 600s
     tls:
       enabled: false
+  resources:
+    requests:
+      cpu: 200m
+    limits:
+      cpu: 500m
 
 redis:
   enabled: false

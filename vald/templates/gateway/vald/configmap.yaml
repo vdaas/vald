@@ -29,7 +29,7 @@ data:
       agent_name: {{ .Values.agent.name }}
       index_replica: 5
       discoverer:
-        host: {{ .Values.discoverer.name }}.default.svc.cluster.local
+        host: {{ .Values.discoverer.name }}.{{ .Release.Namespace }}.svc.cluster.local
         port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.discoverer.server_config.servers.grpc.port }}
         duration: "2s"
         discover_client:
@@ -131,7 +131,7 @@ data:
             key: /path/to/key
             ca: /path/to/ca
       meta:
-        host: {{ .Values.meta.name }}.default.svc.cluster.local
+        host: {{ .Values.meta.name }}.{{ .Release.Namespace }}.svc.cluster.local
         port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.meta.server_config.servers.grpc.port }}
         duration: "2s"
         client:
@@ -184,7 +184,7 @@ data:
             key: /path/to/key
             ca: /path/to/ca
       backup:
-        host: {{ .Values.compressor.name }}.default.svc.cluster.local
+        host: {{ .Values.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
         port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.compressor.server_config.servers.grpc.port }}
         duration: "2s"
         client:

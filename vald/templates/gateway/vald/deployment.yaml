@@ -37,6 +37,59 @@ spec:
       labels:
         app: {{ .Values.gateway.name }}
     spec:
+      initContainers:
+      {{- if .Values.gateway.initContainers.waitForManagerCompressor.enabled }}
+      {{- $compressorReadinessPort := default .Values.defaults.server_config.healths.readiness.port .Values.compressor.server_config.healths.readiness.port }}
+      - name: wait-for-manager-compressor
+        image: busybox
+        command:
+        - /bin/sh
+        - -c
+        - >
+          set -x;
+          while [ $(curl -sw '%{http_code}' "http://{{ .Values.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ $compressorReadinessPort }}" -o /dev/null) -ne 200]; do
+            sleep 2;
+          done
+      {{- end }}
+      {{- if .Values.gateway.initContainers.waitForMeta.enabled }}
+      {{- $metaReadinessPort := default .Values.defaults.server_config.healths.readiness.port .Values.meta.server_config.healths.readiness.port }}
+      - name: wait-for-meta
+        image: busybox
+        command:
+        - /bin/sh
+        - -c
+        - >
+          set -x;
+          while [ $(curl -sw '%{http_code}' "http://{{ .Values.meta.name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ $metaReadinessPort }}" -o /dev/null) -ne 200]; do
+            sleep 2;
+          done
+      {{- end }}
+      {{- if .Values.gateway.initContainers.waitForDiscoverer.enabled }}
+      {{- $discovererReadinessPort := default .Values.defaults.server_config.healths.readiness.port .Values.discoverer.server_config.healths.readiness.port }}
+      - name: wait-for-discoverer
+        image: busybox
+        command:
+        - /bin/sh
+        - -c
+        - >
+          set -x;
+          while [ $(curl -sw '%{http_code}' "http://{{ .Values.discoverer.name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ $discovererReadinessPort }}" -o /dev/null) -ne 200]; do
+            sleep 2;
+          done
+      {{- end }}
+      {{- if .Values.gateway.initContainers.waitForAgent.enabled }}
+      {{- $agentReadinessPort := default .Values.defaults.server_config.healths.readiness.port .Values.agent.server_config.healths.readiness.port }}
+      - name: wait-for-agent
+        image: busybox
+        command:
+        - /bin/sh
+        - -c
+        - >
+          set -x;
+          while [ $(curl -sw '%{http_code}' "http://{{ .Values.agent.name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ $agentReadinessPort }}" -o /dev/null) -ne 200]; do
+            sleep 2;
+          done
+      {{- end }}
       containers:
         - name: {{ .Values.gateway.name }}
           image: "{{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag }}"
