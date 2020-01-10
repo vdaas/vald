@@ -4,15 +4,15 @@ go 1.13
 
 replace (
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
-	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.4.1-0.20191121062641-15462c1d60d4
+	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.4.1-0.20191212001955-b66d043e6c89
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.7.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.7.3
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
-	k8s.io/api => k8s.io/api v0.0.0-20191114100352-16d7abae0d2a
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20191114105449-027877536833
-	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20191028221656-72ed19daf4bb
-	k8s.io/client-go => k8s.io/client-go v0.0.0-20191114101535-6c5935290e33
+	k8s.io/api => k8s.io/api v0.16.4
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.16.4
+	k8s.io/apimachinery => k8s.io/apimachinery v0.16.5-beta.1
+	k8s.io/client-go => k8s.io/client-go v0.16.4
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.4.0
 )
 
@@ -45,8 +45,8 @@ require (
 	google.golang.org/genproto v0.0.0-20191206224255-0243a4be9c8f
 	google.golang.org/grpc v1.25.1
 	gopkg.in/yaml.v2 v2.2.7
-	k8s.io/api v0.0.0-20191114100352-16d7abae0d2a
-	k8s.io/apimachinery v0.0.0-20191028221656-72ed19daf4bb
-	k8s.io/client-go v0.0.0-20191114101535-6c5935290e33
+	k8s.io/api v0.16.4
+	k8s.io/apimachinery v0.16.4
+	k8s.io/client-go v0.16.4
 	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
 )

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/agent"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -31,7 +32,6 @@ import (
 	"github.com/vdaas/vald/pkg/agent/ngt/handler/rest"
 	"github.com/vdaas/vald/pkg/agent/ngt/router"
 	"github.com/vdaas/vald/pkg/agent/ngt/service"
-	"google.golang.org/grpc"
 )
 
 type run struct {

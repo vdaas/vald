@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -59,9 +59,7 @@ func (r *Redis) Bind() *Redis {
 		r.TCP = new(TCP)
 	}
 
-	for i, addr := range r.Addrs {
-		r.Addrs[i] = GetActualValue(addr)
-	}
+	r.Addrs = GetActualValues(r.Addrs)
 	r.DialTimeout = GetActualValue(r.DialTimeout)
 	r.DialTimeout = GetActualValue(r.DialTimeout)
 	r.IdleCheckFrequency = GetActualValue(r.IdleCheckFrequency)

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -63,18 +63,17 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 	}, nil
 }
 
-func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (*payload.Meta_Vals, error) {
-	vals, err := s.redis.GetMultiple(keys.GetKeys()...)
+func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *payload.Meta_Vals, err error) {
+	mv = new(payload.Meta_Vals)
+	mv.Vals, err = s.redis.GetMultiple(keys.GetKeys()...)
 	if err != nil {
 		detail := errDetail{method: "GetMetas", keys: keys.GetKeys()}
 		if errors.IsErrRedisNotFound(errors.UnWrapAll(err)) {
-			return nil, status.WrapWithNotFound("Redis entry not found", &detail, err)
+			return mv, status.WrapWithNotFound("Redis entry not found", &detail, err)
 		}
-		return nil, status.WrapWithUnknown("Unknown error occurred at GetMetas", &detail, err)
+		return mv, status.WrapWithUnknown("Unknown error occurred at GetMetas", &detail, err)
 	}
-	return &payload.Meta_Vals{
-		Vals: vals,
-	}, nil
+	return mv, nil
 }
 
 func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*payload.Meta_Key, error) {
@@ -91,18 +90,17 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 	}, nil
 }
 
-func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (*payload.Meta_Keys, error) {
-	keys, err := s.redis.GetInverseMultiple(vals.GetVals()...)
+func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (mk *payload.Meta_Keys, err error) {
+	mk = new(payload.Meta_Keys)
+	mk.Keys, err = s.redis.GetInverseMultiple(vals.GetVals()...)
 	if err != nil {
 		detail := errDetail{method: "GetMetasInverse", vals: vals.GetVals()}
 		if errors.IsErrRedisNotFound(errors.UnWrapAll(err)) {
-			return nil, status.WrapWithNotFound("Redis entry not found", &detail, err)
+			return mk, status.WrapWithNotFound("Redis entry not found", &detail, err)
 		}
-		return nil, status.WrapWithUnknown("Unknown error occurred at GetMetasInverse", &detail, err)
+		return mk, status.WrapWithUnknown("Unknown error occurred at GetMetasInverse", &detail, err)
 	}
-	return &payload.Meta_Keys{
-		Keys: keys,
-	}, nil
+	return mk, nil
 }
 
 func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *payload.Empty, err error) {

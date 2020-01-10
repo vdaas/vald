@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kou-m, rinx )
+// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package model
 
 import (
 	"github.com/vdaas/vald/apis/grpc/agent"
-	"google.golang.org/grpc"
+	"github.com/vdaas/vald/internal/net/grpc"
 )
 
 type Agent struct {
