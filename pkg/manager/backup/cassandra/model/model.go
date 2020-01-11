@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@
 package model
 
 type MetaVector struct {
-	UUID   string    `db:"uuid"`
-	Vector []float64 `db:"vector"`
-	Meta   string    `db:"meta"`
-	IPs    []string  `db:"ips"`
+	UUID   string   `db:"uuid"`
+	Vector []byte   `db:"vector"`
+	Meta   string   `db:"meta"`
+	IPs    []string `db:"ips"`
 }
