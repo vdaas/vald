@@ -36,7 +36,7 @@ import (
 )
 
 const (
-	configration = `
+	configuration = `
 version: v0.0.0
 server_config:
   servers:
@@ -99,11 +99,65 @@ func init() {
 	}
 }
 
-func StartAgentNGTServer(tb testing.TB, ctx context.Context, d assets.Dataset) {
+type Option func(*config.Data) error
+
+func WithCreationEdgeSize(creationEdgeSize int) Option {
+	return func(cfg *config.Data) error {
+		cfg.NGT.CreationEdgeSize = creationEdgeSize
+		return nil
+	}
+}
+
+func WithSearchEdgeSize(searchEdgeSize int) Option {
+	return func(cfg *config.Data) error {
+		cfg.NGT.SearchEdgeSize = searchEdgeSize
+		return nil
+	}
+}
+
+func withHost(host, typ string) Option {
+	return func(cfg *config.Data) error {
+		for _, svr := range cfg.Server.Servers {
+			if svr.Mode == typ {
+				svr.Host = host
+			}
+		}
+		return nil
+	}
+}
+
+func withPort(port uint, typ string) Option {
+	return func(cfg *config.Data) error {
+		for _, svr := range cfg.Server.Servers {
+			if svr.Mode == typ {
+				svr.Port = port
+			}
+		}
+		return nil
+	}
+}
+
+func WithGRPCHost(host string) Option {
+	return withHost(host, "GRPC")
+}
+
+func WithGRPCPort(port uint) Option {
+	return withPort(port, "GRPC")
+}
+
+func WithRESTHost(host string) Option {
+	return withHost(host, "REST")
+}
+
+func WithRESTPort(port uint) Option {
+	return withPort(port, "REST")
+}
+
+func StartAgentNGTServer(tb testing.TB, ctx context.Context, d assets.Dataset, opts ...Option) {
 	tb.Helper()
 
 	once.Do(func() {
-		sr := strings.NewReader(configration)
+		sr := strings.NewReader(configuration)
 		err := yaml.NewDecoder(sr).Decode(&baseCfg)
 		if err != nil {
 			tb.Errorf("failed to load config %s \t %s", d.Name(), err.Error())
@@ -114,6 +168,11 @@ func StartAgentNGTServer(tb testing.TB, ctx context.Context, d assets.Dataset) {
 	cfg.NGT.IndexPath = baseDir + d.Name()
 	cfg.NGT.DistanceType = d.DistanceType()
 	cfg.NGT.ObjectType = d.ObjectType()
+	for _, opt := range opts {
+		if err := opt(&cfg); err != nil {
+			tb.Error(err)
+		}
+	}
 
 	daemon, err := usecase.New(&cfg)
 	if err != nil {

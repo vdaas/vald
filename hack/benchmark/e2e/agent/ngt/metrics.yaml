@@ -13,22 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then
-    # goimports
-    echo "Run goimports..."
-    find ./ -type f -regex ".*\.go" | xargs goimports -w
-    echo "goimports finished."
-
-    # go build
-    echo "Run go build..."
-    go build ./...
-    echo "go build finished."
-
-    if [ `git rev-parse --abbrev-ref HEAD` = "master" ]; then
-        # golangci-lint
-        echo "Run golangci-lint..."
-        golangci-lint run --fast --disable=gochecknoglobals --fix --color always -j 16 --skip-dirs apis/grpc --exclude-use-default=false ./...
-        echo "golangci-lint finished."
-    fi
-fi
+host: 127.0.0.1
+port: 8082
+dataset_name:
+  - mnist
+#  - fashion-mnist
+search_edge_size:
+  - 60
+creation_edge_size:
+  - 20
+epsilon:
+  - -0.8
+  - -0.4
+  - -0.2
+  - -0.1
+  - 0
+  - 0.02
+  - 0.03
+  - 0.05
+  - 0.07
+  - 0.1
+  - 0.2
+k:
+  - 10
+  - 100

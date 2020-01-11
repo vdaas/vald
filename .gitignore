@@ -41,3 +41,6 @@ hack/**/*.hdf5
 
 !Makefile
 !LICENSE
+
+# for mac
+.DS_Store
