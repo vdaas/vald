@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -192,7 +192,7 @@ func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error)
 }
 
 func validateMeta(meta MetaVector) error {
-	if meta.GetVectorString() == "" {
+	if len(meta.GetVector()) == 0 {
 		return errors.ErrRequiredMemberNotFilled("vector")
 	}
 	return nil
@@ -216,9 +216,9 @@ func (m *mySQLClient) SetMeta(ctx context.Context, mv MetaVector) error {
 
 	_, err = tx.InsertBySql("INSERT INTO meta_vector(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
 		mv.GetUUID(),
-		mv.GetVectorString(),
+		mv.GetVector(),
 		mv.GetMeta(),
-		mv.GetVectorString(),
+		mv.GetVector(),
 		mv.GetMeta()).ExecContext(ctx)
 	if err != nil {
 		return err
@@ -269,9 +269,9 @@ func (m *mySQLClient) SetMetas(ctx context.Context, metas ...MetaVector) error {
 
 		_, err = tx.InsertBySql("INSERT INTO meta_vector(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
 			meta.GetUUID(),
-			meta.GetVectorString(),
+			meta.GetVector(),
 			meta.GetMeta(),
-			meta.GetVectorString(),
+			meta.GetVector(),
 			meta.GetMeta()).ExecContext(ctx)
 		if err != nil {
 			return err

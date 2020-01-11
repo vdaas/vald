@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -243,7 +243,7 @@ func (c *client) getMulti(prefix string, keys ...string) (vals []string, err err
 		}
 		vals = append(vals, res.Val())
 	}
-	return vals[:], err
+	return vals, err
 }
 
 func (c *client) Set(key, val string) (err error) {
@@ -366,5 +366,5 @@ func (c *client) deleteMulti(pfx, pfxInv string, keys ...string) (vals []string,
 			continue
 		}
 	}
-	return vals[:], errs
+	return vals, errs
 }

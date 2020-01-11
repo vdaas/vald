@@ -5,17 +5,26 @@ jobs:
   golangci-lint:
     name: runner / golangci-lint
     runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
-      - name: Install dependencies
+      - uses: actions/checkout@v1
+      - name: go build
         run: |
-          echo "install dependencies"
-          sudo make ngt/install
-      - name: golangci-lint
-        uses: reviewdog/action-golangci-lint@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          golangci_lint_flags: "--enable-all --disable=gochecknoglobals --exclude-use-default=false --deadline=30m"
+          go build ./...
+      - name: Install
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.22.2
+          curl -sSfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v0.9.15
+          GOBIN=$(go env GOPATH)/bin
+          echo "::set-env name=PATH::$PATH:$GOBIN"
+      - name: Run golangci-lint
+        run: |
+          golangci-lint run --out-format line-number ${GOLANGCI_LINT_FLAGS} --issues-exit-code 0
+          golangci-lint run --out-format line-number ${GOLANGCI_LINT_FLAGS} \
+              | reviewdog -f=golangci-lint -name=golangci -reporter=${REPORTER} -level=${LEVEL}
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOLANGCI_LINT_FLAGS: "--enable-all --exclude-use-default=false --deadline=30m"
+          REPORTER: github-pr-review
+          LEVEL: warning

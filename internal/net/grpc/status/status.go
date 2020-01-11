@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -126,9 +126,8 @@ func WrapWithUnauthenticated(msg string, detail interface{}, err error) error {
 
 func FromError(err error) *errors.Errors_RPC {
 	for _, detail := range status.Convert(err).Details() {
-		switch t := detail.(type) {
-		case *errors.Errors_RPC:
-			return t
+		if err, ok := detail.(*errors.Errors_RPC); ok {
+			return err
 		}
 	}
 	return nil

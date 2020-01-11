@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -81,6 +81,11 @@ func WithMaxBackoffDelay(dur string) Option {
 			d = time.Second
 		}
 		g.dopts = append(g.dopts,
+			// grpc.WithConnectParams(grpc.ConnectParams{
+			// 	Backoff: backoff.Config{
+			// 		MaxDelay: d,
+			// 	},
+			// }),
 			grpc.WithBackoffMaxDelay(d),
 		)
 	}
@@ -186,7 +191,7 @@ func WithMaxMsgSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
 			g.dopts = append(g.dopts,
-				grpc.WithMaxMsgSize(size),
+				grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(size)),
 			)
 		}
 	}
