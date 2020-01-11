@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -127,6 +127,17 @@ message Backup {
     repeated string ips = 4;
   }
   message MetaVectors { repeated MetaVector vectors = 1; }
+
+  message Compressed {
+    message MetaVector {
+      string uuid = 1;
+      string meta = 2;
+      bytes vector = 3;
+      repeated string ips = 4;
+    }
+
+    message MetaVectors { repeated MetaVector vectors = 1; }
+  }
 }
 
 message Info {

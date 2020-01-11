@@ -9,7 +9,7 @@ on:
       - 'apis/grpc/**'
       - 'pkg/agent/ngt/**'
       - 'cmd/agent/ngt/**'
-      - 'hack/e2e/benchmark/**'
+      - 'hack/benchmark/**'
       - 'resources/GO_VERSION'
       - 'resources/NGT_VERSION'
   pull_request:
@@ -19,7 +19,7 @@ on:
       - 'apis/grpc/**'
       - 'pkg/agent/ngt/**'
       - 'cmd/agent/ngt/**'
-      - 'hack/e2e/benchmark/**'
+      - 'hack/benchmark/**'
       - 'resources/GO_VERSION'
       - 'resources/NGT_VERSION'
 
@@ -27,29 +27,13 @@ jobs:
   bench-agent-stream:
     name: bench-agent-stream
     runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
     steps:
       - name: Check out code.
         uses: actions/checkout@v1
         with:
           fetch-depth: 1
-      - name: Fetch golang version
+      - name: Run bench-agent-stream
         run: |
-          echo "Fetch golang version"
-          GO_VERSION=`make version/go`
-          echo "GO_VERSION=${GO_VERSION}"
-          echo "::set-output name=version::${GO_VERSION}"
-        id: golang_version
-      - uses: actions/setup-go@v1
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
-      - name: Install dependencies
-        run: |
-          echo "install dependencies"
-          sudo apt-get update
-          sudo apt-get install -y libhdf5-dev graphviz
-          sudo make ngt/install
-      - name: bench-agent-stream
-        run: |
-          echo "run bench-agent-stream"
-          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
           make bench/agent/stream

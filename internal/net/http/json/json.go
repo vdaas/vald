@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,6 +44,10 @@ func Encode(w io.Writer, data interface{}) (err error) {
 
 func Decode(r io.Reader, data interface{}) (err error) {
 	return jsoniter.NewDecoder(r).Decode(data)
+}
+
+func Unmarshal(data []byte, i interface{}) error {
+	return jsoniter.Unmarshal(data, i)
 }
 
 func MarshalIndent(data interface{}, pref, ind string) ([]byte, error) {
