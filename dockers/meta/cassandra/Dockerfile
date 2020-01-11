@@ -54,6 +54,8 @@ RUN GO_VERSION="$(cat GO_VERSION)" \
     -X 'github.com/${ORG}/${REPO}/internal/info.GoArch=${GOARCH}' \
     -X 'github.com/${ORG}/${REPO}/internal/info.CGOEnabled=${CGO_ENABLED}'" \
     -a \
+    -tags netgo \
+    -installsuffix netgo \
     -trimpath \
     -o "${APP_NAME}" \
     "cmd/${PKG}/main.go" \

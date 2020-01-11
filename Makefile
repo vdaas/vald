@@ -36,6 +36,8 @@ GO_VERSION := $(shell cat versions/GO_VERSION)
 GOPATH := $(shell go env GOPATH)
 GOCACHE := $(shell go env GOCACHE)
 
+TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION)
+
 MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
 
 ROOTDIR = $(shell git rev-parse --show-toplevel)
@@ -71,6 +73,9 @@ PROTO_PATHS = \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
 	$(GOPATH)/src/github.com/danielvladco/go-proto-gql \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
+
+COMMA := ,
+SHELL = bash
 
 include Makefile.d/functions.mk
 
@@ -124,7 +129,8 @@ init: \
 	git/config/init \
 	git/hooks/init \
 	deps \
-	ngt/install
+	ngt/install \
+	tensorflow/install
 
 .PHONY: update
 ## update deps, license, and run goimports
@@ -169,6 +175,15 @@ ngt/install: /usr/local/include/NGT/Capi.h
 	make install -C /tmp/NGT-$(NGT_VERSION)
 	rm -rf v$(NGT_VERSION).tar.gz
 	rm -rf /tmp/NGT-$(NGT_VERSION)
+
+.PHONY: tensorflow/install
+## install TensorFlow for C
+tensorflow/install: /usr/local/lib/libtensorflow.so
+/usr/local/lib/libtensorflow.so:
+	curl -LO https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
+	tar -C /usr/local -xzf libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
+	rm -f libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
+	ldconfig
 
 .PHONY: test
 ## run tests
