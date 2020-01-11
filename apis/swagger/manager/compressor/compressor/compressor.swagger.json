@@ -4,10 +4,6 @@
     "title": "compressor/compressor.proto",
     "version": "version not set"
   },
-  "schemes": [
-    "http",
-    "https"
-  ],
   "consumes": [
     "application/json"
   ],

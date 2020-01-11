@@ -46,6 +46,7 @@ require (
 	github.com/tensorflow/tensorflow v2.1.0+incompatible
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
+	go.uber.org/automaxprocs v1.2.0
 	golang.org/x/sys v0.0.0-20200107162124-548cf772de50
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/plot v0.0.0-20200108191833-99c418955f1f

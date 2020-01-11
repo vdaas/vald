@@ -4,10 +4,6 @@
     "title": "backup/backup_manager.proto",
     "version": "version not set"
   },
-  "schemes": [
-    "http",
-    "https"
-  ],
   "consumes": [
     "application/json"
   ],
