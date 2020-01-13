@@ -49,7 +49,7 @@ require (
 	go.uber.org/automaxprocs v1.2.0
 	golang.org/x/sys v0.0.0-20200107162124-548cf772de50
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
-	gonum.org/v1/plot v0.0.0-20200108191833-99c418955f1f
+	gonum.org/v1/plot v0.0.0-20200111075622-4abb28f724d5
 	google.golang.org/genproto v0.0.0-20200108215221-bd8f9a0ef82f
 	google.golang.org/grpc v1.26.0
 	gopkg.in/yaml.v2 v2.2.7
