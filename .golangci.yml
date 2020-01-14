@@ -1,0 +1,20 @@
+run:
+  deadline: 30m
+
+output:
+  format: line-number
+
+linters:
+  enable-all: true
+
+issues:
+  exclude-use-default: false
+
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - dupl
+        - scopelint
+        - funlen
+        - gocognit
+        - gomnd
