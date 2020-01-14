@@ -1,0 +1,13 @@
+apiVersion: v1
+entries:
+  vald:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-01-14T16:31:19.1666878+09:00"
+    description: A Helm chart for Kubernetes
+    digest: ee30ddf5b4c4f9ed878e6c003425e60c7d6ff3855f5bf69a6a5efd45b3694aa0
+    name: vald
+    urls:
+    - https://vdaas.github.io/vald/charts/vald-0.1.0.tgz
+    version: 0.1.0
+generated: "2020-01-14T16:31:19.1609533+09:00"
