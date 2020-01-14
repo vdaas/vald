@@ -50,7 +50,9 @@ func New(opts ...Option) Listener {
 	}
 
 	if l.sus != nil && len(l.sus) != 0 && (l.sds == nil || len(l.sds) == 0) {
-		copy(l.sds, l.sus)
+		s := make([]string, len(l.sus))
+		copy(s, l.sus)
+		l.sds = s
 		sort.Sort(sort.Reverse(sort.StringSlice(l.sds)))
 	}
 	return l
@@ -111,7 +113,7 @@ func (l *listener) Shutdown(ctx context.Context) (err error) {
 
 		if l.servers[name].IsRunning() {
 			err = l.servers[name].Shutdown(ctx)
-			if err != nil && err != http.ErrServerClosed {
+			if err != nil && !errors.Is(err, http.ErrServerClosed) {
 				emap[err.Error()] = struct{}{}
 			}
 		}
@@ -120,7 +122,7 @@ func (l *listener) Shutdown(ctx context.Context) (err error) {
 	for name := range l.servers {
 		if l.servers[name].IsRunning() {
 			err = l.servers[name].Shutdown(ctx)
-			if err != nil && err != http.ErrServerClosed {
+			if err != nil && !errors.Is(err, http.ErrServerClosed) {
 				emap[err.Error()] = struct{}{}
 			}
 		}
@@ -128,7 +130,7 @@ func (l *listener) Shutdown(ctx context.Context) (err error) {
 
 	err = nil
 	for msg := range emap {
-		if msg != "" && strings.HasPrefix(msg, http.ErrServerClosed.Error()) {
+		if msg != "" && !strings.HasPrefix(msg, http.ErrServerClosed.Error()) {
 			err = errors.Wrap(err, msg)
 		}
 	}
