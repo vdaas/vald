@@ -203,7 +203,7 @@ func TestDo(t *testing.T) {
 			}
 
 			return test{
-				name: "return nil and context context canceld error",
+				name: "return nil and context canceled error",
 				args: args{
 					fn: fn,
 					opts: []Option{
@@ -226,6 +226,35 @@ func TestDo(t *testing.T) {
 					return nil
 				},
 				want: errors.Wrap(errors.New("error (2)"), context.Canceled.Error()),
+			}
+		}(),
+
+		func() test {
+			err := errors.New("error")
+			fn := func() (interface{}, error) {
+				return nil, err
+			}
+
+			return test{
+				name: "return nil and backoff timeout error",
+				args: args{
+					fn: fn,
+					opts: []Option{
+						WithDisableErrorLog(),
+						WithRetryCount(6),
+						WithBackOffTimeLimit("0s"),
+					},
+				},
+				ctxFn: func() (context.Context, context.CancelFunc) {
+					return context.WithCancel(context.Background())
+				},
+				checkFunc: func(got, want error) error {
+					if !errors.Is(got, want) {
+						return errors.Errorf("not equals. want: %v, got: %v", want, got)
+					}
+					return nil
+				},
+				want: err,
 			}
 		}(),
 	}
