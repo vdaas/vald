@@ -114,16 +114,22 @@ ports:
   {{- if $restEnabled }}
   - name: rest
     port: {{ default .default.servers.rest.port .Values.servers.rest.port }}
+    targetPort: {{ default .default.servers.rest.port .Values.servers.rest.port }}
+    protocol: TCP
   {{- end }}
   {{- $grpcEnabled := default .default.servers.grpc.enabled .Values.servers.grpc.enabled }}
   {{- if $grpcEnabled }}
   - name: grpc
     port: {{ default .default.servers.grpc.port .Values.servers.grpc.port }}
+    targetPort: {{ default .default.servers.grpc.port .Values.servers.grpc.port }}
+    protocol: TCP
   {{- end }}
   {{- $pprofEnabled := default .default.metrics.pprof.enabled .Values.metrics.pprof.enabled }}
   {{- if $pprofEnabled }}
   - name: pprof
     port: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
+    targetPort: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
+    protocol: TCP
   {{- end }}
 {{- end -}}
 
