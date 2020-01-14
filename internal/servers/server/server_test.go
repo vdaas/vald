@@ -135,7 +135,7 @@ func TestNew(t *testing.T) {
 	type test struct {
 		name      string
 		opts      []Option
-		checkFunc func(got *server) error
+		checkFunc func(got *server, gotErr, wantErr error) error
 		wantErr   error
 	}
 
@@ -158,10 +158,15 @@ func TestNew(t *testing.T) {
 					WithIdleTimeout("4s"),
 					WithTLSConfig(new(tls.Config)),
 				},
-				checkFunc: func(got *server) error {
+				checkFunc: func(got *server, gotErr, wantErr error) error {
 					if got.http.srv == nil {
 						return errors.New("http srv is nil")
 					}
+
+					if !errors.Is(gotErr, wantErr) {
+						return errors.Errorf("err is not equals. want: %v, got: %v", wantErr, gotErr)
+					}
+
 					return nil
 				},
 				wantErr: nil,
@@ -172,10 +177,15 @@ func TestNew(t *testing.T) {
 			return test{
 				name: "return invalid api config error in case of REST server",
 				opts: []Option{},
-				checkFunc: func(got *server) error {
+				checkFunc: func(got *server, gotErr, wantErr error) error {
 					if got != nil {
 						return errors.Errorf("New return not nil: %v", got)
 					}
+
+					if !errors.Is(gotErr, wantErr) {
+						return errors.Errorf("err is not equals. want: %v, got: %v", wantErr, gotErr)
+					}
+
 					return nil
 				},
 				wantErr: errors.ErrInvalidAPIConfig,
@@ -194,10 +204,15 @@ func TestNew(t *testing.T) {
 					WithGRPCOption([]grpc.ServerOption{}...),
 					WithTLSConfig(new(tls.Config)),
 				},
-				checkFunc: func(got *server) error {
+				checkFunc: func(got *server, gotErr, wantErr error) error {
 					if got.grpc.srv == nil {
 						return errors.New("grpc srv is nil")
 					}
+
+					if !errors.Is(gotErr, wantErr) {
+						return errors.Errorf("err is not equals. want: %v, got: %v", wantErr, gotErr)
+					}
+
 					return nil
 				},
 				wantErr: nil,
@@ -210,10 +225,15 @@ func TestNew(t *testing.T) {
 				opts: []Option{
 					WithServerMode(GRPC),
 				},
-				checkFunc: func(got *server) error {
+				checkFunc: func(got *server, gotErr, wantErr error) error {
 					if got != nil {
 						return errors.Errorf("New return not nil: %v", got)
 					}
+
+					if !errors.Is(gotErr, wantErr) {
+						return errors.Errorf("err is not equals. want: %v, got: %v", wantErr, gotErr)
+					}
+
 					return nil
 				},
 				wantErr: errors.ErrInvalidAPIConfig,
@@ -227,12 +247,8 @@ func TestNew(t *testing.T) {
 			log.Init(log.DefaultGlg())
 			s, err := New(tt.opts...)
 
-			if err != tt.wantErr {
-				t.Errorf("New err is wrong. want: %v, got: %v", err, tt.wantErr)
-			}
-
 			if tt.wantErr == nil {
-				if err := tt.checkFunc(s.(*server)); err != nil {
+				if err := tt.checkFunc(s.(*server), err, tt.wantErr); err != nil {
 					t.Error(err)
 				}
 			}
@@ -425,6 +441,7 @@ func TestListenAndServe(t *testing.T) {
 		}(),
 	}
 
+	log.Init(log.DefaultGlg())
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
@@ -432,7 +449,6 @@ func TestListenAndServe(t *testing.T) {
 					defer tt.afterFunc()
 				}
 			}()
-			log.Init(log.DefaultGlg())
 
 			s := &server{
 				mode: tt.field.mode,
@@ -571,6 +587,7 @@ func TestShutdown(t *testing.T) {
 		}(),
 	}
 
+	log.Init(log.DefaultGlg())
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
@@ -578,7 +595,6 @@ func TestShutdown(t *testing.T) {
 					defer tt.afterFunc()
 				}
 			}()
-			log.Init(log.DefaultGlg())
 
 			s := &server{
 				mode: tt.field.mode,
