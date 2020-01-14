@@ -19,8 +19,8 @@ package backoff
 
 import (
 	"context"
-	"fmt"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 
@@ -28,13 +28,9 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	type args struct {
-		opts []Option
-	}
-
 	type test struct {
 		name      string
-		args      args
+		opts      []Option
 		want      *backoff
 		checkFunc func(got, want *backoff) error
 	}
@@ -42,20 +38,23 @@ func TestNew(t *testing.T) {
 	tests := []test{
 		{
 			name: "initialize",
+			opts: []Option{
+				WithBackOffFactor(0.5),
+			},
 			want: &backoff{
 				initialDuration:  float64(10 * time.Millisecond),
 				backoffTimeLimit: 5 * time.Minute,
 				maxDuration:      float64(time.Hour),
 				jitterLimit:      float64(time.Minute),
-				backoffFactor:    1.5,
+				backoffFactor:    1.1,
 				maxRetryCount:    50,
 				errLog:           true,
-				durationLimit:    float64(time.Hour) / 1.5,
+				durationLimit:    float64(time.Hour) / 1.1,
 			},
 			checkFunc: func(got *backoff, want *backoff) error {
 				got.jittedInitialDuration, want.jittedInitialDuration = 1, 1
 				if !reflect.DeepEqual(got, want) {
-					return fmt.Errorf("not equals. want: %v, got: %v", got, want)
+					return errors.Errorf("not equals. want: %v, got: %v", got, want)
 				}
 				return nil
 			},
@@ -64,7 +63,7 @@ func TestNew(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := New(tt.args.opts...)
+			got := New(tt.opts...)
 			if err := tt.checkFunc(got.(*backoff), tt.want); err != nil {
 				t.Error(err)
 			}
@@ -94,7 +93,7 @@ func TestDo(t *testing.T) {
 				if cnt == 2 {
 					return nil, nil
 				}
-				return nil, fmt.Errorf("error (%d)", cnt)
+				return nil, errors.Errorf("error (%d)", cnt)
 			}
 
 			return test{
@@ -111,11 +110,11 @@ func TestDo(t *testing.T) {
 				},
 				checkFunc: func(got, want error) error {
 					if cnt != 2 {
-						return fmt.Errorf("error count is wrong, want: %v, got: %v", 2, cnt)
+						return errors.Errorf("error count is wrong, want: %v, got: %v", 2, cnt)
 					}
 
 					if got != want {
-						return fmt.Errorf("not equals. want: %v, got: %v", want, got)
+						return errors.Errorf("not equals. want: %v, got: %v", want, got)
 					}
 
 					return nil
@@ -128,7 +127,44 @@ func TestDo(t *testing.T) {
 			cnt := 0
 			fn := func() (interface{}, error) {
 				cnt++
-				return nil, fmt.Errorf("error (%d)", cnt)
+				if cnt == 2 {
+					return nil, nil
+				}
+				return nil, errors.Errorf("error (%d)", cnt)
+			}
+
+			return test{
+				name: "backoff is successful",
+				args: args{
+					fn: fn,
+					opts: []Option{
+						WithDisableErrorLog(),
+						WithRetryCount(6),
+					},
+				},
+				ctxFn: func() (context.Context, context.CancelFunc) {
+					return context.WithCancel(context.Background())
+				},
+				checkFunc: func(got, want error) error {
+					if cnt != 2 {
+						return errors.Errorf("error count is wrong, want: %v, got: %v", 2, cnt)
+					}
+
+					if got != want {
+						return errors.Errorf("not equals. want: %v, got: %v", want, got)
+					}
+
+					return nil
+				},
+				want: nil,
+			}
+		}(),
+
+		func() test {
+			cnt := 0
+			fn := func() (interface{}, error) {
+				cnt++
+				return nil, errors.Errorf("error (%d)", cnt)
 			}
 
 			return test{
@@ -145,16 +181,16 @@ func TestDo(t *testing.T) {
 				},
 				checkFunc: func(got, want error) error {
 					if cnt != 7 {
-						return fmt.Errorf("error count is wrong, want: %v, got: %v", 7, cnt)
+						return errors.Errorf("error count is wrong, want: %v, got: %v", 7, cnt)
 					}
 
 					if got.Error() != want.Error() {
-						return fmt.Errorf("not equals. want: %v, got: %v", want, got)
+						return errors.Errorf("not equals. want: %v, got: %v", want, got)
 					}
 
 					return nil
 				},
-				want: fmt.Errorf("error (7)"),
+				want: errors.New("error (7)"),
 			}
 		}(),
 
@@ -167,7 +203,7 @@ func TestDo(t *testing.T) {
 				if cnt == 2 {
 					cancel()
 				}
-				return nil, fmt.Errorf("error (%d)", cnt)
+				return nil, errors.Errorf("error (%d)", cnt)
 			}
 
 			return test{
@@ -184,16 +220,16 @@ func TestDo(t *testing.T) {
 				},
 				checkFunc: func(got, want error) error {
 					if cnt != 2 {
-						return fmt.Errorf("error count is wrong, want: %v, got: %v", 2, cnt)
+						return errors.Errorf("error count is wrong, want: %v, got: %v", 2, cnt)
 					}
 
 					if got.Error() != want.Error() {
-						return fmt.Errorf("not equals. want: %v, got: %v", want, got)
+						return errors.Errorf("not equals. want: %v, got: %v", want, got)
 					}
 
 					return nil
 				},
-				want: errors.Wrap(fmt.Errorf("error (2)"), context.Canceled.Error()),
+				want: errors.Wrap(errors.New("error (2)"), context.Canceled.Error()),
 			}
 		}(),
 	}
@@ -211,6 +247,29 @@ func TestDo(t *testing.T) {
 			if err := tt.checkFunc(err, tt.want); err != nil {
 				t.Error(err)
 			}
+		})
+	}
+}
+
+func TestClose(t *testing.T) {
+	type test struct {
+		name string
+		wg   sync.WaitGroup
+	}
+
+	tests := []test{
+		{
+			name: "close is success",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bo := &backoff{
+				wg: tt.wg,
+			}
+
+			bo.Close()
 		})
 	}
 }
