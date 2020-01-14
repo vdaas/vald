@@ -104,8 +104,9 @@ func TestSetupAPIs(t *testing.T) {
 	tests := []test{
 		func() test {
 			fn := func(srv *grpc.Server) {}
+
 			return test{
-				name: "setup is success",
+				name: "returns options and nil",
 				args: args{
 					cfg: new(tls.Config),
 				},
@@ -161,8 +162,9 @@ func TestSetupAPIs(t *testing.T) {
 				},
 			}
 		}(),
+
 		{
-			name: "faild to setup of RESR server",
+			name: "returns nil options and error when setup of RESR server fails",
 			args: args{
 				cfg: new(tls.Config),
 			},
@@ -188,8 +190,9 @@ func TestSetupAPIs(t *testing.T) {
 				return nil
 			},
 		},
+
 		{
-			name: "faild to setup of gRPC server",
+			name: "returns nil options and error when setup of gRPC server fails",
 			args: args{
 				cfg: new(tls.Config),
 			},
@@ -215,8 +218,9 @@ func TestSetupAPIs(t *testing.T) {
 				return nil
 			},
 		},
+
 		{
-			name: "faild to setup of GQL server",
+			name: "returns nil options and error when setup of GQL server fails",
 			args: args{
 				cfg: new(tls.Config),
 			},
@@ -279,36 +283,65 @@ func TestSetupHealthCheck(t *testing.T) {
 	}
 
 	tests := []test{
-		func() test {
-			return test{
-				name: "setup is success",
-				args: args{
-					cfg: new(tls.Config),
-				},
-				field: field{
-					cfg: &config.Servers{
-						HealthCheckServers: []*config.Server{
-							{
-								Name: "name",
-								Host: "host",
-								Port: 8080,
-							},
+		{
+			name: "returns options and nil",
+			args: args{
+				cfg: new(tls.Config),
+			},
+			field: field{
+				cfg: &config.Servers{
+					HealthCheckServers: []*config.Server{
+						{
+							Name: "name",
+							Host: "host",
+							Port: 8080,
 						},
 					},
 				},
-				checkFunc: func(opts []servers.Option, err error) error {
-					if err != nil {
-						return errors.Errorf("returns an error: %v", err)
-					}
+			},
+			checkFunc: func(opts []servers.Option, err error) error {
+				if err != nil {
+					return errors.Errorf("returns an error: %v", err)
+				}
 
-					if len(opts) != 1 {
-						return errors.Errorf("length of options is wrong. want: %v got: %v", 1, len(opts))
-					}
+				if len(opts) != 1 {
+					return errors.Errorf("length of options is wrong. want: %v got: %v", 1, len(opts))
+				}
 
-					return nil
+				return nil
+			},
+		},
+
+		{
+			name: "returns nil option and error when server.New returns error",
+			args: args{
+				cfg: new(tls.Config),
+			},
+			field: field{
+				cfg: &config.Servers{
+					HealthCheckServers: []*config.Server{
+						{
+							Name: "name",
+							Host: "host",
+							Port: 8080,
+							Mode: server.GRPC.String(),
+						},
+					},
 				},
-			}
-		}(),
+			},
+			checkFunc: func(opts []servers.Option, err error) error {
+				wantErr := errors.ErrInvalidAPIConfig
+				if !errors.Is(wantErr, err) {
+					return errors.Errorf("error is wrong. want: %v, got: %v", wantErr, err)
+				}
+
+				if len(opts) != 0 {
+					return errors.Errorf("length of options is wrong. want: %v got: %v", 0, len(opts))
+				}
+
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -343,7 +376,7 @@ func TestSetupMetrics(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "setup is success",
+			name: "returns options and nil",
 			args: args{
 				cfg: new(tls.Config),
 			},
@@ -368,6 +401,36 @@ func TestSetupMetrics(t *testing.T) {
 
 				if len(opts) != 1 {
 					return errors.Errorf("length of options is wrong. want: %v got: %v", 1, len(opts))
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "returns nil option and error when server.New returns error",
+			args: args{
+				cfg: new(tls.Config),
+			},
+			field: field{
+				cfg: &config.Servers{
+					MetricsServers: []*config.Server{
+						{
+							Name: "pprof",
+							Host: "host",
+							Port: 8080,
+							Mode: server.GRPC.String(),
+						},
+					},
+				},
+			},
+			checkFunc: func(opts []servers.Option, err error) error {
+				wantErr := errors.ErrInvalidAPIConfig
+				if !errors.Is(wantErr, err) {
+					return errors.Errorf("error is wrong. want: %v, got: %v", wantErr, err)
+				}
+
+				if len(opts) != 0 {
+					return errors.Errorf("length of options is wrong. want: %v got: %v", 0, len(opts))
 				}
 				return nil
 			},
