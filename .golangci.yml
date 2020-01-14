@@ -17,3 +17,4 @@ issues:
         - scopelint
         - funlen
         - gocognit
+        - gomnd
