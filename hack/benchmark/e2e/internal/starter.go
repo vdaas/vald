@@ -17,7 +17,6 @@ package internal
 
 import (
 	"context"
-	"os"
 	"strings"
 	"sync"
 	"testing"
@@ -27,7 +26,6 @@ import (
 	"github.com/vdaas/vald/apis/grpc/vald"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/pkg/agent/ngt/config"
 	"github.com/vdaas/vald/pkg/agent/ngt/usecase"
@@ -74,30 +72,20 @@ server_config:
   tls:
     enabled: false
 ngt:
-  index_path: "/tmp/ngt/unknown"
   dimension: 0
   bulk_insert_chunk_size: 10
   distance_type: unknown
   object_type: unknown
   creation_edge_size: 20
   search_edge_size: 10
+  enable_in_memory_mode: true
 `
-	baseDir = "/tmp/ngt/"
 )
 
 var (
 	baseCfg config.Data
 	once    sync.Once
 )
-
-func init() {
-	if err := os.RemoveAll(baseDir); err != nil {
-		log.Fatal(err)
-	}
-	if err := os.MkdirAll(baseDir, 0755); err != nil {
-		log.Fatal(err)
-	}
-}
 
 type Option func(*config.Data) error
 
@@ -165,7 +153,6 @@ func StartAgentNGTServer(tb testing.TB, ctx context.Context, d assets.Dataset, o
 	})
 	cfg := baseCfg
 	cfg.NGT.Dimension = d.Dimension()
-	cfg.NGT.IndexPath = baseDir + d.Name()
 	cfg.NGT.DistanceType = d.DistanceType()
 	cfg.NGT.ObjectType = d.ObjectType()
 	for _, opt := range opts {
