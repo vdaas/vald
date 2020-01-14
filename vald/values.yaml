@@ -295,6 +295,36 @@ backupManager:
     # repository: vdaas/vald-manager-backup-cassandra
     tag: nightly
     pullPolicy: Always
+  initContainers:
+    - type: waitFor
+      name: wait-for-mysql
+      image: mysql:latest
+      target: custom
+      whileCondition: $(mysqladmin -hmysql.default.svc.cluster.local -uroot -p${MYSQL_PASSWORD} --show-warnings=false ping | grep alive | awk '{print $3}') -ne alive
+      sleepDuration: 2
+      env:
+      - name: MYSQL_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: mysql-secret
+            key: password
+    # - type: waitFor
+    #   name: wait-for-cassandra
+    #   image: cassandra:latest
+    #   target: custom
+    #   whileCondition: $(cqlsh cassandra.default.svc.cluster.local -u${CASSANDRA_USERNAME} -p${CASSANDRA_PASSWORD} -e "select now() from system.local" > /dev/null; echo $?) -ne 0
+    #   sleepDuration: 2
+    #   env:
+    #   - name: CASSANDRA_USERNAME
+    #     valueFrom:
+    #       secretKeyRef:
+    #         name: cassandra-user
+    #         key: ""
+    #   - name: CASSANDRA_PASSWORD
+    #     valueFrom:
+    #       secretKeyRef:
+    #         name: cassandra-secret
+    #         key: ""
   server_config:
     prefix: backup-manager
     servers:
@@ -434,6 +464,36 @@ meta:
     # repository: vdaas/vald-meta-cassandra
     tag: nightly
     pullPolicy: Always
+  initContainers:
+    - type: waitFor
+      name: wait-for-redis
+      image: redis:latest
+      target: custom
+      whileCondition: $(redis-cli -h redis.default.svc.cluster.local -a ${REDIS_PASSWORD}) -ne 200
+      sleepDuration: 2
+      env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: password
+    # - type: waitFor
+    #   name: wait-for-cassandra
+    #   image: cassandra:latest
+    #   target: custom
+    #   whileCondition: $(cqlsh cassandra.default.svc.cluster.local -u${CASSANDRA_USERNAME} -p${CASSANDRA_PASSWORD} -e "select now() from system.local" > /dev/null; echo $?) -ne 0
+    #   sleepDuration: 2
+    #   env:
+    #   - name: CASSANDRA_USERNAME
+    #     valueFrom:
+    #       secretKeyRef:
+    #         name: cassandra-user
+    #         key: ""
+    #   - name: CASSANDRA_PASSWORD
+    #     valueFrom:
+    #       secretKeyRef:
+    #         name: cassandra-secret
+    #         key: ""
   server_config:
     prefix: meta
     servers:

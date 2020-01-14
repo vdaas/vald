@@ -362,9 +362,15 @@ initContainers
       {{- else if eq .target "manager-backup" }}
       {{- $backupManagerReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.backupManager.server_config.healths.readiness.port }}
       while [ $(curl -sw '%{http_code}' "http://{{ $.Values.backupManager.name }}.{{ $.namespace }}.svc.cluster.local:{{ $backupManagerReadinessPort }}" -o /dev/null) -ne 200]; do
+      {{- else if .whileCondition }}
+      while [ {{ .whileCondition }} ]; do
       {{- end }}
         sleep {{ .sleepDuration }};
       done
+  {{- end }}
+  {{- if .env }}
+  env:
+    {{- toYaml .env | nindent 4 }}
   {{- end }}
 {{- end }}
 {{- end -}}
