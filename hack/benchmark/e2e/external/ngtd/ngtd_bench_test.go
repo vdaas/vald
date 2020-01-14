@@ -405,7 +405,7 @@ func BenchmarkNGTDgRPCStream(rb *testing.B) {
 			i := 0
 			b.Run("Insert objects", func(bb *testing.B) {
 				if bb.N+i >= len(ids) {
-					ids = append(ids, assets.CreateIDs(len(train))...)
+					ids = append(ids, assets.CreateRandomIDs(len(train))...)
 				}
 
 				bb.ReportAllocs()
