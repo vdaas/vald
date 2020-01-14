@@ -251,21 +251,21 @@ func TestDo(t *testing.T) {
 func TestClose(t *testing.T) {
 	type test struct {
 		name string
-		wg   sync.WaitGroup
+		wg   *sync.WaitGroup
 	}
 
 	tests := []test{
 		{
 			name: "close is success",
+			wg:   new(sync.WaitGroup),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			bo := &backoff{
-				wg: tt.wg,
+				wg: *tt.wg,
 			}
-
 			bo.Close()
 		})
 	}
