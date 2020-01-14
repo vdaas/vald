@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -147,9 +148,15 @@ func TestNew(t *testing.T) {
 			hdr := new(handler)
 
 			return test{
-				name: "initialize REST server",
+				name: "initialize REST server is successs",
 				opts: []Option{
 					WithHTTPHandler(hdr),
+					WithErrorGroup(nil),
+					WithReadHeaderTimeout("1s"),
+					WithReadTimeout("2s"),
+					WithWriteTimeout("3s"),
+					WithIdleTimeout("4s"),
+					WithTLSConfig(new(tls.Config)),
 				},
 				checkFunc: func(got *server) error {
 					if got.http.srv == nil {
@@ -179,10 +186,13 @@ func TestNew(t *testing.T) {
 			fn := func(g *grpc.Server) {}
 
 			return test{
-				name: "initialize of gRPC server is successful",
+				name: "initialize of gRPC server is success",
 				opts: []Option{
 					WithServerMode(GRPC),
 					WithGRPCRegistFunc(fn),
+					WithGRPCKeepaliveTime("1s"),
+					WithGRPCOption([]grpc.ServerOption{}...),
+					WithTLSConfig(new(tls.Config)),
 				},
 				checkFunc: func(got *server) error {
 					if got.grpc.srv == nil {
@@ -211,6 +221,7 @@ func TestNew(t *testing.T) {
 		}(),
 	}
 
+	log.Init(log.DefaultGlg())
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			log.Init(log.DefaultGlg())

@@ -1508,6 +1508,35 @@ func TestWithGRPCHeaderTableSize(t *testing.T) {
 	}
 }
 
+func TestWithGRPCInterceptors(t *testing.T) {
+	type test struct {
+		name      string
+		names     []string
+		checkFunc func(opt Option) error
+	}
+
+	tests := []test{
+		{
+			name: "set success",
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				return nil
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			opt := WithGRPCInterceptors(tt.names...)
+			if err := tt.checkFunc(opt); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
 func TestDefaultOption(t *testing.T) {
 	type test struct {
 		name      string
