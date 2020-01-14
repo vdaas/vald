@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 )
 
 func TestNew(t *testing.T) {
@@ -90,30 +91,26 @@ func TestDo(t *testing.T) {
 			cnt := 0
 			fn := func() (interface{}, error) {
 				cnt++
-				if cnt == 2 {
-					return nil, nil
-				}
-				return nil, errors.Errorf("error (%d)", cnt)
+				return nil, nil
 			}
 
 			return test{
-				name: "backoff is successful",
+				name: "returns response and nil when function return not nil",
 				args: args{
 					fn: fn,
 					opts: []Option{
 						WithDisableErrorLog(),
-						WithRetryCount(6),
 					},
 				},
 				ctxFn: func() (context.Context, context.CancelFunc) {
 					return context.WithCancel(context.Background())
 				},
 				checkFunc: func(got, want error) error {
-					if cnt != 2 {
+					if cnt != 1 {
 						return errors.Errorf("error count is wrong, want: %v, got: %v", 2, cnt)
 					}
 
-					if got != want {
+					if !errors.Is(want, got) {
 						return errors.Errorf("not equals. want: %v, got: %v", want, got)
 					}
 
@@ -150,7 +147,7 @@ func TestDo(t *testing.T) {
 						return errors.Errorf("error count is wrong, want: %v, got: %v", 2, cnt)
 					}
 
-					if got != want {
+					if !errors.Is(want, got) {
 						return errors.Errorf("not equals. want: %v, got: %v", want, got)
 					}
 
@@ -172,7 +169,6 @@ func TestDo(t *testing.T) {
 				args: args{
 					fn: fn,
 					opts: []Option{
-						WithDisableErrorLog(),
 						WithRetryCount(6),
 					},
 				},
@@ -184,7 +180,7 @@ func TestDo(t *testing.T) {
 						return errors.Errorf("error count is wrong, want: %v, got: %v", 7, cnt)
 					}
 
-					if got.Error() != want.Error() {
+					if want.Error() != got.Error() {
 						return errors.Errorf("not equals. want: %v, got: %v", want, got)
 					}
 
@@ -207,7 +203,7 @@ func TestDo(t *testing.T) {
 			}
 
 			return test{
-				name: "context canceld",
+				name: "return nil and context context canceld error",
 				args: args{
 					fn: fn,
 					opts: []Option{
@@ -234,6 +230,7 @@ func TestDo(t *testing.T) {
 		}(),
 	}
 
+	log.Init(log.DefaultGlg())
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel := tt.ctxFn()
