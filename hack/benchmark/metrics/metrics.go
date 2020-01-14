@@ -15,6 +15,8 @@
 //
 package metrics
 
+import "time"
+
 type SearchMetrics struct {
 	Recall  float64
 	Qps     float64
@@ -22,7 +24,7 @@ type SearchMetrics struct {
 }
 
 type Metrics struct {
-	BuildTime        int64
+	BuildTime        time.Duration
 	DatasetName      string
 	SearchEdgeSize   int
 	CreationEdgeSize int

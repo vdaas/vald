@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package ngt
+package vald
 
 import (
 	"context"
@@ -25,26 +25,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/hack/benchmark/e2e/internal"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/metrics"
 )
 
 var (
-	configuration string
-	outputPath    string
+	configuration = flag.String("conf", "metrics.yaml", "set metrics configuration file path")
+	outputPath    = flag.String("output", "metrics.gob", "set result output path")
+	wait          = flag.Duration("wait-for-indexing", 30 * time.Second, "wait time for automatic indexing")
 )
-
-func init() {
-	flag.StringVar(&configuration, "conf", "metrics.yaml", "set metrics configuration file path")
-	flag.StringVar(&outputPath, "output", "metrics.gob", "set result output path")
-}
 
 func TestMetrics(rt *testing.T) {
 	flag.Parse()
 
-	p, err := internal.FromYaml(configuration)
+	p, err := internal.FromYaml(*configuration)
 	if err != nil {
 		rt.Error(err)
 	}
@@ -80,25 +75,17 @@ func TestMetrics(rt *testing.T) {
 							internal.WithGRPCHost(p.Host),
 							internal.WithGRPCPort(p.Port))
 
-						client := internal.NewAgentClient(t, ctx, p.Address())
+						client := internal.NewValdClient(t, ctx, p.Address())
 
-						insertTime := internal.InsertMetrics(tt, client, ctx, data.Train(), data.IDs())
+						buildTime := internal.InsertMetrics(tt, client, ctx, data.Train(), data.IDs())
 
-						buildStart := time.Now()
-						_, err := client.CreateIndex(ctx, &payload.Controll_CreateIndexRequest{
-							PoolSize: 10000,
-						})
-						if err != nil {
-							t.Error(err)
-						}
-						buildEnd := time.Since(buildStart)
-						buildTime := insertTime + buildEnd
+						time.Sleep(*wait)
 
 						for _, k := range p.K {
 							searchMetrics := make([]*metrics.SearchMetrics, 0, len(p.Epsilon))
 							for _, eps := range p.Epsilon {
 								tt.Run(fmt.Sprintf("Recall@%d with %f", k, eps), func(ttt *testing.T) {
-									recall, qps := internal.SearchMetrics(ttt, client, ctx, data.Query(), datasetNeighbors, uint32(k), eps, -1)
+									recall, qps := internal.SearchMetrics(ttt, client, ctx, data.Query(), datasetNeighbors, k, eps, -1)
 									searchMetrics = append(searchMetrics, &metrics.SearchMetrics{
 										Recall:  recall,
 										Qps:     qps,
@@ -121,7 +108,7 @@ func TestMetrics(rt *testing.T) {
 			}
 		})
 	}
-	output, err := os.OpenFile(outputPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	output, err := os.OpenFile(*outputPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		rt.Error(err)
 	}

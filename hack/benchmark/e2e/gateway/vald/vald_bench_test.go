@@ -38,11 +38,10 @@ var (
 	}
 	targets    []string
 	addresses  []string
-	wait       time.Duration
+	waitVar    time.Duration
 	datasetVar string
 	addressVar string
 	once       sync.Once
-	waitVar    int64
 )
 
 func init() {
@@ -50,7 +49,7 @@ func init() {
 
 	flag.StringVar(&datasetVar, "dataset", "", "available dataset(choice with comma)")
 	flag.StringVar(&addressVar, "address", "", "vald gateway address")
-	flag.Int64Var(&waitVar, "wait", 30, "indexing wait time(secs)")
+	flag.DurationVar(&waitVar, "wait", 30 * time.Second, "indexing wait time(secs)")
 }
 
 func parseArgs(tb testing.TB) {
