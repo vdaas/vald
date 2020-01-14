@@ -9,13 +9,9 @@ import (
 )
 
 func TestWithMiddleware(t *testing.T) {
-	type args struct {
-		mw middleware.Wrapper
-	}
-
 	type test struct {
 		name      string
-		args      args
+		mw        middleware.Wrapper
 		checkFunc func(Option) error
 	}
 
@@ -25,9 +21,7 @@ func TestWithMiddleware(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					mw: mw,
-				},
+				mw:   mw,
 				checkFunc: func(opt Option) error {
 					got := new(router)
 					opt(got)
@@ -48,7 +42,7 @@ func TestWithMiddleware(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithMiddleware(tt.args.mw)
+			opt := WithMiddleware(tt.mw)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -57,13 +51,9 @@ func TestWithMiddleware(t *testing.T) {
 }
 
 func TestWithMiddlewares(t *testing.T) {
-	type args struct {
-		mws []middleware.Wrapper
-	}
-
 	type test struct {
 		name      string
-		args      args
+		mws       []middleware.Wrapper
 		checkFunc func(Option) error
 	}
 
@@ -75,10 +65,8 @@ func TestWithMiddlewares(t *testing.T) {
 			}
 
 			return test{
-				name: "set success",
-				args: args{
-					mws: mws,
-				},
+				name: "set success when middlewares field is nil",
+				mws:  mws,
 				checkFunc: func(opt Option) error {
 					got := new(router)
 					opt(got)
@@ -97,11 +85,46 @@ func TestWithMiddlewares(t *testing.T) {
 				},
 			}
 		}(),
+
+		func() test {
+			mw := new(middlewareMock)
+
+			mws := []middleware.Wrapper{
+				new(middlewareMock),
+				new(middlewareMock),
+			}
+
+			return test{
+				name: "set success when middlewares field is not nil",
+				mws:  mws,
+				checkFunc: func(opt Option) error {
+					got := &router{
+						middlewares: []middleware.Wrapper{
+							mw,
+						},
+					}
+					opt(got)
+
+					if len(got.middlewares) != 3 {
+						return fmt.Errorf("invalid params count was set")
+					}
+
+					mws = append([]middleware.Wrapper{mw}, mws[:]...)
+					for i := range got.middlewares {
+						if got, want := got.middlewares[i], mws[i]; !reflect.DeepEqual(got, want) {
+							return fmt.Errorf("invalid params was set")
+						}
+					}
+
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithMiddlewares(tt.args.mws...)
+			opt := WithMiddlewares(tt.mws...)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -110,13 +133,9 @@ func TestWithMiddlewares(t *testing.T) {
 }
 
 func TestWithRoute(t *testing.T) {
-	type args struct {
-		route Route
-	}
-
 	type test struct {
 		name      string
-		args      args
+		route     Route
 		checkFunc func(Option) error
 	}
 
@@ -125,10 +144,8 @@ func TestWithRoute(t *testing.T) {
 			r := Route{}
 
 			return test{
-				name: "set success",
-				args: args{
-					route: r,
-				},
+				name:  "set success",
+				route: r,
 				checkFunc: func(opt Option) error {
 					got := new(router)
 					opt(got)
@@ -149,7 +166,7 @@ func TestWithRoute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithRoute(tt.args.route)
+			opt := WithRoute(tt.route)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -158,13 +175,9 @@ func TestWithRoute(t *testing.T) {
 }
 
 func TestWithRoutes(t *testing.T) {
-	type args struct {
-		routes []Route
-	}
-
 	type test struct {
 		name      string
-		args      args
+		routes    []Route
 		checkFunc func(Option) error
 	}
 
@@ -176,10 +189,8 @@ func TestWithRoutes(t *testing.T) {
 			}
 
 			return test{
-				name: "set success",
-				args: args{
-					routes: rs,
-				},
+				name:   "set success when routes field is nil",
+				routes: rs,
 				checkFunc: func(opt Option) error {
 					got := new(router)
 					opt(got)
@@ -198,11 +209,46 @@ func TestWithRoutes(t *testing.T) {
 				},
 			}
 		}(),
+
+		func() test {
+			r := Route{}
+
+			rs := []Route{
+				Route{},
+				Route{},
+			}
+
+			return test{
+				name:   "set success when routes field is not nil",
+				routes: rs,
+				checkFunc: func(opt Option) error {
+					got := &router{
+						routes: []Route{
+							r,
+						},
+					}
+					opt(got)
+
+					if len(got.routes) != 3 {
+						return fmt.Errorf("invalid params count was set")
+					}
+
+					rs = append([]Route{r}, rs[:]...)
+					for i := range got.routes {
+						if got, want := got.routes[i], rs[i]; !reflect.DeepEqual(got, want) {
+							return fmt.Errorf("invalid params was set")
+						}
+					}
+
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithRoutes(tt.args.routes...)
+			opt := WithRoutes(tt.routes...)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}

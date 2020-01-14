@@ -12,13 +12,9 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	type args struct {
-		opts []Option
-	}
-
 	type test struct {
 		name        string
-		args        args
+		opts        []Option
 		initialized bool
 	}
 
@@ -32,13 +28,11 @@ func TestNew(t *testing.T) {
 
 			return test{
 				name: "initialize success",
-				args: args{
-					opts: []Option{
-						WithMiddleware(mw),
-						WithRoutes(
-							Route{},
-						),
-					},
+				opts: []Option{
+					WithMiddleware(mw),
+					WithRoutes(
+						Route{},
+					),
 				},
 				initialized: true,
 			}
@@ -47,7 +41,7 @@ func TestNew(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := New(tt.args.opts...)
+			got := New(tt.opts...)
 			if (got != nil) != tt.initialized {
 				t.Error("New() is wrong.")
 			}
