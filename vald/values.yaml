@@ -152,6 +152,8 @@ gateway:
     ingress:
       - ""
   ingress:
+    annotations:
+      nginx.ingress.kubernetes.io/grpc-backend: "true"
     host: vald.gateway.vdaas.co.jp
   resources:
     requests:
