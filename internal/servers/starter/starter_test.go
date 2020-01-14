@@ -330,9 +330,8 @@ func TestSetupHealthCheck(t *testing.T) {
 				},
 			},
 			checkFunc: func(opts []servers.Option, err error) error {
-				wantErr := errors.ErrInvalidAPIConfig
-				if !errors.Is(wantErr, err) {
-					return errors.Errorf("error is wrong. want: %v, got: %v", wantErr, err)
+				if got, want := err, errors.ErrInvalidAPIConfig; !errors.Is(want, got) {
+					return errors.Errorf("error is wrong. want: %v, got: %v", want, got)
 				}
 
 				if len(opts) != 0 {
@@ -424,9 +423,8 @@ func TestSetupMetrics(t *testing.T) {
 				},
 			},
 			checkFunc: func(opts []servers.Option, err error) error {
-				wantErr := errors.ErrInvalidAPIConfig
-				if !errors.Is(wantErr, err) {
-					return errors.Errorf("error is wrong. want: %v, got: %v", wantErr, err)
+				if got, want := err, errors.ErrInvalidAPIConfig; !errors.Is(want, got) {
+					return errors.Errorf("error is wrong. want: %v, got: %v", want, got)
 				}
 
 				if len(opts) != 0 {
