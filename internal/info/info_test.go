@@ -55,10 +55,12 @@ func TestShowVersionInfo(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		log.Init(tt.logger)
-		ShowVersionInfo(tt.args.extras)(tt.args.name)
-		if err := tt.checkFunc(); err != nil {
-			t.Error(err)
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			log.Init(tt.logger)
+			ShowVersionInfo(tt.args.extras)(tt.args.name)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
 	}
 }
