@@ -101,7 +101,7 @@ gateway:
   minReplicas: 3
   maxReplicas: 9
   hpa:
-    enabled: false
+    enabled: true
     targetCPUUtilizationPercentage: 80
   image:
     repository: vdaas/vald-gateway
@@ -243,7 +243,7 @@ compressor:
   minReplicas: 3
   maxReplicas: 15
   hpa:
-    enabled: false
+    enabled: true
     targetCPUUtilizationPercentage: 80
   image:
     repository: vdaas/vald-manager-compressor
@@ -290,7 +290,7 @@ backupManager:
   minReplicas: 3
   maxReplicas: 15
   hpa:
-    enabled: false
+    enabled: true
     targetCPUUtilizationPercentage: 80
   image:
     repository: vdaas/vald-manager-backup-mysql
@@ -454,7 +454,7 @@ meta:
   minReplicas: 2
   maxReplicas: 10
   hpa:
-    enabled: false
+    enabled: true
     targetCPUUtilizationPercentage: 80
   image:
     repository: vdaas/vald-meta-redis

@@ -175,6 +175,11 @@ func readAndRewrite(path string) error {
 				buf.WriteString("\n")
 				continue
 			}
+			if (filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml") && strings.HasPrefix(line, "---") {
+				buf.WriteString(line)
+				buf.WriteString("\n")
+				continue
+			}
 			if lf && strings.HasPrefix(line, d.Escape) {
 				continue
 			} else if !bf {

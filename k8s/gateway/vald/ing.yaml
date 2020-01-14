@@ -1,5 +1,4 @@
 ---
-# Source: vald/templates/gateway/vald/ing.yaml
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -29,7 +28,7 @@ metadata:
   namespace: default
 spec:
   rules:
-  - host: vald.gateway.vdaas.co.jp
+  - host: vald.gateway.vdaas.org
     http:
       paths:
       - backend:

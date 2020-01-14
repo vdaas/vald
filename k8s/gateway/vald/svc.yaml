@@ -1,5 +1,4 @@
 ---
-# Source: vald/templates/gateway/vald/svc.yaml
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -23,10 +22,16 @@ spec:
   ports:
     - name: rest
       port: 8080
+      targetPort: 8080
+      protocol: TCP
     - name: grpc
       port: 8081
+      targetPort: 8081
+      protocol: TCP
     - name: pprof
       port: 6060
+      targetPort: 6060
+      protocol: TCP
   selector:
     app: vald-gateway
   clusterIP: None

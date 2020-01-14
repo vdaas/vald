@@ -1,5 +1,4 @@
 ---
-# Source: vald/templates/manager/compressor/hpa.yaml
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -15,3 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: vald-manager-compressor
+spec:
+  maxReplicas: 15
+  minReplicas: 3
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: vald-manager-compressor
+  targetCPUUtilizationPercentage: 80
+status:

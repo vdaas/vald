@@ -24,6 +24,7 @@ jobs:
       - name: Update k8s
         run: |
           make k8s/manifest/update
+          make license
       - name: Push to master
         run: |
           git config --global user.name "vdaas-ci"
