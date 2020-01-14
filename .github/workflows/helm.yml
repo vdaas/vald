@@ -1,0 +1,39 @@
+name: 'Update Helm charts'
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'vald/**'
+
+jobs:
+  update-k8s-manifest:
+    name: Update k8s manifest
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - uses: azure/setup-helm@v1
+      - name: Helm version
+        run: |
+          helm version
+      - name: Update k8s
+        run: |
+          make k8s/manifest/update
+      - name: Push to master
+        run: |
+          git config --global user.name "vdaas-ci"
+          git config --global user.email "ci@vdaas.org"
+
+          git add k8s
+          git commit --signoff -m ":robot: Automatically update k8s manifests"
+
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
