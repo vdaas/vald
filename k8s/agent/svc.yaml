@@ -1,3 +1,5 @@
+---
+# Source: vald/templates/agent/svc.yaml
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -13,12 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: policy/v1beta1
-kind: PodDisruptionBudget
+apiVersion: v1
+kind: Service
 metadata:
-  name: agent-ngt
+  name: vald-agent-ngt
 spec:
-  maxUnavailable: 1
   selector:
-    matchLabels:
-      app: agent-ngt
+    app: vald-agent-ngt
+  clusterIP: None

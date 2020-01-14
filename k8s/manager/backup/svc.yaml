@@ -1,5 +1,5 @@
 ---
-# Source: vald/templates/gateway/vald/ing.yaml
+# Source: vald/templates/manager/backup/svc.yaml
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -15,23 +15,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-apiVersion: extensions/v1beta1
-# apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: v1
+kind: Service
 metadata:
-  annotations:
-    nginx.ingress.kubernetes.io/grpc-backend: "true"
-  labels:
-    name: vald-gateway-ingress
-    app: vald-gateway-ingress
-  name: vald-gateway-ingress
-  namespace: default
+  name: vald-manager-backup
 spec:
-  rules:
-  - host: vald.gateway.vdaas.co.jp
-    http:
-      paths:
-      - backend:
-          serviceName: vald-gateway
-          servicePort: grpc
+  ports:
+    - name: rest
+      port: 8080
+    - name: grpc
+      port: 8081
+    - name: pprof
+      port: 6060
+  selector:
+    app: vald-manager-backup
+  clusterIP: None

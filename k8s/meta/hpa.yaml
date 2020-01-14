@@ -1,3 +1,5 @@
+---
+# Source: vald/templates/meta/hpa.yaml
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -13,15 +15,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
-metadata:
-  name: discoverer
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: discoverer
-subjects:
-- kind: ServiceAccount
-  name: vald
-  namespace: default

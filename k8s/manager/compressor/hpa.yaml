@@ -1,3 +1,5 @@
+---
+# Source: vald/templates/manager/compressor/hpa.yaml
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -13,8 +15,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: vald
-  namespace: default

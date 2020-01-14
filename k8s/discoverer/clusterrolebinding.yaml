@@ -1,3 +1,5 @@
+---
+# Source: vald/templates/discoverer/clusterrolebinding.yaml
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -13,23 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: v1
-kind: Service
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
 metadata:
-  name: manager-backup-mysql
-spec:
-  ports:
-  - port: 8081
-    name: grpc
-    targetPort: 8081
-    protocol: TCP
-  - port: 8080
-    name: rest
-    targetPort: 8080
-    protocol: TCP
-  - port: 6060
-    name: pprof
-    targetPort: 6060
-  selector:
-    app: manager-backup-mysql
-  clusterIP: None
+  name: discoverer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: discoverer
+subjects:
+- kind: ServiceAccount
+  name: vald
+  namespace: default

@@ -1,3 +1,5 @@
+---
+# Source: vald/templates/gateway/vald/svc.yaml
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -16,21 +18,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: gateway
+  name: vald-gateway
 spec:
   ports:
-  - port: 80
-    name: grpc
-    targetPort: 8081
-    protocol: TCP
-  - port: 8080
-    name: rest
-    targetPort: 8080
-    protocol: TCP
-  - port: 6060
-    name: pprof
-    targetPort: 6060
-    protocol: TCP
+    - name: rest
+      port: 8080
+    - name: grpc
+      port: 8081
+    - name: pprof
+      port: 6060
   selector:
-    app: gateway
+    app: vald-gateway
   clusterIP: None

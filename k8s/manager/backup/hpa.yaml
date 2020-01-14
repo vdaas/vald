@@ -1,3 +1,5 @@
+---
+# Source: vald/templates/manager/backup/hpa.yaml
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -13,24 +15,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: v1
-kind: Service
-metadata:
-  name: discoverer-k8s
-spec:
-  ports:
-  - port: 8081
-    name: grpc
-    targetPort: 8081
-    protocol: TCP
-  - port: 8080
-    name: rest
-    targetPort: 8080
-    protocol: TCP
-  - port: 6060
-    name: pprof
-    targetPort: 6060
-    protocol: TCP
-  selector:
-    app: discoverer-k8s
-  clusterIP: None

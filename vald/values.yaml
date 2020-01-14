@@ -314,14 +314,9 @@ backupManager:
     #   name: wait-for-cassandra
     #   image: cassandra:latest
     #   target: custom
-    #   whileCondition: $(cqlsh cassandra.default.svc.cluster.local -u${CASSANDRA_USERNAME} -p${CASSANDRA_PASSWORD} -e "select now() from system.local" > /dev/null; echo $?) -ne 0
+    #   whileCondition: $(cqlsh cassandra.default.svc.cluster.local -uroot -p${CASSANDRA_PASSWORD} -e "select now() from system.local" > /dev/null; echo $?) -ne 0
     #   sleepDuration: 2
     #   env:
-    #   - name: CASSANDRA_USERNAME
-    #     valueFrom:
-    #       secretKeyRef:
-    #         name: cassandra-user
-    #         key: ""
     #   - name: CASSANDRA_PASSWORD
     #     valueFrom:
     #       secretKeyRef:
@@ -483,14 +478,9 @@ meta:
     #   name: wait-for-cassandra
     #   image: cassandra:latest
     #   target: custom
-    #   whileCondition: $(cqlsh cassandra.default.svc.cluster.local -u${CASSANDRA_USERNAME} -p${CASSANDRA_PASSWORD} -e "select now() from system.local" > /dev/null; echo $?) -ne 0
+    #   whileCondition: $(cqlsh cassandra.default.svc.cluster.local -uroot -p${CASSANDRA_PASSWORD} -e "select now() from system.local" > /dev/null; echo $?) -ne 0
     #   sleepDuration: 2
     #   env:
-    #   - name: CASSANDRA_USERNAME
-    #     valueFrom:
-    #       secretKeyRef:
-    #         name: cassandra-user
-    #         key: ""
     #   - name: CASSANDRA_PASSWORD
     #     valueFrom:
     #       secretKeyRef:
@@ -523,7 +513,7 @@ meta:
     enabled: true
     config:
       addrs:
-        - redis.default.svc.cluster.local
+        - redis.default.svc.cluster.local:6379
       db: 0
       dial_timeout: 5s
       idle_check_frequency: 1m
@@ -535,7 +525,7 @@ meta:
       max_retry_backoff: 512ms
       min_idle_conns: 0
       min_retry_backoff: 8ms
-      password: ""
+      password: password
       pool_size: 10
       pool_timeout: 4s
       read_only: false

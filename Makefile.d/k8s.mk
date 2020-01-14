@@ -13,17 +13,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+.PHONY: k8s/manifest/clean
+## clean k8s manifests
+k8s/manifest/clean:
+	rm -rf \
+	    k8s/agent \
+	    k8s/discoverer \
+	    k8s/gateway/vald \
+	    k8s/manager/backup \
+	    k8s/manager/compressor \
+	    k8s/meta
+
+.PHONY: k8s/manifest/update
+## update k8s manifests using helm templates
+k8s/manifest/update: \
+	k8s/manifest/clean
+	helm template --values vald/values.yaml --output-dir tmp-k8s vald
+	mkdir -p k8s/gateway
+	mkdir -p k8s/manager
+	mv tmp-k8s/vald/templates/agent k8s/agent
+	mv tmp-k8s/vald/templates/discoverer k8s/discoverer
+	mv tmp-k8s/vald/templates/gateway/vald k8s/gateway/vald
+	mv tmp-k8s/vald/templates/manager/backup k8s/manager/backup
+	mv tmp-k8s/vald/templates/manager/compressor k8s/manager/compressor
+	mv tmp-k8s/vald/templates/meta k8s/meta
+	rm -rf tmp-k8s
+
 .PHONY: k8s/vald/deploy
 ## deploy vald sample cluster to k8s
 k8s/vald/deploy: \
 	k8s/external/mysql/deploy \
 	k8s/external/redis/deploy
 	kubectl apply -f k8s/metrics/metrics-server
-	kubectl apply -f k8s/manager/backup/mysql
+	kubectl apply -f k8s/manager/backup
 	kubectl apply -f k8s/manager/compressor
-	kubectl apply -f k8s/agent/ngt
-	kubectl apply -f k8s/discoverer/k8s
-	kubectl apply -f k8s/meta/redis
+	kubectl apply -f k8s/agent
+	kubectl apply -f k8s/discoverer
+	kubectl apply -f k8s/meta
 	kubectl apply -f k8s/gateway/vald
 
 .PHONY: k8s/vald/remove
@@ -32,11 +58,11 @@ k8s/vald/remove: \
 	k8s/external/mysql/remove \
 	k8s/external/redis/remove
 	kubectl delete -f k8s/gateway/vald
-	kubectl delete -f k8s/manager/backup/mysql
+	kubectl delete -f k8s/manager/backup
 	kubectl delete -f k8s/manager/compressor
-	kubectl delete -f k8s/meta/redis
-	kubectl delete -f k8s/discoverer/k8s
-	kubectl delete -f k8s/agent/ngt
+	kubectl delete -f k8s/meta
+	kubectl delete -f k8s/discoverer
+	kubectl delete -f k8s/agent
 	kubectl delete -f k8s/metrics/metrics-server
 
 .PHONY: k8s/external/mysql/deploy

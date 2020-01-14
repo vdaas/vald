@@ -1,5 +1,5 @@
 ---
-# Source: vald/templates/gateway/vald/deployment.yaml
+# Source: vald/templates/manager/backup/deployment.yaml
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -18,16 +18,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vald-gateway
+  name: vald-manager-backup
   labels:
-    app: vald-gateway
+    app: vald-manager-backup
 spec:
   progressDeadlineSeconds: 600
-  replicas: 3
+  replicas: 1
   revisionHistoryLimit: 2
   selector:
     matchLabels:
-      app: vald-gateway
+      app: vald-manager-backup
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -37,53 +37,29 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app: vald-gateway
+        app: vald-manager-backup
     spec:
       initContainers:
         
-        - name: wait-for-manager-compressor
-          image: busybox
+        - name: wait-for-mysql
+          image: mysql:latest
           command:
             - /bin/sh
             - -c
             - >
               set -x;
-              while [ $(curl -sw '%{http_code}' "http://vald-manager-compressor.default.svc.cluster.local:3001" -o /dev/null) -ne 200]; do
+              while [ $(mysqladmin -hmysql.default.svc.cluster.local -uroot -p${MYSQL_PASSWORD} --show-warnings=false ping | grep alive | awk '{print $3}') -ne alive ]; do
                 sleep 2;
               done
-        - name: wait-for-meta
-          image: busybox
-          command:
-            - /bin/sh
-            - -c
-            - >
-              set -x;
-              while [ $(curl -sw '%{http_code}' "http://vald-meta.default.svc.cluster.local:3001" -o /dev/null) -ne 200]; do
-                sleep 2;
-              done
-        - name: wait-for-discoverer
-          image: busybox
-          command:
-            - /bin/sh
-            - -c
-            - >
-              set -x;
-              while [ $(curl -sw '%{http_code}' "http://vald-discoverer.default.svc.cluster.local:3001" -o /dev/null) -ne 200]; do
-                sleep 2;
-              done
-        - name: wait-for-agent
-          image: busybox
-          command:
-            - /bin/sh
-            - -c
-            - >
-              set -x;
-              while [ $(curl -sw '%{http_code}' "http://vald-agent-ngt.default.svc.cluster.local:3001" -o /dev/null) -ne 200]; do
-                sleep 2;
-              done
+          env:
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: mysql-secret
       containers:
-        - name: vald-gateway
-          image: "vdaas/vald-gateway:nightly"
+        - name: vald-manager-backup
+          image: "vdaas/vald-manager-backup-mysql:nightly"
           imagePullPolicy: Always
           
           livenessProbe:
@@ -130,7 +106,7 @@ spec:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           volumeMounts:
-            - name: vald-gateway-config
+            - name: vald-manager-backup-config
               mountPath: /etc/server/
       dnsPolicy: ClusterFirst
       restartPolicy: Always
@@ -138,8 +114,8 @@ spec:
       securityContext: {}
       terminationGracePeriodSeconds: 30
       volumes:
-        - name: vald-gateway-config
+        - name: vald-manager-backup-config
           configMap:
             defaultMode: 420
-            name: vald-gateway-config
+            name: vald-manager-backup-config
 status:
