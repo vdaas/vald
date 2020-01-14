@@ -2,11 +2,11 @@ package routing
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/http/rest"
 )
@@ -87,11 +87,11 @@ func TestRouting(t *testing.T) {
 					hdr.ServeHTTP(w, r)
 
 					if cnt != 1 {
-						return fmt.Errorf("call count is wrong. want: %v, got: %v", 1, cnt)
+						return errors.Errorf("call count is wrong. want: %v, got: %v", 1, cnt)
 					}
 
 					if got, want := w.Code, http.StatusOK; got != want {
-						return fmt.Errorf("status code not equals. want: %v, got: %v", want, got)
+						return errors.Errorf("status code not equals. want: %v, got: %v", want, got)
 					}
 					return nil
 				},
@@ -108,7 +108,7 @@ func TestRouting(t *testing.T) {
 					hdr.ServeHTTP(w, r)
 
 					if got, want := w.Code, http.StatusMethodNotAllowed; got != want {
-						return fmt.Errorf("status code not equals. want: %v, got: %v", want, got)
+						return errors.Errorf("status code not equals. want: %v, got: %v", want, got)
 					}
 					return nil
 				},
@@ -123,7 +123,7 @@ func TestRouting(t *testing.T) {
 			h := func(w http.ResponseWriter, req *http.Request) (code int, err error) {
 				cnt++
 				w.WriteHeader(http.StatusBadRequest)
-				return http.StatusOK, fmt.Errorf("faild")
+				return http.StatusOK, errors.New("faild")
 			}
 
 			return test{
@@ -138,11 +138,11 @@ func TestRouting(t *testing.T) {
 					hdr.ServeHTTP(w, r)
 
 					if cnt != 1 {
-						return fmt.Errorf("call count is wrong. want: %v, got: %v", 1, cnt)
+						return errors.Errorf("call count is wrong. want: %v, got: %v", 1, cnt)
 					}
 
 					if got, want := w.Code, http.StatusBadRequest; got != want {
-						return fmt.Errorf("status code not equals. want: %v, got: %v", want, got)
+						return errors.Errorf("status code not equals. want: %v, got: %v", want, got)
 					}
 					return nil
 				},

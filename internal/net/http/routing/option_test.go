@@ -1,10 +1,10 @@
 package routing
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/http/middleware"
 )
 
@@ -27,11 +27,11 @@ func TestWithMiddleware(t *testing.T) {
 					opt(got)
 
 					if len(got.middlewares) != 1 {
-						return fmt.Errorf("invalid params count was set")
+						return errors.New("invalid params count was set")
 					}
 
 					if got, want := got.middlewares[0], mw; !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("invalid params was set")
+						return errors.New("invalid params was set")
 					}
 
 					return nil
@@ -72,12 +72,12 @@ func TestWithMiddlewares(t *testing.T) {
 					opt(got)
 
 					if len(got.middlewares) != 2 {
-						return fmt.Errorf("invalid params count was set")
+						return errors.New("invalid params count was set")
 					}
 
 					for i := range got.middlewares {
 						if got, want := got.middlewares[i], mws[i]; !reflect.DeepEqual(got, want) {
-							return fmt.Errorf("invalid params was set")
+							return errors.New("invalid params was set")
 						}
 					}
 
@@ -106,13 +106,13 @@ func TestWithMiddlewares(t *testing.T) {
 					opt(got)
 
 					if len(got.middlewares) != 3 {
-						return fmt.Errorf("invalid params count was set")
+						return errors.New("invalid params count was set")
 					}
 
 					mws = append([]middleware.Wrapper{mw}, mws[:]...)
 					for i := range got.middlewares {
 						if got, want := got.middlewares[i], mws[i]; !reflect.DeepEqual(got, want) {
-							return fmt.Errorf("invalid params was set")
+							return errors.New("invalid params was set")
 						}
 					}
 
@@ -151,11 +151,11 @@ func TestWithRoute(t *testing.T) {
 					opt(got)
 
 					if len(got.routes) != 1 {
-						return fmt.Errorf("invalid params count was set")
+						return errors.New("invalid params count was set")
 					}
 
 					if got, want := got.routes[0], r; !reflect.DeepEqual(got, want) {
-						return fmt.Errorf("invalid params was set")
+						return errors.New("invalid params was set")
 					}
 
 					return nil
@@ -196,12 +196,12 @@ func TestWithRoutes(t *testing.T) {
 					opt(got)
 
 					if len(got.routes) != 2 {
-						return fmt.Errorf("invalid params count was set")
+						return errors.New("invalid params count was set")
 					}
 
 					for i := range got.routes {
 						if got, want := got.routes[i], rs[i]; !reflect.DeepEqual(got, want) {
-							return fmt.Errorf("invalid params was set")
+							return errors.New("invalid params was set")
 						}
 					}
 
@@ -230,13 +230,13 @@ func TestWithRoutes(t *testing.T) {
 					opt(got)
 
 					if len(got.routes) != 3 {
-						return fmt.Errorf("invalid params count was set")
+						return errors.New("invalid params count was set")
 					}
 
 					rs = append([]Route{r}, rs[:]...)
 					for i := range got.routes {
 						if got, want := got.routes[i], rs[i]; !reflect.DeepEqual(got, want) {
-							return fmt.Errorf("invalid params was set")
+							return errors.New("invalid params was set")
 						}
 					}
 
