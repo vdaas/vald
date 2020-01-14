@@ -108,14 +108,26 @@ gateway:
     tag: nightly
     pullPolicy: Always
   initContainers:
-    waitForManagerCompressor:
-      enabled: true
-    waitForMeta:
-      enabled: true
-    waitForDiscoverer:
-      enabled: false
-    waitForAgent:
-      enabled: true
+    - type: waitFor
+      name: wait-for-manager-compressor
+      target: compressor
+      image: busybox
+      sleepDuration: 2
+    - type: waitFor
+      name: wait-for-meta
+      target: meta
+      image: busybox
+      sleepDuration: 2
+    - type: waitFor
+      name: wait-for-discoverer
+      target: discoverer
+      image: busybox
+      sleepDuration: 2
+    - type: waitFor
+      name: wait-for-agent
+      target: agent
+      image: busybox
+      sleepDuration: 2
   server_config:
     prefix: gateway
     servers:
@@ -236,8 +248,11 @@ compressor:
     tag: nightly
     pullPolicy: Always
   initContainers:
-    waitForManagerBackup:
-      enabled: true
+    - type: waitFor
+      name: wait-for-manager-backup
+      target: manager-backup
+      image: busybox
+      sleepDuration: 2
   server_config:
     prefix: manager-compressor
     servers:

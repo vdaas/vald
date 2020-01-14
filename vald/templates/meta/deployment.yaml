@@ -37,6 +37,11 @@ spec:
       labels:
         app: {{ .Values.meta.name }}
     spec:
+      {{- if .Values.meta.initContainers }}
+      initContainers:
+        {{- $initContainers := dict "initContainers" .Values.meta.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+        {{- include "vald.initContainers" $initContainers | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Values.meta.name }}
           image: "{{ .Values.meta.image.repository }}:{{ .Values.meta.image.tag }}"

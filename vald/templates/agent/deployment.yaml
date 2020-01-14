@@ -37,6 +37,11 @@ spec:
       labels:
         app: {{ .Values.agent.name }}
     spec:
+      {{- if .Values.agent.initContainers }}
+      initContainers:
+        {{- $initContainers := dict "initContainers" .Values.agent.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+        {{- include "vald.initContainers" $initContainers | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Values.agent.name }}
           image: "{{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}"

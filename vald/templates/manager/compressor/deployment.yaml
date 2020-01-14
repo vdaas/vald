@@ -37,19 +37,10 @@ spec:
       labels:
         app: {{ .Values.compressor.name }}
     spec:
+      {{- if .Values.compressor.initContainers }}
       initContainers:
-      {{- if .Values.compressor.initContainers.waitForManagerBackup.enabled }}
-      {{- $backupManagerReadinessPort := default .Values.defaults.server_config.healths.readiness.port .Values.backupManager.server_config.healths.readiness.port }}
-      - name: wait-for-manager-backup
-        image: busybox
-        command:
-        - /bin/sh
-        - -c
-        - >
-          set -x;
-          while [ $(curl -sw '%{http_code}' "http://{{ .Values.backupManager.name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ $backupManagerReadinessPort }}" -o /dev/null) -ne 200]; do
-            sleep 2;
-          done
+        {{- $initContainers := dict "initContainers" .Values.compressor.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+        {{- include "vald.initContainers" $initContainers | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Values.compressor.name }}

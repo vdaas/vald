@@ -37,6 +37,11 @@ spec:
       labels:
         app: {{ .Values.backupManager.name }}
     spec:
+      {{- if .Values.backupManager.initContainers }}
+      initContainers:
+        {{- $initContainers := dict "initContainers" .Values.backupManager.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+        {{- include "vald.initContainers" $initContainers | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Values.backupManager.name }}
           image: "{{ .Values.backupManager.image.repository }}:{{ .Values.backupManager.image.tag }}"

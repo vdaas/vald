@@ -37,6 +37,11 @@ spec:
       labels:
         app: {{ .Values.discoverer.name }}
     spec:
+      {{- if .Values.discoverer.initContainers }}
+      initContainers:
+        {{- $initContainers := dict "initContainers" .Values.discoverer.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+        {{- include "vald.initContainers" $initContainers | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Values.discoverer.name }}
           image: "{{ .Values.discoverer.image.repository }}:{{ .Values.discoverer.image.tag }}"

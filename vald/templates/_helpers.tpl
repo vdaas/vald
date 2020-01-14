@@ -333,3 +333,38 @@ tls:
   {{- toYaml .default.tls | nindent 2 }}
   {{- end }}
 {{- end -}}
+
+{{/*
+initContainers
+*/}}
+{{- define "vald.initContainers" -}}
+{{- range .initContainers }}
+- name: {{ .name }}
+  image: {{ .image }}
+  {{- if eq .type "waitFor" }}
+  command:
+    - /bin/sh
+    - -c
+    - >
+      set -x;
+      {{- if eq .target "compressor" }}
+      {{- $compressorReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.compressor.server_config.healths.readiness.port }}
+      while [ $(curl -sw '%{http_code}' "http://{{ $.Values.compressor.name }}.{{ $.namespace }}.svc.cluster.local:{{ $compressorReadinessPort }}" -o /dev/null) -ne 200]; do
+      {{- else if eq .target "meta" }}
+      {{- $metaReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.meta.server_config.healths.readiness.port }}
+      while [ $(curl -sw '%{http_code}' "http://{{ $.Values.meta.name }}.{{ $.namespace }}.svc.cluster.local:{{ $metaReadinessPort }}" -o /dev/null) -ne 200]; do
+      {{- else if eq .target "discoverer" }}
+      {{- $discovererReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.discoverer.server_config.healths.readiness.port }}
+      while [ $(curl -sw '%{http_code}' "http://{{ $.Values.discoverer.name }}.{{ $.namespace }}.svc.cluster.local:{{ $discovererReadinessPort }}" -o /dev/null) -ne 200]; do
+      {{- else if eq .target "agent" }}
+      {{- $agentReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.agent.server_config.healths.readiness.port }}
+      while [ $(curl -sw '%{http_code}' "http://{{ $.Values.agent.name }}.{{ $.namespace }}.svc.cluster.local:{{ $agentReadinessPort }}" -o /dev/null) -ne 200]; do
+      {{- else if eq .target "manager-backup" }}
+      {{- $backupManagerReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.backupManager.server_config.healths.readiness.port }}
+      while [ $(curl -sw '%{http_code}' "http://{{ $.Values.backupManager.name }}.{{ $.namespace }}.svc.cluster.local:{{ $backupManagerReadinessPort }}" -o /dev/null) -ne 200]; do
+      {{- end }}
+        sleep {{ .sleepDuration }};
+      done
+  {{- end }}
+{{- end }}
+{{- end -}}
