@@ -192,6 +192,7 @@ func (s *Server) Opts() []server.Option {
 		opts = append(opts,
 			server.WithServerMode(mode),
 		)
+
 		if s.HTTP != nil {
 			opts = append(opts,
 				server.WithReadHeaderTimeout(s.HTTP.ReadHeaderTimeout),

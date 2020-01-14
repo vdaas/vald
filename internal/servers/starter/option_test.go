@@ -1,22 +1,18 @@
 package starter
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/servers/server"
 )
 
 func TestWithConfig(t *testing.T) {
-	type args struct {
-		cfg *config.Servers
-	}
-
 	type test struct {
 		name      string
-		args      args
+		cfg       *config.Servers
 		checkFunc func(Option) error
 	}
 
@@ -26,15 +22,13 @@ func TestWithConfig(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					cfg: cfg,
-				},
+				cfg:  cfg,
 				checkFunc: func(opt Option) error {
 					got := new(srvs)
 					opt(got)
 
 					if !reflect.DeepEqual(got.cfg, cfg) {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 
 					return nil
@@ -45,7 +39,7 @@ func TestWithConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithConfig(tt.args.cfg)
+			opt := WithConfig(tt.cfg)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -54,13 +48,9 @@ func TestWithConfig(t *testing.T) {
 }
 
 func TestWithGRPC(t *testing.T) {
-	type args struct {
-		opts func(cfg *config.Server) []server.Option
-	}
-
 	type test struct {
 		name      string
-		args      args
+		opts      func(cfg *config.Server) []server.Option
 		checkFunc func(Option) error
 	}
 
@@ -72,15 +62,13 @@ func TestWithGRPC(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					opts: srvOpts,
-				},
+				opts: srvOpts,
 				checkFunc: func(opt Option) error {
 					got := new(srvs)
 					opt(got)
 
 					if reflect.ValueOf(got.grpc).Pointer() != reflect.ValueOf(srvOpts).Pointer() {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 
 					return nil
@@ -91,7 +79,7 @@ func TestWithGRPC(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPC(tt.args.opts)
+			opt := WithGRPC(tt.opts)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -100,13 +88,9 @@ func TestWithGRPC(t *testing.T) {
 }
 
 func TestWithREST(t *testing.T) {
-	type args struct {
-		opts func(cfg *config.Server) []server.Option
-	}
-
 	type test struct {
 		name      string
-		args      args
+		opts      func(cfg *config.Server) []server.Option
 		checkFunc func(Option) error
 	}
 
@@ -118,15 +102,13 @@ func TestWithREST(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					opts: srvOpts,
-				},
+				opts: srvOpts,
 				checkFunc: func(opt Option) error {
 					got := new(srvs)
 					opt(got)
 
 					if reflect.ValueOf(got.rest).Pointer() != reflect.ValueOf(srvOpts).Pointer() {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 
 					return nil
@@ -137,7 +119,7 @@ func TestWithREST(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithREST(tt.args.opts)
+			opt := WithREST(tt.opts)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -146,13 +128,9 @@ func TestWithREST(t *testing.T) {
 }
 
 func TestWithGQL(t *testing.T) {
-	type args struct {
-		opts func(cfg *config.Server) []server.Option
-	}
-
 	type test struct {
 		name      string
-		args      args
+		opts      func(cfg *config.Server) []server.Option
 		checkFunc func(Option) error
 	}
 
@@ -164,15 +142,13 @@ func TestWithGQL(t *testing.T) {
 
 			return test{
 				name: "set success",
-				args: args{
-					opts: srvOpts,
-				},
+				opts: srvOpts,
 				checkFunc: func(opt Option) error {
 					got := new(srvs)
 					opt(got)
 
 					if reflect.ValueOf(got.gql).Pointer() != reflect.ValueOf(srvOpts).Pointer() {
-						return fmt.Errorf("invalid param was set")
+						return errors.New("invalid param was set")
 					}
 
 					return nil
@@ -183,7 +159,7 @@ func TestWithGQL(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGQL(tt.args.opts)
+			opt := WithGQL(tt.opts)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -221,10 +197,10 @@ func TestWithPreStartFunc(t *testing.T) {
 
 					if fn, ok := got.pstartf[name]; ok {
 						if reflect.ValueOf(fn).Pointer() != reflect.ValueOf(fn).Pointer() {
-							return fmt.Errorf("invalid param was set")
+							return errors.New("invalid param was set")
 						}
 					} else {
-						return fmt.Errorf("param was not set")
+						return errors.New("param was not set")
 					}
 
 					return nil
@@ -273,10 +249,10 @@ func TestWithPreStopFunc(t *testing.T) {
 
 					if fn, ok := got.pstopf[name]; ok {
 						if reflect.ValueOf(fn).Pointer() != reflect.ValueOf(fn).Pointer() {
-							return fmt.Errorf("invalid param was set")
+							return errors.New("invalid param was set")
 						}
 					} else {
-						return fmt.Errorf("param was not set")
+						return errors.New("param was not set")
 					}
 
 					return nil

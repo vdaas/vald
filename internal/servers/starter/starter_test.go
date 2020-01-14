@@ -1,7 +1,6 @@
 package starter
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -14,29 +13,54 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	type args struct {
-		opts []Option
-	}
-
 	type test struct {
 		name      string
-		args      args
+		opts      []Option
 		checkFunc func(s Server, err error) error
 	}
 
 	tests := []test{
 		{
 			name: "initialize is success",
-			args: args{
-				opts: []Option{},
+			opts: []Option{
+				WithConfig(&config.Servers{
+					TLS: &config.TLS{
+						Enabled: true,
+						Cert:    "./testdata/dummyServer.crt",
+						CA:      "./testdata/dummyCa.pem",
+						Key:     "./testdata/dummyServer.key",
+					},
+				}),
 			},
 			checkFunc: func(s Server, err error) error {
 				if err != nil {
-					return fmt.Errorf("return an error: %v", err)
+					return errors.Errorf("return an error: %v", err)
 				}
 
 				if s == nil {
-					return fmt.Errorf("server is nil")
+					return errors.New("server is nil")
+				}
+
+				return nil
+			},
+		},
+
+		{
+			name: "initialize is faild when tls.New returns error",
+			opts: []Option{
+				WithConfig(&config.Servers{
+					TLS: &config.TLS{
+						Enabled: true,
+					},
+				}),
+			},
+			checkFunc: func(s Server, err error) error {
+				if err == nil {
+					return errors.New("error is nil")
+				}
+
+				if s != nil {
+					return errors.New("server is not nil")
 				}
 
 				return nil
@@ -46,7 +70,7 @@ func TestNew(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			srv, err := New(tt.args.opts...)
+			srv, err := New(tt.opts...)
 			if err := tt.checkFunc(srv, err); err != nil {
 				t.Error(err)
 			}
@@ -126,11 +150,11 @@ func TestSetupAPIs(t *testing.T) {
 				},
 				checkFunc: func(opts []servers.Option, err error) error {
 					if err != nil {
-						return fmt.Errorf("returns an error: %v", err)
+						return errors.Errorf("returns an error: %v", err)
 					}
 
 					if len(opts) != 3 {
-						return fmt.Errorf("length of options is wrong. want: %v got: %v", 3, len(opts))
+						return errors.Errorf("length of options is wrong. want: %v got: %v", 3, len(opts))
 					}
 
 					return nil
@@ -157,9 +181,9 @@ func TestSetupAPIs(t *testing.T) {
 			},
 			checkFunc: func(opts []servers.Option, err error) error {
 				if err == nil {
-					return fmt.Errorf("error is nil")
+					return errors.New("error is nil")
 				} else if got, want := err, errors.ErrInvalidAPIConfig; got.Error() != want.Error() {
-					return fmt.Errorf("error is not equals. want: %v, got: %v", want, got)
+					return errors.Errorf("error is not equals. want: %v, got: %v", want, got)
 				}
 				return nil
 			},
@@ -184,9 +208,9 @@ func TestSetupAPIs(t *testing.T) {
 			},
 			checkFunc: func(opts []servers.Option, err error) error {
 				if err == nil {
-					return fmt.Errorf("error is nil")
+					return errors.New("error is nil")
 				} else if got, want := err, errors.ErrInvalidAPIConfig; got.Error() != want.Error() {
-					return fmt.Errorf("error is not equals. want: %v, got: %v", want, got)
+					return errors.Errorf("error is not equals. want: %v, got: %v", want, got)
 				}
 				return nil
 			},
@@ -211,9 +235,9 @@ func TestSetupAPIs(t *testing.T) {
 			},
 			checkFunc: func(opts []servers.Option, err error) error {
 				if err == nil {
-					return fmt.Errorf("error is nil")
+					return errors.New("error is nil")
 				} else if got, want := err, errors.ErrInvalidAPIConfig; got.Error() != want.Error() {
-					return fmt.Errorf("error is not equals. want: %v, got: %v", want, got)
+					return errors.Errorf("error is not equals. want: %v, got: %v", want, got)
 				}
 				return nil
 			},
@@ -274,11 +298,11 @@ func TestSetupHealthCheck(t *testing.T) {
 				},
 				checkFunc: func(opts []servers.Option, err error) error {
 					if err != nil {
-						return fmt.Errorf("returns an error: %v", err)
+						return errors.Errorf("returns an error: %v", err)
 					}
 
 					if len(opts) != 1 {
-						return fmt.Errorf("length of options is wrong. want: %v got: %v", 1, len(opts))
+						return errors.Errorf("length of options is wrong. want: %v got: %v", 1, len(opts))
 					}
 
 					return nil
@@ -318,39 +342,36 @@ func TestSetupMetrics(t *testing.T) {
 	}
 
 	tests := []test{
-		func() test {
-			return test{
-				name: "setup is success",
-				args: args{
-					cfg: new(tls.Config),
-				},
-				field: field{
-					cfg: &config.Servers{
-						MetricsServers: []*config.Server{
-							{
-								Name: "",
-							},
-							{
-								Name: "pprof",
-								Host: "host",
-								Port: 8080,
-							},
+		{
+			name: "setup is success",
+			args: args{
+				cfg: new(tls.Config),
+			},
+			field: field{
+				cfg: &config.Servers{
+					MetricsServers: []*config.Server{
+						{
+							Name: "",
+						},
+						{
+							Name: "pprof",
+							Host: "host",
+							Port: 8080,
 						},
 					},
 				},
-				checkFunc: func(opts []servers.Option, err error) error {
-					if err != nil {
-						return fmt.Errorf("returns an error: %v", err)
-					}
+			},
+			checkFunc: func(opts []servers.Option, err error) error {
+				if err != nil {
+					return errors.Errorf("returns an error: %v", err)
+				}
 
-					if len(opts) != 1 {
-						return fmt.Errorf("length of options is wrong. want: %v got: %v", 1, len(opts))
-					}
-
-					return nil
-				},
-			}
-		}(),
+				if len(opts) != 1 {
+					return errors.Errorf("length of options is wrong. want: %v got: %v", 1, len(opts))
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
