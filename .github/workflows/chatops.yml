@@ -5,18 +5,34 @@ name: ChatOps
 jobs:
   rebase:
     name: Rebase
-    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/rebase')
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Automatic Rebase
-      uses: cirrus-actions/rebase@1.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  # https://github.community/t5/GitHub-Actions/Workflow-is-failing-if-no-job-can-be-ran-due-to-condition/m-p/38186#M3250
-  always_job:
-    name: Aways run job
-    runs-on: ubuntu-latest
-    steps:
-      - name: Always run
-        run: echo "This job is used to prevent the workflow to fail when all other jobs are skipped."
+      - name: check PR Comments
+        id: check_comments_rebase
+        uses: machine-learning-apps/actions-chatops@master
+        with:
+          TRIGGER_PHRASE: "/rebase"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: comment back to PR
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"Rebase triggered by ${USERNAME} for branch: ${BRANCH}\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          API_URL: ${{ github.event.issue.comments_url }}
+          BRANCH: ${{ steps.check_comments_rebase.outputs.BRANCH_NAME }}
+          USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
+      - uses: actions/checkout@v1
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
+      - name: Automatic Rebase
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
+        uses: cirrus-actions/rebase@1.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
