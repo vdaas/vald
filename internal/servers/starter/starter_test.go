@@ -164,7 +164,7 @@ func TestSetupAPIs(t *testing.T) {
 		}(),
 
 		{
-			name: "returns nil options and error when setup of RESR server fails",
+			name: "returns nil options and error when setup of REST server fails",
 			args: args{
 				cfg: new(tls.Config),
 			},
