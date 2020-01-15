@@ -263,7 +263,6 @@ func TestSetupAPIs(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestSetupHealthCheck(t *testing.T) {

@@ -195,8 +195,8 @@ func TestWithPreStartFunc(t *testing.T) {
 					}
 					opt(got)
 
-					if fn, ok := got.pstartf[name]; ok {
-						if reflect.ValueOf(fn).Pointer() != reflect.ValueOf(fn).Pointer() {
+					if gfn, ok := got.pstartf[name]; ok {
+						if reflect.ValueOf(gfn).Pointer() != reflect.ValueOf(fn).Pointer() {
 							return errors.New("invalid param was set")
 						}
 					} else {
@@ -247,8 +247,8 @@ func TestWithPreStopFunc(t *testing.T) {
 					}
 					opt(got)
 
-					if fn, ok := got.pstopf[name]; ok {
-						if reflect.ValueOf(fn).Pointer() != reflect.ValueOf(fn).Pointer() {
+					if gfn, ok := got.pstopf[name]; ok {
+						if reflect.ValueOf(gfn).Pointer() != reflect.ValueOf(fn).Pointer() {
 							return errors.New("invalid param was set")
 						}
 					} else {
