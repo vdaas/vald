@@ -38,7 +38,7 @@ func TestNew(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "initialize",
+			name: "initialize is success",
 			opts: []Option{
 				WithBackOffFactor(0.5),
 			},
