@@ -137,3 +137,18 @@ k8s/linkerd/deploy:
 			"$(kubectl config current-context)"  \
 			| awk "{print \$5}" | sed "s/^$/default/" \
 		linkerd.io/inject=enabled
+
+.PHONY: helm/package/vald
+## packaging Helm chart for Vald
+helm/package/vald:
+	helm package vald
+
+.PHONY: helm/repo/index/create
+## create Helm chart repository index
+helm/repo/index/create:
+	helm repo index --url https://vdaas.github.io/vald/charts .
+
+.PHONY: helm/repo/add
+## add Helm chart repository
+helm/repo/add:
+	helm repo add vald https://vdaas.github.io/vald/charts
