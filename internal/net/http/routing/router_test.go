@@ -76,7 +76,7 @@ func TestRouting(t *testing.T) {
 			}
 
 			return test{
-				name: "status ok",
+				name: "serveHTTP is success when handler returns status ok",
 				args: args{
 					m: []string{
 						http.MethodGet,
@@ -103,7 +103,7 @@ func TestRouting(t *testing.T) {
 			r := httptest.NewRequest(http.MethodGet, "/", new(bytes.Buffer))
 
 			return test{
-				name: "invalid request method",
+				name: "serveHTTP is fail when handler returns invalid request method",
 				checkFunc: func(hdr http.Handler) error {
 					hdr.ServeHTTP(w, r)
 
@@ -127,7 +127,7 @@ func TestRouting(t *testing.T) {
 			}
 
 			return test{
-				name: "internal call error",
+				name: "serveHTTP is fail when handler handler returns error",
 				args: args{
 					m: []string{
 						http.MethodGet,
