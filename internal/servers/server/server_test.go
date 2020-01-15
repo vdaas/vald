@@ -175,7 +175,7 @@ func TestNew(t *testing.T) {
 
 		func() test {
 			return test{
-				name: "return invalid api config error in case of REST server",
+				name: "return nil and error when REST server returns invalid api config error",
 				opts: []Option{},
 				checkFunc: func(got *server, gotErr, wantErr error) error {
 					if got != nil {
@@ -221,9 +221,64 @@ func TestNew(t *testing.T) {
 
 		func() test {
 			return test{
-				name: "return invalid api config error in case of gRPC server",
+				name: "return nil and error when gRPC server returns invalid api config error",
 				opts: []Option{
 					WithServerMode(GRPC),
+				},
+				checkFunc: func(got *server, gotErr, wantErr error) error {
+					if got != nil {
+						return errors.Errorf("New return not nil: %v", got)
+					}
+
+					if !errors.Is(gotErr, wantErr) {
+						return errors.Errorf("err is not equals. want: %v, got: %v", wantErr, gotErr)
+					}
+
+					return nil
+				},
+				wantErr: errors.ErrInvalidAPIConfig,
+			}
+		}(),
+
+		func() test {
+			type handler struct {
+				http.Handler
+			}
+
+			hdr := new(handler)
+
+			return test{
+				name: "initialize GQL server is successs",
+				opts: []Option{
+					WithServerMode(GQL),
+					WithHTTPHandler(hdr),
+					WithErrorGroup(nil),
+					WithReadHeaderTimeout("1s"),
+					WithReadTimeout("2s"),
+					WithWriteTimeout("3s"),
+					WithIdleTimeout("4s"),
+					WithTLSConfig(new(tls.Config)),
+				},
+				checkFunc: func(got *server, gotErr, wantErr error) error {
+					if got.http.srv == nil {
+						return errors.New("http srv is nil")
+					}
+
+					if !errors.Is(gotErr, wantErr) {
+						return errors.Errorf("err is not equals. want: %v, got: %v", wantErr, gotErr)
+					}
+
+					return nil
+				},
+				wantErr: nil,
+			}
+		}(),
+
+		func() test {
+			return test{
+				name: "return nil and error when GQL server returns invalid api config error",
+				opts: []Option{
+					WithServerMode(GQL),
 				},
 				checkFunc: func(got *server, gotErr, wantErr error) error {
 					if got != nil {
