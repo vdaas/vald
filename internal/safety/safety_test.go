@@ -33,7 +33,7 @@ func TestRecoverFunc(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "runtime error",
+			name: "returns error when system paniced caused by runtime error",
 			fn: func() error {
 				_ = []string{}[10]
 				return nil
@@ -43,7 +43,7 @@ func TestRecoverFunc(t *testing.T) {
 		},
 
 		{
-			name: "panic string",
+			name: "returns error when system paniced caused by panic with string value",
 			fn: func() error {
 				panic("panic")
 			},
@@ -51,7 +51,7 @@ func TestRecoverFunc(t *testing.T) {
 		},
 
 		{
-			name: "panic error",
+			name: "returns error when system paniced caused by panic with error",
 			fn: func() error {
 				panic(fmt.Errorf("error"))
 			},
@@ -59,7 +59,7 @@ func TestRecoverFunc(t *testing.T) {
 		},
 
 		{
-			name: "default case panic",
+			name: "returns error when system paniced caused by panic with int value",
 			fn: func() error {
 				panic(10)
 			},
