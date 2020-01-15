@@ -321,7 +321,18 @@ backupManager:
     #     valueFrom:
     #       secretKeyRef:
     #         name: cassandra-secret
-    #         key: ""
+    #         key: password
+  env:
+    - name: MYSQL_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: mysql-secret
+          key: password
+    # - name: CASSANDRA_PASSWORD
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: cassandra-secret
+    #       key: password
   server_config:
     prefix: backup-manager
     servers:
@@ -352,7 +363,7 @@ backupManager:
       host: mysql.default.svc.cluster.local
       port: 3306
       user: root
-      pass: password
+      pass: _MYSQL_PASSWORD_
       name: vald
       conn_max_life_time: 30s
       max_open_conns: 100
@@ -391,8 +402,8 @@ backupManager:
       keyspace: vald
       num_conns: 2
       consistency:  quorum
-      username: ""
-      password: ""
+      username: root
+      password: _CASSANDRA_PASSWORD_
       retry_policy:
         num_retries: 3
         min_duration: 1s
@@ -485,7 +496,18 @@ meta:
     #     valueFrom:
     #       secretKeyRef:
     #         name: cassandra-secret
-    #         key: ""
+    #         key: password
+  env:
+    - name: REDIS_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: redis-secret
+          key: password
+    # - name: CASSANDRA_PASSWORD
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: cassandra-secret
+    #       key: password
   server_config:
     prefix: meta
     servers:
@@ -525,7 +547,7 @@ meta:
       max_retry_backoff: 512ms
       min_idle_conns: 0
       min_retry_backoff: 8ms
-      password: password
+      password: _REDIS_PASSWORD_
       pool_size: 10
       pool_timeout: 4s
       read_only: false
@@ -564,8 +586,8 @@ meta:
       keyspace: vald
       num_conns: 2
       consistency:  quorum
-      username: ""
-      password: ""
+      username: root
+      password: _CASSANDRA_PASSWORD_
       retry_policy:
         num_retries: 3
         min_duration: 1s
@@ -620,6 +642,11 @@ initializer:
       name: mysql-config
       filename: ddl.sql
       schema: vald
+    secret:
+      enabled: false
+      name: mysql-secret
+      data:
+        password: cGFzc3dvcmQ=
   redis:
     enabled: false
     name: redis-init
@@ -636,6 +663,11 @@ initializer:
           secretKeyRef:
             name: redis-secret
             key: password
+    secret:
+      enabled: false
+      name: redis-secret
+      data:
+        password: cGFzc3dvcmQ=
   cassandra:
     enabled: false
     name: cassandra-init
@@ -653,7 +685,7 @@ initializer:
         valueFrom:
           secretKeyRef:
             name: cassandra-secret
-            key: ""
+            key: password
     configmap:
       enabled: false
       name: cassandra-initdb
@@ -669,3 +701,8 @@ initializer:
       backup:
         enabled: true
         name: meta_vector
+    secret:
+      enabled: false
+      name: cassandra-secret
+      data:
+        password: cGFzc3dvcmQ=
