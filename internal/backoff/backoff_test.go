@@ -131,7 +131,7 @@ func TestDo(t *testing.T) {
 			}
 
 			return test{
-				name: "backoff is successful",
+				name: "returns response and nil when retried twice and did not return an error",
 				args: args{
 					fn: fn,
 					opts: []Option{
@@ -165,7 +165,7 @@ func TestDo(t *testing.T) {
 			}
 
 			return test{
-				name: "reached max retry",
+				name: "returns error when retrying the maximum number of times",
 				args: args{
 					fn: fn,
 					opts: []Option{
@@ -203,7 +203,7 @@ func TestDo(t *testing.T) {
 			}
 
 			return test{
-				name: "return nil and context canceled error",
+				name: "return response and error when context canceled",
 				args: args{
 					fn: fn,
 					opts: []Option{
@@ -236,7 +236,7 @@ func TestDo(t *testing.T) {
 			}
 
 			return test{
-				name: "return nil and backoff timeout error",
+				name: "return response and error when backoff timeout",
 				args: args{
 					fn: fn,
 					opts: []Option{
