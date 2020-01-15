@@ -1,4 +1,3 @@
----
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -14,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{- if .Values.initializer.cassandra.enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -22,29 +22,22 @@ spec:
   template:
     spec:
       containers:
-      - name: cassandra-init
-        image: "cassandra:latest"
-        imagePullPolicy: Always
+      - name: {{ .Values.initializer.cassandra.name }}
+        image: "{{ .Values.initializer.cassandra.image.repository }}:{{ .Values.initializer.cassandra.image.tag }}"
+        imagePullPolicy: {{ .Values.initializer.cassandra.image.pullPolicy }}
         command:
           - /bin/sh
           - -c
           - |
-            cqlsh -u${CASSANDRA_USER} -p${CASSANDRA_PASSWORD} ${CASSANDRA_HOST} < /initdb/init.cql
+            cqlsh -u${CASSANDRA_USER} -p${CASSANDRA_PASSWORD} ${CASSANDRA_HOST} < /initdb/{{ .Values.initializer.cassandra.configmap.filename }}
         env:
-          - name: CASSANDRA_HOST
-            value: cassandra.default.svc.cluster.local
-          - name: CASSANDRA_USER
-            value: root
-          - name: CASSANDRA_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                key: ""
-                name: cassandra-secret
+          {{- toYaml .Values.initializer.cassandra.env | nindent 10 }}
         volumeMounts:
-          - name: cassandra-initdb
+          - name: {{ .Values.initializer.cassandra.configmap.name }}
             mountPath: /initdb
-      restartPolicy: Never
+      restartPolicy: {{ .Values.initializer.cassandra.restartPolicy }}
       volumes:
-        - name: cassandra-initdb
+        - name: {{ .Values.initializer.cassandra.configmap.name }}
           configMap:
-            name: cassandra-initdb
+            name: {{ .Values.initializer.cassandra.configmap.name }}
+{{- end }}

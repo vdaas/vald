@@ -22,7 +22,8 @@ k8s/manifest/clean:
 	    k8s/gateway/vald \
 	    k8s/manager/backup \
 	    k8s/manager/compressor \
-	    k8s/meta
+	    k8s/meta \
+	    k8s/jobs
 
 .PHONY: k8s/manifest/update
 ## update k8s manifests using helm templates
@@ -37,6 +38,7 @@ k8s/manifest/update: \
 	mv tmp-k8s/vald/templates/manager/backup k8s/manager/backup
 	mv tmp-k8s/vald/templates/manager/compressor k8s/manager/compressor
 	mv tmp-k8s/vald/templates/meta k8s/meta
+	mv tmp-k8s/vald/templates/jobs k8s/jobs
 	rm -rf tmp-k8s
 
 .PHONY: k8s/vald/deploy
@@ -68,7 +70,7 @@ k8s/vald/remove: \
 .PHONY: k8s/external/mysql/deploy
 ## deploy mysql to k8s
 k8s/external/mysql/deploy:
-	kubectl create configmap mysql-config --from-file=$(ROOTDIR)/assets/ddl/mysql/ddl.sql
+	kubectl apply -f k8s/jobs/db/initialize/mysql/configmap.yaml
 	kubectl apply -f k8s/external/mysql
 
 .PHONY: k8s/external/mysql/remove
@@ -81,8 +83,6 @@ k8s/external/mysql/remove:
 ## initialize mysql on k8s
 k8s/external/mysql/initialize:
 	-kubectl delete -f k8s/jobs/db/initialize/mysql
-	-kubectl delete configmap mysql-config
-	kubectl create configmap mysql-config --from-file=$(ROOTDIR)/assets/ddl/mysql/ddl.sql
 	kubectl apply -f k8s/external/mysql/secret.yaml
 	kubectl apply -f k8s/jobs/db/initialize/mysql
 
@@ -106,7 +106,7 @@ k8s/external/redis/initialize:
 .PHONY: k8s/external/cassandra/deploy
 ## deploy cassandra to k8s
 k8s/external/cassandra/deploy:
-	kubectl create configmap cassandra-initdb --from-file=$(ROOTDIR)/assets/ddl/cassandra/init.cql
+	kubectl apply -f k8s/jobs/db/initialize/cassandra/configmap.yaml
 	kubectl apply -f k8s/external/cassandra
 
 .PHONY: k8s/external/cassandra/remove
@@ -120,7 +120,6 @@ k8s/external/cassandra/remove:
 k8s/external/cassandra/initialize:
 	-kubectl delete -f k8s/jobs/db/initialize/cassandra
 	-kubectl delete configmap cassandra-initdb
-	kubectl create configmap cassandra-initdb --from-file=$(ROOTDIR)/assets/ddl/cassandra/init.cql
 	kubectl apply -f k8s/jobs/db/initialize/cassandra
 
 .PHONY: k8s/linkerd/deploy

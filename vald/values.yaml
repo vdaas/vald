@@ -595,3 +595,77 @@ meta:
       write_coalesce_wait_time: 200ms
       kv_table: kv
       vk_table: vk
+
+initializer:
+  mysql:
+    enabled: true
+    name: mysql-init
+    image:
+      repository: mysql
+      tag: latest
+      pullPolicy: Always
+    restartPolicy: Never
+    env:
+      - name: MYSQL_HOST
+        value: mysql.default.svc.cluster.local
+      - name: MYSQL_USER
+        value: root
+      - name: MYSQL_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: mysql-secret
+            key: password
+    configmap:
+      enabled: true
+      name: mysql-config
+      filename: ddl.sql
+      schema: vald
+  redis:
+    enabled: true
+    name: redis-init
+    image:
+      repository: redis
+      tag: latest
+      pullPolicy: Always
+    restartPolicy: Never
+    env:
+      - name: REDIS_HOST
+        value: redis.default.svc.cluster.local
+      - name: REDIS_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: redis-secret
+            key: password
+  cassandra:
+    enabled: true
+    name: cassandra-init
+    image:
+      repository: cassandra
+      tag: latest
+      pullPolicy: Always
+    restartPolicy: Never
+    env:
+      - name: CASSANDRA_HOST
+        value: cassandra.default.svc.cluster.local
+      - name: CASSANDRA_USER
+        value: root
+      - name: CASSANDRA_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: cassandra-secret
+            key: ""
+    configmap:
+      enabled: true
+      name: cassandra-initdb
+      filename: init.cql
+      keyspace: vald
+      replication_class: SimpleStrategy
+      replication_factor: 3
+      meta:
+        enabled: true
+        name:
+          kv: kv
+          vk: vk
+      backup:
+        enabled: true
+        name: meta_vector

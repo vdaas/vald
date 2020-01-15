@@ -1,4 +1,3 @@
----
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -14,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{- if .Values.initializer.mysql.enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -22,29 +22,22 @@ spec:
   template:
     spec:
       containers:
-      - name: mysql-init
-        image: "mysql:latest"
-        imagePullPolicy: Always
+      - name: {{ .Values.initializer.mysql.name }}
+        image: "{{ .Values.initializer.mysql.image.repository }}:{{ .Values.initializer.mysql.image.tag }}"
+        imagePullPolicy: {{ .Values.initializer.mysql.image.pullPolicy }}
         command:
           - /bin/sh
           - -c
           - |
-            mysql -h ${MYSQL_HOST} -u ${MYSQL_USER} -p${MYSQL_PASSWORD} < /initdb/ddl.sql
+            mysql -h ${MYSQL_HOST} -u ${MYSQL_USER} -p${MYSQL_PASSWORD} < /initdb/{{ .Values.initializer.mysql.configmap.filename }}
         env:
-          - name: MYSQL_HOST
-            value: mysql.default.svc.cluster.local
-          - name: MYSQL_USER
-            value: root
-          - name: MYSQL_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                key: password
-                name: mysql-secret
+          {{- toYaml .Values.initializer.mysql.env | nindent 10 }}
         volumeMounts:
-        - name: mysql-config
+        - name: {{ .Values.initializer.mysql.configmap.name }}
           mountPath: /initdb/
-      restartPolicy: Never
+      restartPolicy: {{ .Values.initializer.mysql.restartPolicy }}
       volumes:
-      - name: mysql-config
+      - name: {{ .Values.initializer.mysql.configmap.name }}
         configMap:
-          name: mysql-config
+          name: {{ .Values.initializer.mysql.configmap.name }}
+{{- end }}

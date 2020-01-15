@@ -20,6 +20,14 @@ metadata:
   name: discoverer
 rules:
 - apiGroups:
+  - apps
+  resources:
+  - replicasets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - ""
   resources:
   - nodes
