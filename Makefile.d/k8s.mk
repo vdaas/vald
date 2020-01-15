@@ -34,6 +34,8 @@ k8s/manifest/update: \
 	    --set initializer.mysql.enabled=true \
 	    --set initializer.redis.enabled=true \
 	    --set initializer.cassandra.enabled=true \
+	    --set initializer.mysql.configmap.enabled=true \
+	    --set initializer.cassandra.configmap.enabled=true \
 	    --output-dir tmp-k8s \
 	    vald
 	mkdir -p k8s/gateway

@@ -616,7 +616,7 @@ initializer:
             name: mysql-secret
             key: password
     configmap:
-      enabled: true
+      enabled: false
       name: mysql-config
       filename: ddl.sql
       schema: vald
@@ -655,7 +655,7 @@ initializer:
             name: cassandra-secret
             key: ""
     configmap:
-      enabled: true
+      enabled: false
       name: cassandra-initdb
       filename: init.cql
       keyspace: vald
