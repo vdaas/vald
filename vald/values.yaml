@@ -598,7 +598,7 @@ meta:
 
 initializer:
   mysql:
-    enabled: true
+    enabled: false
     name: mysql-init
     image:
       repository: mysql
@@ -621,7 +621,7 @@ initializer:
       filename: ddl.sql
       schema: vald
   redis:
-    enabled: true
+    enabled: false
     name: redis-init
     image:
       repository: redis
@@ -637,7 +637,7 @@ initializer:
             name: redis-secret
             key: password
   cassandra:
-    enabled: true
+    enabled: false
     name: cassandra-init
     image:
       repository: cassandra

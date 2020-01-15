@@ -29,7 +29,13 @@ k8s/manifest/clean:
 ## update k8s manifests using helm templates
 k8s/manifest/update: \
 	k8s/manifest/clean
-	helm template --values vald/values.yaml --output-dir tmp-k8s vald
+	helm template \
+	    --values vald/values.yaml \
+	    --set initializer.mysql.enabled=true \
+	    --set initializer.redis.enabled=true \
+	    --set initializer.cassandra.enabled=true \
+	    --output-dir tmp-k8s \
+	    vald
 	mkdir -p k8s/gateway
 	mkdir -p k8s/manager
 	mv tmp-k8s/vald/templates/agent k8s/agent
