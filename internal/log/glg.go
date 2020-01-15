@@ -17,7 +17,10 @@
 package log
 
 import (
+	"reflect"
+
 	"github.com/kpango/glg"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 type glglogger struct {
@@ -38,35 +41,35 @@ func DefaultGlg() Logger {
 }
 
 func (l *glglogger) Info(vals ...interface{}) {
-	l.log.Info(vals...)
+	out(l.log.Info, vals...)
 }
 
 func (l *glglogger) Infof(format string, vals ...interface{}) {
-	l.log.Infof(format, vals...)
+	outf(l.log.Infof, format, vals...)
 }
 
 func (l *glglogger) Debug(vals ...interface{}) {
-	l.log.Debug(vals...)
+	out(l.log.Debug, vals...)
 }
 
 func (l *glglogger) Debugf(format string, vals ...interface{}) {
-	l.log.Debugf(format, vals...)
+	outf(l.log.Debugf, format, vals...)
 }
 
 func (l *glglogger) Warn(vals ...interface{}) {
-	l.log.Warn(vals...)
+	out(l.log.Warn, vals...)
 }
 
 func (l *glglogger) Warnf(format string, vals ...interface{}) {
-	l.log.Warnf(format, vals...)
+	outf(l.log.Warnf, format, vals...)
 }
 
 func (l *glglogger) Error(vals ...interface{}) {
-	l.log.Error(vals...)
+	out(l.log.Error, vals...)
 }
 
 func (l *glglogger) Errorf(format string, vals ...interface{}) {
-	l.log.Errorf(format, vals...)
+	outf(l.log.Errorf, format, vals...)
 }
 
 func (l *glglogger) Fatal(vals ...interface{}) {
@@ -75,4 +78,42 @@ func (l *glglogger) Fatal(vals ...interface{}) {
 
 func (l *glglogger) Fatalf(format string, vals ...interface{}) {
 	l.log.Fatalf(format, vals...)
+}
+
+func out(
+	fn func(vals ...interface{}) error,
+	vals ...interface{},
+) {
+	if err := fn(vals...); err != nil {
+		Warn(errors.ErrLoggingRetry(err, reflect.ValueOf(fn)))
+
+		err = fn(vals)
+		if err != nil {
+			Error(errors.ErrLoggingFaild(err, reflect.ValueOf(fn)))
+
+			err = fn(vals...)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+}
+
+func outf(
+	fn func(format string, vals ...interface{}) error,
+	format string, vals ...interface{},
+) {
+	if err := fn(format, vals...); err != nil {
+		Warn(errors.Wrap(err, ""))
+
+		err = fn(format, vals...)
+		if err != nil {
+			Error(errors.Wrap(err, ""))
+
+			err = fn(format, vals...)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
 }
