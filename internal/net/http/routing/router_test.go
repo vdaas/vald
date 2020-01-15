@@ -127,7 +127,7 @@ func TestRouting(t *testing.T) {
 			}
 
 			return test{
-				name: "serveHTTP is fail when handler handler returns error",
+				name: "serveHTTP is fail when handler returns error",
 				args: args{
 					m: []string{
 						http.MethodGet,
