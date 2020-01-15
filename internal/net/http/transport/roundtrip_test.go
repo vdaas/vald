@@ -141,7 +141,7 @@ func TestRoundTrip(t *testing.T) {
 			}
 
 			return test{
-				name: "returns backoff error",
+				name: "returns error when Do function returns error",
 				args: args{
 					req: new(http.Request),
 				},
@@ -178,7 +178,7 @@ func TestRoundTrip(t *testing.T) {
 			}
 
 			return test{
-				name: "returns type conversion error",
+				name: "returns error when type conversion error occurs",
 				args: args{
 					req: new(http.Request),
 				},
