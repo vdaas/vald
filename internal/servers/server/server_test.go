@@ -341,15 +341,9 @@ func TestListenAndServe(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "server already running",
+			name: "return nil when server is already running",
 			field: field{
 				running: true,
-			},
-			checkFunc: func(s *server, got, want error) error {
-				if want != got {
-					return errors.Errorf("ListenAndServe returns error: %v", got)
-				}
-				return nil
 			},
 			want: nil,
 		},
@@ -358,18 +352,12 @@ func TestListenAndServe(t *testing.T) {
 			err := errors.New("faild to prestart")
 
 			return test{
-				name: "prestart error",
+				name: "return error when prestart function return error",
 				field: field{
 					running: false,
 					preStartFunc: func() error {
 						return err
 					},
-				},
-				checkFunc: func(s *server, got, want error) error {
-					if want != got {
-						return errors.Errorf("ListenAndServe returns error: %v", got)
-					}
-					return nil
 				},
 				want: err,
 			}
@@ -400,12 +388,6 @@ func TestListenAndServe(t *testing.T) {
 					},
 					running: false,
 				},
-				checkFunc: func(s *server, got, want error) error {
-					if want != got {
-						return errors.Errorf("ListenAndServe returns error: %v", got)
-					}
-					return nil
-				},
 				want: nil,
 			}
 		}(),
@@ -429,12 +411,6 @@ func TestListenAndServe(t *testing.T) {
 						return nil
 					},
 					running: false,
-				},
-				checkFunc: func(s *server, got, want error) error {
-					if want != got {
-						return errors.Errorf("ListenAndServe returns error: %v", got)
-					}
-					return nil
 				},
 				want: nil,
 			}
@@ -476,8 +452,8 @@ func TestListenAndServe(t *testing.T) {
 			}
 
 			got := s.ListenAndServe(tt.args.ctx, tt.args.errCh)
-			if err := tt.checkFunc(s, got, tt.want); err != nil {
-				t.Error(err)
+			if !errors.Is(got, tt.want) {
+				t.Errorf("ListenAndServe returns error: %v", got)
 			}
 		})
 	}
