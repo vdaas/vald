@@ -16,7 +16,12 @@
 
 package log
 
-import "sync"
+import (
+	"reflect"
+	"sync"
+
+	"github.com/vdaas/vald/internal/errors"
+)
 
 type Logger interface {
 	Info(vals ...interface{})
@@ -83,4 +88,32 @@ func Fatal(vals ...interface{}) {
 
 func Fatalf(format string, vals ...interface{}) {
 	logger.Fatalf(format, vals...)
+}
+
+func out(
+	fn func(vals ...interface{}) error,
+	vals ...interface{},
+) {
+	outf(func(format string, vals ...interface{}) error {
+		return fn(vals...)
+	}, "", vals...)
+}
+
+func outf(
+	fn func(format string, vals ...interface{}) error,
+	format string, vals ...interface{},
+) {
+	if err := fn(format, vals...); err != nil {
+		Warn(errors.ErrLoggingRetry(err, reflect.ValueOf(fn)))
+
+		err = fn(format, vals...)
+		if err != nil {
+			Error(errors.ErrLoggingFaild(err, reflect.ValueOf(fn)))
+
+			err = fn(format, vals...)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
 }

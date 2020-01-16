@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/kpango/glg"
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log/mock"
 )
 
@@ -131,12 +130,6 @@ func TestGlgInfo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if err := recover(); err != nil {
-					t.Error(err)
-				}
-			}()
-
 			logger = tt.global.l
 
 			gl := &glglogger{
@@ -219,12 +212,6 @@ func TestGlgInfof(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if err := recover(); err != nil {
-					t.Error(err)
-				}
-			}()
-
 			logger = tt.global.l
 
 			gl := &glglogger{
@@ -305,12 +292,6 @@ func TestGlgDebug(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if err := recover(); err != nil {
-					t.Error(err)
-				}
-			}()
-
 			logger = tt.global.l
 
 			gl := &glglogger{
@@ -754,245 +735,6 @@ func TestGlgErrorf(t *testing.T) {
 			}
 
 			gl.Errorf(tt.args.format, tt.args.vals...)
-			if err := tt.checkFunc(); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
-func TestOut(t *testing.T) {
-	type args struct {
-		fn   func(...interface{}) error
-		vals []interface{}
-	}
-
-	type global struct {
-		l Logger
-	}
-
-	type test struct {
-		name      string
-		args      args
-		global    global
-		checkFunc func() error
-		recovery  bool
-	}
-
-	tests := []test{
-		func() test {
-			var cnt int
-			fn := func(vals ...interface{}) error {
-				cnt++
-				return nil
-			}
-
-			return test{
-				name: "processing is successes when fn return nil",
-				args: args{
-					vals: []interface{}{
-						"name",
-					},
-					fn: fn,
-				},
-				checkFunc: func() error {
-					if cnt != 1 {
-						return errors.Errorf("called cnt is wrong. want: %v, got: %v", 1, cnt)
-					}
-					return nil
-				},
-				recovery: false,
-			}
-		}(),
-
-		func() test {
-			fnErr := errors.New("fail")
-
-			var cnt int
-			fn := func(vals ...interface{}) error {
-				cnt++
-				return fnErr
-			}
-
-			var (
-				warn error
-				err  error
-			)
-
-			l := &mock.Logger{
-				WarnFunc: func(vals ...interface{}) {
-					warn = vals[0].(error)
-				},
-				ErrorFunc: func(vals ...interface{}) {
-					err = vals[0].(error)
-				},
-			}
-
-			return test{
-				name: "processing is fails when fn return error",
-				args: args{
-					vals: []interface{}{
-						"name",
-					},
-					fn: fn,
-				},
-				global: global{
-					l: l,
-				},
-				checkFunc: func() error {
-					if cnt != 3 {
-						return errors.Errorf("called cnt is wrong. want: %v, got: %v", 3, cnt)
-					}
-
-					if !errors.Is(warn, fnErr) {
-						return errors.Errorf("argument of warn funcion is wrong. want: %v, got: %v", warn, fnErr)
-					}
-
-					if !errors.Is(warn, fnErr) {
-						return errors.Errorf("argument of error function is wrong. want: %v, got: %v", err, fnErr)
-					}
-
-					return nil
-				},
-				recovery: true,
-			}
-		}(),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if tt.recovery {
-					if err := recover(); err == nil {
-						t.Error("panic is nil")
-					}
-				}
-			}()
-
-			logger = tt.global.l
-
-			out(tt.args.fn, tt.args.vals...)
-			if err := tt.checkFunc(); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
-func TestOutf(t *testing.T) {
-	type args struct {
-		fn     func(string, ...interface{}) error
-		format string
-		vals   []interface{}
-	}
-
-	type global struct {
-		l Logger
-	}
-
-	type test struct {
-		name      string
-		args      args
-		global    global
-		checkFunc func() error
-		recovery  bool
-	}
-
-	tests := []test{
-		func() test {
-			var cnt int
-			fn := func(format string, vals ...interface{}) error {
-				cnt++
-				return nil
-			}
-
-			return test{
-				name: "processing is successes when fn return nil",
-				args: args{
-					format: "format",
-					vals: []interface{}{
-						"name",
-					},
-					fn: fn,
-				},
-				checkFunc: func() error {
-					if cnt != 1 {
-						return errors.Errorf("called cnt is wrong. want: %v, got: %v", 1, cnt)
-					}
-					return nil
-				},
-				recovery: false,
-			}
-		}(),
-
-		func() test {
-			fnErr := errors.New("fail")
-
-			var cnt int
-			fn := func(format string, vals ...interface{}) error {
-				cnt++
-				return fnErr
-			}
-
-			var (
-				warn error
-				err  error
-			)
-
-			l := &mock.Logger{
-				WarnFunc: func(vals ...interface{}) {
-					warn = vals[0].(error)
-				},
-				ErrorFunc: func(vals ...interface{}) {
-					err = vals[0].(error)
-				},
-			}
-
-			return test{
-				name: "processing is fails when fn return error",
-				args: args{
-					format: "format",
-					vals: []interface{}{
-						"name",
-					},
-					fn: fn,
-				},
-				global: global{
-					l: l,
-				},
-				checkFunc: func() error {
-					if cnt != 3 {
-						return errors.Errorf("called cnt is wrong. want: %v, got: %v", 3, cnt)
-					}
-
-					if !errors.Is(warn, fnErr) {
-						return errors.Errorf("argument of warn funcion is wrong. want: %v, got: %v", warn, fnErr)
-					}
-
-					if !errors.Is(warn, fnErr) {
-						return errors.Errorf("argument of error function is wrong. want: %v, got: %v", err, fnErr)
-					}
-
-					return nil
-				},
-				recovery: true,
-			}
-		}(),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if tt.recovery {
-					if err := recover(); err == nil {
-						t.Error("panic is nil")
-					}
-				}
-			}()
-
-			logger = tt.global.l
-
-			outf(tt.args.fn, tt.args.format, tt.args.vals...)
 			if err := tt.checkFunc(); err != nil {
 				t.Error(err)
 			}
