@@ -19,6 +19,7 @@ package cassandra
 
 import (
 	"crypto/tls"
+	"strings"
 	"time"
 
 	"github.com/gocql/gocql"
@@ -116,14 +117,14 @@ var consistenciesMap = map[string]gocql.Consistency{
 	"three":       gocql.Three,
 	"quorum":      gocql.Quorum,
 	"all":         gocql.All,
-	"localQuorum": gocql.LocalQuorum,
-	"eachQuorum":  gocql.EachQuorum,
-	"localOne":    gocql.LocalOne,
+	"localquorum": gocql.LocalQuorum,
+	"eachquorum":  gocql.EachQuorum,
+	"localone":    gocql.LocalOne,
 }
 
 func WithConsistency(consistency string) Option {
 	return func(c *client) error {
-		actual, ok := consistenciesMap[consistency]
+		actual, ok := consistenciesMap[strings.TrimSpace(strings.Trim(strings.Trim(strings.ToLower(consistency), "_"), "-"))]
 		if !ok {
 			return errors.ErrCassandraInvalidConsistencyType(consistency)
 		}
