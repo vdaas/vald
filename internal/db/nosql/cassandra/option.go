@@ -30,7 +30,11 @@ import (
 type Option func(*client) error
 
 var (
-	defaultOpts = []Option{}
+	defaultOpts = []Option{
+		WithDisableDCAwareRouting(),
+		WithDisableNonLocalReplicasFallback(),
+		WithDisableShuffleReplicas(),
+	}
 )
 
 func WithHosts(hosts ...string) Option {
@@ -285,6 +289,55 @@ func WithEnableHostVerification(enableHostVerification bool) Option {
 func WithDefaultTimestamp(defaultTimestamp bool) Option {
 	return func(c *client) error {
 		c.defaultTimestamp = defaultTimestamp
+		return nil
+	}
+}
+
+func WithDC(name string) Option {
+	return func(c *client) error {
+		c.poolConfig.dataCenterName = name
+		return nil
+	}
+}
+
+func WithEnableDCAwareRouting() Option {
+	return func(c *client) error {
+		c.poolConfig.enableDCAwareRouting = true
+		return nil
+	}
+}
+
+func WithDisableDCAwareRouting() Option {
+	return func(c *client) error {
+		c.poolConfig.enableDCAwareRouting = false
+		return nil
+	}
+}
+
+func WithEnableNonLocalReplicasFallback() Option {
+	return func(c *client) error {
+		c.poolConfig.enableNonLocalReplicasFallback = true
+		return nil
+	}
+}
+
+func WithDisableNonLocalReplicasFallback() Option {
+	return func(c *client) error {
+		c.poolConfig.enableNonLocalReplicasFallback = false
+		return nil
+	}
+}
+
+func WithEnableShuffleReplicas() Option {
+	return func(c *client) error {
+		c.poolConfig.enableShuffleReplicas = true
+		return nil
+	}
+}
+
+func WithDisableShuffleReplicas() Option {
+	return func(c *client) error {
+		c.poolConfig.enableShuffleReplicas = false
 		return nil
 	}
 }
