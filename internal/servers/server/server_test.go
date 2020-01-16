@@ -148,7 +148,7 @@ func TestNew(t *testing.T) {
 			hdr := new(handler)
 
 			return test{
-				name: "initialize REST server is successs",
+				name: "initialize REST server is successes",
 				opts: []Option{
 					WithHTTPHandler(hdr),
 					WithErrorGroup(nil),
@@ -248,7 +248,7 @@ func TestNew(t *testing.T) {
 			hdr := new(handler)
 
 			return test{
-				name: "initialize GQL server is successs",
+				name: "initialize GQL server is successes",
 				opts: []Option{
 					WithServerMode(GQL),
 					WithHTTPHandler(hdr),
@@ -390,7 +390,6 @@ func TestListenAndServe(t *testing.T) {
 		args      args
 		field     field
 		afterFunc func()
-		checkFunc func(s *server, got, want error) error
 		want      error
 	}
 
