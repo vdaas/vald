@@ -1,12 +1,12 @@
 package log
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/kpango/glg"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 func TestNewGlg(t *testing.T) {
@@ -51,7 +51,7 @@ func TestDefaultGlg(t *testing.T) {
 		{
 			name: "default glg success",
 			want: &glglogger{
-				log: glg.Get(),
+				log: glg.Get().SetMode(glg.NONE),
 			},
 		},
 	}
@@ -66,36 +66,841 @@ func TestDefaultGlg(t *testing.T) {
 	}
 }
 
+func TestGlgInfo(t *testing.T) {
+	type args struct {
+		vals []interface{}
+	}
+
+	type field struct {
+		log *glg.Glg
+	}
+
+	type global struct {
+		l Logger
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		global    global
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var (
+				warn error
+				err  error
+			)
+
+			l := &loggerMock{
+				WarnFunc: func(vals ...interface{}) {
+					warn = vals[0].(error)
+				},
+				ErrorFunc: func(vals ...interface{}) {
+					err = vals[0].(error)
+				},
+			}
+
+			return test{
+				name: "output is successes",
+				args: args{
+					vals: []interface{}{
+						"name",
+					},
+				},
+				field: field{
+					log: glg.Get().SetMode(glg.NONE),
+				},
+				global: global{
+					l: l,
+				},
+				checkFunc: func() error {
+					if warn != nil {
+						t.Errorf("argument of warn funcion is not nil. err: %v", warn)
+					}
+
+					if err != nil {
+						t.Errorf("argument of error funcion is not nil. err: %v", err)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if err := recover(); err != nil {
+					t.Error(err)
+				}
+			}()
+
+			logger = tt.global.l
+
+			gl := &glglogger{
+				log: tt.field.log,
+			}
+
+			gl.Info(tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestGlgInfof(t *testing.T) {
+	type args struct {
+		format string
+		vals   []interface{}
+	}
+
+	type field struct {
+		log *glg.Glg
+	}
+
+	type global struct {
+		l Logger
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		global    global
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var (
+				warn error
+				err  error
+			)
+
+			l := &loggerMock{
+				WarnFunc: func(vals ...interface{}) {
+					warn = vals[0].(error)
+				},
+				ErrorFunc: func(vals ...interface{}) {
+					err = vals[0].(error)
+				},
+			}
+
+			return test{
+				name: "output is successes",
+				args: args{
+					format: "%v",
+					vals: []interface{}{
+						"name",
+					},
+				},
+				field: field{
+					log: glg.Get().SetMode(glg.NONE),
+				},
+				global: global{
+					l: l,
+				},
+				checkFunc: func() error {
+					if warn != nil {
+						t.Errorf("argument of warn funcion is not nil. err: %v", warn)
+					}
+
+					if err != nil {
+						t.Errorf("argument of error funcion is not nil. err: %v", err)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if err := recover(); err != nil {
+					t.Error(err)
+				}
+			}()
+
+			logger = tt.global.l
+
+			gl := &glglogger{
+				log: tt.field.log,
+			}
+
+			gl.Infof(tt.args.format, tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestGlgDebug(t *testing.T) {
+	type args struct {
+		vals []interface{}
+	}
+
+	type field struct {
+		log *glg.Glg
+	}
+
+	type global struct {
+		l Logger
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		global    global
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var (
+				warn error
+				err  error
+			)
+
+			l := &loggerMock{
+				WarnFunc: func(vals ...interface{}) {
+					warn = vals[0].(error)
+				},
+				ErrorFunc: func(vals ...interface{}) {
+					err = vals[0].(error)
+				},
+			}
+
+			return test{
+				name: "output is successes",
+				args: args{
+					vals: []interface{}{
+						"name",
+					},
+				},
+				field: field{
+					log: glg.Get().SetMode(glg.NONE),
+				},
+				global: global{
+					l: l,
+				},
+				checkFunc: func() error {
+					if warn != nil {
+						t.Errorf("argument of warn funcion is not nil. err: %v", warn)
+					}
+
+					if err != nil {
+						t.Errorf("argument of error funcion is not nil. err: %v", err)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if err := recover(); err != nil {
+					t.Error(err)
+				}
+			}()
+
+			logger = tt.global.l
+
+			gl := &glglogger{
+				log: tt.field.log,
+			}
+
+			gl.Debug(tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestGlgDebugf(t *testing.T) {
+	type args struct {
+		format string
+		vals   []interface{}
+	}
+
+	type field struct {
+		log *glg.Glg
+	}
+
+	type global struct {
+		l Logger
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		global    global
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var (
+				warn error
+				err  error
+			)
+
+			l := &loggerMock{
+				WarnFunc: func(vals ...interface{}) {
+					warn = vals[0].(error)
+				},
+				ErrorFunc: func(vals ...interface{}) {
+					err = vals[0].(error)
+				},
+			}
+
+			return test{
+				name: "output is successes",
+				args: args{
+					format: "%v",
+					vals: []interface{}{
+						"name",
+					},
+				},
+				field: field{
+					log: glg.Get().SetMode(glg.NONE),
+				},
+				global: global{
+					l: l,
+				},
+				checkFunc: func() error {
+					if warn != nil {
+						t.Errorf("argument of warn funcion is not nil. err: %v", warn)
+					}
+
+					if err != nil {
+						t.Errorf("argument of error funcion is not nil. err: %v", err)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if err := recover(); err != nil {
+					t.Error(err)
+				}
+			}()
+
+			logger = tt.global.l
+
+			gl := &glglogger{
+				log: tt.field.log,
+			}
+
+			gl.Debugf(tt.args.format, tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestGlgWarn(t *testing.T) {
+	type args struct {
+		vals []interface{}
+	}
+
+	type field struct {
+		log *glg.Glg
+	}
+
+	type global struct {
+		l Logger
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		global    global
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var (
+				warn error
+				err  error
+			)
+
+			l := &loggerMock{
+				WarnFunc: func(vals ...interface{}) {
+					warn = vals[0].(error)
+				},
+				ErrorFunc: func(vals ...interface{}) {
+					err = vals[0].(error)
+				},
+			}
+
+			return test{
+				name: "output is successes",
+				args: args{
+					vals: []interface{}{
+						"name",
+					},
+				},
+				field: field{
+					log: glg.Get().SetMode(glg.NONE),
+				},
+				global: global{
+					l: l,
+				},
+				checkFunc: func() error {
+					if warn != nil {
+						t.Errorf("argument of warn funcion is not nil. err: %v", warn)
+					}
+
+					if err != nil {
+						t.Errorf("argument of error funcion is not nil. err: %v", err)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if err := recover(); err != nil {
+					t.Error(err)
+				}
+			}()
+
+			logger = tt.global.l
+
+			gl := &glglogger{
+				log: tt.field.log,
+			}
+
+			gl.Warn(tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestGlgWarnf(t *testing.T) {
+	type args struct {
+		format string
+		vals   []interface{}
+	}
+
+	type field struct {
+		log *glg.Glg
+	}
+
+	type global struct {
+		l Logger
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		global    global
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var (
+				warn error
+				err  error
+			)
+
+			l := &loggerMock{
+				WarnFunc: func(vals ...interface{}) {
+					warn = vals[0].(error)
+				},
+				ErrorFunc: func(vals ...interface{}) {
+					err = vals[0].(error)
+				},
+			}
+
+			return test{
+				name: "output is successes",
+				args: args{
+					format: "%v",
+					vals: []interface{}{
+						"name",
+					},
+				},
+				field: field{
+					log: glg.Get().SetMode(glg.NONE),
+				},
+				global: global{
+					l: l,
+				},
+				checkFunc: func() error {
+					if warn != nil {
+						t.Errorf("argument of warn funcion is not nil. err: %v", warn)
+					}
+
+					if err != nil {
+						t.Errorf("argument of error funcion is not nil. err: %v", err)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if err := recover(); err != nil {
+					t.Error(err)
+				}
+			}()
+
+			logger = tt.global.l
+
+			gl := &glglogger{
+				log: tt.field.log,
+			}
+
+			gl.Warnf(tt.args.format, tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestGlgError(t *testing.T) {
+	type args struct {
+		vals []interface{}
+	}
+
+	type field struct {
+		log *glg.Glg
+	}
+
+	type global struct {
+		l Logger
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		global    global
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var (
+				warn error
+				err  error
+			)
+
+			l := &loggerMock{
+				WarnFunc: func(vals ...interface{}) {
+					warn = vals[0].(error)
+				},
+				ErrorFunc: func(vals ...interface{}) {
+					err = vals[0].(error)
+				},
+			}
+
+			return test{
+				name: "output is successes",
+				args: args{
+					vals: []interface{}{
+						"name",
+					},
+				},
+				field: field{
+					log: glg.Get().SetMode(glg.NONE),
+				},
+				global: global{
+					l: l,
+				},
+				checkFunc: func() error {
+					if warn != nil {
+						t.Errorf("argument of warn funcion is not nil. err: %v", warn)
+					}
+
+					if err != nil {
+						t.Errorf("argument of error funcion is not nil. err: %v", err)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if err := recover(); err != nil {
+					t.Error(err)
+				}
+			}()
+
+			logger = tt.global.l
+
+			gl := &glglogger{
+				log: tt.field.log,
+			}
+
+			gl.Error(tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestGlgErrorf(t *testing.T) {
+	type args struct {
+		format string
+		vals   []interface{}
+	}
+
+	type field struct {
+		log *glg.Glg
+	}
+
+	type global struct {
+		l Logger
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		global    global
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var (
+				warn error
+				err  error
+			)
+
+			l := &loggerMock{
+				WarnFunc: func(vals ...interface{}) {
+					warn = vals[0].(error)
+				},
+				ErrorFunc: func(vals ...interface{}) {
+					err = vals[0].(error)
+				},
+			}
+
+			return test{
+				name: "output is successes",
+				args: args{
+					format: "%v",
+					vals: []interface{}{
+						"name",
+					},
+				},
+				field: field{
+					log: glg.Get().SetMode(glg.NONE),
+				},
+				global: global{
+					l: l,
+				},
+				checkFunc: func() error {
+					if warn != nil {
+						t.Errorf("argument of warn funcion is not nil. err: %v", warn)
+					}
+
+					if err != nil {
+						t.Errorf("argument of error funcion is not nil. err: %v", err)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if err := recover(); err != nil {
+					t.Error(err)
+				}
+			}()
+
+			logger = tt.global.l
+
+			gl := &glglogger{
+				log: tt.field.log,
+			}
+
+			gl.Errorf(tt.args.format, tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestGlgFatal(t *testing.T) {
+	type args struct {
+		vals []interface{}
+	}
+
+	type field struct {
+		log *glg.Glg
+	}
+
+	type test struct {
+		name  string
+		args  args
+		field field
+	}
+
+	tests := []test{
+		{
+			name: "output is successes",
+			args: args{
+				vals: []interface{}{
+					"name",
+				},
+			},
+			field: field{
+				log: glg.Get(),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				err := recover()
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			gl := &glglogger{
+				log: tt.field.log,
+			}
+
+			gl.Fatal(tt.args.vals...)
+		})
+	}
+}
+func TestGlgFatalf(t *testing.T) {}
+
 func TestOut(t *testing.T) {
 	type args struct {
 		fn   func(...interface{}) error
 		vals []interface{}
 	}
 
+	type global struct {
+		l Logger
+	}
+
 	type test struct {
 		name      string
 		args      args
+		global    global
 		checkFunc func() error
 		recovery  bool
 	}
 
 	tests := []test{
 		func() test {
-			vals := []interface{}{
-				"name",
-			}
-
+			var cnt int
 			fn := func(vals ...interface{}) error {
-				return errors.New("aaaa")
+				cnt++
+				return nil
 			}
 
 			return test{
-				name: "output success when fn return nil",
+				name: "processing is successes when fn return nil",
 				args: args{
-					vals: vals,
-					fn:   fn,
+					vals: []interface{}{
+						"name",
+					},
+					fn: fn,
 				},
 				checkFunc: func() error {
+					if cnt != 1 {
+						return errors.Errorf("called cnt is wrong. want: %v, got: %v", 1, cnt)
+					}
+					return nil
+				},
+				recovery: false,
+			}
+		}(),
+
+		func() test {
+			fnErr := errors.New("fail")
+
+			var cnt int
+			fn := func(vals ...interface{}) error {
+				cnt++
+				return fnErr
+			}
+
+			var (
+				warn error
+				err  error
+			)
+
+			l := &loggerMock{
+				WarnFunc: func(vals ...interface{}) {
+					warn = vals[0].(error)
+				},
+				ErrorFunc: func(vals ...interface{}) {
+					err = vals[0].(error)
+				},
+			}
+
+			return test{
+				name: "processing is fails when fn return error",
+				args: args{
+					vals: []interface{}{
+						"name",
+					},
+					fn: fn,
+				},
+				global: global{
+					l: l,
+				},
+				checkFunc: func() error {
+					if cnt != 3 {
+						return errors.Errorf("called cnt is wrong. want: %v, got: %v", 3, cnt)
+					}
+
+					if !errors.Is(warn, fnErr) {
+						return errors.Errorf("argument of warn funcion is wrong. want: %v, got: %v", warn, fnErr)
+					}
+
+					if !errors.Is(warn, fnErr) {
+						return errors.Errorf("argument of error function is wrong. want: %v, got: %v", err, fnErr)
+					}
+
 					return nil
 				},
 				recovery: true,
@@ -106,11 +911,21 @@ func TestOut(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
-				if err := recover(); err != nil {
-					fmt.Println(err)
+				if tt.recovery {
+					if err := recover(); err != nil {
+						fmt.Println(err)
+					} else {
+						t.Error("panic is nil")
+					}
 				}
 			}()
+
+			logger = tt.global.l
+
 			out(tt.args.fn, tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }
@@ -122,17 +937,118 @@ func TestOutf(t *testing.T) {
 		vals   []interface{}
 	}
 
-	type test struct {
-		name     string
-		args     args
-		recovery bool
+	type global struct {
+		l Logger
 	}
 
-	tests := []test{}
+	type test struct {
+		name      string
+		args      args
+		global    global
+		checkFunc func() error
+		recovery  bool
+	}
+
+	tests := []test{
+		func() test {
+			var cnt int
+			fn := func(format string, vals ...interface{}) error {
+				cnt++
+				return nil
+			}
+
+			return test{
+				name: "processing is successes when fn return nil",
+				args: args{
+					format: "format",
+					vals: []interface{}{
+						"name",
+					},
+					fn: fn,
+				},
+				checkFunc: func() error {
+					if cnt != 1 {
+						return errors.Errorf("called cnt is wrong. want: %v, got: %v", 1, cnt)
+					}
+					return nil
+				},
+				recovery: false,
+			}
+		}(),
+
+		func() test {
+			fnErr := errors.New("fail")
+
+			var cnt int
+			fn := func(format string, vals ...interface{}) error {
+				cnt++
+				return fnErr
+			}
+
+			var (
+				warn error
+				err  error
+			)
+
+			l := &loggerMock{
+				WarnFunc: func(vals ...interface{}) {
+					warn = vals[0].(error)
+				},
+				ErrorFunc: func(vals ...interface{}) {
+					err = vals[0].(error)
+				},
+			}
+
+			return test{
+				name: "processing is fails when fn return error",
+				args: args{
+					format: "format",
+					vals: []interface{}{
+						"name",
+					},
+					fn: fn,
+				},
+				global: global{
+					l: l,
+				},
+				checkFunc: func() error {
+					if cnt != 3 {
+						return errors.Errorf("called cnt is wrong. want: %v, got: %v", 3, cnt)
+					}
+
+					if !errors.Is(warn, fnErr) {
+						return errors.Errorf("argument of warn funcion is wrong. want: %v, got: %v", warn, fnErr)
+					}
+
+					if !errors.Is(warn, fnErr) {
+						return errors.Errorf("argument of error function is wrong. want: %v, got: %v", err, fnErr)
+					}
+
+					return nil
+				},
+				recovery: true,
+			}
+		}(),
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if tt.recovery {
+					if err := recover(); err != nil {
+						fmt.Println(err)
+					} else {
+						t.Error("panic is nil")
+					}
+				}
+			}()
+
+			logger = tt.global.l
+
 			outf(tt.args.fn, tt.args.format, tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }

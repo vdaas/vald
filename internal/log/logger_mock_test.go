@@ -26,7 +26,7 @@ func (lm *loggerMock) Debug(vals ...interface{}) {
 }
 
 func (lm *loggerMock) Debugf(format string, vals ...interface{}) {
-	lm.Debugf(format, vals...)
+	lm.DebugfFunc(format, vals...)
 }
 
 func (lm *loggerMock) Warn(vals ...interface{}) {
@@ -38,7 +38,7 @@ func (lm *loggerMock) Warnf(format string, vals ...interface{}) {
 }
 
 func (lm *loggerMock) Error(vals ...interface{}) {
-	lm.Error(vals...)
+	lm.ErrorFunc(vals...)
 }
 
 func (lm *loggerMock) Errorf(format string, vals ...interface{}) {
