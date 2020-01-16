@@ -35,7 +35,11 @@ func TestZstdCompressVector(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		zstdc := NewZstd()
+		zstdc, err := NewZstd()
+		if err != nil {
+			t.Fatalf("initialize failed: %s", err)
+		}
+
 		compressed, err := zstdc.CompressVector(tc.vector)
 		if err != nil {
 			t.Fatalf("Compress failed: %s", err)

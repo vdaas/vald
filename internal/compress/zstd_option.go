@@ -18,43 +18,36 @@
 package compress
 
 import (
-	"bytes"
-	"encoding/gob"
-	"reflect"
-
+	"github.com/DataDog/zstd"
 	"github.com/vdaas/vald/internal/errors"
 )
 
-type gobCompressor struct {
-}
+type ZstdOption func(c *zstdCompressor) error
 
-func NewGob(opts ...GobOption) (Compressor, error) {
-	c := new(gobCompressor)
-	for _, opt := range append(defaultGobOpts, opts...) {
-		if err := opt(c); err != nil {
-			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+var (
+	defaultZstdOpts = []ZstdOption{
+		WithZstdGob(),
+		WithZstdCompressionLevel(zstd.DefaultCompression),
+	}
+)
+
+func WithZstdGob(opts ...GobOption) ZstdOption {
+	return func(c *zstdCompressor) error {
+		gobc, err := NewGob(opts...)
+		if err != nil {
+			return err
 		}
+		c.gobc = gobc
+		return nil
 	}
-
-	return c, nil
 }
 
-func (g *gobCompressor) CompressVector(vector []float64) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	err := gob.NewEncoder(buf).Encode(vector)
-	if err != nil {
-		return nil, err
+func WithZstdCompressionLevel(level int) ZstdOption {
+	return func(c *zstdCompressor) error {
+		if level < zstd.BestSpeed || level > zstd.BestCompression {
+			return errors.ErrInvalidCompressionLevel(level)
+		}
+		c.compressionLevel = level
+		return nil
 	}
-
-	return buf.Bytes(), nil
-}
-
-func (g *gobCompressor) DecompressVector(bs []byte) ([]float64, error) {
-	var vector []float64
-	err := gob.NewDecoder(bytes.NewBuffer(bs)).Decode(&vector)
-	if err != nil {
-		return nil, err
-	}
-
-	return vector, nil
 }

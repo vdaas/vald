@@ -35,7 +35,11 @@ func TestLZ4CompressVector(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		lz4c := NewLZ4()
+		lz4c, err := NewLZ4()
+		if err != nil {
+			t.Fatalf("initialize failed: %s", err)
+		}
+
 		compressed, err := lz4c.CompressVector(tc.vector)
 		if err != nil {
 			t.Fatalf("Compress failed: %s", err)

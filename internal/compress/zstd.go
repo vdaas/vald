@@ -21,17 +21,26 @@ import (
 	// TODO
 	// which is the better library of zstd algorithm?
 	// "github.com/valyala/gozstd"
+	"reflect"
+
 	"github.com/DataDog/zstd"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 type zstdCompressor struct {
-	gobc Compressor
+	gobc             Compressor
+	compressionLevel int
 }
 
-func NewZstd() Compressor {
-	return &zstdCompressor{
-		gobc: NewGob(),
+func NewZstd(opts ...ZstdOption) (Compressor, error) {
+	c := new(zstdCompressor)
+	for _, opt := range append(defaultZstdOpts, opts...) {
+		if err := opt(c); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
 	}
+
+	return c, nil
 }
 
 func (z *zstdCompressor) CompressVector(vector []float64) ([]byte, error) {
@@ -40,7 +49,7 @@ func (z *zstdCompressor) CompressVector(vector []float64) ([]byte, error) {
 		return nil, err
 	}
 
-	return zstd.Compress(nil, gob)
+	return zstd.CompressLevel(nil, gob, z.compressionLevel)
 }
 
 func (z *zstdCompressor) DecompressVector(bs []byte) ([]float64, error) {

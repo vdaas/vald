@@ -58,6 +58,7 @@ func CompressAlgorithm(ca string) compressAlgorithm {
 
 type Compressor struct {
 	CompressAlgorithm string `json:"compress_algorithm" yaml:"compress_algorithm"`
+	CompressionLevel  int    `json:"compression_level" yaml:"compression_level"`
 	ConcurrentLimit   int    `json:"concurrent_limit" yaml:"concurrent_limit"`
 	Buffer            int    `json:"buffer" yaml:"buffer"`
 }

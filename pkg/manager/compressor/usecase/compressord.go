@@ -132,7 +132,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 func (r *run) PreStart(ctx context.Context) error {
 	log.Info("daemon pre-start")
-	return nil
+	return r.compressor.PreStart(ctx)
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {

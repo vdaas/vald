@@ -14,25 +14,11 @@
 // limitations under the License.
 //
 
-// Package errors provides error types and function
-package errors
+// Package compress provides compress functions
+package compress
+
+type GobOption func(c *gobCompressor) error
 
 var (
-	// internal compressor
-	ErrInvalidCompressionLevel = func(level int) error {
-		return Errorf("invalid compression level: %d", level)
-	}
-
-	// Compressor
-	ErrCompressorNameNotFound = func(name string) error {
-		return Errorf("compressor %s not found", name)
-	}
-
-	ErrCompressFailed = func() error {
-		return New("compress failed")
-	}
-
-	ErrDecompressFailed = func() error {
-		return New("decompress failed")
-	}
+	defaultGobOpts = []GobOption{}
 )
