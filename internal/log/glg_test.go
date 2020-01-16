@@ -1,7 +1,6 @@
 package log
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -43,9 +42,8 @@ func TestNewGlg(t *testing.T) {
 
 func TestDefaultGlg(t *testing.T) {
 	type test struct {
-		name     string
-		want     *glglogger
-		recovery bool
+		name string
+		want *glglogger
 	}
 
 	tests := []test{
@@ -865,9 +863,7 @@ func TestOut(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
 				if tt.recovery {
-					if err := recover(); err != nil {
-						fmt.Println(err)
-					} else {
+					if err := recover(); err == nil {
 						t.Error("panic is nil")
 					}
 				}
@@ -988,9 +984,7 @@ func TestOutf(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
 				if tt.recovery {
-					if err := recover(); err != nil {
-						fmt.Println(err)
-					} else {
+					if err := recover(); err == nil {
 						t.Error("panic is nil")
 					}
 				}
