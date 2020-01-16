@@ -110,7 +110,12 @@ func TestInfo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Init(tt.global.l)
+			logger = tt.global.l
+
+			Info(tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }
@@ -176,7 +181,12 @@ func TestInfof(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Init(tt.global.l)
+			logger = tt.global.l
+
+			Infof(tt.args.format, tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }
@@ -231,7 +241,12 @@ func TestDebug(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Init(tt.global.l)
+			logger = tt.global.l
+
+			Debug(tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }
@@ -297,7 +312,12 @@ func TestDebugf(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Init(tt.global.l)
+			logger = tt.global.l
+
+			Debugf(tt.args.format, tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }
@@ -352,7 +372,12 @@ func TestWarn(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Init(tt.global.l)
+			logger = tt.global.l
+
+			Warn(tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }
@@ -418,7 +443,12 @@ func TestWarnf(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Init(tt.global.l)
+			logger = tt.global.l
+
+			Warnf(tt.args.format, tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }
@@ -473,7 +503,12 @@ func TestError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Init(tt.global.l)
+			logger = tt.global.l
+
+			Error(tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }
@@ -539,7 +574,12 @@ func TestErrorf(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Init(tt.global.l)
+			logger = tt.global.l
+
+			Errorf(tt.args.format, tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }
@@ -594,7 +634,12 @@ func TestFatal(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Init(tt.global.l)
+			logger = tt.global.l
+
+			Fatal(tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }
@@ -660,7 +705,12 @@ func TestFatalf(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Init(tt.global.l)
+			logger = tt.global.l
+
+			Fatalf(tt.args.format, tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }

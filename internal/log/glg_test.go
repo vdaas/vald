@@ -763,54 +763,6 @@ func TestGlgErrorf(t *testing.T) {
 	}
 }
 
-func TestGlgFatal(t *testing.T) {
-	type args struct {
-		vals []interface{}
-	}
-
-	type field struct {
-		log *glg.Glg
-	}
-
-	type test struct {
-		name  string
-		args  args
-		field field
-	}
-
-	tests := []test{
-		{
-			name: "output is successes",
-			args: args{
-				vals: []interface{}{
-					"name",
-				},
-			},
-			field: field{
-				log: glg.Get(),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				err := recover()
-				if err != nil {
-					t.Error(err)
-				}
-			}()
-
-			gl := &glglogger{
-				log: tt.field.log,
-			}
-
-			gl.Fatal(tt.args.vals...)
-		})
-	}
-}
-func TestGlgFatalf(t *testing.T) {}
-
 func TestOut(t *testing.T) {
 	type args struct {
 		fn   func(...interface{}) error
