@@ -374,12 +374,6 @@ func TestGlgDebugf(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if err := recover(); err != nil {
-					t.Error(err)
-				}
-			}()
-
 			logger = tt.global.l
 
 			gl := &glglogger{
@@ -460,12 +454,6 @@ func TestGlgWarn(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if err := recover(); err != nil {
-					t.Error(err)
-				}
-			}()
-
 			logger = tt.global.l
 
 			gl := &glglogger{
@@ -548,12 +536,6 @@ func TestGlgWarnf(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if err := recover(); err != nil {
-					t.Error(err)
-				}
-			}()
-
 			logger = tt.global.l
 
 			gl := &glglogger{
@@ -634,12 +616,6 @@ func TestGlgError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if err := recover(); err != nil {
-					t.Error(err)
-				}
-			}()
-
 			logger = tt.global.l
 
 			gl := &glglogger{
@@ -722,12 +698,6 @@ func TestGlgErrorf(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if err := recover(); err != nil {
-					t.Error(err)
-				}
-			}()
-
 			logger = tt.global.l
 
 			gl := &glglogger{
