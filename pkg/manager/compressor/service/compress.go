@@ -22,12 +22,14 @@ import (
 	"sync"
 
 	"github.com/vdaas/vald/internal/compress"
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/safety"
 )
 
 type Compressor interface {
+	PreStart(ctx context.Context) error
 	Start(ctx context.Context) <-chan error
 	Compress(ctx context.Context, vector []float64) ([]byte, error)
 	Decompress(ctx context.Context, bytes []byte) ([]float64, error)
@@ -36,11 +38,13 @@ type Compressor interface {
 }
 
 type compressor struct {
-	compressor compress.Compressor
-	limitation int
-	buffer     int
-	eg         errgroup.Group
-	jobCh      chan func() error
+	algorithm        string
+	compressionLevel int
+	compressor       compress.Compressor
+	limitation       int
+	buffer           int
+	eg               errgroup.Group
+	jobCh            chan func() error
 }
 
 func NewCompressor(opts ...CompressorOption) (Compressor, error) {
@@ -52,6 +56,37 @@ func NewCompressor(opts ...CompressorOption) (Compressor, error) {
 	}
 
 	return c, nil
+}
+
+func (c *compressor) PreStart(ctx context.Context) (err error) {
+	var compressor compress.Compressor
+
+	switch config.CompressAlgorithm(c.algorithm) {
+	case config.GOB:
+		compressor, err = compress.NewGob()
+	case config.GZIP:
+		compressor, err = compress.NewGzip(
+			compress.WithGzipCompressionLevel(c.compressionLevel),
+		)
+	case config.LZ4:
+		compressor, err = compress.NewLZ4(
+			compress.WithLZ4CompressionLevel(c.compressionLevel),
+		)
+	case config.ZSTD:
+		compressor, err = compress.NewZstd(
+			compress.WithZstdCompressionLevel(c.compressionLevel),
+		)
+	default:
+		return errors.ErrCompressorNameNotFound(c.algorithm)
+	}
+
+	if err != nil {
+		return nil
+	}
+
+	c.compressor = compressor
+
+	return nil
 }
 
 func (c *compressor) Start(ctx context.Context) <-chan error {

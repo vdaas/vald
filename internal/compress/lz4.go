@@ -20,23 +20,32 @@ package compress
 import (
 	"bytes"
 	"io"
+	"reflect"
 
 	"github.com/pierrec/lz4"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 type lz4Compressor struct {
-	gobc Compressor
+	gobc             Compressor
+	compressionLevel int
 }
 
-func NewLZ4() Compressor {
-	return &lz4Compressor{
-		gobc: NewGob(),
+func NewLZ4(opts ...LZ4Option) (Compressor, error) {
+	c := new(lz4Compressor)
+	for _, opt := range append(defaultLZ4Opts, opts...) {
+		if err := opt(c); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
 	}
+
+	return c, nil
 }
 
 func (l *lz4Compressor) CompressVector(vector []float64) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	zw := lz4.NewWriter(buf)
+	zw.Header.CompressionLevel = l.compressionLevel
 
 	gob, err := l.gobc.CompressVector(vector)
 	if err != nil {
