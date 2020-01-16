@@ -7,6 +7,7 @@ import (
 
 	"github.com/kpango/glg"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log/mock"
 )
 
 func TestNewGlg(t *testing.T) {
@@ -94,7 +95,7 @@ func TestGlgInfo(t *testing.T) {
 				err  error
 			)
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				WarnFunc: func(vals ...interface{}) {
 					warn = vals[0].(error)
 				},
@@ -181,7 +182,7 @@ func TestGlgInfof(t *testing.T) {
 				err  error
 			)
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				WarnFunc: func(vals ...interface{}) {
 					warn = vals[0].(error)
 				},
@@ -268,7 +269,7 @@ func TestGlgDebug(t *testing.T) {
 				err  error
 			)
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				WarnFunc: func(vals ...interface{}) {
 					warn = vals[0].(error)
 				},
@@ -355,7 +356,7 @@ func TestGlgDebugf(t *testing.T) {
 				err  error
 			)
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				WarnFunc: func(vals ...interface{}) {
 					warn = vals[0].(error)
 				},
@@ -442,7 +443,7 @@ func TestGlgWarn(t *testing.T) {
 				err  error
 			)
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				WarnFunc: func(vals ...interface{}) {
 					warn = vals[0].(error)
 				},
@@ -529,7 +530,7 @@ func TestGlgWarnf(t *testing.T) {
 				err  error
 			)
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				WarnFunc: func(vals ...interface{}) {
 					warn = vals[0].(error)
 				},
@@ -616,7 +617,7 @@ func TestGlgError(t *testing.T) {
 				err  error
 			)
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				WarnFunc: func(vals ...interface{}) {
 					warn = vals[0].(error)
 				},
@@ -703,7 +704,7 @@ func TestGlgErrorf(t *testing.T) {
 				err  error
 			)
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				WarnFunc: func(vals ...interface{}) {
 					warn = vals[0].(error)
 				},
@@ -868,7 +869,7 @@ func TestOut(t *testing.T) {
 				err  error
 			)
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				WarnFunc: func(vals ...interface{}) {
 					warn = vals[0].(error)
 				},
@@ -990,7 +991,7 @@ func TestOutf(t *testing.T) {
 				err  error
 			)
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				WarnFunc: func(vals ...interface{}) {
 					warn = vals[0].(error)
 				},

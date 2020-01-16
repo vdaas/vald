@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log/mock"
 )
 
 func TestInit(t *testing.T) {
@@ -15,7 +16,7 @@ func TestInit(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			l := &loggerMock{}
+			l := new(mock.Logger)
 
 			return test{
 				name: "set success",
@@ -79,7 +80,7 @@ func TestInfo(t *testing.T) {
 		func() test {
 			var want []interface{}
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				InfoFunc: func(vals ...interface{}) {
 					want = vals
 				},
@@ -138,7 +139,7 @@ func TestInfof(t *testing.T) {
 				wantVals   []interface{}
 			)
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				InfofFunc: func(format string, vals ...interface{}) {
 					wantFormat = format
 					wantVals = vals
@@ -200,7 +201,7 @@ func TestDebug(t *testing.T) {
 		func() test {
 			var want []interface{}
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				DebugFunc: func(vals ...interface{}) {
 					want = vals
 				},
@@ -259,7 +260,7 @@ func TestDebugf(t *testing.T) {
 				wantVals   []interface{}
 			)
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				DebugfFunc: func(format string, vals ...interface{}) {
 					wantFormat = format
 					wantVals = vals
@@ -321,7 +322,7 @@ func TestWarn(t *testing.T) {
 		func() test {
 			var want []interface{}
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				WarnFunc: func(vals ...interface{}) {
 					want = vals
 				},
@@ -380,7 +381,7 @@ func TestWarnf(t *testing.T) {
 				wantVals   []interface{}
 			)
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				WarnfFunc: func(format string, vals ...interface{}) {
 					wantFormat = format
 					wantVals = vals
@@ -442,7 +443,7 @@ func TestError(t *testing.T) {
 		func() test {
 			var want []interface{}
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				ErrorFunc: func(vals ...interface{}) {
 					want = vals
 				},
@@ -501,7 +502,7 @@ func TestErrorf(t *testing.T) {
 				wantVals   []interface{}
 			)
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				ErrorfFunc: func(format string, vals ...interface{}) {
 					wantFormat = format
 					wantVals = vals
@@ -563,7 +564,7 @@ func TestFatal(t *testing.T) {
 		func() test {
 			var want []interface{}
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				FatalFunc: func(vals ...interface{}) {
 					want = vals
 				},
@@ -622,7 +623,7 @@ func TestFatalf(t *testing.T) {
 				wantVals   []interface{}
 			)
 
-			l := &loggerMock{
+			l := &mock.Logger{
 				FatalfFunc: func(format string, vals ...interface{}) {
 					wantFormat = format
 					wantVals = vals
