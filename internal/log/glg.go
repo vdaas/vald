@@ -84,19 +84,9 @@ func out(
 	fn func(vals ...interface{}) error,
 	vals ...interface{},
 ) {
-	if err := fn(vals...); err != nil {
-		Warn(errors.ErrLoggingRetry(err, reflect.ValueOf(fn)))
-
-		err = fn(vals)
-		if err != nil {
-			Error(errors.ErrLoggingFaild(err, reflect.ValueOf(fn)))
-
-			err = fn(vals...)
-			if err != nil {
-				panic(err)
-			}
-		}
-	}
+	outf(func(format string, vals ...interface{}) error {
+		return fn(vals...)
+	}, "", vals...)
 }
 
 func outf(
@@ -104,11 +94,11 @@ func outf(
 	format string, vals ...interface{},
 ) {
 	if err := fn(format, vals...); err != nil {
-		Warn(errors.Wrap(err, ""))
+		Warn(errors.ErrLoggingRetry(err, reflect.ValueOf(fn)))
 
 		err = fn(format, vals...)
 		if err != nil {
-			Error(errors.Wrap(err, ""))
+			Error(errors.ErrLoggingFaild(err, reflect.ValueOf(fn)))
 
 			err = fn(format, vals...)
 			if err != nil {
