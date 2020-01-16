@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{- if .Values.discoverer.clusterRoleBinding.enabled }}
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
@@ -25,3 +26,4 @@ subjects:
 - kind: ServiceAccount
   name: vald
   namespace: default
+{{- end }}

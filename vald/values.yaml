@@ -237,6 +237,12 @@ discoverer:
     full_shutdown_duration: 600s
     tls:
       enabled: false
+  clusterRole:
+    enabled: true
+  clusterRoleBinding:
+    enabled: true
+  serviceAccount:
+    enabled: true
 
 compressor:
   name: vald-manager-compressor

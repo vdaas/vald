@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{- if .Values.discoverer.clusterRole.enabled }}
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
@@ -42,3 +43,4 @@ rules:
   - /metrics
   verbs:
   - get
+{{- end }}
