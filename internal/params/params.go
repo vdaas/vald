@@ -19,7 +19,6 @@ package params
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -74,7 +73,6 @@ func (p *parser) Parse() (*Data, bool, error) {
 
 	err := f.Parse(os.Args[1:])
 	if err != nil {
-		fmt.Println(err)
 		if err != flag.ErrHelp {
 			return nil, false, errors.ErrArgumentParseFailed(err)
 		}
