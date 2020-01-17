@@ -15,11 +15,6 @@ func clearGlobalObject() {
 	once = sync.Once{}
 }
 
-func setDummyGlobalObject() {
-	instance = new(group)
-	once = sync.Once{}
-}
-
 func TestNew(t *testing.T) {
 	type test struct {
 		name string
@@ -73,7 +68,8 @@ func TestInit(t *testing.T) {
 				name: "returns ctx of argument when instance is already initialized",
 				ctx:  ctx,
 				beforeFunc: func() {
-					setDummyGlobalObject()
+					instance = new(group)
+					once = sync.Once{}
 					once.Do(func() {})
 				},
 				checkFunc: func(egctx context.Context) error {
