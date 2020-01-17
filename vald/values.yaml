@@ -389,7 +389,7 @@ backupManager:
     - type: waitFor
       name: wait-for-mysql
       image: mysql:latest
-      target: custom
+      target: mysql.default.svc.cluster.local
       whileCondition: $(mysqladmin -hmysql.default.svc.cluster.local -uroot -p${MYSQL_PASSWORD} --show-warnings=false ping | grep alive | awk '{print $3}') -ne alive
       sleepDuration: 2
       env:
@@ -401,7 +401,7 @@ backupManager:
     # - type: waitFor
     #   name: wait-for-cassandra
     #   image: cassandra:latest
-    #   target: custom
+    #   target: cassandra.default.svc.cluster.local
     #   whileCondition: $(cqlsh cassandra.default.svc.cluster.local -uroot -p${CASSANDRA_PASSWORD} -e "select now() from system.local" > /dev/null; echo $?) -ne 0
     #   sleepDuration: 2
     #   env:
@@ -569,7 +569,7 @@ meta:
     - type: waitFor
       name: wait-for-redis
       image: redis:latest
-      target: custom
+      target: redis.default.svc.cluster.local
       whileCondition: $(redis-cli -h redis.default.svc.cluster.local -a ${REDIS_PASSWORD}) -ne 200
       sleepDuration: 2
       env:
@@ -581,7 +581,7 @@ meta:
     # - type: waitFor
     #   name: wait-for-cassandra
     #   image: cassandra:latest
-    #   target: custom
+    #   target: cassandra.default.svc.cluster.local
     #   whileCondition: $(cqlsh cassandra.default.svc.cluster.local -uroot -p${CASSANDRA_PASSWORD} -e "select now() from system.local" > /dev/null; echo $?) -ne 0
     #   sleepDuration: 2
     #   env:

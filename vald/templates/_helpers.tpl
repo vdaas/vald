@@ -431,6 +431,7 @@ initContainers
       {{- else if .whileCondition }}
       while [ {{ .whileCondition }} ]; do
       {{- end }}
+        echo "waiting for {{ .target }} to be ready..."
         sleep {{ .sleepDuration }};
       done
   {{- end }}
