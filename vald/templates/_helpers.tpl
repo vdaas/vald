@@ -199,7 +199,7 @@ servers:
         time: {{ default .default.servers.grpc.server.grpc.keepalive.time .Values.servers.grpc.server.grpc.keepalive.time }}
         timeout: {{ default .default.servers.grpc.server.grpc.keepalive.timeout .Values.servers.grpc.server.grpc.keepalive.timeout }}
         {{- else }}
-        {{- toYaml .Values.servers.grpc.server.grpc.keepalive | nindent 8 }}
+        {{- toYaml .default.servers.grpc.server.grpc.keepalive | nindent 8 }}
         {{- end }}
       write_buffer_size: {{ default .default.servers.grpc.server.grpc.write_buffer_size .Values.servers.grpc.server.grpc.write_buffer_size }}
       read_buffer_size: {{ default .default.servers.grpc.server.grpc.read_buffer_size .Values.servers.grpc.server.grpc.read_buffer_size }}
@@ -233,10 +233,10 @@ health_check_servers:
       read_timeout: {{ default .default.healths.liveness.server.http.read_timeout .Values.healths.liveness.server.http.read_timeout }}
       write_timeout: {{ default .default.healths.liveness.server.http.write_timeout .Values.healths.liveness.server.http.write_timeout }}
       {{- else }}
-      {{- toYaml .Values.healths.liveness.server.http | nindent 6 }}
+      {{- toYaml .default.healths.liveness.server.http | nindent 6 }}
       {{- end }}
     {{- else }}
-    {{- toYaml .Values.healths.liveness.server | nindent 4 }}
+    {{- toYaml .default.healths.liveness.server | nindent 4 }}
     {{- end }}
   {{- end }}
   {{- $readinessEnabled := default .default.healths.readiness.enabled .Values.healths.readiness.enabled }}
@@ -256,10 +256,10 @@ health_check_servers:
       read_timeout: {{ default .default.healths.readiness.server.http.read_timeout .Values.healths.readiness.server.http.read_timeout }}
       write_timeout: {{ default .default.healths.readiness.server.http.write_timeout .Values.healths.readiness.server.http.write_timeout }}
       {{- else }}
-      {{- toYaml .Values.healths.readiness.server.http | nindent 6 }}
+      {{- toYaml .default.healths.readiness.server.http | nindent 6 }}
       {{- end }}
     {{- else }}
-    {{- toYaml .Values.healths.readiness.server | nindent 4 }}
+    {{- toYaml .default.healths.readiness.server | nindent 4 }}
     {{- end }}
   {{- end }}
 metrics_servers:
@@ -280,10 +280,10 @@ metrics_servers:
       read_timeout: {{ default .default.metrics.pprof.server.http.read_timeout .Values.metrics.pprof.server.http.read_timeout }}
       write_timeout: {{ default .default.metrics.pprof.server.http.write_timeout .Values.metrics.pprof.server.http.write_timeout }}
       {{- else }}
-      {{- toYaml .Values.metrics.pprof.server.http | nindent 6 }}
+      {{- toYaml .default.metrics.pprof.server.http | nindent 6 }}
       {{- end }}
     {{- else }}
-    {{- toYaml .Values.metrics.pprof.server | nindent 4 }}
+    {{- toYaml .default.metrics.pprof.server | nindent 4 }}
     {{- end }}
   {{- end }}
 startup_strategy:
