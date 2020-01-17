@@ -415,19 +415,26 @@ initContainers
       set -x;
       {{- if eq .target "compressor" }}
       {{- $compressorReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.compressor.server_config.healths.readiness.port }}
-      while [ $(curl -sw '%{http_code}' "http://{{ $.Values.compressor.name }}.{{ $.namespace }}.svc.cluster.local:{{ $compressorReadinessPort }}" -o /dev/null) -ne 200]; do
+      {{- $compressorReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
+      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.compressor.name }}.{{ $.namespace }}.svc.cluster.local:{{ $compressorReadinessPort }}{{ $compressorReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
       {{- else if eq .target "meta" }}
       {{- $metaReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.meta.server_config.healths.readiness.port }}
-      while [ $(curl -sw '%{http_code}' "http://{{ $.Values.meta.name }}.{{ $.namespace }}.svc.cluster.local:{{ $metaReadinessPort }}" -o /dev/null) -ne 200]; do
+      {{- $metaReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
+      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.meta.name }}.{{ $.namespace }}.svc.cluster.local:{{ $metaReadinessPort }}{{ $metaReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
       {{- else if eq .target "discoverer" }}
       {{- $discovererReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.discoverer.server_config.healths.readiness.port }}
-      while [ $(curl -sw '%{http_code}' "http://{{ $.Values.discoverer.name }}.{{ $.namespace }}.svc.cluster.local:{{ $discovererReadinessPort }}" -o /dev/null) -ne 200]; do
+      {{- $discovererReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
+      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.discoverer.name }}.{{ $.namespace }}.svc.cluster.local:{{ $discovererReadinessPort }}{{ $discovererReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
       {{- else if eq .target "agent" }}
       {{- $agentReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.agent.server_config.healths.readiness.port }}
-      while [ $(curl -sw '%{http_code}' "http://{{ $.Values.agent.name }}.{{ $.namespace }}.svc.cluster.local:{{ $agentReadinessPort }}" -o /dev/null) -ne 200]; do
+      {{- $agentReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
+      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.agent.name }}.{{ $.namespace }}.svc.cluster.local:{{ $agentReadinessPort }}{{ $agentReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
       {{- else if eq .target "manager-backup" }}
       {{- $backupManagerReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.backupManager.server_config.healths.readiness.port }}
-      while [ $(curl -sw '%{http_code}' "http://{{ $.Values.backupManager.name }}.{{ $.namespace }}.svc.cluster.local:{{ $backupManagerReadinessPort }}" -o /dev/null) -ne 200]; do
+      {{- $backupManagerReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
+      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.backupManager.name }}.{{ $.namespace }}.svc.cluster.local:{{ $backupManagerReadinessPort }}{{ $backupManagerReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+      {{- else if .untilCondition }}
+      until [ {{ .untilCondition }} ]; do
       {{- else if .whileCondition }}
       while [ {{ .whileCondition }} ]; do
       {{- end }}
