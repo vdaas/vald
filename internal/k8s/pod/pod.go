@@ -108,11 +108,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	}
 
 	var (
-		cpuLimit float64
+		cpuLimit   float64
 		cpuRequest float64
-		memLimit float64
+		memLimit   float64
 		memRequest float64
-		pods     = make(map[string][]Pod, len(ps.Items))
+		pods       = make(map[string][]Pod, len(ps.Items))
 	)
 
 	for _, pod := range ps.Items {
@@ -129,10 +129,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 				cpuRequest += float64(request.Cpu().Value())
 				memRequest += float64(request.Memory().Value())
 			}
-			cpuLimit  /= float64(len(pod.Spec.Containers)) 
-			memLimit  /= float64(len(pod.Spec.Containers))  
-			cpuRequest/= float64(len(pod.Spec.Containers)) 
-			memRequest/= float64(len(pod.Spec.Containers)) 
+			cpuLimit /= float64(len(pod.Spec.Containers))
+			memLimit /= float64(len(pod.Spec.Containers))
+			cpuRequest /= float64(len(pod.Spec.Containers))
+			memRequest /= float64(len(pod.Spec.Containers))
 			// pod.GetObjectMeta().GetLabels()["app"]
 			podMetaName := pod.GetObjectMeta().GetName()
 
@@ -141,12 +141,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			}
 
 			pods[podMetaName] = append(pods[podMetaName], Pod{
-				Name:     pod.GetName(),
-				NodeName: pod.Spec.NodeName,
-				IP:       pod.Status.PodIP,
-				CPULimit: cpuLimit,
+				Name:       pod.GetName(),
+				NodeName:   pod.Spec.NodeName,
+				IP:         pod.Status.PodIP,
+				CPULimit:   cpuLimit,
 				CPURequest: cpuRequest,
-				MemLimit: memLimit,
+				MemLimit:   memLimit,
 				MemRequest: memRequest,
 			})
 		}
