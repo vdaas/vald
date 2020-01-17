@@ -17,13 +17,19 @@ jobs:
       - name: comment back to PR
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
         run: |
-          curl --include --verbose --fail \
-          -H "Accept: application/json" \
-          -H "Content-Type:application/json" \
-          -H "Authorization: token ${GITHUB_TOKEN}" \
-          --request POST \
-          --data "{\"body\": \"Rebase triggered by ${USERNAME} for branch: ${BRANCH}\"}" \
-          $API_URL
+          curl -o CHATOPS_OWNERS https://github.com/vdaas/vald/blob/master/.github/CHATOPS_OWNERS
+          if grep "^${USERNAME}$" CHATOPS_OWNERS > /dev/null 2>&1 ; then
+            echo "[OK] rebase requested by ${USERNAME}"
+            curl --include --verbose --fail \
+            -H "Accept: application/json" \
+            -H "Content-Type:application/json" \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            --request POST \
+            --data "{\"body\": \"**[REBASE]** Rebase triggered by ${USERNAME} for branch: ${BRANCH}\"}" \
+            $API_URL
+          else
+            echo "[NG] ${USERNAME} is not a member of CHATOPS_OWNERS"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
@@ -36,3 +42,34 @@ jobs:
         uses: cirrus-actions/rebase@1.2
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+  approve:
+    name: Approve
+    runs-on: ubuntu-latest
+    steps:
+      - name: check PR Comments
+        id: check_comments_approve
+        uses: machine-learning-apps/actions-chatops@master
+        with:
+          TRIGGER_PHRASE: "/approve"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: approve
+        if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          curl -o CHATOPS_OWNERS https://github.com/vdaas/vald/blob/master/.github/CHATOPS_OWNERS
+          if grep "^${USERNAME}$" CHATOPS_OWNERS > /dev/null 2>&1 ; then
+            echo "[OK] Approved by ${USERNAME}"
+            curl --include --verbose --fail \
+            -H "Accept: application/json" \
+            -H "Content-Type:application/json" \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            --request POST \
+            --data "{\"body\": \"**[APPROVED]** This PR is approved by ${USERNAME}.\", \"event\": \"APPROVE\"}" \
+            "${PR_URL}/reviews"
+          else
+            echo "[NG] ${USERNAME} is not a member of CHATOPS_OWNERS"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          PR_URL: ${{ github.event.issue.pull_request.url }}
+          USERNAME: ${{ steps.check_comments_approve.outputs.COMMENTER_USERNAME }}
