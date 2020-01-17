@@ -51,28 +51,44 @@ Container ports
 {{- $livenessEnabled := default .default.healths.liveness.enabled .Values.healths.liveness.enabled }}
 {{- if $livenessEnabled }}
 livenessProbe:
+  {{- if .Values.healths.liveness.livenessProbe }}
   httpGet:
-    path: /liveness
-    port: liveness
-    scheme: HTTP
-  initialDelaySeconds: 5
-  timeoutSeconds: 2
-  successThreshold: 1
-  failureThreshold: 2
-  periodSeconds: 3
+    {{- if .Values.healths.liveness.livenessProbe.httpGet }}
+    path: {{ default .default.healths.liveness.livenessProbe.httpGet.path .Values.healths.liveness.livenessProbe.httpGet.path }}
+    port: {{ default .default.healths.liveness.livenessProbe.httpGet.port .Values.healths.liveness.livenessProbe.httpGet.port }}
+    scheme: {{ default .default.healths.liveness.livenessProbe.httpGet.scheme .Values.healths.liveness.livenessProbe.httpGet.scheme }}
+    {{- else }}
+    {{- toYaml .default.healths.liveness.livenessProbe.httpGet | nindent 4 }}
+    {{- end }}
+  initialDelaySeconds: {{ default .default.healths.liveness.livenessProbe.initialDelaySeconds .Values.healths.liveness.livenessProbe.initialDelaySeconds }}
+  timeoutSeconds: {{ default .default.healths.liveness.livenessProbe.timeoutSeconds .Values.healths.liveness.livenessProbe.timeoutSeconds }}
+  successThreshold: {{ default .default.healths.liveness.livenessProbe.successThreshold .Values.healths.liveness.livenessProbe.successThreshold }}
+  failureThreshold: {{ default .default.healths.liveness.livenessProbe.failureThreshold .Values.healths.liveness.livenessProbe.failureThreshold }}
+  periodSeconds: {{ default .default.healths.liveness.livenessProbe.periodSeconds .Values.healths.liveness.livenessProbe.periodSeconds }}
+  {{- else }}
+  {{- toYaml .default.healths.liveness.livenessProbe | nindent 2 }}
+  {{- end }}
 {{- end }}
 {{- $readinessEnabled := default .default.healths.readiness.enabled .Values.healths.readiness.enabled }}
 {{- if $readinessEnabled }}
 readinessProbe:
+  {{- if .Values.healths.readiness.readinessProbe }}
   httpGet:
-    path: /readiness
-    port: readiness
-    scheme: HTTP
-  initialDelaySeconds: 10
-  timeoutSeconds: 2
-  successThreshold: 1
-  failureThreshold: 2
-  periodSeconds: 3
+    {{- if .Values.healths.readiness.readinessProbe.httpGet }}
+    path: {{ default .default.healths.readiness.readinessProbe.httpGet.path .Values.healths.readiness.readinessProbe.httpGet.path }}
+    port: {{ default .default.healths.readiness.readinessProbe.httpGet.port .Values.healths.readiness.readinessProbe.httpGet.port }}
+    scheme: {{ default .default.healths.readiness.readinessProbe.httpGet.scheme .Values.healths.readiness.readinessProbe.httpGet.scheme }}
+    {{- else }}
+    {{- toYaml .default.healths.readiness.readinessProbe | nindent 2 }}
+    {{- end }}
+  initialDelaySeconds: {{ default .default.healths.readiness.readinessProbe.initialDelaySeconds .Values.healths.readiness.readinessProbe.initialDelaySeconds }}
+  timeoutSeconds: {{ default .default.healths.readiness.readinessProbe.timeoutSeconds .Values.healths.readiness.readinessProbe.timeoutSeconds }}
+  successThreshold: {{ default .default.healths.readiness.readinessProbe.successThreshold .Values.healths.readiness.readinessProbe.successThreshold }}
+  failureThreshold: {{ default .default.healths.readiness.readinessProbe.failureThreshold .Values.healths.readiness.readinessProbe.failureThreshold }}
+  periodSeconds: {{ default .default.healths.readiness.readinessProbe.periodSeconds .Values.healths.readiness.readinessProbe.periodSeconds }}
+  {{- else }}
+  {{- toYaml .default.healths.readiness.readinessProbe | nindent 2 }}
+  {{- end }}
 {{- end }}
 ports:
   {{- if $livenessEnabled }}
@@ -143,41 +159,61 @@ servers:
   - name: rest
     host: {{ default .default.servers.rest.host .Values.servers.rest.host }}
     port: {{ default .default.servers.rest.port .Values.servers.rest.port }}
-    mode: REST
-    probe_wait_time: 3s
+    {{- if .Values.servers.rest.server }}
+    mode: {{ default .default.servers.rest.server.mode .Values.servers.rest.server.mode }}
+    probe_wait_time: {{ default .default.servers.rest.server.probe_wait_time .Values.servers.rest.server.probe_wait_time }}
     http:
-      shutdown_duration: 5s
-      handler_timeout: 5s
-      idle_timeout: 2s
-      read_header_timeout: 1s
-      read_timeout: 1s
-      write_timeout: 1s
+      {{- if .Values.servers.rest.server.http }}
+      shutdown_duration: {{ default .default.servers.rest.server.http.shutdown_duration .Values.servers.rest.server.http.shutdown_duration }}
+      handler_timeout: {{ default .default.servers.rest.server.http.handler_timeout .Values.servers.rest.server.http.handler_timeout }}
+      idle_timeout: {{ default .default.servers.rest.server.http.idle_timeout .Values.servers.rest.server.http.idle_timeout }}
+      read_header_timeout: {{ default .default.servers.rest.server.http.read_header_timeout .Values.servers.rest.server.http.read_header_timeout }}
+      read_timeout: {{ default .default.servers.rest.server.http.read_timeout .Values.servers.rest.server.http.read_timeout }}
+      write_timeout: {{ default .default.servers.rest.server.http.write_timeout .Values.servers.rest.server.http.write_timeout }}
+      {{- else }}
+      {{- toYaml .default.servers.rest.server.http | nindent 6}}
+      {{- end }}
+    {{- else }}
+    {{- toYaml .default.servers.rest.server | nindent 4 }}
+    {{- end }}
   {{- end }}
   {{- $grpcEnabled := default .default.servers.grpc.enabled .Values.servers.grpc.enabled }}
   {{- if $grpcEnabled }}
   - name: grpc
     host: {{ default .default.servers.grpc.host .Values.servers.grpc.host }}
     port: {{ default .default.servers.grpc.port .Values.servers.grpc.port }}
-    mode: GRPC
-    probe_wait_time: "3s"
+    {{- if .Values.servers.grpc.server }}
+    mode: {{ default .default.servers.grpc.server.mode .Values.servers.grpc.server.mode }}
+    probe_wait_time: {{ default .default.servers.grpc.server.probe_wait_time .Values.servers.grpc.server.probe_wait_time }}
     grpc:
-      max_receive_message_size: 0
-      max_send_message_size: 0
-      initial_window_size: 0
-      initial_conn_window_size: 0
+      {{- if .Values.servers.grpc.server.grpc }}
+      max_receive_message_size: {{ default .default.servers.grpc.server.grpc.max_receive_message_size .Values.servers.grpc.server.grpc.max_receive_message_size }}
+      max_send_message_size: {{ default .default.servers.grpc.server.grpc.max_send_message_size .Values.servers.grpc.server.grpc.max_send_message_size }}
+      initial_window_size: {{ default .default.servers.grpc.server.grpc.initial_window_size .Values.servers.grpc.server.grpc.initial_window_size }}
+      initial_conn_window_size: {{ default .default.servers.grpc.server.grpc.initial_conn_window_size .Values.servers.grpc.server.grpc.initial_conn_window_size }}
       keepalive:
-        max_conn_idle: ""
-        max_conn_age: ""
-        max_conn_age_grace: ""
-        time: ""
-        timeout: ""
-      write_buffer_size: 0
-      read_buffer_size: 0
-      connection_timeout: ""
-      max_header_list_size: 0
-      header_table_size: 0
-      interceptors: []
+        {{- if .Values.servers.grpc.server.grpc.keepalive }}
+        max_conn_idle: {{ default .default.servers.grpc.server.grpc.keepalive.max_conn_idle .Values.servers.grpc.server.grpc.keepalive.max_conn_idle }}
+        max_conn_age: {{ default .default.servers.grpc.server.grpc.keepalive.max_conn_age .Values.servers.grpc.server.grpc.keepalive.max_conn_age }}
+        max_conn_age_grace: {{ default .default.servers.grpc.server.grpc.keepalive.max_conn_age_grace .Values.servers.grpc.server.grpc.keepalive.max_conn_age_grace }}
+        time: {{ default .default.servers.grpc.server.grpc.keepalive.time .Values.servers.grpc.server.grpc.keepalive.time }}
+        timeout: {{ default .default.servers.grpc.server.grpc.keepalive.timeout .Values.servers.grpc.server.grpc.keepalive.timeout }}
+        {{- else }}
+        {{- toYaml .Values.servers.grpc.server.grpc.keepalive | nindent 8 }}
+        {{- end }}
+      write_buffer_size: {{ default .default.servers.grpc.server.grpc.write_buffer_size .Values.servers.grpc.server.grpc.write_buffer_size }}
+      read_buffer_size: {{ default .default.servers.grpc.server.grpc.read_buffer_size .Values.servers.grpc.server.grpc.read_buffer_size }}
+      connection_timeout: {{ default .default.servers.grpc.server.grpc.connection_timeout .Values.servers.grpc.server.grpc.connection_timeout }}
+      max_header_list_size: {{ default .default.servers.grpc.server.grpc.max_header_list_size .Values.servers.grpc.server.grpc.max_header_list_size }}
+      header_table_size: {{ default .default.servers.grpc.server.grpc.header_table_size .Values.servers.grpc.server.grpc.header_table_size }}
+      interceptors: {{ default .default.servers.grpc.server.grpc.interceptors .Values.servers.grpc.server.grpc.interceptors }}
+      {{- else }}
+      {{- toYaml .default.servers.grpc.server.grpc | nindent 6 }}
+      {{- end }}
     restart: true
+    {{- else }}
+    {{- toYaml .default.servers.grpc.server | nindent 4 }}
+    {{- end }}
   {{- end }}
 health_check_servers:
   {{- $livenessEnabled := default .default.healths.liveness.enabled .Values.healths.liveness.enabled }}
@@ -185,30 +221,46 @@ health_check_servers:
   - name: liveness
     host: {{ default .default.healths.liveness.host .Values.healths.liveness.host }}
     port: {{ default .default.healths.liveness.port .Values.healths.liveness.port }}
-    mode: ""
-    probe_wait_time: "3s"
+    {{- if .Values.healths.liveness.server }}
+    mode: {{ default .default.healths.liveness.server.mode .Values.healths.liveness.server.mode }}
+    probe_wait_time: {{ default .default.healths.liveness.server.probe_wait_time .Values.healths.liveness.server.probe_wait_time }}
     http:
-      shutdown_duration: "5s"
-      handler_timeout: ""
-      idle_timeout: ""
-      read_header_timeout: ""
-      read_timeout: ""
-      write_timeout: ""
+      {{- if .Values.healths.liveness.server.http }}
+      shutdown_duration: {{ default .default.healths.liveness.server.http.shutdown_duration .Values.healths.liveness.server.http.shutdown_duration }}
+      handler_timeout: {{ default .default.healths.liveness.server.http.handler_timeout .Values.healths.liveness.server.http.handler_timeout }}
+      idle_timeout: {{ default .default.healths.liveness.server.http.idle_timeout .Values.healths.liveness.server.http.idle_timeout }}
+      read_header_timeout: {{ default .default.healths.liveness.server.http.read_header_timeout .Values.healths.liveness.server.http.read_header_timeout }}
+      read_timeout: {{ default .default.healths.liveness.server.http.read_timeout .Values.healths.liveness.server.http.read_timeout }}
+      write_timeout: {{ default .default.healths.liveness.server.http.write_timeout .Values.healths.liveness.server.http.write_timeout }}
+      {{- else }}
+      {{- toYaml .Values.healths.liveness.server.http | nindent 6 }}
+      {{- end }}
+    {{- else }}
+    {{- toYaml .Values.healths.liveness.server | nindent 4 }}
+    {{- end }}
   {{- end }}
   {{- $readinessEnabled := default .default.healths.readiness.enabled .Values.healths.readiness.enabled }}
   {{- if $readinessEnabled }}
   - name: readiness
     host: {{ default .default.healths.readiness.host .Values.healths.readiness.host }}
     port: {{ default .default.healths.readiness.port .Values.healths.readiness.port }}
-    mode: ""
-    probe_wait_time: "3s"
+    {{- if .Values.healths.readiness.server }}
+    mode: {{ default .default.healths.readiness.server.mode .Values.healths.readiness.server.mode }}
+    probe_wait_time: {{ default .default.healths.readiness.server.probe_wait_time .Values.healths.readiness.server.probe_wait_time }}
     http:
-      shutdown_duration: "5s"
-      handler_timeout: ""
-      idle_timeout: ""
-      read_header_timeout: ""
-      read_timeout: ""
-      write_timeout: ""
+      {{- if .Values.healths.readiness.server.http }}
+      shutdown_duration: {{ default .default.healths.readiness.server.http.shutdown_duration .Values.healths.readiness.server.http.shutdown_duration }}
+      handler_timeout: {{ default .default.healths.readiness.server.http.handler_timeout .Values.healths.readiness.server.http.handler_timeout }}
+      idle_timeout: {{ default .default.healths.readiness.server.http.idle_timeout .Values.healths.readiness.server.http.idle_timeout }}
+      read_header_timeout: {{ default .default.healths.readiness.server.http.read_header_timeout .Values.healths.readiness.server.http.read_header_timeout }}
+      read_timeout: {{ default .default.healths.readiness.server.http.read_timeout .Values.healths.readiness.server.http.read_timeout }}
+      write_timeout: {{ default .default.healths.readiness.server.http.write_timeout .Values.healths.readiness.server.http.write_timeout }}
+      {{- else }}
+      {{- toYaml .Values.healths.readiness.server.http | nindent 6 }}
+      {{- end }}
+    {{- else }}
+    {{- toYaml .Values.healths.readiness.server | nindent 4 }}
+    {{- end }}
   {{- end }}
 metrics_servers:
   {{- $pprofEnabled := default .default.metrics.pprof.enabled .Values.metrics.pprof.enabled }}
@@ -216,15 +268,23 @@ metrics_servers:
   - name: pprof
     host: {{ default .default.metrics.pprof.host .Values.metrics.pprof.host }}
     port: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
-    mode: REST
-    probe_wait_time: 3s
+    {{- if .Values.metrics.pprof.server }}
+    mode: {{ default .default.metrics.pprof.server.mode .Values.metrics.pprof.server.mode }}
+    probe_wait_time: {{ default .default.metrics.pprof.server.probe_wait_time .Values.metrics.pprof.server.probe_wait_time }}
     http:
-      shutdown_duration: 5s
-      handler_timeout: 5s
-      idle_timeout: 2s
-      read_header_timeout: 1s
-      read_timeout: 1s
-      write_timeout: 1s
+      {{- if .Values.metrics.pprof.server.http }}
+      shutdown_duration: {{ default .default.metrics.pprof.server.http.shutdown_duration .Values.metrics.pprof.server.http.shutdown_duration }}
+      handler_timeout: {{ default .default.metrics.pprof.server.http.handler_timeout .Values.metrics.pprof.server.http.handler_timeout }}
+      idle_timeout: {{ default .default.metrics.pprof.server.http.idle_timeout .Values.metrics.pprof.server.http.idle_timeout }}
+      read_header_timeout: {{ default .default.metrics.pprof.server.http.read_header_timeout .Values.metrics.pprof.server.http.read_header_timeout }}
+      read_timeout: {{ default .default.metrics.pprof.server.http.read_timeout .Values.metrics.pprof.server.http.read_timeout }}
+      write_timeout: {{ default .default.metrics.pprof.server.http.write_timeout .Values.metrics.pprof.server.http.write_timeout }}
+      {{- else }}
+      {{- toYaml .Values.metrics.pprof.server.http | nindent 6 }}
+      {{- end }}
+    {{- else }}
+    {{- toYaml .Values.metrics.pprof.server | nindent 4 }}
+    {{- end }}
   {{- end }}
 startup_strategy:
   {{- if $livenessEnabled }}
