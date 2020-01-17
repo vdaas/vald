@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,6 +18,10 @@
 package errors
 
 var (
+	ErrDaemonStartFailed = func(err error) error {
+		return Wrap(err, "failed to start daemon")
+	}
+
 	ErrDaemonStopFailed = func(err error) error {
 		return Wrap(err, "failed to stop daemon")
 	}

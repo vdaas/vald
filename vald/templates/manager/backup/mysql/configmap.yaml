@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,3 +31,25 @@ data:
       user: {{ .Values.mysql.user }}
       pass: {{ .Values.mysql.pass }}
       name: {{ .Values.mysql.name }}
+      conn_max_life_time: 30s
+      max_open_conns: 100
+      max_idle_conns: 100
+      tls:
+        enabled: false
+        cert: /path/to/cert
+        key: /path/to/key
+        ca: /path/to/ca
+      tcp:
+        dns:
+          cache_enabled: true
+          refresh_duration: 1h
+          cache_expiration: 24h
+        dialer:
+          timeout: 5s
+          keep_alive: 5m
+          dual_stack_enabled: false
+        tls:
+          enabled: false
+          cert: /path/to/cert
+          key: /path/to/key
+          ca: /path/to/ca

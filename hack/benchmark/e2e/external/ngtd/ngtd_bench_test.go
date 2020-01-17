@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -405,7 +405,7 @@ func BenchmarkNGTDgRPCStream(rb *testing.B) {
 			i := 0
 			b.Run("Insert objects", func(bb *testing.B) {
 				if bb.N+i >= len(ids) {
-					ids = append(ids, assets.CreateIDs(len(train))...)
+					ids = append(ids, assets.CreateRandomIDs(len(train))...)
 				}
 
 				bb.ReportAllocs()

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -184,20 +184,37 @@ func (r *run) PreStart(ctx context.Context) error {
 	return nil
 }
 
-func (r *run) Start(ctx context.Context) <-chan error {
+func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 5)
 	var bech, fech, mech, gech, sech <-chan error
+	var err error
 	if r.backup != nil {
-		bech = r.backup.Start(ctx)
+		bech, err = r.backup.Start(ctx)
+		if err != nil {
+			close(ech)
+			return nil, err
+		}
 	}
 	if r.filter != nil {
-		fech = r.filter.Start(ctx)
+		fech, err = r.filter.Start(ctx)
+		if err != nil {
+			close(ech)
+			return nil, err
+		}
 	}
 	if r.metadata != nil {
-		mech = r.metadata.Start(ctx)
+		mech, err = r.metadata.Start(ctx)
+		if err != nil {
+			close(ech)
+			return nil, err
+		}
 	}
 	if r.gateway != nil {
-		gech = r.gateway.Start(ctx)
+		gech, err = r.gateway.Start(ctx)
+		if err != nil {
+			close(ech)
+			return nil, err
+		}
 	}
 	sech = r.server.ListenAndServe(ctx)
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -205,7 +222,7 @@ func (r *run) Start(ctx context.Context) <-chan error {
 		for {
 			select {
 			case <-ctx.Done():
-				return nil
+				return ctx.Err()
 			case err = <-bech:
 			case err = <-fech:
 			case err = <-gech:
@@ -215,13 +232,13 @@ func (r *run) Start(ctx context.Context) <-chan error {
 			if err != nil {
 				select {
 				case <-ctx.Done():
-					return nil
+					return ctx.Err()
 				case ech <- err:
 				}
 			}
 		}
 	}))
-	return ech
+	return ech, nil
 }
 
 func (r *run) PreStop(ctx context.Context) error {

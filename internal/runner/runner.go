@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,12 +29,14 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/params"
+	"github.com/vdaas/vald/internal/timeutil/location"
 	ver "github.com/vdaas/vald/internal/version"
+	"go.uber.org/automaxprocs/maxprocs"
 )
 
 type Runner interface {
 	PreStart(ctx context.Context) error
-	Start(ctx context.Context) <-chan error
+	Start(ctx context.Context) (<-chan error, error)
 	PreStop(ctx context.Context) error
 	Stop(ctx context.Context) error
 	PostStop(ctx context.Context) error
@@ -45,8 +47,10 @@ type runner struct {
 	maxVersion       string
 	minVersion       string
 	name             string
-	loadConfig       func(string) (interface{}, string, error)
+	location         string
+	loadConfig       func(string) (interface{}, string, string, error)
 	initializeDaemon func(interface{}) (Runner, error)
+	showVersionFunc  func(name string)
 }
 
 func Do(ctx context.Context, opts ...Option) error {
@@ -71,27 +75,39 @@ func Do(ctx context.Context, opts ...Option) error {
 	}
 
 	if p.ShowVersion() {
-		log.Infof("vald %s server version -> %s", r.name, log.Bold(r.version))
+		if r.showVersionFunc != nil {
+			r.showVersionFunc(r.name)
+		} else {
+			log.Infof("vald %s server", r.name)
+			log.Infof("version -> %s", log.Bold(r.version))
+		}
 		return nil
 	}
 
-	cfg, version, err := r.loadConfig(p.ConfigFilePath())
+	cfg, version, loc, err := r.loadConfig(p.ConfigFilePath())
 	if err != nil {
 		return err
 	}
+	// set location temporary for initialization logging
+	// _ = loc
+	location.Set(loc)
 
 	err = ver.Check(version, r.maxVersion, r.minVersion)
 	if err != nil {
 		return err
 	}
 
+	maxprocs.Set(maxprocs.Logger(log.Infof))
+
 	daemon, err := r.initializeDaemon(cfg)
 	if err != nil {
 		return err
 	}
 
-	log.Infof("service %s :%s starting...", r.name, version)
+	log.Infof("service %s %s starting...", r.name, version)
 
+	// reset timelocation to override external libs & running logging
+	location.Set(loc)
 	return Run(ctx, daemon, r.name)
 }
 
@@ -110,7 +126,10 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 		return err
 	}
 
-	ech := run.Start(rctx)
+	ech, err := run.Start(rctx)
+	if err != nil {
+		return errors.ErrDaemonStartFailed(err)
+	}
 
 	emap := make(map[string]int)
 	errs := make([]error, 0, 10)

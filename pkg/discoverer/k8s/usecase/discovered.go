@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -101,9 +101,9 @@ func (r *run) PreStart(ctx context.Context) error {
 	return nil
 }
 
-func (r *run) Start(ctx context.Context) <-chan error {
+func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 2)
-	r.eg.Go(safety.RecoverFunc(func() error {
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		log.Info("daemon start")
 		defer close(ech)
 		dech := r.dsc.Start(ctx)
@@ -112,12 +112,19 @@ func (r *run) Start(ctx context.Context) <-chan error {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case ech <- <-dech:
-			case ech <- <-sech:
+			case err = <-dech:
+			case err = <-sech:
+			}
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case ech <- err:
+				}
 			}
 		}
 	}))
-	return ech
+	return ech, nil
 }
 
 func (r *run) PreStop(ctx context.Context) error {

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,14 +17,49 @@ package assets
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/internal/log"
 	"gonum.org/v1/hdf5"
 )
 
-func loadDataset(f *hdf5.File, name string) (dim int, vec [][]float64, err error) {
-	dset, err := f.OpenDataset(name)
+type loaderFunc func(*hdf5.Dataset, int, int, int) (interface{}, error)
+
+func loadFloat64(dset *hdf5.Dataset, npoints, row, dim int) (interface{}, error) {
+	v := make([]float32, npoints)
+	if err := dset.Read(&v); err != nil {
+		return nil, err
+	}
+
+	vec := make([][]float64, row)
+	for i := 0; i < row; i++ {
+		vec[i] = make([]float64, dim)
+		for j := 0; j < dim; j++ {
+			vec[i][j] = float64(v[i*dim+j])
+		}
+	}
+	return vec, nil
+}
+
+func loadInt(dset *hdf5.Dataset, npoints, row, dim int) (interface{}, error) {
+	v := make([]int32, npoints)
+	if err := dset.Read(&v); err != nil {
+		return nil, err
+	}
+
+	vec := make([][]int, row)
+	for i := 0; i < row; i++ {
+		vec[i] = make([]int, dim)
+		for j := 0; j < dim; j++ {
+			vec[i][j] = int(v[i*dim+j])
+		}
+	}
+	return vec, nil
+}
+
+func loadDataset(file *hdf5.File, name string, f loaderFunc) (dim int, vec interface{}, err error) {
+	dset, err := file.OpenDataset(name)
 	if err != nil {
 		return 0, nil, err
 	}
@@ -40,51 +75,57 @@ func loadDataset(f *hdf5.File, name string) (dim int, vec [][]float64, err error
 		return 0, nil, err
 	}
 
-	var row int
-	row, dim = int(dims[0]), int(dims[1])
-	v := make([]float32, space.SimpleExtentNPoints())
-	if err := dset.Read(&v); err != nil {
-		return dim, nil, err
-	}
-
-	vec = make([][]float64, row)
-	for i := 0; i < row; i++ {
-		vec[i] = make([]float64, dim)
-		for j := 0; j < dim; j++ {
-			vec[i][j] = float64(v[i*dim+j])
-		}
-	}
-	return dim, vec, nil
+	row, dim := int(dims[0]), int(dims[1])
+	vec, err = f(dset, space.SimpleExtentNPoints(), row, dim)
+	return dim, vec, err
 }
 
-func Load(path string) (train [][]float64, test [][]float64, dim int, err error) {
+func Load(path string) (train, test, distances [][]float64, neighbors [][]int, dim int, err error) {
 	f, err := hdf5.OpenFile(path, hdf5.F_ACC_RDONLY)
 	if err != nil {
 		log.Error(path)
-		return nil, nil, 0, err
+		return nil, nil, nil, nil, 0, err
 	}
 	defer func() {
 		err = f.Close()
 	}()
-	var trainDim int
-	trainDim, train, err = loadDataset(f, "train")
+	trainDim, v1, err := loadDataset(f, "train", loadFloat64)
 	if err != nil {
 		log.Error(path)
-		return nil, nil, 0, err
+		return nil, nil, nil, nil, 0, err
 	}
-	var testDim int
-	testDim, test, err = loadDataset(f, "test")
+	train = v1.([][]float64)
+	dim = trainDim
+	testDim, v2, err := loadDataset(f, "test", loadFloat64)
 	if err != nil {
 		log.Error(path)
-		return train, nil, trainDim, err
+		return train, nil, nil, nil, dim, err
 	}
-	if trainDim != testDim {
-		return train, test, 0, fmt.Errorf("test has different dimension from train")
+	test = v2.([][]float64)
+	if dim != testDim {
+		return train, test, nil, nil, 0, fmt.Errorf("test has different dimension from train")
 	}
-	return train, test, trainDim, nil
+	distancesDim, v3, err := loadDataset(f, "distances", loadFloat64)
+	if err != nil {
+		log.Error(path)
+		return train, test, nil, nil, dim, err
+	}
+	distances = v3.([][]float64)
+
+	neighborsDim, v4, err := loadDataset(f, "neighbors", loadInt)
+	if err != nil {
+		log.Error(path)
+		return train, test, distances, nil, trainDim, err
+	}
+	neighbors = v4.([][]int)
+	if distancesDim != neighborsDim {
+		return train, test, distances, neighbors, dim, fmt.Errorf("neighbors has different dimension from distances")
+	}
+
+	return train, test, distances, neighbors, dim, nil
 }
 
-func CreateIDs(n int) []string {
+func CreateRandomIDs(n int) []string {
 	ids := make([]string, 0, n)
 	for i := 0; i < n; i++ {
 		ids = append(ids, fuid.String())
@@ -92,10 +133,26 @@ func CreateIDs(n int) []string {
 	return ids
 }
 
-func LoadDataAndIDs(path string) (ids []string, train [][]float64, test [][]float64, dim int, err error) {
-	train, test, dim, err = Load(path)
-	if err != nil {
-		return nil, train, test, dim, err
+func CreateSequentialIDs(n int) []string {
+	ids := make([]string, 0, n)
+	for i := 0; i < n; i++ {
+		ids = append(ids, strconv.Itoa(i))
 	}
-	return CreateIDs(len(train)), train, test, dim, nil
+	return ids
+}
+
+func LoadDataWithRandomIDs(path string) (ids []string, train, test, distances [][]float64, neighbors [][]int, dim int, err error) {
+	train, test, distances, neighbors, dim, err = Load(path)
+	if err != nil {
+		return nil, train, test, distances, neighbors, dim, err
+	}
+	return CreateRandomIDs(len(train)), train, test, distances, neighbors, dim, nil
+}
+
+func LoadDataWithSequentialIDs(path string) (ids []string, train, test, distances [][]float64, neighbors [][]int, dim int, err error) {
+	train, test, distances, neighbors, dim, err = Load(path)
+	if err != nil {
+		return nil, train, test, distances, neighbors, dim, err
+	}
+	return CreateSequentialIDs(len(train)), train, test, distances, neighbors, dim, nil
 }

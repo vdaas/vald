@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -81,6 +81,13 @@ func WithAgentName(name string) GWOption {
 func WithAgentPort(port int) GWOption {
 	return func(g *gateway) error {
 		g.agentPort = port
+		return nil
+	}
+}
+
+func WithAgentServiceDNSARecord(a string) GWOption {
+	return func(g *gateway) error {
+		g.agentARecord = a
 		return nil
 	}
 }

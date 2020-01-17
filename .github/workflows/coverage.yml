@@ -14,27 +14,16 @@ jobs:
   coverage:
     name: Coverage
     runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
     steps:
       - name: Check out code.
         uses: actions/checkout@v1
         with:
           fetch-depth: 1
-      - name: Fetch golang version
-        run: |
-          GO_VERSION=`make version/go`
-          echo "GO_VERSION=${GO_VERSION}"
-          echo "::set-output name=version::${GO_VERSION}"
-        id: golang_version
-      - uses: actions/setup-go@v1
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
-      - name: Install dependencies
-        run: |
-          sudo make ngt/install
       - name: Run coverage
         continue-on-error: true
         run: |
-          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
           make coverage
       - name: Upload coverage report to Codecov
         uses: codecov/codecov-action@v1.0.3

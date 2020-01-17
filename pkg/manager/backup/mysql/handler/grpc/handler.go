@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ func New(opts ...Option) Server {
 	return s
 }
 
-func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_MetaVector, err error) {
+func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_Compressed_MetaVector, err error) {
 	meta, err := s.mySQL.GetMeta(ctx, req.Uuid)
 	if err != nil {
 		detail := errDetail{method: "GetVector", uuid: req.Uuid}
@@ -73,13 +73,13 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 	}, nil
 }
 
-func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) (res *payload.Empty, err error) {
+func (s *server) Register(ctx context.Context, meta *payload.Backup_Compressed_MetaVector) (res *payload.Empty, err error) {
 	m, err := toModelMetaVector(meta)
 	if err != nil {
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "Register", uuid: meta.Uuid}, err)
 	}
 
-	err = s.mySQL.SetMeta(ctx, *m)
+	err = s.mySQL.SetMeta(ctx, m)
 	if err != nil {
 		detail := errDetail{method: "Register", uuid: meta.Uuid}
 		if errors.IsErrMySQLInvalidArgument(errors.UnWrapAll(err)) {
@@ -91,15 +91,15 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) 
 	return new(payload.Empty), nil
 }
 
-func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) (res *payload.Empty, err error) {
-	ms := make([]model.MetaVector, 0, len(metas.Vectors))
+func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_Compressed_MetaVectors) (res *payload.Empty, err error) {
+	ms := make([]*model.MetaVector, 0, len(metas.Vectors))
 	for _, meta := range metas.Vectors {
 		var m *model.MetaVector
 		m, err = toModelMetaVector(meta)
 		if err != nil {
 			return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "RegisterMulti", uuid: meta.Uuid}, err)
 		}
-		ms = append(ms, *m)
+		ms = append(ms, m)
 	}
 
 	err = s.mySQL.SetMetas(ctx, ms...)
@@ -150,21 +150,16 @@ func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Re
 	return new(payload.Empty), nil
 }
 
-func toBackupMetaVector(meta *model.MetaVector) (res *payload.Backup_MetaVector, err error) {
-	vector, err := meta.GetVector()
-	if err != nil {
-		return nil, err
-	}
-
-	return &payload.Backup_MetaVector{
+func toBackupMetaVector(meta *model.MetaVector) (res *payload.Backup_Compressed_MetaVector, err error) {
+	return &payload.Backup_Compressed_MetaVector{
 		Uuid:   meta.GetUUID(),
 		Meta:   meta.GetMeta(),
-		Vector: vector,
+		Vector: meta.GetVector(),
 		Ips:    meta.GetIPs(),
 	}, nil
 }
 
-func toModelMetaVector(obj *payload.Backup_MetaVector) (res *model.MetaVector, err error) {
+func toModelMetaVector(obj *payload.Backup_Compressed_MetaVector) (res *model.MetaVector, err error) {
 	return &model.MetaVector{
 		UUID:   obj.Uuid,
 		Vector: obj.Vector,
