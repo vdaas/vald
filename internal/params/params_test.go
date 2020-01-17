@@ -18,25 +18,26 @@
 package params
 
 import (
+	"fmt"
+	"os"
 	"reflect"
 	"testing"
+
+	"github.com/vdaas/vald/internal/errors"
 )
 
 func TestNew(t *testing.T) {
-	type args struct {
-		opts []Option
-	}
-	tests := []struct {
+	type test struct {
 		name string
-		args args
+		opts []Option
 		want *parser
-	}{
+	}
+
+	tests := []test{
 		{
-			name: "return parser success",
-			args: args{
-				opts: []Option{
-					WithVersionKey("dummyVersionKey"),
-				},
+			name: "returns parser instance",
+			opts: []Option{
+				WithVersionKey("dummyVersionKey"),
 			},
 			want: &parser{
 				filePath: filePath{
@@ -52,10 +53,12 @@ func TestNew(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := New(tt.args.opts...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("New() = %+v, want %+v", got, tt.want)
+			got := New(tt.opts...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("not equals. want: %v, got: %v", tt.want, got)
 			}
 		})
 	}
@@ -63,104 +66,174 @@ func TestNew(t *testing.T) {
 
 func Test_parser_Parse(t *testing.T) {
 	type fields struct {
-		filePath struct {
-			key         string
-			defaultPath string
-			description string
-		}
-		version struct {
-			key         string
-			defaultFlag bool
-			description string
-		}
+		filePath filePath
+		version  version
 	}
-	tests := []struct {
-		name    string
-		fields  fields
-		want    *Data
-		want1   bool
-		wantErr bool
-	}{
-		// TODO: Add test cases.
+
+	type global struct {
+		args []string
 	}
+
+	type test struct {
+		name      string
+		fields    fields
+		global    global
+		checkFunc func(got, want error) error
+		wantData  *Data
+		wantFail  bool
+		wantError error
+	}
+
+	tests := []test{
+		{
+			name: "returns data and flag and nil when parser is successes",
+			fields: fields{
+				filePath: filePath{
+					key:         "conf",
+					defaultPath: "vald_config.yml",
+					description: "set config file",
+				},
+				version: version{
+					key:         "version",
+					defaultFlag: false,
+					description: "print version",
+				},
+			},
+			global: global{
+				args: []string{
+					"vald",
+					"--conf",
+					"./config/vald_config.yml",
+					"--version",
+					"true",
+				},
+			},
+			checkFunc: func(got, want error) error {
+				if got != nil {
+					return errors.New("err is not nil")
+				}
+				return nil
+			},
+			wantData: &Data{
+				configFilePath: "./config/vald_config.yml",
+				showVersion:    true,
+			},
+			wantFail:  false,
+			wantError: nil,
+		},
+
+		{
+			name: "returns data and flag and error when parse error occurs and err is not equal flag.ErrHelp",
+			fields: fields{
+				filePath: filePath{
+					key:         "conf",
+					defaultPath: "vald_config.yml",
+					description: "set config file",
+				},
+				version: version{
+					key:         "version",
+					defaultFlag: false,
+					description: "print version",
+				},
+			},
+			global: global{
+				args: []string{
+					"vald",
+					"--conf",
+					"./config/vald_config.yml",
+					"-name",
+					"true",
+				},
+			},
+			checkFunc: func(got, want error) error {
+				if got == nil {
+					return errors.New("err is nil")
+				} else if !errors.Is(want, got) {
+					return errors.Errorf("err is not equal. want: %v, got: %v", want, got)
+				}
+				return nil
+			},
+			wantData:  nil,
+			wantFail:  false,
+			wantError: errors.ErrArgumentParseFailed(fmt.Errorf("flag provided but not defined: -name")),
+		},
+	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &parser{
+			os.Args = tt.global.args
+
+			d, fail, err := (&parser{
 				filePath: tt.fields.filePath,
 				version:  tt.fields.version,
+			}).Parse()
+
+			if want, got := tt.wantData, d; !reflect.DeepEqual(want, got) {
+				t.Errorf("data is not equal. want: %v, got: %v", want, got)
 			}
-			got, got1, err := p.Parse()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("parser.Parse() error = %v, wantErr %v", err, tt.wantErr)
-				return
+
+			if want, got := tt.wantFail, fail; want != got {
+				t.Errorf("fail is not equal. want: %v, got: %v", want, got)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parser.Parse() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("parser.Parse() got1 = %v, want %v", got1, tt.want1)
+
+			if err := tt.checkFunc(err, tt.wantError); err != nil {
+				t.Error(err)
 			}
 		})
 	}
 }
 
 func TestData_ConfigFilePath(t *testing.T) {
-	type fields struct {
+	type test struct {
+		name           string
 		configFilePath string
-		showVersion    bool
+		want           string
 	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   string
-	}{
+
+	tests := []test{
 		{
-			name: "return configFilePath success",
-			fields: fields{
-				configFilePath: "dummy_path",
-			},
-			want: "dummy_path",
+			name:           "returns config file path",
+			configFilePath: "config_file_path",
+			want:           "config_file_path",
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &Data{
-				configFilePath: tt.fields.configFilePath,
-				showVersion:    tt.fields.showVersion,
+				configFilePath: tt.configFilePath,
 			}
-			if got := d.ConfigFilePath(); got != tt.want {
-				t.Errorf("Data.ConfigFilePath() = %v, want %v", got, tt.want)
+
+			if got, want := d.ConfigFilePath(), tt.want; got != want {
+				t.Errorf("not equals. want: %v, got: %v", want, got)
 			}
 		})
 	}
 }
 
 func TestData_ShowVersion(t *testing.T) {
-	type fields struct {
-		configFilePath string
-		showVersion    bool
+	type test struct {
+		name        string
+		showVersion bool
+		want        bool
 	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   bool
-	}{
+
+	tests := []test{
 		{
-			name: "return showVersion success",
-			fields: fields{
-				showVersion: true,
-			},
-			want: true,
+			name:        "returns config file path",
+			showVersion: true,
+			want:        true,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &Data{
-				configFilePath: tt.fields.configFilePath,
-				showVersion:    tt.fields.showVersion,
+				showVersion: tt.showVersion,
 			}
-			if got := d.ShowVersion(); got != tt.want {
-				t.Errorf("Data.ShowVersion() = %v, want %v", got, tt.want)
+
+			if got, want := d.ShowVersion(), tt.want; got != want {
+				t.Errorf("not equals. want: %v, got: %v", want, got)
 			}
 		})
 	}
