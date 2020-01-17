@@ -48,9 +48,15 @@ type reconciler struct {
 }
 
 type Pod struct {
+<<<<<<< HEAD:internal/k8s/metrics/pod/pod.go
 	Name string
 	CPU  float64
 	Mem  float64
+=======
+	Name     string
+	CPU      float64
+	Mem      float64
+>>>>>>> 83235e77e6803d84fbf345cbf3a64c69510f9183:internal/k8s/metrics/pods/pod.go
 }
 
 func New(opts ...Option) PodWatcher {
@@ -99,8 +105,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			memUsage += float64(container.Usage.Memory().Value())
 		}
 
+<<<<<<< HEAD:internal/k8s/metrics/pod/pod.go
 		cpuUsage /= float64(len(pod.Containers))
 		memUsage /= float64(len(pod.Containers))
+=======
+		cpuUsage = cpuUsage / float64(len(pod.Containers))
+		memUsage = memUsage / float64(len(pod.Containers))
+>>>>>>> 83235e77e6803d84fbf345cbf3a64c69510f9183:internal/k8s/metrics/pods/pod.go
 
 		podMetaName := pod.GetObjectMeta().GetName()
 
