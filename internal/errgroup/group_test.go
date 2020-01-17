@@ -393,7 +393,6 @@ func TestDoCancel(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestEgGo(t *testing.T) {
