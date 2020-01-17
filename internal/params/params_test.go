@@ -220,7 +220,7 @@ func TestData_ShowVersion(t *testing.T) {
 
 	tests := []test{
 		{
-			name:        "returns config file path",
+			name:        "returns show version flag",
 			showVersion: true,
 			want:        true,
 		},
