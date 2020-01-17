@@ -15,6 +15,11 @@ func clearGlobalObject() {
 	once = sync.Once{}
 }
 
+func setDummyGlobalObject() {
+	instance = new(group)
+	once = sync.Once{}
+}
+
 func TestNew(t *testing.T) {
 	type test struct {
 		name string
@@ -40,15 +45,19 @@ func TestNew(t *testing.T) {
 
 func TestInit(t *testing.T) {
 	type test struct {
-		name      string
-		ctx       context.Context
-		checkFunc func(ctx context.Context) error
+		name       string
+		ctx        context.Context
+		beforeFunc func()
+		checkFunc  func(ctx context.Context) error
 	}
 
 	tests := []test{
 		{
 			name: "returns egctx when New function is called",
 			ctx:  context.Background(),
+			beforeFunc: func() {
+				clearGlobalObject()
+			},
 			checkFunc: func(egctx context.Context) error {
 				if egctx == nil || instance == nil {
 					return errors.Errorf("egctx or instance is nil. egctx: %v, instance: %v", egctx, instance)
@@ -63,13 +72,17 @@ func TestInit(t *testing.T) {
 			return test{
 				name: "returns ctx of argument when instance is already initialized",
 				ctx:  ctx,
+				beforeFunc: func() {
+					setDummyGlobalObject()
+					once.Do(func() {})
+				},
 				checkFunc: func(egctx context.Context) error {
 					if !reflect.DeepEqual(egctx, ctx) {
 						return errors.Errorf("egctx is not equals. want: %v, got: %v", ctx, egctx)
 					}
 
-					if instance != nil {
-						return errors.Errorf("instance is not nil. instance: %v", instance)
+					if instance == nil {
+						return errors.New("instance is nil")
 					}
 					return nil
 				},
@@ -77,13 +90,15 @@ func TestInit(t *testing.T) {
 		}(),
 	}
 
-	clearGlobalObject()
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
-				instance = nil
+				clearGlobalObject()
 			}()
+
+			if tt.beforeFunc != nil {
+				tt.beforeFunc()
+			}
 
 			egctx := Init(tt.ctx)
 			if err := tt.checkFunc(egctx); err != nil {
@@ -95,21 +110,30 @@ func TestInit(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	type test struct {
-		name string
+		name       string
+		beforeFunc func()
 	}
 
 	tests := []test{
 		{
 			name: "returns new instance when instance is nil",
+			beforeFunc: func() {
+				clearGlobalObject()
+			},
 		},
 	}
 
-	clearGlobalObject()
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			eg := Get()
-			if eg == nil {
+			defer func() {
+				clearGlobalObject()
+			}()
+
+			if tt.beforeFunc != nil {
+				tt.beforeFunc()
+			}
+
+			if eg := Get(); eg == nil {
 				t.Error("eg is nil")
 			}
 		})
