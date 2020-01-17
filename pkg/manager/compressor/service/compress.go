@@ -81,7 +81,7 @@ func (c *compressor) PreStart(ctx context.Context) (err error) {
 	}
 
 	if err != nil {
-		return nil
+		return err
 	}
 
 	c.compressor = compressor
