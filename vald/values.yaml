@@ -287,7 +287,8 @@ compressor:
   backup:
     client: {}
   compress:
-    compress_algorithm: lz4
+    compress_algorithm: zstd
+    compression_level: 10
     concurrent_limit: 10
     buffer: 100
 
@@ -438,6 +439,11 @@ backupManager:
       default_idempotence: false
       write_coalesce_wait_time: 200ms
       meta_table: meta_vector
+      pool_config:
+        data_center: ""
+        dc_aware_routing: false
+        non_local_replicas_fallback: false
+        shuffle_replicas: false
 
 indexManager:
   name: vald-index-manager-ngt
@@ -623,6 +629,11 @@ meta:
       write_coalesce_wait_time: 200ms
       kv_table: kv
       vk_table: vk
+      pool_config:
+        data_center: ""
+        dc_aware_routing: false
+        non_local_replicas_fallback: false
+        shuffle_replicas: false
 
 initializer:
   mysql:
