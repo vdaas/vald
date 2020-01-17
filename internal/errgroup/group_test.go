@@ -230,7 +230,7 @@ func TestEgWait(t *testing.T) {
 			}
 
 			return test{
-				name: "processing is success when function is not nil",
+				name: "processing is successes when function is not nil",
 				receiver: receiver{
 					g: g,
 				},
@@ -430,7 +430,7 @@ func TestEgGo(t *testing.T) {
 			}
 
 			return test{
-				name: "processing is success when function is not nil",
+				name: "processing is successes when function is not nil",
 				args: args{
 					f: f,
 				},
