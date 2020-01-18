@@ -3,6 +3,39 @@ on:
     types: [created]
 name: ChatOps
 jobs:
+  label:
+    name: Add labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: check PR Comments
+        id: check_comments_label
+        uses: machine-learning-apps/actions-chatops@master
+        with:
+          TRIGGER_PHRASE: "/label"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: add label
+        if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          curl -o CHATOPS_OWNERS https://github.com/vdaas/vald/blob/master/.github/CHATOPS_OWNERS
+          if grep "^${USERNAME}$" CHATOPS_OWNERS > /dev/null 2>&1 ; then
+            echo "[OK] label requested by ${USERNAME}"
+            labels=`echo "${TRAILING_LINE}" | jq -cMR 'split(" ")'`
+            curl --include --verbose --fail \
+            -H "Accept: application/json" \
+            -H "Content-Type:application/json" \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            --request POST \
+            --data "{\"labels\": ${labels}}" \
+            `echo "${ISSUE_URL}" | sed -e 's/{\/name}//'`
+          else
+            echo "[NG] ${USERNAME} is not a member of CHATOPS_OWNERS"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          ISSUE_URL: ${{ github.event.issue.labels_url }}
+          USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
+          TRAILING_LINE: ${{ steps.check_comments_label.outputs.TRAILING_LINE }}
   rebase:
     name: Rebase
     runs-on: ubuntu-latest
@@ -42,39 +75,10 @@ jobs:
         uses: cirrus-actions/rebase@1.2
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-  approve:
-    name: Approve
-    runs-on: ubuntu-latest
-    steps:
-      - name: check PR Comments
-        id: check_comments_approve
-        uses: machine-learning-apps/actions-chatops@master
-        with:
-          TRIGGER_PHRASE: "/approve"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: approve
-        if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
-        run: |
-          curl -o CHATOPS_OWNERS https://github.com/vdaas/vald/blob/master/.github/CHATOPS_OWNERS
-          if grep "^${USERNAME}$" CHATOPS_OWNERS > /dev/null 2>&1 ; then
-            echo "[OK] Approved by ${USERNAME}"
-            curl --include --verbose --fail \
-            -H "Accept: application/json" \
-            -H "Content-Type:application/json" \
-            -H "Authorization: token ${GITHUB_TOKEN}" \
-            --request POST \
-            --data "{\"body\": \"**[APPROVED]** This PR is approved by ${USERNAME}.\", \"event\": \"APPROVE\"}" \
-            "${PR_URL}/reviews"
-          else
-            echo "[NG] ${USERNAME} is not a member of CHATOPS_OWNERS"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          PR_URL: ${{ github.event.issue.pull_request.url }}
-          USERNAME: ${{ steps.check_comments_approve.outputs.COMMENTER_USERNAME }}
   add-contributors:
     name: Add contributors
+    needs:
+      - rebase
     runs-on: ubuntu-latest
     steps:
       - name: check PR Comments
@@ -140,36 +144,37 @@ jobs:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
-  label:
-    name: Add labels
+  approve:
+    name: Approve
+    needs:
+      - rebase
+      - add-contributors
     runs-on: ubuntu-latest
     steps:
       - name: check PR Comments
-        id: check_comments_label
+        id: check_comments_approve
         uses: machine-learning-apps/actions-chatops@master
         with:
-          TRIGGER_PHRASE: "/label"
+          TRIGGER_PHRASE: "/approve"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: add label
-        if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
+      - name: approve
+        if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
         run: |
           curl -o CHATOPS_OWNERS https://github.com/vdaas/vald/blob/master/.github/CHATOPS_OWNERS
           if grep "^${USERNAME}$" CHATOPS_OWNERS > /dev/null 2>&1 ; then
-            echo "[OK] label requested by ${USERNAME}"
-            labels=`echo "${TRAILING_LINE}" | jq -cMR 'split(" ")'`
+            echo "[OK] Approved by ${USERNAME}"
             curl --include --verbose --fail \
             -H "Accept: application/json" \
             -H "Content-Type:application/json" \
             -H "Authorization: token ${GITHUB_TOKEN}" \
             --request POST \
-            --data "{\"labels\": ${labels}}" \
-            `echo "${ISSUE_URL}" | sed -e 's/{\/name}//'`
+            --data "{\"body\": \"**[APPROVED]** This PR is approved by ${USERNAME}.\", \"event\": \"APPROVE\"}" \
+            "${PR_URL}/reviews"
           else
             echo "[NG] ${USERNAME} is not a member of CHATOPS_OWNERS"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          ISSUE_URL: ${{ github.event.issue.labels_url }}
-          USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
-          TRAILING_LINE: ${{ steps.check_comments_label.outputs.TRAILING_LINE }}
+          PR_URL: ${{ github.event.issue.pull_request.url }}
+          USERNAME: ${{ steps.check_comments_approve.outputs.COMMENTER_USERNAME }}
