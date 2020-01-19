@@ -240,7 +240,7 @@
 | ----- | ---- | ----- | ----------- |
 | uuid | [string](#string) |  |  |
 | meta | [string](#string) |  |  |
-| vector | [double](#double) | repeated |  |
+| vector | [float](#float) | repeated |  |
 | ips | [string](#string) | repeated |  |
 
 
@@ -607,7 +607,7 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | id | [string](#string) |  |  |
-| vector | [double](#double) | repeated |  |
+| vector | [float](#float) | repeated |  |
 
 
 
@@ -681,7 +681,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| vector | [double](#double) | repeated |  |
+| vector | [float](#float) | repeated |  |
 | config | [Search.Config](#payload.Search.Config) |  |  |
 
 

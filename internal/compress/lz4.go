@@ -42,7 +42,7 @@ func NewLZ4(opts ...LZ4Option) (Compressor, error) {
 	return c, nil
 }
 
-func (l *lz4Compressor) CompressVector(vector []float64) ([]byte, error) {
+func (l *lz4Compressor) CompressVector(vector []float32) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	zw := lz4.NewWriter(buf)
 	zw.Header.CompressionLevel = l.compressionLevel
@@ -65,7 +65,7 @@ func (l *lz4Compressor) CompressVector(vector []float64) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (l *lz4Compressor) DecompressVector(bs []byte) ([]float64, error) {
+func (l *lz4Compressor) DecompressVector(bs []byte) ([]float32, error) {
 	buf := new(bytes.Buffer)
 	zr := lz4.NewReader(bytes.NewReader(bs))
 	_, err := io.Copy(buf, zr)

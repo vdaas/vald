@@ -104,7 +104,7 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) 
 
 func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) (res *payload.Empty, err error) {
 	mvs := metas.GetVectors()
-	vectors := make([][]float64, 0, len(mvs))
+	vectors := make([][]float32, 0, len(mvs))
 	for _, mv := range mvs {
 		vectors = append(vectors, mv.GetVector())
 	}
