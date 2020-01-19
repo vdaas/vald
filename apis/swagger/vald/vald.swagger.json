@@ -320,43 +320,5 @@
         }
       }
     }
-  },
-  "x-stream-definitions": {
-    "SearchResponse": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "$ref": "#/definitions/SearchResponse"
-        },
-        "error": {
-          "$ref": "#/definitions/runtimeStreamError"
-        }
-      },
-      "title": "Stream result of SearchResponse"
-    },
-    "payloadBackupMetaVector": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "$ref": "#/definitions/payloadBackupMetaVector"
-        },
-        "error": {
-          "$ref": "#/definitions/runtimeStreamError"
-        }
-      },
-      "title": "Stream result of payloadBackupMetaVector"
-    },
-    "payloadEmpty": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "$ref": "#/definitions/payloadEmpty"
-        },
-        "error": {
-          "$ref": "#/definitions/runtimeStreamError"
-        }
-      },
-      "title": "Stream result of payloadEmpty"
-    }
   }
 }
