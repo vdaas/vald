@@ -35,7 +35,11 @@ func TestGzipCompressVector(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		gzipc := NewGzip()
+		gzipc, err := NewGzip()
+		if err != nil {
+			t.Fatalf("initialize failed: %s", err)
+		}
+
 		compressed, err := gzipc.CompressVector(tc.vector)
 		if err != nil {
 			t.Fatalf("Compress failed: %s", err)

@@ -35,7 +35,11 @@ func TestGobCompressVector(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		gobc := NewGob()
+		gobc, err := NewGob()
+		if err != nil {
+			t.Fatalf("initialize failed: %s", err)
+		}
+
 		compressed, err := gobc.CompressVector(tc.vector)
 		if err != nil {
 			t.Fatalf("Compress failed: %s", err)

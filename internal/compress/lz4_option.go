@@ -14,25 +14,37 @@
 // limitations under the License.
 //
 
-// Package errors provides error types and function
-package errors
+// Package compress provides compress functions
+package compress
+
+import "github.com/vdaas/vald/internal/errors"
+
+type LZ4Option func(c *lz4Compressor) error
 
 var (
-	// internal compressor
-	ErrInvalidCompressionLevel = func(level int) error {
-		return Errorf("invalid compression level: %d", level)
-	}
-
-	// Compressor
-	ErrCompressorNameNotFound = func(name string) error {
-		return Errorf("compressor %s not found", name)
-	}
-
-	ErrCompressFailed = func() error {
-		return New("compress failed")
-	}
-
-	ErrDecompressFailed = func() error {
-		return New("decompress failed")
+	defaultLZ4Opts = []LZ4Option{
+		WithLZ4Gob(),
+		WithLZ4CompressionLevel(0),
 	}
 )
+
+func WithLZ4Gob(opts ...GobOption) LZ4Option {
+	return func(c *lz4Compressor) error {
+		gobc, err := NewGob(opts...)
+		if err != nil {
+			return err
+		}
+		c.gobc = gobc
+		return nil
+	}
+}
+
+func WithLZ4CompressionLevel(level int) LZ4Option {
+	return func(c *lz4Compressor) error {
+		if level > 0 {
+			return errors.ErrInvalidCompressionLevel(level)
+		}
+		c.compressionLevel = level
+		return nil
+	}
+}

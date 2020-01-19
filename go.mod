@@ -5,7 +5,7 @@ go 1.13
 replace (
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.0
-	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200103014340-68f928edb90a
+	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200115135732-617765adbe2d
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.7.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.7.3
@@ -28,7 +28,7 @@ require (
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/getsentry/raven-go v0.2.0 // indirect
 	github.com/go-redis/redis/v7 v7.0.0-beta.5
-	github.com/go-sql-driver/mysql v1.5.0
+	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gocql/gocql v0.0.0-20200103014340-68f928edb90a
 	github.com/gocraft/dbr/v2 v2.6.3
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
@@ -47,10 +47,10 @@ require (
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
 	go.uber.org/automaxprocs v1.2.0
-	golang.org/x/sys v0.0.0-20200113162924-86b910548bc1
+	golang.org/x/sys v0.0.0-20200116001909-b77594299b42
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/plot v0.0.0-20200111075622-4abb28f724d5
-	google.golang.org/genproto v0.0.0-20200113173426-e1de0a7b01eb
+	google.golang.org/genproto v0.0.0-20200115191322-ca5a22157cba
 	google.golang.org/grpc v1.26.0
 	gopkg.in/yaml.v2 v2.2.7
 	k8s.io/api v0.17.1

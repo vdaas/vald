@@ -18,10 +18,7 @@
 package service
 
 import (
-	"github.com/vdaas/vald/internal/compress"
-	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/errors"
 )
 
 type CompressorOption func(c *compressor) error
@@ -51,18 +48,14 @@ func WithBuffer(b int) CompressorOption {
 
 func WithCompressAlgorithm(name string) CompressorOption {
 	return func(c *compressor) error {
-		switch config.CompressAlgorithm(name) {
-		case config.GOB:
-			c.compressor = compress.NewGob()
-		case config.GZIP:
-			c.compressor = compress.NewGzip()
-		case config.LZ4:
-			c.compressor = compress.NewLZ4()
-		case config.ZSTD:
-			c.compressor = compress.NewZstd()
-		default:
-			return errors.ErrCompressorNameNotFound(name)
-		}
+		c.algorithm = name
+		return nil
+	}
+}
+
+func WithCompressionLevel(level int) CompressorOption {
+	return func(c *compressor) error {
+		c.compressionLevel = level
 		return nil
 	}
 }
