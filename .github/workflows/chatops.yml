@@ -14,10 +14,14 @@ jobs:
           TRIGGER_PHRASE: "/label"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: install yq and get permissions
+        if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          # curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+          curl -O CHATOPS_OWNERS https://raw.githubusercontent.com/vdaas/vald/master/.github/CHATOPS_OWNERS
       - name: add label
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         run: |
-          curl -o CHATOPS_OWNERS https://github.com/vdaas/vald/blob/master/.github/CHATOPS_OWNERS
           if grep "^${USERNAME}$" CHATOPS_OWNERS > /dev/null 2>&1 ; then
             echo "[OK] label requested by ${USERNAME}"
             labels=`echo "${TRAILING_LINE}" | jq -cMR 'split(" ")'`
@@ -47,10 +51,14 @@ jobs:
           TRIGGER_PHRASE: "/rebase"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: install yq and get permissions
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          # curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+          curl -O CHATOPS_OWNERS https://raw.githubusercontent.com/vdaas/vald/master/.github/CHATOPS_OWNERS
       - name: comment back to PR
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
         run: |
-          curl -o CHATOPS_OWNERS https://github.com/vdaas/vald/blob/master/.github/CHATOPS_OWNERS
           if grep "^${USERNAME}$" CHATOPS_OWNERS > /dev/null 2>&1 ; then
             echo "[OK] rebase requested by ${USERNAME}"
             curl --include --verbose --fail \
@@ -88,11 +96,15 @@ jobs:
           TRIGGER_PHRASE: "/add-contributors"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: install yq and get permissions
+        if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          # curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+          curl -O CHATOPS_OWNERS https://raw.githubusercontent.com/vdaas/vald/master/.github/CHATOPS_OWNERS
       - name: check executable
         if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true'
         id: check_executable
         run: |
-          curl -o CHATOPS_OWNERS https://github.com/vdaas/vald/blob/master/.github/CHATOPS_OWNERS
           if grep "^${USERNAME}$" CHATOPS_OWNERS > /dev/null 2>&1 ; then
             echo "[OK] Add contributor request by ${USERNAME}"
 
@@ -158,10 +170,14 @@ jobs:
           TRIGGER_PHRASE: "/approve"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: install yq and get permissions
+        if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          # curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+          curl -O CHATOPS_OWNERS https://raw.githubusercontent.com/vdaas/vald/master/.github/CHATOPS_OWNERS
       - name: approve
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
         run: |
-          curl -o CHATOPS_OWNERS https://github.com/vdaas/vald/blob/master/.github/CHATOPS_OWNERS
           if grep "^${USERNAME}$" CHATOPS_OWNERS > /dev/null 2>&1 ; then
             echo "[OK] Approved by ${USERNAME}"
             curl --include --verbose --fail \
