@@ -429,43 +429,5 @@
         }
       }
     }
-  },
-  "x-stream-definitions": {
-    "ObjectVector": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "$ref": "#/definitions/ObjectVector"
-        },
-        "error": {
-          "$ref": "#/definitions/runtimeStreamError"
-        }
-      },
-      "title": "Stream result of ObjectVector"
-    },
-    "SearchResponse": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "$ref": "#/definitions/SearchResponse"
-        },
-        "error": {
-          "$ref": "#/definitions/runtimeStreamError"
-        }
-      },
-      "title": "Stream result of SearchResponse"
-    },
-    "payloadEmpty": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "$ref": "#/definitions/payloadEmpty"
-        },
-        "error": {
-          "$ref": "#/definitions/runtimeStreamError"
-        }
-      },
-      "title": "Stream result of payloadEmpty"
-    }
   }
 }

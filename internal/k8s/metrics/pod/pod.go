@@ -24,13 +24,14 @@ import (
 
 	"github.com/vdaas/vald/internal/k8s"
 
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/metrics/pkg/apis/metrics"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 type PodWatcher interface {
@@ -48,11 +49,9 @@ type reconciler struct {
 }
 
 type Pod struct {
-	Name     string
-	NodeName string
-	IP       string
-	CPU      float64
-	Mem      float64
+	Name string
+	CPU  float64
+	Mem  float64
 }
 
 func New(opts ...Option) PodWatcher {
@@ -66,11 +65,9 @@ func New(opts ...Option) PodWatcher {
 }
 
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
-	ps := &corev1.PodList{}
+	m := &metrics.PodMetricsList{}
 
-	err = r.mgr.GetClient().List(context.TODO(), ps, client.InNamespace(req.Namespace), client.MatchingFields{
-		"status.phase": string(corev1.PodRunning),
-	})
+	err = r.mgr.GetClient().List(context.TODO(), m, client.InNamespace(req.Namespace))
 
 	if err != nil {
 		if r.onError != nil {
@@ -92,37 +89,29 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	var (
 		cpuUsage float64
 		memUsage float64
-		pods     = make(map[string][]Pod, len(ps.Items))
+		pods     = make(map[string][]Pod, len(m.Items))
 	)
 
-	for _, pod := range ps.Items {
+	for _, pod := range m.Items {
 		cpuUsage = 0.0
 		memUsage = 0.0
-		for _, container := range pod.Spec.Containers {
-			request := container.Resources.Requests
-			limit := container.Resources.Limits
-			cpuUsage += (float64(request.Cpu().Value()) /
-				float64(limit.Cpu().Value())) * 100.0
-			memUsage += (float64(request.Memory().Value()) /
-				float64(limit.Memory().Value())) * 100.0
+		for _, container := range pod.Containers {
+			cpuUsage += float64(container.Usage.Cpu().Value())
+			memUsage += float64(container.Usage.Memory().Value())
 		}
 
-		cpuUsage = cpuUsage / float64(len(pod.Spec.Containers))
-		memUsage = memUsage / float64(len(pod.Spec.Containers))
-
-		// pod.GetObjectMeta().GetLabels()["app"]
+		cpuUsage /= float64(len(pod.Containers))
+		memUsage /= float64(len(pod.Containers))
 		podMetaName := pod.GetObjectMeta().GetName()
 
 		if _, ok := pods[podMetaName]; !ok {
-			pods[podMetaName] = make([]Pod, 0, len(ps.Items))
+			pods[podMetaName] = make([]Pod, 0, len(m.Items))
 		}
 
 		pods[podMetaName] = append(pods[podMetaName], Pod{
-			Name:     pod.GetName(),
-			NodeName: pod.Spec.NodeName,
-			IP:       pod.Status.PodIP,
-			CPU:      cpuUsage,
-			Mem:      memUsage,
+			Name: pod.GetName(),
+			CPU:  cpuUsage,
+			Mem:  memUsage,
 		})
 	}
 
@@ -152,13 +141,20 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil {
 		r.mgr = mgr
 	}
+	metrics.AddToScheme(r.mgr.GetScheme())
 	return r
 }
 
 func (r *reconciler) For() runtime.Object {
-	return new(appsv1.ReplicaSet)
+	// return new(appsv1.ReplicaSet)
+	return nil
 }
 
-// func (r *reconciler) Owns() runtime.Object {
-// 	return new(corev1.Pod)
-// }
+func (r *reconciler) Owns() runtime.Object {
+	// return new(corev1.Pod)
+	return nil
+}
+
+func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
+	return &source.Kind{Type: new(metrics.PodMetricsList)}, &handler.EnqueueRequestForObject{}
+}
