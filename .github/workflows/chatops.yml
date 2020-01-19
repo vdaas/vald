@@ -14,27 +14,38 @@ jobs:
           TRIGGER_PHRASE: "/label"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq and get permissions
+      - name: install yq and check permissions
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
+        id: check_permissions
         run: |
-          # curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
-          curl -O CHATOPS_OWNERS https://raw.githubusercontent.com/vdaas/vald/master/.github/CHATOPS_OWNERS
-      - name: add label
-        if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
-        run: |
-          if grep "^${USERNAME}$" CHATOPS_OWNERS > /dev/null 2>&1 ; then
-            echo "[OK] label requested by ${USERNAME}"
-            labels=`echo "${TRAILING_LINE}" | jq -cMR 'split(" ")'`
-            curl --include --verbose --fail \
-            -H "Accept: application/json" \
-            -H "Content-Type:application/json" \
-            -H "Authorization: token ${GITHUB_TOKEN}" \
-            --request POST \
-            --data "{\"labels\": ${labels}}" \
-            `echo "${ISSUE_URL}" | sed -e 's/{\/name}//'`
-          else
-            echo "[NG] ${USERNAME} is not a member of CHATOPS_OWNERS"
+          curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+          curl -O chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role" -j`
+          if [ "$roles" = "null" ]; then
+            roles=`yq r chatops_permissions.yaml default-roles -j`
           fi
+          for role in `echo $roles | jq -r '.[]'`
+          do
+              if yq r chatops_permissions.yaml "roles.${role}.policies" -j | jq -r '.[]' | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+                echo "[OK] label requested by ${USERNAME}"
+                echo "::set-output name=EXECUTABLE::true"
+                break
+              fi
+          done
+        env:
+          USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
+          REQUIRED_POLICY: label
+      - name: add label
+        if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          labels=`echo "${TRAILING_LINE}" | jq -cMR 'split(" ")'`
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"labels\": ${labels}}" \
+          `echo "${ISSUE_URL}" | sed -e 's/{\/name}//'`
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           ISSUE_URL: ${{ github.event.issue.labels_url }}
@@ -51,35 +62,46 @@ jobs:
           TRIGGER_PHRASE: "/rebase"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq and get permissions
+      - name: install yq and check permissions
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
+        id: check_permissions
         run: |
-          # curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
-          curl -O CHATOPS_OWNERS https://raw.githubusercontent.com/vdaas/vald/master/.github/CHATOPS_OWNERS
-      - name: comment back to PR
-        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
-        run: |
-          if grep "^${USERNAME}$" CHATOPS_OWNERS > /dev/null 2>&1 ; then
-            echo "[OK] rebase requested by ${USERNAME}"
-            curl --include --verbose --fail \
-            -H "Accept: application/json" \
-            -H "Content-Type:application/json" \
-            -H "Authorization: token ${GITHUB_TOKEN}" \
-            --request POST \
-            --data "{\"body\": \"**[REBASE]** Rebase triggered by ${USERNAME} for branch: ${BRANCH}\"}" \
-            $API_URL
-          else
-            echo "[NG] ${USERNAME} is not a member of CHATOPS_OWNERS"
+          curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+          curl -O chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role" -j`
+          if [ "$roles" = "null" ]; then
+            roles=`yq r chatops_permissions.yaml default-roles -j`
           fi
+          for role in `echo $roles | jq -r '.[]'`
+          do
+              if yq r chatops_permissions.yaml "roles.${role}.policies" -j | jq -r '.[]' | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+                echo "[OK] rebase requested by ${USERNAME}"
+                echo "::set-output name=EXECUTABLE::true"
+                break
+              fi
+          done
+        env:
+          USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
+          REQUIRED_POLICY: rebase
+      - name: comment back to PR
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[REBASE]** Rebase triggered by ${USERNAME} for branch: ${BRANCH}\"}" \
+          $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
           BRANCH: ${{ steps.check_comments_rebase.outputs.BRANCH_NAME }}
           USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
       - uses: actions/checkout@v1
-        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
       - name: Automatic Rebase
-        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         uses: cirrus-actions/rebase@1.2
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
@@ -96,42 +118,48 @@ jobs:
           TRIGGER_PHRASE: "/add-contributors"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq and get permissions
+      - name: install yq and check permissions
         if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true'
+        id: check_permissions
         run: |
-          # curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
-          curl -O CHATOPS_OWNERS https://raw.githubusercontent.com/vdaas/vald/master/.github/CHATOPS_OWNERS
-      - name: check executable
-        if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true'
-        id: check_executable
-        run: |
-          if grep "^${USERNAME}$" CHATOPS_OWNERS > /dev/null 2>&1 ; then
-            echo "[OK] Add contributor request by ${USERNAME}"
-
-            curl --include --verbose --fail \
-            -H "Accept: application/json" \
-            -H "Content-Type:application/json" \
-            -H "Authorization: token ${GITHUB_TOKEN}" \
-            --request POST \
-            --data "{\"body\": \"**[ADD CONTRIBUTORS]** Add contributor ${PR_AUTHOR} to CONTRIBUTORS triggered by ${USERNAME}.\"}" \
-            $API_URL
-
-            echo "::set-output name=executable::true"
-          else
-            echo "[NG] ${USERNAME} is not a member of CHATOPS_OWNERS"
-            echo "::set-output name=executable::false"
+          curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+          curl -O chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role" -j`
+          if [ "$roles" = "null" ]; then
+            roles=`yq r chatops_permissions.yaml default-roles -j`
           fi
+          for role in `echo $roles | jq -r '.[]'`
+          do
+              if yq r chatops_permissions.yaml "roles.${role}.policies" -j | jq -r '.[]' | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+                echo "[OK] add-contributor requested by ${USERNAME}"
+                echo "::set-output name=EXECUTABLE::true"
+                break
+              fi
+          done
+        env:
+          USERNAME: ${{ steps.check_comments_add_contributors.outputs.COMMENTER_USERNAME }}
+          REQUIRED_POLICY: add-contributors
+      - name: check executable
+        if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[ADD CONTRIBUTORS]** Add contributor ${PR_AUTHOR} to CONTRIBUTORS triggered by ${USERNAME}.\"}" \
+          $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           USERNAME: ${{ steps.check_comments_add_contributors.outputs.COMMENTER_USERNAME }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
           API_URL: ${{ github.event.issue.comments_url }}
       - uses: actions/checkout@v1
-        if: steps.check_executable.outputs.executable == 'true'
+        if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 1
       - name: Add contributor and push
-        if: steps.check_execute.outputs.executable == 'true'
+        if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
           if grep "^${PR_AUTHOR}$" CONTRIBUTORS > /dev/null 2>&1 ; then
             echo "${PR_AUTHOR} already exists in CONTRIBUTORS"
@@ -170,26 +198,37 @@ jobs:
           TRIGGER_PHRASE: "/approve"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq and get permissions
+      - name: install yq and check permissions
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
+        id: check_permissions
         run: |
-          # curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
-          curl -O CHATOPS_OWNERS https://raw.githubusercontent.com/vdaas/vald/master/.github/CHATOPS_OWNERS
-      - name: approve
-        if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
-        run: |
-          if grep "^${USERNAME}$" CHATOPS_OWNERS > /dev/null 2>&1 ; then
-            echo "[OK] Approved by ${USERNAME}"
-            curl --include --verbose --fail \
-            -H "Accept: application/json" \
-            -H "Content-Type:application/json" \
-            -H "Authorization: token ${GITHUB_TOKEN}" \
-            --request POST \
-            --data "{\"body\": \"**[APPROVED]** This PR is approved by ${USERNAME}.\", \"event\": \"APPROVE\"}" \
-            "${PR_URL}/reviews"
-          else
-            echo "[NG] ${USERNAME} is not a member of CHATOPS_OWNERS"
+          curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+          curl -O chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role" -j`
+          if [ "$roles" = "null" ]; then
+            roles=`yq r chatops_permissions.yaml default-roles -j`
           fi
+          for role in `echo $roles | jq -r '.[]'`
+          do
+              if yq r chatops_permissions.yaml "roles.${role}.policies" -j | jq -r '.[]' | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+                echo "[OK] approved requested by ${USERNAME}"
+                echo "::set-output name=EXECUTABLE::true"
+                break
+              fi
+          done
+        env:
+          USERNAME: ${{ steps.check_comments_approve.outputs.COMMENTER_USERNAME }}
+          REQUIRED_POLICY: approve
+      - name: approve
+        if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[APPROVED]** This PR is approved by ${USERNAME}.\", \"event\": \"APPROVE\"}" \
+          "${PR_URL}/reviews"
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           PR_URL: ${{ github.event.issue.pull_request.url }}
