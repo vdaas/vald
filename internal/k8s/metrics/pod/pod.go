@@ -24,13 +24,14 @@ import (
 
 	"github.com/vdaas/vald/internal/k8s"
 
-	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/metrics/pkg/apis/metrics"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 type PodWatcher interface {
@@ -48,15 +49,9 @@ type reconciler struct {
 }
 
 type Pod struct {
-<<<<<<< HEAD:internal/k8s/metrics/pod/pod.go
 	Name string
 	CPU  float64
 	Mem  float64
-=======
-	Name     string
-	CPU      float64
-	Mem      float64
->>>>>>> 83235e77e6803d84fbf345cbf3a64c69510f9183:internal/k8s/metrics/pods/pod.go
 }
 
 func New(opts ...Option) PodWatcher {
@@ -105,14 +100,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			memUsage += float64(container.Usage.Memory().Value())
 		}
 
-<<<<<<< HEAD:internal/k8s/metrics/pod/pod.go
 		cpuUsage /= float64(len(pod.Containers))
 		memUsage /= float64(len(pod.Containers))
-=======
-		cpuUsage = cpuUsage / float64(len(pod.Containers))
-		memUsage = memUsage / float64(len(pod.Containers))
->>>>>>> 83235e77e6803d84fbf345cbf3a64c69510f9183:internal/k8s/metrics/pods/pod.go
-
 		podMetaName := pod.GetObjectMeta().GetName()
 
 		if _, ok := pods[podMetaName]; !ok {
@@ -152,13 +141,20 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil {
 		r.mgr = mgr
 	}
+	metrics.AddToScheme(r.mgr.GetScheme())
 	return r
 }
 
 func (r *reconciler) For() runtime.Object {
-	return new(appsv1.ReplicaSet)
+	// return new(appsv1.ReplicaSet)
+	return nil
 }
 
-// func (r *reconciler) Owns() runtime.Object {
-// 	return new(corev1.Pod)
-// }
+func (r *reconciler) Owns() runtime.Object {
+	// return new(corev1.Pod)
+	return nil
+}
+
+func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
+	return &source.Kind{Type: new(metrics.PodMetricsList)}, &handler.EnqueueRequestForObject{}
+}

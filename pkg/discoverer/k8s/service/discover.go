@@ -113,11 +113,18 @@ func (d *discoverer) GetServers(name, nodeName string) (srvs *payload.Info_Serve
 				(name == "" && nodeName == p.NodeName) ||
 				(metaname == name && nodeName == "") ||
 				(metaname == name && nodeName == p.NodeName) {
+				cpu := 100.0*p.CPURequest/p.CPULimit
+				mem := 100.0*p.MemRequest/p.MemLimit
+				metrics, ok := d.podMetrics.Load(name)
+				if ok {
+					m := metrics.(mpod.Pod)
+					cpu = 100.0 * m.CPU / p.CPULimit
+				}
 				srv := &payload.Info_Server{
 					Name: p.Name,
 					Ip:   p.IP,
-					Cpu:  p.CPU,
-					Mem:  p.Mem,
+					Cpu:  cpu,
+					Mem:  mem,
 				}
 				if nr, ok := d.nodes.Load(p.NodeName); ok {
 					n, ok := nr.(node.Node)
