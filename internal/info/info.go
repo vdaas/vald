@@ -74,3 +74,14 @@ func ShowVersionInfo(extras map[string]string) func(name string) {
 		log.Info(strings.Join(strs, "\n"))
 	}
 }
+
+func ShowWholeInfo(logf func(format string, vals ...interface{})) {
+	logf("version     -> %s", Version)
+	logf("commit Hash -> %s", GitCommit)
+	logf("build time  -> %s", BuildTime)
+	logf("Go version  -> %s", GoVersion)
+	logf("Go OS       -> %s", GoOS)
+	logf("Go arch     -> %s", GoArch)
+	logf("CGO enabled -> %s", CGOEnabled)
+	logf("NGT version -> %s", NGTVersion)
+}
