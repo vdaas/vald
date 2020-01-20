@@ -18,6 +18,6 @@
 package compress
 
 type Compressor interface {
-	CompressVector(vector []float64) (bytes []byte, err error)
-	DecompressVector(bytes []byte) (vector []float64, err error)
+	CompressVector(vector []float32) (bytes []byte, err error)
+	DecompressVector(bytes []byte) (vector []float32, err error)
 }

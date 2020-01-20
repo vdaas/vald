@@ -43,7 +43,7 @@ func NewZstd(opts ...ZstdOption) (Compressor, error) {
 	return c, nil
 }
 
-func (z *zstdCompressor) CompressVector(vector []float64) ([]byte, error) {
+func (z *zstdCompressor) CompressVector(vector []float32) ([]byte, error) {
 	gob, err := z.gobc.CompressVector(vector)
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func (z *zstdCompressor) CompressVector(vector []float64) ([]byte, error) {
 	return zstd.CompressLevel(nil, gob, z.compressionLevel)
 }
 
-func (z *zstdCompressor) DecompressVector(bs []byte) ([]float64, error) {
+func (z *zstdCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	bufbytes, err := zstd.Decompress(nil, bs)
 	if err != nil {
 		return nil, err
