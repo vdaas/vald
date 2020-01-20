@@ -29,7 +29,7 @@ func TestWithInitialDuration(t *testing.T) {
 			},
 		},
 		{
-			name: "set default value",
+			name: "set default",
 			dur:  "dur",
 			checkFunc: func(opt Option) error {
 				got := new(backoff)
@@ -75,7 +75,7 @@ func TestWithMaximumDuration(t *testing.T) {
 			},
 		},
 		{
-			name: "set default value",
+			name: "set default",
 			dur:  "dur",
 			checkFunc: func(opt Option) error {
 				got := new(backoff)
@@ -121,7 +121,7 @@ func TestWithJitterLimit(t *testing.T) {
 			},
 		},
 		{
-			name: "set default value",
+			name: "set default",
 			dur:  "dur",
 			checkFunc: func(opt Option) error {
 				got := new(backoff)
@@ -167,7 +167,7 @@ func TestWithBackOffFactor(t *testing.T) {
 			},
 		},
 		{
-			name: "set default value",
+			name: "set default",
 			f:    -10.0,
 			checkFunc: func(opt Option) error {
 				got := new(backoff)
@@ -213,7 +213,7 @@ func TestWithRetryCount(t *testing.T) {
 			},
 		},
 		{
-			name: "set default value",
+			name: "set default",
 			c:    -10,
 			checkFunc: func(opt Option) error {
 				got := new(backoff)
@@ -259,7 +259,7 @@ func TestWithBackOffTimeLimit(t *testing.T) {
 			},
 		},
 		{
-			name: "set default value",
+			name: "set default",
 			dur:  "dur",
 			checkFunc: func(opt Option) error {
 				got := new(backoff)
