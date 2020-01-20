@@ -144,7 +144,10 @@ func readAndRewrite(path string) error {
 	}
 	fi, err := f.Stat()
 	if err != nil {
-		f.Close()
+		err = f.Close()
+		if err != nil {
+			log.Fatal("error")
+		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
 	buf := bytes.NewBuffer(make([]byte, 0, fi.Size()))
@@ -155,7 +158,10 @@ func readAndRewrite(path string) error {
 		Escape:   sharpEscape,
 	}
 	if fi.Name() == "LICENSE" {
-		license.Execute(buf, d)
+		err = license.Execute(buf, d)
+		if err != nil {
+			log.Fatal("error")
+		}
 	} else {
 		switch filepath.Ext(path) {
 		case ".go", ".proto":
@@ -170,9 +176,18 @@ func readAndRewrite(path string) error {
 			if filepath.Ext(path) == ".go" && strings.HasPrefix(line, "// +build") ||
 				filepath.Ext(path) == ".py" && strings.HasPrefix(line, "# -*-") {
 				bf = true
-				buf.WriteString(line)
-				buf.WriteString("\n")
-				buf.WriteString("\n")
+				_, err = buf.WriteString(line)
+				if err != nil {
+					log.Fatal("error")
+				}
+				_, err = buf.WriteString("\n")
+				if err != nil {
+					log.Fatal("error")
+				}
+				_, err = buf.WriteString("\n")
+				if err != nil {
+					log.Fatal("error")
+				}
 				continue
 			}
 			if (filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml") && strings.HasPrefix(line, "---") {
@@ -190,13 +205,22 @@ func readAndRewrite(path string) error {
 				continue
 			} else if !bf {
 				once.Do(func() {
-					apache.Execute(buf, d)
+					err = apache.Execute(buf, d)
+					if err != nil {
+						log.Fatal("error")
+					}
 				})
 				lf = false
 			}
 			if !lf {
-				buf.WriteString(line)
-				buf.WriteString("\n")
+				_, err = buf.WriteString(line)
+				if err != nil {
+					log.Fatal("error")
+				}
+				_, err = buf.WriteString("\n")
+				if err != nil {
+					log.Fatal("error")
+				}
 			}
 			bf = false
 		}
@@ -211,11 +235,20 @@ func readAndRewrite(path string) error {
 	}
 	f, err = os.Create(path)
 	if err != nil {
-		f.Close()
+		err = f.Close()
+		if err != nil {
+			log.Fatal("error")
+		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
-	f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"))
-	f.Close()
+	_, err = f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"))
+	if err != nil {
+		log.Fatal("error")
+	}
+	err = f.Close()
+	if err != nil {
+		log.Fatal("error")
+	}
 	return nil
 }
 
