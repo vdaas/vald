@@ -183,6 +183,7 @@ gateway:
   name: vald-gateway
   minReplicas: 3
   maxReplicas: 9
+  maxUnavailable: 50%
   hpa:
     enabled: true
     targetCPUUtilizationPercentage: 80
@@ -300,6 +301,7 @@ discoverer:
   name: vald-discoverer
   minReplicas: 1
   maxReplicas: 2
+  maxUnavailable: 50%
   image:
     repository: vdaas/vald-discoverer-k8s
     tag: nightly
@@ -337,6 +339,7 @@ compressor:
   name: vald-manager-compressor
   minReplicas: 3
   maxReplicas: 15
+  maxUnavailable: 50%
   hpa:
     enabled: true
     targetCPUUtilizationPercentage: 80
@@ -386,6 +389,7 @@ backupManager:
   name: vald-manager-backup
   minReplicas: 3
   maxReplicas: 15
+  maxUnavailable: 50%
   hpa:
     enabled: true
     targetCPUUtilizationPercentage: 80
@@ -540,6 +544,7 @@ indexManager:
   name: vald-index-manager-ngt
   minReplicas: 1
   maxReplicas: 2
+  maxUnavailable: 50%
   image:
     repository: vdaas/vald-index-manager-ngt
     tag: nightly
@@ -568,6 +573,7 @@ meta:
   name: vald-meta
   minReplicas: 2
   maxReplicas: 10
+  maxUnavailable: 50%
   hpa:
     enabled: true
     targetCPUUtilizationPercentage: 80
