@@ -36,15 +36,15 @@ import (
 
 type NGT interface {
 	Start(ctx context.Context) <-chan error
-	Search(vec []float64, size uint32, epsilon, radius float32) ([]model.Distance, error)
+	Search(vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error)
 	SearchByID(uuid string, size uint32, epsilon, radius float32) ([]model.Distance, error)
-	Insert(uuid string, vec []float64) (err error)
-	InsertMultiple(vecs map[string][]float64) (err error)
-	Update(uuid string, vec []float64) (err error)
-	UpdateMultiple(vecs map[string][]float64) (err error)
+	Insert(uuid string, vec []float32) (err error)
+	InsertMultiple(vecs map[string][]float32) (err error)
+	Update(uuid string, vec []float32) (err error)
+	UpdateMultiple(vecs map[string][]float32) (err error)
 	Delete(uuid string) (err error)
 	DeleteMultiple(uuids ...string) (err error)
-	GetObject(uuid string) (vec []float64, err error)
+	GetObject(uuid string) (vec []float32, err error)
 	CreateIndex(poolSize uint32) (err error)
 	SaveIndex() (err error)
 	Exists(string) (uint32, bool)
@@ -69,7 +69,7 @@ type ngt struct {
 }
 
 type vcache struct {
-	vector []float64
+	vector []float32
 	date   int64
 }
 
@@ -169,7 +169,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (n *ngt) Search(vec []float64, size uint32, epsilon, radius float32) ([]model.Distance, error) {
+func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error) {
 	if n.indexing.Load().(bool) {
 		return make([]model.Distance, 0), nil
 	}
@@ -217,11 +217,11 @@ func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) ([]m
 	return n.Search(vec, size, epsilon, radius)
 }
 
-func (n *ngt) Insert(uuid string, vec []float64) (err error) {
+func (n *ngt) Insert(uuid string, vec []float32) (err error) {
 	return n.insert(uuid, vec, time.Now().UnixNano(), true)
 }
 
-func (n *ngt) insert(uuid string, vec []float64, t int64, validation bool) (err error) {
+func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err error) {
 	if len(uuid) == 0 {
 		err = errors.ErrUUIDNotFound(0)
 		return err
@@ -241,7 +241,7 @@ func (n *ngt) insert(uuid string, vec []float64, t int64, validation bool) (err 
 	return nil
 }
 
-func (n *ngt) InsertMultiple(vecs map[string][]float64) (err error) {
+func (n *ngt) InsertMultiple(vecs map[string][]float32) (err error) {
 	t := time.Now().UnixNano()
 	for uuid, vec := range vecs {
 		ierr := n.insert(uuid, vec, t, true)
@@ -256,7 +256,7 @@ func (n *ngt) InsertMultiple(vecs map[string][]float64) (err error) {
 	return err
 }
 
-func (n *ngt) Update(uuid string, vec []float64) (err error) {
+func (n *ngt) Update(uuid string, vec []float32) (err error) {
 	err = n.Delete(uuid)
 	if err != nil {
 		return err
@@ -265,7 +265,7 @@ func (n *ngt) Update(uuid string, vec []float64) (err error) {
 	return n.insert(uuid, vec, time.Now().UnixNano(), false)
 }
 
-func (n *ngt) UpdateMultiple(vecs map[string][]float64) (err error) {
+func (n *ngt) UpdateMultiple(vecs map[string][]float32) (err error) {
 	uuids := make([]string, 0, len(vecs))
 	for uuid := range vecs {
 		uuids = append(uuids, uuid)
@@ -330,7 +330,7 @@ func (n *ngt) DeleteMultiple(uuids ...string) (err error) {
 	return err
 }
 
-func (n *ngt) GetObject(uuid string) (vec []float64, err error) {
+func (n *ngt) GetObject(uuid string) (vec []float32, err error) {
 	oid, ok := n.kvs.Get(uuid)
 	if !ok {
 		err = errors.ErrObjectIDNotFound(uuid)
@@ -378,7 +378,7 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 		err = errors.Wrap(err, brerr.Error())
 	}
 	uuids := make([]string, 0, ic)
-	vecs := make([][]float64, 0, ic)
+	vecs := make([][]float32, 0, ic)
 	n.ivc.Range(func(uuid string, ivc vcache) bool {
 		if ivc.date <= t {
 			uuids = append(uuids, uuid)

@@ -133,7 +133,7 @@ func (s *server) StreamInsert(stream agent.Agent_StreamInsertServer) error {
 func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
 	res = new(payload.Empty)
 
-	vmap := make(map[string][]float64, len(vecs.GetVectors()))
+	vmap := make(map[string][]float32, len(vecs.GetVectors()))
 	for _, vec := range vecs.GetVectors() {
 		vmap[vec.GetId()] = vec.GetVector()
 	}
@@ -165,7 +165,7 @@ func (s *server) StreamUpdate(stream agent.Agent_StreamUpdateServer) error {
 func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
 	res = new(payload.Empty)
 
-	vmap := make(map[string][]float64, len(vecs.GetVectors()))
+	vmap := make(map[string][]float32, len(vecs.GetVectors()))
 	for _, vec := range vecs.GetVectors() {
 		vmap[vec.GetId()] = vec.GetVector()
 	}

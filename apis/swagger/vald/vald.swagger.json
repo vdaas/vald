@@ -193,7 +193,7 @@
           "type": "array",
           "items": {
             "type": "number",
-            "format": "double"
+            "format": "float"
           }
         }
       }
@@ -254,7 +254,7 @@
           "type": "array",
           "items": {
             "type": "number",
-            "format": "double"
+            "format": "float"
           }
         },
         "ips": {
@@ -275,7 +275,7 @@
           "type": "array",
           "items": {
             "type": "number",
-            "format": "double"
+            "format": "float"
           }
         },
         "config": {

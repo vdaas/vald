@@ -39,7 +39,7 @@ func NewGob(opts ...GobOption) (Compressor, error) {
 	return c, nil
 }
 
-func (g *gobCompressor) CompressVector(vector []float64) ([]byte, error) {
+func (g *gobCompressor) CompressVector(vector []float32) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := gob.NewEncoder(buf).Encode(vector)
 	if err != nil {
@@ -49,8 +49,8 @@ func (g *gobCompressor) CompressVector(vector []float64) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (g *gobCompressor) DecompressVector(bs []byte) ([]float64, error) {
-	var vector []float64
+func (g *gobCompressor) DecompressVector(bs []byte) ([]float32, error) {
+	var vector []float32
 	err := gob.NewDecoder(bytes.NewBuffer(bs)).Decode(&vector)
 	if err != nil {
 		return nil, err

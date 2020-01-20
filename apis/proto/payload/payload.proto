@@ -30,7 +30,7 @@ import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
 
 message Search {
   message Request {
-    repeated double vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
     Config config = 2;
   }
 
@@ -72,7 +72,7 @@ message Object {
 
   message Vector {
     string id = 1 [ (validate.rules).string.min_len = 1 ];
-    repeated double vector = 2 [ (validate.rules).repeated .min_items = 2 ];
+    repeated float vector = 2 [ (validate.rules).repeated .min_items = 2 ];
   }
   message Vectors { repeated Vector vectors = 1; }
 }
@@ -123,7 +123,7 @@ message Backup {
   message MetaVector {
     string uuid = 1;
     string meta = 2;
-    repeated double vector = 3 [ (validate.rules).repeated .min_items = 2 ];
+    repeated float vector = 3 [ (validate.rules).repeated .min_items = 2 ];
     repeated string ips = 4;
   }
   message MetaVectors { repeated MetaVector vectors = 1; }
