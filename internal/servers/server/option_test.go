@@ -268,7 +268,7 @@ func TestWithProbeWaitTime(t *testing.T) {
 			},
 		},
 		{
-			name: "set default value",
+			name: "set default",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -314,7 +314,7 @@ func TestWithShutdownDuration(t *testing.T) {
 			},
 		},
 		{
-			name: "set default value",
+			name: "set default",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -361,7 +361,7 @@ func TestWithReadHeaderTimeout(t *testing.T) {
 		},
 
 		{
-			name: "set default value",
+			name: "set default",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -408,7 +408,7 @@ func TestWithReadTimeout(t *testing.T) {
 		},
 
 		{
-			name: "set default value",
+			name: "set default",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -455,7 +455,7 @@ func TestWithWriteTimeout(t *testing.T) {
 		},
 
 		{
-			name: "set default value",
+			name: "set default",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -502,7 +502,7 @@ func TestWithIdleTimeout(t *testing.T) {
 		},
 
 		{
-			name: "set default value",
+			name: "set default",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)

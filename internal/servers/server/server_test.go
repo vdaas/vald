@@ -26,25 +26,25 @@ func TestString(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "REST mode",
+			name: "returns REST when in REST mode",
 			m:    1,
 			want: "REST",
 		},
 
 		{
-			name: "gRPC mode",
+			name: "returns gRPC when in gRPC mode",
 			m:    2,
 			want: "gRPC",
 		},
 
 		{
-			name: "GraphQL mode",
+			name: "returns GraphQL when in GraphQL mode",
 			m:    3,
 			want: "GraphQL",
 		},
 
 		{
-			name: "unknown mode",
+			name: "returns unknown when in unknown mode",
 			m:    5,
 			want: "unknown",
 		},
@@ -73,7 +73,7 @@ func TestMode(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "REST mode (rest)",
+			name: "returns REST when in REST mode (rest)",
 			args: args{
 				m: "REST",
 			},
@@ -81,7 +81,7 @@ func TestMode(t *testing.T) {
 		},
 
 		{
-			name: "REST mode (http)",
+			name: "returns HTTP when in REST mode (http)",
 			args: args{
 				m: "HTTP",
 			},
@@ -89,7 +89,7 @@ func TestMode(t *testing.T) {
 		},
 
 		{
-			name: "gRPC mode",
+			name: "returns GRPC when in gRPC mode",
 			args: args{
 				m: "GRPC",
 			},
@@ -97,7 +97,7 @@ func TestMode(t *testing.T) {
 		},
 
 		{
-			name: "GraphQL mode (graphql)",
+			name: "returns GraphQL when in GraphQL mode (graphql)",
 			args: args{
 				m: "GraphQL",
 			},
@@ -105,7 +105,7 @@ func TestMode(t *testing.T) {
 		},
 
 		{
-			name: "GraphQL mode (gql)",
+			name: "returns GQL when in GraphQL mode (gql)",
 			args: args{
 				m: "GQL",
 			},
@@ -113,7 +113,7 @@ func TestMode(t *testing.T) {
 		},
 
 		{
-			name: "unknown mode",
+			name: "returns 0 when in unknown mode",
 			args: args{
 				m: "Vald",
 			},
@@ -148,7 +148,7 @@ func TestNew(t *testing.T) {
 			hdr := new(handler)
 
 			return test{
-				name: "initialize REST server is successes",
+				name: "returns REST server instance when in REST mode",
 				opts: []Option{
 					WithHTTPHandler(hdr),
 					WithErrorGroup(nil),
@@ -175,7 +175,7 @@ func TestNew(t *testing.T) {
 
 		func() test {
 			return test{
-				name: "return nil and error when REST server returns invalid api config error",
+				name: "returns nil and error when REST server returns invalid api config error",
 				opts: []Option{},
 				checkFunc: func(got *server, gotErr, wantErr error) error {
 					if got != nil {
@@ -196,7 +196,7 @@ func TestNew(t *testing.T) {
 			fn := func(g *grpc.Server) {}
 
 			return test{
-				name: "initialize of gRPC server is success",
+				name: "returns gRPC server instance when in gRPC mode",
 				opts: []Option{
 					WithServerMode(GRPC),
 					WithGRPCRegistFunc(fn),
@@ -221,7 +221,7 @@ func TestNew(t *testing.T) {
 
 		func() test {
 			return test{
-				name: "return nil and error when gRPC server returns invalid api config error",
+				name: "returns nil and error when gRPC server returns invalid api config error",
 				opts: []Option{
 					WithServerMode(GRPC),
 				},
@@ -248,7 +248,7 @@ func TestNew(t *testing.T) {
 			hdr := new(handler)
 
 			return test{
-				name: "initialize GQL server is successes",
+				name: "returns GQL server instance when in GraphQL mode",
 				opts: []Option{
 					WithServerMode(GQL),
 					WithHTTPHandler(hdr),
@@ -276,7 +276,7 @@ func TestNew(t *testing.T) {
 
 		func() test {
 			return test{
-				name: "return nil and error when GQL server returns invalid api config error",
+				name: "returns nil and error when GQL server returns invalid api config error",
 				opts: []Option{
 					WithServerMode(GQL),
 				},
@@ -320,11 +320,19 @@ func TestIsRunning(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "server is running",
+			name: "returns true when server is running",
 			s: &server{
 				running: true,
 			},
 			want: true,
+		},
+
+		{
+			name: "returns false when server is not running",
+			s: &server{
+				running: false,
+			},
+			want: false,
 		},
 	}
 
@@ -347,7 +355,7 @@ func TestName(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "server is running",
+			name: "returns name of server instance field",
 			s: &server{
 				name: "name",
 			},
@@ -395,7 +403,7 @@ func TestListenAndServe(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "return nil when server is already running",
+			name: "returns nil when server is already running",
 			field: field{
 				running: true,
 			},
@@ -406,7 +414,7 @@ func TestListenAndServe(t *testing.T) {
 			err := errors.New("faild to prestart")
 
 			return test{
-				name: "return error when prestart function return error",
+				name: "returns error when prestart function return error",
 				field: field{
 					running: false,
 					preStartFunc: func() error {
@@ -427,7 +435,7 @@ func TestListenAndServe(t *testing.T) {
 			}
 
 			return test{
-				name: "serving of REST server is successful",
+				name: "returns nil when serving of REST server is successes",
 				field: field{
 					mode:           REST,
 					eg:             errgroup.Get(),
@@ -450,7 +458,7 @@ func TestListenAndServe(t *testing.T) {
 			srv := new(grpc.Server)
 
 			return test{
-				name: "serving of gRPC server is successful",
+				name: "returns nil when serving of gRPC server is successes",
 				field: field{
 					mode:           GRPC,
 					eg:             errgroup.Get(),
@@ -540,7 +548,7 @@ func TestShutdown(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "server not running",
+			name: "returns nil when server is not running",
 			checkFunc: func(s *server, got, want error) error {
 				if want != got {
 					return errors.Errorf("Shutdown returns error: %v", got)
@@ -557,7 +565,7 @@ func TestShutdown(t *testing.T) {
 			testSrv := httptest.NewServer(handler)
 
 			return test{
-				name: "shutdown REST server",
+				name: "returns nil when shutdown of REST server is successes",
 				args: args{
 					ctx: context.Background(),
 				},
@@ -589,7 +597,7 @@ func TestShutdown(t *testing.T) {
 			grpcSrv := grpc.NewServer()
 
 			return test{
-				name: "shutdown gRPC server",
+				name: "returns nil when shutdown of gRPC server is successes",
 				args: args{
 					ctx: context.Background(),
 				},
