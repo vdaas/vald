@@ -31,20 +31,16 @@ import (
 const (
 	maxVersion = "v0.0.10"
 	minVersion = "v0.0.0"
+	name       = "manager backup mysql"
 )
 
 func main() {
 	if err := safety.RecoverFunc(func() error {
 		return runner.Do(
 			context.Background(),
-			runner.WithName("backup-manager"),
+			runner.WithName(name),
 			runner.WithVersion(info.Version, maxVersion, minVersion),
-			runner.WithShowVersionFunc(info.ShowVersionInfo(map[string]string{
-				"go version":  info.GoVersion,
-				"os":          info.GoOS,
-				"arch":        info.GoArch,
-				"cgo enabled": info.CGOEnabled,
-			})),
+			runner.WithShowVersionFunc(info.ShowVersionInfo),
 			runner.WithConfigLoader(func(path string) (interface{}, string, string, error) {
 				cfg, err := config.NewConfig(path)
 				if err != nil {

@@ -36,52 +36,50 @@ var (
 	GoArch     string
 	CGOEnabled string
 	NGTVersion string
+
+	keyvals = map[string]*string{
+		"version":     &Version,
+		"commit hash": &GitCommit,
+		"build time":  &BuildTime,
+		"go version":  &GoVersion,
+		"os":          &GoOS,
+		"arch":        &GoArch,
+		"cgo enabled": &CGOEnabled,
+		"ngt version": &NGTVersion,
+	}
 )
 
-func ShowVersionInfo(extras map[string]string) func(name string) {
-	return func(name string) {
-		defaultKeys := []string{"version", "commit hash", "build time"}
-		keys := make([]string, 0, len(extras))
-		for k := range extras {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-
-		var l int
-		maxlen := 0
-		for _, k := range append(defaultKeys, keys...) {
-			l = len(k)
-			if maxlen < l {
-				maxlen = l
-			}
-		}
-
-		infoFormat := fmt.Sprintf("%%-%ds -> %%s", maxlen)
-
-		strs := make([]string, 0, len(keys)+4)
-		strs = append(strs,
-			fmt.Sprintf("\nvald %s server", name),
-			fmt.Sprintf(infoFormat, defaultKeys[0], log.Bold(Version)),
-			fmt.Sprintf(infoFormat, defaultKeys[1], GitCommit),
-			fmt.Sprintf(infoFormat, defaultKeys[2], BuildTime),
-		)
-		for _, k := range keys {
-			if k != "" && extras[k] != "" {
-				strs = append(strs, fmt.Sprintf(infoFormat, k, extras[k]))
-			}
-		}
-
-		log.Info(strings.Join(strs, "\n"))
+func ShowVersionInfo(name string, logfunc func(vals ...interface{})) {
+	keys := make([]string, 0, len(keyvals))
+	for k := range keyvals {
+		keys = append(keys, k)
 	}
-}
+	sort.Strings(keys)
 
-func ShowWholeInfo(logf func(format string, vals ...interface{})) {
-	logf("version     -> %s", Version)
-	logf("commit Hash -> %s", GitCommit)
-	logf("build time  -> %s", BuildTime)
-	logf("Go version  -> %s", GoVersion)
-	logf("Go OS       -> %s", GoOS)
-	logf("Go arch     -> %s", GoArch)
-	logf("CGO enabled -> %s", CGOEnabled)
-	logf("NGT version -> %s", NGTVersion)
+	var l int
+	maxlen := 0
+	for _, k := range keys {
+		l = len(k)
+		if maxlen < l {
+			maxlen = l
+		}
+	}
+
+	infoFormat := fmt.Sprintf("%%-%ds -> %%s", maxlen)
+
+	strs := make([]string, 0, len(keys))
+	if name != "" {
+		strs = append(strs, fmt.Sprintf("\nvald %s server", name))
+	}
+	for _, k := range keys {
+		if k != "" && *keyvals[k] != "" {
+			if k == "version" {
+				strs = append(strs, fmt.Sprintf(infoFormat, k, log.Bold(*keyvals[k])))
+			} else {
+				strs = append(strs, fmt.Sprintf(infoFormat, k, *keyvals[k]))
+			}
+		}
+	}
+
+	logfunc(strings.Join(strs, "\n"))
 }
