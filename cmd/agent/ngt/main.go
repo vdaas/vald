@@ -40,7 +40,6 @@ func main() {
 			context.Background(),
 			runner.WithName(name),
 			runner.WithVersion(info.Version, maxVersion, minVersion),
-			runner.WithShowVersionFunc(info.ShowVersionInfo),
 			runner.WithConfigLoader(func(path string) (interface{}, string, string, error) {
 				cfg, err := config.NewConfig(path)
 				if err != nil {
@@ -53,7 +52,7 @@ func main() {
 			}),
 		)
 	})(); err != nil {
-		info.ShowVersionInfo(name, log.Error)
+		info.Error()
 		log.Fatal(err)
 		return
 	}

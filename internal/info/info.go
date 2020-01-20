@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/log"
@@ -47,9 +48,34 @@ var (
 		"cgo enabled": &CGOEnabled,
 		"ngt version": &NGTVersion,
 	}
+
+	once sync.Once
+	name string
 )
 
-func ShowVersionInfo(name string, logfunc func(vals ...interface{})) {
+func Init(n string) {
+	once.Do(func() {
+		name = n
+	})
+}
+
+func Info() {
+	showVersionInfo(log.Info)
+}
+
+func Debug() {
+	showVersionInfo(log.Debug)
+}
+
+func Warn() {
+	showVersionInfo(log.Warn)
+}
+
+func Error() {
+	showVersionInfo(log.Error)
+}
+
+func showVersionInfo(logfunc func(vals ...interface{})) {
 	keys := make([]string, 0, len(keyvals))
 	for k := range keyvals {
 		keys = append(keys, k)
