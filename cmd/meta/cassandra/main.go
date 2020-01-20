@@ -53,6 +53,7 @@ func main() {
 			}),
 		)
 	})(); err != nil {
+		info.ShowVersionInfo(name, log.Warn)
 		log.Fatal(err)
 		return
 	}
