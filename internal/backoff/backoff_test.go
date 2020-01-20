@@ -38,7 +38,7 @@ func TestNew(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "initialize is success",
+			name: "returns backoff instance",
 			opts: []Option{
 				WithBackOffFactor(0.5),
 			},
@@ -280,22 +280,21 @@ func TestDo(t *testing.T) {
 func TestClose(t *testing.T) {
 	type test struct {
 		name string
-		wg   *sync.WaitGroup
+		bo   *backoff
 	}
 
 	tests := []test{
 		{
-			name: "close is success",
-			wg:   new(sync.WaitGroup),
+			name: "processing is successes",
+			bo: &backoff{
+				wg: sync.WaitGroup{},
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bo := &backoff{
-				wg: *tt.wg,
-			}
-			bo.Close()
+			tt.bo.Close()
 		})
 	}
 }
