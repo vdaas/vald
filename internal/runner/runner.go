@@ -50,7 +50,7 @@ type runner struct {
 	location         string
 	loadConfig       func(string) (interface{}, string, string, error)
 	initializeDaemon func(interface{}) (Runner, error)
-	showVersionFunc  func(name string)
+	showVersionFunc  func(name string, log func(vals ...interface{}))
 }
 
 func Do(ctx context.Context, opts ...Option) error {
@@ -76,7 +76,7 @@ func Do(ctx context.Context, opts ...Option) error {
 
 	if p.ShowVersion() {
 		if r.showVersionFunc != nil {
-			r.showVersionFunc(r.name)
+			r.showVersionFunc(r.name, log.Info)
 		} else {
 			log.Infof("vald %s server", r.name)
 			log.Infof("version -> %s", log.Bold(r.version))
