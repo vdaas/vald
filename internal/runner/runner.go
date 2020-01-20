@@ -27,6 +27,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/params"
 	"github.com/vdaas/vald/internal/timeutil/location"
@@ -50,7 +51,6 @@ type runner struct {
 	location         string
 	loadConfig       func(string) (interface{}, string, string, error)
 	initializeDaemon func(interface{}) (Runner, error)
-	showVersionFunc  func(name string, log func(vals ...interface{}))
 }
 
 func Do(ctx context.Context, opts ...Option) error {
@@ -61,6 +61,7 @@ func Do(ctx context.Context, opts ...Option) error {
 	}
 
 	log.Init(log.DefaultGlg())
+	info.Init(r.name)
 
 	p, isHelp, err := params.New(
 		params.WithConfigFileDescription(fmt.Sprintf("%s config file path", r.name)),
@@ -75,12 +76,7 @@ func Do(ctx context.Context, opts ...Option) error {
 	}
 
 	if p.ShowVersion() {
-		if r.showVersionFunc != nil {
-			r.showVersionFunc(r.name, log.Info)
-		} else {
-			log.Infof("vald %s server", r.name)
-			log.Infof("version -> %s", log.Bold(r.version))
-		}
+		info.Info()
 		return nil
 	}
 
