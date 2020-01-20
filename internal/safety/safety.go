@@ -21,7 +21,6 @@ import (
 	"runtime"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 )
 
@@ -32,7 +31,6 @@ func RecoverFunc(fn func() error) func() error {
 				log.Warnf("recovered:\t%+v", r)
 				switch x := r.(type) {
 				case runtime.Error:
-					info.ShowVersionInfo("", log.Warn)
 					err = errors.ErrRuntimeError(err, x)
 					panic(err)
 				case string:
