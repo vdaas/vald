@@ -18,8 +18,8 @@ jobs:
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
-          curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
-          curl -O chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          sudo wget -O /usr/local/bin/yq -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod a+x /usr/local/bin/yq
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
           roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role" -j`
           if [ "$roles" = "null" ]; then
             roles=`yq r chatops_permissions.yaml default-roles -j`
@@ -66,8 +66,8 @@ jobs:
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
-          curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
-          curl -O chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          sudo wget -O /usr/local/bin/yq -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod a+x /usr/local/bin/yq
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
           roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role" -j`
           if [ "$roles" = "null" ]; then
             roles=`yq r chatops_permissions.yaml default-roles -j`
@@ -122,8 +122,8 @@ jobs:
         if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
-          curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
-          curl -O chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          sudo wget -O /usr/local/bin/yq -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod a+x /usr/local/bin/yq
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
           roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role" -j`
           if [ "$roles" = "null" ]; then
             roles=`yq r chatops_permissions.yaml default-roles -j`
@@ -202,8 +202,8 @@ jobs:
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
-          curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
-          curl -O chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          sudo wget -O /usr/local/bin/yq -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod a+x /usr/local/bin/yq
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
           roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role" -j`
           if [ "$roles" = "null" ]; then
             roles=`yq r chatops_permissions.yaml default-roles -j`
