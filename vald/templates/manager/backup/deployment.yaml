@@ -21,7 +21,7 @@ metadata:
     app: {{ .Values.backupManager.name }}
 spec:
   progressDeadlineSeconds: 600
-  replicas: 1
+  replicas: {{ .Values.backupManager.minReplicas }}
   revisionHistoryLimit: 2
   selector:
     matchLabels:
