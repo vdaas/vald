@@ -20,7 +20,8 @@ metadata:
 data:
   config.yaml: |
     ---
-    version: v0.0.0
+    version: {{ .Values.backupManager.version }}
+    time_zone: {{ default .Values.defaults.time_zone .Values.backupManager.time_zone }}
     server_config:
       {{- $servers := dict "Values" .Values.backupManager.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}

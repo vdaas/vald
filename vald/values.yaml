@@ -15,6 +15,7 @@
 #
 
 defaults:
+  time_zone: UTC
   server_config:
     servers:
       rest:
@@ -178,6 +179,7 @@ defaults:
         ca: /path/to/ca
 
 gateway:
+  version: v0.0.0
   name: vald-gateway
   minReplicas: 3
   maxReplicas: 9
@@ -253,6 +255,7 @@ gateway:
       client: {}
 
 agent:
+  version: v0.0.0
   name: vald-agent-ngt
   minReplicas: 20
   maxReplicas: 300
@@ -293,6 +296,7 @@ agent:
     enable_in_memory_mode: true
 
 discoverer:
+  version: v0.0.0
   name: vald-discoverer
   minReplicas: 1
   maxReplicas: 2
@@ -326,6 +330,7 @@ discoverer:
     enabled: true
 
 compressor:
+  version: v0.0.0
   name: vald-manager-compressor
   minReplicas: 3
   maxReplicas: 15
@@ -374,6 +379,7 @@ compressor:
     buffer: 100
 
 backupManager:
+  version: v0.0.0
   name: vald-manager-backup
   minReplicas: 3
   maxReplicas: 15
@@ -527,6 +533,7 @@ backupManager:
         shuffle_replicas: false
 
 indexManager:
+  version: v0.0.0
   name: vald-index-manager-ngt
   minReplicas: 1
   maxReplicas: 2
@@ -554,6 +561,7 @@ indexManager:
       enabled: false
 
 meta:
+  version: v0.0.0
   name: vald-meta
   minReplicas: 2
   maxReplicas: 10

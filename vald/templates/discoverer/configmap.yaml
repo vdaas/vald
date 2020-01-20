@@ -20,7 +20,8 @@ metadata:
 data:
   config.yaml: |
     ---
-    version: v0.0.0
+    version: {{ .Values.discoverer.version }}
+    time_zone: {{ default .Values.defaults.time_zone .Values.discoverer.time_zone }}
     server_config:
       {{- $servers := dict "Values" .Values.discoverer.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
