@@ -1,0 +1,71 @@
+roles:
+  admin:
+    policies:
+      - rebase
+      - approve
+      - add-contributors
+      - label
+  author:
+    policies:
+      - rebase
+      - approve
+      - add-contributors
+      - label
+  sig-lead:
+    policies:
+      - rebase
+      - approve
+      - label
+  sig-sre:
+    policies:
+      - rebase
+      - add-contributors
+      - label
+  sig-set:
+    policies:
+      - rebase
+      - label
+  sig-core:
+    policies:
+      - rebase
+      - label
+  contributor:
+    policies:
+      - label
+
+default-roles:
+  - contributor
+
+users:
+  kpango:
+    role:
+      - author
+      - admin
+  rinx:
+    role:
+      - author
+      - sig-lead
+      - sig-core
+      - sig-sre
+  kmrmt:
+    role:
+      - author
+      - sig-core
+  vankichi:
+    role:
+      - sig-lead
+      - contributor
+      - sig-set
+  hlts2:
+    role:
+      - contributor
+      - sig-sre
+      - sig-set
+  datelier:
+    role:
+      - contributor
+      - sig-core
+  kevindiu:
+    role:
+      - contributor
+      - sig-set
