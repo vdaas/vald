@@ -17,13 +17,13 @@
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: discoverer
+  name: {{ .Values.discoverer.clusterRoleBinding.name }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: discoverer
+  name: {{ .Values.discoverer.clusterRole.name }}
 subjects:
 - kind: ServiceAccount
-  name: vald
-  namespace: default
+  name: {{ .Values.discoverer.serviceAccount.name }}
+  namespace: {{ .Release.Namespace }}
 {{- end }}

@@ -26,7 +26,7 @@ data:
       {{- $servers := dict "Values" .Values.compressor.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
     backup:
-      host: {{ .Values.backupManager.name }}.default.svc.cluster.local
+      host: {{ .Values.backupManager.name }}.{{ .Release.Namespace }}.svc.cluster.local
       port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.backupManager.server_config.servers.grpc.port }}
       client:
         {{- $backupClient := dict "Values" .Values.compressor.backup.client "default" .Values.defaults.grpc.client }}

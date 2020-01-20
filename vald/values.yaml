@@ -324,10 +324,13 @@ discoverer:
       enabled: false
   clusterRole:
     enabled: true
+    name: discoverer
   clusterRoleBinding:
     enabled: true
+    name: discoverer
   serviceAccount:
     enabled: true
+    name: vald
 
 compressor:
   version: v0.0.0
