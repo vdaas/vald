@@ -13,23 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if eq .Values.gateway.kind "Deployment" }}
+{{- if eq .Values.gateway.kind "DaemonSet" }}
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: {{ .Values.gateway.name }}
   labels:
     app: {{ .Values.gateway.name }}
 spec:
-  progressDeadlineSeconds: {{ .Values.gateway.progressDeadlineSeconds }}
-  replicas: {{ .Values.gateway.minReplicas }}
   revisionHistoryLimit: {{ .Values.gateway.revisionHistoryLimit }}
   selector:
     matchLabels:
       app: {{ .Values.gateway.name }}
-  strategy:
+  updateStrategy:
     rollingUpdate:
-      maxSurge: {{ .Values.gateway.rollingUpdate.maxSurge }}
       maxUnavailable: {{ .Values.gateway.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
   template:

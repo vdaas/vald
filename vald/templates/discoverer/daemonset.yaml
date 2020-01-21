@@ -13,23 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if eq .Values.discoverer.kind "Deployment" }}
+{{- if eq .Values.discoverer.kind "DaemonSet" }}
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: {{ .Values.discoverer.name }}
   labels:
     app: {{ .Values.discoverer.name }}
 spec:
-  progressDeadlineSeconds: {{ .Values.discoverer.progressDeadlineSeconds }}
-  replicas: {{ .Values.discoverer.minReplicas }}
   revisionHistoryLimit: {{ .Values.discoverer.revisionHistoryLimit }}
   selector:
     matchLabels:
       app: {{ .Values.discoverer.name }}
-  strategy:
+  updateStrategy:
     rollingUpdate:
-      maxSurge: {{ .Values.discoverer.rollingUpdate.maxSurge }}
       maxUnavailable: {{ .Values.discoverer.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
   template:

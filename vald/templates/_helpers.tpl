@@ -79,7 +79,7 @@ readinessProbe:
     port: {{ default .default.healths.readiness.readinessProbe.httpGet.port .Values.healths.readiness.readinessProbe.httpGet.port }}
     scheme: {{ default .default.healths.readiness.readinessProbe.httpGet.scheme .Values.healths.readiness.readinessProbe.httpGet.scheme }}
     {{- else }}
-    {{- toYaml .default.healths.readiness.readinessProbe | nindent 2 }}
+    {{- toYaml .default.healths.readiness.readinessProbe.httpGet | nindent 4 }}
     {{- end }}
   initialDelaySeconds: {{ default .default.healths.readiness.readinessProbe.initialDelaySeconds .Values.healths.readiness.readinessProbe.initialDelaySeconds }}
   timeoutSeconds: {{ default .default.healths.readiness.readinessProbe.timeoutSeconds .Values.healths.readiness.readinessProbe.timeoutSeconds }}

@@ -13,23 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if eq .Values.backupManager.kind "Deployment" }}
+{{- if eq .Values.backupManager.kind "DaemonSet" }}
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: {{ .Values.backupManager.name }}
   labels:
     app: {{ .Values.backupManager.name }}
 spec:
-  progressDeadlineSeconds: {{ .Values.backupManager.progressDeadlineSeconds }}
-  replicas: {{ .Values.backupManager.minReplicas }}
   revisionHistoryLimit: {{ .Values.backupManager.revisionHistoryLimit }}
   selector:
     matchLabels:
       app: {{ .Values.backupManager.name }}
-  strategy:
+  updateStrategy:
     rollingUpdate:
-      maxSurge: {{ .Values.backupManager.rollingUpdate.maxSurge }}
       maxUnavailable: {{ .Values.backupManager.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
   template:
