@@ -13,23 +13,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{ $isDaemonSet := false }}
+{{- if .Values.compressor.externalTrafficPolicy }}
+{{- if eq .Values.compressor.externalTrafficPolicy "Local" }}
+{{ $isDaemonSet = true }}
+{{- end }}
+{{- end }}
 apiVersion: apps/v1
+{{- if $isDaemonSet }}
+kind: DaemonSet
+{{- else }}
 kind: Deployment
+{{- end }}
 metadata:
   name: {{ .Values.compressor.name }}
   labels:
     app: {{ .Values.compressor.name }}
 spec:
-  progressDeadlineSeconds: 600
+  {{- if $isDaemonSet }}
+  {{- else }}
+  progressDeadlineSeconds: {{ .Values.compressor.progressDeadlineSeconds }}
   replicas: {{ .Values.compressor.minReplicas }}
-  revisionHistoryLimit: 2
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.compressor.revisionHistoryLimit }}
   selector:
     matchLabels:
       app: {{ .Values.compressor.name }}
+  {{- if $isDaemonSet }}
+  updateStrategy:
+  {{- else }}
   strategy:
+  {{- end }}
     rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
+      {{- if $isDaemonSet }}
+      {{- else }}
+      maxSurge: {{ .Values.compressor.rollingUpdate.maxSurge }}
+      {{- end }}
+      maxUnavailable: {{ .Values.compressor.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
   template:
     metadata:
@@ -61,7 +81,7 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: {{ .Values.compressor.terminationGracePeriodSeconds }}
       volumes:
       - configMap:
           defaultMode: 420

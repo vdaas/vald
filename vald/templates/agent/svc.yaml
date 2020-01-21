@@ -18,6 +18,14 @@ kind: Service
 metadata:
   name: {{ .Values.agent.name }}
 spec:
+  {{- $servers := dict "Values" .Values.agent.server_config "default" .Values.defaults.server_config }}
+  {{- include "vald.servicePorts" $servers | nindent 2 }}
   selector:
     app: {{ .Values.agent.name }}
+  {{- if eq .Values.agent.serviceType "ClusterIP" }}
   clusterIP: None
+  {{- end }}
+  type: {{ .Values.agent.serviceType }}
+  {{- if .Values.agent.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.agent.externalTrafficPolicy }}
+  {{- end }}

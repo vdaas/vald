@@ -13,23 +13,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{ $isDaemonSet := false }}
+{{- if .Values.backupManager.externalTrafficPolicy }}
+{{- if eq .Values.backupManager.externalTrafficPolicy "Local" }}
+{{ $isDaemonSet = true }}
+{{- end }}
+{{- end }}
 apiVersion: apps/v1
+{{- if $isDaemonSet }}
+kind: DaemonSet
+{{- else }}
 kind: Deployment
+{{- end }}
 metadata:
   name: {{ .Values.backupManager.name }}
   labels:
     app: {{ .Values.backupManager.name }}
 spec:
-  progressDeadlineSeconds: 600
+  {{- if $isDaemonSet }}
+  {{- else }}
+  progressDeadlineSeconds: {{ .Values.backupManager.progressDeadlineSeconds }}
   replicas: {{ .Values.backupManager.minReplicas }}
-  revisionHistoryLimit: 2
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.backupManager.revisionHistoryLimit }}
   selector:
     matchLabels:
       app: {{ .Values.backupManager.name }}
+  {{- if $isDaemonSet }}
+  updateStrategy:
+  {{- else }}
   strategy:
+  {{- end }}
     rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
+      {{- if $isDaemonSet }}
+      {{- else }}
+      maxSurge: {{ .Values.backupManager.rollingUpdate.maxSurge }}
+      {{- end }}
+      maxUnavailable: {{ .Values.backupManager.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
   template:
     metadata:
@@ -61,7 +81,7 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: {{ .Values.backupManager.terminationGracePeriodSeconds }}
       volumes:
         - name: {{ .Values.backupManager.name }}-config
           configMap:

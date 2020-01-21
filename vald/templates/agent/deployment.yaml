@@ -13,23 +13,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{ $isDaemonSet := false }}
+{{- if .Values.agent.externalTrafficPolicy }}
+{{- if eq .Values.agent.externalTrafficPolicy "Local" }}
+{{ $isDaemonSet = true }}
+{{- end }}
+{{- end }}
 apiVersion: apps/v1
+{{- if $isDaemonSet }}
+kind: DaemonSet
+{{- else }}
 kind: Deployment
+{{- end }}
 metadata:
   name: {{ .Values.agent.name }}
   labels:
     app: {{ .Values.agent.name }}
 spec:
-  progressDeadlineSeconds: 600
+  {{- if $isDaemonSet }}
+  {{- else }}
+  progressDeadlineSeconds: {{ .Values.agent.progressDeadlineSeconds }}
   replicas: {{ .Values.agent.minReplicas }}
-  revisionHistoryLimit: 2
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.agent.revisionHistoryLimit }}
   selector:
     matchLabels:
       app: {{ .Values.agent.name }}
+  {{- if $isDaemonSet }}
+  updateStrategy:
+  {{- else }}
   strategy:
+  {{- end }}
     rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
+      {{- if $isDaemonSet }}
+      {{- else }}
+      maxSurge: {{ .Values.agent.rollingUpdate.maxSurge }}
+      {{- end }}
+      maxUnavailable: {{ .Values.agent.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
   template:
     metadata:
@@ -61,7 +81,7 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: {{ .Values.agent.terminationGracePeriodSeconds }}
       volumes:
         - name: {{ .Values.agent.name }}-config
           configMap:

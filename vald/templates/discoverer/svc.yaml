@@ -22,4 +22,10 @@ spec:
   {{- include "vald.servicePorts" $servers | nindent 2 }}
   selector:
     app: {{ .Values.discoverer.name }}
+  {{- if eq .Values.discoverer.serviceType "ClusterIP" }}
   clusterIP: None
+  {{- end }}
+  type: {{ .Values.discoverer.serviceType }}
+  {{- if .Values.discoverer.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.discoverer.externalTrafficPolicy }}
+  {{- end }}

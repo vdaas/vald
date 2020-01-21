@@ -181,9 +181,14 @@ defaults:
 gateway:
   version: v0.0.0
   name: vald-gateway
+  serviceType: ClusterIP
+  # externalTrafficPolicy: Cluster
+  progressDeadlineSeconds: 600
   minReplicas: 3
   maxReplicas: 9
   maxUnavailable: 50%
+  revisionHistoryLimit: 2
+  terminationGracePeriodSeconds: 30
   hpa:
     enabled: true
     targetCPUUtilizationPercentage: 80
@@ -191,6 +196,9 @@ gateway:
     repository: vdaas/vald-gateway
     tag: nightly
     pullPolicy: Always
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
   initContainers:
     - type: waitFor
       name: wait-for-manager-compressor
@@ -216,7 +224,7 @@ gateway:
     prefix: gateway
     servers:
       rest:
-        enabled: true
+        enabled: false
       grpc:
         enabled: true
     healths:
@@ -226,7 +234,7 @@ gateway:
         enabled: true
     metrics:
       pprof:
-        enabled: true
+        enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -258,18 +266,26 @@ gateway:
 agent:
   version: v0.0.0
   name: vald-agent-ngt
+  serviceType: ClusterIP
+  # externalTrafficPolicy: Cluster
+  progressDeadlineSeconds: 600
   minReplicas: 20
   maxReplicas: 300
   maxUnavailable: 1
+  revisionHistoryLimit: 2
+  terminationGracePeriodSeconds: 30
   image:
     repository: vdaas/vald-agent-ngt
     tag: nightly
     pullPolicy: Always
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
   server_config:
     prefix: agent
     servers:
       rest:
-        enabled: true
+        enabled: false
       grpc:
         enabled: true
     healths:
@@ -279,7 +295,7 @@ agent:
         enabled: true
     metrics:
       pprof:
-        enabled: true
+        enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -299,18 +315,26 @@ agent:
 discoverer:
   version: v0.0.0
   name: vald-discoverer
+  serviceType: ClusterIP
+  # externalTrafficPolicy: Cluster
+  progressDeadlineSeconds: 600
   minReplicas: 1
   maxReplicas: 2
   maxUnavailable: 50%
+  revisionHistoryLimit: 2
+  terminationGracePeriodSeconds: 30
   image:
     repository: vdaas/vald-discoverer-k8s
     tag: nightly
     pullPolicy: Always
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
   server_config:
     prefix: discoverer
     servers:
       rest:
-        enabled: true
+        enabled: false
       grpc:
         enabled: true
     healths:
@@ -320,7 +344,7 @@ discoverer:
         enabled: true
     metrics:
       pprof:
-        enabled: true
+        enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -337,9 +361,14 @@ discoverer:
 compressor:
   version: v0.0.0
   name: vald-manager-compressor
+  serviceType: ClusterIP
+  # externalTrafficPolicy: Cluster
+  progressDeadlineSeconds: 600
   minReplicas: 3
   maxReplicas: 15
   maxUnavailable: 50%
+  revisionHistoryLimit: 2
+  terminationGracePeriodSeconds: 30
   hpa:
     enabled: true
     targetCPUUtilizationPercentage: 80
@@ -347,6 +376,9 @@ compressor:
     repository: vdaas/vald-manager-compressor
     tag: nightly
     pullPolicy: Always
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
   initContainers:
     - type: waitFor
       name: wait-for-manager-backup
@@ -357,7 +389,7 @@ compressor:
     prefix: manager-compressor
     servers:
       rest:
-        enabled: true
+        enabled: false
       grpc:
         enabled: true
     healths:
@@ -367,7 +399,7 @@ compressor:
         enabled: true
     metrics:
       pprof:
-        enabled: true
+        enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -387,9 +419,14 @@ compressor:
 backupManager:
   version: v0.0.0
   name: vald-manager-backup
+  serviceType: ClusterIP
+  # externalTrafficPolicy: Cluster
+  progressDeadlineSeconds: 600
   minReplicas: 3
   maxReplicas: 15
   maxUnavailable: 50%
+  revisionHistoryLimit: 2
+  terminationGracePeriodSeconds: 30
   hpa:
     enabled: true
     targetCPUUtilizationPercentage: 80
@@ -398,6 +435,9 @@ backupManager:
     # repository: vdaas/vald-manager-backup-cassandra
     tag: nightly
     pullPolicy: Always
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
   initContainers:
     - type: waitFor
       name: wait-for-mysql
@@ -438,7 +478,7 @@ backupManager:
     prefix: backup-manager
     servers:
       rest:
-        enabled: true
+        enabled: false
       grpc:
         enabled: true
     healths:
@@ -448,7 +488,7 @@ backupManager:
         enabled: true
     metrics:
       pprof:
-        enabled: true
+        enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -542,18 +582,26 @@ backupManager:
 indexManager:
   version: v0.0.0
   name: vald-index-manager-ngt
+  serviceType: ClusterIP
+  # externalTrafficPolicy: Cluster
+  progressDeadlineSeconds: 600
   minReplicas: 1
   maxReplicas: 2
   maxUnavailable: 50%
+  revisionHistoryLimit: 2
+  terminationGracePeriodSeconds: 30
   image:
     repository: vdaas/vald-index-manager-ngt
     tag: nightly
     pullPolicy: Always
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
   server_config:
     prefix: index-manager
     servers:
       rest:
-        enabled: true
+        enabled: false
       grpc:
         enabled: true
     healths:
@@ -563,7 +611,7 @@ indexManager:
         enabled: true
     metrics:
       pprof:
-        enabled: true
+        enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -571,9 +619,14 @@ indexManager:
 meta:
   version: v0.0.0
   name: vald-meta
+  serviceType: ClusterIP
+  # externalTrafficPolicy: Cluster
+  progressDeadlineSeconds: 600
   minReplicas: 2
   maxReplicas: 10
   maxUnavailable: 50%
+  revisionHistoryLimit: 2
+  terminationGracePeriodSeconds: 30
   hpa:
     enabled: true
     targetCPUUtilizationPercentage: 80
@@ -582,6 +635,9 @@ meta:
     # repository: vdaas/vald-meta-cassandra
     tag: nightly
     pullPolicy: Always
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
   initContainers:
     - type: waitFor
       name: wait-for-redis
@@ -622,7 +678,7 @@ meta:
     prefix: meta
     servers:
       rest:
-        enabled: true
+        enabled: false
       grpc:
         enabled: true
     healths:
@@ -632,7 +688,7 @@ meta:
         enabled: true
     metrics:
       pprof:
-        enabled: true
+        enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false

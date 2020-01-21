@@ -13,23 +13,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{ $isDaemonSet := false }}
+{{- if .Values.gateway.externalTrafficPolicy }}
+{{- if eq .Values.gateway.externalTrafficPolicy "Local" }}
+{{ $isDaemonSet = true }}
+{{- end }}
+{{- end }}
 apiVersion: apps/v1
+{{- if $isDaemonSet }}
+kind: DaemonSet
+{{- else }}
 kind: Deployment
+{{- end }}
 metadata:
   name: {{ .Values.gateway.name }}
   labels:
     app: {{ .Values.gateway.name }}
 spec:
-  progressDeadlineSeconds: 600
+  {{- if $isDaemonSet }}
+  {{- else }}
+  progressDeadlineSeconds: {{ .Values.gateway.progressDeadlineSeconds }}
   replicas: {{ .Values.gateway.minReplicas }}
-  revisionHistoryLimit: 2
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.gateway.revisionHistoryLimit }}
   selector:
     matchLabels:
       app: {{ .Values.gateway.name }}
+  {{- if $isDaemonSet }}
+  updateStrategy:
+  {{- else }}
   strategy:
+  {{- end }}
     rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
+      {{- if $isDaemonSet }}
+      {{- else }}
+      maxSurge: {{ .Values.gateway.rollingUpdate.maxSurge }}
+      {{- end }}
+      maxUnavailable: {{ .Values.gateway.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
   template:
     metadata:
@@ -61,7 +81,7 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: {{ .Values.gateway.terminationGracePeriodSeconds }}
       volumes:
         - name: {{ .Values.gateway.name }}-config
           configMap:

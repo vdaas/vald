@@ -13,23 +13,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{ $isDaemonSet := false }}
+{{- if .Values.discoverer.externalTrafficPolicy }}
+{{- if eq .Values.discoverer.externalTrafficPolicy "Local" }}
+{{ $isDaemonSet = true }}
+{{- end }}
+{{- end }}
 apiVersion: apps/v1
+{{- if $isDaemonSet }}
+kind: DaemonSet
+{{- else }}
 kind: Deployment
+{{- end }}
 metadata:
   name: {{ .Values.discoverer.name }}
   labels:
     app: {{ .Values.discoverer.name }}
 spec:
-  progressDeadlineSeconds: 600
+  {{- if $isDaemonSet }}
+  {{- else }}
+  progressDeadlineSeconds: {{ .Values.discoverer.progressDeadlineSeconds }}
   replicas: {{ .Values.discoverer.minReplicas }}
-  revisionHistoryLimit: 2
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.discoverer.revisionHistoryLimit }}
   selector:
     matchLabels:
       app: {{ .Values.discoverer.name }}
+  {{- if $isDaemonSet }}
+  updateStrategy:
+  {{- else }}
   strategy:
+  {{- end }}
     rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
+      {{- if $isDaemonSet }}
+      {{- else }}
+      maxSurge: {{ .Values.discoverer.rollingUpdate.maxSurge }}
+      {{- end }}
+      maxUnavailable: {{ .Values.discoverer.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
   template:
     metadata:
@@ -63,7 +83,7 @@ spec:
       serviceAccount: vald
       serviceAccountName: vald
       securityContext: {}
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: {{ .Values.discoverer.terminationGracePeriodSeconds }}
       volumes:
         - name: {{ .Values.discoverer.name }}-config
           configMap:
