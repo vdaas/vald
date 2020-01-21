@@ -59,6 +59,7 @@ func Do(ctx context.Context, opts ...Option) error {
 		opt(r)
 	}
 
+	info.Init(r.name)
 	log.Init(log.DefaultGlg())
 
 	p, isHelp, err := params.New(
@@ -74,8 +75,7 @@ func Do(ctx context.Context, opts ...Option) error {
 	}
 
 	if p.ShowVersion() {
-		info.Init(r.name)
-		log.Infof("\n%s", info.String())
+		log.Info(info.String())
 		return nil
 	}
 
@@ -84,8 +84,6 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
-	// TODO enable json mode&format flag from config
-	info.Init(r.name)
 	// set location temporary for initialization logging
 	location.Set(loc)
 

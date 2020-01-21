@@ -21,18 +21,18 @@ type Option func(*parser)
 
 var (
 	defaultOpts = []Option{
-		WithConfigFilePathKey("f"),
+		WithConfigFilePathKeys("f", "file", "c", "config"),
 		WithConfigFilePathDefault("/etc/server/config.yaml"),
 		WithConfigFileDescription("config file path"),
-		WithVersionKey("version"),
+		WithVersionKeys("v", "ver", "version"),
 		WithVersionFlagDefault(false),
 		WithVersionDescription("show server version"),
 	}
 )
 
-func WithConfigFilePathKey(key string) Option {
+func WithConfigFilePathKeys(keys ...string) Option {
 	return func(p *parser) {
-		p.filePath.key = key
+		p.filePath.keys = append(p.filePath.keys, keys...)
 	}
 }
 
@@ -48,9 +48,9 @@ func WithConfigFileDescription(desc string) Option {
 	}
 }
 
-func WithVersionKey(key string) Option {
+func WithVersionKeys(keys ...string) Option {
 	return func(p *parser) {
-		p.version.key = key
+		p.version.keys = append(p.version.keys, keys...)
 	}
 }
 

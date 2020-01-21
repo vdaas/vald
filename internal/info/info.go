@@ -117,7 +117,7 @@ func (d Detail) String() string {
 		strs = append(strs, fmt.Sprintf(infoFormat, tag, value))
 	}
 	sort.Strings(strs)
-	return strings.Join(strs, "\n")
+	return "\n"+strings.Join(strs, "\n")
 }
 
 func (d Detail) Get() Detail {
