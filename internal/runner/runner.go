@@ -76,7 +76,7 @@ func Do(ctx context.Context, opts ...Option) error {
 	}
 
 	if p.ShowVersion() {
-		info.Info()
+		log.Info(info.String(0))
 		return nil
 	}
 

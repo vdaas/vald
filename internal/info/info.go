@@ -18,14 +18,31 @@
 package info
 
 import (
+	"encoding/json"
 	"fmt"
+	"reflect"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
 	"time"
+	"unsafe"
 
 	"github.com/vdaas/vald/internal/log"
 )
+
+type Detail struct {
+	Version    string `json:"version,omitempty" yaml:"version,omitempty"`
+	ServerName string `json:"server_name,omitempty" yaml:"server_name,omitempty"`
+	GitCommit  string `json:"git_commit,omitempty" yaml:"git_commit,omitempty"`
+	SourceURL  string `json:"source_url,omitempty" yaml:"source_url,omitempty"`
+	BuildTime  string `json:"build_time,omitempty" yaml:"build_time,omitempty"`
+	GoVersion  string `json:"go_version,omitempty" yaml:"go_version,omitempty"`
+	GoOS       string `json:"go_os,omitempty" yaml:"go_os,omitempty"`
+	GoArch     string `json:"go_arch,omitempty" yaml:"go_arch,omitempty"`
+	CGOEnabled string `json:"cgo_enabled,omitempty" yaml:"cgo_enabled,omitempty"`
+	NGTVersion string `json:"ngt_version,omitempty" yaml:"ngt_version,omitempty"`
+}
 
 var (
 	Version   = "v0.0.1"
@@ -36,76 +53,108 @@ var (
 	GoOS       string
 	GoArch     string
 	CGOEnabled string
+
 	NGTVersion string
 
-	keyvals = map[string]*string{
-		"version":     &Version,
-		"commit hash": &GitCommit,
-		"build time":  &BuildTime,
-		"go version":  &GoVersion,
-		"os":          &GoOS,
-		"arch":        &GoArch,
-		"cgo enabled": &CGOEnabled,
-		"ngt version": &NGTVersion,
-	}
+	reps = strings.NewReplacer("_", " ", ",omitempty", "")
 
 	once sync.Once
-	name string
+
+	detail Detail
 )
 
-func Init(n string) {
-	once.Do(func() {
-		name = n
-	})
+const (
+	organization = "vdaas"
+	repository   = "vald"
+)
+
+func String(callStack int) string {
+	return detail.String(callStack)
 }
 
-func Info() {
-	showVersionInfo(log.Info)
+func Object(callStack int) Detail {
+	return detail.Object(callStack)
 }
 
-func Debug() {
-	showVersionInfo(log.Debug)
+func JSONString(format bool, callStack int) string {
+	return detail.JSONString(format, callStack)
 }
 
-func Warn() {
-	showVersionInfo(log.Warn)
-}
-
-func Error() {
-	showVersionInfo(log.Error)
-}
-
-func showVersionInfo(logfunc func(vals ...interface{})) {
-	keys := make([]string, 0, len(keyvals))
-	for k := range keyvals {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	var l int
-	maxlen := 0
-	for _, k := range keys {
-		l = len(k)
+func (d Detail) String(callStack int) string {
+	d.SourceURL = sourceURL(organization, repository, d.GitCommit, callStack)
+	maxlen, l := 0, 0
+	rt, rv := reflect.TypeOf(d), reflect.ValueOf(d)
+	info := make(map[string]string, rt.NumField())
+	for i := 0; i < rt.NumField(); i++ {
+		tag := reps.Replace(rt.Field(i).Tag.Get("json"))
+		value, ok := rv.Field(i).Interface().(string)
+		if !ok {
+			continue
+		}
+		l = len(value)
 		if maxlen < l {
 			maxlen = l
 		}
+		info[tag] = value
 	}
 
 	infoFormat := fmt.Sprintf("%%-%ds -> %%s", maxlen)
-
-	strs := make([]string, 0, len(keys))
-	if name != "" {
-		strs = append(strs, fmt.Sprintf("\nvald %s server", name))
+	strs := make([]string, 0, rt.NumField())
+	for tag, value := range info {
+		strs = append(strs, fmt.Sprintf(infoFormat, tag, value))
 	}
-	for _, k := range keys {
-		if k != "" && *keyvals[k] != "" {
-			if k == "version" {
-				strs = append(strs, fmt.Sprintf(infoFormat, k, log.Bold(*keyvals[k])))
-			} else {
-				strs = append(strs, fmt.Sprintf(infoFormat, k, *keyvals[k]))
-			}
+	sort.Strings(strs)
+	return strings.Join(strs, "\n")
+}
+
+func (d Detail) Object(callStack int) Detail {
+	d.SourceURL = sourceURL(organization, repository, d.GitCommit, callStack)
+	return d
+}
+
+func (d Detail) JSONString(format bool, callStack int) (str string) {
+	var err error
+	var b []byte
+	d.SourceURL = sourceURL(organization, repository, d.GitCommit, callStack)
+	if !format {
+		b, err = json.Marshal(d)
+	} else {
+		b, err = json.MarshalIndent(d, "", "\t")
+	}
+	if err != nil {
+		return d.String(callStack)
+	}
+	return *(*string)(unsafe.Pointer(&b))
+}
+
+func Init(name string) {
+	once.Do(func() {
+		detail = Detail{
+			Version:    log.Bold(Version),
+			ServerName: name,
+			GitCommit:  GitCommit,
+			BuildTime:  BuildTime,
+			GoVersion:  GoVersion,
+			GoOS:       GoOS,
+			GoArch:     GoArch,
+			CGOEnabled: CGOEnabled,
+			NGTVersion: NGTVersion,
 		}
+	})
+}
+
+func sourceURL(org, repo, commit string, caller int) string {
+	if caller < 2 {
+		return fmt.Sprintf("https://github.com/%s/%s/blob/%s/",
+			org, repo, commit)
 	}
 
-	logfunc(strings.Join(strs, "\n"))
+	_, file, line, ok := runtime.Caller(caller)
+	if !ok {
+		return fmt.Sprintf("https://github.com/%s/%s/blob/%s/",
+			org, repo, commit)
+	}
+	return fmt.Sprintf("https://github.com/%s/%s/blob/%s/%s#L%d",
+		org, repo, commit, strings.SplitN(file,
+			fmt.Sprintf("%s/%s/", org, repo), 2)[1], line)
 }

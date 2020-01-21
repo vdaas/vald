@@ -52,7 +52,7 @@ func main() {
 			}),
 		)
 	})(); err != nil {
-		info.Error()
+
 		log.Fatal(err)
 		return
 	}
