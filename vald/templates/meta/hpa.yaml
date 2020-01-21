@@ -23,7 +23,7 @@ spec:
   minReplicas: {{ .Values.meta.minReplicas }}
   scaleTargetRef:
     apiVersion: apps/v1
-    kind: Deployment
+    kind: {{ .Values.meta.kind }}
     name: {{ .Values.meta.name }}
   targetCPUUtilizationPercentage: {{ .Values.meta.hpa.targetCPUUtilizationPercentage }}
 status:

@@ -23,7 +23,7 @@ spec:
   minReplicas: {{ .Values.backupManager.minReplicas }}
   scaleTargetRef:
     apiVersion: apps/v1
-    kind: Deployment
+    kind: {{ .Values.backupManager.kind }}
     name: {{ .Values.backupManager.name }}
   targetCPUUtilizationPercentage: {{ .Values.backupManager.hpa.targetCPUUtilizationPercentage }}
 status:

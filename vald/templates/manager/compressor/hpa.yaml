@@ -23,7 +23,7 @@ spec:
   minReplicas: {{ .Values.compressor.minReplicas }}
   scaleTargetRef:
     apiVersion: apps/v1
-    kind: Deployment
+    kind: {{ .Values.compressor.kind }}
     name: {{ .Values.compressor.name }}
   targetCPUUtilizationPercentage: {{ .Values.compressor.hpa.targetCPUUtilizationPercentage }}
 status:

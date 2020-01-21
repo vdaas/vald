@@ -23,7 +23,7 @@ spec:
   minReplicas: {{ .Values.gateway.minReplicas }}
   scaleTargetRef:
     apiVersion: apps/v1
-    kind: Deployment
+    kind: {{ .Values.gateway.kind }}
     name: {{ .Values.gateway.name }}
   targetCPUUtilizationPercentage: {{ .Values.gateway.hpa.targetCPUUtilizationPercentage }}
 status:
