@@ -76,7 +76,7 @@ func Do(ctx context.Context, opts ...Option) error {
 	}
 
 	if p.ShowVersion() {
-		log.Info(info.String(0))
+		log.Infof("\n%s", info.String(0))
 		return nil
 	}
 
@@ -93,7 +93,11 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
-	maxprocs.Set(maxprocs.Logger(log.Infof))
+	mfunc, err := maxprocs.Set(maxprocs.Logger(log.Infof))
+	if err != nil {
+		mfunc()
+		return err
+	}
 
 	daemon, err := r.initializeDaemon(cfg)
 	if err != nil {

@@ -46,7 +46,7 @@ type Detail struct {
 
 var (
 	Version   = "v0.0.1"
-	GitCommit = "no commit info available."
+	GitCommit = "master"
 	BuildTime = time.Now().Format(time.RFC1123)
 
 	GoVersion  string
@@ -91,7 +91,7 @@ func (d Detail) String(callStack int) string {
 		if !ok {
 			continue
 		}
-		l = len(value)
+		l = len(tag)
 		if maxlen < l {
 			maxlen = l
 		}
@@ -154,6 +154,7 @@ func sourceURL(org, repo, commit string, caller int) string {
 		return fmt.Sprintf("https://github.com/%s/%s/blob/%s/",
 			org, repo, commit)
 	}
+	log.Debug(file)
 	return fmt.Sprintf("https://github.com/%s/%s/blob/%s/%s#L%d",
 		org, repo, commit, strings.SplitN(file,
 			fmt.Sprintf("%s/%s/", org, repo), 2)[1], line)
