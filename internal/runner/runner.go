@@ -48,7 +48,6 @@ type runner struct {
 	maxVersion       string
 	minVersion       string
 	name             string
-	location         string
 	loadConfig       func(string) (interface{}, string, string, error)
 	initializeDaemon func(interface{}) (Runner, error)
 }
@@ -61,7 +60,6 @@ func Do(ctx context.Context, opts ...Option) error {
 	}
 
 	log.Init(log.DefaultGlg())
-	info.Init(r.name)
 
 	p, isHelp, err := params.New(
 		params.WithConfigFileDescription(fmt.Sprintf("%s config file path", r.name)),
@@ -76,7 +74,8 @@ func Do(ctx context.Context, opts ...Option) error {
 	}
 
 	if p.ShowVersion() {
-		log.Infof("\n%s", info.String(0))
+		info.Init(r.name)
+		log.Infof("\n%s", info.String())
 		return nil
 	}
 
@@ -84,8 +83,10 @@ func Do(ctx context.Context, opts ...Option) error {
 	if err != nil {
 		return err
 	}
+
+	// TODO enable json mode&format flag from config
+	info.Init(r.name)
 	// set location temporary for initialization logging
-	// _ = loc
 	location.Set(loc)
 
 	err = ver.Check(version, r.maxVersion, r.minVersion)
