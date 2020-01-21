@@ -32,6 +32,7 @@ func NewGlg(g *glg.Glg, opts ...GlgOption) Logger {
 	}).apply(append(defaultGlgOpts, opts...)...)
 
 	gl.setMode(gl.lv)
+
 	return gl
 }
 
@@ -41,6 +42,7 @@ func DefaultGlg() Logger {
 	}).apply(defaultGlgOpts...)
 
 	gl.setMode(gl.lv)
+
 	return gl
 }
 
