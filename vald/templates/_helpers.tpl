@@ -140,6 +140,13 @@ ports:
     targetPort: {{ default .default.servers.grpc.port .Values.servers.grpc.port }}
     protocol: TCP
   {{- end }}
+  {{- $readinessEnabled := default .default.healths.readiness.enabled .Values.healths.readiness.enabled }}
+  {{- if $readinessEnabled }}
+  - name: readiness
+    port: {{ default .default.healths.readiness.port .Values.healths.readiness.port }}
+    targetPort: {{ default .default.healths.readiness.port .Values.healths.readiness.port }}
+    protocol: TCP
+  {{- end }}
   {{- $pprofEnabled := default .default.metrics.pprof.enabled .Values.metrics.pprof.enabled }}
   {{- if $pprofEnabled }}
   - name: pprof
