@@ -21,23 +21,36 @@ import (
 )
 
 type glglogger struct {
-	log *glg.Glg
+	level logLevel
+	log   *glg.Glg
 }
 
 // New returns a new glglogger instance.
-func NewGlg(g *glg.Glg) Logger {
-	return &glglogger{
+func NewGlg(g *glg.Glg, opts ...GlgOption) Logger {
+	return (&glglogger{
 		log: g,
-	}
+	}).apply(append(defaultGlgOpts, opts...)...)
 }
 
 func DefaultGlg() Logger {
-	return &glglogger{
+	return (&glglogger{
 		log: glg.Get(),
+	}).apply(defaultGlgOpts...)
+}
+
+func (l *glglogger) apply(opts ...GlgOption) *glglogger {
+	for _, opt := range opts {
+		opt(l)
 	}
+	return l
+}
+
+func (l *glglogger) isEnableLogLevel(ll logLevel) (ok bool) {
+	return l.level >= ll
 }
 
 func (l *glglogger) Info(vals ...interface{}) {
+	// TODO:
 	l.log.Info(vals...)
 }
 

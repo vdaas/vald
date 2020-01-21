@@ -32,6 +32,9 @@ type Default struct {
 	// Version represent configuration file version.
 	Version string `json:"version" yaml:"version"`
 
+	// LogLevel represent log level configuration.
+	LogLevel string `json:"log_level" yaml:"log_level"`
+
 	// TZ represent system time location .
 	TZ string `json:"time_zone" yaml:"time_zone"`
 }
@@ -39,19 +42,22 @@ type Default struct {
 func (c *Default) Bind() *Default {
 	c.Version = GetActualValue(c.Version)
 	c.TZ = GetActualValue(c.TZ)
+	c.LogLevel = GetActualValue(c.TZ)
 	return c
 }
 
 func (c *Default) UnmarshalJSON(data []byte) (err error) {
 	ic := new(struct {
-		Ver string `json:"version"`
-		TZ  string `json:"time_zone"`
+		Ver      string `json:"version"`
+		LogLevel string `json:"log_level"`
+		TZ       string `json:"time_zone"`
 	})
 	err = json.Unmarshal(data, &ic)
 	if err != nil {
 		return err
 	}
 	c.Version = ic.Ver
+	c.LogLevel = ic.LogLevel
 	c.TZ = ic.TZ
 	return nil
 }
