@@ -5,7 +5,8 @@ import "strings"
 type logLevel uint8
 
 const (
-	INFO logLevel = iota
+	DEBUG logLevel = iota
+	INFO
 	DEBUGL
 	WARN
 	ERROR
@@ -14,10 +15,10 @@ const (
 
 func (lv logLevel) String() string {
 	switch lv {
+	case DEBUG:
+		return "debug"
 	case INFO:
 		return "info"
-	case DEBUGL:
-		return "debug"
 	case WARN:
 		return "warn"
 	case ERROR:
@@ -28,12 +29,12 @@ func (lv logLevel) String() string {
 	return "unknown"
 }
 
-func (lv logLevel) Level(ll string) logLevel {
-	switch strings.ToLower(ll) {
+func level(lv string) logLevel {
+	switch strings.ToLower(lv) {
+	case "debug":
+		return DEBUG
 	case "info":
 		return INFO
-	case "debug":
-		return DEBUGL
 	case "warn":
 		return WARN
 	case "error":

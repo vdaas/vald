@@ -21,21 +21,27 @@ import (
 )
 
 type glglogger struct {
-	level logLevel
-	log   *glg.Glg
+	lv  logLevel
+	log *glg.Glg
 }
 
 // New returns a new glglogger instance.
 func NewGlg(g *glg.Glg, opts ...GlgOption) Logger {
-	return (&glglogger{
+	gl := (&glglogger{
 		log: g,
 	}).apply(append(defaultGlgOpts, opts...)...)
+
+	gl.setMode(gl.lv)
+	return gl
 }
 
 func DefaultGlg() Logger {
-	return (&glglogger{
+	gl := (&glglogger{
 		log: glg.Get(),
 	}).apply(defaultGlgOpts...)
+
+	gl.setMode(gl.lv)
+	return gl
 }
 
 func (l *glglogger) apply(opts ...GlgOption) *glglogger {
@@ -45,12 +51,28 @@ func (l *glglogger) apply(opts ...GlgOption) *glglogger {
 	return l
 }
 
-func (l *glglogger) isEnableLogLevel(ll logLevel) (ok bool) {
-	return l.level >= ll
+func (l *glglogger) setMode(lv logLevel) {
+	l.log.SetMode(glg.NONE)
+
+	switch lv {
+	case DEBUG:
+		l.log.SetLevelMode(glg.DEBG, glg.STD)
+		fallthrough
+	case INFO:
+		l.log.SetLevelMode(glg.INFO, glg.STD)
+		fallthrough
+	case WARN:
+		l.log.SetLevelMode(glg.WARN, glg.STD)
+		fallthrough
+	case ERROR:
+		l.log.SetLevelMode(glg.ERR, glg.STD)
+		fallthrough
+	case FATAL:
+		l.log.SetLevelMode(glg.FAIL, glg.STD)
+	}
 }
 
 func (l *glglogger) Info(vals ...interface{}) {
-	// TODO:
 	l.log.Info(vals...)
 }
 

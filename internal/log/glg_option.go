@@ -1,22 +1,18 @@
 package log
 
+import "strings"
+
 // GlgOption represetns option for glglogger.
 type GlgOption func(*glglogger)
 
 var (
 	defaultGlgOpts = []GlgOption{
-		WithLogLevel(INFO.String()),
+		WithLogLevel(DEBUG.String()),
 	}
 )
 
-func WithLogLevel(level string) GlgOption {
+func WithLogLevel(lv string) GlgOption {
 	return func(g *glglogger) {
-		// uppr := strings.ToUpper(level)
-		// for _, level := range levels {
-		// 	if uppr == level {
-		// 		g.level = uppr
-		// 		return
-		// 	}
-		// }
+		g.lv = level(strings.ToUpper(lv))
 	}
 }
