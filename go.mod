@@ -38,7 +38,7 @@ require (
 	github.com/kpango/fastime v1.0.16
 	github.com/kpango/fuid v0.0.0-20190507064958-80435564606b
 	github.com/kpango/gache v1.1.24
-	github.com/kpango/glg v1.4.7
+	github.com/kpango/glg v1.4.8
 	github.com/lucasb-eyer/go-colorful v1.0.3
 	github.com/pierrec/lz4/v3 v3.2.1
 	github.com/scylladb/gocqlx v1.3.3
@@ -46,7 +46,7 @@ require (
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
 	go.uber.org/automaxprocs v1.2.0
-	golang.org/x/sys v0.0.0-20200117145432-59e60aa80a0c
+	golang.org/x/sys v0.0.0-20200121082415-34d275377bf9
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/plot v0.0.0-20200111075622-4abb28f724d5
 	google.golang.org/genproto v0.0.0-20200117163144-32f20d992d24
