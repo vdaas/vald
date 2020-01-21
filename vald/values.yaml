@@ -266,6 +266,9 @@ gateway:
 agent:
   version: v0.0.0
   name: vald-agent-ngt
+  kind: StatefulSet
+  # kind: DaemonSet
+  # kind: Deployment
   serviceType: ClusterIP
   # externalTrafficPolicy: Cluster
   progressDeadlineSeconds: 600
@@ -274,6 +277,9 @@ agent:
   maxUnavailable: 1
   revisionHistoryLimit: 2
   terminationGracePeriodSeconds: 30
+  hpa:
+    enabled: true
+    targetCPUUtilizationPercentage: 80
   image:
     repository: vdaas/vald-agent-ngt
     tag: nightly
@@ -281,6 +287,7 @@ agent:
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
+    partition: 0
   server_config:
     prefix: agent
     servers:

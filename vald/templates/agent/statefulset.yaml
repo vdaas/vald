@@ -13,24 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if eq .Values.agent.kind "Deployment" }}
+{{- if eq .Values.agent.kind "StatefulSet" }}
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ .Values.agent.name }}
   labels:
     app: {{ .Values.agent.name }}
 spec:
-  progressDeadlineSeconds: {{ .Values.agent.progressDeadlineSeconds }}
+  serviceName: {{ .Values.agent.name }}
   replicas: {{ .Values.agent.minReplicas }}
   revisionHistoryLimit: {{ .Values.agent.revisionHistoryLimit }}
   selector:
     matchLabels:
       app: {{ .Values.agent.name }}
-  strategy:
+  updateStrategy:
     rollingUpdate:
-      maxSurge: {{ .Values.agent.rollingUpdate.maxSurge }}
-      maxUnavailable: {{ .Values.agent.rollingUpdate.maxUnavailable }}
+      partition: {{ .Values.agent.rollingUpdate.partition }}
     type: RollingUpdate
   template:
     metadata:
