@@ -42,7 +42,7 @@ type Default struct {
 func (c *Default) Bind() *Default {
 	c.Version = GetActualValue(c.Version)
 	c.TZ = GetActualValue(c.TZ)
-	c.LogLevel = GetActualValue(c.TZ)
+	c.LogLevel = GetActualValue(c.LogLevel)
 	return c
 }
 
