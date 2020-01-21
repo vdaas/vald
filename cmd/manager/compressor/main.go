@@ -52,7 +52,6 @@ func main() {
 			}),
 		)
 	})(); err != nil {
-
 		log.Fatal(err)
 		return
 	}

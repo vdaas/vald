@@ -25,7 +25,6 @@ require (
 	github.com/cockroachdb/logtags v0.0.0-20190617123548-eb05cc24525f // indirect
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
-	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/getsentry/raven-go v0.2.0 // indirect
 	github.com/go-redis/redis/v7 v7.0.0-beta.5
 	github.com/go-sql-driver/mysql v1.5.0
@@ -41,7 +40,7 @@ require (
 	github.com/kpango/gache v1.1.24
 	github.com/kpango/glg v1.4.7
 	github.com/lucasb-eyer/go-colorful v1.0.3
-	github.com/pierrec/lz4 v2.4.0+incompatible
+	github.com/pierrec/lz4/v3 v3.2.1
 	github.com/scylladb/gocqlx v1.3.3
 	github.com/tensorflow/tensorflow v2.1.0+incompatible
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
