@@ -17,17 +17,17 @@
 package glg
 
 import (
-	kglg "github.com/kpango/glg"
+	logger "github.com/kpango/glg"
 	"github.com/vdaas/vald/internal/log"
 )
 
 type glglogger struct {
 	lv  log.Level
-	log *kglg.Glg
+	log *logger.Glg
 }
 
 // New returns a new glglogger instance.
-func New(g *kglg.Glg, opts ...Option) log.Logger {
+func New(g *logger.Glg, opts ...Option) log.Logger {
 	gl := (&glglogger{
 		log: g,
 	}).apply(append(defaultOpts, opts...)...)
@@ -38,7 +38,7 @@ func New(g *kglg.Glg, opts ...Option) log.Logger {
 
 func Default() log.Logger {
 	gl := (&glglogger{
-		log: kglg.Get(),
+		log: logger.Get(),
 	}).apply(defaultOpts...)
 
 	gl.setLevelMode(gl.lv)
@@ -53,23 +53,23 @@ func (l *glglogger) apply(opts ...Option) *glglogger {
 }
 
 func (l *glglogger) setLevelMode(lv log.Level) {
-	l.log.SetMode(kglg.NONE)
+	l.log.SetMode(logger.NONE)
 
 	switch lv {
 	case log.DEBUG:
-		l.log.SetLevelMode(kglg.DEBG, kglg.STD)
+		l.log.SetLevelMode(logger.DEBG, logger.STD)
 		fallthrough
 	case log.INFO:
-		l.log.SetLevelMode(kglg.INFO, kglg.STD)
+		l.log.SetLevelMode(logger.INFO, logger.STD)
 		fallthrough
 	case log.WARN:
-		l.log.SetLevelMode(kglg.WARN, kglg.STD)
+		l.log.SetLevelMode(logger.WARN, logger.STD)
 		fallthrough
 	case log.ERROR:
-		l.log.SetLevelMode(kglg.ERR, kglg.STD)
+		l.log.SetLevelMode(logger.ERR, logger.STD)
 		fallthrough
 	case log.FATAL:
-		l.log.SetLevelMode(kglg.FAIL, kglg.STD)
+		l.log.SetLevelMode(logger.FAIL, logger.STD)
 	}
 }
 

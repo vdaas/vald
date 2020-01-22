@@ -18,7 +18,7 @@
 package config
 
 import (
-	kglg "github.com/kpango/glg"
+	logger "github.com/kpango/glg"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/glg"
 )
@@ -59,7 +59,7 @@ func (l Log) Opts() (opts []log.Option) {
 
 		opts = []log.Option{
 			log.WithLogger(
-				glg.New(kglg.Get(), gopts...),
+				glg.New(logger.Get(), gopts...),
 			),
 		}
 	}

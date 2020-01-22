@@ -16,17 +16,17 @@ const (
 func (lv Level) String() string {
 	switch lv {
 	case DEBUG:
-		return "debug"
+		return "Debug"
 	case INFO:
-		return "info"
+		return "Info"
 	case WARN:
-		return "warn"
+		return "Warn"
 	case ERROR:
-		return "error"
+		return "Error"
 	case FATAL:
-		return "fatal"
+		return "Fatal"
 	}
-	return "unknown"
+	return "Unknown"
 }
 
 func ToLevel(lv string) Level {

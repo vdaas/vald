@@ -36,7 +36,7 @@ type Default struct {
 	TZ string `json:"time_zone" yaml:"time_zone"`
 
 	// Log represent log configuration.
-	Log `json:"log" yaml:"log"`
+	Log Log `json:"log" yaml:"log"`
 }
 
 func (c *Default) Bind() *Default {
@@ -50,7 +50,7 @@ func (c *Default) UnmarshalJSON(data []byte) (err error) {
 	ic := new(struct {
 		Ver string `json:"version"`
 		TZ  string `json:"time_zone"`
-		Log `json:"log"`
+		Log Log    `json:"log"`
 	})
 	err = json.Unmarshal(data, &ic)
 	if err != nil {
