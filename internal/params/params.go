@@ -37,7 +37,7 @@ type parser struct {
 		description string
 	}
 	version struct {
-		keys         []string
+		keys        []string
 		defaultFlag bool
 		description string
 	}
@@ -55,7 +55,7 @@ func (p *parser) Parse() (*Data, bool, error) {
 	f := flag.NewFlagSet(filepath.Base(os.Args[0]), flag.ContinueOnError)
 
 	d := new(Data)
-	for _, key := range p.filePath.keys{
+	for _, key := range p.filePath.keys {
 		f.StringVar(&d.configFilePath,
 			key,
 			p.filePath.defaultPath,

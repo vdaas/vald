@@ -117,7 +117,7 @@ func (d Detail) String() string {
 		strs = append(strs, fmt.Sprintf(infoFormat, tag, value))
 	}
 	sort.Strings(strs)
-	return "\n"+strings.Join(strs, "\n")
+	return "\n" + strings.Join(strs, "\n")
 }
 
 func (d Detail) Get() Detail {
@@ -136,14 +136,26 @@ func (d Detail) Get() Detail {
 			break
 		}
 		url := defaultURL
-		fps := strings.SplitN(file, "go/src/", 2)
 		switch {
 		case strings.HasPrefix(file, runtime.GOROOT()+"/src"):
 			url = fmt.Sprintf("https://github.com/golang/go/blob/%s%s#L%d", d.GoVersion, strings.TrimPrefix(file, runtime.GOROOT()), line)
-		case len(fps) > 1 && strings.Contains(file, valdRepo):
-			url = strings.Replace(fps[1]+"#L"+strconv.Itoa(line), valdRepo, "https://"+valdRepo+"/blob/"+d.GitCommit, -1)
+		case strings.Contains(file, "go/pkg/mod/"):
+			url = "https:/"
+			for _, path := range strings.Split(strings.SplitN(file, "go/pkg/mod/", 2)[1], "/") {
+				if strings.Contains(path, "@") {
+					sv := strings.SplitN(path, "@", 2)
+					if strings.Count(sv[1], "-") > 2 {
+						path = sv[0] + "/blob/master"
+					} else {
+						path = sv[0] + "/blob/" + sv[1]
+					}
+				}
+				url += "/" + path
+			}
+			url += "#L" + strconv.Itoa(line)
+		case strings.Contains(file, "go/src/") && strings.Contains(file, valdRepo):
+			url = strings.Replace(strings.SplitN(file, "go/src/", 2)[1]+"#L"+strconv.Itoa(line), valdRepo, "https://"+valdRepo+"/blob/"+d.GitCommit, -1)
 		}
-
 		d.StackTrace = append(d.StackTrace, StackTrace{
 			FuncName: funcName,
 			File:     file,

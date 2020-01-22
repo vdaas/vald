@@ -10,10 +10,10 @@ replace (
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.7.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.7.3
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200117160349-530e935923ad
-	k8s.io/api => k8s.io/api v0.17.1
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.1
-	k8s.io/apimachinery => k8s.io/apimachinery v0.17.1
-	k8s.io/client-go => k8s.io/client-go v0.17.1
+	k8s.io/api => k8s.io/api v0.17.2
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.2
+	k8s.io/apimachinery => k8s.io/apimachinery v0.17.2
+	k8s.io/client-go => k8s.io/client-go v0.17.2
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.4.0
 )
 
@@ -31,7 +31,7 @@ require (
 	github.com/gocql/gocql v0.0.0-20200103014340-68f928edb90a
 	github.com/gocraft/dbr/v2 v2.6.3
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
-	github.com/google/gofuzz v1.0.0
+	github.com/google/gofuzz v1.1.0
 	github.com/gorilla/mux v1.7.1
 	github.com/hashicorp/go-version v1.2.0
 	github.com/json-iterator/go v1.1.9
@@ -52,9 +52,9 @@ require (
 	google.golang.org/genproto v0.0.0-20200117163144-32f20d992d24
 	google.golang.org/grpc v1.26.0
 	gopkg.in/yaml.v2 v2.2.7
-	k8s.io/api v0.17.1
-	k8s.io/apimachinery v0.17.1
-	k8s.io/client-go v0.17.1
-	k8s.io/metrics v0.17.1
+	k8s.io/api v0.17.2
+	k8s.io/apimachinery v0.17.2
+	k8s.io/client-go v0.17.2
+	k8s.io/metrics v0.17.2
 	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
 )
