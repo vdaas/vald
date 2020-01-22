@@ -1,6 +1,10 @@
 package glg
 
-import "github.com/vdaas/vald/internal/log"
+import (
+	"strings"
+
+	"github.com/vdaas/vald/internal/log"
+)
 
 // Option represetns option for glglogger.
 type Option func(*glglogger)
@@ -19,7 +23,7 @@ func WithEnableJSON() Option {
 
 func WithLevel(lv string) Option {
 	return func(g *glglogger) {
-		// g.lv = log.ToLevel(strings.ToUpper(lv))
+		g.lv = log.ToLevel(strings.ToUpper(lv))
 	}
 }
 
