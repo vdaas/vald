@@ -12,15 +12,11 @@ type Option func(*glglogger)
 
 var (
 	defaultOpts = []Option{
-		WithLevel(log.DEBUG.String()),
+		WithConfig(&config.Log{
+			Level: log.DEBUG.String(),
+		}),
 	}
 )
-
-func WithLevel(lv string) Option {
-	return func(g *glglogger) {
-		g.lv = log.ToLevel(strings.ToUpper(lv))
-	}
-}
 
 func WithConfig(cfg *config.Log) Option {
 	return func(g *glglogger) {
@@ -29,15 +25,9 @@ func WithConfig(cfg *config.Log) Option {
 		}
 
 		if cfg.Format == "json" {
-			WithEnableJSON()(g)
+			// TODO:
 		}
 
 		g.lv = log.ToLevel(strings.ToUpper(cfg.Level))
-	}
-}
-
-func WithEnableJSON() Option {
-	return func(g *glglogger) {
-		// TODO: Enable JSON
 	}
 }
