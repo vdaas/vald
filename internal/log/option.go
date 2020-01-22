@@ -1,9 +1,13 @@
 package log
 
+import "github.com/vdaas/vald/internal/log/glg"
+
 type Option func(*option)
 
 var (
-	defaultOptions = []Option{}
+	defaultOptions = []Option{
+		WithLogger(glg.Default()),
+	}
 )
 
 type option struct {

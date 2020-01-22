@@ -18,17 +18,16 @@ package glg
 
 import (
 	logger "github.com/kpango/glg"
-	"github.com/vdaas/vald/internal/log"
 )
 
-type glglogger struct {
-	lv  log.Level
+type GlgLogger struct {
+	lv  level
 	log *logger.Glg
 }
 
-// New returns a new glglogger instance.
-func New(g *logger.Glg, opts ...Option) log.Logger {
-	gl := (&glglogger{
+// New returns a new GlgLogger instance.
+func New(g *logger.Glg, opts ...Option) *GlgLogger {
+	gl := (&GlgLogger{
 		log: g,
 	}).apply(append(defaultOpts, opts...)...)
 
@@ -36,8 +35,8 @@ func New(g *logger.Glg, opts ...Option) log.Logger {
 	return gl
 }
 
-func Default() log.Logger {
-	gl := (&glglogger{
+func Default() *GlgLogger {
+	gl := (&GlgLogger{
 		log: logger.Get(),
 	}).apply(defaultOpts...)
 
@@ -45,70 +44,70 @@ func Default() log.Logger {
 	return gl
 }
 
-func (l *glglogger) apply(opts ...Option) *glglogger {
+func (l *GlgLogger) apply(opts ...Option) *GlgLogger {
 	for _, opt := range opts {
 		opt(l)
 	}
 	return l
 }
 
-func (l *glglogger) setLevelMode(lv log.Level) {
+func (l *GlgLogger) setLevelMode(lv level) {
 	l.log.SetMode(logger.NONE)
 
 	switch lv {
-	case log.DEBUG:
+	case DEBUG:
 		l.log.SetLevelMode(logger.DEBG, logger.STD)
 		fallthrough
-	case log.INFO:
+	case INFO:
 		l.log.SetLevelMode(logger.INFO, logger.STD)
 		fallthrough
-	case log.WARN:
+	case WARN:
 		l.log.SetLevelMode(logger.WARN, logger.STD)
 		fallthrough
-	case log.ERROR:
+	case ERROR:
 		l.log.SetLevelMode(logger.ERR, logger.STD)
 		fallthrough
-	case log.FATAL:
+	case FATAL:
 		l.log.SetLevelMode(logger.FAIL, logger.STD)
 	}
 }
 
-func (l *glglogger) Info(vals ...interface{}) {
+func (l *GlgLogger) Info(vals ...interface{}) {
 	l.log.Info(vals...)
 }
 
-func (l *glglogger) Infof(format string, vals ...interface{}) {
+func (l *GlgLogger) Infof(format string, vals ...interface{}) {
 	l.log.Infof(format, vals...)
 }
 
-func (l *glglogger) Debug(vals ...interface{}) {
+func (l *GlgLogger) Debug(vals ...interface{}) {
 	l.log.Debug(vals...)
 }
 
-func (l *glglogger) Debugf(format string, vals ...interface{}) {
+func (l *GlgLogger) Debugf(format string, vals ...interface{}) {
 	l.log.Debugf(format, vals...)
 }
 
-func (l *glglogger) Warn(vals ...interface{}) {
+func (l *GlgLogger) Warn(vals ...interface{}) {
 	l.log.Warn(vals...)
 }
 
-func (l *glglogger) Warnf(format string, vals ...interface{}) {
+func (l *GlgLogger) Warnf(format string, vals ...interface{}) {
 	l.log.Warnf(format, vals...)
 }
 
-func (l *glglogger) Error(vals ...interface{}) {
+func (l *GlgLogger) Error(vals ...interface{}) {
 	l.log.Error(vals...)
 }
 
-func (l *glglogger) Errorf(format string, vals ...interface{}) {
+func (l *GlgLogger) Errorf(format string, vals ...interface{}) {
 	l.log.Errorf(format, vals...)
 }
 
-func (l *glglogger) Fatal(vals ...interface{}) {
+func (l *GlgLogger) Fatal(vals ...interface{}) {
 	l.log.Fatal(vals...)
 }
 
-func (l *glglogger) Fatalf(format string, vals ...interface{}) {
+func (l *GlgLogger) Fatalf(format string, vals ...interface{}) {
 	l.log.Fatalf(format, vals...)
 }

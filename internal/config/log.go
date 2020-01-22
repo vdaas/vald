@@ -40,10 +40,6 @@ func (l Log) Bind() Log {
 
 func (l Log) Opts() (opts []log.Option) {
 	switch l.Type {
-	case "zap":
-		// TODO(@funapy)
-		fallthrough
-
 	case "glg":
 		gopts := []glg.Option{
 			glg.WithLevel(l.Level),

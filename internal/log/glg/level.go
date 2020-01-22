@@ -1,11 +1,11 @@
-package log
+package glg
 
 import "strings"
 
-type Level uint8
+type level uint8
 
 const (
-	DEBUG Level = iota
+	DEBUG level = iota
 	INFO
 	DEBUGL
 	WARN
@@ -13,7 +13,7 @@ const (
 	FATAL
 )
 
-func (lv Level) String() string {
+func (lv level) String() string {
 	switch lv {
 	case DEBUG:
 		return "Debug"
@@ -29,7 +29,7 @@ func (lv Level) String() string {
 	return "Unknown"
 }
 
-func ToLevel(lv string) Level {
+func toLevel(lv string) level {
 	switch strings.ToLower(lv) {
 	case "debug":
 		return DEBUG
