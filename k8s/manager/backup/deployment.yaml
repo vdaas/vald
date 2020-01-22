@@ -47,7 +47,7 @@ spec:
             - -c
             - >
               set -x;
-              until [ $(mysqladmin -hmysql.default.svc.cluster.local -uroot -p${MYSQL_PASSWORD} --show-warnings=false ping | grep alive | awk '{print $3}') -eq alive ]; do
+              until [ "$(mysqladmin -hmysql.default.svc.cluster.local -uroot -p${MYSQL_PASSWORD} --show-warnings=false ping | grep alive | awk '{print $3}')" = "alive" ]; do
                 echo "waiting for mysql.default.svc.cluster.local to be ready..."
                 sleep 2;
               done

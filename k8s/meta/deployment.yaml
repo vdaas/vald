@@ -47,7 +47,7 @@ spec:
             - -c
             - >
               set -x;
-              until [ $(redis-cli -h redis.default.svc.cluster.local -a ${REDIS_PASSWORD}) -eq 200 ]; do
+              until [ "$(redis-cli -h redis.default.svc.cluster.local -a ${REDIS_PASSWORD} ping)" = "PONG" ]; do
                 echo "waiting for redis.default.svc.cluster.local to be ready..."
                 sleep 2;
               done

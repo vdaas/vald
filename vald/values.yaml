@@ -458,7 +458,7 @@ backupManager:
       name: wait-for-mysql
       image: mysql:latest
       target: mysql.default.svc.cluster.local
-      untilCondition: $(mysqladmin -hmysql.default.svc.cluster.local -uroot -p${MYSQL_PASSWORD} --show-warnings=false ping | grep alive | awk '{print $3}') -eq alive
+      untilCondition: "\"$(mysqladmin -hmysql.default.svc.cluster.local -uroot -p${MYSQL_PASSWORD} --show-warnings=false ping | grep alive | awk '{print $3}')\" = \"alive\""
       sleepDuration: 2
       env:
       - name: MYSQL_PASSWORD
@@ -662,7 +662,7 @@ meta:
       name: wait-for-redis
       image: redis:latest
       target: redis.default.svc.cluster.local
-      untilCondition: $(redis-cli -h redis.default.svc.cluster.local -a ${REDIS_PASSWORD}) -eq 200
+      untilCondition: "\"$(redis-cli -h redis.default.svc.cluster.local -a ${REDIS_PASSWORD} ping)\" = \"PONG\""
       sleepDuration: 2
       env:
         - name: REDIS_PASSWORD
