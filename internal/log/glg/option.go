@@ -3,6 +3,7 @@ package glg
 import (
 	"strings"
 
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/log"
 )
 
@@ -10,7 +11,7 @@ import (
 type Option func(*glglogger)
 
 var (
-	defaultGlgOpts = []Option{
+	defaultOpts = []Option{
 		WithLevel(log.DEBUG.String()),
 	}
 )
@@ -21,8 +22,22 @@ func WithLevel(lv string) Option {
 	}
 }
 
+func WithConfig(cfg *config.Log) Option {
+	return func(g *glglogger) {
+		if cfg == nil {
+			return
+		}
+
+		if cfg.Format == "json" {
+			WithEnableJSON()(g)
+		}
+
+		g.lv = log.ToLevel(strings.ToUpper(cfg.Level))
+	}
+}
+
 func WithEnableJSON() Option {
 	return func(g *glglogger) {
-
+		// TODO: Enable JSON
 	}
 }

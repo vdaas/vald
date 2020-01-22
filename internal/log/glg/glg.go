@@ -30,20 +30,18 @@ type glglogger struct {
 func New(g *kglg.Glg, opts ...Option) log.Logger {
 	gl := (&glglogger{
 		log: g,
-	}).apply(append(defaultGlgOpts, opts...)...)
+	}).apply(append(defaultOpts, opts...)...)
 
 	gl.setMode(gl.lv)
-
 	return gl
 }
 
 func Default() log.Logger {
 	gl := (&glglogger{
 		log: kglg.Get(),
-	}).apply(defaultGlgOpts...)
+	}).apply(defaultOpts...)
 
 	gl.setMode(gl.lv)
-
 	return gl
 }
 
