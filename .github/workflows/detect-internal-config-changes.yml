@@ -17,7 +17,8 @@ jobs:
           -H "Authorization: token ${GITHUB_TOKEN}" \
           --request POST \
           --data "{\"body\": \"**[WARNING]** Changes in \`interal/config\` may require you to change Helm charts. Please check.\"}" \
-          $API_URL
+          ${API_URL}
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: ${{ github.event.issue.comments_url }}
+          API_URL: ${{ github.event.pull_request.comments_url }}
+          PR_USER: ${{ github.event.pull_request.user.login }}
