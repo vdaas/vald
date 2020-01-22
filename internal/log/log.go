@@ -36,9 +36,13 @@ var (
 	once   sync.Once
 )
 
-func Init(l Logger) {
+func Init(l Logger, opts ...Option) {
 	once.Do(func() {
-		logger = l
+		o := (&option{
+			logger: l,
+		}).evaluateOption(opts...)
+
+		logger = o.logger
 	})
 }
 
