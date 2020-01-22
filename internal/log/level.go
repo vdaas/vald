@@ -2,10 +2,10 @@ package log
 
 import "strings"
 
-type logLevel uint8
+type Level uint8
 
 const (
-	DEBUG logLevel = iota
+	DEBUG Level = iota
 	INFO
 	DEBUGL
 	WARN
@@ -13,7 +13,7 @@ const (
 	FATAL
 )
 
-func (lv logLevel) String() string {
+func (lv Level) String() string {
 	switch lv {
 	case DEBUG:
 		return "debug"
@@ -29,7 +29,7 @@ func (lv logLevel) String() string {
 	return "unknown"
 }
 
-func level(lv string) logLevel {
+func ToLevel(lv string) Level {
 	switch strings.ToLower(lv) {
 	case "debug":
 		return DEBUG

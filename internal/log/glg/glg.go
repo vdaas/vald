@@ -14,19 +14,20 @@
 // limitations under the License.
 //
 
-package log
+package glg
 
 import (
-	"github.com/kpango/glg"
+	kglg "github.com/kpango/glg"
+	"github.com/vdaas/vald/internal/log"
 )
 
 type glglogger struct {
-	lv  logLevel
-	log *glg.Glg
+	lv  log.Level
+	log *kglg.Glg
 }
 
 // New returns a new glglogger instance.
-func NewGlg(g *glg.Glg, opts ...GlgOption) Logger {
+func New(g *kglg.Glg, opts ...Option) log.Logger {
 	gl := (&glglogger{
 		log: g,
 	}).apply(append(defaultGlgOpts, opts...)...)
@@ -36,9 +37,9 @@ func NewGlg(g *glg.Glg, opts ...GlgOption) Logger {
 	return gl
 }
 
-func DefaultGlg() Logger {
+func Default() log.Logger {
 	gl := (&glglogger{
-		log: glg.Get(),
+		log: kglg.Get(),
 	}).apply(defaultGlgOpts...)
 
 	gl.setMode(gl.lv)
@@ -46,31 +47,31 @@ func DefaultGlg() Logger {
 	return gl
 }
 
-func (l *glglogger) apply(opts ...GlgOption) *glglogger {
+func (l *glglogger) apply(opts ...Option) *glglogger {
 	for _, opt := range opts {
 		opt(l)
 	}
 	return l
 }
 
-func (l *glglogger) setMode(lv logLevel) {
-	l.log.SetMode(glg.NONE)
+func (l *glglogger) setMode(lv log.Level) {
+	l.log.SetMode(kglg.NONE)
 
 	switch lv {
-	case DEBUG:
-		l.log.SetLevelMode(glg.DEBG, glg.STD)
+	case log.DEBUG:
+		l.log.SetLevelMode(kglg.DEBG, kglg.STD)
 		fallthrough
-	case INFO:
-		l.log.SetLevelMode(glg.INFO, glg.STD)
+	case log.INFO:
+		l.log.SetLevelMode(kglg.INFO, kglg.STD)
 		fallthrough
-	case WARN:
-		l.log.SetLevelMode(glg.WARN, glg.STD)
+	case log.WARN:
+		l.log.SetLevelMode(kglg.WARN, kglg.STD)
 		fallthrough
-	case ERROR:
-		l.log.SetLevelMode(glg.ERR, glg.STD)
+	case log.ERROR:
+		l.log.SetLevelMode(kglg.ERR, kglg.STD)
 		fallthrough
-	case FATAL:
-		l.log.SetLevelMode(glg.FAIL, glg.STD)
+	case log.FATAL:
+		l.log.SetLevelMode(kglg.FAIL, kglg.STD)
 	}
 }
 
