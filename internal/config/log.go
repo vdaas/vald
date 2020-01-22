@@ -45,9 +45,6 @@ func (l Log) Opts() (opts []log.Option) {
 		fallthrough
 
 	case "glg":
-		fallthrough
-
-	default:
 		gopts := []glg.Option{
 			glg.WithLevel(l.Level),
 			glg.WithMode(l.Mode),

@@ -2,6 +2,10 @@ package log
 
 type Option func(*option)
 
+var (
+	defaultOptions = []Option{}
+)
+
 type option struct {
 	logger Logger
 }

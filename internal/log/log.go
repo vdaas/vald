@@ -38,7 +38,7 @@ var (
 
 func Init(opts ...Option) {
 	once.Do(func() {
-		o := (&option{}).apply(opts...)
+		o := (&option{}).apply(append(defaultOptions, opts...)...)
 		logger = o.logger
 	})
 }
