@@ -18,14 +18,14 @@
 package config
 
 type Log struct {
-	Level string `json:"level" yaml:"level"`
-	// Mode   string `json:"mode" yaml:"mode"`
+	Level  string `json:"level" yaml:"level"`
+	Mode   string `json:"mode" yaml:"mode"`
 	Format string `json:"format" yaml:"format"`
 }
 
 func (l Log) Bind() Log {
 	l.Level = GetActualValue(l.Level)
-	// l.Mode = GetActualValue(l.Mode)
+	l.Mode = GetActualValue(l.Mode)
 	l.Format = GetActualValue(l.Format)
 	return l
 }

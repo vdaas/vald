@@ -32,7 +32,7 @@ func New(g *kglg.Glg, opts ...Option) log.Logger {
 		log: g,
 	}).apply(append(defaultOpts, opts...)...)
 
-	gl.setMode(gl.lv)
+	gl.setLevelMode(gl.lv)
 	return gl
 }
 
@@ -41,7 +41,7 @@ func Default() log.Logger {
 		log: kglg.Get(),
 	}).apply(defaultOpts...)
 
-	gl.setMode(gl.lv)
+	gl.setLevelMode(gl.lv)
 	return gl
 }
 
@@ -52,7 +52,7 @@ func (l *glglogger) apply(opts ...Option) *glglogger {
 	return l
 }
 
-func (l *glglogger) setMode(lv log.Level) {
+func (l *glglogger) setLevelMode(lv log.Level) {
 	l.log.SetMode(kglg.NONE)
 
 	switch lv {
