@@ -43,7 +43,7 @@ func Init(l Logger) {
 }
 
 func Bold(str string) string {
-	return "\033[1m" + str + "\033[0m"
+	return "\033[1m" + str + "\033[22m"
 }
 
 func Info(vals ...interface{}) {

@@ -19,7 +19,10 @@ package info
 
 import (
 	"fmt"
+	"reflect"
+	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -27,85 +30,172 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
+type Detail struct {
+	Version    string       `json:"vald_version,omitempty" yaml:"vald_version,omitempty"`
+	ServerName string       `json:"server_name,omitempty" yaml:"server_name,omitempty"`
+	GitCommit  string       `json:"git_commit,omitempty" yaml:"git_commit,omitempty"`
+	BuildTime  string       `json:"build_time,omitempty" yaml:"build_time,omitempty"`
+	GoVersion  string       `json:"go_version,omitempty" yaml:"go_version,omitempty"`
+	GoOS       string       `json:"go_os,omitempty" yaml:"go_os,omitempty"`
+	GoArch     string       `json:"go_arch,omitempty" yaml:"go_arch,omitempty"`
+	CGOEnabled string       `json:"cgo_enabled,omitempty" yaml:"cgo_enabled,omitempty"`
+	NGTVersion string       `json:"ngt_version,omitempty" yaml:"ngt_version,omitempty"`
+	StackTrace []StackTrace `json:"stack_trace,omitempty" yaml:"stack_trace,omitempty"`
+	PrepOnce   sync.Once    `json:"-" yaml:"-"`
+}
+
+type StackTrace struct {
+	URL      string `json:"url,omitempty" yaml:"url,omitempty"`
+	FuncName string `json:"function_name,omitempty" yaml:"func_name,omitempty"`
+	File     string `json:"file,omitempty" yaml:"file,omitempty"`
+	Line     int    `json:"line,omitempty" yaml:"line,omitempty"`
+}
+
 var (
-	Version   = "v0.0.1"
-	GitCommit = "no commit info available."
-	BuildTime = time.Now().Format(time.RFC1123)
+	Version      = "v0.0.1"
+	GitCommit    = "master"
+	Organization = "vdaas"
+	Repository   = "vald"
+	BuildTime    = time.Now().Format(time.RFC1123)
 
 	GoVersion  string
 	GoOS       string
 	GoArch     string
 	CGOEnabled string
+
 	NGTVersion string
 
-	keyvals = map[string]*string{
-		"version":     &Version,
-		"commit hash": &GitCommit,
-		"build time":  &BuildTime,
-		"go version":  &GoVersion,
-		"os":          &GoOS,
-		"arch":        &GoArch,
-		"cgo enabled": &CGOEnabled,
-		"ngt version": &NGTVersion,
-	}
+	reps = strings.NewReplacer("_", " ", ",omitempty", "")
 
 	once sync.Once
-	name string
+
+	detail Detail
 )
 
-func Init(n string) {
-	once.Do(func() {
-		name = n
-	})
+func String() string {
+	return detail.String()
 }
 
-func Info() {
-	showVersionInfo(log.Info)
+func Get() Detail {
+	return detail.Get()
 }
 
-func Debug() {
-	showVersionInfo(log.Debug)
-}
-
-func Warn() {
-	showVersionInfo(log.Warn)
-}
-
-func Error() {
-	showVersionInfo(log.Error)
-}
-
-func showVersionInfo(logfunc func(vals ...interface{})) {
-	keys := make([]string, 0, len(keyvals))
-	for k := range keyvals {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	var l int
-	maxlen := 0
-	for _, k := range keys {
-		l = len(k)
+func (d Detail) String() string {
+	d = d.Get()
+	d.Version = log.Bold(d.Version)
+	maxlen, l := 0, 0
+	rt, rv := reflect.TypeOf(d), reflect.ValueOf(d)
+	info := make(map[string]string, rt.NumField())
+	for i := 0; i < rt.NumField(); i++ {
+		v := rv.Field(i).Interface()
+		value, ok := v.(string)
+		if !ok {
+			sts, ok := v.([]StackTrace)
+			if ok {
+				tag := reps.Replace(rt.Field(i).Tag.Get("json"))
+				l = len(tag) + 2
+				if maxlen < l {
+					maxlen = l
+				}
+				for i, st := range sts {
+					info[fmt.Sprintf("%s-%d", tag, i)] = st.URL
+				}
+			}
+			continue
+		}
+		tag := reps.Replace(rt.Field(i).Tag.Get("json"))
+		l = len(tag)
 		if maxlen < l {
 			maxlen = l
 		}
+		info[tag] = value
 	}
 
 	infoFormat := fmt.Sprintf("%%-%ds -> %%s", maxlen)
-
-	strs := make([]string, 0, len(keys))
-	if name != "" {
-		strs = append(strs, fmt.Sprintf("\nvald %s server", name))
+	strs := make([]string, 0, rt.NumField())
+	for tag, value := range info {
+		strs = append(strs, fmt.Sprintf(infoFormat, tag, value))
 	}
-	for _, k := range keys {
-		if k != "" && *keyvals[k] != "" {
-			if k == "version" {
-				strs = append(strs, fmt.Sprintf(infoFormat, k, log.Bold(*keyvals[k])))
-			} else {
-				strs = append(strs, fmt.Sprintf(infoFormat, k, *keyvals[k]))
-			}
+	sort.Strings(strs)
+	return "\n"+strings.Join(strs, "\n")
+}
+
+func (d Detail) Get() Detail {
+	d.prepare()
+	valdRepo := fmt.Sprintf("github.com/%s/%s", Organization, Repository)
+	defaultURL := fmt.Sprintf("https://%s/tree/%s", valdRepo, d.GitCommit)
+
+	d.StackTrace = make([]StackTrace, 0, 10)
+	for i := 3; ; i++ {
+		pc, file, line, ok := runtime.Caller(i)
+		if !ok {
+			break
 		}
-	}
+		funcName := runtime.FuncForPC(pc).Name()
+		if funcName == "runtime.main" {
+			break
+		}
+		url := defaultURL
+		fps := strings.SplitN(file, "go/src/", 2)
+		switch {
+		case strings.HasPrefix(file, runtime.GOROOT()+"/src"):
+			url = fmt.Sprintf("https://github.com/golang/go/blob/%s%s#L%d", d.GoVersion, strings.TrimPrefix(file, runtime.GOROOT()), line)
+		case len(fps) > 1 && strings.Contains(file, valdRepo):
+			url = strings.Replace(fps[1]+"#L"+strconv.Itoa(line), valdRepo, "https://"+valdRepo+"/blob/"+d.GitCommit, -1)
+		}
 
-	logfunc(strings.Join(strs, "\n"))
+		d.StackTrace = append(d.StackTrace, StackTrace{
+			FuncName: funcName,
+			File:     file,
+			Line:     line,
+			URL:      url,
+		})
+	}
+	return d
+}
+
+func (d *Detail) prepare() {
+	d.PrepOnce.Do(func() {
+		if len(d.GitCommit) == 0 {
+			d.GitCommit = "master"
+		}
+		if len(Version) == 0 && len(d.Version) == 0 {
+			d.Version = GitCommit
+		}
+		if len(d.BuildTime) == 0 {
+			d.BuildTime = BuildTime
+		}
+		if len(d.GoVersion) == 0 {
+			d.GoVersion = runtime.Version()
+		}
+		if len(d.GoOS) == 0 {
+			d.GoOS = runtime.GOOS
+		}
+		if len(d.GoArch) == 0 {
+			d.GoArch = runtime.GOARCH
+		}
+		if len(d.CGOEnabled) == 0 && len(CGOEnabled) != 0 {
+			d.CGOEnabled = CGOEnabled
+		}
+		if len(d.NGTVersion) == 0 && len(NGTVersion) != 0 {
+			d.NGTVersion = NGTVersion
+		}
+	})
+}
+
+func Init(name string) {
+	once.Do(func() {
+		detail = Detail{
+			Version:    Version,
+			ServerName: name,
+			GitCommit:  GitCommit,
+			BuildTime:  BuildTime,
+			GoVersion:  GoVersion,
+			GoOS:       GoOS,
+			GoArch:     GoArch,
+			CGOEnabled: CGOEnabled,
+			NGTVersion: NGTVersion,
+		}
+		detail.prepare()
+	})
 }

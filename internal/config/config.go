@@ -62,6 +62,7 @@ func Read(path string, cfg interface{}) error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	switch filepath.Ext(path) {
 	case ".yaml":
 		err = yaml.NewDecoder(f).Decode(cfg)

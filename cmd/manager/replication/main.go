@@ -52,8 +52,7 @@ func main() {
 			}),
 		)
 	})(); err != nil {
-		info.Error()
-		log.Fatal(err)
+		log.Fatal(err, info.Get())
 		return
 	}
 }
