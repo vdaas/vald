@@ -31,6 +31,7 @@ type Log struct {
 }
 
 func (l Log) Bind() Log {
+	l.Type = GetActualValue(l.Type)
 	l.Level = GetActualValue(l.Level)
 	l.Mode = GetActualValue(l.Mode)
 	l.Format = GetActualValue(l.Format)
