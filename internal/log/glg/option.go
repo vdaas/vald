@@ -11,12 +11,18 @@ type Option func(*glglogger)
 
 var (
 	defaultGlgOpts = []Option{
-		WithLogLevel(log.DEBUG.String()),
+		WithLevel(log.DEBUG.String()),
 	}
 )
 
-func WithLogLevel(lv string) Option {
+func WithLevel(lv string) Option {
 	return func(g *glglogger) {
 		g.lv = log.ToLevel(strings.ToUpper(lv))
+	}
+}
+
+func WithEnableJSON() Option {
+	return func(g *glglogger) {
+
 	}
 }
