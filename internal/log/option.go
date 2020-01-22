@@ -13,6 +13,8 @@ func (o *option) evaluateOption(opts ...Option) *option {
 	return o
 }
 
-func WithConfig() Option {
-	return func(opt *option) {}
+func WithLogger(logger Logger) Option {
+	return func(o *option) {
+		o.logger = logger
+	}
 }

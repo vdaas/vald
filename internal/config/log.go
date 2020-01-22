@@ -17,7 +17,14 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+import (
+	kglg "github.com/kpango/glg"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/glg"
+)
+
 type Log struct {
+	Type   string `json:"type" yaml:"type"`
 	Level  string `json:"level" yaml:"level"`
 	Mode   string `json:"mode" yaml:"mode"`
 	Format string `json:"format" yaml:"format"`
@@ -28,4 +35,32 @@ func (l Log) Bind() Log {
 	l.Mode = GetActualValue(l.Mode)
 	l.Format = GetActualValue(l.Format)
 	return l
+}
+
+func (l Log) Opts() (opts []log.Option) {
+	switch l.Type {
+	case "zap":
+		// TODO(@funapy)
+		fallthrough
+
+	case "glg":
+		fallthrough
+
+	default:
+		gopts := []glg.Option{
+			glg.WithLevel(l.Level),
+			glg.WithMode(l.Mode),
+		}
+
+		if l.Format == "json" {
+			gopts = append(gopts, glg.WithEnableJSON())
+		}
+
+		opts = []log.Option{
+			log.WithLogger(
+				glg.New(kglg.Get(), gopts...),
+			),
+		}
+	}
+	return
 }
