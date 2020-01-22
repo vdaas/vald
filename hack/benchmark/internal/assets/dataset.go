@@ -41,21 +41,21 @@ type Dataset interface {
 }
 
 type dataset struct {
-	train        [][]float32
-	trainAsFloat64        [][]float64
-	trainOnce sync.Once
-	query        [][]float32
-	queryAsFloat64        [][]float64
-	queryOnce sync.Once
-	distances    [][]float32
-	distancesAsFloat64    [][]float64
-	distancesOnce sync.Once
-	neighbors    [][]int
-	ids          []string
-	name         string
-	dimension    int
-	distanceType string
-	objectType   string
+	train              [][]float32
+	trainAsFloat64     [][]float64
+	trainOnce          sync.Once
+	query              [][]float32
+	queryAsFloat64     [][]float64
+	queryOnce          sync.Once
+	distances          [][]float32
+	distancesAsFloat64 [][]float64
+	distancesOnce      sync.Once
+	neighbors          [][]int
+	ids                []string
+	name               string
+	dimension          int
+	distanceType       string
+	objectType         string
 }
 
 var (
