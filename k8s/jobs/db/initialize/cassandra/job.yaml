@@ -38,7 +38,7 @@ spec:
           - name: CASSANDRA_PASSWORD
             valueFrom:
               secretKeyRef:
-                key: ""
+                key: password
                 name: cassandra-secret
         volumeMounts:
           - name: cassandra-initdb

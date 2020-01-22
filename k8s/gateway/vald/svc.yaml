@@ -20,18 +20,15 @@ metadata:
   name: vald-gateway
 spec:
   ports:
-    - name: rest
-      port: 8080
-      targetPort: 8080
-      protocol: TCP
     - name: grpc
       port: 8081
       targetPort: 8081
       protocol: TCP
-    - name: pprof
-      port: 6060
-      targetPort: 6060
+    - name: readiness
+      port: 3001
+      targetPort: 3001
       protocol: TCP
   selector:
     app: vald-gateway
   clusterIP: None
+  type: ClusterIP

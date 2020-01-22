@@ -19,6 +19,16 @@ kind: Service
 metadata:
   name: vald-agent-ngt
 spec:
+  ports:
+    - name: grpc
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+    - name: readiness
+      port: 3001
+      targetPort: 3001
+      protocol: TCP
   selector:
     app: vald-agent-ngt
   clusterIP: None
+  type: ClusterIP

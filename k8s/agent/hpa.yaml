@@ -14,21 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: v1
-kind: Service
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
 metadata:
-  name: vald-manager-compressor
+  name: vald-agent-ngt
 spec:
-  ports:
-    - name: grpc
-      port: 8081
-      targetPort: 8081
-      protocol: TCP
-    - name: readiness
-      port: 3001
-      targetPort: 3001
-      protocol: TCP
-  selector:
-    app: vald-manager-compressor
-  clusterIP: None
-  type: ClusterIP
+  maxReplicas: 300
+  minReplicas: 20
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: vald-agent-ngt
+  targetCPUUtilizationPercentage: 80
+status:

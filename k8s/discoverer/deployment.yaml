@@ -44,25 +44,25 @@ spec:
           imagePullPolicy: Always
           
           livenessProbe:
+            failureThreshold: 2
             httpGet:
               path: /liveness
               port: liveness
               scheme: HTTP
             initialDelaySeconds: 5
-            timeoutSeconds: 2
-            successThreshold: 1
-            failureThreshold: 2
             periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 2
           readinessProbe:
+            failureThreshold: 2
             httpGet:
               path: /readiness
               port: readiness
               scheme: HTTP
             initialDelaySeconds: 10
-            timeoutSeconds: 2
-            successThreshold: 1
-            failureThreshold: 2
             periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 2
           ports:
             - name: liveness
               protocol: TCP
@@ -70,19 +70,15 @@ spec:
             - name: readiness
               protocol: TCP
               containerPort: 3001
-            - name: rest
-              protocol: TCP
-              containerPort: 8080
             - name: grpc
               protocol: TCP
               containerPort: 8081
-            - name: pprof
-              protocol: TCP
-              containerPort: 6060
           resources:
             null
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          env:
+            null
           volumeMounts:
             - name: vald-discoverer-config
               mountPath: /etc/server/
