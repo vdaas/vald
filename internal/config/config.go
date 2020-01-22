@@ -48,10 +48,9 @@ func (c *Default) Bind() *Default {
 
 func (c *Default) UnmarshalJSON(data []byte) (err error) {
 	ic := new(struct {
-		Ver      string `json:"version"`
-		LogLevel string `json:"log_level"`
-		TZ       string `json:"time_zone"`
-		Log      `json:"log"`
+		Ver string `json:"version"`
+		TZ  string `json:"time_zone"`
+		Log `json:"log"`
 	})
 	err = json.Unmarshal(data, &ic)
 	if err != nil {
