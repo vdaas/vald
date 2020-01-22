@@ -38,10 +38,7 @@ var (
 
 func Init(l Logger, opts ...Option) {
 	once.Do(func() {
-		o := (&option{
-			logger: l,
-		}).evaluateOption(opts...)
-
+		o := (&option{}).apply(opts...)
 		logger = o.logger
 	})
 }

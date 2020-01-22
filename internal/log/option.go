@@ -6,7 +6,7 @@ type option struct {
 	logger Logger
 }
 
-func (o *option) evaluateOption(opts ...Option) *option {
+func (o *option) apply(opts ...Option) *option {
 	for _, opt := range opts {
 		opt(o)
 	}
