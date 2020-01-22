@@ -1,3 +1,4 @@
+---
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -16,98 +17,67 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: manager-compressor-config
+  name: vald-manager-compressor-config
 data:
   config.yaml: |
     ---
     version: v0.0.0
+    time_zone: UTC
     server_config:
       servers:
-      - name: manager-compressor-rest
-        host: 0.0.0.0
-        port: 8080
-        mode: REST
-        probe_wait_time: 3s
-        http:
-          shutdown_duration: 5s
-          handler_timeout: 5s
-          idle_timeout: 2s
-          read_header_timeout: 1s
-          read_timeout: 1s
-          write_timeout: 1s
-      - name: manager-compressor-grpc
-        host: 0.0.0.0
-        port: 8081
-        mode: GRPC
-        probe_wait_time: "3s"
-        grpc:
-          max_receive_message_size: 0
-          max_send_message_size: 0
-          initial_window_size: 0
-          initial_conn_window_size: 0
-          keepalive:
-            max_idle_conn_idle: O
-            max_conn_age: ""
-            max_conn_age_grace: ""
-            time: ""
-            timeout: ""
-          write_buffer_size: 0
-          read_buffer_size: 0
-          connection_timeout: ""
-          max_header_list_size: 0
-          header_table_size: 0
-          interceptors: []
-        restart: true
+        - name: grpc
+          host: 0.0.0.0
+          port: 8081
+          grpc:
+            connection_timeout: ""
+            header_table_size: 0
+            initial_conn_window_size: 0
+            initial_window_size: 0
+            interceptors: []
+            keepalive:
+              max_conn_age: ""
+              max_conn_age_grace: ""
+              max_conn_idle: ""
+              time: ""
+              timeout: ""
+            max_header_list_size: 0
+            max_receive_message_size: 0
+            max_send_message_size: 0
+            read_buffer_size: 0
+            write_buffer_size: 0
+          mode: GRPC
+          probe_wait_time: 3s
+          restart: true
       health_check_servers:
-      - name: liveness
-        host: 0.0.0.0
-        port: 3000
-        mode: ""
-        probe_wait_time: "3s"
-        http:
-          shutdown_duration: "5s"
-          handler_timeout: ""
-          idle_timeout: ""
-          read_header_timeout: ""
-          read_timeout: ""
-          write_timeout: ""
-      - name: readiness
-        host: 0.0.0.0
-        port: 3001
-        mode: ""
-        probe_wait_time: "3s"
-        http:
-          shutdown_duration: "5s"
-          handler_timeout: ""
-          idle_timeout: ""
-          read_header_timeout: ""
-          read_timeout: ""
-          write_timeout: ""
+        - name: liveness
+          host: 0.0.0.0
+          port: 3000
+          http:
+            handler_timeout: ""
+            idle_timeout: ""
+            read_header_timeout: ""
+            read_timeout: ""
+            shutdown_duration: 5s
+            write_timeout: ""
+          mode: ""
+          probe_wait_time: 3s
+        - name: readiness
+          host: 0.0.0.0
+          port: 3001
+          http:
+            handler_timeout: ""
+            idle_timeout: ""
+            read_header_timeout: ""
+            read_timeout: ""
+            shutdown_duration: 5s
+            write_timeout: ""
+          mode: ""
+          probe_wait_time: 3s
       metrics_servers:
-      - name: pprof
-        host: 0.0.0.0
-        port: 6060
-        mode: REST
-        probe_wait_time: 3s
-        http:
-          shutdown_duration: 5s
-          handler_timeout: 5s
-          idle_timeout: 2s
-          read_header_timeout: 1s
-          read_timeout: 1s
-          write_timeout: 1s
       startup_strategy:
-      - livenesss
-      - pprof
-      - manager-compressor-grpc
-      - manager-compressor-rest
-      - readiness
-      shutdown_strategy:
-      - readiness
-      - manager-compressor-rest
-      - manager-compressor-grpc
-      - pprof
-      - livenesss
+        - liveness
+        - grpc
+        - readiness
       full_shutdown_duration: 600s
       tls:
         enabled: false
@@ -115,58 +85,59 @@ data:
         key: /path/to/key
         ca: /path/to/ca
     backup:
-      host: manager-backup-mysql.default.svc.cluster.local
+      host: vald-manager-backup.default.svc.cluster.local
       port: 8081
       client:
         addrs: []
-        health_check_duration: "5s"
+        health_check_duration: 1s
         backoff:
-          initial_duration: "5ms"
-          backoff_time_limit: "5s"
-          maximum_duration: "1s"
-          jitter_limit: "100ms"
-          backoff_factor: 1.2
-          retry_count: 20
-          enable_error_log: true
+          backoff_factor: 0
+          backoff_time_limit: ""
+          enable_error_log: false
+          initial_duration: ""
+          jitter_limit: ""
+          maximum_duration: ""
+          retry_count: 0
         call_option:
-          wait_for_ready: true
-          max_retry_rpc_buffer_size: 0
           max_recv_msg_size: 0
+          max_retry_rpc_buffer_size: 0
           max_send_msg_size: 0
+          wait_for_ready: true
         dial_option:
-          write_buffer_size: 0
-          read_buffer_size: 0
-          initial_window_size: 0
-          initial_connection_window_size: 0
-          max_msg_size: 0
-          max_backoff_delay: ""
-          enable_backoff: false
-          insecure: true
-          timeout: ""
           dialer:
+            dialer:
+              dual_stack_enabled: true
+              keep_alive: ""
+              timeout: ""
             dns:
               cache_enabled: false
-              refresh_duration: ""
               cache_expiration: ""
-            dialer:
-              timeout: ""
-              keep_alive: ""
-              dual_stack_enabled: true
+              refresh_duration: ""
             tls:
-              enabled: false
-              cert: /path/to/cert
-              key: /path/to/key
               ca: /path/to/ca
+              cert: /path/to/cert
+              enabled: false
+              key: /path/to/key
+          enable_backoff: false
+          initial_connection_window_size: 0
+          initial_window_size: 0
+          insecure: true
           keep_alive:
-            time: "60s"
-            timeout: ""
             permit_without_stream: false
+            time: ""
+            timeout: ""
+          max_backoff_delay: ""
+          max_msg_size: 0
+          read_buffer_size: 0
+          timeout: ""
+          write_buffer_size: 0
         tls:
-          enabled: false
-          cert: /path/to/cert
-          key: /path/to/key
           ca: /path/to/ca
+          cert: /path/to/cert
+          enabled: false
+          key: /path/to/key
     compressor:
-      compress_algorithm: gob
-      concurrent_limit: 10
       buffer: 100
+      compress_algorithm: zstd
+      compression_level: 10
+      concurrent_limit: 10

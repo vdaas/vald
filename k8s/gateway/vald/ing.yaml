@@ -1,3 +1,4 @@
+---
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -21,9 +22,9 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/grpc-backend: "true"
   labels:
-    name: gateway-ingress
-    app: gateway-ingress
-  name: gateway-ingress
+    name: vald-gateway-ingress
+    app: vald-gateway-ingress
+  name: vald-gateway-ingress
   namespace: default
 spec:
   rules:
@@ -31,5 +32,5 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: gateway
+          serviceName: vald-gateway
           servicePort: grpc

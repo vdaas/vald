@@ -1,0 +1,24 @@
+name: 'Detect internal config changes'
+on:
+  pull_request:
+    paths:
+      - 'internal/config/**'
+
+jobs:
+  warning:
+    name: warn internal config changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Warn
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[WARNING]** Changes in \`interal/config\` may require you to change Helm charts. Please check.\"}" \
+          ${API_URL}
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: ${{ github.event.pull_request.comments_url }}
+          PR_USER: ${{ github.event.pull_request.user.login }}

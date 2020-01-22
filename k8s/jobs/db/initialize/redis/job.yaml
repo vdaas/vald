@@ -1,3 +1,4 @@
+---
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -22,7 +23,7 @@ spec:
     spec:
       containers:
       - name: redis-init
-        image: redis:latest
+        image: "redis:latest"
         imagePullPolicy: Always
         command:
           - /bin/sh
@@ -30,11 +31,11 @@ spec:
           - |
             redis-cli -c -a ${REDIS_PASSWORD} -h ${REDIS_HOST} FLUSHALL
         env:
-        - name: REDIS_HOST
-          value: redis.default.svc.cluster.local
-        - name: REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: redis-secret
-              key: password
+          - name: REDIS_HOST
+            value: redis.default.svc.cluster.local
+          - name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: redis-secret
       restartPolicy: Never

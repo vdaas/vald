@@ -19,7 +19,7 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   annotations:
-    nginx.ingress.kubernetes.io/grpc-backend: "true"
+    {{- toYaml .Values.gateway.ingress.annotations | nindent 4 }}
   labels:
     name: {{ .Values.gateway.name }}-ingress
     app: {{ .Values.gateway.name }}-ingress
