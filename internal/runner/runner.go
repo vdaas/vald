@@ -27,6 +27,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/params"
 	"github.com/vdaas/vald/internal/timeutil/location"
@@ -47,10 +48,8 @@ type runner struct {
 	maxVersion       string
 	minVersion       string
 	name             string
-	location         string
 	loadConfig       func(string) (interface{}, string, string, error)
 	initializeDaemon func(interface{}) (Runner, error)
-	showVersionFunc  func(name string)
 }
 
 func Do(ctx context.Context, opts ...Option) error {
@@ -60,6 +59,7 @@ func Do(ctx context.Context, opts ...Option) error {
 		opt(r)
 	}
 
+	info.Init(r.name)
 	log.Init(log.DefaultGlg())
 
 	p, isHelp, err := params.New(
@@ -75,12 +75,7 @@ func Do(ctx context.Context, opts ...Option) error {
 	}
 
 	if p.ShowVersion() {
-		if r.showVersionFunc != nil {
-			r.showVersionFunc(r.name)
-		} else {
-			log.Infof("vald %s server", r.name)
-			log.Infof("version -> %s", log.Bold(r.version))
-		}
+		log.Info(info.String())
 		return nil
 	}
 
@@ -88,8 +83,8 @@ func Do(ctx context.Context, opts ...Option) error {
 	if err != nil {
 		return err
 	}
+
 	// set location temporary for initialization logging
-	// _ = loc
 	location.Set(loc)
 
 	err = ver.Check(version, r.maxVersion, r.minVersion)
@@ -97,7 +92,11 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
-	maxprocs.Set(maxprocs.Logger(log.Infof))
+	mfunc, err := maxprocs.Set(maxprocs.Logger(log.Infof))
+	if err != nil {
+		mfunc()
+		return err
+	}
 
 	daemon, err := r.initializeDaemon(cfg)
 	if err != nil {
