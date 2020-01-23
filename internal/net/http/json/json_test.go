@@ -595,7 +595,7 @@ func TestErrorHandler(t *testing.T) {
 		}(),
 	}
 
-	log.Init(log.DefaultGlg())
+	log.Init()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := ErrorHandler(tt.args.w, tt.args.r, tt.args.msg, tt.args.code, tt.args.err)

@@ -53,7 +53,7 @@ var (
 )
 
 func init() {
-	log.Init(log.DefaultGlg())
+	log.Init()
 	glg.Get().SetMode(glg.NONE)
 	if err := os.RemoveAll(baseDir); err != nil {
 		log.Fatal(err)

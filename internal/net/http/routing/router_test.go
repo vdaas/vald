@@ -165,7 +165,7 @@ func TestRouting(t *testing.T) {
 		}(),
 	}
 
-	log.Init(log.DefaultGlg())
+	log.Init()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			hdr := new(router).routing(tt.args.name, tt.args.path, tt.args.m, tt.args.h)
