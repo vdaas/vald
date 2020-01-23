@@ -14,18 +14,11 @@ var (
 )
 
 func WithEnableJSON() Option {
-	return func(g *GlgLogger) {
-	}
+	return func(g *GlgLogger) {}
 }
 
 func WithLevel(lv string) Option {
 	return func(g *GlgLogger) {
 		g.lv = toLevel(strings.ToUpper(lv))
-	}
-}
-
-func WithMode(lv string) Option {
-	return func(g *GlgLogger) {
-
 	}
 }
