@@ -16,7 +16,9 @@
 
 package log
 
-import "sync"
+import (
+	"sync"
+)
 
 type Logger interface {
 	Info(vals ...interface{})
