@@ -91,6 +91,9 @@ func WithPort(port uint) Option {
 
 func WithName(name string) Option {
 	return func(s *server) {
+		if name == "" {
+			return
+		}
 		s.name = name
 	}
 }

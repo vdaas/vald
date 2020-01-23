@@ -39,10 +39,12 @@ func TestWithHost(t *testing.T) {
 			name: "returns nothing",
 			host: "",
 			checkFunc: func(opt Option) error {
-				got := new(server)
+				got := &server{
+					host: "host",
+				}
 				opt(got)
 
-				if got.host != "" {
+				if got.host != "host" {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -85,10 +87,12 @@ func TestWithPort(t *testing.T) {
 		{
 			name: "returns nothing",
 			checkFunc: func(opt Option) error {
-				got := new(server)
+				got := &server{
+					port: 8080,
+				}
 				opt(got)
 
-				if got.port != 0 {
+				if got.port != 8080 {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -124,6 +128,22 @@ func TestWithName(t *testing.T) {
 				if got.name != "vald" {
 					return errors.New("invalid param was set")
 				}
+				return nil
+			},
+		},
+
+		{
+			name: "returns nothing",
+			checkFunc: func(opt Option) error {
+				got := &server{
+					name: "name",
+				}
+				opt(got)
+
+				if got.name != "name" {
+					return errors.New("invalid param was set")
+				}
+
 				return nil
 			},
 		},
