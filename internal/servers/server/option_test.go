@@ -36,7 +36,7 @@ func TestWithHost(t *testing.T) {
 		},
 
 		{
-			name: "do nothing",
+			name: "returns nothing",
 			host: "",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -83,7 +83,7 @@ func TestWithPort(t *testing.T) {
 		},
 
 		{
-			name: "do nothing",
+			name: "returns nothing",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
@@ -109,14 +109,14 @@ func TestWithPort(t *testing.T) {
 func TestWithName(t *testing.T) {
 	type test struct {
 		name      string
-		arg       string
+		n         string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
 			name: "set success",
-			arg:  "vald",
+			n:    "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
@@ -131,7 +131,7 @@ func TestWithName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithName(tt.arg)
+			opt := WithName(tt.n)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -1039,7 +1039,7 @@ func TestWithGRPCKeepaliveMaxConnIdle(t *testing.T) {
 		},
 
 		{
-			name: "do nothing when max is empty",
+			name: "returns nothing when max is empty",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
@@ -1052,7 +1052,7 @@ func TestWithGRPCKeepaliveMaxConnIdle(t *testing.T) {
 		},
 
 		{
-			name: "do nothing when max is invalid",
+			name: "returns nothing when max is invalid",
 			max:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -1099,7 +1099,7 @@ func TestWithGRPCKeepaliveMaxConnAge(t *testing.T) {
 		},
 
 		{
-			name: "do nothing when max is empty",
+			name: "returns nothing when max is empty",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
@@ -1112,7 +1112,7 @@ func TestWithGRPCKeepaliveMaxConnAge(t *testing.T) {
 		},
 
 		{
-			name: "do nothing when max is invalid",
+			name: "returns nothing when max is invalid",
 			max:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -1159,7 +1159,7 @@ func TestWithGRPCKeepaliveMaxConnAgeGrace(t *testing.T) {
 		},
 
 		{
-			name: "do nothing when max is empty",
+			name: "returns nothing when max is empty",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
@@ -1172,7 +1172,7 @@ func TestWithGRPCKeepaliveMaxConnAgeGrace(t *testing.T) {
 		},
 
 		{
-			name: "do nothing when max is invalid",
+			name: "returns nothing when max is invalid",
 			max:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -1219,7 +1219,7 @@ func TestWithGRPCKeepaliveTime(t *testing.T) {
 		},
 
 		{
-			name: "do nothing when dur is empty",
+			name: "returns nothing when dur is empty",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
@@ -1232,7 +1232,7 @@ func TestWithGRPCKeepaliveTime(t *testing.T) {
 		},
 
 		{
-			name: "do nothing when dur is invalid",
+			name: "returns nothing when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -1279,7 +1279,7 @@ func TestWithGRPCKeepaliveTimeout(t *testing.T) {
 		},
 
 		{
-			name: "do nothing when dur is empty",
+			name: "returns nothing when dur is empty",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
@@ -1292,7 +1292,7 @@ func TestWithGRPCKeepaliveTimeout(t *testing.T) {
 		},
 
 		{
-			name: "do nothing when dur is invalid",
+			name: "returns nothing when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -1405,7 +1405,7 @@ func TestWithGRPCConnectionTimeout(t *testing.T) {
 		},
 
 		{
-			name: "do nothing when to is empty",
+			name: "returns nothing when to is empty",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
@@ -1418,7 +1418,7 @@ func TestWithGRPCConnectionTimeout(t *testing.T) {
 		},
 
 		{
-			name: "do nothing when to is invalid",
+			name: "returns nothing when to is invalid",
 			to:   "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
