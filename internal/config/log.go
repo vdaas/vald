@@ -30,7 +30,7 @@ type Log struct {
 	Format string `json:"format" yaml:"format"`
 }
 
-func (l Log) Bind() Log {
+func (l *Log) Bind() *Log {
 	l.Type = GetActualValue(l.Type)
 	l.Level = GetActualValue(l.Level)
 	l.Mode = GetActualValue(l.Mode)
@@ -38,7 +38,7 @@ func (l Log) Bind() Log {
 	return l
 }
 
-func (l Log) Opts() (opts []log.Option) {
+func (l *Log) Opts() (opts []log.Option) {
 	switch l.Type {
 	case "glg":
 		gopts := []glg.Option{
