@@ -32,6 +32,9 @@ func (o *option) apply(opts ...Option) *option {
 
 func WithLogger(logger Logger) Option {
 	return func(o *option) {
+		if logger == nil {
+			return
+		}
 		o.logger = logger
 	}
 }

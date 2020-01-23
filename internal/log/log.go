@@ -80,6 +80,7 @@ func Error(vals ...interface{}) {
 }
 
 func Errorf(format string, vals ...interface{}) {
+	logger.Errorf(format, vals...)
 }
 
 func Fatal(vals ...interface{}) {
