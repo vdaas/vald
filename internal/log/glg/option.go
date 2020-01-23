@@ -27,6 +27,9 @@ func WithEnableJSON() Option {
 
 func WithLevel(lv string) Option {
 	return func(g *GlgLogger) {
+		if lv == "" {
+			return
+		}
 		g.lv = toLevel(strings.ToUpper(lv))
 	}
 }
