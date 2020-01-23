@@ -18,6 +18,7 @@ package glg
 
 import (
 	logger "github.com/kpango/glg"
+	"github.com/vdaas/vald/internal/log/retry"
 )
 
 type GlgLogger struct {
@@ -73,35 +74,35 @@ func (l *GlgLogger) setLevelMode(lv level) {
 }
 
 func (l *GlgLogger) Info(vals ...interface{}) {
-	l.log.Info(vals...)
+	retry.Out(l.log.Info, vals...)
 }
 
 func (l *GlgLogger) Infof(format string, vals ...interface{}) {
-	l.log.Infof(format, vals...)
+	retry.Outf(l.log.Infof, format, vals...)
 }
 
 func (l *GlgLogger) Debug(vals ...interface{}) {
-	l.log.Debug(vals...)
+	retry.Out(l.log.Debug, vals...)
 }
 
 func (l *GlgLogger) Debugf(format string, vals ...interface{}) {
-	l.log.Debugf(format, vals...)
+	retry.Outf(l.log.Debugf, format, vals...)
 }
 
 func (l *GlgLogger) Warn(vals ...interface{}) {
-	l.log.Warn(vals...)
+	retry.Out(l.log.Warn, vals...)
 }
 
 func (l *GlgLogger) Warnf(format string, vals ...interface{}) {
-	l.log.Warnf(format, vals...)
+	retry.Outf(l.log.Warnf, format, vals...)
 }
 
 func (l *GlgLogger) Error(vals ...interface{}) {
-	l.log.Error(vals...)
+	retry.Out(l.log.Error, vals...)
 }
 
 func (l *GlgLogger) Errorf(format string, vals ...interface{}) {
-	l.log.Errorf(format, vals...)
+	retry.Outf(l.log.Errorf, format, vals...)
 }
 
 func (l *GlgLogger) Fatal(vals ...interface{}) {

@@ -51,6 +51,16 @@ var (
 		return Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt))
 	}
 
+	ErrLoggingRetry = func(err error, ref reflect.Value) error {
+		return Wrapf(err, "failed to output %s logs, retrying...",
+			runtime.FuncForPC(ref.Pointer()).Name())
+	}
+
+	ErrLoggingFaild = func(err error, ref reflect.Value) error {
+		return Wrapf(err, "failed to output %s logs",
+			runtime.FuncForPC(ref.Pointer()).Name())
+	}
+
 	New = func(msg string) error {
 		if msg == "" {
 			return nil
