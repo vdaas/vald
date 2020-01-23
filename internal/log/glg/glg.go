@@ -22,8 +22,10 @@ import (
 )
 
 type GlgLogger struct {
-	lv  level
-	log *logger.Glg
+	lv    level
+	rout  retry.Out
+	routf retry.Outf
+	log   *logger.Glg
 }
 
 // New returns a new GlgLogger instance.
@@ -74,41 +76,41 @@ func (l *GlgLogger) setLevelMode(lv level) {
 }
 
 func (l *GlgLogger) Info(vals ...interface{}) {
-	retry.Out(l.log.Info, vals...)
+	// retry.Out(l.log.Info, vals...)
 }
 
 func (l *GlgLogger) Infof(format string, vals ...interface{}) {
-	retry.Outf(l.log.Infof, format, vals...)
+	// retry.Outf(l.log.Infof, format, vals...)
 }
 
 func (l *GlgLogger) Debug(vals ...interface{}) {
-	retry.Out(l.log.Debug, vals...)
+	// retry.Out(l.log.Debug, vals...)
 }
 
 func (l *GlgLogger) Debugf(format string, vals ...interface{}) {
-	retry.Outf(l.log.Debugf, format, vals...)
+	// retry.Outf(l.log.Debugf, format, vals...)
 }
 
 func (l *GlgLogger) Warn(vals ...interface{}) {
-	retry.Out(l.log.Warn, vals...)
+	// retry.Out(l.log.Warn, vals...)
 }
 
 func (l *GlgLogger) Warnf(format string, vals ...interface{}) {
-	retry.Outf(l.log.Warnf, format, vals...)
+	// retry.Outf(l.log.Warnf, format, vals...)
 }
 
 func (l *GlgLogger) Error(vals ...interface{}) {
-	retry.Out(l.log.Error, vals...)
+	// retry.Out(l.log.Error, vals...)
 }
 
 func (l *GlgLogger) Errorf(format string, vals ...interface{}) {
-	retry.Outf(l.log.Errorf, format, vals...)
+	// retry.Outf(l.log.Errorf, format, vals...)
 }
 
 func (l *GlgLogger) Fatal(vals ...interface{}) {
-	l.log.Fatal(vals...)
+	// l.log.Fatal(vals...)
 }
 
 func (l *GlgLogger) Fatalf(format string, vals ...interface{}) {
-	l.log.Fatalf(format, vals...)
+	// l.log.Fatalf(format, vals...)
 }

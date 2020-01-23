@@ -1,12 +1,21 @@
 package log
 
-import "github.com/vdaas/vald/internal/log/glg"
+import (
+	glglogger "github.com/kpango/glg"
+	"github.com/vdaas/vald/internal/log/glg"
+)
 
 type Option func(*option)
 
 var (
 	defaultOptions = []Option{
-		WithLogger(glg.Default()),
+		WithLogger(
+			glg.New(
+				glglogger.Get(),
+				glg.WithRetryOut(retryOut),
+				glg.WithRetryOutf(retryOutf),
+			),
+		),
 	}
 )
 
