@@ -24,7 +24,6 @@ metadata:
     name: {{ .Values.gateway.name }}-ingress
     app: {{ .Values.gateway.name }}-ingress
   name: {{ .Values.gateway.name }}-ingress
-  namespace: default
 spec:
   rules:
   - host: {{ .Values.gateway.ingress.host }}
