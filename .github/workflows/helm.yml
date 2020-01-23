@@ -23,6 +23,7 @@ jobs:
           helm version
       - name: Update k8s
         run: |
+          git checkout master
           make k8s/manifest/update
           make license
       - name: Push to master
