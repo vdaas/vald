@@ -129,28 +129,28 @@ ports:
   {{- $restEnabled := default .default.servers.rest.enabled .Values.servers.rest.enabled }}
   {{- if $restEnabled }}
   - name: rest
-    port: {{ default .default.servers.rest.port .Values.servers.rest.port }}
+    port: {{ default .default.servers.rest.servicePort .Values.servers.rest.servicePort }}
     targetPort: {{ default .default.servers.rest.port .Values.servers.rest.port }}
     protocol: TCP
   {{- end }}
   {{- $grpcEnabled := default .default.servers.grpc.enabled .Values.servers.grpc.enabled }}
   {{- if $grpcEnabled }}
   - name: grpc
-    port: {{ default .default.servers.grpc.port .Values.servers.grpc.port }}
+    port: {{ default .default.servers.grpc.servicePort .Values.servers.grpc.servicePort }}
     targetPort: {{ default .default.servers.grpc.port .Values.servers.grpc.port }}
     protocol: TCP
   {{- end }}
   {{- $readinessEnabled := default .default.healths.readiness.enabled .Values.healths.readiness.enabled }}
   {{- if $readinessEnabled }}
   - name: readiness
-    port: {{ default .default.healths.readiness.port .Values.healths.readiness.port }}
+    port: {{ default .default.healths.readiness.servicePort .Values.healths.readiness.servicePort }}
     targetPort: {{ default .default.healths.readiness.port .Values.healths.readiness.port }}
     protocol: TCP
   {{- end }}
   {{- $pprofEnabled := default .default.metrics.pprof.enabled .Values.metrics.pprof.enabled }}
   {{- if $pprofEnabled }}
   - name: pprof
-    port: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
+    port: {{ default .default.metrics.pprof.servicePort .Values.metrics.pprof.servicePort }}
     targetPort: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
     protocol: TCP
   {{- end }}
