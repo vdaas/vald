@@ -21,16 +21,16 @@ import (
 	"github.com/vdaas/vald/internal/log/retry"
 )
 
-type GlgLogger struct {
+type Logger struct {
 	lv    level
 	rout  retry.Out
 	routf retry.Outf
 	log   *logger.Glg
 }
 
-// New returns a new GlgLogger instance.
-func New(g *logger.Glg, opts ...Option) *GlgLogger {
-	gl := &GlgLogger{
+// New returns a new Logger instance.
+func New(g *logger.Glg, opts ...Option) *Logger {
+	gl := &Logger{
 		log: g,
 	}
 
@@ -41,7 +41,7 @@ func New(g *logger.Glg, opts ...Option) *GlgLogger {
 	return gl
 }
 
-func (l *GlgLogger) setLevelMode(lv level) {
+func (l *Logger) setLevelMode(lv level) {
 	l.log.SetMode(logger.NONE)
 
 	switch lv {
@@ -62,42 +62,42 @@ func (l *GlgLogger) setLevelMode(lv level) {
 	}
 }
 
-func (l *GlgLogger) Info(vals ...interface{}) {
+func (l *Logger) Info(vals ...interface{}) {
 	l.rout(l.log.Info, vals...)
 }
 
-func (l *GlgLogger) Infof(format string, vals ...interface{}) {
+func (l *Logger) Infof(format string, vals ...interface{}) {
 	l.routf(l.log.Infof, format, vals...)
 }
 
-func (l *GlgLogger) Debug(vals ...interface{}) {
+func (l *Logger) Debug(vals ...interface{}) {
 	l.rout(l.log.Debug, vals...)
 }
 
-func (l *GlgLogger) Debugf(format string, vals ...interface{}) {
+func (l *Logger) Debugf(format string, vals ...interface{}) {
 	l.routf(l.log.Debugf, format, vals...)
 }
 
-func (l *GlgLogger) Warn(vals ...interface{}) {
+func (l *Logger) Warn(vals ...interface{}) {
 	l.rout(l.log.Warn, vals...)
 }
 
-func (l *GlgLogger) Warnf(format string, vals ...interface{}) {
+func (l *Logger) Warnf(format string, vals ...interface{}) {
 	l.routf(l.log.Warnf, format, vals...)
 }
 
-func (l *GlgLogger) Error(vals ...interface{}) {
+func (l *Logger) Error(vals ...interface{}) {
 	l.rout(l.log.Error, vals...)
 }
 
-func (l *GlgLogger) Errorf(format string, vals ...interface{}) {
+func (l *Logger) Errorf(format string, vals ...interface{}) {
 	l.routf(l.log.Errorf, format, vals...)
 }
 
-func (l *GlgLogger) Fatal(vals ...interface{}) {
+func (l *Logger) Fatal(vals ...interface{}) {
 	l.log.Fatal(vals...)
 }
 
-func (l *GlgLogger) Fatalf(format string, vals ...interface{}) {
+func (l *Logger) Fatalf(format string, vals ...interface{}) {
 	l.log.Fatalf(format, vals...)
 }

@@ -6,8 +6,8 @@ import (
 	"github.com/vdaas/vald/internal/log/retry"
 )
 
-// Option represetns option for GlgLogger.
-type Option func(*GlgLogger)
+// Option represetns option for Logger.
+type Option func(*Logger)
 
 var (
 	defaultOpts = []Option{
@@ -22,17 +22,17 @@ var (
 )
 
 func WithEnableJSON() Option {
-	return func(g *GlgLogger) {}
+	return func(g *Logger) {}
 }
 
 func WithLevel(lv string) Option {
-	return func(g *GlgLogger) {
+	return func(g *Logger) {
 		g.lv = toLevel(strings.ToUpper(lv))
 	}
 }
 
 func WithRetryOut(fn retry.Out) Option {
-	return func(g *GlgLogger) {
+	return func(g *Logger) {
 		if fn == nil {
 			return
 		}
@@ -41,7 +41,7 @@ func WithRetryOut(fn retry.Out) Option {
 }
 
 func WithRetryOutf(fn retry.Outf) Option {
-	return func(g *GlgLogger) {
+	return func(g *Logger) {
 		if fn == nil {
 			return
 		}
