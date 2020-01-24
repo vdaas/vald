@@ -36,7 +36,7 @@ type Default struct {
 	TZ string `json:"time_zone" yaml:"time_zone"`
 
 	// Log represent log configuration.
-	Log *Log `json:"log" yaml:"log"`
+	Log *Log `json:"log,omitempty" yaml:"log,omitempty"`
 }
 
 func (c *Default) Bind() *Default {
