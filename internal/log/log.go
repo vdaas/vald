@@ -17,10 +17,7 @@
 package log
 
 import (
-	"reflect"
 	"sync"
-
-	"github.com/vdaas/vald/internal/errors"
 )
 
 type Logger interface {
@@ -43,7 +40,10 @@ var (
 
 func Init(opts ...Option) {
 	once.Do(func() {
-		o := (&option{}).apply(append(defaultOptions, opts...)...)
+		o := new(option)
+		for _, opt := range append(defaultOptions, opts...) {
+			opt(o)
+		}
 		logger = o.logger
 	})
 }
@@ -89,29 +89,3 @@ func Fatal(vals ...interface{}) {
 func Fatalf(format string, vals ...interface{}) {
 	logger.Fatalf(format, vals...)
 }
-
-var (
-	retryOut = func(fn func(vals ...interface{}) error, vals ...interface{}) {
-		retryOutf(func(format string, vals ...interface{}) error {
-			return fn(vals...)
-		}, "", vals...)
-	}
-
-	retryOutf = func(fn func(format string, vals ...interface{}) error, format string, vals ...interface{}) {
-		if err := fn(format, vals...); err != nil {
-			rv := reflect.ValueOf(fn)
-
-			Warn(errors.ErrLoggingRetry(err, rv))
-
-			err = fn(format, vals...)
-			if err != nil {
-				Error(errors.ErrLoggingFaild(err, rv))
-
-				err = fn(format, vals...)
-				if err != nil {
-					panic(err)
-				}
-			}
-		}
-	}
-)
