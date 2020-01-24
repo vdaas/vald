@@ -136,12 +136,17 @@ k8s/external/cassandra/initialize:
 .PHONY: k8s/linkerd/deploy
 ## deploy linkerd to k8s
 k8s/linkerd/deploy:
+	linkerd check --pre
 	linkerd install | kubectl apply -f -
+	linkerd check
 	kubectl annotate namespace \
-		kubectl config get-contexts --no-headers \
-			"$(kubectl config current-context)"  \
-			| awk "{print \$5}" | sed "s/^$/default/" \
+		default \
 		linkerd.io/inject=enabled
+
+.PHONY: k8s/linkerd/remove
+## remove linkerd from k8s
+k8s/linkerd/remove:
+	linkerd install --ignore-cluster | kubectl delete -f -
 
 .PHONY: helm/package/vald
 ## packaging Helm chart for Vald
