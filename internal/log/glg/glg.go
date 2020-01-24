@@ -30,28 +30,15 @@ type GlgLogger struct {
 
 // New returns a new GlgLogger instance.
 func New(g *logger.Glg, opts ...Option) *GlgLogger {
-	gl := (&GlgLogger{
+	gl := &GlgLogger{
 		log: g,
-	}).apply(append(defaultOpts, opts...)...)
-
-	gl.setLevelMode(gl.lv)
-	return gl
-}
-
-func Default() *GlgLogger {
-	gl := (&GlgLogger{
-		log: logger.Get(),
-	}).apply(defaultOpts...)
-
-	gl.setLevelMode(gl.lv)
-	return gl
-}
-
-func (l *GlgLogger) apply(opts ...Option) *GlgLogger {
-	for _, opt := range opts {
-		opt(l)
 	}
-	return l
+
+	for _, opt := range append(defaultOpts, opts...) {
+		opt(gl)
+	}
+	gl.setLevelMode(gl.lv)
+	return gl
 }
 
 func (l *GlgLogger) setLevelMode(lv level) {
