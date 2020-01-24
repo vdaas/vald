@@ -25,7 +25,8 @@ kubernetes 1.12~
 ## Installation
 
 ```shell
-helm install vdaas/vald
+helm repo add vald https://vdaas.github.io/vald/charts
+helm install --generate-name vald/vald
 ```
 
 ## Example
