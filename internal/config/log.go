@@ -26,12 +26,14 @@ import (
 type Log struct {
 	Type   string `json:"type" yaml:"type"`
 	Level  string `json:"level" yaml:"level"`
+	Mode   string `json:"mode" yaml:"mode"`
 	Format string `json:"format" yaml:"format"`
 }
 
 func (l *Log) Bind() *Log {
 	l.Type = GetActualValue(l.Type)
 	l.Level = GetActualValue(l.Level)
+	l.Mode = GetActualValue(l.Mode)
 	l.Format = GetActualValue(l.Format)
 	return l
 }
