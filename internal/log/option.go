@@ -1,24 +1,21 @@
 package log
 
-import (
-	"github.com/kpango/glg"
-	glglogger "github.com/vdaas/vald/internal/log/glg"
-	"github.com/vdaas/vald/internal/log/retry"
-)
+// glglogger "github.com/vdaas/vald/internal/log/glg"
+// "github.com/vdaas/vald/internal/log/retry"
 
 type Option func(*option)
 
 var (
 	defaultOptions = []Option{
-		WithLogger(
-			glglogger.New(
-				glg.Get(),
-				glglogger.WithRetry(retry.New(
-					Warn,
-					Error,
-				)),
-			),
-		),
+		// WithLogger(
+		// 	glglogger.New(
+		// 		glg.Get(),
+		// 		glglogger.WithRetry(retry.New(
+		// 			Warn,
+		// 			Error,
+		// 		)),
+		// 	),
+		// ),
 	}
 )
 
