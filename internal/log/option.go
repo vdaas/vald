@@ -3,6 +3,7 @@ package log
 import (
 	glglogger "github.com/kpango/glg"
 	"github.com/vdaas/vald/internal/log/glg"
+	"github.com/vdaas/vald/internal/log/retry"
 )
 
 type Option func(*option)
@@ -12,8 +13,10 @@ var (
 		WithLogger(
 			glg.New(
 				glglogger.Get(),
-				// glg.WithRetryOut(retryOut),
-				// glg.WithRetryOutf(retryOutf),
+				glg.WithRetry(retry.New(
+					Warn,
+					Error,
+				)),
 			),
 		),
 	}

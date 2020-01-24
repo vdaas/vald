@@ -12,12 +12,7 @@ type Option func(*Logger)
 var (
 	defaultOpts = []Option{
 		WithLevel(DEBUG.String()),
-		WithRetryOut(func(fn func(vals ...interface{}) error, vals ...interface{}) {
-			fn(vals...)
-		}),
-		WithRetryOutf(func(fn func(format string, vals ...interface{}) error, format string, vals ...interface{}) {
-			fn(format, vals...)
-		}),
+		WithRetry(retry.NewNop()),
 	}
 )
 
@@ -31,20 +26,11 @@ func WithLevel(lv string) Option {
 	}
 }
 
-func WithRetryOut(fn retry.Out) Option {
+func WithRetry(rt retry.Retry) Option {
 	return func(g *Logger) {
-		if fn == nil {
+		if rt == nil {
 			return
 		}
-		g.rout = fn
-	}
-}
-
-func WithRetryOutf(fn retry.Outf) Option {
-	return func(g *Logger) {
-		if fn == nil {
-			return
-		}
-		g.routf = fn
+		g.rt = rt
 	}
 }

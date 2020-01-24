@@ -22,10 +22,9 @@ import (
 )
 
 type Logger struct {
-	lv    level
-	rout  retry.Out
-	routf retry.Outf
-	log   *logger.Glg
+	lv  level
+	rt  retry.Retry
+	log *logger.Glg
 }
 
 // New returns a new Logger instance.
@@ -62,35 +61,35 @@ func (l *Logger) setLevelMode(lv level) {
 }
 
 func (l *Logger) Info(vals ...interface{}) {
-	l.rout(l.log.Info, vals...)
+	l.rt.Out(l.log.Info, vals...)
 }
 
 func (l *Logger) Infof(format string, vals ...interface{}) {
-	l.routf(l.log.Infof, format, vals...)
+	l.rt.Outf(l.log.Infof, format, vals...)
 }
 
 func (l *Logger) Debug(vals ...interface{}) {
-	l.rout(l.log.Debug, vals...)
+	l.rt.Out(l.log.Debug, vals...)
 }
 
 func (l *Logger) Debugf(format string, vals ...interface{}) {
-	l.routf(l.log.Debugf, format, vals...)
+	l.rt.Outf(l.log.Debugf, format, vals...)
 }
 
 func (l *Logger) Warn(vals ...interface{}) {
-	l.rout(l.log.Warn, vals...)
+	l.rt.Out(l.log.Warn, vals...)
 }
 
 func (l *Logger) Warnf(format string, vals ...interface{}) {
-	l.routf(l.log.Warnf, format, vals...)
+	l.rt.Outf(l.log.Warnf, format, vals...)
 }
 
 func (l *Logger) Error(vals ...interface{}) {
-	l.rout(l.log.Error, vals...)
+	l.rt.Out(l.log.Error, vals...)
 }
 
 func (l *Logger) Errorf(format string, vals ...interface{}) {
-	l.routf(l.log.Errorf, format, vals...)
+	l.rt.Outf(l.log.Errorf, format, vals...)
 }
 
 func (l *Logger) Fatal(vals ...interface{}) {
