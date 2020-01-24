@@ -12,8 +12,8 @@ var (
 		WithLogger(
 			glg.New(
 				glglogger.Get(),
-				glg.WithRetryOut(retryOut),
-				glg.WithRetryOutf(retryOutf),
+				// glg.WithRetryOut(retryOut),
+				// glg.WithRetryOutf(retryOutf),
 			),
 		),
 	}
