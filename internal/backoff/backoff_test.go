@@ -23,11 +23,10 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/log/glg"
 )
 
 func TestNextDuration(t *testing.T) {
-	log.Init(glg.Default())
+	log.Init()
 	t.Run("Text NextDuration", func(t *testing.T) {
 		bo := New()
 		bo.Do(context.Background(), func() (interface{}, error) {
