@@ -33,7 +33,6 @@ func New(g *logger.Glg, opts ...Option) *Logger {
 	gl := &Logger{
 		log: g,
 	}
-
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(gl)
 	}
