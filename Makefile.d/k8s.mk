@@ -156,9 +156,9 @@ helm/package/vald:
 .PHONY: helm/repo/index/create
 ## create Helm chart repository index
 helm/repo/index/create:
-	helm repo index --url https://vdaas.github.io/vald/charts .
+	helm repo index --url https://vald.vdaas.org/charts .
 
 .PHONY: helm/repo/add
 ## add Helm chart repository
 helm/repo/add:
-	helm repo add vald https://vdaas.github.io/vald/charts
+	helm repo add vald https://vald.vdaas.org/charts
