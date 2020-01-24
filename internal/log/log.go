@@ -44,8 +44,28 @@ func Init(opts ...Option) {
 		for _, opt := range append(defaultOptions, opts...) {
 			opt(o)
 		}
-		logger = o.logger
+		logger = getLogger(o)
 	})
+}
+
+func getLogger(o *option) Logger {
+	// switch config.Mode(o.mode) {
+	// case config.GLG:
+	// 	// gopts := []glglogger.Option{
+	// 	// 	glglogger.WithLevel(o.lv),
+	// 	// 	glglogger.WithRetry(
+	// 	// 		retry.New(
+	// 	// 			Warn,
+	// 	// 			Error,
+	// 	// 		),
+	// 	// 	),
+	// 	// }
+	// 	// return glglogger.New(glg.Get(), gopts...)
+	// default:
+	// 	return o.logger
+	// }
+	//
+	return nil
 }
 
 func Bold(str string) string {

@@ -17,11 +17,40 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-import (
-	logger "github.com/kpango/glg"
-	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/log/glg"
+import "strings"
+
+type logFormat uint8
+
+const (
+	JSON logFormat = iota
+	YAML
 )
+
+func (lf logFormat) String() string {
+	switch lf {
+	case JSON:
+		return "json"
+	case YAML:
+		return "yaml"
+	default:
+		return "unknown"
+	}
+}
+
+type logMode uint8
+
+const (
+	GLG logMode = iota
+)
+
+func (lm logMode) Mode(mode string) logMode {
+	switch strings.ToLower(mode) {
+	case "glg":
+		return GLG
+	default:
+		return GLG
+	}
+}
 
 type Log struct {
 	Mode   string `json:"mode" yaml:"mode"`
@@ -34,24 +63,4 @@ func (l *Log) Bind() *Log {
 	l.Mode = GetActualValue(l.Mode)
 	l.Format = GetActualValue(l.Format)
 	return l
-}
-
-func (l *Log) Opts() (opts []log.Option) {
-	switch l.Mode {
-	case "glg":
-		gopts := []glg.Option{
-			glg.WithLevel(l.Level),
-		}
-
-		if l.Format == "json" {
-			gopts = append(gopts, glg.WithEnableJSON())
-		}
-
-		opts = []log.Option{
-			log.WithLogger(
-				glg.New(logger.Get(), gopts...),
-			),
-		}
-	}
-	return
 }
