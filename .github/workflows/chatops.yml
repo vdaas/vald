@@ -161,6 +161,21 @@ jobs:
       - name: Add contributor and push
         if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
+          PR_RESP=$(curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          ${PR_INFO_URL})
+          HEAD_BRANCH=$(echo "$PR_RESP" | jq -r .head.ref)
+          if [[ -z "$HEAD_BRANCH" ]]; then
+            echo "Cannot get head branch information for PR #${PR_NUM}!"
+            echo "API response: $PR_RESP"
+            exit 1
+          fi
+          echo "Head branch for PR #${PR_NUM} is ${HEAD_BRANCH}"
+
+          git checkout ${HEAD_BRANCH}
+
           if grep "^${PR_AUTHOR}$" CONTRIBUTORS > /dev/null 2>&1 ; then
             echo "${PR_AUTHOR} already exists in CONTRIBUTORS"
           else
@@ -176,14 +191,14 @@ jobs:
 
             git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
-            REMOTE_BRANCH=`echo ${GITHUB_REF} | sed -e 's:^refs/heads/::'`
-
-            git push origin HEAD:${REMOTE_BRANCH}
+            git push origin ${HEAD_BRANCH}
           fi
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          PR_INFO: ${{ github.event.issue.pull_request.url }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
+          PR_NUM: ${{ github.event.issue.number }}
   approve:
     name: Approve
     needs:
