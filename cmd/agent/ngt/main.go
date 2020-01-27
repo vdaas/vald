@@ -20,7 +20,6 @@ package main
 import (
 	"context"
 
-	iconfig "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
@@ -47,10 +46,10 @@ func main() {
 				"cgo enabled": info.CGOEnabled,
 				"ngt version": info.NGTVersion,
 			})),
-			runner.WithConfigLoader(func(path string) (interface{}, iconfig.Default, error) {
+			runner.WithConfigLoader(func(path string) (interface{}, config.Default, error) {
 				cfg, err := config.NewConfig(path)
 				if err != nil {
-					return nil, iconfig.Default{}, err
+					return nil, config.Default{}, err
 				}
 				return cfg, cfg.Default, err
 			}),

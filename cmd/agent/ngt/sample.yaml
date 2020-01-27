@@ -19,7 +19,7 @@ version: v0.0.0
 time_zone: JST
 log:
   mode: glg
-  level: info
+  level: debug
   format: json
 server_config:
   servers:
