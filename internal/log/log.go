@@ -17,7 +17,6 @@
 package log
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/vdaas/vald/internal/log/glg"
@@ -53,8 +52,6 @@ func Init(opts ...Option) {
 }
 
 func getLogger(o *option) Logger {
-	o.logger.Info("aaa")
-	fmt.Println(o.logger)
 	switch o.mode {
 	case mode.GLG:
 		gopts := []glg.Option{
