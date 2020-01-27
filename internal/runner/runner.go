@@ -25,6 +25,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -48,7 +49,7 @@ type runner struct {
 	minVersion       string
 	name             string
 	location         string
-	loadConfig       func(string) (interface{}, string, string, error)
+	loadConfig       func(string) (interface{}, config.Default, error)
 	initializeDaemon func(interface{}) (Runner, error)
 	showVersionFunc  func(name string)
 }
@@ -59,8 +60,6 @@ func Do(ctx context.Context, opts ...Option) error {
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(r)
 	}
-
-	log.Init()
 
 	p, isHelp, err := params.New(
 		params.WithConfigFileDescription(fmt.Sprintf("%s config file path", r.name)),
@@ -74,6 +73,25 @@ func Do(ctx context.Context, opts ...Option) error {
 		return nil
 	}
 
+	cfg, defaultCfg, err := r.loadConfig(p.ConfigFilePath())
+	if err != nil {
+		return err
+	}
+
+	if logcfg := defaultCfg.Log; logcfg != nil {
+		log.Init(
+			log.WithMode(logcfg.Mode),
+			log.WithLevel(logcfg.Level),
+			log.WithFormat(logcfg.Format),
+		)
+	} else {
+		log.Init()
+	}
+
+	// set location temporary for initialization logging
+	// _ = loc
+	location.Set(defaultCfg.TZ)
+
 	if p.ShowVersion() {
 		if r.showVersionFunc != nil {
 			r.showVersionFunc(r.name)
@@ -84,15 +102,7 @@ func Do(ctx context.Context, opts ...Option) error {
 		return nil
 	}
 
-	cfg, version, loc, err := r.loadConfig(p.ConfigFilePath())
-	if err != nil {
-		return err
-	}
-	// set location temporary for initialization logging
-	// _ = loc
-	location.Set(loc)
-
-	err = ver.Check(version, r.maxVersion, r.minVersion)
+	err = ver.Check(defaultCfg.Version, r.maxVersion, r.minVersion)
 	if err != nil {
 		return err
 	}
@@ -104,10 +114,10 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
-	log.Infof("service %s %s starting...", r.name, version)
+	log.Infof("service %s %s starting...", r.name, defaultCfg.Version)
 
 	// reset timelocation to override external libs & running logging
-	location.Set(loc)
+	location.Set(defaultCfg.TZ)
 	return Run(ctx, daemon, r.name)
 }
 

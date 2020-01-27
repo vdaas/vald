@@ -47,7 +47,7 @@ func (m Mode) String() string {
 
 func Atom(str string) Mode {
 	switch strings.ToLower(str) {
-	case "glgl":
+	case "glg":
 		return GLG
 	case "zap":
 		return ZAP

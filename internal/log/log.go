@@ -56,6 +56,7 @@ func getLogger(o *option) Logger {
 	case mode.GLG:
 		gopts := []glg.Option{
 			glg.WithLevel(o.level.String()),
+			glg.WithFormat(o.format.String()),
 		}
 		return glg.New(gopts...)
 	default:

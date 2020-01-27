@@ -17,6 +17,10 @@
 ---
 version: v0.0.0
 time_zone: JST
+log:
+  mode: glg
+  level: info
+  format: json
 server_config:
   servers:
   - name: agent-rest
