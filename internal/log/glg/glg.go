@@ -24,11 +24,10 @@ import (
 )
 
 type logger struct {
-	format     format.Format
-	level      level.Level
-	retry      retry.Retry
-	enableJSON bool
-	glg        *glg.Glg
+	format format.Format
+	level  level.Level
+	retry  retry.Retry
+	glg    *glg.Glg
 }
 
 // New returns a new logger instance.
