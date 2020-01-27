@@ -54,6 +54,9 @@ gateway:
     repository: vdaas/vald-gateway
     tag: nightly
     pullPolicy: Always
+  log:
+    mode: glg
+    level: debug
   server_config:
     prefix: gateway
     servers:
@@ -88,6 +91,9 @@ agent:
     repository: vdaas/vald-agent-ngt
     tag: nightly
     pullPolicy: Always
+  log:
+    mode: glg
+    level: debug
   server_config:
     prefix: agent
     servers:
@@ -127,6 +133,9 @@ discoverer:
     repository: vdaas/vald-discoverer-k8s
     tag: nightly
     pullPolicy: Always
+  log:
+    mode: glg
+    level: debug
   server_config:
     prefix: discoverer
     servers:
@@ -154,6 +163,9 @@ compressor:
     repository: vdaas/vald-manager-compressor
     tag: nightly
     pullPolicy: Always
+  log:
+    mode: glg
+    level: debug
   server_config:
     prefix: manager-compressor
     servers:
@@ -185,6 +197,9 @@ backupManager:
     repository: vdaas/vald-manager-backup-mysql
     tag: nightly
     pullPolicy: Always
+  log:
+    mode: glg
+    level: debug
   server_config:
     prefix: backup-manager
     servers:
@@ -220,6 +235,9 @@ indexManager:
     repository: vdaas/vald-index-manager-ngt
     tag: nightly
     pullPolicy: Always
+  log:
+    mode: glg
+    level: debug
   server_config:
     prefix: index-manager
     servers:
@@ -247,6 +265,9 @@ meta:
     repository: vdaas/vald-meta-redis
     tag: nightly
     pullPolicy: Always
+  log:
+    mode: glg
+    level: debug
   server_config:
     prefix: meta
     servers:

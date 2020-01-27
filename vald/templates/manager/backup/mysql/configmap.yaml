@@ -21,6 +21,12 @@ data:
   config.yaml: |
     ---
     version: v0.0.0
+    {{- if .Values.backupManager.log }}
+    log:
+      mode: {{ .Values.backupManager.log.mode }}
+      level: {{ .Values.backupManager.log.level }}
+      format: {{ .Values.backupManager.log.format }}
+    {{- end }}
     server_config:
       {{- $servers := dict "Values" .Values.backupManager.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}

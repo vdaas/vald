@@ -21,6 +21,12 @@ data:
   config.yaml: |
     ---
     version: v0.0.0
+    {{- if .Values.compressor.log }}
+    log:
+      mode: {{ .Values.compressor.log.mode }}
+      level: {{ .Values.compressor.log.level }}
+      format: {{ .Values.compressor.log.format }}
+    {{- end }}
     server_config:
       {{- $servers := dict "Values" .Values.compressor.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}

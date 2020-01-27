@@ -21,6 +21,12 @@ data:
   config.yaml: |
     ---
     version: v0.0.0
+    {{- if .Values.agent.log }}
+    log:
+      mode: {{ .Values.agent.log.mode }}
+      level: {{ .Values.agent.log.level }}
+      format: {{ .Values.agent.log.format }}
+    {{- end }}
     server_config:
       {{- $servers := dict "Values" .Values.agent.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
