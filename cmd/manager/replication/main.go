@@ -45,12 +45,12 @@ func main() {
 				"arch":        info.GoArch,
 				"cgo enabled": info.CGOEnabled,
 			})),
-			runner.WithConfigLoader(func(path string) (interface{}, string, string, error) {
+			runner.WithConfigLoader(func(path string) (interface{}, config.Default, error) {
 				cfg, err := config.NewConfig(path)
 				if err != nil {
-					return nil, "", "", err
+					return nil, config.Default{}, err
 				}
-				return cfg, cfg.Version, cfg.TZ, err
+				return cfg, cfg.Default, err
 			}),
 			runner.WithDaemonInitializer(func(cfg interface{}) (runner.Runner, error) {
 				return usecase.New(cfg.(*config.Data))
