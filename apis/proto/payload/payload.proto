@@ -102,7 +102,7 @@ message Backup {
   message Remove {
     message Request { string uuid = 1 [ (validate.rules).string.min_len = 1 ]; }
     message RequestMulti {
-      repeated string uuid = 1 [ (validate.rules).repeated .min_items = 1 ];
+      repeated string uuids = 1 [ (validate.rules).repeated .min_items = 1 ];
     }
   }
 

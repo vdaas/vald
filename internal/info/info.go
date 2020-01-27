@@ -81,7 +81,9 @@ func Get() Detail {
 }
 
 func (d Detail) String() string {
-	d = d.Get()
+	if len(d.StackTrace) == 0 {
+		d = d.Get()
+	}
 	d.Version = log.Bold(d.Version)
 	maxlen, l := 0, 0
 	rt, rv := reflect.TypeOf(d), reflect.ValueOf(d)
@@ -97,8 +99,16 @@ func (d Detail) String() string {
 				if maxlen < l {
 					maxlen = l
 				}
+				urlMaxLen := 0
+				for _, st := range sts {
+					ul := len(st.URL)
+					if urlMaxLen < ul {
+						urlMaxLen = ul
+					}
+				}
+				urlFormat := fmt.Sprintf("%%-%ds\t%%s", urlMaxLen)
 				for i, st := range sts {
-					info[fmt.Sprintf("%s-%d", tag, i)] = st.URL
+					info[fmt.Sprintf("%s-%d", tag, i)] = fmt.Sprintf(urlFormat, st.URL, st.FuncName)
 				}
 			}
 			continue
