@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/pkg/agent/ngt/model"
@@ -57,6 +58,7 @@ func (s *server) Exists(ctx context.Context, oid *payload.Object_ID) (res *paylo
 	var ok bool
 	rid, ok := s.ngt.Exists(oid.GetId())
 	if !ok {
+		log.Warnf("[Exists]\tObjectID not found\t%v", oid.GetId())
 		err = errors.ErrObjectIDNotFound(oid.GetId())
 		return nil, status.WrapWithNotFound("ObjectID not found", &errDetail{method: "Exists", id: oid.GetId()}, err)
 	}
@@ -85,6 +87,8 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 func toSearchResponse(dists []model.Distance, err error) (res *payload.Search_Response, rerr error) {
 	res = new(payload.Search_Response)
 	if err != nil {
+		// TODO: not found error or others
+		log.Errorf("[toSearchResponse]\tUnknown error\t%+v", err)
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "Search"}, err)
 	}
 	res.Results = make([]*payload.Object_Distance, 0, len(dists))
@@ -117,6 +121,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (res *p
 	res = new(payload.Empty)
 	err = s.ngt.Insert(vec.GetId(), vec.GetVector())
 	if err != nil {
+		log.Errorf("[Insert]\tUnknown error\t%+v", err)
 		return res, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "Insert", id: vec.GetId()}, err)
 	}
 	return res, nil
@@ -140,6 +145,7 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 
 	err = s.ngt.InsertMultiple(vmap)
 	if err != nil {
+		log.Errorf("[MultiInsert]\tUnknown error\t%+v", err)
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "MultiInsert"}, err)
 	}
 	return res, nil
@@ -149,6 +155,7 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 	res = new(payload.Empty)
 	err = s.ngt.Update(vec.GetId(), vec.GetVector())
 	if err != nil {
+		log.Errorf("[Update]\tUnknown error\t%+v", err)
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "Update"}, err)
 	}
 	return res, nil
@@ -172,6 +179,7 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 
 	err = s.ngt.UpdateMultiple(vmap)
 	if err != nil {
+		log.Errorf("[MultiUpdate]\tUnknown error\t%+v", err)
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "MultiUpdate"}, err)
 	}
 	return res, err
@@ -181,6 +189,7 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (res *payloa
 	res = new(payload.Empty)
 	err = s.ngt.Delete(id.GetId())
 	if err != nil {
+		log.Errorf("[Remove]\tUnknown error\t%+v", err)
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "Remove", id: id.GetId()}, err)
 	}
 	return res, nil
@@ -198,6 +207,7 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res 
 	res = new(payload.Empty)
 	err = s.ngt.DeleteMultiple(ids.GetIds()...)
 	if err != nil {
+		log.Errorf("[MultiRemove]\tUnknown error\t%+v", err)
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "MultiRemove", ids: ids.GetIds()}, err)
 	}
 	return res, nil
@@ -207,7 +217,8 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (res *pay
 	uuid := id.GetId()
 	vec, err := s.ngt.GetObject(uuid)
 	if err != nil {
-		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "GetObject", id: uuid}, err)
+		log.Warnf("[GetObject]\tUUID not found\t%v", uuid)
+		return nil, status.WrapWithNotFound("UUID not found", &errDetail{method: "GetObject", id: uuid}, err)
 	}
 	return &payload.Object_Vector{
 		Id:     uuid,
@@ -227,6 +238,7 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Controll_CreateInde
 	res = new(payload.Empty)
 	err = s.ngt.CreateIndex(c.GetPoolSize())
 	if err != nil {
+		log.Errorf("[CreateIndex]\tUnknown error\t%+v", err)
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "CreateIndex"}, err)
 	}
 	return res, nil
@@ -236,6 +248,7 @@ func (s *server) SaveIndex(context.Context, *payload.Empty) (res *payload.Empty,
 	res = new(payload.Empty)
 	err = s.ngt.SaveIndex()
 	if err != nil {
+		log.Errorf("[SaveIndex]\tUnknown error\t%+v", err)
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "SaveIndex"}, err)
 	}
 	return res, nil
@@ -245,6 +258,7 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Controll_Cre
 	res = new(payload.Empty)
 	err = s.ngt.CreateAndSaveIndex(c.GetPoolSize())
 	if err != nil {
+		log.Errorf("[CreateAndSaveIndex]\tUnknown error\t%+v", err)
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "CreateAndSaveIndex"}, err)
 	}
 	return res, nil

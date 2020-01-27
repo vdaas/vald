@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/manager/backup"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/model"
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/service"
@@ -55,8 +56,10 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 	if err != nil {
 		detail := errDetail{method: "GetVector", uuid: req.Uuid}
 		if errors.IsErrCassandraNotFound(errors.UnWrapAll(err)) {
+			log.Warnf("[GetVector]\tnot found\t%v\t%+v", req.Uuid, err)
 			return nil, status.WrapWithNotFound("cassandra entry not found", &detail, err)
 		}
+		log.Errorf("[GetVector]\tunknown error\t%+v", err)
 		return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
 	}
 
@@ -66,6 +69,7 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Request) (res *payload.Info_IPs, err error) {
 	ips, err := s.cassandra.GetIPs(ctx, req.Uuid)
 	if err != nil {
+		log.Errorf("[Locations]\tunknown error\t%+v", err)
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "Locations", uuid: req.Uuid}, err)
 	}
 
@@ -77,11 +81,13 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 func (s *server) Register(ctx context.Context, meta *payload.Backup_Compressed_MetaVector) (res *payload.Empty, err error) {
 	m, err := toModelMetaVector(meta)
 	if err != nil {
+		log.Errorf("[Register]\tunknown error\t%+v", err)
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "Register", uuid: meta.Uuid}, err)
 	}
 
 	err = s.cassandra.SetMeta(ctx, m)
 	if err != nil {
+		log.Errorf("[Register]\tunknown error\t%+v", err)
 		detail := errDetail{method: "Register", uuid: meta.Uuid}
 		return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
 	}
@@ -95,6 +101,7 @@ func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_Compre
 		var m *model.MetaVector
 		m, err = toModelMetaVector(meta)
 		if err != nil {
+			log.Errorf("[RegisterMulti]\tunknown error\t%+v", err)
 			return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "RegisterMulti", uuid: meta.Uuid}, err)
 		}
 		ms = append(ms, m)
@@ -102,6 +109,7 @@ func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_Compre
 
 	err = s.cassandra.SetMetas(ctx, ms...)
 	if err != nil {
+		log.Errorf("[RegisterMulti]\tunknown error\t%+v", err)
 		detail := errDetail{method: "RegisterMulti"}
 		return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
 	}
@@ -112,6 +120,7 @@ func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_Compre
 func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request) (res *payload.Empty, err error) {
 	err = s.cassandra.DeleteMeta(ctx, req.Uuid)
 	if err != nil {
+		log.Errorf("[Remove]\tunknown error\t%+v", err)
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "Remove", uuid: req.Uuid}, err)
 	}
 
@@ -121,6 +130,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request)
 func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_RequestMulti) (res *payload.Empty, err error) {
 	err = s.cassandra.DeleteMetas(ctx, req.GetUuid()...)
 	if err != nil {
+		log.Errorf("[RemoveMulti]\tunknown error\t%+v", err)
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "RemoveMulti", uuids: req.GetUuid()}, err)
 	}
 
@@ -130,6 +140,7 @@ func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_Req
 func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Register_Request) (res *payload.Empty, err error) {
 	err = s.cassandra.SetIPs(ctx, req.Uuid, req.Ips...)
 	if err != nil {
+		log.Errorf("[RegisterIPs]\tunknown error\t%+v", err)
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "RegisterIPs", uuid: req.Uuid}, err)
 	}
 
@@ -139,6 +150,7 @@ func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Registe
 func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Request) (res *payload.Empty, err error) {
 	err = s.cassandra.RemoveIPs(ctx, req.Ips...)
 	if err != nil {
+		log.Errorf("[RemoveIPs]\tunknown error\t%+v", err)
 		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "RemoveIPs"}, err)
 	}
 
