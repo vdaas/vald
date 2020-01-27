@@ -16,6 +16,59 @@
 
 package glg
 
+import (
+	"github.com/kpango/glg"
+	"github.com/vdaas/vald/internal/log/format"
+	"github.com/vdaas/vald/internal/log/level"
+	"github.com/vdaas/vald/internal/log/retry"
+)
 
-type Option func(l *logger) error
+type Option func(l *logger)
 
+var (
+	defaultOpts = []Option{
+		WithGlg(glg.Get()),
+		WithLevel(level.DEBG.String()),
+		WithRetry(retry.NewNop()),
+	}
+)
+
+func WithGlg(g *glg.Glg) Option {
+	return func(l *logger) {
+		if g == nil {
+			return
+		}
+		l.glg = g
+	}
+}
+
+func WithEnableJSON() Option {
+	return func(l *logger) {}
+}
+
+func WithFormat(str string) Option {
+	return func(l *logger) {
+		if str == "" {
+			return
+		}
+		l.format = format.Atof(str)
+	}
+}
+
+func WithLevel(str string) Option {
+	return func(l *logger) {
+		if str == "" {
+			return
+		}
+		l.level = level.Atol(str)
+	}
+}
+
+func WithRetry(rt retry.Retry) Option {
+	return func(l *logger) {
+		if rt == nil {
+			return
+		}
+		l.retry = rt
+	}
+}

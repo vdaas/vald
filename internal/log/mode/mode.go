@@ -16,6 +16,8 @@
 
 package mode
 
+import "strings"
+
 type Mode uint8
 
 const (
@@ -41,4 +43,20 @@ func (m Mode) String() string {
 		return "klog"
 	}
 	return "unknown"
+}
+
+func Atom(str string) Mode {
+	switch strings.ToLower(str) {
+	case "glgl":
+		return GLG
+	case "zap":
+		return ZAP
+	case "zerolog":
+		return ZEROLOG
+	case "logrus":
+		return LOGRUS
+	case "klog":
+		return KLOG
+	}
+	return Unknown
 }

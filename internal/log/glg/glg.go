@@ -18,48 +18,92 @@ package glg
 
 import (
 	"github.com/kpango/glg"
+	"github.com/vdaas/vald/internal/log/format"
+	"github.com/vdaas/vald/internal/log/level"
+	"github.com/vdaas/vald/internal/log/retry"
 )
 
 type logger struct {
-
-	*glg.Glg
+	format     format.Format
+	level      level.Level
+	retry      retry.Retry
+	enableJSON bool
+	glg        *glg.Glg
 }
 
 // New returns a new logger instance.
 func New(opts ...Option) *logger {
-	return &logger{g}
+	l := new(logger)
+	for _, opt := range append(defaultOpts, opts...) {
+		opt(l)
+	}
+
+	return l.
+		setLevelMode(l.level).
+		setLogFormat(l.format)
+}
+
+func (l *logger) setLevelMode(lv level.Level) *logger {
+	l.glg.SetMode(glg.NONE)
+
+	switch lv {
+	case level.DEBG:
+		l.glg.SetLevelMode(glg.DEBG, glg.STD)
+		fallthrough
+	case level.INFO:
+		l.glg.SetLevelMode(glg.INFO, glg.STD)
+		fallthrough
+	case level.WARN:
+		l.glg.SetLevelMode(glg.WARN, glg.STD)
+		fallthrough
+	case level.ERR:
+		l.glg.SetLevelMode(glg.ERR, glg.STD)
+		fallthrough
+	case level.FATAL:
+		l.glg.SetLevelMode(glg.FAIL, glg.STD)
+	}
+
+	return l
+}
+
+func (l *logger) setLogFormat(fmt format.Format) *logger {
+	switch fmt {
+	case format.JSON:
+
+	}
+	return nil
 }
 
 func (l *logger) Info(vals ...interface{}) {
-	l.Info(vals...)
+	l.retry.Out(l.glg.Info, vals...)
 }
 
 func (l *logger) Infof(format string, vals ...interface{}) {
-	l.Infof(format, vals...)
+	l.retry.Outf(l.glg.Infof, format, vals...)
 }
 
 func (l *logger) Debug(vals ...interface{}) {
-	l.Debug(vals...)
+	l.retry.Out(l.glg.Debug, vals...)
 }
 
 func (l *logger) Debugf(format string, vals ...interface{}) {
-	l.Debugf(format, vals...)
+	l.retry.Outf(l.glg.Debugf, format, vals...)
 }
 
 func (l *logger) Warn(vals ...interface{}) {
-	l.Warn(vals...)
+	l.retry.Out(l.glg.Warn, vals...)
 }
 
 func (l *logger) Warnf(format string, vals ...interface{}) {
-	l.Warnf(format, vals...)
+	l.retry.Outf(l.glg.Warnf, format, vals...)
 }
 
 func (l *logger) Error(vals ...interface{}) {
-	l.Error(vals...)
+	l.retry.Out(l.glg.Error, vals...)
 }
 
 func (l *logger) Errorf(format string, vals ...interface{}) {
-	l.Errorf(format, vals...)
+	l.retry.Outf(l.glg.Errorf, format, vals...)
 }
 
 func (l *logger) Fatal(vals ...interface{}) {

@@ -1,28 +1,34 @@
 package log
 
-// glglogger "github.com/vdaas/vald/internal/log/glg"
-// "github.com/vdaas/vald/internal/log/retry"
+import (
+	"github.com/vdaas/vald/internal/log/format"
+	"github.com/vdaas/vald/internal/log/glg"
+	"github.com/vdaas/vald/internal/log/level"
+	"github.com/vdaas/vald/internal/log/mode"
+	retry "github.com/vdaas/vald/internal/log/retry"
+)
 
 type Option func(*option)
 
 var (
 	defaultOptions = []Option{
-		// WithLogger(
-		// 	glglogger.New(
-		// 		glg.Get(),
-		// 		glglogger.WithRetry(retry.New(
-		// 			Warn,
-		// 			Error,
-		// 		)),
-		// 	),
-		// ),
+		WithLogger(
+			glg.New(
+				glg.WithRetry(
+					retry.New(
+						Error,
+						Warn,
+					),
+				),
+			),
+		),
 	}
 )
 
 type option struct {
-	mode   string
-	lv     string
-	format string
+	mode   mode.Mode
+	level  level.Level
+	format format.Format
 	logger Logger
 }
 
@@ -35,29 +41,29 @@ func WithLogger(logger Logger) Option {
 	}
 }
 
-func WithMode(mode string) Option {
+func WithMode(str string) Option {
 	return func(o *option) {
-		if mode == "" {
+		if str == "" {
 			return
 		}
-		o.mode = mode
+		o.mode = mode.Atom(str)
 	}
 }
 
-func WithLevel(lv string) Option {
+func WithLevel(str string) Option {
 	return func(o *option) {
-		if lv == "" {
+		if str == "" {
 			return
 		}
-		o.lv = lv
+		o.level = level.Atol(str)
 	}
 }
 
-func WithFormat(format string) Option {
+func WithFormat(str string) Option {
 	return func(o *option) {
-		if format == "" {
+		if str == "" {
 			return
 		}
-		o.format = format
+		o.format = format.Atof(str)
 	}
 }

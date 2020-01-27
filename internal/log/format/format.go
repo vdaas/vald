@@ -36,3 +36,15 @@ func (f Format) String() string {
 	}
 	return "unknown"
 }
+
+func Atof(str string) Format {
+	switch str {
+	case "raw":
+		return RAW
+	case "json":
+		return JSON
+	case "ltsv":
+		return LTSV
+	}
+	return Unknown
+}

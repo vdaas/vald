@@ -17,8 +17,10 @@
 package log
 
 import (
-	"github.com/vdaas/vald/internal/config"
 	"sync"
+
+	"github.com/vdaas/vald/internal/log/glg"
+	"github.com/vdaas/vald/internal/log/mode"
 )
 
 type Logger interface {
@@ -50,23 +52,15 @@ func Init(opts ...Option) {
 }
 
 func getLogger(o *option) Logger {
-	switch o.mode.Mode() {
-	case config.GLG:
-		// gopts := []glglogger.Option{
-		// 	glglogger.WithLevel(o.lv),
-		// 	glglogger.WithRetry(
-		// 		retry.New(
-		// 			Warn,
-		// 			Error,
-		// 		),
-		// 	),
-		// }
-		// return glglogger.New(glg.Get(), gopts...)
+	switch o.mode {
+	case mode.GLG:
+		gopts := []glg.Option{
+			glg.WithLevel(o.level.String()),
+		}
+		return glg.New(gopts...)
 	default:
 		return o.logger
 	}
-	
-	return nil
 }
 
 func Bold(str string) string {

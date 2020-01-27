@@ -16,25 +16,33 @@
 
 package level
 
-type LEVEL uint8
+import "strings"
+
+type Level uint8
 
 const (
-	Unknown LEVEL = iota
+	Unknown Level = iota
+
 	// DEBG is debug log level
 	DEBG
+
 	// INFO is info log level
 	INFO
+
 	// WARN is warning log level
 	WARN
+
 	// ERR is error log level
 	ERR
+
 	// CRIT is critical error log level
 	CRIT
+
 	// FATAL is fatal log level
 	FATAL
 )
 
-func (l LEVEL) String() string {
+func (l Level) String() string {
 	switch l {
 	case DEBG:
 		return "DEBG"
@@ -50,4 +58,22 @@ func (l LEVEL) String() string {
 		return "FATAL"
 	}
 	return "unknown"
+}
+
+func Atol(str string) Level {
+	switch strings.ToLower(str) {
+	case "debug":
+		return DEBG
+	case "info":
+		return INFO
+	case "warn":
+		return WARN
+	case "error":
+		return ERR
+	case "crit":
+		return CRIT
+	case "fatal":
+		return FATAL
+	}
+	return Unknown
 }
