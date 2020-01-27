@@ -69,7 +69,7 @@ func (l *logger) setLevelMode(lv level.Level) *logger {
 func (l *logger) setLogFormat(fmt format.Format) *logger {
 	switch fmt {
 	case format.JSON:
-
+		l.glg.EnableJSON()
 	}
 	return nil
 }
