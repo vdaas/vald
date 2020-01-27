@@ -21,6 +21,9 @@ data:
   config.yaml: |
     ---
     version: v0.0.0
+    log:
+      mode: glg
+      level: debug
     server_config:
       servers:
       - name: manager-compressor-rest

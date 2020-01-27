@@ -22,6 +22,9 @@ data:
     ---
     version: v0.0.0
     time_zone: Asia/Tokyo
+    log:
+      mode: glg
+      level: debug
     server_config:
       servers:
       - name: meta-rest
