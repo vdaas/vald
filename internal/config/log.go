@@ -17,41 +17,6 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-import "strings"
-
-type logFormat uint8
-
-const (
-	JSON logFormat = iota
-	YAML
-)
-
-func (lf logFormat) String() string {
-	switch lf {
-	case JSON:
-		return "json"
-	case YAML:
-		return "yaml"
-	default:
-		return "unknown"
-	}
-}
-
-type logMode uint8
-
-const (
-	GLG logMode = iota
-)
-
-func (lm logMode) Mode(mode string) logMode {
-	switch strings.ToLower(mode) {
-	case "glg":
-		return GLG
-	default:
-		return GLG
-	}
-}
-
 type Log struct {
 	Mode   string `json:"mode" yaml:"mode"`
 	Level  string `json:"level" yaml:"level"`
