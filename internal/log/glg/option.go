@@ -43,7 +43,9 @@ func WithGlg(g *glg.Glg) Option {
 }
 
 func WithEnableJSON() Option {
-	return func(l *logger) {}
+	return func(l *logger) {
+		l.format = format.JSON
+	}
 }
 
 func WithFormat(str string) Option {
