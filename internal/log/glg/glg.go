@@ -71,7 +71,7 @@ func (l *logger) setLogFormat(fmt format.Format) *logger {
 	case format.JSON:
 		l.glg.EnableJSON()
 	}
-	return nil
+	return l
 }
 
 func (l *logger) Info(vals ...interface{}) {
