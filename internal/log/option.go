@@ -5,7 +5,7 @@ import (
 	"github.com/vdaas/vald/internal/log/glg"
 	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/log/mode"
-	retry "github.com/vdaas/vald/internal/log/retry"
+	"github.com/vdaas/vald/internal/log/retry"
 )
 
 type Option func(*option)

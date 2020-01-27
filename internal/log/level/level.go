@@ -23,8 +23,8 @@ type Level uint8
 const (
 	Unknown Level = iota
 
-	// DEBG is debug log level
-	DEBG
+	// DEBUG is debug log level
+	DEBUG
 
 	// INFO is info log level
 	INFO
@@ -32,8 +32,8 @@ const (
 	// WARN is warning log level
 	WARN
 
-	// ERR is error log level
-	ERR
+	// ERRO is error log level
+	ERROR
 
 	// CRIT is critical error log level
 	CRIT
@@ -44,14 +44,14 @@ const (
 
 func (l Level) String() string {
 	switch l {
-	case DEBG:
-		return "DEBG"
+	case DEBUG:
+		return "DEBUG"
 	case INFO:
 		return "INFO"
 	case WARN:
 		return "WARN"
-	case ERR:
-		return "ERR"
+	case ERROR:
+		return "ERROR"
 	case CRIT:
 		return "CRIT"
 	case FATAL:
@@ -63,13 +63,13 @@ func (l Level) String() string {
 func Atol(str string) Level {
 	switch strings.ToLower(str) {
 	case "debug":
-		return DEBG
+		return DEBUG
 	case "info":
 		return INFO
 	case "warn":
 		return WARN
 	case "error":
-		return ERR
+		return ERROR
 	case "crit":
 		return CRIT
 	case "fatal":

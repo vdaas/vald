@@ -28,7 +28,7 @@ type Option func(l *logger)
 var (
 	defaultOpts = []Option{
 		WithGlg(glg.Get()),
-		WithLevel(level.DEBG.String()),
+		WithLevel(level.DEBUG.String()),
 		WithRetry(retry.NewNop()),
 	}
 )

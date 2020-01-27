@@ -47,7 +47,7 @@ func (l *logger) setLevelMode(lv level.Level) *logger {
 	l.glg.SetMode(glg.NONE)
 
 	switch lv {
-	case level.DEBG:
+	case level.DEBUG:
 		l.glg.SetLevelMode(glg.DEBG, glg.STD)
 		fallthrough
 	case level.INFO:
@@ -56,7 +56,7 @@ func (l *logger) setLevelMode(lv level.Level) *logger {
 	case level.WARN:
 		l.glg.SetLevelMode(glg.WARN, glg.STD)
 		fallthrough
-	case level.ERR:
+	case level.ERROR:
 		l.glg.SetLevelMode(glg.ERR, glg.STD)
 		fallthrough
 	case level.FATAL:
