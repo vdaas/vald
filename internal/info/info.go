@@ -31,18 +31,18 @@ import (
 )
 
 type Detail struct {
-	Version      string       `json:"vald_version,omitempty" yaml:"vald_version,omitempty"`
-	ServerName   string       `json:"server_name,omitempty" yaml:"server_name,omitempty"`
-	GitCommit    string       `json:"git_commit,omitempty" yaml:"git_commit,omitempty"`
-	BuildTime    string       `json:"build_time,omitempty" yaml:"build_time,omitempty"`
-	GoVersion    string       `json:"go_version,omitempty" yaml:"go_version,omitempty"`
-	GoOS         string       `json:"go_os,omitempty" yaml:"go_os,omitempty"`
-	GoArch       string       `json:"go_arch,omitempty" yaml:"go_arch,omitempty"`
-	CGOEnabled   string       `json:"cgo_enabled,omitempty" yaml:"cgo_enabled,omitempty"`
-	NGTVersion   string       `json:"ngt_version,omitempty" yaml:"ngt_version,omitempty"`
-	CPUInfoFlags string       `json:"cpu_info_flags,omitempty" yaml:"cpu_info_flags,omitempty"`
-	StackTrace   []StackTrace `json:"stack_trace,omitempty" yaml:"stack_trace,omitempty"`
-	PrepOnce     sync.Once    `json:"-" yaml:"-"`
+	Version           string       `json:"vald_version,omitempty" yaml:"vald_version,omitempty"`
+	ServerName        string       `json:"server_name,omitempty" yaml:"server_name,omitempty"`
+	GitCommit         string       `json:"git_commit,omitempty" yaml:"git_commit,omitempty"`
+	BuildTime         string       `json:"build_time,omitempty" yaml:"build_time,omitempty"`
+	GoVersion         string       `json:"go_version,omitempty" yaml:"go_version,omitempty"`
+	GoOS              string       `json:"go_os,omitempty" yaml:"go_os,omitempty"`
+	GoArch            string       `json:"go_arch,omitempty" yaml:"go_arch,omitempty"`
+	CGOEnabled        string       `json:"cgo_enabled,omitempty" yaml:"cgo_enabled,omitempty"`
+	NGTVersion        string       `json:"ngt_version,omitempty" yaml:"ngt_version,omitempty"`
+	BuildCPUInfoFlags []string     `json:"build_cpu_info_flags,omitempty" yaml:"build_cpu_info_flags,omitempty"`
+	StackTrace        []StackTrace `json:"stack_trace,omitempty" yaml:"stack_trace,omitempty"`
+	PrepOnce          sync.Once    `json:"-" yaml:"-"`
 }
 
 type StackTrace struct {
@@ -66,7 +66,7 @@ var (
 
 	NGTVersion string
 
-	CPUInfoFlags string
+	BuildCPUInfoFlags string
 
 	reps = strings.NewReplacer("_", " ", ",omitempty", "")
 
@@ -205,8 +205,8 @@ func (d *Detail) prepare() {
 		if len(d.NGTVersion) == 0 && len(NGTVersion) != 0 {
 			d.NGTVersion = NGTVersion
 		}
-		if len(d.CPUInfoFlags) == 0 && len(CPUInfoFlags) != 0 {
-			d.CPUInfoFlags = CPUInfoFlags
+		if len(d.BuildCPUInfoFlags) == 0 && len(BuildCPUInfoFlags) != 0 {
+			d.BuildCPUInfoFlags = strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
 		}
 	})
 }
@@ -214,16 +214,16 @@ func (d *Detail) prepare() {
 func Init(name string) {
 	once.Do(func() {
 		detail = Detail{
-			Version:      Version,
-			ServerName:   name,
-			GitCommit:    GitCommit,
-			BuildTime:    BuildTime,
-			GoVersion:    GoVersion,
-			GoOS:         GoOS,
-			GoArch:       GoArch,
-			CGOEnabled:   CGOEnabled,
-			NGTVersion:   NGTVersion,
-			CPUInfoFlags: CPUInfoFlags,
+			Version:           Version,
+			ServerName:        name,
+			GitCommit:         GitCommit,
+			BuildTime:         BuildTime,
+			GoVersion:         GoVersion,
+			GoOS:              GoOS,
+			GoArch:            GoArch,
+			CGOEnabled:        CGOEnabled,
+			NGTVersion:        NGTVersion,
+			BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
 		}
 		detail.prepare()
 	})

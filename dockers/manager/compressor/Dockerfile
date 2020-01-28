@@ -57,7 +57,7 @@ RUN GO_VERSION="$(cat GO_VERSION)" \
     -X 'github.com/${ORG}/${REPO}/internal/info.GoOS=${GOOS}' \
     -X 'github.com/${ORG}/${REPO}/internal/info.GoArch=${GOARCH}' \
     -X 'github.com/${ORG}/${REPO}/internal/info.CGOEnabled=${CGO_ENABLED}' \
-    -X 'github.com/${ORG}/${REPO}/internal/info.CPUInfoFlags=${CPU_INFO_FLAGS}'" \
+    -X 'github.com/${ORG}/${REPO}/internal/info.BuildCPUInfoFlags=${CPU_INFO_FLAGS}'" \
     -a \
     -tags "cgo netgo" \
     -trimpath \
