@@ -36,24 +36,24 @@ type Default struct {
 	TZ string `json:"time_zone" yaml:"time_zone"`
 
 	// Log represent log configuration.
-	Log *Log `json:"log,omitempty" yaml:"log,omitempty"`
+	Logging *Logging `json:"logging,omitempty" yaml:"logging,omitempty"`
 }
 
 func (c *Default) Bind() *Default {
 	c.Version = GetActualValue(c.Version)
 	c.TZ = GetActualValue(c.TZ)
 
-	if c.Log != nil {
-		c.Log = c.Log.Bind()
+	if c.Logging != nil {
+		c.Logging = c.Logging.Bind()
 	}
 	return c
 }
 
 func (c *Default) UnmarshalJSON(data []byte) (err error) {
 	ic := new(struct {
-		Ver string `json:"version"`
-		TZ  string `json:"time_zone"`
-		Log *Log   `json:"log"`
+		Ver     string   `json:"version"`
+		TZ      string   `json:"time_zone"`
+		Logging *Logging `json:"logging"`
 	})
 	err = json.Unmarshal(data, &ic)
 	if err != nil {
@@ -61,7 +61,7 @@ func (c *Default) UnmarshalJSON(data []byte) (err error) {
 	}
 	c.Version = ic.Ver
 	c.TZ = ic.TZ
-	c.Log = ic.Log
+	c.Logging = ic.Logging
 	return nil
 }
 

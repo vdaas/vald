@@ -21,11 +21,11 @@ data:
   config.yaml: |
     ---
     version: v0.0.0
-    {{- if .Values.compressor.log }}
+    {{- if .Values.compressor.logging }}
     log:
-      mode: {{ .Values.compressor.log.mode }}
-      level: {{ .Values.compressor.log.level }}
-      format: {{ .Values.compressor.log.format }}
+      mode: {{ .Values.compressor.logging.logger }}
+      level: {{ .Values.compressor.logging.level }}
+      format: {{ .Values.compressor.logging.format }}
     {{- end }}
     server_config:
       {{- $servers := dict "Values" .Values.compressor.server_config "default" .Values.defaults.server_config }}

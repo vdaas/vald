@@ -14,14 +14,14 @@
 // limitations under the License.
 //
 
-package mode
+package loggertype
 
 import "strings"
 
-type Mode uint8
+type LoggerType uint8
 
 const (
-	Unknown Mode = iota
+	Unknown LoggerType = iota
 	GLG
 	ZAP
 	ZEROLOG
@@ -29,7 +29,7 @@ const (
 	KLOG
 )
 
-func (m Mode) String() string {
+func (m LoggerType) String() string {
 	switch m {
 	case GLG:
 		return "glg"
@@ -45,7 +45,7 @@ func (m Mode) String() string {
 	return "unknown"
 }
 
-func Atom(str string) Mode {
+func Atot(str string) LoggerType {
 	switch strings.ToLower(str) {
 	case "glg":
 		return GLG

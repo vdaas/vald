@@ -4,7 +4,7 @@ import (
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/glg"
 	"github.com/vdaas/vald/internal/log/level"
-	"github.com/vdaas/vald/internal/log/mode"
+	loggertype "github.com/vdaas/vald/internal/log/logger_type"
 	"github.com/vdaas/vald/internal/log/retry"
 )
 
@@ -26,10 +26,10 @@ var (
 )
 
 type option struct {
-	mode   mode.Mode
-	level  level.Level
-	format format.Format
-	logger Logger
+	loggerType loggertype.LoggerType
+	level      level.Level
+	format     format.Format
+	logger     Logger
 }
 
 func WithLogger(logger Logger) Option {
@@ -41,12 +41,12 @@ func WithLogger(logger Logger) Option {
 	}
 }
 
-func WithMode(str string) Option {
+func WithLoggerType(str string) Option {
 	return func(o *option) {
 		if str == "" {
 			return
 		}
-		o.mode = mode.Atom(str)
+		o.loggerType = loggertype.Atot(str)
 	}
 }
 

@@ -21,11 +21,11 @@ data:
   config.yaml: |
     ---
     version: v0.0.0
-    {{- if .Values.gateway.log }}
+    {{- if .Values.gateway.logging }}
     log:
-      mode: {{ .Values.gateway.log.mode }}
-      level: {{ .Values.gateway.log.level }}
-      format: {{ .Values.gateway.log.format }}
+      mode: {{ .Values.gateway.logging.logger }}
+      level: {{ .Values.gateway.logging.level }}
+      format: {{ .Values.gateway.logging.format }}
     {{- end }}
     server_config:
       {{- $servers := dict "Values" .Values.gateway.server_config "default" .Values.defaults.server_config }}

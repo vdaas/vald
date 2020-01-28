@@ -78,9 +78,9 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
-	if logcfg := defaultCfg.Log; logcfg != nil {
+	if logcfg := defaultCfg.Logging; logcfg != nil {
 		log.Init(
-			log.WithMode(logcfg.Mode),
+			log.WithLoggerType(logcfg.Logger),
 			log.WithLevel(logcfg.Level),
 			log.WithFormat(logcfg.Format),
 		)

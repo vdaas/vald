@@ -17,15 +17,15 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-type Log struct {
-	Mode   string `json:"mode" yaml:"mode"`
+type Logging struct {
+	Logger string `json:"logger" yaml:"logger"`
 	Level  string `json:"level" yaml:"level"`
 	Format string `json:"format" yaml:"format"`
 }
 
-func (l *Log) Bind() *Log {
+func (l *Logging) Bind() *Logging {
+	l.Logger = GetActualValue(l.Logger)
 	l.Level = GetActualValue(l.Level)
-	l.Mode = GetActualValue(l.Mode)
 	l.Format = GetActualValue(l.Format)
 	return l
 }
