@@ -19,7 +19,6 @@ package grpc
 
 import (
 	"context"
-	"encoding/hex"
 	"fmt"
 
 	"github.com/vdaas/vald/apis/grpc/manager/backup"
@@ -158,27 +157,18 @@ func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Re
 }
 
 func toBackupMetaVector(meta *model.MetaVector) (res *payload.Backup_Compressed_MetaVector, err error) {
-	rawBinVec := make([]byte, hex.DecodedLen(len(meta.Vector)))
-	_, err = hex.Decode(rawBinVec, meta.Vector)
-	if err != nil {
-		return nil, err
-	}
-
 	return &payload.Backup_Compressed_MetaVector{
 		Uuid:   meta.UUID,
 		Meta:   meta.Meta,
-		Vector: rawBinVec,
+		Vector: meta.Vector,
 		Ips:    meta.IPs,
 	}, nil
 }
 
 func toModelMetaVector(obj *payload.Backup_Compressed_MetaVector) (res *model.MetaVector, err error) {
-	hexVec := make([]byte, hex.EncodedLen(len(obj.Vector)))
-	hex.Encode(hexVec, obj.Vector)
-
 	return &model.MetaVector{
 		UUID:   obj.Uuid,
-		Vector: hexVec,
+		Vector: obj.Vector,
 		Meta:   obj.Meta,
 		IPs:    obj.Ips,
 	}, nil

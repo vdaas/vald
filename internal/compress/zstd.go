@@ -18,12 +18,11 @@
 package compress
 
 import (
-	// TODO
-	// which is the better library of zstd algorithm?
-	// "github.com/valyala/gozstd"
+	"bytes"
+	"io"
 	"reflect"
 
-	"github.com/DataDog/zstd"
+	"github.com/valyala/gozstd"
 	"github.com/vdaas/vald/internal/errors"
 )
 
@@ -44,21 +43,36 @@ func NewZstd(opts ...ZstdOption) (Compressor, error) {
 }
 
 func (z *zstdCompressor) CompressVector(vector []float32) ([]byte, error) {
+	buf := new(bytes.Buffer)
+	zw := gozstd.NewWriterLevel(buf, z.compressionLevel)
+
 	gob, err := z.gobc.CompressVector(vector)
 	if err != nil {
 		return nil, err
 	}
 
-	return zstd.CompressLevel(nil, gob, z.compressionLevel)
-}
-
-func (z *zstdCompressor) DecompressVector(bs []byte) ([]float32, error) {
-	bufbytes, err := zstd.Decompress(nil, bs)
+	_, err = zw.Write(gob)
 	if err != nil {
 		return nil, err
 	}
 
-	vec, err := z.gobc.DecompressVector(bufbytes)
+	err = zw.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (z *zstdCompressor) DecompressVector(bs []byte) ([]float32, error) {
+	buf := new(bytes.Buffer)
+	zr := gozstd.NewReader(bytes.NewReader(bs))
+	_, err := io.Copy(buf, zr)
+	if err != nil {
+		return nil, err
+	}
+
+	vec, err := z.gobc.DecompressVector(buf.Bytes())
 	if err != nil {
 		return nil, err
 	}

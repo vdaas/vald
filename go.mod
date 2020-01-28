@@ -43,6 +43,7 @@ require (
 	github.com/pierrec/lz4/v3 v3.2.1
 	github.com/scylladb/gocqlx v1.3.3
 	github.com/tensorflow/tensorflow v2.1.0+incompatible
+	github.com/valyala/gozstd v1.6.4
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
 	go.uber.org/automaxprocs v1.2.0

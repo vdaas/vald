@@ -73,9 +73,7 @@ func (l *lz4Compressor) DecompressVector(bs []byte) ([]float32, error) {
 		return nil, err
 	}
 
-	bufbytes := buf.Bytes()
-
-	vec, err := l.gobc.DecompressVector(bufbytes)
+	vec, err := l.gobc.DecompressVector(buf.Bytes())
 	if err != nil {
 		return nil, err
 	}

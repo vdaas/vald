@@ -79,9 +79,7 @@ func (g *gzipCompressor) DecompressVector(bs []byte) ([]float32, error) {
 		return nil, err
 	}
 
-	bufbytes := buf.Bytes()
-
-	vec, err := g.gobc.DecompressVector(bufbytes)
+	vec, err := g.gobc.DecompressVector(buf.Bytes())
 	if err != nil {
 		return nil, err
 	}
