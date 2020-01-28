@@ -35,6 +35,10 @@ func (r *retry) Out(
 	fn func(vals ...interface{}) error,
 	vals ...interface{},
 ) {
+	if fn == nil {
+		return
+	}
+
 	r.Outf(func(format string, vals ...interface{}) error {
 		return fn(vals...)
 	}, "", vals...)
@@ -44,6 +48,10 @@ func (r *retry) Outf(
 	fn func(format string, vals ...interface{}) error,
 	format string, vals ...interface{},
 ) {
+	if fn == nil {
+		return
+	}
+
 	if err := fn(format, vals...); err != nil {
 		rv := reflect.ValueOf(fn)
 
