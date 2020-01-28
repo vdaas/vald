@@ -52,7 +52,7 @@ func (l Level) String() string {
 	case FATAL:
 		return "FATAL"
 	}
-	return "unknown"
+	return "Unknown"
 }
 
 func Atol(str string) Level {
