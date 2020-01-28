@@ -16,6 +16,8 @@
 
 package format
 
+import "strings"
+
 type Format uint8
 
 const (
@@ -38,7 +40,7 @@ func (f Format) String() string {
 }
 
 func Atof(str string) Format {
-	switch str {
+	switch strings.ToLower(str) {
 	case "raw":
 		return RAW
 	case "json":
