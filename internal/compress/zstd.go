@@ -19,7 +19,6 @@ package compress
 
 import (
 	"bytes"
-	"io"
 	"reflect"
 
 	"github.com/valyala/gozstd"
@@ -51,7 +50,7 @@ func (z *zstdCompressor) CompressVector(vector []float32) ([]byte, error) {
 		return nil, err
 	}
 
-	_, err = zw.Write(gob)
+	_, err = zw.ReadFrom(bytes.NewReader(gob))
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +66,7 @@ func (z *zstdCompressor) CompressVector(vector []float32) ([]byte, error) {
 func (z *zstdCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	buf := new(bytes.Buffer)
 	zr := gozstd.NewReader(bytes.NewReader(bs))
-	_, err := io.Copy(buf, zr)
+	_, err := zr.WriteTo(buf)
 	if err != nil {
 		return nil, err
 	}
