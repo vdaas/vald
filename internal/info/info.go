@@ -113,6 +113,16 @@ func (d Detail) String() string {
 				for i, st := range sts {
 					info[fmt.Sprintf("%s-%d", tag, i)] = fmt.Sprintf(urlFormat, st.URL, st.FuncName)
 				}
+			} else {
+				strs, ok := v.([]string)
+				if ok {
+					tag := reps.Replace(rt.Field(i).Tag.Get("json"))
+					l = len(tag)
+					if maxlen < l {
+						maxlen = l
+					}
+					info[tag] = fmt.Sprintf("%v", strs)
+				}
 			}
 			continue
 		}
