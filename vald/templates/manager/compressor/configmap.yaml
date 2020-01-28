@@ -23,7 +23,7 @@ data:
     version: v0.0.0
     {{- if .Values.compressor.logging }}
     log:
-      mode: {{ .Values.compressor.logging.logger }}
+      logger: {{ .Values.compressor.logging.logger }}
       level: {{ .Values.compressor.logging.level }}
       format: {{ .Values.compressor.logging.format }}
     {{- end }}

@@ -23,7 +23,7 @@ data:
     version: v0.0.0
     {{- if .Values.gateway.logging }}
     log:
-      mode: {{ .Values.gateway.logging.logger }}
+      logger: {{ .Values.gateway.logging.logger }}
       level: {{ .Values.gateway.logging.level }}
       format: {{ .Values.gateway.logging.format }}
     {{- end }}
