@@ -22,7 +22,7 @@ data:
     ---
     version: v0.0.0
     {{- if .Values.backupManager.logging }}
-    log:
+    logging:
       logger: {{ .Values.backupManager.logging.logger }}
       level: {{ .Values.backupManager.logging.level }}
       format: {{ .Values.backupManager.logging.format }}
