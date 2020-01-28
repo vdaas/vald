@@ -32,7 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/params"
 	"github.com/vdaas/vald/internal/timeutil/location"
 	ver "github.com/vdaas/vald/internal/version"
-	"go.uber.org/automaxprocs/maxprocs"
+	// "go.uber.org/automaxprocs/maxprocs"
 )
 
 type Runner interface {
@@ -92,11 +92,11 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
-	mfunc, err := maxprocs.Set(maxprocs.Logger(log.Infof))
-	if err != nil {
-		mfunc()
-		return err
-	}
+	// // mfunc, err := maxprocs.Set(maxprocs.Logger(log.Infof))
+	// if err != nil {
+	// 	mfunc()
+	// 	return err
+	// }
 
 	daemon, err := r.initializeDaemon(cfg)
 	if err != nil {
