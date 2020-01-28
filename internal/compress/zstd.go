@@ -42,13 +42,13 @@ func NewZstd(opts ...ZstdOption) (Compressor, error) {
 }
 
 func (z *zstdCompressor) CompressVector(vector []float32) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	zw := gozstd.NewWriterLevel(buf, z.compressionLevel)
-
 	gob, err := z.gobc.CompressVector(vector)
 	if err != nil {
 		return nil, err
 	}
+
+	buf := new(bytes.Buffer)
+	zw := gozstd.NewWriterLevel(buf, z.compressionLevel)
 
 	_, err = zw.ReadFrom(bytes.NewReader(gob))
 	if err != nil {
