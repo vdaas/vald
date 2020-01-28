@@ -58,16 +58,15 @@ func (l Level) String() string {
 func Atol(str string) Level {
 	low := strings.ToLower(str)
 
-	switch true {
-	case strings.HasPrefix(low, "deb"):
+	if strings.HasPrefix(low, "deb") {
 		return DEBUG
-	case low == "info":
-		return ERROR
-	case low == "warn":
+	} else if low == "info" {
+		return INFO
+	} else if low == "warn" {
 		return WARN
-	case strings.HasPrefix(low, "err"):
+	} else if strings.HasPrefix(low, "err") {
 		return ERROR
-	case low == "fatal":
+	} else if low == "fatal" {
 		return FATAL
 	}
 	return Unknown
