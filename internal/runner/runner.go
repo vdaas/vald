@@ -49,7 +49,7 @@ type runner struct {
 	minVersion       string
 	name             string
 	location         string
-	loadConfig       func(string) (interface{}, config.Default, error)
+	loadConfig       func(string) (interface{}, config.Common, error)
 	initializeDaemon func(interface{}) (Runner, error)
 	showVersionFunc  func(name string)
 }
@@ -73,12 +73,12 @@ func Do(ctx context.Context, opts ...Option) error {
 		return nil
 	}
 
-	cfg, defaultCfg, err := r.loadConfig(p.ConfigFilePath())
+	cfg, commonCfg, err := r.loadConfig(p.ConfigFilePath())
 	if err != nil {
 		return err
 	}
 
-	if logcfg := defaultCfg.Logging; logcfg != nil {
+	if logcfg := commonCfg.Logging; logcfg != nil {
 		log.Init(
 			log.WithLoggerType(logcfg.Logger),
 			log.WithLevel(logcfg.Level),
@@ -90,7 +90,7 @@ func Do(ctx context.Context, opts ...Option) error {
 
 	// set location temporary for initialization logging
 	// _ = loc
-	location.Set(defaultCfg.TZ)
+	location.Set(commonCfg.TZ)
 
 	if p.ShowVersion() {
 		if r.showVersionFunc != nil {
@@ -102,7 +102,7 @@ func Do(ctx context.Context, opts ...Option) error {
 		return nil
 	}
 
-	err = ver.Check(defaultCfg.Version, r.maxVersion, r.minVersion)
+	err = ver.Check(commonCfg.Version, r.maxVersion, r.minVersion)
 	if err != nil {
 		return err
 	}
@@ -114,10 +114,10 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
-	log.Infof("service %s %s starting...", r.name, defaultCfg.Version)
+	log.Infof("service %s %s starting...", r.name, commonCfg.Version)
 
 	// reset timelocation to override external libs & running logging
-	location.Set(defaultCfg.TZ)
+	location.Set(commonCfg.TZ)
 	return Run(ctx, daemon, r.name)
 }
 
