@@ -18,7 +18,7 @@ func TestWithError(t *testing.T) {
 			fn := func(vals ...interface{}) {}
 
 			return test{
-				name: "set success",
+				name: "set success when fn is not nil",
 				fn:   fn,
 				checkFunc: func(opt Option) error {
 					got := new(retry)
@@ -75,7 +75,7 @@ func TestWithWarn(t *testing.T) {
 			fn := func(vals ...interface{}) {}
 
 			return test{
-				name: "set success",
+				name: "set success when fn is not nil",
 				fn:   fn,
 				checkFunc: func(opt Option) error {
 					got := new(retry)
