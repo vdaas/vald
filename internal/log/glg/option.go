@@ -29,7 +29,7 @@ var (
 	defaultOpts = []Option{
 		WithGlg(glg.Get()),
 		WithLevel(level.DEBUG.String()),
-		WithRetry(retry.NewNop()),
+		WithRetry(retry.New()),
 	}
 )
 

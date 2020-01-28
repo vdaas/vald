@@ -23,11 +23,12 @@ type retry struct {
 	errorfn func(vals ...interface{})
 }
 
-func New(warnfn, errorfn func(vals ...interface{})) Retry {
-	return &retry{
-		warnfn:  warnfn,
-		errorfn: errorfn,
+func New(opts ...Option) Retry {
+	r := new(retry)
+	for _, opt := range append(defaultOption, opts...) {
+		opt(r)
 	}
+	return r
 }
 
 func (r *retry) Out(

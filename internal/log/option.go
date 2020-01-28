@@ -16,8 +16,8 @@ var (
 			glg.New(
 				glg.WithRetry(
 					retry.New(
-						Error,
-						Warn,
+						retry.WithError(Error),
+						retry.WithWarn(Warn),
 					),
 				),
 			),
