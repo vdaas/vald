@@ -20,7 +20,7 @@ replace (
 require (
 	github.com/DataDog/zstd v1.4.4
 	github.com/certifi/gocertifi v0.0.0-20200104152315-a6d78f326758 // indirect
-	github.com/cespare/xxhash v1.1.0
+	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/cockroachdb/errors v1.2.4
 	github.com/cockroachdb/logtags v0.0.0-20190617123548-eb05cc24525f // indirect
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
@@ -46,10 +46,10 @@ require (
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
 	go.uber.org/automaxprocs v1.2.0
-	golang.org/x/sys v0.0.0-20200121082415-34d275377bf9
+	golang.org/x/sys v0.0.0-20200124204421-9fbb57f87de9
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/plot v0.0.0-20200111075622-4abb28f724d5
-	google.golang.org/genproto v0.0.0-20200117163144-32f20d992d24
+	google.golang.org/genproto v0.0.0-20200127141224-2548664c049f
 	google.golang.org/grpc v1.26.0
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.2

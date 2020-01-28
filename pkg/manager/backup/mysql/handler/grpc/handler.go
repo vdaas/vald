@@ -19,10 +19,12 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/vdaas/vald/apis/grpc/manager/backup"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/pkg/manager/backup/mysql/model"
@@ -32,13 +34,7 @@ import (
 type Server backup.BackupServer
 
 type server struct {
-	mySQL service.MySQL
-}
-
-type errDetail struct {
-	method string
-	uuid   string
-	uuids  []string
+	mysql service.MySQL
 }
 
 func New(opts ...Option) Server {
@@ -51,25 +47,26 @@ func New(opts ...Option) Server {
 }
 
 func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_Compressed_MetaVector, err error) {
-	meta, err := s.mySQL.GetMeta(ctx, req.Uuid)
+	uuid := req.GetUuid()
+	meta, err := s.mysql.GetMeta(ctx, uuid)
 	if err != nil {
-		detail := errDetail{method: "GetVector", uuid: req.Uuid}
 		if errors.IsErrMySQLNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[GetVector]\tnot found\t%v\t%+v", req.Uuid, err)
-			return nil, status.WrapWithNotFound("MySQL entry not found", &detail, err)
+			return nil, status.WrapWithNotFound(fmt.Sprintf("GetVector API mysql uuid %s's object not found", uuid), err, info.Get())
 		}
 		log.Errorf("[GetVector]\tunknown error\t%+v", err)
-		return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
+		return nil, status.WrapWithUnknown(fmt.Sprintf("GetVector API mysql uuid %s's unknown error occurred", uuid), err, info.Get())
 	}
 
 	return toBackupMetaVector(meta)
 }
 
 func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Request) (res *payload.Info_IPs, err error) {
-	ips, err := s.mySQL.GetIPs(ctx, req.Uuid)
+	uuid := req.GetUuid()
+	ips, err := s.mysql.GetIPs(ctx, uuid)
 	if err != nil {
 		log.Errorf("[Locations]\tunknown error\t%+v", err)
-		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "Locations", uuid: req.Uuid}, err)
+		return nil, status.WrapWithNotFound(fmt.Sprintf("Locations API uuid %s's location not found", uuid), err, info.Get())
 	}
 
 	return &payload.Info_IPs{
@@ -78,86 +75,82 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 }
 
 func (s *server) Register(ctx context.Context, meta *payload.Backup_Compressed_MetaVector) (res *payload.Empty, err error) {
+	uuid := meta.GetUuid()
 	m, err := toModelMetaVector(meta)
 	if err != nil {
 		log.Errorf("[Register]\tunknown error\t%+v", err)
-		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "Register", uuid: meta.Uuid}, err)
+		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s's could not convert vector to meta_vector", uuid), err, info.Get())
 	}
 
-	err = s.mySQL.SetMeta(ctx, m)
+	err = s.mysql.SetMeta(ctx, m)
 	if err != nil {
 		log.Errorf("[Register]\tunknown error\t%+v", err)
-		detail := errDetail{method: "Register", uuid: meta.Uuid}
-		if errors.IsErrMySQLInvalidArgument(errors.UnWrapAll(err)) {
-			return nil, status.WrapWithInvalidArgument("MySQL invalid argument", &detail, err)
-		}
-		return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
+		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s's failed to backup metadata", uuid), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
 }
 
 func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_Compressed_MetaVectors) (res *payload.Empty, err error) {
-	ms := make([]*model.MetaVector, 0, len(metas.Vectors))
+	ms := make([]*model.MetaVector, 0, len(metas.GetVectors()))
 	for _, meta := range metas.Vectors {
 		var m *model.MetaVector
 		m, err = toModelMetaVector(meta)
 		if err != nil {
 			log.Errorf("[RegisterMulti]\tunknown error\t%+v", err)
-			return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "RegisterMulti", uuid: meta.Uuid}, err)
+			return nil, status.WrapWithInternal(fmt.Sprintf("RegisterMulti API uuids %s's could not convert vector to meta_vector", meta.GetUuid()), err, info.Get())
 		}
 		ms = append(ms, m)
 	}
 
-	err = s.mySQL.SetMetas(ctx, ms...)
+	err = s.mysql.SetMetas(ctx, ms...)
 	if err != nil {
-		detail := errDetail{method: "RegisterMulti"}
-		if errors.IsErrMySQLInvalidArgument(errors.UnWrapAll(err)) {
-			log.Warnf("[RegisterMulti]\tinvalid argument\t%+v", err)
-			return nil, status.WrapWithInvalidArgument("MySQL invalid argument", &detail, err)
-		}
 		log.Errorf("[RegisterMulti]\tunknown error\t%+v", err)
-		return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
+		return nil, status.WrapWithInternal(fmt.Sprintf("RegisterMulti API failed to backup metadatas %#v", ms), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
 }
 
 func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request) (res *payload.Empty, err error) {
-	err = s.mySQL.DeleteMeta(ctx, req.Uuid)
+	uuid := req.GetUuid()
+	err = s.mysql.DeleteMeta(ctx, uuid)
 	if err != nil {
 		log.Errorf("[Remove]\tunknown error\t%+v", err)
-		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "Remove", uuid: req.Uuid}, err)
+		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API uuid %s's could not DeleteMeta", uuid), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
 }
 
 func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_RequestMulti) (res *payload.Empty, err error) {
-	err = s.mySQL.DeleteMetas(ctx, req.GetUuid()...)
+	uuids := req.GetUuids()
+	err = s.mysql.DeleteMetas(ctx, uuids...)
 	if err != nil {
 		log.Errorf("[RemoveMulti]\tunknown error\t%+v", err)
-		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "RemoveMulti", uuids: req.GetUuid()}, err)
+		return nil, status.WrapWithInternal(fmt.Sprintf("RemoveMulti API uuids %#v could not DeleteMetas", uuids), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
 }
 
 func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Register_Request) (res *payload.Empty, err error) {
-	err = s.mySQL.SetIPs(ctx, req.Uuid, req.Ips...)
+	uuid := req.GetUuid()
+	err = s.mysql.SetIPs(ctx, uuid, req.Ips...)
 	if err != nil {
 		log.Errorf("[RegisterIPs]\tunknown error\t%+v", err)
-		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "RegisterIPs", uuid: req.Uuid}, err)
+		return nil, status.WrapWithInternal(fmt.Sprintf("RegisterIPs API uuid %s's could not SetIPs", uuid), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
 }
 
 func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Request) (res *payload.Empty, err error) {
-	err = s.mySQL.RemoveIPs(ctx, req.Ips...)
+	ips := req.GetIps()
+	err = s.mysql.RemoveIPs(ctx, ips...)
 	if err != nil {
 		log.Errorf("[RemoveIPs]\tunknown error\t%+v", err)
-		return nil, status.WrapWithUnknown("Unknown error occurred", &errDetail{method: "RemoveIPs"}, err)
+		return nil, status.WrapWithInternal(fmt.Sprintf("RemoveIPs API uuid %s's could not RemoveIPs", ips), err, info.Get())
 	}
 
 	return new(payload.Empty), nil

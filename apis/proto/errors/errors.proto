@@ -31,10 +31,11 @@ import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
 message Errors {
   message RPC {
     string type = 1;
-    string title = 2;
-    string detail = 3;
+    string msg = 2;
+    repeated string details = 3;
     string instance = 4;
     int64 status = 5;
     string error = 6;
+    repeated RPC roots = 7;
   }
 }

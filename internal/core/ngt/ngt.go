@@ -127,6 +127,8 @@ const (
 
 	// ErrorCode is false
 	ErrorCode = C._Bool(false)
+
+	dimensionLimit = 1 << 16
 )
 
 // New returns NGT instance with recreating empty index file
@@ -476,7 +478,7 @@ func (n *ngt) BulkRemove(ids ...uint) error {
 // GetVector returns vector stored in NGT index.
 func (n *ngt) GetVector(id uint) ([]float32, error) {
 	dimension := int(n.dimension)
-	ret := make([]float32, 0, dimension)
+	var ret []float32
 	switch n.objectType {
 	case Float:
 		n.mu.RLock()
@@ -485,10 +487,10 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 		if results == nil {
 			return nil, n.newGoError(n.ebuf)
 		}
-		slice := (*[1 << 30]C.float)(unsafe.Pointer(results))[:dimension:dimension]
-		for i := 0; i < dimension; i++ {
-			ret[i] = float32(slice[i])
-		}
+		ret = (*[dimensionLimit]float32)(unsafe.Pointer(results))[:dimension:dimension]
+		// for _, elem := range (*[dimensionLimit]C.float)(unsafe.Pointer(results))[:dimension:dimension]{
+		// 	ret = append(ret, float32(elem))
+		// }
 	case Uint8:
 		n.mu.RLock()
 		results := C.ngt_get_object_as_integer(n.ospace, C.ObjectID(id), n.ebuf)
@@ -496,9 +498,9 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 		if results == nil {
 			return nil, n.newGoError(n.ebuf)
 		}
-		slice := (*[1 << 30]C.uchar)(unsafe.Pointer(results))[:dimension:dimension]
-		for i := 0; i < dimension; i++ {
-			ret[i] = float32(slice[i])
+		ret = make([]float32, 0, dimension)
+		for _, elem := range (*[dimensionLimit]C.uint8_t)(unsafe.Pointer(results))[:dimension:dimension] {
+			ret = append(ret, float32(elem))
 		}
 	default:
 		return nil, errors.ErrUnsupportedObjectType
@@ -521,7 +523,6 @@ func (n *ngt) Close() {
 		C.ngt_close_index(n.index)
 		C.ngt_destroy_error_object(n.ebuf)
 		n.index = nil
-
 		// dimension           C.int32_t
 		// objectType          objectType
 		// prop                C.NGTProperty
