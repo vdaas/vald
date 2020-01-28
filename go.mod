@@ -45,6 +45,7 @@ require (
 	github.com/valyala/gozstd v1.6.4
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
+	go.uber.org/automaxprocs v1.3.0
 	golang.org/x/sys v0.0.0-20200124204421-9fbb57f87de9
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/plot v0.0.0-20200111075622-4abb28f724d5
