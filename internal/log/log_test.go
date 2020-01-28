@@ -86,137 +86,6 @@ func TestBold(t *testing.T) {
 	}
 }
 
-func TestInfo(t *testing.T) {
-	type args struct {
-		vals []interface{}
-	}
-
-	type global struct {
-		l Logger
-	}
-
-	type test struct {
-		name      string
-		args      args
-		global    global
-		checkFunc func() error
-	}
-
-	tests := []test{
-		func() test {
-			var want []interface{}
-
-			l := &mock.Logger{
-				InfoFunc: func(vals ...interface{}) {
-					want = vals
-				},
-			}
-
-			vals := []interface{}{
-				"vald",
-			}
-
-			return test{
-				name: "set success",
-				args: args{
-					vals: vals,
-				},
-				global: global{
-					l: l,
-				},
-				checkFunc: func() error {
-					if !reflect.DeepEqual(vals, want) {
-						return errors.Errorf("not equals. want: %v, got: %v", want, vals)
-					}
-					return nil
-				},
-			}
-		}(),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			logger = tt.global.l
-
-			Info(tt.args.vals...)
-			if err := tt.checkFunc(); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
-func TestInfof(t *testing.T) {
-	type args struct {
-		format string
-		vals   []interface{}
-	}
-
-	type global struct {
-		l Logger
-	}
-
-	type test struct {
-		name      string
-		args      args
-		global    global
-		checkFunc func() error
-	}
-
-	tests := []test{
-		func() test {
-			var (
-				wantFormat string
-				wantVals   []interface{}
-			)
-
-			l := &mock.Logger{
-				InfofFunc: func(format string, vals ...interface{}) {
-					wantFormat = format
-					wantVals = vals
-				},
-			}
-
-			format := "%v"
-			vals := []interface{}{
-				"vald",
-			}
-
-			return test{
-				name: "set success",
-				args: args{
-					format: format,
-					vals:   vals,
-				},
-				global: global{
-					l: l,
-				},
-				checkFunc: func() error {
-					if !reflect.DeepEqual(format, wantFormat) {
-						return errors.Errorf("vals is not equals. want: %v, got: %v", wantFormat, format)
-					}
-
-					if !reflect.DeepEqual(vals, wantVals) {
-						return errors.Errorf("vals is not equals. want: %v, got: %v", wantVals, vals)
-					}
-					return nil
-				},
-			}
-		}(),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			logger = tt.global.l
-
-			Infof(tt.args.format, tt.args.vals...)
-			if err := tt.checkFunc(); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
 func TestDebug(t *testing.T) {
 	type args struct {
 		vals []interface{}
@@ -341,6 +210,137 @@ func TestDebugf(t *testing.T) {
 			logger = tt.global.l
 
 			Debugf(tt.args.format, tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestInfo(t *testing.T) {
+	type args struct {
+		vals []interface{}
+	}
+
+	type global struct {
+		l Logger
+	}
+
+	type test struct {
+		name      string
+		args      args
+		global    global
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var want []interface{}
+
+			l := &mock.Logger{
+				InfoFunc: func(vals ...interface{}) {
+					want = vals
+				},
+			}
+
+			vals := []interface{}{
+				"vald",
+			}
+
+			return test{
+				name: "set success",
+				args: args{
+					vals: vals,
+				},
+				global: global{
+					l: l,
+				},
+				checkFunc: func() error {
+					if !reflect.DeepEqual(vals, want) {
+						return errors.Errorf("not equals. want: %v, got: %v", want, vals)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			logger = tt.global.l
+
+			Info(tt.args.vals...)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestInfof(t *testing.T) {
+	type args struct {
+		format string
+		vals   []interface{}
+	}
+
+	type global struct {
+		l Logger
+	}
+
+	type test struct {
+		name      string
+		args      args
+		global    global
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var (
+				wantFormat string
+				wantVals   []interface{}
+			)
+
+			l := &mock.Logger{
+				InfofFunc: func(format string, vals ...interface{}) {
+					wantFormat = format
+					wantVals = vals
+				},
+			}
+
+			format := "%v"
+			vals := []interface{}{
+				"vald",
+			}
+
+			return test{
+				name: "set success",
+				args: args{
+					format: format,
+					vals:   vals,
+				},
+				global: global{
+					l: l,
+				},
+				checkFunc: func() error {
+					if !reflect.DeepEqual(format, wantFormat) {
+						return errors.Errorf("vals is not equals. want: %v, got: %v", wantFormat, format)
+					}
+
+					if !reflect.DeepEqual(vals, wantVals) {
+						return errors.Errorf("vals is not equals. want: %v, got: %v", wantVals, vals)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			logger = tt.global.l
+
+			Infof(tt.args.format, tt.args.vals...)
 			if err := tt.checkFunc(); err != nil {
 				t.Error(err)
 			}
