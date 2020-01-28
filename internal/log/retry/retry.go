@@ -51,7 +51,7 @@ func (r *retry) Outf(
 
 		err = fn(format, vals...)
 		if err != nil {
-			r.errorfn(errors.ErrLoggingFaild(err, rv))
+			r.errorfn(errors.ErrLoggingFailed(err, rv))
 
 			err = fn(format, vals...)
 			if err != nil {

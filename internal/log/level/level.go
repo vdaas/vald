@@ -35,9 +35,6 @@ const (
 	// ERRO is error log level
 	ERROR
 
-	// CRIT is critical error log level
-	CRIT
-
 	// FATAL is fatal log level
 	FATAL
 )
@@ -52,8 +49,6 @@ func (l Level) String() string {
 		return "WARN"
 	case ERROR:
 		return "ERROR"
-	case CRIT:
-		return "CRIT"
 	case FATAL:
 		return "FATAL"
 	}
@@ -61,18 +56,18 @@ func (l Level) String() string {
 }
 
 func Atol(str string) Level {
-	switch strings.ToLower(str) {
-	case "debug":
+	low := strings.ToLower(str)
+
+	switch true {
+	case strings.HasPrefix(low, "deb"):
 		return DEBUG
-	case "info":
-		return INFO
-	case "warn":
-		return WARN
-	case "error":
+	case strings.HasPrefix(low, "info"):
 		return ERROR
-	case "crit":
-		return CRIT
-	case "fatal":
+	case strings.HasPrefix(low, "warn"):
+		return WARN
+	case strings.HasPrefix(low, "err"):
+		return ERROR
+	case strings.HasPrefix(low, "fatal"):
 		return FATAL
 	}
 	return Unknown

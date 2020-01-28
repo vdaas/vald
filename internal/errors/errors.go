@@ -56,7 +56,7 @@ var (
 			runtime.FuncForPC(ref.Pointer()).Name())
 	}
 
-	ErrLoggingFaild = func(err error, ref reflect.Value) error {
+	ErrLoggingFailed = func(err error, ref reflect.Value) error {
 		return Wrapf(err, "failed to output %s logs",
 			runtime.FuncForPC(ref.Pointer()).Name())
 	}
