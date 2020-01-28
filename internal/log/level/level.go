@@ -61,13 +61,13 @@ func Atol(str string) Level {
 	switch true {
 	case strings.HasPrefix(low, "deb"):
 		return DEBUG
-	case strings.HasPrefix(low, "info"):
+	case low == "info":
 		return ERROR
-	case strings.HasPrefix(low, "warn"):
+	case low == "warn":
 		return WARN
 	case strings.HasPrefix(low, "err"):
 		return ERROR
-	case strings.HasPrefix(low, "fatal"):
+	case low == "fatal":
 		return FATAL
 	}
 	return Unknown
