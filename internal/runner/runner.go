@@ -91,7 +91,6 @@ func Do(ctx context.Context, opts ...Option) error {
 	if err != nil {
 		return err
 	}
-
 	// // mfunc, err := maxprocs.Set(maxprocs.Logger(log.Infof))
 	// if err != nil {
 	// 	mfunc()
