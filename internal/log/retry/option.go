@@ -16,7 +16,7 @@ func WithError(fn func(vals ...interface{})) Option {
 		if fn == nil {
 			return
 		}
-		r.errorfn = fn
+		r.errorFn = fn
 	}
 }
 
@@ -25,6 +25,6 @@ func WithWarn(fn func(vals ...interface{})) Option {
 		if fn == nil {
 			return
 		}
-		r.errorfn = fn
+		r.warnFn = fn
 	}
 }

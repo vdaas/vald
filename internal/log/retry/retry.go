@@ -19,8 +19,8 @@ type Retry interface {
 }
 
 type retry struct {
-	warnfn  func(vals ...interface{})
-	errorfn func(vals ...interface{})
+	warnFn  func(vals ...interface{})
+	errorFn func(vals ...interface{})
 }
 
 func New(opts ...Option) Retry {
@@ -47,11 +47,11 @@ func (r *retry) Outf(
 	if err := fn(format, vals...); err != nil {
 		rv := reflect.ValueOf(fn)
 
-		r.warnfn(errors.ErrLoggingRetry(err, rv))
+		r.warnFn(errors.ErrLoggingRetry(err, rv))
 
 		err = fn(format, vals...)
 		if err != nil {
-			r.errorfn(errors.ErrLoggingFailed(err, rv))
+			r.errorFn(errors.ErrLoggingFailed(err, rv))
 
 			err = fn(format, vals...)
 			if err != nil {
