@@ -48,15 +48,6 @@ func WithEnableJSON() Option {
 	}
 }
 
-func WithFormat(str string) Option {
-	return func(l *logger) {
-		if str == "" {
-			return
-		}
-		l.format = format.Atof(str)
-	}
-}
-
 func WithLevel(str string) Option {
 	return func(l *logger) {
 		if str == "" {
