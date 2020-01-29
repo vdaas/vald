@@ -328,11 +328,17 @@ func (g *gateway) DoMulti(ctx context.Context,
 	var cur uint32 = 0
 	limit := uint32(num)
 	cctx, cancel := context.WithCancel(ctx)
+	slot := make(chan struct{}, num)
+	defer close(slot)
 	var once sync.Once
 	return g.acClient.RangeConcurrent(cctx, num, func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 		if conn == nil {
 			return errors.ErrAgentClientNotConnected
 		}
+		slot <- struct{}{}
+		defer func(){
+			<- slot
+		}()
 		if atomic.LoadUint32(&cur) > limit {
 			once.Do(func() {
 				cancel()
