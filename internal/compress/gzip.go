@@ -21,21 +21,33 @@ import (
 	"bytes"
 	"compress/gzip"
 	"io"
+	"reflect"
+
+	"github.com/vdaas/vald/internal/errors"
 )
 
 type gzipCompressor struct {
-	gobc Compressor
+	gobc             Compressor
+	compressionLevel int
 }
 
-func NewGzip() Compressor {
-	return &gzipCompressor{
-		gobc: NewGob(),
+func NewGzip(opts ...GzipOption) (Compressor, error) {
+	c := new(gzipCompressor)
+	for _, opt := range append(defaultGzipOpts, opts...) {
+		if err := opt(c); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
 	}
+
+	return c, nil
 }
 
-func (g *gzipCompressor) CompressVector(vector []float64) ([]byte, error) {
+func (g *gzipCompressor) CompressVector(vector []float32) ([]byte, error) {
 	buf := new(bytes.Buffer)
-	gw := gzip.NewWriter(buf)
+	gw, err := gzip.NewWriterLevel(buf, g.compressionLevel)
+	if err != nil {
+		return nil, err
+	}
 
 	gob, err := g.gobc.CompressVector(vector)
 	if err != nil {
@@ -55,7 +67,7 @@ func (g *gzipCompressor) CompressVector(vector []float64) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (g *gzipCompressor) DecompressVector(bs []byte) ([]float64, error) {
+func (g *gzipCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	buf := new(bytes.Buffer)
 	gr, err := gzip.NewReader(bytes.NewBuffer(bs))
 	if err != nil {
@@ -67,9 +79,7 @@ func (g *gzipCompressor) DecompressVector(bs []byte) ([]float64, error) {
 		return nil, err
 	}
 
-	bufbytes := buf.Bytes()
-
-	vec, err := g.gobc.DecompressVector(bufbytes)
+	vec, err := g.gobc.DecompressVector(buf.Bytes())
 	if err != nil {
 		return nil, err
 	}

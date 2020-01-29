@@ -23,7 +23,6 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/tls"
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/model"
 )
 
@@ -57,59 +56,9 @@ type client struct {
 }
 
 func New(cfg *config.Cassandra) (Cassandra, error) {
-	opts := []cassandra.Option{
-		cassandra.WithHosts(cfg.Hosts...),
-		cassandra.WithCQLVersion(cfg.CQLVersion),
-		cassandra.WithProtoVersion(cfg.ProtoVersion),
-		cassandra.WithTimeout(cfg.Timeout),
-		cassandra.WithConnectTimeout(cfg.ConnectTimeout),
-		cassandra.WithPort(cfg.Port),
-		cassandra.WithKeyspace(cfg.Keyspace),
-		cassandra.WithNumConns(cfg.NumConns),
-		cassandra.WithConsistency(cfg.Consistency),
-		cassandra.WithUsername(cfg.Username),
-		cassandra.WithPassword(cfg.Password),
-		cassandra.WithRetryPolicyNumRetries(cfg.RetryPolicy.NumRetries),
-		cassandra.WithRetryPolicyMinDuration(cfg.RetryPolicy.MinDuration),
-		cassandra.WithRetryPolicyMaxDuration(cfg.RetryPolicy.MaxDuration),
-		cassandra.WithReconnectionPolicyMaxRetries(cfg.ReconnectionPolicy.MaxRetries),
-		cassandra.WithReconnectionPolicyInitialInterval(cfg.ReconnectionPolicy.InitialInterval),
-		cassandra.WithSocketKeepalive(cfg.SocketKeepalive),
-		cassandra.WithMaxPreparedStmts(cfg.MaxPreparedStmts),
-		cassandra.WithMaxRoutingKeyInfo(cfg.MaxRoutingKeyInfo),
-		cassandra.WithPageSize(cfg.PageSize),
-		cassandra.WithEnableHostVerification(cfg.EnableHostVerification),
-		cassandra.WithDefaultTimestamp(cfg.DefaultTimestamp),
-		cassandra.WithReconnectInterval(cfg.ReconnectInterval),
-		cassandra.WithMaxWaitSchemaAgreement(cfg.MaxWaitSchemaAgreement),
-		cassandra.WithIgnorePeerAddr(cfg.IgnorePeerAddr),
-		cassandra.WithDisableInitialHostLookup(cfg.DisableInitialHostLookup),
-		cassandra.WithDisableNodeStatusEvents(cfg.DisableNodeStatusEvents),
-		cassandra.WithDisableTopologyEvents(cfg.DisableTopologyEvents),
-		cassandra.WithDisableSkipMetadata(cfg.DisableSkipMetadata),
-		cassandra.WithDefaultIdempotence(cfg.DefaultIdempotence),
-		cassandra.WithWriteCoalesceWaitTime(cfg.WriteCoalesceWaitTime),
-		cassandra.WithKVTable(cfg.KVTable),
-		cassandra.WithVKTable(cfg.VKTable),
-	}
-
-	if cfg.TLS != nil && cfg.TLS.Enabled {
-		tcfg, err := tls.New(
-			tls.WithCert(cfg.TLS.Cert),
-			tls.WithKey(cfg.TLS.Key),
-			tls.WithCa(cfg.TLS.CA),
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		opts = append(
-			opts,
-			cassandra.WithTLS(tcfg),
-			cassandra.WithTLSCertPath(cfg.TLS.Cert),
-			cassandra.WithTLSKeyPath(cfg.TLS.Key),
-			cassandra.WithTLSCAPath(cfg.TLS.CA),
-		)
+	opts, err := cfg.Opts()
+	if err != nil {
+		return nil, err
 	}
 
 	db, err := cassandra.New(opts...)

@@ -17,8 +17,6 @@
 // Package errors provides error types and function
 package errors
 
-// "github.com/pkg/errors"
-
 var (
 
 	// Redis
