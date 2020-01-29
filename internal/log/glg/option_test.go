@@ -42,7 +42,7 @@ func TestWithGlg(t *testing.T) {
 			g := glg.New()
 
 			return test{
-				name: "set success when glg is not nil",
+				name: "returns nothing when glg is nil",
 				g:    nil,
 				checkFunc: func(opt Option) error {
 					got := &logger{
@@ -194,7 +194,7 @@ func TestWithRetry(t *testing.T) {
 			rt := new(mock.Retry)
 
 			return test{
-				name: "set success when rt is not nil",
+				name: "returns nothing when rt is not nil",
 				rt:   nil,
 				checkFunc: func(opt Option) error {
 					got := &logger{
