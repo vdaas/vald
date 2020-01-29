@@ -391,18 +391,20 @@ func TestInfo(t *testing.T) {
 				},
 			}
 
+			wantVals := "vals"
+
 			return test{
 				name: "output success",
 				args: args{
-					vals: "vals",
+					vals: wantVals,
 				},
 				field: field{
 					retry: retry,
 					glg:   glg.Get(),
 				},
 				checkFunc: func() error {
-					if gotVals != "vals" {
-						return errors.New("vals not equals")
+					if gotVals != wantVals {
+						return errors.Errorf("vals not equals. want: %v, but got: %v", wantVals, gotVals)
 					}
 					return nil
 				},
@@ -455,23 +457,26 @@ func TestInfof(t *testing.T) {
 				},
 			}
 
+			wantVals := "vals"
+			wantFormat := "format"
+
 			return test{
 				name: "output success",
 				args: args{
-					vals:   "vals",
-					format: "format",
+					vals:   wantVals,
+					format: wantFormat,
 				},
 				field: field{
 					retry: retry,
 					glg:   glg.Get(),
 				},
 				checkFunc: func() error {
-					if gotFormat != "format" {
-						return errors.New("format not equals")
+					if gotFormat != wantFormat {
+						return errors.Errorf("format not equals. want: %v, but got: %v", wantFormat, gotFormat)
 					}
 
-					if gotVals != "vals" {
-						return errors.New("vals not equals")
+					if gotVals != wantVals {
+						return errors.Errorf("vals not equals. want: %v, but got: %v", wantVals, gotVals)
 					}
 					return nil
 				},
@@ -519,18 +524,20 @@ func TestDebug(t *testing.T) {
 				},
 			}
 
+			wantVals := "vals"
+
 			return test{
 				name: "output success",
 				args: args{
-					vals: "vals",
+					vals: wantVals,
 				},
 				field: field{
 					retry: retry,
 					glg:   glg.Get(),
 				},
 				checkFunc: func() error {
-					if gotVals != "vals" {
-						return errors.New("vals not equals")
+					if gotVals != wantVals {
+						return errors.Errorf("vals not equals. want: %v, but got: %v", wantVals, gotVals)
 					}
 					return nil
 				},
@@ -583,23 +590,26 @@ func TestDebugf(t *testing.T) {
 				},
 			}
 
+			wantVals := "vals"
+			wantFormat := "format"
+
 			return test{
 				name: "output success",
 				args: args{
-					vals:   "vals",
-					format: "format",
+					vals:   wantVals,
+					format: wantFormat,
 				},
 				field: field{
 					retry: retry,
 					glg:   glg.Get(),
 				},
 				checkFunc: func() error {
-					if gotFormat != "format" {
-						return errors.New("format not equals")
+					if gotFormat != wantFormat {
+						return errors.Errorf("format not equals. want: %v, but got: %v", wantFormat, gotFormat)
 					}
 
-					if gotVals != "vals" {
-						return errors.New("vals not equals")
+					if gotVals != wantVals {
+						return errors.Errorf("vals not equals. want: %v, but got: %v", wantVals, gotVals)
 					}
 					return nil
 				},
@@ -647,18 +657,20 @@ func TestWarn(t *testing.T) {
 				},
 			}
 
+			wantVals := "vals"
+
 			return test{
 				name: "output success",
 				args: args{
-					vals: "vals",
+					vals: wantVals,
 				},
 				field: field{
 					retry: retry,
 					glg:   glg.Get(),
 				},
 				checkFunc: func() error {
-					if gotVals != "vals" {
-						return errors.New("vals not equals")
+					if gotVals != wantVals {
+						return errors.Errorf("vals not equals. want: %v, but got: %v", wantVals, gotVals)
 					}
 					return nil
 				},
@@ -711,23 +723,26 @@ func TestWarnf(t *testing.T) {
 				},
 			}
 
+			wantVals := "vals"
+			wantFormat := "format"
+
 			return test{
 				name: "output success",
 				args: args{
-					vals:   "vals",
-					format: "format",
+					vals:   wantVals,
+					format: wantFormat,
 				},
 				field: field{
 					retry: retry,
 					glg:   glg.Get(),
 				},
 				checkFunc: func() error {
-					if gotFormat != "format" {
-						return errors.New("format not equals")
+					if gotFormat != wantFormat {
+						return errors.Errorf("format not equals. want: %v, but got: %v", wantFormat, gotFormat)
 					}
 
-					if gotVals != "vals" {
-						return errors.New("vals not equals")
+					if gotVals != wantVals {
+						return errors.Errorf("vals not equals. want: %v, but got: %v", wantVals, gotVals)
 					}
 					return nil
 				},
@@ -775,18 +790,20 @@ func TestError(t *testing.T) {
 				},
 			}
 
+			wantVals := "vals"
+
 			return test{
 				name: "output success",
 				args: args{
-					vals: "vals",
+					vals: wantVals,
 				},
 				field: field{
 					retry: retry,
 					glg:   glg.Get(),
 				},
 				checkFunc: func() error {
-					if gotVals != "vals" {
-						return errors.New("vals not equals")
+					if gotVals != wantVals {
+						return errors.Errorf("vals not equals. want: %v, but got: %v", wantVals, gotVals)
 					}
 					return nil
 				},
@@ -839,23 +856,26 @@ func TestErrorf(t *testing.T) {
 				},
 			}
 
+			wantVals := "vals"
+			wantFormat := "format"
+
 			return test{
 				name: "output success",
 				args: args{
-					vals:   "vals",
-					format: "format",
+					vals:   wantVals,
+					format: wantFormat,
 				},
 				field: field{
 					retry: retry,
 					glg:   glg.Get(),
 				},
 				checkFunc: func() error {
-					if gotFormat != "format" {
-						return errors.New("format not equals")
+					if gotFormat != wantFormat {
+						return errors.Errorf("format not equals. want: %v, but got: %v", wantFormat, gotFormat)
 					}
 
-					if gotVals != "vals" {
-						return errors.New("vals not equals")
+					if gotVals != wantVals {
+						return errors.Errorf("vals not equals. want: %v, but got: %v", wantVals, gotVals)
 					}
 					return nil
 				},
