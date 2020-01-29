@@ -36,7 +36,7 @@ func TestWithHost(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing",
+			name: "returns nothing when host is empty",
 			host: "",
 			checkFunc: func(opt Option) error {
 				got := &server{
@@ -85,7 +85,7 @@ func TestWithPort(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing",
+			name: "returns nothing when port is 0",
 			checkFunc: func(opt Option) error {
 				got := &server{
 					port: 8080,
@@ -133,7 +133,7 @@ func TestWithName(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing",
+			name: "returns nothing when name is empty",
 			checkFunc: func(opt Option) error {
 				got := &server{
 					name: "name",
@@ -180,6 +180,24 @@ func TestWithErrorGroup(t *testing.T) {
 				return nil
 			},
 		},
+
+		{
+			name: "returns nothing when eg is nil",
+			eg:   nil,
+			checkFunc: func(opt Option) error {
+				eg := errgroup.Get()
+
+				got := &server{
+					eg: eg,
+				}
+				opt(got)
+
+				if !reflect.DeepEqual(got.eg, eg) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -217,6 +235,24 @@ func TestWithPreStartFunc(t *testing.T) {
 				},
 			}
 		}(),
+
+		{
+			name: "returns nothing when fn is nil",
+			fn:   nil,
+			checkFunc: func(opt Option) error {
+				fn := func() error { return nil }
+
+				got := &server{
+					preStartFunc: fn,
+				}
+				opt(got)
+
+				if reflect.ValueOf(got.preStartFunc).Pointer() != reflect.ValueOf(fn).Pointer() {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -254,6 +290,24 @@ func TestWithPreStopFunc(t *testing.T) {
 				},
 			}
 		}(),
+
+		{
+			name: "returns nothing when fn is nil",
+			fn:   nil,
+			checkFunc: func(opt Option) error {
+				fn := func() error { return nil }
+
+				got := &server{
+					preStopFunc: fn,
+				}
+				opt(got)
+
+				if reflect.ValueOf(got.preStopFunc).Pointer() != reflect.ValueOf(fn).Pointer() {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -287,8 +341,9 @@ func TestWithProbeWaitTime(t *testing.T) {
 				return nil
 			},
 		},
+
 		{
-			name: "set default",
+			name: "set default when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -334,7 +389,7 @@ func TestWithShutdownDuration(t *testing.T) {
 			},
 		},
 		{
-			name: "set default",
+			name: "set default when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -381,7 +436,7 @@ func TestWithReadHeaderTimeout(t *testing.T) {
 		},
 
 		{
-			name: "set default",
+			name: "set default when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -428,7 +483,7 @@ func TestWithReadTimeout(t *testing.T) {
 		},
 
 		{
-			name: "set default",
+			name: "set default when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -475,7 +530,7 @@ func TestWithWriteTimeout(t *testing.T) {
 		},
 
 		{
-			name: "set default",
+			name: "set default when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -522,7 +577,7 @@ func TestWithIdleTimeout(t *testing.T) {
 		},
 
 		{
-			name: "set default",
+			name: "set default when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -571,6 +626,23 @@ func TestWithListenConfig(t *testing.T) {
 				},
 			}
 		}(),
+
+		{
+			name: "returns nothing when lc is nil",
+			lc:   nil,
+			checkFunc: func(opt Option) error {
+				lc := new(net.ListenConfig)
+				got := &server{
+					lc: lc,
+				}
+				opt(got)
+
+				if !reflect.DeepEqual(got.lc, lc) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -599,6 +671,22 @@ func TestWithServerMode(t *testing.T) {
 				opt(got)
 
 				if got.mode != REST {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "returns nothing when mode is invalid",
+			m:    mode(100),
+			checkFunc: func(opt Option) error {
+				got := &server{
+					mode: GRPC,
+				}
+				opt(got)
+
+				if got.mode != GRPC {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -641,6 +729,23 @@ func TestWithTLSConfig(t *testing.T) {
 				},
 			}
 		}(),
+
+		{
+			name: "returns nothing when cfg is nil",
+			cfg:  nil,
+			checkFunc: func(opt Option) error {
+				cfg := new(tls.Config)
+				got := &server{
+					tcfg: cfg,
+				}
+				opt(got)
+
+				if !reflect.DeepEqual(got.tcfg, cfg) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -682,6 +787,22 @@ func TestWithHTTPHandler(t *testing.T) {
 				},
 			}
 		}(),
+
+		{
+			name:    "returns nothing when hdr is nil",
+			handler: nil,
+			checkFunc: func(opt Option) error {
+				hdr := new(handler)
+				got := new(server)
+				got.http.h = hdr
+				opt(got)
+
+				if reflect.ValueOf(got.http.h).Pointer() != reflect.ValueOf(hdr).Pointer() {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -719,6 +840,22 @@ func TestWithHTTPServer(t *testing.T) {
 				},
 			}
 		}(),
+
+		{
+			name: "returns nothing when srv is nil",
+			srv:  nil,
+			checkFunc: func(opt Option) error {
+				srv := new(http.Server)
+				got := new(server)
+				got.http.srv = srv
+				opt(got)
+
+				if !reflect.DeepEqual(got.http.srv, srv) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -756,6 +893,22 @@ func TestWithGRPCServer(t *testing.T) {
 				},
 			}
 		}(),
+
+		{
+			name: "returns nothing when srv is nil",
+			srv:  nil,
+			checkFunc: func(opt Option) error {
+				srv := new(grpc.Server)
+				got := new(server)
+				got.grpc.srv = srv
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.srv, srv) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -793,6 +946,22 @@ func TestWithGRPCOption(t *testing.T) {
 				},
 			}
 		}(),
+
+		{
+			name: "returns nothing when opts is nil",
+			opts: nil,
+			checkFunc: func(opt Option) error {
+				opts := []grpc.ServerOption{}
+				got := new(server)
+				got.grpc.opts = opts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, opts) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -830,6 +999,22 @@ func TestWithGRPCRegistFunc(t *testing.T) {
 				},
 			}
 		}(),
+
+		{
+			name: "returns nothing when f is nil",
+			fn:   nil,
+			checkFunc: func(opt Option) error {
+				fn := func(*grpc.Server) {}
+				got := new(server)
+				got.grpc.reg = fn
+				opt(got)
+
+				if reflect.ValueOf(got.grpc.reg).Pointer() != reflect.ValueOf(fn).Pointer() {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
