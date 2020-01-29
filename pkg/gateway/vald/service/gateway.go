@@ -325,11 +325,11 @@ func (g *gateway) Do(ctx context.Context,
 
 func (g *gateway) DoMulti(ctx context.Context,
 	num int, f func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error) error {
-	var cur uint32
+	var cur uint32 = 0
 	limit := uint32(num)
-	ctx, cancel := context.WithCancel(ctx)
+	cctx, cancel := context.WithCancel(ctx)
 	var once sync.Once
-	return g.acClient.RangeConcurrent(ctx, int(limit), func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+	return g.acClient.RangeConcurrent(cctx, num, func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 		if conn == nil {
 			return errors.ErrAgentClientNotConnected
 		}
@@ -339,7 +339,7 @@ func (g *gateway) DoMulti(ctx context.Context,
 			})
 			return nil
 		}
-		err = f(ctx, addr, agent.NewAgentClient(conn), copts...)
+		err = f(cctx, addr, agent.NewAgentClient(conn), copts...)
 		if err != nil {
 			return err
 		}

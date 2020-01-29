@@ -176,29 +176,29 @@ func (g *gRPCClient) Range(ctx context.Context,
 func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	concurrency int,
 	f func(addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
-	wrapf := func(addr string, conn *ClientConn, copts ...CallOption) (err error) {
+	wrapf := func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) (err error) {
 		conn, err = g.reconnect(ctx, addr, conn)
 		if err != nil {
 			return errors.Wrap(err, errors.ErrGRPCClientConnNotFound(addr).Error())
 		}
 		return f(addr, conn, copts...)
 	}
-	eg, ctx := errgroup.New(ctx)
+	eg, egctx := errgroup.New(ctx)
 	eg.Limitation(concurrency)
 	g.conns.Range(func(addr string, conn *ClientConn) bool {
 		eg.Go(safety.RecoverFunc(func() (err error) {
 			select {
-			case <-ctx.Done():
+			case <-egctx.Done():
 				return ctx.Err()
 			default:
 				var err error
 				if g.bo != nil {
-					_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-						err = wrapf(addr, conn, g.copts...)
+					_, err = g.bo.Do(egctx, func() (r interface{}, err error) {
+						err = wrapf(egctx, addr, conn, g.copts...)
 						return
 					})
 				} else {
-					err = wrapf(addr, conn, g.copts...)
+					err = wrapf(egctx, addr, conn, g.copts...)
 				}
 				if err != nil {
 					return errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
