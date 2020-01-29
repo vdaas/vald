@@ -149,7 +149,9 @@ func (g *group) Wait() error {
 	g.enableLimitation.Store(false)
 	g.mu.RLock()
 	for _, err := range g.errs {
-		g.err = errors.Wrap(g.err, err.Error())
+		if err != nil {
+			g.err = errors.Wrap(g.err, err.Error())
+		}
 	}
 	g.mu.RUnlock()
 	return g.err

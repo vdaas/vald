@@ -55,7 +55,7 @@ func TestInit(t *testing.T) {
 			},
 			checkFunc: func(egctx context.Context) error {
 				if egctx == nil || instance == nil {
-					return errors.Errorf("egctx or instance is nil. egctx: %v, instance: %v", egctx, instance)
+					return errors.Errorf("egctx or global instance is nil. egctx: %v, instance: %v", egctx, instance)
 				}
 				return nil
 			},
@@ -65,7 +65,7 @@ func TestInit(t *testing.T) {
 			ctx := context.Background()
 
 			return test{
-				name: "returns ctx of argument when instance is already initialized",
+				name: "returns ctx of argument when global instance is already initialized",
 				ctx:  ctx,
 				beforeFunc: func() {
 					instance = new(group)
@@ -73,12 +73,12 @@ func TestInit(t *testing.T) {
 					once.Do(func() {})
 				},
 				checkFunc: func(egctx context.Context) error {
-					if !reflect.DeepEqual(egctx, ctx) {
-						return errors.Errorf("egctx is not equals. want: %v, got: %v", ctx, egctx)
-					}
-
 					if instance == nil {
 						return errors.New("instance is nil")
+					}
+
+					if !reflect.DeepEqual(egctx, ctx) {
+						return errors.Errorf("egctx is not equals. want: %v, got: %v", ctx, egctx)
 					}
 					return nil
 				},
@@ -108,15 +108,39 @@ func TestGet(t *testing.T) {
 	type test struct {
 		name       string
 		beforeFunc func()
+		checkFunc  func(got Group) error
 	}
 
 	tests := []test{
 		{
-			name: "returns new instance when instance is nil",
+			name: "returns new instance when global instance is nil",
 			beforeFunc: func() {
 				clearGlobalObject()
 			},
+			checkFunc: func(got Group) error {
+				if got == nil {
+					return errors.New("group is nil")
+				}
+				return nil
+			},
 		},
+
+		func() test {
+			eg, _ := New(context.Background())
+
+			return test{
+				name: "returns old instance when global instance is not nil",
+				beforeFunc: func() {
+					instance = eg
+				},
+				checkFunc: func(got Group) error {
+					if !reflect.DeepEqual(got, eg) {
+						return errors.Errorf("not equals. want: %v, but got: %v", eg, got)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, tt := range tests {
@@ -129,8 +153,8 @@ func TestGet(t *testing.T) {
 				tt.beforeFunc()
 			}
 
-			if eg := Get(); eg == nil {
-				t.Error("eg is nil")
+			if err := tt.checkFunc(Get()); err != nil {
+				t.Error(err)
 			}
 		})
 	}
@@ -155,7 +179,7 @@ func TestLimitation(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "processing is successes when limitation is greater than 0",
+			name: "store true when limitation is greater than 0",
 			args: args{
 				limit: 10,
 			},
@@ -164,20 +188,20 @@ func TestLimitation(t *testing.T) {
 			},
 			checkFunc: func(eg *group) error {
 				if ok := eg.enableLimitation.Load().(bool); !ok {
-					return errors.Errorf("enableLimitation is wrong. want: %v, got: %v", true, !ok)
+					return errors.Errorf("enableLimitation is wrong. want: %v, got: %v", true, false)
 				}
 				return nil
 			},
 		},
 
 		{
-			name: "processing is successes when limitation is 0 or less",
+			name: "store false when limitation is 0 or less",
 			args: args{
 				limit: 0,
 			},
 			checkFunc: func(eg *group) error {
 				if ok := eg.enableLimitation.Load().(bool); ok {
-					return errors.Errorf("enableLimitation is wrong. want: %v, got: %v", false, ok)
+					return errors.Errorf("enableLimitation is wrong. want: %v, got: %v", false, true)
 				}
 				return nil
 			},
@@ -199,7 +223,7 @@ func TestLimitation(t *testing.T) {
 	}
 }
 
-func TestEgWait(t *testing.T) {
+func Test_group_Wait(t *testing.T) {
 	type receiver struct {
 		g Group
 	}
@@ -216,6 +240,34 @@ func TestEgWait(t *testing.T) {
 			var enableLimitation atomic.Value
 			enableLimitation.Store(true)
 
+			g := &group{
+				enableLimitation: enableLimitation,
+				egctx:            context.Background(),
+				limitation:       make(chan struct{}),
+				errs: []error{
+					nil,
+				},
+			}
+
+			return test{
+				name: "returns nil when errs contains no error",
+				receiver: receiver{
+					g: g,
+				},
+				checkFunc: func() error {
+					if ok := g.enableLimitation.Load().(bool); ok {
+						return errors.Errorf("enableLimitation is not equals. want: %v, got: %v", false, ok)
+					}
+					return nil
+				},
+				want: nil,
+			}
+		}(),
+
+		func() test {
+			var enableLimitation atomic.Value
+			enableLimitation.Store(true)
+
 			err1 := errors.New("fail_1")
 			err2 := errors.New("fail_2")
 
@@ -226,11 +278,12 @@ func TestEgWait(t *testing.T) {
 				errs: []error{
 					err1,
 					err2,
+					nil,
 				},
 			}
 
 			return test{
-				name: "processing is successes when function is not nil",
+				name: "returns error when errs contains error",
 				receiver: receiver{
 					g: g,
 				},
@@ -254,7 +307,8 @@ func TestEgWait(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.receiver.g.Wait()
-			if !errors.Is(tt.want, got) {
+
+			if !errors.Is(got, tt.want) {
 				t.Errorf("not equals. want: %v, got: %v", tt.want, got)
 			}
 
@@ -289,7 +343,7 @@ func TestWait(t *testing.T) {
 			}
 
 			return test{
-				name: "processing is successes when errors is nil",
+				name: "returns nil when instance.Wait returns nil",
 				global: global{
 					instance: g,
 				},
@@ -345,7 +399,7 @@ func TestDoCancel(t *testing.T) {
 			}
 
 			return test{
-				name: "processing is successes when cancel is not nil",
+				name: "success when cancel function is not nil",
 				receiver: receiver{
 					g: g,
 				},
@@ -362,7 +416,7 @@ func TestDoCancel(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 
 			return test{
-				name: "do nothing when cancel is nil",
+				name: "failure when cancel function is nil",
 				receiver: receiver{
 					g: new(group),
 				},
@@ -395,7 +449,7 @@ func TestDoCancel(t *testing.T) {
 	}
 }
 
-func TestEgGo(t *testing.T) {
+func Test_group_Go(t *testing.T) {
 	type args struct {
 		f func() error
 	}
@@ -429,7 +483,7 @@ func TestEgGo(t *testing.T) {
 			}
 
 			return test{
-				name: "processing is successes when function is not nil",
+				name: "success when function is not nil",
 				args: args{
 					f: f,
 				},
@@ -461,7 +515,7 @@ func TestEgGo(t *testing.T) {
 		}(),
 
 		{
-			name: "do nothing when function is nil",
+			name: "failure when function is nil",
 			receiver: receiver{
 				g: new(group),
 			},
@@ -491,16 +545,55 @@ func TestGo(t *testing.T) {
 	}
 
 	type test struct {
-		name   string
-		args   args
-		global global
+		name      string
+		args      args
+		global    global
+		checkFunc func() error
 	}
 
 	tests := []test{
+		func() test {
+			var enableLimitation atomic.Value
+			enableLimitation.Store(true)
+
+			f := func() error {
+				return nil
+			}
+
+			g := &group{
+				enableLimitation: enableLimitation,
+				egctx:            context.Background(),
+				emap:             make(map[string]struct{}),
+				limitation:       make(chan struct{}, 1),
+			}
+
+			return test{
+				name: "success when function is  nil and function returns nil",
+				args: args{
+					f: f,
+				},
+				global: global{
+					instance: g,
+				},
+				checkFunc: func() error {
+					g.Wait()
+
+					if len(g.emap) != 0 {
+						return errors.Errorf("emap count is wrong. want: %d, got: %d", 1, len(g.emap))
+					}
+
+					return nil
+				},
+			}
+		}(),
+
 		{
-			name: "do nothing when function is nil",
+			name: "failure when function is nil",
 			global: global{
 				instance: new(group),
+			},
+			checkFunc: func() error {
+				return nil
 			},
 		},
 	}
@@ -512,7 +605,11 @@ func TestGo(t *testing.T) {
 			}()
 
 			instance = tt.global.instance
-			Go(tt.args.f)
+
+			instance.Go(tt.args.f)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }
