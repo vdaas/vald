@@ -100,18 +100,27 @@ func WithName(name string) Option {
 
 func WithErrorGroup(eg errgroup.Group) Option {
 	return func(s *server) {
+		if eg == nil {
+			return
+		}
 		s.eg = eg
 	}
 }
 
 func WithPreStopFunction(f func() error) Option {
 	return func(s *server) {
+		if f == nil {
+			return
+		}
 		s.preStopFunc = f
 	}
 }
 
 func WithPreStartFunc(f func() error) Option {
 	return func(s *server) {
+		if f == nil {
+			return
+		}
 		s.preStartFunc = f
 	}
 }
@@ -178,52 +187,74 @@ func WithIdleTimeout(dur string) Option {
 
 func WithListenConfig(lc *net.ListenConfig) Option {
 	return func(s *server) {
-		if lc != nil {
-			s.lc = lc
+		if lc == nil {
+			return
 		}
+		s.lc = lc
 	}
 }
 
 func WithServerMode(m mode) Option {
 	return func(s *server) {
-		s.mode = m
+		switch m {
+		case GRPC, REST, GQL:
+			s.mode = m
+		default:
+			return
+		}
 	}
 }
 
 func WithTLSConfig(cfg *tls.Config) Option {
 	return func(s *server) {
-		if cfg != nil {
-			s.tcfg = cfg
+		if cfg == nil {
+			return
 		}
+		s.tcfg = cfg
 	}
 }
 
 func WithHTTPHandler(h http.Handler) Option {
 	return func(s *server) {
+		if h == nil {
+			return
+		}
 		s.http.h = h
 	}
 }
 
 func WithHTTPServer(srv *http.Server) Option {
 	return func(s *server) {
+		if srv == nil {
+			return
+		}
 		s.http.srv = srv
 	}
 }
 
 func WithGRPCServer(srv *grpc.Server) Option {
 	return func(s *server) {
+		if srv == nil {
+			return
+		}
 		s.grpc.srv = srv
 	}
 }
 
 func WithGRPCOption(opts ...grpc.ServerOption) Option {
 	return func(s *server) {
+		if opts == nil {
+			return
+		}
 		s.grpc.opts = opts
 	}
 }
 
 func WithGRPCRegistFunc(f func(*grpc.Server)) Option {
 	return func(s *server) {
+		if f == nil {
+			return
+		}
 		s.grpc.reg = f
 	}
 }
