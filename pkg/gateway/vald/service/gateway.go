@@ -336,8 +336,8 @@ func (g *gateway) DoMulti(ctx context.Context,
 			return errors.ErrAgentClientNotConnected
 		}
 		slot <- struct{}{}
-		defer func(){
-			<- slot
+		defer func() {
+			<-slot
 		}()
 		if atomic.LoadUint32(&cur) > limit {
 			once.Do(func() {
