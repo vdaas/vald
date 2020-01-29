@@ -3,12 +3,15 @@ package glg
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/kpango/glg"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log/format"
+	"github.com/vdaas/vald/internal/log/level"
+	"github.com/vdaas/vald/internal/log/mock"
+	"github.com/vdaas/vald/internal/log/retry"
 )
 
 func TestNew(t *testing.T) {
@@ -18,16 +21,276 @@ func TestNew(t *testing.T) {
 		want *logger
 	}
 
-	tests := []test{}
+	tests := []test{
+		func() test {
+			glg := glg.New()
+			retry := retry.New()
+
+			return test{
+				name: "returns logger object when option and defaultOpts is set",
+				opts: []Option{
+					WithGlg(glg),
+					WithRetry(retry),
+				},
+				want: &logger{
+					glg:   glg,
+					level: level.DEBUG,
+					retry: retry,
+				},
+			}
+		}(),
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
+			l := New(tt.opts...)
+			if !reflect.DeepEqual(tt.want, l) {
+				t.Errorf("not equals. want: %v, but got: %v", tt.want, l)
+			}
 		})
 	}
 }
 
-func TestSetLevelMode(t *testing.T) {}
+func TestSetLevelMode(t *testing.T) {
+	type args struct {
+		lv level.Level
+	}
+
+	type field struct {
+		glg *glg.Glg
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		checkFunc func(got *logger) error
+	}
+
+	tests := []test{
+		{
+			name: "returns logger object updated the glg object when lv is DEBUG",
+			args: args{
+				lv: level.DEBUG,
+			},
+			field: field{
+				glg: glg.New(),
+			},
+			checkFunc: func(got *logger) error {
+				g := got.glg
+
+				if g.GetCurrentMode(glg.DEBG) != glg.STD {
+					return errors.New("debug level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.INFO) != glg.STD {
+					return errors.New("info level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.WARN) != glg.STD {
+					return errors.New("warn level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.ERR) != glg.STD {
+					return errors.New("error level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.FAIL) != glg.STD {
+					return errors.New("fatal level is wrong")
+				}
+
+				return nil
+			},
+		},
+
+		{
+			name: "returns logger object updated the glg object when lv is INFO",
+			args: args{
+				lv: level.INFO,
+			},
+			field: field{
+				glg: glg.New(),
+			},
+			checkFunc: func(got *logger) error {
+				g := got.glg
+
+				if g.GetCurrentMode(glg.DEBG) != glg.NONE {
+					return errors.New("debug level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.INFO) != glg.STD {
+					return errors.New("info level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.WARN) != glg.STD {
+					return errors.New("warn level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.ERR) != glg.STD {
+					return errors.New("error level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.FAIL) != glg.STD {
+					return errors.New("fatal level is wrong")
+				}
+
+				return nil
+			},
+		},
+
+		{
+			name: "returns logger object updated the glg object when lv is WARN",
+			args: args{
+				lv: level.WARN,
+			},
+			field: field{
+				glg: glg.New(),
+			},
+			checkFunc: func(got *logger) error {
+				g := got.glg
+
+				if g.GetCurrentMode(glg.DEBG) != glg.NONE {
+					return errors.New("debug level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.INFO) != glg.NONE {
+					return errors.New("info level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.WARN) != glg.STD {
+					return errors.New("warn level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.ERR) != glg.STD {
+					return errors.New("error level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.FAIL) != glg.STD {
+					return errors.New("fatal level is wrong")
+				}
+
+				return nil
+			},
+		},
+
+		{
+			name: "returns logger object updated the glg object when lv is ERROR",
+			args: args{
+				lv: level.ERROR,
+			},
+			field: field{
+				glg: glg.New(),
+			},
+			checkFunc: func(got *logger) error {
+				g := got.glg
+
+				if g.GetCurrentMode(glg.DEBG) != glg.NONE {
+					return errors.New("debug level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.INFO) != glg.NONE {
+					return errors.New("info level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.WARN) != glg.NONE {
+					return errors.New("warn level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.ERR) != glg.STD {
+					return errors.New("error level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.FAIL) != glg.STD {
+					return errors.New("fatal level is wrong")
+				}
+
+				return nil
+			},
+		},
+
+		{
+			name: "returns logger object updated the glg object when lv is FATAL",
+			args: args{
+				lv: level.FATAL,
+			},
+			field: field{
+				glg: glg.New(),
+			},
+			checkFunc: func(got *logger) error {
+				g := got.glg
+
+				if g.GetCurrentMode(glg.DEBG) != glg.NONE {
+					return errors.New("debug level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.INFO) != glg.NONE {
+					return errors.New("info level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.WARN) != glg.NONE {
+					return errors.New("warn level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.ERR) != glg.NONE {
+					return errors.New("error level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.FAIL) != glg.STD {
+					return errors.New("fatal level is wrong")
+				}
+
+				return nil
+			},
+		},
+
+		{
+			name: "returns logger object updated the glg object when lv is Unknown",
+			args: args{
+				lv: level.Unknown,
+			},
+			field: field{
+				glg: glg.New(),
+			},
+			checkFunc: func(got *logger) error {
+				g := got.glg
+
+				if g.GetCurrentMode(glg.DEBG) != glg.NONE {
+					return errors.New("debug level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.INFO) != glg.NONE {
+					return errors.New("info level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.WARN) != glg.NONE {
+					return errors.New("warn level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.ERR) != glg.NONE {
+					return errors.New("error level is wrong")
+				}
+
+				if g.GetCurrentMode(glg.FAIL) != glg.NONE {
+					return errors.New("fatal level is wrong")
+				}
+
+				return nil
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := (&logger{
+				glg: tt.field.glg,
+			}).setLevelMode(tt.args.lv)
+
+			if err := tt.checkFunc(l); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
 
 func TestSetLogFormat(t *testing.T) {
 	type args struct {
@@ -46,47 +309,100 @@ func TestSetLogFormat(t *testing.T) {
 	}
 
 	tests := []test{
-		func() test {
-			return test{
-				name: "returns logger object updated the glg object when format is JSON",
-				args: args{
-					fmt: format.JSON,
-				},
-				field: field{
-					glg: glg.New().SetMode(glg.BOTH),
-				},
-				checkFunc: func(got *logger) error {
-					buf := new(bytes.Buffer)
-					got.glg.SetLevelWriter(glg.INFO, buf)
-					got.glg.Info("vald")
+		{
+			name: "returns logger object updated the glg object when format is JSON",
+			args: args{
+				fmt: format.JSON,
+			},
+			field: field{
+				glg: glg.New().SetMode(glg.BOTH),
+			},
+			checkFunc: func(got *logger) error {
+				buf := new(bytes.Buffer)
+				got.glg.SetLevelWriter(glg.INFO, buf)
+				got.glg.Info("vald")
 
-					var obj map[string]interface{}
-					if err := json.NewDecoder(buf).Decode(&obj); err != nil {
-						return errors.New("not in JSON output mode")
-					}
-					return nil
+				var obj map[string]interface{}
+				if err := json.NewDecoder(buf).Decode(&obj); err != nil {
+					return errors.New("not in JSON output mode")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "returns logger object without updating the glg object when format is invalid",
+			args: args{
+				fmt: format.Unknown,
+			},
+			field: field{
+				glg: glg.New().SetMode(glg.BOTH),
+			},
+			checkFunc: func(got *logger) error {
+				buf := new(bytes.Buffer)
+				got.glg.AddLevelWriter(glg.INFO, buf)
+				got.glg.Info("vald")
+
+				var obj map[string]interface{}
+				if err := json.NewDecoder(buf).Decode(&obj); err == nil {
+					return errors.New("not in RAW output mode")
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := (&logger{
+				glg: tt.field.glg,
+			}).setLogFormat(tt.args.fmt)
+
+			if err := tt.checkFunc(l); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestInfo(t *testing.T) {
+	type args struct {
+		vals interface{}
+	}
+
+	type field struct {
+		glg   *glg.Glg
+		retry retry.Retry
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var gotVals string
+			retry := &mock.Retry{
+				OutFunc: func(fn func(vals ...interface{}) error, vals ...interface{}) {
+					gotVals = vals[0].(string)
 				},
 			}
-		}(),
 
-		func() test {
 			return test{
-				name: "returns logger object without updating the glg object when format is invalid",
+				name: "output success",
 				args: args{
-					fmt: format.Unknown,
+					vals: "vals",
 				},
 				field: field{
-					glg: glg.New().SetMode(glg.BOTH),
+					retry: retry,
+					glg:   glg.Get(),
 				},
-				checkFunc: func(got *logger) error {
-					buf := new(bytes.Buffer)
-					got.glg.AddLevelWriter(glg.INFO, buf)
-					got.glg.Info("vald")
-
-					var obj map[string]interface{}
-					if err := json.NewDecoder(buf).Decode(&obj); err == nil {
-						fmt.Println(obj)
-						return errors.New("not in RAW output mode")
+				checkFunc: func() error {
+					if gotVals != "vals" {
+						return errors.New("vals not equals")
 					}
 					return nil
 				},
@@ -96,15 +412,465 @@ func TestSetLogFormat(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				tt.field.glg.DisableJSON()
-			}()
+			l := &logger{
+				glg:   tt.field.glg,
+				retry: tt.field.retry,
+			}
+			l.Info(tt.args.vals)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
 
-			l := (&logger{
-				glg: tt.field.glg,
-			}).setLogFormat(tt.args.fmt)
+func TestInfof(t *testing.T) {
+	type args struct {
+		vals   interface{}
+		format string
+	}
 
-			if err := tt.checkFunc(l); err != nil {
+	type field struct {
+		glg   *glg.Glg
+		retry retry.Retry
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var (
+				gotVals   string
+				gotFormat string
+			)
+			retry := &mock.Retry{
+				OutfFunc: func(fn func(format string, vals ...interface{}) error, format string, vals ...interface{}) {
+					gotFormat = format
+					gotVals = vals[0].(string)
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					vals:   "vals",
+					format: "format",
+				},
+				field: field{
+					retry: retry,
+					glg:   glg.Get(),
+				},
+				checkFunc: func() error {
+					if gotFormat != "format" {
+						return errors.New("format not equals")
+					}
+
+					if gotVals != "vals" {
+						return errors.New("vals not equals")
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := &logger{
+				glg:   tt.field.glg,
+				retry: tt.field.retry,
+			}
+			l.Infof(tt.args.format, tt.args.vals)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestDebug(t *testing.T) {
+	type args struct {
+		vals interface{}
+	}
+
+	type field struct {
+		glg   *glg.Glg
+		retry retry.Retry
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var gotVals string
+			retry := &mock.Retry{
+				OutFunc: func(fn func(vals ...interface{}) error, vals ...interface{}) {
+					gotVals = vals[0].(string)
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					vals: "vals",
+				},
+				field: field{
+					retry: retry,
+					glg:   glg.Get(),
+				},
+				checkFunc: func() error {
+					if gotVals != "vals" {
+						return errors.New("vals not equals")
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := &logger{
+				glg:   tt.field.glg,
+				retry: tt.field.retry,
+			}
+			l.Debug(tt.args.vals)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestDebugf(t *testing.T) {
+	type args struct {
+		vals   interface{}
+		format string
+	}
+
+	type field struct {
+		glg   *glg.Glg
+		retry retry.Retry
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var (
+				gotVals   string
+				gotFormat string
+			)
+			retry := &mock.Retry{
+				OutfFunc: func(fn func(format string, vals ...interface{}) error, format string, vals ...interface{}) {
+					gotFormat = format
+					gotVals = vals[0].(string)
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					vals:   "vals",
+					format: "format",
+				},
+				field: field{
+					retry: retry,
+					glg:   glg.Get(),
+				},
+				checkFunc: func() error {
+					if gotFormat != "format" {
+						return errors.New("format not equals")
+					}
+
+					if gotVals != "vals" {
+						return errors.New("vals not equals")
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := &logger{
+				glg:   tt.field.glg,
+				retry: tt.field.retry,
+			}
+			l.Debugf(tt.args.format, tt.args.vals)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestWarn(t *testing.T) {
+	type args struct {
+		vals interface{}
+	}
+
+	type field struct {
+		glg   *glg.Glg
+		retry retry.Retry
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var gotVals string
+			retry := &mock.Retry{
+				OutFunc: func(fn func(vals ...interface{}) error, vals ...interface{}) {
+					gotVals = vals[0].(string)
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					vals: "vals",
+				},
+				field: field{
+					retry: retry,
+					glg:   glg.Get(),
+				},
+				checkFunc: func() error {
+					if gotVals != "vals" {
+						return errors.New("vals not equals")
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := &logger{
+				glg:   tt.field.glg,
+				retry: tt.field.retry,
+			}
+			l.Warn(tt.args.vals)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestWarnf(t *testing.T) {
+	type args struct {
+		vals   interface{}
+		format string
+	}
+
+	type field struct {
+		glg   *glg.Glg
+		retry retry.Retry
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var (
+				gotVals   string
+				gotFormat string
+			)
+			retry := &mock.Retry{
+				OutfFunc: func(fn func(format string, vals ...interface{}) error, format string, vals ...interface{}) {
+					gotFormat = format
+					gotVals = vals[0].(string)
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					vals:   "vals",
+					format: "format",
+				},
+				field: field{
+					retry: retry,
+					glg:   glg.Get(),
+				},
+				checkFunc: func() error {
+					if gotFormat != "format" {
+						return errors.New("format not equals")
+					}
+
+					if gotVals != "vals" {
+						return errors.New("vals not equals")
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := &logger{
+				glg:   tt.field.glg,
+				retry: tt.field.retry,
+			}
+			l.Warnf(tt.args.format, tt.args.vals)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestError(t *testing.T) {
+	type args struct {
+		vals interface{}
+	}
+
+	type field struct {
+		glg   *glg.Glg
+		retry retry.Retry
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var gotVals string
+			retry := &mock.Retry{
+				OutFunc: func(fn func(vals ...interface{}) error, vals ...interface{}) {
+					gotVals = vals[0].(string)
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					vals: "vals",
+				},
+				field: field{
+					retry: retry,
+					glg:   glg.Get(),
+				},
+				checkFunc: func() error {
+					if gotVals != "vals" {
+						return errors.New("vals not equals")
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := &logger{
+				glg:   tt.field.glg,
+				retry: tt.field.retry,
+			}
+			l.Error(tt.args.vals)
+			if err := tt.checkFunc(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestErrorf(t *testing.T) {
+	type args struct {
+		vals   interface{}
+		format string
+	}
+
+	type field struct {
+		glg   *glg.Glg
+		retry retry.Retry
+	}
+
+	type test struct {
+		name      string
+		args      args
+		field     field
+		checkFunc func() error
+	}
+
+	tests := []test{
+		func() test {
+			var (
+				gotVals   string
+				gotFormat string
+			)
+			retry := &mock.Retry{
+				OutfFunc: func(fn func(format string, vals ...interface{}) error, format string, vals ...interface{}) {
+					gotFormat = format
+					gotVals = vals[0].(string)
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					vals:   "vals",
+					format: "format",
+				},
+				field: field{
+					retry: retry,
+					glg:   glg.Get(),
+				},
+				checkFunc: func() error {
+					if gotFormat != "format" {
+						return errors.New("format not equals")
+					}
+
+					if gotVals != "vals" {
+						return errors.New("vals not equals")
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := &logger{
+				glg:   tt.field.glg,
+				retry: tt.field.retry,
+			}
+			l.Errorf(tt.args.format, tt.args.vals)
+			if err := tt.checkFunc(); err != nil {
 				t.Error(err)
 			}
 		})

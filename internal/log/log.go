@@ -69,71 +69,41 @@ func Bold(str string) string {
 }
 
 func Debug(vals ...interface{}) {
-	if logger == nil {
-		return
-	}
 	logger.Debug(vals...)
 }
 
 func Debugf(format string, vals ...interface{}) {
-	if logger == nil {
-		return
-	}
 	logger.Debugf(format, vals...)
 }
 
 func Info(vals ...interface{}) {
-	if logger == nil {
-		return
-	}
 	logger.Info(vals...)
 }
 
 func Infof(format string, vals ...interface{}) {
-	if logger == nil {
-		return
-	}
 	logger.Infof(format, vals...)
 }
 
 func Warn(vals ...interface{}) {
-	if logger == nil {
-		return
-	}
 	logger.Warn(vals...)
 }
 
 func Warnf(format string, vals ...interface{}) {
-	if logger == nil {
-		return
-	}
 	logger.Warnf(format, vals...)
 }
 
 func Error(vals ...interface{}) {
-	if logger == nil {
-		return
-	}
 	logger.Error(vals...)
 }
 
 func Errorf(format string, vals ...interface{}) {
-	if logger == nil {
-		return
-	}
 	logger.Errorf(format, vals...)
 }
 
 func Fatal(vals ...interface{}) {
-	if logger == nil {
-		return
-	}
 	logger.Fatal(vals...)
 }
 
 func Fatalf(format string, vals ...interface{}) {
-	if logger == nil {
-		return
-	}
 	logger.Fatalf(format, vals...)
 }

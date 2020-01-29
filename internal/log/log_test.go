@@ -2,6 +2,7 @@ package log
 
 import (
 	"reflect"
+	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -13,7 +14,57 @@ import (
 )
 
 func TestInit(t *testing.T) {
+	type test struct {
+		name      string
+		opts      []Option
+		checkFunc func(Logger) error
+	}
 
+	tests := []test{
+		func() test {
+			logger := glg.New()
+			return test{
+				name: "set logger object when option is not empty",
+				opts: []Option{
+					WithLogger(logger),
+				},
+				checkFunc: func(got Logger) error {
+					if !reflect.DeepEqual(got, logger) {
+						return errors.Errorf("not equals. want: %v, but got: %v", got, logger)
+					}
+					return nil
+				},
+			}
+		}(),
+
+		func() test {
+			return test{
+				name: "set logger object when option is empty",
+				opts: []Option{},
+				checkFunc: func(got Logger) error {
+					if got == nil {
+						return errors.New("logger is nil")
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				logger = nil
+				once = sync.Once{}
+			}()
+
+			Init(tt.opts...)
+
+			if err := tt.checkFunc(logger); err != nil {
+				t.Error(err)
+			}
+		})
+	}
 }
 
 func TestGetLogger(t *testing.T) {
@@ -117,7 +168,7 @@ func TestDebug(t *testing.T) {
 			}
 
 			return test{
-				name: "set success",
+				name: "output success",
 				args: args{
 					vals: vals,
 				},
@@ -183,7 +234,7 @@ func TestDebugf(t *testing.T) {
 			}
 
 			return test{
-				name: "set success",
+				name: "output success",
 				args: args{
 					format: format,
 					vals:   vals,
@@ -248,7 +299,7 @@ func TestInfo(t *testing.T) {
 			}
 
 			return test{
-				name: "set success",
+				name: "output success",
 				args: args{
 					vals: vals,
 				},
@@ -314,7 +365,7 @@ func TestInfof(t *testing.T) {
 			}
 
 			return test{
-				name: "set success",
+				name: "output success",
 				args: args{
 					format: format,
 					vals:   vals,
@@ -379,7 +430,7 @@ func TestWarn(t *testing.T) {
 			}
 
 			return test{
-				name: "set success",
+				name: "output success",
 				args: args{
 					vals: vals,
 				},
@@ -445,7 +496,7 @@ func TestWarnf(t *testing.T) {
 			}
 
 			return test{
-				name: "set success",
+				name: "output success",
 				args: args{
 					format: format,
 					vals:   vals,
@@ -510,7 +561,7 @@ func TestError(t *testing.T) {
 			}
 
 			return test{
-				name: "set success",
+				name: "output success",
 				args: args{
 					vals: vals,
 				},
@@ -576,7 +627,7 @@ func TestErrorf(t *testing.T) {
 			}
 
 			return test{
-				name: "set success",
+				name: "output success",
 				args: args{
 					format: format,
 					vals:   vals,
@@ -641,7 +692,7 @@ func TestFatal(t *testing.T) {
 			}
 
 			return test{
-				name: "set success",
+				name: "output success",
 				args: args{
 					vals: vals,
 				},
@@ -707,7 +758,7 @@ func TestFatalf(t *testing.T) {
 			}
 
 			return test{
-				name: "set success",
+				name: "output success",
 				args: args{
 					format: format,
 					vals:   vals,

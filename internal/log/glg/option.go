@@ -42,9 +42,12 @@ func WithGlg(g *glg.Glg) Option {
 	}
 }
 
-func WithEnableJSON() Option {
+func WithFormat(str string) Option {
 	return func(l *logger) {
-		l.format = format.JSON
+		if str == "" {
+			return
+		}
+		l.format = format.Atof(str)
 	}
 }
 

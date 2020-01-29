@@ -69,15 +69,17 @@ func TestWithGlg(t *testing.T) {
 	}
 }
 
-func TestWithEnableJSON(t *testing.T) {
+func TestWithFormat(t *testing.T) {
 	type test struct {
 		name      string
+		str       string
 		checkFunc func(Option) error
 	}
 
 	tests := []test{
 		{
-			name: "set success",
+			name: "set success when str is JSON",
+			str:  format.JSON.String(),
 			checkFunc: func(opt Option) error {
 				got := new(logger)
 				opt(got)
@@ -88,11 +90,26 @@ func TestWithEnableJSON(t *testing.T) {
 				return nil
 			},
 		},
+
+		{
+			name: "returns nothing when str is empty",
+			checkFunc: func(opt Option) error {
+				got := &logger{
+					format: format.RAW,
+				}
+				opt(got)
+
+				if got.format != format.RAW {
+					return errors.New("invalid params was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithEnableJSON()
+			opt := WithFormat(tt.str)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
