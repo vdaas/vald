@@ -118,12 +118,8 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 		return s.gateway.BroadCast(ectx, func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error {
 			r, err := f(ctx, ac, copts...)
 			if err != nil {
-				log.Error(err)
-				er := status.FromError(err)
-				if er != nil {
-					return status.WrapWithInternal(fmt.Sprintf("search request to %s failed", target), err, info.Get())
-				}
-				return status.WrapWithInternal(fmt.Sprintf("search request to %s failed", target), err, info.Get())
+				log.Debug(err)
+				return nil
 			}
 			for _, dist := range r.GetResults() {
 				if dist.GetDistance() > math.Float32frombits(atomic.LoadUint32(&maxDist)) {
