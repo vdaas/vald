@@ -23,7 +23,6 @@ import (
 	"net"
 	"reflect"
 	"sort"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -322,12 +321,12 @@ func (g *gateway) Do(ctx context.Context,
 }
 
 func (g *gateway) DoMulti(ctx context.Context,
-	num int, f func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error) error {
+	num int, f func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error) (err error) {
 	var cur uint32 = 0
 	limit := uint32(num)
 	cctx, cancel := context.WithCancel(ctx)
 	var once sync.Once
-	return g.acClient.RangeConcurrent(cctx, num, func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+	err = g.acClient.RangeConcurrent(cctx, num, func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 		if conn == nil {
 			return errors.ErrAgentClientNotConnected
 		}
@@ -343,16 +342,17 @@ func (g *gateway) DoMulti(ctx context.Context,
 			}
 			err = f(cctx, addr, agent.NewAgentClient(conn), copts...)
 			if err != nil {
-				if !strings.Contains(err.Error(), context.Canceled.Error()) &&
-					!strings.Contains(err.Error(), context.DeadlineExceeded.Error()) {
-					return err
-				}
-				return nil
+				log.Debug(err)
+				return err
 			}
 			atomic.AddUint32(&cur, 1)
 		}
 		return nil
 	})
+	if err != nil && atomic.LoadUint32(&cur) < limit {
+		return err
+	}
+	return nil
 }
 
 func (g *gateway) GetAgentCount() int {
