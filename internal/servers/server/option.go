@@ -73,55 +73,49 @@ var (
 
 func WithHost(host string) Option {
 	return func(s *server) {
-		if host == "" {
-			return
+		if host != "" {
+			s.host = host
 		}
-		s.host = host
 	}
 }
 
 func WithPort(port uint) Option {
 	return func(s *server) {
-		if port == 0 {
-			return
+		if port != 0 {
+			s.port = port
 		}
-		s.port = port
 	}
 }
 
 func WithName(name string) Option {
 	return func(s *server) {
-		if name == "" {
-			return
+		if name != "" {
+			s.name = name
 		}
-		s.name = name
 	}
 }
 
 func WithErrorGroup(eg errgroup.Group) Option {
 	return func(s *server) {
-		if eg == nil {
-			return
+		if eg != nil {
+			s.eg = eg
 		}
-		s.eg = eg
 	}
 }
 
 func WithPreStopFunction(f func() error) Option {
 	return func(s *server) {
-		if f == nil {
-			return
+		if f != nil {
+			s.preStopFunc = f
 		}
-		s.preStopFunc = f
 	}
 }
 
 func WithPreStartFunc(f func() error) Option {
 	return func(s *server) {
-		if f == nil {
-			return
+		if f != nil {
+			s.preStartFunc = f
 		}
-		s.preStartFunc = f
 	}
 }
 
@@ -187,10 +181,9 @@ func WithIdleTimeout(dur string) Option {
 
 func WithListenConfig(lc *net.ListenConfig) Option {
 	return func(s *server) {
-		if lc == nil {
-			return
+		if lc != nil {
+			s.lc = lc
 		}
-		s.lc = lc
 	}
 }
 
@@ -207,55 +200,49 @@ func WithServerMode(m mode) Option {
 
 func WithTLSConfig(cfg *tls.Config) Option {
 	return func(s *server) {
-		if cfg == nil {
-			return
+		if cfg != nil {
+			s.tcfg = cfg
 		}
-		s.tcfg = cfg
 	}
 }
 
 func WithHTTPHandler(h http.Handler) Option {
 	return func(s *server) {
-		if h == nil {
-			return
+		if h != nil {
+			s.http.h = h
 		}
-		s.http.h = h
 	}
 }
 
 func WithHTTPServer(srv *http.Server) Option {
 	return func(s *server) {
-		if srv == nil {
-			return
+		if srv != nil {
+			s.http.srv = srv
 		}
-		s.http.srv = srv
 	}
 }
 
 func WithGRPCServer(srv *grpc.Server) Option {
 	return func(s *server) {
-		if srv == nil {
-			return
+		if srv != nil {
+			s.grpc.srv = srv
 		}
-		s.grpc.srv = srv
 	}
 }
 
 func WithGRPCOption(opts ...grpc.ServerOption) Option {
 	return func(s *server) {
-		if opts == nil {
-			return
+		if opts != nil {
+			s.grpc.opts = opts
 		}
-		s.grpc.opts = opts
 	}
 }
 
 func WithGRPCRegistFunc(f func(*grpc.Server)) Option {
 	return func(s *server) {
-		if f == nil {
-			return
+		if f != nil {
+			s.grpc.reg = f
 		}
-		s.grpc.reg = f
 	}
 }
 

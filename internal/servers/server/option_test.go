@@ -36,7 +36,7 @@ func TestWithHost(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing when host is empty",
+			name: "not set nothing when host is empty",
 			host: "",
 			checkFunc: func(opt Option) error {
 				got := &server{
@@ -85,7 +85,7 @@ func TestWithPort(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing when port is 0",
+			name: "not set when port is 0",
 			checkFunc: func(opt Option) error {
 				got := &server{
 					port: 8080,
@@ -133,7 +133,7 @@ func TestWithName(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing when name is empty",
+			name: "not set when name is empty",
 			checkFunc: func(opt Option) error {
 				got := &server{
 					name: "name",
@@ -182,7 +182,7 @@ func TestWithErrorGroup(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing when eg is nil",
+			name: "not set when eg is nil",
 			eg:   nil,
 			checkFunc: func(opt Option) error {
 				eg := errgroup.Get()
@@ -237,7 +237,7 @@ func TestWithPreStartFunc(t *testing.T) {
 		}(),
 
 		{
-			name: "returns nothing when fn is nil",
+			name: "not set when fn is nil",
 			fn:   nil,
 			checkFunc: func(opt Option) error {
 				fn := func() error { return nil }
@@ -292,7 +292,7 @@ func TestWithPreStopFunc(t *testing.T) {
 		}(),
 
 		{
-			name: "returns nothing when fn is nil",
+			name: "not set when fn is nil",
 			fn:   nil,
 			checkFunc: func(opt Option) error {
 				fn := func() error { return nil }
@@ -343,7 +343,7 @@ func TestWithProbeWaitTime(t *testing.T) {
 		},
 
 		{
-			name: "set default when dur is invalid",
+			name: "not set when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
@@ -628,7 +628,7 @@ func TestWithListenConfig(t *testing.T) {
 		}(),
 
 		{
-			name: "returns nothing when lc is nil",
+			name: "not set when lc is nil",
 			lc:   nil,
 			checkFunc: func(opt Option) error {
 				lc := new(net.ListenConfig)
@@ -678,7 +678,7 @@ func TestWithServerMode(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing when mode is invalid",
+			name: "not set when mode is invalid",
 			m:    mode(100),
 			checkFunc: func(opt Option) error {
 				got := &server{
@@ -731,7 +731,7 @@ func TestWithTLSConfig(t *testing.T) {
 		}(),
 
 		{
-			name: "returns nothing when cfg is nil",
+			name: "not set when cfg is nil",
 			cfg:  nil,
 			checkFunc: func(opt Option) error {
 				cfg := new(tls.Config)
@@ -789,7 +789,7 @@ func TestWithHTTPHandler(t *testing.T) {
 		}(),
 
 		{
-			name:    "returns nothing when hdr is nil",
+			name:    "not set when hdr is nil",
 			handler: nil,
 			checkFunc: func(opt Option) error {
 				hdr := new(handler)
@@ -842,7 +842,7 @@ func TestWithHTTPServer(t *testing.T) {
 		}(),
 
 		{
-			name: "returns nothing when srv is nil",
+			name: "not set when srv is nil",
 			srv:  nil,
 			checkFunc: func(opt Option) error {
 				srv := new(http.Server)
@@ -895,7 +895,7 @@ func TestWithGRPCServer(t *testing.T) {
 		}(),
 
 		{
-			name: "returns nothing when srv is nil",
+			name: "not set when srv is nil",
 			srv:  nil,
 			checkFunc: func(opt Option) error {
 				srv := new(grpc.Server)
@@ -948,7 +948,7 @@ func TestWithGRPCOption(t *testing.T) {
 		}(),
 
 		{
-			name: "returns nothing when opts is nil",
+			name: "not set when opts is nil",
 			opts: nil,
 			checkFunc: func(opt Option) error {
 				opts := []grpc.ServerOption{}
@@ -1001,7 +1001,7 @@ func TestWithGRPCRegistFunc(t *testing.T) {
 		}(),
 
 		{
-			name: "returns nothing when f is nil",
+			name: "not set when f is nil",
 			fn:   nil,
 			checkFunc: func(opt Option) error {
 				fn := func(*grpc.Server) {}
@@ -1110,6 +1110,42 @@ func TestWithGRPCMaxReceiveMessageSize(t *testing.T) {
 				return nil
 			},
 		},
+
+		{
+			name: "not set when size is 0",
+			size: 0,
+			checkFunc: func(opt Option) error {
+				sopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(100 * time.Second),
+				}
+				got := new(server)
+				got.grpc.opts = sopts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, sopts) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when size is less than 0",
+			size: -1,
+			checkFunc: func(opt Option) error {
+				sopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(100 * time.Second),
+				}
+				got := new(server)
+				got.grpc.opts = sopts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, sopts) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -1138,6 +1174,42 @@ func TestWithGRPCMaxSendMessageSize(t *testing.T) {
 				opt(got)
 
 				if len(got.grpc.opts) != 1 {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when size is 0",
+			size: 0,
+			checkFunc: func(opt Option) error {
+				sopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(100 * time.Second),
+				}
+				got := new(server)
+				got.grpc.opts = sopts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, sopts) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when size is less than 0",
+			size: -1,
+			checkFunc: func(opt Option) error {
+				sopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(100 * time.Second),
+				}
+				got := new(server)
+				got.grpc.opts = sopts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, sopts) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1176,6 +1248,42 @@ func TestWithGRPCInitialWindowSize(t *testing.T) {
 				return nil
 			},
 		},
+
+		{
+			name: "not set when size is 0",
+			size: 0,
+			checkFunc: func(opt Option) error {
+				sopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(100 * time.Second),
+				}
+				got := new(server)
+				got.grpc.opts = sopts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, sopts) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when size is less than 0",
+			size: -1,
+			checkFunc: func(opt Option) error {
+				sopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(100 * time.Second),
+				}
+				got := new(server)
+				got.grpc.opts = sopts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, sopts) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -1204,6 +1312,42 @@ func TestWithGRPCInitialConnWindowSize(t *testing.T) {
 				opt(got)
 
 				if len(got.grpc.opts) != 1 {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when size is 0",
+			size: 0,
+			checkFunc: func(opt Option) error {
+				sopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(100 * time.Second),
+				}
+				got := new(server)
+				got.grpc.opts = sopts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, sopts) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when size is less than 0",
+			size: -1,
+			checkFunc: func(opt Option) error {
+				sopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(100 * time.Second),
+				}
+				got := new(server)
+				got.grpc.opts = sopts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, sopts) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1244,12 +1388,16 @@ func TestWithGRPCKeepaliveMaxConnIdle(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing when max is empty",
+			name: "not set when max is empty",
 			checkFunc: func(opt Option) error {
+				grpcKeepAlive := &grpcKeepAlive{
+					maxConnIdle: 10 * time.Second,
+				}
 				got := new(server)
+				got.grpc.keepAlive = grpcKeepAlive
 				opt(got)
 
-				if got.grpc.keepAlive != nil {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1257,13 +1405,17 @@ func TestWithGRPCKeepaliveMaxConnIdle(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing when max is invalid",
+			name: "not set when max is invalid",
 			max:  "vald",
 			checkFunc: func(opt Option) error {
+				grpcKeepAlive := &grpcKeepAlive{
+					maxConnIdle: 10 * time.Second,
+				}
 				got := new(server)
+				got.grpc.keepAlive = grpcKeepAlive
 				opt(got)
 
-				if got.grpc.keepAlive != nil {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1304,12 +1456,16 @@ func TestWithGRPCKeepaliveMaxConnAge(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing when max is empty",
+			name: "not set when max is empty",
 			checkFunc: func(opt Option) error {
+				grpcKeepAlive := &grpcKeepAlive{
+					maxConnAge: 10 * time.Second,
+				}
 				got := new(server)
+				got.grpc.keepAlive = grpcKeepAlive
 				opt(got)
 
-				if got.grpc.keepAlive != nil {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1317,13 +1473,17 @@ func TestWithGRPCKeepaliveMaxConnAge(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing when max is invalid",
+			name: "not set when max is invalid",
 			max:  "vald",
 			checkFunc: func(opt Option) error {
+				grpcKeepAlive := &grpcKeepAlive{
+					maxConnAge: 10 * time.Second,
+				}
 				got := new(server)
+				got.grpc.keepAlive = grpcKeepAlive
 				opt(got)
 
-				if got.grpc.keepAlive != nil {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1364,12 +1524,16 @@ func TestWithGRPCKeepaliveMaxConnAgeGrace(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing when max is empty",
+			name: "not set when max is empty",
 			checkFunc: func(opt Option) error {
+				grpcKeepAlive := &grpcKeepAlive{
+					maxConnAgeGrace: 10 * time.Second,
+				}
 				got := new(server)
+				got.grpc.keepAlive = grpcKeepAlive
 				opt(got)
 
-				if got.grpc.keepAlive != nil {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1377,13 +1541,17 @@ func TestWithGRPCKeepaliveMaxConnAgeGrace(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing when max is invalid",
+			name: "not set when max is invalid",
 			max:  "vald",
 			checkFunc: func(opt Option) error {
+				grpcKeepAlive := &grpcKeepAlive{
+					maxConnAgeGrace: 10 * time.Second,
+				}
 				got := new(server)
+				got.grpc.keepAlive = grpcKeepAlive
 				opt(got)
 
-				if got.grpc.keepAlive != nil {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1424,12 +1592,16 @@ func TestWithGRPCKeepaliveTime(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing when dur is empty",
+			name: "not set when dur is empty",
 			checkFunc: func(opt Option) error {
+				grpcKeepAlive := &grpcKeepAlive{
+					t: 10 * time.Second,
+				}
 				got := new(server)
+				got.grpc.keepAlive = grpcKeepAlive
 				opt(got)
 
-				if got.grpc.keepAlive != nil {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1437,13 +1609,17 @@ func TestWithGRPCKeepaliveTime(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing when dur is invalid",
+			name: "not set when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
+				grpcKeepAlive := &grpcKeepAlive{
+					t: 10 * time.Second,
+				}
 				got := new(server)
+				got.grpc.keepAlive = grpcKeepAlive
 				opt(got)
 
-				if got.grpc.keepAlive != nil {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1486,10 +1662,14 @@ func TestWithGRPCKeepaliveTimeout(t *testing.T) {
 		{
 			name: "returns nothing when dur is empty",
 			checkFunc: func(opt Option) error {
+				grpcKeepAlive := &grpcKeepAlive{
+					timeout: 10 * time.Second,
+				}
 				got := new(server)
+				got.grpc.keepAlive = grpcKeepAlive
 				opt(got)
 
-				if got.grpc.keepAlive != nil {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1500,10 +1680,14 @@ func TestWithGRPCKeepaliveTimeout(t *testing.T) {
 			name: "returns nothing when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
+				grpcKeepAlive := &grpcKeepAlive{
+					timeout: 10 * time.Second,
+				}
 				got := new(server)
+				got.grpc.keepAlive = grpcKeepAlive
 				opt(got)
 
-				if got.grpc.keepAlive != nil {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1542,6 +1726,42 @@ func TestWithGRPCWriteBufferSize(t *testing.T) {
 				return nil
 			},
 		},
+
+		{
+			name: "not set when size is 0",
+			size: 0,
+			checkFunc: func(opt Option) error {
+				gopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(10 * time.Second),
+				}
+				got := new(server)
+				got.grpc.opts = gopts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, gopts) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when size is less than 0",
+			size: -1,
+			checkFunc: func(opt Option) error {
+				gopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(10 * time.Second),
+				}
+				got := new(server)
+				got.grpc.opts = gopts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, gopts) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -1570,6 +1790,42 @@ func TestWithGRPCReadBufferSize(t *testing.T) {
 				opt(got)
 
 				if len(got.grpc.opts) != 1 {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when size is 0",
+			size: 0,
+			checkFunc: func(opt Option) error {
+				gopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(10 * time.Second),
+				}
+				got := new(server)
+				got.grpc.opts = gopts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, gopts) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when size is less than 0",
+			size: -1,
+			checkFunc: func(opt Option) error {
+				gopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(10 * time.Second),
+				}
+				got := new(server)
+				got.grpc.opts = gopts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, gopts) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1610,12 +1866,16 @@ func TestWithGRPCConnectionTimeout(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing when to is empty",
+			name: "not set when to is empty",
 			checkFunc: func(opt Option) error {
+				gopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(10 * time.Second),
+				}
 				got := new(server)
+				got.grpc.opts = gopts
 				opt(got)
 
-				if len(got.grpc.opts) != 0 {
+				if !reflect.DeepEqual(got.grpc.opts, gopts) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1623,13 +1883,17 @@ func TestWithGRPCConnectionTimeout(t *testing.T) {
 		},
 
 		{
-			name: "returns nothing when to is invalid",
+			name: "not set when to is invalid",
 			to:   "vald",
 			checkFunc: func(opt Option) error {
+				gopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(10 * time.Second),
+				}
 				got := new(server)
+				got.grpc.opts = gopts
 				opt(got)
 
-				if len(got.grpc.opts) != 0 {
+				if !reflect.DeepEqual(got.grpc.opts, gopts) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1668,6 +1932,42 @@ func TestWithGRPCMaxHeaderListSize(t *testing.T) {
 				return nil
 			},
 		},
+
+		{
+			name: "not set when size is 0",
+			size: 0,
+			checkFunc: func(opt Option) error {
+				gopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(10 * time.Second),
+				}
+				got := new(server)
+				got.grpc.opts = gopts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, gopts) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when size is less than 0",
+			size: -1,
+			checkFunc: func(opt Option) error {
+				gopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(10 * time.Second),
+				}
+				got := new(server)
+				got.grpc.opts = gopts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, gopts) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -1696,6 +1996,42 @@ func TestWithGRPCHeaderTableSize(t *testing.T) {
 				opt(got)
 
 				if len(got.grpc.opts) != 1 {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when size is 0",
+			size: 0,
+			checkFunc: func(opt Option) error {
+				gopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(10 * time.Second),
+				}
+				got := new(server)
+				got.grpc.opts = gopts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, gopts) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when size is less than 0",
+			size: -1,
+			checkFunc: func(opt Option) error {
+				gopts := []grpc.ServerOption{
+					grpc.ConnectionTimeout(10 * time.Second),
+				}
+				got := new(server)
+				got.grpc.opts = gopts
+				opt(got)
+
+				if !reflect.DeepEqual(got.grpc.opts, gopts) {
 					return errors.New("invalid param was set")
 				}
 				return nil
