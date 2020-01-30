@@ -61,69 +61,53 @@ func TestString(t *testing.T) {
 }
 
 func TestMode(t *testing.T) {
-	type args struct {
-		m string
-	}
-
 	type test struct {
 		name string
-		args args
+		str  string
 		want mode
 	}
 
 	tests := []test{
 		{
 			name: "returns REST when in REST mode (rest)",
-			args: args{
-				m: "REST",
-			},
+			str:  "REST",
 			want: REST,
 		},
 
 		{
 			name: "returns HTTP when in REST mode (http)",
-			args: args{
-				m: "HTTP",
-			},
+			str:  "HTTP",
 			want: REST,
 		},
 
 		{
 			name: "returns GRPC when in gRPC mode",
-			args: args{
-				m: "GRPC",
-			},
+			str:  "GRPC",
 			want: GRPC,
 		},
 
 		{
 			name: "returns GraphQL when in GraphQL mode (graphql)",
-			args: args{
-				m: "GraphQL",
-			},
+			str:  "GraphQL",
 			want: GQL,
 		},
 
 		{
 			name: "returns GQL when in GraphQL mode (gql)",
-			args: args{
-				m: "GQL",
-			},
+			str:  "GQL",
 			want: GQL,
 		},
 
 		{
 			name: "returns 0 when in unknown mode",
-			args: args{
-				m: "Vald",
-			},
+			str:  "Vald",
 			want: 0,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Mode(tt.args.m)
+			got := Mode(tt.str)
 			if tt.want != got {
 				t.Errorf("Mode is wrong. want: %v, got: %v", tt.want, got)
 			}
