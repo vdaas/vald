@@ -23,6 +23,7 @@ import (
 	"net"
 	"reflect"
 	"sort"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -342,8 +343,8 @@ func (g *gateway) DoMulti(ctx context.Context,
 			}
 			err = f(cctx, addr, agent.NewAgentClient(conn), copts...)
 			if err != nil {
-				if !errors.Is(err, context.Canceled) &&
-					!errors.Is(err, context.DeadlineExceeded) {
+				if !strings.Contains(err.Error(), context.Canceled.Error()) &&
+					!strings.Contains(err.Error(), context.DeadlineExceeded.Error()) {
 					return err
 				}
 				return nil
