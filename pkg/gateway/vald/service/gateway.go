@@ -341,14 +341,14 @@ func (g *gateway) DoMulti(ctx context.Context,
 				return nil
 			}
 			err = f(cctx, addr, agent.NewAgentClient(conn), copts...)
-			switch err {
-			case nil:
-				atomic.AddUint32(&cur, 1)
-			case context.Canceled, context.DeadlineExceeded:
+			if err != nil {
+				if !errors.Is(err, context.Canceled) &&
+					!errors.Is(err, context.DeadlineExceeded) {
+					return err
+				}
 				return nil
-			default:
-				return err
 			}
+			atomic.AddUint32(&cur, 1)
 		}
 		return nil
 	})

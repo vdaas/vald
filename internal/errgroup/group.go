@@ -108,7 +108,6 @@ func (g *group) Go(f func() error) {
 				}
 			}
 			if err := f(); err != nil {
-
 				if limited {
 					select {
 					case <-g.limitation:

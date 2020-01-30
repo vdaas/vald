@@ -76,7 +76,6 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 	if err != nil {
 		log.Debugf("error body: %#v, msg: %v", data, err)
 		log.Error(err)
-		return st
 	}
 
 	return st
