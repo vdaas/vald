@@ -342,14 +342,14 @@ func (g *gateway) DoMulti(ctx context.Context,
 			}
 			err = f(cctx, addr, agent.NewAgentClient(conn), copts...)
 			if err != nil {
-				log.Debug(err)
+				log.Debug(addr, err)
 				return err
 			}
 			atomic.AddUint32(&cur, 1)
 		}
 		return nil
 	})
-	if err != nil && atomic.LoadUint32(&cur) < limit {
+	if err != nil && cur < limit {
 		return err
 	}
 	return nil
