@@ -28,6 +28,7 @@ import (
 	core "github.com/vdaas/vald/internal/core/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/pkg/agent/ngt/model"
@@ -178,12 +179,10 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 		return nil, err
 	}
 
-	var errs error
 	ds := make([]model.Distance, 0, len(sr))
-
 	for _, d := range sr {
 		if err = d.Error; d.ID == 0 && err != nil {
-			errs = errors.Wrap(errs, err.Error())
+			log.Debug(err)
 			continue
 		}
 		key, ok := n.kvs.GetInverse(d.ID)
@@ -192,12 +191,10 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 				ID:       key,
 				Distance: d.Distance,
 			})
-		} else {
-			errs = errors.Wrap(errs, errors.ErrUUIDNotFound(d.ID).Error())
 		}
 	}
 
-	return ds, errs
+	return ds, nil
 }
 
 func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (dst []model.Distance, err error) {
