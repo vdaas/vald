@@ -264,8 +264,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	err = s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) (err error) {
 		_, err = ac.Insert(ctx, vec, copts...)
 		if err != nil {
-			log.Error(err)
-			return status.WrapWithInternal(fmt.Sprintf("Insert API failed to Insert Request to agent %s", target), err, info.Get())
+			return err
 		}
 		target = strings.SplitN(target, ":", 2)[0]
 		mu.Lock()
