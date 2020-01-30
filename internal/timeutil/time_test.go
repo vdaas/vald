@@ -29,43 +29,43 @@ func TestParse(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "parse duration success (ns)",
+			name:    "returns time.Nanosecond and nil when t is 1ns",
 			t:       "1ns",
 			want:    time.Nanosecond,
 			wantErr: false,
 		},
 		{
-			name:    "parse duration success (ms)",
+			name:    "returns time.Millisecond and nil when t is 1ms",
 			t:       "1ms",
 			want:    time.Millisecond,
 			wantErr: false,
 		},
 		{
-			name:    "parse duration success (s)",
+			name:    "returns time.Second and nil when t is 1s",
 			t:       "1s",
 			want:    time.Second,
 			wantErr: false,
 		},
 		{
-			name:    "parse duration success (m)",
+			name:    "returns tme.Minute and nil when t is 1m",
 			t:       "1m",
 			want:    time.Minute,
 			wantErr: false,
 		},
 		{
-			name:    "parse duration success (h)",
+			name:    "returns time.Hour and nil when t is 1h",
 			t:       "1h",
 			want:    time.Hour,
 			wantErr: false,
 		},
 		{
-			name:    "parse empty string success",
+			name:    "returns 0 and nil when t is empty",
 			t:       "",
 			want:    0,
 			wantErr: false,
 		},
 		{
-			name:    "parse incorrect string return error",
+			name:    "returns 0 and incorrect string error when t is invalid",
 			t:       "dummystring",
 			want:    0,
 			wantErr: true,
