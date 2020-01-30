@@ -334,7 +334,7 @@ func (g *gateway) DoMulti(ctx context.Context,
 		case <-cctx.Done():
 			return nil
 		default:
-			if atomic.LoadUint32(&cur) > limit {
+			if atomic.LoadUint32(&cur) >= limit {
 				once.Do(func() {
 					cancel()
 				})
