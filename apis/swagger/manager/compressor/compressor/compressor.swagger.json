@@ -254,7 +254,7 @@
     "RemoveRequestMulti": {
       "type": "object",
       "properties": {
-        "uuid": {
+        "uuids": {
           "type": "array",
           "items": {
             "type": "string"
@@ -275,7 +275,7 @@
           "type": "array",
           "items": {
             "type": "number",
-            "format": "double"
+            "format": "float"
           }
         },
         "ips": {

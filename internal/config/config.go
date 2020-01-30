@@ -19,9 +19,11 @@ package config
 
 import (
 	"bytes"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+	"unsafe"
 
 	"github.com/vdaas/vald/internal/net/http/json"
 	yaml "gopkg.in/yaml.v2"
@@ -35,6 +37,11 @@ type Default struct {
 	// TZ represent system time location .
 	TZ string `json:"time_zone" yaml:"time_zone"`
 }
+
+const (
+	fileValuePrefix = "file://"
+	envSymbol       = "_"
+)
 
 func (c *Default) Bind() *Default {
 	c.Version = GetActualValue(c.Version)
@@ -62,6 +69,7 @@ func Read(path string, cfg interface{}) error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	switch filepath.Ext(path) {
 	case ".yaml":
 		err = yaml.NewDecoder(f).Decode(cfg)
@@ -71,12 +79,31 @@ func Read(path string, cfg interface{}) error {
 	return err
 }
 
-// GetActualValue returns the environment variable value if the val has prefix and suffix "_", otherwise the val will directly return.
-func GetActualValue(val string) string {
-	if checkPrefixAndSuffix(val, "_", "_") {
-		return os.ExpandEnv(os.Getenv(strings.TrimPrefix(strings.TrimSuffix(val, "_"), "_")))
+// GetActualValue returns the environment variable value if the val has prefix and suffix "_",
+// if actual value start with file://{path} the return value will read from file
+// otherwise the val will directly return.
+func GetActualValue(val string) (res string) {
+	if checkPrefixAndSuffix(val, envSymbol, envSymbol) {
+		val = strings.TrimPrefix(strings.TrimSuffix(val, envSymbol), envSymbol)
+		if !strings.HasPrefix(val, "$") {
+			val = "$" + val
+		}
 	}
-	return os.ExpandEnv(val)
+	res = os.ExpandEnv(val)
+	if strings.HasPrefix(res, fileValuePrefix) {
+		path := strings.TrimPrefix(res, fileValuePrefix)
+		file, err := os.OpenFile(path, os.O_RDONLY, 0600)
+		defer file.Close()
+		if err != nil {
+			return
+		}
+		body, err := ioutil.ReadAll(file)
+		if err != nil {
+			return
+		}
+		res = *(*string)(unsafe.Pointer(&body))
+	}
+	return
 }
 
 func GetActualValues(vals []string) []string {

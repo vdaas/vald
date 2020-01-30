@@ -31,20 +31,16 @@ type Data struct {
 }
 
 type parser struct {
-	filePath filePath
-	version  version
-}
-
-type filePath struct {
-	key         string
-	defaultPath string
-	description string
-}
-
-type version struct {
-	key         string
-	defaultFlag bool
-	description string
+	filePath struct {
+		keys        []string
+		defaultPath string
+		description string
+	}
+	version struct {
+		keys        []string
+		defaultFlag bool
+		description string
+	}
 }
 
 func New(opts ...Option) *parser {
@@ -59,17 +55,21 @@ func (p *parser) Parse() (*Data, bool, error) {
 	f := flag.NewFlagSet(filepath.Base(os.Args[0]), flag.ContinueOnError)
 
 	d := new(Data)
-	f.StringVar(&d.configFilePath,
-		p.filePath.key,
-		p.filePath.defaultPath,
-		p.filePath.description,
-	)
+	for _, key := range p.filePath.keys {
+		f.StringVar(&d.configFilePath,
+			key,
+			p.filePath.defaultPath,
+			p.filePath.description,
+		)
+	}
 
-	f.BoolVar(&d.showVersion,
-		p.version.key,
-		p.version.defaultFlag,
-		p.version.description,
-	)
+	for _, key := range p.version.keys {
+		f.BoolVar(&d.showVersion,
+			key,
+			p.version.defaultFlag,
+			p.version.description,
+		)
+	}
 
 	err := f.Parse(os.Args[1:])
 	if err != nil {

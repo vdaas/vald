@@ -222,7 +222,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		for {
 			select {
 			case <-ctx.Done():
-				return nil
+				return ctx.Err()
 			case err = <-bech:
 			case err = <-fech:
 			case err = <-gech:
@@ -232,7 +232,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			if err != nil {
 				select {
 				case <-ctx.Done():
-					return nil
+					return ctx.Err()
 				case ech <- err:
 				}
 			}

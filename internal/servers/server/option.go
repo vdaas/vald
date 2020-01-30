@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -51,7 +52,7 @@ var (
 						w.WriteHeader(http.StatusOK)
 						_, err := fmt.Fprint(w, http.StatusText(http.StatusOK))
 						if err != nil {
-							log.Fatal(err)
+							log.Error(err, info.Get())
 						}
 					}
 				})

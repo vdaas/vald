@@ -21,7 +21,6 @@ import (
 	"reflect"
 	"runtime"
 
-	// "github.com/pkg/errors"
 	"github.com/cockroachdb/errors"
 	"github.com/cockroachdb/errors/errbase"
 )
