@@ -199,20 +199,14 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 
 func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (dst []model.Distance, err error) {
 	if n.indexing.Load().(bool) {
+		log.Debug("SearchByID\t now indexing...")
 		return make([]model.Distance, 0), nil
 	}
-	var vec []float32
-	oid, ok := n.kvs.Get(uuid)
-	if !ok {
-		vec, ok = n.insertCache(uuid)
-		if !ok {
-			return nil, errors.ErrObjectIDNotFound(uuid)
-		}
-	} else {
-		vec, err = n.core.GetVector(uint(oid))
-		if err != nil {
-			return nil, errors.ErrObjectNotFound(err, uuid)
-		}
+	log.Debugf("SearchByID\tuuid: %s size: %d epsilon: %f radius: %f", uuid, size, epsilon, radius)
+	vec, err := n.GetObject(uuid)
+	if err != nil{
+		log.Debugf("SearchByID\tuuid: %s's vector not found", uuid)
+		return nil, err
 	}
 	return n.Search(vec, size, epsilon, radius)
 }
@@ -343,14 +337,21 @@ func (n *ngt) DeleteMultiple(uuids ...string) (err error) {
 func (n *ngt) GetObject(uuid string) (vec []float32, err error) {
 	oid, ok := n.kvs.Get(uuid)
 	if !ok {
-		vec, ok := n.insertCache(uuid)
+		log.Debugf("GetObject\tuuid: %s's kvs data not found, trying to read from vcache", uuid)
+		vec, ok = n.insertCache(uuid)
 		if !ok {
-			err = errors.ErrObjectIDNotFound(uuid)
-			return nil, err
+			log.Debugf("GetObject\tuuid: %s's vcache data not found", uuid)
+			return nil, errors.ErrObjectIDNotFound(uuid)
 		}
-		return vec, nil
+	} else {
+		log.Debugf("GetObject\tGetVector oid: %d", oid)
+		vec, err = n.core.GetVector(uint(oid))
+		if err != nil {
+			log.Debugf("GetObject\tuuid: %s oid: %d's vector not found", uuid, oid)
+			return nil, errors.ErrObjectNotFound(err, uuid)
+		}
 	}
-	return n.core.GetVector(uint(oid))
+	return vec, nil
 }
 
 func (n *ngt) CreateIndex(poolSize uint32) (err error) {
