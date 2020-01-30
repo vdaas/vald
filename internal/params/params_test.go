@@ -35,18 +35,55 @@ func TestNew(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "returns parser instance",
-			opts: []Option{
-				WithVersionKey("dummyVersionKey"),
-			},
+			name: "returns parser instance when opts is empty",
+			opts: nil,
 			want: &parser{
 				filePath: filePath{
-					key:         "f",
+					keys: []string{
+						"f",
+						"file",
+						"c",
+						"config",
+					},
 					defaultPath: "/etc/server/config.yaml",
 					description: "config file path",
 				},
 				version: version{
-					key:         "dummyVersionKey",
+					keys: []string{
+						"v",
+						"ver",
+						"version",
+					},
+					defaultFlag: false,
+					description: "show server version",
+				},
+			},
+		},
+
+		{
+			name: "returns parser instance when opts is not empty",
+			opts: []Option{
+				WithConfigFilePathKeys("p", "path"),
+			},
+			want: &parser{
+				filePath: filePath{
+					keys: []string{
+						"f",
+						"file",
+						"c",
+						"config",
+						"p",
+						"path",
+					},
+					defaultPath: "/etc/server/config.yaml",
+					description: "config file path",
+				},
+				version: version{
+					keys: []string{
+						"v",
+						"ver",
+						"version",
+					},
 					defaultFlag: false,
 					description: "show server version",
 				},
@@ -89,12 +126,16 @@ func Test_parser_Parse(t *testing.T) {
 			name: "returns data and flag and nil when parser is successes",
 			fields: fields{
 				filePath: filePath{
-					key:         "conf",
+					keys: []string{
+						"conf",
+					},
 					defaultPath: "vald_config.yml",
 					description: "set config file",
 				},
 				version: version{
-					key:         "version",
+					keys: []string{
+						"version",
+					},
 					defaultFlag: false,
 					description: "print version",
 				},
@@ -126,12 +167,16 @@ func Test_parser_Parse(t *testing.T) {
 			name: "returns data and flag and error when parse error occurs and err is not equal flag.ErrHelp",
 			fields: fields{
 				filePath: filePath{
-					key:         "conf",
+					keys: []string{
+						"conf",
+					},
 					defaultPath: "vald_config.yml",
 					description: "set config file",
 				},
 				version: version{
-					key:         "version",
+					keys: []string{
+						"version",
+					},
 					defaultFlag: false,
 					description: "print version",
 				},

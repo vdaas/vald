@@ -9,19 +9,41 @@ import (
 func TestWithConfigFilePathKey(t *testing.T) {
 	type test struct {
 		name      string
-		key       string
+		keys      []string
 		checkFunc func(Option) error
 	}
 
 	tests := []test{
 		{
-			name: "set success",
-			key:  "key",
+			name: "set success when keys is not empty",
+			keys: []string{
+				"key",
+			},
 			checkFunc: func(opt Option) error {
 				got := new(parser)
 				opt(got)
 
-				if got.filePath.key != "key" {
+				if len(got.filePath.keys) != 1 || got.filePath.keys[0] != "key" {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when keys is empty",
+			keys: nil,
+			checkFunc: func(opt Option) error {
+				got := &parser{
+					filePath: filePath{
+						keys: []string{
+							"key",
+						},
+					},
+				}
+				opt(got)
+
+				if len(got.filePath.keys) != 1 || got.filePath.keys[0] != "key" {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -31,7 +53,7 @@ func TestWithConfigFilePathKey(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithConfigFilePathKey(tt.key)
+			opt := WithConfigFilePathKeys(tt.keys...)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -48,10 +70,28 @@ func TestWithConfigFilePathDefault(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set success",
+			name: "set success when path is not empty",
 			path: "path",
 			checkFunc: func(opt Option) error {
 				got := new(parser)
+				opt(got)
+
+				if got.filePath.defaultPath != "path" {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when path is empty",
+			path: "",
+			checkFunc: func(opt Option) error {
+				got := &parser{
+					filePath: filePath{
+						defaultPath: "path",
+					},
+				}
 				opt(got)
 
 				if got.filePath.defaultPath != "path" {
@@ -81,10 +121,28 @@ func TestWithConfigFileDescription(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set success",
+			name: "set success when desc is not empty",
 			desc: "desc",
 			checkFunc: func(opt Option) error {
 				got := new(parser)
+				opt(got)
+
+				if got.filePath.description != "desc" {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when desc is empty",
+			desc: "",
+			checkFunc: func(opt Option) error {
+				got := &parser{
+					filePath: filePath{
+						description: "desc",
+					},
+				}
 				opt(got)
 
 				if got.filePath.description != "desc" {
@@ -108,19 +166,41 @@ func TestWithConfigFileDescription(t *testing.T) {
 func TestWithVersionKey(t *testing.T) {
 	type test struct {
 		name      string
-		key       string
+		keys      []string
 		checkFunc func(Option) error
 	}
 
 	tests := []test{
 		{
-			name: "set success",
-			key:  "key",
+			name: "set success when keys is not empty",
+			keys: []string{
+				"key",
+			},
 			checkFunc: func(opt Option) error {
 				got := new(parser)
 				opt(got)
 
-				if got.version.key != "key" {
+				if len(got.version.keys) != 1 && got.version.keys[0] != "key" {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when keys is empty",
+			keys: nil,
+			checkFunc: func(opt Option) error {
+				got := &parser{
+					version: version{
+						keys: []string{
+							"key",
+						},
+					},
+				}
+				opt(got)
+
+				if len(got.version.keys) != 1 && got.version.keys[0] != "key" {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -130,7 +210,7 @@ func TestWithVersionKey(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithVersionKey(tt.key)
+			opt := WithVersionKeys(tt.keys...)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -180,10 +260,28 @@ func TestWithVersionDescription(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set success",
+			name: "set success when desc is not empty",
 			desc: "desc",
 			checkFunc: func(opt Option) error {
 				got := new(parser)
+				opt(got)
+
+				if got.version.description != "desc" {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when desc is empty",
+			desc: "",
+			checkFunc: func(opt Option) error {
+				got := &parser{
+					version: version{
+						description: "desc",
+					},
+				}
 				opt(got)
 
 				if got.version.description != "desc" {
