@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"net"
 	"reflect"
-	"runtime"
 	"sort"
 	"sync"
 	"sync/atomic"
@@ -238,7 +237,6 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface
 			res, err = discoverer.NewDiscovererClient(conn).
 				Discover(ctx, &payload.Discoverer_Request{
 					Name: g.agentName,
-
 					Node: "",
 				}, copts...)
 			if err != nil {
@@ -247,7 +245,6 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface
 			return res, nil
 		})
 	if err != nil {
-		runtime.Gosched()
 		return nil, err
 	}
 
@@ -344,12 +341,14 @@ func (g *gateway) DoMulti(ctx context.Context,
 				return nil
 			}
 			err = f(cctx, addr, agent.NewAgentClient(conn), copts...)
-			if err != nil &&
-				err != context.Canceled &&
-				err != context.DeadlineExceeded {
+			switch err {
+			case nil:
+				atomic.AddUint32(&cur, 1)
+			case context.Canceled, context.DeadlineExceeded:
+				return nil
+			default:
 				return err
 			}
-			atomic.AddUint32(&cur, 1)
 		}
 		return nil
 	})

@@ -19,7 +19,6 @@ package grpc
 
 import (
 	"context"
-	"runtime"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -189,7 +188,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 		eg.Go(safety.RecoverFunc(func() (err error) {
 			select {
 			case <-egctx.Done():
-				return ctx.Err()
+				return nil
 			default:
 				var err error
 				if g.bo != nil {
@@ -258,7 +257,6 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 	}
 	conn, err = grpc.DialContext(ctx, addr, append(g.dopts, dopts...)...)
 	if err != nil {
-		runtime.Gosched()
 		return err
 	}
 	atomic.AddUint64(&g.clientCount, 1)
@@ -339,7 +337,6 @@ func (g *gRPCClient) reconnect(ctx context.Context, addr string, conn *ClientCon
 	}
 	conn, err = grpc.DialContext(ctx, addr, g.dopts...)
 	if err != nil {
-		runtime.Gosched()
 		return nil, err
 	}
 	g.conns.Store(addr, conn)

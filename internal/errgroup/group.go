@@ -19,6 +19,7 @@ package errgroup
 
 import (
 	"context"
+	"runtime"
 	"sync"
 	"sync/atomic"
 
@@ -107,6 +108,14 @@ func (g *group) Go(f func() error) {
 				}
 			}
 			if err := f(); err != nil {
+
+				if limited {
+					select {
+					case <-g.limitation:
+					case <-g.egctx.Done():
+					}
+				}
+				runtime.Gosched()
 				g.mu.RLock()
 				_, ok := g.emap[err.Error()]
 				g.mu.RUnlock()
@@ -117,6 +126,7 @@ func (g *group) Go(f func() error) {
 					g.mu.Unlock()
 				}
 				g.doCancel()
+				return
 			}
 			if limited {
 				select {
