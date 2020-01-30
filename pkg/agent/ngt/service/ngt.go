@@ -362,11 +362,12 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 	if ic == 0 {
 		return errors.ErrUncommittedIndexNotFound
 	}
+	t := time.Now().UnixNano()
 	n.indexing.Store(true)
 	defer n.indexing.Store(false)
 	atomic.StoreUint64(&n.ic, 0)
 
-	t := time.Now().UnixNano()
+	log.Infof("create index started, uncommitted indexes = %d", ic)
 	delList := make([]string, 0, ic)
 	n.dvc.Range(func(uuid string, dvc vcache) bool {
 		if dvc.date > t {
@@ -378,18 +379,23 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 		delList = append(delList, uuid)
 		return true
 	})
+	log.Info("create index delete kvs phase started", delList)
 	doids := make([]uint, 0, ic)
 	for _, duuid := range delList {
 		n.dvc.Delete(duuid)
 		id, ok := n.kvs.Delete(duuid)
 		if !ok {
+			log.Error(errors.ErrObjectIDNotFound(duuid).Error())
 			err = errors.Wrap(err, errors.ErrObjectIDNotFound(duuid).Error())
 		} else {
 			doids = append(doids, uint(id))
 		}
 	}
+
+	log.Info("create index delete index phase started", doids)
 	brerr := n.core.BulkRemove(doids...)
 	if brerr != nil {
+		log.Error(brerr)
 		err = errors.Wrap(err, brerr.Error())
 	}
 	uuids := make([]string, 0, ic)
@@ -401,14 +407,17 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 		}
 		return true
 	})
+	log.Info("create index insert index phase started", vecs)
 	oids, errs := n.core.BulkInsert(vecs)
 	if errs != nil && len(errs) != 0 {
 		for _, bierr := range errs {
 			if bierr != nil {
+				log.Error(bierr)
 				err = errors.Wrap(err, bierr.Error())
 			}
 		}
 	}
+	log.Info("create index insert kvs phase started", uuids, oids)
 	for i, uuid := range uuids {
 		n.ivc.Delete(uuid)
 		if len(oids) > i {
@@ -418,8 +427,10 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 			}
 		}
 	}
+	log.Info("create graph and tree phase started", poolSize)
 	cierr := n.core.CreateIndex(poolSize)
 	if cierr != nil {
+		log.Error(cierr)
 		err = errors.Wrap(err, cierr.Error())
 	}
 	return err
