@@ -161,11 +161,7 @@ jobs:
       - name: Add contributor and push
         if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
-          PR_RESP=$(curl --include --verbose --fail \
-          -H "Accept: application/json" \
-          -H "Content-Type:application/json" \
-          -H "Authorization: token ${GITHUB_TOKEN}" \
-          ${PR_INFO_URL})
+          PR_RESP=`curl ${PR_INFO_URL}`
           HEAD_BRANCH=$(echo "$PR_RESP" | jq -r .head.ref)
           if [[ -z "$HEAD_BRANCH" ]]; then
             echo "Cannot get head branch information for PR #${PR_NUM}!"
