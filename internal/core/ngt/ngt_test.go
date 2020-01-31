@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -51,16 +51,16 @@ func TestCreate(t *testing.T) {
 
 func TestInsert(t *testing.T) {
 	tests := []struct {
-		vector []float64
+		vector []float32
 		want   uint
 	}{
-		{[]float64{1, 0, 0, 0, 0, 0}, 1},
-		{[]float64{0, 1, 0, 0, 0, 0}, 2},
-		{[]float64{0, 0, 1, 0, 0, 0}, 3},
-		{[]float64{0, 0, 0, 1, 0, 0}, 4},
-		{[]float64{0, 0, 0, 0, 1, 0}, 5},
-		{[]float64{0, 0, 0, 0, 0, 1}, 6},
-		{[]float64{1, 1, 0, 0, 0, 0}, 7},
+		{[]float32{1, 0, 0, 0, 0, 0}, 1},
+		{[]float32{0, 1, 0, 0, 0, 0}, 2},
+		{[]float32{0, 0, 1, 0, 0, 0}, 3},
+		{[]float32{0, 0, 0, 1, 0, 0}, 4},
+		{[]float32{0, 0, 0, 0, 1, 0}, 5},
+		{[]float32{0, 0, 0, 0, 0, 1}, 6},
+		{[]float32{1, 1, 0, 0, 0, 0}, 7},
 	}
 
 	tmpdir, err := ioutil.TempDir("", "tmpdir")
@@ -92,16 +92,16 @@ func TestInsert(t *testing.T) {
 
 func TestInsertCommit(t *testing.T) {
 	tests := []struct {
-		vector []float64
+		vector []float32
 		want   uint
 	}{
-		{[]float64{1, 0, 0, 0, 0, 0}, 1},
-		{[]float64{0, 1, 0, 0, 0, 0}, 2},
-		{[]float64{0, 0, 1, 0, 0, 0}, 3},
-		{[]float64{0, 0, 0, 1, 0, 0}, 4},
-		{[]float64{0, 0, 0, 0, 1, 0}, 5},
-		{[]float64{0, 0, 0, 0, 0, 1}, 6},
-		{[]float64{1, 1, 0, 0, 0, 0}, 7},
+		{[]float32{1, 0, 0, 0, 0, 0}, 1},
+		{[]float32{0, 1, 0, 0, 0, 0}, 2},
+		{[]float32{0, 0, 1, 0, 0, 0}, 3},
+		{[]float32{0, 0, 0, 1, 0, 0}, 4},
+		{[]float32{0, 0, 0, 0, 1, 0}, 5},
+		{[]float32{0, 0, 0, 0, 0, 1}, 6},
+		{[]float32{1, 1, 0, 0, 0, 0}, 7},
 	}
 
 	tmpdir, err := ioutil.TempDir("", "tmpdir")
@@ -133,11 +133,11 @@ func TestInsertCommit(t *testing.T) {
 
 func TestBulkInsert(t *testing.T) {
 	tests := []struct {
-		vectors [][]float64
+		vectors [][]float32
 		wants   []uint
 	}{
 		{
-			[][]float64{
+			[][]float32{
 				{1, 0, 0, 0, 0, 0},
 				{0, 1, 0, 0, 0, 0},
 				{0, 0, 1, 0, 0, 0},
@@ -179,11 +179,11 @@ func TestBulkInsert(t *testing.T) {
 
 func TestBulkInsertCommit(t *testing.T) {
 	tests := []struct {
-		vectors [][]float64
+		vectors [][]float32
 		wants   []uint
 	}{
 		{
-			[][]float64{
+			[][]float32{
 				{1, 0, 0, 0, 0, 0},
 				{0, 1, 0, 0, 0, 0},
 				{0, 0, 1, 0, 0, 0},
@@ -225,15 +225,15 @@ func TestBulkInsertCommit(t *testing.T) {
 
 func TestSearch(t *testing.T) {
 	tests := []struct {
-		vector []float64
+		vector []float32
 		want   SearchResult
 	}{
-		{[]float64{1, 0, 0, 0, 0, 0}, SearchResult{1, 0, nil}},
-		{[]float64{0, 1, 0, 0, 0, 0}, SearchResult{2, 0, nil}},
-		{[]float64{0, 0, 1, 0, 0, 0}, SearchResult{3, 0, nil}},
-		{[]float64{0, 0, 0, 1, 0, 0}, SearchResult{4, 0, nil}},
-		{[]float64{0, 0, 0, 0, 1, 0}, SearchResult{5, 0, nil}},
-		{[]float64{1, 1, 0, 0, 0, 0}, SearchResult{6, 0, nil}},
+		{[]float32{1, 0, 0, 0, 0, 0}, SearchResult{1, 0, nil}},
+		{[]float32{0, 1, 0, 0, 0, 0}, SearchResult{2, 0, nil}},
+		{[]float32{0, 0, 1, 0, 0, 0}, SearchResult{3, 0, nil}},
+		{[]float32{0, 0, 0, 1, 0, 0}, SearchResult{4, 0, nil}},
+		{[]float32{0, 0, 0, 0, 1, 0}, SearchResult{5, 0, nil}},
+		{[]float32{1, 1, 0, 0, 0, 0}, SearchResult{6, 0, nil}},
 	}
 
 	ngt, err := Load(

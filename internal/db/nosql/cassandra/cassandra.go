@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -78,6 +78,12 @@ type client struct {
 		initialInterval time.Duration
 		maxRetries      int
 	}
+	poolConfig struct {
+		dataCenterName                 string
+		enableDCAwareRouting           bool
+		enableShuffleReplicas          bool
+		enableNonLocalReplicasFallback bool
+	}
 	socketKeepalive          time.Duration
 	maxPreparedStmts         int
 	maxRoutingKeyInfo        int
@@ -147,7 +153,23 @@ func New(opts ...Option) (Cassandra, error) {
 		SerialConsistency: c.serialConsistency,
 		DefaultTimestamp:  c.defaultTimestamp,
 		PoolConfig: gocql.PoolConfig{
-			HostSelectionPolicy: gocql.RoundRobinHostPolicy(),
+			HostSelectionPolicy: func() (hsp gocql.HostSelectionPolicy) {
+				if c.poolConfig.enableDCAwareRouting && len(c.poolConfig.dataCenterName) != 0 {
+					hsp = gocql.DCAwareRoundRobinPolicy(c.poolConfig.dataCenterName)
+				} else {
+					hsp = gocql.RoundRobinHostPolicy()
+				}
+				switch {
+				case c.poolConfig.enableShuffleReplicas &&
+					c.poolConfig.enableNonLocalReplicasFallback:
+					return gocql.TokenAwareHostPolicy(hsp, gocql.ShuffleReplicas(), gocql.NonLocalReplicasFallback())
+				case c.poolConfig.enableShuffleReplicas:
+					return gocql.TokenAwareHostPolicy(hsp, gocql.ShuffleReplicas())
+				case c.poolConfig.enableNonLocalReplicasFallback:
+					return gocql.TokenAwareHostPolicy(hsp, gocql.NonLocalReplicasFallback())
+				}
+				return gocql.TokenAwareHostPolicy(hsp)
+			}(),
 		},
 		ReconnectInterval:      c.reconnectInterval,
 		MaxWaitSchemaAgreement: c.maxWaitSchemaAgreement,

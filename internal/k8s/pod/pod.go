@@ -1,5 +1,20 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -50,11 +65,13 @@ type reconciler struct {
 }
 
 type Pod struct {
-	Name     string
-	NodeName string
-	IP       string
-	CPU      float64
-	Mem      float64
+	Name       string
+	NodeName   string
+	IP         string
+	CPULimit   float64
+	CPURequest float64
+	MemLimit   float64
+	MemRequest float64
 }
 
 func New(opts ...Option) PodWatcher {
@@ -91,27 +108,31 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	}
 
 	var (
-		cpuUsage float64
-		memUsage float64
-		pods     = make(map[string][]Pod, len(ps.Items))
+		cpuLimit   float64
+		cpuRequest float64
+		memLimit   float64
+		memRequest float64
+		pods       = make(map[string][]Pod, len(ps.Items))
 	)
 
 	for _, pod := range ps.Items {
 		if pod.Status.Phase == corev1.PodRunning {
-			cpuUsage = 0.0
-			memUsage = 0.0
+			cpuLimit = 0.0
+			memLimit = 0.0
+			cpuRequest = 0.0
+			memRequest = 0.0
 			for _, container := range pod.Spec.Containers {
 				request := container.Resources.Requests
 				limit := container.Resources.Limits
-				cpuUsage += (float64(request.Cpu().Value()) /
-					float64(limit.Cpu().Value())) * 100.0
-				memUsage += (float64(request.Memory().Value()) /
-					float64(limit.Memory().Value())) * 100.0
+				cpuLimit += float64(limit.Cpu().Value())
+				memLimit += float64(limit.Memory().Value())
+				cpuRequest += float64(request.Cpu().Value())
+				memRequest += float64(request.Memory().Value())
 			}
-
-			cpuUsage = cpuUsage / float64(len(pod.Spec.Containers))
-			memUsage = memUsage / float64(len(pod.Spec.Containers))
-
+			cpuLimit /= float64(len(pod.Spec.Containers))
+			memLimit /= float64(len(pod.Spec.Containers))
+			cpuRequest /= float64(len(pod.Spec.Containers))
+			memRequest /= float64(len(pod.Spec.Containers))
 			// pod.GetObjectMeta().GetLabels()["app"]
 			podMetaName := pod.GetObjectMeta().GetName()
 
@@ -120,11 +141,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			}
 
 			pods[podMetaName] = append(pods[podMetaName], Pod{
-				Name:     pod.GetName(),
-				NodeName: pod.Spec.NodeName,
-				IP:       pod.Status.PodIP,
-				CPU:      cpuUsage,
-				Mem:      memUsage,
+				Name:       pod.GetName(),
+				NodeName:   pod.Spec.NodeName,
+				IP:         pod.Status.PodIP,
+				CPULimit:   cpuLimit,
+				CPURequest: cpuRequest,
+				MemLimit:   memLimit,
+				MemRequest: memRequest,
 			})
 		}
 	}

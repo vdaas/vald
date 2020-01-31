@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@
 .PHONY: kind/start
 ## start kind (kubernetes in docker) cluster
 kind/start:
-	kind create cluster --name vald
-	export KUBECONFIG="$(kind get kubeconfig-path --name=vald)"
+	kind create cluster --name $(NAME)
+	@make kind/login
 
 .PHONY: kind/login
-## login kind (kubernetes in docker) cluster
+## login command for kind (kubernetes in docker) cluster
 kind/login:
-	export KUBECONFIG="$(kind get kubeconfig-path --name=vald)"
+	kubectl cluster-info --context kind-$(NAME)
 
 .PHONY: kind/stop
 ## stop kind (kubernetes in docker) cluster
 kind/stop:
-	kind delete cluster --name vald
+	kind delete cluster --name $(NAME)

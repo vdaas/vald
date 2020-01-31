@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 // Package errors provides error types and function
 package errors
 
-// "github.com/pkg/errors"
-
 var (
 
 	// gRPC
@@ -34,10 +32,12 @@ var (
 	}
 
 	ErrGRPCClientConnNotFound = func(addr string) error {
-		return Errorf("gRPC client connection not found on %s", addr)
+		return Errorf("gRPC client connection not found in %s", addr)
 	}
 
 	ErrRPCCallFailed = func(addr string, err error) error {
 		return Wrapf(err, "addr: %s", addr)
 	}
+
+	ErrGRPCTargetAddrNotFound = New("grpc connection target not found")
 )

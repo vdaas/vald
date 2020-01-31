@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,6 +25,10 @@ var (
 	}
 
 	ErrIndexNotFound = New("index file not found")
+
+	ErrDimensionLimitExceed = func(current, limit int) error {
+		return Errorf("supported dimension limit exceed:\trequired = %d,\tlimit = %d", current, limit)
+	}
 
 	ErrUnsupportedObjectType = New("unsupported ObjectType")
 
@@ -64,7 +68,10 @@ var (
 	}
 
 	ErrUUIDNotFound = func(id uint32) error {
-		return Errorf("ngt object id %d's metadata not found", id)
+		if id == 0 {
+			return Errorf("ngt object uuid not found", id)
+		}
+		return Errorf("ngt object uuid %d's metadata not found", id)
 	}
 
 	ErrObjectIDNotFound = func(uuid string) error {

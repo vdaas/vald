@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -72,6 +72,9 @@ func WithBulkInsertChunkSize(size int) Option {
 
 func WithDimension(size int) Option {
 	return func(n *ngt) error {
+		if size > dimensionLimit {
+			return errors.ErrDimensionLimitExceed(size, dimensionLimit)
+		}
 		if C.ngt_set_property_dimension(n.prop, C.int32_t(size), n.ebuf) == ErrorCode {
 			return errors.ErrFailedToSetDimension(n.newGoError(n.ebuf))
 		}

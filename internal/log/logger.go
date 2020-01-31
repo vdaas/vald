@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ func Init(l Logger) {
 }
 
 func Bold(str string) string {
-	return "\033[1m" + str + "\033[0m"
+	return "\033[1m" + str + "\033[22m"
 }
 
 func Info(vals ...interface{}) {

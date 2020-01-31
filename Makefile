@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,18 +14,20 @@
 # limitations under the License.
 #
 
-REPO                          ?= vdaas
-NAME                           = vald
-GOPKG                          = github.com/$(REPO)/$(NAME)
-TAG                            = $(shell date -u +%Y%m%d-%H%M%S)
-BASE_IMAGE                     = $(NAME)-base
-AGENT_IMAGE                    = $(NAME)-agent-ngt
-GATEWAY_IMAGE                  = $(NAME)-gateway
-DISCOVERER_IMAGE               = $(NAME)-discoverer-k8s
-KVS_IMAGE                      = $(NAME)-meta-redis
-NOSQL_IMAGE                    = $(NAME)-meta-cassandra
-BACKUP_MANAGER_MYSQL_IMAGE     = $(NAME)-manager-backup-mysql
-BACKUP_MANAGER_CASSANDRA_IMAGE = $(NAME)-manager-backup-cassandra
+REPO                           ?= vdaas
+NAME                            = vald
+GOPKG                           = github.com/$(REPO)/$(NAME)
+TAG                             = $(shell date -u +%Y%m%d-%H%M%S)
+BASE_IMAGE                      = $(NAME)-base
+AGENT_IMAGE                     = $(NAME)-agent-ngt
+GATEWAY_IMAGE                   = $(NAME)-gateway
+DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
+KVS_IMAGE                       = $(NAME)-meta-redis
+NOSQL_IMAGE                     = $(NAME)-meta-cassandra
+BACKUP_MANAGER_MYSQL_IMAGE      = $(NAME)-manager-backup-mysql
+BACKUP_MANAGER_CASSANDRA_IMAGE  = $(NAME)-manager-backup-cassandra
+MANAGER_COMPRESSOR_IMAGE        = $(NAME)-manager-compressor
+CI_CONTAINER_IMAGE             = $(NAME)-ci-container
 
 NGT_VERSION := $(shell cat versions/NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
@@ -33,6 +35,8 @@ NGT_REPO = github.com/yahoojapan/NGT
 GO_VERSION := $(shell cat versions/GO_VERSION)
 GOPATH := $(shell go env GOPATH)
 GOCACHE := $(shell go env GOCACHE)
+
+TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION)
 
 MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
 
@@ -70,6 +74,9 @@ PROTO_PATHS = \
 	$(GOPATH)/src/github.com/danielvladco/go-proto-gql \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 
+COMMA := ,
+SHELL = bash
+
 include Makefile.d/functions.mk
 
 .PHONY: all
@@ -106,7 +113,7 @@ clean:
 		./bench \
 		./pprof \
 		./vendor \
-		./$(GOCACHE) \
+		$(GOCACHE) \
 		./go.sum \
 		./go.mod
 	cp ./hack/go.mod.default ./go.mod
@@ -122,7 +129,8 @@ init: \
 	git/config/init \
 	git/hooks/init \
 	deps \
-	ngt/install
+	ngt/install \
+	tensorflow/install
 
 .PHONY: update
 ## update deps, license, and run goimports
@@ -167,6 +175,15 @@ ngt/install: /usr/local/include/NGT/Capi.h
 	make install -C /tmp/NGT-$(NGT_VERSION)
 	rm -rf v$(NGT_VERSION).tar.gz
 	rm -rf /tmp/NGT-$(NGT_VERSION)
+
+.PHONY: tensorflow/install
+## install TensorFlow for C
+tensorflow/install: /usr/local/lib/libtensorflow.so
+/usr/local/lib/libtensorflow.so:
+	curl -LO https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
+	tar -C /usr/local -xzf libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
+	rm -f libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
+	ldconfig
 
 .PHONY: test
 ## run tests

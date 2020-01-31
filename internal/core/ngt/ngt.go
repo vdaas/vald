@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,23 +37,23 @@ type (
 	// NGT is core interface
 	NGT interface {
 		// Search returns search result as []SearchResult
-		Search(vec []float64, size int, epsilon, radius float32) ([]SearchResult, error)
+		Search(vec []float32, size int, epsilon, radius float32) ([]SearchResult, error)
 
 		// Insert returns NGT object id.
 		// This only stores not indexing, you must call CreateIndex and SaveIndex.
-		Insert(vec []float64) (uint, error)
+		Insert(vec []float32) (uint, error)
 
 		// InsertCommit returns NGT object id.
 		// This stores and indexes at the same time.
-		InsertCommit(vec []float64, poolSize uint32) (uint, error)
+		InsertCommit(vec []float32, poolSize uint32) (uint, error)
 
 		// BulkInsert returns NGT object ids.
 		// This only stores not indexing, you must call CreateIndex and SaveIndex.
-		BulkInsert(vecs [][]float64) ([]uint, []error)
+		BulkInsert(vecs [][]float32) ([]uint, []error)
 
 		// BulkInsertCommit returns NGT object ids.
 		// This stores and indexes at the same time.
-		BulkInsertCommit(vecs [][]float64, poolSize uint32) ([]uint, []error)
+		BulkInsertCommit(vecs [][]float32, poolSize uint32) ([]uint, []error)
 
 		// CreateAndSaveIndex call  CreateIndex and SaveIndex in a row.
 		CreateAndSaveIndex(poolSize uint32) error
@@ -71,7 +71,7 @@ type (
 		BulkRemove(ids ...uint) error
 
 		// GetVector returns vector stored in NGT index.
-		GetVector(id uint) ([]float64, error)
+		GetVector(id uint) ([]float32, error)
 
 		// Close NGT index.
 		Close()
@@ -127,6 +127,8 @@ const (
 
 	// ErrorCode is false
 	ErrorCode = C._Bool(false)
+
+	dimensionLimit = 1 << 16
 )
 
 // New returns NGT instance with recreating empty index file
@@ -257,7 +259,7 @@ func (n *ngt) loadObjectSpace() error {
 }
 
 // Search returns search result as []SearchResult
-func (n *ngt) Search(vec []float64, size int, epsilon, radius float32) ([]SearchResult, error) {
+func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) ([]SearchResult, error) {
 	results := C.ngt_create_empty_results(n.ebuf)
 
 	defer C.ngt_destroy_results(results)
@@ -274,9 +276,9 @@ func (n *ngt) Search(vec []float64, size int, epsilon, radius float32) ([]Search
 	}
 
 	n.mu.RLock()
-	ret := C.ngt_search_index(
+	ret := C.ngt_search_index_as_float(
 		n.index,
-		(*C.double)(&vec[0]),
+		(*C.float)(&vec[0]),
 		n.dimension,
 		// C.size_t(size),
 		*(*C.size_t)(unsafe.Pointer(&size)),
@@ -316,9 +318,9 @@ func (n *ngt) Search(vec []float64, size int, epsilon, radius float32) ([]Search
 
 // Insert returns NGT object id.
 // This only stores not indexing, you must call CreateIndex and SaveIndex.
-func (n *ngt) Insert(vec []float64) (uint, error) {
+func (n *ngt) Insert(vec []float32) (uint, error) {
 	n.mu.Lock()
-	id := C.ngt_insert_index(n.index, (*C.double)(&vec[0]), C.uint32_t(n.dimension), n.ebuf)
+	id := C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), n.ebuf)
 	n.mu.Unlock()
 	if id == 0 {
 		return 0, n.newGoError(n.ebuf)
@@ -329,7 +331,7 @@ func (n *ngt) Insert(vec []float64) (uint, error) {
 
 // InsertCommit returns NGT object id.
 // This stores and indexes at the same time.
-func (n *ngt) InsertCommit(vec []float64, poolSize uint32) (uint, error) {
+func (n *ngt) InsertCommit(vec []float32, poolSize uint32) (uint, error) {
 	id, err := n.Insert(vec)
 	if err != nil {
 		return id, err
@@ -350,7 +352,7 @@ func (n *ngt) InsertCommit(vec []float64, poolSize uint32) (uint, error) {
 
 // BulkInsert returns NGT object ids.
 // This only stores not indexing, you must call CreateIndex and SaveIndex.
-func (n *ngt) BulkInsert(vecs [][]float64) ([]uint, []error) {
+func (n *ngt) BulkInsert(vecs [][]float32) ([]uint, []error) {
 	ids := make([]uint, 0, len(vecs))
 	errs := make([]error, 0, len(vecs))
 
@@ -358,7 +360,7 @@ func (n *ngt) BulkInsert(vecs [][]float64) ([]uint, []error) {
 	n.mu.Lock()
 	for _, vec := range vecs {
 		// n.mu.Lock()
-		id = uint(C.ngt_insert_index(n.index, (*C.double)(&vec[0]), C.uint32_t(n.dimension), n.ebuf))
+		id = uint(C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), n.ebuf))
 		// n.mu.Unlock()
 		if id == 0 {
 			errs = append(errs, n.newGoError(n.ebuf))
@@ -372,7 +374,7 @@ func (n *ngt) BulkInsert(vecs [][]float64) ([]uint, []error) {
 
 // BulkInsertCommit returns NGT object ids.
 // This stores and indexes at the same time.
-func (n *ngt) BulkInsertCommit(vecs [][]float64, poolSize uint32) ([]uint, []error) {
+func (n *ngt) BulkInsertCommit(vecs [][]float32, poolSize uint32) ([]uint, []error) {
 	ids := make([]uint, 0, len(vecs))
 	errs := make([]error, 0, len(vecs))
 
@@ -474,9 +476,9 @@ func (n *ngt) BulkRemove(ids ...uint) error {
 }
 
 // GetVector returns vector stored in NGT index.
-func (n *ngt) GetVector(id uint) ([]float64, error) {
+func (n *ngt) GetVector(id uint) ([]float32, error) {
 	dimension := int(n.dimension)
-	ret := make([]float64, 0, dimension)
+	var ret []float32
 	switch n.objectType {
 	case Float:
 		n.mu.RLock()
@@ -485,10 +487,10 @@ func (n *ngt) GetVector(id uint) ([]float64, error) {
 		if results == nil {
 			return nil, n.newGoError(n.ebuf)
 		}
-		slice := (*[1 << 30]C.float)(unsafe.Pointer(results))[:dimension:dimension]
-		for i := 0; i < dimension; i++ {
-			ret[i] = float64(slice[i])
-		}
+		ret = (*[dimensionLimit]float32)(unsafe.Pointer(results))[:dimension:dimension]
+		// for _, elem := range (*[dimensionLimit]C.float)(unsafe.Pointer(results))[:dimension:dimension]{
+		// 	ret = append(ret, float32(elem))
+		// }
 	case Uint8:
 		n.mu.RLock()
 		results := C.ngt_get_object_as_integer(n.ospace, C.ObjectID(id), n.ebuf)
@@ -496,9 +498,9 @@ func (n *ngt) GetVector(id uint) ([]float64, error) {
 		if results == nil {
 			return nil, n.newGoError(n.ebuf)
 		}
-		slice := (*[1 << 30]C.uchar)(unsafe.Pointer(results))[:dimension:dimension]
-		for i := 0; i < dimension; i++ {
-			ret[i] = float64(slice[i])
+		ret = make([]float32, 0, dimension)
+		for _, elem := range (*[dimensionLimit]C.uint8_t)(unsafe.Pointer(results))[:dimension:dimension] {
+			ret = append(ret, float32(elem))
 		}
 	default:
 		return nil, errors.ErrUnsupportedObjectType
@@ -521,7 +523,6 @@ func (n *ngt) Close() {
 		C.ngt_close_index(n.index)
 		C.ngt_destroy_error_object(n.ebuf)
 		n.index = nil
-
 		// dimension           C.int32_t
 		// objectType          objectType
 		// prop                C.NGTProperty

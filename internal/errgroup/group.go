@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package errgroup
 
 import (
 	"context"
+	"runtime"
 	"sync"
 	"sync/atomic"
 
@@ -107,6 +108,13 @@ func (g *group) Go(f func() error) {
 				}
 			}
 			if err := f(); err != nil {
+				if limited {
+					select {
+					case <-g.limitation:
+					case <-g.egctx.Done():
+					}
+				}
+				runtime.Gosched()
 				g.mu.RLock()
 				_, ok := g.emap[err.Error()]
 				g.mu.RUnlock()
@@ -117,10 +125,11 @@ func (g *group) Go(f func() error) {
 					g.mu.Unlock()
 				}
 				g.doCancel()
+				return
 			}
 			if limited {
 				select {
-				case _ = <-g.limitation:
+				case <-g.limitation:
 				case <-g.egctx.Done():
 				}
 			}

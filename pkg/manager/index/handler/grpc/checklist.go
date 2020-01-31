@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package grpc provides grpc server logic
 package grpc
 
 import (
@@ -41,11 +40,7 @@ type entryCheckList struct {
 	p unsafe.Pointer
 }
 
-func newEntryCheckList(i struct{}) *entryCheckList {
-	return &entryCheckList{p: unsafe.Pointer(&i)}
-}
-
-func (m *checkList) Exists(key string) (ok bool) {
+func (m *checkList) Exists(key string) bool {
 	read, _ := m.read.Load().(readOnlyCheckList)
 	e, ok := read.m[key]
 	if !ok && read.amended {
@@ -78,18 +73,18 @@ func (m *checkList) Check(key string) {
 	m.mu.Lock()
 	read, _ = m.read.Load().(readOnlyCheckList)
 	if e, ok := read.m[key]; ok {
-		if atomic.CompareAndSwapPointer(&e.p, expungedCheckList, nil) {
+		if e.unexpungeLocked() {
 			m.dirty[key] = e
 		}
-		atomic.StorePointer(&e.p, unsafe.Pointer(&struct{}{}))
+		atomic.StorePointer(&e.p, unsafe.Pointer(&value))
 	} else if e, ok := m.dirty[key]; ok {
-		atomic.StorePointer(&e.p, unsafe.Pointer(&struct{}{}))
+		atomic.StorePointer(&e.p, unsafe.Pointer(&value))
 	} else {
 		if !read.amended {
 			m.dirtyLocked()
 			m.read.Store(readOnlyCheckList{m: read.m, amended: true})
 		}
-		m.dirty[key] = newEntryCheckList(value)
+		m.dirty[key] = &entryCheckList{p: unsafe.Pointer(&value)}
 	}
 	m.mu.Unlock()
 }
@@ -104,6 +99,10 @@ func (e *entryCheckList) tryStore(i *struct{}) bool {
 			return true
 		}
 	}
+}
+
+func (e *entryCheckList) unexpungeLocked() (wasExpunged bool) {
+	return atomic.CompareAndSwapPointer(&e.p, expungedCheckList, nil)
 }
 
 func (m *checkList) missLocked() {

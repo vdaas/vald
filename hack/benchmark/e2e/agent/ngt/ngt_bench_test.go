@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -33,38 +32,6 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/internal/log"
 )
-
-var (
-	searchConfig = &payload.Search_Config{
-		Num:     10,
-		Radius:  -1,
-		Epsilon: 0.01,
-	}
-	targets    []string
-	addresses  []string
-	datasetVar string
-	addressVar string
-	once       sync.Once
-)
-
-func init() {
-	log.Init(log.DefaultGlg())
-
-	flag.StringVar(&datasetVar, "dataset", "", "available dataset(choice with comma)")
-	flag.StringVar(&addressVar, "address", "", "vald agent address")
-}
-
-func parseArgs(tb testing.TB) {
-	tb.Helper()
-	once.Do(func() {
-		flag.Parse()
-		targets = strings.Split(strings.TrimSpace(datasetVar), ",")
-		addresses = strings.Split(strings.TrimSpace(addressVar), ",")
-		if len(targets) != len(addresses) {
-			tb.Fatal("address and dataset must have same length.")
-		}
-	})
-}
 
 func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 	parseArgs(rb)
@@ -113,7 +80,7 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 			url := fmt.Sprintf("http://%s/insert", address)
 			b.Run("Insert objects", func(bb *testing.B) {
 				for bb.N+i >= len(ids) {
-					ids = append(ids, assets.CreateIDs(len(train))...)
+					ids = append(ids, assets.CreateSequentialIDs(len(train))...)
 				}
 
 				bb.ReportAllocs()
@@ -286,7 +253,7 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 			i := 0
 			b.Run("Insert objects", func(bb *testing.B) {
 				for bb.N+i >= len(ids) {
-					ids = append(ids, assets.CreateIDs(len(train))...)
+					ids = append(ids, assets.CreateSequentialIDs(len(train))...)
 				}
 
 				bb.ReportAllocs()
@@ -406,7 +373,7 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 			i := 0
 			b.Run("Insert objects", func(bb *testing.B) {
 				for bb.N+i >= len(ids) {
-					ids = append(ids, assets.CreateIDs(len(train))...)
+					ids = append(ids, assets.CreateSequentialIDs(len(train))...)
 				}
 
 				bb.ReportAllocs()
