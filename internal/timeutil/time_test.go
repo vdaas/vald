@@ -22,12 +22,14 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	tests := []struct {
+	type test struct {
 		name    string
 		t       string
 		want    time.Duration
 		wantErr bool
-	}{
+	}
+
+	tests := []test{
 		{
 			name:    "returns time.Nanosecond and nil when t is 1ns",
 			t:       "1ns",
