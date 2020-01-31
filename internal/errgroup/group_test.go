@@ -113,7 +113,7 @@ func TestGet(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "returns new instance when global instance is nil",
+			name: "returns new instance when instance object of global is nil",
 			beforeFunc: func() {
 				clearGlobalObject()
 			},
@@ -129,7 +129,7 @@ func TestGet(t *testing.T) {
 			eg, _ := New(context.Background())
 
 			return test{
-				name: "returns old instance when global instance is not nil",
+				name: "returns old instance when instance object of global is not nil",
 				beforeFunc: func() {
 					instance = eg
 				},
