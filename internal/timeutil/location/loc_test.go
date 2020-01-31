@@ -248,6 +248,20 @@ func Test_location(t *testing.T) {
 				return nil
 			},
 		},
+
+		{
+			name: "returns invalid location when zone is empty",
+			args: args{
+				zone:   "",
+				offset: 0,
+			},
+			checkFunc: func(got *time.Location) error {
+				if !reflect.DeepEqual(got, time.UTC) {
+					return errors.Errorf("not equals. want: %v, but got: %v", time.UTC, got)
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
