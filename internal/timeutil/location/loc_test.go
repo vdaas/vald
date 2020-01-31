@@ -159,7 +159,7 @@ func TestGMT(t *testing.T) {
 			got := GMT()
 			if got == nil {
 				t.Error("got is nil")
-			} else if got, want := got.String(), "GMT"; got != want {
+			} else if got, want := got.String(), locationGMT; got != want {
 				t.Errorf("String() not equals. want: %v, but got: %v", want, got)
 			}
 		})
@@ -199,14 +199,14 @@ func TestJST(t *testing.T) {
 			got := JST()
 			if got == nil {
 				t.Error("got is nil")
-			} else if got, want := got.String(), "JST"; got != want {
+			} else if got, want := got.String(), locationJST; got != want {
 				t.Errorf("String() not equals. want: %v, but got: %v", want, got)
 			}
 		})
 	}
 }
 
-func aTest_location(t *testing.T) {
+func Test_location(t *testing.T) {
 	type args struct {
 		zone   string
 		offset int
