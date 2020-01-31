@@ -24,24 +24,38 @@ import (
 )
 
 func TestWithName(t *testing.T) {
-	type args struct {
-		name string
-	}
-	tests := []struct {
+	type test struct {
 		name      string
-		args      args
+		str       string
 		checkFunc func(Option) error
-	}{
+	}
+
+	tests := []test{
 		{
-			name: "set name success",
-			args: args{
-				name: "dummyName",
-			},
+			name: "set success when str is not empty",
+			str:  "name",
 			checkFunc: func(o Option) error {
-				r := &runner{}
-				o(r)
-				if r.name != "dummyName" {
-					return errors.New("cannot set value")
+				got := new(runner)
+				o(got)
+
+				if got.name != "str" {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when str is empty",
+			str:  "name",
+			checkFunc: func(o Option) error {
+				got := &runner{
+					name: "name",
+				}
+				o(got)
+
+				if got.name != "name" {
+					return errors.New("invalid param was set")
 				}
 				return nil
 			},
@@ -49,7 +63,7 @@ func TestWithName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := WithName(tt.args.name)
+			got := WithName(tt.str)
 			if err := tt.checkFunc(got); err != nil {
 				t.Errorf("WithName() error = %v", err)
 			}
@@ -69,88 +83,183 @@ func TestWithVersion(t *testing.T) {
 		checkFunc func(Option) error
 	}{
 		{
-			name: "set ver success",
+			name: "set ver success when ver is not empty",
 			args: args{
-				ver: "dummyVer",
+				ver: "ver",
 			},
 			checkFunc: func(o Option) error {
-				r := &runner{}
-				o(r)
-				if r.version != "dummyVer" {
-					return errors.New("cannot set value")
+				got := new(runner)
+				o(got)
+
+				if got.version != "ver" {
+					return errors.New("invalid param was set")
 				}
-				if r.maxVersion != "" {
+
+				if got.maxVersion != "" {
 					return errors.New("maxVersion should be empty")
 				}
-				if r.minVersion != "" {
+
+				if got.minVersion != "" {
 					return errors.New("minVersion should be empty")
 				}
 				return nil
 			},
 		},
+
 		{
-			name: "set min ver success",
+			name: "not set ver when ver is empty",
 			args: args{
-				min: "dummyMinVer",
+				ver: "",
 			},
 			checkFunc: func(o Option) error {
-				r := &runner{}
-				o(r)
-				if r.version != "" {
-					return errors.New("version should be empty")
+				got := &runner{
+					version: "ver",
 				}
-				if r.maxVersion != "" {
+				o(got)
+
+				if got.version != "ver" {
+					return errors.New("invalid param was set")
+				}
+
+				if got.maxVersion != "" {
 					return errors.New("maxVersion should be empty")
 				}
-				if r.minVersion != "dummyMinVer" {
-					return errors.New("cannot set value")
-				}
-				return nil
-			},
-		},
-		{
-			name: "set max ver success",
-			args: args{
-				max: "dummyMaxVer",
-			},
-			checkFunc: func(o Option) error {
-				r := &runner{}
-				o(r)
-				if r.version != "" {
-					return errors.New("version should be empty")
-				}
-				if r.maxVersion != "dummyMaxVer" {
-					return errors.New("cannot set value")
-				}
-				if r.minVersion != "" {
+
+				if got.minVersion != "" {
 					return errors.New("minVersion should be empty")
 				}
 				return nil
 			},
 		},
+
+		{
+			name: "set min success when min is not empty",
+			args: args{
+				min: "min",
+			},
+			checkFunc: func(o Option) error {
+				got := new(runner)
+				o(got)
+
+				if got.version != "" {
+					return errors.New("version should be empty")
+				}
+
+				if got.maxVersion != "" {
+					return errors.New("maxVersion should be empty")
+				}
+
+				if got.minVersion != "min" {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set min when min is empty",
+			args: args{
+				min: "",
+			},
+			checkFunc: func(o Option) error {
+				got := &runner{
+					minVersion: "min",
+				}
+				o(got)
+
+				if got.version != "" {
+					return errors.New("version should be empty")
+				}
+
+				if got.maxVersion != "" {
+					return errors.New("maxVersion should be empty")
+				}
+
+				if got.minVersion != "min" {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "set max success when max is not empty",
+			args: args{
+				max: "max",
+			},
+			checkFunc: func(o Option) error {
+				got := new(runner)
+				o(got)
+
+				if got.version != "" {
+					return errors.New("version should be empty")
+				}
+
+				if got.maxVersion != "max" {
+					return errors.New("invalid param was set")
+				}
+
+				if got.minVersion != "" {
+					return errors.New("minVersion should be empty")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set max when max is empty",
+			args: args{
+				max: "",
+			},
+			checkFunc: func(o Option) error {
+				got := &runner{
+					maxVersion: "max",
+				}
+				o(got)
+
+				if got.version != "" {
+					return errors.New("version should be empty")
+				}
+
+				if got.maxVersion != "max" {
+					return errors.New("invalid param was set")
+				}
+
+				if got.minVersion != "" {
+					return errors.New("minVersion should be empty")
+				}
+				return nil
+			},
+		},
+
 		{
 			name: "set all success",
 			args: args{
-				ver: "dummyVer",
-				min: "dummyMinVer",
-				max: "dummyMaxVer",
+				ver: "ver",
+				min: "min",
+				max: "max",
 			},
 			checkFunc: func(o Option) error {
-				r := &runner{}
-				o(r)
-				if r.version != "dummyVer" {
-					return errors.New("cannot set value")
+				got := new(runner)
+				o(got)
+
+				if got.version != "ver" {
+					return errors.New("invalid ver param was set")
 				}
-				if r.maxVersion != "dummyMaxVer" {
-					return errors.New("cannot set value")
+
+				if got.maxVersion != "max" {
+					return errors.New("invalid max param was set")
 				}
-				if r.minVersion != "dummyMinVer" {
-					return errors.New("cannot set value")
+
+				if got.minVersion != "min" {
+					return errors.New("invalid min param was set")
 				}
+
 				return nil
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := WithVersion(tt.args.ver, tt.args.max, tt.args.min)
@@ -162,36 +271,57 @@ func TestWithVersion(t *testing.T) {
 }
 
 func TestWithConfigLoader(t *testing.T) {
-	type args struct {
-		f func(string) (interface{}, string, error)
-	}
 	type test struct {
 		name      string
-		args      args
+		f         func(string) (interface{}, string, string, error)
 		checkFunc func(Option) error
 	}
+
 	tests := []test{
 		func() test {
-			f := func(string) (interface{}, string, error) {
-				return nil, "", nil
+			f := func(string) (interface{}, string, string, error) {
+				return nil, "", "", nil
 			}
 			return test{
-				name: "set config load success",
-				args: args{f: f},
+				name: "set success when f is not nil",
+				f:    f,
 				checkFunc: func(o Option) error {
-					r := &runner{}
-					o(r)
-					if reflect.ValueOf(r.loadConfig) != reflect.ValueOf(f) {
-						return errors.New("cannot set value")
+					got := new(runner)
+					o(got)
+
+					if reflect.ValueOf(got.loadConfig).Pointer() != reflect.ValueOf(f).Pointer() {
+						return errors.New("invalid min param was set")
+					}
+					return nil
+				},
+			}
+		}(),
+
+		func() test {
+			f := func(string) (interface{}, string, string, error) {
+				return nil, "", "", nil
+			}
+			return test{
+				name: "not set when f is nil",
+				f:    nil,
+				checkFunc: func(o Option) error {
+					got := &runner{
+						loadConfig: f,
+					}
+					o(got)
+
+					if reflect.ValueOf(got.loadConfig).Pointer() != reflect.ValueOf(f).Pointer() {
+						return errors.New("invalid min param was set")
 					}
 					return nil
 				},
 			}
 		}(),
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := WithConfigLoader(tt.args.f)
+			got := WithConfigLoader(tt.f)
 			if err := tt.checkFunc(got); err != nil {
 				t.Errorf("WithConfigLoader() error = %v", err)
 			}
@@ -200,12 +330,9 @@ func TestWithConfigLoader(t *testing.T) {
 }
 
 func TestWithDaemonInitializer(t *testing.T) {
-	type args struct {
-		f func(interface{}) (Runner, error)
-	}
 	type test struct {
 		name      string
-		args      args
+		f         func(interface{}) (Runner, error)
 		checkFunc func(Option) error
 	}
 	tests := []test{
@@ -214,22 +341,45 @@ func TestWithDaemonInitializer(t *testing.T) {
 				return nil, nil
 			}
 			return test{
-				name: "set config load success",
-				args: args{f: f},
+				name: "set success when f is not nil",
+				f:    f,
 				checkFunc: func(o Option) error {
-					r := &runner{}
-					o(r)
-					if reflect.ValueOf(r.initializeDaemon) != reflect.ValueOf(f) {
-						return errors.New("cannot set value")
+					got := new(runner)
+					o(got)
+
+					if reflect.ValueOf(got.initializeDaemon).Pointer() != reflect.ValueOf(f).Pointer() {
+						return errors.New("invalid min param was set")
+					}
+					return nil
+				},
+			}
+		}(),
+
+		func() test {
+			f := func(interface{}) (Runner, error) {
+				return nil, nil
+			}
+			return test{
+				name: "not set when f is nil",
+				f:    nil,
+				checkFunc: func(o Option) error {
+					got := &runner{
+						initializeDaemon: f,
+					}
+					o(got)
+
+					if reflect.ValueOf(got.initializeDaemon).Pointer() != reflect.ValueOf(f).Pointer() {
+						return errors.New("invalid min param was set")
 					}
 					return nil
 				},
 			}
 		}(),
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := WithDaemonInitializer(tt.args.f)
+			got := WithDaemonInitializer(tt.f)
 			if err := tt.checkFunc(got); err != nil {
 				t.Errorf("WithDaemonInitializer() error = %v", err)
 			}

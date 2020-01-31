@@ -20,7 +20,7 @@ import "context"
 
 type runnerMock struct {
 	PreStartFunc func(ctx context.Context) error
-	StartFunc    func(ctx context.Context) <-chan error
+	StartFunc    func(ctx context.Context) (<-chan error, error)
 	PreStopFunc  func(ctx context.Context) error
 	StopFunc     func(ctx context.Context) error
 	PostStopFunc func(ctx context.Context) error
@@ -33,11 +33,11 @@ func (r *runnerMock) PreStart(ctx context.Context) error {
 	return nil
 }
 
-func (r *runnerMock) Start(ctx context.Context) <-chan error {
+func (r *runnerMock) Start(ctx context.Context) (<-chan error, error) {
 	if r.StartFunc != nil {
 		return r.StartFunc(ctx)
 	}
-	return nil
+	return nil, nil
 }
 
 func (r *runnerMock) PreStop(ctx context.Context) error {
