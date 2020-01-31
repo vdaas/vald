@@ -27,36 +27,21 @@ type runnerMock struct {
 }
 
 func (r *runnerMock) PreStart(ctx context.Context) error {
-	if r.PreStartFunc != nil {
-		return r.PreStartFunc(ctx)
-	}
-	return nil
+	return r.PreStartFunc(ctx)
 }
 
 func (r *runnerMock) Start(ctx context.Context) (<-chan error, error) {
-	if r.StartFunc != nil {
-		return r.StartFunc(ctx)
-	}
-	return nil, nil
+	return r.StartFunc(ctx)
 }
 
 func (r *runnerMock) PreStop(ctx context.Context) error {
-	if r.PreStopFunc != nil {
-		return r.PreStopFunc(ctx)
-	}
-	return nil
+	return r.PreStopFunc(ctx)
 }
 
 func (r *runnerMock) Stop(ctx context.Context) error {
-	if r.StopFunc != nil {
-		return r.StopFunc(ctx)
-	}
-	return nil
+	return r.StopFunc(ctx)
 }
 
 func (r *runnerMock) PostStop(ctx context.Context) error {
-	if r.PostStopFunc != nil {
-		return r.PostStopFunc(ctx)
-	}
-	return nil
+	return r.PostStopFunc(ctx)
 }
