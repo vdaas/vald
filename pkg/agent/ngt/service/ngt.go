@@ -283,6 +283,7 @@ func (n *ngt) UpdateMultiple(vecs map[string][]float32) (err error) {
 		if ierr != nil {
 			n.dvc.Delete(uuid)
 			n.ivc.Delete(uuid)
+			atomic.AddUint64(&n.ic, ^uint64(0))
 			if err != nil {
 				err = errors.Wrap(ierr, err.Error())
 			} else {
