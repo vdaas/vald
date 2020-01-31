@@ -250,7 +250,7 @@ func Test_location(t *testing.T) {
 		},
 
 		{
-			name: "returns invalid location when zone is empty",
+			name: "returns UTC location when zone is empty",
 			args: args{
 				zone:   "",
 				offset: 0,
