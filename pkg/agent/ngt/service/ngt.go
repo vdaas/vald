@@ -204,7 +204,7 @@ func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (dst
 	}
 	log.Debugf("SearchByID\tuuid: %s size: %d epsilon: %f radius: %f", uuid, size, epsilon, radius)
 	vec, err := n.GetObject(uuid)
-	if err != nil{
+	if err != nil {
 		log.Debugf("SearchByID\tuuid: %s's vector not found", uuid)
 		return nil, err
 	}
@@ -256,12 +256,13 @@ func (n *ngt) InsertMultiple(vecs map[string][]float32) (err error) {
 }
 
 func (n *ngt) Update(uuid string, vec []float32) (err error) {
-	err = n.Delete(uuid)
+	now := time.Now().UnixNano()
+	err = n.delete(uuid, now)
 	if err != nil {
 		return err
 	}
-
-	return n.insert(uuid, vec, time.Now().UnixNano(), false)
+	now++
+	return n.insert(uuid, vec, now, false)
 }
 
 func (n *ngt) UpdateMultiple(vecs map[string][]float32) (err error) {
@@ -281,6 +282,7 @@ func (n *ngt) UpdateMultiple(vecs map[string][]float32) (err error) {
 		ierr := n.insert(uuid, vec, t, false)
 		if ierr != nil {
 			n.dvc.Delete(uuid)
+			n.ivc.Delete(uuid)
 			if err != nil {
 				err = errors.Wrap(ierr, err.Error())
 			} else {
@@ -307,11 +309,10 @@ func (n *ngt) delete(uuid string, t int64) (err error) {
 			err = errors.ErrObjectIDNotFound(uuid)
 			return err
 		}
-	} else {
-		if vc, ok := n.ivc.Load(uuid); ok && vc.date < t {
-			n.ivc.Delete(uuid)
-			atomic.AddUint64(&n.ic, ^uint64(0))
-		}
+	}
+	if vc, ok := n.ivc.Load(uuid); ok && vc.date < t {
+		n.ivc.Delete(uuid)
+		atomic.AddUint64(&n.ic, ^uint64(0))
 	}
 	n.dvc.Store(uuid, vcache{
 		date: t,
@@ -338,18 +339,18 @@ func (n *ngt) GetObject(uuid string) (vec []float32, err error) {
 	oid, ok := n.kvs.Get(uuid)
 	if !ok {
 		log.Debugf("GetObject\tuuid: %s's kvs data not found, trying to read from vcache", uuid)
-		vec, ok = n.insertCache(uuid)
+		ivc, ok := n.insertCache(uuid)
 		if !ok {
 			log.Debugf("GetObject\tuuid: %s's vcache data not found", uuid)
 			return nil, errors.ErrObjectIDNotFound(uuid)
 		}
-	} else {
-		log.Debugf("GetObject\tGetVector oid: %d", oid)
-		vec, err = n.core.GetVector(uint(oid))
-		if err != nil {
-			log.Debugf("GetObject\tuuid: %s oid: %d's vector not found", uuid, oid)
-			return nil, errors.ErrObjectNotFound(err, uuid)
-		}
+		return ivc.vector, nil
+	}
+	log.Debugf("GetObject\tGetVector oid: %d", oid)
+	vec, err = n.core.GetVector(uint(oid))
+	if err != nil {
+		log.Debugf("GetObject\tuuid: %s oid: %d's vector not found", uuid, oid)
+		return nil, errors.ErrObjectNotFound(err, uuid)
 	}
 	return vec, nil
 }
@@ -460,16 +461,15 @@ func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 	return oid, ok
 }
 
-func (n *ngt) insertCache(uuid string) ([]float32, bool) {
+func (n *ngt) insertCache(uuid string) (*vcache, bool) {
 	iv, ok := n.ivc.Load(uuid)
 	if ok {
 		dv, ok := n.dvc.Load(uuid)
 		if !ok {
-			return iv.vector, ok
+			return &iv, ok
 		}
 		if ok && dv.date <= iv.date {
-			n.dvc.Delete(uuid)
-			return iv.vector, ok
+			return &iv, ok
 		}
 		n.ivc.Delete(uuid)
 		atomic.AddUint64(&n.ic, ^uint64(0))
