@@ -34,6 +34,7 @@ import (
 type Dialer interface {
 	GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error)
 	StartDialerCache(ctx context.Context)
+	DialContext(ctx context.Context, network, address string) (net.Conn, error)
 }
 
 type dialer struct {
@@ -138,6 +139,10 @@ func (d *dialer) StartDialerCache(ctx context.Context) {
 			EnableExpiredHook().
 			StartExpired(ctx, d.dnsRefreshDuration)
 	}
+}
+
+func (d *dialer) DialContext(ctx context.Context, network, address string) (net.Conn, error) {
+	return d.GetDialer()(ctx, network, address)
 }
 
 func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (

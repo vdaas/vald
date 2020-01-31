@@ -582,6 +582,15 @@ backupManager:
         cert: /path/to/cert
         key: /path/to/key
         ca: /path/to/ca
+      tcp:
+        dns:
+          cache_enabled: true
+          refresh_duration: 5m
+          cache_expiration: 24h
+        dialer:
+          timeout: 30s
+          keep_alive: 10m
+          dual_stack_enabled: false
       enable_host_verification: false
       default_timestamp: true
       reconnect_interval: 1m
@@ -599,7 +608,6 @@ backupManager:
         dc_aware_routing: false
         non_local_replicas_fallback: false
         shuffle_replicas: false
-
 indexManager:
   version: v0.0.0
   name: vald-index-manager-ngt
@@ -795,6 +803,15 @@ meta:
         cert: /path/to/cert
         key: /path/to/key
         ca: /path/to/ca
+      tcp:
+        dns:
+          cache_enabled: true
+          refresh_duration: 5m
+          cache_expiration: 24h
+        dialer:
+          timeout: 30s
+          keep_alive: 10m
+          dual_stack_enabled: false
       enable_host_verification: false
       default_timestamp: true
       reconnect_interval: 1m
