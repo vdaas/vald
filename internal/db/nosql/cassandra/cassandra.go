@@ -20,7 +20,6 @@ import (
 	"context"
 	"crypto/tls"
 	"reflect"
-	"sync"
 	"time"
 
 	"github.com/gocql/gocql"
@@ -110,9 +109,8 @@ type client struct {
 	kvTable                  string
 	vkTable                  string
 
-	cluster     *gocql.ClusterConfig
-	session     *gocql.Session
-	sessionPool sync.Map
+	cluster *gocql.ClusterConfig
+	session *gocql.Session
 }
 
 func New(opts ...Option) (Cassandra, error) {
@@ -312,12 +310,12 @@ func (c *client) MultiGetValue(keys ...string) (values []string, err error) {
 	}).SelectRelease(&keyvals); err != nil {
 		return nil, err
 	}
-	
+
 	kvs := make(map[string]string, len(keyvals))
 	for _, keyval := range keyvals {
 		kvs[keyval.UUID] = keyval.Meta
 	}
-	
+
 	values = make([]string, 0, len(keyvals))
 	for _, key := range keys {
 		if kvs[key] == "" {
@@ -331,7 +329,7 @@ func (c *client) MultiGetValue(keys ...string) (values []string, err error) {
 		}
 		values = append(values, kvs[key])
 	}
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 	return values, nil
@@ -349,12 +347,12 @@ func (c *client) MultiGetKey(values ...string) (keys []string, err error) {
 	}).SelectRelease(&keyvals); err != nil {
 		return nil, err
 	}
-	
+
 	kvs := make(map[string]string, len(keyvals))
 	for _, keyval := range keyvals {
 		kvs[keyval.Meta] = keyval.UUID
 	}
-	
+
 	keys = make([]string, 0, len(keyvals))
 	for _, value := range values {
 		if kvs[value] == "" {
@@ -368,7 +366,7 @@ func (c *client) MultiGetKey(values ...string) (keys []string, err error) {
 		}
 		keys = append(keys, kvs[value])
 	}
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 	return keys, nil
