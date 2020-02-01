@@ -249,7 +249,7 @@ jobs:
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 1
-      - name: Add contributor and push
+      - name: update and push
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
           PR_RESP=`curl ${PR_INFO_URL}`
@@ -265,7 +265,8 @@ jobs:
 
           echo "Update license headers and format go codes"
 
-          go get golang.org/x/tools/cmd/goimports
+          go get -u golang.org/x/tools/cmd/goimports
+          export PATH=$(go env GOPATH)/bin:$PATH
 
           make license
           make update/goimports
