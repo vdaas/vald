@@ -696,6 +696,12 @@ meta:
     #       secretKeyRef:
     #         name: cassandra-secret
     #         key: password
+    # - type: waitFor
+    #   name: wait-for-scylla
+    #   image: scylladb/scylla:latest
+    #   target: scylla.default.svc.cluster.local
+    #   untilCondition: $(cqlsh scylla.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $?) -eq 0
+    #   sleepDuration: 2
   env:
     - name: REDIS_PASSWORD
       valueFrom:
@@ -777,6 +783,9 @@ meta:
         - cassandra-0.cassandra.default.svc.cluster.local
         - cassandra-1.cassandra.default.svc.cluster.local
         - cassandra-2.cassandra.default.svc.cluster.local
+        # - scylla-0.scylla.default.svc.cluster.local
+        # - scylla-1.scylla.default.svc.cluster.local
+        # - scylla-2.scylla.default.svc.cluster.local
       cql_version: 3.0.0
       proto_version: 0
       timeout: 600ms
