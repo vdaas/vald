@@ -41,6 +41,7 @@ spec:
         - name: vald-agent-ngt
           image: "vdaas/vald-agent-ngt:nightly"
           imagePullPolicy: Always
+          
           livenessProbe:
             failureThreshold: 2
             httpGet:
