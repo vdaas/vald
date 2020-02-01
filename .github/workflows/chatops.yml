@@ -265,7 +265,9 @@ jobs:
 
           echo "Update license headers and format go codes"
 
+          pushd /tmp
           go get -u golang.org/x/tools/cmd/goimports
+          popd
           export PATH=$(go env GOPATH)/bin:$PATH
 
           make license
