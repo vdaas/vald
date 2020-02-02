@@ -133,6 +133,18 @@ k8s/external/cassandra/initialize:
 	-kubectl delete configmap cassandra-initdb
 	kubectl apply -f k8s/jobs/db/initialize/cassandra
 
+.PHONY: k8s/external/scylla/deploy
+## deploy scylla to k8s
+k8s/external/scylla/deploy:
+	kubectl apply -f k8s/jobs/db/initialize/cassandra/configmap.yaml
+	kubectl apply -f k8s/external/scylla
+
+.PHONY: k8s/external/scylla/remove
+## remove scylla from k8s
+k8s/external/scylla/remove:
+	kubectl delete -f k8s/external/scylla
+	kubectl delete configmap cassandra-initdb
+
 .PHONY: k8s/linkerd/deploy
 ## deploy linkerd to k8s
 k8s/linkerd/deploy:
