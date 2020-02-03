@@ -85,7 +85,6 @@ func TestWithConfigFilePathDefault(t *testing.T) {
 
 		{
 			name: "not set when path is empty",
-			path: "",
 			checkFunc: func(opt Option) error {
 				got := &parser{
 					filePath: filePath{
@@ -275,7 +274,6 @@ func TestWithVersionDescription(t *testing.T) {
 
 		{
 			name: "not set when desc is empty",
-			desc: "",
 			checkFunc: func(opt Option) error {
 				got := &parser{
 					version: version{
