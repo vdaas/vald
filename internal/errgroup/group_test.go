@@ -195,13 +195,26 @@ func TestLimitation(t *testing.T) {
 		},
 
 		{
-			name: "store false when limitation is 0 or less",
-			args: args{
-				limit: 0,
-			},
+			name: "store false when limitation is 0",
 			checkFunc: func(eg *group) error {
 				if ok := eg.enableLimitation.Load().(bool); ok {
 					return errors.Errorf("enableLimitation is wrong. want: %v, got: %v", false, true)
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "store true when limitation is less than 0",
+			args: args{
+				limit: -1,
+			},
+			field: field{
+				limitation: make(chan struct{}),
+			},
+			checkFunc: func(eg *group) error {
+				if ok := eg.enableLimitation.Load().(bool); ok {
+					return errors.Errorf("enableLimitation is wrong. want: %v, got: %v", true, false)
 				}
 				return nil
 			},
@@ -399,7 +412,7 @@ func TestDoCancel(t *testing.T) {
 			}
 
 			return test{
-				name: "success when cancel function is not nil",
+				name: "success when field of cancel function is not nil",
 				receiver: receiver{
 					g: g,
 				},
@@ -416,7 +429,7 @@ func TestDoCancel(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 
 			return test{
-				name: "failure when cancel function is nil",
+				name: "failure when field of cancel function is nil",
 				receiver: receiver{
 					g: new(group),
 				},
