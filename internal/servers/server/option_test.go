@@ -37,7 +37,6 @@ func TestWithHost(t *testing.T) {
 
 		{
 			name: "not set nothing when host is empty",
-			host: "",
 			checkFunc: func(opt Option) error {
 				got := &server{
 					host: "host",
@@ -183,7 +182,6 @@ func TestWithErrorGroup(t *testing.T) {
 
 		{
 			name: "not set when eg is nil",
-			eg:   nil,
 			checkFunc: func(opt Option) error {
 				eg := errgroup.Get()
 
@@ -238,7 +236,6 @@ func TestWithPreStartFunc(t *testing.T) {
 
 		{
 			name: "not set when fn is nil",
-			fn:   nil,
 			checkFunc: func(opt Option) error {
 				fn := func() error { return nil }
 
@@ -293,7 +290,6 @@ func TestWithPreStopFunc(t *testing.T) {
 
 		{
 			name: "not set when fn is nil",
-			fn:   nil,
 			checkFunc: func(opt Option) error {
 				fn := func() error { return nil }
 
@@ -355,6 +351,21 @@ func TestWithProbeWaitTime(t *testing.T) {
 				return nil
 			},
 		},
+
+		{
+			name: "not set when dur is empty",
+			checkFunc: func(opt Option) error {
+				got := &server{
+					pwt: 5 * time.Second,
+				}
+				opt(got)
+
+				if got.pwt != 0 {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -388,6 +399,7 @@ func TestWithShutdownDuration(t *testing.T) {
 				return nil
 			},
 		},
+
 		{
 			name: "set default when dur is invalid",
 			dur:  "vald",
@@ -396,6 +408,21 @@ func TestWithShutdownDuration(t *testing.T) {
 				opt(got)
 
 				if got.sddur != 5*time.Second {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "set default when dur is empty",
+			checkFunc: func(opt Option) error {
+				got := &server{
+					sddur: 5 * time.Second,
+				}
+				opt(got)
+
+				if got.sddur != 0 {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -448,6 +475,21 @@ func TestWithReadHeaderTimeout(t *testing.T) {
 				return nil
 			},
 		},
+
+		{
+			name: "set default when dur is empty",
+			checkFunc: func(opt Option) error {
+				got := &server{
+					rht: 5 * time.Second,
+				}
+				opt(got)
+
+				if got.rht != 0 {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -490,6 +532,21 @@ func TestWithReadTimeout(t *testing.T) {
 				opt(got)
 
 				if got.rt != 5*time.Second {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "set default when dur is empty",
+			checkFunc: func(opt Option) error {
+				got := &server{
+					rt: 5 * time.Second,
+				}
+				opt(got)
+
+				if got.rt != 0 {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -542,6 +599,21 @@ func TestWithWriteTimeout(t *testing.T) {
 				return nil
 			},
 		},
+
+		{
+			name: "set default when dur is empty",
+			checkFunc: func(opt Option) error {
+				got := &server{
+					wt: 5 * time.Second,
+				}
+				opt(got)
+
+				if got.wt != 0 {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -589,6 +661,21 @@ func TestWithIdleTimeout(t *testing.T) {
 				return nil
 			},
 		},
+
+		{
+			name: "set default when dur is empty",
+			checkFunc: func(opt Option) error {
+				got := &server{
+					it: 5 * time.Second,
+				}
+				opt(got)
+
+				if got.it != 0 {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -629,7 +716,6 @@ func TestWithListenConfig(t *testing.T) {
 
 		{
 			name: "not set when lc is nil",
-			lc:   nil,
 			checkFunc: func(opt Option) error {
 				lc := new(net.ListenConfig)
 				got := &server{
@@ -692,6 +778,21 @@ func TestWithServerMode(t *testing.T) {
 				return nil
 			},
 		},
+
+		{
+			name: "not set when mode is empty",
+			checkFunc: func(opt Option) error {
+				got := &server{
+					mode: GRPC,
+				}
+				opt(got)
+
+				if got.mode != GRPC {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -732,7 +833,6 @@ func TestWithTLSConfig(t *testing.T) {
 
 		{
 			name: "not set when cfg is nil",
-			cfg:  nil,
 			checkFunc: func(opt Option) error {
 				cfg := new(tls.Config)
 				got := &server{
@@ -789,8 +889,7 @@ func TestWithHTTPHandler(t *testing.T) {
 		}(),
 
 		{
-			name:    "not set when hdr is nil",
-			handler: nil,
+			name: "not set when hdr is nil",
 			checkFunc: func(opt Option) error {
 				hdr := new(handler)
 				got := new(server)
@@ -843,7 +942,6 @@ func TestWithHTTPServer(t *testing.T) {
 
 		{
 			name: "not set when srv is nil",
-			srv:  nil,
 			checkFunc: func(opt Option) error {
 				srv := new(http.Server)
 				got := new(server)
@@ -896,7 +994,6 @@ func TestWithGRPCServer(t *testing.T) {
 
 		{
 			name: "not set when srv is nil",
-			srv:  nil,
 			checkFunc: func(opt Option) error {
 				srv := new(grpc.Server)
 				got := new(server)
@@ -949,7 +1046,6 @@ func TestWithGRPCOption(t *testing.T) {
 
 		{
 			name: "not set when opts is nil",
-			opts: nil,
 			checkFunc: func(opt Option) error {
 				opts := []grpc.ServerOption{}
 				got := new(server)
@@ -1002,7 +1098,6 @@ func TestWithGRPCRegistFunc(t *testing.T) {
 
 		{
 			name: "not set when f is nil",
-			fn:   nil,
 			checkFunc: func(opt Option) error {
 				fn := func(*grpc.Server) {}
 				got := new(server)
@@ -1113,7 +1208,6 @@ func TestWithGRPCMaxReceiveMessageSize(t *testing.T) {
 
 		{
 			name: "not set when size is 0",
-			size: 0,
 			checkFunc: func(opt Option) error {
 				sopts := []grpc.ServerOption{
 					grpc.ConnectionTimeout(100 * time.Second),
@@ -1182,7 +1276,6 @@ func TestWithGRPCMaxSendMessageSize(t *testing.T) {
 
 		{
 			name: "not set when size is 0",
-			size: 0,
 			checkFunc: func(opt Option) error {
 				sopts := []grpc.ServerOption{
 					grpc.ConnectionTimeout(100 * time.Second),
@@ -1251,7 +1344,6 @@ func TestWithGRPCInitialWindowSize(t *testing.T) {
 
 		{
 			name: "not set when size is 0",
-			size: 0,
 			checkFunc: func(opt Option) error {
 				sopts := []grpc.ServerOption{
 					grpc.ConnectionTimeout(100 * time.Second),
@@ -1320,7 +1412,6 @@ func TestWithGRPCInitialConnWindowSize(t *testing.T) {
 
 		{
 			name: "not set when size is 0",
-			size: 0,
 			checkFunc: func(opt Option) error {
 				sopts := []grpc.ServerOption{
 					grpc.ConnectionTimeout(100 * time.Second),
@@ -1729,7 +1820,6 @@ func TestWithGRPCWriteBufferSize(t *testing.T) {
 
 		{
 			name: "not set when size is 0",
-			size: 0,
 			checkFunc: func(opt Option) error {
 				gopts := []grpc.ServerOption{
 					grpc.ConnectionTimeout(10 * time.Second),
@@ -1798,7 +1888,6 @@ func TestWithGRPCReadBufferSize(t *testing.T) {
 
 		{
 			name: "not set when size is 0",
-			size: 0,
 			checkFunc: func(opt Option) error {
 				gopts := []grpc.ServerOption{
 					grpc.ConnectionTimeout(10 * time.Second),
@@ -1935,7 +2024,6 @@ func TestWithGRPCMaxHeaderListSize(t *testing.T) {
 
 		{
 			name: "not set when size is 0",
-			size: 0,
 			checkFunc: func(opt Option) error {
 				gopts := []grpc.ServerOption{
 					grpc.ConnectionTimeout(10 * time.Second),
@@ -2004,7 +2092,6 @@ func TestWithGRPCHeaderTableSize(t *testing.T) {
 
 		{
 			name: "not set when size is 0",
-			size: 0,
 			checkFunc: func(opt Option) error {
 				gopts := []grpc.ServerOption{
 					grpc.ConnectionTimeout(10 * time.Second),
