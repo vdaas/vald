@@ -47,7 +47,7 @@ func WithVersion(ver, max, min string) Option {
 	}
 }
 
-func WithConfigLoader(f func(string) (interface{}, config.Common, error)) Option {
+func WithConfigLoader(f func(string) (interface{}, *config.GlobalConfig, error)) Option {
 	return func(r *runner) {
 		if f != nil {
 			r.loadConfig = f

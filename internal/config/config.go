@@ -29,8 +29,8 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-// Common represent a application setting data content (config.yaml).
-type Common struct {
+// GlobalConfig represent a application setting data content (config.yaml).
+type GlobalConfig struct {
 	// Version represent configuration file version.
 	Version string `json:"version" yaml:"version"`
 
@@ -46,7 +46,7 @@ const (
 	envSymbol       = "_"
 )
 
-func (c *Common) Bind() *Common {
+func (c *GlobalConfig) Bind() *GlobalConfig {
 	c.Version = GetActualValue(c.Version)
 	c.TZ = GetActualValue(c.TZ)
 
@@ -56,7 +56,7 @@ func (c *Common) Bind() *Common {
 	return c
 }
 
-func (c *Common) UnmarshalJSON(data []byte) (err error) {
+func (c *GlobalConfig) UnmarshalJSON(data []byte) (err error) {
 	ic := new(struct {
 		Ver     string   `json:"version"`
 		TZ      string   `json:"time_zone"`

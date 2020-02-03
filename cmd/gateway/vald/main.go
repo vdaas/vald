@@ -40,12 +40,12 @@ func main() {
 			context.Background(),
 			runner.WithName(name),
 			runner.WithVersion(info.Version, maxVersion, minVersion),
-			runner.WithConfigLoader(func(path string) (interface{}, config.Common, error) {
+			runner.WithConfigLoader(func(path string) (interface{}, *config.GlobalConfig, error) {
 				cfg, err := config.NewConfig(path)
 				if err != nil {
-					return nil, config.Common{}, err
+					return nil, nil, err
 				}
-				return cfg, cfg.Common, err
+				return cfg, &cfg.GlobalConfig, nil
 			}),
 			runner.WithDaemonInitializer(func(cfg interface{}) (runner.Runner, error) {
 				return usecase.New(cfg.(*config.Data))
