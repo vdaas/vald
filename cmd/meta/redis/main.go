@@ -45,7 +45,7 @@ func main() {
 				if err != nil {
 					return nil, nil, err
 				}
-				return cfg, &cfg.GlobalConfig, err
+				return cfg, &cfg.GlobalConfig, nil
 			}),
 			runner.WithDaemonInitializer(func(cfg interface{}) (runner.Runner, error) {
 				return usecase.New(cfg.(*config.Data))
