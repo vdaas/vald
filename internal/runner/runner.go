@@ -28,6 +28,8 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/exporter/metric"
+	"github.com/vdaas/vald/internal/exporter/trace"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/params"
@@ -61,6 +63,13 @@ func Do(ctx context.Context, opts ...Option) error {
 	}
 
 	info.Init(r.name)
+
+	trace.InitStdoutTracer()
+	metricController, err := metric.InitStdoutMeter()
+	if err != nil {
+		return err
+	}
+	defer metricController.Stop()
 
 	p, isHelp, err := params.New(
 		params.WithConfigFileDescription(fmt.Sprintf("%s config file path", r.name)),

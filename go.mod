@@ -32,7 +32,7 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200103014340-68f928edb90a
 	github.com/gocraft/dbr/v2 v2.6.3
-	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+	github.com/gogo/protobuf v1.3.1
 	github.com/google/gofuzz v1.1.0
 	github.com/gorilla/mux v1.7.1
 	github.com/hashicorp/go-version v1.2.0
@@ -49,6 +49,7 @@ require (
 	github.com/valyala/gozstd v1.6.4
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
+	go.opentelemetry.io/otel v0.2.1
 	go.uber.org/automaxprocs v1.3.0
 	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
