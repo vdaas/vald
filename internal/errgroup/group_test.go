@@ -205,7 +205,7 @@ func TestLimitation(t *testing.T) {
 		},
 
 		{
-			name: "store true when limitation is less than 0",
+			name: "store false when limitation is less than 0",
 			args: args{
 				limit: -1,
 			},
