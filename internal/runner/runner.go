@@ -123,12 +123,12 @@ func Do(ctx context.Context, opts ...Option) error {
 
 func Run(ctx context.Context, run Runner, name string) (err error) {
 	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 	defer func() {
 		signal.Stop(sigCh)
 		close(sigCh)
 	}()
 
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 	rctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
