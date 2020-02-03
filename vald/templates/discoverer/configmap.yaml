@@ -22,11 +22,11 @@ data:
     ---
     version: {{ .Values.discoverer.version }}
     time_zone: {{ default .Values.defaults.time_zone .Values.discoverer.time_zone }}
-    {{- if .Values.agent.logging }}
+    {{- if .Values.discoverer.logging }}
     logging:
-      logger: {{ .Values.agent.logging.logger }}
-      level: {{ .Values.agent.logging.level }}
-      format: {{ .Values.agent.logging.format }}
+      logger: {{ .Values.discoverer.logging.logger }}
+      level: {{ .Values.discoverer.logging.level }}
+      format: {{ .Values.discoverer.logging.format }}
     {{- end }}
     server_config:
       {{- $servers := dict "Values" .Values.discoverer.server_config "default" .Values.defaults.server_config }}

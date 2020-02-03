@@ -22,6 +22,12 @@ data:
     ---
     version: {{ .Values.meta.version }}
     time_zone: {{ default .Values.defaults.time_zone .Values.meta.time_zone }}
+    {{- if .Values.meta.logging }}
+    logging:
+      logger: {{ .Values.meta.logging.logger }}
+      level: {{ .Values.meta.logging.level }}
+      format: {{ .Values.meta.logging.format }}
+    {{- end }}
     server_config:
       {{- $servers := dict "Values" .Values.meta.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}

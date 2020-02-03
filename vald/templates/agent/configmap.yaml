@@ -22,6 +22,12 @@ data:
     ---
     version: {{ .Values.agent.version }}
     time_zone: {{ default .Values.defaults.time_zone .Values.agent.time_zone }}
+    {{- if .Values.agent.logging }}
+    logging:
+      logger: {{ .Values.agent.logging.logger }}
+      level: {{ .Values.agent.logging.level }}
+      format: {{ .Values.agent.logging.format }}
+    {{- end }}
     server_config:
       {{- $servers := dict "Values" .Values.agent.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
