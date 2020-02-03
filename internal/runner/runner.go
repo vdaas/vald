@@ -25,6 +25,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
@@ -48,7 +49,7 @@ type runner struct {
 	maxVersion       string
 	minVersion       string
 	name             string
-	loadConfig       func(string) (interface{}, string, string, error)
+	loadConfig       func(string) (interface{}, *config.GlobalConfig, error)
 	initializeDaemon func(interface{}) (Runner, error)
 }
 
@@ -60,7 +61,6 @@ func Do(ctx context.Context, opts ...Option) error {
 	}
 
 	info.Init(r.name)
-	log.Init(log.DefaultGlg())
 
 	p, isHelp, err := params.New(
 		params.WithConfigFileDescription(fmt.Sprintf("%s config file path", r.name)),
@@ -74,20 +74,31 @@ func Do(ctx context.Context, opts ...Option) error {
 		return nil
 	}
 
+	cfg, commonCfg, err := r.loadConfig(p.ConfigFilePath())
+	if err != nil {
+		return err
+	}
+
+	if logcfg := commonCfg.Logging; logcfg != nil {
+		log.Init(
+			log.WithLoggerType(logcfg.Logger),
+			log.WithLevel(logcfg.Level),
+			log.WithFormat(logcfg.Format),
+		)
+	} else {
+		log.Init()
+	}
+
+	// set location temporary for initialization logging
+	// _ = loc
+	location.Set(commonCfg.TZ)
+
 	if p.ShowVersion() {
 		log.Info(info.String())
 		return nil
 	}
 
-	cfg, version, loc, err := r.loadConfig(p.ConfigFilePath())
-	if err != nil {
-		return err
-	}
-
-	// set location temporary for initialization logging
-	location.Set(loc)
-
-	err = ver.Check(version, r.maxVersion, r.minVersion)
+	err = ver.Check(commonCfg.Version, r.maxVersion, r.minVersion)
 	if err != nil {
 		return err
 	}
@@ -103,10 +114,10 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
-	log.Infof("service %s %s starting...", r.name, version)
+	log.Infof("service %s %s starting...", r.name, commonCfg.Version)
 
 	// reset timelocation to override external libs & running logging
-	location.Set(loc)
+	location.Set(commonCfg.TZ)
 	return Run(ctx, daemon, r.name)
 }
 

@@ -23,6 +23,7 @@ data:
     ---
     version: v0.0.0
     time_zone: UTC
+    time_zone: Asia/Tokyo
     server_config:
       servers:
         - name: grpc

@@ -259,7 +259,7 @@ func TestDo(t *testing.T) {
 		}(),
 	}
 
-	log.Init(log.DefaultGlg())
+	log.Init()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel := tt.ctxFn()
