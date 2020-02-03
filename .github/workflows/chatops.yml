@@ -161,11 +161,7 @@ jobs:
       - name: Add contributor and push
         if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
-          PR_RESP=$(curl --include --verbose --fail \
-          -H "Accept: application/json" \
-          -H "Content-Type:application/json" \
-          -H "Authorization: token ${GITHUB_TOKEN}" \
-          ${PR_INFO_URL})
+          PR_RESP=`curl ${PR_INFO_URL}`
           HEAD_BRANCH=$(echo "$PR_RESP" | jq -r .head.ref)
           if [[ -z "$HEAD_BRANCH" ]]; then
             echo "Cannot get head branch information for PR #${PR_NUM}!"
@@ -182,11 +178,12 @@ jobs:
             echo "Add ${PR_AUTHOR} to CONTRIBUTORS"
 
             echo "${PR_AUTHOR}" >> CONTRIBUTORS
+            make readme/update/contributors
 
             git config --global user.name "vdaas-ci"
             git config --global user.email "ci@vdaas.org"
 
-            git add CONTRIBUTORS
+            git add CONTRIBUTORS README.md
             git commit --signoff -m ":robot: Automatically add contributor"
 
             git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
@@ -199,11 +196,107 @@ jobs:
           PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
           PR_NUM: ${{ github.event.issue.number }}
+  format:
+    name: Add license and run goimports
+    needs:
+      - rebase
+      - add-contributors
+    runs-on: ubuntu-latest
+    steps:
+      - name: check PR Comments
+        id: check_comments_format
+        uses: machine-learning-apps/actions-chatops@master
+        with:
+          TRIGGER_PHRASE: "/format"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: install yq and check permissions
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
+        id: check_permissions
+        run: |
+          sudo wget -O /usr/local/bin/yq -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod a+x /usr/local/bin/yq
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role" -j`
+          if [ "$roles" = "null" ]; then
+            roles=`yq r chatops_permissions.yaml default-roles -j`
+          fi
+          for role in `echo $roles | jq -r '.[]'`
+          do
+              if yq r chatops_permissions.yaml "roles.${role}.policies" -j | jq -r '.[]' | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+                echo "[OK] format requested by ${USERNAME}"
+                echo "::set-output name=EXECUTABLE::true"
+                break
+              fi
+          done
+        env:
+          USERNAME: ${{ steps.check_comments_format.outputs.COMMENTER_USERNAME }}
+          REQUIRED_POLICY: format
+      - name: check executable
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[FORMAT]** Updating license headers and formatting go codes triggered by ${USERNAME}.\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          USERNAME: ${{ steps.check_comments_format.outputs.COMMENTER_USERNAME }}
+          API_URL: ${{ github.event.issue.comments_url }}
+      - uses: actions/checkout@v1
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        with:
+          fetch-depth: 1
+      - name: update and push
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          PR_RESP=`curl ${PR_INFO_URL}`
+          HEAD_BRANCH=$(echo "$PR_RESP" | jq -r .head.ref)
+          if [[ -z "$HEAD_BRANCH" ]]; then
+            echo "Cannot get head branch information for PR #${PR_NUM}!"
+            echo "API response: $PR_RESP"
+            exit 1
+          fi
+          echo "Head branch for PR #${PR_NUM} is ${HEAD_BRANCH}"
+
+          git checkout ${HEAD_BRANCH}
+
+          echo "Update license headers and format go codes"
+
+          pushd /tmp
+          go get -u golang.org/x/tools/cmd/goimports
+          popd
+          export PATH=$(go env GOPATH)/bin:$PATH
+
+          make license
+          make update/goimports
+
+          if git diff --quiet --exit-code; then
+            echo "Nothing updated"
+          else
+            git config --global user.name "vdaas-ci"
+            git config --global user.email "ci@vdaas.org"
+
+            git add .
+            git commit --signoff -m ":robot: Update license headers and formatting go codes"
+
+            git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+            git push origin ${HEAD_BRANCH}
+          fi
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
+          PR_NUM: ${{ github.event.issue.number }}
   approve:
     name: Approve
     needs:
       - rebase
       - add-contributors
+      - format
     runs-on: ubuntu-latest
     steps:
       - name: check PR Comments

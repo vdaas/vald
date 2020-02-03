@@ -61,6 +61,8 @@ Please read the [contribution guide](https://github.com/vdaas/vald/blob/master/C
 
 ## Contributor
 
+- [hlts2](https://github.com/hlts2)
+
 ## LICENSE
 
 vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas/vald/blob/master/LICENSE) file.

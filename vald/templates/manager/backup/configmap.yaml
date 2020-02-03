@@ -22,6 +22,12 @@ data:
     ---
     version: {{ .Values.backupManager.version }}
     time_zone: {{ default .Values.defaults.time_zone .Values.backupManager.time_zone }}
+    {{- if .Values.backupManager.logging }}
+    logging:
+      logger: {{ .Values.backupManager.logging.logger }}
+      level: {{ .Values.backupManager.logging.level }}
+      format: {{ .Values.backupManager.logging.format }}
+    {{- end }}
     server_config:
       {{- $servers := dict "Values" .Values.backupManager.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}

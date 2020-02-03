@@ -29,13 +29,16 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-// Default represent a application setting data content (config.yaml).
-type Default struct {
+// GlobalConfig represent a application setting data content (config.yaml).
+type GlobalConfig struct {
 	// Version represent configuration file version.
 	Version string `json:"version" yaml:"version"`
 
 	// TZ represent system time location .
 	TZ string `json:"time_zone" yaml:"time_zone"`
+
+	// Log represent log configuration.
+	Logging *Logging `json:"logging,omitempty" yaml:"logging,omitempty"`
 }
 
 const (
@@ -43,16 +46,21 @@ const (
 	envSymbol       = "_"
 )
 
-func (c *Default) Bind() *Default {
+func (c *GlobalConfig) Bind() *GlobalConfig {
 	c.Version = GetActualValue(c.Version)
 	c.TZ = GetActualValue(c.TZ)
+
+	if c.Logging != nil {
+		c.Logging = c.Logging.Bind()
+	}
 	return c
 }
 
-func (c *Default) UnmarshalJSON(data []byte) (err error) {
+func (c *GlobalConfig) UnmarshalJSON(data []byte) (err error) {
 	ic := new(struct {
-		Ver string `json:"version"`
-		TZ  string `json:"time_zone"`
+		Ver     string   `json:"version"`
+		TZ      string   `json:"time_zone"`
+		Logging *Logging `json:"logging"`
 	})
 	err = json.Unmarshal(data, &ic)
 	if err != nil {
@@ -60,6 +68,7 @@ func (c *Default) UnmarshalJSON(data []byte) (err error) {
 	}
 	c.Version = ic.Ver
 	c.TZ = ic.TZ
+	c.Logging = ic.Logging
 	return nil
 }
 

@@ -5,30 +5,36 @@ roles:
       - approve
       - add-contributors
       - label
+      - format
   author:
     policies:
       - rebase
       - approve
       - add-contributors
       - label
+      - format
   sig-lead:
     policies:
       - rebase
       - approve
       - label
+      - format
   sig-sre:
     policies:
       - rebase
       - add-contributors
       - label
+      - format
   sig-set:
     policies:
       - rebase
       - label
+      - format
   sig-core:
     policies:
       - rebase
       - label
+      - format
   contributor:
     policies:
       - label
