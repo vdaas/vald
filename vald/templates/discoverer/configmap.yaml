@@ -20,7 +20,7 @@ metadata:
 data:
   config.yaml: |
     ---
-    version: v0.0.0
+    version: {{ .Values.discoverer.version }}
     time_zone: {{ default .Values.defaults.time_zone .Values.discoverer.time_zone }}
     {{- if .Values.agent.logging }}
     logging:

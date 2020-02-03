@@ -20,7 +20,7 @@ metadata:
 data:
   config.yaml: |
     ---
-    version: v0.0.0
+    version: {{ .Values.backupManager.version }}
     time_zone: {{ default .Values.defaults.time_zone .Values.backupManager.time_zone }}
     {{- if .Values.backupManager.logging }}
     logging:

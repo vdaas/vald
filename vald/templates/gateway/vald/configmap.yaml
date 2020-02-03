@@ -20,7 +20,7 @@ metadata:
 data:
   config.yaml: |
     ---
-    version: v0.0.0
+    version: {{ .Values.gateway.version }}
     time_zone: {{ default .Values.defaults.time_zone .Values.gateway.time_zone }}
     {{- if .Values.gateway.logging }}
     logging:
