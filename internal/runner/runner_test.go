@@ -18,7 +18,11 @@ package runner
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"testing"
+
+	"github.com/vdaas/vald/internal/log"
 )
 
 func TestDo(t *testing.T) {
@@ -40,93 +44,92 @@ func TestDo(t *testing.T) {
 	}
 }
 
-// func TestRun(t *testing.T) {
-// 	type args struct {
-// 		ctx  context.Context
-// 		run  Runner
-// 		name string
-// 	}
-// 	type test struct {
-// 		name      string
-// 		args      args
-// 		checkFunc func(args) error
-// 	}
-// 	tests := []test{
-// 		func() test {
-// 			log.Init(log.DefaultGlg())
-// 			ctx, cancel := context.WithCancel(context.Background())
-// 			run := &runnerMock{}
-//
-// 			return test{
-// 				name: "run success",
-// 				args: args{
-// 					ctx: ctx,
-// 					run: run,
-// 				},
-// 				checkFunc: func(args args) error {
-// 					cancel()
-// 					return Run(args.ctx, args.run, args.name)
-// 				},
-// 			}
-// 		}(),
-// 		func() test {
-// 			log.Init(log.DefaultGlg())
-// 			ctx, cancel := context.WithCancel(context.Background())
-// 			run := &runnerMock{
-// 				PreStartFunc: func(ctx context.Context) error {
-// 					return errors.New("prestart error")
-// 				},
-// 			}
-//
-// 			return test{
-// 				name: "run with prestart error",
-// 				args: args{
-// 					ctx: ctx,
-// 					run: run,
-// 				},
-// 				checkFunc: func(args args) error {
-// 					cancel()
-// 					err := Run(args.ctx, args.run, args.name)
-// 					if err.Error() != "prestart error" {
-// 						return errors.New("prestart error should be thrown")
-// 					}
-// 					return nil
-// 				},
-// 			}
-// 		}(),
-// 		func() test {
-// 			log.Init(log.DefaultGlg())
-// 			ctx, cancel := context.WithCancel(context.Background())
-// 			run := &runnerMock{
-// 				StartFunc: func(ctx context.Context) <-chan error {
-// 					errChan := make(chan error, 1)
-// 					errChan <- errors.New("start error")
-// 					return errChan
-// 				},
-// 			}
-//
-// 			return test{
-// 				name: "run with start error",
-// 				args: args{
-// 					ctx: ctx,
-// 					run: run,
-// 				},
-// 				checkFunc: func(args args) error {
-// 					cancel()
-// 					err := Run(args.ctx, args.run, args.name)
-// 					if err.Error() != "error:\tstart error\tcount:\t0" {
-// 						return fmt.Errorf("start error should be thrown, got: %s", err)
-// 					}
-// 					return nil
-// 				},
-// 			}
-// 		}(),
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			if err := tt.checkFunc(tt.args); err != nil {
-// 				t.Errorf("Run() error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
+func TestRun(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		run  Runner
+		name string
+	}
+	type test struct {
+		name      string
+		args      args
+		checkFunc func(args) error
+	}
+	tests := []test{
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			run := &runnerMock{}
+
+			return test{
+				name: "run success",
+				args: args{
+					ctx: ctx,
+					run: run,
+				},
+				checkFunc: func(args args) error {
+					cancel()
+					return Run(args.ctx, args.run, args.name)
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			run := &runnerMock{
+				PreStartFunc: func(ctx context.Context) error {
+					return errors.New("prestart error")
+				},
+			}
+
+			return test{
+				name: "run with prestart error",
+				args: args{
+					ctx: ctx,
+					run: run,
+				},
+				checkFunc: func(args args) error {
+					cancel()
+					err := Run(args.ctx, args.run, args.name)
+					if err.Error() != "prestart error" {
+						return errors.New("prestart error should be thrown")
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			run := &runnerMock{
+				StartFunc: func(ctx context.Context) (<-chan error, error) {
+					errChan := make(chan error, 1)
+					errChan <- errors.New("start error")
+					return errChan, nil
+				},
+			}
+
+			return test{
+				name: "run with start error",
+				args: args{
+					ctx: ctx,
+					run: run,
+				},
+				checkFunc: func(args args) error {
+					cancel()
+					err := Run(args.ctx, args.run, args.name)
+					if err.Error() != "error:\tstart error\tcount:\t0" {
+						return fmt.Errorf("start error should be thrown, got: %s", err)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	log.Init()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.checkFunc(tt.args); err != nil {
+				t.Errorf("Run() error = %v", err)
+			}
+		})
+	}
+}

@@ -21,6 +21,8 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+
+	"github.com/vdaas/vald/internal/config"
 )
 
 func TestWithName(t *testing.T) {
@@ -38,7 +40,7 @@ func TestWithName(t *testing.T) {
 				got := new(runner)
 				o(got)
 
-				if got.name != "str" {
+				if got.name != "name" {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -263,14 +265,14 @@ func TestWithVersion(t *testing.T) {
 func TestWithConfigLoader(t *testing.T) {
 	type test struct {
 		name      string
-		f         func(string) (interface{}, string, string, error)
+		f         func(string) (interface{}, *config.GlobalConfig, error)
 		checkFunc func(Option) error
 	}
 
 	tests := []test{
 		func() test {
-			f := func(string) (interface{}, string, string, error) {
-				return nil, "", "", nil
+			f := func(string) (interface{}, *config.GlobalConfig, error) {
+				return nil, new(config.GlobalConfig), nil
 			}
 			return test{
 				name: "set success when f is not nil",
@@ -290,8 +292,8 @@ func TestWithConfigLoader(t *testing.T) {
 		{
 			name: "not set when f is nil",
 			checkFunc: func(o Option) error {
-				f := func(string) (interface{}, string, string, error) {
-					return nil, "", "", nil
+				f := func(string) (interface{}, *config.GlobalConfig, error) {
+					return nil, new(config.GlobalConfig), nil
 				}
 				got := &runner{
 					loadConfig: f,
