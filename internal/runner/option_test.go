@@ -47,7 +47,6 @@ func TestWithName(t *testing.T) {
 
 		{
 			name: "not set when str is empty",
-			str:  "name",
 			checkFunc: func(o Option) error {
 				got := &runner{
 					name: "name",
@@ -108,9 +107,6 @@ func TestWithVersion(t *testing.T) {
 
 		{
 			name: "not set ver when ver is empty",
-			args: args{
-				ver: "",
-			},
 			checkFunc: func(o Option) error {
 				got := &runner{
 					version: "ver",
@@ -158,9 +154,6 @@ func TestWithVersion(t *testing.T) {
 
 		{
 			name: "not set min when min is empty",
-			args: args{
-				min: "",
-			},
 			checkFunc: func(o Option) error {
 				got := &runner{
 					minVersion: "min",
@@ -208,9 +201,6 @@ func TestWithVersion(t *testing.T) {
 
 		{
 			name: "not set max when max is empty",
-			args: args{
-				max: "",
-			},
 			checkFunc: func(o Option) error {
 				got := &runner{
 					maxVersion: "max",
@@ -297,26 +287,23 @@ func TestWithConfigLoader(t *testing.T) {
 			}
 		}(),
 
-		func() test {
-			f := func(string) (interface{}, string, string, error) {
-				return nil, "", "", nil
-			}
-			return test{
-				name: "not set when f is nil",
-				f:    nil,
-				checkFunc: func(o Option) error {
-					got := &runner{
-						loadConfig: f,
-					}
-					o(got)
+		{
+			name: "not set when f is nil",
+			checkFunc: func(o Option) error {
+				f := func(string) (interface{}, string, string, error) {
+					return nil, "", "", nil
+				}
+				got := &runner{
+					loadConfig: f,
+				}
+				o(got)
 
-					if reflect.ValueOf(got.loadConfig).Pointer() != reflect.ValueOf(f).Pointer() {
-						return errors.New("invalid min param was set")
-					}
-					return nil
-				},
-			}
-		}(),
+				if reflect.ValueOf(got.loadConfig).Pointer() != reflect.ValueOf(f).Pointer() {
+					return errors.New("invalid min param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -355,26 +342,23 @@ func TestWithDaemonInitializer(t *testing.T) {
 			}
 		}(),
 
-		func() test {
-			f := func(interface{}) (Runner, error) {
-				return nil, nil
-			}
-			return test{
-				name: "not set when f is nil",
-				f:    nil,
-				checkFunc: func(o Option) error {
-					got := &runner{
-						initializeDaemon: f,
-					}
-					o(got)
+		{
+			name: "not set when f is nil",
+			checkFunc: func(o Option) error {
+				f := func(interface{}) (Runner, error) {
+					return nil, nil
+				}
+				got := &runner{
+					initializeDaemon: f,
+				}
+				o(got)
 
-					if reflect.ValueOf(got.initializeDaemon).Pointer() != reflect.ValueOf(f).Pointer() {
-						return errors.New("invalid min param was set")
-					}
-					return nil
-				},
-			}
-		}(),
+				if reflect.ValueOf(got.initializeDaemon).Pointer() != reflect.ValueOf(f).Pointer() {
+					return errors.New("invalid min param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
