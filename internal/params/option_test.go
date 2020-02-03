@@ -32,7 +32,6 @@ func TestWithConfigFilePathKey(t *testing.T) {
 
 		{
 			name: "not set when keys is empty",
-			keys: nil,
 			checkFunc: func(opt Option) error {
 				got := &parser{
 					filePath: filePath{
@@ -135,7 +134,6 @@ func TestWithConfigFileDescription(t *testing.T) {
 
 		{
 			name: "not set when desc is empty",
-			desc: "",
 			checkFunc: func(opt Option) error {
 				got := &parser{
 					filePath: filePath{
@@ -188,7 +186,6 @@ func TestWithVersionKey(t *testing.T) {
 
 		{
 			name: "not set when keys is empty",
-			keys: nil,
 			checkFunc: func(opt Option) error {
 				got := &parser{
 					version: version{
