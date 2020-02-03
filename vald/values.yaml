@@ -203,6 +203,9 @@ gateway:
     repository: vdaas/vald-gateway
     tag: nightly
     pullPolicy: Always
+  logging:
+    logger: glg
+    level: debug
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -292,6 +295,9 @@ agent:
     repository: vdaas/vald-agent-ngt
     tag: nightly
     pullPolicy: Always
+  logging:
+    logger: glg
+    level: debug
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -344,6 +350,9 @@ discoverer:
     repository: vdaas/vald-discoverer-k8s
     tag: nightly
     pullPolicy: Always
+  logging:
+    logger: glg
+    level: debug
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -395,6 +404,9 @@ compressor:
     repository: vdaas/vald-manager-compressor
     tag: nightly
     pullPolicy: Always
+  logging:
+    logger: glg
+    level: debug
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -456,6 +468,9 @@ backupManager:
     # repository: vdaas/vald-manager-backup-cassandra
     tag: nightly
     pullPolicy: Always
+  logging:
+    logger: glg
+    level: debug
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -582,6 +597,15 @@ backupManager:
         cert: /path/to/cert
         key: /path/to/key
         ca: /path/to/ca
+      tcp:
+        dns:
+          cache_enabled: true
+          refresh_duration: 5m
+          cache_expiration: 24h
+        dialer:
+          timeout: 30s
+          keep_alive: 10m
+          dual_stack_enabled: false
       enable_host_verification: false
       default_timestamp: true
       reconnect_interval: 1m
@@ -599,7 +623,6 @@ backupManager:
         dc_aware_routing: false
         non_local_replicas_fallback: false
         shuffle_replicas: false
-
 indexManager:
   version: v0.0.0
   name: vald-index-manager-ngt
@@ -617,6 +640,9 @@ indexManager:
     repository: vdaas/vald-index-manager-ngt
     tag: nightly
     pullPolicy: Always
+  logging:
+    logger: glg
+    level: debug
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -660,6 +686,9 @@ meta:
     # repository: vdaas/vald-meta-cassandra
     tag: nightly
     pullPolicy: Always
+  logging:
+    logger: glg
+    level: debug
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -688,6 +717,12 @@ meta:
     #       secretKeyRef:
     #         name: cassandra-secret
     #         key: password
+    # - type: waitFor
+    #   name: wait-for-scylla
+    #   image: scylladb/scylla:latest
+    #   target: scylla.default.svc.cluster.local
+    #   untilCondition: $(cqlsh scylla.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $?) -eq 0
+    #   sleepDuration: 2
   env:
     - name: REDIS_PASSWORD
       valueFrom:
@@ -769,6 +804,9 @@ meta:
         - cassandra-0.cassandra.default.svc.cluster.local
         - cassandra-1.cassandra.default.svc.cluster.local
         - cassandra-2.cassandra.default.svc.cluster.local
+        # - scylla-0.scylla.default.svc.cluster.local
+        # - scylla-1.scylla.default.svc.cluster.local
+        # - scylla-2.scylla.default.svc.cluster.local
       cql_version: 3.0.0
       proto_version: 0
       timeout: 600ms
@@ -795,6 +833,15 @@ meta:
         cert: /path/to/cert
         key: /path/to/key
         ca: /path/to/ca
+      tcp:
+        dns:
+          cache_enabled: true
+          refresh_duration: 5m
+          cache_expiration: 24h
+        dialer:
+          timeout: 30s
+          keep_alive: 10m
+          dual_stack_enabled: false
       enable_host_verification: false
       default_timestamp: true
       reconnect_interval: 1m

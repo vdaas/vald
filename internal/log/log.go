@@ -16,13 +16,18 @@
 
 package log
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/vdaas/vald/internal/log/glg"
+	loggertype "github.com/vdaas/vald/internal/log/logger_type"
+)
 
 type Logger interface {
-	Info(vals ...interface{})
-	Infof(format string, vals ...interface{})
 	Debug(vals ...interface{})
 	Debugf(format string, vals ...interface{})
+	Info(vals ...interface{})
+	Infof(format string, vals ...interface{})
 	Warn(vals ...interface{})
 	Warnf(format string, vals ...interface{})
 	Error(vals ...interface{})
@@ -36,21 +41,31 @@ var (
 	once   sync.Once
 )
 
-func Init(l Logger) {
+func Init(opts ...Option) {
 	once.Do(func() {
-		logger = l
+		o := new(option)
+		for _, opt := range append(defaultOptions, opts...) {
+			opt(o)
+		}
+		logger = getLogger(o)
 	})
+}
+
+func getLogger(o *option) Logger {
+	switch o.loggerType {
+	case loggertype.GLG:
+		gopts := []glg.Option{
+			glg.WithLevel(o.level.String()),
+			glg.WithFormat(o.format.String()),
+		}
+		return glg.New(gopts...)
+	default:
+		return o.logger
+	}
 }
 
 func Bold(str string) string {
 	return "\033[1m" + str + "\033[22m"
-}
-
-func Info(vals ...interface{}) {
-	logger.Info(vals...)
-}
-func Infof(format string, vals ...interface{}) {
-	logger.Infof(format, vals...)
 }
 
 func Debug(vals ...interface{}) {
@@ -59,6 +74,14 @@ func Debug(vals ...interface{}) {
 
 func Debugf(format string, vals ...interface{}) {
 	logger.Debugf(format, vals...)
+}
+
+func Info(vals ...interface{}) {
+	logger.Info(vals...)
+}
+
+func Infof(format string, vals ...interface{}) {
+	logger.Infof(format, vals...)
 }
 
 func Warn(vals ...interface{}) {

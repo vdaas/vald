@@ -22,6 +22,12 @@ data:
     ---
     version: {{ .Values.discoverer.version }}
     time_zone: {{ default .Values.defaults.time_zone .Values.discoverer.time_zone }}
+    {{- if .Values.discoverer.logging }}
+    logging:
+      logger: {{ .Values.discoverer.logging.logger }}
+      level: {{ .Values.discoverer.logging.level }}
+      format: {{ .Values.discoverer.logging.format }}
+    {{- end }}
     server_config:
       {{- $servers := dict "Values" .Values.discoverer.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}

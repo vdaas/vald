@@ -3,6 +3,11 @@ on:
   push:
     branches:
       - master
+    tags:
+       - '*.*.*'
+       - 'v*.*.*'
+       - '*.*.*-*'
+       - 'v*.*.*-*'
     paths:
       - 'internal/**'
       - '!internal/db/**'
@@ -14,7 +19,6 @@ on:
       - 'dockers/base/Dockerfile'
       - 'dockers/manager/backup/mysql/Dockerfile'
       - 'resources/GO_VERSION'
-      - 'resources/NGT_VERSION'
   pull_request:
     paths:
       - 'internal/**'
@@ -27,7 +31,6 @@ on:
       - 'dockers/base/Dockerfile'
       - 'dockers/manager/backup/mysql/Dockerfile'
       - 'resources/GO_VERSION'
-      - 'resources/NGT_VERSION'
 
 jobs:
   build:
