@@ -123,7 +123,7 @@ func TestBold(t *testing.T) {
 		{
 			name: "returns concat string with bash sequence",
 			str:  "Vald",
-			want: "\033[1mVald\033[0m",
+			want: "\033[1mVald\033[22m",
 		},
 	}
 

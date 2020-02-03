@@ -3,6 +3,11 @@ on:
   push:
     branches:
       - master
+    tags:
+       - '*.*.*'
+       - 'v*.*.*'
+       - '*.*.*-*'
+       - 'v*.*.*-*'
     paths:
       - 'internal/**'
       - '!internal/db/**'

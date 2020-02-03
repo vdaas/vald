@@ -47,14 +47,6 @@ func WithVersion(ver, max, min string) Option {
 	}
 }
 
-func WithShowVersionFunc(f func(name string)) Option {
-	return func(r *runner) {
-		if f != nil {
-			r.showVersionFunc = f
-		}
-	}
-}
-
 func WithConfigLoader(f func(string) (interface{}, config.Common, error)) Option {
 	return func(r *runner) {
 		if f != nil {

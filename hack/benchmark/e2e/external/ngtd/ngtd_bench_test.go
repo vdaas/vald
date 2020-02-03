@@ -56,10 +56,10 @@ func init() {
 	log.Init()
 	glg.Get().SetMode(glg.NONE)
 	if err := os.RemoveAll(baseDir); err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	if err := os.MkdirAll(baseDir, 0755); err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	flag.StringVar(&datasetVar, "assets", "", "list available assets(choice with comma)")

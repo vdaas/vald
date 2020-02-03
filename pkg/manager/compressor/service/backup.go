@@ -122,7 +122,7 @@ func (b *backup) Remove(ctx context.Context, uuid string) (err error) {
 
 func (b *backup) RemoveMultiple(ctx context.Context, uuids ...string) (err error) {
 	req := new(payload.Backup_Remove_RequestMulti)
-	req.Uuid = uuids
+	req.Uuids = uuids
 	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = gback.NewBackupClient(conn).RemoveMulti(ctx, req, copts...)
 		if err != nil {

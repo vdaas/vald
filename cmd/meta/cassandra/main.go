@@ -31,33 +31,28 @@ import (
 const (
 	maxVersion = "v0.0.10"
 	minVersion = "v0.0.0"
+	name       = "meta cassandra"
 )
 
 func main() {
 	if err := safety.RecoverFunc(func() error {
 		return runner.Do(
 			context.Background(),
-			runner.WithName("cassandra-meta"),
+			runner.WithName(name),
 			runner.WithVersion(info.Version, maxVersion, minVersion),
-			runner.WithShowVersionFunc(info.ShowVersionInfo(map[string]string{
-				"go version":  info.GoVersion,
-				"os":          info.GoOS,
-				"arch":        info.GoArch,
-				"cgo enabled": info.CGOEnabled,
-			})),
-			runner.WithConfigLoader(func(path string) (interface{}, string, string, error) {
+			runner.WithConfigLoader(func(path string) (interface{}, config.Common, error) {
 				cfg, err := config.NewConfig(path)
 				if err != nil {
-					return nil, "", "", err
+					return nil, config.Common{}, err
 				}
-				return cfg, cfg.Version, cfg.TZ, err
+				return cfg, cfg.Common, err
 			}),
 			runner.WithDaemonInitializer(func(cfg interface{}) (runner.Runner, error) {
 				return usecase.New(cfg.(*config.Data))
 			}),
 		)
 	})(); err != nil {
-		log.Fatal(err)
+		log.Fatal(err, info.Get())
 		return
 	}
 }
