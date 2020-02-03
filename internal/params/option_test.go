@@ -6,7 +6,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-func TestWithConfigFilePathKey(t *testing.T) {
+func TestWithConfigFilePathKeys(t *testing.T) {
 	type test struct {
 		name      string
 		keys      []string
@@ -32,6 +32,26 @@ func TestWithConfigFilePathKey(t *testing.T) {
 
 		{
 			name: "not set when keys is empty",
+			checkFunc: func(opt Option) error {
+				got := &parser{
+					filePath: filePath{
+						keys: []string{
+							"key",
+						},
+					},
+				}
+				opt(got)
+
+				if len(got.filePath.keys) != 1 || got.filePath.keys[0] != "key" {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when keys is nil",
+			keys: nil,
 			checkFunc: func(opt Option) error {
 				got := &parser{
 					filePath: filePath{
@@ -160,7 +180,7 @@ func TestWithConfigFileDescription(t *testing.T) {
 	}
 }
 
-func TestWithVersionKey(t *testing.T) {
+func TestWithVersionKeys(t *testing.T) {
 	type test struct {
 		name      string
 		keys      []string
@@ -186,6 +206,26 @@ func TestWithVersionKey(t *testing.T) {
 
 		{
 			name: "not set when keys is empty",
+			checkFunc: func(opt Option) error {
+				got := &parser{
+					version: version{
+						keys: []string{
+							"key",
+						},
+					},
+				}
+				opt(got)
+
+				if len(got.version.keys) != 1 && got.version.keys[0] != "key" {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "not set when keys is nil",
+			keys: nil,
 			checkFunc: func(opt Option) error {
 				got := &parser{
 					version: version{

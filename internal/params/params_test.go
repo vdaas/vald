@@ -35,8 +35,33 @@ func TestNew(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "returns parser instance when opts is empty",
+			name: "returns parser instance when opts is nil",
 			opts: nil,
+			want: &parser{
+				filePath: filePath{
+					keys: []string{
+						"f",
+						"file",
+						"c",
+						"config",
+					},
+					defaultPath: "/etc/server/config.yaml",
+					description: "config file path",
+				},
+				version: version{
+					keys: []string{
+						"v",
+						"ver",
+						"version",
+					},
+					defaultFlag: false,
+					description: "show server version",
+				},
+			},
+		},
+
+		{
+			name: "returns parser instance when opts is empty",
 			want: &parser{
 				filePath: filePath{
 					keys: []string{
