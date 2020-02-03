@@ -26,7 +26,6 @@ import (
 	"syscall"
 
 	"github.com/vdaas/vald/internal/config"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
@@ -132,8 +131,6 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 	rctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	rctx = errgroup.Init(rctx)
-
 	err = run.PreStart(rctx)
 	if err != nil {
 		return err
@@ -184,15 +181,6 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 			if err != nil {
 				if _, ok := emap[err.Error()]; !ok {
 					e := errors.ErrPostStopFunc(name, err)
-					errs = append(errs, e)
-					log.Error(err)
-				}
-				emap[err.Error()]++
-			}
-			err = errgroup.Wait()
-			if err != nil {
-				if _, ok := emap[err.Error()]; !ok {
-					e := errors.ErrRunnerWait(name, err)
 					errs = append(errs, e)
 					log.Error(err)
 				}
