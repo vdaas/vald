@@ -24,7 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/interceptor"
+	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -77,13 +77,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 					agent.RegisterAgentServer(srv, g)
 				}),
 				server.WithGRPCOption(
-					interceptor.UnaryInterceptor(
-						interceptor.NewServerInterceptor(
-							interceptor.WithServerTracerName("example/grpc"),
-							interceptor.WithGRPCServerKeyName("grpc.server"),
-							interceptor.WithGRPCServerKeyValue("hello-world"),
-						).GetServerInterceptor(),
-					),
+					metric.StatsHandler(metric.NewServerHandler()),
 				),
 				server.WithPreStartFunc(func() error {
 					// TODO check unbackupped upstream

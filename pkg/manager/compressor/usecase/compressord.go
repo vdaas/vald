@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -105,6 +106,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
 					compressor.RegisterBackupServer(srv, g)
 				}),
+				server.WithGRPCOption(
+					metric.StatsHandler(metric.NewServerHandler()),
+				),
 				server.WithPreStartFunc(func() error {
 					// TODO check unbackupped upstream
 					return nil

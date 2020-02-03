@@ -21,6 +21,8 @@ replace (
 require (
 	bou.ke/monkey v1.0.2 // indirect
 	github.com/DataDog/zstd v0.0.0-00010101000000-000000000000
+	contrib.go.opencensus.io/exporter/jaeger v0.2.0
+	contrib.go.opencensus.io/exporter/prometheus v0.1.0
 	github.com/certifi/gocertifi v0.0.0-20200104152315-a6d78f326758 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/cockroachdb/errors v1.2.4
@@ -49,6 +51,7 @@ require (
 	github.com/valyala/gozstd v1.6.4
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
+	go.opencensus.io v0.21.0
 	go.opentelemetry.io/otel v0.2.1
 	go.uber.org/automaxprocs v1.3.0
 	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5

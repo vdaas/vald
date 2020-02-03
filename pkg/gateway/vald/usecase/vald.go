@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -161,6 +162,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
 					vald.RegisterValdServer(srv, v)
 				}),
+				server.WithGRPCOption(
+					metric.StatsHandler(metric.NewServerHandler()),
+				),
 				server.WithPreStopFunction(func() error {
 					// TODO notify another gateway and scheduler
 					return nil

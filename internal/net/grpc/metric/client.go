@@ -14,35 +14,21 @@
 // limitations under the License.
 //
 
-// Package interceptor provides interceptors for grpc
-package interceptor
+// Package metric provides metrics functions for grpc
+package metric
 
-type ServerOption func(*serverInterceptor)
-
-var (
-	serverDefaultOpts = []ServerOption{}
+import (
+	"go.opencensus.io/plugin/ocgrpc"
 )
 
-func WithGRPCServerKeyName(name string) ServerOption {
-	return func(i *serverInterceptor) {
-		if name != "" {
-			i.grpcServerKeyName = name
-		}
-	}
-}
+type ClientHandler = ocgrpc.ClientHandler
 
-func WithGRPCServerKeyValue(val string) ServerOption {
-	return func(i *serverInterceptor) {
-		if val != "" {
-			i.grpcServerKeyValue = val
-		}
-	}
-}
+func NewClientHandler(opts ...ClientOption) *ClientHandler {
+	handler := new(ClientHandler)
 
-func WithServerTracerName(name string) ServerOption {
-	return func(i *serverInterceptor) {
-		if name != "" {
-			i.tracerName = name
-		}
+	for _, opt := range append(clientDefaultOpts, opts...) {
+		opt(handler)
 	}
+
+	return handler
 }

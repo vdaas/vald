@@ -14,27 +14,43 @@
 // limitations under the License.
 //
 
-// Package interceptor provides interceptors for grpc
-package interceptor
+// Package prometheus provides a prometheus exporter.
+package prometheus
 
-type ClientOption func(*clientInterceptor)
+import (
+	"sync"
 
-var (
-	clientDefaultOpts = []ClientOption{}
+	"contrib.go.opencensus.io/exporter/prometheus"
 )
 
-func WithClientTracerName(name string) ClientOption {
-	return func(i *clientInterceptor) {
-		if name != "" {
-			i.tracerName = name
+type prometheusOptions = prometheus.Options
+
+var (
+	exporter *prometheus.Exporter
+	once     sync.Once
+)
+
+func Init(opts ...PrometheusOption) (err error) {
+	po := new(prometheusOptions)
+
+	for _, opt := range append(prometheusDefaultOpts, opts...) {
+		err = opt(po)
+		if err != nil {
+			return err
 		}
 	}
+
+	ex, err := prometheus.NewExporter(*po)
+	if err != nil {
+		return err
+	}
+
+	once.Do(func() {
+		exporter = ex
+	})
+	return nil
 }
 
-func WithClientSpanName(name string) ClientOption {
-	return func(i *clientInterceptor) {
-		if name != "" {
-			i.spanName = name
-		}
-	}
+func Exporter() *prometheus.Exporter {
+	return exporter
 }

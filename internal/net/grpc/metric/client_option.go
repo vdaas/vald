@@ -14,17 +14,11 @@
 // limitations under the License.
 //
 
-// Package interceptor provides interceptors for grpc
-package interceptor
+// Package metric provides metrics functions for grpc
+package metric
 
-import (
-	"google.golang.org/grpc"
-)
-
-type UnaryServerInterceptor = grpc.UnaryServerInterceptor
-type UnaryClientInterceptor = grpc.UnaryClientInterceptor
+type ClientOption func(*ClientHandler)
 
 var (
-	UnaryInterceptor     = grpc.UnaryInterceptor
-	WithUnaryInterceptor = grpc.WithUnaryInterceptor
+	clientDefaultOpts = []ClientOption{}
 )

@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/gateway/vald/model"
 )
@@ -106,6 +107,9 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 			g.agentOpts,
 			grpc.WithAddrs(addrs...),
 			grpc.WithErrGroup(g.eg),
+			grpc.WithDialOptions(
+				metric.WithStatsHandler(metric.NewClientHandler()),
+			),
 		)...,
 	)
 
