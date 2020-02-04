@@ -3,12 +3,12 @@ entries:
   vald:
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-02-03T05:54:09.173227402Z"
+    created: "2020-02-04T06:55:35.585736883Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
-    digest: a575950a6cd941002396bd9e0bf4c844f90bcf987d063f829fc1d4788729278a
+    digest: fef12949c65ebd9a0c2f74060e2b63ee3069909545e920717852959004c60a3b
     name: vald
     urls:
     - https://vald.vdaas.org/charts/vald-0.1.0.tgz
     version: 0.1.0
-generated: "2020-02-03T05:54:09.168150415Z"
+generated: "2020-02-04T06:55:35.580172688Z"
