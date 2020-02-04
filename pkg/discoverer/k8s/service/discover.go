@@ -24,6 +24,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/k8s"
+	mnode "github.com/vdaas/vald/internal/k8s/metrics/node"
 	mpod "github.com/vdaas/vald/internal/k8s/metrics/pod"
 	"github.com/vdaas/vald/internal/k8s/node"
 	"github.com/vdaas/vald/internal/k8s/pod"
@@ -36,11 +37,12 @@ type Discoverer interface {
 }
 
 type discoverer struct {
-	maxServers int
-	nodes      sync.Map
-	pods       sync.Map
-	podMetrics sync.Map
-	ctrl       k8s.Controller
+	maxServers  int
+	nodes       sync.Map
+	nodeMetrics sync.Map
+	pods        sync.Map
+	podMetrics  sync.Map
+	ctrl        k8s.Controller
 }
 
 func New() (dsc Discoverer, err error) {
@@ -48,6 +50,19 @@ func New() (dsc Discoverer, err error) {
 	d.ctrl, err = k8s.New(
 		k8s.WithControllerName("vald k8s agent discoverer"),
 		k8s.WithDisableLeaderElection(),
+		k8s.WithResourceController(mnode.New(
+			mnode.WithControllerName("node metrics discoverer"),
+			mnode.WithOnErrorFunc(func(err error) {
+				log.Error(err)
+			}),
+			mnode.WithOnReconcileFunc(func(nodes map[string]mnode.Node) {
+				b, _ := json.Marshal(nodes)
+				log.Debug(string(b))
+				for name, metrics := range nodes {
+					d.nodeMetrics.Store(name, metrics)
+				}
+			}),
+		)),
 		k8s.WithResourceController(mpod.New(
 			mpod.WithControllerName("pod metrics discoverer"),
 			mpod.WithOnErrorFunc(func(err error) {

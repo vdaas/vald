@@ -105,9 +105,9 @@ func (l *logger) Errorf(format string, vals ...interface{}) {
 }
 
 func (l *logger) Fatal(vals ...interface{}) {
-	l.Fatal(vals...)
+	l.glg.Fatal(vals...)
 }
 
 func (l *logger) Fatalf(format string, vals ...interface{}) {
-	l.Fatalf(format, vals...)
+	l.glg.Fatalf(format, vals...)
 }
