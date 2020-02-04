@@ -1,3 +1,4 @@
+---
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -16,20 +17,18 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: manager-compressor
+  name: vald-manager-compressor
 spec:
   ports:
-  - port: 8081
-    name: grpc
-    targetPort: 8081
-    protocol: TCP
-  - port: 8080
-    name: rest
-    targetPort: 8080
-    protocol: TCP
-  - port: 6060
-    name: pprof
-    targetPort: 6060
+    - name: grpc
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+    - name: readiness
+      port: 3001
+      targetPort: 3001
+      protocol: TCP
   selector:
-    app: manager-compressor
+    app: vald-manager-compressor
   clusterIP: None
+  type: ClusterIP

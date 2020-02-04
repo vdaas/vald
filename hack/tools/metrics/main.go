@@ -49,7 +49,7 @@ var (
 func main() {
 	flag.Parse()
 
-	log.Init(log.DefaultGlg())
+	log.Init()
 
 	in, err := os.OpenFile(*input, os.O_RDONLY, os.ModeDevice)
 	if err != nil {

@@ -51,6 +51,15 @@ func WithHosts(hosts ...string) Option {
 	}
 }
 
+func WithDialer(der gocql.Dialer) Option {
+	return func(c *client) error {
+		if der != nil {
+			c.dialer = der
+		}
+		return nil
+	}
+}
+
 func WithCQLVersion(version string) Option {
 	return func(c *client) error {
 		c.cqlVersion = version

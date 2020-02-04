@@ -25,8 +25,10 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/params"
 	"github.com/vdaas/vald/internal/timeutil/location"
@@ -47,10 +49,8 @@ type runner struct {
 	maxVersion       string
 	minVersion       string
 	name             string
-	location         string
-	loadConfig       func(string) (interface{}, string, string, error)
+	loadConfig       func(string) (interface{}, *config.GlobalConfig, error)
 	initializeDaemon func(interface{}) (Runner, error)
-	showVersionFunc  func(name string)
 }
 
 func Do(ctx context.Context, opts ...Option) error {
@@ -60,7 +60,7 @@ func Do(ctx context.Context, opts ...Option) error {
 		opt(r)
 	}
 
-	log.Init(log.DefaultGlg())
+	info.Init(r.name)
 
 	p, isHelp, err := params.New(
 		params.WithConfigFileDescription(fmt.Sprintf("%s config file path", r.name)),
@@ -74,40 +74,50 @@ func Do(ctx context.Context, opts ...Option) error {
 		return nil
 	}
 
+	cfg, commonCfg, err := r.loadConfig(p.ConfigFilePath())
+	if err != nil {
+		return err
+	}
+
+	if logcfg := commonCfg.Logging; logcfg != nil {
+		log.Init(
+			log.WithLoggerType(logcfg.Logger),
+			log.WithLevel(logcfg.Level),
+			log.WithFormat(logcfg.Format),
+		)
+	} else {
+		log.Init()
+	}
+
+	// set location temporary for initialization logging
+	// _ = loc
+	location.Set(commonCfg.TZ)
+
 	if p.ShowVersion() {
-		if r.showVersionFunc != nil {
-			r.showVersionFunc(r.name)
-		} else {
-			log.Infof("vald %s server", r.name)
-			log.Infof("version -> %s", log.Bold(r.version))
-		}
+		log.Info(info.String())
 		return nil
 	}
 
-	cfg, version, loc, err := r.loadConfig(p.ConfigFilePath())
-	if err != nil {
-		return err
-	}
-	// set location temporary for initialization logging
-	// _ = loc
-	location.Set(loc)
-
-	err = ver.Check(version, r.maxVersion, r.minVersion)
+	err = ver.Check(commonCfg.Version, r.maxVersion, r.minVersion)
 	if err != nil {
 		return err
 	}
 
-	maxprocs.Set(maxprocs.Logger(log.Infof))
+	mfunc, err := maxprocs.Set(maxprocs.Logger(log.Infof))
+	if err != nil {
+		mfunc()
+		return err
+	}
 
 	daemon, err := r.initializeDaemon(cfg)
 	if err != nil {
 		return err
 	}
 
-	log.Infof("service %s %s starting...", r.name, version)
+	log.Infof("service %s %s starting...", r.name, commonCfg.Version)
 
 	// reset timelocation to override external libs & running logging
-	location.Set(loc)
+	location.Set(commonCfg.TZ)
 	return Run(ctx, daemon, r.name)
 }
 

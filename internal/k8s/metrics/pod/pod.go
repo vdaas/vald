@@ -26,7 +26,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/metrics/pkg/apis/metrics"
+	metrics "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -61,7 +61,7 @@ func New(opts ...Option) PodWatcher {
 		opt(r)
 	}
 
-	return nil
+	return r
 }
 
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
@@ -146,15 +146,13 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 }
 
 func (r *reconciler) For() runtime.Object {
-	// return new(appsv1.ReplicaSet)
-	return nil
+	return new(metrics.PodMetrics)
 }
 
 func (r *reconciler) Owns() runtime.Object {
-	// return new(corev1.Pod)
-	return nil
+	return new(metrics.PodMetrics)
 }
 
 func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
-	return &source.Kind{Type: new(metrics.PodMetricsList)}, &handler.EnqueueRequestForObject{}
+	return &source.Kind{Type: new(metrics.PodMetrics)}, &handler.EnqueueRequestForObject{}
 }

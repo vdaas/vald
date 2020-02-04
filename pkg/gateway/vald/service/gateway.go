@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"net"
 	"reflect"
-	"runtime"
 	"sort"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -42,11 +42,11 @@ type Gateway interface {
 	Start(ctx context.Context) (<-chan error, error)
 	GetAgentCount() int
 	Do(ctx context.Context,
-		f func(ctx context.Context, tgt string, ac agent.AgentClient) error) error
+		f func(ctx context.Context, tgt string, ac agent.AgentClient, copts ...grpc.CallOption) error) error
 	DoMulti(ctx context.Context, num int,
-		f func(ctx context.Context, tgt string, ac agent.AgentClient) error) error
+		f func(ctx context.Context, tgt string, ac agent.AgentClient, copts ...grpc.CallOption) error) error
 	BroadCast(ctx context.Context,
-		f func(ctx context.Context, tgt string, ac agent.AgentClient) error) error
+		f func(ctx context.Context, tgt string, ac agent.AgentClient, copts ...grpc.CallOption) error) error
 }
 
 type gateway struct {
@@ -237,7 +237,6 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface
 			res, err = discoverer.NewDiscovererClient(conn).
 				Discover(ctx, &payload.Discoverer_Request{
 					Name: g.agentName,
-
 					Node: "",
 				}, copts...)
 			if err != nil {
@@ -246,7 +245,6 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface
 			return res, nil
 		})
 	if err != nil {
-		runtime.Gosched()
 		return nil, err
 	}
 
@@ -306,35 +304,55 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface
 }
 
 func (g *gateway) BroadCast(ctx context.Context,
-	f func(ctx context.Context, target string, ac agent.AgentClient) error) (err error) {
+	f func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error) (err error) {
 	return g.DoMulti(ctx, g.GetAgentCount(), f)
 }
 
 func (g *gateway) Do(ctx context.Context,
-	f func(ctx context.Context, target string, ac agent.AgentClient) error) (err error) {
+	f func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error) (err error) {
 	addr := fmt.Sprintf("%s:%d", g.agents.Load().(model.Agents)[0].IP, g.agentPort)
 	_, err = g.acClient.Do(ctx, addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		if conn == nil {
 			return nil, errors.ErrAgentClientNotConnected
 		}
-		return nil, f(ctx, addr, agent.NewAgentClient(conn))
+		return nil, f(ctx, addr, agent.NewAgentClient(conn), copts...)
 	})
 	return err
 }
 
 func (g *gateway) DoMulti(ctx context.Context,
-	num int, f func(ctx context.Context, target string, ac agent.AgentClient) error) error {
-	var cur uint32
+	num int, f func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error) (err error) {
+	var cur uint32 = 0
 	limit := uint32(num)
-	return g.acClient.RangeConcurrent(ctx, 0, func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+	cctx, cancel := context.WithCancel(ctx)
+	var once sync.Once
+	err = g.acClient.RangeConcurrent(cctx, num, func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 		if conn == nil {
 			return errors.ErrAgentClientNotConnected
 		}
-		if atomic.AddUint32(&cur, 1) > limit {
+		select {
+		case <-cctx.Done():
 			return nil
+		default:
+			if atomic.LoadUint32(&cur) >= limit {
+				once.Do(func() {
+					cancel()
+				})
+				return nil
+			}
+			err = f(cctx, addr, agent.NewAgentClient(conn), copts...)
+			if err != nil {
+				log.Debug(addr, err)
+				return err
+			}
+			atomic.AddUint32(&cur, 1)
 		}
-		return f(ctx, addr, agent.NewAgentClient(conn))
+		return nil
 	})
+	if err != nil && cur < limit {
+		return err
+	}
+	return nil
 }
 
 func (g *gateway) GetAgentCount() int {

@@ -46,7 +46,7 @@ var (
 )
 
 func init() {
-	log.Init(log.DefaultGlg())
+	log.Init()
 
 	flag.StringVar(&datasetVar, "dataset", "", "available dataset(choice with comma)")
 	flag.StringVar(&addressVar, "address", "", "vald gateway address")

@@ -22,7 +22,7 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/pierrec/lz4"
+	lz4 "github.com/pierrec/lz4/v3"
 	"github.com/vdaas/vald/internal/errors"
 )
 
@@ -73,9 +73,7 @@ func (l *lz4Compressor) DecompressVector(bs []byte) ([]float32, error) {
 		return nil, err
 	}
 
-	bufbytes := buf.Bytes()
-
-	vec, err := l.gobc.DecompressVector(bufbytes)
+	vec, err := l.gobc.DecompressVector(buf.Bytes())
 	if err != nil {
 		return nil, err
 	}
