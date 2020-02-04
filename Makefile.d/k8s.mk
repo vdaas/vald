@@ -70,13 +70,103 @@ k8s/vald/deploy: \
 k8s/vald/remove: \
 	k8s/external/mysql/remove \
 	k8s/external/redis/remove
-	kubectl delete -f k8s/gateway/vald
-	kubectl delete -f k8s/manager/backup
-	kubectl delete -f k8s/manager/compressor
-	kubectl delete -f k8s/meta
-	kubectl delete -f k8s/discoverer
-	kubectl delete -f k8s/agent
-	kubectl delete -f k8s/metrics/metrics-server
+	-kubectl delete -f k8s/gateway/vald
+	-kubectl delete -f k8s/manager/backup
+	-kubectl delete -f k8s/manager/compressor
+	-kubectl delete -f k8s/meta
+	-kubectl delete -f k8s/discoverer
+	-kubectl delete -f k8s/agent
+	-kubectl delete -f k8s/metrics/metrics-server
+
+.PHONY: k8s/vald/deploy/cassandra
+## deploy vald sample cluster with cassandra to k8s
+k8s/vald/deploy/cassandra: \
+	k8s/external/cassandra/deploy
+	helm template \
+	    --values vald/values.yaml \
+	    --set backupManager.image.repository=vdaas/vald-manager-backup-cassandra \
+	    --set backupManager.initContainers[0].type=waitFor \
+	    --set backupManager.initContainers[0].name=wait-for-cassandra \
+	    --set backupManager.initContainers[0].image=cassandra:latest \
+	    --set backupManager.initContainers[0].target=cassandra.default.svc.cluster.local \
+	    --set backupManager.initContainers[0].untilCondition='$$(cqlsh cassandra.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $$?) -eq 0' \
+	    --set backupManager.initContainers[0].sleepDuration=2 \
+	    --set backupManager.initContainers[0].env=null \
+	    --set backupManager.env=null \
+	    --set backupManager.mysql.enabled=false \
+	    --set backupManager.cassandra.enabled=true \
+	    --set backupManager.cassandra.config.hosts[0]=cassandra-0.cassandra.default.svc.cluster.local \
+	    --set backupManager.cassandra.config.hosts[1]=cassandra-1.cassandra.default.svc.cluster.local \
+	    --set backupManager.cassandra.config.hosts[2]=cassandra-2.cassandra.default.svc.cluster.local \
+	    --set meta.image.repository=vdaas/vald-meta-cassandra \
+	    --set meta.initContainers[0].type=waitFor \
+	    --set meta.initContainers[0].name=wait-for-cassandra \
+	    --set meta.initContainers[0].image=cassandra:latest \
+	    --set meta.initContainers[0].target=cassandra.default.svc.cluster.local \
+	    --set meta.initContainers[0].untilCondition='$$(cqlsh cassandra.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $$?) -eq 0' \
+	    --set meta.initContainers[0].sleepDuration=2 \
+	    --set meta.initContainers[0].env=null \
+	    --set meta.env=null \
+	    --set meta.mysql.enabled=false \
+	    --set meta.cassandra.enabled=true \
+	    --set meta.cassandra.config.hosts[0]=cassandra-0.cassandra.default.svc.cluster.local \
+	    --set meta.cassandra.config.hosts[1]=cassandra-1.cassandra.default.svc.cluster.local \
+	    --set meta.cassandra.config.hosts[2]=cassandra-2.cassandra.default.svc.cluster.local \
+	    --output-dir tmp-k8s \
+	    vald
+	kubectl apply -f k8s/metrics/metrics-server
+	kubectl apply -f tmp-k8s/vald/templates/manager/backup
+	kubectl apply -f tmp-k8s/vald/templates/manager/compressor
+	kubectl apply -f tmp-k8s/vald/templates/agent
+	kubectl apply -f tmp-k8s/vald/templates/discoverer
+	kubectl apply -f tmp-k8s/vald/templates/meta
+	kubectl apply -f tmp-k8s/vald/templates/gateway/vald
+	rm -rf tmp-k8s
+
+.PHONY: k8s/vald/deploy/scylla
+## deploy vald sample cluster with scylla to k8s
+k8s/vald/deploy/scylla: \
+	k8s/external/scylla/deploy
+	helm template \
+	    --values vald/values.yaml \
+	    --set backupManager.image.repository=vdaas/vald-manager-backup-cassandra \
+	    --set backupManager.initContainers[0].type=waitFor \
+	    --set backupManager.initContainers[0].name=wait-for-scylla \
+	    --set backupManager.initContainers[0].image=cassandra:latest \
+	    --set backupManager.initContainers[0].target=scylla.default.svc.cluster.local \
+	    --set backupManager.initContainers[0].untilCondition='$$(cqlsh scylla.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $$?) -eq 0' \
+	    --set backupManager.initContainers[0].sleepDuration=2 \
+	    --set backupManager.initContainers[0].env=null \
+	    --set backupManager.env=null \
+	    --set backupManager.mysql.enabled=false \
+	    --set backupManager.cassandra.enabled=true \
+	    --set backupManager.cassandra.config.hosts[0]=scylla-0.scylla.default.svc.cluster.local \
+	    --set backupManager.cassandra.config.hosts[1]=scylla-1.scylla.default.svc.cluster.local \
+	    --set backupManager.cassandra.config.hosts[2]=scylla-2.scylla.default.svc.cluster.local \
+	    --set meta.image.repository=vdaas/vald-meta-cassandra \
+	    --set meta.initContainers[0].type=waitFor \
+	    --set meta.initContainers[0].name=wait-for-scylla \
+	    --set meta.initContainers[0].image=cassandra:latest \
+	    --set meta.initContainers[0].target=scylla.default.svc.cluster.local \
+	    --set meta.initContainers[0].untilCondition='$$(cqlsh scylla.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $$?) -eq 0' \
+	    --set meta.initContainers[0].sleepDuration=2 \
+	    --set meta.initContainers[0].env=null \
+	    --set meta.env=null \
+	    --set meta.mysql.enabled=false \
+	    --set meta.cassandra.enabled=true \
+	    --set meta.cassandra.config.hosts[0]=scylla-0.scylla.default.svc.cluster.local \
+	    --set meta.cassandra.config.hosts[1]=scylla-1.scylla.default.svc.cluster.local \
+	    --set meta.cassandra.config.hosts[2]=scylla-2.scylla.default.svc.cluster.local \
+	    --output-dir tmp-k8s \
+	    vald
+	kubectl apply -f k8s/metrics/metrics-server
+	kubectl apply -f tmp-k8s/vald/templates/manager/backup
+	kubectl apply -f tmp-k8s/vald/templates/manager/compressor
+	kubectl apply -f tmp-k8s/vald/templates/agent
+	kubectl apply -f tmp-k8s/vald/templates/discoverer
+	kubectl apply -f tmp-k8s/vald/templates/meta
+	kubectl apply -f tmp-k8s/vald/templates/gateway/vald
+	rm -rf tmp-k8s
 
 .PHONY: k8s/external/mysql/deploy
 ## deploy mysql to k8s
@@ -87,8 +177,8 @@ k8s/external/mysql/deploy:
 .PHONY: k8s/external/mysql/remove
 ## remove mysql from k8s
 k8s/external/mysql/remove:
-	kubectl delete -f k8s/external/mysql
-	kubectl delete configmap mysql-config
+	-kubectl delete -f k8s/external/mysql
+	-kubectl delete configmap mysql-config
 
 .PHONY: k8s/external/mysql/initialize
 ## initialize mysql on k8s
@@ -105,7 +195,7 @@ k8s/external/redis/deploy:
 .PHONY: k8s/external/redis/remove
 ## remove redis from k8s
 k8s/external/redis/remove:
-	kubectl delete -f k8s/external/redis
+	-kubectl delete -f k8s/external/redis
 
 .PHONY: k8s/external/redis/initialize
 ## initialize redis on k8s
@@ -123,8 +213,8 @@ k8s/external/cassandra/deploy:
 .PHONY: k8s/external/cassandra/remove
 ## remove cassandra from k8s
 k8s/external/cassandra/remove:
-	kubectl delete -f k8s/external/cassandra
-	kubectl delete configmap cassandra-initdb
+	-kubectl delete -f k8s/external/cassandra
+	-kubectl delete configmap cassandra-initdb
 
 .PHONY: k8s/external/cassandra/initialize
 ## initialize cassandra on k8s
@@ -142,8 +232,8 @@ k8s/external/scylla/deploy:
 .PHONY: k8s/external/scylla/remove
 ## remove scylla from k8s
 k8s/external/scylla/remove:
-	kubectl delete -f k8s/external/scylla
-	kubectl delete configmap cassandra-initdb
+	-kubectl delete -f k8s/external/scylla
+	-kubectl delete configmap cassandra-initdb
 
 .PHONY: k8s/linkerd/deploy
 ## deploy linkerd to k8s
