@@ -26,9 +26,9 @@ server_config:
     host: 127.0.0.1
     port: 8080
     mode: REST
-    probe_wait_time: 3s
+    probe_wait_time: 
     http:
-      shutdown_duration: 5s
+      shutdown_duration: 
       handler_timeout: 5s
       idle_timeout: 2s
       read_header_timeout: 1s
@@ -38,9 +38,9 @@ server_config:
     host: 127.0.0.1
     port: 8082
     mode: GRPC
-    probe_wait_time: "3s"
+    probe_wait_time: 
     http:
-      shutdown_duration: "5s"
+      shutdown_duration: 
       handler_timeout: ""
       idle_timeout: ""
       read_header_timeout: ""
@@ -51,9 +51,9 @@ server_config:
     host: 127.0.0.1
     port: 3000
     mode: ""
-    probe_wait_time: "3s"
+    probe_wait_time: 
     http:
-      shutdown_duration: "5s"
+      shutdown_duration:
       handler_timeout: ""
       idle_timeout: ""
       read_header_timeout: ""
@@ -63,9 +63,9 @@ server_config:
     host: 127.0.0.1
     port: 3001
     mode: ""
-    probe_wait_time: "3s"
+    probe_wait_time:
     http:
-      shutdown_duration: "5s"
+      shutdown_duration:
       handler_timeout: ""
       idle_timeout: ""
       read_header_timeout: ""
@@ -76,9 +76,9 @@ server_config:
     host: 127.0.0.1
     port: 6060
     mode: REST
-    probe_wait_time: 3s
+    probe_wait_time:
     http:
-      shutdown_duration: 5s
+      shutdown_duration:
       handler_timeout: 5s
       idle_timeout: 2s
       read_header_timeout: 1s
