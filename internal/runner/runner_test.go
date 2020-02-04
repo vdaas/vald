@@ -44,7 +44,7 @@ func TestDo(t *testing.T) {
 			loadConfig := func(string) (interface{}, *config.GlobalConfig, error) {
 				return nil, &config.GlobalConfig{
 					Version: "v0.0.1",
-					Logging: &config.Logging{},
+					Logging: new(config.Logging),
 				}, nil
 			}
 
@@ -192,28 +192,6 @@ func TestDo(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithConfigLoader(loadConfig),
-					},
-				},
-				wantErr: true,
-			}
-		}(),
-
-		func() test {
-			loadConfig := func(string) (interface{}, *config.GlobalConfig, error) {
-				return nil, &config.GlobalConfig{
-					Version: "v0.1.0",
-				}, errors.New("fail")
-			}
-
-			return test{
-				name: "returns error incase of invalid version",
-				testArgs: []string{
-					"dummyCommand",
-				},
-				args: args{
-					opts: []Option{
-						WithConfigLoader(loadConfig),
-						WithVersion("v0.0.0", "v0.0.10", "v0.0.1"),
 					},
 				},
 				wantErr: true,
