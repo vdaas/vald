@@ -18,8 +18,10 @@ package runner
 
 import (
 	"context"
+	"os"
 	"testing"
 
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 )
@@ -30,16 +32,200 @@ func TestDo(t *testing.T) {
 		opts []Option
 	}
 
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{}
+	type test struct {
+		name     string
+		testArgs []string
+		args     args
+		wantErr  bool
+	}
+
+	tests := []test{
+		func() test {
+			loadConfig := func(string) (interface{}, *config.GlobalConfig, error) {
+				return nil, &config.GlobalConfig{
+					Version: "v0.0.1",
+					Logging: &config.Logging{},
+				}, nil
+			}
+
+			initializeDeamon := func(interface{}) (Runner, error) {
+				return &runnerMock{
+					PreStartFunc: func(ctx context.Context) error {
+						return nil
+					},
+					StartFunc: func(ctx context.Context) (<-chan error, error) {
+						return make(chan error), nil
+					},
+					PreStopFunc: func(ctx context.Context) error {
+						return nil
+					},
+					StopFunc: func(ctx context.Context) error {
+						return nil
+					},
+					PostStopFunc: func(ctx context.Context) error {
+						return nil
+					},
+				}, nil
+			}
+
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+
+			return test{
+				name: "returns nil when no error occurs internally",
+				testArgs: []string{
+					"dummyCommand",
+				},
+				args: args{
+					opts: []Option{
+						WithDaemonInitializer(initializeDeamon),
+						WithConfigLoader(loadConfig),
+						WithVersion("v0.0.0", "v0.0.10", "v0.0.1"),
+					},
+					ctx: ctx,
+				},
+			}
+		}(),
+
+		{
+			name: "returns error when parsing of params fails",
+			testArgs: []string{
+				"dummyCommand",
+				"-test.Args=true",
+			},
+			wantErr: true,
+		},
+
+		{
+			name: "returns nil when help option is set",
+			testArgs: []string{
+				"dummyCommand",
+				"--help",
+			},
+		},
+
+		func() test {
+			loadConfig := func(string) (interface{}, *config.GlobalConfig, error) {
+				return nil, &config.GlobalConfig{
+					Version: "v0.0.1",
+					Logging: new(config.Logging),
+				}, nil
+			}
+
+			initializeDeamon := func(interface{}) (Runner, error) {
+				return nil, errors.New("fail")
+			}
+
+			return test{
+				name: "returns error when initialization of the daemon fails",
+				testArgs: []string{
+					"dummyCommand",
+				},
+				args: args{
+					opts: []Option{
+						WithDaemonInitializer(initializeDeamon),
+						WithConfigLoader(loadConfig),
+						WithVersion("v0.0.0", "v0.0.10", "v0.0.1"),
+					},
+				},
+				wantErr: true,
+			}
+		}(),
+
+		func() test {
+			loadConfig := func(string) (interface{}, *config.GlobalConfig, error) {
+				return nil, new(config.GlobalConfig), nil
+			}
+
+			return test{
+				name: "returns nil when version options is set",
+				testArgs: []string{
+					"dummyCommand",
+					"--version",
+				},
+				args: args{
+					opts: []Option{
+						WithConfigLoader(loadConfig),
+					},
+				},
+			}
+		}(),
+
+		func() test {
+			loadConfig := func(string) (interface{}, *config.GlobalConfig, error) {
+				return nil, &config.GlobalConfig{
+					Version: "v0.1.0",
+					Logging: new(config.Logging),
+				}, nil
+			}
+
+			initializeDeamon := func(interface{}) (Runner, error) {
+				return nil, errors.New("fail")
+			}
+
+			return test{
+				name: "returns error when version check fails",
+				testArgs: []string{
+					"dummyCommand",
+				},
+				args: args{
+					opts: []Option{
+						WithDaemonInitializer(initializeDeamon),
+						WithConfigLoader(loadConfig),
+						WithVersion("v0.0.0", "v0.0.10", "v0.0.1"),
+					},
+				},
+				wantErr: true,
+			}
+		}(),
+
+		func() test {
+			loadConfig := func(string) (interface{}, *config.GlobalConfig, error) {
+				return nil, nil, errors.New("fail")
+			}
+
+			return test{
+				name: "returns error when loading the config fails",
+				testArgs: []string{
+					"dummyCommand",
+				},
+				args: args{
+					opts: []Option{
+						WithConfigLoader(loadConfig),
+					},
+				},
+				wantErr: true,
+			}
+		}(),
+
+		func() test {
+			loadConfig := func(string) (interface{}, *config.GlobalConfig, error) {
+				return nil, &config.GlobalConfig{
+					Version: "v0.1.0",
+				}, errors.New("fail")
+			}
+
+			return test{
+				name: "returns error incase of invalid version",
+				testArgs: []string{
+					"dummyCommand",
+				},
+				args: args{
+					opts: []Option{
+						WithConfigLoader(loadConfig),
+						WithVersion("v0.0.0", "v0.0.10", "v0.0.1"),
+					},
+				},
+				wantErr: true,
+			}
+		}(),
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			os.Args = tt.testArgs
 			if err := Do(tt.args.ctx, tt.args.opts...); (err != nil) != tt.wantErr {
-				t.Errorf("Do() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("not equals. err: %v", err)
 			}
 		})
 	}
