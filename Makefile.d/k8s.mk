@@ -89,7 +89,7 @@ k8s/vald/deploy/scylla: \
 	    --set backupManager.initContainers[0].name=wait-for-scylla \
 	    --set backupManager.initContainers[0].image=scylladb/scylla:latest \
 	    --set backupManager.initContainers[0].target=scylla.default.svc.cluster.local \
-	    --set backupManager.initContainers[0].untilCondition='$$(cqlsh scylla.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $$?)' \
+	    --set backupManager.initContainers[0].untilCondition='$$(cqlsh scylla.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $$?) -eq 0' \
 	    --set backupManager.initContainers[0].sleepDuration=2 \
 	    --set backupManager.initContainers[0].env=null \
 	    --set backupManager.env=null \
@@ -103,7 +103,7 @@ k8s/vald/deploy/scylla: \
 	    --set meta.initContainers[0].name=wait-for-scylla \
 	    --set meta.initContainers[0].image=scylladb/scylla:latest \
 	    --set meta.initContainers[0].target=scylla.default.svc.cluster.local \
-	    --set meta.initContainers[0].untilCondition='$$(cqlsh scylla.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $$?)' \
+	    --set meta.initContainers[0].untilCondition='$$(cqlsh scylla.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $$?) -eq 0' \
 	    --set meta.initContainers[0].sleepDuration=2 \
 	    --set meta.initContainers[0].env=null \
 	    --set meta.env=null \
