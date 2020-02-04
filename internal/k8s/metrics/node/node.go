@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-// Package pod provides kubernetes pod information and preriodically update
-package pod
+// Package node provides kubernetes node information and preriodically update
+package node
 
 import (
 	"context"
@@ -34,27 +34,29 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-type PodWatcher interface {
+type NodeWatcher interface {
 	k8s.ResourceController
-	GetPods(name string) (pods []Pod, ok bool)
+	GetNodes(name string) (nodes Node, ok bool)
 }
 
 type reconciler struct {
 	mu          sync.RWMutex
-	podList     map[string][]Pod
+	nodes       map[string]Node
 	mgr         manager.Manager
 	name        string
 	onError     func(err error)
-	onReconcile func(podList map[string][]Pod)
+	onReconcile func(nodeList map[string]Node)
 }
 
-type Pod struct {
-	Name string
-	CPU  float64
-	Mem  float64
+type Node struct {
+	Name    string
+	CPU     int64
+	Mem     int64
+	Pods    int64
+	Storage int64
 }
 
-func New(opts ...Option) PodWatcher {
+func New(opts ...Option) NodeWatcher {
 	r := new(reconciler)
 
 	for _, opt := range opts {
@@ -65,7 +67,7 @@ func New(opts ...Option) PodWatcher {
 }
 
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
-	m := &metrics.PodMetricsList{}
+	m := &metrics.NodeMetricsList{}
 
 	err = r.mgr.GetClient().List(context.TODO(), m, client.InNamespace(req.Namespace))
 
@@ -86,49 +88,33 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		return
 	}
 
-	var (
-		cpuUsage float64
-		memUsage float64
-		pods     = make(map[string][]Pod, len(m.Items))
-	)
+	nodes := make(map[string]Node, len(m.Items))
 
-	for _, pod := range m.Items {
-		cpuUsage = 0.0
-		memUsage = 0.0
-		for _, container := range pod.Containers {
-			cpuUsage += float64(container.Usage.Cpu().Value())
-			memUsage += float64(container.Usage.Memory().Value())
+	for _, node := range m.Items {
+		nodeName := node.GetName()
+		nodes[nodeName] = Node{
+			Name:    nodeName,
+			CPU:     node.Usage.Cpu().Value(),
+			Mem:     node.Usage.Memory().Value(),
+			Storage: node.Usage.StorageEphemeral().Value(),
+			Pods:    node.Usage.Pods().Value(),
 		}
-
-		cpuUsage /= float64(len(pod.Containers))
-		memUsage /= float64(len(pod.Containers))
-		podMetaName := pod.GetObjectMeta().GetName()
-
-		if _, ok := pods[podMetaName]; !ok {
-			pods[podMetaName] = make([]Pod, 0, len(m.Items))
-		}
-
-		pods[podMetaName] = append(pods[podMetaName], Pod{
-			Name: pod.GetName(),
-			CPU:  cpuUsage,
-			Mem:  memUsage,
-		})
 	}
 
 	if r.onReconcile != nil {
-		r.onReconcile(pods)
+		r.onReconcile(nodes)
 	}
 
 	r.mu.Lock()
-	r.podList = pods
+	r.nodes = nodes
 	r.mu.Lock()
 
 	return
 }
 
-func (r *reconciler) GetPods(name string) (pods []Pod, ok bool) {
+func (r *reconciler) GetNodes(name string) (nodes Node, ok bool) {
 	r.mu.RLock()
-	pods, ok = r.podList[name]
+	nodes, ok = r.nodes[name]
 	r.mu.RUnlock()
 	return
 }
@@ -146,13 +132,13 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 }
 
 func (r *reconciler) For() runtime.Object {
-	return new(metrics.PodMetrics)
+	return new(metrics.NodeMetrics)
 }
 
 func (r *reconciler) Owns() runtime.Object {
-	return new(metrics.PodMetrics)
+	return new(metrics.NodeMetrics)
 }
 
 func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
-	return &source.Kind{Type: new(metrics.PodMetrics)}, &handler.EnqueueRequestForObject{}
+	return &source.Kind{Type: new(metrics.NodeMetrics)}, &handler.EnqueueRequestForObject{}
 }
