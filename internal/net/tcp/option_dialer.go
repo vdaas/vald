@@ -38,7 +38,9 @@ var (
 
 func WithCache(c gache.Gache) DialerOption {
 	return func(d *dialer) {
-		d.cache = c
+		if c != nil {
+			d.cache = c
+		}
 	}
 }
 
@@ -99,7 +101,9 @@ func WithDialerKeepAlive(dur string) DialerOption {
 
 func WithTLS(cfg *tls.Config) DialerOption {
 	return func(d *dialer) {
-		d.tlsConfig = cfg
+		if cfg != nil {
+			d.tlsConfig = cfg
+		}
 	}
 }
 

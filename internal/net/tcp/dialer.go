@@ -83,6 +83,7 @@ func NewDialer(opts ...DialerOption) Dialer {
 		}
 		return d
 	}
+
 	if d.cache == nil {
 		d.cache = gache.New()
 	}
@@ -132,7 +133,7 @@ func (d *dialer) StartDialerCache(ctx context.Context) {
 				if err := safety.RecoverFunc(func() (err error) {
 					_, err = d.lookup(gctx, addr)
 					return err
-				}); err != nil {
+				})(); err != nil {
 					log.Error(err)
 				}
 			}).

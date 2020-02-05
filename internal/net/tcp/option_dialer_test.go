@@ -22,7 +22,7 @@ func TestWithCache(t *testing.T) {
 			c := gache.New()
 
 			return test{
-				name: "set success",
+				name: "set success when c is not nil",
 				c:    c,
 				checkFunc: func(opt DialerOption) error {
 					got := new(dialer)
@@ -35,6 +35,23 @@ func TestWithCache(t *testing.T) {
 				},
 			}
 		}(),
+
+		{
+			name: "not set when c is nil",
+			c:    nil,
+			checkFunc: func(opt DialerOption) error {
+				c := gache.New()
+				got := &dialer{
+					cache: c,
+				}
+				opt(got)
+
+				if !reflect.DeepEqual(got.cache, c) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -56,7 +73,7 @@ func TestWithDNSRefreshDuration(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set success",
+			name: "set success when dur is valid",
 			dur:  "10s",
 			checkFunc: func(opt DialerOption) error {
 				got := new(dialer)
@@ -70,7 +87,7 @@ func TestWithDNSRefreshDuration(t *testing.T) {
 		},
 
 		{
-			name: "set default",
+			name: "set default when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt DialerOption) error {
 				got := new(dialer)
@@ -84,12 +101,14 @@ func TestWithDNSRefreshDuration(t *testing.T) {
 		},
 
 		{
-			name: "do nothing",
+			name: "not set when dur is empty",
 			checkFunc: func(opt DialerOption) error {
-				got := new(dialer)
+				got := &dialer{
+					dnsRefreshDuration: 10 * time.Second,
+				}
 				opt(got)
 
-				if got.dnsRefreshDuration != 0 {
+				if got.dnsRefreshDuration != 10*time.Second {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -116,7 +135,7 @@ func TestWithDNSCacheExpiration(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set success",
+			name: "set success when dur is valid",
 			dur:  "10s",
 			checkFunc: func(opt DialerOption) error {
 				got := new(dialer)
@@ -135,7 +154,7 @@ func TestWithDNSCacheExpiration(t *testing.T) {
 		},
 
 		{
-			name: "set default",
+			name: "set default when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt DialerOption) error {
 				got := new(dialer)
@@ -154,12 +173,14 @@ func TestWithDNSCacheExpiration(t *testing.T) {
 		},
 
 		{
-			name: "do nothing",
+			name: "not set when dur is empty",
 			checkFunc: func(opt DialerOption) error {
-				got := new(dialer)
+				got := &dialer{
+					dnsCacheExpiration: 10 * time.Second,
+				}
 				opt(got)
 
-				if got.dnsCacheExpiration != 0 {
+				if got.dnsCacheExpiration != 10*time.Second {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -186,7 +207,7 @@ func TestWithDialerTimeout(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set success",
+			name: "set success when dur is valid",
 			dur:  "10s",
 			checkFunc: func(opt DialerOption) error {
 				got := new(dialer)
@@ -200,7 +221,7 @@ func TestWithDialerTimeout(t *testing.T) {
 		},
 
 		{
-			name: "set default",
+			name: "set default when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt DialerOption) error {
 				got := new(dialer)
@@ -214,12 +235,14 @@ func TestWithDialerTimeout(t *testing.T) {
 		},
 
 		{
-			name: "do nothing",
+			name: "not set when dur is invalid",
 			checkFunc: func(opt DialerOption) error {
-				got := new(dialer)
+				got := &dialer{
+					dialerTimeout: 10 * time.Second,
+				}
 				opt(got)
 
-				if got.dialerTimeout != 0 {
+				if got.dialerTimeout != 10*time.Second {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -246,7 +269,7 @@ func TestWithDialerKeepAlive(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set success",
+			name: "set success when dur is valid",
 			dur:  "10s",
 			checkFunc: func(opt DialerOption) error {
 				got := new(dialer)
@@ -260,7 +283,7 @@ func TestWithDialerKeepAlive(t *testing.T) {
 		},
 
 		{
-			name: "set default",
+			name: "set default when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt DialerOption) error {
 				got := new(dialer)
@@ -274,12 +297,14 @@ func TestWithDialerKeepAlive(t *testing.T) {
 		},
 
 		{
-			name: "do nothing",
+			name: "not set when dur is empty",
 			checkFunc: func(opt DialerOption) error {
-				got := new(dialer)
+				got := &dialer{
+					dialerKeepAlive: 10 * time.Second,
+				}
 				opt(got)
 
-				if got.dialerKeepAlive != 0 {
+				if got.dialerKeepAlive != 10*time.Second {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -308,7 +333,7 @@ func TestWithTLS(t *testing.T) {
 		func() test {
 			cfg := new(tls.Config)
 			return test{
-				name: "set success",
+				name: "set success when cfg is not nil",
 				cfg:  cfg,
 				checkFunc: func(opt DialerOption) error {
 					got := new(dialer)
@@ -321,6 +346,22 @@ func TestWithTLS(t *testing.T) {
 				},
 			}
 		}(),
+
+		{
+			name: "not set when cfg is nil",
+			checkFunc: func(opt DialerOption) error {
+				cfg := new(tls.Config)
+				got := &dialer{
+					tlsConfig: cfg,
+				}
+				opt(got)
+
+				if !reflect.DeepEqual(got.tlsConfig, cfg) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
