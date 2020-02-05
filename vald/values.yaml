@@ -159,7 +159,7 @@ defaults:
         enable_backoff: false
         insecure: true
         timeout: ""
-        dialer:
+        tcp:
           dns:
             cache_enabled: false
             refresh_duration: ""

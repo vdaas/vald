@@ -145,6 +145,31 @@ func (e *entryUo) delete() (hadValue bool) {
 	}
 }
 
+func (m *uo) Range(f func(uuid string, oid uint32) bool) {
+	read, _ := m.read.Load().(readOnlyUo)
+	if read.amended {
+		m.mu.Lock()
+		read, _ = m.read.Load().(readOnlyUo)
+		if read.amended {
+			read = readOnlyUo{m: m.dirty}
+			m.read.Store(read)
+			m.dirty = nil
+			m.misses = 0
+		}
+		m.mu.Unlock()
+	}
+
+	for k, e := range read.m {
+		v, ok := e.load()
+		if !ok {
+			continue
+		}
+		if !f(k, v) {
+			break
+		}
+	}
+}
+
 func (m *uo) missLocked() {
 	m.misses++
 	if m.misses < len(m.dirty) {

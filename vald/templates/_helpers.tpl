@@ -355,35 +355,35 @@ dial_option:
   enable_backoff: {{ default .default.dial_option.enable_backoff .Values.dial_option.enable_backoff }}
   insecure: {{ default .default.dial_option.insecure .Values.dial_option.insecure }}
   timeout: {{ default .default.dial_option.timeout .Values.dial_option.timeout }}
-  dialer:
-    {{- if .Values.dial_option.dialer }}
+  tcp:
+    {{- if .Values.dial_option.tcp }}
     dns:
-      {{- if .Values.dial_option.dialer.dns }}
-      cache_enabled: {{ default .default.dial_option.dialer.dns.cache_enabled .Values.dial_option.dialer.dns.cache_enabled }}
-      refresh_duration: {{ default .default.dial_option.dialer.dns.refresh_duration .Values.dial_option.dialer.dns.refresh_duration }}
-      cache_expiration: {{ default .default.dial_option.dialer.dns.cache_expiration .Values.dial_option.dialer.dns.cache_expiration }}
+      {{- if .Values.dial_option.tcp.dns }}
+      cache_enabled: {{ default .default.dial_option.tcp.dns.cache_enabled .Values.dial_option.tcp.dns.cache_enabled }}
+      refresh_duration: {{ default .default.dial_option.tcp.dns.refresh_duration .Values.dial_option.tcp.dns.refresh_duration }}
+      cache_expiration: {{ default .default.dial_option.tcp.dns.cache_expiration .Values.dial_option.tcp.dns.cache_expiration }}
       {{- else }}
-      {{- toYaml .default.dial_option.dialer.dns | nindent 6 }}
+      {{- toYaml .default.dial_option.tcp.dns | nindent 6 }}
       {{- end }}
     dialer:
-      {{- if .Values.dial_option.dialer.dialer }}
-      timeout: {{ default .default.dial_option.dialer.dialer.timeout .Values.dial_option.dialer.dialer.timeout }}
-      keep_alive: {{ default .default.dial_option.dialer.dialer.keep_alive .Values.dial_option.dialer.dialer.keep_alive }}
-      dual_stack_enabled: {{ default .default.dial_option.dialer.dialer.dual_stack_enabled .Values.dial_option.dialer.dialer.dual_stack_enabled }}
+      {{- if .Values.dial_option.tcp.dialer }}
+      timeout: {{ default .default.dial_option.tcp.dialer.timeout .Values.dial_option.tcp.dialer.timeout }}
+      keep_alive: {{ default .default.dial_option.tcp.dialer.keep_alive .Values.dial_option.tcp.dialer.keep_alive }}
+      dual_stack_enabled: {{ default .default.dial_option.tcp.dialer.dual_stack_enabled .Values.dial_option.tcp.dialer.dual_stack_enabled }}
       {{- else }}
-      {{- toYaml .default.dial_option.dialer.dialer | nindent 6 }}
+      {{- toYaml .default.dial_option.tcp.dialer | nindent 6 }}
       {{- end }}
     tls:
-      {{- if .Values.dial_option.dialer.tls }}
-      enabled: {{ default .default.dial_option.dialer.tls.enabled .Values.dial_option.dialer.tls.enabled }}
-      cert: {{ default .default.dial_option.dialer.tls.cert .Values.dial_option.dialer.tls.cert }}
-      key: {{ default .default.dial_option.dialer.tls.key .Values.dial_option.dialer.tls.key }}
-      ca: {{ default .default.dial_option.dialer.tls.ca .Values.dial_option.dialer.tls.ca }}
+      {{- if .Values.dial_option.tcp.tls }}
+      enabled: {{ default .default.dial_option.tcp.tls.enabled .Values.dial_option.tcp.tls.enabled }}
+      cert: {{ default .default.dial_option.tcp.tls.cert .Values.dial_option.tcp.tls.cert }}
+      key: {{ default .default.dial_option.tcp.tls.key .Values.dial_option.tcp.tls.key }}
+      ca: {{ default .default.dial_option.tcp.tls.ca .Values.dial_option.tcp.tls.ca }}
       {{- else }}
-      {{- toYaml .default.dial_option.dialer.tls | nindent 6 }}
+      {{- toYaml .default.dial_option.tcp.tls | nindent 6 }}
       {{- end }}
     {{- else }}
-    {{- toYaml .default.dial_option.dialer | nindent 4 }}
+    {{- toYaml .default.dial_option.tcp | nindent 4 }}
     {{- end }}
   keep_alive:
     {{- if .Values.dial_option.keep_alive }}

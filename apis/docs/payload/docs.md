@@ -22,16 +22,20 @@
     - [Backup.Remove](#payload.Backup.Remove)
     - [Backup.Remove.Request](#payload.Backup.Remove.Request)
     - [Backup.Remove.RequestMulti](#payload.Backup.Remove.RequestMulti)
-    - [Controll](#payload.Controll)
-    - [Controll.CreateIndexRequest](#payload.Controll.CreateIndexRequest)
+    - [Control](#payload.Control)
+    - [Control.CreateIndexRequest](#payload.Control.CreateIndexRequest)
     - [Discoverer](#payload.Discoverer)
     - [Discoverer.Request](#payload.Discoverer.Request)
     - [Empty](#payload.Empty)
     - [Info](#payload.Info)
+    - [Info.CPU](#payload.Info.CPU)
     - [Info.IPs](#payload.Info.IPs)
     - [Info.Index](#payload.Info.Index)
-    - [Info.Server](#payload.Info.Server)
-    - [Info.Servers](#payload.Info.Servers)
+    - [Info.Memory](#payload.Info.Memory)
+    - [Info.Node](#payload.Info.Node)
+    - [Info.Nodes](#payload.Info.Nodes)
+    - [Info.Pod](#payload.Info.Pod)
+    - [Info.Pods](#payload.Info.Pods)
     - [Meta](#payload.Meta)
     - [Meta.Key](#payload.Meta.Key)
     - [Meta.KeyVal](#payload.Meta.KeyVal)
@@ -303,19 +307,19 @@
 
 
 
-<a name="payload.Controll"></a>
+<a name="payload.Control"></a>
 
-### Controll
-
-
+### Control
 
 
 
 
 
-<a name="payload.Controll.CreateIndexRequest"></a>
 
-### Controll.CreateIndexRequest
+
+<a name="payload.Control.CreateIndexRequest"></a>
+
+### Control.CreateIndexRequest
 
 
 
@@ -347,6 +351,7 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | [string](#string) |  |  |
+| namespace | [string](#string) |  |  |
 | node | [string](#string) |  |  |
 
 
@@ -368,6 +373,23 @@
 
 ### Info
 
+
+
+
+
+
+
+<a name="payload.Info.CPU"></a>
+
+### Info.CPU
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| limit | [double](#double) |  |  |
+| request | [double](#double) |  |  |
+| usage | [double](#double) |  |  |
 
 
 
@@ -397,44 +419,99 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| count | [uint32](#uint32) |  |  |
-| uncommitted_index | [uint32](#uint32) |  |  |
+| stored | [uint32](#uint32) |  |  |
+| uncommitted | [uint32](#uint32) |  |  |
 | uuids | [string](#string) | repeated |  |
-| uncommitted_uuid | [string](#string) | repeated |  |
+| uncommitted_uuids | [string](#string) | repeated |  |
+| indexing | [bool](#bool) |  |  |
 
 
 
 
 
 
-<a name="payload.Info.Server"></a>
+<a name="payload.Info.Memory"></a>
 
-### Info.Server
+### Info.Memory
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| limit | [double](#double) |  |  |
+| request | [double](#double) |  |  |
+| usage | [double](#double) |  |  |
+
+
+
+
+
+
+<a name="payload.Info.Node"></a>
+
+### Info.Node
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | [string](#string) |  |  |
-| ip | [string](#string) |  |  |
-| server | [Info.Server](#payload.Info.Server) |  |  |
-| cpu | [double](#double) |  |  |
-| mem | [double](#double) |  |  |
+| internal_addr | [string](#string) |  |  |
+| external_addr | [string](#string) |  |  |
+| cpu | [Info.CPU](#payload.Info.CPU) |  |  |
+| memory | [Info.Memory](#payload.Info.Memory) |  |  |
+| Pods | [Info.Pods](#payload.Info.Pods) |  |  |
 
 
 
 
 
 
-<a name="payload.Info.Servers"></a>
+<a name="payload.Info.Nodes"></a>
 
-### Info.Servers
+### Info.Nodes
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| Servers | [Info.Server](#payload.Info.Server) | repeated |  |
+| nodes | [Info.Node](#payload.Info.Node) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Info.Pod"></a>
+
+### Info.Pod
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| app_name | [string](#string) |  |  |
+| name | [string](#string) |  |  |
+| namespace | [string](#string) |  |  |
+| ip | [string](#string) |  |  |
+| cpu | [Info.CPU](#payload.Info.CPU) |  |  |
+| memory | [Info.Memory](#payload.Info.Memory) |  |  |
+| node | [Info.Node](#payload.Info.Node) |  |  |
+
+
+
+
+
+
+<a name="payload.Info.Pods"></a>
+
+### Info.Pods
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| pods | [Info.Pod](#payload.Info.Pod) | repeated |  |
 
 
 

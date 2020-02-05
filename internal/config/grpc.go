@@ -50,7 +50,7 @@ type DialOption struct {
 	EnableBackoff               bool                 `json:"enable_backoff" yaml:"enable_backoff"`
 	Insecure                    bool                 `json:"insecure" yaml:"insecure"`
 	Timeout                     string               `json:"timeout" yaml:"timeout"`
-	Dialer                      *TCP                 `json:"dialer" yaml:"dialer"`
+	TCP                         *TCP                 `json:"tcp" yaml:"tcp"`
 	KeepAlive                   *GRPCClientKeepalive `json:"keep_alive" yaml:"keep_alive"`
 }
 
@@ -158,9 +158,9 @@ func (g *GRPCClient) Opts() []grpc.Option {
 			grpc.WithDialTimeout(g.DialOption.Timeout),
 		)
 
-		if g.DialOption.Dialer != nil &&
-			len(g.DialOption.Dialer.Dialer.Timeout) != 0 {
-			der, err := tcp.NewDialer(g.DialOption.Dialer.Opts()...)
+		if g.DialOption.TCP != nil &&
+			len(g.DialOption.TCP.Dialer.Timeout) != 0 {
+			der, err := tcp.NewDialer(g.DialOption.TCP.Opts()...)
 			if err == nil {
 				opts = append(opts,
 					grpc.WithDialer(der),

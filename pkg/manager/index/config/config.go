@@ -31,8 +31,8 @@ type Data struct {
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
-	// Gateway represent agent gateway service configuration
-	Gateway *config.Gateway `json:"gateway" yaml:"gateway"`
+	// Indexer represent agent auto indexing service configuration
+	Indexer *config.Indexer `json:"indexer" yaml:"indexer"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
@@ -50,10 +50,9 @@ func NewConfig(path string) (cfg *Data, err error) {
 		cfg.Server = cfg.Server.Bind()
 	}
 
-	if cfg.Gateway != nil {
-		cfg.Gateway = cfg.Gateway.Bind()
+	if cfg.Indexer != nil {
+		cfg.Indexer = cfg.Indexer.Bind()
 	}
-
 	return cfg, nil
 }
 

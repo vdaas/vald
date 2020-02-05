@@ -31,7 +31,7 @@ type Gateway struct {
 	IndexReplica int `json:"index_replica" yaml:"index_replica"`
 
 	// Discoverer represent agent discoverer service configuration
-	Discoverer *Discoverer `json:"discoverer" yaml:"discoverer"`
+	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
 
 	// Meta represent meta data service configuration
 	Meta *Meta `json:"meta" yaml:"meta"`

@@ -19,7 +19,6 @@ package pod
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
@@ -27,31 +26,27 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	metrics "k8s.io/metrics/pkg/apis/metrics/v1beta1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-type PodWatcher interface {
-	k8s.ResourceController
-	GetPods(name string) (pods []Pod, ok bool)
-}
+type PodWatcher k8s.ResourceController
 
 type reconciler struct {
-	mu          sync.RWMutex
-	podList     map[string][]Pod
+	ctx         context.Context
 	mgr         manager.Manager
 	name        string
 	onError     func(err error)
-	onReconcile func(podList map[string][]Pod)
+	onReconcile func(podList map[string]Pod)
 }
 
 type Pod struct {
-	Name string
-	CPU  float64
-	Mem  float64
+	Name      string
+	Namespace string
+	CPU       float64
+	Mem       float64
 }
 
 func New(opts ...Option) PodWatcher {
@@ -67,7 +62,7 @@ func New(opts ...Option) PodWatcher {
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
 	m := &metrics.PodMetricsList{}
 
-	err = r.mgr.GetClient().List(context.TODO(), m, client.InNamespace(req.Namespace))
+	err = r.mgr.GetClient().List(r.ctx, m)
 
 	if err != nil {
 		if r.onError != nil {
@@ -89,7 +84,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	var (
 		cpuUsage float64
 		memUsage float64
-		pods     = make(map[string][]Pod, len(m.Items))
+		pods     = make(map[string]Pod, len(m.Items))
 	)
 
 	for _, pod := range m.Items {
@@ -104,32 +99,18 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		memUsage /= float64(len(pod.Containers))
 		podMetaName := pod.GetObjectMeta().GetName()
 
-		if _, ok := pods[podMetaName]; !ok {
-			pods[podMetaName] = make([]Pod, 0, len(m.Items))
+		pods[podMetaName] = Pod{
+			Name:      pod.GetName(),
+			Namespace: pod.GetNamespace(),
+			CPU:       cpuUsage,
+			Mem:       memUsage,
 		}
-
-		pods[podMetaName] = append(pods[podMetaName], Pod{
-			Name: pod.GetName(),
-			CPU:  cpuUsage,
-			Mem:  memUsage,
-		})
 	}
 
 	if r.onReconcile != nil {
 		r.onReconcile(pods)
 	}
 
-	r.mu.Lock()
-	r.podList = pods
-	r.mu.Lock()
-
-	return
-}
-
-func (r *reconciler) GetPods(name string) (pods []Pod, ok bool) {
-	r.mu.RLock()
-	pods, ok = r.podList[name]
-	r.mu.RUnlock()
 	return
 }
 
@@ -137,8 +118,11 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
-	if r.mgr == nil {
+func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
+	if r.ctx == nil && ctx != nil {
+		r.ctx = ctx
+	}
+	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
 	metrics.AddToScheme(r.mgr.GetScheme())
@@ -146,13 +130,17 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 }
 
 func (r *reconciler) For() runtime.Object {
+	// WARN: metrics should be renew
+	// https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md#further-improvements
 	return new(metrics.PodMetrics)
 }
 
 func (r *reconciler) Owns() runtime.Object {
-	return new(metrics.PodMetrics)
+	// return new(metrics.PodMetrics)
+	return nil
 }
 
 func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
-	return &source.Kind{Type: new(metrics.PodMetrics)}, &handler.EnqueueRequestForObject{}
+	// return &source.Kind{Type: new(metrics.PodMetrics)}, &handler.EnqueueRequestForObject{}
+	return nil, nil
 }

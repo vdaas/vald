@@ -46,7 +46,7 @@ func WithOnErrorFunc(f func(err error)) Option {
 	}
 }
 
-func WithOnReconcileFunc(f func(podList map[string][]Pod)) Option {
+func WithOnReconcileFunc(f func(podList map[string]Pod)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
 		return nil
