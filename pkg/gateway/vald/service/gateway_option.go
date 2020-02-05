@@ -29,7 +29,9 @@ import (
 type GWOption func(g *gateway) error
 
 var (
-	defaultGWOpts = []GWOption{}
+	defaultGWOpts = []GWOption{
+		WithErrGroup(errgroup.Get()),
+	}
 )
 
 func WithDiscovererClient(client grpc.Client) GWOption {
@@ -94,7 +96,9 @@ func WithAgentServiceDNSARecord(a string) GWOption {
 
 func WithErrGroup(eg errgroup.Group) GWOption {
 	return func(g *gateway) error {
-		g.eg = eg
+		if eg != nil {
+			g.eg = eg
+		}
 		return nil
 	}
 }

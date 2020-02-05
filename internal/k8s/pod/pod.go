@@ -20,35 +20,27 @@ package pod
 import (
 	"context"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/log"
 
-	// appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-type PodWatcher interface {
-	k8s.ResourceController
-	GetPods(name string) (pods []Pod, ok bool)
-}
+type PodWatcher k8s.ResourceController
 
 type reconciler struct {
-	mu          sync.RWMutex
-	podList     map[string][]Pod
+	ctx         context.Context
 	mgr         manager.Manager
 	name        string
+	namespace   string
 	onError     func(err error)
 	onReconcile func(podList map[string][]Pod)
 }
@@ -56,6 +48,7 @@ type reconciler struct {
 type Pod struct {
 	Name       string
 	NodeName   string
+	Namespace  string
 	IP         string
 	CPULimit   float64
 	CPURequest float64
@@ -76,11 +69,9 @@ func New(opts ...Option) PodWatcher {
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
 	ps := &corev1.PodList{}
 
-	err = r.mgr.GetClient().List(context.TODO(), ps)
-	// err = r.mgr.GetClient().Get(context.TODO(), req.NamespacedName, ps)
+	err = r.mgr.GetClient().List(r.ctx, ps)
 
 	if err != nil {
-		log.Error(err)
 		if r.onError != nil {
 			r.onError(err)
 		}
@@ -89,11 +80,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			RequeueAfter: time.Millisecond * 100,
 		}
 		if errors.IsNotFound(err) {
-			res = reconcile.Result{
+			log.Error("not found", err)
+			return reconcile.Result{
 				Requeue:      true,
 				RequeueAfter: time.Second,
-			}
-			log.Error("not found")
+			}, nil
 		}
 		return
 	}
@@ -137,6 +128,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			pods[podName] = append(pods[podName], Pod{
 				Name:       pod.GetName(),
 				NodeName:   pod.Spec.NodeName,
+				Namespace:  pod.GetNamespace(),
 				IP:         pod.Status.PodIP,
 				CPULimit:   cpuLimit,
 				CPURequest: cpuRequest,
@@ -149,18 +141,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	if r.onReconcile != nil {
 		r.onReconcile(pods)
 	}
-
-	r.mu.Lock()
-	r.podList = pods
-	r.mu.Lock()
-
-	return
-}
-
-func (r *reconciler) GetPods(name string) (pods []Pod, ok bool) {
-	r.mu.RLock()
-	pods, ok = r.podList[name]
-	r.mu.RUnlock()
 	return
 }
 
@@ -168,12 +148,14 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
-	if r.mgr == nil {
+func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
+	if r.ctx == nil && ctx != nil {
+		r.ctx = ctx
+	}
+	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
 	corev1.AddToScheme(r.mgr.GetScheme())
-	// appsv1.AddToScheme(r.mgr.GetScheme())
 	return r
 }
 
@@ -182,46 +164,10 @@ func (r *reconciler) For() runtime.Object {
 }
 
 func (r *reconciler) Owns() runtime.Object {
-	return new(corev1.Pod)
+	return nil
 }
 
 func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
-	return &source.Kind{Type: new(corev1.Pod)}, handler.Funcs{
-		CreateFunc: func(ev event.CreateEvent, wq workqueue.RateLimitingInterface) {
-			log.Debug("created")
-			wq.Add(reconcile.Request{
-				NamespacedName: types.NamespacedName{
-					Name:      ev.Meta.GetName(),
-					Namespace: ev.Meta.GetNamespace(),
-				},
-			})
-		},
-		UpdateFunc: func(ev event.UpdateEvent, wq workqueue.RateLimitingInterface) {
-			log.Debug("update")
-			wq.Add(reconcile.Request{
-				NamespacedName: types.NamespacedName{
-					Name:      ev.MetaNew.GetName(),
-					Namespace: ev.MetaNew.GetNamespace(),
-				},
-			})
-		},
-		DeleteFunc: func(ev event.DeleteEvent, wq workqueue.RateLimitingInterface) {
-			log.Debug("deleted")
-			wq.Add(reconcile.Request{
-				NamespacedName: types.NamespacedName{
-					Name:      ev.Meta.GetName(),
-					Namespace: ev.Meta.GetNamespace(),
-				},
-			})
-		},
-		GenericFunc: func(ev event.GenericEvent, wq workqueue.RateLimitingInterface) {
-			log.Debug("generic")
-			wq.Add(reconcile.Request{
-				NamespacedName: types.NamespacedName{
-					Name:      ev.Meta.GetName(),
-					Namespace: ev.Meta.GetNamespace(),
-				},
-			})
-		},
-	}
+	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
+	return nil, nil
 }

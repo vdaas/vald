@@ -44,3 +44,22 @@ kind/login:
 ## stop kind (kubernetes in docker) cluster
 kind/stop:
 	kind delete cluster --name $(NAME)
+
+
+.PHONY: kind/cluster/start
+## start kind (kubernetes in docker) multi node cluster
+kind/cluster/start:
+	kind create cluster --name $(NAME)-cluster --config $(ROOTDIR)/k8s/debug/kind/config.yaml
+	@make kind/login
+
+
+.PHONY: kind/cluster/stop
+## stop kind (kubernetes in docker) multi node cluster
+kind/cluster/stop:
+	kind delete cluster --name $(NAME)-cluster
+
+.PHONY: kind/cluster/login
+## login command for kind (kubernetes in docker) multi node cluster
+kind/cluster/login:
+	kubectl cluster-info --context kind-$(NAME)-cluster
+

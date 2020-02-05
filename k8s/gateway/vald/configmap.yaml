@@ -115,7 +115,18 @@ data:
             max_send_msg_size: 0
             wait_for_ready: true
           dial_option:
-            dialer:
+            enable_backoff: false
+            initial_connection_window_size: 0
+            initial_window_size: 0
+            insecure: true
+            keep_alive:
+              permit_without_stream: false
+              time: ""
+              timeout: ""
+            max_backoff_delay: ""
+            max_msg_size: 0
+            read_buffer_size: 0
+            tcp:
               dialer:
                 dual_stack_enabled: true
                 keep_alive: ""
@@ -129,17 +140,6 @@ data:
                 cert: /path/to/cert
                 enabled: false
                 key: /path/to/key
-            enable_backoff: false
-            initial_connection_window_size: 0
-            initial_window_size: 0
-            insecure: true
-            keep_alive:
-              permit_without_stream: false
-              time: ""
-              timeout: ""
-            max_backoff_delay: ""
-            max_msg_size: 0
-            read_buffer_size: 0
             timeout: ""
             write_buffer_size: 0
           tls:
@@ -164,7 +164,18 @@ data:
             max_send_msg_size: 0
             wait_for_ready: true
           dial_option:
-            dialer:
+            enable_backoff: false
+            initial_connection_window_size: 0
+            initial_window_size: 0
+            insecure: true
+            keep_alive:
+              permit_without_stream: false
+              time: ""
+              timeout: ""
+            max_backoff_delay: ""
+            max_msg_size: 0
+            read_buffer_size: 0
+            tcp:
               dialer:
                 dual_stack_enabled: true
                 keep_alive: ""
@@ -178,17 +189,6 @@ data:
                 cert: /path/to/cert
                 enabled: false
                 key: /path/to/key
-            enable_backoff: false
-            initial_connection_window_size: 0
-            initial_window_size: 0
-            insecure: true
-            keep_alive:
-              permit_without_stream: false
-              time: ""
-              timeout: ""
-            max_backoff_delay: ""
-            max_msg_size: 0
-            read_buffer_size: 0
             timeout: ""
             write_buffer_size: 0
           tls:
@@ -216,7 +216,18 @@ data:
             max_send_msg_size: 0
             wait_for_ready: true
           dial_option:
-            dialer:
+            enable_backoff: false
+            initial_connection_window_size: 0
+            initial_window_size: 0
+            insecure: true
+            keep_alive:
+              permit_without_stream: false
+              time: ""
+              timeout: ""
+            max_backoff_delay: ""
+            max_msg_size: 0
+            read_buffer_size: 0
+            tcp:
               dialer:
                 dual_stack_enabled: true
                 keep_alive: ""
@@ -230,17 +241,6 @@ data:
                 cert: /path/to/cert
                 enabled: false
                 key: /path/to/key
-            enable_backoff: false
-            initial_connection_window_size: 0
-            initial_window_size: 0
-            insecure: true
-            keep_alive:
-              permit_without_stream: false
-              time: ""
-              timeout: ""
-            max_backoff_delay: ""
-            max_msg_size: 0
-            read_buffer_size: 0
             timeout: ""
             write_buffer_size: 0
           tls:
@@ -271,7 +271,18 @@ data:
             max_send_msg_size: 0
             wait_for_ready: true
           dial_option:
-            dialer:
+            enable_backoff: false
+            initial_connection_window_size: 0
+            initial_window_size: 0
+            insecure: true
+            keep_alive:
+              permit_without_stream: false
+              time: ""
+              timeout: ""
+            max_backoff_delay: ""
+            max_msg_size: 0
+            read_buffer_size: 0
+            tcp:
               dialer:
                 dual_stack_enabled: true
                 keep_alive: ""
@@ -285,17 +296,6 @@ data:
                 cert: /path/to/cert
                 enabled: false
                 key: /path/to/key
-            enable_backoff: false
-            initial_connection_window_size: 0
-            initial_window_size: 0
-            insecure: true
-            keep_alive:
-              permit_without_stream: false
-              time: ""
-              timeout: ""
-            max_backoff_delay: ""
-            max_msg_size: 0
-            read_buffer_size: 0
             timeout: ""
             write_buffer_size: 0
           tls:

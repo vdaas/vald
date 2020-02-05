@@ -32,8 +32,8 @@ model:
   filename: apis/graphql/$package/models.generated.go
   package: $package
 models:
-  Controll_CreateIndexRequestInput:
-    model: github.com/vdaas/vald/apis/grpc/payload.Controll_CreateIndexRequest
+  Control.CreateIndexRequestInput:
+    model: github.com/vdaas/vald/apis/grpc/payload.Control.CreateIndexRequest
   Insert_MultiRequestInput:
     model: github.com/vdaas/vald/apis/grpc/payload.Insert_MultiRequest
   Insert_RequestInput:

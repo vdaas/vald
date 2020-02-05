@@ -34,12 +34,12 @@ import (
 )
 
 type Controller interface {
-	Start(ctx context.Context) <-chan error
+	Start(ctx context.Context) (<-chan error, error)
 }
 
 type ResourceController interface {
 	GetName() string
-	NewReconciler(mgr manager.Manager) reconcile.Reconciler
+	NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler
 	For() runtime.Object
 	Owns() runtime.Object
 	Watches() (*source.Kind, handler.EventHandler)
@@ -84,6 +84,11 @@ func New(opts ...Option) (cl Controller, err error) {
 		}
 	}
 
+	return c, nil
+}
+
+func (c *controller) Start(ctx context.Context) (<-chan error, error) {
+	var err error
 	for _, rc := range c.rcs {
 		if rc != nil {
 			bc := builder.ControllerManagedBy(c.mgr).Named(rc.GetName())
@@ -102,19 +107,13 @@ func New(opts ...Option) (cl Controller, err error) {
 				}
 				bc = bc.Watches(src, h)
 			}
-			_, err = bc.Build(rc.NewReconciler(c.mgr))
+			_, err = bc.Build(rc.NewReconciler(ctx, c.mgr))
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
-
-	return c, nil
-}
-
-func (c *controller) Start(ctx context.Context) <-chan error {
 	ech := make(chan error, 1)
-
 	c.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
 		err := c.mgr.Start(ctx.Done())
@@ -124,5 +123,5 @@ func (c *controller) Start(ctx context.Context) <-chan error {
 		return nil
 	}))
 
-	return ech
+	return ech, nil
 }
