@@ -27,8 +27,9 @@ import (
 type jaegerOptions = jaeger.Options
 
 var (
-	exporter *jaeger.Exporter
-	once     sync.Once
+	exporter  *jaeger.Exporter
+	once      sync.Once
+	flushOnce sync.Once
 )
 
 func Init(opts ...JaegerOption) (err error) {
@@ -55,4 +56,12 @@ func Init(opts ...JaegerOption) (err error) {
 
 func Exporter() *jaeger.Exporter {
 	return exporter
+}
+
+func Flush() {
+	if exporter != nil {
+		flushOnce.Do(func() {
+			exporter.Flush()
+		})
+	}
 }

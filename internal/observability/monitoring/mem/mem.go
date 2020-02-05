@@ -14,32 +14,13 @@
 // limitations under the License.
 //
 
-// Package metric provides meters.
-package metric
+// Package mem provides memory metrics functions
+package mem
 
 import (
-	"strings"
-	"unsafe"
-
-	"github.com/vdaas/vald/internal/log"
-	"go.opentelemetry.io/otel/exporter/metric/stdout"
-	"go.opentelemetry.io/otel/sdk/metric/controller/push"
+	"github.com/shirou/gopsutil/mem"
 )
 
-type stdoutWriter struct {
-	printer func(...interface{})
-}
-
-func (t *stdoutWriter) Write(p []byte) (int, error) {
-	t.printer(strings.TrimSpace(*(*string)(unsafe.Pointer(&p))))
-	return len(p), nil
-}
-
-func InitStdoutMeter() (*push.Controller, error) {
-	return stdout.InstallNewPipeline(
-		stdout.Config{
-			Writer:      &stdoutWriter{printer: log.Info},
-			Quantiles:   []float64{0.5, 0.9, 0.99},
-			PrettyPrint: false,
-		})
+func VirtualMemory() (mem.VirtualMemoryStat, error) {
+	return mem.VirtualMemory()
 }

@@ -14,11 +14,22 @@
 // limitations under the License.
 //
 
-// Package jaeger provides a jaeger exporter.
-package jaeger
+// Package prometheus provides a prometheus exporter.
+package prometheus
 
-type JaegerOption func(*jaegerOptions) error
+type PrometheusOption func(*prometheusOptions) error
 
 var (
-	jaegerDefaultOpts = []JaegerOption{}
+	prometheusDefaultOpts = []PrometheusOption{
+		WithNamespace("vald"),
+	}
 )
+
+func WithNamespace(ns string) PrometheusOption {
+	return func(po *prometheusOptions) error {
+		if ns != "" {
+			po.Namespace = ns
+		}
+		return nil
+	}
+}

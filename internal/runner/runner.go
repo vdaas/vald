@@ -28,8 +28,6 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/exporter/metric/prometheus"
-	// "github.com/vdaas/vald/internal/exporter/trace/jaeger"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/params"
@@ -111,19 +109,6 @@ func Do(ctx context.Context, opts ...Option) error {
 		mfunc()
 		return err
 	}
-
-	// TODO: to be switchable from config
-	err = prometheus.Init()
-	if err != nil {
-		return err
-	}
-
-	// // TODO: to be switchable from config
-	// err = jaeger.Init()
-	// if err != nil {
-	// 	return err
-	// }
-	// defer jaeger.Exporter().Flush()
 
 	daemon, err := r.initializeDaemon(cfg)
 	if err != nil {

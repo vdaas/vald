@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
+	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -53,6 +54,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
 	eg := errgroup.Get()
+
+	err = observability.New(cfg.Observability)
+	if err != nil {
+		return nil, err
+	}
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),

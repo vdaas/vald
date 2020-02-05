@@ -14,11 +14,13 @@
 // limitations under the License.
 //
 
-// Package prometheus provides a prometheus exporter.
-package prometheus
+// Package cpu provides cpu metrics functions
+package cpu
 
-type PrometheusOption func(*prometheusOptions) error
-
-var (
-	prometheusDefaultOpts = []PrometheusOption{}
+import (
+	"github.com/shirou/gopsutil/cpu"
 )
+
+func Info() ([]cpu.InfoStat, error) {
+	return cpu.Info()
+}
