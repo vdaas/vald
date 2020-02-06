@@ -3,6 +3,7 @@ package tcp
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net"
 	"reflect"
 	"testing"
@@ -79,7 +80,7 @@ func TestNewDialer(t *testing.T) {
 		},
 
 		{
-			name: "returns dialer when tls option is not empty",
+			name: "returns dialer when tls option is not empty and connection confirmation succeeds",
 			opts: []DialerOption{
 				WithTLS(new(tls.Config)),
 			},
@@ -98,6 +99,15 @@ func TestNewDialer(t *testing.T) {
 
 				if d.cache != nil {
 					return errors.New("invalid param was set about cache")
+				}
+
+				conn, err := d.dialer(context.Background(), "tcp", "google.com:80")
+				if err != nil {
+					return errors.Errorf("err is not nil: %v", err)
+				}
+
+				if conn == nil {
+					return errors.Errorf("conn is nil")
 				}
 
 				return nil
@@ -310,6 +320,7 @@ func TestStartDialerCache(t *testing.T) {
 				},
 				checkFunc: func(cache gache.Gache) error {
 					time.Sleep(1 * time.Second)
+
 					val, _ := cache.Get(addr)
 					if reflect.DeepEqual(val, ips) {
 						return errors.New("cache is not cleared")
@@ -440,8 +451,9 @@ func Test_cachedDialer(t *testing.T) {
 	}
 
 	type field struct {
-		der   *net.Dialer
-		cache gache.Gache
+		der       *net.Dialer
+		cache     gache.Gache
+		tlsConfig *tls.Config
 	}
 
 	type test struct {
@@ -458,7 +470,7 @@ func Test_cachedDialer(t *testing.T) {
 				args: args{
 					dctx:    context.Background(),
 					network: "tcp",
-					address: "google.com",
+					address: "google.com:80",
 				},
 				field: field{
 					der: &net.Dialer{
@@ -468,18 +480,108 @@ func Test_cachedDialer(t *testing.T) {
 					},
 					cache: gache.New(),
 				},
-				checkFunc: func(gotConn net.Conn, gotErr error) error {
+				checkFunc: func(conn net.Conn, err error) error {
+					if err != nil {
+						return errors.Errorf("err is not nil: %v", err)
+					}
+
+					if conn == nil {
+						return errors.New("conn is nil")
+					}
 					return nil
 				},
 			}
 		}(),
+
+		func() test {
+			return test{
+				name: "returns tls conn and nil when dialer returns tls conn and nil",
+				args: args{
+					dctx:    context.Background(),
+					network: "tcp",
+					address: "google.com:80",
+				},
+				field: field{
+					der: &net.Dialer{
+						Resolver: &net.Resolver{
+							PreferGo: false,
+						},
+					},
+					cache:     gache.New(),
+					tlsConfig: new(tls.Config),
+				},
+				checkFunc: func(conn net.Conn, err error) error {
+					if err != nil {
+						return errors.Errorf("err is not nil: %v", err)
+					}
+
+					if conn == nil {
+						return errors.New("conn is nil")
+					}
+					return nil
+				},
+			}
+		}(),
+
+		func() test {
+			addr := "google.com:80"
+			cache := gache.New()
+			cache.Set(addr, make(map[int]string, 1))
+
+			return test{
+				name: "returns conn and nil when dialer returns conn and nil",
+				args: args{
+					dctx:    context.Background(),
+					network: "tcp",
+					address: addr,
+				},
+				field: field{
+					der: &net.Dialer{
+						Resolver: &net.Resolver{
+							PreferGo: false,
+						},
+					},
+					cache: gache.New(),
+				},
+				checkFunc: func(conn net.Conn, err error) error {
+					fmt.Println(err)
+					fmt.Println(conn)
+					return nil
+				},
+			}
+		}(),
+		//
+		// func() test {
+		// 	return test{
+		// 		name: "tls",
+		// 		args: args{
+		// 			dctx:    context.Background(),
+		// 			network: "tcp",
+		// 			address: "google.com",
+		// 		},
+		// 		field: field{
+		// 			der: &net.Dialer{
+		// 				Resolver: &net.Resolver{
+		// 					PreferGo: false,
+		// 				},
+		// 			},
+		// 			cache:     gache.New(),
+		// 			tlsConfig: &tls.Config{},
+		// 		},
+		// 		checkFunc: func(gotConn net.Conn, gotErr error) error {
+		// 			fmt.Println(gotErr)
+		// 			return nil
+		// 		},
+		// 	}
+		// }(),
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &dialer{
-				der:   tt.field.der,
-				cache: tt.field.cache,
+				der:       tt.field.der,
+				cache:     tt.field.cache,
+				tlsConfig: tt.field.tlsConfig,
 			}
 
 			conn, err := d.cachedDialer(tt.args.dctx, tt.args.network, tt.args.address)
