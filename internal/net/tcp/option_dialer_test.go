@@ -13,22 +13,22 @@ import (
 func TestWithCache(t *testing.T) {
 	type test struct {
 		name      string
-		c         gache.Gache
+		cache     gache.Gache
 		checkFunc func(DialerOption) error
 	}
 
 	tests := []test{
 		func() test {
-			c := gache.New()
+			cache := gache.New()
 
 			return test{
-				name: "set success when c is not nil",
-				c:    c,
+				name:  "set success when c is not nil",
+				cache: cache,
 				checkFunc: func(opt DialerOption) error {
 					got := new(dialer)
 					opt(got)
 
-					if !reflect.DeepEqual(got.cache, c) {
+					if !reflect.DeepEqual(got.cache, cache) {
 						return errors.New("invalid param was set")
 					}
 					return nil
@@ -38,7 +38,6 @@ func TestWithCache(t *testing.T) {
 
 		{
 			name: "not set when c is nil",
-			c:    nil,
 			checkFunc: func(opt DialerOption) error {
 				c := gache.New()
 				got := &dialer{
@@ -56,7 +55,7 @@ func TestWithCache(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithCache(tt.c)
+			opt := WithCache(tt.cache)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -235,7 +234,7 @@ func TestWithDialerTimeout(t *testing.T) {
 		},
 
 		{
-			name: "not set when dur is invalid",
+			name: "not set when dur is empty",
 			checkFunc: func(opt DialerOption) error {
 				got := &dialer{
 					dialerTimeout: 10 * time.Second,

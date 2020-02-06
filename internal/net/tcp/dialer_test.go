@@ -3,7 +3,6 @@ package tcp
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"net"
 	"reflect"
 	"testing"
@@ -464,76 +463,102 @@ func Test_cachedDialer(t *testing.T) {
 	}
 
 	tests := []test{
-		func() test {
-			return test{
-				name: "returns conn and nil when dialer returns conn and nil",
-				args: args{
-					dctx:    context.Background(),
-					network: "tcp",
-					address: "google.com:80",
-				},
-				field: field{
-					der: &net.Dialer{
-						Resolver: &net.Resolver{
-							PreferGo: false,
-						},
+		{
+			name: "returns conn and nil when dialer returns conn and nil",
+			args: args{
+				dctx:    context.Background(),
+				network: "tcp",
+				address: "google.com:80",
+			},
+			field: field{
+				der: &net.Dialer{
+					Resolver: &net.Resolver{
+						PreferGo: false,
 					},
-					cache: gache.New(),
 				},
-				checkFunc: func(conn net.Conn, err error) error {
-					if err != nil {
-						return errors.Errorf("err is not nil: %v", err)
-					}
+				cache: gache.New(),
+			},
+			checkFunc: func(conn net.Conn, err error) error {
+				if err != nil {
+					return errors.Errorf("err is not nil: %v", err)
+				}
 
-					if conn == nil {
-						return errors.New("conn is nil")
-					}
-					return nil
-				},
-			}
-		}(),
+				if conn == nil {
+					return errors.New("conn is nil")
+				}
+				return nil
+			},
+		},
 
-		func() test {
-			return test{
-				name: "returns tls conn and nil when dialer returns tls conn and nil",
-				args: args{
-					dctx:    context.Background(),
-					network: "tcp",
-					address: "google.com:80",
-				},
-				field: field{
-					der: &net.Dialer{
-						Resolver: &net.Resolver{
-							PreferGo: false,
-						},
+		{
+			name: "returns tls conn and nil when dialer returns tls conn and nil",
+			args: args{
+				dctx:    context.Background(),
+				network: "tcp",
+				address: "google.com:80",
+			},
+			field: field{
+				der: &net.Dialer{
+					Resolver: &net.Resolver{
+						PreferGo: false,
 					},
-					cache:     gache.New(),
-					tlsConfig: new(tls.Config),
 				},
-				checkFunc: func(conn net.Conn, err error) error {
-					if err != nil {
-						return errors.Errorf("err is not nil: %v", err)
-					}
+				cache:     gache.New(),
+				tlsConfig: new(tls.Config),
+			},
+			checkFunc: func(conn net.Conn, err error) error {
+				if err != nil {
+					return errors.Errorf("err is not nil: %v", err)
+				}
 
-					if conn == nil {
-						return errors.New("conn is nil")
-					}
-					return nil
+				if conn == nil {
+					return errors.New("conn is nil")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "returns nil and error when lookup and dialer returns error about missing port in address",
+			args: args{
+				dctx:    context.Background(),
+				network: "tcp",
+				address: "addr",
+			},
+			field: field{
+				der: &net.Dialer{
+					Resolver: &net.Resolver{
+						PreferGo: false,
+					},
 				},
-			}
-		}(),
+				cache: gache.New(),
+			},
+			checkFunc: func(conn net.Conn, err error) error {
+				if err == nil {
+					return errors.New("err is nil")
+				}
+
+				if conn != nil {
+					return errors.Errorf("conn is not nil: %v", conn)
+				}
+
+				return nil
+			},
+		},
 
 		func() test {
-			addr := "google.com:80"
+			addr := "google.com"
 			cache := gache.New()
-			cache.Set(addr, make(map[int]string, 1))
+			cache.Set(addr, map[int]string{
+				1: "invalid_ip",
+			})
 
 			return test{
-				name: "returns conn and nil when dialer returns conn and nil",
+				name: "returns conn and nil when re-dial returns conn and nil due to invalid cache IP",
 				args: args{
 					dctx:    context.Background(),
 					network: "tcp",
-					address: addr,
+					address: addr + ":80",
 				},
 				field: field{
 					der: &net.Dialer{
@@ -541,39 +566,24 @@ func Test_cachedDialer(t *testing.T) {
 							PreferGo: false,
 						},
 					},
-					cache: gache.New(),
+					cache: cache,
 				},
 				checkFunc: func(conn net.Conn, err error) error {
-					fmt.Println(err)
-					fmt.Println(conn)
+					if err != nil {
+						return errors.Errorf("err is not nil: %v", err)
+					}
+
+					if conn == nil {
+						return errors.New("conn is nil")
+					}
+
+					if _, ok := cache.Get(addr); ok {
+						return errors.New("cache value is not deleted")
+					}
 					return nil
 				},
 			}
 		}(),
-		//
-		// func() test {
-		// 	return test{
-		// 		name: "tls",
-		// 		args: args{
-		// 			dctx:    context.Background(),
-		// 			network: "tcp",
-		// 			address: "google.com",
-		// 		},
-		// 		field: field{
-		// 			der: &net.Dialer{
-		// 				Resolver: &net.Resolver{
-		// 					PreferGo: false,
-		// 				},
-		// 			},
-		// 			cache:     gache.New(),
-		// 			tlsConfig: &tls.Config{},
-		// 		},
-		// 		checkFunc: func(gotConn net.Conn, gotErr error) error {
-		// 			fmt.Println(gotErr)
-		// 			return nil
-		// 		},
-		// 	}
-		// }(),
 	}
 
 	for _, tt := range tests {
