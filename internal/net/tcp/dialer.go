@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import (
 type Dialer interface {
 	GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error)
 	StartDialerCache(ctx context.Context)
+	DialContext(ctx context.Context, network, address string) (net.Conn, error)
 }
 
 type dialer struct {
@@ -138,6 +139,10 @@ func (d *dialer) StartDialerCache(ctx context.Context) {
 			EnableExpiredHook().
 			StartExpired(ctx, d.dnsRefreshDuration)
 	}
+}
+
+func (d *dialer) DialContext(ctx context.Context, network, address string) (net.Conn, error) {
+	return d.GetDialer()(ctx, network, address)
 }
 
 func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (

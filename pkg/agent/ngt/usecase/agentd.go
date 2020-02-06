@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/agent"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -100,28 +101,30 @@ func (r *run) PreStart(ctx context.Context) error {
 	return nil
 }
 
-func (r *run) Start(ctx context.Context) <-chan error {
+func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 2)
-	nech := r.ngt.Start(ctx)
-	sech := r.server.ListenAndServe(ctx)
-	r.eg.Go(safety.RecoverFunc(func() error {
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
+		log.Info("daemon start")
+		defer close(ech)
+		nech := r.ngt.Start(ctx)
+		sech := r.server.ListenAndServe(ctx)
 		for {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case err := <-nech:
-				if err != nil {
-					ech <- err
+			case err = <-nech:
+			case err = <-sech:
+			}
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case ech <- err:
 				}
-			case err := <-sech:
-				if err != nil {
-					ech <- err
-				}
-				return nil
 			}
 		}
 	}))
-	return ech
+	return ech, nil
 }
 
 func (r *run) PreStop(ctx context.Context) error {

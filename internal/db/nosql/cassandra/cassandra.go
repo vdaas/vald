@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -78,6 +78,12 @@ type client struct {
 		initialInterval time.Duration
 		maxRetries      int
 	}
+	poolConfig struct {
+		dataCenterName                 string
+		enableDCAwareRouting           bool
+		enableShuffleReplicas          bool
+		enableNonLocalReplicasFallback bool
+	}
 	socketKeepalive          time.Duration
 	maxPreparedStmts         int
 	maxRoutingKeyInfo        int
@@ -98,6 +104,7 @@ type client struct {
 	disableSchemaEvents      bool
 	disableSkipMetadata      bool
 	defaultIdempotence       bool
+	dialer                   gocql.Dialer
 	writeCoalesceWaitTime    time.Duration
 	kvTable                  string
 	vkTable                  string
@@ -140,6 +147,7 @@ func New(opts ...Option) (Cassandra, error) {
 			MaxRetries:      c.reconnectionPolicy.maxRetries,
 			InitialInterval: c.reconnectionPolicy.initialInterval,
 		},
+		Dialer:            c.dialer,
 		SocketKeepalive:   c.socketKeepalive,
 		MaxPreparedStmts:  c.maxPreparedStmts,
 		MaxRoutingKeyInfo: c.maxRoutingKeyInfo,
@@ -147,7 +155,23 @@ func New(opts ...Option) (Cassandra, error) {
 		SerialConsistency: c.serialConsistency,
 		DefaultTimestamp:  c.defaultTimestamp,
 		PoolConfig: gocql.PoolConfig{
-			HostSelectionPolicy: gocql.RoundRobinHostPolicy(),
+			HostSelectionPolicy: func() (hsp gocql.HostSelectionPolicy) {
+				if c.poolConfig.enableDCAwareRouting && len(c.poolConfig.dataCenterName) != 0 {
+					hsp = gocql.DCAwareRoundRobinPolicy(c.poolConfig.dataCenterName)
+				} else {
+					hsp = gocql.RoundRobinHostPolicy()
+				}
+				switch {
+				case c.poolConfig.enableShuffleReplicas &&
+					c.poolConfig.enableNonLocalReplicasFallback:
+					return gocql.TokenAwareHostPolicy(hsp, gocql.ShuffleReplicas(), gocql.NonLocalReplicasFallback())
+				case c.poolConfig.enableShuffleReplicas:
+					return gocql.TokenAwareHostPolicy(hsp, gocql.ShuffleReplicas())
+				case c.poolConfig.enableNonLocalReplicasFallback:
+					return gocql.TokenAwareHostPolicy(hsp, gocql.NonLocalReplicasFallback())
+				}
+				return gocql.TokenAwareHostPolicy(hsp)
+			}(),
 		},
 		ReconnectInterval:      c.reconnectInterval,
 		MaxWaitSchemaAgreement: c.maxWaitSchemaAgreement,
@@ -242,14 +266,12 @@ func (c *client) Query(stmt string, names []string) *Queryx {
 	return gocqlx.Query(c.session.Query(stmt), names)
 }
 
-func (c *client) GetValue(key string) (string, error) {
-	var value string
-
-	stmt, names := qb.Select(c.kvTable).Columns(metaColumn).Where(qb.Eq(uuidColumn)).ToCql()
-	q := gocqlx.Query(c.session.Query(stmt), names).BindMap(qb.M{
+func (c *client) GetValue(key string) (value string, err error) {
+	if err = c.Query(Select(c.kvTable,
+		[]string{metaColumn},
+		qb.Eq(uuidColumn))).BindMap(qb.M{
 		uuidColumn: key,
-	})
-	if err := q.GetRelease(&value); err != nil {
+	}).GetRelease(&value); err != nil {
 		switch err {
 		case gocql.ErrNotFound:
 			return "", errors.ErrCassandraNotFound(key)
@@ -260,14 +282,12 @@ func (c *client) GetValue(key string) (string, error) {
 	return value, nil
 }
 
-func (c *client) GetKey(value string) (string, error) {
-	var key string
-
-	stmt, names := qb.Select(c.vkTable).Columns(uuidColumn).Where(qb.Eq(metaColumn)).ToCql()
-	q := gocqlx.Query(c.session.Query(stmt), names).BindMap(qb.M{
+func (c *client) GetKey(value string) (key string, err error) {
+	if err = c.Query(Select(c.vkTable,
+		[]string{uuidColumn},
+		qb.Eq(metaColumn))).BindMap(qb.M{
 		metaColumn: value,
-	})
-	if err := q.GetRelease(&key); err != nil {
+	}).GetRelease(&key); err != nil {
 		switch err {
 		case gocql.ErrNotFound:
 			return "", errors.ErrCassandraNotFound(value)
@@ -278,16 +298,16 @@ func (c *client) GetKey(value string) (string, error) {
 	return key, nil
 }
 
-func (c *client) MultiGetValue(keys ...string) ([]string, error) {
+func (c *client) MultiGetValue(keys ...string) (values []string, err error) {
 	var keyvals []struct {
 		UUID string
 		Meta string
 	}
-	stmt, names := qb.Select(c.kvTable).Columns(uuidColumn, metaColumn).Where(qb.In(uuidColumn)).ToCql()
-	q := gocqlx.Query(c.session.Query(stmt), names).BindMap(qb.M{
+	if err = c.Query(Select(c.kvTable,
+		[]string{uuidColumn, metaColumn},
+		qb.In(uuidColumn))).BindMap(qb.M{
 		uuidColumn: keys,
-	})
-	if err := q.SelectRelease(&keyvals); err != nil {
+	}).SelectRelease(&keyvals); err != nil {
 		return nil, err
 	}
 
@@ -296,34 +316,35 @@ func (c *client) MultiGetValue(keys ...string) ([]string, error) {
 		kvs[keyval.UUID] = keyval.Meta
 	}
 
-	var errs error
-	values := make([]string, 0, len(keyvals))
+	values = make([]string, 0, len(keyvals))
 	for _, key := range keys {
 		if kvs[key] == "" {
-			if errs != nil {
-				errs = errors.Wrap(errs, errors.ErrCassandraNotFound(key).Error())
+			if err != nil {
+				err = errors.Wrap(err, errors.ErrCassandraNotFound(key).Error())
 			} else {
-				errs = errors.ErrCassandraNotFound(key)
+				err = errors.ErrCassandraNotFound(key)
 			}
 			values = append(values, "")
 			continue
 		}
 		values = append(values, kvs[key])
 	}
-
-	return values, errs
+	if err != nil {
+		return nil, err
+	}
+	return values, nil
 }
 
-func (c *client) MultiGetKey(values ...string) ([]string, error) {
+func (c *client) MultiGetKey(values ...string) (keys []string, err error) {
 	var keyvals []struct {
 		UUID string
 		Meta string
 	}
-	stmt, names := qb.Select(c.vkTable).Columns(uuidColumn, metaColumn).Where(qb.In(metaColumn)).ToCql()
-	q := gocqlx.Query(c.session.Query(stmt), names).BindMap(qb.M{
+	if err = c.Query(Select(c.vkTable,
+		[]string{uuidColumn, metaColumn},
+		qb.In(metaColumn))).BindMap(qb.M{
 		metaColumn: values,
-	})
-	if err := q.SelectRelease(&keyvals); err != nil {
+	}).SelectRelease(&keyvals); err != nil {
 		return nil, err
 	}
 
@@ -332,42 +353,37 @@ func (c *client) MultiGetKey(values ...string) ([]string, error) {
 		kvs[keyval.Meta] = keyval.UUID
 	}
 
-	var errs error
-	keys := make([]string, 0, len(keyvals))
+	keys = make([]string, 0, len(keyvals))
 	for _, value := range values {
 		if kvs[value] == "" {
-			if errs != nil {
-				errs = errors.Wrap(errs, errors.ErrCassandraNotFound(value).Error())
+			if err != nil {
+				err = errors.Wrap(err, errors.ErrCassandraNotFound(value).Error())
 			} else {
-				errs = errors.ErrCassandraNotFound(value)
+				err = errors.ErrCassandraNotFound(value)
 			}
 			keys = append(keys, "")
 			continue
 		}
 		keys = append(keys, kvs[value])
 	}
-
-	return keys, errs
+	if err != nil {
+		return nil, err
+	}
+	return keys, nil
 }
 
 func (c *client) Set(key, value string) error {
-	stmt, names := qb.Insert(c.kvTable).Columns(uuidColumn, metaColumn).ToCql()
-	q := gocqlx.Query(c.session.Query(stmt), names).BindMap(qb.M{
+	if err := c.Query(Insert(c.kvTable, uuidColumn, metaColumn).ToCql()).BindMap(qb.M{
 		uuidColumn: key,
 		metaColumn: value,
-	})
-
-	if err := q.ExecRelease(); err != nil {
+	}).ExecRelease(); err != nil {
 		return err
 	}
 
-	stmt, names = qb.Insert(c.vkTable).Columns(metaColumn, uuidColumn).ToCql()
-	q = gocqlx.Query(c.session.Query(stmt), names).BindMap(qb.M{
+	return c.Query(Insert(c.vkTable, metaColumn, uuidColumn).ToCql()).BindMap(qb.M{
 		metaColumn: value,
 		uuidColumn: key,
-	})
-
-	return q.ExecRelease()
+	}).ExecRelease()
 }
 
 func (c *client) MultiSet(keyvals map[string]string) error {
@@ -381,10 +397,7 @@ func (c *client) MultiSet(keyvals map[string]string) error {
 		entities = append(entities, key, val, key, val)
 	}
 
-	stmt, names := bt.ToCql()
-	q := gocqlx.Query(c.session.Query(stmt), names).Bind(entities...)
-
-	return q.ExecRelease()
+	return c.Query(bt.ToCql()).Bind(entities...).ExecRelease()
 }
 
 func (c *client) DeleteByKeys(keys ...string) ([]string, error) {
@@ -402,13 +415,10 @@ func (c *client) DeleteByKeys(keys ...string) ([]string, error) {
 		uuids = append(uuids, key, vals[i])
 	}
 
-	stmt, names := bt.ToCql()
-	q := gocqlx.Query(c.session.Query(stmt), names).Bind(uuids...)
-	err = q.ExecRelease()
+	err = c.Query(bt.ToCql()).Bind(uuids...).ExecRelease()
 	if err != nil {
 		return nil, err
 	}
-
 	return vals, nil
 }
 
@@ -427,12 +437,9 @@ func (c *client) DeleteByValues(values ...string) ([]string, error) {
 		metas = append(metas, keys[i], value)
 	}
 
-	stmt, names := bt.ToCql()
-	q := gocqlx.Query(c.session.Query(stmt), names).Bind(metas...)
-	err = q.ExecRelease()
+	err = c.Query(bt.ToCql()).Bind(metas...).ExecRelease()
 	if err != nil {
 		return nil, err
 	}
-
 	return keys, nil
 }

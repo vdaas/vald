@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import (
 	"reflect"
 	"runtime"
 
-	// "github.com/pkg/errors"
 	"github.com/cockroachdb/errors"
 	"github.com/cockroachdb/errors/errbase"
 )
@@ -50,6 +49,16 @@ var (
 
 	ErrInvalidTypeConversion = func(i interface{}, tgt interface{}) error {
 		return Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt))
+	}
+
+	ErrLoggingRetry = func(err error, ref reflect.Value) error {
+		return Wrapf(err, "failed to output %s logs, retrying...",
+			runtime.FuncForPC(ref.Pointer()).Name())
+	}
+
+	ErrLoggingFailed = func(err error, ref reflect.Value) error {
+		return Wrapf(err, "failed to output %s logs",
+			runtime.FuncForPC(ref.Pointer()).Name())
 	}
 
 	New = func(msg string) error {

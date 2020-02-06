@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,85 +19,69 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 )
 
 func TestRecoverFunc(t *testing.T) {
-	type args struct {
-		fn func() error
-	}
-
 	type test struct {
 		name       string
-		args       args
+		fn         func() error
 		runtimeErr bool
 		want       error
 	}
 
 	tests := []test{
 		{
-			name: "runtime error",
-			args: args{
-				fn: func() error {
-					_ = []string{}[10]
-					return nil
-				},
+			name: "returns error when system paniced caused by runtime error",
+			fn: func() error {
+				_ = []string{}[10]
+				return nil
 			},
 			runtimeErr: true,
-			want:       fmt.Errorf("system paniced caused by runtime error: runtime error: index out of range [10] with length 0"),
+			want:       errors.New("system paniced caused by runtime error: runtime error: index out of range [10] with length 0"),
 		},
 
 		{
-			name: "panic string",
-			args: args{
-				fn: func() error {
-					panic("panic")
-				},
+			name: "returns error when system paniced caused by panic with string value",
+			fn: func() error {
+				panic("panic")
 			},
-			want: fmt.Errorf("panic recovered: panic"),
+			want: errors.New("panic recovered: panic"),
 		},
 
 		{
-			name: "panic error",
-			args: args{
-				fn: func() error {
-					panic(fmt.Errorf("error"))
-				},
+			name: "returns error when system paniced caused by panic with error",
+			fn: func() error {
+				panic(fmt.Errorf("error"))
 			},
-			want: fmt.Errorf("error"),
+			want: errors.New("error"),
 		},
 
 		{
-			name: "default case panic",
-			args: args{
-				fn: func() error {
-					panic(10)
-				},
+			name: "returns error when system paniced caused by panic with int value",
+			fn: func() error {
+				panic(10)
 			},
-			want: fmt.Errorf("panic recovered: 10"),
+			want: errors.New("panic recovered: 10"),
 		},
 	}
 
-	log.Init(log.DefaultGlg())
+	log.Init()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
 				if ok := tt.runtimeErr; ok {
-					if want, got := tt.want, recover().(error); want.Error() != got.Error() {
-						t.Errorf("want: %v, got: %v", want, got)
+					if want, got := tt.want, recover().(error); !errors.Is(got, want) {
+						t.Errorf("not equals. want: %v, got: %v", want, got)
 					}
 				}
 			}()
 
-			got := RecoverFunc(tt.args.fn)()
-
-			if tt.want == nil && got != nil {
-				t.Errorf("RecoverFunc return error: %v", got)
-			} else if tt.want != nil {
-				if tt.want.Error() != got.Error() {
-					t.Errorf("RecoverFunc is wrong, want: %v, got: %v", tt.want, got)
-				}
+			got := RecoverFunc(tt.fn)()
+			if !errors.Is(got, tt.want) {
+				t.Errorf("not equals. want: %v, got: %v", tt.want, got)
 			}
 		})
 	}

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package cassandra
 
 import (
 	"crypto/tls"
+	"strings"
 	"time"
 
 	"github.com/gocql/gocql"
@@ -29,7 +30,11 @@ import (
 type Option func(*client) error
 
 var (
-	defaultOpts = []Option{}
+	defaultOpts = []Option{
+		WithDisableDCAwareRouting(),
+		WithDisableNonLocalReplicasFallback(),
+		WithDisableShuffleReplicas(),
+	}
 )
 
 func WithHosts(hosts ...string) Option {
@@ -41,6 +46,15 @@ func WithHosts(hosts ...string) Option {
 			c.hosts = hosts
 		} else {
 			c.hosts = append(c.hosts, hosts...)
+		}
+		return nil
+	}
+}
+
+func WithDialer(der gocql.Dialer) Option {
+	return func(c *client) error {
+		if der != nil {
+			c.dialer = der
 		}
 		return nil
 	}
@@ -116,14 +130,14 @@ var consistenciesMap = map[string]gocql.Consistency{
 	"three":       gocql.Three,
 	"quorum":      gocql.Quorum,
 	"all":         gocql.All,
-	"localQuorum": gocql.LocalQuorum,
-	"eachQuorum":  gocql.EachQuorum,
-	"localOne":    gocql.LocalOne,
+	"localquorum": gocql.LocalQuorum,
+	"eachquorum":  gocql.EachQuorum,
+	"localone":    gocql.LocalOne,
 }
 
 func WithConsistency(consistency string) Option {
 	return func(c *client) error {
-		actual, ok := consistenciesMap[consistency]
+		actual, ok := consistenciesMap[strings.TrimSpace(strings.Trim(strings.Trim(strings.ToLower(consistency), "_"), "-"))]
 		if !ok {
 			return errors.ErrCassandraInvalidConsistencyType(consistency)
 		}
@@ -284,6 +298,55 @@ func WithEnableHostVerification(enableHostVerification bool) Option {
 func WithDefaultTimestamp(defaultTimestamp bool) Option {
 	return func(c *client) error {
 		c.defaultTimestamp = defaultTimestamp
+		return nil
+	}
+}
+
+func WithDC(name string) Option {
+	return func(c *client) error {
+		c.poolConfig.dataCenterName = name
+		return nil
+	}
+}
+
+func WithEnableDCAwareRouting() Option {
+	return func(c *client) error {
+		c.poolConfig.enableDCAwareRouting = true
+		return nil
+	}
+}
+
+func WithDisableDCAwareRouting() Option {
+	return func(c *client) error {
+		c.poolConfig.enableDCAwareRouting = false
+		return nil
+	}
+}
+
+func WithEnableNonLocalReplicasFallback() Option {
+	return func(c *client) error {
+		c.poolConfig.enableNonLocalReplicasFallback = true
+		return nil
+	}
+}
+
+func WithDisableNonLocalReplicasFallback() Option {
+	return func(c *client) error {
+		c.poolConfig.enableNonLocalReplicasFallback = false
+		return nil
+	}
+}
+
+func WithEnableShuffleReplicas() Option {
+	return func(c *client) error {
+		c.poolConfig.enableShuffleReplicas = true
+		return nil
+	}
+}
+
+func WithDisableShuffleReplicas() Option {
+	return func(c *client) error {
+		c.poolConfig.enableShuffleReplicas = false
 		return nil
 	}
 }

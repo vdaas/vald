@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -85,23 +85,26 @@ func dirwalk(dir string) []string {
 		switch filepath.Ext(file.Name()) {
 		case
 			".cfg",
+			".crt",
+			".default",
 			".drawio",
 			".git",
 			".gitignore",
 			".gitkeep",
 			".gitmodules",
+			".hdf5",
 			".helmignore",
 			".html",
 			".json",
+			".key",
 			".lock",
 			".md",
 			".md5",
-			".hdf5",
 			".mod",
-			".default",
+			".pem",
 			".png",
-			".sum",
 			".ssv",
+			".sum",
 			".svg",
 			".tpl",
 			".txt",
@@ -113,6 +116,8 @@ func dirwalk(dir string) []string {
 			case
 				"GO_VERSION",
 				"NGT_VERSION",
+				"VALD_VERSION",
+				"TENSORFLOW_C_VERSION",
 				"AUTHORS",
 				"CONTRIBUTORS",
 				"Pipefile",
@@ -139,18 +144,24 @@ func readAndRewrite(path string) error {
 	}
 	fi, err := f.Stat()
 	if err != nil {
-		f.Close()
+		err = f.Close()
+		if err != nil {
+			log.Fatal("error")
+		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
 	buf := bytes.NewBuffer(make([]byte, 0, fi.Size()))
 	d := Data{
 		NickName: "Vdaas.org Vald team",
-		FullName: " kpango, kmrmt, rinx ",
+		FullName: " kpango, rinx, kmrmt ",
 		Year:     time.Now().Year(),
 		Escape:   sharpEscape,
 	}
 	if fi.Name() == "LICENSE" {
-		license.Execute(buf, d)
+		err = license.Execute(buf, d)
+		if err != nil {
+			log.Fatal("error")
+		}
 	} else {
 		switch filepath.Ext(path) {
 		case ".go", ".proto":
@@ -165,22 +176,51 @@ func readAndRewrite(path string) error {
 			if filepath.Ext(path) == ".go" && strings.HasPrefix(line, "// +build") ||
 				filepath.Ext(path) == ".py" && strings.HasPrefix(line, "# -*-") {
 				bf = true
-				buf.WriteString(line)
-				buf.WriteString("\n")
-				buf.WriteString("\n")
+				_, err = buf.WriteString(line)
+				if err != nil {
+					log.Fatal("error")
+				}
+				_, err = buf.WriteString("\n")
+				if err != nil {
+					log.Fatal("error")
+				}
+				_, err = buf.WriteString("\n")
+				if err != nil {
+					log.Fatal("error")
+				}
+				continue
+			}
+			if (filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml") && strings.HasPrefix(line, "---") {
+				_, err = buf.WriteString(line)
+				if err != nil {
+					log.Fatal("error")
+				}
+				_, err = buf.WriteString("\n")
+				if err != nil {
+					log.Fatal("error")
+				}
 				continue
 			}
 			if lf && strings.HasPrefix(line, d.Escape) {
 				continue
 			} else if !bf {
 				once.Do(func() {
-					apache.Execute(buf, d)
+					err = apache.Execute(buf, d)
+					if err != nil {
+						log.Fatal("error")
+					}
 				})
 				lf = false
 			}
 			if !lf {
-				buf.WriteString(line)
-				buf.WriteString("\n")
+				_, err = buf.WriteString(line)
+				if err != nil {
+					log.Fatal("error")
+				}
+				_, err = buf.WriteString("\n")
+				if err != nil {
+					log.Fatal("error")
+				}
 			}
 			bf = false
 		}
@@ -195,11 +235,20 @@ func readAndRewrite(path string) error {
 	}
 	f, err = os.Create(path)
 	if err != nil {
-		f.Close()
+		err = f.Close()
+		if err != nil {
+			log.Fatal("error")
+		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
-	f.WriteString(strings.Replace(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"), "2019-2019", "2019", 1))
-	f.Close()
+	_, err = f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"))
+	if err != nil {
+		log.Fatal("error")
+	}
+	err = f.Close()
+	if err != nil {
+		log.Fatal("error")
+	}
 	return nil
 }
 

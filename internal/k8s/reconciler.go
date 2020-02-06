@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -74,9 +74,9 @@ func New(opts ...Option) (cl Controller, err error) {
 		c.mgr, err = manager.New(
 			cfg,
 			manager.Options{
-				// Scheme:             runtime.NewScheme(),
-				// LeaderElection:     c.leaderElection,
-				// MetricsBindAddress: c.merticsAddr,
+				Scheme:             runtime.NewScheme(),
+				LeaderElection:     c.leaderElection,
+				MetricsBindAddress: c.merticsAddr,
 			},
 		)
 		if err != nil {
@@ -102,7 +102,7 @@ func New(opts ...Option) (cl Controller, err error) {
 				}
 				bc = bc.Watches(src, h)
 			}
-			err = bc.Complete(rc.NewReconciler(c.mgr))
+			_, err = bc.Build(rc.NewReconciler(c.mgr))
 			if err != nil {
 				return nil, err
 			}

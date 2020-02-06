@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,12 +31,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     unzip \
     git \
+    gcc \
+    g++ \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt
 COPY versions/GO_VERSION .
-RUN export GO_VERSION=`cat GO_VERSION` \
+RUN export GO_VERSION="$(cat GO_VERSION)" \
     && curl -sSL -O "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" \
     && tar zxf "go${GO_VERSION}.linux-amd64.tar.gz" \
     && rm "go${GO_VERSION}.linux-amd64.tar.gz" \

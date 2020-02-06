@@ -1,0 +1,41 @@
+#
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.compressor.name }}-config
+data:
+  config.yaml: |
+    ---
+    version: {{ .Values.compressor.version }}
+    time_zone: {{ default .Values.defaults.time_zone .Values.compressor.time_zone }}
+    {{- if .Values.compressor.logging }}
+    logging:
+      logger: {{ .Values.compressor.logging.logger }}
+      level: {{ .Values.compressor.logging.level }}
+      format: {{ .Values.compressor.logging.format }}
+    {{- end }}
+    server_config:
+      {{- $servers := dict "Values" .Values.compressor.server_config "default" .Values.defaults.server_config }}
+      {{- include "vald.servers" $servers | nindent 6 }}
+    backup:
+      host: {{ .Values.backupManager.name }}.{{ .Release.Namespace }}.svc.cluster.local
+      port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.backupManager.server_config.servers.grpc.port }}
+      client:
+        {{- $backupClient := dict "Values" .Values.compressor.backup.client "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $backupClient | nindent 8 }}
+    compressor:
+      {{- toYaml .Values.compressor.compress | nindent 6 }}

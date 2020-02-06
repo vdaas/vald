@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ func New(sopts ...Option) (Server, error) {
 
 	var cfg *tls.Config
 
-	if ss.cfg.TLS.Enabled {
+	if ss.cfg.TLS != nil && ss.cfg.TLS.Enabled {
 		var err error
 		cfg, err = tls.New(
 			tls.WithCert(ss.cfg.TLS.Cert),

@@ -1,0 +1,83 @@
+name: 'Build docker image: ci-container'
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'dockers/ci/**'
+      - 'resources/GO_VERSION'
+      - 'resources/NGT_VERSION'
+  pull_request:
+    paths:
+      - 'dockers/ci/**'
+      - 'resources/GO_VERSION'
+      - 'resources/NGT_VERSION'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Build the Docker image
+      run: |
+        make docker/build/ci-container
+    - name: Login to GitHub package registry
+      run: |
+        echo ${GITHUB_TOKEN} | docker login docker.pkg.github.com --username ${GITHUB_USER} --password-stdin
+      env:
+        GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+        GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+    - name: push to GitHub package registry (master)
+      if: github.ref == 'refs/heads/master'
+      run: |
+        originname=`make docker/name/ci-container`
+        imagename=`make docker/name/ci-container | sed -e 's:vdaas:docker.pkg.github.com/vdaas/vald:'`
+        docker tag ${originname} ${imagename}:latest
+        docker push ${imagename}:latest
+        docker tag ${originname} ${imagename}:nightly
+        docker push ${imagename}:nightly
+    - name: push to GitHub package registry (pull request)
+      if: github.event_name == 'pull_request'
+      run: |
+        originname=`make docker/name/ci-container`
+        imagename=`make docker/name/ci-container | sed -e 's:vdaas:docker.pkg.github.com/vdaas/vald:'`
+        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+        docker tag ${originname} ${imagename}:pr-${pr_num}
+        docker push ${imagename}:pr-${pr_num}
+    - name: push to GitHub package registry (tags)
+      if: startsWith( github.ref, 'refs/tags/')
+      run: |
+        originname=`make docker/name/ci-container`
+        imagename=`make docker/name/ci-container | sed -e 's:vdaas:docker.pkg.github.com/vdaas/vald:'`
+        tag_name=`cat $GITHUB_REF | sed -e 's:^refs/tags/::'`
+        docker tag ${originname} ${imagename}:${tag_name}
+        docker push ${imagename}:${tag_name}
+    - name: Login to DockerHub
+      run: |
+        echo ${DOCKERHUB_PASS} | docker login --username ${DOCKERHUB_USER} --password-stdin
+      env:
+        DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+        DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+    - name: push to DockerHub (master)
+      if: github.ref == 'refs/heads/master'
+      run: |
+        imagename=`make docker/name/ci-container`
+        docker push ${imagename}:latest
+        docker tag ${imagename} ${imagename}:nightly
+        docker push ${imagename}:nightly
+    - name: push to DockerHub (pull request)
+      if: github.event_name == 'pull_request'
+      run: |
+        imagename=`make docker/name/ci-container`
+        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+        docker tag ${imagename} ${imagename}:pr-${pr_num}
+        docker push ${imagename}:pr-${pr_num}
+    - name: push to DockerHub (tags)
+      if: startsWith( github.ref, 'refs/tags/')
+      run: |
+        imagename=`make docker/name/ci-container`
+        tag_name=`cat $GITHUB_REF | sed -e 's:^refs/tags/::'`
+        docker tag ${imagename} ${imagename}:${tag_name}
+        docker push ${imagename}:${tag_name}

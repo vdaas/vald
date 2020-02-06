@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,12 +32,12 @@ type Data struct {
 
 type parser struct {
 	filePath struct {
-		key         string
+		keys        []string
 		defaultPath string
 		description string
 	}
 	version struct {
-		key         string
+		keys        []string
 		defaultFlag bool
 		description string
 	}
@@ -55,17 +55,21 @@ func (p *parser) Parse() (*Data, bool, error) {
 	f := flag.NewFlagSet(filepath.Base(os.Args[0]), flag.ContinueOnError)
 
 	d := new(Data)
-	f.StringVar(&d.configFilePath,
-		p.filePath.key,
-		p.filePath.defaultPath,
-		p.filePath.description,
-	)
+	for _, key := range p.filePath.keys {
+		f.StringVar(&d.configFilePath,
+			key,
+			p.filePath.defaultPath,
+			p.filePath.description,
+		)
+	}
 
-	f.BoolVar(&d.showVersion,
-		p.version.key,
-		p.version.defaultFlag,
-		p.version.description,
-	)
+	for _, key := range p.version.keys {
+		f.BoolVar(&d.showVersion,
+			key,
+			p.version.defaultFlag,
+			p.version.description,
+		)
+	}
 
 	err := f.Parse(os.Args[1:])
 	if err != nil {

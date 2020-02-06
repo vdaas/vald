@@ -1,0 +1,50 @@
+---
+#
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cassandra-init
+spec:
+  template:
+    spec:
+      containers:
+      - name: cassandra-init
+        image: "cassandra:latest"
+        imagePullPolicy: Always
+        command:
+          - /bin/sh
+          - -c
+          - |
+            cqlsh -u${CASSANDRA_USER} -p${CASSANDRA_PASSWORD} ${CASSANDRA_HOST} < /initdb/init.cql
+        env:
+          - name: CASSANDRA_HOST
+            value: cassandra.default.svc.cluster.local
+          - name: CASSANDRA_USER
+            value: root
+          - name: CASSANDRA_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: cassandra-secret
+        volumeMounts:
+          - name: cassandra-initdb
+            mountPath: /initdb
+      restartPolicy: Never
+      volumes:
+        - name: cassandra-initdb
+          configMap:
+            name: cassandra-initdb

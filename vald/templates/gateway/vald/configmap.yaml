@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,221 +20,43 @@ metadata:
 data:
   config.yaml: |
     ---
-    version: v0.0.0
+    version: {{ .Values.gateway.version }}
+    time_zone: {{ default .Values.defaults.time_zone .Values.gateway.time_zone }}
+    {{- if .Values.gateway.logging }}
+    logging:
+      logger: {{ .Values.gateway.logging.logger }}
+      level: {{ .Values.gateway.logging.level }}
+      format: {{ .Values.gateway.logging.format }}
+    {{- end }}
     server_config:
       {{- $servers := dict "Values" .Values.gateway.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
     gateway:
       agent_port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.agent.server_config.servers.grpc.port }}
       agent_name: {{ .Values.agent.name }}
-      index_replica: 5
+      agent_dns: {{ .Values.agent.name }}.{{ .Release.Namespace }}.svc.cluster.local
+      index_replica: {{ .Values.gateway.gateway_config.index_replica }}
       discoverer:
-        host: {{ .Values.discoverer.name }}.default.svc.cluster.local
+        host: {{ .Values.discoverer.name }}.{{ .Release.Namespace }}.svc.cluster.local
         port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.discoverer.server_config.servers.grpc.port }}
-        duration: "2s"
+        duration: {{ .Values.gateway.gateway_config.discoverer.duration }}
         discover_client:
-          addrs: []
-          health_check_duration: "1s"
-          backoff:
-            initial_duration: ""
-            backoff_time_limit: ""
-            maximum_duration: ""
-            jitter_limit: ""
-            backoff_factor: 0
-            retry_count: 0
-            enable_error_log: false
-          call_option:
-            wait_for_ready: true
-            max_retry_rpc_buffer_size: 0
-            max_recv_msg_size: 0
-            max_send_msg_size: 0
-          dial_option:
-            write_buffer_size: 0
-            read_buffer_size: 0
-            initial_window_size: 0
-            initial_connection_window_size: 0
-            max_msg_size: 0
-            max_backoff_delay: ""
-            enable_backoff: false
-            insecure: true
-            timeout: ""
-            dialer:
-              dns:
-                cache_enabled: false
-                refresh_duration: ""
-                cache_expiration: ""
-              dialer:
-                timeout: ""
-                keep_alive: ""
-                dual_stack_enabled: true
-              tls:
-                enabled: false
-                cert: /path/to/cert
-                key: /path/to/key
-                ca: /path/to/ca
-            keep_alive:
-              time: ""
-              timeout: ""
-              permit_without_stream: false
-          tls:
-            enabled: false
-            cert: /path/to/cert
-            key: /path/to/key
-            ca: /path/to/ca
+          {{- $discoverClient := dict "Values" .Values.gateway.gateway_config.discoverer.discover_client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $discoverClient | nindent 10 }}
         agent_client:
-          addrs: []
-          health_check_duration: "1s"
-          backoff:
-            initial_duration: ""
-            backoff_time_limit: ""
-            maximum_duration: ""
-            jitter_limit: ""
-            backoff_factor: 0
-            retry_count: 0
-            enable_error_log: false
-          call_option:
-            wait_for_ready: true
-            max_retry_rpc_buffer_size: 0
-            max_recv_msg_size: 0
-            max_send_msg_size: 0
-          dial_option:
-            write_buffer_size: 0
-            read_buffer_size: 0
-            initial_window_size: 0
-            initial_connection_window_size: 0
-            max_msg_size: 0
-            max_backoff_delay: ""
-            enable_backoff: false
-            insecure: true
-            timeout: ""
-            dialer:
-              dns:
-                cache_enabled: false
-                refresh_duration: ""
-                cache_expiration: ""
-              dialer:
-                timeout: ""
-                keep_alive: ""
-                dual_stack_enabled: true
-              tls:
-                enabled: false
-                cert: /path/to/cert
-                key: /path/to/key
-                ca: /path/to/ca
-            keep_alive:
-              time: ""
-              timeout: ""
-              permit_without_stream: false
-          tls:
-            enabled: false
-            cert: /path/to/cert
-            key: /path/to/key
-            ca: /path/to/ca
+          {{- $agentClient := dict "Values" .Values.gateway.gateway_config.discoverer.agent_client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $agentClient | nindent 10 }}
       meta:
-        host: {{ .Values.meta.name }}.default.svc.cluster.local
+        host: {{ .Values.meta.name }}.{{ .Release.Namespace }}.svc.cluster.local
         port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.meta.server_config.servers.grpc.port }}
-        duration: "2s"
         client:
-          addrs: []
-          health_check_duration: "1s"
-          backoff:
-            initial_duration: ""
-            backoff_time_limit: ""
-            maximum_duration: ""
-            jitter_limit: ""
-            backoff_factor: 0
-            retry_count: 0
-            enable_error_log: false
-          call_option:
-            wait_for_ready: true
-            max_retry_rpc_buffer_size: 0
-            max_recv_msg_size: 0
-            max_send_msg_size: 0
-          dial_option:
-            write_buffer_size: 0
-            read_buffer_size: 0
-            initial_window_size: 0
-            initial_connection_window_size: 0
-            max_msg_size: 0
-            max_backoff_delay: ""
-            enable_backoff: false
-            insecure: true
-            timeout: ""
-            dialer:
-              dns:
-                cache_enabled: false
-                refresh_duration: ""
-                cache_expiration: ""
-              dialer:
-                timeout: ""
-                keep_alive: ""
-                dual_stack_enabled: true
-              tls:
-                enabled: false
-                cert: /path/to/cert
-                key: /path/to/key
-                ca: /path/to/ca
-            keep_alive:
-              time: ""
-              timeout: ""
-              permit_without_stream: false
-          tls:
-            enabled: false
-            cert: /path/to/cert
-            key: /path/to/key
-            ca: /path/to/ca
+          {{- $metaClient := dict "Values" .Values.gateway.gateway_config.meta.client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $metaClient | nindent 10 }}
       backup:
-        host: {{ .Values.backupManager.name }}.default.svc.cluster.local
-        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.backupManager.server_config.servers.grpc.port }}
-        duration: "2s"
+        host: {{ .Values.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
+        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.compressor.server_config.servers.grpc.port }}
         client:
-          addrs: []
-          health_check_duration: "1s"
-          backoff:
-            initial_duration: ""
-            backoff_time_limit: ""
-            maximum_duration: ""
-            jitter_limit: ""
-            backoff_factor: 0
-            retry_count: 0
-            enable_error_log: false
-          call_option:
-            wait_for_ready: true
-            max_retry_rpc_buffer_size: 0
-            max_recv_msg_size: 0
-            max_send_msg_size: 0
-          dial_option:
-            write_buffer_size: 0
-            read_buffer_size: 0
-            initial_window_size: 0
-            initial_connection_window_size: 0
-            max_msg_size: 0
-            max_backoff_delay: ""
-            enable_backoff: false
-            insecure: true
-            timeout: ""
-            dialer:
-              dns:
-                cache_enabled: false
-                refresh_duration: ""
-                cache_expiration: ""
-              dialer:
-                timeout: ""
-                keep_alive: ""
-                dual_stack_enabled: true
-              tls:
-                enabled: false
-                cert: /path/to/cert
-                key: /path/to/key
-                ca: /path/to/ca
-            keep_alive:
-              time: ""
-              timeout: ""
-              permit_without_stream: false
-          tls:
-            enabled: false
-            cert: /path/to/cert
-            key: /path/to/key
-            ca: /path/to/ca
+          {{- $backupClient := dict "Values" .Values.gateway.gateway_config.backup.client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $backupClient | nindent 10 }}
       egress_filter:
         client: null

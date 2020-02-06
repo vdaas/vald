@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import (
 )
 
 type Filter interface {
-	Start(ctx context.Context) <-chan error
+	Start(ctx context.Context) (<-chan error, error)
 	FilterSearch(context.Context, *payload.Search_Response) (*payload.Search_Response, error)
 }
 
@@ -46,7 +46,7 @@ func NewFilter(opts ...FilterOption) (ef Filter, err error) {
 	return f, nil
 }
 
-func (f *filter) Start(ctx context.Context) <-chan error {
+func (f *filter) Start(ctx context.Context) (<-chan error, error) {
 	return f.client.StartConnectionMonitor(ctx)
 }
 

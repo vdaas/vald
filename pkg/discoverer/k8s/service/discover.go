@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/k8s"
+	mnode "github.com/vdaas/vald/internal/k8s/metrics/node"
+	mpod "github.com/vdaas/vald/internal/k8s/metrics/pod"
 	"github.com/vdaas/vald/internal/k8s/node"
 	"github.com/vdaas/vald/internal/k8s/pod"
 	"github.com/vdaas/vald/internal/log"
@@ -35,10 +37,12 @@ type Discoverer interface {
 }
 
 type discoverer struct {
-	maxServers int
-	nodes      sync.Map
-	pods       sync.Map
-	ctrl       k8s.Controller
+	maxServers  int
+	nodes       sync.Map
+	nodeMetrics sync.Map
+	pods        sync.Map
+	podMetrics  sync.Map
+	ctrl        k8s.Controller
 }
 
 func New() (dsc Discoverer, err error) {
@@ -46,6 +50,35 @@ func New() (dsc Discoverer, err error) {
 	d.ctrl, err = k8s.New(
 		k8s.WithControllerName("vald k8s agent discoverer"),
 		k8s.WithDisableLeaderElection(),
+		k8s.WithResourceController(mnode.New(
+			mnode.WithControllerName("node metrics discoverer"),
+			mnode.WithOnErrorFunc(func(err error) {
+				log.Error(err)
+			}),
+			mnode.WithOnReconcileFunc(func(nodes map[string]mnode.Node) {
+				b, _ := json.Marshal(nodes)
+				log.Debug(string(b))
+				for name, metrics := range nodes {
+					d.nodeMetrics.Store(name, metrics)
+				}
+			}),
+		)),
+		k8s.WithResourceController(mpod.New(
+			mpod.WithControllerName("pod metrics discoverer"),
+			mpod.WithOnErrorFunc(func(err error) {
+				log.Error(err)
+			}),
+			mpod.WithOnReconcileFunc(func(podMetricsList map[string][]mpod.Pod) {
+				b, _ := json.Marshal(podMetricsList)
+				log.Debug(string(b))
+				for name, pods := range podMetricsList {
+					if len(pods) > d.maxServers {
+						d.maxServers = len(pods)
+					}
+					d.podMetrics.Store(name, pods)
+				}
+			}),
+		)),
 		k8s.WithResourceController(pod.New(
 			pod.WithControllerName("pod discoverer"),
 			pod.WithOnErrorFunc(func(err error) {
@@ -95,11 +128,18 @@ func (d *discoverer) GetServers(name, nodeName string) (srvs *payload.Info_Serve
 				(name == "" && nodeName == p.NodeName) ||
 				(metaname == name && nodeName == "") ||
 				(metaname == name && nodeName == p.NodeName) {
+				cpu := 100.0 * p.CPURequest / p.CPULimit
+				mem := 100.0 * p.MemRequest / p.MemLimit
+				metrics, ok := d.podMetrics.Load(name)
+				if ok {
+					m := metrics.(mpod.Pod)
+					cpu = 100.0 * m.CPU / p.CPULimit
+				}
 				srv := &payload.Info_Server{
 					Name: p.Name,
 					Ip:   p.IP,
-					Cpu:  p.CPU,
-					Mem:  p.Mem,
+					Cpu:  cpu,
+					Mem:  mem,
 				}
 				if nr, ok := d.nodes.Load(p.NodeName); ok {
 					n, ok := nr.(node.Node)

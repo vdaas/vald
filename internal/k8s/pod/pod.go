@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,16 +19,20 @@ package pod
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/log"
 
-	appsv1 "k8s.io/api/apps/v1"
+	// appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -50,11 +54,13 @@ type reconciler struct {
 }
 
 type Pod struct {
-	Name     string
-	NodeName string
-	IP       string
-	CPU      float64
-	Mem      float64
+	Name       string
+	NodeName   string
+	IP         string
+	CPULimit   float64
+	CPURequest float64
+	MemLimit   float64
+	MemRequest float64
 }
 
 func New(opts ...Option) PodWatcher {
@@ -70,10 +76,11 @@ func New(opts ...Option) PodWatcher {
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
 	ps := &corev1.PodList{}
 
-	err = r.mgr.GetClient().List(context.TODO(), ps, client.InNamespace(req.Namespace))
+	err = r.mgr.GetClient().List(context.TODO(), ps)
 	// err = r.mgr.GetClient().Get(context.TODO(), req.NamespacedName, ps)
 
 	if err != nil {
+		log.Error(err)
 		if r.onError != nil {
 			r.onError(err)
 		}
@@ -86,45 +93,55 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 				Requeue:      true,
 				RequeueAfter: time.Second,
 			}
+			log.Error("not found")
 		}
 		return
 	}
 
 	var (
-		cpuUsage float64
-		memUsage float64
-		pods     = make(map[string][]Pod, len(ps.Items))
+		cpuLimit   float64
+		cpuRequest float64
+		memLimit   float64
+		memRequest float64
+		pods       = make(map[string][]Pod, len(ps.Items))
 	)
 
 	for _, pod := range ps.Items {
 		if pod.Status.Phase == corev1.PodRunning {
-			cpuUsage = 0.0
-			memUsage = 0.0
+			cpuLimit = 0.0
+			memLimit = 0.0
+			cpuRequest = 0.0
+			memRequest = 0.0
 			for _, container := range pod.Spec.Containers {
 				request := container.Resources.Requests
 				limit := container.Resources.Limits
-				cpuUsage += (float64(request.Cpu().Value()) /
-					float64(limit.Cpu().Value())) * 100.0
-				memUsage += (float64(request.Memory().Value()) /
-					float64(limit.Memory().Value())) * 100.0
+				cpuLimit += float64(limit.Cpu().Value())
+				memLimit += float64(limit.Memory().Value())
+				cpuRequest += float64(request.Cpu().Value())
+				memRequest += float64(request.Memory().Value())
+			}
+			cpuLimit /= float64(len(pod.Spec.Containers))
+			memLimit /= float64(len(pod.Spec.Containers))
+			cpuRequest /= float64(len(pod.Spec.Containers))
+			memRequest /= float64(len(pod.Spec.Containers))
+			podName, ok := pod.GetObjectMeta().GetLabels()["app"]
+			if !ok {
+				pns := strings.Split(pod.GetName(), "-")
+				podName = strings.Join(pns[:len(pns)-1], "-")
 			}
 
-			cpuUsage = cpuUsage / float64(len(pod.Spec.Containers))
-			memUsage = memUsage / float64(len(pod.Spec.Containers))
-
-			// pod.GetObjectMeta().GetLabels()["app"]
-			podMetaName := pod.GetObjectMeta().GetName()
-
-			if _, ok := pods[podMetaName]; !ok {
-				pods[podMetaName] = make([]Pod, 0, len(ps.Items))
+			if _, ok := pods[podName]; !ok {
+				pods[podName] = make([]Pod, 0, len(ps.Items))
 			}
 
-			pods[podMetaName] = append(pods[podMetaName], Pod{
-				Name:     pod.GetName(),
-				NodeName: pod.Spec.NodeName,
-				IP:       pod.Status.PodIP,
-				CPU:      cpuUsage,
-				Mem:      memUsage,
+			pods[podName] = append(pods[podName], Pod{
+				Name:       pod.GetName(),
+				NodeName:   pod.Spec.NodeName,
+				IP:         pod.Status.PodIP,
+				CPULimit:   cpuLimit,
+				CPURequest: cpuRequest,
+				MemLimit:   memLimit,
+				MemRequest: memRequest,
 			})
 		}
 	}
@@ -156,20 +173,55 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 		r.mgr = mgr
 	}
 	corev1.AddToScheme(r.mgr.GetScheme())
-	appsv1.AddToScheme(r.mgr.GetScheme())
+	// appsv1.AddToScheme(r.mgr.GetScheme())
 	return r
 }
 
 func (r *reconciler) For() runtime.Object {
-	// return new(appsv1.ReplicaSet)
-	return nil
+	return new(corev1.Pod)
 }
 
 func (r *reconciler) Owns() runtime.Object {
-	// return new(corev1.Pod)
-	return nil
+	return new(corev1.Pod)
 }
 
 func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
-	return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
+	return &source.Kind{Type: new(corev1.Pod)}, handler.Funcs{
+		CreateFunc: func(ev event.CreateEvent, wq workqueue.RateLimitingInterface) {
+			log.Debug("created")
+			wq.Add(reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name:      ev.Meta.GetName(),
+					Namespace: ev.Meta.GetNamespace(),
+				},
+			})
+		},
+		UpdateFunc: func(ev event.UpdateEvent, wq workqueue.RateLimitingInterface) {
+			log.Debug("update")
+			wq.Add(reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name:      ev.MetaNew.GetName(),
+					Namespace: ev.MetaNew.GetNamespace(),
+				},
+			})
+		},
+		DeleteFunc: func(ev event.DeleteEvent, wq workqueue.RateLimitingInterface) {
+			log.Debug("deleted")
+			wq.Add(reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name:      ev.Meta.GetName(),
+					Namespace: ev.Meta.GetNamespace(),
+				},
+			})
+		},
+		GenericFunc: func(ev event.GenericEvent, wq workqueue.RateLimitingInterface) {
+			log.Debug("generic")
+			wq.Add(reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name:      ev.Meta.GetName(),
+					Namespace: ev.Meta.GetNamespace(),
+				},
+			})
+		},
+	}
 }

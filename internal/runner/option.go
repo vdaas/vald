@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 // Package runner provides implementation of process runner
 package runner
+
+import "github.com/vdaas/vald/internal/config"
 
 type Option func(*runner)
 
@@ -45,7 +47,7 @@ func WithVersion(ver, max, min string) Option {
 	}
 }
 
-func WithConfigLoader(f func(string) (interface{}, string, error)) Option {
+func WithConfigLoader(f func(string) (interface{}, *config.GlobalConfig, error)) Option {
 	return func(r *runner) {
 		if f != nil {
 			r.loadConfig = f

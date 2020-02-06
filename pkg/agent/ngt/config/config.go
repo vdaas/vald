@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Vdaas.org Vald team ( kpango, kmrmt, rinx )
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,11 +21,12 @@ import (
 	"github.com/vdaas/vald/internal/config"
 )
 
+type GlobalConfig = config.GlobalConfig
+
 // Config represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
-	// Version represent configuration file version.
-	Version string `json:"version" yaml:"version"`
+	config.GlobalConfig `json:",inline" yaml:",inline"`
 
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
@@ -39,6 +40,10 @@ func NewConfig(path string) (cfg *Data, err error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	if cfg != nil {
+		cfg.Bind()
 	}
 
 	if cfg.Server != nil {
