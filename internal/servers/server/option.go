@@ -191,8 +191,6 @@ func WithServerMode(m mode) Option {
 		switch m {
 		case GRPC, REST, GQL:
 			s.mode = m
-		default:
-			return
 		}
 	}
 }

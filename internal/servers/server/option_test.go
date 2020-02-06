@@ -112,14 +112,14 @@ func TestWithPort(t *testing.T) {
 func TestWithName(t *testing.T) {
 	type test struct {
 		name      string
-		n         string
+		srvName   string
 		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
 		{
-			name: "set success",
-			n:    "vald",
+			name:    "set success",
+			srvName: "vald",
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
@@ -132,7 +132,7 @@ func TestWithName(t *testing.T) {
 		},
 
 		{
-			name: "not set when name is empty",
+			name: "not set when srvName is empty",
 			checkFunc: func(opt Option) error {
 				got := &server{
 					name: "name",
@@ -150,7 +150,7 @@ func TestWithName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithName(tt.n)
+			opt := WithName(tt.srvName)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
