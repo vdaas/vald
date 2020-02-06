@@ -18,7 +18,7 @@
 package jaeger
 
 import (
-	"sync"
+	"context"
 
 	"contrib.go.opencensus.io/exporter/jaeger"
 	"go.opencensus.io/trace"
@@ -26,42 +26,50 @@ import (
 
 type jaegerOptions = jaeger.Options
 
-var (
-	exporter  *jaeger.Exporter
-	once      sync.Once
-	flushOnce sync.Once
-)
+type Jaeger interface {
+	Start(ctx context.Context) error
+	Stop(ctx context.Context)
+	Exporter() *jaeger.Exporter
+}
 
-func Init(opts ...JaegerOption) (err error) {
+type exporter struct {
+	exporter *jaeger.Exporter
+	options  jaegerOptions
+}
+
+func New(opts ...JaegerOption) (j Jaeger, err error) {
 	jo := new(jaegerOptions)
 
 	for _, opt := range append(jaegerDefaultOpts, opts...) {
 		err = opt(jo)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	ex, err := jaeger.NewExporter(*jo)
+	return &exporter{
+		options: *jo,
+	}, nil
+}
+
+func (e *exporter) Start(ctx context.Context) error {
+	ex, err := jaeger.NewExporter(e.options)
 	if err != nil {
 		return err
 	}
 
-	once.Do(func() {
-		exporter = ex
-		trace.RegisterExporter(ex)
-	})
+	e.exporter = ex
+	trace.RegisterExporter(ex)
+
 	return nil
 }
 
-func Exporter() *jaeger.Exporter {
-	return exporter
+func (e *exporter) Stop(ctx context.Context) {
+	if e.exporter != nil {
+		e.exporter.Flush()
+	}
 }
 
-func Flush() {
-	if exporter != nil {
-		flushOnce.Do(func() {
-			exporter.Flush()
-		})
-	}
+func (e *exporter) Exporter() *jaeger.Exporter {
+	return e.exporter
 }

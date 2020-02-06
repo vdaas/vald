@@ -47,6 +47,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.0.3
 	github.com/pierrec/lz4/v3 v3.2.1
 	github.com/scylladb/gocqlx v1.3.3
+	github.com/shirou/gopsutil v0.0.0-20190901111213-e4ec7b275ada
 	github.com/tensorflow/tensorflow v2.1.0+incompatible
 	github.com/valyala/gozstd v1.6.4
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8

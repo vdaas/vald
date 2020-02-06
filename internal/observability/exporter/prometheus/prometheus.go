@@ -18,39 +18,69 @@
 package prometheus
 
 import (
+	"context"
 	"sync"
 
 	"contrib.go.opencensus.io/exporter/prometheus"
 )
 
-type prometheusOptions = prometheus.Options
-
 var (
-	exporter *prometheus.Exporter
+	instance *exporter
 	once     sync.Once
 )
 
-func Init(opts ...PrometheusOption) (err error) {
+type prometheusOptions = prometheus.Options
+
+type Prometheus interface {
+	Start(ctx context.Context) error
+	Stop(ctx context.Context)
+	Exporter() *prometheus.Exporter
+}
+
+type exporter struct {
+	exporter *prometheus.Exporter
+	options  prometheusOptions
+}
+
+func New(opts ...PrometheusOption) (Prometheus, error) {
 	po := new(prometheusOptions)
 
 	for _, opt := range append(prometheusDefaultOpts, opts...) {
-		err = opt(po)
+		err := opt(po)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
 	ex, err := prometheus.NewExporter(*po)
 	if err != nil {
-		return err
+		return nil, err
+	}
+
+	e := exporter{
+		exporter: ex,
+		options:  *po,
 	}
 
 	once.Do(func() {
-		exporter = ex
+		instance = &e
 	})
+
+	return &e, nil
+}
+
+func (e *exporter) Start(ctx context.Context) error {
 	return nil
 }
 
+func (e *exporter) Stop(ctx context.Context) {
+	return
+}
+
+func (e *exporter) Exporter() *prometheus.Exporter {
+	return e.exporter
+}
+
 func Exporter() *prometheus.Exporter {
-	return exporter
+	return instance.exporter
 }

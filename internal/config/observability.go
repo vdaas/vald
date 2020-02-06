@@ -18,8 +18,13 @@
 package config
 
 type Observability struct {
+	Collector  *Collector  `json:"collector" yaml:"collector"`
 	Prometheus *Prometheus `json:"prometheus" yaml:"prometheus"`
 	Jaeger     *Jaeger     `json:"jaeger" yaml:"jaeger"`
+}
+
+type Collector struct {
+	Duration string `json:"duration" yaml:"duration"`
 }
 
 type Prometheus struct {
@@ -41,18 +46,22 @@ type Jaeger struct {
 	BufferMaxCount int `json:"buffer_max_count" yaml:"buffer_max_count"`
 }
 
-func (c *Observability) Bind() *Observability {
-	if c.Prometheus != nil {
-		c.Prometheus.Namespace = GetActualValue(c.Prometheus.Namespace)
+func (o *Observability) Bind() *Observability {
+	if o.Collector != nil {
+		o.Collector.Duration = GetActualValue(o.Collector.Duration)
 	}
 
-	if c.Jaeger != nil {
-		c.Jaeger.CollectorEndpoint = GetActualValue(c.Jaeger.CollectorEndpoint)
-		c.Jaeger.AgentEndpoint = GetActualValue(c.Jaeger.AgentEndpoint)
-		c.Jaeger.Username = GetActualValue(c.Jaeger.Username)
-		c.Jaeger.Password = GetActualValue(c.Jaeger.Password)
-		c.Jaeger.ServiceName = GetActualValue(c.Jaeger.ServiceName)
+	if o.Prometheus != nil {
+		o.Prometheus.Namespace = GetActualValue(o.Prometheus.Namespace)
 	}
 
-	return c
+	if o.Jaeger != nil {
+		o.Jaeger.CollectorEndpoint = GetActualValue(o.Jaeger.CollectorEndpoint)
+		o.Jaeger.AgentEndpoint = GetActualValue(o.Jaeger.AgentEndpoint)
+		o.Jaeger.Username = GetActualValue(o.Jaeger.Username)
+		o.Jaeger.Password = GetActualValue(o.Jaeger.Password)
+		o.Jaeger.ServiceName = GetActualValue(o.Jaeger.ServiceName)
+	}
+
+	return o
 }

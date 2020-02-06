@@ -18,24 +18,59 @@
 package observability
 
 import (
+	"context"
+
 	"github.com/vdaas/vald/internal/config"
-	"github.com/vdaas/vald/internal/observability/exporter/metric/prometheus"
-	"github.com/vdaas/vald/internal/observability/exporter/trace/jaeger"
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/observability/collector"
+	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
+	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
+	"github.com/vdaas/vald/internal/observability/metrics/mem"
+	"github.com/vdaas/vald/internal/safety"
 )
 
-func New(cfg *config.Observability) error {
+type Observability interface {
+	PreStart(ctx context.Context) error
+	Start(ctx context.Context) <-chan error
+	Stop(ctx context.Context)
+}
+
+type observability struct {
+	jaeger     jaeger.Jaeger
+	prometheus prometheus.Prometheus
+	collector  collector.Collector
+	eg         errgroup.Group
+}
+
+func New(cfg *config.Observability) (Observability, error) {
+	o := new(observability)
 	if cfg != nil {
+		if cfg.Collector != nil {
+			col, err := collector.New(
+				collector.WithDuration(cfg.Collector.Duration),
+				collector.WithMetrics(
+					mem.NewMetric(),
+				),
+			)
+			if err != nil {
+				return nil, err
+			}
+
+			o.collector = col
+		}
 		if cfg.Prometheus != nil && cfg.Prometheus.Enabled {
-			err := prometheus.Init(
+			prom, err := prometheus.New(
 				prometheus.WithNamespace(cfg.Prometheus.Namespace),
 			)
 			if err != nil {
-				return err
+				return nil, err
 			}
+
+			o.prometheus = prom
 		}
 
 		if cfg.Jaeger != nil && cfg.Jaeger.Enabled {
-			err := jaeger.Init(
+			jae, err := jaeger.New(
 				jaeger.WithCollectorEndpoint(cfg.Jaeger.CollectorEndpoint),
 				jaeger.WithAgentEndpoint(cfg.Jaeger.AgentEndpoint),
 				jaeger.WithUsername(cfg.Jaeger.Username),
@@ -44,14 +79,69 @@ func New(cfg *config.Observability) error {
 				jaeger.WithBufferMaxCount(cfg.Jaeger.BufferMaxCount),
 			)
 			if err != nil {
-				return err
+				return nil, err
 			}
+
+			o.jaeger = jae
+		}
+	}
+
+	o.eg = errgroup.Get()
+
+	return o, nil
+}
+
+func (o *observability) PreStart(ctx context.Context) (err error) {
+	err = o.collector.PreStart(ctx)
+	if err != nil {
+		return err
+	}
+	if o.prometheus != nil {
+		err = o.prometheus.Start(ctx)
+		if err != nil {
+			return err
+		}
+	}
+	if o.jaeger != nil {
+		err = o.jaeger.Start(ctx)
+		if err != nil {
+			return err
 		}
 	}
 	return nil
 }
 
-func Stop() error {
-	jaeger.Flush()
-	return nil
+func (o *observability) Start(ctx context.Context) <-chan error {
+	ech := make(chan error, 2)
+
+	o.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(ech)
+		cech := o.collector.Start(ctx)
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case err = <-cech:
+			}
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case ech <- err:
+				}
+			}
+		}
+	}))
+
+	return ech
+}
+
+func (o *observability) Stop(ctx context.Context) {
+	o.collector.Stop(ctx)
+	if o.prometheus != nil {
+		o.prometheus.Stop(ctx)
+	}
+	if o.jaeger != nil {
+		o.jaeger.Stop(ctx)
+	}
 }

@@ -23,7 +23,7 @@ import (
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/net/http/metrics"
-	"github.com/vdaas/vald/internal/observability/exporter/metric/prometheus"
+	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
 	"github.com/vdaas/vald/internal/servers"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/tls"
@@ -164,7 +164,7 @@ func (s *srvs) setupMetrics(cfg *tls.Config) ([]servers.Option, error) {
 		switch strings.ToLower(msc.Name) {
 		case "prof", "pprof", "profile", "profiler":
 			hopt = server.WithHTTPHandler(metrics.NewPProfHandler())
-		case "prometheus":
+		case "prom", "prometheus":
 			hopt = server.WithHTTPHandler(prometheus.Exporter())
 		default:
 			continue

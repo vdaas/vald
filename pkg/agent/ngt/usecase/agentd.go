@@ -38,10 +38,11 @@ import (
 )
 
 type run struct {
-	eg     errgroup.Group
-	cfg    *config.Data
-	ngt    service.NGT
-	server starter.Server
+	eg            errgroup.Group
+	cfg           *config.Data
+	ngt           service.NGT
+	server        starter.Server
+	observability observability.Observability
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
@@ -55,7 +56,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	)
 	eg := errgroup.Get()
 
-	err = observability.New(cfg.Observability)
+	obs, err := observability.New(cfg.Observability)
 	if err != nil {
 		return nil, err
 	}
@@ -103,15 +104,16 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
-		eg:     eg,
-		ngt:    ngt,
-		cfg:    cfg,
-		server: srv,
+		eg:            eg,
+		ngt:           ngt,
+		cfg:           cfg,
+		server:        srv,
+		observability: obs,
 	}, nil
 }
 
 func (r *run) PreStart(ctx context.Context) error {
-	return nil
+	return r.observability.PreStart(ctx)
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
@@ -120,12 +122,14 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		log.Info("daemon start")
 		defer close(ech)
 		nech := r.ngt.Start(ctx)
+		oech := r.observability.Start(ctx)
 		sech := r.server.ListenAndServe(ctx)
 		for {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
 			case err = <-nech:
+			case err = <-oech:
 			case err = <-sech:
 			}
 			if err != nil {
@@ -145,6 +149,7 @@ func (r *run) PreStop(ctx context.Context) error {
 }
 
 func (r *run) Stop(ctx context.Context) error {
+	r.observability.Stop(ctx)
 	return r.server.Shutdown(ctx)
 }
 
