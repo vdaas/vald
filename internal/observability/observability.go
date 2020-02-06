@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
 	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
 	"github.com/vdaas/vald/internal/observability/metrics/mem"
+	"github.com/vdaas/vald/internal/observability/metrics/runtime"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -50,6 +51,7 @@ func New(cfg *config.Observability) (Observability, error) {
 				collector.WithDuration(cfg.Collector.Duration),
 				collector.WithMetrics(
 					mem.NewMetric(),
+					runtime.NewNumberOfGoroutines(),
 				),
 			)
 			if err != nil {
