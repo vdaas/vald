@@ -20,16 +20,26 @@ package compress
 import (
 	"bytes"
 	"encoding/gob"
+	"reflect"
+
+	"github.com/vdaas/vald/internal/errors"
 )
 
 type gobCompressor struct {
 }
 
-func NewGob() Compressor {
-	return &gobCompressor{}
+func NewGob(opts ...GobOption) (Compressor, error) {
+	c := new(gobCompressor)
+	for _, opt := range append(defaultGobOpts, opts...) {
+		if err := opt(c); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
+	}
+
+	return c, nil
 }
 
-func (g *gobCompressor) CompressVector(vector []float64) ([]byte, error) {
+func (g *gobCompressor) CompressVector(vector []float32) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := gob.NewEncoder(buf).Encode(vector)
 	if err != nil {
@@ -39,8 +49,8 @@ func (g *gobCompressor) CompressVector(vector []float64) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (g *gobCompressor) DecompressVector(bs []byte) ([]float64, error) {
-	var vector []float64
+func (g *gobCompressor) DecompressVector(bs []byte) ([]float32, error) {
+	var vector []float32
 	err := gob.NewDecoder(bytes.NewBuffer(bs)).Decode(&vector)
 	if err != nil {
 		return nil, err

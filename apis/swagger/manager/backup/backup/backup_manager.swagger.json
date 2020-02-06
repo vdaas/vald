@@ -286,7 +286,7 @@
     "RemoveRequestMulti": {
       "type": "object",
       "properties": {
-        "uuid": {
+        "uuids": {
           "type": "array",
           "items": {
             "type": "string"

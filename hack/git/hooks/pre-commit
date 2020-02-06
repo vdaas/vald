@@ -20,15 +20,15 @@ if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then
     find ./ -type f -regex ".*\.go" | xargs goimports -w
     echo "goimports finished."
 
+    # go build
+    echo "Run go build..."
+    go build ./...
+    echo "go build finished."
+
     if [ `git rev-parse --abbrev-ref HEAD` = "master" ]; then
         # golangci-lint
         echo "Run golangci-lint..."
         golangci-lint run --fast --disable=gochecknoglobals --fix --color always -j 16 --skip-dirs apis/grpc --exclude-use-default=false ./...
         echo "golangci-lint finished."
     fi
-
-    # go build
-    echo "Run go build..."
-    go build ./...
-    echo "go build finished."
 fi

@@ -26,6 +26,10 @@ var (
 
 	ErrIndexNotFound = New("index file not found")
 
+	ErrDimensionLimitExceed = func(current, limit int) error {
+		return Errorf("supported dimension limit exceed:\trequired = %d,\tlimit = %d", current, limit)
+	}
+
 	ErrUnsupportedObjectType = New("unsupported ObjectType")
 
 	ErrUnsupportedDistanceType = New("unsupported DistanceType")
@@ -64,7 +68,10 @@ var (
 	}
 
 	ErrUUIDNotFound = func(id uint32) error {
-		return Errorf("ngt object id %d's metadata not found", id)
+		if id == 0 {
+			return Errorf("ngt object uuid not found", id)
+		}
+		return Errorf("ngt object uuid %d's metadata not found", id)
 	}
 
 	ErrObjectIDNotFound = func(uuid string) error {

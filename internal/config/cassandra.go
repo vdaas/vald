@@ -17,6 +17,12 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+import (
+	"github.com/vdaas/vald/internal/db/nosql/cassandra"
+	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/tls"
+)
+
 type Cassandra struct {
 	Hosts          []string `json:"hosts" yaml:"hosts"`
 	CQLVersion     string   `json:"cql_version" yaml:"cql_version"`
@@ -31,6 +37,7 @@ type Cassandra struct {
 	Username string `json:"username" yaml:"username"`
 	Password string `json:"password" yaml:"password"`
 
+	PoolConfig         *PoolConfig         `json:"pool_config" yaml:"pool_config"`
 	RetryPolicy        *RetryPolicy        `json:"retry_policy" yaml:"retry_policy"`
 	ReconnectionPolicy *ReconnectionPolicy `json:"reconnection_policy" yaml:"reconnection_policy"`
 
@@ -39,6 +46,7 @@ type Cassandra struct {
 	MaxRoutingKeyInfo        int    `json:"max_routing_key_info" yaml:"max_routing_key_info"`
 	PageSize                 int    `json:"page_size" yaml:"page_size"`
 	TLS                      *TLS   `json:"tls" yaml:"tls"`
+	TCP                      *TCP   `json:"tcp" yaml:"tcp"`
 	EnableHostVerification   bool   `json:"enable_host_verification" yaml:"enable_host_verification"`
 	DefaultTimestamp         bool   `json:"default_timestamp" yaml:"default_timestamp"`
 	ReconnectInterval        string `json:"reconnect_interval" yaml:"reconnect_interval"`
@@ -58,6 +66,13 @@ type Cassandra struct {
 
 	// backup manager
 	MetaTable string `json:"meta_table" yaml:"meta_table"`
+}
+
+type PoolConfig struct {
+	DataCenter               string `json:"data_center" yaml:"data_center"`
+	DCAwareRouting           bool   `json:"dc_aware_routing" yaml:"dc_aware_routing"`
+	NonLocalReplicasFallback bool   `json:"non_local_replicas_fallback" yaml:"non_local_replicas_fallback"`
+	ShuffleReplicas          bool   `json:"shuffle_replicas" yaml:"shuffle_replicas"`
 }
 
 type RetryPolicy struct {
@@ -89,11 +104,19 @@ func (c *Cassandra) Bind() *Cassandra {
 	if c.ReconnectionPolicy != nil {
 		c.ReconnectionPolicy.InitialInterval = GetActualValue(c.ReconnectionPolicy.InitialInterval)
 	}
+	if c.PoolConfig != nil {
+		c.PoolConfig.DataCenter = GetActualValue(c.PoolConfig.DataCenter)
+	}
 	c.SocketKeepalive = GetActualValue(c.SocketKeepalive)
 	if c.TLS != nil {
 		c.TLS.Bind()
 	} else {
 		c.TLS = new(TLS)
+	}
+	if c.TCP != nil {
+		c.TCP.Bind()
+	} else {
+		c.TCP = new(TCP)
 	}
 	c.ReconnectInterval = GetActualValue(c.ReconnectInterval)
 	c.MaxWaitSchemaAgreement = GetActualValue(c.MaxWaitSchemaAgreement)
@@ -105,4 +128,83 @@ func (c *Cassandra) Bind() *Cassandra {
 	c.MetaTable = GetActualValue(c.MetaTable)
 
 	return c
+}
+
+func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
+	opts = []cassandra.Option{
+		cassandra.WithHosts(cfg.Hosts...),
+		cassandra.WithCQLVersion(cfg.CQLVersion),
+		cassandra.WithProtoVersion(cfg.ProtoVersion),
+		cassandra.WithTimeout(cfg.Timeout),
+		cassandra.WithConnectTimeout(cfg.ConnectTimeout),
+		cassandra.WithPort(cfg.Port),
+		cassandra.WithKeyspace(cfg.Keyspace),
+		cassandra.WithNumConns(cfg.NumConns),
+		cassandra.WithConsistency(cfg.Consistency),
+		cassandra.WithUsername(cfg.Username),
+		cassandra.WithPassword(cfg.Password),
+		cassandra.WithRetryPolicyNumRetries(cfg.RetryPolicy.NumRetries),
+		cassandra.WithRetryPolicyMinDuration(cfg.RetryPolicy.MinDuration),
+		cassandra.WithRetryPolicyMaxDuration(cfg.RetryPolicy.MaxDuration),
+		cassandra.WithReconnectionPolicyMaxRetries(cfg.ReconnectionPolicy.MaxRetries),
+		cassandra.WithReconnectionPolicyInitialInterval(cfg.ReconnectionPolicy.InitialInterval),
+		cassandra.WithSocketKeepalive(cfg.SocketKeepalive),
+		cassandra.WithMaxPreparedStmts(cfg.MaxPreparedStmts),
+		cassandra.WithMaxRoutingKeyInfo(cfg.MaxRoutingKeyInfo),
+		cassandra.WithPageSize(cfg.PageSize),
+		cassandra.WithEnableHostVerification(cfg.EnableHostVerification),
+		cassandra.WithDefaultTimestamp(cfg.DefaultTimestamp),
+		cassandra.WithReconnectInterval(cfg.ReconnectInterval),
+		cassandra.WithMaxWaitSchemaAgreement(cfg.MaxWaitSchemaAgreement),
+		cassandra.WithIgnorePeerAddr(cfg.IgnorePeerAddr),
+		cassandra.WithDisableInitialHostLookup(cfg.DisableInitialHostLookup),
+		cassandra.WithDisableNodeStatusEvents(cfg.DisableNodeStatusEvents),
+		cassandra.WithDisableTopologyEvents(cfg.DisableTopologyEvents),
+		cassandra.WithDisableSkipMetadata(cfg.DisableSkipMetadata),
+		cassandra.WithDefaultIdempotence(cfg.DefaultIdempotence),
+		cassandra.WithWriteCoalesceWaitTime(cfg.WriteCoalesceWaitTime),
+		cassandra.WithKVTable(cfg.KVTable),
+		cassandra.WithVKTable(cfg.VKTable),
+	}
+
+	if cfg.PoolConfig != nil {
+		opts = append(opts, cassandra.WithDC(cfg.PoolConfig.DataCenter))
+		if cfg.PoolConfig.DCAwareRouting {
+			opts = append(opts, cassandra.WithEnableDCAwareRouting())
+		}
+		if cfg.PoolConfig.NonLocalReplicasFallback {
+			opts = append(opts, cassandra.WithEnableNonLocalReplicasFallback())
+		}
+		if cfg.PoolConfig.ShuffleReplicas {
+			opts = append(opts, cassandra.WithEnableShuffleReplicas())
+		}
+	}
+
+	if cfg.TCP != nil {
+		opts = append(opts,
+			cassandra.WithDialer(
+				tcp.NewDialer(cfg.TCP.Opts()...),
+			),
+		)
+	}
+
+	if cfg.TLS != nil && cfg.TLS.Enabled {
+		tcfg, err := tls.New(
+			tls.WithCert(cfg.TLS.Cert),
+			tls.WithKey(cfg.TLS.Key),
+			tls.WithCa(cfg.TLS.CA),
+		)
+		if err != nil {
+			return opts, err
+		}
+
+		opts = append(
+			opts,
+			cassandra.WithTLS(tcfg),
+			cassandra.WithTLSCertPath(cfg.TLS.Cert),
+			cassandra.WithTLSKeyPath(cfg.TLS.Key),
+			cassandra.WithTLSCAPath(cfg.TLS.CA),
+		)
+	}
+	return opts, nil
 }

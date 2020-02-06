@@ -30,4 +30,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 RUN make ngt/install
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib
+RUN make tensorflow/install

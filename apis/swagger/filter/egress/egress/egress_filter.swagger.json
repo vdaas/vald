@@ -72,19 +72,5 @@
         }
       }
     }
-  },
-  "x-stream-definitions": {
-    "ObjectDistance": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "$ref": "#/definitions/ObjectDistance"
-        },
-        "error": {
-          "$ref": "#/definitions/runtimeStreamError"
-        }
-      },
-      "title": "Stream result of ObjectDistance"
-    }
   }
 }
