@@ -20,11 +20,17 @@ package collector
 import (
 	"context"
 	"runtime"
+	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/safety"
+)
+
+var (
+	instance *collector
+	once     sync.Once
 )
 
 type Collector interface {
@@ -51,16 +57,21 @@ func New(opts ...CollectorOption) (Collector, error) {
 
 	co.eg = errgroup.Get()
 
+	once.Do(func() {
+		instance = co
+	})
+
 	return co, nil
 }
 
-func (c *collector) PreStart(ctx context.Context) error {
-	views := make([]*metrics.View, 0, len(c.metrics))
-	for _, metric := range c.metrics {
-		views = append(views, metric.View()...)
-	}
+func Register(ms ...metrics.Metric) error {
+	instance.metrics = append(instance.metrics, ms...)
 
-	return metrics.RegisterView(views...)
+	return registerView(ms...)
+}
+
+func (c *collector) PreStart(ctx context.Context) error {
+	return registerView(c.metrics...)
 }
 
 func (c *collector) Start(ctx context.Context) <-chan error {
@@ -104,4 +115,13 @@ func (c *collector) collect(ctx context.Context) (err error) {
 
 	metrics.Record(ctx, measurements...)
 	return nil
+}
+
+func registerView(ms ...metrics.Metric) error {
+	views := make([]*metrics.View, 0, len(ms))
+	for _, metric := range ms {
+		views = append(views, metric.View()...)
+	}
+
+	return metrics.RegisterView(views...)
 }
