@@ -19,8 +19,6 @@ package errors
 
 import "time"
 
-// "github.com/pkg/errors"
-
 var (
 	// HTTP
 

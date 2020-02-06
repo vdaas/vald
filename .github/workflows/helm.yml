@@ -1,0 +1,76 @@
+name: 'Update Helm charts'
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'vald/**'
+
+jobs:
+  update-k8s-manifest:
+    name: Update k8s manifest
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - uses: azure/setup-helm@v1
+      - name: Helm version
+        run: |
+          helm version
+      - name: Update k8s
+        run: |
+          git checkout master
+          make k8s/manifest/update
+          make license
+      - name: Push to master
+        run: |
+          git config --global user.name "vdaas-ci"
+          git config --global user.email "ci@vdaas.org"
+
+          git add k8s
+          git commit --signoff -m ":robot: Automatically update k8s manifests"
+
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+  update-helm-chart:
+    name: Update Helm chart
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - uses: azure/setup-helm@v1
+      - name: Helm version
+        run: |
+          helm version
+      - name: Update k8s
+        run: |
+          make helm/package/vald
+          make helm/repo/index/create
+      - name: Push to gh-pages
+        run: |
+          git checkout gh-pages
+          mv -f index.yaml charts/index.yaml
+          mv -f vald-0.1.0.tgz charts/vald-0.1.0.tgz
+
+          git config --global user.name "vdaas-ci"
+          git config --global user.email "ci@vdaas.org"
+
+          git add charts
+          git commit --signoff -m ":robot: Automatically update Helm charts"
+
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin gh-pages
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}

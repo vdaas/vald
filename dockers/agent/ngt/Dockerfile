@@ -33,6 +33,9 @@ COPY pkg/${PKG} .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 COPY cmd/${PKG} .
 
+ENV CFLAGS "-mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl"
+ENV CXXFLAGS ${CFLAGS}
+
 WORKDIR /tmp
 COPY versions/NGT_VERSION .
 RUN export NGT_VERSION="$(cat NGT_VERSION)" \
@@ -52,6 +55,7 @@ RUN GO_VERSION="$(cat GO_VERSION)" \
     && VALD_VERSION="$(cat VALD_VERSION)" \
     && NGT_VERSION="$(cat NGT_VERSION)" \
     && GIT_COMMIT="$(git rev-list -1 HEAD)" \
+    && CPU_INFO_FLAGS="$(cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1)" \
     && GOOS="$(go env GOOS)" \
     && GOARCH="$(go env GOARCH)" \
     && CGO_ENABLED=1 \
@@ -68,7 +72,8 @@ RUN GO_VERSION="$(cat GO_VERSION)" \
     -X 'github.com/${ORG}/${REPO}/internal/info.GoOS=${GOOS}' \
     -X 'github.com/${ORG}/${REPO}/internal/info.GoArch=${GOARCH}' \
     -X 'github.com/${ORG}/${REPO}/internal/info.CGOEnabled=${CGO_ENABLED}' \
-    -X 'github.com/${ORG}/${REPO}/internal/info.NGTVersion=${NGT_VERSION}'" \
+    -X 'github.com/${ORG}/${REPO}/internal/info.NGTVersion=${NGT_VERSION}' \
+    -X 'github.com/${ORG}/${REPO}/internal/info.BuildCPUInfoFlags=${CPU_INFO_FLAGS}'" \
     -a \
     -tags "cgo netgo" \
     -trimpath \

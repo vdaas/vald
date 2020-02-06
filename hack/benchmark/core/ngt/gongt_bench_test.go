@@ -42,7 +42,7 @@ var (
 )
 
 func init() {
-	log.Init(log.DefaultGlg())
+	log.Init()
 
 	flag.StringVar(&datasetVar, "dataset", "", "available dataset(choice with comma)")
 }
@@ -72,7 +72,7 @@ func BenchmarkGoNGTSequential(b *testing.B) {
 			defer n.Close()
 
 			bb.Run("Insert", func(sb *testing.B) {
-				dataset := d.Train()
+				dataset := d.TrainAsFloat64()
 
 				sb.ReportAllocs()
 				sb.ResetTimer()
@@ -94,7 +94,7 @@ func BenchmarkGoNGTSequential(b *testing.B) {
 			})
 
 			bb.Run("Search", func(sb *testing.B) {
-				dataset := d.Query()
+				dataset := d.QueryAsFloat64()
 
 				sb.ReportAllocs()
 				sb.ResetTimer()
@@ -127,7 +127,7 @@ func BenchmarkGoNGTParallel(b *testing.B) {
 			defer n.Close()
 
 			bb.Run("Insert", func(sb *testing.B) {
-				dataset := d.Train()
+				dataset := d.TrainAsFloat64()
 				sb.ReportAllocs()
 				sb.ResetTimer()
 				sb.StartTimer()
@@ -152,7 +152,7 @@ func BenchmarkGoNGTParallel(b *testing.B) {
 			})
 
 			bb.Run("Search", func(sb *testing.B) {
-				dataset := d.Query()
+				dataset := d.QueryAsFloat64()
 				sb.ReportAllocs()
 				sb.ResetTimer()
 				sb.StartTimer()
