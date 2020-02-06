@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/pkg/agent/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/ngt/service"
 )
@@ -50,6 +51,8 @@ func New(opts ...Option) Server {
 }
 
 func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *payload.Object_ID, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.Exists")
+	defer span.End()
 	uuid := uid.GetId()
 	oid, ok := s.ngt.Exists(uuid)
 	if !ok {
@@ -63,6 +66,8 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 }
 
 func (s *server) Search(ctx context.Context, req *payload.Search_Request) (*payload.Search_Response, error) {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.Search")
+	defer span.End()
 	return toSearchResponse(
 		s.ngt.Search(
 			req.GetVector(),
@@ -72,6 +77,8 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (*payl
 }
 
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_Response, error) {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.SearchByID")
+	defer span.End()
 	return toSearchResponse(
 		s.ngt.SearchByID(
 			req.GetId(),
@@ -100,6 +107,8 @@ func (s *server) StreamSearch(stream agent.Agent_StreamSearchServer) error {
 	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Search_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
+			ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.StreamSearch")
+			defer span.End()
 			return s.Search(ctx, data.(*payload.Search_Request))
 		})
 }
@@ -108,11 +117,15 @@ func (s *server) StreamSearchByID(stream agent.Agent_StreamSearchByIDServer) err
 	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Search_IDRequest) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
+			ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.StreamSearchByID")
+			defer span.End()
 			return s.SearchByID(ctx, data.(*payload.Search_IDRequest))
 		})
 }
 
 func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (res *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.Insert")
+	defer span.End()
 	err = s.ngt.Insert(vec.GetId(), vec.GetVector())
 	if err != nil {
 		log.Errorf("[Insert]\tUnknown error\t%+v", err)
@@ -125,11 +138,15 @@ func (s *server) StreamInsert(stream agent.Agent_StreamInsertServer) error {
 	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_Vector) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
+			ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.StreamInsert")
+			defer span.End()
 			return s.Insert(ctx, data.(*payload.Object_Vector))
 		})
 }
 
 func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.MultiInsert")
+	defer span.End()
 	vmap := make(map[string][]float32, len(vecs.GetVectors()))
 	for _, vec := range vecs.GetVectors() {
 		vmap[vec.GetId()] = vec.GetVector()
@@ -143,6 +160,8 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 }
 
 func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.Update")
+	defer span.End()
 	res = new(payload.Empty)
 	err = s.ngt.Update(vec.GetId(), vec.GetVector())
 	if err != nil {
@@ -156,11 +175,15 @@ func (s *server) StreamUpdate(stream agent.Agent_StreamUpdateServer) error {
 	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_Vector) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
+			ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.StreamUpdate")
+			defer span.End()
 			return s.Update(ctx, data.(*payload.Object_Vector))
 		})
 }
 
 func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.MultiUpdate")
+	defer span.End()
 	res = new(payload.Empty)
 
 	vmap := make(map[string][]float32, len(vecs.GetVectors()))
@@ -177,6 +200,8 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 }
 
 func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (res *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.Remove")
+	defer span.End()
 	res = new(payload.Empty)
 	uuid := id.GetId()
 	err = s.ngt.Delete(uuid)
@@ -191,11 +216,15 @@ func (s *server) StreamRemove(stream agent.Agent_StreamRemoveServer) error {
 	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_ID) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
+			ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.StreamRemove")
+			defer span.End()
 			return s.Remove(ctx, data.(*payload.Object_ID))
 		})
 }
 
 func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.MultiRemove")
+	defer span.End()
 	res = new(payload.Empty)
 	uuids := ids.GetIds()
 	err = s.ngt.DeleteMultiple(uuids...)
@@ -207,6 +236,8 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res 
 }
 
 func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (res *payload.Object_Vector, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.GetObject")
+	defer span.End()
 	uuid := id.GetId()
 	vec, err := s.ngt.GetObject(uuid)
 	if err != nil {
@@ -223,11 +254,15 @@ func (s *server) StreamGetObject(stream agent.Agent_StreamGetObjectServer) error
 	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_ID) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
+			ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.StreamGetObject")
+			defer span.End()
 			return s.GetObject(ctx, data.(*payload.Object_ID))
 		})
 }
 
 func (s *server) CreateIndex(ctx context.Context, c *payload.Controll_CreateIndexRequest) (res *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.CreateIndex")
+	defer span.End()
 	res = new(payload.Empty)
 	err = s.ngt.CreateIndex(c.GetPoolSize())
 	if err != nil {
@@ -248,6 +283,8 @@ func (s *server) SaveIndex(context.Context, *payload.Empty) (res *payload.Empty,
 }
 
 func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Controll_CreateIndexRequest) (res *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.CreateAndSaveIndex")
+	defer span.End()
 	res = new(payload.Empty)
 	err = s.ngt.CreateAndSaveIndex(c.GetPoolSize())
 	if err != nil {
@@ -258,5 +295,7 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Controll_Cre
 }
 
 func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.Info_Index, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.IndexInfo")
+	defer span.End()
 	return nil, nil
 }

@@ -19,6 +19,7 @@ package prometheus
 
 import (
 	"context"
+	"net/http"
 	"sync"
 
 	"contrib.go.opencensus.io/exporter/prometheus"
@@ -83,4 +84,10 @@ func (e *exporter) Exporter() *prometheus.Exporter {
 
 func Exporter() *prometheus.Exporter {
 	return instance.exporter
+}
+
+func NewHTTPHandler() http.Handler {
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", instance.exporter)
+	return mux
 }

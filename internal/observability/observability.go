@@ -25,6 +25,8 @@ import (
 	"github.com/vdaas/vald/internal/observability/collector"
 	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
 	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
+	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/observability/metrics/grpc"
 	"github.com/vdaas/vald/internal/observability/metrics/mem"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime"
 	"github.com/vdaas/vald/internal/safety"
@@ -94,6 +96,10 @@ func New(cfg *config.Observability) (Observability, error) {
 }
 
 func (o *observability) PreStart(ctx context.Context) (err error) {
+	err = metrics.RegisterView(grpc.DefaultServerViews...)
+	if err != nil {
+		return err
+	}
 	err = o.collector.PreStart(ctx)
 	if err != nil {
 		return err

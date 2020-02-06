@@ -165,7 +165,7 @@ func (s *srvs) setupMetrics(cfg *tls.Config) ([]servers.Option, error) {
 		case "prof", "pprof", "profile", "profiler":
 			hopt = server.WithHTTPHandler(metrics.NewPProfHandler())
 		case "prom", "prometheus":
-			hopt = server.WithHTTPHandler(prometheus.Exporter())
+			hopt = server.WithHTTPHandler(prometheus.NewHTTPHandler())
 		default:
 			continue
 		}

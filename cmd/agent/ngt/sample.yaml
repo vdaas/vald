@@ -86,8 +86,8 @@ server_config:
       read_timeout: 1s
       write_timeout: 1s
   - name: prometheus
-    host: 127.0.0.1
-    port: 6061
+    host: 0.0.0.0
+    port: 8000
     mode: REST
     probe_wait_time: 3s
     http:
