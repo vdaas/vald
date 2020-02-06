@@ -70,28 +70,36 @@ var (
 
 func WithCert(cert string) Option {
 	return func(c *credentials) error {
-		c.cert = cert
+		if len(cert) != 0 {
+			c.cert = cert
+		}
 		return nil
 	}
 }
 
 func WithKey(key string) Option {
 	return func(c *credentials) error {
-		c.key = key
+		if len(key) != 0 {
+			c.key = key
+		}
 		return nil
 	}
 }
 
 func WithCa(ca string) Option {
 	return func(c *credentials) error {
-		c.ca = ca
+		if len(ca) != 0 {
+			c.ca = ca
+		}
 		return nil
 	}
 }
 
 func WithTLSConfig(cfg *tls.Config) Option {
 	return func(c *credentials) error {
-		c.cfg = cfg
+		if cfg != nil {
+			c.cfg = cfg
+		}
 		return nil
 	}
 }
