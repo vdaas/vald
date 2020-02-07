@@ -76,6 +76,10 @@ func (c *compressor) PreStart(ctx context.Context) (err error) {
 		compressor, err = compress.NewZstd(
 			compress.WithZstdCompressionLevel(c.compressionLevel),
 		)
+	case config.DDZSTD:
+		compressor, err = compress.NewDDZstd(
+			compress.WithDDZstdCompressionLevel(c.compressionLevel),
+		)
 	default:
 		return errors.ErrCompressorNameNotFound(c.algorithm)
 	}
