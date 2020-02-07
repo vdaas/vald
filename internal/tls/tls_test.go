@@ -22,7 +22,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
-	"strings"
+	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -300,74 +300,114 @@ func TestNewClientConfig(t *testing.T) {
 }
 
 func TestNewX509CertPool(t *testing.T) {
-	type args struct {
-		path string
+	type test struct {
+		name      string
+		path      string
+		checkFunc func(*x509.CertPool, error) error
 	}
 
-	tests := []struct {
-		name      string
-		args      args
-		want      *x509.CertPool
-		checkFunc func(*x509.CertPool, *x509.CertPool) error
-		wantErr   bool
-	}{
-		// TODO: Add test cases.
-		{
-			name: "Check err if file is not exists",
-			args: args{
-				path: "",
-			},
-			want: &x509.CertPool{},
-			checkFunc: func(*x509.CertPool, *x509.CertPool) error {
-				return nil
-			},
-			wantErr: true,
-		},
-		{
-			name: "Check Append CA is correct",
-			args: args{
-				path: "./testdata/dummyCa.pem",
-			},
-			want: func() *x509.CertPool {
-				wantPool := x509.NewCertPool()
-				c, err := ioutil.ReadFile("./testdata/dummyCa.pem")
+	tests := []test{
+		func() test {
+			path := "./testdata/dummyServer.crt"
+
+			wantFn := func() (got *x509.CertPool, err error) {
+				pool := x509.NewCertPool()
+				b, err := ioutil.ReadFile("./testdata/dummyServer.crt")
 				if err != nil {
-					panic(err)
+					return nil, err
 				}
-				if !wantPool.AppendCertsFromPEM(c) {
-					panic(errors.New("Error appending certs from PEM"))
+
+				if !pool.AppendCertsFromPEM(b) {
+					return nil, errors.New("faild to add cert")
 				}
-				return wantPool
-			}(),
-			checkFunc: func(want *x509.CertPool, got *x509.CertPool) error {
-				for _, wantCert := range want.Subjects() {
-					exists := false
-					for _, gotCert := range got.Subjects() {
-						if strings.EqualFold(string(wantCert), string(gotCert)) {
-							exists = true
-						}
+
+				return pool, nil
+			}
+
+			return test{
+				name: "returns pool and nil when the pool exists and adds the cert file into pool",
+				path: path,
+				checkFunc: func(got *x509.CertPool, err error) error {
+					if err != nil {
+						return errors.Errorf("err is not nil. err: %v", err)
 					}
-					if !exists {
-						return fmt.Errorf("Error\twant\t%s\t not found", string(wantCert))
+
+					if got == nil {
+						return errors.New("got is nil")
 					}
+
+					want, err := wantFn()
+					if err != nil {
+						return errors.Errorf("faild to create want object. err:", err)
+					}
+
+					if len(got.Subjects()) == 0 {
+						return errors.New("cert files are empty")
+					}
+
+					if got, want := got.Subjects()[len(got.Subjects())-1], want.Subjects()[0]; !reflect.DeepEqual(got, want) {
+						return errors.Errorf("not equals. want: %v, got: %v", want, got)
+					}
+
+					return nil
+				},
+			}
+		}(),
+
+		{
+			name: "returns nil and error when contents of path is invalid",
+			path: "./testdata/invalid.crt",
+			checkFunc: func(got *x509.CertPool, err error) error {
+				if err == nil {
+					return errors.New("err is ")
+				} else if !errors.Is(err, errors.ErrCertificationFailed) {
+					return errors.Errorf("err not equals. want: %v, but got: %v", errors.ErrCertificationFailed, err)
+				}
+
+				if got == nil {
+					return errors.Errorf("got is not nil: %v", got)
+				}
+
+				return nil
+			},
+		},
+
+		{
+			name: "returns nil and error when path dose not exist",
+			path: "not_exist",
+			checkFunc: func(got *x509.CertPool, err error) error {
+				if err == nil {
+					return errors.New("err is nil")
+				}
+
+				if got != nil {
+					return errors.Errorf("got is not nil: %v", got)
 				}
 				return nil
 			},
-			wantErr: false,
+		},
+
+		{
+			name: "returns nil and error when path is empty",
+			checkFunc: func(got *x509.CertPool, err error) error {
+				if err == nil {
+					return errors.New("err is nil")
+				}
+
+				if got != nil {
+					return errors.Errorf("got is not nil: %v", got)
+				}
+
+				return nil
+			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewX509CertPool(tt.args.path)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("NewX509CertPool() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if tt.checkFunc != nil {
-				err = tt.checkFunc(tt.want, got)
-				if err != nil {
-					t.Errorf("TestNewX509CertPool error = %s", err)
-				}
+			got, err := NewX509CertPool(tt.path)
+			if err = tt.checkFunc(got, err); err != nil {
+				t.Error(err)
 			}
 		})
 	}
