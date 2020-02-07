@@ -29,8 +29,9 @@ import (
 )
 
 var (
-	instance *collector
-	once     sync.Once
+	initMetrics []metrics.Metric
+	instance    *collector
+	once        sync.Once
 )
 
 type Collector interface {
@@ -61,13 +62,19 @@ func New(opts ...CollectorOption) (Collector, error) {
 		instance = co
 	})
 
+	co.metrics = append(co.metrics, initMetrics...)
+
 	return co, nil
 }
 
 func Register(ms ...metrics.Metric) error {
-	instance.metrics = append(instance.metrics, ms...)
+	if instance != nil {
+		instance.metrics = append(instance.metrics, ms...)
+		return registerView(ms...)
+	}
 
-	return registerView(ms...)
+	initMetrics = append(initMetrics, ms...)
+	return nil
 }
 
 func (c *collector) PreStart(ctx context.Context) error {

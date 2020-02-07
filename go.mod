@@ -20,9 +20,9 @@ replace (
 
 require (
 	bou.ke/monkey v1.0.2 // indirect
-	github.com/DataDog/zstd v0.0.0-00010101000000-000000000000
 	contrib.go.opencensus.io/exporter/jaeger v0.2.0
 	contrib.go.opencensus.io/exporter/prometheus v0.1.0
+	github.com/DataDog/zstd v0.0.0-00010101000000-000000000000
 	github.com/certifi/gocertifi v0.0.0-20200104152315-a6d78f326758 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/cockroachdb/errors v1.2.4
