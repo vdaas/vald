@@ -271,6 +271,9 @@ gateway:
       agent_client: {}
     meta:
       client: {}
+      enable_cache: true
+      cache_expiration: "30m"
+      expired_cache_check_duration: "3m"
     backup:
       client: {}
 

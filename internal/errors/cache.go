@@ -14,49 +14,9 @@
 // limitations under the License.
 //
 
-package loggertype
+// Package errors provides error types and function
+package errors
 
-import "strings"
-
-type LoggerType uint8
-
-const (
-	Unknown LoggerType = iota
-	GLG
-	ZAP
-	ZEROLOG
-	LOGRUS
-	KLOG
+var (
+	ErrInvalidCacheMode = New("invalid cache mode")
 )
-
-func (m LoggerType) String() string {
-	switch m {
-	case GLG:
-		return "glg"
-	case ZAP:
-		return "zap"
-	case ZEROLOG:
-		return "zerolog"
-	case LOGRUS:
-		return "logrus"
-	case KLOG:
-		return "klog"
-	}
-	return "unknown"
-}
-
-func Atot(str string) LoggerType {
-	switch strings.ToLower(str) {
-	case "glg":
-		return GLG
-	case "zap":
-		return ZAP
-	case "zerolog":
-		return ZEROLOG
-	case "logrus":
-		return LOGRUS
-	case "klog":
-		return KLOG
-	}
-	return Unknown
-}

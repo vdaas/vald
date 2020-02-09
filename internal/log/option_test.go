@@ -22,8 +22,8 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/level"
-	loggertype "github.com/vdaas/vald/internal/log/logger_type"
 	"github.com/vdaas/vald/internal/log/mock"
+	mode "github.com/vdaas/vald/internal/log/mode"
 )
 
 func TestWithLogger(t *testing.T) {
@@ -85,7 +85,7 @@ func TestWithLogger(t *testing.T) {
 	}
 }
 
-func TestWithLoggerType(t *testing.T) {
+func TestWithMode(t *testing.T) {
 	type test struct {
 		name      string
 		str       string
@@ -95,12 +95,12 @@ func TestWithLoggerType(t *testing.T) {
 	tests := []test{
 		{
 			name: "set success when str is not empty",
-			str:  loggertype.GLG.String(),
+			str:  mode.GLG.String(),
 			checkFunc: func(opt Option) error {
 				option := new(option)
 				opt(option)
 
-				if option.loggerType != loggertype.GLG {
+				if option.logMode != mode.GLG {
 					return errors.New("invalid params was set")
 				}
 				return nil
@@ -111,11 +111,11 @@ func TestWithLoggerType(t *testing.T) {
 			name: "returns nothing when str is empty",
 			checkFunc: func(opt Option) error {
 				option := &option{
-					loggerType: loggertype.ZAP,
+					logMode: mode.ZAP,
 				}
 				opt(option)
 
-				if option.loggerType != loggertype.ZAP {
+				if option.logMode != mode.ZAP {
 					return errors.New("invalid params was set")
 				}
 				return nil
@@ -125,7 +125,7 @@ func TestWithLoggerType(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithLoggerType(tt.str)
+			opt := WithMode(tt.str)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}

@@ -22,6 +22,7 @@ import (
 
 	gmeta "github.com/vdaas/vald/apis/grpc/meta"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 )
@@ -41,9 +42,18 @@ type Meta interface {
 }
 
 type meta struct {
-	addr   string
-	client grpc.Client
+	addr                string
+	client              grpc.Client
+	cache               cache.Cache
+	enableCache         bool
+	expireCheckDuration string
+	expireDuration      string
 }
+
+const (
+	uuidCacheKeyPref = "uuid-"
+	metaCacheKeyPref = "meta-"
+)
 
 func NewMeta(opts ...MetaOption) (mi Meta, err error) {
 	m := new(meta)
@@ -52,15 +62,30 @@ func NewMeta(opts ...MetaOption) (mi Meta, err error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
+	if m.enableCache {
+		if m.cache == nil {
+			m.cache, err = cache.New(
+				cache.WithExpireDuration(m.expireDuration),
+				cache.WithExpireCheckDuration(m.expireCheckDuration),
+			)
+		}
+	}
 
 	return m, nil
 }
 
 func (m *meta) Start(ctx context.Context) (<-chan error, error) {
+	m.cache.Start(ctx)
 	return m.client.StartConnectionMonitor(ctx)
 }
 
 func (m *meta) GetMeta(ctx context.Context, uuid string) (v string, err error) {
+	if m.enableCache {
+		data, ok := m.cache.Get(metaCacheKeyPref + uuid)
+		if ok {
+			return data.(string), nil
+		}
+	}
 	val, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		val, err := gmeta.NewMetaClient(conn).GetMeta(ctx, &payload.Meta_Key{
 			Key: uuid,
@@ -73,10 +98,31 @@ func (m *meta) GetMeta(ctx context.Context, uuid string) (v string, err error) {
 	if err != nil {
 		return "", err
 	}
-	return val.(string), nil
+	v = val.(string)
+
+	if m.enableCache {
+		m.cache.Set(metaCacheKeyPref+uuid, v)
+		m.cache.Set(uuidCacheKeyPref+v, uuid)
+	}
+	return v, nil
 }
 
 func (m *meta) GetMetas(ctx context.Context, uuids ...string) ([]string, error) {
+	if m.enableCache {
+		metas, ok := func() (metas []string, ok bool) {
+			for _, uuid := range uuids {
+				data, ok := m.cache.Get(metaCacheKeyPref + uuid)
+				if !ok {
+					return nil, false
+				}
+				metas = append(metas, data.(string))
+			}
+			return metas, true
+		}()
+		if ok {
+			return metas, nil
+		}
+	}
 	vals, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		vals, err := gmeta.NewMetaClient(conn).GetMetas(ctx, &payload.Meta_Keys{
 			Keys: uuids,
@@ -89,13 +135,26 @@ func (m *meta) GetMetas(ctx context.Context, uuids ...string) ([]string, error) 
 	if vals != nil {
 		vs, ok := vals.([]string)
 		if ok {
+			if m.enableCache {
+				for i, v := range vs {
+					uuid := uuids[i]
+					m.cache.Set(metaCacheKeyPref+uuid, v)
+					m.cache.Set(uuidCacheKeyPref+v, uuid)
+				}
+			}
 			return vs, err
 		}
 	}
 	return nil, err
 }
 
-func (m *meta) GetUUID(ctx context.Context, meta string) (string, error) {
+func (m *meta) GetUUID(ctx context.Context, meta string) (k string, err error) {
+	if m.enableCache {
+		data, ok := m.cache.Get(uuidCacheKeyPref + meta)
+		if ok {
+			return data.(string), nil
+		}
+	}
 	key, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		key, err := gmeta.NewMetaClient(conn).GetMetaInverse(ctx, &payload.Meta_Val{
 			Val: meta,
@@ -108,10 +167,31 @@ func (m *meta) GetUUID(ctx context.Context, meta string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return key.(string), nil
+
+	k = key.(string)
+	if m.enableCache {
+		m.cache.Set(uuidCacheKeyPref+meta, k)
+		m.cache.Set(metaCacheKeyPref+k, meta)
+	}
+	return k, nil
 }
 
 func (m *meta) GetUUIDs(ctx context.Context, metas ...string) ([]string, error) {
+	if m.enableCache {
+		uuids, ok := func() (uuids []string, ok bool) {
+			for _, meta := range metas {
+				data, ok := m.cache.Get(uuidCacheKeyPref + meta)
+				if !ok {
+					return nil, false
+				}
+				uuids = append(uuids, data.(string))
+			}
+			return uuids, true
+		}()
+		if ok {
+			return uuids, nil
+		}
+	}
 	keys, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		keys, err := gmeta.NewMetaClient(conn).GetMetasInverse(ctx, &payload.Meta_Vals{
 			Vals: metas,
@@ -124,6 +204,13 @@ func (m *meta) GetUUIDs(ctx context.Context, metas ...string) ([]string, error) 
 	if keys != nil {
 		ks, ok := keys.([]string)
 		if ok {
+			if m.enableCache {
+				for i, k := range ks {
+					meta := metas[i]
+					m.cache.Set(uuidCacheKeyPref+meta, k)
+					m.cache.Set(metaCacheKeyPref+k, meta)
+				}
+			}
 			return ks, err
 		}
 	}
@@ -139,7 +226,15 @@ func (m *meta) SetUUIDandMeta(ctx context.Context, uuid, meta string) (err error
 
 		return nil, err
 	})
-	return
+	if err != nil {
+		return err
+	}
+
+	if m.enableCache {
+		m.cache.Set(uuidCacheKeyPref+meta, uuid)
+		m.cache.Set(metaCacheKeyPref+uuid, meta)
+	}
+	return nil
 }
 
 func (m *meta) SetUUIDandMetas(ctx context.Context, kvs map[string]string) (err error) {
@@ -157,10 +252,26 @@ func (m *meta) SetUUIDandMetas(ctx context.Context, kvs map[string]string) (err 
 
 		return nil, err
 	})
-	return
+	if err != nil {
+		return err
+	}
+
+	if m.enableCache {
+		for uuid, meta := range kvs {
+			m.cache.Set(uuidCacheKeyPref+meta, uuid)
+			m.cache.Set(metaCacheKeyPref+uuid, meta)
+		}
+	}
+	return nil
 }
 
 func (m *meta) DeleteMeta(ctx context.Context, uuid string) (v string, err error) {
+	if m.enableCache {
+		meta, ok := m.cache.GetAndDelete(metaCacheKeyPref + uuid)
+		if ok {
+			m.cache.Delete(uuidCacheKeyPref + meta.(string))
+		}
+	}
 	val, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		val, err := gmeta.NewMetaClient(conn).DeleteMeta(ctx, &payload.Meta_Key{
 			Key: uuid,
@@ -177,6 +288,14 @@ func (m *meta) DeleteMeta(ctx context.Context, uuid string) (v string, err error
 }
 
 func (m *meta) DeleteMetas(ctx context.Context, uuids ...string) ([]string, error) {
+	if m.enableCache {
+		for _, uuid := range uuids {
+			meta, ok := m.cache.GetAndDelete(metaCacheKeyPref + uuid)
+			if ok {
+				m.cache.Delete(uuidCacheKeyPref + meta.(string))
+			}
+		}
+	}
 	vals, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		vals, err := gmeta.NewMetaClient(conn).DeleteMetas(ctx, &payload.Meta_Keys{
 			Keys: uuids,
@@ -193,6 +312,12 @@ func (m *meta) DeleteMetas(ctx context.Context, uuids ...string) ([]string, erro
 }
 
 func (m *meta) DeleteUUID(ctx context.Context, meta string) (string, error) {
+	if m.enableCache {
+		uuid, ok := m.cache.GetAndDelete(uuidCacheKeyPref + meta)
+		if ok {
+			m.cache.Delete(metaCacheKeyPref + uuid.(string))
+		}
+	}
 	key, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		key, err := gmeta.NewMetaClient(conn).DeleteMetaInverse(ctx, &payload.Meta_Val{
 			Val: meta,
@@ -209,6 +334,14 @@ func (m *meta) DeleteUUID(ctx context.Context, meta string) (string, error) {
 }
 
 func (m *meta) DeleteUUIDs(ctx context.Context, metas ...string) ([]string, error) {
+	if m.enableCache {
+		for _, meta := range metas {
+			uuid, ok := m.cache.GetAndDelete(uuidCacheKeyPref + meta)
+			if ok {
+				m.cache.Delete(metaCacheKeyPref + uuid.(string))
+			}
+		}
+	}
 	keys, err := m.client.Do(ctx, m.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		keys, err := gmeta.NewMetaClient(conn).DeleteMetasInverse(ctx, &payload.Meta_Vals{
 			Vals: metas,

@@ -24,8 +24,8 @@ import (
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/glg"
 	"github.com/vdaas/vald/internal/log/level"
-	loggertype "github.com/vdaas/vald/internal/log/logger_type"
 	"github.com/vdaas/vald/internal/log/mock"
+	mode "github.com/vdaas/vald/internal/log/mode"
 )
 
 func TestInit(t *testing.T) {
@@ -93,9 +93,9 @@ func TestGetLogger(t *testing.T) {
 		{
 			name: "returns glg object when logger type is GLG",
 			o: &option{
-				loggerType: loggertype.GLG,
-				level:      level.DEBUG,
-				format:     format.JSON,
+				logMode: mode.GLG,
+				level:   level.DEBUG,
+				format:  format.JSON,
 			},
 			want: glg.New(
 				glg.WithLevel(level.DEBUG.String()),
@@ -109,8 +109,8 @@ func TestGetLogger(t *testing.T) {
 			return test{
 				name: "returns logger when logger type is Unknown",
 				o: &option{
-					loggerType: loggertype.Unknown,
-					logger:     logger,
+					logMode: mode.Unknown,
+					logger:  logger,
 				},
 				want: logger,
 			}

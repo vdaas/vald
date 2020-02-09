@@ -247,6 +247,9 @@ data:
             cert: /path/to/cert
             enabled: false
             key: /path/to/key
+        enable_cache: true
+        cache_expiration: 30m
+        expired_cache_check_duration: 3m
       backup:
         host: vald-manager-compressor.default.svc.cluster.local
         port: 8081

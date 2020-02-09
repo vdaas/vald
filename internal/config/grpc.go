@@ -160,11 +160,12 @@ func (g *GRPCClient) Opts() []grpc.Option {
 
 		if g.DialOption.Dialer != nil &&
 			len(g.DialOption.Dialer.Dialer.Timeout) != 0 {
-			opts = append(opts,
-				grpc.WithDialer(
-					tcp.NewDialer(g.DialOption.Dialer.Opts()...),
-				),
-			)
+			der, err := tcp.NewDialer(g.DialOption.Dialer.Opts()...)
+			if err == nil {
+				opts = append(opts,
+					grpc.WithDialer(der),
+				)
+			}
 		}
 
 		if g.DialOption.KeepAlive != nil {

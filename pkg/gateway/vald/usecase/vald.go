@@ -107,6 +107,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 				)...,
 			),
 		),
+		service.WithMetaCacheEnabled(cfg.Gateway.Meta.EnableCache),
+		service.WithMetaCacheExpireDuration(cfg.Gateway.Meta.CacheExpiration),
+		service.WithMetaCacheExpiredCheckDuration(cfg.Gateway.Meta.ExpiredCacheCheckDuration),
 	)
 	if err != nil {
 		return nil, err

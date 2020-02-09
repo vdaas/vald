@@ -20,7 +20,7 @@ import (
 	"sync"
 
 	"github.com/vdaas/vald/internal/log/glg"
-	loggertype "github.com/vdaas/vald/internal/log/logger_type"
+	mode "github.com/vdaas/vald/internal/log/mode"
 )
 
 type Logger interface {
@@ -52,8 +52,8 @@ func Init(opts ...Option) {
 }
 
 func getLogger(o *option) Logger {
-	switch o.loggerType {
-	case loggertype.GLG:
+	switch o.logMode {
+	case mode.GLG:
 		gopts := []glg.Option{
 			glg.WithLevel(o.level.String()),
 			glg.WithFormat(o.format.String()),

@@ -52,6 +52,9 @@ data:
         client:
           {{- $metaClient := dict "Values" .Values.gateway.gateway_config.meta.client "default" .Values.defaults.grpc.client }}
           {{- include "vald.grpc.client" $metaClient | nindent 10 }}
+        enable_cache: {{ .Values.gateway.gateway_config.meta.enable_cache }}
+        cache_expiration: {{ .Values.gateway.gateway_config.meta.cache_expiration }}
+        expired_cache_check_duration: {{ .Values.gateway.gateway_config.meta.expired_cache_check_duration }}
       backup:
         host: {{ .Values.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
         port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.compressor.server_config.servers.grpc.port }}

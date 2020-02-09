@@ -88,7 +88,7 @@ func Do(ctx context.Context, opts ...Option) error {
 
 	if lcfg := ccfg.Logging; lcfg != nil {
 		log.Init(
-			log.WithLoggerType(lcfg.Logger),
+			log.WithMode(lcfg.Logger),
 			log.WithLevel(lcfg.Level),
 			log.WithFormat(lcfg.Format),
 		)
