@@ -96,16 +96,16 @@ spec:
           env:
             null
           volumeMounts:
-          - name: vald-manager-compressor-config
-            mountPath: /etc/server/
+            - name: vald-manager-compressor-config
+              mountPath: /etc/server/
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
       volumes:
-      - configMap:
-          defaultMode: 420
+        - configMap:
+            defaultMode: 420
+            name: vald-manager-compressor-config
           name: vald-manager-compressor-config
-        name: vald-manager-compressor-config
 status:
