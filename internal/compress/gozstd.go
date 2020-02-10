@@ -19,21 +19,20 @@ package compress
 
 import (
 	"bytes"
-	"io"
 	"reflect"
 
-	"github.com/klauspost/compress/gzip"
+	"github.com/klauspost/compress/zstd"
 	"github.com/vdaas/vald/internal/errors"
 )
 
-type gzipCompressor struct {
-	gobc             Compressor
-	compressionLevel int
+type goZstdCompressor struct {
+	gobc     Compressor
+	eoptions []zstd.EOption
 }
 
-func NewGzip(opts ...GzipOption) (Compressor, error) {
-	c := new(gzipCompressor)
-	for _, opt := range append(defaultGzipOpts, opts...) {
+func NewGoZstd(opts ...GoZstdOption) (Compressor, error) {
+	c := new(goZstdCompressor)
+	for _, opt := range append(defaultGoZstdOpts, opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -42,24 +41,24 @@ func NewGzip(opts ...GzipOption) (Compressor, error) {
 	return c, nil
 }
 
-func (g *gzipCompressor) CompressVector(vector []float32) ([]byte, error) {
+func (z *goZstdCompressor) CompressVector(vector []float32) ([]byte, error) {
+	gob, err := z.gobc.CompressVector(vector)
+	if err != nil {
+		return nil, err
+	}
+
 	buf := new(bytes.Buffer)
-	gw, err := gzip.NewWriterLevel(buf, g.compressionLevel)
+	zw, err := zstd.NewWriter(buf, z.eoptions...)
 	if err != nil {
 		return nil, err
 	}
 
-	gob, err := g.gobc.CompressVector(vector)
+	_, err = zw.ReadFrom(bytes.NewReader(gob))
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = gw.Write(gob)
-	if err != nil {
-		return nil, err
-	}
-
-	err = gw.Close()
+	err = zw.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -67,19 +66,20 @@ func (g *gzipCompressor) CompressVector(vector []float32) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (g *gzipCompressor) DecompressVector(bs []byte) ([]float32, error) {
+func (z *goZstdCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	buf := new(bytes.Buffer)
-	gr, err := gzip.NewReader(bytes.NewBuffer(bs))
+	zr, err := zstd.NewReader(bytes.NewReader(bs))
+	if err != nil {
+		return nil, err
+	}
+	defer zr.Close()
+
+	_, err = zr.WriteTo(buf)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = io.Copy(buf, gr)
-	if err != nil {
-		return nil, err
-	}
-
-	vec, err := g.gobc.DecompressVector(buf.Bytes())
+	vec, err := z.gobc.DecompressVector(buf.Bytes())
 	if err != nil {
 		return nil, err
 	}
