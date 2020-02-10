@@ -454,9 +454,9 @@ initContainers
   env:
     {{- toYaml .env | nindent 4 }}
   {{- end }}
-  {{- if .volumes }}
-  volumes:
-    {{- toYaml .volumes | nindent 4 }}
+  {{- if .volumeMounts }}
+  volumeMounts:
+    {{- toYaml .volumeMounts | nindent 4 }}
   {{- end }}
 {{- else }}
 - {{- toYaml . | nindent 2 }}
