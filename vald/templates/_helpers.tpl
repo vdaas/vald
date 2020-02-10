@@ -412,9 +412,10 @@ initContainers
 */}}
 {{- define "vald.initContainers" -}}
 {{- range .initContainers }}
-{{- if eq .type "waitFor" }}
+{{- if .type }}
 - name: {{ .name }}
   image: {{ .image }}
+  {{- if eq .type "waitFor" }}
   command:
     - /bin/sh
     - -c
@@ -448,9 +449,14 @@ initContainers
         echo "waiting for {{ .target }} to be ready..."
         sleep {{ .sleepDuration }};
       done
+  {{- end }}
   {{- if .env }}
   env:
     {{- toYaml .env | nindent 4 }}
+  {{- end }}
+  {{- if .volumes }}
+  volumes:
+    {{- toYaml .volumes | nindent 4 }}
   {{- end }}
 {{- else }}
 - {{- toYaml . | nindent 2 }}
