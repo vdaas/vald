@@ -24,7 +24,7 @@ import (
 type ZstdOption func(c *zstdCompressor) error
 
 var (
-	defaultGoZstdOpts = []ZstdOption{
+	defaultZstdOpts = []ZstdOption{
 		WithZstdGob(),
 		WithZstdCompressionLevel(3),
 	}

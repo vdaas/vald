@@ -32,7 +32,7 @@ type zstdCompressor struct {
 
 func NewZstd(opts ...ZstdOption) (Compressor, error) {
 	c := new(zstdCompressor)
-	for _, opt := range append(defaultGoZstdOpts, opts...) {
+	for _, opt := range append(defaultZstdOpts, opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
