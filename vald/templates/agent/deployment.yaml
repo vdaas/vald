@@ -58,6 +58,9 @@ spec:
           volumeMounts:
             - name: {{ .Values.agent.name }}-config
               mountPath: /etc/server/
+            {{- if .Values.agent.volumeMounts }}
+            {{- toYaml .Values.agent.volumeMounts | nindent 12 }}
+            {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -68,5 +71,8 @@ spec:
           configMap:
             defaultMode: 420
             name: {{ .Values.agent.name }}-config
+        {{- if .Values.agent.volumes }}
+        {{- toYaml .Values.agent.volumes | nindent 8 }}
+        {{- end }}
 status:
 {{- end }}

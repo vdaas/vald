@@ -58,6 +58,9 @@ spec:
           volumeMounts:
             - name: {{ .Values.discoverer.name }}-config
               mountPath: /etc/server/
+            {{- if .Values.discoverer.volumeMounts }}
+            {{- toYaml .Values.discoverer.volumeMounts | nindent 12 }}
+            {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -70,5 +73,8 @@ spec:
           configMap:
             defaultMode: 420
             name: {{ .Values.discoverer.name }}-config
+        {{- if .Values.discoverer.volumes }}
+        {{- toYaml .Values.discoverer.volumes | nindent 8 }}
+        {{- end }}
 status:
 {{- end }}

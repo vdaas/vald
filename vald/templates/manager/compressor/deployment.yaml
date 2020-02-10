@@ -56,17 +56,23 @@ spec:
           env:
             {{- toYaml .Values.compressor.env | nindent 12 }}
           volumeMounts:
-          - name: {{ .Values.compressor.name }}-config
-            mountPath: /etc/server/
+            - name: {{ .Values.compressor.name }}-config
+              mountPath: /etc/server/
+            {{- if .Values.compressor.volumeMounts }}
+            {{- toYaml .Values.compressor.volumeMounts | nindent 12 }}
+            {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: {{ .Values.compressor.terminationGracePeriodSeconds }}
       volumes:
-      - configMap:
-          defaultMode: 420
+        - configMap:
+            defaultMode: 420
+            name: {{ .Values.compressor.name }}-config
           name: {{ .Values.compressor.name }}-config
-        name: {{ .Values.compressor.name }}-config
+        {{- if .Values.compressor.volumes }}
+        {{- toYaml .Values.compressor.volumes | nindent 8 }}
+        {{- end }}
 status:
 {{- end }}
