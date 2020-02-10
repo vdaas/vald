@@ -55,6 +55,9 @@ spec:
           volumeMounts:
             - name: {{ .Values.gateway.name }}-config
               mountPath: /etc/server/
+            {{- if .Values.gateway.volumeMounts }}
+            {{- toYaml .Values.gateway.volumeMounts | nindent 12 }}
+            {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -65,5 +68,8 @@ spec:
           configMap:
             defaultMode: 420
             name: {{ .Values.gateway.name }}-config
+        {{- if .Values.gateway.volumes }}
+        {{- toYaml .Values.gateway.volumes | nindent 8 }}
+        {{- end }}
 status:
 {{- end }}
