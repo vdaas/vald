@@ -27,6 +27,7 @@ jobs:
           make k8s/manifest/update
           make license
       - name: Push to master
+        continue-on-error: true
         run: |
           git config --global user.name "vdaas-ci"
           git config --global user.email "ci@vdaas.org"
@@ -35,7 +36,7 @@ jobs:
           git commit --signoff -m ":robot: Automatically update k8s manifests"
 
           git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push origin
+          git push origin master
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
@@ -58,6 +59,7 @@ jobs:
           make helm/package/vald
           make helm/repo/index/create
       - name: Push to gh-pages
+        continue-on-error: true
         run: |
           git checkout gh-pages
           mv -f index.yaml charts/index.yaml

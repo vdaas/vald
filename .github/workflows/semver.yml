@@ -37,6 +37,8 @@ jobs:
           echo "version updated: ${GITWERK_RESULT}"
           echo "${GITWERK_RESULT}" > versions/VALD_VERSION
 
+          git checkout master
+
           git config --global user.name "vdaas-ci"
           git config --global user.email "ci@vdaas.org"
 
