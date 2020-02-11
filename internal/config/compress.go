@@ -26,7 +26,6 @@ const (
 	GZIP
 	LZ4
 	ZSTD
-	DDZSTD
 )
 
 func (ca compressAlgorithm) String() string {
@@ -39,8 +38,6 @@ func (ca compressAlgorithm) String() string {
 		return "lz4"
 	case ZSTD:
 		return "zstd"
-	case DDZSTD:
-		return "ddzstd"
 	}
 	return "unknown"
 }
@@ -55,8 +52,6 @@ func CompressAlgorithm(ca string) compressAlgorithm {
 		return LZ4
 	case "zstd":
 		return ZSTD
-	case "ddzstd":
-		return DDZSTD
 	}
 	return 0
 }

@@ -21,13 +21,13 @@ import (
 	"bytes"
 	"reflect"
 
-	"github.com/valyala/gozstd"
+	"github.com/klauspost/compress/zstd"
 	"github.com/vdaas/vald/internal/errors"
 )
 
 type zstdCompressor struct {
-	gobc             Compressor
-	compressionLevel int
+	gobc     Compressor
+	eoptions []zstd.EOption
 }
 
 func NewZstd(opts ...ZstdOption) (Compressor, error) {
@@ -48,20 +48,17 @@ func (z *zstdCompressor) CompressVector(vector []float32) ([]byte, error) {
 	}
 
 	buf := new(bytes.Buffer)
-	zw := gozstd.NewWriterLevel(buf, z.compressionLevel)
-	defer func() {
-		cerr := zw.Close()
-		if cerr != nil {
-			err = errors.Wrap(err, cerr.Error())
-		}
-	}()
+	zw, err := zstd.NewWriter(buf, z.eoptions...)
+	if err != nil {
+		return nil, err
+	}
 
 	_, err = zw.ReadFrom(bytes.NewReader(gob))
 	if err != nil {
 		return nil, err
 	}
 
-	err = zw.Flush()
+	err = zw.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -71,8 +68,13 @@ func (z *zstdCompressor) CompressVector(vector []float32) ([]byte, error) {
 
 func (z *zstdCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	buf := new(bytes.Buffer)
-	zr := gozstd.NewReader(bytes.NewReader(bs))
-	_, err := zr.WriteTo(buf)
+	zr, err := zstd.NewReader(bytes.NewReader(bs))
+	if err != nil {
+		return nil, err
+	}
+	defer zr.Close()
+
+	_, err = zr.WriteTo(buf)
 	if err != nil {
 		return nil, err
 	}
