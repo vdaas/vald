@@ -181,11 +181,14 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 	}
 
 	if cfg.TCP != nil {
-		opts = append(opts,
-			cassandra.WithDialer(
-				tcp.NewDialer(cfg.TCP.Opts()...),
-			),
-		)
+		der, err := tcp.NewDialer(cfg.TCP.Opts()...)
+		if err == nil {
+			opts = append(opts,
+				cassandra.WithDialer(
+					der,
+				),
+			)
+		}
 	}
 
 	if cfg.TLS != nil && cfg.TLS.Enabled {

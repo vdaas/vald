@@ -20,6 +20,12 @@
             "schema": {
               "$ref": "#/definitions/ObjectID"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -43,6 +49,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/payloadEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -69,6 +81,12 @@
             "schema": {
               "$ref": "#/definitions/payloadEmpty"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -94,6 +112,12 @@
             "schema": {
               "$ref": "#/definitions/InfoIndex"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "tags": [
@@ -110,6 +134,12 @@
             "schema": {
               "$ref": "#/definitions/payloadEmpty"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "tags": [
@@ -125,6 +155,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/payloadEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -152,6 +188,12 @@
             "schema": {
               "$ref": "#/definitions/ObjectVector"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -176,6 +218,12 @@
             "schema": {
               "$ref": "#/definitions/payloadEmpty"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -199,6 +247,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/SearchResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -226,6 +280,12 @@
             "schema": {
               "$ref": "#/definitions/SearchResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -251,6 +311,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/payloadEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -401,6 +467,27 @@
         "value": {
           "type": "string",
           "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
         }
       }
     },

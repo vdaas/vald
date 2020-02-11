@@ -19,7 +19,6 @@ package service
 import (
 	"context"
 
-	"github.com/kpango/gache"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/rdb/mysql"
 	"github.com/vdaas/vald/internal/net/tcp"
@@ -45,7 +44,7 @@ type client struct {
 	der tcp.Dialer
 }
 
-func New(cfg *config.MySQL) (MySQL, error) {
+func New(cfg *config.MySQL) (ms MySQL, err error) {
 	c := new(client)
 
 	opts := append(make([]mysql.Option, 0, 13),
@@ -80,7 +79,6 @@ func New(cfg *config.MySQL) (MySQL, error) {
 		topts := make([]tcp.DialerOption, 0, 8)
 		if cfg.TCP.DNS != nil && cfg.TCP.DNS.CacheEnabled {
 			topts = append(topts,
-				tcp.WithCache(gache.New()),
 				tcp.WithEnableDNSCache(),
 				tcp.WithDNSCacheExpiration(cfg.TCP.DNS.CacheExpiration),
 				tcp.WithDNSRefreshDuration(cfg.TCP.DNS.RefreshDuration),
@@ -104,10 +102,13 @@ func New(cfg *config.MySQL) (MySQL, error) {
 			}
 			topts = append(topts, tcp.WithTLS(tcfg))
 		}
-		c.der = tcp.NewDialer(append(topts,
+		c.der, err = tcp.NewDialer(append(topts,
 			tcp.WithDialerKeepAlive(cfg.TCP.Dialer.KeepAlive),
 			tcp.WithDialerTimeout(cfg.TCP.Dialer.Timeout),
 		)...)
+		if err != nil {
+			return nil, err
+		}
 		opts = append(opts, mysql.WithDialer(c.der.GetDialer()))
 	}
 

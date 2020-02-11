@@ -112,7 +112,6 @@ clean:
 		./apis/swagger \
 		./bench \
 		./pprof \
-		./vendor \
 		$(GOCACHE) \
 		./go.sum \
 		./go.mod
@@ -151,8 +150,6 @@ update/goimports:
 deps: \
 	proto/deps
 	go mod tidy
-	go mod vendor
-	rm -rf vendor
 
 .PHONY: version/go
 ## print go version
