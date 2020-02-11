@@ -22,29 +22,29 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/level"
-	loggertype "github.com/vdaas/vald/internal/log/logger_type"
+	logger "github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/log/mock"
 )
 
 func TestWithLogger(t *testing.T) {
 	type test struct {
 		name      string
-		logger    Logger
+		l         Logger
 		checkFunc func(Option) error
 	}
 
 	tests := []test{
 		func() test {
-			logger := new(mock.Logger)
+			l := new(mock.Logger)
 
 			return test{
-				name:   "set success when logger is not nil",
-				logger: logger,
+				name: "set success when l is not nil",
+				l:    l,
 				checkFunc: func(opt Option) error {
 					option := new(option)
 					opt(option)
 
-					if !reflect.DeepEqual(option.logger, logger) {
+					if !reflect.DeepEqual(option.logger, l) {
 						return errors.New("invalid params was set")
 					}
 
@@ -54,18 +54,18 @@ func TestWithLogger(t *testing.T) {
 		}(),
 
 		func() test {
-			logger := new(mock.Logger)
+			l := new(mock.Logger)
 
 			return test{
-				name:   "returns nothing when logger is nil",
-				logger: nil,
+				name: "returns nothing when l is nil",
+				l:    nil,
 				checkFunc: func(opt Option) error {
 					option := &option{
-						logger: logger,
+						logger: l,
 					}
 					opt(option)
 
-					if !reflect.DeepEqual(option.logger, logger) {
+					if !reflect.DeepEqual(option.logger, l) {
 						return errors.New("invalid params was set")
 					}
 
@@ -77,7 +77,7 @@ func TestWithLogger(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithLogger(tt.logger)
+			opt := WithLogger(tt.l)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
@@ -95,12 +95,12 @@ func TestWithLoggerType(t *testing.T) {
 	tests := []test{
 		{
 			name: "set success when str is not empty",
-			str:  loggertype.GLG.String(),
+			str:  logger.GLG.String(),
 			checkFunc: func(opt Option) error {
 				option := new(option)
 				opt(option)
 
-				if option.loggerType != loggertype.GLG {
+				if option.logType != logger.GLG {
 					return errors.New("invalid params was set")
 				}
 				return nil
@@ -111,11 +111,11 @@ func TestWithLoggerType(t *testing.T) {
 			name: "returns nothing when str is empty",
 			checkFunc: func(opt Option) error {
 				option := &option{
-					loggerType: loggertype.ZAP,
+					logType: logger.ZAP,
 				}
 				opt(option)
 
-				if option.loggerType != loggertype.ZAP {
+				if option.logType != logger.ZAP {
 					return errors.New("invalid params was set")
 				}
 				return nil

@@ -20,13 +20,18 @@ package config
 import "fmt"
 
 type Meta struct {
-	Host   string      `json:"host" yaml:"host"`
-	Port   int         `json:"port" yaml:"port"`
-	Client *GRPCClient `json:"client" yaml:"client"`
+	Host                      string      `json:"host" yaml:"host"`
+	Port                      int         `json:"port" yaml:"port"`
+	Client                    *GRPCClient `json:"client" yaml:"client"`
+	EnableCache               bool        `json:"enable_cache" yaml:"enable_cache"`
+	CacheExpiration           string      `json:"cache_expiration" yaml:"cache_expiration"`
+	ExpiredCacheCheckDuration string      `json:"expired_cache_check_duration" yaml:"expired_cache_check_duration"`
 }
 
 func (m *Meta) Bind() *Meta {
 	m.Host = GetActualValue(m.Host)
+	m.CacheExpiration = GetActualValue(m.CacheExpiration)
+	m.ExpiredCacheCheckDuration = GetActualValue(m.ExpiredCacheCheckDuration)
 
 	if m.Client != nil {
 		m.Client.Bind()
