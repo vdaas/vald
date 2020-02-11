@@ -102,9 +102,23 @@ jobs:
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
       - name: Automatic Rebase
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        continue-on-error: true
         uses: cirrus-actions/rebase@1.2
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+      - name: failure comment
+        if: failure()
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[REBASE]** Failed to rebase.\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: ${{ github.event.issue.comments_url }}
   add-contributors:
     name: Add contributors
     needs:
@@ -160,6 +174,7 @@ jobs:
           fetch-depth: 1
       - name: Add contributor and push
         if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        continue-on-error: true
         run: |
           PR_RESP=`curl ${PR_INFO_URL}`
           HEAD_BRANCH=$(echo "$PR_RESP" | jq -r .head.ref)
@@ -196,6 +211,19 @@ jobs:
           PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
           PR_NUM: ${{ github.event.issue.number }}
+      - name: failure comment
+        if: failure()
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[ADD CONTRIBUTORS]** Failed to add contributors.\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: ${{ github.event.issue.comments_url }}
   format:
     name: Add license and run goimports
     needs:
@@ -251,6 +279,7 @@ jobs:
           fetch-depth: 1
       - name: update and push
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        continue-on-error: true
         run: |
           PR_RESP=`curl ${PR_INFO_URL}`
           HEAD_BRANCH=$(echo "$PR_RESP" | jq -r .head.ref)
@@ -291,6 +320,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
           PR_NUM: ${{ github.event.issue.number }}
+      - name: failure comment
+        if: failure()
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[FORMAT]** Failed to format.\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: ${{ github.event.issue.comments_url }}
   approve:
     name: Approve
     needs:
