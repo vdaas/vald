@@ -20,13 +20,13 @@ jobs:
         run: |
           sudo wget -O /usr/local/bin/yq -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod a+x /usr/local/bin/yq
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role" -j`
-          if [ "$roles" = "null" ]; then
-            roles=`yq r chatops_permissions.yaml default-roles -j`
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          if [ "$roles" = "" ]; then
+            roles=`yq r chatops_permissions.yaml "default-roles.*"`
           fi
-          for role in `echo $roles | jq -r '.[]'`
+          for role in `echo $roles`
           do
-              if yq r chatops_permissions.yaml "roles.${role}.policies" -j | jq -r '.[]' | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] label requested by ${USERNAME}"
                 echo "::set-output name=EXECUTABLE::true"
                 break
@@ -68,13 +68,13 @@ jobs:
         run: |
           sudo wget -O /usr/local/bin/yq -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod a+x /usr/local/bin/yq
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role" -j`
-          if [ "$roles" = "null" ]; then
-            roles=`yq r chatops_permissions.yaml default-roles -j`
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          if [ "$roles" = "" ]; then
+            roles=`yq r chatops_permissions.yaml "default-roles.*"`
           fi
-          for role in `echo $roles | jq -r '.[]'`
+          for role in `echo $roles`
           do
-              if yq r chatops_permissions.yaml "roles.${role}.policies" -j | jq -r '.[]' | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] rebase requested by ${USERNAME}"
                 echo "::set-output name=EXECUTABLE::true"
                 break
@@ -124,13 +124,13 @@ jobs:
         run: |
           sudo wget -O /usr/local/bin/yq -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod a+x /usr/local/bin/yq
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role" -j`
-          if [ "$roles" = "null" ]; then
-            roles=`yq r chatops_permissions.yaml default-roles -j`
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          if [ "$roles" = "" ]; then
+            roles=`yq r chatops_permissions.yaml "default-roles.*"`
           fi
-          for role in `echo $roles | jq -r '.[]'`
+          for role in `echo $roles`
           do
-              if yq r chatops_permissions.yaml "roles.${role}.policies" -j | jq -r '.[]' | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] add-contributor requested by ${USERNAME}"
                 echo "::set-output name=EXECUTABLE::true"
                 break
@@ -216,13 +216,13 @@ jobs:
         run: |
           sudo wget -O /usr/local/bin/yq -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod a+x /usr/local/bin/yq
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role" -j`
-          if [ "$roles" = "null" ]; then
-            roles=`yq r chatops_permissions.yaml default-roles -j`
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          if [ "$roles" = "" ]; then
+            roles=`yq r chatops_permissions.yaml "default-roles.*"`
           fi
-          for role in `echo $roles | jq -r '.[]'`
+          for role in `echo $roles`
           do
-              if yq r chatops_permissions.yaml "roles.${role}.policies" -j | jq -r '.[]' | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] format requested by ${USERNAME}"
                 echo "::set-output name=EXECUTABLE::true"
                 break
@@ -312,13 +312,13 @@ jobs:
         run: |
           sudo wget -O /usr/local/bin/yq -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod a+x /usr/local/bin/yq
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role" -j`
-          if [ "$roles" = "null" ]; then
-            roles=`yq r chatops_permissions.yaml default-roles -j`
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          if [ "$roles" = "" ]; then
+            roles=`yq r chatops_permissions.yaml "default-roles.*"`
           fi
-          for role in `echo $roles | jq -r '.[]'`
+          for role in `echo $roles`
           do
-              if yq r chatops_permissions.yaml "roles.${role}.policies" -j | jq -r '.[]' | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] approved requested by ${USERNAME}"
                 echo "::set-output name=EXECUTABLE::true"
                 break
