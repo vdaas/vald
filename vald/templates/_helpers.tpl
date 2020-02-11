@@ -412,6 +412,7 @@ initContainers
 */}}
 {{- define "vald.initContainers" -}}
 {{- range .initContainers }}
+{{- if .type }}
 - name: {{ .name }}
   image: {{ .image }}
   {{- if eq .type "waitFor" }}
@@ -453,5 +454,12 @@ initContainers
   env:
     {{- toYaml .env | nindent 4 }}
   {{- end }}
+  {{- if .volumeMounts }}
+  volumeMounts:
+    {{- toYaml .volumeMounts | nindent 4 }}
+  {{- end }}
+{{- else }}
+- {{- toYaml . | nindent 2 }}
+{{- end }}
 {{- end }}
 {{- end -}}

@@ -21,8 +21,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/cache/gache"
-	"github.com/vdaas/vald/internal/cache/mode"
 	"github.com/vdaas/vald/internal/errors"
 )
 
@@ -35,7 +35,7 @@ type Cache interface {
 }
 
 type cache struct {
-	mode           mode.Mode
+	cacher         cacher.Type
 	expireDur      time.Duration
 	expireCheckDur time.Duration
 	expiredHook    func(context.Context, string)
@@ -49,13 +49,13 @@ func New(opts ...Option) (cc Cache, err error) {
 			return nil, err
 		}
 	}
-	switch c.mode {
-	case mode.GACHE:
+	switch c.cacher {
+	case cacher.GACHE:
 		return gache.New(
 			gache.WithExpireDuration(c.expireDur),
 			gache.WithExpireCheckDuration(c.expireCheckDur),
 			gache.WithExpiredHook(c.expiredHook),
 		), nil
 	}
-	return nil, errors.ErrInvalidCacheMode
+	return nil, errors.ErrInvalidCacherType
 }

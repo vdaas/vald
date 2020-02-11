@@ -13,58 +13,58 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package mode
+package logger
 
 import "testing"
 
 func TestString(t *testing.T) {
 	type test struct {
 		name    string
-		logMode Mode
+		logType Type
 		want    string
 	}
 
 	tests := []test{
 		{
 			name:    "returns glg",
-			logMode: GLG,
+			logType: GLG,
 			want:    "glg",
 		},
 
 		{
 			name:    "returns zap",
-			logMode: ZAP,
+			logType: ZAP,
 			want:    "zap",
 		},
 
 		{
 			name:    "returns zerolog",
-			logMode: ZEROLOG,
+			logType: ZEROLOG,
 			want:    "zerolog",
 		},
 
 		{
 			name:    "returns logrus",
-			logMode: LOGRUS,
+			logType: LOGRUS,
 			want:    "logrus",
 		},
 
 		{
 			name:    "returns klog",
-			logMode: KLOG,
+			logType: KLOG,
 			want:    "klog",
 		},
 
 		{
 			name:    "returns unknown",
-			logMode: Mode(100),
+			logType: Type(100),
 			want:    "unknown",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.logMode.String()
+			got := tt.logType.String()
 			if got != tt.want {
 				t.Errorf("not equals. want: %v, but got: %v", tt.want, got)
 			}
@@ -76,7 +76,7 @@ func TestAtot(t *testing.T) {
 	type test struct {
 		name string
 		str  string
-		want Mode
+		want Type
 	}
 
 	tests := []test{

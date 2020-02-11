@@ -16,8 +16,8 @@
 run:
   deadline: 30m
   skip-dirs:
-    - apis/grpc/*
-    - hack/benchmark/*
+    - (^|/)apis($|/)
+    - (^|/)hack/benchmark($|/)
 
 output:
   format: line-number

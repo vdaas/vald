@@ -20,7 +20,7 @@ package cache
 import (
 	"context"
 
-	"github.com/vdaas/vald/internal/cache/mode"
+	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/timeutil"
 )
@@ -29,7 +29,7 @@ type Option func(*cache) error
 
 var (
 	defaultOpts = []Option{
-		WithMode(mode.GACHE.String()),
+		WithType(cacher.GACHE.String()),
 		WithExpireDuration("30m"),
 		WithExpireCheckDuration("5m"),
 	}
@@ -44,16 +44,16 @@ func WithExpiredHook(f func(context.Context, string)) Option {
 	}
 }
 
-func WithMode(mo string) Option {
+func WithType(mo string) Option {
 	return func(c *cache) error {
 		if len(mo) == 0 {
 			return nil
 		}
-		m := mode.ToMode(mo)
-		if m == mode.Unknown {
-			return errors.ErrInvalidCacheMode
+		m := cacher.ToType(mo)
+		if m == cacher.Unknown {
+			return errors.ErrInvalidCacherType
 		}
-		c.mode = m
+		c.cacher = m
 		return nil
 	}
 }

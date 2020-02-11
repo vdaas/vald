@@ -58,15 +58,21 @@ spec:
           volumeMounts:
             - name: {{ .Values.meta.name }}-config
               mountPath: /etc/server/
+            {{- if .Values.meta.volumeMounts }}
+            {{- toYaml .Values.meta.volumeMounts | nindent 12 }}
+            {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: {{ .Values.meta.terminationGracePeriodSeconds }}
       volumes:
-      - name: {{ .Values.meta.name }}-config
-        configMap:
-          defaultMode: 420
-          name: {{ .Values.meta.name }}-config
+        - name: {{ .Values.meta.name }}-config
+          configMap:
+            defaultMode: 420
+            name: {{ .Values.meta.name }}-config
+        {{- if .Values.meta.volumes }}
+        {{- toYaml .Values.meta.volumes | nindent 8 }}
+        {{- end }}
 status:
 {{- end }}

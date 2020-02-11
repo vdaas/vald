@@ -114,8 +114,8 @@ spec:
       securityContext: {}
       terminationGracePeriodSeconds: 30
       volumes:
-      - name: vald-meta-config
-        configMap:
-          defaultMode: 420
-          name: vald-meta-config
+        - name: vald-meta-config
+          configMap:
+            defaultMode: 420
+            name: vald-meta-config
 status:

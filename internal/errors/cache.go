@@ -18,5 +18,5 @@
 package errors
 
 var (
-	ErrInvalidCacheMode = New("invalid cache mode")
+	ErrInvalidCacherType = New("invalid cacher type")
 )

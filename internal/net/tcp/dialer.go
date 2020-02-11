@@ -38,18 +38,18 @@ type Dialer interface {
 }
 
 type dialer struct {
-	cache              cache.Cache
-	dnsCache           bool
-	tlsConfig          *tls.Config
+	cache                 cache.Cache
+	dnsCache              bool
+	tlsConfig             *tls.Config
 	dnsRefreshDurationStr string
 	dnsCacheExpirationStr string
-	dnsRefreshDuration time.Duration
-	dnsCacheExpiration time.Duration
-	dialerTimeout      time.Duration
-	dialerKeepAlive    time.Duration
-	dialerDualStack    bool
-	der                *net.Dialer
-	dialer             func(ctx context.Context, network, addr string) (net.Conn, error)
+	dnsRefreshDuration    time.Duration
+	dnsCacheExpiration    time.Duration
+	dialerTimeout         time.Duration
+	dialerKeepAlive       time.Duration
+	dialerDualStack       bool
+	der                   *net.Dialer
+	dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
 }
 
 func NewDialer(opts ...DialerOption) (der Dialer, err error) {

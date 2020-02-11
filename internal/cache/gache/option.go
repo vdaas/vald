@@ -43,7 +43,6 @@ func WithExpiredHook(f func(context.Context, string)) Option {
 		if f != nil {
 			c.expiredHook = f
 		}
-		return
 	}
 }
 
@@ -52,7 +51,6 @@ func WithExpireDuration(dur time.Duration) Option {
 		if dur != 0 {
 			c.expireDur = dur
 		}
-		return
 	}
 }
 
@@ -61,6 +59,5 @@ func WithExpireCheckDuration(dur time.Duration) Option {
 		if dur != 0 {
 			c.expireCheckDur = dur
 		}
-		return
 	}
 }

@@ -14,49 +14,30 @@
 // limitations under the License.
 //
 
-package mode
+// Package cacher provides implementation of cache type definition
+package cacher
 
 import "strings"
 
-type Mode uint8
+type Type uint8
 
 const (
-	Unknown Mode = iota
-	GLG
-	ZAP
-	ZEROLOG
-	LOGRUS
-	KLOG
+	Unknown Type = iota
+	GACHE
 )
 
-func (m Mode) String() string {
+func (m Type) String() string {
 	switch m {
-	case GLG:
-		return "glg"
-	case ZAP:
-		return "zap"
-	case ZEROLOG:
-		return "zerolog"
-	case LOGRUS:
-		return "logrus"
-	case KLOG:
-		return "klog"
+	case GACHE:
+		return "gache"
 	}
 	return "unknown"
 }
 
-func Atot(str string) Mode {
+func ToType(str string) Type {
 	switch strings.ToLower(str) {
-	case "glg":
-		return GLG
-	case "zap":
-		return ZAP
-	case "zerolog":
-		return ZEROLOG
-	case "logrus":
-		return LOGRUS
-	case "klog":
-		return KLOG
+	case "gache":
+		return GACHE
 	}
 	return Unknown
 }

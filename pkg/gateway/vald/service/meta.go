@@ -68,6 +68,9 @@ func NewMeta(opts ...MetaOption) (mi Meta, err error) {
 				cache.WithExpireDuration(m.expireDuration),
 				cache.WithExpireCheckDuration(m.expireCheckDuration),
 			)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 

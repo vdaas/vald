@@ -14,30 +14,49 @@
 // limitations under the License.
 //
 
-// Package mode provides implementation of cache mode deifinition
-package mode
+package logger
 
 import "strings"
 
-type Mode uint8
+type Type uint8
 
 const (
-	Unknown Mode = iota
-	GACHE
+	Unknown Type = iota
+	GLG
+	ZAP
+	ZEROLOG
+	LOGRUS
+	KLOG
 )
 
-func (m Mode) String() string {
+func (m Type) String() string {
 	switch m {
-	case GACHE:
-		return "gache"
+	case GLG:
+		return "glg"
+	case ZAP:
+		return "zap"
+	case ZEROLOG:
+		return "zerolog"
+	case LOGRUS:
+		return "logrus"
+	case KLOG:
+		return "klog"
 	}
 	return "unknown"
 }
 
-func ToMode(str string) Mode {
+func Atot(str string) Type {
 	switch strings.ToLower(str) {
-	case "gache":
-		return GACHE
+	case "glg":
+		return GLG
+	case "zap":
+		return ZAP
+	case "zerolog":
+		return ZEROLOG
+	case "logrus":
+		return LOGRUS
+	case "klog":
+		return KLOG
 	}
 	return Unknown
 }

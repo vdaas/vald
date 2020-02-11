@@ -24,8 +24,8 @@ import (
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/glg"
 	"github.com/vdaas/vald/internal/log/level"
+	logger "github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/log/mock"
-	mode "github.com/vdaas/vald/internal/log/mode"
 )
 
 func TestInit(t *testing.T) {
@@ -37,15 +37,15 @@ func TestInit(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			logger := glg.New()
+			l := glg.New()
 			return test{
-				name: "set logger object when option is not empty",
+				name: "set l object when option is not empty",
 				opts: []Option{
-					WithLogger(logger),
+					WithLogger(l),
 				},
 				checkFunc: func(got Logger) error {
-					if !reflect.DeepEqual(got, logger) {
-						return errors.Errorf("not equals. want: %v, but got: %v", got, logger)
+					if !reflect.DeepEqual(got, l) {
+						return errors.Errorf("not equals. want: %v, but got: %v", got, l)
 					}
 					return nil
 				},
@@ -54,11 +54,11 @@ func TestInit(t *testing.T) {
 
 		func() test {
 			return test{
-				name: "set logger object when option is empty",
+				name: "set l object when option is empty",
 				opts: []Option{},
 				checkFunc: func(got Logger) error {
 					if got == nil {
-						return errors.New("logger is nil")
+						return errors.New("l is nil")
 					}
 					return nil
 				},
@@ -69,13 +69,13 @@ func TestInit(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
-				logger = nil
+				l = nil
 				once = sync.Once{}
 			}()
 
 			Init(tt.opts...)
 
-			if err := tt.checkFunc(logger); err != nil {
+			if err := tt.checkFunc(l); err != nil {
 				t.Error(err)
 			}
 		})
@@ -91,9 +91,9 @@ func TestGetLogger(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "returns glg object when logger type is GLG",
+			name: "returns glg object when l type is GLG",
 			o: &option{
-				logMode: mode.GLG,
+				logType: logger.GLG,
 				level:   level.DEBUG,
 				format:  format.JSON,
 			},
@@ -104,15 +104,15 @@ func TestGetLogger(t *testing.T) {
 		},
 
 		func() test {
-			logger := glg.New()
+			l := glg.New()
 
 			return test{
-				name: "returns logger when logger type is Unknown",
+				name: "returns l when l type is Unknown",
 				o: &option{
-					logMode: mode.Unknown,
-					logger:  logger,
+					logType: logger.Unknown,
+					logger:  l,
 				},
-				want: logger,
+				want: l,
 			}
 		}(),
 	}
@@ -202,7 +202,7 @@ func TestDebug(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logger = tt.global.l
+			l = tt.global.l
 
 			Debug(tt.args.vals...)
 			if err := tt.checkFunc(); err != nil {
@@ -273,7 +273,7 @@ func TestDebugf(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logger = tt.global.l
+			l = tt.global.l
 
 			Debugf(tt.args.format, tt.args.vals...)
 			if err := tt.checkFunc(); err != nil {
@@ -333,7 +333,7 @@ func TestInfo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logger = tt.global.l
+			l = tt.global.l
 
 			Info(tt.args.vals...)
 			if err := tt.checkFunc(); err != nil {
@@ -404,7 +404,7 @@ func TestInfof(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logger = tt.global.l
+			l = tt.global.l
 
 			Infof(tt.args.format, tt.args.vals...)
 			if err := tt.checkFunc(); err != nil {
@@ -464,7 +464,7 @@ func TestWarn(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logger = tt.global.l
+			l = tt.global.l
 
 			Warn(tt.args.vals...)
 			if err := tt.checkFunc(); err != nil {
@@ -535,7 +535,7 @@ func TestWarnf(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logger = tt.global.l
+			l = tt.global.l
 
 			Warnf(tt.args.format, tt.args.vals...)
 			if err := tt.checkFunc(); err != nil {
@@ -595,7 +595,7 @@ func TestError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logger = tt.global.l
+			l = tt.global.l
 
 			Error(tt.args.vals...)
 			if err := tt.checkFunc(); err != nil {
@@ -666,7 +666,7 @@ func TestErrorf(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logger = tt.global.l
+			l = tt.global.l
 
 			Errorf(tt.args.format, tt.args.vals...)
 			if err := tt.checkFunc(); err != nil {
@@ -726,7 +726,7 @@ func TestFatal(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logger = tt.global.l
+			l = tt.global.l
 
 			Fatal(tt.args.vals...)
 			if err := tt.checkFunc(); err != nil {
@@ -797,7 +797,7 @@ func TestFatalf(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logger = tt.global.l
+			l = tt.global.l
 
 			Fatalf(tt.args.format, tt.args.vals...)
 			if err := tt.checkFunc(); err != nil {
