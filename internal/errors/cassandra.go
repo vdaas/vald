@@ -30,6 +30,16 @@ var (
 		}
 	}
 
+	NewErrCassandraUnavailableIdentity = func() error {
+		return &ErrCassandraUnavailableIdentity{
+			err: New("error cassandra unavailable"),
+		}
+	}
+
+	ErrCassandraUnavailable = func() error {
+		return NewErrCassandraUnavailableIdentity()
+	}
+
 	ErrCassandraNotFound = func(key string) error {
 		return Wrapf(NewErrCassandraNotFoundIdentity(), "error cassandra key '%s' not found", key)
 	}
@@ -58,6 +68,23 @@ func (e *ErrCassandraNotFoundIdentity) Error() string {
 func IsErrCassandraNotFound(err error) bool {
 	switch err.(type) {
 	case *ErrCassandraNotFoundIdentity:
+		return true
+	default:
+		return false
+	}
+}
+
+type ErrCassandraUnavailableIdentity struct {
+	err error
+}
+
+func (e *ErrCassandraUnavailableIdentity) Error() string {
+	return e.err.Error()
+}
+
+func IsErrCassandraUnavailableIdentify(err error) bool {
+	switch err.(type) {
+	case *ErrCassandraUnavailableIdentity:
 		return true
 	default:
 		return false
