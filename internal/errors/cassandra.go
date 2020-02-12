@@ -40,8 +40,13 @@ var (
 		return NewErrCassandraUnavailableIdentity()
 	}
 
-	ErrCassandraNotFound = func(key string) error {
-		return Wrapf(NewErrCassandraNotFoundIdentity(), "error cassandra key '%s' not found", key)
+	ErrCassandraNotFound = func(keys ...string) error {
+		if len(keys) == 1 {
+			return Wrapf(NewErrCassandraNotFoundIdentity(), "error cassandra key '%s' not found", keys[0])
+		} else if len(keys) > 1 {
+			return Wrapf(NewErrCassandraNotFoundIdentity(), "error cassandra keys '%s' not found", keys)
+		}
+		return nil
 	}
 
 	ErrCassandraGetOperationFailed = func(key string, err error) error {

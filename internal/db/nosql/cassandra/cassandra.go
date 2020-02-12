@@ -312,6 +312,12 @@ func (c *client) MultiGetValue(keys ...string) (values []string, err error) {
 		qb.In(uuidColumn))).BindMap(qb.M{
 		uuidColumn: keys,
 	}).SelectRelease(&keyvals); err != nil {
+		switch err {
+		case gocql.ErrNotFound:
+			return nil, errors.ErrCassandraNotFound(keys...)
+		case gocql.ErrUnavailable:
+			return nil, errors.ErrCassandraUnavailable()
+		}
 		return nil, err
 	}
 
@@ -349,7 +355,12 @@ func (c *client) MultiGetKey(values ...string) (keys []string, err error) {
 		qb.In(metaColumn))).BindMap(qb.M{
 		metaColumn: values,
 	}).SelectRelease(&keyvals); err != nil {
-		return nil, err
+		switch err {
+		case gocql.ErrNotFound:
+			return nil, errors.ErrCassandraNotFound(values...)
+		case gocql.ErrUnavailable:
+			return nil, errors.ErrCassandraUnavailable()
+		}
 	}
 
 	kvs := make(map[string]string, len(keyvals))
