@@ -49,6 +49,9 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 		if errors.IsErrCassandraNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[GetMeta]\tnot found\t%v\t%+v", key.GetKey(), err)
 			return nil, status.WrapWithNotFound(fmt.Sprintf("GetMeta API key %s not found", key.GetKey()), err, info.Get())
+		} else if errors.IsErrCassandraUnavailable(errors.UnWrapAll(err)) {
+			log.Warnf("[GetMeta]\tunavailable\t%+v", err)
+			return nil, status.WrapWithUnavailable(fmt.Sprintf("GetMeta API Cassandra unavailable"), err, info.Get())
 		}
 		log.Errorf("[GetMeta]\tunknown error\t%+v", err)
 		return nil, status.WrapWithUnknown(fmt.Sprintf("GetMeta API unknown error occurred key %s", key.GetKey()), err, info.Get())
@@ -65,6 +68,9 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 		if errors.IsErrCassandraNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[GetMetas]\tnot found\t%v\t%+v", keys.GetKeys(), err)
 			return mv, status.WrapWithNotFound(fmt.Sprintf("GetMetas API Cassandra entry keys %#v not found", keys.GetKeys()), err, info.Get())
+		} else if errors.IsErrCassandraUnavailable(errors.UnWrapAll(err)) {
+			log.Warnf("[GetMetas]\tunavailable\t%+v", err)
+			return mv, status.WrapWithUnavailable(fmt.Sprintf("GetMetas API Cassandra unavailable"), err, info.Get())
 		}
 		log.Errorf("[GetMetas]\tunknown error\t%+v", err)
 		return mv, status.WrapWithUnknown(fmt.Sprintf("GetMetas API Cassandra entry keys %#v unknown error occurred", keys.GetKeys()), err, info.Get())
@@ -78,6 +84,9 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 		if errors.IsErrCassandraNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[GetMetaInverse]\tnot found\t%v\t%+v", val.GetVal(), err)
 			return nil, status.WrapWithNotFound(fmt.Sprintf("GetMetaInverse API val %s not found", val.GetVal()), err, info.Get())
+		} else if errors.IsErrCassandraUnavailable(errors.UnWrapAll(err)) {
+			log.Warnf("[GetMetaInverse]\tunavailable\t%+v", err)
+			return nil, status.WrapWithUnavailable(fmt.Sprintf("GetMetaInverse API Cassandra unavailable"), err, info.Get())
 		}
 		log.Errorf("[GetMetaInverse]\tunknown error\t%+v", err)
 		return nil, status.WrapWithUnknown(fmt.Sprintf("GetMetaInverse API val %s unknown error occurred", val.GetVal()), err, info.Get())
@@ -94,7 +103,11 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 		if errors.IsErrCassandraNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[GetMetasInverse]\tnot found\t%v\t%+v", vals.GetVals(), err)
 			return mk, status.WrapWithNotFound(fmt.Sprintf("GetMetasInverse API vals %#v not found", vals.GetVals()), err, info.Get())
+		} else if errors.IsErrCassandraUnavailable(errors.UnWrapAll(err)) {
+			log.Warnf("[GetMetasInverse]\tunavailable\t%+v", err)
+			return mk, status.WrapWithUnavailable(fmt.Sprintf("GetMetasInverse API Cassandra unavailable"), err, info.Get())
 		}
+
 		log.Errorf("[GetMetasInverse]\tunknown error\t%+v", err)
 		return mk, status.WrapWithUnknown(fmt.Sprintf("GetMetasInverse API vals %#v unknown error occurred", vals.GetVals()), err, info.Get())
 	}
@@ -129,7 +142,11 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 		if errors.IsErrCassandraNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[DeleteMeta]\tnot found\t%v\t%+v", key.GetKey(), err)
 			return nil, status.WrapWithNotFound(fmt.Sprintf("DeleteMeta API key %s not found", key.GetKey()), err, info.Get())
+		} else if errors.IsErrCassandraUnavailable(errors.UnWrapAll(err)) {
+			log.Warnf("[DeleteMeta]\tunavailable\t%+v", err)
+			return nil, status.WrapWithUnavailable(fmt.Sprintf("DeleteMeta API Cassandra unavailable"), err, info.Get())
 		}
+
 		log.Errorf("[DeleteMeta]\tunknown error\t%+v", err)
 		return nil, status.WrapWithUnknown(fmt.Sprintf("DeleteMeta API unknown error occurred key %s", key.GetKey()), err, info.Get())
 	}
@@ -145,7 +162,11 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 		if errors.IsErrCassandraNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[DeleteMetas]\tnot found\t%v\t%+v", keys.GetKeys(), err)
 			return mv, status.WrapWithNotFound(fmt.Sprintf("DeleteMetas API Cassandra entry keys %#v not found", keys.GetKeys()), err, info.Get())
+		} else if errors.IsErrCassandraUnavailable(errors.UnWrapAll(err)) {
+			log.Warnf("[DeleteMetas]\tunavailable\t%+v", err)
+			return nil, status.WrapWithUnavailable(fmt.Sprintf("DeleteMetas API Cassandra unavailable"), err, info.Get())
 		}
+
 		log.Errorf("[DeleteMetas]\tunknown error\t%+v", err)
 		return mv, status.WrapWithUnknown(fmt.Sprintf("DeleteMetas API Cassandra entry keys %#v unknown error occurred", keys.GetKeys()), err, info.Get())
 	}
@@ -158,7 +179,11 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 		if errors.IsErrCassandraNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[DeleteMetaInverse]\tnot found\t%v\t%+v", val.GetVal(), err)
 			return nil, status.WrapWithNotFound(fmt.Sprintf("DeleteMetaInverse API val %s not found", val.GetVal()), err, info.Get())
+		} else if errors.IsErrCassandraUnavailable(errors.UnWrapAll(err)) {
+			log.Warnf("[DeleteMetaInverse]\tunavailable\t%+v", err)
+			return nil, status.WrapWithUnavailable(fmt.Sprintf("DeleteMetaInverse API Cassandra unavailable"), err, info.Get())
 		}
+
 		log.Errorf("[DeleteMetaInverse]\tunknown error\t%+v", err)
 		return nil, status.WrapWithUnknown(fmt.Sprintf("DeleteMetaInverse API val %s unknown error occurred", val.GetVal()), err, info.Get())
 	}
@@ -174,7 +199,11 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 		if errors.IsErrCassandraNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[DeleteMetasInverse]\tnot found\t%v\t%+v", vals.GetVals(), err)
 			return mk, status.WrapWithNotFound(fmt.Sprintf("DeleteMetasInverse API vals %#v not found", vals.GetVals()), err, info.Get())
+		} else if errors.IsErrCassandraUnavailable(errors.UnWrapAll(err)) {
+			log.Warnf("[DeleteMetasInverse]\tunavailable\t%+v", err)
+			return nil, status.WrapWithUnavailable(fmt.Sprintf("DeleteMetasInverse API Cassandra unavailable"), err, info.Get())
 		}
+
 		log.Errorf("[DeleteMetasInverse]\tunknown error\t%+v", err)
 		return mk, status.WrapWithUnknown(fmt.Sprintf("DeleteMetasInverse API vals %#v unknown error occurred", vals.GetVals()), err, info.Get())
 	}

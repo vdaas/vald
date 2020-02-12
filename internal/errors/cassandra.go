@@ -82,7 +82,7 @@ func (e *ErrCassandraUnavailableIdentity) Error() string {
 	return e.err.Error()
 }
 
-func IsErrCassandraUnavailableIdentify(err error) bool {
+func IsErrCassandraUnavailable(err error) bool {
 	switch err.(type) {
 	case *ErrCassandraUnavailableIdentity:
 		return true
