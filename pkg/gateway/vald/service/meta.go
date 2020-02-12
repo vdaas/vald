@@ -78,7 +78,9 @@ func NewMeta(opts ...MetaOption) (mi Meta, err error) {
 }
 
 func (m *meta) Start(ctx context.Context) (<-chan error, error) {
-	m.cache.Start(ctx)
+	if m.enableCache && m.cache != nil{
+		m.cache.Start(ctx)
+	}
 	return m.client.StartConnectionMonitor(ctx)
 }
 
