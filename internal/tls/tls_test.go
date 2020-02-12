@@ -293,7 +293,7 @@ func TestNewClientConfig(t *testing.T) {
 		},
 
 		{
-			name: "returns nil and error when ca file is invalid",
+			name: "returns nil and error when contents of ca file is invalid",
 			opts: []Option{
 				WithCa(dummyInvalidCaPath),
 			},
@@ -313,7 +313,7 @@ func TestNewClientConfig(t *testing.T) {
 		},
 
 		{
-			name: "returns nil and error when cert file is invalid",
+			name: "returns nil and error when contents of cert file is invalid",
 			opts: []Option{
 				WithCert(dummyInvalidCertPath),
 				WithKey(dummyKeyPath),
@@ -368,7 +368,7 @@ func TestNewX509CertPool(t *testing.T) {
 			}
 
 			return test{
-				name: "returns pool and nil when the pool exists and adds the cert file into pool",
+				name: "returns pool and nil when the pool exists and adds the cert into pool",
 				path: dummyCertPath,
 				checkFunc: func(pool *x509.CertPool, err error) error {
 					if err != nil {
