@@ -57,13 +57,14 @@ jobs:
       - name: Update k8s
         run: |
           make helm/package/vald
-          make helm/repo/index/create
       - name: Push to gh-pages
         continue-on-error: true
         run: |
           git checkout gh-pages
-          mv -f index.yaml charts/index.yaml
-          mv -f vald-0.1.0.tgz charts/vald-0.1.0.tgz
+          mv -f vald-*.tgz charts/
+          pushd charts
+          helm repo index --url https://vald.vdaas.org/charts .
+          popd
 
           git config --global user.name "vdaas-ci"
           git config --global user.email "ci@vdaas.org"
