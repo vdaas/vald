@@ -275,6 +275,8 @@ func (c *client) GetValue(key string) (value string, err error) {
 		switch err {
 		case gocql.ErrNotFound:
 			return "", errors.ErrCassandraNotFound(key)
+		case gocql.ErrUnavailable:
+			return "", errors.ErrCassandraUnavailable()
 		default:
 			return "", err
 		}
@@ -291,6 +293,8 @@ func (c *client) GetKey(value string) (key string, err error) {
 		switch err {
 		case gocql.ErrNotFound:
 			return "", errors.ErrCassandraNotFound(value)
+		case gocql.ErrUnavailable:
+			return "", errors.ErrCassandraUnavailable()
 		default:
 			return "", err
 		}
