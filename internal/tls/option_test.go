@@ -138,7 +138,7 @@ func TestWithCa(t *testing.T) {
 		},
 
 		{
-			name: "set success when ca is empty",
+			name: "set set when ca is empty",
 			checkFunc: func(opt Option) error {
 				got := &credentials{
 					ca: "ca",
@@ -195,7 +195,7 @@ func TestWithTLSConfig(t *testing.T) {
 		}(),
 
 		{
-			name: "not success when cfg is nil",
+			name: "not set when cfg is nil",
 			checkFunc: func(opt Option) error {
 				cfg := new(tls.Config)
 
