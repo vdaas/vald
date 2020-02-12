@@ -31,7 +31,7 @@ require (
 	github.com/go-redis/redis/v7 v7.0.0-beta.6
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200103014340-68f928edb90a
-	github.com/gocraft/dbr/v2 v2.6.3
+	github.com/gocraft/dbr/v2 v2.7.0
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
 	github.com/google/gofuzz v1.1.0
 	github.com/gorilla/mux v1.7.1
