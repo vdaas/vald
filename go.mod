@@ -34,7 +34,7 @@ require (
 	github.com/gocraft/dbr/v2 v2.6.3
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
 	github.com/google/gofuzz v1.1.0
-	github.com/gorilla/mux v1.7.1
+	github.com/gorilla/mux v1.7.4
 	github.com/hashicorp/go-version v1.2.0
 	github.com/json-iterator/go v1.1.9
 	github.com/klauspost/compress v1.9.8
