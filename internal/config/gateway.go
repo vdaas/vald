@@ -53,6 +53,8 @@ func (g *Gateway) Bind() *Gateway {
 	}
 	if g.Meta != nil {
 		g.Meta = g.Meta.Bind()
+	} else {
+		g.Meta = new(Meta)
 	}
 	if g.BackupManager != nil {
 		g.BackupManager = g.BackupManager.Bind()
