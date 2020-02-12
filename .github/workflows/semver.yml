@@ -37,12 +37,14 @@ jobs:
           echo "version updated: ${GITWERK_RESULT}"
           echo "${GITWERK_RESULT}" > versions/VALD_VERSION
 
+          sed -i -e "s/^version: .*$/version: ${GITWERK_RESULT}/" vald/Chart.yaml
+
           git checkout master
 
           git config --global user.name "vdaas-ci"
           git config --global user.email "ci@vdaas.org"
 
-          git add versions/VALD_VERSION
+          git add versions/VALD_VERSION vald/Chart.yaml
           git commit --signoff -m ":bookmark: :robot: Release ${GITWERK_RESULT}"
 
           git tag ${GITWERK_RESULT}
