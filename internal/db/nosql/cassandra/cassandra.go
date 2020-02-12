@@ -266,20 +266,24 @@ func (c *client) Query(stmt string, names []string) *Queryx {
 	return gocqlx.Query(c.session.Query(stmt), names)
 }
 
+func clientError(err error, keys ...string) error {
+	switch err {
+	case gocql.ErrNotFound:
+		return errors.ErrCassandraNotFound(keys...)
+	case gocql.ErrUnavailable:
+		return errors.ErrCassandraUnavailable()
+	default:
+		return err
+	}
+}
+
 func (c *client) GetValue(key string) (value string, err error) {
 	if err = c.Query(Select(c.kvTable,
 		[]string{metaColumn},
 		qb.Eq(uuidColumn))).BindMap(qb.M{
 		uuidColumn: key,
 	}).GetRelease(&value); err != nil {
-		switch err {
-		case gocql.ErrNotFound:
-			return "", errors.ErrCassandraNotFound(key)
-		case gocql.ErrUnavailable:
-			return "", errors.ErrCassandraUnavailable()
-		default:
-			return "", err
-		}
+		return "", clientError(err, key)
 	}
 	return value, nil
 }
@@ -290,14 +294,7 @@ func (c *client) GetKey(value string) (key string, err error) {
 		qb.Eq(metaColumn))).BindMap(qb.M{
 		metaColumn: value,
 	}).GetRelease(&key); err != nil {
-		switch err {
-		case gocql.ErrNotFound:
-			return "", errors.ErrCassandraNotFound(value)
-		case gocql.ErrUnavailable:
-			return "", errors.ErrCassandraUnavailable()
-		default:
-			return "", err
-		}
+		return "", clientError(err, key)
 	}
 	return key, nil
 }
@@ -312,13 +309,7 @@ func (c *client) MultiGetValue(keys ...string) (values []string, err error) {
 		qb.In(uuidColumn))).BindMap(qb.M{
 		uuidColumn: keys,
 	}).SelectRelease(&keyvals); err != nil {
-		switch err {
-		case gocql.ErrNotFound:
-			return nil, errors.ErrCassandraNotFound(keys...)
-		case gocql.ErrUnavailable:
-			return nil, errors.ErrCassandraUnavailable()
-		}
-		return nil, err
+		return nil, clientError(err, keys...)
 	}
 
 	kvs := make(map[string]string, len(keyvals))
@@ -355,12 +346,8 @@ func (c *client) MultiGetKey(values ...string) (keys []string, err error) {
 		qb.In(metaColumn))).BindMap(qb.M{
 		metaColumn: values,
 	}).SelectRelease(&keyvals); err != nil {
-		switch err {
-		case gocql.ErrNotFound:
-			return nil, errors.ErrCassandraNotFound(values...)
-		case gocql.ErrUnavailable:
-			return nil, errors.ErrCassandraUnavailable()
-		}
+		return nil, clientError(err, values...)
+
 	}
 
 	kvs := make(map[string]string, len(keyvals))
