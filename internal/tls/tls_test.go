@@ -20,7 +20,6 @@ package tls
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
 	"io/ioutil"
 	"reflect"
 	"testing"
@@ -28,272 +27,318 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
+var (
+	dummyCaPath          = "./testdata/dummyCa.pem"
+	dummyCertPath        = "./testdata/dummyServer.crt"
+	dummyKeyPath         = "./testdata/dummyServer.key"
+	dummyInvalidCaPath   = "./testdata/invalid.pem"
+	dummyInvalidCertPath = "./testdata/invalid.crt"
+)
+
 func TestNew(t *testing.T) {
-	type args struct {
-		opts []Option
-	}
-	dummyCertPath := "./testdata/dummyServer.crt"
-	dummyKeyPath := "./testdata/dummyServer.key"
-	dummyCaPath := "./testdata/dummyCa.pem"
-	defaultArgs := args{
-		opts: []Option{
-			WithCert(dummyCertPath),
-			WithKey(dummyKeyPath),
-			WithCa(dummyCaPath),
-		},
-	}
-	tests := []struct {
+	type test struct {
 		name      string
-		args      args
-		want      *Config
-		checkFunc func(*Config, *Config) error
-		wantErr   error
-	}{
-		{
-			name: "return value MinVersion test.",
-			args: defaultArgs,
-			want: func() *Config {
-				conf := defaultConfig
-				cert, _ := tls.LoadX509KeyPair(dummyCertPath, dummyKeyPath)
-				conf.Certificates = []tls.Certificate{cert}
-				return conf
-			}(),
-			checkFunc: func(got, want *tls.Config) error {
-				if got.MinVersion != want.MinVersion {
-					return fmt.Errorf("MinVersion not Matched :\tgot %d\twant %d", got.MinVersion, want.MinVersion)
+		opts      []Option
+		checkFunc func(*Config, error) error
+	}
+
+	tests := []test{
+		func() test {
+			wantFn := func() (*Config, error) {
+				var err error
+				c := &credentials{
+					cfg: new(tls.Config),
 				}
-				return nil
-			},
-		},
-		{
-			name: "return value CurvePreferences test.",
-			args: defaultArgs,
-			want: func() *Config {
-				conf := defaultConfig
-				cert, _ := tls.LoadX509KeyPair(dummyCertPath, dummyKeyPath)
-				conf.Certificates = []tls.Certificate{cert}
-				return conf
-			}(),
-			checkFunc: func(got, want *tls.Config) error {
-				if len(got.CurvePreferences) != len(want.CurvePreferences) {
-					return fmt.Errorf("CurvePreferences not Matched length:\tgot %d\twant %d", len(got.CurvePreferences), len(want.CurvePreferences))
+
+				c.cfg.Certificates = make([]tls.Certificate, 1)
+				c.cfg.Certificates[0], err = tls.LoadX509KeyPair(dummyCertPath, dummyKeyPath)
+				if err != nil {
+					return nil, err
 				}
-				for _, actualValue := range got.CurvePreferences {
-					var match bool
-					for _, expectedValue := range want.CurvePreferences {
-						if actualValue == expectedValue {
-							match = true
-							break
-						}
+
+				b, err := ioutil.ReadFile(dummyCertPath)
+				if err != nil {
+					return nil, err
+				}
+
+				pool := x509.NewCertPool()
+				if !pool.AppendCertsFromPEM(b) {
+					return nil, errors.New("faild to add cert")
+				}
+
+				c.cfg.ClientCAs = pool
+				c.cfg.ClientAuth = tls.RequireAndVerifyClientCert
+
+				c.cfg.BuildNameToCertificate()
+
+				return c.cfg, nil
+			}
+
+			return test{
+				name: "returns cfg and nil when option is not empty",
+				opts: []Option{
+					WithCert(dummyCertPath),
+					WithKey(dummyKeyPath),
+					WithCa(dummyCertPath),
+				},
+				checkFunc: func(cfg *tls.Config, err error) error {
+					if err != nil {
+						return errors.Errorf("err is not nil: %v", err)
 					}
 
-					if !match {
-						return fmt.Errorf("CurvePreferences not Find :\twant %s", string(want.MinVersion))
+					if cfg == nil {
+						return errors.New("cfg is nil")
 					}
+
+					wantCfg, wantErr := wantFn()
+					if wantErr != nil {
+						return errors.Errorf("wantErr is not nil: %v", wantErr)
+					}
+
+					if len(cfg.Certificates) != 1 && len(cfg.Certificates) != len(wantCfg.Certificates) {
+						return errors.New("Certificates length is wrong")
+					}
+
+					if got, want := string(wantCfg.Certificates[0].Certificate[0]), string(cfg.Certificates[0].Certificate[0]); want != got {
+						return errors.Errorf("Certificates[0] want: %v, but got: %v", want, got)
+					}
+
+					if len(cfg.ClientCAs.Subjects()) == 0 {
+						return errors.New("subjects are empty")
+					}
+
+					l := len(cfg.ClientCAs.Subjects()) - 1
+					if got, want := cfg.ClientCAs.Subjects()[l], wantCfg.ClientCAs.Subjects()[0]; !reflect.DeepEqual(got, want) {
+						return errors.Errorf("ClientCAs.Subjects want: %v, got: %v", want, got)
+					}
+
+					if got, want := cfg.ClientAuth, wantCfg.ClientAuth; want != got {
+						return errors.Errorf("ClientAuth want: %v, but got: %v", want, got)
+					}
+
+					return nil
+				},
+			}
+		}(),
+
+		{
+			name: "returns nil and error when option is empty",
+			checkFunc: func(cfg *tls.Config, err error) error {
+				if err == nil {
+					return errors.New("err is nil")
+				} else if !errors.Is(err, errors.ErrTLSCertOrKeyNotFound) {
+					return errors.Errorf("want err: %v, got: %v", errors.ErrTLSCertOrKeyNotFound, err)
+				}
+
+				if cfg != nil {
+					return errors.Errorf("cfg is not nil: %v", cfg)
 				}
 				return nil
 			},
 		},
+
 		{
-			name: "return value SessionTicketsDisabled test.",
-			args: defaultArgs,
-			want: func() *Config {
-				conf := defaultConfig
-				cert, _ := tls.LoadX509KeyPair(dummyCertPath, dummyKeyPath)
-				conf.Certificates = []tls.Certificate{cert}
-				return conf
-			}(),
-			checkFunc: func(got, want *tls.Config) error {
-				if got.SessionTicketsDisabled != want.SessionTicketsDisabled {
-					return fmt.Errorf("SessionTicketsDisabled not matched :\tgot %v\twant %v", got.SessionTicketsDisabled, want.SessionTicketsDisabled)
+			name: "returns nil and error when cert path is empty",
+			opts: []Option{
+				WithKey(dummyKeyPath),
+			},
+			checkFunc: func(cfg *tls.Config, err error) error {
+				if err == nil {
+					return errors.New("err is nil")
+				} else if !errors.Is(err, errors.ErrTLSCertOrKeyNotFound) {
+					return errors.Errorf("want err: %v, got: %v", errors.ErrTLSCertOrKeyNotFound, err)
+				}
+
+				if cfg != nil {
+					return errors.Errorf("cfg is not nil: %v", cfg)
 				}
 				return nil
 			},
 		},
+
 		{
-			name: "return value ClientAuth test.",
-			args: defaultArgs,
-			want: func() *Config {
-				conf := defaultConfig
-				cert, _ := tls.LoadX509KeyPair(dummyCertPath, dummyKeyPath)
-				conf.Certificates = []tls.Certificate{cert}
-				return conf
-			}(),
-			checkFunc: func(got, want *tls.Config) error {
-				if got.ClientAuth != want.ClientAuth {
-					return fmt.Errorf("ClientAuth not Matched :\tgot %d \twant %d", got.ClientAuth, want.ClientAuth)
+			name: "returns nil and error when key path is empty",
+			opts: []Option{
+				WithCert(dummyCertPath),
+			},
+			checkFunc: func(cfg *tls.Config, err error) error {
+				if err == nil {
+					return errors.New("err is nil")
+				} else if !errors.Is(err, errors.ErrTLSCertOrKeyNotFound) {
+					return errors.Errorf("want err: %v, got: %v", errors.ErrTLSCertOrKeyNotFound, err)
+				}
+
+				if cfg != nil {
+					return errors.Errorf("cfg is not nil: %v", cfg)
 				}
 				return nil
 			},
 		},
+
 		{
-			name: "cert file not found return error",
-			args: func() args {
-				a := defaultArgs
-				a.opts = append(a.opts, WithCert(""))
-				return a
-			}(),
-			wantErr: errors.ErrTLSCertOrKeyNotFound,
+			name: "returns nil and error when contents of cert file is invalid",
+			opts: []Option{
+				WithCert(dummyInvalidCertPath),
+				WithKey(dummyKeyPath),
+			},
+			checkFunc: func(cfg *tls.Config, err error) error {
+				if err == nil {
+					return errors.New("err is nil")
+				} else if want, got := errors.New("tls: failed to find any PEM data in certificate input"), err; want.Error() != got.Error() {
+					return errors.Errorf("want err: %v, but got: %v", want, got)
+				}
+
+				if cfg != nil {
+					return errors.Errorf("cfg is not nil: %v", cfg)
+				}
+				return nil
+			},
 		},
+
 		{
-			name: "key file not found return error",
-			args: func() args {
-				a := defaultArgs
-				a.opts = append(a.opts, WithCert(""))
-				return a
-			}(),
-			wantErr: errors.ErrTLSCertOrKeyNotFound,
+			name: "returns nil and error when contents of ca file is invalid",
+			opts: []Option{
+				WithCert(dummyCertPath),
+				WithKey(dummyKeyPath),
+				WithCa(dummyInvalidCaPath),
+			},
+			checkFunc: func(cfg *tls.Config, err error) error {
+				if err == nil {
+					return errors.New("err is nil")
+				} else if !errors.Is(err, errors.ErrCertificationFailed) {
+					return errors.Errorf("want err: %v, but got: %v", errors.ErrCertificationFailed, err)
+				}
+
+				if cfg != nil {
+					return errors.Errorf("cfg is not nil: %v", cfg)
+				}
+				return nil
+			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// got, gotErr := New(tt.args.opts...)
-			// if tt.checkFunc != nil {
-			// 	if err := tt.checkFunc(got, tt.want); err != nil {
-			// 		t.Errorf("NewTLSConfig() error = %v", err)
-			// 		return
-			// 	}
-			// }
-			// if gotErr != nil {
-			// 	if tt.wantErr == nil {
-			// 		t.Errorf("NewTLSConfig() error = %v, wantErr = %v", gotErr, tt.wantErr)
-			// 	} else if gotErr.Error() != tt.wantErr.Error() {
-			// 		t.Errorf("NewTLSConfig() error = %v, wantErr = %v", gotErr, tt.wantErr)
-			// 	}
-			// } else if tt.wantErr != nil {
-			// 	t.Errorf("NewTLSConfig() error = %v, wantErr = %v", gotErr, tt.wantErr)
-			// }
+			cfg, err := New(tt.opts...)
+			if err := tt.checkFunc(cfg, err); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }
 
 func TestNewClientConfig(t *testing.T) {
-	type args struct {
-		opts []Option
-	}
-	dummyCertPath := "./testdata/dummyServer.crt"
-	dummyKeyPath := "./testdata/dummyServer.key"
-	dummyCaPath := "./testdata/dummyCa.pem"
-	defaultArgs := args{
-		opts: []Option{
-			WithCert(dummyCertPath),
-			WithKey(dummyKeyPath),
-			WithCa(dummyCaPath),
-		},
-	}
 	tests := []struct {
 		name      string
-		args      args
-		checkFunc func(*Config, *Config) error
-		want      *Config
-		wantErr   error
+		opts      []Option
+		checkFunc func(*Config, error) error
 	}{
 		{
-			name: "return value MinVersion test.",
-			args: defaultArgs,
-			want: func() *Config {
-				conf := defaultConfig
-				cert, _ := tls.LoadX509KeyPair(dummyCertPath, dummyKeyPath)
-				conf.Certificates = []tls.Certificate{cert}
-				return conf
-			}(),
-			checkFunc: func(got, want *tls.Config) error {
-				if got.MinVersion != want.MinVersion {
-					return fmt.Errorf("MinVersion not Matched :\tgot %d\twant %d", got.MinVersion, want.MinVersion)
+			name: "returns cfg and nil when option is empty",
+			checkFunc: func(cfg *Config, err error) error {
+				if err != nil {
+					return errors.Errorf("err is not nil. err: %v", err)
+				}
+
+				if cfg == nil {
+					return errors.New("cfg is nil")
 				}
 				return nil
 			},
 		},
 
 		{
-			name: "return value CurvePreferences test.",
-			args: defaultArgs,
-			want: func() *Config {
-				conf := defaultConfig
-				cert, _ := tls.LoadX509KeyPair(dummyCertPath, dummyKeyPath)
-				conf.Certificates = []tls.Certificate{cert}
-				return conf
-			}(),
-			checkFunc: func(got, want *tls.Config) error {
-				if len(got.CurvePreferences) != len(want.CurvePreferences) {
-					return fmt.Errorf("CurvePreferences not Matched length:\tgot %d\twant %d", len(got.CurvePreferences), len(want.CurvePreferences))
+			name: "returns cfg and nil when cert and key option is not empty",
+			opts: []Option{
+				WithCert(dummyCertPath),
+				WithKey(dummyKeyPath),
+			},
+			checkFunc: func(cfg *Config, err error) error {
+				if err != nil {
+					return errors.Errorf("err is not nil. err: %v", err)
 				}
-				for _, actualValue := range got.CurvePreferences {
-					var match bool
-					for _, expectedValue := range want.CurvePreferences {
-						if actualValue == expectedValue {
-							match = true
-							break
-						}
-					}
 
-					if !match {
-						return fmt.Errorf("CurvePreferences not Find :\twant %s", string(want.MinVersion))
-					}
+				if cfg == nil {
+					return errors.New("cfg is nil")
+				}
+
+				if len(cfg.Certificates) != 1 {
+					return errors.Errorf("invalid certificate was set. %v", cfg.Certificates)
 				}
 				return nil
 			},
 		},
+
 		{
-			name: "return value SessionTicketsDisabled test.",
-			args: defaultArgs,
-			want: func() *Config {
-				conf := defaultConfig
-				cert, _ := tls.LoadX509KeyPair(dummyCertPath, dummyKeyPath)
-				conf.Certificates = []tls.Certificate{cert}
-				return conf
-			}(),
-			checkFunc: func(got, want *tls.Config) error {
-				if got.SessionTicketsDisabled != want.SessionTicketsDisabled {
-					return fmt.Errorf("SessionTicketsDisabled not matched :\tgot %v\twant %v", got.SessionTicketsDisabled, want.SessionTicketsDisabled)
+			name: "returns cfg and nil when ca option is not empty",
+			opts: []Option{
+				WithCa(dummyCaPath),
+			},
+			checkFunc: func(cfg *Config, err error) error {
+				if err != nil {
+					return errors.Errorf("err is not nil. err: %v", err)
 				}
+
+				if cfg == nil {
+					return errors.New("cfg is nil")
+				}
+
+				if cfg.RootCAs == nil {
+					return errors.New("rootca is nil")
+				}
+
+				// TODO: added test case
 				return nil
 			},
 		},
+
 		{
-			name: "return value ClientAuth test.",
-			args: defaultArgs,
-			want: func() *Config {
-				conf := defaultConfig
-				cert, _ := tls.LoadX509KeyPair(dummyCertPath, dummyKeyPath)
-				conf.Certificates = []tls.Certificate{cert}
-				return conf
-			}(),
-			checkFunc: func(got, want *tls.Config) error {
-				if got.ClientAuth != want.ClientAuth {
-					return fmt.Errorf("ClientAuth not Matched :\tgot %d \twant %d", got.ClientAuth, want.ClientAuth)
+			name: "returns nil and error when ca file is invalid",
+			opts: []Option{
+				WithCa(dummyInvalidCaPath),
+			},
+			checkFunc: func(cfg *Config, err error) error {
+				if err == nil {
+					return errors.New("err is nil")
+				} else if !errors.Is(err, errors.ErrCertificationFailed) {
+					return errors.Errorf("want err: %v, but got: %v", errors.ErrCertificationFailed, err)
 				}
+
+				if cfg != nil {
+					return errors.Errorf("cfg is not nil: %v", cfg)
+				}
+
 				return nil
 			},
 		},
+
 		{
-			name: "cert file not found return error",
-			args: args{
-				[]Option{
-					WithCert(""),
-					WithKey(dummyKeyPath),
-					WithCa(dummyCaPath),
-				},
+			name: "returns nil and error when cert file is invalid",
+			opts: []Option{
+				WithCert(dummyInvalidCertPath),
+				WithKey(dummyKeyPath),
+			},
+			checkFunc: func(cfg *Config, err error) error {
+				if err == nil {
+					return errors.New("err is nil")
+				} else if want, got := errors.New("tls: failed to find any PEM data in certificate input"), err; want.Error() != got.Error() {
+					return errors.Errorf("want err: %v, but got: %v", want, got)
+				}
+
+				if cfg != nil {
+					return errors.Errorf("cfg is not nil: %v", cfg)
+				}
+
+				return nil
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, gotErr := NewClientConfig(tt.args.opts...)
-			if tt.checkFunc != nil {
-				if err := tt.checkFunc(got, tt.want); err != nil {
-					t.Errorf("NewTLSConfig() error = %v", err)
-					return
-				}
-			}
-			if gotErr != nil {
-				if tt.wantErr == nil {
-					t.Errorf("NewTLSConfig() error = %v, wantErr = %v", gotErr, tt.wantErr)
-				} else if gotErr.Error() != tt.wantErr.Error() {
-					t.Errorf("NewTLSConfig() error = %v, wantErr = %v", gotErr, tt.wantErr)
-				}
-			} else if tt.wantErr != nil {
-				t.Errorf("NewTLSConfig() error = %v, wantErr = %v", gotErr, tt.wantErr)
+			cfg, err := NewClientConfig(tt.opts...)
+			if err := tt.checkFunc(cfg, err); err != nil {
+				t.Error(err)
 			}
 		})
 	}
@@ -308,11 +353,9 @@ func TestNewX509CertPool(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			path := "./testdata/dummyServer.crt"
-
-			wantFn := func() (got *x509.CertPool, err error) {
+			wantFn := func() (*x509.CertPool, error) {
 				pool := x509.NewCertPool()
-				b, err := ioutil.ReadFile("./testdata/dummyServer.crt")
+				b, err := ioutil.ReadFile(dummyCertPath)
 				if err != nil {
 					return nil, err
 				}
@@ -326,13 +369,13 @@ func TestNewX509CertPool(t *testing.T) {
 
 			return test{
 				name: "returns pool and nil when the pool exists and adds the cert file into pool",
-				path: path,
-				checkFunc: func(got *x509.CertPool, err error) error {
+				path: dummyCertPath,
+				checkFunc: func(pool *x509.CertPool, err error) error {
 					if err != nil {
 						return errors.Errorf("err is not nil. err: %v", err)
 					}
 
-					if got == nil {
+					if pool == nil {
 						return errors.New("got is nil")
 					}
 
@@ -341,11 +384,12 @@ func TestNewX509CertPool(t *testing.T) {
 						return errors.Errorf("faild to create want object. err:", err)
 					}
 
-					if len(got.Subjects()) == 0 {
+					if len(pool.Subjects()) == 0 {
 						return errors.New("cert files are empty")
 					}
 
-					if got, want := got.Subjects()[len(got.Subjects())-1], want.Subjects()[0]; !reflect.DeepEqual(got, want) {
+					l := len(pool.Subjects()) - 1
+					if got, want := pool.Subjects()[l], want.Subjects()[0]; !reflect.DeepEqual(got, want) {
 						return errors.Errorf("not equals. want: %v, got: %v", want, got)
 					}
 
@@ -356,16 +400,16 @@ func TestNewX509CertPool(t *testing.T) {
 
 		{
 			name: "returns nil and error when contents of path is invalid",
-			path: "./testdata/invalid.crt",
-			checkFunc: func(got *x509.CertPool, err error) error {
+			path: dummyInvalidCertPath,
+			checkFunc: func(pool *x509.CertPool, err error) error {
 				if err == nil {
 					return errors.New("err is ")
 				} else if !errors.Is(err, errors.ErrCertificationFailed) {
 					return errors.Errorf("err not equals. want: %v, but got: %v", errors.ErrCertificationFailed, err)
 				}
 
-				if got == nil {
-					return errors.Errorf("got is not nil: %v", got)
+				if pool == nil {
+					return errors.Errorf("got is not nil: %v", pool)
 				}
 
 				return nil
@@ -375,13 +419,13 @@ func TestNewX509CertPool(t *testing.T) {
 		{
 			name: "returns nil and error when path dose not exist",
 			path: "not_exist",
-			checkFunc: func(got *x509.CertPool, err error) error {
+			checkFunc: func(pool *x509.CertPool, err error) error {
 				if err == nil {
 					return errors.New("err is nil")
 				}
 
-				if got != nil {
-					return errors.Errorf("got is not nil: %v", got)
+				if pool != nil {
+					return errors.Errorf("got is not nil: %v", pool)
 				}
 				return nil
 			},
@@ -389,13 +433,13 @@ func TestNewX509CertPool(t *testing.T) {
 
 		{
 			name: "returns nil and error when path is empty",
-			checkFunc: func(got *x509.CertPool, err error) error {
+			checkFunc: func(pool *x509.CertPool, err error) error {
 				if err == nil {
 					return errors.New("err is nil")
 				}
 
-				if got != nil {
-					return errors.Errorf("got is not nil: %v", got)
+				if pool != nil {
+					return errors.Errorf("got is not nil: %v", pool)
 				}
 
 				return nil
