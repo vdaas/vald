@@ -1,13 +1,19 @@
 package helper
 
-import "testing"
+import (
+	"io/ioutil"
+	"os"
+	"testing"
+)
 
 type Helper interface {
 	Run(b *testing.B) error
 }
 
 type helper struct {
-	parallel bool
+	parallel  bool
+	targets   []string
+	operation OperationHelper
 }
 
 func NewHelper(opts ...HelperOption) Helper {
@@ -27,10 +33,38 @@ func (h *helper) Run(b *testing.B) error {
 	return h.run(b)
 }
 
-func (h *helper) runParallel(b *testing.B) error {
+func (h *helper) run(b *testing.B) error {
+	for _, target := range h.targets {
+		tmpdir, err := ioutil.TempDir("", "tmpdir")
+		if err != nil {
+			return err
+		}
+		defer os.RemoveAll(tmpdir)
+
+		h.operation.Insert()(b)
+		h.operation.CreateIndex()(b)
+		h.operation.Search()(b)
+
+		// TODO
+		_ = target
+	}
 	return nil
 }
 
-func (h *helper) run(b *testing.B) error {
+func (h *helper) runParallel(b *testing.B) error {
+	for _, target := range h.targets {
+		tmpdir, err := ioutil.TempDir("", "tmpdir")
+		if err != nil {
+			return err
+		}
+		defer os.RemoveAll(tmpdir)
+
+		h.operation.InsertParallel()(b)
+		h.operation.CreateIndexParallel()(b)
+		h.operation.SearchParallel()(b)
+
+		// TODO
+		_ = target
+	}
 	return nil
 }
