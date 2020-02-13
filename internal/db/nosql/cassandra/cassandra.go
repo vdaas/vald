@@ -347,7 +347,6 @@ func (c *client) MultiGetKey(values ...string) (keys []string, err error) {
 		metaColumn: values,
 	}).SelectRelease(&keyvals); err != nil {
 		return nil, clientError(err, values...)
-
 	}
 
 	kvs := make(map[string]string, len(keyvals))
