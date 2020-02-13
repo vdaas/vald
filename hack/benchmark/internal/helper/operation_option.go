@@ -8,11 +8,19 @@ var (
 	defaultOperationHelperOption = []OperationHelperOption{}
 )
 
-func WithNGT() OperationHelperOption {
+// func WithNGT() OperationHelperOption {
+// 	return func(o *operationHelper) {}
+// }
+
+func WithNGTInitializer(fn func()) OperationHelperOption {
 	return func(o *operationHelper) {}
 }
 
-func WithGoNGT() OperationHelperOption {
+// func WithGoNGT() OperationHelperOption {
+// 	return func(o *operationHelper) {}
+// }
+
+func WithGoNGTInitializer(fn func()) OperationHelperOption {
 	return func(o *operationHelper) {}
 }
 
