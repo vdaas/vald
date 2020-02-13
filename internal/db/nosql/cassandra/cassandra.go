@@ -34,7 +34,8 @@ const (
 )
 
 var (
-	ErrNotFound = gocql.ErrNotFound
+	ErrNotFound    = gocql.ErrNotFound
+	ErrUnavailable = gocql.ErrUnavailable
 )
 
 type Cassandra interface {
@@ -268,9 +269,9 @@ func (c *client) Query(stmt string, names []string) *Queryx {
 
 func clientError(err error, keys ...string) error {
 	switch err {
-	case gocql.ErrNotFound:
+	case ErrNotFound:
 		return errors.ErrCassandraNotFound(keys...)
-	case gocql.ErrUnavailable:
+	case ErrUnavailable:
 		return errors.ErrCassandraUnavailable()
 	default:
 		return err
