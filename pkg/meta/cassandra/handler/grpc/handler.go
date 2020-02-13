@@ -53,6 +53,7 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 			log.Warnf("[GetMeta]\tunavailable\t%+v", err)
 			return nil, status.WrapWithUnavailable(fmt.Sprintf("GetMeta API Cassandra unavailable"), err, info.Get())
 		}
+
 		log.Errorf("[GetMeta]\tunknown error\t%+v", err)
 		return nil, status.WrapWithUnknown(fmt.Sprintf("GetMeta API Cassandra unknown error occurred key %s", key.GetKey()), err, info.Get())
 	}
@@ -72,6 +73,7 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 			log.Warnf("[GetMetas]\tunavailable\t%+v", err)
 			return mv, status.WrapWithUnavailable(fmt.Sprintf("GetMetas API Cassandra unavailable"), err, info.Get())
 		}
+
 		log.Errorf("[GetMetas]\tunknown error\t%+v", err)
 		return mv, status.WrapWithUnknown(fmt.Sprintf("GetMetas API Cassandra entry keys %#v unknown error occurred", keys.GetKeys()), err, info.Get())
 	}
@@ -88,6 +90,7 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 			log.Warnf("[GetMetaInverse]\tunavailable\t%+v", err)
 			return nil, status.WrapWithUnavailable(fmt.Sprintf("GetMetaInverse API Cassandra unavailable"), err, info.Get())
 		}
+
 		log.Errorf("[GetMetaInverse]\tunknown error\t%+v", err)
 		return nil, status.WrapWithUnknown(fmt.Sprintf("GetMetaInverse API Cassandra val %s unknown error occurred", val.GetVal()), err, info.Get())
 	}
