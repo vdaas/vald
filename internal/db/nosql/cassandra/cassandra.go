@@ -270,9 +270,9 @@ func (c *client) Query(stmt string, names []string) *Queryx {
 func clientError(err error, keys ...string) error {
 	switch err {
 	case ErrNotFound:
-		return errors.ErrCassandraNotFound(keys...)
+		return errors.Wrap(err, errors.ErrCassandraNotFound(keys...).Error())
 	case ErrUnavailable:
-		return errors.ErrCassandraUnavailable()
+		return errors.Wrap(err, errors.ErrCassandraUnavailable().Error())
 	default:
 		return err
 	}
