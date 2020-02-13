@@ -35,6 +35,10 @@ const (
 	epsilon = 0.1
 )
 
+const (
+	IndexDirPath = "tmpdir"
+)
+
 var (
 	targets    []string
 	datasetVar string
@@ -61,14 +65,14 @@ func BenchmarkGoNGTSequential(b *testing.B) {
 
 	for _, target := range targets {
 		b.Run(target, func(bb *testing.B) {
-			tmpdir, err := ioutil.TempDir("", "tmpdir")
+			indexDir, err := ioutil.TempDir("", IndexDirPath)
 			if err != nil {
 				bb.Error(err)
 			}
-			defer os.RemoveAll(tmpdir)
+			defer os.RemoveAll(indexDir)
 
 			d := assets.Data(target)(b)
-			n := gongt.SetIndexPath(tmpdir).SetObjectType(gongt.Float).SetDimension(d.Dimension()).Open()
+			n := gongt.SetIndexPath(indexDir).SetObjectType(gongt.Float).SetDimension(d.Dimension()).Open()
 			defer n.Close()
 
 			bb.Run("Insert", func(sb *testing.B) {
@@ -116,14 +120,14 @@ func BenchmarkGoNGTParallel(b *testing.B) {
 
 	for _, target := range targets {
 		b.Run(target, func(bb *testing.B) {
-			tmpdir, err := ioutil.TempDir("", "tmpdir")
+			indexDir, err := ioutil.TempDir("", IndexDirPath)
 			if err != nil {
 				bb.Error(err)
 			}
-			defer os.RemoveAll(tmpdir)
+			defer os.RemoveAll(indexDir)
 
 			d := assets.Data(target)(b)
-			n := gongt.SetIndexPath(tmpdir).SetObjectType(gongt.Float).SetDimension(d.Dimension()).Open()
+			n := gongt.SetIndexPath(indexDir).SetObjectType(gongt.Float).SetDimension(d.Dimension()).Open()
 			defer n.Close()
 
 			bb.Run("Insert", func(sb *testing.B) {
