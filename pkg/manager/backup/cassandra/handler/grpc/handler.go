@@ -57,7 +57,7 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 
 		case errors.IsErrCassandraUnavailable(errors.UnWrapAll(err)):
 			log.Warnf("[GetVector]\tunavailable\t%+v", err)
-			return nil, status.WrapWithNotFound(fmt.Sprintf("GetVector API Cassandra unavailable"), err, info.Get())
+			return nil, status.WrapWithUnavailable(fmt.Sprintf("GetVector API Cassandra unavailable"), err, info.Get())
 
 		default:
 			log.Errorf("[GetVector]\tunknown error\t%+v", err)
