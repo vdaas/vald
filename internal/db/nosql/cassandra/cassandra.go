@@ -34,8 +34,19 @@ const (
 )
 
 var (
-	ErrNotFound    = gocql.ErrNotFound
-	ErrUnavailable = gocql.ErrUnavailable
+	ErrNotFound             = gocql.ErrNotFound
+	ErrUnavailable          = gocql.ErrUnavailable
+	ErrUnsupported          = gocql.ErrUnsupported
+	ErrTooManyStmts         = gocql.ErrTooManyStmts
+	ErrUseStmt              = gocql.ErrUseStmt
+	ErrSessionClosed        = gocql.ErrSessionClosed
+	ErrNoConnections        = gocql.ErrNoConnections
+	ErrNoKeyspace           = gocql.ErrNoKeyspace
+	ErrKeyspaceDoesNotExist = gocql.ErrKeyspaceDoesNotExist
+	ErrNoMetadata           = gocql.ErrNoMetadata
+	ErrNoHosts              = gocql.ErrNoHosts
+	ErrNoConnectionsStarted = gocql.ErrNoConnectionsStarted
+	ErrHostQueryFailed      = gocql.ErrHostQueryFailed
 )
 
 type Cassandra interface {
