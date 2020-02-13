@@ -31,12 +31,9 @@ import (
 )
 
 const (
-	size    = 10
-	epsilon = 0.1
-)
-
-const (
 	IndexDirPath = "tmpdir"
+	SearchSize   = 10
+	Epsilon      = 0.1
 )
 
 var (
@@ -72,7 +69,11 @@ func BenchmarkGoNGTSequential(b *testing.B) {
 			defer os.RemoveAll(indexDir)
 
 			d := assets.Data(target)(b)
-			n := gongt.SetIndexPath(indexDir).SetObjectType(gongt.Float).SetDimension(d.Dimension()).Open()
+			n := gongt.
+				SetIndexPath(indexDir).
+				SetObjectType(gongt.Float).
+				SetDimension(d.Dimension()).
+				Open()
 			defer n.Close()
 
 			bb.Run("Insert", func(sb *testing.B) {
@@ -104,7 +105,7 @@ func BenchmarkGoNGTSequential(b *testing.B) {
 				sb.ResetTimer()
 				sb.StartTimer()
 				for i := 0; i < sb.N; i++ {
-					_, err := n.Search(dataset[i%len(dataset)], size, epsilon)
+					_, err := n.Search(dataset[i%len(dataset)], SearchSize, Epsilon)
 					if err != nil {
 						sb.Error(err)
 					}
@@ -163,7 +164,7 @@ func BenchmarkGoNGTParallel(b *testing.B) {
 				sb.RunParallel(func(pb *testing.PB) {
 					i := 0
 					for pb.Next() {
-						_, err := n.Search(dataset[i%len(dataset)], size, epsilon)
+						_, err := n.Search(dataset[i%len(dataset)], SearchSize, Epsilon)
 						if err != nil {
 							sb.Error(err)
 						}
