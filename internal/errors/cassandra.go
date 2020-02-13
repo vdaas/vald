@@ -41,12 +41,14 @@ var (
 	}
 
 	ErrCassandraNotFound = func(keys ...string) error {
-		if len(keys) == 1 {
+		switch {
+		case len(keys) == 1:
 			return Wrapf(NewErrCassandraNotFoundIdentity(), "error cassandra key '%s' not found", keys[0])
-		} else if len(keys) > 1 {
+		case len(keys) > 1:
 			return Wrapf(NewErrCassandraNotFoundIdentity(), "error cassandra keys '%s' not found", keys)
+		default:
+			return nil
 		}
-		return nil
 	}
 
 	ErrCassandraGetOperationFailed = func(key string, err error) error {
