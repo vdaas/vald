@@ -66,9 +66,7 @@ jobs:
         run: |
           git checkout gh-pages
           mv -f vald-*.tgz charts/
-          pushd charts
-          helm repo index --url https://vald.vdaas.org/charts .
-          popd
+          helm repo index --url https://vald.vdaas.org/charts charts/
 
           git config --global user.name "vdaas-ci"
           git config --global user.email "ci@vdaas.org"
