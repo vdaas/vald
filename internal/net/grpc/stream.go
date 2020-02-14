@@ -27,6 +27,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// TODO rename BidirectionalStreamServer
 func BidirectionalStream(stream grpc.ServerStream,
 	concurrency int,
 	newData func() interface{},
@@ -70,3 +71,6 @@ func BidirectionalStream(stream grpc.ServerStream,
 		}
 	}
 }
+
+// TODO implement BidirectionalStreamClient
+// func BidirectionalStreamClient(...) error {}
