@@ -35,6 +35,8 @@ func WithNGT(n service.NGT) Option {
 
 func WithStreamConcurrency(c int) Option {
 	return func(s *server) {
-		s.streamConcurrency = c
+		if c != 0 {
+			s.streamConcurrency = c
+		}
 	}
 }
