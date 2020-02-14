@@ -278,12 +278,12 @@ func (c *client) Query(stmt string, names []string) *Queryx {
 	return gocqlx.Query(c.session.Query(stmt), names)
 }
 
-func clientError(err error, keys ...string) error {
+func wrapErrorWithKeys(err error, keys ...string) error {
 	switch err {
 	case ErrNotFound:
-		return errors.Wrap(err, errors.ErrCassandraNotFound(keys...).Error())
+		return errors.ErrCassandraNotFound(keys...)
 	case ErrUnavailable:
-		return errors.Wrap(err, errors.ErrCassandraUnavailable().Error())
+		return errors.ErrCassandraUnavailable()
 	default:
 		return err
 	}
@@ -295,7 +295,7 @@ func (c *client) GetValue(key string) (value string, err error) {
 		qb.Eq(uuidColumn))).BindMap(qb.M{
 		uuidColumn: key,
 	}).GetRelease(&value); err != nil {
-		return "", clientError(err, key)
+		return "", wrapErrorWithKeys(err, key)
 	}
 	return value, nil
 }
@@ -306,7 +306,7 @@ func (c *client) GetKey(value string) (key string, err error) {
 		qb.Eq(metaColumn))).BindMap(qb.M{
 		metaColumn: value,
 	}).GetRelease(&key); err != nil {
-		return "", clientError(err, key)
+		return "", wrapErrorWithKeys(err, key)
 	}
 	return key, nil
 }
@@ -321,7 +321,7 @@ func (c *client) MultiGetValue(keys ...string) (values []string, err error) {
 		qb.In(uuidColumn))).BindMap(qb.M{
 		uuidColumn: keys,
 	}).SelectRelease(&keyvals); err != nil {
-		return nil, clientError(err, keys...)
+		return nil, wrapErrorWithKeys(err, keys...)
 	}
 
 	kvs := make(map[string]string, len(keyvals))
@@ -358,7 +358,7 @@ func (c *client) MultiGetKey(values ...string) (keys []string, err error) {
 		qb.In(metaColumn))).BindMap(qb.M{
 		metaColumn: values,
 	}).SelectRelease(&keyvals); err != nil {
-		return nil, clientError(err, values...)
+		return nil, wrapErrorWithKeys(err, values...)
 	}
 
 	kvs := make(map[string]string, len(keyvals))

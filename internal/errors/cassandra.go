@@ -26,13 +26,13 @@ var (
 
 	NewErrCassandraNotFoundIdentity = func() error {
 		return &ErrCassandraNotFoundIdentity{
-			err: New("error cassandra entry not found"),
+			err: New("cassandra entry not found"),
 		}
 	}
 
 	NewErrCassandraUnavailableIdentity = func() error {
 		return &ErrCassandraUnavailableIdentity{
-			err: New("error cassandra unavailable"),
+			err: New("cassandra unavailable"),
 		}
 	}
 
