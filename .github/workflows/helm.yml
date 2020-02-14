@@ -18,6 +18,8 @@ jobs:
         with:
           fetch-depth: 1
       - uses: azure/setup-helm@v1
+        with:
+          version: 'v3.1.0'
       - name: Helm version
         run: |
           helm version
@@ -51,6 +53,8 @@ jobs:
         with:
           fetch-depth: 1
       - uses: azure/setup-helm@v1
+        with:
+          version: 'v3.1.0'
       - name: Helm version
         run: |
           helm version

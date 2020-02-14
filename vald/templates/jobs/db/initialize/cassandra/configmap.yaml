@@ -24,6 +24,7 @@ data:
     CREATE KEYSPACE IF NOT EXISTS {{ .Values.initializer.cassandra.configmap.keyspace }} WITH replication = {'class': '{{ .Values.initializer.cassandra.configmap.replication_class }}', 'replication_factor': {{ .Values.initializer.cassandra.configmap.replication_factor }}};
 
     {{- if .Values.initializer.cassandra.configmap.meta.enabled }}
+    // meta
 
     DROP TABLE IF EXISTS {{ .Values.initializer.cassandra.configmap.keyspace }}.{{ .Values.initializer.cassandra.configmap.meta.name.kv }};
     CREATE TABLE {{ .Values.initializer.cassandra.configmap.keyspace }}.{{ .Values.initializer.cassandra.configmap.meta.name.kv }} (
@@ -41,6 +42,7 @@ data:
     {{- end }}
 
     {{- if .Values.initializer.cassandra.configmap.backup.enabled }}
+    // backup
 
     DROP TABLE IF EXISTS {{ .Values.initializer.cassandra.configmap.keyspace }}.{{ .Values.initializer.cassandra.configmap.backup.name }};
     CREATE TABLE {{ .Values.initializer.cassandra.configmap.keyspace }}.{{ .Values.initializer.cassandra.configmap.backup.name }} (
