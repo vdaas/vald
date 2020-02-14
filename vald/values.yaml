@@ -42,6 +42,7 @@ defaults:
           mode: GRPC
           probe_wait_time: "3s"
           grpc:
+            bidirectional_stream_concurrency: 20
             max_receive_message_size: 0
             max_send_message_size: 0
             initial_window_size: 0
