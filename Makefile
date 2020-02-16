@@ -38,6 +38,10 @@ GOCACHE := $(shell go env GOCACHE)
 
 TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION)
 
+VALDCLI_VERSION := $(shell cat versions/VALDCLI_VERSION)
+
+UNAME := $(shell uname)
+
 MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
 
 ROOTDIR = $(shell git rev-parse --show-toplevel)
@@ -65,6 +69,12 @@ BENCH_DATASETS = $(BENCH_DATASET_MD5S:$(BENCH_DATASET_MD5_DIR)/%.md5=$(BENCH_DAT
 
 DATASET_ARGS ?= identity-128
 ADDRESS_ARGS ?= ""
+
+HOST      ?= localhost
+PORT      ?= 80
+NUMBER    ?= 10
+DIMENSION ?= 6
+NUMPANES  ?= 4
 
 PROTO_PATHS = \
 	$(PROTODIRS:%=./apis/proto/%) \
@@ -112,6 +122,7 @@ clean:
 		./apis/swagger \
 		./bench \
 		./pprof \
+		./libs \
 		$(GOCACHE) \
 		./go.sum \
 		./go.mod
@@ -129,7 +140,8 @@ init: \
 	git/hooks/init \
 	deps \
 	ngt/install \
-	tensorflow/install
+	tensorflow/install \
+	valdcli/install
 
 .PHONY: update
 ## update deps, license, and run goimports
@@ -217,3 +229,4 @@ include Makefile.d/git.mk
 include Makefile.d/proto.mk
 include Makefile.d/k8s.mk
 include Makefile.d/kind.mk
+include Makefile.d/client.mk
