@@ -250,6 +250,14 @@ k8s/linkerd/deploy:
 k8s/linkerd/remove:
 	linkerd install --ignore-cluster | kubectl delete -f -
 
+.PHONY: helm/install
+## install helm
+helm/install: $(BINDIR)/helm
+
+$(BINDIR)/helm:
+	mkdir -p $(BINDIR)
+	curl "https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3" | HELM_INSTALL_DIR=$(BINDIR) bash
+
 .PHONY: helm/package/vald
 ## packaging Helm chart for Vald
 helm/package/vald:

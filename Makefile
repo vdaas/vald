@@ -38,7 +38,10 @@ GOCACHE := $(shell go env GOCACHE)
 
 TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION)
 
-VALDCLI_VERSION := $(shell cat versions/VALDCLI_VERSION)
+KIND_VERSION    ?= v0.7.0
+VALDCLI_VERSION ?= v0.0.1
+
+BINDIR ?= /usr/local/bin
 
 UNAME := $(shell uname)
 
@@ -140,7 +143,13 @@ init: \
 	git/hooks/init \
 	deps \
 	ngt/install \
-	tensorflow/install \
+	tensorflow/install
+
+.PHONY: tools/install
+## install development tools
+tools/install: \
+	helm/install \
+	kind/install \
 	valdcli/install
 
 .PHONY: update
