@@ -408,6 +408,30 @@ tls:
 {{- end -}}
 
 {{/*
+observability
+*/}}
+{{- define "vald.observability" -}}
+collector:
+  {{- if .Values.collector }}
+    duration: {{ default .default.collector.duration .Values.collector.duration }}
+  {{- else }}
+  {{- toYaml .default.collector | nindent 2 }}
+  {{- end }}
+prometheus:
+  {{- if .Values.prometheus }}
+    enabled: {{ default .default.prometheus.enabled .Values.prometheus.enabled }}
+  {{- else }}
+  {{- toYaml .default.prometheus | nindent 2 }}
+  {{- end }}
+jaeger:
+  {{- if .Values.jaeger }}
+    enabled: {{ default .default.jaeger.enabled .Values.jaeger.enabled }}
+  {{- else }}
+  {{- toYaml .default.jaeger | nindent 2 }}
+  {{- end }}
+{{- end -}}
+
+{{/*
 initContainers
 */}}
 {{- define "vald.initContainers" -}}

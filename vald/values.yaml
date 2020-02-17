@@ -183,6 +183,13 @@ defaults:
         cert: /path/to/cert
         key: /path/to/key
         ca: /path/to/ca
+  observability:
+    collector:
+      duration: 3s
+    prometheus:
+      enabled: true
+    jaeger:
+      enabled: false
 
 gateway:
   version: v0.0.0
@@ -249,6 +256,7 @@ gateway:
     full_shutdown_duration: 600s
     tls:
       enabled: false
+  observability: {}
   filter:
     egress:
       - ""
@@ -324,6 +332,7 @@ agent:
     full_shutdown_duration: 600s
     tls:
       enabled: false
+  observability: {}
   ngt:
     # index_path: /path/to/index
     auto_index_limit: 10m
@@ -378,6 +387,7 @@ discoverer:
     full_shutdown_duration: 600s
     tls:
       enabled: false
+  observability: {}
   clusterRole:
     enabled: true
     name: discoverer
@@ -438,6 +448,7 @@ compressor:
     full_shutdown_duration: 600s
     tls:
       enabled: false
+  observability: {}
   resources:
     requests:
       cpu: 200m
@@ -538,6 +549,7 @@ backupManager:
     full_shutdown_duration: 600s
     tls:
       enabled: false
+  observability: {}
   resources:
     requests:
       cpu: 200m
@@ -678,6 +690,7 @@ indexManager:
     full_shutdown_duration: 600s
     tls:
       enabled: false
+  observability: {}
 
 meta:
   version: v0.0.0
@@ -766,6 +779,7 @@ meta:
     full_shutdown_duration: 600s
     tls:
       enabled: false
+  observability: {}
   resources:
     requests:
       cpu: 200m

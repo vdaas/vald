@@ -31,6 +31,9 @@ data:
     server_config:
       {{- $servers := dict "Values" .Values.compressor.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
+    observability:
+      {{- $observability := dict "Values" .Values.compressor.observability "default" .Values.defaults.observability }}
+      {{- include "vald.observability" $observability | nindent 6 }}
     backup:
       host: {{ .Values.backupManager.name }}.{{ .Release.Namespace }}.svc.cluster.local
       port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.backupManager.server_config.servers.grpc.port }}
