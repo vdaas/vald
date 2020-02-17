@@ -127,6 +127,21 @@ defaults:
             read_header_timeout: 1s
             read_timeout: 1s
             write_timeout: 1s
+      prometheus:
+        enabled: false
+        host: 0.0.0.0
+        port: 6061
+        servicePort: 6061
+        server:
+          mode: REST
+          probe_wait_time: 3s
+          http:
+            shutdown_duration: 5s
+            handler_timeout: 5s
+            idle_timeout: 2s
+            read_header_timeout: 1s
+            read_timeout: 1s
+            write_timeout: 1s
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -253,6 +268,8 @@ gateway:
     metrics:
       pprof:
         enabled: false
+      prometheus:
+        enabled: true
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -329,6 +346,8 @@ agent:
     metrics:
       pprof:
         enabled: false
+      prometheus:
+        enabled: true
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -384,6 +403,8 @@ discoverer:
     metrics:
       pprof:
         enabled: false
+      prometheus:
+        enabled: true
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -445,6 +466,8 @@ compressor:
     metrics:
       pprof:
         enabled: false
+      prometheus:
+        enabled: true
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -546,6 +569,8 @@ backupManager:
     metrics:
       pprof:
         enabled: false
+      prometheus:
+        enabled: true
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -687,6 +712,8 @@ indexManager:
     metrics:
       pprof:
         enabled: false
+      prometheus:
+        enabled: true
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -776,6 +803,8 @@ meta:
     metrics:
       pprof:
         enabled: false
+      prometheus:
+        enabled: true
     full_shutdown_duration: 600s
     tls:
       enabled: false

@@ -119,6 +119,12 @@ ports:
     protocol: TCP
     containerPort: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
   {{- end }}
+  {{- $prometheusEnabled := default .default.metrics.prometheus.enabled .Values.metrics.prometheus.enabled }}
+  {{- if $prometheusEnabled }}
+  - name: prometheus
+    protocol: TCP
+    containerPort: {{ default .default.metrics.prometheus.port .Values.metrics.prometheus.port }}
+  {{- end }}
 {{- end -}}
 
 {/*
@@ -152,6 +158,13 @@ ports:
   - name: pprof
     port: {{ default .default.metrics.pprof.servicePort .Values.metrics.pprof.servicePort }}
     targetPort: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
+    protocol: TCP
+  {{- end }}
+  {{- $prometheusEnabled := default .default.metrics.prometheus.enabled .Values.metrics.prometheus.enabled }}
+  {{- if $prometheusEnabled }}
+  - name: prometheus
+    port: {{ default .default.metrics.prometheus.servicePort .Values.metrics.prometheus.servicePort }}
+    targetPort: {{ default .default.metrics.prometheus.port .Values.metrics.prometheus.port }}
     protocol: TCP
   {{- end }}
 {{- end -}}
@@ -293,12 +306,38 @@ metrics_servers:
     {{- toYaml .default.metrics.pprof.server | nindent 4 }}
     {{- end }}
   {{- end }}
+  {{- $prometheusEnabled := default .default.metrics.prometheus.enabled .Values.metrics.prometheus.enabled }}
+  {{- if $prometheusEnabled }}
+  - name: prometheus
+    host: {{ default .default.metrics.prometheus.host .Values.metrics.prometheus.host }}
+    port: {{ default .default.metrics.prometheus.port .Values.metrics.prometheus.port }}
+    {{- if .Values.metrics.prometheus.server }}
+    mode: {{ default .default.metrics.prometheus.server.mode .Values.metrics.prometheus.server.mode }}
+    probe_wait_time: {{ default .default.metrics.prometheus.server.probe_wait_time .Values.metrics.prometheus.server.probe_wait_time }}
+    http:
+      {{- if .Values.metrics.prometheus.server.http }}
+      shutdown_duration: {{ default .default.metrics.prometheus.server.http.shutdown_duration .Values.metrics.prometheus.server.http.shutdown_duration }}
+      handler_timeout: {{ default .default.metrics.prometheus.server.http.handler_timeout .Values.metrics.prometheus.server.http.handler_timeout }}
+      idle_timeout: {{ default .default.metrics.prometheus.server.http.idle_timeout .Values.metrics.prometheus.server.http.idle_timeout }}
+      read_header_timeout: {{ default .default.metrics.prometheus.server.http.read_header_timeout .Values.metrics.prometheus.server.http.read_header_timeout }}
+      read_timeout: {{ default .default.metrics.prometheus.server.http.read_timeout .Values.metrics.prometheus.server.http.read_timeout }}
+      write_timeout: {{ default .default.metrics.prometheus.server.http.write_timeout .Values.metrics.prometheus.server.http.write_timeout }}
+      {{- else }}
+      {{- toYaml .default.metrics.prometheus.server.http | nindent 6 }}
+      {{- end }}
+    {{- else }}
+    {{- toYaml .default.metrics.prometheus.server | nindent 4 }}
+    {{- end }}
+  {{- end }}
 startup_strategy:
   {{- if $livenessEnabled }}
   - liveness
   {{- end }}
   {{- if $pprofEnabled }}
   - pprof
+  {{- end }}
+  {{- if $prometheusEnabled }}
+  - prometheus
   {{- end }}
   {{- if $grpcEnabled }}
   - grpc
