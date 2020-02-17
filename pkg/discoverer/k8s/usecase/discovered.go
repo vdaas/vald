@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
+	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -37,10 +38,11 @@ import (
 )
 
 type run struct {
-	eg     errgroup.Group
-	cfg    *config.Data
-	dsc    service.Discoverer
-	server starter.Server
+	eg            errgroup.Group
+	cfg           *config.Data
+	dsc           service.Discoverer
+	server        starter.Server
+	observability observability.Observability
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
@@ -50,6 +52,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	g := handler.New(handler.WithDiscoverer(dsc))
 	eg := errgroup.Get()
+
+	obs, err := observability.New(cfg.Observability)
+	if err != nil {
+		return nil, err
+	}
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
@@ -93,30 +100,32 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
-		eg:     eg,
-		cfg:    cfg,
-		dsc:    dsc,
-		server: srv,
+		eg:            eg,
+		cfg:           cfg,
+		dsc:           dsc,
+		server:        srv,
+		observability: obs,
 	}, nil
 }
 
 func (r *run) PreStart(ctx context.Context) error {
-	log.Info("daemon start")
-	return nil
+	return r.observability.PreStart(ctx)
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 2)
+	ech := make(chan error, 3)
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		log.Info("daemon start")
 		defer close(ech)
 		dech := r.dsc.Start(ctx)
+		oech := r.observability.Start(ctx)
 		sech := r.server.ListenAndServe(ctx)
 		for {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
 			case err = <-dech:
+			case err = <-oech:
 			case err = <-sech:
 			}
 			if err != nil {
@@ -136,6 +145,7 @@ func (r *run) PreStop(ctx context.Context) error {
 }
 
 func (r *run) Stop(ctx context.Context) error {
+	r.observability.Stop(ctx)
 	return r.server.Shutdown(ctx)
 }
 

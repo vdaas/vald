@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
+	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -38,11 +39,12 @@ import (
 )
 
 type run struct {
-	eg         errgroup.Group
-	cfg        *config.Data
-	backup     service.Backup
-	compressor service.Compressor
-	server     starter.Server
+	eg            errgroup.Group
+	cfg           *config.Data
+	backup        service.Backup
+	compressor    service.Compressor
+	server        starter.Server
+	observability observability.Observability
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
@@ -84,6 +86,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		handler.WithCompressor(c),
 		handler.WithBackup(b),
 	)
+
+	obs, err := observability.New(cfg.Observability)
+	if err != nil {
+		return nil, err
+	}
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
@@ -127,22 +134,27 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
-		eg:         eg,
-		cfg:        cfg,
-		backup:     b,
-		compressor: c,
-		server:     srv,
+		eg:            eg,
+		cfg:           cfg,
+		backup:        b,
+		compressor:    c,
+		server:        srv,
+		observability: obs,
 	}, nil
 }
 
 func (r *run) PreStart(ctx context.Context) error {
 	log.Info("daemon pre-start")
-	return r.compressor.PreStart(ctx)
+	err := r.compressor.PreStart(ctx)
+	if err != nil {
+		return err
+	}
+	return r.observability.PreStart(ctx)
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 2)
-	var bech, cech, sech <-chan error
+	ech := make(chan error, 4)
+	var bech, cech, sech, oech <-chan error
 	var err error
 	if r.backup != nil {
 		bech, err = r.backup.Start(ctx)
@@ -155,6 +167,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		cech = r.compressor.Start(ctx)
 	}
 	sech = r.server.ListenAndServe(ctx)
+	oech = r.observability.Start(ctx)
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		log.Info("daemon start")
 		defer close(ech)
@@ -162,9 +175,10 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case err = <-sech:
 			case err = <-bech:
 			case err = <-cech:
+			case err = <-sech:
+			case err = <-oech:
 			}
 			if err != nil {
 				select {
@@ -183,6 +197,7 @@ func (r *run) PreStop(ctx context.Context) error {
 }
 
 func (r *run) Stop(ctx context.Context) error {
+	r.observability.Stop(ctx)
 	return r.server.Shutdown(ctx)
 }
 

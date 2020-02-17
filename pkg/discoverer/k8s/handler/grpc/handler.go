@@ -22,6 +22,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/discoverer"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
 )
 
@@ -40,5 +41,7 @@ func New(opts ...Option) discoverer.DiscovererServer {
 
 func (s *server) Discover(ctx context.Context, req *payload.Discoverer_Request) (
 	res *payload.Info_Servers, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/discoverer-k8s.Discover")
+	defer span.End()
 	return s.dsc.GetServers(req.GetName(), req.GetNode()), nil
 }

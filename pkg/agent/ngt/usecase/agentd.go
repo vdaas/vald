@@ -117,7 +117,7 @@ func (r *run) PreStart(ctx context.Context) error {
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 2)
+	ech := make(chan error, 3)
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		log.Info("daemon start")
 		defer close(ech)

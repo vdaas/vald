@@ -31,6 +31,9 @@ type Data struct {
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
+	// Observability represent observability configurations
+	Observability *config.Observability `json:"observability" yaml:"observability"`
+
 	// Redis represent redis configurations
 	Redis *config.Redis `json:"redis_config" yaml:"redis_config"`
 }
@@ -49,6 +52,11 @@ func NewConfig(path string) (cfg *Data, err error) {
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()
 	}
+
+	if cfg.Observability != nil {
+		cfg.Observability = cfg.Observability.Bind()
+	}
+
 	if cfg.Redis != nil {
 		cfg.Redis = cfg.Redis.Bind()
 	}

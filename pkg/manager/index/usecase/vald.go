@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
+	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -37,13 +38,14 @@ import (
 )
 
 type run struct {
-	eg       errgroup.Group
-	cfg      *config.Data
-	server   starter.Server
-	filter   service.Filter
-	gateway  service.Gateway
-	metadata service.Meta
-	backup   service.Backup
+	eg            errgroup.Group
+	cfg           *config.Data
+	server        starter.Server
+	observability observability.Observability
+	filter        service.Filter
+	gateway       service.Gateway
+	metadata      service.Meta
+	backup        service.Backup
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
@@ -138,6 +140,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		handler.WithReplicationCount(cfg.Gateway.IndexReplica),
 	)
 
+	obs, err := observability.New(cfg.Observability)
+	if err != nil {
+		return nil, err
+	}
+
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
 		starter.WithREST(func(sc *iconf.Server) []server.Option {
@@ -174,23 +181,24 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
-		eg:       eg,
-		cfg:      cfg,
-		server:   srv,
-		filter:   filter,
-		gateway:  gateway,
-		metadata: metadata,
-		backup:   backup,
+		eg:            eg,
+		cfg:           cfg,
+		server:        srv,
+		observability: obs,
+		filter:        filter,
+		gateway:       gateway,
+		metadata:      metadata,
+		backup:        backup,
 	}, nil
 }
 
 func (r *run) PreStart(ctx context.Context) error {
-	return nil
+	return r.observability.PreStart(ctx)
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 5)
-	var bech, fech, mech, gech, sech <-chan error
+	ech := make(chan error, 6)
+	var bech, fech, mech, gech, sech, oech <-chan error
 	var err error
 	if r.backup != nil {
 		bech, err = r.backup.Start(ctx)
@@ -221,6 +229,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		}
 	}
 	sech = r.server.ListenAndServe(ctx)
+	oech = r.observability.Start(ctx)
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 		for {
@@ -232,6 +241,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			case err = <-gech:
 			case err = <-mech:
 			case err = <-sech:
+			case err = <-oech:
 			}
 			if err != nil {
 				select {
@@ -250,6 +260,7 @@ func (r *run) PreStop(ctx context.Context) error {
 }
 
 func (r *run) Stop(ctx context.Context) error {
+	r.observability.Stop(ctx)
 	return r.server.Shutdown(ctx)
 }
 

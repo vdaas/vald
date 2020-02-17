@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/pkg/meta/redis/service"
 )
 
@@ -44,6 +45,8 @@ func New(opts ...Option) meta.MetaServer {
 }
 
 func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.Meta_Val, error) {
+	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.GetMeta")
+	defer span.End()
 	val, err := s.redis.Get(key.GetKey())
 	if err != nil {
 		if errors.IsErrRedisNotFound(errors.UnWrapAll(err)) {
@@ -59,6 +62,8 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 }
 
 func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *payload.Meta_Vals, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.GetMetas")
+	defer span.End()
 	mv = new(payload.Meta_Vals)
 	mv.Vals, err = s.redis.GetMultiple(keys.GetKeys()...)
 	if err != nil {
@@ -73,6 +78,8 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 }
 
 func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*payload.Meta_Key, error) {
+	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.GetMetaInverse")
+	defer span.End()
 	key, err := s.redis.GetInverse(val.GetVal())
 	if err != nil {
 		if errors.IsErrRedisNotFound(errors.UnWrapAll(err)) {
@@ -88,6 +95,8 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 }
 
 func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (mk *payload.Meta_Keys, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.GetMetasInverse")
+	defer span.End()
 	mk = new(payload.Meta_Keys)
 	mk.Keys, err = s.redis.GetInverseMultiple(vals.GetVals()...)
 	if err != nil {
@@ -102,6 +111,8 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 }
 
 func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.SetMeta")
+	defer span.End()
 	err = s.redis.Set(kv.GetKey(), kv.GetVal())
 	if err != nil {
 		log.Errorf("[SetMeta]\tunknown error\t%+v", err)
@@ -111,6 +122,8 @@ func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *paylo
 }
 
 func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.SetMetas")
+	defer span.End()
 	query := make(map[string]string, len(kvs.GetKvs())/2)
 	for _, kv := range kvs.GetKvs() {
 		query[kv.GetKey()] = kv.GetVal()
@@ -124,6 +137,8 @@ func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *pa
 }
 
 func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payload.Meta_Val, error) {
+	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.DeleteMeta")
+	defer span.End()
 	val, err := s.redis.Delete(key.GetKey())
 	if err != nil {
 		if errors.IsErrRedisNotFound(errors.UnWrapAll(err)) {
@@ -139,6 +154,8 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 }
 
 func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *payload.Meta_Vals, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.DeleteMetas")
+	defer span.End()
 	mv = new(payload.Meta_Vals)
 	mv.Vals, err = s.redis.DeleteMultiple(keys.GetKeys()...)
 	if err != nil {
@@ -153,6 +170,8 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 }
 
 func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (*payload.Meta_Key, error) {
+	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.DeleteMetaInverse")
+	defer span.End()
 	key, err := s.redis.DeleteInverse(val.GetVal())
 	if err != nil {
 		if errors.IsErrRedisNotFound(errors.UnWrapAll(err)) {
@@ -168,6 +187,8 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 }
 
 func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (mk *payload.Meta_Keys, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.DeleteMetasInverse")
+	defer span.End()
 	mk = new(payload.Meta_Keys)
 	mk.Keys, err = s.redis.DeleteInverseMultiple(vals.GetVals()...)
 	if err != nil {

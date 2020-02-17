@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/model"
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/service"
 )
@@ -47,6 +48,8 @@ func New(opts ...Option) Server {
 }
 
 func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_Compressed_MetaVector, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-cassandra.GetVector")
+	defer span.End()
 	uuid := req.GetUuid()
 	meta, err := s.cassandra.GetMeta(ctx, uuid)
 	if err != nil {
@@ -62,6 +65,8 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 }
 
 func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Request) (res *payload.Info_IPs, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-cassandra.Locations")
+	defer span.End()
 	uuid := req.GetUuid()
 	ips, err := s.cassandra.GetIPs(ctx, uuid)
 	if err != nil {
@@ -75,6 +80,8 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 }
 
 func (s *server) Register(ctx context.Context, meta *payload.Backup_Compressed_MetaVector) (res *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-cassandra.Register")
+	defer span.End()
 	uuid := meta.GetUuid()
 	m, err := toModelMetaVector(meta)
 	if err != nil {
@@ -92,6 +99,8 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_Compressed_M
 }
 
 func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_Compressed_MetaVectors) (res *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-cassandra.RegisterMulti")
+	defer span.End()
 	ms := make([]*model.MetaVector, 0, len(metas.GetVectors()))
 	for _, meta := range metas.Vectors {
 		var m *model.MetaVector
@@ -113,6 +122,8 @@ func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_Compre
 }
 
 func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request) (res *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-cassandra.Remove")
+	defer span.End()
 	uuid := req.GetUuid()
 	err = s.cassandra.DeleteMeta(ctx, uuid)
 	if err != nil {
@@ -124,6 +135,8 @@ func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request)
 }
 
 func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_RequestMulti) (res *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-cassandra.RemoveMulti")
+	defer span.End()
 	uuids := req.GetUuids()
 	err = s.cassandra.DeleteMetas(ctx, uuids...)
 	if err != nil {
@@ -135,6 +148,8 @@ func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_Req
 }
 
 func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Register_Request) (res *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-cassandra.RegisterIPs")
+	defer span.End()
 	uuid := req.GetUuid()
 	err = s.cassandra.SetIPs(ctx, uuid, req.Ips...)
 	if err != nil {
@@ -146,6 +161,8 @@ func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Registe
 }
 
 func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Request) (res *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-cassandra.RemoveIPs")
+	defer span.End()
 	ips := req.GetIps()
 	err = s.cassandra.RemoveIPs(ctx, ips...)
 	if err != nil {
