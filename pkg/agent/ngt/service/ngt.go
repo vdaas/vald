@@ -134,7 +134,10 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 		n.indexing.Store(false)
 	}
 
-	collector.Register(metrics.NewNGTMetrics(&n.ic))
+	err = collector.Register(metrics.NewNGTMetrics(&n.ic))
+	if err != nil {
+		return nil, err
+	}
 
 	return n, nil
 }

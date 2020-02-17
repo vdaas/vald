@@ -75,7 +75,6 @@ func (e *exporter) Start(ctx context.Context) error {
 }
 
 func (e *exporter) Stop(ctx context.Context) {
-	return
 }
 
 func (e *exporter) Exporter() *prometheus.Exporter {

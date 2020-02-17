@@ -106,7 +106,6 @@ func (c *collector) Start(ctx context.Context) <-chan error {
 }
 
 func (c *collector) Stop(ctx context.Context) {
-	return
 }
 
 func (c *collector) collect(ctx context.Context) (err error) {
