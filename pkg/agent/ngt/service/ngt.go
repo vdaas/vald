@@ -53,6 +53,8 @@ type NGT interface {
 	IsIndexing() bool
 	UUIDs(context.Context) (uuids []string)
 	UncommittedUUIDs() (uuids []string)
+	DeleteVCacheLen() uint64
+	InsertVCacheLen() uint64
 	Close()
 }
 
@@ -514,4 +516,12 @@ func (n *ngt) UncommittedUUIDs() (uuids []string) {
 		return true
 	})
 	return uuids
+}
+
+func (n *ngt) InsertVCacheLen() uint64 {
+	return n.ivc.Len()
+}
+
+func (n *ngt) DeleteVCacheLen() uint64 {
+	return n.dvc.Len()
 }

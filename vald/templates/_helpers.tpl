@@ -322,6 +322,7 @@ gRPC client configuration
 */}}
 {{- define "vald.grpc.client" -}}
 addrs: {{ default .default.addrs .Values.addrs }}
+connection_pool: {{ default .default.connection_pool .Values.connection_pool }}
 health_check_duration: {{ default .default.health_check_duration .Values.health_check_duration }}
 backoff:
   {{- if .Values.backoff }}

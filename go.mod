@@ -7,14 +7,14 @@ replace (
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.1-0.20200213224922-5a8a207333b3
 	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200203083758-81b8263d9fe5
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
-	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.7.0
+	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.8.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.7.4
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200214034016-1d94cc7ab1c6
 	k8s.io/api => k8s.io/api v0.17.3
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.3
 	k8s.io/apimachinery => k8s.io/apimachinery v0.17.3
 	k8s.io/client-go => k8s.io/client-go v0.17.3
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.4.0
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.5.0
 )
 
 require (
@@ -47,7 +47,7 @@ require (
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
 	go.uber.org/automaxprocs v1.3.0
-	golang.org/x/sys v0.0.0-20200212091648-12a6c2dcc1e4
+	golang.org/x/sys v0.0.0-20200217220822-9197077df867
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/plot v0.0.0-20200212202559-4d97eda4de95
 	google.golang.org/genproto v0.0.0-20200212174721-66ed5ce911ce

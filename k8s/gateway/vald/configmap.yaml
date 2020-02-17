@@ -33,6 +33,7 @@ data:
           host: 0.0.0.0
           port: 8081
           grpc:
+            bidirectional_stream_concurrency: 20
             connection_timeout: ""
             header_table_size: 0
             initial_conn_window_size: 0
@@ -99,6 +100,7 @@ data:
         duration: 2s
         discover_client:
           addrs: []
+          connection_pool: 10
           health_check_duration: 1s
           backoff:
             backoff_factor: 0
@@ -148,6 +150,7 @@ data:
             key: /path/to/key
         agent_client:
           addrs: []
+          connection_pool: 100
           health_check_duration: 1s
           backoff:
             backoff_factor: 0
@@ -200,6 +203,7 @@ data:
         port: 8081
         client:
           addrs: []
+          connection_pool: 10
           health_check_duration: 1s
           backoff:
             backoff_factor: 0
@@ -255,6 +259,7 @@ data:
         port: 8081
         client:
           addrs: []
+          connection_pool: 10
           health_check_duration: 1s
           backoff:
             backoff_factor: 0

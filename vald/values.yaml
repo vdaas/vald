@@ -42,6 +42,7 @@ defaults:
           mode: GRPC
           probe_wait_time: "3s"
           grpc:
+            bidirectional_stream_concurrency: 20
             max_receive_message_size: 0
             max_send_message_size: 0
             initial_window_size: 0
@@ -135,6 +136,7 @@ defaults:
   grpc:
     client:
       addrs: []
+      connection_pool: 10
       health_check_duration: "1s"
       backoff:
         initial_duration: ""
@@ -268,7 +270,9 @@ gateway:
     discoverer:
       duration: "2s"
       discover_client: {}
-      agent_client: {}
+      agent_client: {
+          connection_pool: 100
+      }
     meta:
       client: {}
       enable_cache: true

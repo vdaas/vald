@@ -64,10 +64,7 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 		DualStack: d.dialerDualStack,
 		Control:   Control,
 	}
-	// d.der.Resolver = &net.Resolver{
-	// 	PreferGo: false,
-	// 	Dial:     d.der.DialContext,
-	// }
+
 	if !d.dnsCache {
 		if d.tlsConfig != nil {
 			d.dialer = func(ctx context.Context, network,
