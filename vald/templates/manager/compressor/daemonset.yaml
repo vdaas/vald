@@ -71,5 +71,12 @@ spec:
         {{- if .Values.compressor.volumes }}
         {{- toYaml .Values.compressor.volumes | nindent 8 }}
         {{- end }}
+      {{- if .Values.compressor.nodeName }}
+      nodeName: {{ .Values.compressor.nodeName }}
+      {{- end }}
+      {{- if .Values.compressor.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.compressor.nodeSelector | nindent 8 }}
+      {{- end }}
 status:
 {{- end }}

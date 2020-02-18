@@ -76,5 +76,12 @@ spec:
         {{- if .Values.discoverer.volumes }}
         {{- toYaml .Values.discoverer.volumes | nindent 8 }}
         {{- end }}
+      {{- if .Values.discoverer.nodeName }}
+      nodeName: {{ .Values.discoverer.nodeName }}
+      {{- end }}
+      {{- if .Values.discoverer.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.discoverer.nodeSelector | nindent 8 }}
+      {{- end }}
 status:
 {{- end }}

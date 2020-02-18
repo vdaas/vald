@@ -71,5 +71,12 @@ spec:
         {{- if .Values.backupManager.volumes }}
         {{- toYaml .Values.backupManager.volumes | nindent 8 }}
         {{- end }}
+      {{- if .Values.backupManager.nodeName }}
+      nodeName: {{ .Values.backupManager.nodeName }}
+      {{- end }}
+      {{- if .Values.backupManager.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.backupManager.nodeSelector | nindent 8 }}
+      {{- end }}
 status:
 {{- end }}
