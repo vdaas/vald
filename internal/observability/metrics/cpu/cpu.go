@@ -18,24 +18,48 @@
 package cpu
 
 import (
+	"os"
 	"runtime"
 
+	"github.com/shirou/gopsutil/process"
 	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
 type cpu struct {
-	numCPU metrics.Int64Measure
+	process    *process.Process
+	numCPU     metrics.Int64Measure
+	percentCPU metrics.Float64Measure
+	numThreads metrics.Int64Measure
 }
 
-func NewMetric() metrics.Metric {
-	return &cpu{
-		numCPU: *metrics.Int64("vdaas.org/cpu/num", "number of cpu", metrics.UnitDimensionless),
+func NewMetric() (metrics.Metric, error) {
+	p, err := process.NewProcess(int32(os.Getpid()))
+	if err != nil {
+		return nil, err
 	}
+
+	return &cpu{
+		process:    p,
+		numCPU:     *metrics.Int64("vdaas.org/cpu/num", "number of cpu", metrics.UnitDimensionless),
+		percentCPU: *metrics.Float64("vdaas.org/cpu/percent", "cpu usage", metrics.UnitDimensionless),
+		numThreads: *metrics.Int64("vdaas.org/thread/num", "number of threads", metrics.UnitDimensionless),
+	}, nil
 }
 
 func (c *cpu) Measurement() ([]metrics.Measurement, error) {
+	cpuPercent, err := c.process.CPUPercent()
+	if err != nil {
+		return nil, err
+	}
+	numThreads, err := c.process.NumThreads()
+	if err != nil {
+		return nil, err
+	}
+
 	return []metrics.Measurement{
 		c.numCPU.M(int64(runtime.NumCPU())),
+		c.percentCPU.M(cpuPercent),
+		c.numThreads.M(int64(numThreads)),
 	}, nil
 }
 
@@ -45,6 +69,18 @@ func (c *cpu) View() []*metrics.View {
 			Name:        "num_cpu",
 			Description: "number of cpu",
 			Measure:     &c.numCPU,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "cpu_percent",
+			Description: "cpu usage",
+			Measure:     &c.percentCPU,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "num_threads",
+			Description: "number of threads",
+			Measure:     &c.numThreads,
 			Aggregation: metrics.LastValue(),
 		},
 	}

@@ -50,10 +50,15 @@ func New(cfg *config.Observability) (Observability, error) {
 	o := new(observability)
 	if cfg != nil {
 		if cfg.Collector != nil {
+			cpuMetric, err := cpu.NewMetric()
+			if err != nil {
+				return nil, err
+			}
+
 			col, err := collector.New(
 				collector.WithDuration(cfg.Collector.Duration),
 				collector.WithMetrics(
-					cpu.NewMetric(),
+					cpuMetric,
 					mem.NewMetric(),
 					runtime.NewNumberOfGoroutines(),
 					runtime.NewNumberOfCGOCall(),
