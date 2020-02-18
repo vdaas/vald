@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
 	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/observability/metrics/cpu"
 	"github.com/vdaas/vald/internal/observability/metrics/grpc"
 	"github.com/vdaas/vald/internal/observability/metrics/mem"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime"
@@ -52,8 +53,10 @@ func New(cfg *config.Observability) (Observability, error) {
 			col, err := collector.New(
 				collector.WithDuration(cfg.Collector.Duration),
 				collector.WithMetrics(
+					cpu.NewMetric(),
 					mem.NewMetric(),
 					runtime.NewNumberOfGoroutines(),
+					runtime.NewNumberOfCGOCall(),
 				),
 			)
 			if err != nil {

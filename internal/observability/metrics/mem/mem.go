@@ -18,64 +18,95 @@
 package mem
 
 import (
-	"github.com/shirou/gopsutil/mem"
+	"runtime"
+
 	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
 type memory struct {
-	total     metrics.Int64Measure
-	available metrics.Int64Measure
-	used      metrics.Int64Measure
-	free      metrics.Int64Measure
+	alloc        metrics.Int64Measure
+	totalAlloc   metrics.Int64Measure
+	sys          metrics.Int64Measure
+	mallocs      metrics.Int64Measure
+	frees        metrics.Int64Measure
+	pauseTotalMs metrics.Float64Measure
+	numGC        metrics.Int64Measure
 }
 
 func NewMetric() metrics.Metric {
 	return &memory{
-		total:     *metrics.Int64("vdaas.org/memory/total", "size of total memory", metrics.UnitBytes),
-		available: *metrics.Int64("vdaas.org/memory/available", "size of available memory", metrics.UnitBytes),
-		used:      *metrics.Int64("vdaas.org/memory/used", "size of used memory", metrics.UnitBytes),
-		free:      *metrics.Int64("vdaas.org/memory/free", "size of free memory", metrics.UnitBytes),
+		alloc:        *metrics.Int64("vdaas.org/memory/alloc", "currently allocated number of bytes on the heap", metrics.UnitBytes),
+		totalAlloc:   *metrics.Int64("vdaas.org/memory/total_alloc", "cumulative bytes allocated for heap objects", metrics.UnitBytes),
+		sys:          *metrics.Int64("vdaas.org/memory/sys", "total bytes of memory obtained from the OS", metrics.UnitBytes),
+		mallocs:      *metrics.Int64("vdaas.org/memory/mallocs", "the cumulative count of heap objects allocated", metrics.UnitDimensionless),
+		frees:        *metrics.Int64("vdaas.org/memory/frees", "the cumulative count of heap objects freed", metrics.UnitDimensionless),
+		pauseTotalMs: *metrics.Float64("vdaas.org/memory/pause_total_ms", "the cumulative milliseconds in GC", metrics.UnitMilliseconds),
+		numGC:        *metrics.Int64("vdaas.org/memory/num_gc", "the number of completed GC cycles", metrics.UnitDimensionless),
 	}
 }
 
 func (m *memory) Measurement() ([]metrics.Measurement, error) {
-	v, err := mem.VirtualMemory()
-	if err != nil {
-		return nil, err
+	var mstats runtime.MemStats
+	runtime.ReadMemStats(&mstats)
+
+	pauseTotalMs := 0.0
+	if mstats.PauseTotalNs > 0 {
+		pauseTotalMs = float64(mstats.PauseTotalNs) / 1000000.0
 	}
 
 	return []metrics.Measurement{
-		m.total.M(int64(v.Total)),
-		m.available.M(int64(v.Available)),
-		m.used.M(int64(v.Used)),
-		m.free.M(int64(v.Free)),
+		m.alloc.M(int64(mstats.Alloc)),
+		m.totalAlloc.M(int64(mstats.TotalAlloc)),
+		m.sys.M(int64(mstats.Sys)),
+		m.mallocs.M(int64(mstats.Mallocs)),
+		m.frees.M(int64(mstats.Frees)),
+		m.pauseTotalMs.M(float64(pauseTotalMs)),
+		m.numGC.M(int64(mstats.NumGC)),
 	}, nil
 }
 
 func (m *memory) View() []*metrics.View {
 	return []*metrics.View{
 		&metrics.View{
-			Name:        "memory_total",
-			Description: "size of total memory",
-			Measure:     &m.total,
+			Name:        "alloc",
+			Description: "currently allocated number of bytes on the heap",
+			Measure:     &m.alloc,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
-			Name:        "memory_available",
-			Description: "size of available memory",
-			Measure:     &m.available,
+			Name:        "total_alloc",
+			Description: "cumulative bytes allocated for heap objects",
+			Measure:     &m.totalAlloc,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
-			Name:        "memory_used",
-			Description: "size of used memory",
-			Measure:     &m.used,
+			Name:        "sys",
+			Description: "total bytes of memory obtained from the OS",
+			Measure:     &m.sys,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
-			Name:        "memory_free",
-			Description: "size of free memory",
-			Measure:     &m.free,
+			Name:        "mallocs",
+			Description: "the cumulative count of heap objects allocated",
+			Measure:     &m.mallocs,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "frees",
+			Description: "the cumulative count of heap objects freed",
+			Measure:     &m.frees,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "pause_total_ms",
+			Description: "the cumulative milliseconds in GC",
+			Measure:     &m.pauseTotalMs,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "num_gc",
+			Description: "the number of completed GC cycles",
+			Measure:     &m.numGC,
 			Aggregation: metrics.LastValue(),
 		},
 	}

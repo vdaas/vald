@@ -18,9 +18,34 @@
 package cpu
 
 import (
-	"github.com/shirou/gopsutil/cpu"
+	"runtime"
+
+	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
-func Info() ([]cpu.InfoStat, error) {
-	return cpu.Info()
+type cpu struct {
+	numCPU metrics.Int64Measure
+}
+
+func NewMetric() metrics.Metric {
+	return &cpu{
+		numCPU: *metrics.Int64("vdaas.org/cpu/num", "number of cpu", metrics.UnitDimensionless),
+	}
+}
+
+func (c *cpu) Measurement() ([]metrics.Measurement, error) {
+	return []metrics.Measurement{
+		c.numCPU.M(int64(runtime.NumCPU())),
+	}, nil
+}
+
+func (c *cpu) View() []*metrics.View {
+	return []*metrics.View{
+		&metrics.View{
+			Name:        "num_cpu",
+			Description: "number of cpu",
+			Measure:     &c.numCPU,
+			Aggregation: metrics.LastValue(),
+		},
+	}
 }

@@ -14,39 +14,37 @@
 // limitations under the License.
 //
 
-// Package ngt provides functions for ngt stats
-package ngt
+// Package runtime provides functions for runtime stats
+package runtime
 
 import (
-	"sync/atomic"
+	"runtime"
 
 	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
-type ngt struct {
-	ic                    *uint64
-	uncommittedIndexCount metrics.Int64Measure
+type numcgocall struct {
+	count metrics.Int64Measure
 }
 
-func NewNGTMetrics(ic *uint64) metrics.Metric {
-	return &ngt{
-		ic:                    ic,
-		uncommittedIndexCount: *metrics.Int64("vdaas.org/ngt/uncommitted_index_count", "uncommitted index count", metrics.UnitDimensionless),
+func NewNumberOfCGOCall() metrics.Metric {
+	return &numcgocall{
+		count: *metrics.Int64("vdaas.org/runtime/num_cgo_call", "number of cgo call", metrics.UnitDimensionless),
 	}
 }
 
-func (n *ngt) Measurement() ([]metrics.Measurement, error) {
+func (n *numcgocall) Measurement() ([]metrics.Measurement, error) {
 	return []metrics.Measurement{
-		n.uncommittedIndexCount.M(int64(atomic.LoadUint64(n.ic))),
+		n.count.M(int64(runtime.NumCgoCall())),
 	}, nil
 }
 
-func (n *ngt) View() []*metrics.View {
+func (n *numcgocall) View() []*metrics.View {
 	return []*metrics.View{
 		&metrics.View{
-			Name:        "uncommitted_index_count",
-			Description: "uncommitted index count",
-			Measure:     &n.uncommittedIndexCount,
+			Name:        "num_cgo_call",
+			Description: "number of cgo call",
+			Measure:     &n.count,
 			Aggregation: metrics.LastValue(),
 		},
 	}
