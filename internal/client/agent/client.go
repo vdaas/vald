@@ -83,7 +83,6 @@ func (c *agentClient) StreamSearch(ctx context.Context, newData func() *client.S
 		}, func(res interface{}, err error) {
 			f(res.(*client.SearchResponse), err)
 		})
-
 	})
 	return err
 }
@@ -106,7 +105,6 @@ func (c *agentClient) StreamSearchByID(ctx context.Context, newData func() *clie
 		}, func(res interface{}, err error) {
 			f(res.(*client.SearchResponse), err)
 		})
-
 	})
 	return err
 }
@@ -136,7 +134,6 @@ func (c *agentClient) StreamInsert(ctx context.Context, newData func() *client.O
 		}, func(_ interface{}, err error) {
 			f(err)
 		})
-
 	})
 	return err
 }
