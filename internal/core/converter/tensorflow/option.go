@@ -23,6 +23,7 @@ var (
 	defaultOpts = []Option{
 		WithOperations(),        // set to default
 		WithSessionOptions(nil), // set to default
+		WithNdim(0),             // set to default
 	}
 )
 
@@ -77,5 +78,11 @@ func WithTags(tags ...string) Option {
 				t.tags = tags
 			}
 		}
+	}
+}
+
+func WithNdim(ndim int8) Option {
+	return func(t *tensorflow) {
+		t.ndim = ndim
 	}
 }
