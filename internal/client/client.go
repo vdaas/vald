@@ -34,13 +34,13 @@ type Reader interface {
 
 type Writer interface {
 	Insert(context.Context, *ObjectVector) error
-	StreamInsert(context.Context, func() *ObjectVector, func(error))
+	StreamInsert(context.Context, func() *ObjectVector, func(error)) error
 	MultiInsert(context.Context, *ObjectVectors) error
 	Update(context.Context, *ObjectVector) error
-	StreamUpdate(context.Context, func() *ObjectVector, func(error))
+	StreamUpdate(context.Context, func() *ObjectVector, func(error)) error
 	MultiUpdate(context.Context, *ObjectVectors) error
 	Remove(context.Context, *ObjectID) error
-	StreamRemove(context.Context, func() *ObjectID, func(error))
+	StreamRemove(context.Context, func() *ObjectID, func(error)) error
 	MultiRemove(context.Context, *ObjectIDs) error
 }
 

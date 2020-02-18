@@ -6,6 +6,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/client"
+	igrpc "github.com/vdaas/vald/internal/net/grpc"
 	"google.golang.org/grpc"
 )
 
@@ -16,6 +17,7 @@ type Client interface {
 }
 
 type agentClient struct {
+	streamConcurrency int
 	agent.AgentClient
 }
 
@@ -24,6 +26,7 @@ func New(ctx context.Context, addr string) (Client, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &agentClient{
 		AgentClient: agent.NewAgentClient(conn),
 	}, nil
@@ -41,20 +44,42 @@ func (c *agentClient) SearchByID(ctx context.Context, searchIDRequest *client.Se
 	return c.AgentClient.SearchByID(ctx, searchIDRequest)
 }
 
-func (c *agentClient) StreamSearch(
-	context.Context,
-	func() *client.SearchRequest,
-	func(*client.SearchResponse, error),
-) error {
-	return nil
+func (c *agentClient) StreamSearch(ctx context.Context, newData func() *client.SearchRequest, f func(*client.SearchResponse, error)) (err error) {
+	var st agent.Agent_StreamSearchClient
+
+	st, err = c.AgentClient.StreamSearch(ctx)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		err = st.CloseSend()
+	}()
+
+	return igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
+		return newData()
+	}, func(res interface{}, err error) {
+		f(res.(*client.SearchResponse), err)
+	})
 }
 
-func (c *agentClient) StreamSearchByID(
-	context.Context,
-	func() *client.SearchRequest,
-	func(*client.SearchResponse, error),
-) error {
-	return nil
+func (c *agentClient) StreamSearchByID(ctx context.Context, newData func() *client.SearchRequest, f func(*client.SearchResponse, error)) (err error) {
+	var st agent.Agent_StreamSearchByIDClient
+
+	st, err = c.AgentClient.StreamSearchByID(ctx)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		err = st.CloseSend()
+	}()
+
+	return igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
+		return newData()
+	}, func(res interface{}, err error) {
+		f(res.(*client.SearchResponse), err)
+	})
 }
 
 func (c *agentClient) Insert(ctx context.Context, objectVector *client.ObjectVector) error {
@@ -62,11 +87,23 @@ func (c *agentClient) Insert(ctx context.Context, objectVector *client.ObjectVec
 	return err
 }
 
-func (c *agentClient) StreamInsert(
-	context.Context,
-	func() *client.ObjectVector,
-	func(error),
-) {
+func (c *agentClient) StreamInsert(ctx context.Context, newData func() *client.ObjectVector, f func(error)) (err error) {
+	var st agent.Agent_StreamInsertClient
+
+	st, err = c.AgentClient.StreamInsert(ctx)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		err = st.CloseSend()
+	}()
+
+	return igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
+		return newData()
+	}, func(_ interface{}, err error) {
+		f(err)
+	})
 }
 
 func (c *agentClient) MultiInsert(ctx context.Context, objectVectors *client.ObjectVectors) error {
@@ -79,12 +116,23 @@ func (c *agentClient) Update(ctx context.Context, objectVector *client.ObjectVec
 	return err
 }
 
-func (c *agentClient) StreamUpdate(
-	context.Context,
-	func() *client.ObjectVector,
-	func(error),
-) {
+func (c *agentClient) StreamUpdate(ctx context.Context, newData func() *client.ObjectVector, f func(error)) (err error) {
+	var st agent.Agent_StreamUpdateClient
 
+	st, err = c.AgentClient.StreamUpdate(ctx)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		err = st.CloseSend()
+	}()
+
+	return igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
+		return newData()
+	}, func(_ interface{}, err error) {
+		f(err)
+	})
 }
 
 func (c *agentClient) MultiUpdate(ctx context.Context, objectVectors *client.ObjectVectors) error {
@@ -97,11 +145,23 @@ func (c *agentClient) Remove(ctx context.Context, objectID *client.ObjectID) err
 	return err
 }
 
-func (c *agentClient) StreamRemove(
-	context.Context,
-	func() *client.ObjectID,
-	func(error),
-) {
+func (c *agentClient) StreamRemove(ctx context.Context, newData func() *client.ObjectID, f func(error)) (err error) {
+	var st agent.Agent_StreamRemoveClient
+
+	st, err = c.AgentClient.StreamRemove(ctx)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		err = st.CloseSend()
+	}()
+
+	return igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
+		return newData()
+	}, func(_ interface{}, err error) {
+		f(err)
+	})
 }
 
 func (c *agentClient) MultiRemove(ctx context.Context, objectIDs *client.ObjectIDs) error {
@@ -113,12 +173,23 @@ func (c *agentClient) GetObject(ctx context.Context, objectID *client.ObjectID) 
 	return c.AgentClient.GetObject(ctx, objectID)
 }
 
-func (c *agentClient) StreamGetObject(
-	context.Context,
-	func() *client.ObjectID,
-	func(*client.ObjectVector, error),
-) error {
-	return nil
+func (c *agentClient) StreamGetObject(ctx context.Context, newData func() *client.ObjectID, f func(*client.ObjectVector, error)) (err error) {
+	var st agent.Agent_StreamGetObjectClient
+
+	st, err = c.AgentClient.StreamGetObject(ctx)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		err = st.CloseSend()
+	}()
+
+	return igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
+		return newData()
+	}, func(res interface{}, err error) {
+		f(res.(*client.ObjectVector), err)
+	})
 }
 
 func (c *agentClient) CreateIndex(ctx context.Context, controlCreateIndexRequest *client.ControlCreateIndexRequest) error {
