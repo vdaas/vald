@@ -8,6 +8,11 @@ var (
 	defaultOptions = []Option{
 		WithAddr("0.0.0.0"),
 		WithStreamConcurrency(5),
+		WithGRPCClientConfig(&config.GRPCClient{
+			Addrs: []string{
+				"0.0.0.0",
+			},
+		}),
 	}
 )
 
@@ -30,7 +35,7 @@ func WithStreamConcurrency(n int) Option {
 func WithGRPCClientConfig(cfg *config.GRPCClient) Option {
 	return func(c *agentClient) {
 		if cfg != nil {
-			c.cfg = cfg
+			c.cfg = cfg.Bind()
 		}
 	}
 }
