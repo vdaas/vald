@@ -94,9 +94,6 @@ func BidirectionalStreamClient(stream grpc.ClientStream,
 
 			err = stream.SendMsg(data)
 			if err != nil {
-				if err == io.EOF {
-					return eg.Wait()
-				}
 				return err
 			}
 
