@@ -71,10 +71,7 @@ func (c *gatewayClient) StreamSearch(ctx context.Context, newData func() *client
 		if err != nil {
 			return nil, err
 		}
-
-		defer func() {
-			err = st.CloseSend()
-		}()
+		defer st.CloseSend()
 
 		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
 			return newData()
@@ -93,10 +90,7 @@ func (c *gatewayClient) StreamSearchByID(ctx context.Context, newData func() *cl
 		if err != nil {
 			return nil, err
 		}
-
-		defer func() {
-			err = st.CloseSend()
-		}()
+		defer st.CloseSend()
 
 		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
 			return newData()
@@ -123,10 +117,7 @@ func (c *gatewayClient) StreamInsert(ctx context.Context, newData func() *client
 		if err != nil {
 			return nil, err
 		}
-
-		defer func() {
-			err = st.CloseSend()
-		}()
+		defer st.CloseSend()
 
 		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
 			return newData()
@@ -161,10 +152,7 @@ func (c *gatewayClient) StreamUpdate(ctx context.Context, newData func() *client
 		if err != nil {
 			return nil, err
 		}
-
-		defer func() {
-			err = st.CloseSend()
-		}()
+		defer st.CloseSend()
 
 		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
 			return newData()
@@ -197,10 +185,7 @@ func (c *gatewayClient) StreamRemove(ctx context.Context, newData func() *client
 		if err != nil {
 			return nil, err
 		}
-
-		defer func() {
-			err = st.CloseSend()
-		}()
+		defer st.CloseSend()
 
 		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
 			return newData()
@@ -236,10 +221,7 @@ func (c *gatewayClient) StreamGetObject(ctx context.Context, newData func() *cli
 		if err != nil {
 			return nil, err
 		}
-
-		defer func() {
-			err = st.CloseSend()
-		}()
+		defer st.CloseSend()
 
 		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
 			return newData()
