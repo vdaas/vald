@@ -71,5 +71,12 @@ spec:
         {{- if .Values.agent.volumes }}
         {{- toYaml .Values.agent.volumes | nindent 8 }}
         {{- end }}
+      {{- if .Values.agent.nodeName }}
+      nodeName: {{ .Values.agent.nodeName }}
+      {{- end }}
+      {{- if .Values.agent.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.agent.nodeSelector | nindent 8 }}
+      {{- end }}
 status:
 {{- end }}

@@ -243,7 +243,23 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (err error) {
 
 func (g *gateway) BroadCast(ctx context.Context,
 	f func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error) (err error) {
-	return g.DoMulti(ctx, g.GetAgentCount(), f)
+	return g.acClient.RangeConcurrent(ctx, -1,
+		func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+			if conn == nil {
+				return errors.ErrAgentClientNotConnected
+			}
+			select {
+			case <-ctx.Done():
+				return nil
+			default:
+				err = f(ctx, addr, agent.NewAgentClient(conn), copts...)
+				if err != nil {
+					log.Debug(addr, err)
+					return err
+				}
+			}
+			return nil
+		})
 }
 
 func (g *gateway) Do(ctx context.Context,

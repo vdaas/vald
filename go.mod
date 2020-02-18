@@ -4,7 +4,7 @@ go 1.13
 
 replace (
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
-	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.1-0.20200213224922-5a8a207333b3
+	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.1-0.20200218151620-3d8a0293423a
 	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200203083758-81b8263d9fe5
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.8.0
@@ -50,7 +50,7 @@ require (
 	golang.org/x/sys v0.0.0-20200217220822-9197077df867
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/plot v0.0.0-20200212202559-4d97eda4de95
-	google.golang.org/genproto v0.0.0-20200212174721-66ed5ce911ce
+	google.golang.org/genproto v0.0.0-20200218151345-dad8c97a84f5
 	google.golang.org/grpc v1.27.1
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.3
