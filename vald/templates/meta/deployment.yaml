@@ -74,5 +74,12 @@ spec:
         {{- if .Values.meta.volumes }}
         {{- toYaml .Values.meta.volumes | nindent 8 }}
         {{- end }}
+      {{- if .Values.meta.nodeName }}
+      nodeName: {{ .Values.meta.nodeName }}
+      {{- end }}
+      {{- if .Values.meta.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.meta.nodeSelector | nindent 8 }}
+      {{- end }}
 status:
 {{- end }}
