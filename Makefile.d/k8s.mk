@@ -235,6 +235,28 @@ k8s/external/scylla/remove:
 	-kubectl delete -f k8s/external/scylla
 	-kubectl delete configmap cassandra-initdb
 
+.PHONY: k8s/metrics/metrics-server/deploy
+## deploy metrics-serrver
+k8s/metrics/metrics-server/deploy:
+	kubectl apply -f k8s/metrics/metrics-server
+
+.PHONY: k8s/metrics/metrics-server/remove
+## remove metrics-serrver
+k8s/metrics/metrics-server/remove:
+	-kubectl delete -f k8s/metrics/metrics-server
+
+.PHONY: k8s/metrics/prometheus/deploy
+## deploy prometheus and grafana
+k8s/metrics/prometheus/deploy:
+	kubectl apply -f k8s/metrics/prometheus
+	kubectl apply -f k8s/metrics/grafana
+
+.PHONY: k8s/metrics/prometheus/remove
+## remove prometheus and grafana
+k8s/metrics/prometheus/remove:
+	-kubectl delete -f k8s/metrics/prometheus
+	-kubectl delete -f k8s/metrics/grafana
+
 .PHONY: k8s/linkerd/deploy
 ## deploy linkerd to k8s
 k8s/linkerd/deploy:
