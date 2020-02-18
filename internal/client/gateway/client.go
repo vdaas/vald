@@ -5,8 +5,8 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/vald"
 	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/config"
 	igrpc "github.com/vdaas/vald/internal/net/grpc"
-	"google.golang.org/grpc"
 )
 
 type Client interface {
@@ -15,177 +15,237 @@ type Client interface {
 }
 
 type gatewayClient struct {
+	addr              string
+	cfg               *config.GRPCClient
+	grpcClient        igrpc.Client
 	streamConcurrency int
-	vald.ValdClient
 }
 
-func New(ctx context.Context, addr string) (Client, error) {
-	conn, err := grpc.DialContext(ctx, addr, grpc.WithInsecure())
-	if err != nil {
-		return nil, err
+func New(ctx context.Context, opts ...Option) (Client, error) {
+	c := new(gatewayClient)
+
+	for _, opt := range append(defaultOptions, opts...) {
+		opt(c)
 	}
 
-	return &gatewayClient{
-		ValdClient: vald.NewValdClient(conn),
-	}, nil
+	c.grpcClient = igrpc.New(c.cfg.Opts()...)
+
+	return c, nil
 }
 
 func (c *gatewayClient) Exists(ctx context.Context, objectID *client.ObjectID) (*client.ObjectID, error) {
-	return c.ValdClient.Exists(ctx, objectID)
+	res, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
+		return vald.NewValdClient(conn).Exists(ctx, objectID, copts...)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res.(*client.ObjectID), nil
 }
 
 func (c *gatewayClient) Search(ctx context.Context, searchRequest *client.SearchRequest) (*client.SearchResponse, error) {
-	return c.ValdClient.Search(ctx, searchRequest)
+	res, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
+		return vald.NewValdClient(conn).Search(ctx, searchRequest, copts...)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res.(*client.SearchResponse), nil
 }
 
 func (c *gatewayClient) SearchByID(ctx context.Context, searchIDRequest *client.SearchIDRequest) (*client.SearchResponse, error) {
-	return c.ValdClient.SearchByID(ctx, searchIDRequest)
-}
-
-func (c *gatewayClient) StreamSearch(ctx context.Context, newData func() *client.SearchRequest, f func(*client.SearchResponse, error)) (err error) {
-	var st vald.Vald_StreamSearchClient
-
-	st, err = c.ValdClient.StreamSearch(ctx)
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		err = st.CloseSend()
-	}()
-
-	return igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-		return newData()
-	}, func(res interface{}, err error) {
-		f(res.(*client.SearchResponse), err)
+	res, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
+		return vald.NewValdClient(conn).SearchByID(ctx, searchIDRequest, copts...)
 	})
-}
-
-func (c *gatewayClient) StreamSearchByID(ctx context.Context, newData func() *client.SearchRequest, f func(*client.SearchResponse, error)) (err error) {
-	var st vald.Vald_StreamSearchByIDClient
-
-	st, err = c.ValdClient.StreamSearchByID(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	defer func() {
-		err = st.CloseSend()
-	}()
-
-	return igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-		return newData()
-	}, func(res interface{}, err error) {
-		f(res.(*client.SearchResponse), err)
-	})
+	return res.(*client.SearchResponse), nil
 }
 
-func (c *gatewayClient) Insert(ctx context.Context, objectVector *client.ObjectVector) error {
-	_, err := c.ValdClient.Insert(ctx, objectVector)
+func (c *gatewayClient) StreamSearch(ctx context.Context, newData func() *client.SearchRequest, f func(*client.SearchResponse, error)) error {
+	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (res interface{}, err error) {
+		var st vald.Vald_StreamSearchClient
+
+		st, err = vald.NewValdClient(conn).StreamSearch(ctx, copts...)
+		if err != nil {
+			return nil, err
+		}
+
+		defer func() {
+			err = st.CloseSend()
+		}()
+
+		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
+			return newData()
+		}, func(res interface{}, err error) {
+			f(res.(*client.SearchResponse), err)
+		})
+	})
 	return err
 }
 
-func (c *gatewayClient) StreamInsert(ctx context.Context, newData func() *client.ObjectVector, f func(error)) (err error) {
-	var st vald.Vald_StreamInsertClient
+func (c *gatewayClient) StreamSearchByID(ctx context.Context, newData func() *client.SearchRequest, f func(*client.SearchResponse, error)) error {
+	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (res interface{}, err error) {
+		var st vald.Vald_StreamSearchByIDClient
 
-	st, err = c.ValdClient.StreamInsert(ctx)
-	if err != nil {
-		return err
-	}
+		st, err = vald.NewValdClient(conn).StreamSearchByID(ctx, copts...)
+		if err != nil {
+			return nil, err
+		}
 
-	defer func() {
-		err = st.CloseSend()
-	}()
+		defer func() {
+			err = st.CloseSend()
+		}()
 
-	return igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-		return newData()
-	}, func(_ interface{}, err error) {
-		f(err)
+		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
+			return newData()
+		}, func(res interface{}, err error) {
+			f(res.(*client.SearchResponse), err)
+		})
 	})
+
+	return err
+}
+
+func (c *gatewayClient) Insert(ctx context.Context, objectVector *client.ObjectVector) error {
+	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
+		return vald.NewValdClient(conn).Insert(ctx, objectVector, copts...)
+	})
+	return err
+}
+
+func (c *gatewayClient) StreamInsert(ctx context.Context, newData func() *client.ObjectVector, f func(error)) error {
+	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (res interface{}, err error) {
+		var st vald.Vald_StreamInsertClient
+
+		st, err = vald.NewValdClient(conn).StreamInsert(ctx, copts...)
+		if err != nil {
+			return nil, err
+		}
+
+		defer func() {
+			err = st.CloseSend()
+		}()
+
+		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
+			return newData()
+		}, func(_ interface{}, err error) {
+			f(err)
+		})
+
+	})
+
+	return err
 }
 
 func (c *gatewayClient) MultiInsert(ctx context.Context, objectVectors *client.ObjectVectors) error {
-	_, err := c.ValdClient.MultiInsert(ctx, objectVectors)
+	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
+		return vald.NewValdClient(conn).MultiInsert(ctx, objectVectors, copts...)
+	})
 	return err
 }
 
 func (c *gatewayClient) Update(ctx context.Context, objectVector *client.ObjectVector) error {
-	_, err := c.ValdClient.Update(ctx, objectVector)
+	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
+		return vald.NewValdClient(conn).Update(ctx, objectVector, copts...)
+	})
 	return err
 }
 
-func (c *gatewayClient) StreamUpdate(ctx context.Context, newData func() *client.ObjectVector, f func(error)) (err error) {
-	var st vald.Vald_StreamUpdateClient
+func (c *gatewayClient) StreamUpdate(ctx context.Context, newData func() *client.ObjectVector, f func(error)) error {
+	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (res interface{}, err error) {
+		var st vald.Vald_StreamUpdateClient
 
-	st, err = c.ValdClient.StreamUpdate(ctx)
-	if err != nil {
-		return err
-	}
+		st, err = vald.NewValdClient(conn).StreamUpdate(ctx, copts...)
+		if err != nil {
+			return nil, err
+		}
 
-	defer func() {
-		err = st.CloseSend()
-	}()
+		defer func() {
+			err = st.CloseSend()
+		}()
 
-	return igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-		return newData()
-	}, func(_ interface{}, err error) {
-		f(err)
+		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
+			return newData()
+		}, func(_ interface{}, err error) {
+			f(err)
+		})
 	})
+	return err
 }
 
 func (c *gatewayClient) MultiUpdate(ctx context.Context, objectVectors *client.ObjectVectors) error {
-	_, err := c.ValdClient.MultiUpdate(ctx, objectVectors)
+	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
+		return vald.NewValdClient(conn).MultiUpdate(ctx, objectVectors, copts...)
+	})
 	return err
 }
 
 func (c *gatewayClient) Remove(ctx context.Context, objectID *client.ObjectID) error {
-	_, err := c.ValdClient.Remove(ctx, objectID)
+	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
+		return vald.NewValdClient(conn).Remove(ctx, objectID, copts...)
+	})
 	return err
 }
 
-func (c *gatewayClient) StreamRemove(ctx context.Context, newData func() *client.ObjectID, f func(error)) (err error) {
-	var st vald.Vald_StreamRemoveClient
+func (c *gatewayClient) StreamRemove(ctx context.Context, newData func() *client.ObjectID, f func(error)) error {
+	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (res interface{}, err error) {
+		var st vald.Vald_StreamRemoveClient
 
-	st, err = c.ValdClient.StreamRemove(ctx)
-	if err != nil {
-		return err
-	}
+		st, err = vald.NewValdClient(conn).StreamRemove(ctx, copts...)
+		if err != nil {
+			return nil, err
+		}
 
-	defer func() {
-		err = st.CloseSend()
-	}()
+		defer func() {
+			err = st.CloseSend()
+		}()
 
-	return igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-		return newData()
-	}, func(_ interface{}, err error) {
-		f(err)
+		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
+			return newData()
+		}, func(_ interface{}, err error) {
+			f(err)
+		})
 	})
+	return err
 }
 
 func (c *gatewayClient) MultiRemove(ctx context.Context, objectIDs *client.ObjectIDs) error {
-	_, err := c.ValdClient.MultiRemove(ctx, objectIDs)
+	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
+		return vald.NewValdClient(conn).MultiRemove(ctx, objectIDs, copts...)
+	})
 	return err
 }
 
 func (c *gatewayClient) GetObject(ctx context.Context, objectID *client.ObjectID) (*client.MetaObject, error) {
-	return c.ValdClient.GetObject(ctx, objectID)
+	res, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
+		return vald.NewValdClient(conn).GetObject(ctx, objectID, copts...)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res.(*client.MetaObject), err
 }
 
-func (c *gatewayClient) StreamGetObject(ctx context.Context, newData func() *client.ObjectID, f func(*client.MetaObject, error)) (err error) {
-	var st vald.Vald_StreamGetObjectClient
+func (c *gatewayClient) StreamGetObject(ctx context.Context, newData func() *client.ObjectID, f func(*client.MetaObject, error)) error {
+	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (res interface{}, err error) {
+		var st vald.Vald_StreamGetObjectClient
 
-	st, err = c.ValdClient.StreamGetObject(ctx)
-	if err != nil {
-		return err
-	}
+		st, err = vald.NewValdClient(conn).StreamGetObject(ctx, copts...)
+		if err != nil {
+			return nil, err
+		}
 
-	defer func() {
-		err = st.CloseSend()
-	}()
+		defer func() {
+			err = st.CloseSend()
+		}()
 
-	return igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-		return newData()
-	}, func(res interface{}, err error) {
-		f(res.(*client.MetaObject), err)
+		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
+			return newData()
+		}, func(res interface{}, err error) {
+			f(res.(*client.MetaObject), err)
+		})
 	})
+	return err
 }
