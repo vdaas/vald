@@ -37,7 +37,7 @@ func New(ctx context.Context, opts ...Option) (Client, error) {
 
 func (c *agentClient) Exists(ctx context.Context, objectID *client.ObjectID) (*client.ObjectID, error) {
 	res, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
-		return agent.NewAgentClient(conn).Exists(ctx, objectID)
+		return agent.NewAgentClient(conn).Exists(ctx, objectID, copts...)
 	})
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func (c *agentClient) Exists(ctx context.Context, objectID *client.ObjectID) (*c
 
 func (c *agentClient) Search(ctx context.Context, searchRequest *client.SearchRequest) (*client.SearchResponse, error) {
 	res, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
-		return agent.NewAgentClient(conn).Search(ctx, searchRequest)
+		return agent.NewAgentClient(conn).Search(ctx, searchRequest, copts...)
 	})
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (c *agentClient) Search(ctx context.Context, searchRequest *client.SearchRe
 
 func (c *agentClient) SearchByID(ctx context.Context, searchIDRequest *client.SearchIDRequest) (*client.SearchResponse, error) {
 	res, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
-		return agent.NewAgentClient(conn).SearchByID(ctx, searchIDRequest)
+		return agent.NewAgentClient(conn).SearchByID(ctx, searchIDRequest, copts...)
 	})
 	if err != nil {
 		return nil, err
@@ -69,7 +69,7 @@ func (c *agentClient) StreamSearch(ctx context.Context, newData func() *client.S
 	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (res interface{}, err error) {
 		var st agent.Agent_StreamSearchClient
 
-		st, err = agent.NewAgentClient(conn).StreamSearch(ctx)
+		st, err = agent.NewAgentClient(conn).StreamSearch(ctx, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -92,7 +92,7 @@ func (c *agentClient) StreamSearchByID(ctx context.Context, newData func() *clie
 	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (res interface{}, err error) {
 		var st agent.Agent_StreamSearchByIDClient
 
-		st, err = agent.NewAgentClient(conn).StreamSearchByID(ctx)
+		st, err = agent.NewAgentClient(conn).StreamSearchByID(ctx, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -113,7 +113,7 @@ func (c *agentClient) StreamSearchByID(ctx context.Context, newData func() *clie
 
 func (c *agentClient) Insert(ctx context.Context, objectVector *client.ObjectVector) error {
 	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
-		return agent.NewAgentClient(conn).Insert(ctx, objectVector)
+		return agent.NewAgentClient(conn).Insert(ctx, objectVector, copts...)
 	})
 	return err
 }
@@ -122,7 +122,7 @@ func (c *agentClient) StreamInsert(ctx context.Context, newData func() *client.O
 	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (res interface{}, err error) {
 		var st agent.Agent_StreamInsertClient
 
-		st, err = agent.NewAgentClient(conn).StreamInsert(ctx)
+		st, err = agent.NewAgentClient(conn).StreamInsert(ctx, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -143,14 +143,14 @@ func (c *agentClient) StreamInsert(ctx context.Context, newData func() *client.O
 
 func (c *agentClient) MultiInsert(ctx context.Context, objectVectors *client.ObjectVectors) error {
 	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
-		return agent.NewAgentClient(conn).MultiInsert(ctx, objectVectors)
+		return agent.NewAgentClient(conn).MultiInsert(ctx, objectVectors, copts...)
 	})
 	return err
 }
 
 func (c *agentClient) Update(ctx context.Context, objectVector *client.ObjectVector) error {
 	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
-		return agent.NewAgentClient(conn).Update(ctx, objectVector)
+		return agent.NewAgentClient(conn).Update(ctx, objectVector, copts...)
 	})
 	return err
 }
@@ -159,7 +159,7 @@ func (c *agentClient) StreamUpdate(ctx context.Context, newData func() *client.O
 	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (res interface{}, err error) {
 		var st agent.Agent_StreamUpdateClient
 
-		st, err = agent.NewAgentClient(conn).StreamUpdate(ctx)
+		st, err = agent.NewAgentClient(conn).StreamUpdate(ctx, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -179,14 +179,14 @@ func (c *agentClient) StreamUpdate(ctx context.Context, newData func() *client.O
 
 func (c *agentClient) MultiUpdate(ctx context.Context, objectVectors *client.ObjectVectors) error {
 	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
-		return agent.NewAgentClient(conn).MultiUpdate(ctx, objectVectors)
+		return agent.NewAgentClient(conn).MultiUpdate(ctx, objectVectors, copts...)
 	})
 	return err
 }
 
 func (c *agentClient) Remove(ctx context.Context, objectID *client.ObjectID) error {
 	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
-		return agent.NewAgentClient(conn).Remove(ctx, objectID)
+		return agent.NewAgentClient(conn).Remove(ctx, objectID, copts...)
 	})
 	return err
 }
@@ -195,7 +195,7 @@ func (c *agentClient) StreamRemove(ctx context.Context, newData func() *client.O
 	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (res interface{}, err error) {
 		var st agent.Agent_StreamRemoveClient
 
-		st, err = agent.NewAgentClient(conn).StreamRemove(ctx)
+		st, err = agent.NewAgentClient(conn).StreamRemove(ctx, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -215,14 +215,14 @@ func (c *agentClient) StreamRemove(ctx context.Context, newData func() *client.O
 
 func (c *agentClient) MultiRemove(ctx context.Context, objectIDs *client.ObjectIDs) error {
 	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
-		return agent.NewAgentClient(conn).MultiRemove(ctx, objectIDs)
+		return agent.NewAgentClient(conn).MultiRemove(ctx, objectIDs, copts...)
 	})
 	return err
 }
 
 func (c *agentClient) GetObject(ctx context.Context, objectID *client.ObjectID) (*client.ObjectVector, error) {
 	res, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
-		return agent.NewAgentClient(conn).GetObject(ctx, objectID)
+		return agent.NewAgentClient(conn).GetObject(ctx, objectID, copts...)
 	})
 	if err != nil {
 		return nil, err
@@ -234,7 +234,7 @@ func (c *agentClient) StreamGetObject(ctx context.Context, newData func() *clien
 	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (res interface{}, err error) {
 		var st agent.Agent_StreamGetObjectClient
 
-		st, err = agent.NewAgentClient(conn).StreamGetObject(ctx)
+		st, err = agent.NewAgentClient(conn).StreamGetObject(ctx, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -254,28 +254,28 @@ func (c *agentClient) StreamGetObject(ctx context.Context, newData func() *clien
 
 func (c *agentClient) CreateIndex(ctx context.Context, controlCreateIndexRequest *client.ControlCreateIndexRequest) error {
 	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
-		return agent.NewAgentClient(conn).CreateIndex(ctx, controlCreateIndexRequest)
+		return agent.NewAgentClient(conn).CreateIndex(ctx, controlCreateIndexRequest, copts...)
 	})
 	return err
 }
 
 func (c *agentClient) SaveIndex(ctx context.Context) error {
 	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
-		return agent.NewAgentClient(conn).SaveIndex(ctx, new(payload.Empty))
+		return agent.NewAgentClient(conn).SaveIndex(ctx, new(payload.Empty), copts...)
 	})
 	return err
 }
 
 func (c *agentClient) CreateAndSaveIndex(ctx context.Context, controlCreateIndexRequest *client.ControlCreateIndexRequest) error {
 	_, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
-		return agent.NewAgentClient(conn).CreateAndSaveIndex(ctx, controlCreateIndexRequest)
+		return agent.NewAgentClient(conn).CreateAndSaveIndex(ctx, controlCreateIndexRequest, copts...)
 	})
 	return err
 }
 
 func (c *agentClient) IndexInfo(ctx context.Context) (*client.InfoIndex, error) {
 	res, err := c.grpcClient.Do(ctx, c.addr, func(conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
-		return agent.NewAgentClient(conn).IndexInfo(ctx, new(payload.Empty))
+		return agent.NewAgentClient(conn).IndexInfo(ctx, new(payload.Empty), copts...)
 	})
 	if err != nil {
 		return nil, err
