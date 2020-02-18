@@ -25,7 +25,9 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
+	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/pkg/manager/backup/mysql/config"
@@ -36,10 +38,11 @@ import (
 )
 
 type run struct {
-	eg     errgroup.Group
-	cfg    *config.Data
-	mySQL  service.MySQL
-	server starter.Server
+	eg            errgroup.Group
+	cfg           *config.Data
+	mySQL         service.MySQL
+	server        starter.Server
+	observability observability.Observability
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
@@ -49,6 +52,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	g := handler.New(handler.WithMySQL(m))
 	eg := errgroup.Get()
+
+	obs, err := observability.New(cfg.Observability)
+	if err != nil {
+		return nil, err
+	}
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
@@ -92,10 +100,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
-		eg:     eg,
-		cfg:    cfg,
-		mySQL:  m,
-		server: srv,
+		eg:            eg,
+		cfg:           cfg,
+		mySQL:         m,
+		server:        srv,
+		observability: obs,
 	}, nil
 }
 
@@ -105,11 +114,32 @@ func (r *run) PreStart(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return nil
+	return r.observability.PreStart(ctx)
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	return r.server.ListenAndServe(ctx), nil
+	ech := make(chan error, 2)
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(ech)
+		sech := r.server.ListenAndServe(ctx)
+		oech := r.observability.Start(ctx)
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case err = <-sech:
+			case err = <-oech:
+			}
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case ech <- err:
+				}
+			}
+		}
+	}))
+	return ech, nil
 }
 
 func (r *run) PreStop(ctx context.Context) error {
@@ -117,6 +147,7 @@ func (r *run) PreStop(ctx context.Context) error {
 }
 
 func (r *run) Stop(ctx context.Context) error {
+	r.observability.Stop(ctx)
 	return r.server.Shutdown(ctx)
 }
 
