@@ -74,7 +74,7 @@ func BidirectionalStream(stream grpc.ServerStream,
 
 func BidirectionalStreamClient(stream grpc.ClientStream,
 	concurrency int,
-	newData func() interface{},
+	dataProvider func() interface{},
 	f func(interface{}, error)) (err error) {
 	ctx := stream.Context()
 	eg, ctx := errgroup.New(stream.Context())
@@ -87,7 +87,7 @@ func BidirectionalStreamClient(stream grpc.ClientStream,
 		case <-ctx.Done():
 			return eg.Wait()
 		default:
-			data := newData()
+			data := dataProvider()
 			if data == nil {
 				return eg.Wait()
 			}
