@@ -6,11 +6,11 @@ type Option func(*gatewayClient)
 
 var (
 	defaultOptions = []Option{
-		WithAddr("0.0.0.0"),
+		WithAddr("0.0.0.0:8081"),
 		WithStreamConcurrency(5),
 		WithGRPCClientConfig(&config.GRPCClient{
 			Addrs: []string{
-				"0.0.0.0",
+				"0.0.0.0:8081",
 			},
 		}),
 	}
