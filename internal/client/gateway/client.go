@@ -21,7 +21,7 @@ type gatewayClient struct {
 	streamConcurrency int
 }
 
-func New(ctx context.Context, opts ...Option) (Client, error) {
+func New(opts ...Option) (Client, error) {
 	c := new(gatewayClient)
 
 	for _, opt := range append(defaultOptions, opts...) {
