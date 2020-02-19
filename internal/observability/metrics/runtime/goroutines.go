@@ -29,7 +29,7 @@ type goroutines struct {
 
 func NewNumberOfGoroutines() metrics.Metric {
 	return &goroutines{
-		count: *metrics.Int64("vdaas.org/runtime/num_goroutine", "number of goroutines", metrics.UnitDimensionless),
+		count: *metrics.Int64("vdaas.org/vald/runtime/goroutine_count", "number of goroutines", metrics.UnitDimensionless),
 	}
 }
 
@@ -39,10 +39,14 @@ func (g *goroutines) Measurement() ([]metrics.Measurement, error) {
 	}, nil
 }
 
+func (g *goroutines) MeasurementWithTags() ([]metrics.MeasurementWithTags, error) {
+	return []metrics.MeasurementWithTags{}, nil
+}
+
 func (g *goroutines) View() []*metrics.View {
 	return []*metrics.View{
 		&metrics.View{
-			Name:        "num_goroutine",
+			Name:        "goroutine_count",
 			Description: "number of goroutines",
 			Measure:     &g.count,
 			Aggregation: metrics.LastValue(),

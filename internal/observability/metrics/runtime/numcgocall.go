@@ -29,7 +29,7 @@ type numcgocall struct {
 
 func NewNumberOfCGOCall() metrics.Metric {
 	return &numcgocall{
-		count: *metrics.Int64("vdaas.org/runtime/num_cgo_call", "number of cgo call", metrics.UnitDimensionless),
+		count: *metrics.Int64("vdaas.org/vald/runtime/cgo_call_count", "number of cgo call", metrics.UnitDimensionless),
 	}
 }
 
@@ -39,13 +39,17 @@ func (n *numcgocall) Measurement() ([]metrics.Measurement, error) {
 	}, nil
 }
 
+func (n *numcgocall) MeasurementWithTags() ([]metrics.MeasurementWithTags, error) {
+	return []metrics.MeasurementWithTags{}, nil
+}
+
 func (n *numcgocall) View() []*metrics.View {
 	return []*metrics.View{
 		&metrics.View{
-			Name:        "num_cgo_call",
+			Name:        "cgo_call_count",
 			Description: "number of cgo call",
 			Measure:     &n.count,
-			Aggregation: metrics.LastValue(),
+			Aggregation: metrics.Count(),
 		},
 	}
 }

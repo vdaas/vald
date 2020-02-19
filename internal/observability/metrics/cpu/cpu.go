@@ -18,18 +18,38 @@
 package cpu
 
 import (
+	"fmt"
 	"os"
-	"runtime"
+	"strconv"
 
+	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/process"
 	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
-type cpu struct {
-	process    *process.Process
-	numCPU     metrics.Int64Measure
-	percentCPU metrics.Float64Measure
-	numThreads metrics.Int64Measure
+const (
+	cpuID         = "cpu_id"
+	cpuVendorID   = "cpu_vendor_id"
+	cpuFamily     = "cpu_family"
+	cpuModel      = "cpu_model"
+	cpuStepping   = "cpu_stepping"
+	cpuPhysicalID = "cpu_physical_id"
+	cpuCoreID     = "cpu_core_id"
+	cpuCores      = "cpu_cores"
+	cpuModelName  = "cpu_model_name"
+	cpuMhz        = "cpu_mhz"
+	cpuCacheSize  = "cpu_cache_size"
+	cpuFlags      = "cpu_flags"
+	cpuMicrocode  = "cpu_microcode"
+)
+
+type cpuInfo struct {
+	process      *process.Process
+	infoStats    []cpu.InfoStat
+	infoStatKeys map[string]metrics.Key
+	cpuInfo      metrics.Int64Measure
+	cpuPercent   metrics.Float64Measure
+	numThreads   metrics.Int64Measure
 }
 
 func NewMetric() (metrics.Metric, error) {
@@ -38,15 +58,54 @@ func NewMetric() (metrics.Metric, error) {
 		return nil, err
 	}
 
-	return &cpu{
-		process:    p,
-		numCPU:     *metrics.Int64("vdaas.org/cpu/num", "number of cpu", metrics.UnitDimensionless),
-		percentCPU: *metrics.Float64("vdaas.org/cpu/percent", "cpu usage", metrics.UnitDimensionless),
-		numThreads: *metrics.Int64("vdaas.org/thread/num", "number of threads", metrics.UnitDimensionless),
+	infoStats, err := cpu.Info()
+	if err != nil {
+		return nil, err
+	}
+
+	infoStatKeys, err := infoStatsLabelKeys()
+	if err != nil {
+		return nil, err
+	}
+
+	return &cpuInfo{
+		process:      p,
+		infoStats:    infoStats,
+		infoStatKeys: infoStatKeys,
+		cpuInfo:      *metrics.Int64("vdaas.org/vald/cpu/info", "cpu info", metrics.UnitDimensionless),
+		cpuPercent:   *metrics.Float64("vdaas.org/vald/cpu/utilization", "cpu utilization", metrics.UnitDimensionless),
+		numThreads:   *metrics.Int64("vdaas.org/vald/thread/count", "number of threads", metrics.UnitDimensionless),
 	}, nil
 }
 
-func (c *cpu) Measurement() ([]metrics.Measurement, error) {
+func infoStatsLabelKeys() (map[string]metrics.Key, error) {
+	keys := []string{
+		cpuID,
+		cpuVendorID,
+		cpuFamily,
+		cpuModel,
+		cpuStepping,
+		cpuPhysicalID,
+		cpuCoreID,
+		cpuCores,
+		cpuModelName,
+		cpuMhz,
+		cpuCacheSize,
+		cpuFlags,
+		cpuMicrocode,
+	}
+	info := make(map[string]metrics.Key, len(keys))
+	for _, kstr := range keys {
+		k, err := metrics.NewKey(kstr)
+		if err != nil {
+			return nil, err
+		}
+		info[kstr] = k
+	}
+	return info, nil
+}
+
+func (c *cpuInfo) Measurement() ([]metrics.Measurement, error) {
 	cpuPercent, err := c.process.CPUPercent()
 	if err != nil {
 		return nil, err
@@ -57,28 +116,59 @@ func (c *cpu) Measurement() ([]metrics.Measurement, error) {
 	}
 
 	return []metrics.Measurement{
-		c.numCPU.M(int64(runtime.NumCPU())),
-		c.percentCPU.M(cpuPercent),
+		c.cpuPercent.M(cpuPercent),
 		c.numThreads.M(int64(numThreads)),
 	}, nil
 }
 
-func (c *cpu) View() []*metrics.View {
+func (c *cpuInfo) MeasurementWithTags() ([]metrics.MeasurementWithTags, error) {
+	ms := make([]metrics.MeasurementWithTags, 0, len(c.infoStats))
+	for _, infoStat := range c.infoStats {
+		ms = append(ms, metrics.MeasurementWithTags{
+			Measurement: c.cpuInfo.M(int64(1)),
+			Tags: map[metrics.Key]string{
+				c.infoStatKeys[cpuID]:         strconv.Itoa(int(infoStat.CPU)),
+				c.infoStatKeys[cpuVendorID]:   infoStat.VendorID,
+				c.infoStatKeys[cpuFamily]:     infoStat.Family,
+				c.infoStatKeys[cpuModel]:      infoStat.Model,
+				c.infoStatKeys[cpuStepping]:   strconv.Itoa(int(infoStat.Stepping)),
+				c.infoStatKeys[cpuPhysicalID]: infoStat.PhysicalID,
+				c.infoStatKeys[cpuCoreID]:     infoStat.CoreID,
+				c.infoStatKeys[cpuCores]:      strconv.Itoa(int(infoStat.Cores)),
+				c.infoStatKeys[cpuModelName]:  infoStat.ModelName,
+				c.infoStatKeys[cpuMhz]:        fmt.Sprintf("%g", infoStat.Mhz),
+				c.infoStatKeys[cpuCacheSize]:  strconv.Itoa(int(infoStat.CacheSize)),
+				// tags must be less than 255 characters
+				c.infoStatKeys[cpuFlags]:     fmt.Sprintf("%.255s", fmt.Sprintf("%v", infoStat.Flags)),
+				c.infoStatKeys[cpuMicrocode]: infoStat.Microcode,
+			},
+		})
+	}
+	return ms, nil
+}
+
+func (c *cpuInfo) View() []*metrics.View {
+	keys := make([]metrics.Key, 0, len(c.infoStatKeys))
+	for _, k := range c.infoStatKeys {
+		keys = append(keys, k)
+	}
+
 	return []*metrics.View{
 		&metrics.View{
-			Name:        "num_cpu",
-			Description: "number of cpu",
-			Measure:     &c.numCPU,
+			Name:        "cpu_info",
+			Description: "cpu info",
+			TagKeys:     keys,
+			Measure:     &c.cpuInfo,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
-			Name:        "cpu_percent",
-			Description: "cpu usage",
-			Measure:     &c.percentCPU,
+			Name:        "cpu_utilization",
+			Description: "cpu utilization",
+			Measure:     &c.cpuPercent,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
-			Name:        "num_threads",
+			Name:        "thread_count",
 			Description: "number of threads",
 			Measure:     &c.numThreads,
 			Aggregation: metrics.LastValue(),

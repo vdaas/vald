@@ -20,8 +20,10 @@ package metrics
 import (
 	"context"
 
+	"github.com/vdaas/vald/internal/errors"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
+	"go.opencensus.io/tag"
 )
 
 var (
@@ -36,6 +38,8 @@ var (
 	Distribution = view.Distribution
 	LastValue    = view.LastValue
 	Sum          = view.Sum
+
+	NewKey = tag.NewKey
 )
 
 type Measurement = stats.Measurement
@@ -44,8 +48,16 @@ type View = view.View
 type Int64Measure = stats.Int64Measure
 type Float64Measure = stats.Float64Measure
 
+type Key = tag.Key
+
+type MeasurementWithTags struct {
+	Measurement Measurement
+	Tags        map[Key]string
+}
+
 type Metric interface {
 	Measurement() ([]Measurement, error)
+	MeasurementWithTags() ([]MeasurementWithTags, error)
 	View() []*View
 }
 
@@ -55,4 +67,19 @@ func RegisterView(views ...*View) error {
 
 func Record(ctx context.Context, ms ...Measurement) {
 	stats.Record(ctx, ms...)
+}
+
+func RecordWithTags(ctx context.Context, mwts ...MeasurementWithTags) error {
+	var errs error
+	for _, mwt := range mwts {
+		mutators := make([]tag.Mutator, 0, len(mwt.Tags))
+		for k, v := range mwt.Tags {
+			mutators = append(mutators, tag.Upsert(k, v))
+		}
+		err := stats.RecordWithTags(ctx, mutators, mwt.Measurement)
+		if err != nil {
+			errs = errors.Wrap(errs, err.Error())
+		}
+	}
+	return errs
 }

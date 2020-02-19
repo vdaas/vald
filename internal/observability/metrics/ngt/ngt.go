@@ -41,6 +41,10 @@ func (n *ngt) Measurement() ([]metrics.Measurement, error) {
 	}, nil
 }
 
+func (n *ngt) MeasurementWithTags() ([]metrics.MeasurementWithTags, error) {
+	return []metrics.MeasurementWithTags{}, nil
+}
+
 func (n *ngt) View() []*metrics.View {
 	return []*metrics.View{
 		&metrics.View{

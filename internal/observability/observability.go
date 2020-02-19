@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/metrics/grpc"
 	"github.com/vdaas/vald/internal/observability/metrics/mem"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime"
+	"github.com/vdaas/vald/internal/observability/metrics/version"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -50,14 +51,19 @@ func New(cfg *config.Observability) (Observability, error) {
 	o := new(observability)
 	if cfg != nil {
 		if cfg.Collector != nil {
-			cpuMetric, err := cpu.NewMetric()
+			versionInfo, err := version.NewMetric()
 			if err != nil {
 				return nil, err
 			}
 
+			cpuMetric, err := cpu.NewMetric()
+			if err != nil {
+				return nil, err
+			}
 			col, err := collector.New(
 				collector.WithDuration(cfg.Collector.Duration),
 				collector.WithMetrics(
+					versionInfo,
 					cpuMetric,
 					mem.NewMetric(),
 					runtime.NewNumberOfGoroutines(),

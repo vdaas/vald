@@ -109,18 +109,25 @@ func (c *collector) Stop(ctx context.Context) {
 }
 
 func (c *collector) collect(ctx context.Context) (err error) {
-	measurements := make([]metrics.Measurement, 0, len(c.metrics))
+	measurements := make([]metrics.Measurement, 0)
+	measurementsWithTags := make([]metrics.MeasurementWithTags, 0)
 	var ms []metrics.Measurement
+	var mwts []metrics.MeasurementWithTags
 	for _, metric := range c.metrics {
 		ms, err = metric.Measurement()
 		if err != nil {
 			return err
 		}
 		measurements = append(measurements, ms...)
+		mwts, err = metric.MeasurementWithTags()
+		if err != nil {
+			return err
+		}
+		measurementsWithTags = append(measurementsWithTags, mwts...)
 	}
 
 	metrics.Record(ctx, measurements...)
-	return nil
+	return metrics.RecordWithTags(ctx, measurementsWithTags...)
 }
 
 func registerView(ms ...metrics.Metric) error {
