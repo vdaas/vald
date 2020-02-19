@@ -15,31 +15,31 @@
 #
 
 .PHONY: valdcli/install
-## install valdcli to deps dir
-valdcli/install: libs/bin/valdcli
+## install valdcli
+valdcli/install: $(BINDIR)/valdcli
 
 ifeq ($(UNAME),Darwin)
-libs/bin/valdcli:
-	mkdir -p libs/bin
+$(BINDIR)/valdcli:
+	mkdir -p $(BINDIR)
 	curl -LO https://github.com/rinx/vald-client-clj/releases/download/$(VALDCLI_VERSION)/valdcli-macos.zip
 	unzip valdcli-macos.zip
 	rm -f valdcli-macos.zip
-	mv valdcli libs/bin/valdcli
+	mv valdcli $(BINDIR)/valdcli
 else
-libs/bin/valdcli:
-	mkdir -p libs/bin
+$(BINDIR)/valdcli:
+	mkdir -p $(BINDIR)
 	curl -LO https://github.com/rinx/vald-client-clj/releases/download/$(VALDCLI_VERSION)/valdcli-linux-static.zip
 	unzip valdcli-linux-static.zip
 	rm -f valdcli-linux-static.zip
-	mv valdcli libs/bin/valdcli
+	mv valdcli $(BINDIR)/valdcli
 endif
 
 .PHONY: valdcli/xpanes/insert
 ## insert randomized vectors using valdcli and xpanes
-valdcli/xpanes/insert: libs/bin/valdcli
-	xpanes -c "$(ROOTDIR)/libs/bin/valdcli rand-vecs -n $(NUMBER) -d $(DIMENSION) --with-ids | $(ROOTDIR)/libs/bin/valdcli -h $(HOST) -p $(PORT) stream-insert --elapsed-time" $$(seq 1 $(NUMPANES))
+valdcli/xpanes/insert:
+	xpanes -c "valdcli rand-vecs -n $(NUMBER) -d $(DIMENSION) --with-ids | valdcli -h $(HOST) -p $(PORT) stream-insert --elapsed-time" $$(seq 1 $(NUMPANES))
 
 .PHONY: valdcli/xpanes/search
 ## search randomized vectors using valdcli and xpanes
-valdcli/xpanes/search: libs/bin/valdcli
-	xpanes -c "$(ROOTDIR)/libs/bin/valdcli rand-vecs -n $(NUMBER) -d $(DIMENSION) | $(ROOTDIR)/libs/bin/valdcli -h $(HOST) -p $(PORT) stream-search --elapsed-time" $$(seq 1 $(NUMPANES))
+valdcli/xpanes/search:
+	xpanes -c "valdcli rand-vecs -n $(NUMBER) -d $(DIMENSION) | valdcli -h $(HOST) -p $(PORT) stream-search --elapsed-time" $$(seq 1 $(NUMPANES))

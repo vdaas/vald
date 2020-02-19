@@ -13,6 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+.PHONY: kind/install
+## install KinD
+kind/install: $(BINDIR)/kind
+
+ifeq ($(UNAME),Darwin)
+$(BINDIR)/kind:
+	mkdir -p $(BINDIR)
+	curl -L https://github.com/kubernetes-sigs/kind/releases/download/$(KIND_VERSION)/kind-darwin-amd64 -o $(BINDIR)/kind
+	chmod a+x $(BINDIR)/kind
+else
+$(BINDIR)/kind:
+	mkdir -p $(BINDIR)
+	curl -L https://github.com/kubernetes-sigs/kind/releases/download/$(KIND_VERSION)/kind-linux-amd64 -o $(BINDIR)/kind
+	chmod a+x $(BINDIR)/kind
+endif
+
 .PHONY: kind/start
 ## start kind (kubernetes in docker) cluster
 kind/start:

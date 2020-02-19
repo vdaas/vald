@@ -38,7 +38,11 @@ GOCACHE := $(shell go env GOCACHE)
 
 TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION)
 
-VALDCLI_VERSION := $(shell cat versions/VALDCLI_VERSION)
+KIND_VERSION         ?= v0.7.0
+VALDCLI_VERSION      ?= v0.0.1
+TELEPRESENCE_VERSION ?= 0.104
+
+BINDIR ?= /usr/local/bin
 
 UNAME := $(shell uname)
 
@@ -140,8 +144,15 @@ init: \
 	git/hooks/init \
 	deps \
 	ngt/install \
-	tensorflow/install \
-	valdcli/install
+	tensorflow/install
+
+.PHONY: tools/install
+## install development tools
+tools/install: \
+	helm/install \
+	kind/install \
+	valdcli/install \
+	telepresence/install
 
 .PHONY: update
 ## update deps, license, and run goimports
