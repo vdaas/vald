@@ -272,3 +272,19 @@ helm/repo/index/create:
 ## add Helm chart repository
 helm/repo/add:
 	helm repo add vald https://vald.vdaas.org/charts
+
+.PHONY: telepresence/install
+## install telepresence
+telepresence/install: $(BINDIR)/telepresence
+
+$(BINDIR)/telepresence:
+	@if echo $(BINDIR) | grep -v '^/' > /dev/null; then \
+	    printf "\x1b[31m%s\x1b[0m\n" "WARNING!! BINDIR must be absolute path"; \
+	    exit 1; \
+	fi
+	mkdir -p $(BINDIR)
+	curl -L "https://github.com/telepresenceio/telepresence/archive/$(TELEPRESENCE_VERSION).tar.gz" -o telepresence.tar.gz
+	tar xzvf telepresence.tar.gz
+	rm -rf telepresence.tar.gz
+	env PREFIX=$(BINDIR:%/bin=%) telepresence-$(TELEPRESENCE_VERSION)/install.sh
+	rm -rf telepresence-$(TELEPRESENCE_VERSION)
