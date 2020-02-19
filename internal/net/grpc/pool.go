@@ -43,7 +43,7 @@ type ClientConnPool struct {
 }
 
 func NewPool(ctx context.Context, addr string, size uint64, dopts ...DialOption) (*ClientConnPool, error) {
-	if strings.HasPrefix(addr, ":") {
+	if !strings.HasPrefix(addr, "::") && strings.HasPrefix(addr, ":") {
 		addr = "127.0.0.1" + addr
 	}
 	host, port, err := net.SplitHostPort(addr)
@@ -113,7 +113,20 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 		}
 	}
 
-	ips, err := net.DefaultResolver.LookupIPAddr(ctx, c.addr)
+	if c.host == "localhost" ||
+		c.host == "127.0.0.1" {
+		for {
+			conn, err := grpc.DialContext(ctx, "127.0.0.1:"+c.port, c.dopts...)
+			if err == nil {
+				c.Put(conn)
+			}
+			if atomic.LoadUint64(&c.length) > c.size {
+				return c, nil
+			}
+		}
+	}
+
+	ips, err := net.DefaultResolver.LookupIPAddr(ctx, c.host)
 	if err != nil {
 		for {
 			conn, err := grpc.DialContext(ctx, c.addr, c.dopts...)
