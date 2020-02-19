@@ -1,4 +1,4 @@
-package insert
+package strategy
 
 import (
 	"context"
@@ -9,19 +9,14 @@ import (
 	"github.com/vdaas/vald/internal/client"
 )
 
-const (
-	serial   = "Insert Serial"
-	parallel = "Insert Parallel"
-)
-
 type insert struct {
 	parallel bool
 }
 
-func New(opts ...Option) e2e.Strategy {
+func NewInsert(opts ...InsertOption) e2e.Strategy {
 	i := new(insert)
 
-	for _, opt := range append(defaultOption, opts...) {
+	for _, opt := range append(defaultInsertOption, opts...) {
 		opt(i)
 	}
 
@@ -36,7 +31,7 @@ func (isrt *insert) Run(ctx context.Context, b *testing.B, client client.Client,
 }
 
 func (isrt *insert) run(ctx context.Context, b *testing.B, client client.Client, dataset assets.Dataset) error {
-	b.Run(serial, func(b *testing.B) {
+	b.Run("", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			if err := client.Insert(ctx, nil); err != nil {
 
@@ -48,7 +43,7 @@ func (isrt *insert) run(ctx context.Context, b *testing.B, client client.Client,
 }
 
 func (isrt *insert) runParallel(ctx context.Context, b *testing.B, client client.Client, dataset assets.Dataset) error {
-	b.Run(parallel, func(b *testing.B) {
+	b.Run("", func(b *testing.B) {
 		b.RunParallel(func(p *testing.PB) {
 			for p.Next() {
 				if err := client.Insert(ctx, nil); err != nil {
