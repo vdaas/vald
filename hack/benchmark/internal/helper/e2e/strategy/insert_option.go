@@ -6,7 +6,7 @@ var (
 	defaultInsertOption = []InsertOption{}
 )
 
-func WithParallel() InsertOption {
+func WithParallelInsert() InsertOption {
 	return func(e *insert) {
 		e.parallel = true
 	}
