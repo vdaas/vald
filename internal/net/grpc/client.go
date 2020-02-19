@@ -281,6 +281,8 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 					})
 				}
 			}))
+		} else {
+			return errors.ErrGRPCClientConnNotFound(addr)
 		}
 	}
 	return eg.Wait()
@@ -293,29 +295,26 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 		return f(conn, copts...)
 	}
 	pool, ok := g.conns.Load(addr)
-	if !ok {
-		g.Connect(ctx, addr)
-		pool, ok = g.conns.Load(addr)
-		if !ok {
-			return nil, errors.ErrGRPCClientConnNotFound(addr)
+	if ok {
+		err = pool.Do(func(conn *ClientConn) error {
+			if g.bo != nil {
+				data, err = g.bo.Do(ctx, func() (r interface{}, err error) {
+					r, err = wrapf(conn, g.copts...)
+					if err != nil {
+						return nil, err
+					}
+					return r, nil
+				})
+			} else {
+				data, err = wrapf(conn, g.copts...)
+			}
+			return err
+		})
+		if err != nil {
+			return nil, errors.ErrRPCCallFailed(addr, err)
 		}
-	}
-	err = pool.Do(func(conn *ClientConn) error {
-		if g.bo != nil {
-			data, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-				r, err = wrapf(conn, g.copts...)
-				if err != nil {
-					return nil, err
-				}
-				return r, nil
-			})
-		} else {
-			data, err = wrapf(conn, g.copts...)
-		}
-		return err
-	})
-	if err != nil {
-		return nil, errors.ErrRPCCallFailed(addr, err)
+	} else {
+		return nil, errors.ErrGRPCClientConnNotFound(addr)
 	}
 	return
 }
@@ -334,7 +333,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 		if pool.Healthy() {
 			return nil
 		}
-		pool, err := pool.Connect()
+		pool, err := pool.Connect(ctx)
 		if err != nil {
 			return err
 		}

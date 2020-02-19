@@ -47,7 +47,7 @@ require (
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
 	go.uber.org/automaxprocs v1.3.0
-	golang.org/x/sys v0.0.0-20200217220822-9197077df867
+	golang.org/x/sys v0.0.0-20200219091948-cb0a6d8edb6c
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/plot v0.0.0-20200212202559-4d97eda4de95
 	google.golang.org/genproto v0.0.0-20200218151345-dad8c97a84f5
