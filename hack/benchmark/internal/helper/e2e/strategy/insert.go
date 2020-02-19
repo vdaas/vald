@@ -31,6 +31,8 @@ func (isrt *insert) Run(ctx context.Context, b *testing.B, c client.Client, data
 
 func (isrt *insert) run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
 	b.Run("", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			isrt.do(ctx, b, c, dataset)
 		}
@@ -39,6 +41,8 @@ func (isrt *insert) run(ctx context.Context, b *testing.B, c client.Client, data
 
 func (isrt *insert) runParallel(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
 	b.Run("", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
 		b.RunParallel(func(p *testing.PB) {
 			for p.Next() {
 				isrt.do(ctx, b, c, dataset)
