@@ -1,4 +1,4 @@
-# Quick Start
+# Get Started 
 
 This article is written about tutorial for users who wants to use vald.
 
