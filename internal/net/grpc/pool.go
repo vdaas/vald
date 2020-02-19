@@ -19,6 +19,8 @@ package grpc
 
 import (
 	"context"
+	"net"
+	"strings"
 	"sync"
 	"sync/atomic"
 
@@ -29,8 +31,11 @@ import (
 
 type ClientConnPool struct {
 	ctx     context.Context
+	conn    *ClientConn // default connection
 	pool    sync.Pool
 	addr    string
+	host    string
+	port    string
 	size    uint64
 	length  uint64
 	dopts   []DialOption
@@ -38,12 +43,22 @@ type ClientConnPool struct {
 }
 
 func NewPool(ctx context.Context, addr string, size uint64, dopts ...DialOption) (*ClientConnPool, error) {
+	if strings.HasPrefix(addr, ":") {
+		addr = "127.0.0.1" + addr
+	}
+	host, port, err := net.SplitHostPort(addr)
+	if err != nil {
+		host = addr
+		port = "80"
+	}
 	cp := &ClientConnPool{
 		ctx:    ctx,
 		addr:   addr,
+		host:   host,
+		port:   port,
 		size:   size,
 		dopts:  dopts,
-		length: size,
+		length: 0,
 	}
 	cp.closing.Store(false)
 	cp.pool = sync.Pool{
@@ -51,7 +66,10 @@ func NewPool(ctx context.Context, addr string, size uint64, dopts ...DialOption)
 			if cp.closing.Load().(bool) {
 				return nil
 			}
-			conn, err := grpc.DialContext(ctx, addr, dopts...)
+			if cp.conn != nil && isHealthy(cp.conn) {
+				return cp.conn
+			}
+			conn, err := grpc.DialContext(ctx, cp.addr, cp.dopts...)
 			if err != nil {
 				log.Error(err)
 				return nil
@@ -59,7 +77,7 @@ func NewPool(ctx context.Context, addr string, size uint64, dopts ...DialOption)
 			return conn
 		},
 	}
-	return cp.Connect()
+	return cp.Connect(ctx)
 }
 
 func (c *ClientConnPool) Disconnect() (rerr error) {
@@ -68,49 +86,75 @@ func (c *ClientConnPool) Disconnect() (rerr error) {
 	}
 	c.closing.Store(true)
 	defer c.closing.Store(false)
+	err := c.conn.Close()
+	if err != nil {
+		rerr = errors.Wrap(rerr, err.Error())
+	}
 	for {
 		conn := c.Get()
 		if conn == nil {
 			return
 		}
-		err := conn.Close()
+		err = conn.Close()
 		if err != nil {
 			rerr = errors.Wrap(rerr, err.Error())
 		}
 	}
 }
 
-func (c *ClientConnPool) Connect() (cp *ClientConnPool, err error) {
+func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err error) {
 	if c.closing.Load().(bool) {
 		return nil, nil
 	}
-	for i := uint64(0); i < c.size; i++ {
-		err = c.Do(func(conn *ClientConn) error {
-			if isHealthy(conn) {
-				return nil
+	if c.conn == nil || (c.conn != nil && !isHealthy(c.conn)) {
+		conn, err := grpc.DialContext(ctx, c.addr, c.dopts...)
+		if err == nil {
+			c.conn = conn
+		}
+	}
+
+	ips, err := net.DefaultResolver.LookupIPAddr(ctx, c.addr)
+	if err != nil {
+		for {
+			conn, err := grpc.DialContext(ctx, c.addr, c.dopts...)
+			if err == nil {
+				c.Put(conn)
 			}
-			return errors.ErrGRPCClientConnNotFound(c.addr)
-		})
-		if err != nil {
-			return nil, err
+			if atomic.LoadUint64(&c.length) > c.size {
+				return c, nil
+			}
+		}
+	}
+
+	if uint64(len(ips)) < c.size {
+		for i := uint64(0); i < c.size/uint64(len(ips)); i++ {
+			ips = append(ips, ips...)
+		}
+	}
+
+	for _, ip := range ips {
+		conn, err := grpc.DialContext(ctx, ip.String()+":"+c.port, c.dopts...)
+		if err == nil {
+			c.Put(conn)
+		}
+		if atomic.LoadUint64(&c.length) > c.size {
+			return c, nil
 		}
 	}
 	return c, nil
 }
 
 func (c *ClientConnPool) Get() *ClientConn {
-	conn := c.pool.Get().(*ClientConn)
+	conn, ok := c.pool.Get().(*ClientConn)
+	if !ok {
+		return c.conn
+	}
 	atomic.AddUint64(&c.length, ^uint64(0))
 	if conn == nil || !isHealthy(conn) {
 		if c.closing.Load().(bool) {
 			return nil
 		}
-		var err error
-		conn, err = grpc.DialContext(c.ctx, c.addr, c.dopts...)
-		if err != nil {
-			log.Error(err)
-			return nil
-		}
+		return c.conn
 	}
 	return conn
 }
