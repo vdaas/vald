@@ -25,6 +25,5 @@ func (sisrt *streamInsert) dataProvider() func() *client.ObjectVector {
 	return nil
 }
 
-func (sisrt *streamInsert) Run(ctx context.Context, b *testing.B, client client.Client, dataset assets.Dataset) error {
-	return nil
+func (sisrt *streamInsert) Run(ctx context.Context, b *testing.B, client client.Client, dataset assets.Dataset) {
 }

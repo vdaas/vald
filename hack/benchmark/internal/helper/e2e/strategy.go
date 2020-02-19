@@ -9,5 +9,5 @@ import (
 )
 
 type Strategy interface {
-	Run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) error
+	Run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset)
 }
