@@ -100,6 +100,7 @@ data:
         duration: 2s
         discover_client:
           addrs: []
+          connection_pool: 10
           health_check_duration: 1s
           backoff:
             backoff_factor: 0
@@ -149,6 +150,7 @@ data:
             key: /path/to/key
         agent_client:
           addrs: []
+          connection_pool: 100
           health_check_duration: 1s
           backoff:
             backoff_factor: 0
@@ -201,6 +203,7 @@ data:
         port: 8081
         client:
           addrs: []
+          connection_pool: 10
           health_check_duration: 1s
           backoff:
             backoff_factor: 0
@@ -256,6 +259,7 @@ data:
         port: 8081
         client:
           addrs: []
+          connection_pool: 10
           health_check_duration: 1s
           backoff:
             backoff_factor: 0

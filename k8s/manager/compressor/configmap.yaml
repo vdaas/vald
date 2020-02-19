@@ -94,6 +94,7 @@ data:
       port: 8081
       client:
         addrs: []
+        connection_pool: 10
         health_check_duration: 1s
         backoff:
           backoff_factor: 0

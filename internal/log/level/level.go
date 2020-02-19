@@ -72,15 +72,15 @@ func Atol(str string) Level {
 	switch {
 	case len(str) < 3:
 		return Unknown
-	case strings.HasPrefix(str[:3], DEBUG.String()[:3]):
+	case str[:3] == DEBUG.String()[:3]:
 		return DEBUG
-	case strings.HasPrefix(str[:3], INFO.String()[:3]):
+	case str[:3] == INFO.String()[:3]:
 		return INFO
-	case strings.HasPrefix(str[:3], WARN.String()[:3]):
+	case str[:3] == WARN.String()[:3]:
 		return WARN
-	case strings.HasPrefix(str[:3], ERROR.String()[:3]):
+	case str[:3] == ERROR.String()[:3]:
 		return ERROR
-	case strings.HasPrefix(str[:3], FATAL.String()[:3]):
+	case str[:3] == FATAL.String()[:3]:
 		return FATAL
 	}
 

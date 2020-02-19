@@ -187,7 +187,8 @@ func (idx *index) discover(ctx context.Context, ech chan<- error) (err error) {
 	log.Info("starting discoverer discovery")
 	addrs := make([]string, 0, 100)
 	_, err = idx.dscClient.Do(ctx, idx.dscAddr,
-		func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		func(ctx context.Context,
+			conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 			nodes, err := discoverer.NewDiscovererClient(conn).
 				Nodes(ctx, &payload.Discoverer_Request{
 					Namespace: idx.namespace,
@@ -251,7 +252,8 @@ func (idx *index) discover(ctx context.Context, ech chan<- error) (err error) {
 		}
 		idx.agents.Store(connected[i:])
 		err = idx.acClient.Range(ctx,
-			func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			func(ctx context.Context,
+				addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 				_, ok := cur[addr]
 				if !ok {
 					idx.indexInfos.Delete(addr)
@@ -277,7 +279,8 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 	defer idx.indexing.Store(false)
 	err = idx.acClient.OrderedRangeConcurrent(ctx, idx.agents.Load().([]string),
 		idx.concurrency,
-		func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+		func(ctx context.Context,
+			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 			if conn == nil {
 				return errors.ErrAgentClientNotConnected
 			}
@@ -311,7 +314,8 @@ func (idx *index) loadInfos(ctx context.Context) (err error) {
 	var uuids sync.Map
 	var ucuuids sync.Map
 	err = idx.acClient.RangeConcurrent(ctx, len(idx.agents.Load().([]string)),
-		func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+		func(ctx context.Context,
+			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 			if conn == nil {
 				return errors.ErrAgentClientNotConnected
 			}

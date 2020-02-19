@@ -45,6 +45,9 @@
 | Update | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Empty](#payload.Empty) |  |
 | StreamUpdate | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Empty](#payload.Empty) stream |  |
 | MultiUpdate | [.payload.Object.Vectors](#payload.Object.Vectors) | [.payload.Empty](#payload.Empty) |  |
+| Upsert | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Empty](#payload.Empty) |  |
+| StreamUpsert | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Empty](#payload.Empty) stream |  |
+| MultiUpsert | [.payload.Object.Vectors](#payload.Object.Vectors) | [.payload.Empty](#payload.Empty) |  |
 | Remove | [.payload.Object.ID](#payload.Object.ID) | [.payload.Empty](#payload.Empty) |  |
 | StreamRemove | [.payload.Object.ID](#payload.Object.ID) stream | [.payload.Empty](#payload.Empty) stream |  |
 | MultiRemove | [.payload.Object.IDs](#payload.Object.IDs) | [.payload.Empty](#payload.Empty) |  |

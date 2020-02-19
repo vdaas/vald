@@ -31,6 +31,7 @@ type GWOption func(g *gateway) error
 var (
 	defaultGWOpts = []GWOption{
 		WithErrGroup(errgroup.Get()),
+		WithAgentNamespace("default"),
 	}
 )
 
@@ -75,7 +76,18 @@ func WithAgentOptions(opts ...grpc.Option) GWOption {
 
 func WithAgentName(name string) GWOption {
 	return func(g *gateway) error {
-		g.agentName = name
+		if name != "" {
+			g.agentName = name
+		}
+		return nil
+	}
+}
+
+func WithAgentNamespace(ns string) GWOption {
+	return func(g *gateway) error {
+		if ns != "" {
+			g.namespace = ns
+		}
 		return nil
 	}
 }

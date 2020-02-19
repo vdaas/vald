@@ -136,6 +136,7 @@ defaults:
   grpc:
     client:
       addrs: []
+      connection_pool: 10
       health_check_duration: "1s"
       backoff:
         initial_duration: ""
@@ -269,7 +270,9 @@ gateway:
     discoverer:
       duration: "2s"
       discover_client: {}
-      agent_client: {}
+      agent_client: {
+          connection_pool: 100
+      }
     meta:
       client: {}
       enable_cache: true

@@ -42,27 +42,32 @@ type Client interface {
 	Connect(ctx context.Context, addr string, dopts ...DialOption) error
 	Disconnect(addr string) error
 	Range(ctx context.Context,
-		f func(addr string,
+		f func(ctx context.Context,
+			addr string,
 			conn *ClientConn,
 			copts ...CallOption) error) error
 	RangeConcurrent(ctx context.Context,
 		concurrency int,
-		f func(addr string,
+		f func(ctx context.Context,
+			addr string,
 			conn *ClientConn,
 			copts ...CallOption) error) error
 	OrderedRange(ctx context.Context,
 		order []string,
-		f func(addr string,
+		f func(ctx context.Context,
+			addr string,
 			conn *ClientConn,
 			copts ...CallOption) error) error
 	OrderedRangeConcurrent(ctx context.Context,
 		order []string,
 		concurrency int,
-		f func(addr string,
+		f func(ctx context.Context,
+			addr string,
 			conn *ClientConn,
 			copts ...CallOption) error) error
-	Do(ctx context.Context,
-		addr string, f func(conn *ClientConn,
+	Do(ctx context.Context, addr string,
+		f func(ctx context.Context,
+			conn *ClientConn,
 			copts ...CallOption) (interface{}, error)) (interface{}, error)
 	GetAddrs() ([]string, []string)
 	GetDialOption() []DialOption
@@ -151,27 +156,25 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 }
 
 func (g *gRPCClient) Range(ctx context.Context,
-	f func(addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
-	wrapf := func(addr string, conn *ClientConn, copts ...CallOption) (err error) {
-		return f(addr, conn, copts...)
-	}
+	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
 	g.conns.Range(func(addr string, pool *ClientConnPool) bool {
 		select {
 		case <-ctx.Done():
 			return false
 		default:
-			err := pool.Do(func(conn *ClientConn) (err error) {
+			if err := pool.Do(func(conn *ClientConn) (err error) {
+				if conn == nil {
+					return errors.ErrAgentClientNotConnected
+				}
 				if g.bo != nil {
 					_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-						err = wrapf(addr, conn, g.copts...)
+						err = f(ctx, addr, conn, g.copts...)
 						return
 					})
-				} else {
-					err = wrapf(addr, conn, g.copts...)
+					return err
 				}
-				return nil
-			})
-			if err != nil {
+				return f(ctx, addr, conn, g.copts...)
+			}); err != nil {
 				rerr = errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
 			}
 		}
@@ -182,10 +185,7 @@ func (g *gRPCClient) Range(ctx context.Context,
 
 func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	concurrency int,
-	f func(addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
-	wrapf := func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) (err error) {
-		return f(addr, conn, copts...)
-	}
+	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) error {
 	eg, egctx := errgroup.New(ctx)
 	eg.Limitation(concurrency)
 	g.conns.Range(func(addr string, pool *ClientConnPool) bool {
@@ -194,20 +194,22 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 			case <-egctx.Done():
 				return nil
 			default:
-				return pool.Do(func(conn *ClientConn) (err error) {
+				if err = pool.Do(func(conn *ClientConn) (err error) {
+					if conn == nil {
+						return errors.ErrAgentClientNotConnected
+					}
 					if g.bo != nil {
 						_, err = g.bo.Do(egctx, func() (r interface{}, err error) {
-							err = wrapf(egctx, addr, conn, g.copts...)
+							err = f(egctx, addr, conn, g.copts...)
 							return
 						})
-					} else {
-						err = wrapf(egctx, addr, conn, g.copts...)
+						return err
 					}
-					if err != nil {
-						return errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
-					}
-					return nil
-				})
+					return f(egctx, addr, conn, g.copts...)
+				}); err != nil {
+					return errors.ErrRPCCallFailed(addr, err)
+				}
+				return nil
 			}
 		}))
 		return true
@@ -217,10 +219,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 
 func (g *gRPCClient) OrderedRange(ctx context.Context,
 	orders []string,
-	f func(addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
-	wrapf := func(addr string, conn *ClientConn, copts ...CallOption) (err error) {
-		return f(addr, conn, copts...)
-	}
+	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
 	var err error
 	for _, addr := range orders {
 		select {
@@ -230,14 +229,17 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 			pool, ok := g.conns.Load(addr)
 			if ok {
 				if err = pool.Do(func(conn *ClientConn) (err error) {
+					if conn == nil {
+						return errors.ErrAgentClientNotConnected
+					}
 					if g.bo != nil {
 						_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-							err = wrapf(addr, conn, g.copts...)
+							err = f(ctx, addr, conn, g.copts...)
 							return
 						})
 						return err
 					}
-					return wrapf(addr, conn, g.copts...)
+					return f(ctx, addr, conn, g.copts...)
 				}); err != nil {
 					rerr = errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
 				}
@@ -250,71 +252,66 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 	orders []string,
 	concurrency int,
-	f func(addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
-	wrapf := func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) (err error) {
-		return f(addr, conn, copts...)
-	}
+	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
 	eg, egctx := errgroup.New(ctx)
 	eg.Limitation(concurrency)
 	for _, addr := range orders {
 		pool, ok := g.conns.Load(addr)
-		if ok {
-			eg.Go(safety.RecoverFunc(func() (err error) {
-				select {
-				case <-ctx.Done():
-					return nil
-				default:
-					return pool.Do(func(conn *ClientConn) (err error) {
-						if g.bo != nil {
-							_, err = g.bo.Do(egctx, func() (r interface{}, err error) {
-								err = wrapf(egctx, addr, conn, g.copts...)
-								return
-							})
-						} else {
-							err = wrapf(egctx, addr, conn, g.copts...)
-						}
-
-						if err != nil {
-							return errors.ErrRPCCallFailed(addr, err)
-						}
-						return nil
-					})
-				}
-			}))
-		} else {
+		if !ok {
 			return errors.ErrGRPCClientConnNotFound(addr)
 		}
+		eg.Go(safety.RecoverFunc(func() (err error) {
+			select {
+			case <-ctx.Done():
+				return nil
+			default:
+				if err = pool.Do(func(conn *ClientConn) (err error) {
+					if conn == nil {
+						return errors.ErrAgentClientNotConnected
+					}
+					if g.bo != nil {
+						_, err = g.bo.Do(egctx, func() (r interface{}, err error) {
+							err = f(egctx, addr, conn, g.copts...)
+							return
+						})
+						return nil
+					}
+					return f(egctx, addr, conn, g.copts...)
+				}); err != nil {
+					rerr = errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
+				}
+				return nil
+			}
+		}))
 	}
 	return eg.Wait()
 }
 
 func (g *gRPCClient) Do(ctx context.Context, addr string,
-	f func(conn *ClientConn,
-		copts ...CallOption) (interface{}, error)) (data interface{}, err error) {
-	wrapf := func(conn *ClientConn, copts ...CallOption) (ret interface{}, err error) {
-		return f(conn, copts...)
-	}
+	f func(ctx context.Context,
+		conn *ClientConn, copts ...CallOption) (interface{}, error)) (data interface{}, err error) {
 	pool, ok := g.conns.Load(addr)
-	if ok {
-		err = pool.Do(func(conn *ClientConn) error {
-			if g.bo != nil {
-				data, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-					r, err = wrapf(conn, g.copts...)
-					if err != nil {
-						return nil, err
-					}
-					return r, nil
-				})
-			} else {
-				data, err = wrapf(conn, g.copts...)
-			}
-			return err
-		})
-		if err != nil {
-			return nil, errors.ErrRPCCallFailed(addr, err)
-		}
-	} else {
+	if !ok {
 		return nil, errors.ErrGRPCClientConnNotFound(addr)
+	}
+	if err = pool.Do(func(conn *ClientConn) (err error) {
+		if conn == nil {
+			return errors.ErrAgentClientNotConnected
+		}
+		if g.bo != nil {
+			data, err = g.bo.Do(ctx, func() (r interface{}, err error) {
+				r, err = f(ctx, conn, g.copts...)
+				if err != nil {
+					return nil, err
+				}
+				return r, nil
+			})
+		} else {
+			data, err = f(ctx, conn, g.copts...)
+		}
+		return err
+	}); err != nil {
+		return nil, errors.ErrRPCCallFailed(addr, err)
 	}
 	return
 }

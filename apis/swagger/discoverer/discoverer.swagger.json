@@ -11,8 +11,8 @@
     "application/json"
   ],
   "paths": {
-    "/discover/nodes/{name}": {
-      "get": {
+    "/discover/nodes": {
+      "post": {
         "operationId": "Nodes",
         "responses": {
           "200": {
@@ -30,22 +30,12 @@
         },
         "parameters": [
           {
-            "name": "name",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string"
-          },
-          {
-            "name": "namespace",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "node",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "schema": {
+              "$ref": "#/definitions/payloadDiscovererRequest"
+            }
           }
         ],
         "tags": [
@@ -53,8 +43,8 @@
         ]
       }
     },
-    "/discover/pods/{name}": {
-      "get": {
+    "/discover/pods": {
+      "post": {
         "operationId": "Pods",
         "responses": {
           "200": {
@@ -72,22 +62,12 @@
         },
         "parameters": [
           {
-            "name": "name",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string"
-          },
-          {
-            "name": "namespace",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "node",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "schema": {
+              "$ref": "#/definitions/payloadDiscovererRequest"
+            }
           }
         ],
         "tags": [
@@ -199,6 +179,20 @@
           "items": {
             "$ref": "#/definitions/InfoPod"
           }
+        }
+      }
+    },
+    "payloadDiscovererRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "node": {
+          "type": "string"
         }
       }
     },

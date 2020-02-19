@@ -228,6 +228,38 @@
           "Vald"
         ]
       }
+    },
+    "/upsert": {
+      "post": {
+        "operationId": "Upsert",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/payloadEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ObjectVector"
+            }
+          }
+        ],
+        "tags": [
+          "Vald"
+        ]
+      }
     }
   },
   "definitions": {

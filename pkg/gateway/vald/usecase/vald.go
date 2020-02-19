@@ -81,6 +81,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	gateway, err = service.NewGateway(
 		service.WithErrGroup(eg),
 		service.WithAgentName(cfg.Gateway.AgentName),
+		service.WithAgentNamespace(cfg.Gateway.AgentNamespace),
 		service.WithAgentPort(cfg.Gateway.AgentPort),
 		service.WithAgentServiceDNSARecord(cfg.Gateway.AgentDNS),
 		service.WithDiscovererClient(dscClient),

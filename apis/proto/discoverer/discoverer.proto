@@ -30,9 +30,15 @@ import "pb/gql.proto";
 service Discoverer {
   option (gql.svc_type) = QUERY;
   rpc Pods(payload.Discoverer.Request) returns (payload.Info.Pods) {
-    option (google.api.http).get = "/discover/pods/{name}";
+    option (google.api.http) = {
+      post : "/discover/pods"
+      body : "*"
+    };
   }
   rpc Nodes(payload.Discoverer.Request) returns (payload.Info.Nodes) {
-    option (google.api.http).get = "/discover/nodes/{name}";
+    option (google.api.http) = {
+      post : "/discover/nodes"
+      body : "*"
+    };
   }
 }

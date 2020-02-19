@@ -24,6 +24,9 @@ type Gateway struct {
 	// AgentName represent agents meta_name for service discovery
 	AgentName string `json:"agent_name" yaml:"agent_name"`
 
+	// AgentNamespace represent agent namespace location
+	AgentNamespace string `json:"agent_namespace" yaml:"agent_namespace"`
+
 	// AgentDNS represent agents dns A record for service discovery
 	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
 
@@ -45,6 +48,7 @@ type Gateway struct {
 
 func (g *Gateway) Bind() *Gateway {
 	g.AgentName = GetActualValue(g.AgentName)
+	g.AgentNamespace = GetActualValue(g.AgentNamespace)
 
 	g.AgentDNS = GetActualValue(g.AgentDNS)
 
