@@ -72,6 +72,17 @@ service Vald {
       returns (stream payload.Empty) {}
   rpc MultiUpdate(payload.Object.Vectors) returns (payload.Empty) {}
 
+  rpc Upsert(payload.Object.Vector) returns (payload.Empty) {
+    option (google.api.http) = {
+      post : "/upsert"
+      body : "*"
+    };
+    option (gql.rpc_type) = MUTATION;
+  }
+  rpc StreamUpsert(stream payload.Object.Vector)
+      returns (stream payload.Empty) {}
+  rpc MultiUpsert(payload.Object.Vectors) returns (payload.Empty) {}
+
   rpc Remove(payload.Object.ID) returns (payload.Empty) {
     option (google.api.http).delete = "/remove/{id}";
     option (gql.rpc_type) = MUTATION;

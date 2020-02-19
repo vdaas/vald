@@ -20,7 +20,6 @@ package grpc
 import (
 	"context"
 	"strings"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -81,131 +80,6 @@ type gRPCClient struct {
 	copts       []CallOption
 	eg          errgroup.Group
 	bo          backoff.Backoff
-}
-
-type ClientConnPool struct {
-	ctx     context.Context
-	pool    sync.Pool
-	addr    string
-	size    uint64
-	length  uint64
-	dopts   []DialOption
-	closing atomic.Value
-}
-
-func NewPool(ctx context.Context, addr string, size uint64, dopts ...DialOption) (*ClientConnPool, error) {
-	cp := &ClientConnPool{
-		ctx:    ctx,
-		addr:   addr,
-		size:   size,
-		dopts:  dopts,
-		length: size,
-	}
-	cp.closing.Store(false)
-	cp.pool = sync.Pool{
-		New: func() interface{} {
-			if cp.closing.Load().(bool) {
-				return nil
-			}
-			conn, err := grpc.DialContext(ctx, addr, dopts...)
-			if err != nil {
-				log.Error(err)
-				return nil
-			}
-			return conn
-		},
-	}
-	return cp.Connect()
-}
-
-func (c *ClientConnPool) Disconnect() (rerr error) {
-	if c.closing.Load().(bool) {
-		return nil
-	}
-	c.closing.Store(true)
-	defer c.closing.Store(false)
-	for {
-		conn := c.Get()
-		if conn == nil {
-			return
-		}
-		err := conn.Close()
-		if err != nil {
-			rerr = errors.Wrap(rerr, err.Error())
-		}
-	}
-}
-
-func (c *ClientConnPool) Connect() (cp *ClientConnPool, err error) {
-	if c.closing.Load().(bool) {
-		return nil, nil
-	}
-	for i := uint64(0); i < c.size; i++ {
-		err = c.Do(func(conn *grpc.ClientConn) error {
-			if isHealthy(conn) {
-				return nil
-			}
-			return errors.ErrGRPCClientConnNotFound(c.addr)
-		})
-		if err != nil {
-			return nil, err
-		}
-	}
-	return c, nil
-}
-
-func (c *ClientConnPool) Get() *grpc.ClientConn {
-	conn := c.pool.Get().(*grpc.ClientConn)
-	atomic.AddUint64(&c.length, ^uint64(0))
-	if conn == nil || !isHealthy(conn) {
-		if c.closing.Load().(bool) {
-			return nil
-		}
-		var err error
-		conn, err = grpc.DialContext(c.ctx, c.addr, c.dopts...)
-		if err != nil {
-			log.Error(err)
-			return nil
-		}
-	}
-	return conn
-}
-
-func (c *ClientConnPool) Put(conn *grpc.ClientConn) error {
-	if conn != nil {
-		if c.closing.Load().(bool) {
-			return nil
-		}
-		if atomic.LoadUint64(&c.length) > c.size {
-			return conn.Close()
-		}
-		atomic.AddUint64(&c.length, 1)
-		c.pool.Put(conn)
-	}
-	return nil
-}
-
-func (c *ClientConnPool) Do(f func(conn *grpc.ClientConn) error) (err error) {
-	conn := c.Get()
-	err = f(conn)
-	c.Put(conn)
-	return err
-}
-
-func (c *ClientConnPool) Healthy() bool {
-	for i := uint64(0); i < c.size; i++ {
-		conn := c.Get()
-		if isHealthy(conn) {
-			c.Put(conn)
-		} else {
-			return false
-		}
-	}
-	return true
-}
-
-func (c *ClientConnPool) Len() uint64 {
-	return atomic.LoadUint64(&c.length)
 }
 
 func New(opts ...Option) (c Client) {
