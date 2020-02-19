@@ -21,7 +21,6 @@ type e2e struct {
 
 func New(opts ...Option) Runner {
 	e := new(e2e)
-
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(e)
 	}

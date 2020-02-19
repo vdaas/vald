@@ -13,11 +13,9 @@ type streamInsert struct{}
 
 func NewStreamInsert(opts ...StreamInsertOption) e2e.Strategy {
 	s := new(streamInsert)
-
 	for _, opt := range append(defaultStreamInsertOptions, opts...) {
 		opt(s)
 	}
-
 	return s
 }
 

@@ -15,11 +15,9 @@ type insert struct {
 
 func NewInsert(opts ...InsertOption) e2e.Strategy {
 	i := new(insert)
-
 	for _, opt := range append(defaultInsertOption, opts...) {
 		opt(i)
 	}
-
 	return i
 }
 
