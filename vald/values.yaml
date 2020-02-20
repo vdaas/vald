@@ -208,10 +208,18 @@ defaults:
         enable_memory: true
         enable_goroutine_count: true
         enable_cgo_call_count: true
+    trace:
+      sampling_rate: 1.0
     prometheus:
       enabled: true
     jaeger:
       enabled: false
+      collector_endpoint: http://jaeger-collector.default.svc.cluster.local:14268/api/traces
+      agent_endpoint: "" # localhost:6831
+      username: ""
+      password: ""
+      service_name: vald
+      buffer_max_count: 10
 
 gateway:
   version: v0.0.0

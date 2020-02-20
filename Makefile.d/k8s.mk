@@ -257,6 +257,16 @@ k8s/metrics/prometheus/remove:
 	-kubectl delete -f k8s/metrics/prometheus
 	-kubectl delete -f k8s/metrics/grafana
 
+.PHONY: k8s/metrics/jaeger/deploy
+## deploy jaeger
+k8s/metrics/jaeger/deploy:
+	kubectl apply -f k8s/metrics/jaeger
+
+.PHONY: k8s/metrics/jaeger/remove
+## remove jaeger
+k8s/metrics/jaeger/remove:
+	-kubectl delete -f k8s/metrics/jaeger
+
 .PHONY: k8s/linkerd/deploy
 ## deploy linkerd to k8s
 k8s/linkerd/deploy:

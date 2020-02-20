@@ -31,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/metrics/mem"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime"
 	"github.com/vdaas/vald/internal/observability/metrics/version"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -44,6 +45,7 @@ type observability struct {
 	jaeger     jaeger.Jaeger
 	prometheus prometheus.Prometheus
 	collector  collector.Collector
+	tracer     trace.Tracer
 	eg         errgroup.Group
 }
 
@@ -90,6 +92,11 @@ func New(cfg *config.Observability) (Observability, error) {
 			}
 
 			o.collector = col
+		}
+		if cfg.Trace != nil {
+			o.tracer = trace.New(
+				trace.WithSamplingRate(cfg.Trace.SamplingRate),
+			)
 		}
 		if cfg.Prometheus != nil && cfg.Prometheus.Enabled {
 			prom, err := prometheus.New(
@@ -144,6 +151,9 @@ func (o *observability) PreStart(ctx context.Context) (err error) {
 		if err != nil {
 			return err
 		}
+	}
+	if o.tracer != nil {
+		o.tracer.Start(ctx)
 	}
 	return nil
 }

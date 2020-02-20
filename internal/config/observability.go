@@ -19,6 +19,7 @@ package config
 
 type Observability struct {
 	Collector  *Collector  `json:"collector" yaml:"collector"`
+	Trace      *Trace      `json:"trace" yaml:"trace"`
 	Prometheus *Prometheus `json:"prometheus" yaml:"prometheus"`
 	Jaeger     *Jaeger     `json:"jaeger" yaml:"jaeger"`
 }
@@ -26,6 +27,10 @@ type Observability struct {
 type Collector struct {
 	Duration string   `json:"duration" yaml:"duration"`
 	Metrics  *Metrics `json:"metrics" yaml:"metrics"`
+}
+
+type Trace struct {
+	SamplingRate float64 `json:"sampling_rate" yaml:"sampling_rate"`
 }
 
 type Metrics struct {

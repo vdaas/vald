@@ -14,41 +14,21 @@
 // limitations under the License.
 //
 
-// Package trace provides trace functions.
+// Package trace provides trace function.
 package trace
 
-import (
-	"context"
-
-	"go.opencensus.io/trace"
-)
+type TraceOption func(*tracer)
 
 var (
-	StartSpan = trace.StartSpan
+	traceDefaultOpts = []TraceOption{
+		WithSamplingRate(1.0),
+	}
 )
 
-type Tracer interface {
-	Start(ctx context.Context)
-}
-
-type tracer struct {
-	samplingRate float64
-}
-
-func New(opts ...TraceOption) Tracer {
-	t := new(tracer)
-
-	for _, opt := range append(traceDefaultOpts, opts...) {
-		opt(t)
+func WithSamplingRate(rate float64) TraceOption {
+	return func(t *tracer) {
+		if rate >= 0.0 && rate <= 1.0 {
+			t.samplingRate = rate
+		}
 	}
-
-	return t
-}
-
-func (t *tracer) Start(ctx context.Context) {
-	trace.ApplyConfig(
-		trace.Config{
-			DefaultSampler: trace.ProbabilitySampler(t.samplingRate),
-		},
-	)
 }

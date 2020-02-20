@@ -467,6 +467,12 @@ collector:
   {{- else }}
   {{- toYaml .default.collector | nindent 2 }}
   {{- end }}
+trace:
+  {{- if .Values.trace }}
+  sampling_rate: {{ default .default.trace.sampling_rate .Values.trace.sampling_rate }}
+  {{- else }}
+  {{- toYaml .default.trace | nindent 2 }}
+  {{- end }}
 prometheus:
   {{- if .Values.prometheus }}
     enabled: {{ default .default.prometheus.enabled .Values.prometheus.enabled }}
@@ -476,6 +482,12 @@ prometheus:
 jaeger:
   {{- if .Values.jaeger }}
     enabled: {{ default .default.jaeger.enabled .Values.jaeger.enabled }}
+    collector_endpoint: {{ default .default.jaeger.collector_endpoint .Values.jaeger.collector_endpoint }}
+    agent_endpoint: {{ default .default.jaeger.agent_endpoint .Values.jaeger.agent_endpoint }}
+    username: {{ default .default.jaeger.username .Values.jaeger.username }}
+    password: {{ default .default.jaeger.password .Values.jaeger.password }}
+    service_name: {{ default .default.jaeger.service_name .Values.jaeger.service_name }}
+    buffer_max_count: {{ default .default.jaeger.buffer_max_count .Values.jaeger.buffer_max_count }}
   {{- else }}
   {{- toYaml .default.jaeger | nindent 2 }}
   {{- end }}
