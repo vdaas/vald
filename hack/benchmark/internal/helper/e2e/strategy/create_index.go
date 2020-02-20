@@ -11,7 +11,7 @@ import (
 
 type createIndex struct {
 	poolSize uint32
-	cidx     client.Indexer
+	idxc     client.Indexer
 }
 
 func NewCreateIndex(opts ...CreateIndexOption) e2e.Strategy {
@@ -35,7 +35,7 @@ func (ci *createIndex) Run(ctx context.Context, b *testing.B, c client.Client, d
 }
 
 func (ci *createIndex) do(ctx context.Context, b *testing.B) {
-	if err := ci.cidx.CreateIndex(ctx, &client.ControlCreateIndexRequest{
+	if err := ci.idxc.CreateIndex(ctx, &client.ControlCreateIndexRequest{
 		PoolSize: ci.poolSize,
 	}); err != nil {
 		b.Error(err)
