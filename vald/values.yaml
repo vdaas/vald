@@ -232,6 +232,15 @@ gateway:
       target: agent
       image: busybox
       sleepDuration: 2
+  env:
+    - name: MY_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: MY_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
   server_config:
     prefix: gateway
     servers:
@@ -266,6 +275,8 @@ gateway:
     limits:
       cpu: 500m
   gateway_config:
+    agent_namespace: _MY_POD_NAMESPACE_
+    node_name: _MY_NODE_NAME_
     index_replica: 5
     discoverer:
       duration: "2s"
@@ -661,6 +672,15 @@ indexManager:
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
+  env:
+    - name: MY_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: MY_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
   server_config:
     prefix: index-manager
     servers:
@@ -680,6 +700,8 @@ indexManager:
     tls:
       enabled: false
   indexer:
+    agent_namespace: _MY_POD_NAMESPACE_
+    node_name: _MY_NODE_NAME_
     concurrency: 1
     auto_index_duration_limit: 30m
     auto_index_check_duration: 1m
