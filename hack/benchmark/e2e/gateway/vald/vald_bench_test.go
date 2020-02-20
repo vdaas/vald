@@ -70,17 +70,9 @@ func parseArgs(tb testing.TB) {
 
 func BenchmarkValdGateway_Sequential(b *testing.B) {
 	for _, name := range targets {
-		dataset := assets.Data(name)(b)
-		if dataset == nil {
-			b.Errorf("data is nil: %v", name)
-		}
-
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-
 		bench := e2e.New(
+			b,
 			e2e.WithName(name),
-			e2e.WithDataset(dataset),
 			e2e.WithStrategy(
 				strategy.NewInsert(),
 				strategy.NewSearch(
@@ -89,23 +81,15 @@ func BenchmarkValdGateway_Sequential(b *testing.B) {
 				strategy.NewRemove(),
 			),
 		)
-		bench.Run(ctx, b)
+		bench.Run(context.Background(), b)
 	}
 }
 
 func BenchmarkValdGateway_Stream(b *testing.B) {
 	for _, name := range targets {
-		dataset := assets.Data(name)(b)
-		if dataset == nil {
-			b.Errorf("data is nil: %v", name)
-		}
-
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-
 		bench := e2e.New(
+			b,
 			e2e.WithName(name),
-			e2e.WithDataset(dataset),
 			e2e.WithStrategy(
 				strategy.NewStreamInsert(),
 				strategy.NewStreamSearch(
@@ -114,7 +98,7 @@ func BenchmarkValdGateway_Stream(b *testing.B) {
 				strategy.NewStreamRemove(),
 			),
 		)
-		bench.Run(ctx, b)
+		bench.Run(context.Background(), b)
 	}
 }
 

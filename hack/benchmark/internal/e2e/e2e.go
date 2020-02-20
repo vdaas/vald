@@ -19,23 +19,36 @@ type e2e struct {
 	client     client.Client
 }
 
-func New(opts ...Option) Runner {
+func New(b *testing.B, opts ...Option) Runner {
 	e := new(e2e)
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(e)
 	}
+
+	e.dataset = assets.Data(e.name)(b)
+	if e.dataset == nil {
+		b.Errorf("data is nil: %v", e.name)
+	}
+
 	return e
 }
 
 func (e *e2e) Run(ctx context.Context, b *testing.B) {
-	b.StopTimer()
-	b.ReportAllocs()
-	b.ResetTimer()
-	b.StartTimer()
-	b.Run(e.name, func(bb *testing.B) {
-		for _, strategy := range e.strategies {
-			strategy.Run(ctx, bb, e.client, e.dataset)
-		}
-	})
-	b.StopTimer()
+	func() {
+		b.StopTimer()
+		b.ReportAllocs()
+		b.ResetTimer()
+		b.StartTimer()
+
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+
+		b.Run(e.name, func(bb *testing.B) {
+			for _, strategy := range e.strategies {
+				strategy.Run(ctx, bb, e.client, e.dataset)
+			}
+		})
+
+		b.StopTimer()
+	}()
 }
