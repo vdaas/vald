@@ -30,6 +30,7 @@
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
+| ReplicationInfo | [.payload.Empty](#payload.Empty) | [.payload.Info.Replication](#payload.Info.Replication) |  |
 
  
 

@@ -10,8 +10,54 @@
   "produces": [
     "application/json"
   ],
-  "paths": {},
+  "paths": {
+    "/replication/info": {
+      "get": {
+        "operationId": "ReplicationInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/InfoReplication"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "Replication"
+        ]
+      }
+    }
+  },
   "definitions": {
+    "InfoReplication": {
+      "type": "object",
+      "properties": {
+        "agents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "removedAgents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "replicatingAgent": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {

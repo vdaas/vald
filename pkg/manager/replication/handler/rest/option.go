@@ -14,22 +14,19 @@
 // limitations under the License.
 //
 
-syntax = "proto3";
+// Package rest provides rest api logic
+package rest
 
-package replication_manager;
+import "github.com/vdaas/vald/apis/grpc/manager/index"
 
-option go_package = "github.com/vdaas/vald/apis/grpc/manager/replication";
-option java_multiple_files = true;
-option java_package = "org.vdaas.vald.manager.replication";
-option java_outer_classname = "ValdReplicationManager";
+type Option func(*handler)
 
-import "payload.proto";
-import "google/api/annotations.proto";
-import "pb/gql.proto";
+var (
+	defaultOpts = []Option{}
+)
 
-service Replication {
-  option (gql.svc_type) = QUERY;
-  rpc ReplicationInfo(payload.Empty) returns (payload.Info.Replication) {
-    option (google.api.http).get = "/replication/info";
-  }
+func WithIndexer(i index.IndexServer) Option {
+	return func(h *handler) {
+		h.indexer = i
+	}
 }

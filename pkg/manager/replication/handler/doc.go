@@ -14,22 +14,4 @@
 // limitations under the License.
 //
 
-syntax = "proto3";
-
-package replication_manager;
-
-option go_package = "github.com/vdaas/vald/apis/grpc/manager/replication";
-option java_multiple_files = true;
-option java_package = "org.vdaas.vald.manager.replication";
-option java_outer_classname = "ValdReplicationManager";
-
-import "payload.proto";
-import "google/api/annotations.proto";
-import "pb/gql.proto";
-
-service Replication {
-  option (gql.svc_type) = QUERY;
-  rpc ReplicationInfo(payload.Empty) returns (payload.Info.Replication) {
-    option (google.api.http).get = "/replication/info";
-  }
-}
+package handler

@@ -40,6 +40,7 @@
     - [Info.Nodes](#payload.Info.Nodes)
     - [Info.Pod](#payload.Info.Pod)
     - [Info.Pods](#payload.Info.Pods)
+    - [Info.Replication](#payload.Info.Replication)
     - [Meta](#payload.Meta)
     - [Meta.Key](#payload.Meta.Key)
     - [Meta.KeyVal](#payload.Meta.KeyVal)
@@ -560,6 +561,23 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | pods | [Info.Pod](#payload.Info.Pod) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Info.Replication"></a>
+
+### Info.Replication
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| agents | [string](#string) | repeated |  |
+| removed_agents | [string](#string) | repeated |  |
+| replicating_agent | [string](#string) | repeated |  |
 
 
 
