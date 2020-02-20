@@ -30,30 +30,41 @@ func (isrt *insert) Run(ctx context.Context, b *testing.B, c client.Client, data
 }
 
 func (isrt *insert) run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
-	b.Run("", func(b *testing.B) {
+	b.Run("Insert", func(b *testing.B) {
+		ids, train := dataset.IDs(), dataset.Train()
+
 		b.ReportAllocs()
 		b.ResetTimer()
+		b.StartTimer()
 		for i := 0; i < b.N; i++ {
-			isrt.do(ctx, b, c, dataset)
+			isrt.do(ctx, b, c, ids[i%len(ids)], train[i%len(train)])
 		}
+		b.StopTimer()
 	})
 }
 
 func (isrt *insert) runParallel(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
-	b.Run("", func(b *testing.B) {
+	b.Run("InsertParallel", func(b *testing.B) {
+		ids, train := dataset.IDs(), dataset.Train()
+
 		b.ReportAllocs()
 		b.ResetTimer()
+		b.StartTimer()
 		b.RunParallel(func(p *testing.PB) {
+			i := 0
 			for p.Next() {
-				isrt.do(ctx, b, c, dataset)
+				isrt.do(ctx, b, c, ids[i%len(ids)], train[i%len(train)])
+				i++
 			}
 		})
+		b.StopTimer()
 	})
 }
 
-func (isrt *insert) do(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+func (isrt *insert) do(ctx context.Context, b *testing.B, c client.Client, id string, vector []float32) {
 	if err := c.Insert(ctx, &client.ObjectVector{
-		Vector: []float32{},
+		Id:     id,
+		Vector: vector,
 	}); err != nil {
 		b.Error(err)
 	}
