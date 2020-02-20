@@ -31,7 +31,7 @@ type ngt struct {
 func NewNGTMetrics(ic *uint64) metrics.Metric {
 	return &ngt{
 		ic:                    ic,
-		uncommittedIndexCount: *metrics.Int64("vdaas.org/ngt/uncommitted_index_count", "uncommitted index count", metrics.UnitDimensionless),
+		uncommittedIndexCount: *metrics.Int64("vdaas.org/vald/ngt/uncommitted_index_count", "uncommitted index count", metrics.UnitDimensionless),
 	}
 }
 
