@@ -193,7 +193,7 @@ func (c *ClientConnPool) Do(f func(conn *ClientConn) error) (err error) {
 	return err
 }
 
-func (c *ClientConnPool) Healthy() bool {
+func (c *ClientConnPool) IsHealthy() bool {
 	for i := uint64(0); i < c.size; i++ {
 		conn := c.Get()
 		if conn != nil && isHealthy(conn) {

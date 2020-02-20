@@ -130,7 +130,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 			case <-tick.C:
 				reconnList := make([]string, 0, int(atomic.LoadUint64(&g.clientCount)))
 				g.conns.Range(func(addr string, pool *ClientConnPool) bool {
-					if len(addr) != 0 && !pool.Healthy() {
+					if len(addr) != 0 && !pool.IsHealthy() {
 						reconnList = append(reconnList, addr)
 					}
 					return true
@@ -327,7 +327,7 @@ func (g *gRPCClient) GetCallOption() []CallOption {
 func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOption) (err error) {
 	pool, ok := g.conns.Load(addr)
 	if ok {
-		if pool.Healthy() {
+		if pool.IsHealthy() {
 			return nil
 		}
 		pool, err := pool.Connect(ctx)
@@ -375,7 +375,7 @@ func (g *gRPCClient) Close() error {
 
 func (g *gRPCClient) GetAddrs() (connected []string, disconnected []string) {
 	g.conns.Range(func(addr string, pool *ClientConnPool) bool {
-		if pool.Healthy() {
+		if pool.IsHealthy() {
 			connected = append(connected, addr)
 		} else {
 			disconnected = append(disconnected, addr)
