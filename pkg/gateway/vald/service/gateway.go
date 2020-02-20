@@ -79,6 +79,20 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	if err != nil {
 		return nil, err
 	}
+
+    addrs, err := g.dnsDiscovery(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	g.acClient = grpc.New(
+		append(
+			g.agentOpts,
+            grpc.WithAddrs(addrs...),
+			grpc.WithErrGroup(g.eg),
+		)...,
+	)
+
 	ech := make(chan error, 100)
 	err = g.discover(ctx, ech)
 	if err != nil {
@@ -86,13 +100,6 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 		g.dscClient.Close()
 		return nil, err
 	}
-	g.acClient = grpc.New(
-		append(
-			g.agentOpts,
-			grpc.WithAddrs(g.agents.Load().([]string)...),
-			grpc.WithErrGroup(g.eg),
-		)...,
-	)
 
 	aech, err := g.acClient.StartConnectionMonitor(ctx)
 	if err != nil {
@@ -159,6 +166,18 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
+func (g *gateway) dnsDiscovery(ctx context.Context) (addrs []string, err error) {
+	ips, err := net.DefaultResolver.LookupIPAddr(ctx, g.agentARecord)
+	if err != nil {
+		return nil, errors.ErrAgentAddrCouldNotDiscover(err, g.agentARecord)
+	}
+	addrs = make([]string, 0, len(ips))
+	for _, ip := range ips {
+		addrs = append(addrs, fmt.Sprintf("%s:%d", ip.String(), g.agentPort))
+	}
+	return addrs, nil
+}
+
 func (g *gateway) discover(ctx context.Context, ech chan<- error) (err error) {
 	log.Info("starting discoverer discovery")
 	addrs := make([]string, 0, 100)
@@ -200,13 +219,9 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (err error) {
 	})
 	if err != nil {
 		log.Warn("failed to discover agents from discoverer API, trying to discover from dns...")
-		ips, err := net.DefaultResolver.LookupIPAddr(ctx, g.agentARecord)
+		addrs, err = g.dnsDiscovery(ctx)
 		if err != nil {
-			return errors.ErrAgentAddrCouldNotDiscover(err, g.agentARecord)
-		}
-		addrs = make([]string, 0, len(ips))
-		for _, ip := range ips {
-			addrs = append(addrs, fmt.Sprintf("%s:%d", ip.String(), g.agentPort))
+			return err
 		}
 	}
 	if g.acClient != nil {
