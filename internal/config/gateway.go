@@ -30,6 +30,9 @@ type Gateway struct {
 	// AgentDNS represent agents dns A record for service discovery
 	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
 
+	// NodeName represents node name
+	NodeName string `json:"node_name" yaml:"node_name"`
+
 	// IndexReplica represents index replication count
 	IndexReplica int `json:"index_replica" yaml:"index_replica"`
 
@@ -51,6 +54,8 @@ func (g *Gateway) Bind() *Gateway {
 	g.AgentNamespace = GetActualValue(g.AgentNamespace)
 
 	g.AgentDNS = GetActualValue(g.AgentDNS)
+
+	g.NodeName = GetActualValue(g.NodeName)
 
 	if g.Discoverer != nil {
 		g.Discoverer = g.Discoverer.Bind()

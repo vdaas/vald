@@ -688,7 +688,7 @@ indexManager:
       duration: "2s"
       discover_client: {}
       agent_client:
-        connection_pool: 100
+        connection_pool: 3
 
 meta:
   version: v0.0.0

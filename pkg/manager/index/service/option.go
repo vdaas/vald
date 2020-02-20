@@ -157,6 +157,15 @@ func WithAgentServiceDNSARecord(a string) Option {
 	}
 }
 
+func WithNodeName(nn string) Option {
+	return func(idx *index) error {
+		if nn != "" {
+			idx.nodeName = nn
+		}
+		return nil
+	}
+}
+
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(idx *index) error {
 		if eg != nil {
