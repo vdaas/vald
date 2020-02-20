@@ -53,7 +53,7 @@ func (r *remove) runParallel(ctx context.Context, b *testing.B, c client.Client,
 		bb.RunParallel(func(pb *testing.PB) {
 			i := 0
 			for pb.Next() {
-				r.do(ctx, b, c, ids[i%len(ids)])
+				r.do(ctx, bb, c, ids[i%len(ids)])
 				i++
 			}
 		})

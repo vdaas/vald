@@ -30,34 +30,34 @@ func (isrt *insert) Run(ctx context.Context, b *testing.B, c client.Client, data
 }
 
 func (isrt *insert) run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
-	b.Run("Insert", func(b *testing.B) {
+	b.Run("Insert", func(bb *testing.B) {
 		ids, train := dataset.IDs(), dataset.Train()
 
-		b.ReportAllocs()
-		b.ResetTimer()
-		b.StartTimer()
-		for i := 0; i < b.N; i++ {
-			isrt.do(ctx, b, c, ids[i%len(ids)], train[i%len(train)])
+		bb.ReportAllocs()
+		bb.ResetTimer()
+		bb.StartTimer()
+		for i := 0; i < bb.N; i++ {
+			isrt.do(ctx, bb, c, ids[i%len(ids)], train[i%len(train)])
 		}
-		b.StopTimer()
+		bb.StopTimer()
 	})
 }
 
 func (isrt *insert) runParallel(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
-	b.Run("ParallelInsert", func(b *testing.B) {
+	b.Run("ParallelInsert", func(bb *testing.B) {
 		ids, train := dataset.IDs(), dataset.Train()
 
-		b.ReportAllocs()
-		b.ResetTimer()
-		b.StartTimer()
-		b.RunParallel(func(p *testing.PB) {
+		bb.ReportAllocs()
+		bb.ResetTimer()
+		bb.StartTimer()
+		bb.RunParallel(func(pb *testing.PB) {
 			i := 0
-			for p.Next() {
-				isrt.do(ctx, b, c, ids[i%len(ids)], train[i%len(train)])
+			for pb.Next() {
+				isrt.do(ctx, bb, c, ids[i%len(ids)], train[i%len(train)])
 				i++
 			}
 		})
-		b.StopTimer()
+		bb.StopTimer()
 	})
 }
 

@@ -44,31 +44,31 @@ func (s *search) run(ctx context.Context, b *testing.B, c client.Client, dataset
 	b.Run("Search", func(bb *testing.B) {
 		queries := dataset.Query()
 
-		b.ReportAllocs()
-		b.ResetTimer()
-		b.StartTimer()
+		bb.ReportAllocs()
+		bb.ResetTimer()
+		bb.StartTimer()
 		for i := 0; i < bb.N; i++ {
-			s.do(ctx, b, c, queries[i%len(queries)])
+			s.do(ctx, bb, c, queries[i%len(queries)])
 		}
-		b.StopTimer()
+		bb.StopTimer()
 	})
 }
 
 func (s *search) runParallel(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
-	b.Run("ParallelSearch", func(b *testing.B) {
+	b.Run("ParallelSearch", func(bb *testing.B) {
 		queries := dataset.Query()
 
-		b.ReportAllocs()
-		b.ResetTimer()
-		b.StartTimer()
-		b.RunParallel(func(pb *testing.PB) {
+		bb.ReportAllocs()
+		bb.ResetTimer()
+		bb.StartTimer()
+		bb.RunParallel(func(pb *testing.PB) {
 			i := 0
 			for pb.Next() {
 				s.do(ctx, b, c, queries[i%len(queries)])
 				i++
 			}
 		})
-		b.StopTimer()
+		bb.StopTimer()
 	})
 }
 
