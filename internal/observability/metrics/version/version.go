@@ -94,7 +94,7 @@ func (v *version) MeasurementWithTags(ctx context.Context) ([]metrics.Measuremen
 
 func (v *version) View() []*metrics.View {
 	keys := make([]metrics.Key, 0, len(v.kvs))
-	for k, _ := range v.kvs {
+	for k := range v.kvs {
 		keys = append(keys, k)
 	}
 

@@ -124,7 +124,8 @@ func (c *cpuInfo) Measurement(ctx context.Context) ([]metrics.Measurement, error
 
 func (c *cpuInfo) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
 	ms := make([]metrics.MeasurementWithTags, 0, len(c.infoStats))
-	for _, infoStat := range c.infoStats {
+	for i := range c.infoStats {
+		infoStat := &c.infoStats[i]
 		ms = append(ms, metrics.MeasurementWithTags{
 			Measurement: c.cpuInfo.M(int64(1)),
 			Tags: map[metrics.Key]string{
