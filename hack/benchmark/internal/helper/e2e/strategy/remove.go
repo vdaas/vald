@@ -33,6 +33,7 @@ func (r *remove) run(ctx context.Context, b *testing.B, c client.Client, dataset
 	b.Run("Remove", func(bb *testing.B) {
 		ids := dataset.IDs()
 
+		bb.StopTimer()
 		bb.ReportAllocs()
 		bb.ResetTimer()
 		bb.StartTimer()
@@ -47,6 +48,7 @@ func (r *remove) runParallel(ctx context.Context, b *testing.B, c client.Client,
 	b.Run("ParallelRemove", func(bb *testing.B) {
 		ids := dataset.IDs()
 
+		bb.StartTimer()
 		bb.ReportAllocs()
 		bb.ResetTimer()
 		bb.StartTimer()

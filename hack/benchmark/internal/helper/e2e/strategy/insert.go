@@ -33,6 +33,7 @@ func (isrt *insert) run(ctx context.Context, b *testing.B, c client.Client, data
 	b.Run("Insert", func(bb *testing.B) {
 		ids, train := dataset.IDs(), dataset.Train()
 
+		bb.StopTimer()
 		bb.ReportAllocs()
 		bb.ResetTimer()
 		bb.StartTimer()
@@ -47,6 +48,7 @@ func (isrt *insert) runParallel(ctx context.Context, b *testing.B, c client.Clie
 	b.Run("ParallelInsert", func(bb *testing.B) {
 		ids, train := dataset.IDs(), dataset.Train()
 
+		bb.StopTimer()
 		bb.ReportAllocs()
 		bb.ResetTimer()
 		bb.StartTimer()

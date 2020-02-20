@@ -44,6 +44,7 @@ func (s *search) run(ctx context.Context, b *testing.B, c client.Client, dataset
 	b.Run("Search", func(bb *testing.B) {
 		queries := dataset.Query()
 
+		bb.StopTimer()
 		bb.ReportAllocs()
 		bb.ResetTimer()
 		bb.StartTimer()
@@ -58,6 +59,7 @@ func (s *search) runParallel(ctx context.Context, b *testing.B, c client.Client,
 	b.Run("ParallelSearch", func(bb *testing.B) {
 		queries := dataset.Query()
 
+		bb.StopTimer()
 		bb.ReportAllocs()
 		bb.ResetTimer()
 		bb.StartTimer()

@@ -24,13 +24,9 @@ func NewCreateIndex(opts ...CreateIndexOption) e2e.Strategy {
 
 func (ci *createIndex) Run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
 	b.Run("CreateIndex", func(bb *testing.B) {
-		bb.ReportAllocs()
-		bb.ResetTimer()
-		bb.StartTimer()
 		for i := 0; i < bb.N; i++ {
 			ci.do(ctx, b)
 		}
-		bb.StopTimer()
 	})
 }
 
