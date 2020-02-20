@@ -18,6 +18,7 @@
 package version
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
@@ -78,11 +79,11 @@ func labelKVs() (map[metrics.Key]string, error) {
 	return info, nil
 }
 
-func (v *version) Measurement() ([]metrics.Measurement, error) {
+func (v *version) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
 	return []metrics.Measurement{}, nil
 }
 
-func (v *version) MeasurementWithTags() ([]metrics.MeasurementWithTags, error) {
+func (v *version) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
 	return []metrics.MeasurementWithTags{
 		metrics.MeasurementWithTags{
 			Measurement: v.info.M(int64(1)),

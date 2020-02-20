@@ -50,25 +50,40 @@ type observability struct {
 func New(cfg *config.Observability) (Observability, error) {
 	o := new(observability)
 	if cfg != nil {
-		if cfg.Collector != nil {
-			versionInfo, err := version.NewMetric()
-			if err != nil {
-				return nil, err
-			}
+		if colcfg := cfg.Collector; colcfg != nil {
+			metrics := make([]metrics.Metric, 0)
+			if metcfg := colcfg.Metrics; metcfg != nil {
+				if metcfg.EnableVersionInfo {
+					versionInfo, err := version.NewMetric()
+					if err != nil {
+						return nil, err
+					}
+					metrics = append(metrics, versionInfo)
+				}
 
-			cpuMetric, err := cpu.NewMetric()
-			if err != nil {
-				return nil, err
+				if metcfg.EnableCPU {
+					cpuMetric, err := cpu.NewMetric()
+					if err != nil {
+						return nil, err
+					}
+					metrics = append(metrics, cpuMetric)
+				}
+
+				if metcfg.EnableMemory {
+					metrics = append(metrics, mem.NewMetric())
+				}
+
+				if metcfg.EnableGoroutineCount {
+					metrics = append(metrics, runtime.NewNumberOfGoroutines())
+				}
+
+				if metcfg.EnableCGOCallCount {
+					metrics = append(metrics, runtime.NewNumberOfCGOCall())
+				}
 			}
 			col, err := collector.New(
 				collector.WithDuration(cfg.Collector.Duration),
-				collector.WithMetrics(
-					versionInfo,
-					cpuMetric,
-					mem.NewMetric(),
-					runtime.NewNumberOfGoroutines(),
-					runtime.NewNumberOfCGOCall(),
-				),
+				collector.WithMetrics(metrics...),
 			)
 			if err != nil {
 				return nil, err

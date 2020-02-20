@@ -18,6 +18,7 @@
 package mem
 
 import (
+	"context"
 	"runtime"
 
 	"github.com/vdaas/vald/internal/observability/metrics"
@@ -45,7 +46,7 @@ func NewMetric() metrics.Metric {
 	}
 }
 
-func (m *memory) Measurement() ([]metrics.Measurement, error) {
+func (m *memory) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
 	var mstats runtime.MemStats
 	runtime.ReadMemStats(&mstats)
 
@@ -65,7 +66,7 @@ func (m *memory) Measurement() ([]metrics.Measurement, error) {
 	}, nil
 }
 
-func (m *memory) MeasurementWithTags() ([]metrics.MeasurementWithTags, error) {
+func (m *memory) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
 	return []metrics.MeasurementWithTags{}, nil
 }
 

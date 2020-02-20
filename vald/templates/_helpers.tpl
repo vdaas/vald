@@ -453,7 +453,17 @@ observability
 {{- define "vald.observability" -}}
 collector:
   {{- if .Values.collector }}
-    duration: {{ default .default.collector.duration .Values.collector.duration }}
+  duration: {{ default .default.collector.duration .Values.collector.duration }}
+  metrics:
+    {{- if .Values.collector.metrics }}
+      enable_version_info: {{ default .default.collector.metrics.enable_version_info .Values.collector.metrics.enable_version_info }}
+      enable_cpu: {{ default .default.collector.metrics.enable_cpu .Values.collector.metrics.enable_cpu }}
+      enable_memory: {{ default .default.collector.metrics.enable_memory .Values.collector.metrics.enable_memory }}
+      enable_goroutine_count: {{ default .default.collector.metrics.enable_goroutine_count .Values.collector.metrics.enable_goroutine_count }}
+      enable_cgo_call_count: {{ default .default.collector.metrics.enable_cgo_call_count .Values.collector.metrics.enable_cgo_call_count }}
+    {{- else }}
+    {{- toYaml .default.collector.metrics | nindent 4 }}
+    {{- end }}
   {{- else }}
   {{- toYaml .default.collector | nindent 2 }}
   {{- end }}

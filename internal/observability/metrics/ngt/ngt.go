@@ -18,39 +18,67 @@
 package ngt
 
 import (
-	"sync/atomic"
+	"context"
 
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/pkg/agent/ngt/service"
 )
 
-type ngt struct {
-	ic                    *uint64
+type ngtMetrics struct {
+	ngt                   service.NGT
+	indexCount            metrics.Int64Measure
 	uncommittedIndexCount metrics.Int64Measure
+	insertVCacheCount     metrics.Int64Measure
+	deleteVCacheCount     metrics.Int64Measure
 }
 
-func NewNGTMetrics(ic *uint64) metrics.Metric {
-	return &ngt{
-		ic:                    ic,
-		uncommittedIndexCount: *metrics.Int64("vdaas.org/vald/ngt/uncommitted_index_count", "uncommitted index count", metrics.UnitDimensionless),
+func NewNGTMetrics(n service.NGT) metrics.Metric {
+	return &ngtMetrics{
+		ngt:                   n,
+		indexCount:            *metrics.Int64("vdaas.org/vald/ngt/index_count", "NGT index count", metrics.UnitDimensionless),
+		uncommittedIndexCount: *metrics.Int64("vdaas.org/vald/ngt/uncommitted_index_count", "NGT uncommitted index count", metrics.UnitDimensionless),
+		insertVCacheCount:     *metrics.Int64("vdaas.org/vald/ngt/insert_vcache_count", "NGT insert vcache count", metrics.UnitDimensionless),
+		deleteVCacheCount:     *metrics.Int64("vdaas.org/vald/ngt/delete_vcache_count", "NGT delete vcache count", metrics.UnitDimensionless),
 	}
 }
 
-func (n *ngt) Measurement() ([]metrics.Measurement, error) {
+func (n *ngtMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
 	return []metrics.Measurement{
-		n.uncommittedIndexCount.M(int64(atomic.LoadUint64(n.ic))),
+		n.indexCount.M(int64(len(n.ngt.UUIDs(ctx)))),
+		n.uncommittedIndexCount.M(int64(len(n.ngt.UncommittedUUIDs()))),
+		n.insertVCacheCount.M(int64(n.ngt.InsertVCacheLen())),
+		n.deleteVCacheCount.M(int64(n.ngt.DeleteVCacheLen())),
 	}, nil
 }
 
-func (n *ngt) MeasurementWithTags() ([]metrics.MeasurementWithTags, error) {
+func (n *ngtMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
 	return []metrics.MeasurementWithTags{}, nil
 }
 
-func (n *ngt) View() []*metrics.View {
+func (n *ngtMetrics) View() []*metrics.View {
 	return []*metrics.View{
 		&metrics.View{
-			Name:        "uncommitted_index_count",
-			Description: "uncommitted index count",
+			Name:        "ngt_index_count",
+			Description: "NGT index count",
+			Measure:     &n.indexCount,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "ngt_uncommitted_index_count",
+			Description: "NGT uncommitted index count",
 			Measure:     &n.uncommittedIndexCount,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "ngt_insert_vcache_count",
+			Description: "NGT insert vcache count",
+			Measure:     &n.insertVCacheCount,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "ngt_delete_vcache_count",
+			Description: "NGT delete vcache count",
+			Measure:     &n.deleteVCacheCount,
 			Aggregation: metrics.LastValue(),
 		},
 	}

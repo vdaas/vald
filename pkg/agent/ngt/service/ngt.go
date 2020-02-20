@@ -29,8 +29,6 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/observability/collector"
-	metrics "github.com/vdaas/vald/internal/observability/metrics/ngt"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/pkg/agent/ngt/model"
@@ -136,11 +134,6 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 
 	if in, ok := n.indexing.Load().(bool); !ok || in {
 		n.indexing.Store(false)
-	}
-
-	err = collector.Register(metrics.NewNGTMetrics(&n.ic))
-	if err != nil {
-		return nil, err
 	}
 
 	return n, nil

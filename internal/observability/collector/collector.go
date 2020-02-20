@@ -58,12 +58,6 @@ func New(opts ...CollectorOption) (Collector, error) {
 
 	co.eg = errgroup.Get()
 
-	once.Do(func() {
-		instance = co
-	})
-
-	co.metrics = append(co.metrics, initMetrics...)
-
 	return co, nil
 }
 
@@ -78,6 +72,11 @@ func Register(ms ...metrics.Metric) error {
 }
 
 func (c *collector) PreStart(ctx context.Context) error {
+	once.Do(func() {
+		instance = c
+	})
+
+	c.metrics = append(c.metrics, initMetrics...)
 	return registerView(c.metrics...)
 }
 
@@ -114,12 +113,12 @@ func (c *collector) collect(ctx context.Context) (err error) {
 	var ms []metrics.Measurement
 	var mwts []metrics.MeasurementWithTags
 	for _, metric := range c.metrics {
-		ms, err = metric.Measurement()
+		ms, err = metric.Measurement(ctx)
 		if err != nil {
 			return err
 		}
 		measurements = append(measurements, ms...)
-		mwts, err = metric.MeasurementWithTags()
+		mwts, err = metric.MeasurementWithTags(ctx)
 		if err != nil {
 			return err
 		}

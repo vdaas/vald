@@ -18,6 +18,7 @@
 package cpu
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -105,7 +106,7 @@ func infoStatsLabelKeys() (map[string]metrics.Key, error) {
 	return info, nil
 }
 
-func (c *cpuInfo) Measurement() ([]metrics.Measurement, error) {
+func (c *cpuInfo) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
 	cpuPercent, err := c.process.CPUPercent()
 	if err != nil {
 		return nil, err
@@ -121,7 +122,7 @@ func (c *cpuInfo) Measurement() ([]metrics.Measurement, error) {
 	}, nil
 }
 
-func (c *cpuInfo) MeasurementWithTags() ([]metrics.MeasurementWithTags, error) {
+func (c *cpuInfo) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
 	ms := make([]metrics.MeasurementWithTags, 0, len(c.infoStats))
 	for _, infoStat := range c.infoStats {
 		ms = append(ms, metrics.MeasurementWithTags{

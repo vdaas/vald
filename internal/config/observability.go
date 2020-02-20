@@ -24,7 +24,16 @@ type Observability struct {
 }
 
 type Collector struct {
-	Duration string `json:"duration" yaml:"duration"`
+	Duration string   `json:"duration" yaml:"duration"`
+	Metrics  *Metrics `json:"metrics" yaml:"metrics"`
+}
+
+type Metrics struct {
+	EnableVersionInfo    bool `json:"enable_version_info" yaml:"enable_version_info"`
+	EnableCPU            bool `json:"enable_cpu" yaml:"enable_cpu"`
+	EnableMemory         bool `json:"enable_memory" yaml:"enable_memory"`
+	EnableGoroutineCount bool `json:"enable_goroutine_count" yaml:"enable_goroutine_count"`
+	EnableCGOCallCount   bool `json:"enable_cgo_call_count" yaml:"enable_cgo_call_count"`
 }
 
 type Prometheus struct {

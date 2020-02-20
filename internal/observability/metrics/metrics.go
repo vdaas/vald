@@ -56,8 +56,8 @@ type MeasurementWithTags struct {
 }
 
 type Metric interface {
-	Measurement() ([]Measurement, error)
-	MeasurementWithTags() ([]MeasurementWithTags, error)
+	Measurement(ctx context.Context) ([]Measurement, error)
+	MeasurementWithTags(ctx context.Context) ([]MeasurementWithTags, error)
 	View() []*View
 }
 

@@ -18,6 +18,7 @@
 package runtime
 
 import (
+	"context"
 	"runtime"
 
 	"github.com/vdaas/vald/internal/observability/metrics"
@@ -33,13 +34,13 @@ func NewNumberOfCGOCall() metrics.Metric {
 	}
 }
 
-func (n *numcgocall) Measurement() ([]metrics.Measurement, error) {
+func (n *numcgocall) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
 	return []metrics.Measurement{
 		n.count.M(int64(runtime.NumCgoCall())),
 	}, nil
 }
 
-func (n *numcgocall) MeasurementWithTags() ([]metrics.MeasurementWithTags, error) {
+func (n *numcgocall) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
 	return []metrics.MeasurementWithTags{}, nil
 }
 

@@ -120,6 +120,12 @@ server_config:
 observability:
   collector:
     duration: 3s
+    metrics:
+      enable_version_info: true
+      enable_cpu: true
+      enable_memory: true
+      enable_goroutine_count: true
+      enable_cgo_call_count: true
   prometheus:
     enabled: true
   jaeger:
@@ -133,3 +139,4 @@ ngt:
   creation_edge_size: 20
   search_edge_size: 10
   enable_in_memory_mode: true
+  enable_metrics: true
