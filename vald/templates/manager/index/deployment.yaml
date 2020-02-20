@@ -22,7 +22,7 @@ metadata:
     app: {{ .Values.indexManager.name }}
 spec:
   progressDeadlineSeconds: {{ .Values.indexManager.progressDeadlineSeconds }}
-  replicas: {{ .Values.indexManager.minReplicas }}
+  replicas: {{ .Values.indexManager.replicas }}
   revisionHistoryLimit: {{ .Values.indexManager.revisionHistoryLimit }}
   selector:
     matchLabels:

@@ -647,8 +647,7 @@ indexManager:
   serviceType: ClusterIP
   # externalTrafficPolicy: Cluster
   progressDeadlineSeconds: 600
-  minReplicas: 1
-  maxReplicas: 2
+  replicas: 1
   maxUnavailable: 50%
   revisionHistoryLimit: 2
   terminationGracePeriodSeconds: 30
