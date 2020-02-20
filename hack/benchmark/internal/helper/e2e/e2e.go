@@ -28,9 +28,13 @@ func New(opts ...Option) Runner {
 }
 
 func (e *e2e) Run(ctx context.Context, b *testing.B) {
-	b.Run(e.name, func(b *testing.B) {
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.StartTimer()
+	b.Run(e.name, func(bb *testing.B) {
 		for _, strategy := range e.strategies {
-			strategy.Run(ctx, b, e.client, e.dataset)
+			strategy.Run(ctx, bb, e.client, e.dataset)
 		}
 	})
+	b.StopTimer()
 }
