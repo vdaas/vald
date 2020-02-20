@@ -23,6 +23,7 @@ import (
 )
 
 type vcaches struct {
+	length uint64
 	mu     sync.Mutex
 	read   atomic.Value // readOnly
 	dirty  map[string]*entryVCache
@@ -37,7 +38,7 @@ type readOnlyVCache struct {
 var expungedVCache = unsafe.Pointer(new(vcache))
 
 type entryVCache struct {
-	p unsafe.Pointer // *interface{}
+	p unsafe.Pointer
 }
 
 func newEntryVCache(i vcache) *entryVCache {
@@ -72,6 +73,7 @@ func (e *entryVCache) load() (value vcache, ok bool) {
 }
 
 func (m *vcaches) Store(key string, value vcache) {
+	defer atomic.AddUint64(&m.length, 1)
 	read, _ := m.read.Load().(readOnlyVCache)
 	if e, ok := read.m[key]; ok && e.tryStore(&value) {
 		return
@@ -117,6 +119,7 @@ func (e *entryVCache) storeLocked(i *vcache) {
 }
 
 func (m *vcaches) Delete(key string) {
+	atomic.AddUint64(&m.length, ^uint64(0))
 	read, _ := m.read.Load().(readOnlyVCache)
 	e, ok := read.m[key]
 	if !ok && read.amended {
@@ -203,4 +206,8 @@ func (e *entryVCache) tryExpungeLocked() (isExpunged bool) {
 		p = atomic.LoadPointer(&e.p)
 	}
 	return p == expungedVCache
+}
+
+func (m *vcaches) Len() uint64 {
+	return atomic.LoadUint64(&m.length)
 }

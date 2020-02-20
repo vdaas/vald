@@ -340,11 +340,11 @@
     "InfoIndex": {
       "type": "object",
       "properties": {
-        "count": {
+        "stored": {
           "type": "integer",
           "format": "int64"
         },
-        "uncommittedIndex": {
+        "uncommitted": {
           "type": "integer",
           "format": "int64"
         },
@@ -354,11 +354,15 @@
             "type": "string"
           }
         },
-        "uncommittedUuid": {
+        "uncommittedUuids": {
           "type": "array",
           "items": {
             "type": "string"
           }
+        },
+        "indexing": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },

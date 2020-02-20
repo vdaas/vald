@@ -33,6 +33,9 @@ type Data struct {
 
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
+
+	// Discoverer represent discovery config
+	Discoverer *config.Discoverer `json:"discoverer" yaml:"discoverer"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
@@ -54,6 +57,11 @@ func NewConfig(path string) (cfg *Data, err error) {
 		cfg.Observability = cfg.Observability.Bind()
 	}
 
+	if cfg.Discoverer != nil {
+		cfg.Discoverer = cfg.Discoverer.Bind()
+	} else {
+		cfg.Discoverer = new(config.Discoverer)
+	}
 	return cfg, nil
 }
 

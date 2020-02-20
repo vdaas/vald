@@ -28,8 +28,8 @@ import (
 
 	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/apis/grpc/agent"
+	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
-	"github.com/vdaas/vald/apis/grpc/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
@@ -450,6 +450,39 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed Insert request %#v", vecs), err, info.Get())
 	}
 	return new(payload.Empty), nil
+}
+
+func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*payload.Empty, error) {
+	meta := vec.GetId()
+	uuid, err := s.metadata.GetUUID(ctx, meta)
+	if err != nil || len(uuid) == 0 {
+		return s.Insert(ctx, vec)
+	}
+	return s.Update(ctx, vec)
+}
+
+func (s *server) StreamUpsert(stream vald.Vald_StreamUpsertServer) error {
+	return grpc.BidirectionalStream(stream, s.streamConcurrency,
+		func() interface{} { return new(payload.Object_Vector) },
+		func(ctx context.Context, data interface{}) (interface{}, error) {
+			return s.Upsert(ctx, data.(*payload.Object_Vector))
+		})
+}
+
+func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) (*payload.Empty, error) {
+	metas := make([]string, 0, len(vecs.GetVectors()))
+	for _, vec := range vecs.GetVectors() {
+		metas = append(metas, vec.GetId())
+	}
+	uuids, err := s.metadata.GetUUIDs(ctx, metas...)
+	if err == nil {
+		for i := range uuids {
+			if len(uuids) > i && len(uuids[i]) != 0 {
+				return s.MultiUpdate(ctx, vecs)
+			}
+		}
+	}
+	return s.MultiInsert(ctx, vecs)
 }
 
 func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Empty, error) {

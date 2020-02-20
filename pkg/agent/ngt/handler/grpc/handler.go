@@ -260,7 +260,7 @@ func (s *server) StreamGetObject(stream agent.Agent_StreamGetObjectServer) error
 		})
 }
 
-func (s *server) CreateIndex(ctx context.Context, c *payload.Controll_CreateIndexRequest) (res *payload.Empty, err error) {
+func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndexRequest) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.CreateIndex")
 	defer span.End()
 	res = new(payload.Empty)
@@ -282,7 +282,7 @@ func (s *server) SaveIndex(context.Context, *payload.Empty) (res *payload.Empty,
 	return res, nil
 }
 
-func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Controll_CreateIndexRequest) (res *payload.Empty, err error) {
+func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_CreateIndexRequest) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.CreateAndSaveIndex")
 	defer span.End()
 	res = new(payload.Empty)
@@ -297,5 +297,13 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Controll_Cre
 func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.Info_Index, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.IndexInfo")
 	defer span.End()
-	return nil, nil
+	uuids := s.ngt.UUIDs(ctx)
+	ucuuids := s.ngt.UncommittedUUIDs()
+	return &payload.Info_Index{
+		Stored:           uint32(len(uuids)),
+		Uncommitted:      uint32(len(ucuuids)),
+		Uuids:            uuids,
+		UncommittedUuids: ucuuids,
+		Indexing:         s.ngt.IsIndexing(),
+	}, nil
 }

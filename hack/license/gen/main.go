@@ -77,7 +77,9 @@ func dirwalk(dir string) []string {
 	var paths []string
 	for _, file := range files {
 		if file.IsDir() {
-			if !strings.Contains(file.Name(), "vendor") && !strings.Contains(file.Name(), ".git") {
+			if !strings.Contains(file.Name(), "vendor") &&
+				!strings.Contains(file.Name(), "versions") &&
+				!strings.Contains(file.Name(), ".git") {
 				paths = append(paths, dirwalk(filepath.Join(dir, file.Name()))...)
 			}
 			continue

@@ -34,8 +34,8 @@ type Data struct {
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// Gateway represent agent gateway service configuration
-	Gateway *config.Gateway `json:"gateway" yaml:"gateway"`
+	// Indexer represent agent auto indexing service configuration
+	Indexer *config.Indexer `json:"indexer" yaml:"indexer"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
@@ -57,10 +57,9 @@ func NewConfig(path string) (cfg *Data, err error) {
 		cfg.Observability = cfg.Observability.Bind()
 	}
 
-	if cfg.Gateway != nil {
-		cfg.Gateway = cfg.Gateway.Bind()
+	if cfg.Indexer != nil {
+		cfg.Indexer = cfg.Indexer.Bind()
 	}
-
 	return cfg, nil
 }
 

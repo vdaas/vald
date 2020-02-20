@@ -46,12 +46,15 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	dsc, err := service.New()
+	eg := errgroup.Get()
+	dsc, err := service.New(
+		service.WithDiscoverDuration(cfg.Discoverer.CacheSyncDuration),
+		service.WithErrGroup(eg),
+	)
 	if err != nil {
 		return nil, err
 	}
 	g := handler.New(handler.WithDiscoverer(dsc))
-	eg := errgroup.Get()
 
 	obs, err := observability.New(cfg.Observability)
 	if err != nil {
@@ -117,7 +120,11 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		log.Info("daemon start")
 		defer close(ech)
-		dech := r.dsc.Start(ctx)
+		dech, err := r.dsc.Start(ctx)
+		if err != nil {
+			ech <- err
+			return err
+		}
 		oech := r.observability.Start(ctx)
 		sech := r.server.ListenAndServe(ctx)
 		for {

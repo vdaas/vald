@@ -19,7 +19,7 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/vald"
+	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -76,7 +76,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 	dscClient := grpc.New(
-		append(cfg.Gateway.Discoverer.DiscoverClient.Opts(),
+		append(cfg.Gateway.Discoverer.Client.Opts(),
 			grpc.WithErrGroup(eg),
 		)...,
 	)
@@ -84,6 +84,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	gateway, err = service.NewGateway(
 		service.WithErrGroup(eg),
 		service.WithAgentName(cfg.Gateway.AgentName),
+		service.WithAgentNamespace(cfg.Gateway.AgentNamespace),
 		service.WithAgentPort(cfg.Gateway.AgentPort),
 		service.WithAgentServiceDNSARecord(cfg.Gateway.AgentDNS),
 		service.WithDiscovererClient(dscClient),

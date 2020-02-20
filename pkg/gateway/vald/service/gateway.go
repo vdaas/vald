@@ -20,9 +20,9 @@ package service
 import (
 	"context"
 	"fmt"
+	"math"
 	"net"
 	"reflect"
-	"sort"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -36,7 +36,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/pkg/gateway/vald/model"
 )
 
 type Gateway interface {
@@ -52,9 +51,11 @@ type Gateway interface {
 
 type gateway struct {
 	agentName    string
+	namespace    string
+	nodeName     string
 	agentPort    int
 	agentARecord string
-	agents       atomic.Value
+	agents       atomic.Value // []string ips
 	dscAddr      string
 	dscDur       time.Duration
 	dscClient    grpc.Client
@@ -75,37 +76,21 @@ func NewGateway(opts ...GWOption) (gw Gateway, err error) {
 }
 
 func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 10)
 	dech, err := g.dscClient.StartConnectionMonitor(ctx)
-	discover := g.discover
 	if err != nil {
-		g.dscClient.Close()
-		discover = g.discoverByDNS
+		return nil, err
 	}
-	_, err = discover(ctx, ech)
+	ech := make(chan error, 100)
+	err = g.discover(ctx, ech)
 	if err != nil {
+		close(ech)
 		g.dscClient.Close()
-		discover = g.discoverByDNS
-		_, err = discover(ctx, ech)
-		if err != nil {
-			log.Error(err)
-			close(ech)
-			return nil, err
-		}
+		return nil, err
 	}
-
-	as := g.agents.Load().(model.Agents)
-	addrs := make([]string, 0, len(as))
-	for _, a := range as {
-		addrs = append(addrs,
-			fmt.Sprintf("%s:%d", a.IP, g.agentPort),
-		)
-	}
-
 	g.acClient = grpc.New(
 		append(
 			g.agentOpts,
-			grpc.WithAddrs(addrs...),
+			grpc.WithAddrs(g.agents.Load().([]string)...),
 			grpc.WithErrGroup(g.eg),
 			grpc.WithDialOptions(
 				metric.WithStatsHandler(metric.NewClientHandler()),
@@ -148,13 +133,13 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 			case err = <-dech:
 			case err = <-aech:
 			case <-fch:
-				_, err = discover(ctx, ech)
+				err = g.discover(ctx, ech)
 				if err != nil {
 					ech <- err
 					err = nil
 				}
 			case <-dt.C:
-				_, err = discover(ctx, ech)
+				err = g.discover(ctx, ech)
 				if err != nil {
 					ech <- err
 					log.Error(err)
@@ -178,147 +163,111 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (g *gateway) discoverByDNS(ctx context.Context, ech chan<- error) (ret interface{}, err error) {
-	log.Info("starting dns discovery")
-	ips, err := net.LookupIP(g.agentARecord)
-	if err != nil {
-		ech <- err
-		return nil, err
-	}
-
-	if len(ips) == 0 {
-		return nil, errors.ErrAgentAddrCouldNotDiscover
-	}
-
-	as := make(model.Agents, 0, len(ips))
-	cur := make(map[string]struct{}, len(ips))
-	for _, ip := range ips {
-		host, err := net.LookupAddr(ip.String())
+func (g *gateway) discover(ctx context.Context, ech chan<- error) (err error) {
+	log.Info("starting discoverer discovery")
+	addrs := make([]string, 0, 100)
+	_, err = g.dscClient.Do(ctx, g.dscAddr, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		nodes, err := discoverer.NewDiscovererClient(conn).
+			Nodes(ctx, &payload.Discoverer_Request{
+				Namespace: g.namespace,
+				Name:      g.agentName,
+				Node:      g.nodeName,
+			}, copts...)
 		if err != nil {
 			return nil, err
 		}
-		as = append(as, model.Agent{
-			IP:   ip.String(),
-			Name: host[0],
-		})
-		cur[fmt.Sprintf("%s:%d", ip.String(), g.agentPort)] = struct{}{}
-	}
-
-	g.agents.Store(as)
-
-	if g.acClient != nil {
-		err = g.acClient.Range(ctx,
-			func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-				_, ok := cur[addr]
-				delete(cur, addr)
-				if !ok {
-					return g.acClient.Disconnect(addr)
+		for i := 0; i < (math.MaxInt32); i++ {
+			visited := false
+			for i, node := range nodes.GetNodes() {
+				select {
+				case <-ctx.Done():
+					return nil, ctx.Err()
+				default:
+					if node != nil && node.GetPods() != nil {
+						pods := node.GetPods().GetPods()
+						if i < len(pods) {
+							addrs = append(addrs, fmt.Sprintf("%s:%d", pods[i].GetIp(), g.agentPort))
+							if !visited {
+								visited = true
+							}
+							break
+						}
+					}
 				}
-				return nil
-			})
-		if err != nil {
-			ech <- err
-			err = nil
-		}
-
-		for addr := range cur {
-			err = g.acClient.Connect(ctx, addr)
-			if err != nil {
-				ech <- err
-				err = nil
+			}
+			if !visited {
+				return nil, nil
 			}
 		}
-	}
-	log.Info("finished dns discovery")
-	return nil, nil
-}
-
-func (g *gateway) discover(ctx context.Context, ech chan<- error) (ret interface{}, err error) {
-	log.Info("starting discoverer discovery")
-	var res *payload.Info_Servers
-	_, err = g.dscClient.Do(ctx, g.dscAddr,
-		func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			res, err = discoverer.NewDiscovererClient(conn).
-				Discover(ctx, &payload.Discoverer_Request{
-					Name: g.agentName,
-					Node: "",
-				}, copts...)
-			if err != nil {
-				return nil, err
-			}
-			return res, nil
-		})
+		return nil, nil
+	})
 	if err != nil {
-		return nil, err
-	}
-
-	srvs := res.GetServers()
-	if len(srvs) == 0 {
-		return nil, errors.ErrAgentAddrCouldNotDiscover
-	}
-	as := make(model.Agents, 0, len(srvs))
-	cur := make(map[string]struct{}, len(srvs))
-	for _, srv := range srvs {
-		host := srv.GetServer()
-		if host == nil {
-			host = new(payload.Info_Server)
+		log.Warn("failed to discover agents from discoverer API, trying to discover from dns...")
+		ips, err := net.DefaultResolver.LookupIPAddr(ctx, g.agentARecord)
+		if err != nil {
+			return errors.ErrAgentAddrCouldNotDiscover(err, g.agentARecord)
 		}
-		addr := fmt.Sprintf("%s:%d", srv.GetIp(), g.agentPort)
-		as = append(as, model.Agent{
-			IP:       srv.GetIp(),
-			Name:     srv.GetName(),
-			CPU:      srv.GetCpu(),
-			Mem:      srv.GetMem(),
-			HostIP:   host.GetIp(),
-			HostName: host.GetName(),
-			HostCPU:  host.GetCpu(),
-			HostMem:  host.GetMem(),
-		})
-		cur[addr] = struct{}{}
+		addrs = make([]string, 0, len(ips))
+		for _, ip := range ips {
+			addrs = append(addrs, fmt.Sprintf("%s:%d", ip.String(), g.agentPort))
+		}
 	}
-
-	sort.Sort(as)
-	g.agents.Store(as)
-
 	if g.acClient != nil {
+		cur := make(map[string]struct{}, len(addrs))
+		connected := make([]string, 0, len(addrs))
+		for _, addr := range addrs {
+			err = g.acClient.Connect(ctx, addr)
+			if err != nil {
+				ech <- err
+				err = nil
+			} else {
+				cur[addr] = struct{}{}
+				connected = append(connected, addr)
+			}
+		}
+		g.agents.Store(connected)
 		err = g.acClient.Range(ctx,
-			func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 				_, ok := cur[addr]
-				delete(cur, addr)
 				if !ok {
 					return g.acClient.Disconnect(addr)
 				}
+				delete(cur, addr)
 				return nil
 			})
 		if err != nil {
 			ech <- err
 			err = nil
 		}
-
-		for addr := range cur {
-			err = g.acClient.Connect(ctx, addr)
-			if err != nil {
-				ech <- err
-				err = nil
-			}
-		}
 	}
-	log.Info("starting discoverer discovery")
-	return nil, nil
+	log.Info("finished discoverer discovery")
+	return nil
 }
 
 func (g *gateway) BroadCast(ctx context.Context,
 	f func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error) (err error) {
-	return g.DoMulti(ctx, g.GetAgentCount(), f)
+	return g.acClient.RangeConcurrent(ctx, -1, func(ctx context.Context,
+		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			err = f(ctx, addr, agent.NewAgentClient(conn), copts...)
+			if err != nil {
+				log.Debug(addr, err)
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func (g *gateway) Do(ctx context.Context,
 	f func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error) (err error) {
-	addr := fmt.Sprintf("%s:%d", g.agents.Load().(model.Agents)[0].IP, g.agentPort)
-	_, err = g.acClient.Do(ctx, addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-		if conn == nil {
-			return nil, errors.ErrAgentClientNotConnected
-		}
+	addr := g.agents.Load().([]string)[0]
+	_, err = g.acClient.Do(ctx, addr, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		return nil, f(ctx, addr, agent.NewAgentClient(conn), copts...)
 	})
 	return err
@@ -330,29 +279,27 @@ func (g *gateway) DoMulti(ctx context.Context,
 	limit := uint32(num)
 	cctx, cancel := context.WithCancel(ctx)
 	var once sync.Once
-	err = g.acClient.RangeConcurrent(cctx, num, func(addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
-		if conn == nil {
-			return errors.ErrAgentClientNotConnected
-		}
-		select {
-		case <-cctx.Done():
-			return nil
-		default:
-			if atomic.LoadUint32(&cur) >= limit {
-				once.Do(func() {
-					cancel()
-				})
+	err = g.acClient.OrderedRangeConcurrent(cctx, g.agents.Load().([]string), num,
+		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+			select {
+			case <-cctx.Done():
 				return nil
+			default:
+				if atomic.LoadUint32(&cur) >= limit {
+					once.Do(func() {
+						cancel()
+					})
+					return nil
+				}
+				err = f(cctx, addr, agent.NewAgentClient(conn), copts...)
+				if err != nil {
+					log.Debug(addr, err)
+					return err
+				}
+				atomic.AddUint32(&cur, 1)
 			}
-			err = f(cctx, addr, agent.NewAgentClient(conn), copts...)
-			if err != nil {
-				log.Debug(addr, err)
-				return err
-			}
-			atomic.AddUint32(&cur, 1)
-		}
-		return nil
-	})
+			return nil
+		})
 	if err != nil && cur < limit {
 		return err
 	}
@@ -360,5 +307,5 @@ func (g *gateway) DoMulti(ctx context.Context,
 }
 
 func (g *gateway) GetAgentCount() int {
-	return g.agents.Load().(model.Agents).Len()
+	return len(g.agents.Load().([]string))
 }

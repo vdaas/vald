@@ -65,12 +65,7 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 		Control:   Control,
 	}
 
-	d.der.Resolver = &net.Resolver{
-		PreferGo: false,
-		Dial:     d.der.DialContext,
-	}
-
-	if !d.dnsCache || d.cache == nil {
+	if !d.dnsCache {
 		if d.tlsConfig != nil {
 			d.dialer = func(ctx context.Context, network,
 				addr string) (conn net.Conn, err error) {
@@ -83,6 +78,10 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 		} else {
 			d.dialer = d.der.DialContext
 		}
+		d.der.Resolver = &net.Resolver{
+			PreferGo: false,
+			Dial:     d.dialer,
+		}
 		return d, nil
 	}
 
@@ -92,6 +91,7 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 		d.dnsRefreshDurationStr, d.dnsCacheExpirationStr =
 			d.dnsCacheExpirationStr, d.dnsRefreshDurationStr
 	}
+
 	if d.cache == nil {
 		d.cache, err = cache.New(
 			cache.WithExpireDuration(d.dnsCacheExpirationStr),
@@ -111,6 +111,11 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 	}
 
 	d.dialer = d.cachedDialer
+
+	d.der.Resolver = &net.Resolver{
+		PreferGo: false,
+		Dial:     d.dialer,
+	}
 
 	return d, nil
 }

@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/params"
 	"github.com/vdaas/vald/internal/timeutil/location"
 	ver "github.com/vdaas/vald/internal/version"
@@ -66,23 +67,20 @@ func Do(ctx context.Context, opts ...Option) error {
 		params.WithConfigFileDescription(fmt.Sprintf("%s config file path", r.name)),
 	).Parse()
 
-	if err != nil {
-		log.Init()
+	if isHelp || err != nil {
+		log.Init(log.WithLevel(level.FATAL.String()))
 		return err
 	}
 
-	if isHelp {
-		return nil
-	}
-
 	if p.ShowVersion() {
-		log.Init()
+		log.Init(log.WithLevel(level.INFO.String()))
 		log.Info(info.String())
 		return nil
 	}
 
 	cfg, ccfg, err := r.loadConfig(p.ConfigFilePath())
 	if err != nil {
+		log.Init()
 		return err
 	}
 
