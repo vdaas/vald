@@ -37,11 +37,11 @@ import (
 )
 
 type run struct {
-	eg      errgroup.Group
-	cfg     *config.Data
-	server  starter.Server
+	eg            errgroup.Group
+	cfg           *config.Data
+	server        starter.Server
 	observability observability.Observability
-	indexer service.Indexer
+	indexer       service.Indexer
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
@@ -54,6 +54,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	dscClient := grpc.New(
 		append(cfg.Indexer.Discoverer.Client.Opts(),
 			grpc.WithErrGroup(eg),
+			grpc.WithDialOptions(
+				metric.WithStatsHandler(metric.NewClientHandler()),
+			),
 		)...,
 	)
 	agentOpts := cfg.Indexer.Discoverer.AgentClient.Opts()
@@ -119,11 +122,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
-		eg:      eg,
-		cfg:     cfg,
-		server:  srv,
+		eg:            eg,
+		cfg:           cfg,
+		server:        srv,
 		observability: obs,
-		indexer: indexer,
+		indexer:       indexer,
 	}, nil
 }
 

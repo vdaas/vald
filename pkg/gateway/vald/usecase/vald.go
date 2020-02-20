@@ -68,6 +68,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			grpc.New(
 				append(cfg.Gateway.BackupManager.Client.Opts(),
 					grpc.WithErrGroup(eg),
+					grpc.WithDialOptions(
+						metric.WithStatsHandler(metric.NewClientHandler()),
+					),
 				)...,
 			),
 		),
@@ -78,6 +81,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	dscClient := grpc.New(
 		append(cfg.Gateway.Discoverer.Client.Opts(),
 			grpc.WithErrGroup(eg),
+			grpc.WithDialOptions(
+				metric.WithStatsHandler(metric.NewClientHandler()),
+			),
 		)...,
 	)
 	agentOpts := cfg.Gateway.Discoverer.AgentClient.Opts()
@@ -108,6 +114,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			grpc.New(
 				append(cfg.Gateway.Meta.Client.Opts(),
 					grpc.WithErrGroup(eg),
+					grpc.WithDialOptions(
+						metric.WithStatsHandler(metric.NewClientHandler()),
+					),
 				)...,
 			),
 		),
@@ -129,6 +138,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 				grpc.New(
 					append(ef.Client.Opts(),
 						grpc.WithErrGroup(eg),
+						grpc.WithDialOptions(
+							metric.WithStatsHandler(metric.NewClientHandler()),
+						),
 					)...,
 				),
 			),

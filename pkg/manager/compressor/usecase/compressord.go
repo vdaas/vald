@@ -64,6 +64,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			grpc.New(
 				append(cfg.BackupManager.Client.Opts(),
 					grpc.WithErrGroup(eg),
+					grpc.WithDialOptions(
+						metric.WithStatsHandler(metric.NewClientHandler()),
+					),
 				)...,
 			),
 		),
