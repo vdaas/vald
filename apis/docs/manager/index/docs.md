@@ -34,6 +34,7 @@
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
+| IndexInfo | [.payload.Empty](#payload.Empty) | [.payload.Info.Index](#payload.Info.Index) |  |
 
  
 

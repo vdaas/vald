@@ -34,7 +34,8 @@
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Discover | [.payload.Discoverer.Request](#payload.Discoverer.Request) | [.payload.Info.Servers](#payload.Info.Servers) |  |
+| Pods | [.payload.Discoverer.Request](#payload.Discoverer.Request) | [.payload.Info.Pods](#payload.Info.Pods) |  |
+| Nodes | [.payload.Discoverer.Request](#payload.Discoverer.Request) | [.payload.Info.Nodes](#payload.Info.Nodes) |  |
 
  
 
