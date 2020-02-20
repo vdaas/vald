@@ -288,7 +288,9 @@ gateway:
     full_shutdown_duration: 600s
     tls:
       enabled: false
-  observability: {}
+  observability:
+    jaeger:
+      service_name: vald-gateway
   filter:
     egress:
       - ""
@@ -367,7 +369,9 @@ agent:
     full_shutdown_duration: 600s
     tls:
       enabled: false
-  observability: {}
+  observability:
+    jaeger:
+      service_name: vald-agent-ngt
   ngt:
     # index_path: /path/to/index
     auto_index_limit: 10m
@@ -425,7 +429,9 @@ discoverer:
     full_shutdown_duration: 600s
     tls:
       enabled: false
-  observability: {}
+  observability:
+    jaeger:
+      service_name: vald-discoverer
   clusterRole:
     enabled: true
     name: discoverer
@@ -488,7 +494,9 @@ compressor:
     full_shutdown_duration: 600s
     tls:
       enabled: false
-  observability: {}
+  observability:
+    jaeger:
+      service_name: vald-manager-compressor
   resources:
     requests:
       cpu: 200m
@@ -591,7 +599,9 @@ backupManager:
     full_shutdown_duration: 600s
     tls:
       enabled: false
-  observability: {}
+  observability:
+    jaeger:
+      service_name: vald-manager-backup
   resources:
     requests:
       cpu: 200m
@@ -734,7 +744,9 @@ indexManager:
     full_shutdown_duration: 600s
     tls:
       enabled: false
-  observability: {}
+  observability:
+    jaeger:
+      service_name: vald-manager-index
 
 meta:
   version: v0.0.0
@@ -825,7 +837,9 @@ meta:
     full_shutdown_duration: 600s
     tls:
       enabled: false
-  observability: {}
+  observability:
+    jaeger:
+      service_name: vald-meta
   resources:
     requests:
       cpu: 200m
