@@ -214,8 +214,8 @@ defaults:
       enabled: true
     jaeger:
       enabled: false
-      collector_endpoint: http://jaeger-collector.default.svc.cluster.local:14268/api/traces
-      agent_endpoint: "" # localhost:6831
+      collector_endpoint: "" # http://jaeger-collector.default.svc.cluster.local:14268/api/traces
+      agent_endpoint: jaeger-agent.default.svc.cluster.local:6831
       username: ""
       password: ""
       service_name: vald
