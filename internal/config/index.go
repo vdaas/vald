@@ -24,6 +24,9 @@ type Indexer struct {
 	// AgentName represent agents meta_name for service discovery
 	AgentName string `json:"agent_name" yaml:"agent_name"`
 
+	// AgentNamespace represent agent namespace location
+	AgentNamespace string `json:"agent_namespace" yaml:"agent_namespace"`
+
 	// AgentDNS represent agents dns A record for service discovery
 	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
 
@@ -45,6 +48,7 @@ type Indexer struct {
 
 func (im *Indexer) Bind() *Indexer {
 	im.AgentName = GetActualValue(im.AgentName)
+	im.AgentNamespace = GetActualValue(im.AgentNamespace)
 	im.AgentDNS = GetActualValue(im.AgentDNS)
 	im.AutoIndexDurationLimit = GetActualValue(im.AutoIndexDurationLimit)
 	im.AutoIndexCheckDuration = GetActualValue(im.AutoIndexCheckDuration)

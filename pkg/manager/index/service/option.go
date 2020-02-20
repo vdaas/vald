@@ -35,6 +35,7 @@ var (
 		WithIndexingDuration("1m"),
 		WithIndexingDurationLimit("30m"),
 		WithMinUncommitted(100),
+		WithAgentNamespace("default"),
 	}
 )
 
@@ -129,6 +130,15 @@ func WithAgentOptions(opts ...grpc.Option) Option {
 func WithAgentName(name string) Option {
 	return func(idx *index) error {
 		idx.agentName = name
+		return nil
+	}
+}
+
+func WithAgentNamespace(ns string) Option {
+	return func(idx *index) error {
+		if ns != "" {
+			idx.namespace = ns
+		}
 		return nil
 	}
 }
