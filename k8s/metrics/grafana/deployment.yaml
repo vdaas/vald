@@ -33,3 +33,23 @@ spec:
           image: grafana/grafana
           ports:
             - containerPort: 3000
+          volumeMounts:
+            - name: grafana-datasource-provider
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: grafana-dashboard-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+            - name: grafana-dashboards
+              mountPath: /var/lib/grafana/dashboards
+      volumes:
+        - name: grafana-datasource-provider
+          configMap:
+            defaultMode: 420
+            name: grafana-datasource-provider
+        - name: grafana-dashboard-provider
+          configMap:
+            defaultMode: 420
+            name: grafana-dashboard-provider
+        - name: grafana-dashboards
+          configMap:
+            defaultMode: 420
+            name: grafana-dashboards
