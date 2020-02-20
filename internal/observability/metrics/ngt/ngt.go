@@ -30,6 +30,7 @@ type ngtMetrics struct {
 	uncommittedIndexCount metrics.Int64Measure
 	insertVCacheCount     metrics.Int64Measure
 	deleteVCacheCount     metrics.Int64Measure
+	isIndexing            metrics.Int64Measure
 }
 
 func NewNGTMetrics(n service.NGT) metrics.Metric {
@@ -39,15 +40,22 @@ func NewNGTMetrics(n service.NGT) metrics.Metric {
 		uncommittedIndexCount: *metrics.Int64("vdaas.org/vald/ngt/uncommitted_index_count", "NGT uncommitted index count", metrics.UnitDimensionless),
 		insertVCacheCount:     *metrics.Int64("vdaas.org/vald/ngt/insert_vcache_count", "NGT insert vcache count", metrics.UnitDimensionless),
 		deleteVCacheCount:     *metrics.Int64("vdaas.org/vald/ngt/delete_vcache_count", "NGT delete vcache count", metrics.UnitDimensionless),
+		isIndexing:            *metrics.Int64("vdaas.org/vald/ngt/is_indexing", "currently indexing or not", metrics.UnitDimensionless),
 	}
 }
 
 func (n *ngtMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
+	var isIndexing int64
+	if n.ngt.IsIndexing() {
+		isIndexing = 1
+	}
+
 	return []metrics.Measurement{
 		n.indexCount.M(int64(len(n.ngt.UUIDs(ctx)))),
 		n.uncommittedIndexCount.M(int64(len(n.ngt.UncommittedUUIDs()))),
 		n.insertVCacheCount.M(int64(n.ngt.InsertVCacheLen())),
 		n.deleteVCacheCount.M(int64(n.ngt.DeleteVCacheLen())),
+		n.isIndexing.M(isIndexing),
 	}, nil
 }
 
@@ -79,6 +87,12 @@ func (n *ngtMetrics) View() []*metrics.View {
 			Name:        "ngt_delete_vcache_count",
 			Description: "NGT delete vcache count",
 			Measure:     &n.deleteVCacheCount,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "ngt_is_indexing",
+			Description: "currently indexing or not",
+			Measure:     &n.isIndexing,
 			Aggregation: metrics.LastValue(),
 		},
 	}
