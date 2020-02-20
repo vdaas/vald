@@ -641,7 +641,7 @@ backupManager:
 
 indexManager:
   version: v0.0.0
-  name: vald-index-manager
+  name: vald-manager-index
   kind: Deployment
   # kind: DaemonSet
   serviceType: ClusterIP
@@ -653,7 +653,7 @@ indexManager:
   revisionHistoryLimit: 2
   terminationGracePeriodSeconds: 30
   image:
-    repository: vdaas/vald-index-manager
+    repository: vdaas/vald-manager-index
     tag: nightly
     pullPolicy: Always
   logging:
