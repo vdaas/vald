@@ -164,7 +164,7 @@ func (g *gRPCClient) Range(ctx context.Context,
 		default:
 			if err := pool.Do(func(conn *ClientConn) (err error) {
 				if conn == nil {
-					return errors.ErrAgentClientNotConnected
+					return errors.ErrGRPCClientConnNotFound(addr)
 				}
 				if g.bo != nil {
 					_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
@@ -196,7 +196,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 			default:
 				if err = pool.Do(func(conn *ClientConn) (err error) {
 					if conn == nil {
-						return errors.ErrAgentClientNotConnected
+						return errors.ErrGRPCClientConnNotFound(addr)
 					}
 					if g.bo != nil {
 						_, err = g.bo.Do(egctx, func() (r interface{}, err error) {
@@ -230,7 +230,7 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 			if ok {
 				if err = pool.Do(func(conn *ClientConn) (err error) {
 					if conn == nil {
-						return errors.ErrAgentClientNotConnected
+						return errors.ErrGRPCClientConnNotFound(addr)
 					}
 					if g.bo != nil {
 						_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
@@ -267,7 +267,7 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 			default:
 				if err = pool.Do(func(conn *ClientConn) (err error) {
 					if conn == nil {
-						return errors.ErrAgentClientNotConnected
+						return errors.ErrGRPCClientConnNotFound(addr)
 					}
 					if g.bo != nil {
 						_, err = g.bo.Do(egctx, func() (r interface{}, err error) {
@@ -296,7 +296,7 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 	}
 	if err = pool.Do(func(conn *ClientConn) (err error) {
 		if conn == nil {
-			return errors.ErrAgentClientNotConnected
+			return errors.ErrGRPCClientConnNotFound(addr)
 		}
 		if g.bo != nil {
 			data, err = g.bo.Do(ctx, func() (r interface{}, err error) {

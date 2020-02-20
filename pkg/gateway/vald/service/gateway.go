@@ -264,9 +264,6 @@ func (g *gateway) Do(ctx context.Context,
 	addr := g.agents.Load().([]string)[0]
 	_, err = g.acClient.Do(ctx, addr, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-		if conn == nil {
-			return nil, errors.ErrAgentClientNotConnected
-		}
 		return nil, f(ctx, addr, agent.NewAgentClient(conn), copts...)
 	})
 	return err
@@ -280,9 +277,6 @@ func (g *gateway) DoMulti(ctx context.Context,
 	var once sync.Once
 	err = g.acClient.OrderedRangeConcurrent(cctx, g.agents.Load().([]string), num,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
-			if conn == nil {
-				return errors.ErrAgentClientNotConnected
-			}
 			select {
 			case <-cctx.Done():
 				return nil

@@ -281,9 +281,6 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 		idx.concurrency,
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
-			if conn == nil {
-				return errors.ErrAgentClientNotConnected
-			}
 			select {
 			case <-ctx.Done():
 				return nil
@@ -316,9 +313,6 @@ func (idx *index) loadInfos(ctx context.Context) (err error) {
 	err = idx.acClient.RangeConcurrent(ctx, len(idx.agents.Load().([]string)),
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
-			if conn == nil {
-				return errors.ErrAgentClientNotConnected
-			}
 			select {
 			case <-ctx.Done():
 				return nil
