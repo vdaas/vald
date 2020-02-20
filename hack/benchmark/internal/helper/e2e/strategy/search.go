@@ -55,7 +55,7 @@ func (s *search) run(ctx context.Context, b *testing.B, c client.Client, dataset
 }
 
 func (s *search) runParallel(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
-	b.Run("SearchParallel", func(b *testing.B) {
+	b.Run("ParallelSearch", func(b *testing.B) {
 		queries := dataset.Query()
 
 		b.ReportAllocs()
