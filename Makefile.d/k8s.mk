@@ -39,6 +39,7 @@ k8s/manifest/update: \
 	    --set initializer.mysql.secret.enabled=true \
 	    --set initializer.redis.secret.enabled=true \
 	    --set initializer.cassandra.secret.enabled=true \
+	    --set agent.minReplicas=5 \
 	    --output-dir tmp-k8s \
 	    vald
 	mkdir -p k8s/gateway
