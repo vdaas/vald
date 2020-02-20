@@ -24,7 +24,8 @@ docker/build: \
 	docker/build/meta-cassandra \
 	docker/build/backup-manager-mysql \
 	docker/build/backup-manager-cassandra \
-	docker/build/manager-compressor
+	docker/build/manager-compressor \
+	docker/build/manager-index
 
 .PHONY: docker/name/base
 docker/name/base:
@@ -106,6 +107,15 @@ docker/name/manager-compressor:
 ## build manager-compressor image
 docker/build/manager-compressor: docker/build/base
 	docker build -f dockers/manager/compressor/Dockerfile -t $(REPO)/$(MANAGER_COMPRESSOR_IMAGE) .
+
+.PHONY: docker/name/manager-index
+docker/name/manager-index:
+	@echo "$(REPO)/$(MANAGER_INDEX_IMAGE)"
+
+.PHONY: docker/build/manager-index
+## build manager-index image
+docker/build/manager-index: docker/build/base
+	docker build -f dockers/manager/index/Dockerfile -t $(REPO)/$(MANAGER_INDEX_IMAGE) .
 
 .PHONY: docker/name/ci-container
 docker/name/ci-container:
