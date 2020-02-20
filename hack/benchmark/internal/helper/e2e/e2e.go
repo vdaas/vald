@@ -36,5 +36,4 @@ func (e *e2e) Run(ctx context.Context, b *testing.B) {
 			strategy.Run(ctx, bb, e.client, e.dataset)
 		}
 	})
-	b.StopTimer()
 }
