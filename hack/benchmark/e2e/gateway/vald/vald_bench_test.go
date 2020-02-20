@@ -109,9 +109,7 @@ func BenchmarkValdGateway_Stream(b *testing.B) {
 			e2e.WithStrategy(
 				strategy.NewStreamInsert(),
 				strategy.NewStreamSearch(
-					strategy.WithStreamSearchSize(10),
-					strategy.WithStreamSearchRadius(-1),
-					strategy.WithStreamSearchEpsilon(0.01),
+					strategy.WithStreamSearchConfig(searchConfig),
 				),
 				strategy.NewStreamRemove(),
 			),
