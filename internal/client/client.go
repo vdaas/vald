@@ -2,7 +2,7 @@ package client
 
 import (
 	"context"
-	
+
 	"github.com/vdaas/vald/apis/grpc/payload"
 )
 
@@ -16,6 +16,8 @@ type SearchResponse = payload.Search_Response
 type ControlCreateIndexRequest = payload.Controll_CreateIndexRequest
 type InfoIndex = payload.Info_Index
 type MetaObject = payload.Backup_MetaVector
+
+type SearchConfig = payload.Search_Config
 
 type Client interface {
 	Reader
