@@ -1,5 +1,7 @@
 package strategy
 
+import "github.com/vdaas/vald/internal/client"
+
 type SearchOption func(*search)
 
 var (
@@ -12,26 +14,10 @@ func WithSearchParallel() SearchOption {
 	}
 }
 
-func WithSearchSize(size int) SearchOption {
+func WithSearchConfig(cfg *client.SearchConfig) SearchOption {
 	return func(s *search) {
-		if size > 0 {
-			s.size = uint32(size)
-		}
-	}
-}
-
-func WithSearchEpsilon(e float32) SearchOption {
-	return func(s *search) {
-		if e > 0.0 {
-			s.epsilon = e
-		}
-	}
-}
-
-func WithSearchRadius(r float32) SearchOption {
-	return func(s *search) {
-		if r > 0.0 {
-			s.radius = r
+		if cfg != nil {
+			s.cfg = cfg
 		}
 	}
 }

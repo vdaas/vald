@@ -11,9 +11,6 @@ import (
 
 type search struct {
 	parallel bool
-	size     uint32
-	epsilon  float32
-	radius   float32
 	cfg      *client.SearchConfig
 }
 
@@ -21,12 +18,6 @@ func NewSearch(opts ...SearchOption) e2e.Strategy {
 	s := new(search)
 	for _, opt := range append(defaultSearchOptions, opts...) {
 		opt(s)
-	}
-
-	s.cfg = &client.SearchConfig{
-		Num:     s.size,
-		Epsilon: s.epsilon,
-		Radius:  s.radius,
 	}
 	return s
 }

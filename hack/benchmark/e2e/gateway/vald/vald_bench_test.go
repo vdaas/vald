@@ -27,6 +27,8 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/hack/benchmark/e2e/internal"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
+	"github.com/vdaas/vald/hack/benchmark/internal/helper/e2e"
+	"github.com/vdaas/vald/hack/benchmark/internal/helper/e2e/strategy"
 	"github.com/vdaas/vald/internal/log"
 )
 
@@ -66,7 +68,59 @@ func parseArgs(tb testing.TB) {
 	})
 }
 
-func BenchmarkValdGatewaySequential(rb *testing.B) {
+func BenchmarkValdGateway_Sequential(b *testing.B) {
+	for _, name := range targets {
+		dataset := assets.Data(name)(b)
+		if dataset == nil {
+			b.Errorf("data is nil: %v", name)
+		}
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		bench := e2e.New(
+			e2e.WithName(name),
+			e2e.WithDataset(dataset),
+			e2e.WithStrategy(
+				strategy.NewInsert(),
+				strategy.NewSearch(
+					strategy.WithSearchConfig(searchConfig),
+				),
+				strategy.NewRemove(),
+			),
+		)
+		bench.Run(ctx, b)
+	}
+}
+
+func BenchmarkValdGateway_Stream(b *testing.B) {
+	for _, name := range targets {
+		dataset := assets.Data(name)(b)
+		if dataset == nil {
+			b.Errorf("data is nil: %v", name)
+		}
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		bench := e2e.New(
+			e2e.WithName(name),
+			e2e.WithDataset(dataset),
+			e2e.WithStrategy(
+				strategy.NewStreamInsert(),
+				strategy.NewStreamSearch(
+					strategy.WithStreamSearchSize(10),
+					strategy.WithStreamSearchRadius(-1),
+					strategy.WithStreamSearchEpsilon(0.01),
+				),
+				strategy.NewStreamRemove(),
+			),
+		)
+		bench.Run(ctx, b)
+	}
+}
+
+func aBenchmarkValdGatewaySequential(rb *testing.B) {
 	parseArgs(rb)
 	rctx, rcancel := context.WithCancel(context.Background())
 	defer rcancel()
@@ -154,7 +208,7 @@ func BenchmarkValdGatewaySequential(rb *testing.B) {
 	}
 }
 
-func BenchmarkValdGatewayStream(rb *testing.B) {
+func aBenchmarkValdGatewayStream(rb *testing.B) {
 	parseArgs(rb)
 	rctx, rcancel := context.WithCancel(context.Background())
 	defer rcancel()
