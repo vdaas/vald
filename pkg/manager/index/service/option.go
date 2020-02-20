@@ -34,6 +34,7 @@ var (
 		WithIndexingConcurrency(1),
 		WithIndexingDuration("1m"),
 		WithIndexingDurationLimit("30m"),
+		WithMinUncommitted(100),
 	}
 )
 
@@ -70,6 +71,15 @@ func WithIndexingDurationLimit(dur string) Option {
 			d = time.Minute * 30
 		}
 		idx.indexDurationLimit = d
+		return nil
+	}
+}
+
+func WithMinUncommitted(n int) Option {
+	return func(idx *index) error {
+		if n > 0 {
+			idx.minUncommitted = n
+		}
 		return nil
 	}
 }

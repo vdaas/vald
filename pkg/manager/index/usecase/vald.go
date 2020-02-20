@@ -59,6 +59,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithIndexingConcurrency(cfg.Indexer.Concurrency),
 		service.WithIndexingDuration(cfg.Indexer.AutoIndexCheckDuration),
 		service.WithIndexingDurationLimit(cfg.Indexer.AutoIndexDurationLimit),
+		service.WithMinUncommitted(cfg.Indexer.AutoIndexLength),
 		service.WithAgentName(cfg.Indexer.AgentName),
 		service.WithAgentPort(cfg.Indexer.AgentPort),
 		service.WithAgentServiceDNSARecord(cfg.Indexer.AgentDNS),
