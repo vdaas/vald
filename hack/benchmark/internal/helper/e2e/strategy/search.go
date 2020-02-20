@@ -19,7 +19,6 @@ type search struct {
 
 func NewSearch(opts ...SearchOption) e2e.Strategy {
 	s := new(search)
-
 	for _, opt := range append(defaultSearchOptions, opts...) {
 		opt(s)
 	}
