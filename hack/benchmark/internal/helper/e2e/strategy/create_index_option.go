@@ -5,7 +5,9 @@ import "github.com/vdaas/vald/internal/client"
 type CreateIndexOption func(*createIndex)
 
 var (
-	defaultCreateIndexOptions = []CreateIndexOption{}
+	defaultCreateIndexOptions = []CreateIndexOption{
+		WithCreateIndexPoolSize(1000),
+	}
 )
 
 func WithCreateIndexPoolSize(size int) CreateIndexOption {
@@ -19,7 +21,7 @@ func WithCreateIndexPoolSize(size int) CreateIndexOption {
 func WithCreateIndexClient(cidx client.Indexer) CreateIndexOption {
 	return func(ci *createIndex) {
 		if cidx != nil {
-			ci.cidx = cidx
+			ci.idxc = cidx
 		}
 	}
 }
