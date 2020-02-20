@@ -270,9 +270,8 @@ gateway:
     discoverer:
       duration: "2s"
       discover_client: {}
-      agent_client: {
-          connection_pool: 100
-      }
+      agent_client:
+        connection_pool: 100
     meta:
       client: {}
       enable_cache: true
