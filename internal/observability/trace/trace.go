@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	StartSpan = trace.StartSpan
+	enabled bool
 )
 
 type Tracer interface {
@@ -35,12 +35,26 @@ type tracer struct {
 	samplingRate float64
 }
 
+func StartSpan(ctx context.Context, name string, opts ...trace.StartOption) (context.Context, *trace.Span, func()) {
+	if !enabled {
+		return ctx, nil, func() {}
+	}
+
+	ctx, span := trace.StartSpan(ctx, name, opts...)
+	end := func() {
+		span.End()
+	}
+	return ctx, span, end
+}
+
 func New(opts ...TraceOption) Tracer {
 	t := new(tracer)
 
 	for _, opt := range append(traceDefaultOpts, opts...) {
 		opt(t)
 	}
+
+	enabled = true
 
 	return t
 }

@@ -43,8 +43,8 @@ func New(opts ...Option) discoverer.DiscovererServer {
 }
 
 func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Pods, error) {
-	ctx, span := trace.StartSpan(ctx, "vald/discoverer-k8s.Pods")
-	defer span.End()
+	ctx, _, end := trace.StartSpan(ctx, "vald/discoverer-k8s.Pods")
+	defer end()
 	pods, err := s.dsc.GetPods(req)
 	if err != nil {
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Pods API request %#v pods not found", req), err, info.Get())
@@ -53,8 +53,8 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 }
 
 func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
-	ctx, span := trace.StartSpan(ctx, "vald/discoverer-k8s.Nodes")
-	defer span.End()
+	ctx, _, end := trace.StartSpan(ctx, "vald/discoverer-k8s.Nodes")
+	defer end()
 	nodes, err := s.dsc.GetNodes(req)
 	if err != nil {
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Nodes API request %#v nodes not found", req), err, info.Get())

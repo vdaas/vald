@@ -31,6 +31,7 @@ type Collector struct {
 }
 
 type Trace struct {
+	Enabled      bool    `json:"enabled" yaml:"enabled"`
 	SamplingRate float64 `json:"sampling_rate" yaml:"sampling_rate"`
 }
 
@@ -67,6 +68,10 @@ func (o *Observability) Bind() *Observability {
 		o.Collector.Duration = GetActualValue(o.Collector.Duration)
 	} else {
 		o.Collector = new(Collector)
+	}
+
+	if o.Trace == nil {
+		o.Trace = new(Trace)
 	}
 
 	if o.Prometheus != nil {

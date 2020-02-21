@@ -210,6 +210,7 @@ defaults:
         enable_goroutine: true
         enable_cgo: true
     trace:
+      enabled: true
       sampling_rate: 1.0
     prometheus:
       enabled: true

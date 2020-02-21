@@ -470,6 +470,7 @@ collector:
   {{- end }}
 trace:
   {{- if .Values.trace }}
+  enabled: {{ default .default.trace.enabled .Values.trace.enabled }}
   sampling_rate: {{ default .default.trace.sampling_rate .Values.trace.sampling_rate }}
   {{- else }}
   {{- toYaml .default.trace | nindent 2 }}

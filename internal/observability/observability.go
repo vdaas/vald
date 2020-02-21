@@ -62,13 +62,11 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 	}
 	opts = append(opts, WithCollector(col))
 
-	opts = append(opts,
-		WithTracer(
-			trace.New(
-				trace.WithSamplingRate(cfg.Trace.SamplingRate),
-			),
-		),
-	)
+	if cfg.Trace.Enabled {
+		opts = append(opts,
+			WithTracer(trace.New(trace.WithSamplingRate(cfg.Trace.SamplingRate))),
+		)
+	}
 
 	if cfg.Prometheus.Enabled {
 		prom, err := prometheus.New(
