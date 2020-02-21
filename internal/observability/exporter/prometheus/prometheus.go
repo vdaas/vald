@@ -39,6 +39,7 @@ type Prometheus interface {
 	Start(ctx context.Context) error
 	Stop(ctx context.Context)
 	Exporter() *prometheus.Exporter
+	NewHTTPHandler() http.Handler
 }
 
 type exporter struct {
@@ -85,12 +86,15 @@ func (e *exporter) Exporter() *prometheus.Exporter {
 	return e.exporter
 }
 
-func Exporter() *prometheus.Exporter {
-	return instance.exporter
+func (e *exporter) NewHTTPHandler() http.Handler {
+	mux := http.NewServeMux()
+	mux.Handle(e.options.endpoint, e.exporter)
+	return mux
 }
 
-func NewHTTPHandler() http.Handler {
-	mux := http.NewServeMux()
-	mux.Handle("/metrics", instance.exporter)
-	return mux
+func Exporter() (Prometheus, error) {
+	if instance != nil {
+		return instance, nil
+	}
+	return New()
 }
