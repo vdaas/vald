@@ -157,7 +157,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
 
-	obs, err := observability.New(cfg.Observability)
+	obs, err := observability.NewWithConfig(cfg.Observability)
 	if err != nil {
 		return nil, err
 	}

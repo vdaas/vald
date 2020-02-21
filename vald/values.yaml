@@ -200,14 +200,15 @@ defaults:
         key: /path/to/key
         ca: /path/to/ca
   observability:
+    enabled: true
     collector:
       duration: 3s
       metrics:
         enable_version_info: true
         enable_cpu: true
         enable_memory: true
-        enable_goroutine_count: true
-        enable_cgo_call_count: true
+        enable_goroutine: true
+        enable_cgo: true
     trace:
       sampling_rate: 1.0
     prometheus:

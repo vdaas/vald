@@ -18,6 +18,7 @@
 package config
 
 type Observability struct {
+	Enabled    bool        `json:"enabled" yaml:"enabled"`
 	Collector  *Collector  `json:"collector" yaml:"collector"`
 	Trace      *Trace      `json:"trace" yaml:"trace"`
 	Prometheus *Prometheus `json:"prometheus" yaml:"prometheus"`
@@ -34,15 +35,16 @@ type Trace struct {
 }
 
 type Metrics struct {
-	EnableVersionInfo    bool `json:"enable_version_info" yaml:"enable_version_info"`
-	EnableCPU            bool `json:"enable_cpu" yaml:"enable_cpu"`
-	EnableMemory         bool `json:"enable_memory" yaml:"enable_memory"`
-	EnableGoroutineCount bool `json:"enable_goroutine_count" yaml:"enable_goroutine_count"`
-	EnableCGOCallCount   bool `json:"enable_cgo_call_count" yaml:"enable_cgo_call_count"`
+	EnableVersionInfo bool `json:"enable_version_info" yaml:"enable_version_info"`
+	EnableCPU         bool `json:"enable_cpu" yaml:"enable_cpu"`
+	EnableMemory      bool `json:"enable_memory" yaml:"enable_memory"`
+	EnableGoroutine   bool `json:"enable_goroutine" yaml:"enable_goroutine"`
+	EnableCGO         bool `json:"enable_cgo" yaml:"enable_cgo"`
 }
 
 type Prometheus struct {
 	Enabled   bool   `json:"enabled" yaml:"enabled"`
+	Endpoint  string `json:"endpoint" yaml:"endpoint"`
 	Namespace string `json:"namespace" yaml:"namespace"`
 }
 
@@ -63,10 +65,15 @@ type Jaeger struct {
 func (o *Observability) Bind() *Observability {
 	if o.Collector != nil {
 		o.Collector.Duration = GetActualValue(o.Collector.Duration)
+	} else {
+		o.Collector = new(Collector)
 	}
 
 	if o.Prometheus != nil {
+		o.Prometheus.Endpoint = GetActualValue(o.Prometheus.Endpoint)
 		o.Prometheus.Namespace = GetActualValue(o.Prometheus.Namespace)
+	} else {
+		o.Prometheus = new(Prometheus)
 	}
 
 	if o.Jaeger != nil {
@@ -75,6 +82,8 @@ func (o *Observability) Bind() *Observability {
 		o.Jaeger.Username = GetActualValue(o.Jaeger.Username)
 		o.Jaeger.Password = GetActualValue(o.Jaeger.Password)
 		o.Jaeger.ServiceName = GetActualValue(o.Jaeger.ServiceName)
+	} else {
+		o.Jaeger = new(Jaeger)
 	}
 
 	return o

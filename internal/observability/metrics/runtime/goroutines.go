@@ -28,7 +28,7 @@ type goroutines struct {
 	count metrics.Int64Measure
 }
 
-func NewNumberOfGoroutines() metrics.Metric {
+func NewGoroutineMetrics() metrics.Metric {
 	return &goroutines{
 		count: *metrics.Int64("vdaas.org/vald/runtime/goroutine_count", "number of goroutines", metrics.UnitDimensionless),
 	}

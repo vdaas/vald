@@ -20,18 +20,11 @@ package collector
 import (
 	"context"
 	"runtime"
-	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/safety"
-)
-
-var (
-	initMetrics []metrics.Metric
-	instance    *collector
-	once        sync.Once
 )
 
 type Collector interface {
@@ -56,27 +49,10 @@ func New(opts ...CollectorOption) (Collector, error) {
 		}
 	}
 
-	co.eg = errgroup.Get()
-
 	return co, nil
 }
 
-func Register(ms ...metrics.Metric) error {
-	if instance != nil {
-		instance.metrics = append(instance.metrics, ms...)
-		return registerView(ms...)
-	}
-
-	initMetrics = append(initMetrics, ms...)
-	return nil
-}
-
 func (c *collector) PreStart(ctx context.Context) error {
-	once.Do(func() {
-		instance = c
-	})
-
-	c.metrics = append(c.metrics, initMetrics...)
 	return registerView(c.metrics...)
 }
 

@@ -26,11 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
 	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
 	"github.com/vdaas/vald/internal/observability/metrics"
-	"github.com/vdaas/vald/internal/observability/metrics/cpu"
 	"github.com/vdaas/vald/internal/observability/metrics/grpc"
-	"github.com/vdaas/vald/internal/observability/metrics/mem"
-	"github.com/vdaas/vald/internal/observability/metrics/runtime"
-	"github.com/vdaas/vald/internal/observability/metrics/version"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 )
@@ -42,91 +38,78 @@ type Observability interface {
 }
 
 type observability struct {
-	jaeger     jaeger.Jaeger
-	prometheus prometheus.Prometheus
+	eg         errgroup.Group
 	collector  collector.Collector
 	tracer     trace.Tracer
-	eg         errgroup.Group
+	prometheus prometheus.Prometheus
+	jaeger     jaeger.Jaeger
 }
 
-func New(cfg *config.Observability) (Observability, error) {
-	o := new(observability)
-	if cfg != nil {
-		if colcfg := cfg.Collector; colcfg != nil {
-			metrics := make([]metrics.Metric, 0)
-			if metcfg := colcfg.Metrics; metcfg != nil {
-				if metcfg.EnableVersionInfo {
-					versionInfo, err := version.NewMetric()
-					if err != nil {
-						return nil, err
-					}
-					metrics = append(metrics, versionInfo)
-				}
+func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observability, error) {
+	opts := make([]Option, 0)
 
-				if metcfg.EnableCPU {
-					cpuMetric, err := cpu.NewMetric()
-					if err != nil {
-						return nil, err
-					}
-					metrics = append(metrics, cpuMetric)
-				}
+	col, err := collector.New(
+		collector.WithDuration(cfg.Collector.Duration),
+		collector.WithVersionInfo(cfg.Collector.Metrics.EnableVersionInfo),
+		collector.WithCPUMetrics(cfg.Collector.Metrics.EnableCPU),
+		collector.WithMemoryMetrics(cfg.Collector.Metrics.EnableMemory),
+		collector.WithGoroutineMetrics(cfg.Collector.Metrics.EnableGoroutine),
+		collector.WithCGOMetrics(cfg.Collector.Metrics.EnableCGO),
+		collector.WithMetrics(metrics...),
+	)
+	if err != nil {
+		return nil, err
+	}
+	opts = append(opts, WithCollector(col))
 
-				if metcfg.EnableMemory {
-					metrics = append(metrics, mem.NewMetric())
-				}
-
-				if metcfg.EnableGoroutineCount {
-					metrics = append(metrics, runtime.NewNumberOfGoroutines())
-				}
-
-				if metcfg.EnableCGOCallCount {
-					metrics = append(metrics, runtime.NewNumberOfCGOCall())
-				}
-			}
-			col, err := collector.New(
-				collector.WithDuration(cfg.Collector.Duration),
-				collector.WithMetrics(metrics...),
-			)
-			if err != nil {
-				return nil, err
-			}
-
-			o.collector = col
-		}
-		if cfg.Trace != nil {
-			o.tracer = trace.New(
+	opts = append(opts,
+		WithTracer(
+			trace.New(
 				trace.WithSamplingRate(cfg.Trace.SamplingRate),
-			)
-		}
-		if cfg.Prometheus != nil && cfg.Prometheus.Enabled {
-			prom, err := prometheus.New(
-				prometheus.WithNamespace(cfg.Prometheus.Namespace),
-			)
-			if err != nil {
-				return nil, err
-			}
+			),
+		),
+	)
 
-			o.prometheus = prom
+	if cfg.Prometheus.Enabled {
+		prom, err := prometheus.New(
+			prometheus.WithEndpoint(cfg.Prometheus.Endpoint),
+			prometheus.WithNamespace(cfg.Prometheus.Namespace),
+		)
+		if err != nil {
+			return nil, err
 		}
 
-		if cfg.Jaeger != nil && cfg.Jaeger.Enabled {
-			jae, err := jaeger.New(
-				jaeger.WithCollectorEndpoint(cfg.Jaeger.CollectorEndpoint),
-				jaeger.WithAgentEndpoint(cfg.Jaeger.AgentEndpoint),
-				jaeger.WithUsername(cfg.Jaeger.Username),
-				jaeger.WithPassword(cfg.Jaeger.Password),
-				jaeger.WithServiceName(cfg.Jaeger.ServiceName),
-				jaeger.WithBufferMaxCount(cfg.Jaeger.BufferMaxCount),
-			)
-			if err != nil {
-				return nil, err
-			}
-
-			o.jaeger = jae
-		}
+		opts = append(opts, WithPrometheus(prom))
 	}
 
-	o.eg = errgroup.Get()
+	if cfg.Jaeger.Enabled {
+		jae, err := jaeger.New(
+			jaeger.WithCollectorEndpoint(cfg.Jaeger.CollectorEndpoint),
+			jaeger.WithAgentEndpoint(cfg.Jaeger.AgentEndpoint),
+			jaeger.WithUsername(cfg.Jaeger.Username),
+			jaeger.WithPassword(cfg.Jaeger.Password),
+			jaeger.WithServiceName(cfg.Jaeger.ServiceName),
+			jaeger.WithBufferMaxCount(cfg.Jaeger.BufferMaxCount),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, WithJaeger(jae))
+	}
+
+	return New(opts...)
+}
+
+func New(opts ...Option) (Observability, error) {
+	o := new(observability)
+
+	for _, opt := range append(observabilityDefaultOpts, opts...) {
+		err := opt(o)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	return o, nil
 }

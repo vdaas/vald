@@ -21,14 +21,24 @@ type PrometheusOption func(*prometheusOptions) error
 
 var (
 	prometheusDefaultOpts = []PrometheusOption{
+		WithEndpoint("/metrics"),
 		WithNamespace("vald"),
 	}
 )
 
+func WithEndpoint(ep string) PrometheusOption {
+	return func(po *prometheusOptions) error {
+		if ep != "" {
+			po.endpoint = ep
+		}
+		return nil
+	}
+}
+
 func WithNamespace(ns string) PrometheusOption {
 	return func(po *prometheusOptions) error {
 		if ns != "" {
-			po.Namespace = ns
+			po.options.Namespace = ns
 		}
 		return nil
 	}

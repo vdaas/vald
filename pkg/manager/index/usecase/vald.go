@@ -81,7 +81,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	idx := handler.New(handler.WithIndexer(indexer))
 
-	obs, err := observability.New(cfg.Observability)
+	obs, err := observability.NewWithConfig(cfg.Observability)
 	if err != nil {
 		return nil, err
 	}

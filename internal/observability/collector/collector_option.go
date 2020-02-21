@@ -18,7 +18,12 @@
 package collector
 
 import (
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/observability/metrics/cpu"
+	"github.com/vdaas/vald/internal/observability/metrics/mem"
+	"github.com/vdaas/vald/internal/observability/metrics/runtime"
+	"github.com/vdaas/vald/internal/observability/metrics/version"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
@@ -26,9 +31,19 @@ type CollectorOption func(*collector) error
 
 var (
 	collectorDefaultOpts = []CollectorOption{
+		WithErrGroup(errgroup.Get()),
 		WithDuration("5s"),
 	}
 )
+
+func WithErrGroup(eg errgroup.Group) CollectorOption {
+	return func(c *collector) error {
+		if eg != nil {
+			c.eg = eg
+		}
+		return nil
+	}
+}
 
 func WithDuration(dur string) CollectorOption {
 	return func(c *collector) error {
@@ -46,11 +61,66 @@ func WithDuration(dur string) CollectorOption {
 
 func WithMetrics(metrics ...metrics.Metric) CollectorOption {
 	return func(c *collector) error {
-		if c.metrics != nil && len(c.metrics) > 0 {
-			c.metrics = append(c.metrics, metrics...)
-		} else {
-			c.metrics = metrics
+		if metrics != nil {
+			if c.metrics != nil && len(c.metrics) > 0 {
+				c.metrics = append(c.metrics, metrics...)
+			} else {
+				c.metrics = metrics
+			}
 		}
 		return nil
+	}
+}
+
+func WithVersionInfo(enabled bool) CollectorOption {
+	return func(c *collector) error {
+		if !enabled {
+			return nil
+		}
+		versionInfo, err := version.NewMetric()
+		if err != nil {
+			return err
+		}
+		return WithMetrics(versionInfo)(c)
+	}
+}
+
+func WithCPUMetrics(enabled bool) CollectorOption {
+	return func(c *collector) error {
+		if !enabled {
+			return nil
+		}
+		cpu, err := cpu.NewMetric()
+		if err != nil {
+			return err
+		}
+		return WithMetrics(cpu)(c)
+	}
+}
+
+func WithMemoryMetrics(enabled bool) CollectorOption {
+	return func(c *collector) error {
+		if !enabled {
+			return nil
+		}
+		return WithMetrics(mem.NewMetric())(c)
+	}
+}
+
+func WithGoroutineMetrics(enabled bool) CollectorOption {
+	return func(c *collector) error {
+		if !enabled {
+			return nil
+		}
+		return WithMetrics(runtime.NewGoroutineMetrics())(c)
+	}
+}
+
+func WithCGOMetrics(enabled bool) CollectorOption {
+	return func(c *collector) error {
+		if !enabled {
+			return nil
+		}
+		return WithMetrics(runtime.NewCGOMetrics())(c)
 	}
 }

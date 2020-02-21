@@ -24,27 +24,27 @@ import (
 	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
-type numcgocall struct {
+type cgo struct {
 	count metrics.Int64Measure
 }
 
-func NewNumberOfCGOCall() metrics.Metric {
-	return &numcgocall{
+func NewCGOMetrics() metrics.Metric {
+	return &cgo{
 		count: *metrics.Int64("vdaas.org/vald/runtime/cgo_call_count", "number of cgo call", metrics.UnitDimensionless),
 	}
 }
 
-func (n *numcgocall) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
+func (n *cgo) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
 	return []metrics.Measurement{
 		n.count.M(int64(runtime.NumCgoCall())),
 	}, nil
 }
 
-func (n *numcgocall) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
+func (n *cgo) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
 	return []metrics.MeasurementWithTags{}, nil
 }
 
-func (n *numcgocall) View() []*metrics.View {
+func (n *cgo) View() []*metrics.View {
 	return []*metrics.View{
 		&metrics.View{
 			Name:        "cgo_call_count",

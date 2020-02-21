@@ -56,7 +56,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	g := handler.New(handler.WithDiscoverer(dsc))
 
-	obs, err := observability.New(cfg.Observability)
+	obs, err := observability.NewWithConfig(cfg.Observability)
 	if err != nil {
 		return nil, err
 	}

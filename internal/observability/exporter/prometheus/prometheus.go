@@ -30,7 +30,10 @@ var (
 	once     sync.Once
 )
 
-type prometheusOptions = prometheus.Options
+type prometheusOptions struct {
+	endpoint string
+	options  *prometheus.Options
+}
 
 type Prometheus interface {
 	Start(ctx context.Context) error
@@ -45,6 +48,7 @@ type exporter struct {
 
 func New(opts ...PrometheusOption) (Prometheus, error) {
 	po := new(prometheusOptions)
+	po.options = new(prometheus.Options)
 
 	for _, opt := range append(prometheusDefaultOpts, opts...) {
 		err := opt(po)
@@ -53,7 +57,7 @@ func New(opts ...PrometheusOption) (Prometheus, error) {
 		}
 	}
 
-	ex, err := prometheus.NewExporter(*po)
+	ex, err := prometheus.NewExporter(*po.options)
 	if err != nil {
 		return nil, err
 	}

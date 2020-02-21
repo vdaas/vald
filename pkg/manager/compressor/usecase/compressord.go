@@ -90,7 +90,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		handler.WithBackup(b),
 	)
 
-	obs, err := observability.New(cfg.Observability)
+	obs, err := observability.NewWithConfig(cfg.Observability)
 	if err != nil {
 		return nil, err
 	}

@@ -26,8 +26,8 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
-	"github.com/vdaas/vald/internal/observability/collector"
-	metrics "github.com/vdaas/vald/internal/observability/metrics/agent/ngt"
+	"github.com/vdaas/vald/internal/observability/metrics"
+	ngtmetrics "github.com/vdaas/vald/internal/observability/metrics/agent/ngt"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -58,16 +58,17 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	)
 	eg := errgroup.Get()
 
-	obs, err := observability.New(cfg.Observability)
-	if err != nil {
-		return nil, err
+	var nm metrics.Metric
+	if cfg.NGT.EnableMetrics {
+		nm = ngtmetrics.NewNGTMetrics(ngt)
 	}
 
-	if cfg.NGT.EnableMetrics {
-		err = collector.Register(metrics.NewNGTMetrics(ngt))
-		if err != nil {
-			return nil, err
-		}
+	obs, err := observability.NewWithConfig(
+		cfg.Observability,
+		nm,
+	)
+	if err != nil {
+		return nil, err
 	}
 
 	srv, err := starter.New(
