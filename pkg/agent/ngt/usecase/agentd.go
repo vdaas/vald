@@ -63,12 +63,15 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		nm = ngtmetrics.NewNGTMetrics(ngt)
 	}
 
-	obs, err := observability.NewWithConfig(
-		cfg.Observability,
-		nm,
-	)
-	if err != nil {
-		return nil, err
+	var obs observability.Observability
+	if cfg.Observability.Enabled {
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			nm,
+		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	srv, err := starter.New(
@@ -123,23 +126,29 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 }
 
 func (r *run) PreStart(ctx context.Context) error {
-	return r.observability.PreStart(ctx)
+	if r.observability != nil {
+		return r.observability.PreStart(ctx)
+	}
+	return nil
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 3)
+	var oech, nech, sech <-chan error
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		log.Info("daemon start")
 		defer close(ech)
-		nech := r.ngt.Start(ctx)
-		oech := r.observability.Start(ctx)
-		sech := r.server.ListenAndServe(ctx)
+		if r.observability != nil {
+			oech = r.observability.Start(ctx)
+		}
+		nech = r.ngt.Start(ctx)
+		sech = r.server.ListenAndServe(ctx)
 		for {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case err = <-nech:
 			case err = <-oech:
+			case err = <-nech:
 			case err = <-sech:
 			}
 			if err != nil {
@@ -159,7 +168,9 @@ func (r *run) PreStop(ctx context.Context) error {
 }
 
 func (r *run) Stop(ctx context.Context) error {
-	r.observability.Stop(ctx)
+	if r.observability != nil {
+		r.observability.Stop(ctx)
+	}
 	return r.server.Shutdown(ctx)
 }
 

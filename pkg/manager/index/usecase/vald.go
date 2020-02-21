@@ -81,9 +81,12 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	idx := handler.New(handler.WithIndexer(indexer))
 
-	obs, err := observability.NewWithConfig(cfg.Observability)
-	if err != nil {
-		return nil, err
+	var obs observability.Observability
+	if cfg.Observability.Enabled {
+		obs, err = observability.NewWithConfig(cfg.Observability)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	srv, err := starter.New(
@@ -131,13 +134,19 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 }
 
 func (r *run) PreStart(ctx context.Context) error {
-	return r.observability.PreStart(ctx)
+	if r.observability != nil {
+		return r.observability.PreStart(ctx)
+	}
+	return nil
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 5)
 	var iech, sech, oech <-chan error
 	var err error
+	if r.observability != nil {
+		oech = r.observability.Start(ctx)
+	}
 	if r.indexer != nil {
 		iech, err = r.indexer.Start(ctx)
 		if err != nil {
@@ -146,16 +155,15 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		}
 	}
 	sech = r.server.ListenAndServe(ctx)
-	oech = r.observability.Start(ctx)
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 		for {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
+			case err = <-oech:
 			case err = <-iech:
 			case err = <-sech:
-			case err = <-oech:
 			}
 			if err != nil {
 				select {
@@ -174,7 +182,9 @@ func (r *run) PreStop(ctx context.Context) error {
 }
 
 func (r *run) Stop(ctx context.Context) error {
-	r.observability.Stop(ctx)
+	if r.observability != nil {
+		r.observability.Stop(ctx)
+	}
 	return r.server.Shutdown(ctx)
 }
 
