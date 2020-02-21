@@ -49,18 +49,18 @@ type Gateway interface {
 }
 
 type gateway struct {
-	agentName    string
-	namespace    string
-	nodeName     string
-	agentPort    int
+	acClient     grpc.Client
 	agentARecord string
+	agentName    string
+	agentOpts    []grpc.Option
+	agentPort    int
 	agents       atomic.Value // []string ips
 	dscAddr      string
-	dscDur       time.Duration
 	dscClient    grpc.Client
-	acClient     grpc.Client
-	agentOpts    []grpc.Option
+	dscDur       time.Duration
 	eg           errgroup.Group
+	namespace    string
+	nodeName     string
 }
 
 func NewGateway(opts ...GWOption) (gw Gateway, err error) {
@@ -70,7 +70,6 @@ func NewGateway(opts ...GWOption) (gw Gateway, err error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
-
 	return g, nil
 }
 
@@ -80,15 +79,16 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 		return nil, err
 	}
 
-    addrs, err := g.dnsDiscovery(ctx)
+	addrs, err := g.dnsDiscovery(ctx)
 	if err != nil {
 		return nil, err
 	}
+	g.agents.Store(addrs)
 
 	g.acClient = grpc.New(
 		append(
 			g.agentOpts,
-            grpc.WithAddrs(addrs...),
+			grpc.WithAddrs(addrs...),
 			grpc.WithErrGroup(g.eg),
 		)...,
 	)
@@ -180,7 +180,7 @@ func (g *gateway) dnsDiscovery(ctx context.Context) (addrs []string, err error) 
 
 func (g *gateway) discover(ctx context.Context, ech chan<- error) (err error) {
 	log.Info("starting discoverer discovery")
-	addrs := make([]string, 0, 100)
+	addrs := make([]string, 0, len(g.agents.Load().([]string)))
 	_, err = g.dscClient.Do(ctx, g.dscAddr, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		nodes, err := discoverer.NewDiscovererClient(conn).
@@ -221,7 +221,7 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (err error) {
 		log.Warn("failed to discover agents from discoverer API, trying to discover from dns...")
 		addrs, err = g.dnsDiscovery(ctx)
 		if err != nil {
-			return err
+			return errors.ErrAgentAddrCouldNotDiscover(err, g.agentARecord)
 		}
 	}
 	if g.acClient != nil {
