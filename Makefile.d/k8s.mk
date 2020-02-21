@@ -39,6 +39,10 @@ k8s/manifest/update: \
 	    --set initializer.mysql.secret.enabled=true \
 	    --set initializer.redis.secret.enabled=true \
 	    --set initializer.cassandra.secret.enabled=true \
+	    --set agent.minReplicas=5 \
+	    --set gateway.gateway_config.discoverer.agent_client.connection_pool=10 \
+	    --set indexManager.indexer.discoverer.agent_client.connection_pool=2 \
+	    --set indexManager.indexer.discoverer.agent_client.dial_option.tcp.dialer.keep_alive=15m \
 	    --output-dir tmp-k8s \
 	    vald
 	mkdir -p k8s/gateway

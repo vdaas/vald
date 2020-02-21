@@ -106,6 +106,15 @@ func WithAgentServiceDNSARecord(a string) GWOption {
 	}
 }
 
+func WithNodeName(nn string) GWOption {
+	return func(g *gateway) error {
+		if nn != "" {
+			g.nodeName = nn
+		}
+		return nil
+	}
+}
+
 func WithErrGroup(eg errgroup.Group) GWOption {
 	return func(g *gateway) error {
 		if eg != nil {

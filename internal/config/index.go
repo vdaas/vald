@@ -24,6 +24,9 @@ type Indexer struct {
 	// AgentName represent agents meta_name for service discovery
 	AgentName string `json:"agent_name" yaml:"agent_name"`
 
+	// AgentNamespace represent agent namespace location
+	AgentNamespace string `json:"agent_namespace" yaml:"agent_namespace"`
+
 	// AgentDNS represent agents dns A record for service discovery
 	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
 
@@ -39,15 +42,20 @@ type Indexer struct {
 	// AutoIndexLength represent minimum auto index length
 	AutoIndexLength int `yaml:"auto_index_length" json:"auto_index_length"`
 
+	// NodeName represents node name
+	NodeName string `json:"node_name" yaml:"node_name"`
+
 	// Discoverer represent agent discoverer service configuration
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
 }
 
 func (im *Indexer) Bind() *Indexer {
 	im.AgentName = GetActualValue(im.AgentName)
+	im.AgentNamespace = GetActualValue(im.AgentNamespace)
 	im.AgentDNS = GetActualValue(im.AgentDNS)
 	im.AutoIndexDurationLimit = GetActualValue(im.AutoIndexDurationLimit)
 	im.AutoIndexCheckDuration = GetActualValue(im.AutoIndexCheckDuration)
+	im.NodeName = GetActualValue(im.NodeName)
 
 	if im.Discoverer != nil {
 		im.Discoverer = im.Discoverer.Bind()
