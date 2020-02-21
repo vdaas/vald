@@ -55,7 +55,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		append(cfg.Indexer.Discoverer.Client.Opts(),
 			grpc.WithErrGroup(eg),
 			grpc.WithDialOptions(
-				metric.WithStatsHandler(metric.NewClientHandler()),
+				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
 		)...,
 	)
@@ -107,7 +107,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 					index.RegisterIndexServer(srv, idx)
 				}),
 				server.WithGRPCOption(
-					metric.StatsHandler(metric.NewServerHandler()),
+					grpc.StatsHandler(metric.NewServerHandler()),
 				),
 				server.WithPreStopFunction(func() error {
 					// TODO notify another gateway and scheduler

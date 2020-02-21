@@ -80,7 +80,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 					backup.RegisterBackupServer(srv, g)
 				}),
 				server.WithGRPCOption(
-					metric.StatsHandler(metric.NewServerHandler()),
+					grpc.StatsHandler(metric.NewServerHandler()),
 				),
 				server.WithPreStartFunc(func() error {
 					// TODO check unbackupped upstream

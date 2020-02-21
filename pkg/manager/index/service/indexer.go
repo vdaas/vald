@@ -99,7 +99,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 			grpc.WithAddrs(idx.agents.Load().([]string)...),
 			grpc.WithErrGroup(idx.eg),
 			grpc.WithDialOptions(
-				metric.WithStatsHandler(metric.NewClientHandler()),
+				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
 		)...,
 	)

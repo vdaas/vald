@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-// Package metric provides metrics functions for grpc
-package metric
+// Package grpc provides generic functionality for grpc
+package grpc
 
 import (
 	"google.golang.org/grpc"

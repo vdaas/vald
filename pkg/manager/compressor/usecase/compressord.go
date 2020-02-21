@@ -65,7 +65,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 				append(cfg.BackupManager.Client.Opts(),
 					grpc.WithErrGroup(eg),
 					grpc.WithDialOptions(
-						metric.WithStatsHandler(metric.NewClientHandler()),
+						grpc.WithStatsHandler(metric.NewClientHandler()),
 					),
 				)...,
 			),
@@ -117,7 +117,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 					compressor.RegisterBackupServer(srv, g)
 				}),
 				server.WithGRPCOption(
-					metric.StatsHandler(metric.NewServerHandler()),
+					grpc.StatsHandler(metric.NewServerHandler()),
 				),
 				server.WithPreStartFunc(func() error {
 					// TODO check unbackupped upstream

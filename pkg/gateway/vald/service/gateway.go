@@ -81,7 +81,7 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 		return nil, err
 	}
 
-    addrs, err := g.dnsDiscovery(ctx)
+	addrs, err := g.dnsDiscovery(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -89,10 +89,10 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	g.acClient = grpc.New(
 		append(
 			g.agentOpts,
-            grpc.WithAddrs(addrs...),
+			grpc.WithAddrs(addrs...),
 			grpc.WithErrGroup(g.eg),
 			grpc.WithDialOptions(
-				metric.WithStatsHandler(metric.NewClientHandler()),
+				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
 		)...,
 	)

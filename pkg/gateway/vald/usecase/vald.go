@@ -69,7 +69,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 				append(cfg.Gateway.BackupManager.Client.Opts(),
 					grpc.WithErrGroup(eg),
 					grpc.WithDialOptions(
-						metric.WithStatsHandler(metric.NewClientHandler()),
+						grpc.WithStatsHandler(metric.NewClientHandler()),
 					),
 				)...,
 			),
@@ -82,7 +82,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		append(cfg.Gateway.Discoverer.Client.Opts(),
 			grpc.WithErrGroup(eg),
 			grpc.WithDialOptions(
-				metric.WithStatsHandler(metric.NewClientHandler()),
+				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
 		)...,
 	)
@@ -115,7 +115,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 				append(cfg.Gateway.Meta.Client.Opts(),
 					grpc.WithErrGroup(eg),
 					grpc.WithDialOptions(
-						metric.WithStatsHandler(metric.NewClientHandler()),
+						grpc.WithStatsHandler(metric.NewClientHandler()),
 					),
 				)...,
 			),
@@ -139,7 +139,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 					append(ef.Client.Opts(),
 						grpc.WithErrGroup(eg),
 						grpc.WithDialOptions(
-							metric.WithStatsHandler(metric.NewClientHandler()),
+							grpc.WithStatsHandler(metric.NewClientHandler()),
 						),
 					)...,
 				),
@@ -183,7 +183,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 					vald.RegisterValdServer(srv, v)
 				}),
 				server.WithGRPCOption(
-					metric.StatsHandler(metric.NewServerHandler()),
+					grpc.StatsHandler(metric.NewServerHandler()),
 				),
 				server.WithPreStopFunction(func() error {
 					// TODO notify another gateway and scheduler
