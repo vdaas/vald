@@ -27,7 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/observability/collector"
-	metrics "github.com/vdaas/vald/internal/observability/metrics/ngt"
+	metrics "github.com/vdaas/vald/internal/observability/metrics/agent/ngt"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
