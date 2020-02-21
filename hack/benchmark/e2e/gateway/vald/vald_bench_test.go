@@ -70,7 +70,9 @@ func parseParams() *params {
 	return p
 }
 
-func init() { log.Init() }
+func init() {
+	log.Init()
+}
 
 func TestSetup(t *testing.T) {
 	p := parseParams()
