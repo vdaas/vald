@@ -20,7 +20,7 @@ metadata:
   name: vald-agent-ngt
 spec:
   maxReplicas: 300
-  minReplicas: 20
+  minReplicas: 5
   scaleTargetRef:
     apiVersion: apps/v1
     kind: StatefulSet

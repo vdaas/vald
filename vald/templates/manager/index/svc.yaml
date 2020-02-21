@@ -13,9 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 apiVersion: v1
-appVersion: "1.0"
-description: A distributed high scalable & high-speed approximate nearest neighbor search engine
-name: vald
-version: v0.0.7
+kind: Service
+metadata:
+  name: {{ .Values.indexManager.name }}
+spec:
+  {{- $servers := dict "Values" .Values.indexManager.server_config "default" .Values.defaults.server_config }}
+  {{- include "vald.servicePorts" $servers | nindent 2 }}
+  selector:
+    app: {{ .Values.indexManager.name }}
+  {{- if eq .Values.indexManager.serviceType "ClusterIP" }}
+  clusterIP: None
+  {{- end }}
+  type: {{ .Values.indexManager.serviceType }}
+  {{- if .Values.indexManager.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.indexManager.externalTrafficPolicy }}
+  {{- end }}

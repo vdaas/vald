@@ -100,6 +100,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		),
 		service.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
 		service.WithAgentOptions(agentOpts...),
+		service.WithNodeName(cfg.Gateway.NodeName),
 	)
 	if err != nil {
 		return nil, err

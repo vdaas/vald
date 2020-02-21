@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-apiVersion: v1
-appVersion: "1.0"
-description: A distributed high scalable & high-speed approximate nearest neighbor search engine
-name: vald
-version: v0.0.7
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.indexManager.name }}
+spec:
+  maxUnavailable: {{ .Values.indexManager.maxUnavailable }}
+  selector:
+    matchLabels:
+      app: {{ .Values.indexManager.name }}

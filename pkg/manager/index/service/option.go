@@ -34,6 +34,8 @@ var (
 		WithIndexingConcurrency(1),
 		WithIndexingDuration("1m"),
 		WithIndexingDurationLimit("30m"),
+		WithMinUncommitted(100),
+		WithAgentNamespace("default"),
 	}
 )
 
@@ -70,6 +72,15 @@ func WithIndexingDurationLimit(dur string) Option {
 			d = time.Minute * 30
 		}
 		idx.indexDurationLimit = d
+		return nil
+	}
+}
+
+func WithMinUncommitted(n int) Option {
+	return func(idx *index) error {
+		if n > 0 {
+			idx.minUncommitted = n
+		}
 		return nil
 	}
 }
@@ -123,6 +134,15 @@ func WithAgentName(name string) Option {
 	}
 }
 
+func WithAgentNamespace(ns string) Option {
+	return func(idx *index) error {
+		if ns != "" {
+			idx.namespace = ns
+		}
+		return nil
+	}
+}
+
 func WithAgentPort(port int) Option {
 	return func(idx *index) error {
 		idx.agentPort = port
@@ -133,6 +153,15 @@ func WithAgentPort(port int) Option {
 func WithAgentServiceDNSARecord(a string) Option {
 	return func(idx *index) error {
 		idx.agentARecord = a
+		return nil
+	}
+}
+
+func WithNodeName(nn string) Option {
+	return func(idx *index) error {
+		if nn != "" {
+			idx.nodeName = nn
+		}
 		return nil
 	}
 }

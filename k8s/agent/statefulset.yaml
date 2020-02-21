@@ -22,7 +22,7 @@ metadata:
     app: vald-agent-ngt
 spec:
   serviceName: vald-agent-ngt
-  replicas: 20
+  replicas: 5
   revisionHistoryLimit: 2
   selector:
     matchLabels:

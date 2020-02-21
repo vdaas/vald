@@ -93,6 +93,8 @@ data:
       agent_port: 8081
       agent_name: vald-agent-ngt
       agent_dns: vald-agent-ngt.default.svc.cluster.local
+      agent_namespace: _MY_POD_NAMESPACE_
+      node_name: 
       index_replica: 5
       discoverer:
         host: vald-discoverer.default.svc.cluster.local
@@ -150,7 +152,7 @@ data:
             key: /path/to/key
         agent_client:
           addrs: []
-          connection_pool: 100
+          connection_pool: 10
           health_check_duration: 1s
           backoff:
             backoff_factor: 0

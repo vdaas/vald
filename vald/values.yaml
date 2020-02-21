@@ -270,6 +270,15 @@ gateway:
       target: agent
       image: busybox
       sleepDuration: 2
+  env:
+    # - name: MY_NODE_NAME
+    #   valueFrom:
+    #     fieldRef:
+    #       fieldPath: spec.nodeName
+    - name: MY_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
   server_config:
     prefix: gateway
     servers:
@@ -309,6 +318,8 @@ gateway:
     limits:
       cpu: 500m
   gateway_config:
+    agent_namespace: _MY_POD_NAMESPACE_
+    # node_name: _MY_NODE_NAME_
     index_replica: 5
     discoverer:
       duration: "2s"
@@ -705,19 +716,18 @@ backupManager:
 
 indexManager:
   version: v0.0.0
-  name: vald-index-manager-ngt
+  name: vald-manager-index
   kind: Deployment
   # kind: DaemonSet
   serviceType: ClusterIP
   # externalTrafficPolicy: Cluster
   progressDeadlineSeconds: 600
-  minReplicas: 1
-  maxReplicas: 2
+  replicas: 1
   maxUnavailable: 50%
   revisionHistoryLimit: 2
   terminationGracePeriodSeconds: 30
   image:
-    repository: vdaas/vald-index-manager-ngt
+    repository: vdaas/vald-manager-index
     tag: nightly
     pullPolicy: Always
   logging:
@@ -726,6 +736,15 @@ indexManager:
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
+  env:
+    # - name: MY_NODE_NAME
+    #   valueFrom:
+    #     fieldRef:
+    #       fieldPath: spec.nodeName
+    - name: MY_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
   server_config:
     prefix: index-manager
     servers:
@@ -749,6 +768,18 @@ indexManager:
   observability:
     jaeger:
       service_name: vald-manager-index
+  indexer:
+    agent_namespace: _MY_POD_NAMESPACE_
+    # node_name: _MY_NODE_NAME_
+    concurrency: 1
+    auto_index_duration_limit: 30m
+    auto_index_check_duration: 1m
+    auto_index_length: 100
+    discoverer:
+      duration: "2s"
+      discover_client: {}
+      agent_client:
+        connection_pool: 3
 
 meta:
   version: v0.0.0

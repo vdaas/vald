@@ -46,26 +46,26 @@ type Indexer interface {
 }
 
 type index struct {
-	uuids              atomic.Value // []string uuid
-	uncommittedUUIDs   atomic.Value // []string uncommitted uuid
-	indexing           atomic.Value // bool
-	agentName          string
-	namespace          string
-	nodeName           string
-	agentPort          int
-	concurrency        int
+	acClient           grpc.Client
 	agentARecord       string
-	indexInfos         infoMap
-	minUncommitted     int
-	indexDuration      time.Duration
-	indexDurationLimit time.Duration
+	agentName          string
+	agentOpts          []grpc.Option
+	agentPort          int
 	agents             atomic.Value // []string ips
 	dscAddr            string
-	dscDur             time.Duration
 	dscClient          grpc.Client
-	acClient           grpc.Client
-	agentOpts          []grpc.Option
+	dscDur             time.Duration
 	eg                 errgroup.Group
+	namespace          string
+	nodeName           string
+	indexDuration      time.Duration
+	indexDurationLimit time.Duration
+	concurrency        int
+	indexInfos         infoMap
+	indexing           atomic.Value // bool
+	minUncommitted     int
+	uncommittedUUIDs   atomic.Value // []string uncommitted uuid
+	uuids              atomic.Value // []string uuid
 }
 
 func New(opts ...Option) (idx Indexer, err error) {
@@ -86,6 +86,22 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	addrs, err := idx.dnsDiscovery(ctx)
+	if err != nil {
+		return nil, err
+	}
+	idx.agents.Store(addrs)
+	idx.acClient = grpc.New(
+		append(
+			idx.agentOpts,
+			grpc.WithAddrs(addrs...),
+			grpc.WithErrGroup(idx.eg),
+			grpc.WithDialOptions(
+				grpc.WithStatsHandler(metric.NewClientHandler()),
+			),
+		)...,
+	)
 	ech := make(chan error, 100)
 	err = idx.discover(ctx, ech)
 	if err != nil {
@@ -93,16 +109,6 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 		idx.dscClient.Close()
 		return nil, err
 	}
-	idx.acClient = grpc.New(
-		append(
-			idx.agentOpts,
-			grpc.WithAddrs(idx.agents.Load().([]string)...),
-			grpc.WithErrGroup(idx.eg),
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)...,
-	)
 
 	aech, err := idx.acClient.StartConnectionMonitor(ctx)
 	if err != nil {
@@ -187,9 +193,21 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
+func (idx *index) dnsDiscovery(ctx context.Context) (addrs []string, err error) {
+	ips, err := net.DefaultResolver.LookupIPAddr(ctx, idx.agentARecord)
+	if err != nil {
+		return nil, errors.ErrAgentAddrCouldNotDiscover(err, idx.agentARecord)
+	}
+	addrs = make([]string, 0, len(ips))
+	for _, ip := range ips {
+		addrs = append(addrs, fmt.Sprintf("%s:%d", ip.String(), idx.agentPort))
+	}
+	return addrs, nil
+}
+
 func (idx *index) discover(ctx context.Context, ech chan<- error) (err error) {
 	log.Info("starting discoverer discovery")
-	addrs := make([]string, 0, 100)
+	addrs := make([]string, 0, len(idx.agents.Load().([]string)))
 	_, err = idx.dscClient.Do(ctx, idx.dscAddr,
 		func(ctx context.Context,
 			conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
@@ -225,18 +243,13 @@ func (idx *index) discover(ctx context.Context, ech chan<- error) (err error) {
 					return nil, nil
 				}
 			}
-			// TODO sort addrs here
 			return nil, nil
 		})
 	if err != nil {
 		log.Warn("failed to discover agents from discoverer API, trying to discover from dns...")
-		ips, err := net.DefaultResolver.LookupIPAddr(ctx, idx.agentARecord)
+		addrs, err = idx.dnsDiscovery(ctx)
 		if err != nil {
 			return errors.ErrAgentAddrCouldNotDiscover(err, idx.agentARecord)
-		}
-		addrs = make([]string, 0, len(ips))
-		for _, ip := range ips {
-			addrs = append(addrs, fmt.Sprintf("%s:%d", ip.String(), idx.agentPort))
 		}
 	}
 	if idx.acClient != nil {
