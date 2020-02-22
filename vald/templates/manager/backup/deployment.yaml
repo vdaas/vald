@@ -20,6 +20,8 @@ metadata:
   name: {{ .Values.backupManager.name }}
   labels:
     app: {{ .Values.backupManager.name }}
+  annotations:
+    checksum/configmap: {{ include (print $.Template.BasePath "/manager/backup/configmap.yaml") . | sha256sum }}
 spec:
   progressDeadlineSeconds: {{ .Values.backupManager.progressDeadlineSeconds }}
   replicas: {{ .Values.backupManager.minReplicas }}

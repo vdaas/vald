@@ -20,6 +20,8 @@ metadata:
   name: {{ .Values.gateway.name }}
   labels:
     app: {{ .Values.gateway.name }}
+  annotations:
+    checksum/configmap: {{ include (print $.Template.BasePath "/gateway/vald/configmap.yaml") . | sha256sum }}
 spec:
   revisionHistoryLimit: {{ .Values.gateway.revisionHistoryLimit }}
   selector:

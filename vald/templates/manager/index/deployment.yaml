@@ -20,6 +20,8 @@ metadata:
   name: {{ .Values.indexManager.name }}
   labels:
     app: {{ .Values.indexManager.name }}
+  annotations:
+    checksum/configmap: {{ include (print $.Template.BasePath "/manager/index/configmap.yaml") . | sha256sum }}
 spec:
   progressDeadlineSeconds: {{ .Values.indexManager.progressDeadlineSeconds }}
   replicas: {{ .Values.indexManager.replicas }}
