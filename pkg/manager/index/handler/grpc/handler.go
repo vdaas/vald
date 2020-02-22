@@ -22,6 +22,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/manager/index"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/pkg/manager/index/service"
 )
 
@@ -39,6 +40,8 @@ func New(opts ...Option) index.IndexServer {
 }
 
 func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.Info_Index, err error) {
+	ctx, _, end := trace.StartSpan(ctx, "vald/manager-index.IndexInfo")
+	defer end()
 	uuids := s.indexer.UUIDs(ctx)
 	ucuuids := s.indexer.UncommittedUUIDs()
 	return &payload.Info_Index{
