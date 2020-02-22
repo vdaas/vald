@@ -711,6 +711,10 @@ indexManager:
       discover_client: {}
       agent_client:
         connection_pool: 3
+        dial_option:
+          tcp:
+            dialer:
+              keep_alive: 15m
 
 meta:
   version: v0.0.0
