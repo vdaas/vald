@@ -96,21 +96,20 @@ func (c *ClientConnPool) Disconnect() (rerr error) {
 	if err != nil {
 		rerr = errors.Wrap(rerr, err.Error())
 	}
-	for {
-		conn := c.Get()
-		if conn == nil {
-			return
-		}
-		err = conn.Close()
-		if err != nil {
-			rerr = errors.Wrap(rerr, err.Error())
+	for i := uint64(0); i < atomic.LoadUint64(&c.length); i++ {
+		conn, _ := c.Get()
+		if conn != nil {
+			err = conn.Close()
+			if err != nil {
+				rerr = errors.Wrap(rerr, err.Error())
+			}
 		}
 	}
+	return
 }
 
 func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err error) {
-	if c.closing.Load().(bool) ||
-		atomic.LoadUint64(&c.length) > c.size {
+	if c.closing.Load().(bool) {
 		return c, nil
 	}
 
@@ -119,6 +118,10 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 		if err == nil {
 			c.conn = conn
 		}
+	}
+
+	if atomic.LoadUint64(&c.length) > c.size {
+		return c, nil
 	}
 
 	if c.host == localHost ||
@@ -168,28 +171,33 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 	return c, nil
 }
 
-func (c *ClientConnPool) Get() *ClientConn {
+func (c *ClientConnPool) Get() (*ClientConn, bool) {
 	conn, ok := c.pool.Get().(*ClientConn)
 	if !ok {
-		return c.conn
+		return c.conn, true
 	}
 	atomic.AddUint64(&c.length, ^uint64(0))
 	if conn == nil || !isHealthy(conn) {
 		if c.closing.Load().(bool) {
-			return nil
+			return nil, false
 		}
-		return c.conn
+		return c.conn, true
 	}
-	return conn
+
+	if conn == c.conn {
+		return conn, true
+	}
+
+	return conn, false
 }
 
 func (c *ClientConnPool) Put(conn *ClientConn) error {
 	if conn != nil {
-		if c.closing.Load().(bool) {
-			return nil
-		}
-		if atomic.LoadUint64(&c.length) > c.size {
+		if c.closing.Load().(bool) || atomic.LoadUint64(&c.length) > c.size {
 			return conn.Close()
+		}
+		if conn == c.conn {
+			return nil
 		}
 		atomic.AddUint64(&c.length, 1)
 		c.pool.Put(conn)
@@ -198,17 +206,21 @@ func (c *ClientConnPool) Put(conn *ClientConn) error {
 }
 
 func (c *ClientConnPool) Do(f func(conn *ClientConn) error) (err error) {
-	conn := c.Get()
+	conn, shared := c.Get()
 	err = f(conn)
-	c.Put(conn)
+	if !shared {
+		c.Put(conn)
+	}
 	return err
 }
 
 func (c *ClientConnPool) IsHealthy() bool {
 	for i := uint64(0); i < c.size; i++ {
-		conn := c.Get()
+		conn, shared := c.Get()
 		if conn != nil && isHealthy(conn) {
-			c.Put(conn)
+			if !shared {
+				c.Put(conn)
+			}
 		} else {
 			if conn != nil {
 				conn.Close()

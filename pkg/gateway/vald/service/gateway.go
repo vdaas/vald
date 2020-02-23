@@ -20,7 +20,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"math"
 	"net"
 	"reflect"
 	"sync"
@@ -192,30 +191,50 @@ func (g *gateway) discover(ctx context.Context, ech chan<- error) (err error) {
 		if err != nil {
 			return nil, err
 		}
-		for i := 0; i < (math.MaxInt32); i++ {
-			visited := false
-			for i, node := range nodes.GetNodes() {
-				select {
-				case <-ctx.Done():
-					return nil, ctx.Err()
-				default:
-					if node != nil && node.GetPods() != nil {
-						pods := node.GetPods().GetPods()
-						if i < len(pods) {
-							addrs = append(addrs, fmt.Sprintf("%s:%d", pods[i].GetIp(), g.agentPort))
-							if !visited {
-								visited = true
+		var wg sync.WaitGroup
+		c := sync.NewCond(new(sync.Mutex))
+		cctx, cancel := context.WithCancel(ctx)
+		pch := make(chan string, len(nodes.GetNodes()))
+		for _, n := range nodes.GetNodes() {
+			select {
+			case <-cctx.Done():
+				return nil, cctx.Err()
+			default:
+				node := n
+				wg.Add(1)
+				g.eg.Go(safety.RecoverFunc(func() error {
+					defer wg.Done()
+					if node != nil && node.GetPods() != nil && node.GetPods().GetPods() != nil {
+						c.L.Lock()
+						c.Wait()
+						c.L.Unlock()
+						for _, pod := range node.GetPods().GetPods() {
+							select {
+							case <-cctx.Done():
+								return nil
+							default:
+								pch <- fmt.Sprintf("%s:%d", pod.GetIp(), g.agentPort)
 							}
-							break
 						}
 					}
-				}
-			}
-			if !visited {
-				return nil, nil
+					return nil
+				}))
 			}
 		}
-		return nil, nil
+		g.eg.Go(safety.RecoverFunc(func() error {
+			wg.Wait()
+			cancel()
+			return nil
+		}))
+		c.Broadcast()
+		for {
+			select {
+			case <-cctx.Done():
+				return nil, nil
+			case addr := <-pch:
+				addrs = append(addrs, addr)
+			}
+		}
 	})
 	if err != nil {
 		log.Warn("failed to discover agents from discoverer API, trying to discover from dns...")
