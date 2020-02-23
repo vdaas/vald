@@ -5,11 +5,11 @@ go 1.13
 replace (
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.1-0.20200218151620-3d8a0293423a
-	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200203083758-81b8263d9fe5
+	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200221113847-372a19b1a852
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.8.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.7.4
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d
 	k8s.io/api => k8s.io/api v0.17.3
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.3
 	k8s.io/apimachinery => k8s.io/apimachinery v0.17.3

@@ -91,9 +91,11 @@ func Benchmark_ConnPool(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		conn := pool.Get()
+		conn, shared := pool.Get()
 		do(b, conn)
-		pool.Put(conn)
+		if !shared {
+			pool.Put(conn)
+		}
 	}
 }
 
@@ -124,9 +126,11 @@ func BenchmarkParallel_ConnPool(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			conn := pool.Get()
+			conn, shared := pool.Get()
 			do(b, conn)
-			pool.Put(conn)
+			if !shared {
+				pool.Put(conn)
+			}
 		}
 	})
 }
