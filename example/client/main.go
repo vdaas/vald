@@ -27,7 +27,7 @@ var searchConfig = payload.Search_Config{
 
 func init() {
 	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
-	flag.StringVar(&grpcServerAddr, "addr", ":8081", "set gRPC server address")
+	flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "set gRPC server address")
 	flag.Parse()
 }
 
