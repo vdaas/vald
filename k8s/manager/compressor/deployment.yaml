@@ -20,6 +20,8 @@ metadata:
   name: vald-manager-compressor
   labels:
     app: vald-manager-compressor
+  annotations:
+    checksum/configmap: f1eb77e26bf199541652daeb14bda3b76da2394fdb080a7b66e59880de51c19e
 spec:
   progressDeadlineSeconds: 600
   replicas: 3
@@ -55,7 +57,6 @@ spec:
         - name: vald-manager-compressor
           image: "vdaas/vald-manager-compressor:nightly"
           imagePullPolicy: Always
-          
           livenessProbe:
             failureThreshold: 2
             httpGet:

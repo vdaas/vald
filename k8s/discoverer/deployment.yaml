@@ -20,6 +20,8 @@ metadata:
   name: vald-discoverer
   labels:
     app: vald-discoverer
+  annotations:
+    checksum/configmap: 8661e744998121e32ac63ea26247674e37e4a014bd42408d2f6c2474315e7473
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
@@ -42,7 +44,6 @@ spec:
         - name: vald-discoverer
           image: "vdaas/vald-discoverer-k8s:nightly"
           imagePullPolicy: Always
-          
           livenessProbe:
             failureThreshold: 2
             httpGet:
