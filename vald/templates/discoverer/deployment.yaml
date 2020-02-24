@@ -49,8 +49,8 @@ spec:
         - name: {{ .Values.discoverer.name }}
           image: "{{ .Values.discoverer.image.repository }}:{{ .Values.discoverer.image.tag }}"
           imagePullPolicy: {{ .Values.discoverer.image.pullPolicy }}
-          {{- $servers := dict "Values" .Values.discoverer.server_config "default" .Values.defaults.server_config }}
-          {{- include "vald.containerPorts" $servers | nindent 10 }}
+          {{- $servers := dict "Values" .Values.discoverer.server_config "default" .Values.defaults.server_config -}}
+          {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
           resources:
             {{- toYaml .Values.discoverer.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log

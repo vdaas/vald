@@ -46,8 +46,8 @@ spec:
         - name: {{ .Values.meta.name }}
           image: "{{ .Values.meta.image.repository }}:{{ .Values.meta.image.tag }}"
           imagePullPolicy: {{ .Values.meta.image.pullPolicy }}
-          {{- $servers := dict "Values" .Values.meta.server_config "default" .Values.defaults.server_config }}
-          {{- include "vald.containerPorts" $servers | nindent 10}}
+          {{- $servers := dict "Values" .Values.meta.server_config "default" .Values.defaults.server_config -}}
+          {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
           resources:
             {{- toYaml .Values.meta.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
