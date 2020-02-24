@@ -29,6 +29,8 @@ var (
 		return Errorf("invalid gRPC client connection to %s", addr)
 	}
 
+	ErrGRPCClientNotFound = New("vald internal gRPC client not found")
+
 	ErrGRPCClientConnNotFound = func(addr string) error {
 		return Errorf("gRPC client connection not found in %s", addr)
 	}

@@ -18,8 +18,8 @@
 package errors
 
 var (
-	ErrAgentAddrCouldNotDiscover = func(err error, record string) error {
-		return Wrapf(err, "agent %s couldn't discover", record)
+	ErrAddrCouldNotDiscover = func(err error, record string) error {
+		return Wrapf(err, "addr %s ip couldn't discover", record)
 	}
 
 	ErrNodeNotFound = func(node string) error {
