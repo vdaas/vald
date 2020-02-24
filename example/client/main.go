@@ -44,14 +44,16 @@ func run() error {
 		return err
 	}
 
-	conn, err := grpc.DialContext(context.Background(), grpcServerAddr, grpc.WithInsecure())
+	ctx := context.Background()
+
+	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
 	if err != nil {
 		return err
 	}
 	client := vald.NewValdClient(conn)
 
 	for i := range ids {
-		_, err := client.Insert(context.Background(), &payload.Object_Vector{
+		_, err := client.Insert(ctx, &payload.Object_Vector{
 			Id:     ids[i],
 			Vector: train[i],
 		})
@@ -61,7 +63,7 @@ func run() error {
 	}
 
 	for _, vec := range test {
-		res, err := client.Search(context.Background(), &payload.Search_Request{
+		res, err := client.Search(ctx, &payload.Search_Request{
 			Vector: vec,
 			Config: &searchConfig,
 		})
@@ -72,6 +74,14 @@ func run() error {
 		fmt.Printf("results: %v\n", res.GetResults())
 	}
 
+	for _, id := range ids {
+		_, err := client.Remove(ctx, &payload.Object_ID{
+			Id: id,
+		})
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
