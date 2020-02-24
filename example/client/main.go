@@ -5,7 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 
+	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/apis/grpc/vald"
 
 	"gonum.org/v1/hdf5"
@@ -13,12 +15,12 @@ import (
 )
 
 var (
-	datasetDir     string
+	datasetPath    string
 	grpcServerAddr string
 )
 
 func init() {
-	flag.StringVar(&datasetDir, "path", "/tmp/", "set dataset path")
+	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
 	flag.StringVar(&grpcServerAddr, "addr", ":8081", "set gRPC server address")
 	flag.Parse()
 }
@@ -31,22 +33,46 @@ func main() {
 }
 
 func run() error {
-	conn, err := grpc.DialContext(context.Background(), grpcServerAddr, grpc.WithInsecure())
+	ids, train, test, err := load(datasetPath)
 	if err != nil {
 		return err
 	}
 
+	conn, err := grpc.DialContext(context.Background(), grpcServerAddr, grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
 	client := vald.NewValdClient(conn)
-	fmt.Println(client)
+
+	for i := range ids {
+		_, err := client.Insert(context.Background(), &payload.Object_Vector{
+			Id:     ids[i],
+			Vector: train[i],
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, vec := range test {
+		res, err := client.Search(context.Background(), &payload.Search_Request{
+			Vector: vec,
+		})
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("results: %v\n", res.GetResults())
+	}
 
 	return nil
 }
 
-func load(path string) (train, test [][]float64, err error) {
+func load(path string) (ids []string, train, test [][]float64, err error) {
 	var f *hdf5.File
 	f, err = hdf5.OpenFile(path, hdf5.F_ACC_RDONLY)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	defer f.Close()
 
@@ -81,12 +107,17 @@ func load(path string) (train, test [][]float64, err error) {
 
 	train, err = readFn("train")
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	test, err = readFn("train")
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
+	}
+
+	ids = make([]string, 0, len(train))
+	for i := 0; i < len(train); i++ {
+		ids = append(ids, strconv.Itoa(i))
 	}
 
 	return
