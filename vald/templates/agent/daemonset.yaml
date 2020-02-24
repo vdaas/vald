@@ -20,8 +20,8 @@ metadata:
   name: {{ .Values.agent.name }}
   labels:
     app: {{ .Values.agent.name }}
-  annotations:
-    checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
+  # annotations:
+  #   checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
 spec:
   revisionHistoryLimit: {{ .Values.agent.revisionHistoryLimit }}
   selector:
