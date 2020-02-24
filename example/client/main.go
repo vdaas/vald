@@ -19,6 +19,12 @@ var (
 	grpcServerAddr string
 )
 
+var searchConfig = payload.Search_Config{
+	Num:     10,
+	Radius:  -1,
+	Epsilon: 0.01,
+}
+
 func init() {
 	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
 	flag.StringVar(&grpcServerAddr, "addr", ":8081", "set gRPC server address")
@@ -57,6 +63,7 @@ func run() error {
 	for _, vec := range test {
 		res, err := client.Search(context.Background(), &payload.Search_Request{
 			Vector: vec,
+			Config: &searchConfig,
 		})
 		if err != nil {
 			return err
