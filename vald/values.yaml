@@ -208,6 +208,7 @@ gateway:
   logging:
     logger: glg
     level: debug
+    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -315,6 +316,7 @@ agent:
   logging:
     logger: glg
     level: debug
+    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -370,6 +372,7 @@ discoverer:
   logging:
     logger: glg
     level: debug
+    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -424,6 +427,7 @@ compressor:
   logging:
     logger: glg
     level: debug
+    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -488,6 +492,7 @@ backupManager:
   logging:
     logger: glg
     level: debug
+    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -669,6 +674,7 @@ indexManager:
   logging:
     logger: glg
     level: debug
+    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -711,6 +717,10 @@ indexManager:
       discover_client: {}
       agent_client:
         connection_pool: 3
+        dial_option:
+          tcp:
+            dialer:
+              keep_alive: 15m
 
 meta:
   version: v0.0.0
@@ -736,6 +746,7 @@ meta:
   logging:
     logger: glg
     level: debug
+    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
