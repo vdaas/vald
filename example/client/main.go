@@ -5,8 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strconv"
 
+	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/apis/grpc/vald"
 
@@ -134,7 +134,7 @@ func load(path string) (ids []string, train, test [][]float64, err error) {
 
 	ids = make([]string, 0, len(train))
 	for i := 0; i < len(train); i++ {
-		ids = append(ids, strconv.Itoa(i))
+		ids = append(ids, fuid.String())
 	}
 
 	return

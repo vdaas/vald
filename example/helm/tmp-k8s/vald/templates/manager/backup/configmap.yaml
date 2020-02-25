@@ -1,0 +1,149 @@
+---
+# Source: vald/templates/manager/backup/configmap.yaml
+#
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vald-manager-backup-config
+data:
+  config.yaml: |
+    ---
+    version: v0.0.0
+    time_zone: UTC
+    logging:
+      logger: glg
+      level: debug
+      format: raw
+    server_config:
+      servers:
+        - name: grpc
+          host: 0.0.0.0
+          port: 8081
+          grpc:
+            bidirectional_stream_concurrency: 20
+            connection_timeout: ""
+            header_table_size: 0
+            initial_conn_window_size: 0
+            initial_window_size: 0
+            interceptors: []
+            keepalive:
+              max_conn_age: ""
+              max_conn_age_grace: ""
+              max_conn_idle: ""
+              time: ""
+              timeout: ""
+            max_header_list_size: 0
+            max_receive_message_size: 0
+            max_send_message_size: 0
+            read_buffer_size: 0
+            write_buffer_size: 0
+          mode: GRPC
+          probe_wait_time: 3s
+          restart: true
+      health_check_servers:
+        - name: liveness
+          host: 0.0.0.0
+          port: 3000
+          http:
+            handler_timeout: ""
+            idle_timeout: ""
+            read_header_timeout: ""
+            read_timeout: ""
+            shutdown_duration: 5s
+            write_timeout: ""
+          mode: ""
+          probe_wait_time: 3s
+        - name: readiness
+          host: 0.0.0.0
+          port: 3001
+          http:
+            handler_timeout: ""
+            idle_timeout: ""
+            read_header_timeout: ""
+            read_timeout: ""
+            shutdown_duration: 5s
+            write_timeout: ""
+          mode: ""
+          probe_wait_time: 3s
+      metrics_servers:
+      startup_strategy:
+        - liveness
+        - grpc
+        - readiness
+      full_shutdown_duration: 600s
+      tls:
+        enabled: false
+        cert: /path/to/cert
+        key: /path/to/key
+        ca: /path/to/ca
+    cassandra_config:
+      connect_timeout: 600ms
+      consistency: quorum
+      cql_version: 3.0.0
+      default_idempotence: false
+      default_timestamp: true
+      disable_initial_host_lookup: false
+      disable_node_status_events: false
+      disable_skip_metadata: false
+      disable_topology_events: false
+      enable_host_verification: false
+      hosts:
+      - scylla-0.scylla.default.svc.cluster.local
+      - scylla-1.scylla.default.svc.cluster.local
+      - scylla-2.scylla.default.svc.cluster.local
+      ignore_peer_addr: false
+      keyspace: vald
+      max_prepared_stmts: 1000
+      max_routing_key_info: 1000
+      max_wait_schema_agreement: 1m
+      meta_table: meta_vector
+      num_conns: 2
+      page_size: 5000
+      password: _CASSANDRA_PASSWORD_
+      pool_config:
+        data_center: ""
+        dc_aware_routing: false
+        non_local_replicas_fallback: false
+        shuffle_replicas: false
+      port: 9042
+      proto_version: 0
+      reconnect_interval: 1m
+      reconnection_policy:
+        initial_interval: 1m
+        max_retries: 3
+      retry_policy:
+        max_duration: 30s
+        min_duration: 1s
+        num_retries: 3
+      socket_keepalive: 0s
+      tcp:
+        dialer:
+          dual_stack_enabled: false
+          keep_alive: 10m
+          timeout: 30s
+        dns:
+          cache_enabled: true
+          cache_expiration: 24h
+          refresh_duration: 5m
+      timeout: 600ms
+      tls:
+        ca: /path/to/ca
+        cert: /path/to/cert
+        enabled: false
+        key: /path/to/key
+      username: root
+      write_coalesce_wait_time: 200ms
