@@ -34,8 +34,6 @@ jobs:
       run: |
         originname=`make docker/name/ci-container`
         imagename=`make docker/name/ci-container | sed -e 's:vdaas:docker.pkg.github.com/vdaas/vald:'`
-        docker tag ${originname} ${imagename}:latest
-        docker push ${imagename}:latest
         docker tag ${originname} ${imagename}:nightly
         docker push ${imagename}:nightly
     - name: push to GitHub package registry (pull request)
@@ -51,6 +49,8 @@ jobs:
       run: |
         originname=`make docker/name/ci-container`
         imagename=`make docker/name/ci-container | sed -e 's:vdaas:docker.pkg.github.com/vdaas/vald:'`
+        docker tag ${originname} ${imagename}:latest
+        docker push ${imagename}:latest
         tag_name=`cat $GITHUB_REF | sed -e 's:^refs/tags/::'`
         docker tag ${originname} ${imagename}:${tag_name}
         docker push ${imagename}:${tag_name}
@@ -64,7 +64,6 @@ jobs:
       if: github.ref == 'refs/heads/master'
       run: |
         imagename=`make docker/name/ci-container`
-        docker push ${imagename}:latest
         docker tag ${imagename} ${imagename}:nightly
         docker push ${imagename}:nightly
     - name: push to DockerHub (pull request)
@@ -78,6 +77,7 @@ jobs:
       if: startsWith( github.ref, 'refs/tags/')
       run: |
         imagename=`make docker/name/ci-container`
+        docker push ${imagename}:latest
         tag_name=`cat $GITHUB_REF | sed -e 's:^refs/tags/::'`
         docker tag ${imagename} ${imagename}:${tag_name}
         docker push ${imagename}:${tag_name}

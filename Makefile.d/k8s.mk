@@ -30,19 +30,7 @@ k8s/manifest/clean:
 k8s/manifest/update: \
 	k8s/manifest/clean
 	helm template \
-	    --values vald/values.yaml \
-	    --set initializer.mysql.enabled=true \
-	    --set initializer.redis.enabled=true \
-	    --set initializer.cassandra.enabled=true \
-	    --set initializer.mysql.configmap.enabled=true \
-	    --set initializer.cassandra.configmap.enabled=true \
-	    --set initializer.mysql.secret.enabled=true \
-	    --set initializer.redis.secret.enabled=true \
-	    --set initializer.cassandra.secret.enabled=true \
-	    --set agent.minReplicas=5 \
-	    --set gateway.gateway_config.discoverer.agent_client.connection_pool=10 \
-	    --set indexManager.indexer.discoverer.agent_client.connection_pool=2 \
-	    --set indexManager.indexer.discoverer.agent_client.dial_option.tcp.dialer.keep_alive=15m \
+	    --values vald/values-dev.yaml \
 	    --output-dir tmp-k8s \
 	    vald
 	mkdir -p k8s/gateway
@@ -87,35 +75,7 @@ k8s/vald/remove: \
 k8s/vald/deploy/cassandra: \
 	k8s/external/cassandra/deploy
 	helm template \
-	    --values vald/values.yaml \
-	    --set backupManager.image.repository=vdaas/vald-manager-backup-cassandra \
-	    --set backupManager.initContainers[0].type=waitFor \
-	    --set backupManager.initContainers[0].name=wait-for-cassandra \
-	    --set backupManager.initContainers[0].image=cassandra:latest \
-	    --set backupManager.initContainers[0].target=cassandra.default.svc.cluster.local \
-	    --set backupManager.initContainers[0].untilCondition='$$(cqlsh cassandra.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $$?) -eq 0' \
-	    --set backupManager.initContainers[0].sleepDuration=2 \
-	    --set backupManager.initContainers[0].env=null \
-	    --set backupManager.env=null \
-	    --set backupManager.mysql.enabled=false \
-	    --set backupManager.cassandra.enabled=true \
-	    --set backupManager.cassandra.config.hosts[0]=cassandra-0.cassandra.default.svc.cluster.local \
-	    --set backupManager.cassandra.config.hosts[1]=cassandra-1.cassandra.default.svc.cluster.local \
-	    --set backupManager.cassandra.config.hosts[2]=cassandra-2.cassandra.default.svc.cluster.local \
-	    --set meta.image.repository=vdaas/vald-meta-cassandra \
-	    --set meta.initContainers[0].type=waitFor \
-	    --set meta.initContainers[0].name=wait-for-cassandra \
-	    --set meta.initContainers[0].image=cassandra:latest \
-	    --set meta.initContainers[0].target=cassandra.default.svc.cluster.local \
-	    --set meta.initContainers[0].untilCondition='$$(cqlsh cassandra.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $$?) -eq 0' \
-	    --set meta.initContainers[0].sleepDuration=2 \
-	    --set meta.initContainers[0].env=null \
-	    --set meta.env=null \
-	    --set meta.mysql.enabled=false \
-	    --set meta.cassandra.enabled=true \
-	    --set meta.cassandra.config.hosts[0]=cassandra-0.cassandra.default.svc.cluster.local \
-	    --set meta.cassandra.config.hosts[1]=cassandra-1.cassandra.default.svc.cluster.local \
-	    --set meta.cassandra.config.hosts[2]=cassandra-2.cassandra.default.svc.cluster.local \
+	    --values vald/values-cassandra.yaml \
 	    --output-dir tmp-k8s \
 	    vald
 	kubectl apply -f k8s/metrics/metrics-server
@@ -132,35 +92,7 @@ k8s/vald/deploy/cassandra: \
 k8s/vald/deploy/scylla: \
 	k8s/external/scylla/deploy
 	helm template \
-	    --values vald/values.yaml \
-	    --set backupManager.image.repository=vdaas/vald-manager-backup-cassandra \
-	    --set backupManager.initContainers[0].type=waitFor \
-	    --set backupManager.initContainers[0].name=wait-for-scylla \
-	    --set backupManager.initContainers[0].image=cassandra:latest \
-	    --set backupManager.initContainers[0].target=scylla.default.svc.cluster.local \
-	    --set backupManager.initContainers[0].untilCondition='$$(cqlsh scylla.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $$?) -eq 0' \
-	    --set backupManager.initContainers[0].sleepDuration=2 \
-	    --set backupManager.initContainers[0].env=null \
-	    --set backupManager.env=null \
-	    --set backupManager.mysql.enabled=false \
-	    --set backupManager.cassandra.enabled=true \
-	    --set backupManager.cassandra.config.hosts[0]=scylla-0.scylla.default.svc.cluster.local \
-	    --set backupManager.cassandra.config.hosts[1]=scylla-1.scylla.default.svc.cluster.local \
-	    --set backupManager.cassandra.config.hosts[2]=scylla-2.scylla.default.svc.cluster.local \
-	    --set meta.image.repository=vdaas/vald-meta-cassandra \
-	    --set meta.initContainers[0].type=waitFor \
-	    --set meta.initContainers[0].name=wait-for-scylla \
-	    --set meta.initContainers[0].image=cassandra:latest \
-	    --set meta.initContainers[0].target=scylla.default.svc.cluster.local \
-	    --set meta.initContainers[0].untilCondition='$$(cqlsh scylla.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $$?) -eq 0' \
-	    --set meta.initContainers[0].sleepDuration=2 \
-	    --set meta.initContainers[0].env=null \
-	    --set meta.env=null \
-	    --set meta.mysql.enabled=false \
-	    --set meta.cassandra.enabled=true \
-	    --set meta.cassandra.config.hosts[0]=scylla-0.scylla.default.svc.cluster.local \
-	    --set meta.cassandra.config.hosts[1]=scylla-1.scylla.default.svc.cluster.local \
-	    --set meta.cassandra.config.hosts[2]=scylla-2.scylla.default.svc.cluster.local \
+	    --values vald/values-scylla.yaml \
 	    --output-dir tmp-k8s \
 	    vald
 	kubectl apply -f k8s/metrics/metrics-server

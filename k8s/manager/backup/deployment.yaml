@@ -20,6 +20,8 @@ metadata:
   name: vald-manager-backup
   labels:
     app: vald-manager-backup
+  annotations:
+    checksum/configmap: 6a46f60d362788f0e11391714e3a8bb3cf91bd6e950fb2baeb9f38471ff95909
 spec:
   progressDeadlineSeconds: 600
   replicas: 3
@@ -61,7 +63,6 @@ spec:
         - name: vald-manager-backup
           image: "vdaas/vald-manager-backup-mysql:nightly"
           imagePullPolicy: Always
-          
           livenessProbe:
             failureThreshold: 2
             httpGet:

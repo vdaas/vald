@@ -29,8 +29,6 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 )
 
-// type Dialer func(ctx context.Context, network, addr string) (net.Conn, error)
-
 type Dialer interface {
 	GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error)
 	StartDialerCache(ctx context.Context)

@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/manager/index"
+	"github.com/vdaas/vald/internal/client/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -51,33 +52,44 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		indexer service.Indexer
 	)
 
-	dscClient := grpc.New(
-		append(cfg.Indexer.Discoverer.Client.Opts(),
-			grpc.WithErrGroup(eg),
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)...,
+	client, err := discoverer.New(
+		discoverer.WithAutoConnect(true),
+		discoverer.WithName(cfg.Indexer.AgentName),
+		discoverer.WithNamespace(cfg.Indexer.AgentNamespace),
+		discoverer.WithPort(cfg.Indexer.AgentPort),
+		discoverer.WithServiceDNSARecord(cfg.Indexer.AgentDNS),
+		discoverer.WithDiscovererClient(grpc.New(
+			append(cfg.Indexer.Discoverer.Client.Opts(),
+				grpc.WithErrGroup(eg),
+				grpc.WithDialOptions(
+					grpc.WithStatsHandler(metric.NewClientHandler()),
+				),
+			)...)),
+		discoverer.WithDiscovererHostPort(
+			cfg.Indexer.Discoverer.Host,
+			cfg.Indexer.Discoverer.Port,
+		),
+		discoverer.WithDiscoverDuration(cfg.Indexer.Discoverer.Duration),
+		discoverer.WithOptions(cfg.Indexer.Discoverer.AgentClient.Opts()...),
+		discoverer.WithNodeName(cfg.Indexer.NodeName),
+		discoverer.WithOnDiscoverFunc(func(ctx context.Context, c discoverer.Client, addrs []string) error {
+			last := len(addrs) - 1
+			for i := 0; i < len(addrs)/2; i++ {
+				addrs[i], addrs[last-i] = addrs[last-i], addrs[i]
+			}
+			return nil
+		}),
 	)
-	agentOpts := cfg.Indexer.Discoverer.AgentClient.Opts()
+	if err != nil {
+		return nil, err
+	}
 	indexer, err = service.New(
 		service.WithErrGroup(eg),
+		service.WithDiscoverer(client),
 		service.WithIndexingConcurrency(cfg.Indexer.Concurrency),
 		service.WithIndexingDuration(cfg.Indexer.AutoIndexCheckDuration),
 		service.WithIndexingDurationLimit(cfg.Indexer.AutoIndexDurationLimit),
 		service.WithMinUncommitted(cfg.Indexer.AutoIndexLength),
-		service.WithAgentName(cfg.Indexer.AgentName),
-		service.WithAgentNamespace(cfg.Indexer.AgentNamespace),
-		service.WithAgentPort(cfg.Indexer.AgentPort),
-		service.WithAgentServiceDNSARecord(cfg.Indexer.AgentDNS),
-		service.WithNodeName(cfg.Indexer.NodeName),
-		service.WithDiscovererClient(dscClient),
-		service.WithDiscovererHostPort(
-			cfg.Indexer.Discoverer.Host,
-			cfg.Indexer.Discoverer.Port,
-		),
-		service.WithDiscoverDuration(cfg.Indexer.Discoverer.Duration),
-		service.WithAgentOptions(agentOpts...),
 	)
 	if err != nil {
 		return nil, err

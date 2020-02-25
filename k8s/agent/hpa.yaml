@@ -19,7 +19,7 @@ kind: HorizontalPodAutoscaler
 metadata:
   name: vald-agent-ngt
 spec:
-  maxReplicas: 300
+  maxReplicas: 10
   minReplicas: 5
   scaleTargetRef:
     apiVersion: apps/v1

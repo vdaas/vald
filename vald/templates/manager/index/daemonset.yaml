@@ -20,6 +20,8 @@ metadata:
   name: {{ .Values.indexManager.name }}
   labels:
     app: {{ .Values.indexManager.name }}
+  annotations:
+    checksum/configmap: {{ include (print $.Template.BasePath "/manager/index/configmap.yaml") . | sha256sum }}
 spec:
   revisionHistoryLimit: {{ .Values.indexManager.revisionHistoryLimit }}
   selector:
@@ -44,8 +46,8 @@ spec:
         - name: {{ .Values.indexManager.name }}
           image: "{{ .Values.indexManager.image.repository }}:{{ .Values.indexManager.image.tag }}"
           imagePullPolicy: {{ .Values.indexManager.image.pullPolicy }}
-          {{- $servers := dict "Values" .Values.indexManager.server_config "default" .Values.defaults.server_config }}
-          {{- include "vald.containerPorts" $servers | nindent 10 }}
+          {{- $servers := dict "Values" .Values.indexManager.server_config "default" .Values.defaults.server_config -}}
+          {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
           resources:
             {{- toYaml .Values.indexManager.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log

@@ -29,6 +29,15 @@ helm repo add vald https://vald.vdaas.org/charts
 helm install --generate-name vald/vald
 ```
 
+If you use the default values.yaml, the `nightly` images will be installed.
+
+### Docker image tagging policy
+
+- `nightly` ... latest build of master branch
+- `vX.X.X` ... released versions
+- `latest` ... latest build of release versions
+- `stable` ... latest long-term supported version
+
 ## Example
 
 ```shell
