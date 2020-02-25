@@ -31,3 +31,5 @@ data:
     server_config:
       {{- $servers := dict "Values" .Values.discoverer.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
+    discoverer:
+      {{- toYaml .Values.discoverer.discoverer | nindent 6 }}
