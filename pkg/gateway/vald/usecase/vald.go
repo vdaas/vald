@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
+	"github.com/vdaas/vald/internal/client/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -72,26 +73,30 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-	dscClient := grpc.New(
-		append(cfg.Gateway.Discoverer.Client.Opts(),
-			grpc.WithErrGroup(eg),
-		)...,
-	)
-	agentOpts := cfg.Gateway.Discoverer.AgentClient.Opts()
-	gateway, err = service.NewGateway(
-		service.WithErrGroup(eg),
-		service.WithAgentName(cfg.Gateway.AgentName),
-		service.WithAgentNamespace(cfg.Gateway.AgentNamespace),
-		service.WithAgentPort(cfg.Gateway.AgentPort),
-		service.WithAgentServiceDNSARecord(cfg.Gateway.AgentDNS),
-		service.WithDiscovererClient(dscClient),
-		service.WithDiscovererHostPort(
+	client, err := discoverer.New(
+		discoverer.WithAutoConnect(true),
+		discoverer.WithName(cfg.Gateway.AgentName),
+		discoverer.WithNamespace(cfg.Gateway.AgentNamespace),
+		discoverer.WithPort(cfg.Gateway.AgentPort),
+		discoverer.WithServiceDNSARecord(cfg.Gateway.AgentDNS),
+		discoverer.WithDiscovererClient(grpc.New(
+			append(cfg.Gateway.Discoverer.Client.Opts(),
+				grpc.WithErrGroup(eg),
+			)...)),
+		discoverer.WithDiscovererHostPort(
 			cfg.Gateway.Discoverer.Host,
 			cfg.Gateway.Discoverer.Port,
 		),
-		service.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
-		service.WithAgentOptions(agentOpts...),
-		service.WithNodeName(cfg.Gateway.NodeName),
+		discoverer.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
+		discoverer.WithOptions(cfg.Gateway.Discoverer.AgentClient.Opts()...),
+		discoverer.WithNodeName(cfg.Gateway.NodeName),
+	)
+	if err != nil {
+		return nil, err
+	}
+	gateway, err = service.NewGateway(
+		service.WithErrGroup(eg),
+		service.WithDiscoverer(client),
 	)
 	if err != nil {
 		return nil, err
