@@ -54,13 +54,13 @@ func Init(opts ...Option) {
 func getLogger(o *option) Logger {
 	switch o.logType {
 	case logger.GLG:
+		fallthrough
+	default:
 		gopts := []glg.Option{
 			glg.WithLevel(o.level.String()),
 			glg.WithFormat(o.format.String()),
 		}
 		return glg.New(gopts...)
-	default:
-		return o.logger
 	}
 }
 

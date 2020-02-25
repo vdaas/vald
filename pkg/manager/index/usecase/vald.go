@@ -19,10 +19,9 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/vald"
+	"github.com/vdaas/vald/apis/grpc/manager/index"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -36,106 +35,48 @@ import (
 )
 
 type run struct {
-	eg       errgroup.Group
-	cfg      *config.Data
-	server   starter.Server
-	filter   service.Filter
-	gateway  service.Gateway
-	metadata service.Meta
-	backup   service.Backup
+	eg      errgroup.Group
+	cfg     *config.Data
+	server  starter.Server
+	indexer service.Indexer
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
 	var (
-		filter   service.Filter
-		gateway  service.Gateway
-		metadata service.Meta
-		backup   service.Backup
+		indexer service.Indexer
 	)
 
-	if addrs := cfg.Gateway.BackupManager.Client.Addrs; len(addrs) == 0 {
-		return nil, errors.ErrInvalidBackupConfig
-	}
-
-	backup, err = service.NewBackup(
-		service.WithBackupAddr(cfg.Gateway.BackupManager.Client.Addrs[0]),
-		service.WithBackupClient(
-			grpc.New(
-				append(cfg.Gateway.BackupManager.Client.Opts(),
-					grpc.WithErrGroup(eg),
-				)...,
-			),
-		),
-	)
-	if err != nil {
-		return nil, err
-	}
 	dscClient := grpc.New(
-		append(cfg.Gateway.Discoverer.DiscoverClient.Opts(),
+		append(cfg.Indexer.Discoverer.Client.Opts(),
 			grpc.WithErrGroup(eg),
 		)...,
 	)
-	agentOpts := cfg.Gateway.Discoverer.AgentClient.Opts()
-	gateway, err = service.NewGateway(
+	agentOpts := cfg.Indexer.Discoverer.AgentClient.Opts()
+	indexer, err = service.New(
 		service.WithErrGroup(eg),
-		service.WithAgentName(cfg.Gateway.AgentName),
-		service.WithAgentPort(cfg.Gateway.AgentPort),
-		service.WithAgentServiceDNSARecord(cfg.Gateway.AgentDNS),
+		service.WithIndexingConcurrency(cfg.Indexer.Concurrency),
+		service.WithIndexingDuration(cfg.Indexer.AutoIndexCheckDuration),
+		service.WithIndexingDurationLimit(cfg.Indexer.AutoIndexDurationLimit),
+		service.WithMinUncommitted(cfg.Indexer.AutoIndexLength),
+		service.WithAgentName(cfg.Indexer.AgentName),
+		service.WithAgentNamespace(cfg.Indexer.AgentNamespace),
+		service.WithAgentPort(cfg.Indexer.AgentPort),
+		service.WithAgentServiceDNSARecord(cfg.Indexer.AgentDNS),
+		service.WithNodeName(cfg.Indexer.NodeName),
 		service.WithDiscovererClient(dscClient),
 		service.WithDiscovererHostPort(
-			cfg.Gateway.Discoverer.Host,
-			cfg.Gateway.Discoverer.Port,
+			cfg.Indexer.Discoverer.Host,
+			cfg.Indexer.Discoverer.Port,
 		),
-		service.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
+		service.WithDiscoverDuration(cfg.Indexer.Discoverer.Duration),
 		service.WithAgentOptions(agentOpts...),
 	)
 	if err != nil {
 		return nil, err
 	}
-
-	if addrs := cfg.Gateway.Meta.Client.Addrs; len(addrs) == 0 {
-		return nil, errors.ErrInvalidMetaDataConfig
-	}
-	metadata, err = service.NewMeta(
-		service.WithMetaAddr(cfg.Gateway.Meta.Client.Addrs[0]),
-		service.WithMetaClient(
-			grpc.New(
-				append(cfg.Gateway.Meta.Client.Opts(),
-					grpc.WithErrGroup(eg),
-				)...,
-			),
-		),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	ef := cfg.Gateway.EgressFilter
-	if ef != nil &&
-		ef.Client != nil &&
-		ef.Client.Addrs != nil &&
-		len(ef.Client.Addrs) != 0 {
-		filter, err = service.NewFilter(
-			service.WithFilterClient(
-				grpc.New(
-					append(ef.Client.Opts(),
-						grpc.WithErrGroup(eg),
-					)...,
-				),
-			),
-		)
-	}
-
-	v := handler.New(
-		handler.WithGateway(gateway),
-		handler.WithBackup(backup),
-		handler.WithMeta(metadata),
-		handler.WithFilters(filter),
-		handler.WithErrGroup(eg),
-		handler.WithReplicationCount(cfg.Gateway.IndexReplica),
-	)
+	idx := handler.New(handler.WithIndexer(indexer))
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
@@ -145,7 +86,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 					router.New(
 						router.WithHandler(
 							rest.New(
-								rest.WithVald(v),
+								rest.WithIndexer(idx),
 							),
 						),
 					),
@@ -155,7 +96,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
 			return []server.Option{
 				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-					vald.RegisterValdServer(srv, v)
+					index.RegisterIndexServer(srv, idx)
 				}),
 				server.WithPreStopFunction(func() error {
 					// TODO notify another gateway and scheduler
@@ -170,13 +111,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
-		eg:       eg,
-		cfg:      cfg,
-		server:   srv,
-		filter:   filter,
-		gateway:  gateway,
-		metadata: metadata,
-		backup:   backup,
+		eg:      eg,
+		cfg:     cfg,
+		server:  srv,
+		indexer: indexer,
 	}, nil
 }
 
@@ -186,31 +124,10 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 5)
-	var bech, fech, mech, gech, sech <-chan error
+	var iech, sech <-chan error
 	var err error
-	if r.backup != nil {
-		bech, err = r.backup.Start(ctx)
-		if err != nil {
-			close(ech)
-			return nil, err
-		}
-	}
-	if r.filter != nil {
-		fech, err = r.filter.Start(ctx)
-		if err != nil {
-			close(ech)
-			return nil, err
-		}
-	}
-	if r.metadata != nil {
-		mech, err = r.metadata.Start(ctx)
-		if err != nil {
-			close(ech)
-			return nil, err
-		}
-	}
-	if r.gateway != nil {
-		gech, err = r.gateway.Start(ctx)
+	if r.indexer != nil {
+		iech, err = r.indexer.Start(ctx)
 		if err != nil {
 			close(ech)
 			return nil, err
@@ -223,10 +140,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case err = <-bech:
-			case err = <-fech:
-			case err = <-gech:
-			case err = <-mech:
+			case err = <-iech:
 			case err = <-sech:
 			}
 			if err != nil {

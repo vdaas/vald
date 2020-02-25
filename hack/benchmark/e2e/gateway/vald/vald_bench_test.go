@@ -249,7 +249,7 @@ func BenchmarkValdGatewayStream(rb *testing.B) {
 			b.Run("CreateIndex", func(bb *testing.B) {
 				bb.ReportAllocs()
 				bb.ResetTimer()
-				_, err := client.CreateIndex(ctx, &payload.Controll_CreateIndexRequest{
+				_, err := client.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
 					PoolSize: 10000,
 				})
 				if err != nil {

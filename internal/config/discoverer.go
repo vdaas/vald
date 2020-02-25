@@ -20,23 +20,36 @@ package config
 import "fmt"
 
 type Discoverer struct {
-	Host           string      `json:"host" yaml:"host"`
-	Port           int         `json:"port" yaml:"port"`
-	Duration       string      `json:"duration" yaml:"duration"`
-	DiscoverClient *GRPCClient `json:"discover_client" yaml:"discover_client"`
-	AgentClient    *GRPCClient `json:"agent_client" yaml:"agent_client"`
+	Name              string `json:"name" yaml:"name"`
+	Namespace         string `json:"namespace" yaml:"namespace"`
+	CacheSyncDuration string `json:"cache_sync_duration" yaml:"cache_sync_duration"`
 }
 
 func (d *Discoverer) Bind() *Discoverer {
+	d.Name = GetActualValue(d.Name)
+	d.Namespace = GetActualValue(d.Namespace)
+	d.CacheSyncDuration = GetActualValue(d.CacheSyncDuration)
+	return d
+}
+
+type DiscovererClient struct {
+	Host        string      `json:"host" yaml:"host"`
+	Port        int         `json:"port" yaml:"port"`
+	Duration    string      `json:"duration" yaml:"duration"`
+	Client      *GRPCClient `json:"discover_client" yaml:"discover_client"`
+	AgentClient *GRPCClient `json:"agent_client" yaml:"agent_client"`
+}
+
+func (d *DiscovererClient) Bind() *DiscovererClient {
 	d.Host = GetActualValue(d.Host)
 	d.Duration = GetActualValue(d.Duration)
-	if d.DiscoverClient != nil {
-		d.DiscoverClient.Bind()
+	if d.Client != nil {
+		d.Client.Bind()
 	} else {
-		d.DiscoverClient = newGRPCClientConfig()
+		d.Client = newGRPCClientConfig()
 	}
 	if len(d.Host) != 0 {
-		d.DiscoverClient.Addrs = append(d.DiscoverClient.Addrs, fmt.Sprintf("%s:%d", d.Host, d.Port))
+		d.Client.Addrs = append(d.Client.Addrs, fmt.Sprintf("%s:%d", d.Host, d.Port))
 	}
 	if d.AgentClient != nil {
 		d.AgentClient.Bind()

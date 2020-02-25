@@ -29,7 +29,10 @@ import (
 type GWOption func(g *gateway) error
 
 var (
-	defaultGWOpts = []GWOption{}
+	defaultGWOpts = []GWOption{
+		WithErrGroup(errgroup.Get()),
+		WithAgentNamespace("default"),
+	}
 )
 
 func WithDiscovererClient(client grpc.Client) GWOption {
@@ -73,7 +76,18 @@ func WithAgentOptions(opts ...grpc.Option) GWOption {
 
 func WithAgentName(name string) GWOption {
 	return func(g *gateway) error {
-		g.agentName = name
+		if name != "" {
+			g.agentName = name
+		}
+		return nil
+	}
+}
+
+func WithAgentNamespace(ns string) GWOption {
+	return func(g *gateway) error {
+		if ns != "" {
+			g.namespace = ns
+		}
 		return nil
 	}
 }
@@ -92,9 +106,20 @@ func WithAgentServiceDNSARecord(a string) GWOption {
 	}
 }
 
+func WithNodeName(nn string) GWOption {
+	return func(g *gateway) error {
+		if nn != "" {
+			g.nodeName = nn
+		}
+		return nil
+	}
+}
+
 func WithErrGroup(eg errgroup.Group) GWOption {
 	return func(g *gateway) error {
-		g.eg = eg
+		if eg != nil {
+			g.eg = eg
+		}
 		return nil
 	}
 }
