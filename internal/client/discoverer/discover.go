@@ -101,7 +101,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 	}
 
 	var aech <-chan error
-	if c.autoconn {
+	if c.autoconn && c.client != nil {
 		aech, err = c.client.StartConnectionMonitor(ctx)
 		if err != nil {
 			close(ech)
@@ -121,7 +121,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 			if err != nil {
 				errs = errors.Wrap(errs, err.Error())
 			}
-			if c.autoconn {
+			if c.autoconn && c.client != nil {
 				err = c.client.Close()
 				if err != nil {
 					errs = errors.Wrap(errs, err.Error())
@@ -184,7 +184,7 @@ func (c *client) GetClient() grpc.Client {
 }
 
 func (c *client) connect(ctx context.Context, addr string) (err error) {
-	if c.autoconn {
+	if c.autoconn && c.client != nil {
 		err = c.client.Connect(ctx, addr)
 		if err != nil {
 			return err
@@ -315,7 +315,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 	}
 
 	c.addrs.Store(connected)
-	if c.autoconn {
+	if c.autoconn && c.client != nil {
 		if err = c.client.RangeConcurrent(ctx, len(connected)/3, func(ctx context.Context,
 			addr string,
 			conn *grpc.ClientConn,
