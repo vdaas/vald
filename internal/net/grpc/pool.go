@@ -220,10 +220,11 @@ func (c *ClientConnPool) Put(conn *ClientConn) error {
 
 func (c *ClientConnPool) Do(f func(conn *ClientConn) error) (err error) {
 	conn, shared := c.Get()
+	err = f(conn)
 	if !shared {
 		c.Put(conn)
 	}
-	return f(conn)
+	return err
 }
 
 func (c *ClientConnPool) IsHealthy() bool {
