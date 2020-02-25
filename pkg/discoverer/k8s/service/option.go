@@ -28,7 +28,7 @@ type Option func(d *discoverer) error
 
 var (
 	defaultOpts = []Option{
-		WithDiscoverDuration("500ms"),
+		WithDiscoverDuration("2s"),
 		WithErrGroup(errgroup.Get()),
 	}
 )
