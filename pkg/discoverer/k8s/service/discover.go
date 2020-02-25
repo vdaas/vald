@@ -403,7 +403,9 @@ func (d *discoverer) GetPods(req *payload.Discoverer_Request) (pods *payload.Inf
 		}
 	}
 	for i := range pods.GetPods() {
-		pods.Pods[i].Node.Pods = nil
+		if pods.Pods[i].Node != nil {
+			pods.Pods[i].Node.Pods = nil
+		}
 	}
 	return pods, nil
 }
