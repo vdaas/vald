@@ -45,7 +45,7 @@ func New(opts ...Option) discoverer.DiscovererServer {
 func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Pods, error) {
 	pods, err := s.dsc.GetPods(req)
 	if err != nil {
-        log.Error(err)
+		log.Error(err)
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Pods API request %#v pods not found", req), err, info.Get())
 	}
 	return pods, nil
@@ -54,7 +54,7 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
 	nodes, err := s.dsc.GetNodes(req)
 	if err != nil {
-        log.Error(err)
+		log.Error(err)
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Nodes API request %#v nodes not found", req), err, info.Get())
 	}
 	return nodes, nil

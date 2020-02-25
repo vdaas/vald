@@ -235,7 +235,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 				Node:      c.nodeName,
 			}, copts...)
 		if err != nil {
-            log.Warn("failed to call discoverer.Node API")
+			log.Warn("failed to call discoverer.Node API")
 			return nil, errors.ErrRPCCallFailed(c.dscAddr, err)
 		}
 		var wg sync.WaitGroup
@@ -291,7 +291,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			select {
 			case <-cctx.Done():
 				if len(connected) == 0 {
-                    log.Warn("connected addr is zero")
+					log.Warn("connected addr is zero")
 					return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
 				}
 				if c.onDiscover != nil {

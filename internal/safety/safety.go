@@ -21,6 +21,7 @@ import (
 	"runtime"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 )
 
@@ -40,7 +41,9 @@ func RecoverFunc(fn func() error) func() error {
 				default:
 					err = errors.ErrPanicRecovered(err, x)
 				}
-				log.Error(err)
+				if err != nil {
+					log.Error(err, info.Get())
+				}
 			}
 		}()
 		err = fn()
