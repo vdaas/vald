@@ -53,6 +53,9 @@ func WithNamespace(ns string) Option {
 
 func WithDiscoverDuration(dur string) Option {
 	return func(d *discoverer) error {
+		if dur == "" {
+			return nil
+		}
 		pd, err := timeutil.Parse(dur)
 		if err != nil {
 			pd = time.Second
