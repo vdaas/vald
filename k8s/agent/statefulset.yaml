@@ -24,6 +24,7 @@ metadata:
   #   checksum/configmap: 08e791c8a3222101161f397fe09f4783ba8463d05bf1a1d4205dd7aab5f947e6
 spec:
   serviceName: vald-agent-ngt
+  podManagementPolicy: Parallel
   replicas: 5
   revisionHistoryLimit: 2
   selector:
