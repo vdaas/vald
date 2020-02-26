@@ -74,14 +74,6 @@ func run() error {
 		fmt.Printf("results: %v\n", res.GetResults())
 	}
 
-	for _, id := range ids {
-		_, err := client.Remove(ctx, &payload.Object_ID{
-			Id: id,
-		})
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
