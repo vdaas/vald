@@ -121,11 +121,14 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 
 	if c.conn == nil || (c.conn != nil && !isHealthy(c.conn)) {
 		conn, err := grpc.DialContext(ctx, c.addr, c.dopts...)
-		if err == nil {
-			c.conn = conn
-		} else {
-			log.Debug(err)
+		if err != nil {
+			log.Debugf("failed to dial pool connection addr = %s\terror = %v", c.addr, err)
+			if conn != nil {
+				return c, errors.Wrap(conn.Close(), err.Error())
+			}
+			return nil, err
 		}
+		c.conn = conn
 	}
 
 	if atomic.LoadUint64(&c.length) > c.size {
@@ -139,7 +142,11 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 			if err == nil {
 				c.Put(conn)
 			} else {
-				log.Debug(err)
+				log.Debugf("failed to dial pool connection ip = %s\tport = %s\terror = %v", localIPv4, c.port, err)
+				if conn != nil {
+					return c, errors.Wrap(conn.Close(), err.Error())
+				}
+				return c, err
 			}
 		}
 		return c, nil
@@ -152,7 +159,11 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 			if err == nil {
 				c.Put(conn)
 			} else {
-				log.Debug(err)
+				log.Debugf("failed to dial pool connection addr = %s\terror = %v", c.addr, err)
+				if conn != nil {
+					return c, errors.Wrap(conn.Close(), err.Error())
+				}
+				return c, err
 			}
 		}
 		return c, nil
@@ -172,7 +183,11 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 		if err == nil {
 			c.Put(conn)
 		} else {
-			log.Debug(err)
+			log.Debugf("failed to dial pool connection ip = %s\tport = %s\terror = %v", ip.String, c.port, err)
+			if conn != nil {
+				return c, errors.Wrap(conn.Close(), err.Error())
+			}
+			return c, err
 		}
 		if atomic.LoadUint64(&c.length) > c.size {
 			return c, nil

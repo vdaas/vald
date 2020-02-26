@@ -131,6 +131,10 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 				reconnList := make([]string, 0, int(atomic.LoadUint64(&g.clientCount)))
 				g.conns.Range(func(addr string, pool *ClientConnPool) bool {
 					if len(addr) != 0 && !pool.IsHealthy() {
+						err = g.Disconnect(addr)
+						if err != nil {
+							log.Error(err)
+						}
 						reconnList = append(reconnList, addr)
 					}
 					return true
@@ -258,6 +262,8 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 				if err != nil {
 					rerr = errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
 				}
+			} else {
+				log.Warnf("connection %s not found for OrderedRange", addr)
 			}
 		}
 	}
@@ -267,42 +273,43 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 	orders []string,
 	concurrency int,
-	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
+	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (err error) {
 	eg, egctx := errgroup.New(ctx)
 	eg.Limitation(concurrency)
 	for _, addr := range orders {
 		pool, ok := g.conns.Load(addr)
-		if !ok {
-			return errors.ErrGRPCClientConnNotFound(addr)
-		}
-		eg.Go(safety.RecoverFunc(func() (err error) {
-			select {
-			case <-egctx.Done():
-				return nil
-			default:
-				if g.bo != nil {
-					_, err = g.bo.Do(egctx, func() (r interface{}, err error) {
-						return nil, pool.Do(func(conn *ClientConn) (err error) {
+		if ok {
+			eg.Go(safety.RecoverFunc(func() (err error) {
+				select {
+				case <-egctx.Done():
+					return nil
+				default:
+					if g.bo != nil {
+						_, err = g.bo.Do(egctx, func() (r interface{}, err error) {
+							return nil, pool.Do(func(conn *ClientConn) (err error) {
+								if conn == nil {
+									return errors.ErrGRPCClientConnNotFound(addr)
+								}
+								return f(egctx, addr, conn, g.copts...)
+							})
+						})
+					} else {
+						err = pool.Do(func(conn *ClientConn) (err error) {
 							if conn == nil {
 								return errors.ErrGRPCClientConnNotFound(addr)
 							}
 							return f(egctx, addr, conn, g.copts...)
 						})
-					})
-				} else {
-					err = pool.Do(func(conn *ClientConn) (err error) {
-						if conn == nil {
-							return errors.ErrGRPCClientConnNotFound(addr)
-						}
-						return f(egctx, addr, conn, g.copts...)
-					})
+					}
+					if err != nil {
+						return errors.ErrRPCCallFailed(addr, err)
+					}
+					return nil
 				}
-				if err != nil {
-					return errors.ErrRPCCallFailed(addr, err)
-				}
-				return nil
-			}
-		}))
+			}))
+		} else {
+			log.Warnf("connection %s not found for OrderedRangeConcurrent", addr)
+		}
 	}
 	return eg.Wait()
 }
