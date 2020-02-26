@@ -22,7 +22,7 @@ type gatewayClient struct {
 	streamConcurrency int
 }
 
-func New(opts ...Option) (Client, error) {
+func New(ctx context.Context, opts ...Option) (Client, error) {
 	c := new(gatewayClient)
 
 	for _, opt := range append(defaultOptions, opts...) {
@@ -30,6 +30,10 @@ func New(opts ...Option) (Client, error) {
 	}
 
 	c.grpcClient = igrpc.New(c.cfg.Opts()...)
+
+	if err := c.grpcClient.Connect(ctx, c.addr); err != nil {
+		return nil, err
+	}
 
 	return c, nil
 }
