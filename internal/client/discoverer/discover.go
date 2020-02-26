@@ -234,7 +234,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 				Node:      c.nodeName,
 			}, copts...)
 		if err != nil {
-			log.Info("failed to call discoverer.Node API")
+			log.Warn("failed to call discoverer.Node API")
 			return nil, errors.ErrRPCCallFailed(c.dscAddr, err)
 		}
 		var wg sync.WaitGroup
@@ -247,25 +247,23 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			default:
 				if n != nil && n.GetPods() != nil && n.GetPods().GetPods() != nil {
 					node := n
-					log.Info("dispatch goroutine")
 					wg.Add(1)
 					c.eg.Go(safety.RecoverFunc(func() (err error) {
-						log.Infof("waiting for signal node name = %s", node.GetName())
 						defer wg.Done()
-						log.Infof("processing node name = %s", node.GetName())
+						log.Debug("processing node name = %s", node.GetName())
 						for _, pod := range node.GetPods().GetPods() {
 							select {
 							case <-cctx.Done():
-								log.Info("exit pods loop by context")
+								log.Debug("exit pods loop by context")
 								return nil
 							default:
-								log.Infof("%#v", pod)
+								log.Debug("%#v", pod)
 								if pod != nil && pod.GetIp() != "" {
-									log.Infof("processing pod name = %s", pod.GetName())
+									log.Debug("processing pod name = %s", pod.GetName())
 									addr := fmt.Sprintf("%s:%d", pod.GetIp(), c.port)
 									if err = c.connect(ctx, addr); err != nil {
 										err = errors.ErrAddrCouldNotDiscover(err, addr)
-										log.Info(err)
+										log.Warn(err)
 										ech <- err
 										err = nil
 									} else {
@@ -277,7 +275,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 								}
 							}
 						}
-						log.Info("finished node = " + node.GetName())
+						log.Debug("finished node = " + node.GetName())
 						return nil
 					}))
 				}
@@ -285,7 +283,6 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 		}
 		c.eg.Go(safety.RecoverFunc(func() error {
 			wg.Wait()
-			log.Info("goroutine finished")
 			cancel()
 			return nil
 		}))
@@ -293,7 +290,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			select {
 			case <-cctx.Done():
 				if len(connected) == 0 {
-					log.Info("connected addr is zero")
+					log.Warn("connected addr is zero")
 					return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
 				}
 				if c.onDiscover != nil {
@@ -301,12 +298,12 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 				}
 				return nil, nil
 			case addr := <-pch:
-				log.Info("connected addr = " + addr)
+				log.Debug("connected addr = " + addr)
 				connected = append(connected, addr)
 			}
 		}
 	}); err != nil {
-		log.Info("failed to discover addrs from discoverer API, trying to discover from dns..., %v", err)
+		log.Warn("failed to discover addrs from discoverer API, trying to discover from dns..., %v", err)
 		connected, err = c.dnsDiscovery(ctx, ech)
 		if err != nil {
 			return err

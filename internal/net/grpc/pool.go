@@ -133,10 +133,7 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 
 	if c.host == localHost ||
 		c.host == localIPv4 {
-		for {
-			if atomic.LoadUint64(&c.length) > c.size {
-				return c, nil
-			}
+		for atomic.LoadUint64(&c.length) > c.size {
 			conn, err := grpc.DialContext(ctx, localIPv4+":"+c.port, c.dopts...)
 			if err == nil {
 				c.Put(conn)
@@ -144,14 +141,12 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 				log.Debug(err)
 			}
 		}
+		return c, nil
 	}
 
 	ips, err := net.DefaultResolver.LookupIPAddr(ctx, c.host)
 	if err != nil {
-		for {
-			if atomic.LoadUint64(&c.length) > c.size {
-				return c, nil
-			}
+		for atomic.LoadUint64(&c.length) > c.size {
 			conn, err := grpc.DialContext(ctx, c.addr, c.dopts...)
 			if err == nil {
 				c.Put(conn)
@@ -159,6 +154,7 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 				log.Debug(err)
 			}
 		}
+		return c, nil
 	}
 
 	if uint64(len(ips)) < c.size {
