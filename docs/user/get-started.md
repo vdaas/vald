@@ -94,7 +94,7 @@ Please confirm `kubectl cluster-info` before deployment.
 2. Deployment from helm template command
 
     ```
-    helm install --values example/values-scylla.yaml
+    helm install --values example/helm/values-scylla.yaml vald
     ```
 
 ### Run
