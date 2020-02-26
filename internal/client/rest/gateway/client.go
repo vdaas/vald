@@ -12,6 +12,7 @@ import (
 type Client interface {
 	client.Client
 	client.MetaObjectReader
+	client.Upserter
 }
 
 type gatewayClient struct {
@@ -75,6 +76,14 @@ func (c *gatewayClient) StreamUpdate(ctx context.Context, dataProvider func() *c
 }
 
 func (c *gatewayClient) MultiUpdate(ctx context.Context, objectVectors *client.ObjectVectors) error {
+	return errors.ErrUnsupportedClientMethod
+}
+
+func (c *gatewayClient) Upsert(ctx context.Context, req *client.ObjectVector) error {
+	return errors.ErrUnsupportedClientMethod
+}
+
+func (c *gatewayClient) StreamUpsert(ctx context.Context) error {
 	return errors.ErrUnsupportedClientMethod
 }
 

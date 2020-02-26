@@ -171,6 +171,13 @@ func (c *gatewayClient) MultiUpdate(ctx context.Context, req *client.ObjectVecto
 	return err
 }
 
+func (c *gatewayClient) MultiUpsert(ctx context.Context, req *client.ObjectVectors) error {
+	_, err := c.grpcClient.Do(ctx, c.addr, func(ctx context.Context, conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
+		return nil, nil
+	})
+	return err
+}
+
 func (c *gatewayClient) Upsert(ctx context.Context, req *client.ObjectVector) error {
 	_, err := c.grpcClient.Do(ctx, c.addr, func(ctx context.Context, conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
 		return nil, nil
@@ -179,13 +186,6 @@ func (c *gatewayClient) Upsert(ctx context.Context, req *client.ObjectVector) er
 }
 
 func (c *gatewayClient) StreamUpsert(ctx context.Context) error {
-	_, err := c.grpcClient.Do(ctx, c.addr, func(ctx context.Context, conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
-		return nil, nil
-	})
-	return err
-}
-
-func (c *gatewayClient) MultiUpsert(ctx context.Context, req *client.ObjectVectors) error {
 	_, err := c.grpcClient.Do(ctx, c.addr, func(ctx context.Context, conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
 		return nil, nil
 	})
