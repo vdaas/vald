@@ -59,8 +59,8 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 		log.Error(err)
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Nodes API request %#v nodes not found", req), err, info.Get())
 	}
-    var sbuf = bytes.NewBuffer(nil)
-    json.Encode(sbuf, &nodes)
+	var sbuf = bytes.NewBuffer(nil)
+	json.Encode(sbuf, &nodes)
 	log.Info(sbuf.String())
 	return nodes, nil
 }
