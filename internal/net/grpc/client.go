@@ -276,7 +276,8 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (err error) {
 	eg, egctx := errgroup.New(ctx)
 	eg.Limitation(concurrency)
-	for _, addr := range orders {
+	for _, order := range orders {
+		addr := order
 		pool, ok := g.conns.Load(addr)
 		if ok {
 			eg.Go(safety.RecoverFunc(func() (err error) {

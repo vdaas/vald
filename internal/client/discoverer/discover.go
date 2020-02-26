@@ -297,6 +297,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 	}
 
 	c.addrs.Store(connected)
+
 	if c.autoconn && c.client != nil {
 		if err = c.client.RangeConcurrent(ctx, len(connected)/3, func(ctx context.Context,
 			addr string,
