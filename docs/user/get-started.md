@@ -52,6 +52,7 @@ If helm is not installed, let see below details or [here](https://github.com/hel
 <details>
     <summary>optional installation</summray>
     <div>
+    <pre>
         1. helm
             <code>
             # brew|Scoop|GoFish
@@ -59,15 +60,11 @@ If helm is not installed, let see below details or [here](https://github.com/hel
             # chocolatey
             choco install kubernetes-helm
             </code>
+    </pre>
     </div>
 </details>
 
 ## Starting Vald on k8s cluster
-
-<details>
-    <summary>optional installation</summary>
-    <div>kind</div>
-</details>
 
 You have to install helm. Please check [here](https://github.com/helm/helm#install).
 
