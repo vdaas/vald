@@ -45,6 +45,11 @@ type Writer interface {
 	MultiRemove(context.Context, *ObjectIDs) error
 }
 
+type Upserter interface {
+	StreamUpsert(context.Context) error
+	MultiUpsert(context.Context, *ObjectVectors) error
+}
+
 type ObjectReader interface {
 	GetObject(context.Context, *ObjectID) (*ObjectVector, error)
 	StreamGetObject(context.Context, func() *ObjectID, func(*ObjectVector, error)) error

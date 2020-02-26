@@ -3,7 +3,7 @@ package gateway
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/vald"
+	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/internal/client"
 	"github.com/vdaas/vald/internal/config"
 	igrpc "github.com/vdaas/vald/internal/net/grpc"
