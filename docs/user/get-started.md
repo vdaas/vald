@@ -52,16 +52,13 @@ If helm is not installed, let see below details or [here](https://github.com/hel
 <details>
     <summary>optional installation</summray>
     <div>
-
         1. helm
-            ```bash
+            <code>
             # brew|Scoop|GoFish
             [brew|scoop|gofish] install helm
-
             # chocolatey
             choco install kubernetes-helm
-            ```
-
+            </code>
     </div>
 </details>
 
