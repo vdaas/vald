@@ -262,6 +262,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 								log.Info("exit pods loop by context")
 								return nil
 							default:
+								log.Infof("%#v", pod)
 								if pod != nil && pod.GetIp() != "" {
 									log.Infof("processing pod name = %s", pod.GetName())
 									addr := fmt.Sprintf("%s:%d", pod.GetIp(), c.port)
