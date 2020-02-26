@@ -1,6 +1,6 @@
-package agent
+package gateway
 
-type Option func(*agentClient)
+type Option func(*gatewayClient)
 
 var (
 	defaultOptions = []Option{
@@ -9,9 +9,9 @@ var (
 )
 
 func WithAddr(addr string) Option {
-	return func(ac *agentClient) {
+	return func(c *gatewayClient) {
 		if len(addr) != 0 {
-			ac.addr = addr
+			c.addr = addr
 		}
 	}
 }
