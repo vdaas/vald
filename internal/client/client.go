@@ -46,8 +46,9 @@ type Writer interface {
 }
 
 type Upserter interface {
-	StreamUpsert(context.Context) error
+	Upsert(context.Context, *ObjectVector) error
 	MultiUpsert(context.Context, *ObjectVectors) error
+	StreamUpsert(context.Context, func() *ObjectVector, func(error)) error
 }
 
 type ObjectReader interface {

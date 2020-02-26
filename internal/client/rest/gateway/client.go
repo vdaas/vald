@@ -83,7 +83,11 @@ func (c *gatewayClient) Upsert(ctx context.Context, req *client.ObjectVector) er
 	return errors.ErrUnsupportedClientMethod
 }
 
-func (c *gatewayClient) StreamUpsert(ctx context.Context) error {
+func (c *gatewayClient) MultiUpsert(context.Context, *client.ObjectVectors) error {
+	return errors.ErrUnsupportedClientMethod
+}
+
+func (c *gatewayClient) StreamUpsert(context.Context, func() *client.ObjectVector, func(error)) error {
 	return errors.ErrUnsupportedClientMethod
 }
 
