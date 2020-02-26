@@ -6,16 +6,19 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 )
 
-type ObjectID = payload.Object_ID
-type ObjectIDs = payload.Object_IDs
-type ObjectVector = payload.Object_Vector
-type ObjectVectors = payload.Object_Vectors
-type SearchRequest = payload.Search_Request
-type SearchIDRequest = payload.Search_IDRequest
-type SearchResponse = payload.Search_Response
-type ControlCreateIndexRequest = payload.Control_CreateIndexRequest
-type InfoIndex = payload.Info_Index
-type MetaObject = payload.Backup_MetaVector
+type (
+	ObjectID                  = payload.Object_ID
+	ObjectIDs                 = payload.Object_IDs
+	ObjectVector              = payload.Object_Vector
+	ObjectVectors             = payload.Object_Vectors
+	SearchRequest             = payload.Search_Request
+	SearchIDRequest           = payload.Search_IDRequest
+	SearchResponse            = payload.Search_Response
+	ControlCreateIndexRequest = payload.Control_CreateIndexRequest
+	InfoIndex                 = payload.Info_Index
+	MetaObject                = payload.Backup_MetaVector
+	Empty                     = payload.Empty
+)
 
 type Client interface {
 	Reader
@@ -32,13 +35,13 @@ type Reader interface {
 
 type Writer interface {
 	Insert(context.Context, *ObjectVector) error
-	StreamInsert(context.Context, func() *ObjectVector, func(error))
+	StreamInsert(context.Context, func() *ObjectVector, func(error)) error
 	MultiInsert(context.Context, *ObjectVectors) error
 	Update(context.Context, *ObjectVector) error
-	StreamUpdate(context.Context, func() *ObjectVector, func(error))
+	StreamUpdate(context.Context, func() *ObjectVector, func(error)) error
 	MultiUpdate(context.Context, *ObjectVectors) error
 	Remove(context.Context, *ObjectID) error
-	StreamRemove(context.Context, func() *ObjectID, func(error))
+	StreamRemove(context.Context, func() *ObjectID, func(error)) error
 	MultiRemove(context.Context, *ObjectIDs) error
 }
 

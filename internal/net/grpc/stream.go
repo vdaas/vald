@@ -72,5 +72,37 @@ func BidirectionalStream(stream grpc.ServerStream,
 	}
 }
 
-// TODO implement BidirectionalStreamClient
-// func BidirectionalStreamClient(...) error {}
+func BidirectionalStreamClient(stream grpc.ClientStream,
+	concurrency int,
+	dataProvider func() interface{},
+	f func(interface{}, error)) (err error) {
+	ctx := stream.Context()
+	eg, ctx := errgroup.New(stream.Context())
+	if concurrency > 0 {
+		eg.Limitation(concurrency)
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return eg.Wait()
+		default:
+			data := dataProvider()
+			if data == nil {
+				return eg.Wait()
+			}
+
+			err = stream.SendMsg(data)
+			if err != nil {
+				return err
+			}
+
+			eg.Go(safety.RecoverFunc(func() (err error) {
+				var res interface{}
+				err = stream.RecvMsg(&res)
+				f(res, err)
+				return err
+			}))
+		}
+	}
+}
