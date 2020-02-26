@@ -18,8 +18,8 @@
 package grpc
 
 import (
+	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/vdaas/vald/apis/grpc/discoverer"
@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/net/http/json"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
 )
 
@@ -58,7 +59,8 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 		log.Error(err)
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Nodes API request %#v nodes not found", req), err, info.Get())
 	}
-	b, _ := json.MarshalIndent(nodes, "", "\t")
-	log.Info(string(b))
+    var sbuf = bytes.NewBuffer(nil)
+    json.Encode(sbuf, &nodes)
+	log.Info(sbuf.String())
 	return nodes, nil
 }
