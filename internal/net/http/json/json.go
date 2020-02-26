@@ -97,21 +97,21 @@ func EncodeRequest(req *http.Request,
 }
 
 func DecodeResponse(res *http.Response, data interface{}) (err error) {
-	// if r != nil && r.Body != nil && res.ContentLength != 0 {
-	// 	err = Decode(r.Body, data)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	_, err := io.Copy(ioutil.Discard, r.Body)
-	// 	if err != nil {
-	// 		return errors.ErrRequestBodyFlush(err)
-	// 	}
-	// 	// close
-	// 	err = r.Body.Close()
-	// 	if err != nil {
-	// 		return errors.ErrRequestBodyClose(err)
-	// 	}
-	// }
+	if res != nil && res.Body != nil && res.ContentLength != 0 {
+		err = Decode(res.Body, data)
+		if err != nil {
+			return err
+		}
+		_, err := io.Copy(ioutil.Discard, res.Body)
+		if err != nil {
+			return errors.ErrRequestBodyFlush(err)
+		}
+		// close
+		err = res.Body.Close()
+		if err != nil {
+			return errors.ErrRequestBodyClose(err)
+		}
+	}
 	return nil
 }
 
