@@ -243,12 +243,12 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 		cctx, cancel := context.WithCancel(ctx)
 		pch := make(chan string, len(nodes.GetNodes()))
 		for _, n := range nodes.GetNodes() {
-			log.Infof("processing node name = %s", n.GetName())
 			select {
 			case <-cctx.Done():
 				return nil, cctx.Err()
 			default:
 				if n != nil && n.GetPods() != nil && n.GetPods().GetPods() != nil {
+					log.Infof("processing node name = %s", n.GetName())
 					node := n
 					wg.Add(1)
 					c.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -259,13 +259,15 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 						for _, pod := range node.GetPods().GetPods() {
 							select {
 							case <-cctx.Done():
+								log.Info("exit pods loop by context")
 								return nil
 							default:
 								if pod != nil && pod.GetIp() != "" {
+									log.Infof("processing pod name = %s", pod.GetName())
 									addr := fmt.Sprintf("%s:%d", pod.GetIp(), c.port)
 									if err = c.connect(ctx, addr); err != nil {
 										err = errors.ErrAddrCouldNotDiscover(err, addr)
-										log.Debug(err)
+										log.Info(err)
 										ech <- err
 										err = nil
 									} else {
@@ -277,21 +279,19 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 								}
 							}
 						}
+						log.Info("finished node = " + node.GetName())
 						return nil
 					}))
 				}
 			}
 		}
 		c.eg.Go(safety.RecoverFunc(func() error {
-			log.Info("waiting for goroutine finish")
 			wg.Wait()
 			log.Info("goroutine finished")
 			cancel()
 			return nil
 		}))
-		log.Info("start broadcast")
 		cond.Broadcast()
-		log.Info("broadcast finished")
 		for {
 			select {
 			case <-cctx.Done():
@@ -304,6 +304,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 				}
 				return nil, nil
 			case addr := <-pch:
+				log.Info("connected addr = " + addr)
 				connected = append(connected, addr)
 			}
 		}
