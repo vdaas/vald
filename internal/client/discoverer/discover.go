@@ -235,14 +235,16 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 				Node:      c.nodeName,
 			}, copts...)
 		if err != nil {
-			log.Warn("failed to call discoverer.Node API")
+			log.Info("failed to call discoverer.Node API")
 			return nil, errors.ErrRPCCallFailed(c.dscAddr, err)
 		}
+		log.Info("request to node discoverer success")
 		var wg sync.WaitGroup
 		cond := sync.NewCond(new(sync.Mutex))
 		cctx, cancel := context.WithCancel(ctx)
 		pch := make(chan string, len(nodes.GetNodes()))
 		for _, n := range nodes.GetNodes() {
+			log.Infof("processing node name = %s", n.GetName())
 			select {
 			case <-cctx.Done():
 				return nil, cctx.Err()
@@ -291,7 +293,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			select {
 			case <-cctx.Done():
 				if len(connected) == 0 {
-					log.Warn("connected addr is zero")
+					log.Info("connected addr is zero")
 					return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
 				}
 				if c.onDiscover != nil {
@@ -303,7 +305,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			}
 		}
 	}); err != nil {
-		log.Warnf("failed to discover addrs from discoverer API, trying to discover from dns..., %v", err)
+		log.Info("failed to discover addrs from discoverer API, trying to discover from dns..., %v", err)
 		connected, err = c.dnsDiscovery(ctx, ech)
 		if err != nil {
 			return err
