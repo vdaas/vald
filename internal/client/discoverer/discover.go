@@ -84,6 +84,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 	}
 	c.addrs.Store(addrs)
 
+	var aech <-chan error
 	if c.autoconn {
 		c.client = grpc.New(
 			append(
@@ -92,21 +93,19 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 				grpc.WithErrGroup(c.eg),
 			)...,
 		)
+		if c.client != nil {
+			aech, err = c.client.StartConnectionMonitor(ctx)
+			if err != nil {
+				close(ech)
+				return nil, err
+			}
+		}
 	}
 
 	err = c.discover(ctx, ech)
 	if err != nil {
 		close(ech)
 		return nil, errors.Wrap(c.dscClient.Close(), err.Error())
-	}
-
-	var aech <-chan error
-	if c.autoconn && c.client != nil {
-		aech, err = c.client.StartConnectionMonitor(ctx)
-		if err != nil {
-			close(ech)
-			return nil, err
-		}
 	}
 
 	c.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -284,11 +283,15 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			}
 		}
 		c.eg.Go(safety.RecoverFunc(func() error {
+			log.Info("waiting for goroutine finish")
 			wg.Wait()
+			log.Info("goroutine finished")
 			cancel()
 			return nil
 		}))
+		log.Info("start broadcast")
 		cond.Broadcast()
+		log.Info("broadcast finished")
 		for {
 			select {
 			case <-cctx.Done():
