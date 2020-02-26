@@ -84,6 +84,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 	}
 	c.addrs.Store(addrs)
 
+	var aech <-chan error
 	if c.autoconn {
 		c.client = grpc.New(
 			append(
@@ -92,21 +93,19 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 				grpc.WithErrGroup(c.eg),
 			)...,
 		)
+		if c.client != nil {
+			aech, err = c.client.StartConnectionMonitor(ctx)
+			if err != nil {
+				close(ech)
+				return nil, err
+			}
+		}
 	}
 
 	err = c.discover(ctx, ech)
 	if err != nil {
 		close(ech)
 		return nil, errors.Wrap(c.dscClient.Close(), err.Error())
-	}
-
-	var aech <-chan error
-	if c.autoconn && c.client != nil {
-		aech, err = c.client.StartConnectionMonitor(ctx)
-		if err != nil {
-			close(ech)
-			return nil, err
-		}
 	}
 
 	c.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -235,10 +234,10 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 				Node:      c.nodeName,
 			}, copts...)
 		if err != nil {
+			log.Warn("failed to call discoverer.Node API")
 			return nil, errors.ErrRPCCallFailed(c.dscAddr, err)
 		}
 		var wg sync.WaitGroup
-		cond := sync.NewCond(new(sync.Mutex))
 		cctx, cancel := context.WithCancel(ctx)
 		pch := make(chan string, len(nodes.GetNodes()))
 		for _, n := range nodes.GetNodes() {
@@ -251,19 +250,20 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 					wg.Add(1)
 					c.eg.Go(safety.RecoverFunc(func() (err error) {
 						defer wg.Done()
-						cond.L.Lock()
-						cond.Wait()
-						cond.L.Unlock()
+						log.Debug("processing node name = %s", node.GetName())
 						for _, pod := range node.GetPods().GetPods() {
 							select {
 							case <-cctx.Done():
+								log.Debug("exit pods loop by context")
 								return nil
 							default:
+								log.Debug("%#v", pod)
 								if pod != nil && pod.GetIp() != "" {
+									log.Debug("processing pod name = %s", pod.GetName())
 									addr := fmt.Sprintf("%s:%d", pod.GetIp(), c.port)
 									if err = c.connect(ctx, addr); err != nil {
 										err = errors.ErrAddrCouldNotDiscover(err, addr)
-										log.Debug(err)
+										log.Warn(err)
 										ech <- err
 										err = nil
 									} else {
@@ -275,6 +275,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 								}
 							}
 						}
+						log.Debug("finished node = " + node.GetName())
 						return nil
 					}))
 				}
@@ -285,11 +286,11 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			cancel()
 			return nil
 		}))
-		cond.Broadcast()
 		for {
 			select {
 			case <-cctx.Done():
 				if len(connected) == 0 {
+					log.Warn("connected addr is zero")
 					return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
 				}
 				if c.onDiscover != nil {
@@ -297,11 +298,12 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 				}
 				return nil, nil
 			case addr := <-pch:
+				log.Debug("connected addr = " + addr)
 				connected = append(connected, addr)
 			}
 		}
 	}); err != nil {
-		log.Warn("failed to discover addrs from discoverer API, trying to discover from dns...")
+		log.Warn("failed to discover addrs from discoverer API, trying to discover from dns..., %v", err)
 		connected, err = c.dnsDiscovery(ctx, ech)
 		if err != nil {
 			return err
