@@ -27,7 +27,8 @@ NOSQL_IMAGE                     = $(NAME)-meta-cassandra
 BACKUP_MANAGER_MYSQL_IMAGE      = $(NAME)-manager-backup-mysql
 BACKUP_MANAGER_CASSANDRA_IMAGE  = $(NAME)-manager-backup-cassandra
 MANAGER_COMPRESSOR_IMAGE        = $(NAME)-manager-compressor
-CI_CONTAINER_IMAGE             = $(NAME)-ci-container
+MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
+CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 
 NGT_VERSION := $(shell cat versions/NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
@@ -37,6 +38,14 @@ GOPATH := $(shell go env GOPATH)
 GOCACHE := $(shell go env GOCACHE)
 
 TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION)
+
+KIND_VERSION         ?= v0.7.0
+VALDCLI_VERSION      ?= v0.0.1
+TELEPRESENCE_VERSION ?= 0.104
+
+BINDIR ?= /usr/local/bin
+
+UNAME := $(shell uname)
 
 MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
 
@@ -65,6 +74,12 @@ BENCH_DATASETS = $(BENCH_DATASET_MD5S:$(BENCH_DATASET_MD5_DIR)/%.md5=$(BENCH_DAT
 
 DATASET_ARGS ?= identity-128
 ADDRESS_ARGS ?= ""
+
+HOST      ?= localhost
+PORT      ?= 80
+NUMBER    ?= 10
+DIMENSION ?= 6
+NUMPANES  ?= 4
 
 PROTO_PATHS = \
 	$(PROTODIRS:%=./apis/proto/%) \
@@ -112,6 +127,7 @@ clean:
 		./apis/swagger \
 		./bench \
 		./pprof \
+		./libs \
 		$(GOCACHE) \
 		./go.sum \
 		./go.mod
@@ -131,12 +147,27 @@ init: \
 	ngt/install \
 	tensorflow/install
 
+.PHONY: tools/install
+## install development tools
+tools/install: \
+	helm/install \
+	kind/install \
+	valdcli/install \
+	telepresence/install
+
 .PHONY: update
 ## update deps, license, and run goimports
 update: \
 	clean \
 	deps \
 	proto/all \
+	license \
+	update/goimports
+
+
+.PHONY: format
+## format go codes
+format: \
 	license \
 	update/goimports
 
@@ -217,3 +248,4 @@ include Makefile.d/git.mk
 include Makefile.d/proto.mk
 include Makefile.d/k8s.mk
 include Makefile.d/kind.mk
+include Makefile.d/client.mk

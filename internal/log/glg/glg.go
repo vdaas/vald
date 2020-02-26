@@ -59,7 +59,7 @@ func (l *logger) setLevelMode(lv level.Level) *logger {
 		l.glg.SetLevelMode(glg.ERR, glg.STD)
 		fallthrough
 	case level.FATAL:
-		l.glg.SetLevelMode(glg.FAIL, glg.STD)
+		l.glg.SetLevelMode(glg.FATAL, glg.STD)
 	}
 
 	return l

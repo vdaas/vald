@@ -117,7 +117,7 @@ func TestMetrics(rt *testing.T) {
 							}
 						}
 
-						_, err := client.CreateIndex(ctx, &payload.Controll_CreateIndexRequest{
+						_, err := client.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
 							PoolSize: 10000,
 						})
 						if err != nil {

@@ -30,6 +30,9 @@ type Data struct {
 
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
+
+	// Discoverer represent discovery config
+	Discoverer *config.Discoverer `json:"discoverer" yaml:"discoverer"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
@@ -45,6 +48,11 @@ func NewConfig(path string) (cfg *Data, err error) {
 
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()
+	}
+	if cfg.Discoverer != nil {
+		cfg.Discoverer = cfg.Discoverer.Bind()
+	} else {
+		cfg.Discoverer = new(config.Discoverer)
 	}
 	return cfg, nil
 }

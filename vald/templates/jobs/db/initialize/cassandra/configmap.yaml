@@ -20,18 +20,20 @@ metadata:
   name: {{ .Values.initializer.cassandra.configmap.name }}
 data:
   {{ .Values.initializer.cassandra.configmap.filename }}: |
-    DROP KEYSPACE IF EXISTS {{ .Values.initializer.cassandra.configmap.keyspace }};
+    // DROP KEYSPACE IF EXISTS {{ .Values.initializer.cassandra.configmap.keyspace }};
     CREATE KEYSPACE IF NOT EXISTS {{ .Values.initializer.cassandra.configmap.keyspace }} WITH replication = {'class': '{{ .Values.initializer.cassandra.configmap.replication_class }}', 'replication_factor': {{ .Values.initializer.cassandra.configmap.replication_factor }}};
 
     {{- if .Values.initializer.cassandra.configmap.meta.enabled }}
-    # meta tables
+    // meta
 
+    DROP TABLE IF EXISTS {{ .Values.initializer.cassandra.configmap.keyspace }}.{{ .Values.initializer.cassandra.configmap.meta.name.kv }};
     CREATE TABLE {{ .Values.initializer.cassandra.configmap.keyspace }}.{{ .Values.initializer.cassandra.configmap.meta.name.kv }} (
       uuid   text,
       meta   text,
       PRIMARY KEY (uuid)
     );
 
+    DROP TABLE IF EXISTS {{ .Values.initializer.cassandra.configmap.keyspace }}.{{ .Values.initializer.cassandra.configmap.meta.name.vk }};
     CREATE TABLE {{ .Values.initializer.cassandra.configmap.keyspace }}.{{ .Values.initializer.cassandra.configmap.meta.name.vk }} (
       meta   text,
       uuid   text,
@@ -40,8 +42,9 @@ data:
     {{- end }}
 
     {{- if .Values.initializer.cassandra.configmap.backup.enabled }}
-    # backup-manager tables
+    // backup
 
+    DROP TABLE IF EXISTS {{ .Values.initializer.cassandra.configmap.keyspace }}.{{ .Values.initializer.cassandra.configmap.backup.name }};
     CREATE TABLE {{ .Values.initializer.cassandra.configmap.keyspace }}.{{ .Values.initializer.cassandra.configmap.backup.name }} (
       uuid   text,
       vector blob,
@@ -50,6 +53,7 @@ data:
       PRIMARY KEY (uuid)
     );
 
+    DROP INDEX IF EXISTS {{ .Values.initializer.cassandra.configmap.keyspace }}.{{ .Values.initializer.cassandra.configmap.backup.name }};
     CREATE INDEX ON {{ .Values.initializer.cassandra.configmap.keyspace }}.{{ .Values.initializer.cassandra.configmap.backup.name }} (ips);
     {{- end }}
 {{- end }}

@@ -29,6 +29,15 @@ helm repo add vald https://vald.vdaas.org/charts
 helm install --generate-name vald/vald
 ```
 
+If you use the default values.yaml, the `nightly` images will be installed.
+
+### Docker image tagging policy
+
+- `nightly` ... latest build of master branch
+- `vX.X.X` ... released versions
+- `latest` ... latest build of release versions
+- `stable` ... latest long-term supported version
+
 ## Example
 
 ```shell
@@ -81,6 +90,7 @@ vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas
     <td>NGT</td>
     <td><a href="https://hub.docker.com/r/vdaas/vald-agent-ngt">vdaas/vald-agent-ngt</a></td>
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20agent-ngt/badge.svg"></td>
+  </tr>
   <tr>
     <td>discoverer</td>
     <td>K8s</td>
@@ -92,6 +102,7 @@ vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas
     <td></td>
     <td><a href="https://hub.docker.com/r/vdaas/vald-gateway">vdaas/vald-gateway</a></td>
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20gateway-vald/badge.svg"></td>
+  </tr>
   <tr>
     <td rowspan=2>backup manager</td>
     <td>MySQL</td>
@@ -104,7 +115,7 @@ vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20backup-manager-cassandra/badge.svg"></td>
   </tr>
   <tr>
-    <td>compressor
+    <td>compressor</td>
     <td></td>
     <td><a href="https://hub.docker.com/r/vdaas/vald-manager-compressor">vdaas/vald-manager-compressor</a></td>
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20manager-compressor/badge.svg"></td>
@@ -119,6 +130,12 @@ vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas
     <td>Cassandra</td>
     <td><a href="https://hub.docker.com/r/vdaas/vald-meta-cassandra">vdaas/vald-meta-cassandra</a></td>
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20meta-cassandra/badge.svg"></td>
+  </tr>
+  <tr>
+    <td>index manager</td>
+    <td></td>
+    <td><a href="https://hub.docker.com/r/vdaas/vald-manager-index">vdaas/vald-manager-index</a></td>
+    <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20manager-index/badge.svg"></td>
   </tr>
 </table>
 

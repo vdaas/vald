@@ -70,6 +70,7 @@ jobs:
       run: |
         echo 'Push to DockerHub (tags)'
         imagename=`make docker/name/meta-redis`
+        docker push ${imagename}:latest
         tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
         docker tag ${imagename} ${imagename}:${tag_name}
         docker push ${imagename}:${tag_name}

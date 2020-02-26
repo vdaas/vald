@@ -19,9 +19,14 @@ package grpc
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/vdaas/vald/apis/grpc/discoverer"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
 )
 
@@ -38,7 +43,22 @@ func New(opts ...Option) discoverer.DiscovererServer {
 	return s
 }
 
-func (s *server) Discover(ctx context.Context, req *payload.Discoverer_Request) (
-	res *payload.Info_Servers, err error) {
-	return s.dsc.GetServers(req.GetName(), req.GetNode()), nil
+func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Pods, error) {
+	pods, err := s.dsc.GetPods(req)
+	if err != nil {
+		log.Error(err)
+		return nil, status.WrapWithNotFound(fmt.Sprintf("Pods API request %#v pods not found", req), err, info.Get())
+	}
+	return pods, nil
+}
+
+func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
+	nodes, err := s.dsc.GetNodes(req)
+	if err != nil {
+		log.Error(err)
+		return nil, status.WrapWithNotFound(fmt.Sprintf("Nodes API request %#v nodes not found", req), err, info.Get())
+	}
+	b, _ := json.MarshalIndent(nodes, "", "\t")
+	log.Info(string(b))
+	return nodes, nil
 }

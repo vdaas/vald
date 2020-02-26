@@ -20,6 +20,8 @@ metadata:
   name: {{ .Values.backupManager.name }}
   labels:
     app: {{ .Values.backupManager.name }}
+  annotations:
+    checksum/configmap: {{ include (print $.Template.BasePath "/manager/backup/configmap.yaml") . | sha256sum }}
 spec:
   progressDeadlineSeconds: {{ .Values.backupManager.progressDeadlineSeconds }}
   replicas: {{ .Values.backupManager.minReplicas }}
@@ -47,8 +49,8 @@ spec:
         - name: {{ .Values.backupManager.name }}
           image: "{{ .Values.backupManager.image.repository }}:{{ .Values.backupManager.image.tag }}"
           imagePullPolicy: {{ .Values.backupManager.image.pullPolicy }}
-          {{- $servers := dict "Values" .Values.backupManager.server_config "default" .Values.defaults.server_config }}
-          {{- include "vald.containerPorts" $servers | nindent 10 }}
+          {{- $servers := dict "Values" .Values.backupManager.server_config "default" .Values.defaults.server_config -}}
+          {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
           resources:
             {{- toYaml .Values.backupManager.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
@@ -74,5 +76,12 @@ spec:
         {{- if .Values.backupManager.volumes }}
         {{- toYaml .Values.backupManager.volumes | nindent 8 }}
         {{- end }}
+      {{- if .Values.backupManager.nodeName }}
+      nodeName: {{ .Values.backupManager.nodeName }}
+      {{- end }}
+      {{- if .Values.backupManager.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.backupManager.nodeSelector | nindent 8 }}
+      {{- end }}
 status:
 {{- end }}

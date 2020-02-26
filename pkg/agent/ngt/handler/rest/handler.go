@@ -122,7 +122,7 @@ func (h *handler) MultiRemove(w http.ResponseWriter, r *http.Request) (code int,
 }
 
 func (h *handler) CreateIndex(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Controll_CreateIndexRequest
+	var req *payload.Control_CreateIndexRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.agent.CreateIndex(r.Context(), req)
 	})
@@ -136,7 +136,7 @@ func (h *handler) SaveIndex(w http.ResponseWriter, r *http.Request) (code int, e
 }
 
 func (h *handler) CreateAndSaveIndex(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Controll_CreateIndexRequest
+	var req *payload.Control_CreateIndexRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		_, err = h.agent.CreateIndex(r.Context(), req)
 		if err != nil {
