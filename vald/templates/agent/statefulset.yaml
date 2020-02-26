@@ -24,6 +24,7 @@ metadata:
   #   checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
 spec:
   serviceName: {{ .Values.agent.name }}
+  podManagementPolicy: {{ .Values.agent.podManagementPolicy }}
   replicas: {{ .Values.agent.minReplicas }}
   revisionHistoryLimit: {{ .Values.agent.revisionHistoryLimit }}
   selector:

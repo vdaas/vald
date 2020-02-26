@@ -17,6 +17,7 @@
 agent:
   minReplicas: 5
   maxReplicas: 10
+  podManagementPolicy: Parallel
 
 initializer:
   mysql:
