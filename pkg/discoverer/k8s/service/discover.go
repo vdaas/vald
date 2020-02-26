@@ -427,7 +427,7 @@ func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.I
 		req.Node = name
 		n.Pods.Pods = nil
 		ps, err := d.GetPods(req)
-		if err == nil {
+		if err == nil && ps != nil {
 			for i := range ps.Pods {
 				ps.Pods[i].Node = nil
 			}
