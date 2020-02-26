@@ -254,8 +254,8 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 					c.eg.Go(safety.RecoverFunc(func() (err error) {
 						defer wg.Done()
 						cond.L.Lock()
+						defer cond.L.Unlock()
 						cond.Wait()
-						cond.L.Unlock()
 						for _, pod := range node.GetPods().GetPods() {
 							select {
 							case <-cctx.Done():
