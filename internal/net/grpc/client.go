@@ -359,11 +359,13 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 		}
 		pool, err = pool.Connect(ctx)
 		if err != nil {
+			log.Warn(err)
 			return err
 		}
 		g.conns.Store(addr, pool)
 		return nil
 	}
+	log.Warn("creating new pool for", addr)
 	pool, err = NewPool(ctx, addr, g.poolSize, append(g.dopts, dopts...)...)
 	if err != nil {
 		return err

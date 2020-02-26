@@ -96,9 +96,9 @@ func (g *gateway) DoMulti(ctx context.Context,
 	cctx, cancel := context.WithCancel(ctx)
 	var once sync.Once
 	err = g.client.GetClient().OrderedRangeConcurrent(cctx, g.client.GetAddrs(), num,
-		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+		func(ictx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 			select {
-			case <-cctx.Done():
+			case <-ictx.Done():
 				return nil
 			default:
 				if atomic.LoadUint32(&cur) >= limit {
@@ -107,7 +107,7 @@ func (g *gateway) DoMulti(ctx context.Context,
 					})
 					return nil
 				}
-				err = f(cctx, addr, agent.NewAgentClient(conn), copts...)
+				err = f(ictx, addr, agent.NewAgentClient(conn), copts...)
 				if err != nil {
 					log.Debug(addr, err)
 					return err

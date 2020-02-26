@@ -19,6 +19,7 @@ package grpc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/vdaas/vald/apis/grpc/discoverer"
@@ -57,5 +58,7 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 		log.Error(err)
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Nodes API request %#v nodes not found", req), err, info.Get())
 	}
+	b, _ := json.MarshalIndent(nodes, "", "\t")
+	log.Info(string(b))
 	return nodes, nil
 }

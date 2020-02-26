@@ -19,6 +19,7 @@ package grpc
 
 import (
 	"context"
+	"math"
 	"net"
 	"strings"
 	"sync"
@@ -101,7 +102,7 @@ func (c *ClientConnPool) Disconnect() (rerr error) {
 	if err != nil {
 		rerr = errors.Wrap(rerr, err.Error())
 	}
-	for i := uint64(0); i < atomic.LoadUint64(&c.length); i++ {
+	for i := uint64(0); i < uint64(math.Max(float64(atomic.LoadUint64(&c.length)), float64(c.size)))*2; i++ {
 		conn, _ := c.Get()
 		if conn != nil {
 			err = conn.Close()
