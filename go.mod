@@ -20,7 +20,6 @@ replace (
 
 require (
 	bou.ke/monkey v1.0.2 // indirect
-	github.com/DataDog/zstd v0.0.0-00010101000000-000000000000
 	github.com/certifi/gocertifi v0.0.0-20200104152315-a6d78f326758 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/cockroachdb/errors v1.2.4
@@ -46,7 +45,6 @@ require (
 	github.com/pierrec/lz4/v3 v3.2.1
 	github.com/scylladb/gocqlx v1.3.3
 	github.com/tensorflow/tensorflow v2.1.0+incompatible
-	github.com/valyala/gozstd v1.6.4
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
 	go.uber.org/automaxprocs v1.3.0
