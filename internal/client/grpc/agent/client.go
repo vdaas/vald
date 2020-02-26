@@ -23,7 +23,7 @@ type agentClient struct {
 	grpcClient        igrpc.Client
 }
 
-func New(ctx context.Context, opts ...Option) Client {
+func New(ctx context.Context, opts ...Option) (Client, error) {
 	c := new(agentClient)
 
 	for _, opt := range append(defaultOptions, opts...) {
@@ -32,7 +32,11 @@ func New(ctx context.Context, opts ...Option) Client {
 
 	c.grpcClient = igrpc.New(c.cfg.Opts()...)
 
-	return c
+	if err := c.grpcClient.Connect(ctx, c.addr); err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }
 
 func (c *agentClient) Exists(ctx context.Context, objectID *client.ObjectID) (*client.ObjectID, error) {
