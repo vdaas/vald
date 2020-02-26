@@ -27,12 +27,14 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"golang.org/x/sync/singleflight"
 	"google.golang.org/grpc"
 )
 
 type ClientConnPool struct {
 	ctx     context.Context
 	conn    *ClientConn // default connection
+	group   singleflight.Group
 	pool    sync.Pool
 	addr    string
 	host    string
@@ -76,17 +78,26 @@ func NewPool(ctx context.Context, addr string, size uint64, dopts ...DialOption)
 			if cp.conn != nil && isHealthy(cp.conn) {
 				return cp.conn
 			}
-			log.Warn("establishing new connection to " + cp.addr)
-			conn, err := grpc.DialContext(ctx, cp.addr, cp.dopts...)
+			ic, err, _ := cp.group.Do(cp.addr, func() (interface{}, error) {
+				log.Warn("establishing new connection to " + cp.addr)
+				conn, err := grpc.DialContext(ctx, cp.addr, cp.dopts...)
+				if err != nil {
+					log.Error(err)
+					return nil, nil
+				}
+				if cp.conn != nil {
+					cp.conn.Close()
+				}
+				cp.conn = conn
+				return cp.conn, nil
+			})
 			if err != nil {
-				log.Error(err)
-				return nil
+				if cp.conn != nil && isHealthy(cp.conn) {
+					return cp.conn
+				}
+				log.Warn(err)
 			}
-			if cp.conn != nil {
-				cp.conn.Close()
-			}
-			cp.conn = conn
-			return cp.conn
+			return ic.(*ClientConn)
 		},
 	}
 	return cp.Connect(ctx)
