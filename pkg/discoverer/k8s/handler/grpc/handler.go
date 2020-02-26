@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/discoverer"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
@@ -47,6 +48,7 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 	defer end()
 	pods, err := s.dsc.GetPods(req)
 	if err != nil {
+		log.Error(err)
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Pods API request %#v pods not found", req), err, info.Get())
 	}
 	return pods, nil
@@ -57,6 +59,7 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 	defer end()
 	nodes, err := s.dsc.GetNodes(req)
 	if err != nil {
+		log.Error(err)
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Nodes API request %#v nodes not found", req), err, info.Get())
 	}
 	return nodes, nil

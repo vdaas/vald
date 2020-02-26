@@ -164,6 +164,13 @@ update: \
 	license \
 	update/goimports
 
+
+.PHONY: format
+## format go codes
+format: \
+	license \
+	update/goimports
+
 .PHONY: update/goimports
 ## run goimports for all go files
 update/goimports:

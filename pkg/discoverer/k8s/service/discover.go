@@ -85,6 +85,13 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 				for name, metrics := range nodes {
 					d.nodeMetrics.Store(name, metrics)
 				}
+				d.nodeMetrics.Range(func(name string, _ mnode.Node) bool {
+					_, ok := nodes[name]
+					if !ok {
+						d.nodeMetrics.Delete(name)
+					}
+					return true
+				})
 			}),
 		)),
 		k8s.WithResourceController(mpod.New(
@@ -97,6 +104,13 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 				for name, pods := range podList {
 					d.podMetrics.Store(name, pods)
 				}
+				d.podMetrics.Range(func(name string, _ mpod.Pod) bool {
+					_, ok := podList[name]
+					if !ok {
+						d.podMetrics.Delete(name)
+					}
+					return true
+				})
 			}),
 		)),
 		k8s.WithResourceController(pod.New(
@@ -112,6 +126,13 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 					}
 					d.pods.Store(name, pods)
 				}
+				d.pods.Range(func(name string, _ []pod.Pod) bool {
+					_, ok := podList[name]
+					if !ok {
+						d.pods.Delete(name)
+					}
+					return true
+				})
 			}),
 		)),
 		k8s.WithResourceController(node.New(
@@ -121,9 +142,18 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 			}),
 			node.WithOnReconcileFunc(func(nodes []node.Node) {
 				log.Debugf("node resource reconciled\t%#v", nodes)
+				nm := make(map[string]struct{}, len(nodes))
 				for _, n := range nodes {
+					nm[n.Name] = struct{}{}
 					d.nodes.Store(n.Name, n)
 				}
+				d.nodes.Range(func(name string, _ node.Node) bool {
+					_, ok := nm[name]
+					if !ok {
+						d.nodes.Delete(name)
+					}
+					return true
+				})
 			}),
 		)),
 	)
@@ -373,7 +403,9 @@ func (d *discoverer) GetPods(req *payload.Discoverer_Request) (pods *payload.Inf
 		}
 	}
 	for i := range pods.GetPods() {
-		pods.Pods[i].Node.Pods = nil
+		if pods.Pods[i].Node != nil {
+			pods.Pods[i].Node.Pods = nil
+		}
 	}
 	return pods, nil
 }

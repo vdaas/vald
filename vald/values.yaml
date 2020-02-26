@@ -425,6 +425,11 @@ discoverer:
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
+  env:
+    - name: MY_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
   server_config:
     prefix: discoverer
     servers:
@@ -448,6 +453,10 @@ discoverer:
   observability:
     jaeger:
       service_name: vald-discoverer
+  discoverer:
+    name: ""
+    namespace: _MY_POD_NAMESPACE_
+    cache_sync_duration: 3s
   clusterRole:
     enabled: true
     name: discoverer

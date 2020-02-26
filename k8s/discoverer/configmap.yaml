@@ -89,3 +89,7 @@ data:
         cert: /path/to/cert
         key: /path/to/key
         ca: /path/to/ca
+    discoverer:
+      cache_sync_duration: 3s
+      name: ""
+      namespace: _MY_POD_NAMESPACE_

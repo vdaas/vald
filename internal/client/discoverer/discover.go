@@ -85,6 +85,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 	}
 	c.addrs.Store(addrs)
 
+	var aech <-chan error
 	if c.autoconn {
 		c.client = grpc.New(
 			append(
@@ -96,21 +97,19 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 				),
 			)...,
 		)
+		if c.client != nil {
+			aech, err = c.client.StartConnectionMonitor(ctx)
+			if err != nil {
+				close(ech)
+				return nil, err
+			}
+		}
 	}
 
 	err = c.discover(ctx, ech)
 	if err != nil {
 		close(ech)
 		return nil, errors.Wrap(c.dscClient.Close(), err.Error())
-	}
-
-	var aech <-chan error
-	if c.autoconn && c.client != nil {
-		aech, err = c.client.StartConnectionMonitor(ctx)
-		if err != nil {
-			close(ech)
-			return nil, err
-		}
 	}
 
 	c.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -230,10 +229,10 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 	log.Info("starting discoverer discovery")
 	connected := make([]string, 0, len(c.GetAddrs()))
 	var cur sync.Map
-	if _, err = c.dscClient.Do(ctx, c.dscAddr, func(ctx context.Context,
+	if _, err = c.dscClient.Do(ctx, c.dscAddr, func(ictx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		nodes, err := discoverer.NewDiscovererClient(conn).
-			Nodes(ctx, &payload.Discoverer_Request{
+			Nodes(ictx, &payload.Discoverer_Request{
 				Namespace: c.namespace,
 				Name:      c.name,
 				Node:      c.nodeName,
@@ -241,71 +240,54 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 		if err != nil {
 			return nil, errors.ErrRPCCallFailed(c.dscAddr, err)
 		}
-		var wg sync.WaitGroup
-		cond := sync.NewCond(new(sync.Mutex))
-		cctx, cancel := context.WithCancel(ctx)
-		pch := make(chan string, len(nodes.GetNodes()))
-		for _, n := range nodes.GetNodes() {
-			select {
-			case <-cctx.Done():
-				return nil, cctx.Err()
-			default:
-				if n != nil && n.GetPods() != nil && n.GetPods().GetPods() != nil {
-					node := n
-					wg.Add(1)
-					c.eg.Go(safety.RecoverFunc(func() (err error) {
-						defer wg.Done()
-						cond.L.Lock()
-						cond.Wait()
-						cond.L.Unlock()
-						for _, pod := range node.GetPods().GetPods() {
-							select {
-							case <-cctx.Done():
-								return nil
-							default:
-								if pod != nil && pod.GetIp() != "" {
-									addr := fmt.Sprintf("%s:%d", pod.GetIp(), c.port)
-									if err = c.connect(ctx, addr); err != nil {
-										err = errors.ErrAddrCouldNotDiscover(err, addr)
-										log.Debug(err)
-										ech <- err
-										err = nil
-									} else {
-										if c.autoconn {
-											cur.Store(addr, struct{}{})
-										}
-										pch <- addr
-									}
+		maxPodLen := 0
+		podLength := 0
+		for _, node := range nodes.GetNodes() {
+			l := len(node.GetPods().GetPods())
+			podLength += l
+			if l > maxPodLen {
+				maxPodLen = l
+			}
+		}
+		addrs := make([]string, 0, podLength)
+		for i := 0; i < maxPodLen; i++ {
+			for _, node := range nodes.GetNodes() {
+				select {
+				case <-ictx.Done():
+					return nil, ictx.Err()
+				default:
+					if node != nil && node.GetPods() != nil {
+						pods := node.GetPods().GetPods()
+						if i < len(pods) {
+							addr := fmt.Sprintf("%s:%d", pods[i].GetIp(), c.port)
+							if err = c.connect(ctx, addr); err != nil {
+								err = errors.ErrAddrCouldNotDiscover(err, addr)
+								log.Debug(err)
+								ech <- err
+								err = nil
+							} else {
+								if c.autoconn {
+									cur.Store(addr, struct{}{})
 								}
+								addrs = append(addrs, addr)
 							}
+							break
 						}
-						return nil
-					}))
+					}
 				}
 			}
 		}
-		c.eg.Go(safety.RecoverFunc(func() error {
-			wg.Wait()
-			cancel()
-			return nil
-		}))
-		cond.Broadcast()
-		for {
-			select {
-			case <-cctx.Done():
-				if len(connected) == 0 {
-					return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
-				}
-				if c.onDiscover != nil {
-					return nil, c.onDiscover(ctx, c, connected)
-				}
-				return nil, nil
-			case addr := <-pch:
-				connected = append(connected, addr)
-			}
+		connected = addrs
+		if len(connected) == 0 {
+			log.Warn("connected addr is zero")
+			return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
 		}
+		if c.onDiscover != nil {
+			return nil, c.onDiscover(ctx, c, connected)
+		}
+		return nil, nil
 	}); err != nil {
-		log.Warn("failed to discover addrs from discoverer API, trying to discover from dns...")
+		log.Warn("failed to discover addrs from discoverer API, trying to discover from dns...\t" + err.Error())
 		connected, err = c.dnsDiscovery(ctx, ech)
 		if err != nil {
 			return err

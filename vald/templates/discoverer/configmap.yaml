@@ -34,3 +34,5 @@ data:
     observability:
       {{- $observability := dict "Values" .Values.discoverer.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
+    discoverer:
+      {{- toYaml .Values.discoverer.discoverer | nindent 6 }}
