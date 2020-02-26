@@ -238,7 +238,6 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			return nil, errors.ErrRPCCallFailed(c.dscAddr, err)
 		}
 		var wg sync.WaitGroup
-		cond := sync.NewCond(new(sync.Mutex))
 		cctx, cancel := context.WithCancel(ctx)
 		pch := make(chan string, len(nodes.GetNodes()))
 		for _, n := range nodes.GetNodes() {
@@ -253,9 +252,6 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 					c.eg.Go(safety.RecoverFunc(func() (err error) {
 						log.Infof("waiting for signal node name = %s", node.GetName())
 						defer wg.Done()
-						cond.L.Lock()
-						defer cond.L.Unlock()
-						cond.Wait()
 						log.Infof("processing node name = %s", node.GetName())
 						for _, pod := range node.GetPods().GetPods() {
 							select {
@@ -293,7 +289,6 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			cancel()
 			return nil
 		}))
-		cond.Broadcast()
 		for {
 			select {
 			case <-cctx.Done():
