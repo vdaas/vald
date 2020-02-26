@@ -306,6 +306,7 @@ agent:
   maxUnavailable: 1
   revisionHistoryLimit: 2
   terminationGracePeriodSeconds: 30
+  podManagementPolicy: OrderedReady
   hpa:
     enabled: true
     targetCPUUtilizationPercentage: 80
