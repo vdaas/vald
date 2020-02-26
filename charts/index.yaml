@@ -3,7 +3,17 @@ entries:
   vald:
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-02-26T05:33:14.656321912Z"
+    created: "2020-02-26T08:08:28.365895801Z"
+    description: A distributed high scalable & high-speed approximate nearest neighbor
+      search engine
+    digest: 62d06a8aa72da92ebf5420ea2ca4a65ae4c7424de10984f9217673fde8e37d6b
+    name: vald
+    urls:
+    - https://vald.vdaas.org/charts/vald-v0.0.14.tgz
+    version: v0.0.14
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-02-26T08:08:28.354691356Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 4f2e58484324dfde7b964f7b4fe52b4e1b9c168900805559b8b4c808a382af65
@@ -13,7 +23,7 @@ entries:
     version: v0.0.13
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-02-26T05:33:14.651147021Z"
+    created: "2020-02-26T08:08:28.348896633Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: b4b03e5ff29578eeb495750deff13e5e322e6e39bcaa3431be121ea157cd3369
@@ -23,7 +33,7 @@ entries:
     version: v0.0.12
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-02-26T05:33:14.646251528Z"
+    created: "2020-02-26T08:08:28.336771084Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: b6ef538ea736096ee1aa51078998010cb3655c75bbb915de6ce5236cd7b782f6
@@ -33,7 +43,7 @@ entries:
     version: v0.0.11
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-02-26T05:33:14.639907838Z"
+    created: "2020-02-26T08:08:28.329798356Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 18e7fd5dbc900a660f38eb845f53f9a34a68d2e1e0419acdc177a394e860bbe2
@@ -43,7 +53,7 @@ entries:
     version: v0.0.10
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-02-26T05:33:14.688650661Z"
+    created: "2020-02-26T08:08:28.407596569Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 0d5d9da800193d2651396cfa9afbacb4877e8323b1a4ef2dfb6ddb9927a6c245
@@ -53,7 +63,7 @@ entries:
     version: v0.0.9
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-02-26T05:33:14.681905972Z"
+    created: "2020-02-26T08:08:28.401371444Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 48340b41f4eb17c6c9291f31d14daa83124ee43fe2d3bd876e7156f5206f6f0f
@@ -63,7 +73,7 @@ entries:
     version: v0.0.8
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-02-26T05:33:14.67696508Z"
+    created: "2020-02-26T08:08:28.394467416Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: dad491638c9abe550bca1df24c2cfd3c9a99d5272c40c5c4a5a169c62cafca40
@@ -73,7 +83,7 @@ entries:
     version: v0.0.7
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-02-26T05:33:14.671914288Z"
+    created: "2020-02-26T08:08:28.389452596Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: d8424275f550854062f4573c72b7d1b4059408cdfb92b3af5d80410b56aea868
@@ -83,7 +93,7 @@ entries:
     version: v0.0.6
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-02-26T05:33:14.666075097Z"
+    created: "2020-02-26T08:08:28.382148567Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 690df2ae4e3b5a92695f7b61bc38fc2d4b63ddf34a84f1e588110941bb20b06e
@@ -93,7 +103,7 @@ entries:
     version: v0.0.5
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-02-26T05:33:14.661454804Z"
+    created: "2020-02-26T08:08:28.373505132Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: ea9397e79f0b8fa6ab38bbcc133af30c9779d4660ee0f550026c0b8f2ac5f27a
@@ -101,4 +111,4 @@ entries:
     urls:
     - https://vald.vdaas.org/charts/vald-v0.0.4.tgz
     version: v0.0.4
-generated: "2020-02-26T05:33:14.634557047Z"
+generated: "2020-02-26T08:08:28.323026329Z"
