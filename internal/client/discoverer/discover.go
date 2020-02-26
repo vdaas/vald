@@ -237,7 +237,6 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			log.Info("failed to call discoverer.Node API")
 			return nil, errors.ErrRPCCallFailed(c.dscAddr, err)
 		}
-		log.Info("request to node discoverer success")
 		var wg sync.WaitGroup
 		cond := sync.NewCond(new(sync.Mutex))
 		cctx, cancel := context.WithCancel(ctx)
@@ -248,14 +247,16 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 				return nil, cctx.Err()
 			default:
 				if n != nil && n.GetPods() != nil && n.GetPods().GetPods() != nil {
-					log.Infof("processing node name = %s", n.GetName())
 					node := n
+					log.Info("dispatch goroutine")
 					wg.Add(1)
 					c.eg.Go(safety.RecoverFunc(func() (err error) {
+						log.Infof("waiting for signal node name = %s", node.GetName())
 						defer wg.Done()
 						cond.L.Lock()
 						defer cond.L.Unlock()
 						cond.Wait()
+						log.Infof("processing node name = %s", node.GetName())
 						for _, pod := range node.GetPods().GetPods() {
 							select {
 							case <-cctx.Done():
