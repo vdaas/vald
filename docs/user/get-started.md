@@ -48,9 +48,11 @@ Vald is designed as Cloud Native and also use World Fastest ANN Algorithm [NGT](
 - helm: 
 
 If helm is not installed, let see below details or [here](https://github.com/helm/helm#install).
+
 <details>
     <summary>optional installation</summray>
     <div>
+
         1. helm
             ```bash
             # brew|Scoop|GoFish
