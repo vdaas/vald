@@ -21,7 +21,7 @@ metadata:
   labels:
     app: vald-meta
   annotations:
-    checksum/configmap: c6f1b01d1e9aff3f79061235ce96e0b56f154c41931452641d3a20d706369193
+    checksum/configmap: 0f914f8f95faa1b1bc500998154747a203f4464bb2f6f0cca8384d2e19578533
 spec:
   progressDeadlineSeconds: 600
   replicas: 2
@@ -41,17 +41,20 @@ spec:
         app: vald-meta
     spec:
       initContainers:
-        
         - name: wait-for-redis
           image: redis:latest
           command:
             - /bin/sh
+            - -e
             - -c
             - >
-              set -x;
-              until [ "$(redis-cli -h redis.default.svc.cluster.local -a ${REDIS_PASSWORD} ping)" = "PONG" ]; do
-                echo "waiting for redis.default.svc.cluster.local to be ready..."
-                sleep 2;
+              hosts="redis.default.svc.cluster.local"
+              options="-a ${REDIS_PASSWORD}"
+              for host in $hosts; do
+                until [ "$(redis-cli -h $host $options ping)" = "PONG" ]; do
+                  echo "waiting for $host to be ready..."
+                  sleep 2;
+                done
               done
           env:
             - name: REDIS_PASSWORD

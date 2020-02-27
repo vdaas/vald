@@ -21,7 +21,7 @@ metadata:
   labels:
     app: vald-manager-compressor
   annotations:
-    checksum/configmap: f1eb77e26bf199541652daeb14bda3b76da2394fdb080a7b66e59880de51c19e
+    checksum/configmap: d3e758ef48afdec3b50bdb1d9ffda67c51f2bf96d23bf50b9e57ffbb9262a95c
 spec:
   progressDeadlineSeconds: 600
   replicas: 3
@@ -41,14 +41,13 @@ spec:
         app: vald-manager-compressor
     spec:
       initContainers:
-        
         - name: wait-for-manager-backup
           image: busybox
           command:
             - /bin/sh
+            - -e
             - -c
             - >
-              set -x;
               until [ "$(wget --server-response --spider --quiet http://vald-manager-backup.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for manager-backup to be ready..."
                 sleep 2;
