@@ -20,6 +20,8 @@ defaults:
     logger: glg
     level: debug
     format: raw
+  image:
+    tag: nightly
   server_config:
     servers:
       rest:
@@ -207,7 +209,7 @@ gateway:
     targetCPUUtilizationPercentage: 80
   image:
     repository: vdaas/vald-gateway
-    tag: nightly
+    # tag: nightly
     pullPolicy: Always
   rollingUpdate:
     maxSurge: 25%
@@ -312,7 +314,7 @@ agent:
     targetCPUUtilizationPercentage: 80
   image:
     repository: vdaas/vald-agent-ngt
-    tag: nightly
+    # tag: nightly
     pullPolicy: Always
   rollingUpdate:
     maxSurge: 25%
@@ -364,7 +366,7 @@ discoverer:
   terminationGracePeriodSeconds: 30
   image:
     repository: vdaas/vald-discoverer-k8s
-    tag: nightly
+    # tag: nightly
     pullPolicy: Always
   rollingUpdate:
     maxSurge: 25%
@@ -424,7 +426,7 @@ compressor:
     targetCPUUtilizationPercentage: 80
   image:
     repository: vdaas/vald-manager-compressor
-    tag: nightly
+    # tag: nightly
     pullPolicy: Always
   rollingUpdate:
     maxSurge: 25%
@@ -485,7 +487,7 @@ backupManager:
   image:
     repository: vdaas/vald-manager-backup-mysql
     # repository: vdaas/vald-manager-backup-cassandra
-    tag: nightly
+    # tag: nightly
     pullPolicy: Always
   rollingUpdate:
     maxSurge: 25%
@@ -676,7 +678,7 @@ indexManager:
   terminationGracePeriodSeconds: 30
   image:
     repository: vdaas/vald-manager-index
-    tag: nightly
+    # tag: nightly
     pullPolicy: Always
   rollingUpdate:
     maxSurge: 25%
@@ -750,7 +752,7 @@ meta:
   image:
     repository: vdaas/vald-meta-redis
     # repository: vdaas/vald-meta-cassandra
-    tag: nightly
+    # tag: nightly
     pullPolicy: Always
   rollingUpdate:
     maxSurge: 25%

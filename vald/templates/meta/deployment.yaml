@@ -47,7 +47,7 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Values.meta.name }}
-          image: "{{ .Values.meta.image.repository }}:{{ .Values.meta.image.tag }}"
+          image: "{{ .Values.meta.image.repository }}:{{ default .Values.defaults.image.tag .Values.meta.image.tag }}"
           imagePullPolicy: {{ .Values.meta.image.pullPolicy }}
           {{- $servers := dict "Values" .Values.meta.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
