@@ -45,6 +45,22 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
 {{/*
+joinListWithSpace
+*/}}
+{{- define "vald.utils.joinListWithSpace" -}}
+{{- $local := dict "first" true -}}
+{{- range $k, $v := . -}}{{- if not $local.first -}}{{- " " -}}{{- end -}}{{- $v -}}{{- $_ := set $local "first" false -}}{{- end -}}
+{{- end -}}
+
+{{/*
+joinListWithComma
+*/}}
+{{- define "vald.utils.joinListWithComma" -}}
+{{- $local := dict "first" true -}}
+{{- range $k, $v := . -}}{{- if not $local.first -}},{{- end -}}{{- $v -}}{{- $_ := set $local "first" false -}}{{- end -}}
+{{- end -}}
+
+{{/*
 logging settings
 */}}
 {{- define "vald.logging"}}
@@ -425,16 +441,16 @@ tls:
 initContainers
 */}}
 {{- define "vald.initContainers" -}}
-{{- range .initContainers }}
+{{- range .initContainers -}}
 {{- if .type }}
 - name: {{ .name }}
   image: {{ .image }}
-  {{- if eq .type "waitFor" }}
+  {{- if eq .type "wait-for" }}
   command:
     - /bin/sh
+    - -e
     - -c
     - >
-      set -x;
       {{- if eq .target "compressor" }}
       {{- $compressorReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.compressor.server_config.healths.readiness.port }}
       {{- $compressorReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
@@ -463,6 +479,61 @@ initContainers
         echo "waiting for {{ .target }} to be ready..."
         sleep {{ .sleepDuration }};
       done
+  {{- else if eq .type "wait-for-mysql" }}
+  command:
+    - /bin/sh
+    - -e
+    - -c
+    - >
+      hosts="{{ include "vald.utils.joinListWithSpace" .mysql.hosts }}"
+      options="{{ include "vald.utils.joinListWithSpace" .mysql.options }}"
+      for host in $hosts; do
+        until [ "$(mysqladmin -h$host $options --show-warnings=false ping | grep alive | awk '{print $3}')" = "alive" ]; do
+          echo "waiting for $host to be ready..."
+          sleep {{ .sleepDuration }};
+        done
+      done
+  {{- else if eq .type "wait-for-redis" }}
+  command:
+    - /bin/sh
+    - -e
+    - -c
+    - >
+      hosts="{{ include "vald.utils.joinListWithSpace" .redis.hosts }}"
+      options="{{ include "vald.utils.joinListWithSpace" .redis.options }}"
+      for host in $hosts; do
+        until [ "$(redis-cli -h $host $options ping)" = "PONG" ]; do
+          echo "waiting for $host to be ready..."
+          sleep {{ .sleepDuration }};
+        done
+      done
+  {{- else if eq .type "wait-for-cassandra" }}
+  command:
+    - /bin/sh
+    - -e
+    - -c
+    - >
+      hosts="{{ include "vald.utils.joinListWithSpace" .cassandra.hosts }}"
+      options="{{ include "vald.utils.joinListWithSpace" .cassandra.options }}"
+      for host in $hosts; do
+        until cqlsh $host $options -e "select now() from system.local" > /dev/null; do
+          echo "waiting for $host to be ready..."
+          sleep {{ .sleepDuration }};
+        done
+      done
+  {{- else if eq .type "limit-vsz" }}
+  command:
+    - /bin/sh
+    - -e
+    - -c
+    - >
+      set -eu
+      cgroup_rsslimit="/sys/fs/cgroup/memory/memory.limit_in_bytes"
+      if [ -r "$cgroup_rsslimit" ] ; then
+        rsslimit=`cat "$cgroup_rsslimit"`
+        vszlimit=`expr $rsslimit / 1024`
+        ulimit -v $vszlimit
+      fi
   {{- end }}
   {{- if .env }}
   env:
@@ -473,7 +544,7 @@ initContainers
     {{- toYaml .volumeMounts | nindent 4 }}
   {{- end }}
 {{- else }}
-- {{- toYaml . | nindent 2 }}
+- {{ . | toYaml | nindent 2 | trim }}
 {{- end }}
 {{- end }}
 {{- end -}}
