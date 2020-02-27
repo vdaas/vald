@@ -129,7 +129,7 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 	}
 	idx.indexing.Store(true)
 	defer idx.indexing.Store(false)
-	err = idx.client.GetClient().OrderedRangeConcurrent(ctx, idx.client.GetAddrs(),
+	err = idx.client.GetClient().OrderedRangeConcurrent(ctx, idx.client.GetAddrs(ctx),
 		idx.concurrency,
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
@@ -162,7 +162,7 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 func (idx *index) loadInfos(ctx context.Context) (err error) {
 	var uuids sync.Map
 	var ucuuids sync.Map
-	err = idx.client.GetClient().RangeConcurrent(ctx, len(idx.client.GetAddrs()),
+	err = idx.client.GetClient().RangeConcurrent(ctx, len(idx.client.GetAddrs(ctx)),
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 			select {
