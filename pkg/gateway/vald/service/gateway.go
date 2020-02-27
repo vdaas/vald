@@ -20,7 +20,6 @@ package service
 import (
 	"context"
 	"reflect"
-	"sync"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/apis/grpc/agent"
@@ -93,33 +92,26 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 	f func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error) (err error) {
 	var cur uint32 = 0
 	limit := uint32(num)
-	cctx, cancel := context.WithCancel(ctx)
-	var once sync.Once
-    addrs := g.client.GetAddrs(cctx)
-    log.Debug("DoMulti", addrs)
-	err = g.client.GetClient().OrderedRangeConcurrent(cctx, addrs, num,
-		func(ictx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
-			select {
-			case <-ictx.Done():
-				return nil
-			default:
-				if atomic.LoadUint32(&cur) >= limit {
-					once.Do(func() {
-						cancel()
-					})
-					return nil
-				}
-				if atomic.LoadUint32(&cur) < limit {
-					err = f(ictx, addr, agent.NewAgentClient(conn), copts...)
-					if err != nil {
-						log.Debug(addr, err)
-						return err
-					}
-					atomic.AddUint32(&cur, 1)
-				}
+	// cctx, cancel := context.WithCancel(ctx)
+	// var once sync.Once
+	addrs := g.client.GetAddrs(ctx)
+	log.Debug("DoMulti", addrs)
+	err = g.client.GetClient().OrderedRange(ctx, addrs, func(ictx context.Context,
+		addr string,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption) (err error) {
+		// err = g.client.GetClient().OrderedRangeConcurrent(cctx, addrs, num,
+		// func(ictx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+		if atomic.LoadUint32(&cur) < limit {
+			err = f(ictx, addr, agent.NewAgentClient(conn), copts...)
+			if err != nil {
+				log.Debug(addr, err)
+				return err
 			}
-			return nil
-		})
+			atomic.AddUint32(&cur, 1)
+		}
+		return nil
+	})
 	if err != nil && cur < limit {
 		return err
 	}
