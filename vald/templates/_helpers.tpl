@@ -450,7 +450,7 @@ initContainers
     - /bin/sh
     - -e
     - -c
-    - >
+    - |
       {{- if eq .target "compressor" }}
       {{- $compressorReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.compressor.server_config.healths.readiness.port }}
       {{- $compressorReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
@@ -484,7 +484,7 @@ initContainers
     - /bin/sh
     - -e
     - -c
-    - >
+    - |
       hosts="{{ include "vald.utils.joinListWithSpace" .mysql.hosts }}"
       options="{{ include "vald.utils.joinListWithSpace" .mysql.options }}"
       for host in $hosts; do
@@ -498,7 +498,7 @@ initContainers
     - /bin/sh
     - -e
     - -c
-    - >
+    - |
       hosts="{{ include "vald.utils.joinListWithSpace" .redis.hosts }}"
       options="{{ include "vald.utils.joinListWithSpace" .redis.options }}"
       for host in $hosts; do
@@ -512,7 +512,7 @@ initContainers
     - /bin/sh
     - -e
     - -c
-    - >
+    - |
       hosts="{{ include "vald.utils.joinListWithSpace" .cassandra.hosts }}"
       options="{{ include "vald.utils.joinListWithSpace" .cassandra.options }}"
       for host in $hosts; do
@@ -526,7 +526,7 @@ initContainers
     - /bin/sh
     - -e
     - -c
-    - >
+    - |
       set -eu
       cgroup_rsslimit="/sys/fs/cgroup/memory/memory.limit_in_bytes"
       if [ -r "$cgroup_rsslimit" ] ; then
