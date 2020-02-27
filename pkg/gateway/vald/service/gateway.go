@@ -33,7 +33,7 @@ import (
 
 type Gateway interface {
 	Start(ctx context.Context) (<-chan error, error)
-	GetAgentCount() int
+	GetAgentCount(ctx context.Context) int
 	Do(ctx context.Context,
 		f func(ctx context.Context, tgt string, ac agent.AgentClient, copts ...grpc.CallOption) error) error
 	DoMulti(ctx context.Context, num int,
@@ -81,7 +81,7 @@ func (g *gateway) BroadCast(ctx context.Context,
 
 func (g *gateway) Do(ctx context.Context,
 	f func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error) (err error) {
-	addr := g.client.GetAddrs()[0]
+	addr := g.client.GetAddrs(ctx)[0]
 	_, err = g.client.GetClient().Do(ctx, addr, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		return nil, f(ctx, addr, agent.NewAgentClient(conn), copts...)
@@ -89,13 +89,15 @@ func (g *gateway) Do(ctx context.Context,
 	return err
 }
 
-func (g *gateway) DoMulti(ctx context.Context,
-	num int, f func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error) (err error) {
+func (g *gateway) DoMulti(ctx context.Context, num int,
+	f func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error) (err error) {
 	var cur uint32 = 0
 	limit := uint32(num)
 	cctx, cancel := context.WithCancel(ctx)
 	var once sync.Once
-	err = g.client.GetClient().OrderedRangeConcurrent(cctx, g.client.GetAddrs(), num,
+    addrs := g.client.GetAddrs(cctx)
+    log.Debug("DoMulti", addrs)
+	err = g.client.GetClient().OrderedRangeConcurrent(cctx, addrs, num,
 		func(ictx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 			select {
 			case <-ictx.Done():
@@ -107,12 +109,14 @@ func (g *gateway) DoMulti(ctx context.Context,
 					})
 					return nil
 				}
-				err = f(ictx, addr, agent.NewAgentClient(conn), copts...)
-				if err != nil {
-					log.Debug(addr, err)
-					return err
+				if atomic.LoadUint32(&cur) < limit {
+					err = f(ictx, addr, agent.NewAgentClient(conn), copts...)
+					if err != nil {
+						log.Debug(addr, err)
+						return err
+					}
+					atomic.AddUint32(&cur, 1)
 				}
-				atomic.AddUint32(&cur, 1)
 			}
 			return nil
 		})
@@ -122,6 +126,6 @@ func (g *gateway) DoMulti(ctx context.Context,
 	return nil
 }
 
-func (g *gateway) GetAgentCount() int {
-	return len(g.client.GetAddrs())
+func (g *gateway) GetAgentCount(ctx context.Context) int {
+	return len(g.client.GetAddrs(ctx))
 }

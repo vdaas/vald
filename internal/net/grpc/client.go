@@ -69,7 +69,6 @@ type Client interface {
 		f func(ctx context.Context,
 			conn *ClientConn,
 			copts ...CallOption) (interface{}, error)) (interface{}, error)
-	GetAddrs() ([]string, []string)
 	GetDialOption() []DialOption
 	GetCallOption() []CallOption
 	Close() error
@@ -234,6 +233,10 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 func (g *gRPCClient) OrderedRange(ctx context.Context,
 	orders []string,
 	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
+	if orders == nil {
+		log.Warn("no order found for OrderedRange")
+		return g.Range(ctx, f)
+	}
 	var err error
 	for _, addr := range orders {
 		select {
@@ -274,6 +277,10 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 	orders []string,
 	concurrency int,
 	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (err error) {
+	if orders == nil {
+		log.Warn("no order found for OrderedRangeConcurrent")
+		return g.RangeConcurrent(ctx, concurrency, f)
+	}
 	eg, egctx := errgroup.New(ctx)
 	eg.Limitation(concurrency)
 	for _, order := range orders {
@@ -408,18 +415,6 @@ func (g *gRPCClient) Close() error {
 		g.Disconnect(addr)
 	}
 	return nil
-}
-
-func (g *gRPCClient) GetAddrs() (connected []string, disconnected []string) {
-	g.conns.Range(func(addr string, pool *ClientConnPool) bool {
-		if pool.IsHealthy() {
-			connected = append(connected, addr)
-		} else {
-			disconnected = append(disconnected, addr)
-		}
-		return true
-	})
-	return
 }
 
 func isHealthy(conn *ClientConn) bool {
