@@ -19,7 +19,6 @@ import (
 	"context"
 	"flag"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -35,34 +34,61 @@ var (
 		Radius:  -1,
 		Epsilon: 0.01,
 	}
-	targets    []string
-	addresses  []string
-	wait       time.Duration
-	datasetVar string
-	addressVar string
-	once       sync.Once
-	waitVar    int64
+	targets   []string
+	addresses []string
+	wait      time.Duration
 )
+
+type params struct {
+	dataset string
+	address string
+	wait    int
+}
+
+func parseParams() *params {
+	p := new(params)
+
+	flag.StringVar(&p.dataset,
+		"dataset",
+		"",
+		"set dataset (choice with comma)",
+	)
+
+	flag.StringVar(&p.address,
+		"address",
+		"0.0.0.0:5001",
+		"set vald gateway address",
+	)
+
+	flag.IntVar(&p.wait,
+		"wait",
+		30,
+		"indexing wait time(secs)",
+	)
+	flag.Parse()
+
+	return p
+}
 
 func init() {
 	log.Init()
-
-	flag.StringVar(&datasetVar, "dataset", "", "available dataset(choice with comma)")
-	flag.StringVar(&addressVar, "address", "", "vald gateway address")
-	flag.Int64Var(&waitVar, "wait", 30, "indexing wait time(secs)")
 }
 
-func parseArgs(tb testing.TB) {
-	tb.Helper()
-	once.Do(func() {
-		flag.Parse()
-		targets = strings.Split(strings.TrimSpace(datasetVar), ",")
-		addresses = strings.Split(strings.TrimSpace(addressVar), ",")
-		if len(targets) != len(addresses) {
-			tb.Fatal("address and dataset must have same length.")
-		}
-		wait = time.Duration(waitVar) * time.Second
-	})
+func TestSetup(t *testing.T) {
+	p := parseParams()
+
+	targets = strings.Split(strings.TrimSpace(p.dataset), ",")
+	addresses = strings.Split(strings.TrimSpace(p.address), ",")
+
+	if len(targets) != len(addresses) {
+		t.Fatal("address and dataset must have same length")
+	}
+
+	if p.wait <= 0 {
+		t.Fatalf("invalid wait time: %d", p.wait)
+	}
+
+	wait = time.Duration(p.wait) * time.Second
 }
 
 func BenchmarkValdGateway_Sequential(b *testing.B) {
@@ -70,7 +96,6 @@ func BenchmarkValdGateway_Sequential(b *testing.B) {
 		bench := e2e.New(
 			b,
 			e2e.WithName(name),
-			// TODO: input vald client.
 			e2e.WithClient(nil),
 			e2e.WithStrategy(
 				strategy.NewInsert(),
@@ -89,7 +114,6 @@ func BenchmarkValdGateway_Stream(b *testing.B) {
 		bench := e2e.New(
 			b,
 			e2e.WithName(name),
-			// TODO: input vald client.
 			e2e.WithClient(nil),
 			e2e.WithStrategy(
 				strategy.NewStreamInsert(),

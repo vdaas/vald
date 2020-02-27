@@ -35,13 +35,13 @@ func New(b *testing.B, opts ...Option) Runner {
 
 func (e *e2e) Run(ctx context.Context, b *testing.B) {
 	func() {
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+
 		b.StopTimer()
 		b.ReportAllocs()
 		b.ResetTimer()
 		b.StartTimer()
-
-		ctx, cancel := context.WithCancel(ctx)
-		defer cancel()
 
 		b.Run(e.name, func(bb *testing.B) {
 			for _, strategy := range e.strategies {
