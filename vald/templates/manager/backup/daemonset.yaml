@@ -40,7 +40,7 @@ spec:
       {{- if .Values.backupManager.initContainers }}
       initContainers:
         {{- $initContainers := dict "initContainers" .Values.backupManager.initContainers "Values" .Values "namespace" .Release.Namespace -}}
-        {{- include "vald.initContainers" $initContainers | nindent 8 }}
+        {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Values.backupManager.name }}
