@@ -52,7 +52,11 @@ func run() error {
 	}
 	client := vald.NewValdClient(conn)
 
-	for i := range ids {
+	for i := range ids[:600] {
+		if i%10 == 0 {
+			fmt.Printf("now inserting - %d", i)
+		}
+
 		_, err := client.Insert(ctx, &payload.Object_Vector{
 			Id:     ids[i],
 			Vector: train[i],
@@ -62,7 +66,7 @@ func run() error {
 		}
 	}
 
-	for _, vec := range test {
+	for _, vec := range test[:10] {
 		res, err := client.Search(ctx, &payload.Search_Request{
 			Vector: vec,
 			Config: &searchConfig,
