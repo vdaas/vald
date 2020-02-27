@@ -45,6 +45,19 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
 {{/*
+logging settings
+*/}}
+{{- define "vald.logging"}}
+{{- if .Values -}}
+logger: {{ default .default.logger .Values.logger }}
+level: {{ default .default.level .Values.level }}
+format: {{ default .default.format .Values.format }}
+{{- else }}
+{{- toYaml .default }}
+{{- end }}
+{{- end -}}
+
+{{/*
 Container ports
 */}}
 {{- define "vald.containerPorts" -}}

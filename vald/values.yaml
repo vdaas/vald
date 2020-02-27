@@ -16,6 +16,10 @@
 
 defaults:
   time_zone: UTC
+  logging:
+    logger: glg
+    level: debug
+    format: raw
   server_config:
     servers:
       rest:
@@ -205,10 +209,6 @@ gateway:
     repository: vdaas/vald-gateway
     tag: nightly
     pullPolicy: Always
-  logging:
-    logger: glg
-    level: debug
-    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -314,10 +314,6 @@ agent:
     repository: vdaas/vald-agent-ngt
     tag: nightly
     pullPolicy: Always
-  logging:
-    logger: glg
-    level: debug
-    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -370,10 +366,6 @@ discoverer:
     repository: vdaas/vald-discoverer-k8s
     tag: nightly
     pullPolicy: Always
-  logging:
-    logger: glg
-    level: debug
-    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -434,10 +426,6 @@ compressor:
     repository: vdaas/vald-manager-compressor
     tag: nightly
     pullPolicy: Always
-  logging:
-    logger: glg
-    level: debug
-    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -499,10 +487,6 @@ backupManager:
     # repository: vdaas/vald-manager-backup-cassandra
     tag: nightly
     pullPolicy: Always
-  logging:
-    logger: glg
-    level: debug
-    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -681,10 +665,6 @@ indexManager:
     repository: vdaas/vald-manager-index
     tag: nightly
     pullPolicy: Always
-  logging:
-    logger: glg
-    level: debug
-    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -753,10 +733,6 @@ meta:
     # repository: vdaas/vald-meta-cassandra
     tag: nightly
     pullPolicy: Always
-  logging:
-    logger: glg
-    level: debug
-    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
