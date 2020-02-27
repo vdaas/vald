@@ -81,7 +81,7 @@ Please confirm the right cluster to deploy it by running `kubectl cluster-info` 
     ```bash
     cd {Vald_project_root}
     
-    kubectl apply -f k8s/jobs/db/casandora/configmap.yaml
+    kubectl apply -f k8s/jobs/db/initialize/cassandra/configmap.yaml
     kubectl apply -f k8s/external/scylla
     ```
 
@@ -94,7 +94,7 @@ Please confirm the right cluster to deploy it by running `kubectl cluster-info` 
 2. Deployment from helm template command
 
     ```
-    helm install --values example/helm/values-scylla.yaml Vald
+    helm install --values example/helm/values-scylla.yaml vald vald/vald
     ```
 
 ### Run
