@@ -47,7 +47,7 @@ spec:
             - /bin/sh
             - -e
             - -c
-            - >
+            - |
               hosts="redis.default.svc.cluster.local"
               options="-a ${REDIS_PASSWORD}"
               for host in $hosts; do

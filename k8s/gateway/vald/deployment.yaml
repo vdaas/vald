@@ -47,7 +47,7 @@ spec:
             - /bin/sh
             - -e
             - -c
-            - >
+            - |
               until [ "$(wget --server-response --spider --quiet http://vald-manager-compressor.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for compressor to be ready..."
                 sleep 2;
@@ -58,7 +58,7 @@ spec:
             - /bin/sh
             - -e
             - -c
-            - >
+            - |
               until [ "$(wget --server-response --spider --quiet http://vald-meta.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for meta to be ready..."
                 sleep 2;
@@ -69,7 +69,7 @@ spec:
             - /bin/sh
             - -e
             - -c
-            - >
+            - |
               until [ "$(wget --server-response --spider --quiet http://vald-discoverer.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for discoverer to be ready..."
                 sleep 2;
@@ -80,7 +80,7 @@ spec:
             - /bin/sh
             - -e
             - -c
-            - >
+            - |
               until [ "$(wget --server-response --spider --quiet http://vald-agent-ngt.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for agent to be ready..."
                 sleep 2;

@@ -47,7 +47,7 @@ spec:
             - /bin/sh
             - -e
             - -c
-            - >
+            - |
               until [ "$(wget --server-response --spider --quiet http://vald-manager-backup.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for manager-backup to be ready..."
                 sleep 2;
