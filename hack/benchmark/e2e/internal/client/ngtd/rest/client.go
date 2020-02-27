@@ -16,10 +16,7 @@ type Client interface {
 }
 
 type ngtdClient struct {
-	addr          string
-	searchSize    int
-	searchEpsilon float32
-	proto.NGTDClient
+	addr string
 }
 
 func New(ctx context.Context) (Client, error) {
@@ -53,14 +50,18 @@ func toObjectDistances(in []*proto.ObjectDistance) (to []*payload.Object_Distanc
 }
 
 func (c *ngtdClient) Search(ctx context.Context, req *client.SearchRequest) (*client.SearchResponse, error) {
-	resp, err := c.NGTDClient.Search(ctx, &proto.SearchRequest{
+	resp := new(proto.SearchResponse)
+
+	/**
+	err := json.Request(ctx, http.MethodPost, c.addr+"/search", &proto.SearchRequest {
 		Vector:  tofloat64(req.GetVector()),
 		Epsilon: req.GetConfig().GetEpsilon(),
 		Size_:   int32(req.GetConfig().GetNum()),
-	})
+	}, res)
 	if err != nil {
 		return nil, err
 	}
+	**/
 
 	return &client.SearchResponse{
 		Results: toObjectDistances(resp.GetResult()),
@@ -68,14 +69,18 @@ func (c *ngtdClient) Search(ctx context.Context, req *client.SearchRequest) (*cl
 }
 
 func (c *ngtdClient) SearchByID(ctx context.Context, req *client.SearchIDRequest) (*client.SearchResponse, error) {
-	resp, err := c.NGTDClient.SearchByID(ctx, &proto.SearchRequest{
+	resp := new(proto.SearchResponse)
+
+	/**
+	err := json.Request(ctx, http.MethodPost, c.addr+"/searchbyid", &proto.SearchRequest {
 		Id:      []byte(req.GetId()),
 		Epsilon: req.GetConfig().GetEpsilon(),
 		Size_:   int32(req.GetConfig().GetNum()),
-	})
+	}, res)
 	if err != nil {
 		return nil, err
 	}
+	**/
 
 	return &client.SearchResponse{
 		Results: toObjectDistances(resp.GetResult()),
@@ -83,67 +88,28 @@ func (c *ngtdClient) SearchByID(ctx context.Context, req *client.SearchIDRequest
 }
 
 func (c *ngtdClient) StreamSearch(ctx context.Context, dataProvider func() *client.SearchRequest, f func(*client.SearchResponse, error)) error {
-	st, err := c.NGTDClient.StreamSearch(ctx)
-	if err != nil {
-		return err
-	}
-	defer st.CloseSend()
-
-	/**
-	grpc.BidirectionalStreamClient(st, 100, func() interface{} {
-		return dataProvider()
-	}, func(res interface{}, err error) {
-		_ = client.SearchResponse{
-			Results: toObjectDistances(res.GetResult()),
-		}
-	})
-	*/
-
+	// TODO: errors.NotSupportedClientMethod
 	return nil
 }
 
 func (c *ngtdClient) StreamSearchByID(ctx context.Context, dataProvider func() *client.SearchRequest, f func(*client.SearchResponse, error)) error {
-	st, err := c.NGTDClient.StreamSearchByID(ctx)
-	if err != nil {
-		return err
-	}
-	defer st.CloseSend()
-
-	/**
-	grpc.BidirectionalStreamClient(st, 100, func() interface{} {
-		return dataProvider()
-	}, func(res interface{}, err error) {
-		_ = client.SearchResponse{
-			Results: toObjectDistances(res.GetResult()),
-		}
-	})
-	*/
-
+	// TODO: errors.NotSupportedClientMethod
 	return nil
 }
 
 func (c *ngtdClient) Insert(ctx context.Context, req *client.ObjectVector) error {
-	_, err := c.NGTDClient.Insert(ctx, &proto.InsertRequest{
+	/**
+	return json.Request(ctx, http.MethodPost, c.addr+"/insert", &proto.InsertRequest {
 		Id:     []byte(req.GetId()),
 		Vector: tofloat64(req.GetVector()),
-	})
-	return err
+	}, nil)
+	**/
+	return nil
 }
 
 func (c *ngtdClient) StreamInsert(ctx context.Context, dataProvider func() *client.ObjectVector, f func(error)) {
-	st, err := c.NGTDClient.StreamInsert(ctx)
-	if err != nil {
-		// TODO: return err
-	}
-	defer st.CloseSend()
-
-	/**
-	grpc.BidirectionalStreamClient(st, 100, func() interface{} {
-		return dataProvider()
-	}, func(_ interface{}, err error) {
-		f(err)
-	})
-	*/
+	// TODO: errors.NotSupportedClientMethod
+	return
 }
 
 func (c *ngtdClient) MultiInsert(ctx context.Context, req *client.ObjectVectors) error {
@@ -166,26 +132,15 @@ func (c *ngtdClient) MultiUpdate(ctx context.Context, req *client.ObjectVectors)
 }
 
 func (c *ngtdClient) Remove(ctx context.Context, req *client.ObjectID) error {
-	_, err := c.NGTDClient.Remove(ctx, &proto.RemoveRequest{
-		Id: []byte(req.GetId()),
-	})
-	return err
+	/**
+	return json.Request(ctx, http.MethodGet, c.addr+"/remove/"+req.GetId(), nil, nil)
+	**/
+	return nil
 }
 
 func (c *ngtdClient) StreamRemove(ctx context.Context, dataProvider func() *client.ObjectID, f func(error)) {
-	st, err := c.NGTDClient.StreamRemove(ctx)
-	if err != nil {
-		// TODO: return err
-	}
-	defer st.CloseSend()
-
-	/**
-	grpc.BidirectionalStreamClient(st, 100, func() interface{} {
-		return dataProvider()
-	}, func(_ interface{}, err error) {
-		f(err)
-	})
-	*/
+	// TODO: errors.NotSupportedClientMethod
+	return
 }
 
 func (c *ngtdClient) MultiRemove(ctx context.Context, req *client.ObjectIDs) error {
@@ -194,50 +149,27 @@ func (c *ngtdClient) MultiRemove(ctx context.Context, req *client.ObjectIDs) err
 }
 
 func (c *ngtdClient) GetObject(ctx context.Context, req *client.ObjectID) (*client.ObjectVector, error) {
-	resp, err := c.NGTDClient.GetObject(ctx, &proto.GetObjectRequest{
-		Id: []byte(req.GetId()),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return &client.ObjectVector{
-		Id:     string(resp.GetId()),
-		Vector: resp.GetVector(),
-	}, nil
+	// TODO: errors.NotSupportedClientMethod
+	return nil, nil
 }
 
 func (c *ngtdClient) StreamGetObject(ctx context.Context, dataProvider func() *client.ObjectID, f func(*client.ObjectVector, error)) error {
-	st, err := c.NGTDClient.StreamGetObject(ctx)
-	if err != nil {
-		// TODO: return err
-	}
-	defer st.CloseSend()
-
-	/**
-	grpc.BidirectionalStreamClient(st, 100, func() interface{} {
-		return dataProvider()
-	}, func(res interface{}, err error) {
-		r := res.(*proto.GetObjectResponse)
-		f(&client.ObjectVector {
-			Id: string(resp.GetId()),
-			Vector: resp.GetVector(),
-		},err)
-	})
-	*/
+	// TODO: errors.NotSupportedClientMethod
 	return nil
 }
 
 func (c *ngtdClient) CreateIndex(ctx context.Context, req *client.ControlCreateIndexRequest) error {
-	_, err := c.NGTDClient.CreateIndex(ctx, &proto.CreateIndexRequest{
-		PoolSize: req.GetPoolSize(),
-	})
-	return err
+	/**
+	return json.Request(ctx, http.MethodGet, c.addr+"/index/create/"+req.GetPoolSize(), nil, nil)
+	**/
+	return nil
 }
 
 func (c *ngtdClient) SaveIndex(ctx context.Context) error {
-	_, err := c.NGTDClient.SaveIndex(ctx, new(proto.Empty))
-	return err
+	/**
+	return json.Request(ctx, http.MethodGet, c.addr+"/index/save", nil, nil)
+	**/
+	return nil
 }
 
 func (c *ngtdClient) CreateAndSaveIndex(ctx context.Context, req *client.ControlCreateIndexRequest) error {

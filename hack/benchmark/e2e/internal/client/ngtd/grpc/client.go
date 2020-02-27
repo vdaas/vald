@@ -1,1 +1,250 @@
 package client
+
+import (
+	"context"
+
+	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/client"
+	proto "github.com/yahoojapan/ngtd/proto"
+)
+
+type Client interface {
+	client.Client
+	client.ObjectReader
+	client.Indexer
+}
+
+type ngtdClient struct {
+	addr          string
+	searchSize    int
+	searchEpsilon float32
+	proto.NGTDClient
+}
+
+func New(ctx context.Context) (Client, error) {
+	c := new(ngtdClient)
+	return c, nil
+}
+
+func (c *ngtdClient) Exists(ctx context.Context, req *client.ObjectID) (*client.ObjectID, error) {
+	// TODO: errors.NotSupportedClientMethod
+	return nil, nil
+}
+
+func tofloat64(s []float32) []float64 {
+	return nil
+}
+
+func tofloat32(s []float64) []float32 {
+	return nil
+}
+
+func toObjectDistances(in []*proto.ObjectDistance) (to []*payload.Object_Distance) {
+	to = make([]*payload.Object_Distance, 0, len(in))
+
+	for _, elm := range in {
+		to = append(to, &payload.Object_Distance{
+			Id:       string(elm.GetId()),
+			Distance: elm.GetDistance(),
+		})
+	}
+	return nil
+}
+
+func (c *ngtdClient) Search(ctx context.Context, req *client.SearchRequest) (*client.SearchResponse, error) {
+	resp, err := c.NGTDClient.Search(ctx, &proto.SearchRequest{
+		Vector:  tofloat64(req.GetVector()),
+		Epsilon: req.GetConfig().GetEpsilon(),
+		Size_:   int32(req.GetConfig().GetNum()),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &client.SearchResponse{
+		Results: toObjectDistances(resp.GetResult()),
+	}, nil
+}
+
+func (c *ngtdClient) SearchByID(ctx context.Context, req *client.SearchIDRequest) (*client.SearchResponse, error) {
+	resp, err := c.NGTDClient.SearchByID(ctx, &proto.SearchRequest{
+		Id:      []byte(req.GetId()),
+		Epsilon: req.GetConfig().GetEpsilon(),
+		Size_:   int32(req.GetConfig().GetNum()),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &client.SearchResponse{
+		Results: toObjectDistances(resp.GetResult()),
+	}, nil
+}
+
+func (c *ngtdClient) StreamSearch(ctx context.Context, dataProvider func() *client.SearchRequest, f func(*client.SearchResponse, error)) error {
+	st, err := c.NGTDClient.StreamSearch(ctx)
+	if err != nil {
+		return err
+	}
+	defer st.CloseSend()
+
+	/**
+	grpc.BidirectionalStreamClient(st, 100, func() interface{} {
+		return dataProvider()
+	}, func(res interface{}, err error) {
+		_ = client.SearchResponse{
+			Results: toObjectDistances(res.GetResult()),
+		}
+	})
+	*/
+
+	return nil
+}
+
+func (c *ngtdClient) StreamSearchByID(ctx context.Context, dataProvider func() *client.SearchRequest, f func(*client.SearchResponse, error)) error {
+	st, err := c.NGTDClient.StreamSearchByID(ctx)
+	if err != nil {
+		return err
+	}
+	defer st.CloseSend()
+
+	/**
+	grpc.BidirectionalStreamClient(st, 100, func() interface{} {
+		return dataProvider()
+	}, func(res interface{}, err error) {
+		_ = client.SearchResponse{
+			Results: toObjectDistances(res.GetResult()),
+		}
+	})
+	*/
+
+	return nil
+}
+
+func (c *ngtdClient) Insert(ctx context.Context, req *client.ObjectVector) error {
+	_, err := c.NGTDClient.Insert(ctx, &proto.InsertRequest{
+		Id:     []byte(req.GetId()),
+		Vector: tofloat64(req.GetVector()),
+	})
+	return err
+}
+
+func (c *ngtdClient) StreamInsert(ctx context.Context, dataProvider func() *client.ObjectVector, f func(error)) {
+	st, err := c.NGTDClient.StreamInsert(ctx)
+	if err != nil {
+		// TODO: return err
+	}
+	defer st.CloseSend()
+
+	/**
+	grpc.BidirectionalStreamClient(st, 100, func() interface{} {
+		return dataProvider()
+	}, func(_ interface{}, err error) {
+		f(err)
+	})
+	*/
+}
+
+func (c *ngtdClient) MultiInsert(ctx context.Context, req *client.ObjectVectors) error {
+	// TODO: errors.NotSupportedClientMethod
+	return nil
+}
+
+func (c *ngtdClient) Update(ctx context.Context, req *client.ObjectVector) error {
+	// TODO: errors.NotSupportedClientMethod
+	return nil
+}
+
+func (c *ngtdClient) StreamUpdate(ctx context.Context, dataProvider func() *client.ObjectVector, f func(error)) {
+	// TODO: errors.NotSupportedClientMethod
+}
+
+func (c *ngtdClient) MultiUpdate(ctx context.Context, req *client.ObjectVectors) error {
+	// TODO: errors.NotSupportedClientMethod
+	return nil
+}
+
+func (c *ngtdClient) Remove(ctx context.Context, req *client.ObjectID) error {
+	_, err := c.NGTDClient.Remove(ctx, &proto.RemoveRequest{
+		Id: []byte(req.GetId()),
+	})
+	return err
+}
+
+func (c *ngtdClient) StreamRemove(ctx context.Context, dataProvider func() *client.ObjectID, f func(error)) {
+	st, err := c.NGTDClient.StreamRemove(ctx)
+	if err != nil {
+		// TODO: return err
+	}
+	defer st.CloseSend()
+
+	/**
+	grpc.BidirectionalStreamClient(st, 100, func() interface{} {
+		return dataProvider()
+	}, func(_ interface{}, err error) {
+		f(err)
+	})
+	*/
+}
+
+func (c *ngtdClient) MultiRemove(ctx context.Context, req *client.ObjectIDs) error {
+	// TODO: errors.NotSupportedClientMethod
+	return nil
+}
+
+func (c *ngtdClient) GetObject(ctx context.Context, req *client.ObjectID) (*client.ObjectVector, error) {
+	resp, err := c.NGTDClient.GetObject(ctx, &proto.GetObjectRequest{
+		Id: []byte(req.GetId()),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &client.ObjectVector{
+		Id:     string(resp.GetId()),
+		Vector: resp.GetVector(),
+	}, nil
+}
+
+func (c *ngtdClient) StreamGetObject(ctx context.Context, dataProvider func() *client.ObjectID, f func(*client.ObjectVector, error)) error {
+	st, err := c.NGTDClient.StreamGetObject(ctx)
+	if err != nil {
+		// TODO: return err
+	}
+	defer st.CloseSend()
+
+	/**
+	grpc.BidirectionalStreamClient(st, 100, func() interface{} {
+		return dataProvider()
+	}, func(res interface{}, err error) {
+		r := res.(*proto.GetObjectResponse)
+		f(&client.ObjectVector {
+			Id: string(resp.GetId()),
+			Vector: resp.GetVector(),
+		},err)
+	})
+	*/
+	return nil
+}
+
+func (c *ngtdClient) CreateIndex(ctx context.Context, req *client.ControlCreateIndexRequest) error {
+	_, err := c.NGTDClient.CreateIndex(ctx, &proto.CreateIndexRequest{
+		PoolSize: req.GetPoolSize(),
+	})
+	return err
+}
+
+func (c *ngtdClient) SaveIndex(ctx context.Context) error {
+	_, err := c.NGTDClient.SaveIndex(ctx, new(proto.Empty))
+	return err
+}
+
+func (c *ngtdClient) CreateAndSaveIndex(ctx context.Context, req *client.ControlCreateIndexRequest) error {
+	// TODO: errors.NotSupportedClientMethod
+	return nil
+}
+
+func (c *ngtdClient) IndexInfo(ctx context.Context) (*client.InfoIndex, error) {
+	// TODO: errors.NotSupportedClientMethod
+	return nil, nil
+}
