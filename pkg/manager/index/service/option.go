@@ -18,11 +18,10 @@
 package service
 
 import (
-	"fmt"
 	"time"
 
+	"github.com/vdaas/vald/internal/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
@@ -35,7 +34,6 @@ var (
 		WithIndexingDuration("1m"),
 		WithIndexingDurationLimit("30m"),
 		WithMinUncommitted(100),
-		WithAgentNamespace("default"),
 	}
 )
 
@@ -85,82 +83,10 @@ func WithMinUncommitted(n int) Option {
 	}
 }
 
-func WithDiscovererClient(client grpc.Client) Option {
+func WithDiscoverer(c discoverer.Client) Option {
 	return func(idx *index) error {
-		idx.dscClient = client
-		return nil
-	}
-}
-
-func WithDiscovererAddr(addr string) Option {
-	return func(idx *index) error {
-		idx.dscAddr = addr
-		return nil
-	}
-}
-
-func WithDiscovererHostPort(host string, port int) Option {
-	return func(idx *index) error {
-		idx.dscAddr = fmt.Sprintf("%s:%d", host, port)
-		return nil
-	}
-}
-
-func WithDiscoverDuration(dur string) Option {
-	return func(idx *index) error {
-		if dur == "" {
-			return nil
-		}
-		d, err := timeutil.Parse(dur)
-		if err != nil {
-			d = time.Second
-		}
-		idx.dscDur = d
-		return nil
-	}
-}
-
-func WithAgentOptions(opts ...grpc.Option) Option {
-	return func(idx *index) error {
-		idx.agentOpts = append(idx.agentOpts, opts...)
-		return nil
-	}
-}
-
-func WithAgentName(name string) Option {
-	return func(idx *index) error {
-		idx.agentName = name
-		return nil
-	}
-}
-
-func WithAgentNamespace(ns string) Option {
-	return func(idx *index) error {
-		if ns != "" {
-			idx.namespace = ns
-		}
-		return nil
-	}
-}
-
-func WithAgentPort(port int) Option {
-	return func(idx *index) error {
-		idx.agentPort = port
-		return nil
-	}
-}
-
-func WithAgentServiceDNSARecord(a string) Option {
-	return func(idx *index) error {
-		idx.agentARecord = a
-		return nil
-	}
-}
-
-func WithNodeName(nn string) Option {
-	return func(idx *index) error {
-		if nn != "" {
-			idx.nodeName = nn
+		if c != nil {
+			idx.client = c
 		}
 		return nil
 	}

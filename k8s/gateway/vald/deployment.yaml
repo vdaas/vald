@@ -21,7 +21,7 @@ metadata:
   labels:
     app: vald-gateway
   annotations:
-    checksum/configmap: 2e1ec5e6305a6e0cf524bcdc9db53cc6c25b86dc148249f2fb6a95a5e0a158ba
+    checksum/configmap: e5f6651541cf95dfb60cd41af4b691735b1eaaa6378a4e99b32673a1b010f0b2
 spec:
   progressDeadlineSeconds: 600
   replicas: 3
@@ -41,14 +41,13 @@ spec:
         app: vald-gateway
     spec:
       initContainers:
-        
         - name: wait-for-manager-compressor
           image: busybox
           command:
             - /bin/sh
+            - -e
             - -c
             - >
-              set -x;
               until [ "$(wget --server-response --spider --quiet http://vald-manager-compressor.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for compressor to be ready..."
                 sleep 2;
@@ -57,9 +56,9 @@ spec:
           image: busybox
           command:
             - /bin/sh
+            - -e
             - -c
             - >
-              set -x;
               until [ "$(wget --server-response --spider --quiet http://vald-meta.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for meta to be ready..."
                 sleep 2;
@@ -68,9 +67,9 @@ spec:
           image: busybox
           command:
             - /bin/sh
+            - -e
             - -c
             - >
-              set -x;
               until [ "$(wget --server-response --spider --quiet http://vald-discoverer.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for discoverer to be ready..."
                 sleep 2;
@@ -79,9 +78,9 @@ spec:
           image: busybox
           command:
             - /bin/sh
+            - -e
             - -c
             - >
-              set -x;
               until [ "$(wget --server-response --spider --quiet http://vald-agent-ngt.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for agent to be ready..."
                 sleep 2;

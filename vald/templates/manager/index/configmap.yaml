@@ -22,12 +22,9 @@ data:
     ---
     version: {{ .Values.indexManager.version }}
     time_zone: {{ default .Values.defaults.time_zone .Values.indexManager.time_zone }}
-    {{- if .Values.indexManager.logging }}
     logging:
-      logger: {{ .Values.indexManager.logging.logger }}
-      level: {{ .Values.indexManager.logging.level }}
-      format: {{ .Values.indexManager.logging.format }}
-    {{- end }}
+      {{- $logging := dict "Values" .Values.indexManager.logging "default" .Values.defaults.logging }}
+      {{- include "vald.logging" $logging | nindent 6 }}
     server_config:
       {{- $servers := dict "Values" .Values.indexManager.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}

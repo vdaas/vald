@@ -98,7 +98,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	maxDist := uint32(math.MaxUint32)
 	num := int(cfg.GetNum())
 	res = new(payload.Search_Response)
-	res.Results = make([]*payload.Object_Distance, 0, s.gateway.GetAgentCount()*num)
+	res.Results = make([]*payload.Object_Distance, 0, s.gateway.GetAgentCount(ctx)*num)
 	dch := make(chan *payload.Object_Distance, cap(res.GetResults())/2)
 	eg, ectx := errgroup.New(ctx)
 	var cancel context.CancelFunc
@@ -260,6 +260,9 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	err = s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) (err error) {
 		_, err = ac.Insert(ctx, vec, copts...)
 		if err != nil {
+			if err == errors.ErrRPCCallFailed(target, context.Canceled) {
+				return nil
+			}
 			return err
 		}
 		target = strings.SplitN(target, ":", 2)[0]
@@ -285,6 +288,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 			return nil, status.WrapWithInternal(fmt.Sprintf("Insert API failed to Backup Vectors %#v", vecs), err, info.Get())
 		}
 	}
+    log.Debugf("Insert API insert succeeded to %v", targets)
 	return new(payload.Empty), nil
 }
 
@@ -515,7 +519,7 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res 
 	if err != nil {
 		return nil, status.WrapWithNotFound(fmt.Sprintf("MultiRemove API meta datas %v's uuid not found", ids.GetIds()), err, info.Get())
 	}
-	lmap := make(map[string][]string, s.gateway.GetAgentCount())
+	lmap := make(map[string][]string, s.gateway.GetAgentCount(ctx))
 	for _, uuid := range uuids {
 		locs, err := s.backup.GetLocation(ctx, uuid)
 		if err != nil {

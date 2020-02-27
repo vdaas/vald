@@ -18,11 +18,14 @@ backupManager:
   image:
     repository: vdaas/vald-manager-backup-cassandra
   initContainers:
-    - type: waitFor
+    - type: wait-for-cassandra
       name: wait-for-scylla
       image: cassandra:latest
-      target: scylla.default.svc.cluster.local
-      untilCondition: $(cqlsh scylla.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $?) -eq 0
+      cassandra:
+        hosts:
+          - scylla-0.default.svc.cluster.local
+          - scylla-1.default.svc.cluster.local
+          - scylla-2.default.svc.cluster.local
       sleepDuration: 2
   env: []
   mysql:
@@ -39,11 +42,14 @@ meta:
   image:
     repository: vdaas/vald-meta-cassandra
   initContainers:
-    - type: waitFor
+    - type: wait-for-cassandra
       name: wait-for-scylla
       image: cassandra:latest
-      target: scylla.default.svc.cluster.local
-      untilCondition: $(cqlsh scylla.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $?) -eq 0
+      cassandra:
+        hosts:
+          - scylla-0.default.svc.cluster.local
+          - scylla-1.default.svc.cluster.local
+          - scylla-2.default.svc.cluster.local
       sleepDuration: 2
   env: []
   redis:

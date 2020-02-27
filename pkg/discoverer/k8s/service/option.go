@@ -28,7 +28,7 @@ type Option func(d *discoverer) error
 
 var (
 	defaultOpts = []Option{
-		WithDiscoverDuration("500ms"),
+		WithDiscoverDuration("2s"),
 		WithErrGroup(errgroup.Get()),
 	}
 )
@@ -53,6 +53,9 @@ func WithNamespace(ns string) Option {
 
 func WithDiscoverDuration(dur string) Option {
 	return func(d *discoverer) error {
+		if dur == "" {
+			return nil
+		}
 		pd, err := timeutil.Parse(dur)
 		if err != nil {
 			pd = time.Second

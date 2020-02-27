@@ -24,9 +24,9 @@ data:
     version: v0.0.0
     time_zone: UTC
     logging:
-      logger: glg
-      level: debug
       format: raw
+      level: debug
+      logger: glg
     server_config:
       servers:
         - name: grpc

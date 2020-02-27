@@ -24,9 +24,9 @@ data:
     version: v0.0.0
     time_zone: UTC
     logging:
-      logger: glg
-      level: debug
       format: raw
+      level: debug
+      logger: glg
     server_config:
       servers:
         - name: grpc
@@ -89,3 +89,7 @@ data:
         cert: /path/to/cert
         key: /path/to/key
         ca: /path/to/ca
+    discoverer:
+      cache_sync_duration: 3s
+      name: ""
+      namespace: _MY_POD_NAMESPACE_

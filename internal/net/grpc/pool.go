@@ -19,6 +19,7 @@ package grpc
 
 import (
 	"context"
+	"math"
 	"net"
 	"strings"
 	"sync"
@@ -26,12 +27,14 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"golang.org/x/sync/singleflight"
 	"google.golang.org/grpc"
 )
 
 type ClientConnPool struct {
 	ctx     context.Context
 	conn    *ClientConn // default connection
+	group   singleflight.Group
 	pool    sync.Pool
 	addr    string
 	host    string
@@ -75,12 +78,26 @@ func NewPool(ctx context.Context, addr string, size uint64, dopts ...DialOption)
 			if cp.conn != nil && isHealthy(cp.conn) {
 				return cp.conn
 			}
-			conn, err := grpc.DialContext(ctx, cp.addr, cp.dopts...)
+			ic, err, _ := cp.group.Do(cp.addr, func() (interface{}, error) {
+				log.Warn("establishing new connection to " + cp.addr)
+				conn, err := grpc.DialContext(ctx, cp.addr, cp.dopts...)
+				if err != nil {
+					log.Error(err)
+					return nil, nil
+				}
+				if cp.conn != nil {
+					cp.conn.Close()
+				}
+				cp.conn = conn
+				return cp.conn, nil
+			})
 			if err != nil {
-				log.Error(err)
-				return nil
+				if cp.conn != nil && isHealthy(cp.conn) {
+					return cp.conn
+				}
+				log.Warn(err)
 			}
-			return conn
+			return ic.(*ClientConn)
 		},
 	}
 	return cp.Connect(ctx)
@@ -96,7 +113,7 @@ func (c *ClientConnPool) Disconnect() (rerr error) {
 	if err != nil {
 		rerr = errors.Wrap(rerr, err.Error())
 	}
-	for i := uint64(0); i < atomic.LoadUint64(&c.length); i++ {
+	for i := uint64(0); i < uint64(math.Max(float64(atomic.LoadUint64(&c.length)), float64(c.size)))*2; i++ {
 		conn, _ := c.Get()
 		if conn != nil {
 			err = conn.Close()
@@ -115,9 +132,14 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 
 	if c.conn == nil || (c.conn != nil && !isHealthy(c.conn)) {
 		conn, err := grpc.DialContext(ctx, c.addr, c.dopts...)
-		if err == nil {
-			c.conn = conn
+		if err != nil {
+			log.Debugf("failed to dial pool connection addr = %s\terror = %v", c.addr, err)
+			if conn != nil {
+				return c, errors.Wrap(conn.Close(), err.Error())
+			}
+			return nil, err
 		}
+		c.conn = conn
 	}
 
 	if atomic.LoadUint64(&c.length) > c.size {
@@ -126,28 +148,36 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 
 	if c.host == localHost ||
 		c.host == localIPv4 {
-		for {
-			if atomic.LoadUint64(&c.length) > c.size {
-				return c, nil
-			}
+		for atomic.LoadUint64(&c.length) > c.size {
 			conn, err := grpc.DialContext(ctx, localIPv4+":"+c.port, c.dopts...)
 			if err == nil {
 				c.Put(conn)
+			} else {
+				log.Debugf("failed to dial pool connection ip = %s\tport = %s\terror = %v", localIPv4, c.port, err)
+				if conn != nil {
+					return c, errors.Wrap(conn.Close(), err.Error())
+				}
+				return c, err
 			}
 		}
+		return c, nil
 	}
 
 	ips, err := net.DefaultResolver.LookupIPAddr(ctx, c.host)
 	if err != nil {
-		for {
-			if atomic.LoadUint64(&c.length) > c.size {
-				return c, nil
-			}
+		for atomic.LoadUint64(&c.length) > c.size {
 			conn, err := grpc.DialContext(ctx, c.addr, c.dopts...)
 			if err == nil {
 				c.Put(conn)
+			} else {
+				log.Debugf("failed to dial pool connection addr = %s\terror = %v", c.addr, err)
+				if conn != nil {
+					return c, errors.Wrap(conn.Close(), err.Error())
+				}
+				return c, err
 			}
 		}
+		return c, nil
 	}
 
 	if uint64(len(ips)) < c.size {
@@ -163,6 +193,12 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 		conn, err := grpc.DialContext(ctx, ip.String()+":"+c.port, c.dopts...)
 		if err == nil {
 			c.Put(conn)
+		} else {
+			log.Debugf("failed to dial pool connection ip = %s\tport = %s\terror = %v", ip.String, c.port, err)
+			if conn != nil {
+				return c, errors.Wrap(conn.Close(), err.Error())
+			}
+			return c, err
 		}
 		if atomic.LoadUint64(&c.length) > c.size {
 			return c, nil
@@ -207,11 +243,10 @@ func (c *ClientConnPool) Put(conn *ClientConn) error {
 
 func (c *ClientConnPool) Do(f func(conn *ClientConn) error) (err error) {
 	conn, shared := c.Get()
-	err = f(conn)
 	if !shared {
 		c.Put(conn)
 	}
-	return err
+	return f(conn)
 }
 
 func (c *ClientConnPool) IsHealthy() bool {

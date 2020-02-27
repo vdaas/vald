@@ -21,9 +21,10 @@ metadata:
   labels:
     app: vald-agent-ngt
   # annotations:
-  #   checksum/configmap: 08e791c8a3222101161f397fe09f4783ba8463d05bf1a1d4205dd7aab5f947e6
+  #   checksum/configmap: 119c7296c582711802dfd31ab29b7937ba454b8c1a5ef1811ca0b606a949d884
 spec:
   serviceName: vald-agent-ngt
+  podManagementPolicy: Parallel
   replicas: 5
   revisionHistoryLimit: 2
   selector:

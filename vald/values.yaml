@@ -16,6 +16,10 @@
 
 defaults:
   time_zone: UTC
+  logging:
+    logger: glg
+    level: debug
+    format: raw
   server_config:
     servers:
       rest:
@@ -205,30 +209,26 @@ gateway:
     repository: vdaas/vald-gateway
     tag: nightly
     pullPolicy: Always
-  logging:
-    logger: glg
-    level: debug
-    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
   initContainers:
-    - type: waitFor
+    - type: wait-for
       name: wait-for-manager-compressor
       target: compressor
       image: busybox
       sleepDuration: 2
-    - type: waitFor
+    - type: wait-for
       name: wait-for-meta
       target: meta
       image: busybox
       sleepDuration: 2
-    - type: waitFor
+    - type: wait-for
       name: wait-for-discoverer
       target: discoverer
       image: busybox
       sleepDuration: 2
-    - type: waitFor
+    - type: wait-for
       name: wait-for-agent
       target: agent
       image: busybox
@@ -306,6 +306,7 @@ agent:
   maxUnavailable: 1
   revisionHistoryLimit: 2
   terminationGracePeriodSeconds: 30
+  podManagementPolicy: OrderedReady
   hpa:
     enabled: true
     targetCPUUtilizationPercentage: 80
@@ -313,10 +314,6 @@ agent:
     repository: vdaas/vald-agent-ngt
     tag: nightly
     pullPolicy: Always
-  logging:
-    logger: glg
-    level: debug
-    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
@@ -369,13 +366,14 @@ discoverer:
     repository: vdaas/vald-discoverer-k8s
     tag: nightly
     pullPolicy: Always
-  logging:
-    logger: glg
-    level: debug
-    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
+  env:
+    - name: MY_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
   server_config:
     prefix: discoverer
     servers:
@@ -394,6 +392,10 @@ discoverer:
     full_shutdown_duration: 600s
     tls:
       enabled: false
+  discoverer:
+    name: ""
+    namespace: _MY_POD_NAMESPACE_
+    cache_sync_duration: 3s
   clusterRole:
     enabled: true
     name: discoverer
@@ -424,15 +426,11 @@ compressor:
     repository: vdaas/vald-manager-compressor
     tag: nightly
     pullPolicy: Always
-  logging:
-    logger: glg
-    level: debug
-    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
   initContainers:
-    - type: waitFor
+    - type: wait-for
       name: wait-for-manager-backup
       target: manager-backup
       image: busybox
@@ -489,19 +487,19 @@ backupManager:
     # repository: vdaas/vald-manager-backup-cassandra
     tag: nightly
     pullPolicy: Always
-  logging:
-    logger: glg
-    level: debug
-    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
   initContainers:
-    - type: waitFor
+    - type: wait-for-mysql
       name: wait-for-mysql
       image: mysql:latest
-      target: mysql.default.svc.cluster.local
-      untilCondition: "\"$(mysqladmin -hmysql.default.svc.cluster.local -uroot -p${MYSQL_PASSWORD} --show-warnings=false ping | grep alive | awk '{print $3}')\" = \"alive\""
+      mysql:
+        hosts:
+          - mysql.default.svc.cluster.local
+        options:
+          - "-uroot"
+          - "-p${MYSQL_PASSWORD}"
       sleepDuration: 2
       env:
       - name: MYSQL_PASSWORD
@@ -509,11 +507,17 @@ backupManager:
           secretKeyRef:
             name: mysql-secret
             key: password
-    # - type: waitFor
+    # - type: wait-for-cassandra
     #   name: wait-for-cassandra
     #   image: cassandra:latest
-    #   target: cassandra.default.svc.cluster.local
-    #   untilCondition: $(cqlsh cassandra.default.svc.cluster.local -uroot -p${CASSANDRA_PASSWORD} -e "select now() from system.local" > /dev/null; echo $?) -eq 0
+    #   cassandra:
+    #     hosts:
+    #       - cassandra-0.default.svc.cluster.local
+    #       - cassandra-1.default.svc.cluster.local
+    #       - cassandra-2.default.svc.cluster.local
+    #     options:
+    #       - "-uroot"
+    #       - "-p${CASSANDRA_PASSWORD}"
     #   sleepDuration: 2
     #   env:
     #   - name: CASSANDRA_PASSWORD
@@ -521,11 +525,14 @@ backupManager:
     #       secretKeyRef:
     #         name: cassandra-secret
     #         key: password
-    # - type: waitFor
+    # - type: wait-for-cassandra
     #   name: wait-for-scylla
     #   image: cassandra:latest
-    #   target: scylla.default.svc.cluster.local
-    #   untilCondition: $(cqlsh scylla.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $?) -eq 0
+    #   cassandra:
+    #     hosts:
+    #       - scylla-0.default.svc.cluster.local
+    #       - scylla-1.default.svc.cluster.local
+    #       - scylla-2.default.svc.cluster.local
     #   sleepDuration: 2
   env:
     - name: MYSQL_PASSWORD
@@ -671,13 +678,15 @@ indexManager:
     repository: vdaas/vald-manager-index
     tag: nightly
     pullPolicy: Always
-  logging:
-    logger: glg
-    level: debug
-    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
+  initContainers:
+    - type: wait-for
+      name: wait-for-agent
+      target: agent
+      image: busybox
+      sleepDuration: 2
   env:
     # - name: MY_NODE_NAME
     #   valueFrom:
@@ -743,19 +752,18 @@ meta:
     # repository: vdaas/vald-meta-cassandra
     tag: nightly
     pullPolicy: Always
-  logging:
-    logger: glg
-    level: debug
-    format: raw
   rollingUpdate:
     maxSurge: 25%
     maxUnavailable: 25%
   initContainers:
-    - type: waitFor
+    - type: wait-for-redis
       name: wait-for-redis
       image: redis:latest
-      target: redis.default.svc.cluster.local
-      untilCondition: "\"$(redis-cli -h redis.default.svc.cluster.local -a ${REDIS_PASSWORD} ping)\" = \"PONG\""
+      redis:
+        hosts:
+          - redis.default.svc.cluster.local
+        options:
+          - "-a ${REDIS_PASSWORD}"
       sleepDuration: 2
       env:
         - name: REDIS_PASSWORD
@@ -763,11 +771,17 @@ meta:
             secretKeyRef:
               name: redis-secret
               key: password
-    # - type: waitFor
+    # - type: wait-for-cassandra
     #   name: wait-for-cassandra
     #   image: cassandra:latest
-    #   target: cassandra.default.svc.cluster.local
-    #   untilCondition: $(cqlsh cassandra.default.svc.cluster.local -uroot -p${CASSANDRA_PASSWORD} -e "select now() from system.local" > /dev/null; echo $?) -eq 0
+    #   cassandra:
+    #     hosts:
+    #       - cassandra-0.default.svc.cluster.local
+    #       - cassandra-1.default.svc.cluster.local
+    #       - cassandra-2.default.svc.cluster.local
+    #     options:
+    #       - "-uroot"
+    #       - "-p${CASSANDRA_PASSWORD}"
     #   sleepDuration: 2
     #   env:
     #   - name: CASSANDRA_PASSWORD
@@ -775,11 +789,14 @@ meta:
     #       secretKeyRef:
     #         name: cassandra-secret
     #         key: password
-    # - type: waitFor
+    # - type: wait-for-cassandra
     #   name: wait-for-scylla
     #   image: cassandra:latest
-    #   target: scylla.default.svc.cluster.local
-    #   untilCondition: $(cqlsh scylla.default.svc.cluster.local -e "select now() from system.local" > /dev/null; echo $?) -eq 0
+    #   cassandra:
+    #     hosts:
+    #       - scylla-0.default.svc.cluster.local
+    #       - scylla-1.default.svc.cluster.local
+    #       - scylla-2.default.svc.cluster.local
     #   sleepDuration: 2
   env:
     - name: REDIS_PASSWORD

@@ -19,17 +19,14 @@ package service
 
 import (
 	"context"
-	"fmt"
-	"math"
-	"net"
 	"reflect"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/agent"
-	"github.com/vdaas/vald/apis/grpc/discoverer"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -45,18 +42,8 @@ type Indexer interface {
 }
 
 type index struct {
-	acClient           grpc.Client
-	agentARecord       string
-	agentName          string
-	agentOpts          []grpc.Option
-	agentPort          int
-	agents             atomic.Value // []string ips
-	dscAddr            string
-	dscClient          grpc.Client
-	dscDur             time.Duration
+	client             discoverer.Client
 	eg                 errgroup.Group
-	namespace          string
-	nodeName           string
 	indexDuration      time.Duration
 	indexDurationLimit time.Duration
 	concurrency        int
@@ -81,84 +68,33 @@ func New(opts ...Option) (idx Indexer, err error) {
 }
 
 func (idx *index) Start(ctx context.Context) (<-chan error, error) {
-	dech, err := idx.dscClient.StartConnectionMonitor(ctx)
+	dech, err := idx.client.Start(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	addrs, err := idx.dnsDiscovery(ctx)
+	err = idx.loadInfos(ctx)
 	if err != nil {
 		return nil, err
 	}
-	idx.agents.Store(addrs)
-	idx.acClient = grpc.New(
-		append(
-			idx.agentOpts,
-			grpc.WithAddrs(addrs...),
-			grpc.WithErrGroup(idx.eg),
-		)...,
-	)
 	ech := make(chan error, 100)
-	err = idx.discover(ctx, ech)
-	if err != nil {
-		close(ech)
-		idx.dscClient.Close()
-		return nil, err
-	}
-
-	aech, err := idx.acClient.StartConnectionMonitor(ctx)
-	if err != nil {
-		close(ech)
-		return nil, err
-	}
-
 	idx.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
-		fch := make(chan struct{}, 1)
-		defer close(fch)
 		it := time.NewTicker(idx.indexDuration)
 		defer it.Stop()
 		itl := time.NewTicker(idx.indexDurationLimit)
 		defer itl.Stop()
-		dt := time.NewTicker(idx.dscDur)
-		defer dt.Stop()
 		finalize := func() (err error) {
-			var errs error
-			err = idx.dscClient.Close()
-			if err != nil {
-				errs = errors.Wrap(errs, err.Error())
-			}
-			err = idx.acClient.Close()
-			if err != nil {
-				errs = errors.Wrap(errs, err.Error())
-			}
 			err = ctx.Err()
 			if err != nil && err != context.Canceled {
-				errs = errors.Wrap(errs, err.Error())
+				return err
 			}
-			return errs
+			return nil
 		}
 		for {
 			select {
 			case <-ctx.Done():
 				return finalize()
 			case err = <-dech:
-			case err = <-aech:
-			case <-fch:
-				err = idx.discover(ctx, ech)
-				if err != nil {
-					ech <- err
-					err = nil
-				}
-			case <-dt.C:
-				err = idx.discover(ctx, ech)
-				if err != nil {
-					ech <- err
-					log.Error(err)
-					err = nil
-					time.Sleep(idx.dscDur / 5)
-					fch <- struct{}{}
-				}
 			case <-it.C:
 				err = idx.execute(ctx, true)
 				if err != nil {
@@ -181,107 +117,10 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 					return finalize()
 				case ech <- err:
 				}
-			} else {
-				log.Debug(idx.acClient.GetAddrs())
 			}
 		}
 	}))
 	return ech, nil
-}
-
-func (idx *index) dnsDiscovery(ctx context.Context) (addrs []string, err error) {
-	ips, err := net.DefaultResolver.LookupIPAddr(ctx, idx.agentARecord)
-	if err != nil {
-		return nil, errors.ErrAgentAddrCouldNotDiscover(err, idx.agentARecord)
-	}
-	addrs = make([]string, 0, len(ips))
-	for _, ip := range ips {
-		addrs = append(addrs, fmt.Sprintf("%s:%d", ip.String(), idx.agentPort))
-	}
-	return addrs, nil
-}
-
-func (idx *index) discover(ctx context.Context, ech chan<- error) (err error) {
-	log.Info("starting discoverer discovery")
-	addrs := make([]string, 0, len(idx.agents.Load().([]string)))
-	_, err = idx.dscClient.Do(ctx, idx.dscAddr,
-		func(ctx context.Context,
-			conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			nodes, err := discoverer.NewDiscovererClient(conn).
-				Nodes(ctx, &payload.Discoverer_Request{
-					Namespace: idx.namespace,
-					Name:      idx.agentName,
-					Node:      idx.nodeName,
-				}, copts...)
-			if err != nil {
-				return nil, err
-			}
-			for i := 0; i < (math.MaxInt32); i++ {
-				visited := false
-				for i, node := range nodes.GetNodes() {
-					select {
-					case <-ctx.Done():
-						return nil, ctx.Err()
-					default:
-						if node != nil && node.GetPods() != nil {
-							pods := node.GetPods().GetPods()
-							if i < len(pods) {
-								addrs = append(addrs, fmt.Sprintf("%s:%d", pods[i].GetIp(), idx.agentPort))
-								if !visited {
-									visited = true
-								}
-								break
-							}
-						}
-					}
-				}
-				if !visited {
-					return nil, nil
-				}
-			}
-			return nil, nil
-		})
-	if err != nil {
-		log.Warn("failed to discover agents from discoverer API, trying to discover from dns...")
-		addrs, err = idx.dnsDiscovery(ctx)
-		if err != nil {
-			return errors.ErrAgentAddrCouldNotDiscover(err, idx.agentARecord)
-		}
-	}
-	if idx.acClient != nil {
-		cur := make(map[string]struct{}, len(addrs))
-		i := len(addrs)
-		connected := make([]string, i)
-		for _, addr := range addrs {
-			err = idx.acClient.Connect(ctx, addr)
-			if err != nil {
-				ech <- err
-				err = nil
-			} else {
-				cur[addr] = struct{}{}
-				connected[i-1] = addr
-				i--
-			}
-		}
-		idx.agents.Store(connected[i:])
-		err = idx.acClient.Range(ctx,
-			func(ctx context.Context,
-				addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-				_, ok := cur[addr]
-				if !ok {
-					idx.indexInfos.Delete(addr)
-					return idx.acClient.Disconnect(addr)
-				}
-				delete(cur, addr)
-				return nil
-			})
-		if err != nil {
-			ech <- err
-			err = nil
-		}
-	}
-	log.Info("finished discoverer discovery")
-	return idx.loadInfos(ctx)
 }
 
 func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err error) {
@@ -290,7 +129,7 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 	}
 	idx.indexing.Store(true)
 	defer idx.indexing.Store(false)
-	err = idx.acClient.OrderedRangeConcurrent(ctx, idx.agents.Load().([]string),
+	err = idx.client.GetClient().OrderedRangeConcurrent(ctx, idx.client.GetAddrs(ctx),
 		idx.concurrency,
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
@@ -323,7 +162,7 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 func (idx *index) loadInfos(ctx context.Context) (err error) {
 	var uuids sync.Map
 	var ucuuids sync.Map
-	err = idx.acClient.RangeConcurrent(ctx, len(idx.agents.Load().([]string)),
+	err = idx.client.GetClient().RangeConcurrent(ctx, len(idx.client.GetAddrs(ctx)),
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 			select {

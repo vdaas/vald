@@ -19,7 +19,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"reflect"
 	"sort"
 	"sync"
@@ -85,6 +84,13 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 				for name, metrics := range nodes {
 					d.nodeMetrics.Store(name, metrics)
 				}
+				d.nodeMetrics.Range(func(name string, _ mnode.Node) bool {
+					_, ok := nodes[name]
+					if !ok {
+						d.nodeMetrics.Delete(name)
+					}
+					return true
+				})
 			}),
 		)),
 		k8s.WithResourceController(mpod.New(
@@ -97,6 +103,13 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 				for name, pods := range podList {
 					d.podMetrics.Store(name, pods)
 				}
+				d.podMetrics.Range(func(name string, _ mpod.Pod) bool {
+					_, ok := podList[name]
+					if !ok {
+						d.podMetrics.Delete(name)
+					}
+					return true
+				})
 			}),
 		)),
 		k8s.WithResourceController(pod.New(
@@ -112,6 +125,13 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 					}
 					d.pods.Store(name, pods)
 				}
+				d.pods.Range(func(name string, _ []pod.Pod) bool {
+					_, ok := podList[name]
+					if !ok {
+						d.pods.Delete(name)
+					}
+					return true
+				})
 			}),
 		)),
 		k8s.WithResourceController(node.New(
@@ -121,9 +141,18 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 			}),
 			node.WithOnReconcileFunc(func(nodes []node.Node) {
 				log.Debugf("node resource reconciled\t%#v", nodes)
+				nm := make(map[string]struct{}, len(nodes))
 				for _, n := range nodes {
+					nm[n.Name] = struct{}{}
 					d.nodes.Store(n.Name, n)
 				}
+				d.nodes.Range(func(name string, _ node.Node) bool {
+					_, ok := nm[name]
+					if !ok {
+						d.nodes.Delete(name)
+					}
+					return true
+				})
 			}),
 		)),
 	)
@@ -302,11 +331,6 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				d.podsByNamespace.Store(podsByNamespace)
 				d.podsByName.Store(podsByName)
 				d.nodeByName.Store(nodeByName)
-				nps, _ := d.GetNodes(&payload.Discoverer_Request{
-					Name: "vald-agent-ngt",
-				})
-				b, _ := json.MarshalIndent(nps, "", "\t")
-				log.Info(string(b))
 			case err = <-dech:
 				if err != nil {
 					ech <- err
@@ -373,7 +397,9 @@ func (d *discoverer) GetPods(req *payload.Discoverer_Request) (pods *payload.Inf
 		}
 	}
 	for i := range pods.GetPods() {
-		pods.Pods[i].Node.Pods = nil
+		if pods.Pods[i].Node != nil {
+			pods.Pods[i].Node.Pods = nil
+		}
 	}
 	return pods, nil
 }
@@ -401,7 +427,7 @@ func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.I
 		req.Node = name
 		n.Pods.Pods = nil
 		ps, err := d.GetPods(req)
-		if err == nil {
+		if err == nil && ps != nil {
 			for i := range ps.Pods {
 				ps.Pods[i].Node = nil
 			}
