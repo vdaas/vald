@@ -54,7 +54,7 @@ func run() error {
 
 	for i := range ids[:600] {
 		if i%10 == 0 {
-			fmt.Printf("now inserting - %d", i)
+			fmt.Printf("now inserting - %d\n", i)
 		}
 
 		_, err := client.Insert(ctx, &payload.Object_Vector{
