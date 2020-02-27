@@ -13,11 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+// Package node provides kubernetes node information and preriodically update
 package node
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
@@ -26,32 +27,31 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-type NodeWatcher interface {
-	k8s.ResourceController
-	GetNodes() []Node
-}
+type NodeWatcher k8s.ResourceController
 
 type reconciler struct {
-	mu          sync.RWMutex
-	nodes       []Node
+	ctx         context.Context
 	mgr         manager.Manager
 	name        string
+	namespace   string
 	onError     func(err error)
 	onReconcile func(nodes []Node)
 }
 
 type Node struct {
-	Name string
-	IP   string
-	CPU  float64
-	Mem  float64
+	Name         string
+	InternalAddr string
+	ExternalAddr string
+	CPUCapacity  float64
+	CPURemain    float64
+	MemCapacity  float64
+	MemRemain    float64
 }
 
 func New(opts ...Option) NodeWatcher {
@@ -67,7 +67,7 @@ func New(opts ...Option) NodeWatcher {
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
 	ns := &corev1.NodeList{}
 
-	err = r.mgr.GetClient().List(context.TODO(), ns, client.InNamespace(req.Namespace))
+	err = r.mgr.GetClient().List(r.ctx, ns)
 
 	if err != nil {
 		if r.onError != nil {
@@ -91,33 +91,37 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	for _, node := range ns.Items {
 		remain := node.Status.Allocatable
 		limit := node.Status.Capacity
+		var eip, iip string
+		for _, addr := range node.Status.Addresses {
+			switch addr.Type {
+			case corev1.NodeInternalIP:
+				iip = addr.Address
+			case corev1.NodeInternalDNS:
+				if iip == "" {
+					iip = addr.Address
+				}
+			case corev1.NodeExternalIP:
+				eip = addr.Address
+			case corev1.NodeExternalDNS:
+				if eip == "" {
+					eip = addr.Address
+				}
+			}
+		}
 		nodes = append(nodes, Node{
-			Name: node.GetName(),
-			IP:   node.Status.Addresses[0].Address,
-			CPU: (float64(limit.Cpu().Value()-remain.Cpu().Value()) /
-				float64(limit.Cpu().Value())) * 100.0,
-			Mem: (float64(limit.Memory().Value()-remain.Memory().Value()) /
-				float64(limit.Memory().Value())) * 100.0,
+			Name:         node.GetName(),
+			ExternalAddr: eip,
+			InternalAddr: iip,
+			CPUCapacity:  float64(limit.Cpu().Value()),
+			CPURemain:    float64(remain.Cpu().Value()),
+			MemCapacity:  float64(limit.Memory().Value()),
+			MemRemain:    float64(remain.Memory().Value()),
 		})
 	}
-
-	r.mu.Lock()
-	r.nodes = nodes
-	r.mu.Unlock()
-
 	if r.onReconcile != nil {
-		r.mu.RLock()
-		r.onReconcile(r.nodes)
-		r.mu.RUnlock()
+		r.onReconcile(nodes)
 	}
 
-	return
-}
-
-func (r *reconciler) GetNodes() (nodes []Node) {
-	r.mu.RLock()
-	nodes = r.nodes
-	r.mu.RUnlock()
 	return
 }
 
@@ -125,8 +129,11 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
-	if r.mgr == nil {
+func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
+	if r.ctx == nil && ctx != nil {
+		r.ctx = ctx
+	}
+	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
 	corev1.AddToScheme(r.mgr.GetScheme())
@@ -135,12 +142,10 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 
 func (r *reconciler) For() runtime.Object {
 	return new(corev1.Node)
-	// return nil
 }
 
 func (r *reconciler) Owns() runtime.Object {
-	return new(corev1.Node)
-	// return nil
+	return nil
 }
 
 func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {

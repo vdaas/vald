@@ -26,13 +26,14 @@ data:
     logging:
       logger: glg
       level: debug
-      format: 
+      format: raw
     server_config:
       servers:
         - name: grpc
           host: 0.0.0.0
           port: 8081
           grpc:
+            bidirectional_stream_concurrency: 20
             connection_timeout: ""
             header_table_size: 0
             initial_conn_window_size: 0
@@ -92,6 +93,8 @@ data:
       agent_port: 8081
       agent_name: vald-agent-ngt
       agent_dns: vald-agent-ngt.default.svc.cluster.local
+      agent_namespace: _MY_POD_NAMESPACE_
+      node_name: 
       index_replica: 5
       discoverer:
         host: vald-discoverer.default.svc.cluster.local
@@ -99,6 +102,7 @@ data:
         duration: 2s
         discover_client:
           addrs: []
+          connection_pool: 10
           health_check_duration: 1s
           backoff:
             backoff_factor: 0
@@ -114,7 +118,18 @@ data:
             max_send_msg_size: 0
             wait_for_ready: true
           dial_option:
-            dialer:
+            enable_backoff: false
+            initial_connection_window_size: 0
+            initial_window_size: 0
+            insecure: true
+            keep_alive:
+              permit_without_stream: false
+              time: ""
+              timeout: ""
+            max_backoff_delay: ""
+            max_msg_size: 0
+            read_buffer_size: 0
+            tcp:
               dialer:
                 dual_stack_enabled: true
                 keep_alive: ""
@@ -128,17 +143,6 @@ data:
                 cert: /path/to/cert
                 enabled: false
                 key: /path/to/key
-            enable_backoff: false
-            initial_connection_window_size: 0
-            initial_window_size: 0
-            insecure: true
-            keep_alive:
-              permit_without_stream: false
-              time: ""
-              timeout: ""
-            max_backoff_delay: ""
-            max_msg_size: 0
-            read_buffer_size: 0
             timeout: ""
             write_buffer_size: 0
           tls:
@@ -148,6 +152,7 @@ data:
             key: /path/to/key
         agent_client:
           addrs: []
+          connection_pool: 100
           health_check_duration: 1s
           backoff:
             backoff_factor: 0
@@ -163,7 +168,18 @@ data:
             max_send_msg_size: 0
             wait_for_ready: true
           dial_option:
-            dialer:
+            enable_backoff: false
+            initial_connection_window_size: 0
+            initial_window_size: 0
+            insecure: true
+            keep_alive:
+              permit_without_stream: false
+              time: ""
+              timeout: ""
+            max_backoff_delay: ""
+            max_msg_size: 0
+            read_buffer_size: 0
+            tcp:
               dialer:
                 dual_stack_enabled: true
                 keep_alive: ""
@@ -177,17 +193,6 @@ data:
                 cert: /path/to/cert
                 enabled: false
                 key: /path/to/key
-            enable_backoff: false
-            initial_connection_window_size: 0
-            initial_window_size: 0
-            insecure: true
-            keep_alive:
-              permit_without_stream: false
-              time: ""
-              timeout: ""
-            max_backoff_delay: ""
-            max_msg_size: 0
-            read_buffer_size: 0
             timeout: ""
             write_buffer_size: 0
           tls:
@@ -200,6 +205,7 @@ data:
         port: 8081
         client:
           addrs: []
+          connection_pool: 10
           health_check_duration: 1s
           backoff:
             backoff_factor: 0
@@ -215,7 +221,18 @@ data:
             max_send_msg_size: 0
             wait_for_ready: true
           dial_option:
-            dialer:
+            enable_backoff: false
+            initial_connection_window_size: 0
+            initial_window_size: 0
+            insecure: true
+            keep_alive:
+              permit_without_stream: false
+              time: ""
+              timeout: ""
+            max_backoff_delay: ""
+            max_msg_size: 0
+            read_buffer_size: 0
+            tcp:
               dialer:
                 dual_stack_enabled: true
                 keep_alive: ""
@@ -229,17 +246,6 @@ data:
                 cert: /path/to/cert
                 enabled: false
                 key: /path/to/key
-            enable_backoff: false
-            initial_connection_window_size: 0
-            initial_window_size: 0
-            insecure: true
-            keep_alive:
-              permit_without_stream: false
-              time: ""
-              timeout: ""
-            max_backoff_delay: ""
-            max_msg_size: 0
-            read_buffer_size: 0
             timeout: ""
             write_buffer_size: 0
           tls:
@@ -255,6 +261,7 @@ data:
         port: 8081
         client:
           addrs: []
+          connection_pool: 10
           health_check_duration: 1s
           backoff:
             backoff_factor: 0
@@ -270,7 +277,18 @@ data:
             max_send_msg_size: 0
             wait_for_ready: true
           dial_option:
-            dialer:
+            enable_backoff: false
+            initial_connection_window_size: 0
+            initial_window_size: 0
+            insecure: true
+            keep_alive:
+              permit_without_stream: false
+              time: ""
+              timeout: ""
+            max_backoff_delay: ""
+            max_msg_size: 0
+            read_buffer_size: 0
+            tcp:
               dialer:
                 dual_stack_enabled: true
                 keep_alive: ""
@@ -284,17 +302,6 @@ data:
                 cert: /path/to/cert
                 enabled: false
                 key: /path/to/key
-            enable_backoff: false
-            initial_connection_window_size: 0
-            initial_window_size: 0
-            insecure: true
-            keep_alive:
-              permit_without_stream: false
-              time: ""
-              timeout: ""
-            max_backoff_delay: ""
-            max_msg_size: 0
-            read_buffer_size: 0
             timeout: ""
             write_buffer_size: 0
           tls:

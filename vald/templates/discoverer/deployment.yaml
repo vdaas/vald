@@ -20,6 +20,8 @@ metadata:
   name: {{ .Values.discoverer.name }}
   labels:
     app: {{ .Values.discoverer.name }}
+  annotations:
+    checksum/configmap: {{ include (print $.Template.BasePath "/discoverer/configmap.yaml") . | sha256sum }}
 spec:
   progressDeadlineSeconds: {{ .Values.discoverer.progressDeadlineSeconds }}
   replicas: {{ .Values.discoverer.minReplicas }}
@@ -47,8 +49,8 @@ spec:
         - name: {{ .Values.discoverer.name }}
           image: "{{ .Values.discoverer.image.repository }}:{{ .Values.discoverer.image.tag }}"
           imagePullPolicy: {{ .Values.discoverer.image.pullPolicy }}
-          {{- $servers := dict "Values" .Values.discoverer.server_config "default" .Values.defaults.server_config }}
-          {{- include "vald.containerPorts" $servers | nindent 10 }}
+          {{- $servers := dict "Values" .Values.discoverer.server_config "default" .Values.defaults.server_config -}}
+          {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
           resources:
             {{- toYaml .Values.discoverer.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
@@ -76,5 +78,12 @@ spec:
         {{- if .Values.discoverer.volumes }}
         {{- toYaml .Values.discoverer.volumes | nindent 8 }}
         {{- end }}
+      {{- if .Values.discoverer.nodeName }}
+      nodeName: {{ .Values.discoverer.nodeName }}
+      {{- end }}
+      {{- if .Values.discoverer.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.discoverer.nodeSelector | nindent 8 }}
+      {{- end }}
 status:
 {{- end }}

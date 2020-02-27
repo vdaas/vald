@@ -20,23 +20,26 @@ metadata:
   name: cassandra-initdb
 data:
   init.cql: |
-    DROP KEYSPACE IF EXISTS vald;
+    // DROP KEYSPACE IF EXISTS vald;
     CREATE KEYSPACE IF NOT EXISTS vald WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 3};
-    # meta tables
+    // meta
 
+    DROP TABLE IF EXISTS vald.kv;
     CREATE TABLE vald.kv (
       uuid   text,
       meta   text,
       PRIMARY KEY (uuid)
     );
 
+    DROP TABLE IF EXISTS vald.vk;
     CREATE TABLE vald.vk (
       meta   text,
       uuid   text,
       PRIMARY KEY (meta)
     );
-    # backup-manager tables
+    // backup
 
+    DROP TABLE IF EXISTS vald.meta_vector;
     CREATE TABLE vald.meta_vector (
       uuid   text,
       vector blob,
@@ -45,4 +48,5 @@ data:
       PRIMARY KEY (uuid)
     );
 
+    DROP INDEX IF EXISTS vald.meta_vector;
     CREATE INDEX ON vald.meta_vector (ips);

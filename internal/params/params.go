@@ -76,7 +76,14 @@ func (p *parser) Parse() (*Data, bool, error) {
 		if err != flag.ErrHelp {
 			return nil, false, errors.ErrArgumentParseFailed(err)
 		}
-		return d, true, nil
+		return nil, true, nil
+	}
+
+	if _, err := os.Stat(d.ConfigFilePath()); !d.ShowVersion() &&
+		(os.IsNotExist(err) ||
+			d.ConfigFilePath() == "") {
+		f.Usage()
+		return nil, true, err
 	}
 
 	return d, false, nil

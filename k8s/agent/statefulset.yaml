@@ -20,9 +20,12 @@ metadata:
   name: vald-agent-ngt
   labels:
     app: vald-agent-ngt
+  # annotations:
+  #   checksum/configmap: 08e791c8a3222101161f397fe09f4783ba8463d05bf1a1d4205dd7aab5f947e6
 spec:
   serviceName: vald-agent-ngt
-  replicas: 20
+  podManagementPolicy: Parallel
+  replicas: 5
   revisionHistoryLimit: 2
   selector:
     matchLabels:
@@ -41,7 +44,6 @@ spec:
         - name: vald-agent-ngt
           image: "vdaas/vald-agent-ngt:nightly"
           imagePullPolicy: Always
-          
           livenessProbe:
             failureThreshold: 2
             httpGet:

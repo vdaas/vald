@@ -20,6 +20,8 @@ metadata:
   name: vald-meta
   labels:
     app: vald-meta
+  annotations:
+    checksum/configmap: c6f1b01d1e9aff3f79061235ce96e0b56f154c41931452641d3a20d706369193
 spec:
   progressDeadlineSeconds: 600
   replicas: 2
@@ -61,7 +63,6 @@ spec:
         - name: vald-meta
           image: "vdaas/vald-meta-redis:nightly"
           imagePullPolicy: Always
-          
           livenessProbe:
             failureThreshold: 2
             httpGet:

@@ -28,7 +28,8 @@ import (
 
 type Handler interface {
 	Index(w http.ResponseWriter, r *http.Request) (int, error)
-	Discover(w http.ResponseWriter, r *http.Request) (int, error)
+	Pods(w http.ResponseWriter, r *http.Request) (int, error)
+	Nodes(w http.ResponseWriter, r *http.Request) (int, error)
 }
 
 type handler struct {
@@ -51,9 +52,16 @@ func (h *handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
 	})
 }
 
-func (h *handler) Discover(w http.ResponseWriter, r *http.Request) (code int, err error) {
+func (h *handler) Pods(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Discoverer_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
-		return h.dsc.Discover(r.Context(), req)
+		return h.dsc.Pods(r.Context(), req)
+	})
+}
+
+func (h *handler) Nodes(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Discoverer_Request
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.dsc.Nodes(r.Context(), req)
 	})
 }

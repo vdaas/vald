@@ -36,6 +36,7 @@ type Option func(*gRPCClient)
 
 var (
 	defaultOpts = []Option{
+		WithConnectionPool(3),
 		WithErrGroup(errgroup.Get()),
 		WithHealthCheckDuration("10s"),
 	}
@@ -61,6 +62,14 @@ func WithHealthCheckDuration(dur string) Option {
 			d = time.Second
 		}
 		g.hcDur = d
+	}
+}
+
+func WithConnectionPool(size int) Option {
+	return func(g *gRPCClient) {
+		if size > 1 {
+			g.poolSize = uint64(size)
+		}
 	}
 }
 

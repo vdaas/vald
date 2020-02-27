@@ -17,9 +17,48 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-type IndexManager struct {
+type Indexer struct {
+	// AgentPort represent agent port number
+	AgentPort int `json:"agent_port" yaml:"agent_port"`
+
+	// AgentName represent agents meta_name for service discovery
+	AgentName string `json:"agent_name" yaml:"agent_name"`
+
+	// AgentNamespace represent agent namespace location
+	AgentNamespace string `json:"agent_namespace" yaml:"agent_namespace"`
+
+	// AgentDNS represent agents dns A record for service discovery
+	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
+
+	// Concurrency represents indexing concurrency
+	Concurrency int `json:"concurrency" yaml:"concurrency"`
+
+	// AutoIndexLimit auto indexing duration limit
+	AutoIndexDurationLimit string `yaml:"auto_index_duration_limit" json:"auto_index_duration_limit"`
+
+	// AutoIndexCheckDuration represent checking loop duration about auto indexing execution
+	AutoIndexCheckDuration string `yaml:"auto_index_check_duration" json:"auto_index_check_duration"`
+
+	// AutoIndexLength represent minimum auto index length
+	AutoIndexLength int `yaml:"auto_index_length" json:"auto_index_length"`
+
+	// NodeName represents node name
+	NodeName string `json:"node_name" yaml:"node_name"`
+
+	// Discoverer represent agent discoverer service configuration
+	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
 }
 
-func (im *IndexManager) Bind() *IndexManager {
+func (im *Indexer) Bind() *Indexer {
+	im.AgentName = GetActualValue(im.AgentName)
+	im.AgentNamespace = GetActualValue(im.AgentNamespace)
+	im.AgentDNS = GetActualValue(im.AgentDNS)
+	im.AutoIndexDurationLimit = GetActualValue(im.AutoIndexDurationLimit)
+	im.AutoIndexCheckDuration = GetActualValue(im.AutoIndexCheckDuration)
+	im.NodeName = GetActualValue(im.NodeName)
+
+	if im.Discoverer != nil {
+		im.Discoverer = im.Discoverer.Bind()
+	}
 	return im
 }

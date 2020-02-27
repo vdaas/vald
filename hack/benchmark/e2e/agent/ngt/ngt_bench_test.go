@@ -119,7 +119,7 @@ func BenchmarkAgentNGTRESTSequential(rb *testing.B) {
 
 			url = fmt.Sprintf("http://%s/index/create", address)
 			b.Run("CreateIndex", func(bb *testing.B) {
-				buf, err := json.Marshal(&payload.Controll_CreateIndexRequest{
+				buf, err := json.Marshal(&payload.Control_CreateIndexRequest{
 					PoolSize: 10000,
 				})
 				if err != nil {
@@ -282,7 +282,7 @@ func BenchmarkAgentNGTgRPCSequential(rb *testing.B) {
 			b.Run("CreateIndex", func(bb *testing.B) {
 				bb.ReportAllocs()
 				bb.ResetTimer()
-				_, err := client.CreateIndex(ctx, &payload.Controll_CreateIndexRequest{
+				_, err := client.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
 					PoolSize: 10000,
 				})
 				if err != nil {
@@ -433,7 +433,7 @@ func BenchmarkAgentNGTgRPCStream(rb *testing.B) {
 			b.Run("CreateIndex", func(bb *testing.B) {
 				bb.ReportAllocs()
 				bb.ResetTimer()
-				_, err := client.CreateIndex(ctx, &payload.Controll_CreateIndexRequest{
+				_, err := client.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
 					PoolSize: 10000,
 				})
 				if err != nil {

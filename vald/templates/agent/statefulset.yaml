@@ -20,8 +20,11 @@ metadata:
   name: {{ .Values.agent.name }}
   labels:
     app: {{ .Values.agent.name }}
+  # annotations:
+  #   checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
 spec:
   serviceName: {{ .Values.agent.name }}
+  podManagementPolicy: {{ .Values.agent.podManagementPolicy }}
   replicas: {{ .Values.agent.minReplicas }}
   revisionHistoryLimit: {{ .Values.agent.revisionHistoryLimit }}
   selector:
@@ -46,8 +49,8 @@ spec:
         - name: {{ .Values.agent.name }}
           image: "{{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}"
           imagePullPolicy: {{ .Values.agent.image.pullPolicy }}
-          {{- $servers := dict "Values" .Values.agent.server_config "default" .Values.defaults.server_config }}
-          {{- include "vald.containerPorts" $servers | nindent 10 }}
+          {{- $servers := dict "Values" .Values.agent.server_config "default" .Values.defaults.server_config -}}
+          {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
           resources:
             {{- toYaml .Values.agent.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
@@ -73,5 +76,12 @@ spec:
         {{- if .Values.agent.volumes }}
         {{- toYaml .Values.agent.volumes | nindent 8 }}
         {{- end }}
+      {{- if .Values.agent.nodeName }}
+      nodeName: {{ .Values.agent.nodeName }}
+      {{- end }}
+      {{- if .Values.agent.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.agent.nodeSelector | nindent 8 }}
+      {{- end }}
 status:
 {{- end }}

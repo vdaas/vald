@@ -43,3 +43,11 @@ rules:
   - /metrics
   verbs:
   - get
+- apiGroups:
+  - "metrics.k8s.io"
+  resources:
+  - nodes
+  - pods
+  verbs:
+  - get
+  - list

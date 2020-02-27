@@ -19,6 +19,9 @@ proto/all: \
 	pbgo \
 	pbdoc \
 	swagger
+	# mv apis/docs/payload/docs.md ./docs.md
+	# sed -i -E "s%#payload%apis/docs/payload/docs.md#payload%g" apis/docs
+	# mv ./docs.md apis/docs/payload/docs.md
 	# swagger \
 	# graphql
 

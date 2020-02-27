@@ -20,6 +20,8 @@ metadata:
   name: {{ .Values.compressor.name }}
   labels:
     app: {{ .Values.compressor.name }}
+  annotations:
+    checksum/configmap: {{ include (print $.Template.BasePath "/manager/compressor/configmap.yaml") . | sha256sum }}
 spec:
   progressDeadlineSeconds: {{ .Values.compressor.progressDeadlineSeconds }}
   replicas: {{ .Values.compressor.minReplicas }}
@@ -47,8 +49,8 @@ spec:
         - name: {{ .Values.compressor.name }}
           image: "{{ .Values.compressor.image.repository }}:{{ .Values.compressor.image.tag }}"
           imagePullPolicy: {{ .Values.compressor.image.pullPolicy }}
-          {{- $servers := dict "Values" .Values.compressor.server_config "default" .Values.defaults.server_config }}
-          {{- include "vald.containerPorts" $servers | nindent 10 }}
+          {{- $servers := dict "Values" .Values.compressor.server_config "default" .Values.defaults.server_config -}}
+          {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
           resources:
             {{- toYaml .Values.compressor.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
@@ -74,5 +76,12 @@ spec:
         {{- if .Values.compressor.volumes }}
         {{- toYaml .Values.compressor.volumes | nindent 8 }}
         {{- end }}
+      {{- if .Values.compressor.nodeName }}
+      nodeName: {{ .Values.compressor.nodeName }}
+      {{- end }}
+      {{- if .Values.compressor.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.compressor.nodeSelector | nindent 8 }}
+      {{- end }}
 status:
 {{- end }}

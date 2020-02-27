@@ -10,8 +10,60 @@
   "produces": [
     "application/json"
   ],
-  "paths": {},
+  "paths": {
+    "/index/info": {
+      "get": {
+        "operationId": "IndexInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/InfoIndex"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "Index"
+        ]
+      }
+    }
+  },
   "definitions": {
+    "InfoIndex": {
+      "type": "object",
+      "properties": {
+        "stored": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "uncommitted": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "uuids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "uncommittedUuids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "indexing": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
