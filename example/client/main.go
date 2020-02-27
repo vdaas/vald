@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -85,7 +86,8 @@ func run() error {
 			return err
 		}
 
-		fmt.Printf("results: %v\n", res.GetResults())
+		b, _ := json.MarshalIndent(res.GetResults(), "", " ")
+		fmt.Printf("results : %v\n\n", string(b))
 	}
 
 	return nil
