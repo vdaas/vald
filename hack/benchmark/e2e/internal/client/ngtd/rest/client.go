@@ -19,8 +19,13 @@ type ngtdClient struct {
 	addr string
 }
 
-func New(ctx context.Context) (Client, error) {
+func New(ctx context.Context, opts ...Option) (Client, error) {
 	c := new(ngtdClient)
+
+	for _, opt := range append(defaultOptions, opts...) {
+		opt(c)
+	}
+
 	return c, nil
 }
 
