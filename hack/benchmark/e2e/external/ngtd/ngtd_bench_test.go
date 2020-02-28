@@ -18,26 +18,21 @@ package ngtd
 import (
 	"context"
 	"flag"
-	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/hack/benchmark/e2e/internal/client/ngtd/rest"
+	"github.com/vdaas/vald/hack/benchmark/e2e/internal/starter/ngtd"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/yahoojapan/gongt"
-	"github.com/yahoojapan/ngtd"
-	"github.com/yahoojapan/ngtd/kvs"
 )
 
 const (
-	baseDir = "/tmp/ngtd/"
-	port    = 8200
+	port = 8200
 )
 
 var (
@@ -56,59 +51,11 @@ func init() {
 
 	log.Init()
 
-	if err := os.RemoveAll(baseDir); err != nil {
-		log.Error(err)
-	}
-
-	if err := os.MkdirAll(baseDir, 0755); err != nil {
-		log.Error(err)
-	}
-
 	var dataset string
 	flag.StringVar(&dataset, "dataset", "", "set available dataset list (choice with comma)")
 	flag.Parse()
 
 	targets = strings.Split(strings.TrimSpace(dataset), ",")
-}
-
-func StartNGTD(tb testing.TB, t ngtd.ServerType, dim int) func() {
-	tb.Helper()
-
-	gongt.SetDimension(dim)
-
-	db, err := kvs.NewGoLevel(baseDir + "meta")
-	if err != nil {
-		tb.Error(err)
-	}
-
-	n, err := ngtd.NewNGTD(baseDir+"ngt", db, port)
-	if err != nil {
-		tb.Error(err)
-	}
-
-	wg := new(sync.WaitGroup)
-	wg.Add(1)
-	go func() {
-		wg.Done()
-
-		if err := n.ListenAndServe(t); err != nil {
-			tb.Errorf("ngtd returned error: %s", err.Error())
-		}
-	}()
-
-	wg.Wait()
-
-	return func() {
-		n.Stop()
-
-		if err := os.RemoveAll(baseDir + "meta"); err != nil {
-			tb.Error(err)
-		}
-
-		if err := os.RemoveAll(baseDir + "ngt"); err != nil {
-			tb.Error(err)
-		}
-	}
 }
 
 func BenchmarkNGTD_REST_Sequential(b *testing.B) {
@@ -121,8 +68,10 @@ func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 		bench := e2e.New(
 			b,
 			e2e.WithName(name),
-			e2e.WithServerStarter(func(tb testing.TB, d assets.Dataset) func() {
-				return StartNGTD(tb, ngtd.HTTP, d.Dimension())
+			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
+				return ngtd.New(
+					ngtd.WithDimentaion(d.Dimension()),
+				).Run(ctx, tb)
 			}),
 			e2e.WithClient(client),
 			e2e.WithStrategy(
@@ -150,8 +99,10 @@ func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 		bench := e2e.New(
 			b,
 			e2e.WithName(name),
-			e2e.WithServerStarter(func(tb testing.TB, d assets.Dataset) func() {
-				return StartNGTD(tb, ngtd.GRPC, d.Dimension())
+			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
+				return ngtd.New(
+					ngtd.WithDimentaion(d.Dimension()),
+				).Run(ctx, tb)
 			}),
 			e2e.WithClient(client),
 			e2e.WithStrategy(

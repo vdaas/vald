@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"context"
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
@@ -37,7 +38,7 @@ func WithStrategy(strategis ...Strategy) Option {
 	}
 }
 
-func WithServerStarter(f func(testing.TB, assets.Dataset) func()) Option {
+func WithServerStarter(f func(context.Context, testing.TB, assets.Dataset) func()) Option {
 	return func(e *e2e) {
 		if f != nil {
 			e.serverStarter = f
