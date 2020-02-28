@@ -90,7 +90,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
     At first, you have to apply scylla as backup database.
 
     ```bash
-    cd {Vald_project_root}
+    cd path/to/vald/root 
     
     kubectl apply -f k8s/jobs/db/initialize/cassandra/configmap.yaml
     kubectl apply -f k8s/external/scylla
