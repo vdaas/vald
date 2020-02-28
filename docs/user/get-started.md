@@ -62,7 +62,6 @@ If helm is not installed, please install helm (see below details) or [here](http
 
 ```bash
 # install helm
-
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
 # install hdf5
