@@ -18,10 +18,10 @@ func WithCreateIndexPoolSize(size int) CreateIndexOption {
 	}
 }
 
-func WithCreateIndexClient(cidx client.Indexer) CreateIndexOption {
+func WithCreateIndexClient(idxc client.Indexer) CreateIndexOption {
 	return func(ci *createIndex) {
-		if cidx != nil {
-			ci.idxc = cidx
+		if idxc != nil {
+			ci.idxc = idxc
 		}
 	}
 }
