@@ -59,17 +59,15 @@ If helm is not installed, please install helm (see below details) or [here](http
 
 <details>
     <summary>optional installation</summray>
-    <div>
 
-    ```bash
-    # install helm
-    curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+```bash
+# install helm
 
-    # install hdf5
-    yum install -y hdf5-devel
-    ```
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
-    </div>
+# install hdf5
+yum install -y hdf5-devel
+```
 </details>
 
 ## Starting Vald on k8s cluster
