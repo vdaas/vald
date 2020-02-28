@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/apis/grpc/payload"
@@ -17,13 +18,14 @@ import (
 )
 
 const (
-	insertCont = 20
-	testCount  = 3
+	insertCont = 400
+	testCount  = 20
 )
 
 var (
-	datasetPath    string
-	grpcServerAddr string
+	datasetPath         string
+	grpcServerAddr      string
+	indexingWaitSeconds uint
 )
 
 var searchConfig = payload.Search_Config{
@@ -35,6 +37,7 @@ var searchConfig = payload.Search_Config{
 func init() {
 	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
 	flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "set gRPC server address")
+	flag.UintVar(&indexingWaitSeconds, "wait", 60, "set indexing wait seconds")
 	flag.Parse()
 }
 
@@ -76,6 +79,8 @@ func run() error {
 
 	bar.Finish()
 	fmt.Printf("Finish Inserting. \n\n")
+	fmt.Println("Wait for indexing to finish")
+	time.Sleep(time.Duration(indexingWaitSeconds) * time.Second)
 
 	for _, vec := range test[:testCount] {
 		res, err := client.Search(ctx, &payload.Search_Request{
