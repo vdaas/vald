@@ -25,8 +25,8 @@ jobs:
             vdaas/vald-agent-ngt \
             vdaas/vald-discoverer-k8s \
             vdaas/vald-manager-compressor \
-            vdaas/vald-meta-cassandra \
-            vdaas/vald-manager-backup-cassandra \
+            vdaas/vald-meta-redis \
+            vdaas/vald-manager-backup-mysql \
             vdaas/vald-gateway \
             vdaas/vald-manager-index
           do
@@ -51,17 +51,20 @@ jobs:
           kubectl cluster-info
       - name: deploy vald
         run: |
-          make k8s/external/scylla/deploy
-          jq_query='.items[] | select( ([ .status.conditions[] | select( .type == "Ready" and .status == "True" ) ] | length ) != 1) | .metadata.namespace + "/" + .metadata.name'
-          until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 3 ]
+          sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
+          make k8s/external/mysql/deploy
+          make k8s/external/redis/deploy
+          jq_query='.items[] | select( ([ .status.conditions[] | select( .type == "Ready" and .status == "True" ) ] | length ) == 1) | .metadata.namespace + "/" + .metadata.name'
+          until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 2 ]
           do
-            echo "waiting for Scylla to be ready..."
+            echo "waiting for databases to be ready..."
             kubectl get pods
             sleep 2
           done
           helm repo add vald https://vald.vdaas.org/charts
+          tag=$(cat versions/VALD_VERSION)
           helm install \
-            --values vald/values-scylla.yaml \
+            --set defaults.image.tag=${tag} \
             --set gateway.minReplicas=1 \
             --set gateway.hpa.enabled=false \
             --set gateway.gateway_config.index_replica=3 \
@@ -82,9 +85,9 @@ jobs:
             --set meta.minReplicas=1 \
             --set meta.hpa.enabled=false \
             --generate-name vald/vald
-          until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 12 ]
+          until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 11 ]
           do
-            echo "wait for ready"
+            echo "waiting for Vald to be ready..."
             kubectl get pods
             sleep 2
           done
@@ -93,7 +96,7 @@ jobs:
         run: |
           kubectl port-forward deployment/vald-gateway 8081:8081 &
           pid=$!
-          curl -o https://github.com/rinx/vald-client-clj/releases/download/v0.0.1/valdcli-linux-static.zip
+          curl -OL https://github.com/rinx/vald-client-clj/releases/download/v0.0.1/valdcli-linux-static.zip
           unzip valdcli-linux-static.zip
           chmod a+x valdcli
           sleep 10
@@ -117,3 +120,20 @@ jobs:
           ./valdcli -p 8081 search-by-id --elapsed-time abc
           ./valdcli -p 8081 stream-search-by-id --elapsed-time '["abc" "d923e43c-7bdc-40fd-9a95-26e54edc54a5" "75666cc5-c5e8-4ba6-a653-7f4f216e2710"]'
           kill $pid
+  slack:
+    name: Slack notification
+    needs: e2e-deploy
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: technote-space/workflow-conclusion-action@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: 8398a7/action-slack@v2
+        with:
+          author_name: e2e-deploy test
+          status: ${{ env.WORKFLOW_CONCLUSION }}
+          only_mention_fail: channel
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
