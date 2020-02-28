@@ -33,10 +33,6 @@ func tofloat64(s []float32) []float64 {
 	return nil
 }
 
-func tofloat32(s []float64) []float32 {
-	return nil
-}
-
 func toObjectDistances(in []*proto.ObjectDistance) (to []*payload.Object_Distance) {
 	to = make([]*payload.Object_Distance, 0, len(in))
 

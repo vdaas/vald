@@ -22,9 +22,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
-	"time"
 
-	"github.com/kpango/glg"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
 	"github.com/vdaas/vald/internal/log"
@@ -46,10 +44,11 @@ var (
 
 func init() {
 	log.Init()
-	glg.Get().SetMode(glg.NONE)
+
 	if err := os.RemoveAll(baseDir); err != nil {
 		log.Error(err)
 	}
+
 	if err := os.MkdirAll(baseDir, 0755); err != nil {
 		log.Error(err)
 	}
@@ -66,30 +65,36 @@ func parseArgs() {
 
 func StartNGTD(tb testing.TB, t ngtd.ServerType, dim int) func() {
 	tb.Helper()
+
 	gongt.SetDimension(dim)
+
 	db, err := kvs.NewGoLevel(baseDir + "meta")
 	if err != nil {
 		tb.Error(err)
 	}
+
 	n, err := ngtd.NewNGTD(baseDir+"ngt", db, port)
 	if err != nil {
 		tb.Error(err)
 	}
 
+	wg := new(sync.WaitGroup)
+	wg.Add(1)
 	go func() {
-		err := n.ListenAndServe(t)
-		if err != nil {
+		wg.Done()
+
+		if err := n.ListenAndServe(t); err != nil {
 			tb.Errorf("ngtd returned error: %s", err.Error())
 		}
 	}()
 
-	time.Sleep(5 * time.Second)
+	wg.Wait()
 
 	return func() {
-		n.Stop()
 		if err := os.RemoveAll(baseDir + "meta"); err != nil {
 			tb.Error(err)
 		}
+
 		if err := os.RemoveAll(baseDir + "ngt"); err != nil {
 			tb.Error(err)
 		}
