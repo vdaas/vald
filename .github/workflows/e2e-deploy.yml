@@ -71,8 +71,9 @@ jobs:
             --set agent.minReplicas=3 \
             --set agent.podManagementPolicy=Parallel \
             --set agent.hpa.enabled=false \
-            --set agent.ngt.auto_index_check_duration=30s \
-            --set agent.ngt.auto_index_length=20 \
+            --set agent.ngt.auto_index_limit=60s \
+            --set agent.ngt.auto_index_check_duration=5s \
+            --set agent.ngt.auto_index_length=10 \
             --set agent.ngt.dimension=6 \
             --set discoverer.minReplicas=1 \
             --set discoverer.hpa.enabled=false \
@@ -92,13 +93,15 @@ jobs:
             sleep 2
           done
           kubectl get pods
+      - name: install valdcli
+        run: |
+          curl -OL https://github.com/rinx/vald-client-clj/releases/download/v0.0.1/valdcli-linux-static.zip
+          unzip valdcli-linux-static.zip
+          chmod a+x valdcli
       - name: insert
         run: |
           kubectl port-forward deployment/vald-gateway 8081:8081 &
           pid=$!
-          curl -OL https://github.com/rinx/vald-client-clj/releases/download/v0.0.1/valdcli-linux-static.zip
-          unzip valdcli-linux-static.zip
-          chmod a+x valdcli
           sleep 10
           ./valdcli rand-vec -d 6 | ./valdcli -p 8081 insert --elapsed-time abc
           ./valdcli -p 8081 stream-insert --elapsed-time << EOF
@@ -111,7 +114,12 @@ jobs:
             ./valdcli rand-vec -d 6 | ./valdcli -p 8081 insert --elapsed-time "v${i}"
             sleep 1
           done
-          sleep 120
+          kill $pid
+      - name: search
+        run: |
+          kubectl port-forward deployment/vald-gateway 8081:8081 &
+          pid=$!
+          sleep 10
           ./valdcli -p 8081 exists --elapsed-time abc
           ./valdcli -p 8081 get-object --elapsed-time abc
           ./valdcli -p 8081 stream-get-object --elapsed-time '["abc" "d923e43c-7bdc-40fd-9a95-26e54edc54a5" "75666cc5-c5e8-4ba6-a653-7f4f216e2710"]'
