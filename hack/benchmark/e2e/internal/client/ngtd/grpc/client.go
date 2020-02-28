@@ -6,6 +6,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/client"
 	proto "github.com/yahoojapan/ngtd/proto"
+	"google.golang.org/grpc"
 )
 
 type Client interface {
@@ -21,8 +22,19 @@ type ngtdClient struct {
 	proto.NGTDClient
 }
 
-func New(ctx context.Context) (Client, error) {
+func New(ctx context.Context, opts ...Option) (Client, error) {
 	c := new(ngtdClient)
+
+	for _, opt := range append(defaultOptions, opts...) {
+		opt(c)
+	}
+
+	conn, err := grpc.DialContext(ctx, c.addr, grpc.WithInsecure())
+	if err != nil {
+		return nil, err
+	}
+	c.NGTDClient = proto.NewNGTDClient(conn)
+
 	return c, nil
 }
 
@@ -32,10 +44,6 @@ func (c *ngtdClient) Exists(ctx context.Context, req *client.ObjectID) (*client.
 }
 
 func tofloat64(s []float32) []float64 {
-	return nil
-}
-
-func tofloat32(s []float64) []float32 {
 	return nil
 }
 
