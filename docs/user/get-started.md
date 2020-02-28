@@ -139,13 +139,15 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
 3. Running example
 
     Insert, Search and Remove will be running as follows.<br>
-        - Insert: insert and indexing training dataset to Vald agent
-        - Search: search neighbor vector of test vector.
-        - Remove: remove indexing from Vald agent.
+    - Insert: insert and indexing training dataset to Vald agent
+    - Search: search neighbor vector of test vector.
+    - Remove: remove indexing from Vald agent.
 
     ```bash
     # if you don't install hdf5-devel, please install hdf5-devl at first.
-    yum install -y hdf5-devel
+    # yum install -y hdf5-devel
+    # apt-get install libhdf5-serial-dev
+    # brew install hdf5
 
     # run example
     go run main.go
