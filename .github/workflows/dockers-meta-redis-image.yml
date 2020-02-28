@@ -18,7 +18,7 @@ on:
       - 'cmd/meta/redis/**'
       - 'dockers/base/Dockerfile'
       - 'dockers/meta/redis/Dockerfile'
-      - 'resources/GO_VERSION'
+      - 'versions/GO_VERSION'
   pull_request:
     paths:
       - 'internal/**'
@@ -30,7 +30,7 @@ on:
       - 'cmd/meta/redis/**'
       - 'dockers/base/Dockerfile'
       - 'dockers/meta/redis/Dockerfile'
-      - 'resources/GO_VERSION'
+      - 'versions/GO_VERSION'
 
 jobs:
   build:

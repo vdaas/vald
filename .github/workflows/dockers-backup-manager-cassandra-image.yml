@@ -18,8 +18,8 @@ on:
       - 'cmd/manager/backup/cassandra/**'
       - 'dockers/base/Dockerfile'
       - 'dockers/manager/backup/cassandra/Dockerfile'
-      - 'resources/GO_VERSION'
-      - 'resources/NGT_VERSION'
+      - 'versions/GO_VERSION'
+      - 'versions/NGT_VERSION'
   pull_request:
     paths:
       - 'internal/**'
@@ -31,8 +31,8 @@ on:
       - 'cmd/manager/backup/cassandra/**'
       - 'dockers/base/Dockerfile'
       - 'dockers/manager/backup/cassandra/Dockerfile'
-      - 'resources/GO_VERSION'
-      - 'resources/NGT_VERSION'
+      - 'versions/GO_VERSION'
+      - 'versions/NGT_VERSION'
 
 jobs:
   build:

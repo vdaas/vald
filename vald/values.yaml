@@ -514,9 +514,9 @@ backupManager:
     #   image: cassandra:latest
     #   cassandra:
     #     hosts:
-    #       - cassandra-0.default.svc.cluster.local
-    #       - cassandra-1.default.svc.cluster.local
-    #       - cassandra-2.default.svc.cluster.local
+    #       - cassandra-0.cassandra.default.svc.cluster.local
+    #       - cassandra-1.cassandra.default.svc.cluster.local
+    #       - cassandra-2.cassandra.default.svc.cluster.local
     #     options:
     #       - "-uroot"
     #       - "-p${CASSANDRA_PASSWORD}"
@@ -532,9 +532,9 @@ backupManager:
     #   image: cassandra:latest
     #   cassandra:
     #     hosts:
-    #       - scylla-0.default.svc.cluster.local
-    #       - scylla-1.default.svc.cluster.local
-    #       - scylla-2.default.svc.cluster.local
+    #       - scylla-0.scylla.default.svc.cluster.local
+    #       - scylla-1.scylla.default.svc.cluster.local
+    #       - scylla-2.scylla.default.svc.cluster.local
     #   sleepDuration: 2
   env:
     - name: MYSQL_PASSWORD
@@ -778,9 +778,9 @@ meta:
     #   image: cassandra:latest
     #   cassandra:
     #     hosts:
-    #       - cassandra-0.default.svc.cluster.local
-    #       - cassandra-1.default.svc.cluster.local
-    #       - cassandra-2.default.svc.cluster.local
+    #       - cassandra-0.cassandra.default.svc.cluster.local
+    #       - cassandra-1.cassandra.default.svc.cluster.local
+    #       - cassandra-2.cassandra.default.svc.cluster.local
     #     options:
     #       - "-uroot"
     #       - "-p${CASSANDRA_PASSWORD}"
@@ -796,9 +796,9 @@ meta:
     #   image: cassandra:latest
     #   cassandra:
     #     hosts:
-    #       - scylla-0.default.svc.cluster.local
-    #       - scylla-1.default.svc.cluster.local
-    #       - scylla-2.default.svc.cluster.local
+    #       - scylla-0.scylla.default.svc.cluster.local
+    #       - scylla-1.scylla.default.svc.cluster.local
+    #       - scylla-2.scylla.default.svc.cluster.local
     #   sleepDuration: 2
   env:
     - name: REDIS_PASSWORD
