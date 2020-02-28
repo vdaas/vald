@@ -19,10 +19,14 @@ import (
 	"context"
 	"flag"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
 
+	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/hack/benchmark/e2e/internal/client/ngtd/rest"
+	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
 	"github.com/vdaas/vald/internal/log"
@@ -37,12 +41,19 @@ const (
 )
 
 var (
-	targets    []string
-	datasetVar string
-	once       sync.Once
+	targets []string
+	dataset string
 )
 
+var searchConfig = &payload.Search_Config{
+	Num:     10,
+	Radius:  -1,
+	Epsilon: 0.01,
+}
+
 func init() {
+	testing.Init()
+
 	log.Init()
 
 	if err := os.RemoveAll(baseDir); err != nil {
@@ -53,14 +64,11 @@ func init() {
 		log.Error(err)
 	}
 
-	flag.StringVar(&datasetVar, "assets", "", "list available assets(choice with comma)")
-}
+	var dataset string
+	flag.StringVar(&dataset, "dataset", "", "set available dataset list (choice with comma)")
+	flag.Parse()
 
-func parseArgs() {
-	once.Do(func() {
-		flag.Parse()
-		targets = strings.Split(strings.TrimSpace(datasetVar), ",")
-	})
+	targets = strings.Split(strings.TrimSpace(dataset), ",")
 }
 
 func StartNGTD(tb testing.TB, t ngtd.ServerType, dim int) func() {
@@ -91,6 +99,8 @@ func StartNGTD(tb testing.TB, t ngtd.ServerType, dim int) func() {
 	wg.Wait()
 
 	return func() {
+		n.Stop()
+
 		if err := os.RemoveAll(baseDir + "meta"); err != nil {
 			tb.Error(err)
 		}
@@ -102,18 +112,26 @@ func StartNGTD(tb testing.TB, t ngtd.ServerType, dim int) func() {
 }
 
 func BenchmarkNGTD_REST_Sequential(b *testing.B) {
+	client, err := rest.New(context.Background(), rest.WithAddr("127.0.0.1:"+strconv.Itoa(port)))
+	if err != nil {
+		b.Error(err)
+	}
+
 	for _, name := range targets {
 		bench := e2e.New(
 			b,
 			e2e.WithName(name),
-			e2e.WithClient(nil),
+			e2e.WithServerStarter(func(tb testing.TB, d assets.Dataset) func() {
+				return StartNGTD(tb, ngtd.HTTP, d.Dimension())
+			}),
+			e2e.WithClient(client),
 			e2e.WithStrategy(
 				strategy.NewInsert(),
 				strategy.NewCreateIndex(
-					strategy.WithCreateIndexClient(nil),
+					strategy.WithCreateIndexClient(client),
 				),
 				strategy.NewSearch(
-					strategy.WithSearchConfig(nil),
+					strategy.WithSearchConfig(searchConfig),
 				),
 				strategy.NewRemove(),
 			),
@@ -123,18 +141,26 @@ func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 }
 
 func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
+	client, err := rest.New(context.Background(), rest.WithAddr("127.0.0.1:"+strconv.Itoa(port)))
+	if err != nil {
+		b.Error(err)
+	}
+
 	for _, name := range targets {
 		bench := e2e.New(
 			b,
 			e2e.WithName(name),
-			e2e.WithClient(nil),
+			e2e.WithServerStarter(func(tb testing.TB, d assets.Dataset) func() {
+				return StartNGTD(tb, ngtd.GRPC, d.Dimension())
+			}),
+			e2e.WithClient(client),
 			e2e.WithStrategy(
 				strategy.NewInsert(),
 				strategy.NewCreateIndex(
-					strategy.WithCreateIndexClient(nil),
+					strategy.WithCreateIndexClient(client),
 				),
 				strategy.NewSearch(
-					strategy.WithSearchConfig(nil),
+					strategy.WithSearchConfig(searchConfig),
 				),
 				strategy.NewRemove(),
 			),

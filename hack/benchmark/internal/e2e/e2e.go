@@ -13,10 +13,11 @@ type Runner interface {
 }
 
 type e2e struct {
-	name       string
-	strategies []Strategy
-	dataset    assets.Dataset
-	client     client.Client
+	name          string
+	strategies    []Strategy
+	dataset       assets.Dataset
+	client        client.Client
+	serverStarter func(testing.TB, assets.Dataset) func()
 }
 
 func New(b *testing.B, opts ...Option) Runner {
@@ -37,6 +38,8 @@ func (e *e2e) Run(ctx context.Context, b *testing.B) {
 	func() {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
+
+		defer e.serverStarter(b, assets.Data(e.name)(b))()
 
 		b.StopTimer()
 		b.ReportAllocs()
