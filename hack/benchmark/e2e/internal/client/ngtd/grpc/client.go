@@ -43,22 +43,6 @@ func (c *ngtdClient) Exists(ctx context.Context, req *client.ObjectID) (*client.
 	return nil, nil
 }
 
-func tofloat64(s []float32) []float64 {
-	return nil
-}
-
-func toObjectDistances(in []*proto.ObjectDistance) (to []*payload.Object_Distance) {
-	to = make([]*payload.Object_Distance, 0, len(in))
-
-	for _, elm := range in {
-		to = append(to, &payload.Object_Distance{
-			Id:       string(elm.GetId()),
-			Distance: elm.GetDistance(),
-		})
-	}
-	return nil
-}
-
 func (c *ngtdClient) Search(ctx context.Context, req *client.SearchRequest) (*client.SearchResponse, error) {
 	resp, err := c.NGTDClient.Search(ctx, &proto.SearchRequest{
 		Vector:  tofloat64(req.GetVector()),
@@ -255,4 +239,20 @@ func (c *ngtdClient) CreateAndSaveIndex(ctx context.Context, req *client.Control
 func (c *ngtdClient) IndexInfo(ctx context.Context) (*client.InfoIndex, error) {
 	// TODO: errors.NotSupportedClientMethod
 	return nil, nil
+}
+
+func tofloat64(s []float32) []float64 {
+	return nil
+}
+
+func toObjectDistances(in []*proto.ObjectDistance) (to []*payload.Object_Distance) {
+	to = make([]*payload.Object_Distance, 0, len(in))
+
+	for _, elm := range in {
+		to = append(to, &payload.Object_Distance{
+			Id:       string(elm.GetId()),
+			Distance: elm.GetDistance(),
+		})
+	}
+	return nil
 }
