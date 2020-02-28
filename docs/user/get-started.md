@@ -22,7 +22,7 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
 ### Main Features
 
 - Auto Indexing
-    - Normally, when changing the Graph Index, the Graph must be locked, but  Vald uses distributed index graph, it is extremely difficult for the user to reconstruct the Graph.
+    - Normally, when changing the Graph Index, the Graph must be locked, but Vald uses distributed index graph, it is extremely difficult for the user to reconstruct the Graph.
     - Therefore, Vlad automativally indexes distributed Graphs sequentially.
 
 - Ingress/Egress Filltering
@@ -38,8 +38,7 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
     - Vald has auto index backup feature using MySQL + Redis or Cassndora which enables disaster recovery.
 
 - Distributed Indexing
-    - Vald indexes vecotr to distributed multiple agent.
-    - Which means each agent has different graph index.
+    - Vald indexes vecotr to distributed multiple agent. It means each agent has different graph index.
 
 - Index Replication
     - Vald stores each index in multiple agents which enables index replicas.
@@ -51,15 +50,16 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
 ### Requirements
 
 - k8s: 
-- go:
+- go: 
 - docker:
 - helm: 
-- hdf5
+- hdf5: 
 
 If helm is not installed, please install helm (see below details) or [here](https://htlm.sh/docs/intro/install).
 
 <details>
     <summary>optional installation</summray>
+    <div>
 
     ```bash
     # install helm
@@ -69,6 +69,7 @@ If helm is not installed, please install helm (see below details) or [here](http
     yum install -y hdf5-devel
     ```
 
+    </div>
 </details>
 
 ## Starting Vald on k8s cluster
@@ -77,7 +78,7 @@ You have to install helm. Please check [here](https://github.com/helm/helm#insta
 
 ### Deploy
 
-This section shows how to deploy Vald with Scylla, <span class="x x-first x-last">which</span> is used as a datastore for <span class="x x-first x-last">index-metadata</span> and backup-manager.
+This section shows how to deploy Vald with Scylla, which is used as a datastore for index-metadata and backup-manager.
 If you want to learn about Scylla, please refer to [the official website](https://www.scylladb.com/).
 
 1. Confirm the right cluster to deploy
@@ -128,7 +129,7 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
 
 2. Download dataset
 
-    <span class="x x-first x-last">In this tutorial. we use [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) as a </span>dataset<span class="x x-first x-last"> for indexing and search query.  </span>
+    In this tutorial. we use [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) as a dataset for indexing and search query.
 
     ```bash
     # move to working directory
@@ -162,5 +163,4 @@ We will publish the instructions of `values.yaml` soon.
 
 In the `Get Started` section, we show how to deploy Vald with Scylla.
 Vald can be deployed in another way, which is used by helm or `kind` command. (Compressor datastore is required, for example mysql + redis or casandora ).
-
 
