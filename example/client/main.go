@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -10,8 +11,14 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/apis/grpc/vald"
 
+	"github.com/cheggaaa/pb/v3"
 	"gonum.org/v1/hdf5"
 	"google.golang.org/grpc"
+)
+
+const (
+	insertCont = 20
+	testCount  = 3
 )
 
 var (
@@ -52,7 +59,12 @@ func run() error {
 	}
 	client := vald.NewValdClient(conn)
 
-	for i := range ids {
+	bar := pb.StartNew(insertCont)
+	fmt.Println("Start Inserting: ")
+
+	for i := range ids[:insertCont] {
+		bar.Increment()
+
 		_, err := client.Insert(ctx, &payload.Object_Vector{
 			Id:     ids[i],
 			Vector: train[i],
@@ -62,7 +74,10 @@ func run() error {
 		}
 	}
 
-	for _, vec := range test {
+	bar.Finish()
+	fmt.Printf("Finish Inserting. \n\n")
+
+	for _, vec := range test[:testCount] {
 		res, err := client.Search(ctx, &payload.Search_Request{
 			Vector: vec,
 			Config: &searchConfig,
@@ -71,7 +86,8 @@ func run() error {
 			return err
 		}
 
-		fmt.Printf("results: %v\n", res.GetResults())
+		b, _ := json.MarshalIndent(res.GetResults(), "", " ")
+		fmt.Printf("results : %v\n\n", string(b))
 	}
 
 	return nil
