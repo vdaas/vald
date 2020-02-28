@@ -8,7 +8,7 @@ on:
       - 'internal/**'
       - 'pkg/**'
       - 'cmd/**'
-      - 'resources/GO_VERSION'
+      - 'versions/GO_VERSION'
 
 jobs:
   coverage:

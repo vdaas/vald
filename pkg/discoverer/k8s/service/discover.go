@@ -19,7 +19,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"reflect"
 	"sort"
 	"sync"
@@ -332,11 +331,6 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				d.podsByNamespace.Store(podsByNamespace)
 				d.podsByName.Store(podsByName)
 				d.nodeByName.Store(nodeByName)
-				nps, _ := d.GetNodes(&payload.Discoverer_Request{
-					Name: "vald-agent-ngt",
-				})
-				b, _ := json.MarshalIndent(nps, "", "\t")
-				log.Info(string(b))
 			case err = <-dech:
 				if err != nil {
 					ech <- err
@@ -433,7 +427,7 @@ func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.I
 		req.Node = name
 		n.Pods.Pods = nil
 		ps, err := d.GetPods(req)
-		if err == nil {
+		if err == nil && ps != nil {
 			for i := range ps.Pods {
 				ps.Pods[i].Node = nil
 			}

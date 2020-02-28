@@ -22,12 +22,9 @@ data:
     ---
     version: {{ .Values.compressor.version }}
     time_zone: {{ default .Values.defaults.time_zone .Values.compressor.time_zone }}
-    {{- if .Values.compressor.logging }}
     logging:
-      logger: {{ .Values.compressor.logging.logger }}
-      level: {{ .Values.compressor.logging.level }}
-      format: {{ .Values.compressor.logging.format }}
-    {{- end }}
+      {{- $logging := dict "Values" .Values.compressor.logging "default" .Values.defaults.logging }}
+      {{- include "vald.logging" $logging | nindent 6 }}
     server_config:
       {{- $servers := dict "Values" .Values.compressor.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}

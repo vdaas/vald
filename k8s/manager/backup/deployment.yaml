@@ -21,7 +21,7 @@ metadata:
   labels:
     app: vald-manager-backup
   annotations:
-    checksum/configmap: 6a46f60d362788f0e11391714e3a8bb3cf91bd6e950fb2baeb9f38471ff95909
+    checksum/configmap: eb6097a83abec441a7f6a74a36fd510bc6191b665a11e3afd1221ba68327a05b
 spec:
   progressDeadlineSeconds: 600
   replicas: 3
@@ -41,17 +41,20 @@ spec:
         app: vald-manager-backup
     spec:
       initContainers:
-        
         - name: wait-for-mysql
           image: mysql:latest
           command:
             - /bin/sh
+            - -e
             - -c
-            - >
-              set -x;
-              until [ "$(mysqladmin -hmysql.default.svc.cluster.local -uroot -p${MYSQL_PASSWORD} --show-warnings=false ping | grep alive | awk '{print $3}')" = "alive" ]; do
-                echo "waiting for mysql.default.svc.cluster.local to be ready..."
-                sleep 2;
+            - |
+              hosts="mysql.default.svc.cluster.local"
+              options="-uroot -p${MYSQL_PASSWORD}"
+              for host in $hosts; do
+                until [ "$(mysqladmin -h$host $options --show-warnings=false ping | grep alive | awk '{print $3}')" = "alive" ]; do
+                  echo "waiting for $host to be ready..."
+                  sleep 2;
+                done
               done
           env:
             - name: MYSQL_PASSWORD

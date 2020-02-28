@@ -43,11 +43,11 @@ spec:
       {{- if .Values.discoverer.initContainers }}
       initContainers:
         {{- $initContainers := dict "initContainers" .Values.discoverer.initContainers "Values" .Values "namespace" .Release.Namespace -}}
-        {{- include "vald.initContainers" $initContainers | nindent 8 }}
+        {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Values.discoverer.name }}
-          image: "{{ .Values.discoverer.image.repository }}:{{ .Values.discoverer.image.tag }}"
+          image: "{{ .Values.discoverer.image.repository }}:{{ default .Values.defaults.image.tag .Values.discoverer.image.tag }}"
           imagePullPolicy: {{ .Values.discoverer.image.pullPolicy }}
           {{- $servers := dict "Values" .Values.discoverer.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}

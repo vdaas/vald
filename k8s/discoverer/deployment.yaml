@@ -21,7 +21,7 @@ metadata:
   labels:
     app: vald-discoverer
   annotations:
-    checksum/configmap: d1237b5ef419e7963f2fdbaa69097c38f8b142ecce443b28229135de6e43d7aa
+    checksum/configmap: d564c5318ad3345e5bdb8e336d09f3f645c6ac2b7f0d4ddb20228df381e552bf
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
