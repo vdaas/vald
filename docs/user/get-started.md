@@ -60,14 +60,15 @@ If helm is not installed, please install helm (see below details) or [here](http
 
 <details>
     <summary>optional installation</summray>
-    <div>
-    <pre>
-        1. helm
-            <code>
-            curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-            </code>
-    </pre>
-    </div>
+
+    ```bash
+    # install helm
+    curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+    # install hdf5
+    yum install -y hdf5-devel
+    ```
+
 </details>
 
 ## Starting Vald on k8s cluster
@@ -161,5 +162,5 @@ We will publish the instructions of `values.yaml` soon.
 
 In the `Get Started` section, we show how to deploy Vald with Scylla.
 Vald can be deployed in another way, which is used by helm or `kind` command. (Compressor datastore is required, for example mysql + redis or casandora ).
-Let try another way suited for you.
+
 
