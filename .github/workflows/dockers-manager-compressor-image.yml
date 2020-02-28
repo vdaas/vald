@@ -17,7 +17,7 @@ on:
       - 'cmd/manager/compressor/**'
       - 'dockers/base/Dockerfile'
       - 'dockers/manager/compressor/Dockerfile'
-      - 'resources/GO_VERSION'
+      - 'versions/GO_VERSION'
   pull_request:
     paths:
       - 'internal/**'
@@ -28,7 +28,7 @@ on:
       - 'cmd/manager/compressor/**'
       - 'dockers/base/Dockerfile'
       - 'dockers/manager/compressor/Dockerfile'
-      - 'resources/GO_VERSION'
+      - 'versions/GO_VERSION'
 
 jobs:
   build:

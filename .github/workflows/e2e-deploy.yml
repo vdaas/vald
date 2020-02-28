@@ -9,7 +9,7 @@ on:
        - '*.*.*-*'
        - 'v*.*.*-*'
     paths:
-      - 'resources/VALD_VERSION'
+      - 'versions/VALD_VERSION'
 
 jobs:
   e2e-deploy:
