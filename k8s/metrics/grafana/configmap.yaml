@@ -72,6 +72,7 @@ data:
       "gnetId": null,
       "graphTooltip": 0,
       "id": 1,
+      "iteration": 1582903152149,
       "links": [],
       "panels": [
         {
@@ -139,7 +140,7 @@ data:
           "tableColumn": "vald_version",
           "targets": [
             {
-              "expr": "vald_app_version_info{job=\"vald-agent-ngt\"}",
+              "expr": "vald_app_version_info{job=\"vald-agent-ngt\",pod=~\"$Pod\"}",
               "format": "table",
               "refId": "A"
             }
@@ -224,7 +225,7 @@ data:
           "tableColumn": "go_version",
           "targets": [
             {
-              "expr": "vald_app_version_info{job=\"vald-agent-ngt\"}",
+              "expr": "vald_app_version_info{job=\"vald-agent-ngt\",pod=~\"$Pod\"}",
               "format": "table",
               "refId": "A"
             }
@@ -309,7 +310,7 @@ data:
           "tableColumn": "ngt_version",
           "targets": [
             {
-              "expr": "vald_app_version_info{job=\"vald-agent-ngt\"}",
+              "expr": "vald_app_version_info{job=\"vald-agent-ngt\",pod=~\"$Pod\"}",
               "format": "table",
               "refId": "A"
             }
@@ -333,7 +334,7 @@ data:
           "cacheTimeout": null,
           "datasource": null,
           "gridPos": {
-            "h": 3,
+            "h": 6,
             "w": 4,
             "x": 12,
             "y": 0
@@ -365,10 +366,6 @@ data:
                     {
                       "color": "green",
                       "value": null
-                    },
-                    {
-                      "color": "red",
-                      "value": 80
                     }
                   ]
                 },
@@ -382,11 +379,12 @@ data:
             "justifyMode": "auto",
             "orientation": "horizontal"
           },
-          "pluginVersion": "6.6.1",
+          "pluginVersion": "6.6.2",
           "targets": [
             {
               "expr": "count(up{job=\"vald-agent-ngt\"})",
               "format": "table",
+              "hide": false,
               "instant": false,
               "refId": "A"
             }
@@ -400,7 +398,7 @@ data:
           "cacheTimeout": null,
           "datasource": null,
           "gridPos": {
-            "h": 3,
+            "h": 6,
             "w": 4,
             "x": 16,
             "y": 0
@@ -455,7 +453,7 @@ data:
             "justifyMode": "auto",
             "orientation": "horizontal"
           },
-          "pluginVersion": "6.6.1",
+          "pluginVersion": "6.6.2",
           "targets": [
             {
               "expr": "sum(vald_alloc_bytes{job=\"vald-agent-ngt\"})",
@@ -472,7 +470,7 @@ data:
           "cacheTimeout": null,
           "datasource": null,
           "gridPos": {
-            "h": 3,
+            "h": 6,
             "w": 4,
             "x": 20,
             "y": 0
@@ -527,7 +525,7 @@ data:
             "justifyMode": "auto",
             "orientation": "horizontal"
           },
-          "pluginVersion": "6.6.1",
+          "pluginVersion": "6.6.2",
           "targets": [
             {
               "expr": "sum(vald_ngt_is_indexing{job=\"vald-agent-ngt\"})",
@@ -605,7 +603,7 @@ data:
           "tableColumn": "git_commit",
           "targets": [
             {
-              "expr": "vald_app_version_info{job=\"vald-agent-ngt\"}",
+              "expr": "vald_app_version_info{job=\"vald-agent-ngt\",pod=~\"$Pod\"}",
               "format": "table",
               "refId": "A"
             }
@@ -690,7 +688,7 @@ data:
           "tableColumn": "build_time",
           "targets": [
             {
-              "expr": "vald_app_version_info{job=\"vald-agent-ngt\"}",
+              "expr": "vald_app_version_info{job=\"vald-agent-ngt\",pod=~\"$Pod\"}",
               "format": "table",
               "refId": "A"
             }
@@ -711,220 +709,10 @@ data:
           "valueName": "first"
         },
         {
-          "cacheTimeout": null,
           "datasource": null,
           "gridPos": {
-            "h": 3,
-            "w": 4,
-            "x": 12,
-            "y": 3
-          },
-          "id": 23,
-          "links": [],
-          "options": {
-            "colorMode": "value",
-            "fieldOptions": {
-              "calcs": [
-                "last"
-              ],
-              "defaults": {
-                "mappings": [
-                  {
-                    "id": 0,
-                    "op": "=",
-                    "text": "N/A",
-                    "type": 1,
-                    "value": "null"
-                  }
-                ],
-                "max": 10000000,
-                "min": 0,
-                "nullValueMode": "connected",
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": null
-                    },
-                    {
-                      "color": "#EAB839",
-                      "value": 5000000
-                    },
-                    {
-                      "color": "red",
-                      "value": 10000000
-                    }
-                  ]
-                },
-                "title": "",
-                "unit": "none"
-              },
-              "overrides": [],
-              "values": false
-            },
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "horizontal"
-          },
-          "pluginVersion": "6.6.1",
-          "targets": [
-            {
-              "expr": "sum(vald_ngt_index_count{job=\"vald-agent-ngt\"})",
-              "format": "time_series",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Total NGT indices",
-          "type": "stat"
-        },
-        {
-          "cacheTimeout": null,
-          "datasource": null,
-          "gridPos": {
-            "h": 3,
-            "w": 4,
-            "x": 16,
-            "y": 3
-          },
-          "id": 24,
-          "links": [],
-          "options": {
-            "colorMode": "value",
-            "fieldOptions": {
-              "calcs": [
-                "last"
-              ],
-              "defaults": {
-                "mappings": [
-                  {
-                    "id": 0,
-                    "op": "=",
-                    "text": "N/A",
-                    "type": 1,
-                    "value": "null"
-                  }
-                ],
-                "max": 10000,
-                "min": 0,
-                "nullValueMode": "connected",
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": null
-                    },
-                    {
-                      "color": "#EAB839",
-                      "value": 5000
-                    },
-                    {
-                      "color": "red",
-                      "value": 10000
-                    }
-                  ]
-                },
-                "title": "",
-                "unit": "none"
-              },
-              "overrides": [],
-              "values": false
-            },
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "horizontal"
-          },
-          "pluginVersion": "6.6.1",
-          "targets": [
-            {
-              "expr": "sum(vald_ngt_insert_vcache_count{job=\"vald-agent-ngt\"})",
-              "format": "time_series",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Total insert vcache",
-          "type": "stat"
-        },
-        {
-          "cacheTimeout": null,
-          "datasource": null,
-          "gridPos": {
-            "h": 3,
-            "w": 4,
-            "x": 20,
-            "y": 3
-          },
-          "id": 25,
-          "links": [],
-          "options": {
-            "colorMode": "value",
-            "fieldOptions": {
-              "calcs": [
-                "last"
-              ],
-              "defaults": {
-                "mappings": [
-                  {
-                    "id": 0,
-                    "op": "=",
-                    "text": "N/A",
-                    "type": 1,
-                    "value": "null"
-                  }
-                ],
-                "max": 1000,
-                "min": 0,
-                "nullValueMode": "connected",
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": null
-                    },
-                    {
-                      "color": "#EAB839",
-                      "value": 500
-                    },
-                    {
-                      "color": "red",
-                      "value": 1000
-                    }
-                  ]
-                },
-                "title": "",
-                "unit": "none"
-              },
-              "overrides": [],
-              "values": false
-            },
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "horizontal"
-          },
-          "pluginVersion": "6.6.1",
-          "targets": [
-            {
-              "expr": "sum(vald_ngt_delete_vcache_count{job=\"vald-agent-ngt\"})",
-              "format": "time_series",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Total delete vcache",
-          "type": "stat"
-        },
-        {
-          "datasource": null,
-          "gridPos": {
-            "h": 5,
-            "w": 12,
+            "h": 6,
+            "w": 6,
             "x": 0,
             "y": 6
           },
@@ -950,18 +738,18 @@ data:
                     "from": "",
                     "id": 2,
                     "operator": "",
-                    "text": "N/I",
+                    "text": "Not Indexing",
                     "to": "",
                     "type": 1,
                     "value": "0"
                   },
                   {
-                    "from": "",
+                    "from": "1",
                     "id": 3,
                     "operator": "",
                     "text": "Indexing",
-                    "to": "",
-                    "type": 1,
+                    "to": "10000000",
+                    "type": 2,
                     "value": "1"
                   }
                 ],
@@ -986,12 +774,12 @@ data:
             "justifyMode": "center",
             "orientation": "auto"
           },
-          "pluginVersion": "6.6.1",
+          "pluginVersion": "6.6.2",
           "targets": [
             {
-              "expr": "vald_ngt_is_indexing{job=\"vald-agent-ngt\"}",
+              "expr": "sum(vald_ngt_is_indexing{job=\"vald-agent-ngt\",pod=~\"$Pod\"})",
               "instant": true,
-              "legendFormat": "{{pod}}",
+              "legendFormat": "",
               "refId": "A"
             }
           ],
@@ -1001,14 +789,16 @@ data:
           "type": "stat"
         },
         {
+          "cacheTimeout": null,
           "datasource": null,
           "gridPos": {
-            "h": 3,
-            "w": 12,
-            "x": 12,
+            "h": 6,
+            "w": 6,
+            "x": 6,
             "y": 6
           },
-          "id": 4,
+          "id": 2,
+          "links": [],
           "options": {
             "colorMode": "value",
             "fieldOptions": {
@@ -1018,36 +808,40 @@ data:
               "defaults": {
                 "mappings": [
                   {
-                    "from": "",
-                    "id": 1,
-                    "operator": "",
+                    "id": 0,
+                    "op": "=",
                     "text": "N/A",
-                    "to": "",
                     "type": 1,
                     "value": "null"
                   }
                 ],
+                "nullValueMode": "connected",
                 "thresholds": {
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
+                      "color": "red",
                       "value": null
                     },
                     {
-                      "color": "yellow",
+                      "color": "orange",
                       "value": 100
                     },
                     {
-                      "color": "orange",
+                      "color": "yellow",
                       "value": 1000
                     },
                     {
-                      "color": "red",
+                      "color": "green",
                       "value": 10000
+                    },
+                    {
+                      "color": "blue",
+                      "value": 100000
                     }
                   ]
-                }
+                },
+                "unit": "none"
               },
               "overrides": [],
               "values": false
@@ -1056,12 +850,87 @@ data:
             "justifyMode": "auto",
             "orientation": "auto"
           },
-          "pluginVersion": "6.6.1",
+          "pluginVersion": "6.6.2",
           "targets": [
             {
-              "expr": "vald_ngt_uncommitted_index_count{job=\"vald-agent-ngt\"}",
+              "expr": "sum(vald_ngt_index_count{job=\"vald-agent-ngt\",pod=~\"$Pod\"})",
               "instant": true,
-              "legendFormat": "{{pod}}",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "NGT indices",
+          "type": "stat"
+        },
+        {
+          "cacheTimeout": null,
+          "datasource": null,
+          "gridPos": {
+            "h": 6,
+            "w": 4,
+            "x": 12,
+            "y": 6
+          },
+          "id": 4,
+          "links": [],
+          "maxPerRow": 6,
+          "options": {
+            "colorMode": "value",
+            "fieldOptions": {
+              "calcs": [
+                "last"
+              ],
+              "defaults": {
+                "mappings": [
+                  {
+                    "id": 0,
+                    "op": "=",
+                    "text": "N/A",
+                    "type": 1,
+                    "value": "null"
+                  }
+                ],
+                "nullValueMode": "connected",
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "#EAB839",
+                      "value": 100
+                    },
+                    {
+                      "color": "#EF843C",
+                      "value": 1000
+                    },
+                    {
+                      "color": "red",
+                      "value": 10000
+                    }
+                  ]
+                },
+                "unit": "none"
+              },
+              "overrides": [],
+              "values": false
+            },
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "horizontal"
+          },
+          "pluginVersion": "6.6.2",
+          "repeat": null,
+          "repeatDirection": "h",
+          "targets": [
+            {
+              "expr": "sum(vald_ngt_uncommitted_index_count{job=\"vald-agent-ngt\",pod=~\"$Pod\"})",
+              "instant": true,
+              "legendFormat": "",
               "refId": "A"
             }
           ],
@@ -1073,10 +942,10 @@ data:
         {
           "datasource": null,
           "gridPos": {
-            "h": 3,
-            "w": 12,
-            "x": 12,
-            "y": 9
+            "h": 6,
+            "w": 4,
+            "x": 16,
+            "y": 6
           },
           "id": 5,
           "options": {
@@ -1126,12 +995,12 @@ data:
             "justifyMode": "auto",
             "orientation": "auto"
           },
-          "pluginVersion": "6.6.1",
+          "pluginVersion": "6.6.2",
           "targets": [
             {
-              "expr": "vald_ngt_insert_vcache_count{job=\"vald-agent-ngt\"}",
+              "expr": "sum(vald_ngt_insert_vcache_count{job=\"vald-agent-ngt\",pod=~\"$Pod\"})",
               "instant": true,
-              "legendFormat": "{{pod}}",
+              "legendFormat": "",
               "refId": "A"
             }
           ],
@@ -1141,84 +1010,12 @@ data:
           "type": "stat"
         },
         {
-          "cacheTimeout": null,
           "datasource": null,
           "gridPos": {
-            "h": 4,
-            "w": 12,
-            "x": 0,
-            "y": 11
-          },
-          "id": 2,
-          "links": [],
-          "options": {
-            "colorMode": "value",
-            "fieldOptions": {
-              "calcs": [
-                "last"
-              ],
-              "defaults": {
-                "mappings": [
-                  {
-                    "id": 0,
-                    "op": "=",
-                    "text": "N/A",
-                    "type": 1,
-                    "value": "null"
-                  }
-                ],
-                "nullValueMode": "connected",
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": null
-                    },
-                    {
-                      "color": "yellow",
-                      "value": 100
-                    },
-                    {
-                      "color": "orange",
-                      "value": 1000
-                    },
-                    {
-                      "color": "red",
-                      "value": 10000
-                    }
-                  ]
-                },
-                "unit": "none"
-              },
-              "overrides": [],
-              "values": false
-            },
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto"
-          },
-          "pluginVersion": "6.6.1",
-          "targets": [
-            {
-              "expr": "vald_ngt_index_count{job=\"vald-agent-ngt\"}",
-              "instant": true,
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "NGT indices",
-          "type": "stat"
-        },
-        {
-          "datasource": null,
-          "gridPos": {
-            "h": 3,
-            "w": 12,
-            "x": 12,
-            "y": 12
+            "h": 6,
+            "w": 4,
+            "x": 20,
+            "y": 6
           },
           "id": 6,
           "options": {
@@ -1268,12 +1065,12 @@ data:
             "justifyMode": "auto",
             "orientation": "auto"
           },
-          "pluginVersion": "6.6.1",
+          "pluginVersion": "6.6.2",
           "targets": [
             {
-              "expr": "vald_ngt_delete_vcache_count{job=\"vald-agent-ngt\"}",
+              "expr": "sum(vald_ngt_delete_vcache_count{job=\"vald-agent-ngt\",pod=~\"$Pod\"})",
               "instant": true,
-              "legendFormat": "{{pod}}",
+              "legendFormat": "",
               "refId": "A"
             }
           ],
@@ -1294,7 +1091,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 15
+            "y": 12
           },
           "hiddenSeries": false,
           "id": 12,
@@ -1323,7 +1120,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "vald_alloc_bytes{job=\"vald-agent-ngt\"}",
+              "expr": "vald_alloc_bytes{job=\"vald-agent-ngt\",pod=~\"$Pod\"}",
               "legendFormat": "{{pod}}",
               "refId": "A"
             }
@@ -1381,7 +1178,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 15
+            "y": 12
           },
           "hiddenSeries": false,
           "id": 22,
@@ -1410,7 +1207,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "vald_cpu_utilization{job=\"vald-agent-ngt\"}",
+              "expr": "vald_cpu_utilization{job=\"vald-agent-ngt\",pod=~\"$Pod\"}",
               "legendFormat": "{{pod}}",
               "refId": "A"
             }
@@ -1468,7 +1265,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 23
+            "y": 20
           },
           "hiddenSeries": false,
           "id": 10,
@@ -1497,7 +1294,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "vald_goroutine_count{job=\"vald-agent-ngt\"}",
+              "expr": "vald_goroutine_count{job=\"vald-agent-ngt\",pod=~\"$Pod\"}",
               "legendFormat": "{{pod}}",
               "refId": "A"
             }
@@ -1556,7 +1353,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 23
+            "y": 20
           },
           "hiddenSeries": false,
           "id": 26,
@@ -1588,7 +1385,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "rate(vald_gc_count{job=\"vald-agent-ngt\"}[$__interval])",
+              "expr": "rate(vald_gc_count{job=\"vald-agent-ngt\",pod=~\"$Pod\"}[$__interval])",
               "instant": false,
               "interval": "1s",
               "intervalFactor": 1,
@@ -1636,69 +1433,6 @@ data:
             "align": false,
             "alignLevel": null
           }
-        },
-        {
-          "cards": {
-            "cardPadding": null,
-            "cardRound": null
-          },
-          "color": {
-            "cardColor": "#73BF69",
-            "colorScale": "sqrt",
-            "colorScheme": "interpolateReds",
-            "exponent": 0.5,
-            "min": null,
-            "mode": "opacity"
-          },
-          "dataFormat": "timeseries",
-          "datasource": null,
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 31
-          },
-          "heatmap": {},
-          "hideZeroBuckets": false,
-          "highlightCards": true,
-          "id": 27,
-          "legend": {
-            "show": true
-          },
-          "options": {},
-          "reverseYBuckets": false,
-          "targets": [
-            {
-              "expr": "histogram_quantile(0.95, sum(rate(vald_grpc_io_server_server_latency_bucket[5m])) by (le))",
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "gRPC server latency (P95)",
-          "tooltip": {
-            "show": true,
-            "showHistogram": false
-          },
-          "type": "heatmap",
-          "xAxis": {
-            "show": true
-          },
-          "xBucketNumber": null,
-          "xBucketSize": null,
-          "yAxis": {
-            "decimals": null,
-            "format": "ms",
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true,
-            "splitFactor": null
-          },
-          "yBucketBound": "auto",
-          "yBucketNumber": null,
-          "yBucketSize": null
         }
       ],
       "refresh": "5s",
@@ -1706,10 +1440,58 @@ data:
       "style": "dark",
       "tags": [],
       "templating": {
-        "list": []
+        "list": [
+          {
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": "All",
+              "value": "$__all"
+            },
+            "datasource": "prometheus",
+            "definition": "label_values(vald_ngt_is_indexing, pod)",
+            "hide": 0,
+            "includeAll": true,
+            "label": null,
+            "multi": false,
+            "name": "Pod",
+            "options": [
+              {
+                "selected": true,
+                "text": "All",
+                "value": "$__all"
+              },
+              {
+                "selected": false,
+                "text": "vald-agent-ngt-0",
+                "value": "vald-agent-ngt-0"
+              },
+              {
+                "selected": false,
+                "text": "vald-agent-ngt-1",
+                "value": "vald-agent-ngt-1"
+              },
+              {
+                "selected": false,
+                "text": "vald-agent-ngt-2",
+                "value": "vald-agent-ngt-2"
+              }
+            ],
+            "query": "label_values(vald_ngt_is_indexing, pod)",
+            "refresh": 0,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 0,
+            "tagValuesQuery": "",
+            "tags": [],
+            "tagsQuery": "",
+            "type": "query",
+            "useTags": false
+          }
+        ]
       },
       "time": {
-        "from": "now-30m",
+        "from": "now-5m",
         "to": "now"
       },
       "timepicker": {
