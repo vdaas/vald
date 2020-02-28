@@ -16,9 +16,8 @@ type Client interface {
 }
 
 type ngtdClient struct {
-	addr          string
-	searchSize    int
-	searchEpsilon float32
+	addr              string
+	streamConcurrency int
 	proto.NGTDClient
 }
 
@@ -81,7 +80,7 @@ func (c *ngtdClient) StreamSearch(ctx context.Context, dataProvider func() *clie
 	defer st.CloseSend()
 
 	/**
-	grpc.BidirectionalStreamClient(st, 100, func() interface{} {
+	grpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
 		return dataProvider()
 	}, func(res interface{}, err error) {
 		_ = client.SearchResponse{
@@ -101,7 +100,7 @@ func (c *ngtdClient) StreamSearchByID(ctx context.Context, dataProvider func() *
 	defer st.CloseSend()
 
 	/**
-	grpc.BidirectionalStreamClient(st, 100, func() interface{} {
+	grpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
 		return dataProvider()
 	}, func(res interface{}, err error) {
 		_ = client.SearchResponse{
@@ -129,7 +128,7 @@ func (c *ngtdClient) StreamInsert(ctx context.Context, dataProvider func() *clie
 	defer st.CloseSend()
 
 	/**
-	grpc.BidirectionalStreamClient(st, 100, func() interface{} {
+	grpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
 		return dataProvider()
 	}, func(_ interface{}, err error) {
 		f(err)
@@ -171,7 +170,7 @@ func (c *ngtdClient) StreamRemove(ctx context.Context, dataProvider func() *clie
 	defer st.CloseSend()
 
 	/**
-	grpc.BidirectionalStreamClient(st, 100, func() interface{} {
+	grpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
 		return dataProvider()
 	}, func(_ interface{}, err error) {
 		f(err)
@@ -206,7 +205,7 @@ func (c *ngtdClient) StreamGetObject(ctx context.Context, dataProvider func() *c
 	defer st.CloseSend()
 
 	/**
-	grpc.BidirectionalStreamClient(st, 100, func() interface{} {
+	grpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
 		return dataProvider()
 	}, func(res interface{}, err error) {
 		r := res.(*proto.GetObjectResponse)
