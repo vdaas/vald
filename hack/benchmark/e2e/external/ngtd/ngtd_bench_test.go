@@ -59,7 +59,9 @@ func init() {
 }
 
 func BenchmarkNGTD_REST_Sequential(b *testing.B) {
-	client, err := rest.New(context.Background(), rest.WithAddr("127.0.0.1:"+strconv.Itoa(port)))
+	ctx := context.Background()
+
+	client, err := rest.New(ctx, rest.WithAddr("127.0.0.1:"+strconv.Itoa(port)))
 	if err != nil {
 		b.Error(err)
 	}
@@ -85,12 +87,14 @@ func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 				strategy.NewRemove(),
 			),
 		)
-		bench.Run(context.Background(), b)
+		bench.Run(ctx, b)
 	}
 }
 
 func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
-	client, err := rest.New(context.Background(), rest.WithAddr("127.0.0.1:"+strconv.Itoa(port)))
+	ctx := context.Background()
+
+	client, err := rest.New(ctx, rest.WithAddr("127.0.0.1:"+strconv.Itoa(port)))
 	if err != nil {
 		b.Error(err)
 	}
@@ -116,6 +120,6 @@ func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 				strategy.NewRemove(),
 			),
 		)
-		bench.Run(context.Background(), b)
+		bench.Run(ctx, b)
 	}
 }
