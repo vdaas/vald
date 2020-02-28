@@ -29,66 +29,36 @@ import (
 )
 
 var (
-	searchConfig = &payload.Search_Config{
-		Num:     10,
-		Radius:  -1,
-		Epsilon: 0.01,
-	}
 	targets   []string
 	addresses []string
 	wait      time.Duration
 )
 
-type params struct {
-	dataset string
-	address string
-	wait    int
-}
-
-func parseParams() *params {
-	p := new(params)
-
-	flag.StringVar(&p.dataset,
-		"dataset",
-		"",
-		"set dataset (choice with comma)",
-	)
-
-	flag.StringVar(&p.address,
-		"address",
-		"0.0.0.0:5001",
-		"set vald gateway address",
-	)
-
-	flag.IntVar(&p.wait,
-		"wait",
-		30,
-		"indexing wait time(secs)",
-	)
-	flag.Parse()
-
-	return p
+var searchConfig = &payload.Search_Config{
+	Num:     10,
+	Radius:  -1,
+	Epsilon: 0.01,
 }
 
 func init() {
+	testing.Init()
+
 	log.Init()
-}
 
-func TestSetup(t *testing.T) {
-	p := parseParams()
+	var (
+		dataset     string
+		address     string
+		waitSeconds uint
+	)
 
-	targets = strings.Split(strings.TrimSpace(p.dataset), ",")
-	addresses = strings.Split(strings.TrimSpace(p.address), ",")
+	flag.StringVar(&dataset, "dataset", "", "set dataset (choice with comma)")
+	flag.StringVar(&address, "address", "0.0.0.0:5001", "set vald gateway address")
+	flag.UintVar(&waitSeconds, "wait", 30, "indexing wait time(secs)")
+	flag.Parse()
 
-	if len(targets) != len(addresses) {
-		t.Fatal("address and dataset must have same length")
-	}
-
-	if p.wait <= 0 {
-		t.Fatalf("invalid wait time: %d", p.wait)
-	}
-
-	wait = time.Duration(p.wait) * time.Second
+	targets = strings.Split(strings.TrimSpace(dataset), ",")
+	addresses = strings.Split(strings.TrimSpace(address), ",")
+	wait = time.Duration(time.Duration(waitSeconds) * time.Second)
 }
 
 func BenchmarkValdGateway_Sequential(b *testing.B) {
