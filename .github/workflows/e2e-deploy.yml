@@ -15,7 +15,7 @@ jobs:
   e2e-deploy:
     name: e2e deploy test
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v1
       - name: wait for dockers
@@ -53,7 +53,7 @@ jobs:
         run: |
           make k8s/external/scylla/deploy
           jq_query='.items[] | select( ([ .status.conditions[] | select( .type == "Ready" and .status == "True" ) ] | length ) != 1) | .metadata.namespace + "/" + .metadata.name'
-          until [ $(kubectl get po --all-namespaces -o json | jq -r $jq_query | wc -l) -ge 3 ]
+          until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 3 ]
           do
             echo "waiting for Scylla to be ready..."
             kubectl get pods
@@ -82,7 +82,7 @@ jobs:
             --set meta.minReplicas=1 \
             --set meta.hpa.enabled=false \
             --generate-name vald/vald
-          until [ $(kubectl get po --all-namespaces -o json | jq -r $jq_query | wc -l) -ge 12 ]
+          until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 12 ]
           do
             echo "wait for ready"
             kubectl get pods
