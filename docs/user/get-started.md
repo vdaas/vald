@@ -144,6 +144,10 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
         - Remove: remove indexing from Vald agent.
 
     ```bash
+    # if you don't install hdf5-devel, please install hdf5-devl at first.
+    yum -y install hdf5-devel
+
+    # run example
     go run main.go
     ```
 
