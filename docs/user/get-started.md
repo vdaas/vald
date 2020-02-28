@@ -23,15 +23,15 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
 
 - Auto Indexing
     - Normally, when changing the Graph Index, the Graph must be locked, but Vald uses distributed index graph, it is extremely difficult for the user to reconstruct the Graph.
-    - Therefore, Vlad automativally indexes distributed Graphs sequentially.
+    - Therefore, Vald automatically indexes distributed Graphs sequentially.
 
 - Ingress/Egress Filltering
-    - Vald has flexible customizability, which is the Ingress / Egress filter.
+    - Vald has flexible customizability, which is the Ingress/Egress filter.
     - These can be freely configured by the user to fit the Vald grpc interface.
-        - Ingress Filter: Ability to Vectorize through Filter on request.
+        - Ingress Filter: Ability to Vectorize through filter on request.
         - Egress Filter: A function to rerank or filter the Search response with your own algorithm.
 
-- Horizonal Scaling
+- Horizontal Scaling
     - Vald is a cloud-native vector search engine running on Kubernetes, which enables horizontal scalling of memory and cpu for billion scale of vector data.
 
 - Auto Index Backup
@@ -42,7 +42,7 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
 
 - Index Replication
     - Vald stores each index in multiple agents which enables index replicas.
-    - Rebalance replica when some pods go down
+    - Rebalance replica when some pods go down.
 
 - Easy to use
     - Vald can be easily installed in a few steps and Vald is highly customizable.
@@ -51,11 +51,10 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
 
 - k8s: 
 - go: 
-- docker:
 - helm: 
 - hdf5: 
 
-If helm is not installed, please install helm (see below details) or [here](https://htlm.sh/docs/intro/install).
+If helm is not installed, please install helm (see below details) or [here](https://helm.sh/docs/intro/install).
 
 <details>
     <summary>optional installation</summray>
@@ -66,6 +65,8 @@ curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bas
 
 # install hdf5
 yum install -y hdf5-devel
+apt-get install libhdf5-serial-dev
+brew install hdf5
 ```
 </details>
 
