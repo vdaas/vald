@@ -15,10 +15,10 @@ import (
 type ServerType = ngtd.ServerType
 
 type server struct {
-	dim     int
-	srvType ServerType
-	baseDir string
-	port    int
+	dim      int
+	srvType  ServerType
+	indexDir string
+	port     int
 }
 
 func New(opts ...Option) starter.Starter {
@@ -40,12 +40,12 @@ func (ns *server) Run(ctx context.Context, tb testing.TB) func() {
 
 	gongt.SetDimension(ns.dim)
 
-	db, err := kvs.NewGoLevel(ns.baseDir + "meta")
+	db, err := kvs.NewGoLevel(ns.indexDir + "meta")
 	if err != nil {
 		tb.Error(err)
 	}
 
-	n, err := ngtd.NewNGTD(ns.baseDir+"ngt", db, ns.port)
+	n, err := ngtd.NewNGTD(ns.indexDir+"ngt", db, ns.port)
 	if err != nil {
 		tb.Error(err)
 	}
@@ -72,11 +72,11 @@ func (ns *server) Run(ctx context.Context, tb testing.TB) func() {
 }
 
 func (ns *server) createIndexDir() error {
-	if err := os.RemoveAll(ns.baseDir); err != nil {
+	if err := os.RemoveAll(ns.indexDir); err != nil {
 		return err
 	}
 
-	if err := os.MkdirAll(ns.baseDir, 0755); err != nil {
+	if err := os.MkdirAll(ns.indexDir, 0755); err != nil {
 		return err
 	}
 
@@ -84,11 +84,11 @@ func (ns *server) createIndexDir() error {
 }
 
 func (ns *server) clearIndexDir() error {
-	if err := os.RemoveAll(ns.baseDir + "meta"); err != nil {
+	if err := os.RemoveAll(ns.indexDir + "meta"); err != nil {
 		return err
 	}
 
-	if err := os.RemoveAll(ns.baseDir + "ngt"); err != nil {
+	if err := os.RemoveAll(ns.indexDir + "ngt"); err != nil {
 		return err
 	}
 

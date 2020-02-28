@@ -4,7 +4,7 @@ type Option func(*server)
 
 var (
 	defaultOptions = []Option{
-		WithBaseDir("/tmp/ngtd/"),
+		WithIndexDir("/tmp/ngtd/"),
 		WithPort(8200),
 	}
 )
@@ -23,10 +23,10 @@ func WithServerType(t ServerType) Option {
 	}
 }
 
-func WithBaseDir(path string) Option {
+func WithIndexDir(path string) Option {
 	return func(n *server) {
 		if len(path) != 0 {
-			n.baseDir = path
+			n.indexDir = path
 		}
 	}
 }
