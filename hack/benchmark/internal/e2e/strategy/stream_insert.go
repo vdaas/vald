@@ -30,6 +30,7 @@ func (sisrt *streamInsert) dataProvider(b *testing.B, dataset assets.Dataset) fu
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.StartTimer()
+	defer b.StopTimer()
 
 	return func() *client.ObjectVector {
 		n := int(atomic.AddUint32(&cnt, 1))

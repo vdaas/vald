@@ -30,6 +30,7 @@ func (sr *streamRemove) dataProvider(b *testing.B, dataset assets.Dataset) func(
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.StartTimer()
+	defer b.StopTimer()
 
 	return func() *client.ObjectID {
 		n := int(atomic.AddUint32(&cnt, 1))
