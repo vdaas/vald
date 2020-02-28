@@ -288,7 +288,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 			return nil, status.WrapWithInternal(fmt.Sprintf("Insert API failed to Backup Vectors %#v", vecs), err, info.Get())
 		}
 	}
-    log.Debugf("Insert API insert succeeded to %v", targets)
+	log.Debugf("Insert API insert succeeded to %v", targets)
 	return new(payload.Empty), nil
 }
 
