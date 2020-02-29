@@ -72,7 +72,7 @@ data:
       "gnetId": null,
       "graphTooltip": 0,
       "id": 2,
-      "iteration": 1582966096502,
+      "iteration": 1582968580879,
       "links": [],
       "panels": [
         {
@@ -630,14 +630,10 @@ data:
           "targets": [
             {
               "expr": "count(up{job=~\"$ValdAgentNGT\", node=~\"$Node\"})",
-              "format": "table",
+              "format": "time_series",
               "hide": false,
               "instant": false,
               "refId": "A"
-            },
-            {
-              "expr": "",
-              "refId": "B"
             }
           ],
           "timeFrom": null,
@@ -698,14 +694,10 @@ data:
           "targets": [
             {
               "expr": "count(up{job=~\"$ValdDiscovererK8s\", node=~\"$Node\"})",
-              "format": "table",
+              "format": "time_series",
               "hide": false,
               "instant": false,
               "refId": "A"
-            },
-            {
-              "expr": "",
-              "refId": "B"
             }
           ],
           "timeFrom": null,
@@ -766,14 +758,10 @@ data:
           "targets": [
             {
               "expr": "count(up{job=~\"$ValdGateway\", node=~\"$Node\"})",
-              "format": "table",
+              "format": "time_series",
               "hide": false,
               "instant": false,
               "refId": "A"
-            },
-            {
-              "expr": "",
-              "refId": "B"
             }
           ],
           "timeFrom": null,
@@ -834,14 +822,10 @@ data:
           "targets": [
             {
               "expr": "count(up{job=~\"$ValdManagerBackup\", node=~\"$Node\"})",
-              "format": "table",
+              "format": "time_series",
               "hide": false,
               "instant": false,
               "refId": "A"
-            },
-            {
-              "expr": "",
-              "refId": "B"
             }
           ],
           "timeFrom": null,
@@ -902,14 +886,10 @@ data:
           "targets": [
             {
               "expr": "count(up{job=~\"$ValdManagerCompressor\", node=~\"$Node\"})",
-              "format": "table",
+              "format": "time_series",
               "hide": false,
               "instant": false,
               "refId": "A"
-            },
-            {
-              "expr": "",
-              "refId": "B"
             }
           ],
           "timeFrom": null,
@@ -970,14 +950,10 @@ data:
           "targets": [
             {
               "expr": "count(up{job=~\"$ValdManagerIndex\", node=~\"$Node\"})",
-              "format": "table",
+              "format": "time_series",
               "hide": false,
               "instant": false,
               "refId": "A"
-            },
-            {
-              "expr": "",
-              "refId": "B"
             }
           ],
           "timeFrom": null,
@@ -1038,14 +1014,10 @@ data:
           "targets": [
             {
               "expr": "count(up{job=~\"$ValdMeta\", node=~\"$Node\"})",
-              "format": "table",
+              "format": "time_series",
               "hide": false,
               "instant": false,
               "refId": "A"
-            },
-            {
-              "expr": "",
-              "refId": "B"
             }
           ],
           "timeFrom": null,
