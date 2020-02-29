@@ -185,12 +185,14 @@ k8s/metrics/metrics-server/remove:
 ## deploy prometheus and grafana
 k8s/metrics/prometheus/deploy:
 	kubectl apply -f k8s/metrics/prometheus
+	kubectl create configmap grafana-dashboards --from-file=k8s/metrics/grafana/dashboards/
 	kubectl apply -f k8s/metrics/grafana
 
 .PHONY: k8s/metrics/prometheus/remove
 ## remove prometheus and grafana
 k8s/metrics/prometheus/remove:
 	-kubectl delete -f k8s/metrics/prometheus
+	-kubectl delete configmap grafana-dashboards
 	-kubectl delete -f k8s/metrics/grafana
 
 .PHONY: k8s/metrics/jaeger/deploy
