@@ -72,7 +72,7 @@ data:
       "gnetId": null,
       "graphTooltip": 0,
       "id": 2,
-      "iteration": 1582959485103,
+      "iteration": 1582966096502,
       "links": [],
       "panels": [
         {
@@ -142,6 +142,7 @@ data:
             {
               "expr": "vald_app_version_info{job=~\"$ReplicaSet\", node=~\"$Node\" ,pod=~\"$Pod\"}",
               "format": "table",
+              "instant": true,
               "refId": "A"
             }
           ],
@@ -158,7 +159,7 @@ data:
               "value": "null"
             }
           ],
-          "valueName": "first"
+          "valueName": "current"
         },
         {
           "cacheTimeout": null,
@@ -225,8 +226,9 @@ data:
           "tableColumn": "go_version",
           "targets": [
             {
-              "expr": "vald_app_version_info{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}",
+              "expr": "label_replace(vald_app_version_info{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
               "format": "table",
+              "instant": true,
               "refId": "A"
             }
           ],
@@ -243,7 +245,7 @@ data:
               "value": "null"
             }
           ],
-          "valueName": "first"
+          "valueName": "current"
         },
         {
           "cacheTimeout": null,
@@ -312,6 +314,7 @@ data:
             {
               "expr": "vald_app_version_info{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}",
               "format": "table",
+              "instant": true,
               "refId": "A"
             }
           ],
@@ -328,7 +331,7 @@ data:
               "value": "null"
             }
           ],
-          "valueName": "first"
+          "valueName": "current"
         },
         {
           "cacheTimeout": null,
@@ -469,6 +472,7 @@ data:
             {
               "expr": "vald_app_version_info{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}",
               "format": "table",
+              "instant": true,
               "refId": "A"
             }
           ],
@@ -485,7 +489,7 @@ data:
               "value": "null"
             }
           ],
-          "valueName": "first"
+          "valueName": "current"
         },
         {
           "cacheTimeout": null,
@@ -554,6 +558,7 @@ data:
             {
               "expr": "vald_app_version_info{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}",
               "format": "table",
+              "instant": true,
               "refId": "A"
             }
           ],
@@ -570,7 +575,7 @@ data:
               "value": "null"
             }
           ],
-          "valueName": "first"
+          "valueName": "current"
         },
         {
           "cacheTimeout": null,
@@ -1680,7 +1685,7 @@ data:
       "timezone": "",
       "title": "Vald Cluster Overview",
       "uid": "ZQxyaOlWk",
-      "version": 2
+      "version": 1
     }
   vald-agent.json: |
     {
@@ -1701,7 +1706,7 @@ data:
       "gnetId": null,
       "graphTooltip": 0,
       "id": 1,
-      "iteration": 1582961910321,
+      "iteration": 1582965432388,
       "links": [],
       "panels": [
         {
@@ -1771,6 +1776,7 @@ data:
             {
               "expr": "vald_app_version_info{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}",
               "format": "table",
+              "instant": true,
               "refId": "A"
             }
           ],
@@ -1787,7 +1793,7 @@ data:
               "value": "null"
             }
           ],
-          "valueName": "first"
+          "valueName": "current"
         },
         {
           "cacheTimeout": null,
@@ -1854,8 +1860,9 @@ data:
           "tableColumn": "go_version",
           "targets": [
             {
-              "expr": "vald_app_version_info{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}",
+              "expr": "label_replace(vald_app_version_info{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
               "format": "table",
+              "instant": true,
               "refId": "A"
             }
           ],
@@ -1872,7 +1879,7 @@ data:
               "value": "null"
             }
           ],
-          "valueName": "first"
+          "valueName": "current"
         },
         {
           "cacheTimeout": null,
@@ -1939,8 +1946,9 @@ data:
           "tableColumn": "ngt_version",
           "targets": [
             {
-              "expr": "vald_app_version_info{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}",
+              "expr": "label_replace(vald_app_version_info{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}, \"ngt_version\", \"v$1\", \"ngt_version\", \"([^v].*)\")",
               "format": "table",
+              "instant": true,
               "refId": "A"
             }
           ],
@@ -1957,7 +1965,7 @@ data:
               "value": "null"
             }
           ],
-          "valueName": "first"
+          "valueName": "current"
         },
         {
           "cacheTimeout": null,
@@ -2085,7 +2093,7 @@ data:
           "pluginVersion": "6.6.2",
           "targets": [
             {
-              "expr": "sum(vald_alloc_bytes{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"})",
+              "expr": "sum(vald_alloc_bytes{job=~\"$ReplicaSet\", node=~\"$Node\"})",
               "format": "time_series",
               "refId": "A"
             }
@@ -2234,6 +2242,7 @@ data:
             {
               "expr": "vald_app_version_info{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}",
               "format": "table",
+              "instant": true,
               "refId": "A"
             }
           ],
@@ -2250,7 +2259,7 @@ data:
               "value": "null"
             }
           ],
-          "valueName": "first"
+          "valueName": "current"
         },
         {
           "cacheTimeout": null,
@@ -2319,6 +2328,7 @@ data:
             {
               "expr": "vald_app_version_info{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}",
               "format": "table",
+              "instant": true,
               "refId": "A"
             }
           ],
@@ -2335,7 +2345,7 @@ data:
               "value": "null"
             }
           ],
-          "valueName": "first"
+          "valueName": "current"
         },
         {
           "datasource": null,
@@ -3163,7 +3173,6 @@ data:
           {
             "allValue": null,
             "current": {
-              "selected": true,
               "text": "vald-agent-ngt",
               "value": "vald-agent-ngt"
             },
@@ -3189,7 +3198,7 @@ data:
           {
             "allValue": ".*",
             "current": {
-              "selected": true,
+              "selected": false,
               "text": "All",
               "value": "$__all"
             },
@@ -3215,7 +3224,7 @@ data:
           {
             "allValue": ".*",
             "current": {
-              "selected": true,
+              "selected": false,
               "text": "All",
               "value": "$__all"
             },
@@ -3241,7 +3250,7 @@ data:
         ]
       },
       "time": {
-        "from": "now-1h",
+        "from": "now-5m",
         "to": "now"
       },
       "timepicker": {
