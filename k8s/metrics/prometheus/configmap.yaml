@@ -44,3 +44,6 @@ data:
         - source_labels:
           - __meta_kubernetes_service_name
           target_label: job
+        - source_labels:
+          - __meta_kubernetes_pod_node_name
+          target_label: node
