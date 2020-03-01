@@ -26,7 +26,7 @@ docker/build: \
 	docker/build/backup-manager-cassandra \
 	docker/build/manager-compressor \
 	docker/build/manager-index \
-	docker/build/operator
+	docker/build/helm-operator
 
 .PHONY: docker/name/base
 docker/name/base:
@@ -127,11 +127,11 @@ docker/name/ci-container:
 docker/build/ci-container: docker/build/base
 	docker build -f dockers/ci/base/Dockerfile -t $(REPO)/$(CI_CONTAINER_IMAGE) .
 
-.PHONY: docker/name/operator
-docker/name/operator:
-	@echo "$(REPO)/$(OPERATOR_IMAGE)"
+.PHONY: docker/name/helm-operator
+docker/name/helm-operator:
+	@echo "$(REPO)/$(HELM_OPERATOR_IMAGE)"
 
-.PHONY: docker/build/operator
-## build operator image
-docker/build/operator:
-	docker build -f dockers/operator/Dockerfile -t $(REPO)/$(OPERATOR_IMAGE) .
+.PHONY: docker/build/helm-operator
+## build helm-operator image
+docker/build/helm-operator:
+	docker build -f dockers/helm-operator/Dockerfile -t $(REPO)/$(HELM_OPERATOR_IMAGE) .

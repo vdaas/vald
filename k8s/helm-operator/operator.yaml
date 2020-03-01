@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vald-operator
+  name: vald-helm-operator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: vald-operator
+      name: vald-helm-operator
   template:
     metadata:
       labels:
-        name: vald-operator
+        name: vald-helm-operator
     spec:
-      serviceAccountName: vald-operator
+      serviceAccountName: vald-helm-operator
       containers:
-        - name: vald-operator
-          image: vdaas/vald-operator:nightly
+        - name: vald-helm-operator
+          image: vdaas/vald-helm-operator:nightly
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
@@ -27,4 +27,4 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
-              value: "vald-operator"
+              value: "vald-helm-operator"

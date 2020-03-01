@@ -1,5 +1,5 @@
 apiVersion: vald.vdaas.org/v1alpha1
-kind: Vald
+kind: ValdRelease
 metadata:
   name: vald-cluster
 spec: {}

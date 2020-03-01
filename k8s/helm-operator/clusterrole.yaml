@@ -2,7 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   creationTimestamp: null
-  name: vald-operator
+  name: vald-helm-operator
 rules:
 - apiGroups:
   - ""
@@ -73,7 +73,7 @@ rules:
 - apiGroups:
   - apps
   resourceNames:
-  - vald-operator
+  - vald-helm-operator
   resources:
   - deployments/finalizers
   verbs:

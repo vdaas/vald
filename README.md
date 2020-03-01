@@ -40,15 +40,15 @@ If you use the default values.yaml, the `nightly` images will be installed.
 - `latest` ... latest build of release versions
 - `stable` ... latest long-term supported version
 
-### Using operator
+### Using Helm-operator
 
 ```shell
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/serviceaccount.yaml
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/clusterrole.yaml
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/clusterrolebinding.yaml
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/operator.yaml
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/crd.yaml
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/cr.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/helm-operator/serviceaccount.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/helm-operator/clusterrole.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/helm-operator/clusterrolebinding.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/helm-operator/operator.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/helm-operator/crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/helm-operator/cr.yaml
 ```
 
 ## Example
@@ -151,10 +151,10 @@ vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20manager-index/badge.svg"></td>
   </tr>
   <tr>
-    <td>operator</td>
+    <td>helm-operator</td>
     <td></td>
-    <td><a href="https://hub.docker.com/r/vdaas/vald-operator">vdaas/vald-operator</a></td>
-    <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20operator/badge.svg"></td>
+    <td><a href="https://hub.docker.com/r/vdaas/vald-helm-operator">vdaas/vald-helm-operator</a></td>
+    <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20helm-operator/badge.svg"></td>
   </tr>
 </table>
 
