@@ -26,9 +26,14 @@ func New(b *testing.B, opts ...Option) Runner {
 		opt(e)
 	}
 
-	e.dataset = assets.Data(e.name)(b)
+	fn := assets.Data(e.name)
+	if fn == nil {
+		b.Fatalf("dataset provider is nil: %v", e.name)
+	}
+
+	e.dataset = fn(b)
 	if e.dataset == nil {
-		b.Errorf("data is nil: %v", e.name)
+		b.Fatalf("dataset is nil: %v", e.name)
 	}
 
 	return e

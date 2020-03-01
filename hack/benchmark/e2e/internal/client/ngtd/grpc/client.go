@@ -1,4 +1,4 @@
-package client
+package grpc
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/client"
 	proto "github.com/yahoojapan/ngtd/proto"
-	"google.golang.org/grpc"
+	ggrpc "google.golang.org/grpc"
 )
 
 type Client interface {
@@ -28,7 +28,7 @@ func New(ctx context.Context, opts ...Option) (Client, error) {
 		opt(c)
 	}
 
-	conn, err := grpc.DialContext(ctx, c.addr, grpc.WithInsecure())
+	conn, err := ggrpc.DialContext(ctx, c.addr, ggrpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}

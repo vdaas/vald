@@ -298,7 +298,10 @@ func Data(name string) func(testing.TB) Dataset {
 		i, _ := strconv.Atoi(name[9:])
 		return identity(i)
 	}
-	return data[name]
+	if d, ok := data[name]; ok {
+		return d
+	}
+	return nil
 }
 
 func (d *dataset) Train() [][]float32 {

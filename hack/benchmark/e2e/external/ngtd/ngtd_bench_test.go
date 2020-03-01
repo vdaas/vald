@@ -18,21 +18,17 @@ package ngtd
 import (
 	"context"
 	"flag"
-	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/hack/benchmark/e2e/internal/client/ngtd/grpc"
 	"github.com/vdaas/vald/hack/benchmark/e2e/internal/client/ngtd/rest"
 	"github.com/vdaas/vald/hack/benchmark/e2e/internal/starter/ngtd"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
 	"github.com/vdaas/vald/internal/log"
-)
-
-const (
-	port = 8200
 )
 
 var (
@@ -61,9 +57,9 @@ func init() {
 func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 	ctx := context.Background()
 
-	client, err := rest.New(ctx, rest.WithAddr("127.0.0.1:"+strconv.Itoa(port)))
+	client, err := rest.New(ctx)
 	if err != nil {
-		b.Error(err)
+		b.Fatal(err)
 	}
 
 	for _, name := range targets {
@@ -94,9 +90,9 @@ func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 	ctx := context.Background()
 
-	client, err := rest.New(ctx, rest.WithAddr("127.0.0.1:"+strconv.Itoa(port)))
+	client, err := grpc.New(ctx)
 	if err != nil {
-		b.Error(err)
+		b.Fatal(err)
 	}
 
 	for _, name := range targets {
@@ -106,6 +102,7 @@ func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
 				return ngtd.New(
 					ngtd.WithDimentaion(d.Dimension()),
+					ngtd.WithServerType(ngtd.ServerType(ngtd.GRPC)),
 				).Run(ctx, tb)
 			}),
 			e2e.WithClient(client),

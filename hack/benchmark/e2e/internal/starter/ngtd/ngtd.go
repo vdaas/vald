@@ -5,6 +5,7 @@ import (
 	"os"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/hack/benchmark/e2e/internal/starter"
 	"github.com/yahoojapan/gongt"
@@ -13,6 +14,11 @@ import (
 )
 
 type ServerType = ngtd.ServerType
+
+const (
+	HTTP ServerType = 1
+	GRPC ServerType = 2
+)
 
 type server struct {
 	dim      int
@@ -61,6 +67,8 @@ func (ns *server) Run(ctx context.Context, tb testing.TB) func() {
 	}()
 
 	wg.Wait()
+
+	time.Sleep(5 * time.Second)
 
 	return func() {
 		n.Stop()
