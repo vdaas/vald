@@ -25,7 +25,8 @@ docker/build: \
 	docker/build/backup-manager-mysql \
 	docker/build/backup-manager-cassandra \
 	docker/build/manager-compressor \
-	docker/build/manager-index
+	docker/build/manager-index \
+	docker/build/operator
 
 .PHONY: docker/name/base
 docker/name/base:
@@ -125,3 +126,12 @@ docker/name/ci-container:
 ## build ci-container image
 docker/build/ci-container: docker/build/base
 	docker build -f dockers/ci/base/Dockerfile -t $(REPO)/$(CI_CONTAINER_IMAGE) .
+
+.PHONY: docker/name/operator
+docker/name/operator:
+	@echo "$(REPO)/$(OPERATOR_IMAGE)"
+
+.PHONY: docker/build/operator
+## build operator image
+docker/build/operator:
+	docker build -f dockers/operator/Dockerfile -t $(REPO)/$(OPERATOR_IMAGE) .

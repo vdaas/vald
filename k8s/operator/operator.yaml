@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vald-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: vald-operator
+  template:
+    metadata:
+      labels:
+        name: vald-operator
+    spec:
+      serviceAccountName: vald-operator
+      containers:
+        - name: vald-operator
+          image: vdaas/vald-operator:nightly
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "vald-operator"

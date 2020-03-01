@@ -29,6 +29,7 @@ BACKUP_MANAGER_CASSANDRA_IMAGE  = $(NAME)-manager-backup-cassandra
 MANAGER_COMPRESSOR_IMAGE        = $(NAME)-manager-compressor
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
+OPERATOR_IMAGE                  = $(NAME)-operator
 
 NGT_VERSION := $(shell cat versions/NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
