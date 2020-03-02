@@ -140,7 +140,7 @@ func load(path string) (ids []string, train, test [][]float32, err error) {
 		return nil, nil, nil, err
 	}
 
-	test, err = readFn("train")
+	test, err = readFn("test")
 	if err != nil {
 		return nil, nil, nil, err
 	}
