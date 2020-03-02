@@ -240,8 +240,12 @@ func (c *ngtdClient) IndexInfo(ctx context.Context) (*client.InfoIndex, error) {
 	return nil, nil
 }
 
-func tofloat64(s []float32) []float64 {
-	return nil
+func tofloat64(in []float32) (out []float64) {
+	out = make([]float64, len(in))
+	for i := range in {
+		out[i] = float64(in[i])
+	}
+	return
 }
 
 func toObjectDistances(in []*proto.ObjectDistance) (to []*payload.Object_Distance) {
