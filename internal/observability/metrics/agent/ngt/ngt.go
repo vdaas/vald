@@ -19,6 +19,7 @@ package ngt
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/pkg/agent/ngt/service"
@@ -36,12 +37,23 @@ type ngtMetrics struct {
 func NewNGTMetrics(n service.NGT) metrics.Metric {
 	return &ngtMetrics{
 		ngt:                   n,
-		indexCount:            *metrics.Int64("vdaas.org/vald/ngt/index_count", "NGT index count", metrics.UnitDimensionless),
-		uncommittedIndexCount: *metrics.Int64("vdaas.org/vald/ngt/uncommitted_index_count", "NGT uncommitted index count", metrics.UnitDimensionless),
-		insertVCacheCount:     *metrics.Int64("vdaas.org/vald/ngt/insert_vcache_count", "NGT insert vcache count", metrics.UnitDimensionless),
-		deleteVCacheCount:     *metrics.Int64("vdaas.org/vald/ngt/delete_vcache_count", "NGT delete vcache count", metrics.UnitDimensionless),
-		isIndexing:            *metrics.Int64("vdaas.org/vald/ngt/is_indexing", "currently indexing or not", metrics.UnitDimensionless),
+		indexCount:            *metrics.Int64(metrics.ValdOrg+"/ngt/index_count", "NGT index count", metrics.UnitDimensionless),
+		uncommittedIndexCount: *metrics.Int64(metrics.ValdOrg+"/ngt/uncommitted_index_count", "NGT uncommitted index count", metrics.UnitDimensionless),
+		insertVCacheCount:     *metrics.Int64(metrics.ValdOrg+"/ngt/insert_vcache_count", "NGT insert vcache count", metrics.UnitDimensionless),
+		deleteVCacheCount:     *metrics.Int64(metrics.ValdOrg+"/ngt/delete_vcache_count", "NGT delete vcache count", metrics.UnitDimensionless),
+		isIndexing:            *metrics.Int64(metrics.ValdOrg+"/ngt/is_indexing", "currently indexing or not", metrics.UnitDimensionless),
 	}
+}
+
+func (n *ngtMetrics) MeasurementsCount() int {
+	cnt := 0
+	rv := reflect.ValueOf(*n)
+	for i := 0; i < rv.NumField(); i++ {
+		if metrics.IsMeasureType(rv.Field(i).Type()) {
+			cnt++
+		}
+	}
+	return cnt
 }
 
 func (n *ngtMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, error) {

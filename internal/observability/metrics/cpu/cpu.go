@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"reflect"
 	"strconv"
 
 	"github.com/shirou/gopsutil/cpu"
@@ -73,9 +74,9 @@ func NewMetric() (metrics.Metric, error) {
 		process:      p,
 		infoStats:    infoStats,
 		infoStatKeys: infoStatKeys,
-		cpuInfo:      *metrics.Int64("vdaas.org/vald/cpu/info", "cpu info", metrics.UnitDimensionless),
-		cpuPercent:   *metrics.Float64("vdaas.org/vald/cpu/utilization", "cpu utilization", metrics.UnitDimensionless),
-		numThreads:   *metrics.Int64("vdaas.org/vald/thread/count", "number of threads", metrics.UnitDimensionless),
+		cpuInfo:      *metrics.Int64(metrics.ValdOrg+"/cpu/info", "cpu info", metrics.UnitDimensionless),
+		cpuPercent:   *metrics.Float64(metrics.ValdOrg+"/cpu/utilization", "cpu utilization", metrics.UnitDimensionless),
+		numThreads:   *metrics.Int64(metrics.ValdOrg+"/thread/count", "number of threads", metrics.UnitDimensionless),
 	}, nil
 }
 
@@ -104,6 +105,17 @@ func infoStatsLabelKeys() (map[string]metrics.Key, error) {
 		info[kstr] = k
 	}
 	return info, nil
+}
+
+func (c *cpuInfo) MeasurementsCount() int {
+	cnt := 0
+	rv := reflect.ValueOf(*c)
+	for i := 0; i < rv.NumField(); i++ {
+		if metrics.IsMeasureType(rv.Field(i).Type()) {
+			cnt++
+		}
+	}
+	return cnt
 }
 
 func (c *cpuInfo) Measurement(ctx context.Context) ([]metrics.Measurement, error) {

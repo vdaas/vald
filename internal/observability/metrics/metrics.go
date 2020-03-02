@@ -19,6 +19,7 @@ package metrics
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/vdaas/vald/internal/errors"
 	"go.opencensus.io/stats"
@@ -40,6 +41,8 @@ var (
 	Sum          = view.Sum
 
 	NewKey = tag.NewKey
+
+	ValdOrg = "vald.vdaas.org"
 )
 
 type Measurement = stats.Measurement
@@ -56,6 +59,7 @@ type MeasurementWithTags struct {
 }
 
 type Metric interface {
+	MeasurementsCount() int
 	Measurement(ctx context.Context) ([]Measurement, error)
 	MeasurementWithTags(ctx context.Context) ([]MeasurementWithTags, error)
 	View() []*View
@@ -69,8 +73,7 @@ func Record(ctx context.Context, ms ...Measurement) {
 	stats.Record(ctx, ms...)
 }
 
-func RecordWithTags(ctx context.Context, mwts ...MeasurementWithTags) error {
-	var errs error
+func RecordWithTags(ctx context.Context, mwts ...MeasurementWithTags) (errs error) {
 	for _, mwt := range mwts {
 		mutators := make([]tag.Mutator, 0, len(mwt.Tags))
 		for k, v := range mwt.Tags {
@@ -82,4 +85,14 @@ func RecordWithTags(ctx context.Context, mwts ...MeasurementWithTags) error {
 		}
 	}
 	return errs
+}
+
+func IsMeasureType(t reflect.Type) bool {
+	switch t.Name() {
+	case "Int64Measure":
+		return true
+	case "Float64Measure":
+		return true
+	}
+	return false
 }

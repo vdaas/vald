@@ -19,6 +19,7 @@ package mem
 
 import (
 	"context"
+	"reflect"
 	"runtime"
 
 	"github.com/vdaas/vald/internal/observability/metrics"
@@ -36,14 +37,25 @@ type memory struct {
 
 func NewMetric() metrics.Metric {
 	return &memory{
-		alloc:        *metrics.Int64("vdaas.org/vald/memory/alloc", "currently allocated number of bytes on the heap", metrics.UnitBytes),
-		totalAlloc:   *metrics.Int64("vdaas.org/vald/memory/alloc_total", "cumulative bytes allocated for heap objects", metrics.UnitBytes),
-		sys:          *metrics.Int64("vdaas.org/vald/memory/sys", "total bytes of memory obtained from the OS", metrics.UnitBytes),
-		mallocs:      *metrics.Int64("vdaas.org/vald/memory/mallocs_total", "the cumulative count of heap objects allocated", metrics.UnitDimensionless),
-		frees:        *metrics.Int64("vdaas.org/vald/memory/frees_total", "the cumulative count of heap objects freed", metrics.UnitDimensionless),
-		pauseTotalMs: *metrics.Float64("vdaas.org/vald/memory/pause_ms_total", "the cumulative milliseconds in GC", metrics.UnitMilliseconds),
-		numGC:        *metrics.Int64("vdaas.org/vald/memory/gc_count", "the number of completed GC cycles", metrics.UnitDimensionless),
+		alloc:        *metrics.Int64(metrics.ValdOrg+"/memory/alloc", "currently allocated number of bytes on the heap", metrics.UnitBytes),
+		totalAlloc:   *metrics.Int64(metrics.ValdOrg+"/memory/alloc_total", "cumulative bytes allocated for heap objects", metrics.UnitBytes),
+		sys:          *metrics.Int64(metrics.ValdOrg+"/memory/sys", "total bytes of memory obtained from the OS", metrics.UnitBytes),
+		mallocs:      *metrics.Int64(metrics.ValdOrg+"/memory/mallocs_total", "the cumulative count of heap objects allocated", metrics.UnitDimensionless),
+		frees:        *metrics.Int64(metrics.ValdOrg+"/memory/frees_total", "the cumulative count of heap objects freed", metrics.UnitDimensionless),
+		pauseTotalMs: *metrics.Float64(metrics.ValdOrg+"/memory/pause_ms_total", "the cumulative milliseconds in GC", metrics.UnitMilliseconds),
+		numGC:        *metrics.Int64(metrics.ValdOrg+"/memory/gc_count", "the number of completed GC cycles", metrics.UnitDimensionless),
 	}
+}
+
+func (m *memory) MeasurementsCount() int {
+	cnt := 0
+	rv := reflect.ValueOf(*m)
+	for i := 0; i < rv.NumField(); i++ {
+		if metrics.IsMeasureType(rv.Field(i).Type()) {
+			cnt++
+		}
+	}
+	return cnt
 }
 
 func (m *memory) Measurement(ctx context.Context) ([]metrics.Measurement, error) {

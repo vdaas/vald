@@ -52,14 +52,13 @@ func New(opts ...JaegerOption) (j Jaeger, err error) {
 	}, nil
 }
 
-func (e *exporter) Start(ctx context.Context) error {
-	ex, err := jaeger.NewExporter(e.options)
+func (e *exporter) Start(ctx context.Context) (err error) {
+	e.exporter, err = jaeger.NewExporter(e.options)
 	if err != nil {
 		return err
 	}
 
-	e.exporter = ex
-	trace.RegisterExporter(ex)
+	trace.RegisterExporter(e.exporter)
 
 	return nil
 }

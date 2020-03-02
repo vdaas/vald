@@ -50,9 +50,6 @@ type NGT struct {
 
 	// EnableInMemoryMode enables on memory ngt indexing mode
 	EnableInMemoryMode bool `yaml:"enable_in_memory_mode" json:"enable_in_memory_mode"`
-
-	// EnableMetrics enables to collect metrics
-	EnableMetrics bool `yaml:"enable_metrics" json:"enable_metrics"`
 }
 
 func (n *NGT) Bind() *NGT {

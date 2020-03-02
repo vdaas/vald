@@ -47,26 +47,27 @@ func WithErrGroup(eg errgroup.Group) CollectorOption {
 
 func WithDuration(dur string) CollectorOption {
 	return func(c *collector) error {
-		if dur != "" {
-			d, err := timeutil.Parse(dur)
-			if err != nil {
-				return err
-			}
-
-			c.duration = d
+		if dur == "" {
+			return nil
 		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+		c.duration = d
 		return nil
 	}
 }
 
 func WithMetrics(metrics ...metrics.Metric) CollectorOption {
 	return func(c *collector) error {
-		if metrics != nil {
-			if c.metrics != nil && len(c.metrics) > 0 {
-				c.metrics = append(c.metrics, metrics...)
-			} else {
-				c.metrics = metrics
-			}
+		if metrics == nil {
+			return nil
+		}
+		if c.metrics != nil && len(c.metrics) > 0 {
+			c.metrics = append(c.metrics, metrics...)
+		} else {
+			c.metrics = metrics
 		}
 		return nil
 	}

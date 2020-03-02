@@ -150,4 +150,3 @@ ngt:
   creation_edge_size: 20
   search_edge_size: 10
   enable_in_memory_mode: true
-  enable_metrics: true

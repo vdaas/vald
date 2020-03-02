@@ -22,6 +22,7 @@ import (
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/collector"
 	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
 	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
@@ -113,26 +114,40 @@ func New(opts ...Option) (Observability, error) {
 }
 
 func (o *observability) PreStart(ctx context.Context) (err error) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer func() {
+		if err != nil {
+			cancel()
+		}
+	}()
+
 	err = metrics.RegisterView(grpc.DefaultServerViews...)
 	if err != nil {
 		return err
+	}
+
+	if o.collector == nil {
+		return errors.ErrCollectorNotFound()
 	}
 	err = o.collector.PreStart(ctx)
 	if err != nil {
 		return err
 	}
+
 	if o.prometheus != nil {
 		err = o.prometheus.Start(ctx)
 		if err != nil {
 			return err
 		}
 	}
+
 	if o.jaeger != nil {
 		err = o.jaeger.Start(ctx)
 		if err != nil {
 			return err
 		}
 	}
+
 	if o.tracer != nil {
 		o.tracer.Start(ctx)
 	}

@@ -19,6 +19,7 @@ package runtime
 
 import (
 	"context"
+	"reflect"
 	"runtime"
 
 	"github.com/vdaas/vald/internal/observability/metrics"
@@ -30,26 +31,37 @@ type cgo struct {
 
 func NewCGOMetrics() metrics.Metric {
 	return &cgo{
-		count: *metrics.Int64("vdaas.org/vald/runtime/cgo_call_count", "number of cgo call", metrics.UnitDimensionless),
+		count: *metrics.Int64(metrics.ValdOrg+"/runtime/cgo_call_count", "number of cgo call", metrics.UnitDimensionless),
 	}
 }
 
-func (n *cgo) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
+func (c *cgo) MeasurementsCount() int {
+	cnt := 0
+	rv := reflect.ValueOf(*c)
+	for i := 0; i < rv.NumField(); i++ {
+		if metrics.IsMeasureType(rv.Field(i).Type()) {
+			cnt++
+		}
+	}
+	return cnt
+}
+
+func (c *cgo) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
 	return []metrics.Measurement{
-		n.count.M(int64(runtime.NumCgoCall())),
+		c.count.M(int64(runtime.NumCgoCall())),
 	}, nil
 }
 
-func (n *cgo) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
+func (c *cgo) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
 	return []metrics.MeasurementWithTags{}, nil
 }
 
-func (n *cgo) View() []*metrics.View {
+func (c *cgo) View() []*metrics.View {
 	return []*metrics.View{
 		&metrics.View{
 			Name:        "cgo_call_count",
 			Description: "number of cgo call",
-			Measure:     &n.count,
+			Measure:     &c.count,
 			Aggregation: metrics.Count(),
 		},
 	}

@@ -53,7 +53,12 @@ func New(opts ...CollectorOption) (Collector, error) {
 }
 
 func (c *collector) PreStart(ctx context.Context) error {
-	return registerView(c.metrics...)
+	views := make([]*metrics.View, 0, len(c.metrics))
+	for _, metric := range c.metrics {
+		views = append(views, metric.View()...)
+	}
+
+	return metrics.RegisterView(views...)
 }
 
 func (c *collector) Start(ctx context.Context) <-chan error {
@@ -84,17 +89,22 @@ func (c *collector) Stop(ctx context.Context) {
 }
 
 func (c *collector) collect(ctx context.Context) (err error) {
-	measurements := make([]metrics.Measurement, 0)
-	measurementsWithTags := make([]metrics.MeasurementWithTags, 0)
-	var ms []metrics.Measurement
-	var mwts []metrics.MeasurementWithTags
+	cnt := 0
 	for _, metric := range c.metrics {
-		ms, err = metric.Measurement(ctx)
+		measurementsCount := metric.MeasurementsCount()
+		if cnt < measurementsCount {
+			cnt = measurementsCount
+		}
+	}
+	measurements := make([]metrics.Measurement, 0, len(c.metrics)*cnt)
+	measurementsWithTags := make([]metrics.MeasurementWithTags, 0, len(c.metrics)*cnt)
+	for _, metric := range c.metrics {
+		ms, err := metric.Measurement(ctx)
 		if err != nil {
 			return err
 		}
 		measurements = append(measurements, ms...)
-		mwts, err = metric.MeasurementWithTags(ctx)
+		mwts, err := metric.MeasurementWithTags(ctx)
 		if err != nil {
 			return err
 		}
@@ -103,13 +113,4 @@ func (c *collector) collect(ctx context.Context) (err error) {
 
 	metrics.Record(ctx, measurements...)
 	return metrics.RecordWithTags(ctx, measurementsWithTags...)
-}
-
-func registerView(ms ...metrics.Metric) error {
-	views := make([]*metrics.View, 0, len(ms))
-	for _, metric := range ms {
-		views = append(views, metric.View()...)
-	}
-
-	return metrics.RegisterView(views...)
 }
