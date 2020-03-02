@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"os"
+	"log"
 	"time"
 
 	"github.com/kpango/fuid"
+	"github.com/kpango/glg"
 	"github.com/vdaas/vald-client-go/gateway/vald"
 	"github.com/vdaas/vald-client-go/payload"
 
-	"github.com/cheggaaa/pb/v3"
 	"gonum.org/v1/hdf5"
 	"google.golang.org/grpc"
 )
@@ -35,7 +35,9 @@ var searchConfig = payload.Search_Config{
 }
 
 func init() {
+	/**
 
+	**/
 	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
 	flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "set gRPC server address")
 	flag.UintVar(&indexingWaitSeconds, "wait", 60, "set indexing wait seconds")
@@ -43,60 +45,61 @@ func init() {
 }
 
 func main() {
-	if err := run(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-}
+	/**
 
-func run() error {
+	**/
 	ids, train, test, err := load(datasetPath)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	ctx := context.Background()
 
+	/**
+
+
+	**/
 	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 	client := vald.NewValdClient(conn)
 
-	bar := pb.StartNew(insertCont)
-	fmt.Println("Start Inserting: ")
+	/**
 
+
+	**/
 	for i := range ids[:insertCont] {
-		bar.Increment()
+		glg.Infof("\r")
 
 		_, err := client.Insert(ctx, &payload.Object_Vector{
 			Id:     ids[i],
 			Vector: train[i],
 		})
 		if err != nil {
-			return err
+			log.Fatal(err)
 		}
 	}
 
-	bar.Finish()
 	fmt.Printf("Finish Inserting. \n\n")
 	fmt.Println("Wait for indexing to finish")
 	time.Sleep(time.Duration(indexingWaitSeconds) * time.Second)
 
+	/**
+
+	**/
 	for _, vec := range test[:testCount] {
 		res, err := client.Search(ctx, &payload.Search_Request{
 			Vector: vec,
 			Config: &searchConfig,
 		})
 		if err != nil {
-			return err
+			log.Fatal(err)
 		}
 
 		b, _ := json.MarshalIndent(res.GetResults(), "", " ")
 		fmt.Printf("results : %v\n\n", string(b))
 	}
-
-	return nil
 }
 
 func load(path string) (ids []string, train, test [][]float32, err error) {
