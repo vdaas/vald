@@ -44,7 +44,7 @@ func init() {
 func main() {
 	/**
 	Gets training data, test data and ids based on the dataset path.
-	Ids and training data lengths are equal.
+	the number of ids is equal to the number of training dataset.
 	**/
 	ids, train, test, err := load(datasetPath)
 	if err != nil {
