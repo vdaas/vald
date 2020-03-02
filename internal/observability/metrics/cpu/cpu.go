@@ -54,7 +54,7 @@ type cpuInfo struct {
 	numThreads   metrics.Int64Measure
 }
 
-func NewMetric() (metrics.Metric, error) {
+func New() (metrics.Metric, error) {
 	p, err := process.NewProcess(int32(os.Getpid()))
 	if err != nil {
 		return nil, err

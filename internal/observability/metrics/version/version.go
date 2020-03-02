@@ -36,7 +36,7 @@ type version struct {
 	kvs  map[metrics.Key]string
 }
 
-func NewMetric() (metrics.Metric, error) {
+func New() (metrics.Metric, error) {
 	kvs, err := labelKVs()
 	if err != nil {
 		return nil, err

@@ -20,7 +20,7 @@ time_zone: JST
 logging:
   logger: glg
   level: debug
-  format: raw
+  format: json
 server_config:
   servers:
   - name: agent-rest
@@ -85,22 +85,9 @@ server_config:
       read_header_timeout: 1s
       read_timeout: 1s
       write_timeout: 1s
-  - name: prometheus
-    host: 127.0.0.1
-    port: 6061
-    mode: REST
-    probe_wait_time: 3s
-    http:
-      shutdown_duration: 5s
-      handler_timeout: 5s
-      idle_timeout: 2s
-      read_header_timeout: 1s
-      read_timeout: 1s
-      write_timeout: 1s
   startup_strategy:
   - livenesss
   - pprof
-  - prometheus
   - agent-grpc
   - agent-rest
   - readiness
@@ -108,7 +95,6 @@ server_config:
   - readiness
   - agent-rest
   - agent-grpc
-  - prometheus
   - pprof
   - livenesss
   full_shutdown_duration: 600s
@@ -117,30 +103,6 @@ server_config:
     cert: /path/to/cert
     key: /path/to/key
     ca: /path/to/ca
-observability:
-  enabled: true
-  collector:
-    duration: 3s
-    metrics:
-      enable_version_info: true
-      enable_cpu: true
-      enable_memory: true
-      enable_goroutine: true
-      enable_cgo: true
-  trace:
-    enabled: true
-    sampling_rate: 1.0
-  prometheus:
-    enabled: true
-  jaeger:
-    enabled: false
-    collector_endpoint: "" # http://jaeger-collector.default.svc.cluster.local:14268/api/traces
-    agent_endpoint: jaeger-agent.default.svc.cluster.local:6831
-    username: ""
-    password: ""
-    service_name: vald
-    buffer_max_count: 10
-
 ngt:
   # index_path: /path/to/index
   dimension: 4096

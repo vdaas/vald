@@ -34,7 +34,7 @@ type ngtMetrics struct {
 	isIndexing            metrics.Int64Measure
 }
 
-func NewNGTMetrics(n service.NGT) metrics.Metric {
+func New(n service.NGT) metrics.Metric {
 	return &ngtMetrics{
 		ngt:                   n,
 		indexCount:            *metrics.Int64(metrics.ValdOrg+"/ngt/index_count", "NGT index count", metrics.UnitDimensionless),

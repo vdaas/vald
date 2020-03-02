@@ -75,7 +75,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
-			ngtmetrics.NewNGTMetrics(ngt),
+			ngtmetrics.New(ngt),
 		)
 		if err != nil {
 			return nil, err

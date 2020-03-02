@@ -35,7 +35,7 @@ type memory struct {
 	numGC        metrics.Int64Measure
 }
 
-func NewMetric() metrics.Metric {
+func New() metrics.Metric {
 	return &memory{
 		alloc:        *metrics.Int64(metrics.ValdOrg+"/memory/alloc", "currently allocated number of bytes on the heap", metrics.UnitBytes),
 		totalAlloc:   *metrics.Int64(metrics.ValdOrg+"/memory/alloc_total", "cumulative bytes allocated for heap objects", metrics.UnitBytes),

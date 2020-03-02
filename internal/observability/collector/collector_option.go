@@ -78,7 +78,7 @@ func WithVersionInfo(enabled bool) CollectorOption {
 		if !enabled {
 			return nil
 		}
-		versionInfo, err := version.NewMetric()
+		versionInfo, err := version.New()
 		if err != nil {
 			return err
 		}
@@ -91,7 +91,7 @@ func WithCPUMetrics(enabled bool) CollectorOption {
 		if !enabled {
 			return nil
 		}
-		cpu, err := cpu.NewMetric()
+		cpu, err := cpu.New()
 		if err != nil {
 			return err
 		}
@@ -104,7 +104,7 @@ func WithMemoryMetrics(enabled bool) CollectorOption {
 		if !enabled {
 			return nil
 		}
-		return WithMetrics(mem.NewMetric())(c)
+		return WithMetrics(mem.New())(c)
 	}
 }
 
