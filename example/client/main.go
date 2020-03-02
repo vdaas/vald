@@ -68,8 +68,8 @@ func main() {
 	Starts inserting vectors specified by insertCount(400).
 	**/
 	for i := range ids[:insertCont] {
-		// Call `Insert` function of vald client.
-		// Send vector, id to server via gRPC.
+		// Calls `Insert` function of vald client.
+		// Sends vector, id to server via gRPC.
 		_, err := client.Insert(ctx, &payload.Object_Vector{
 			Id:     ids[i],
 			Vector: train[i],
@@ -88,8 +88,8 @@ func main() {
 	In this example, gets 10 approximate vectors.
 	**/
 	for _, vec := range test[:testCount] {
-		// Call `Search` function of vald client.
-		// Send vector, configuration object to server via gRPC.
+		// Calls `Search` function of vald client.
+		// Sends vector, configuration object to server via gRPC.
 		res, err := client.Search(ctx, &payload.Search_Request{
 			Vector: vec,
 			// Conditions for hitting the search.
