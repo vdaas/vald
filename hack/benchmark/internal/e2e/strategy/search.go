@@ -54,10 +54,10 @@ func (s *search) runParallel(ctx context.Context, b *testing.B, c client.Client,
 		bb.ResetTimer()
 		bb.StartTimer()
 		bb.RunParallel(func(pb *testing.PB) {
-			i := 0
+			cnt := 0
 			for pb.Next() {
-				s.do(ctx, b, c, queries[i%len(queries)])
-				i++
+				s.do(ctx, b, c, queries[cnt%len(queries)])
+				cnt++
 			}
 		})
 		bb.StopTimer()

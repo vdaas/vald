@@ -30,6 +30,7 @@ func (isrt *insert) Run(ctx context.Context, b *testing.B, c client.Client, data
 }
 
 func (isrt *insert) run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+	cnt := 0
 	b.Run("Insert", func(bb *testing.B) {
 		ids, train := dataset.IDs(), dataset.Train()
 
@@ -38,7 +39,8 @@ func (isrt *insert) run(ctx context.Context, b *testing.B, c client.Client, data
 		bb.ResetTimer()
 		bb.StartTimer()
 		for i := 0; i < bb.N; i++ {
-			isrt.do(ctx, bb, c, ids[i%len(ids)], train[i%len(train)])
+			isrt.do(ctx, bb, c, ids[cnt%len(ids)], train[cnt%len(train)])
+			cnt++
 		}
 		bb.StopTimer()
 	})
@@ -53,10 +55,10 @@ func (isrt *insert) runParallel(ctx context.Context, b *testing.B, c client.Clie
 		bb.ResetTimer()
 		bb.StartTimer()
 		bb.RunParallel(func(pb *testing.PB) {
-			i := 0
+			cnt := 0
 			for pb.Next() {
-				isrt.do(ctx, bb, c, ids[i%len(ids)], train[i%len(train)])
-				i++
+				isrt.do(ctx, bb, c, ids[cnt%len(ids)], train[cnt%len(train)])
+				cnt++
 			}
 		})
 		bb.StopTimer()
