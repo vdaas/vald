@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-// Package runtime provides functions for runtime stats
-package runtime
+// Package cgo provides functions for runtime cgo stats
+package cgo
 
 import (
 	"context"
@@ -28,7 +28,7 @@ type cgo struct {
 	count metrics.Int64Measure
 }
 
-func NewCGOMetrics() metrics.Metric {
+func New() metrics.Metric {
 	return &cgo{
 		count: *metrics.Int64(metrics.ValdOrg+"/runtime/cgo_call_count", "number of cgo call", metrics.UnitDimensionless),
 	}

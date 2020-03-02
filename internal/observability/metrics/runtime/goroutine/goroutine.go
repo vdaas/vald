@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-// Package runtime provides functions for runtime stats
-package runtime
+// Package goroutine provides functions for goroutine runtime stats
+package goroutine
 
 import (
 	"context"
@@ -28,7 +28,7 @@ type goroutines struct {
 	count metrics.Int64Measure
 }
 
-func NewGoroutineMetrics() metrics.Metric {
+func New() metrics.Metric {
 	return &goroutines{
 		count: *metrics.Int64(metrics.ValdOrg+"/runtime/goroutine_count", "number of goroutines", metrics.UnitDimensionless),
 	}

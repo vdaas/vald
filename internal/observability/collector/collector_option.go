@@ -22,7 +22,8 @@ import (
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/observability/metrics/cpu"
 	"github.com/vdaas/vald/internal/observability/metrics/mem"
-	"github.com/vdaas/vald/internal/observability/metrics/runtime"
+	"github.com/vdaas/vald/internal/observability/metrics/runtime/cgo"
+	"github.com/vdaas/vald/internal/observability/metrics/runtime/goroutine"
 	"github.com/vdaas/vald/internal/observability/metrics/version"
 	"github.com/vdaas/vald/internal/timeutil"
 )
@@ -113,7 +114,7 @@ func WithGoroutineMetrics(enabled bool) CollectorOption {
 		if !enabled {
 			return nil
 		}
-		return WithMetrics(runtime.NewGoroutineMetrics())(c)
+		return WithMetrics(goroutine.New())(c)
 	}
 }
 
@@ -122,6 +123,6 @@ func WithCGOMetrics(enabled bool) CollectorOption {
 		if !enabled {
 			return nil
 		}
-		return WithMetrics(runtime.NewCGOMetrics())(c)
+		return WithMetrics(cgo.New())(c)
 	}
 }

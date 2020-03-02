@@ -75,8 +75,8 @@ func (c *collector) Start(ctx context.Context) <-chan error {
 			case <-tick.C:
 				err := c.collect(ctx)
 				if err != nil {
-					ech <- err
 					runtime.Gosched()
+					ech <- err
 				}
 			}
 		}
