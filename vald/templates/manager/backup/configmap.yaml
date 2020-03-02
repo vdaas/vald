@@ -28,6 +28,9 @@ data:
     server_config:
       {{- $servers := dict "Values" .Values.backupManager.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
+    observability:
+      {{- $observability := dict "Values" .Values.backupManager.observability "default" .Values.defaults.observability }}
+      {{- include "vald.observability" $observability | nindent 6 }}
     {{- if .Values.backupManager.mysql.enabled }}
     mysql_config:
       {{- toYaml .Values.backupManager.mysql.config | nindent 6 }}

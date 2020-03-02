@@ -148,6 +148,12 @@ ports:
     protocol: TCP
     containerPort: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
   {{- end }}
+  {{- $prometheusEnabled := default .default.metrics.prometheus.enabled .Values.metrics.prometheus.enabled }}
+  {{- if $prometheusEnabled }}
+  - name: prometheus
+    protocol: TCP
+    containerPort: {{ default .default.metrics.prometheus.port .Values.metrics.prometheus.port }}
+  {{- end }}
 {{- end -}}
 
 {/*
@@ -181,6 +187,13 @@ ports:
   - name: pprof
     port: {{ default .default.metrics.pprof.servicePort .Values.metrics.pprof.servicePort }}
     targetPort: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
+    protocol: TCP
+  {{- end }}
+  {{- $prometheusEnabled := default .default.metrics.prometheus.enabled .Values.metrics.prometheus.enabled }}
+  {{- if $prometheusEnabled }}
+  - name: prometheus
+    port: {{ default .default.metrics.prometheus.servicePort .Values.metrics.prometheus.servicePort }}
+    targetPort: {{ default .default.metrics.prometheus.port .Values.metrics.prometheus.port }}
     protocol: TCP
   {{- end }}
 {{- end -}}
@@ -322,12 +335,38 @@ metrics_servers:
     {{- toYaml .default.metrics.pprof.server | nindent 4 }}
     {{- end }}
   {{- end }}
+  {{- $prometheusEnabled := default .default.metrics.prometheus.enabled .Values.metrics.prometheus.enabled }}
+  {{- if $prometheusEnabled }}
+  - name: prometheus
+    host: {{ default .default.metrics.prometheus.host .Values.metrics.prometheus.host }}
+    port: {{ default .default.metrics.prometheus.port .Values.metrics.prometheus.port }}
+    {{- if .Values.metrics.prometheus.server }}
+    mode: {{ default .default.metrics.prometheus.server.mode .Values.metrics.prometheus.server.mode }}
+    probe_wait_time: {{ default .default.metrics.prometheus.server.probe_wait_time .Values.metrics.prometheus.server.probe_wait_time }}
+    http:
+      {{- if .Values.metrics.prometheus.server.http }}
+      shutdown_duration: {{ default .default.metrics.prometheus.server.http.shutdown_duration .Values.metrics.prometheus.server.http.shutdown_duration }}
+      handler_timeout: {{ default .default.metrics.prometheus.server.http.handler_timeout .Values.metrics.prometheus.server.http.handler_timeout }}
+      idle_timeout: {{ default .default.metrics.prometheus.server.http.idle_timeout .Values.metrics.prometheus.server.http.idle_timeout }}
+      read_header_timeout: {{ default .default.metrics.prometheus.server.http.read_header_timeout .Values.metrics.prometheus.server.http.read_header_timeout }}
+      read_timeout: {{ default .default.metrics.prometheus.server.http.read_timeout .Values.metrics.prometheus.server.http.read_timeout }}
+      write_timeout: {{ default .default.metrics.prometheus.server.http.write_timeout .Values.metrics.prometheus.server.http.write_timeout }}
+      {{- else }}
+      {{- toYaml .default.metrics.prometheus.server.http | nindent 6 }}
+      {{- end }}
+    {{- else }}
+    {{- toYaml .default.metrics.prometheus.server | nindent 4 }}
+    {{- end }}
+  {{- end }}
 startup_strategy:
   {{- if $livenessEnabled }}
   - liveness
   {{- end }}
   {{- if $pprofEnabled }}
   - pprof
+  {{- end }}
+  {{- if $prometheusEnabled }}
+  - prometheus
   {{- end }}
   {{- if $grpcEnabled }}
   - grpc
@@ -434,6 +473,54 @@ tls:
   ca: {{ default .default.tls.ca .Values.tls.ca }}
   {{- else }}
   {{- toYaml .default.tls | nindent 2 }}
+  {{- end }}
+{{- end -}}
+
+{{/*
+observability
+*/}}
+{{- define "vald.observability" -}}
+enabled: {{ default .default.enabled .Values.enabled }}
+collector:
+  {{- if .Values.collector }}
+  duration: {{ default .default.collector.duration .Values.collector.duration }}
+  metrics:
+    {{- if .Values.collector.metrics }}
+      enable_version_info: {{ default .default.collector.metrics.enable_version_info .Values.collector.metrics.enable_version_info }}
+      enable_cpu: {{ default .default.collector.metrics.enable_cpu .Values.collector.metrics.enable_cpu }}
+      enable_memory: {{ default .default.collector.metrics.enable_memory .Values.collector.metrics.enable_memory }}
+      enable_goroutine: {{ default .default.collector.metrics.enable_goroutine .Values.collector.metrics.enable_goroutine }}
+      enable_cgo: {{ default .default.collector.metrics.enable_cgo .Values.collector.metrics.enable_cgo }}
+    {{- else }}
+    {{- toYaml .default.collector.metrics | nindent 4 }}
+    {{- end }}
+  {{- else }}
+  {{- toYaml .default.collector | nindent 2 }}
+  {{- end }}
+trace:
+  {{- if .Values.trace }}
+  enabled: {{ default .default.trace.enabled .Values.trace.enabled }}
+  sampling_rate: {{ default .default.trace.sampling_rate .Values.trace.sampling_rate }}
+  {{- else }}
+  {{- toYaml .default.trace | nindent 2 }}
+  {{- end }}
+prometheus:
+  {{- if .Values.prometheus }}
+    enabled: {{ default .default.prometheus.enabled .Values.prometheus.enabled }}
+  {{- else }}
+  {{- toYaml .default.prometheus | nindent 2 }}
+  {{- end }}
+jaeger:
+  {{- if .Values.jaeger }}
+    enabled: {{ default .default.jaeger.enabled .Values.jaeger.enabled }}
+    collector_endpoint: {{ default .default.jaeger.collector_endpoint .Values.jaeger.collector_endpoint }}
+    agent_endpoint: {{ default .default.jaeger.agent_endpoint .Values.jaeger.agent_endpoint }}
+    username: {{ default .default.jaeger.username .Values.jaeger.username }}
+    password: {{ default .default.jaeger.password .Values.jaeger.password }}
+    service_name: {{ default .default.jaeger.service_name .Values.jaeger.service_name }}
+    buffer_max_count: {{ default .default.jaeger.buffer_max_count .Values.jaeger.buffer_max_count }}
+  {{- else }}
+  {{- toYaml .default.jaeger | nindent 2 }}
   {{- end }}
 {{- end -}}
 

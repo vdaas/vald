@@ -171,6 +171,40 @@ k8s/external/scylla/remove:
 	-kubectl delete -f k8s/external/scylla
 	-kubectl delete configmap cassandra-initdb
 
+.PHONY: k8s/metrics/metrics-server/deploy
+## deploy metrics-serrver
+k8s/metrics/metrics-server/deploy:
+	kubectl apply -f k8s/metrics/metrics-server
+
+.PHONY: k8s/metrics/metrics-server/remove
+## remove metrics-serrver
+k8s/metrics/metrics-server/remove:
+	-kubectl delete -f k8s/metrics/metrics-server
+
+.PHONY: k8s/metrics/prometheus/deploy
+## deploy prometheus and grafana
+k8s/metrics/prometheus/deploy:
+	kubectl apply -f k8s/metrics/prometheus
+	kubectl create configmap grafana-dashboards --from-file=k8s/metrics/grafana/dashboards/
+	kubectl apply -f k8s/metrics/grafana
+
+.PHONY: k8s/metrics/prometheus/remove
+## remove prometheus and grafana
+k8s/metrics/prometheus/remove:
+	-kubectl delete -f k8s/metrics/prometheus
+	-kubectl delete configmap grafana-dashboards
+	-kubectl delete -f k8s/metrics/grafana
+
+.PHONY: k8s/metrics/jaeger/deploy
+## deploy jaeger
+k8s/metrics/jaeger/deploy:
+	kubectl apply -f k8s/metrics/jaeger
+
+.PHONY: k8s/metrics/jaeger/remove
+## remove jaeger
+k8s/metrics/jaeger/remove:
+	-kubectl delete -f k8s/metrics/jaeger
+
 .PHONY: k8s/linkerd/deploy
 ## deploy linkerd to k8s
 k8s/linkerd/deploy:

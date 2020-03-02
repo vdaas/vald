@@ -25,6 +25,8 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/metric"
+	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -37,13 +39,14 @@ import (
 )
 
 type run struct {
-	eg       errgroup.Group
-	cfg      *config.Data
-	server   starter.Server
-	filter   service.Filter
-	gateway  service.Gateway
-	metadata service.Meta
-	backup   service.Backup
+	eg            errgroup.Group
+	cfg           *config.Data
+	server        starter.Server
+	observability observability.Observability
+	filter        service.Filter
+	gateway       service.Gateway
+	metadata      service.Meta
+	backup        service.Backup
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
@@ -66,6 +69,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			grpc.New(
 				append(cfg.Gateway.BackupManager.Client.Opts(),
 					grpc.WithErrGroup(eg),
+					grpc.WithDialOptions(
+						grpc.WithStatsHandler(metric.NewClientHandler()),
+					),
 				)...,
 			),
 		),
@@ -82,6 +88,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithDiscovererClient(grpc.New(
 			append(cfg.Gateway.Discoverer.Client.Opts(),
 				grpc.WithErrGroup(eg),
+				grpc.WithDialOptions(
+					grpc.WithStatsHandler(metric.NewClientHandler()),
+				),
 			)...)),
 		discoverer.WithDiscovererHostPort(
 			cfg.Gateway.Discoverer.Host,
@@ -111,6 +120,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			grpc.New(
 				append(cfg.Gateway.Meta.Client.Opts(),
 					grpc.WithErrGroup(eg),
+					grpc.WithDialOptions(
+						grpc.WithStatsHandler(metric.NewClientHandler()),
+					),
 				)...,
 			),
 		),
@@ -132,6 +144,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 				grpc.New(
 					append(ef.Client.Opts(),
 						grpc.WithErrGroup(eg),
+						grpc.WithDialOptions(
+							grpc.WithStatsHandler(metric.NewClientHandler()),
+						),
 					)...,
 				),
 			),
@@ -147,6 +162,30 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		handler.WithReplicationCount(cfg.Gateway.IndexReplica),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
+
+	grpcServerOptions := []server.Option{
+		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+			vald.RegisterValdServer(srv, v)
+		}),
+		server.WithPreStopFunction(func() error {
+			// TODO notify another gateway and scheduler
+			return nil
+		}),
+	}
+
+	var obs observability.Observability
+	if cfg.Observability.Enabled {
+		obs, err = observability.NewWithConfig(cfg.Observability)
+		if err != nil {
+			return nil, err
+		}
+		grpcServerOptions = append(
+			grpcServerOptions,
+			server.WithGRPCOption(
+				grpc.StatsHandler(metric.NewServerHandler()),
+			),
+		)
+	}
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
@@ -164,15 +203,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			}
 		}),
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
-			return []server.Option{
-				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-					vald.RegisterValdServer(srv, v)
-				}),
-				server.WithPreStopFunction(func() error {
-					// TODO notify another gateway and scheduler
-					return nil
-				}),
-			}
+			return grpcServerOptions
 		}),
 		// TODO add GraphQL handler
 	)
@@ -181,24 +212,31 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
-		eg:       eg,
-		cfg:      cfg,
-		server:   srv,
-		filter:   filter,
-		gateway:  gateway,
-		metadata: metadata,
-		backup:   backup,
+		eg:            eg,
+		cfg:           cfg,
+		server:        srv,
+		observability: obs,
+		filter:        filter,
+		gateway:       gateway,
+		metadata:      metadata,
+		backup:        backup,
 	}, nil
 }
 
 func (r *run) PreStart(ctx context.Context) error {
+	if r.observability != nil {
+		return r.observability.PreStart(ctx)
+	}
 	return nil
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 5)
-	var bech, fech, mech, gech, sech <-chan error
+	ech := make(chan error, 6)
+	var bech, fech, mech, gech, sech, oech <-chan error
 	var err error
+	if r.observability != nil {
+		oech = r.observability.Start(ctx)
+	}
 	if r.backup != nil {
 		bech, err = r.backup.Start(ctx)
 		if err != nil {
@@ -234,6 +272,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
+			case err = <-oech:
 			case err = <-bech:
 			case err = <-fech:
 			case err = <-gech:
@@ -257,6 +296,9 @@ func (r *run) PreStop(ctx context.Context) error {
 }
 
 func (r *run) Stop(ctx context.Context) error {
+	if r.observability != nil {
+		r.observability.Stop(ctx)
+	}
 	return r.server.Shutdown(ctx)
 }
 
