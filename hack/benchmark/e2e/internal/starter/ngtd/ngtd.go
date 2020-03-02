@@ -60,15 +60,13 @@ func (ns *server) Run(ctx context.Context, tb testing.TB) func() {
 	wg.Add(1)
 	go func() {
 		wg.Done()
-
 		if err := n.ListenAndServe(ns.srvType); err != nil {
 			tb.Errorf("ngtd returned error: %s", err.Error())
 		}
 	}()
 
 	wg.Wait()
-
-	time.Sleep(5 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	return func() {
 		n.Stop()
