@@ -96,12 +96,28 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	idx := handler.New(handler.WithIndexer(indexer))
 
+	grpcServerOptions := []server.Option{
+		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+			index.RegisterIndexServer(srv, idx)
+		}),
+		server.WithPreStopFunction(func() error {
+			// TODO notify another gateway and scheduler
+			return nil
+		}),
+	}
+
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(cfg.Observability)
 		if err != nil {
 			return nil, err
 		}
+		grpcServerOptions = append(
+			grpcServerOptions,
+			server.WithGRPCOption(
+				grpc.StatsHandler(metric.NewServerHandler()),
+			),
+		)
 	}
 
 	srv, err := starter.New(
@@ -120,18 +136,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			}
 		}),
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
-			return []server.Option{
-				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-					index.RegisterIndexServer(srv, idx)
-				}),
-				server.WithGRPCOption(
-					grpc.StatsHandler(metric.NewServerHandler()),
-				),
-				server.WithPreStopFunction(func() error {
-					// TODO notify another gateway and scheduler
-					return nil
-				}),
-			}
+			return grpcServerOptions
 		}),
 		// TODO add GraphQL handler
 	)

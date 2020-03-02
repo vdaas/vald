@@ -56,12 +56,32 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	g := handler.New(handler.WithDiscoverer(dsc))
 
+	grpcServerOptions := []server.Option{
+		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+			discoverer.RegisterDiscovererServer(srv, g)
+		}),
+		server.WithPreStartFunc(func() error {
+			// TODO check unbackupped upstream
+			return nil
+		}),
+		server.WithPreStopFunction(func() error {
+			// TODO backup all index data here
+			return nil
+		}),
+	}
+
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(cfg.Observability)
 		if err != nil {
 			return nil, err
 		}
+		grpcServerOptions = append(
+			grpcServerOptions,
+			server.WithGRPCOption(
+				grpc.StatsHandler(metric.NewServerHandler()),
+			),
+		)
 	}
 
 	srv, err := starter.New(
@@ -81,22 +101,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			}
 		}),
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
-			return []server.Option{
-				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-					discoverer.RegisterDiscovererServer(srv, g)
-				}),
-				server.WithGRPCOption(
-					grpc.StatsHandler(metric.NewServerHandler()),
-				),
-				server.WithPreStartFunc(func() error {
-					// TODO check unbackupped upstream
-					return nil
-				}),
-				server.WithPreStopFunction(func() error {
-					// TODO backup all index data here
-					return nil
-				}),
-			}
+			return grpcServerOptions
 		}),
 		// TODO add GraphQL handler
 	)

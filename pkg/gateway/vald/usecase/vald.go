@@ -163,12 +163,28 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
 
+	grpcServerOptions := []server.Option{
+		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+			vald.RegisterValdServer(srv, v)
+		}),
+		server.WithPreStopFunction(func() error {
+			// TODO notify another gateway and scheduler
+			return nil
+		}),
+	}
+
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(cfg.Observability)
 		if err != nil {
 			return nil, err
 		}
+		grpcServerOptions = append(
+			grpcServerOptions,
+			server.WithGRPCOption(
+				grpc.StatsHandler(metric.NewServerHandler()),
+			),
+		)
 	}
 
 	srv, err := starter.New(
@@ -187,18 +203,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			}
 		}),
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
-			return []server.Option{
-				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-					vald.RegisterValdServer(srv, v)
-				}),
-				server.WithGRPCOption(
-					grpc.StatsHandler(metric.NewServerHandler()),
-				),
-				server.WithPreStopFunction(func() error {
-					// TODO notify another gateway and scheduler
-					return nil
-				}),
-			}
+			return grpcServerOptions
 		}),
 		// TODO add GraphQL handler
 	)
