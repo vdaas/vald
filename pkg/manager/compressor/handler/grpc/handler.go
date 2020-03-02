@@ -47,8 +47,12 @@ func New(opts ...Option) Server {
 }
 
 func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_MetaVector, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/manager-compressor.GetVector")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.GetVector")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	uuid := req.GetUuid()
 	r, err := s.backup.GetObject(ctx, uuid)
 	if err != nil {
@@ -71,8 +75,12 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 }
 
 func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Request) (res *payload.Info_IPs, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/manager-compressor.Locations")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.Locations")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	uuid := req.GetUuid()
 	r, err := s.backup.GetLocation(ctx, uuid)
 	if err != nil {
@@ -86,8 +94,12 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 }
 
 func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) (res *payload.Empty, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/manager-compressor.Register")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.Register")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	uuid := meta.GetUuid()
 	vector, err := s.compressor.Compress(ctx, meta.GetVector())
 	if err != nil {
@@ -112,8 +124,12 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) 
 }
 
 func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) (res *payload.Empty, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/manager-compressor.RegisterMulti")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.RegisterMulti")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	mvs := metas.GetVectors()
 	vectors := make([][]float32, 0, len(mvs))
 	for _, mv := range mvs {
@@ -156,8 +172,12 @@ func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVe
 }
 
 func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request) (res *payload.Empty, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/manager-compressor.Remove")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.Remove")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	uuid := req.GetUuid()
 	err = s.backup.Remove(ctx, uuid)
 	if err != nil {
@@ -169,8 +189,12 @@ func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request)
 }
 
 func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_RequestMulti) (res *payload.Empty, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/manager-compressor.RemoveMulti")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.RemoveMulti")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	uuids := req.GetUuids()
 	err = s.backup.RemoveMultiple(ctx, uuids...)
 	if err != nil {
@@ -182,8 +206,12 @@ func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_Req
 }
 
 func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Register_Request) (res *payload.Empty, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/manager-compressor.RegisterIPs")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.RegisterIPs")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	uuid := req.GetUuid()
 	ips := req.GetIps()
 	err = s.backup.RegisterIPs(ctx, uuid, ips)
@@ -196,8 +224,12 @@ func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Registe
 }
 
 func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Request) (res *payload.Empty, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/manager-compressor.RemoveIPs")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.RemoveIPs")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	ips := req.GetIps()
 	err = s.backup.RemoveIPs(ctx, ips)
 	if err != nil {

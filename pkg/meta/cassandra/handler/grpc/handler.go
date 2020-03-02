@@ -45,8 +45,12 @@ func New(opts ...Option) meta.MetaServer {
 }
 
 func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.Meta_Val, error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/meta-cassandra.GetMeta")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/meta-cassandra.GetMeta")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	val, err := s.cassandra.Get(key.GetKey())
 	if err != nil {
 		if errors.IsErrCassandraNotFound(errors.UnWrapAll(err)) {
@@ -62,8 +66,12 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 }
 
 func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *payload.Meta_Vals, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/meta-cassandra.GetMetas")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/meta-cassandra.GetMetas")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	mv = new(payload.Meta_Vals)
 	mv.Vals, err = s.cassandra.GetMultiple(keys.GetKeys()...)
 	if err != nil {
@@ -78,8 +86,12 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 }
 
 func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*payload.Meta_Key, error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/meta-cassandra.GetMetaInverse")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/meta-cassandra.GetMetaInverse")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	key, err := s.cassandra.GetInverse(val.GetVal())
 	if err != nil {
 		if errors.IsErrCassandraNotFound(errors.UnWrapAll(err)) {
@@ -95,8 +107,12 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 }
 
 func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (mk *payload.Meta_Keys, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/meta-cassandra.GetMetasInverse")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/meta-cassandra.GetMetasInverse")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	mk = new(payload.Meta_Keys)
 	mk.Keys, err = s.cassandra.GetInverseMultiple(vals.GetVals()...)
 	if err != nil {
@@ -111,8 +127,12 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 }
 
 func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *payload.Empty, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/meta-cassandra.SetMeta")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/meta-cassandra.SetMeta")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	err = s.cassandra.Set(kv.GetKey(), kv.GetVal())
 	if err != nil {
 		log.Errorf("[SetMeta]\tunknown error\t%+v", err)
@@ -122,8 +142,12 @@ func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *paylo
 }
 
 func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *payload.Empty, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/meta-cassandra.SetMetas")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/meta-cassandra.SetMetas")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	query := make(map[string]string, len(kvs.GetKvs())/2)
 	for _, kv := range kvs.GetKvs() {
 		query[kv.GetKey()] = kv.GetVal()
@@ -137,8 +161,12 @@ func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *pa
 }
 
 func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payload.Meta_Val, error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/meta-cassandra.DeleteMeta")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/meta-cassandra.DeleteMeta")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	val, err := s.cassandra.Delete(key.GetKey())
 	if err != nil {
 		if errors.IsErrCassandraNotFound(errors.UnWrapAll(err)) {
@@ -154,8 +182,12 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 }
 
 func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *payload.Meta_Vals, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/meta-cassandra.DeleteMetas")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/meta-cassandra.DeleteMetas")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	mv = new(payload.Meta_Vals)
 	mv.Vals, err = s.cassandra.DeleteMultiple(keys.GetKeys()...)
 	if err != nil {
@@ -170,8 +202,12 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 }
 
 func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (*payload.Meta_Key, error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/meta-cassandra.DeleteMetaInverse")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/meta-cassandra.DeleteMetaInverse")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	key, err := s.cassandra.DeleteInverse(val.GetVal())
 	if err != nil {
 		if errors.IsErrCassandraNotFound(errors.UnWrapAll(err)) {
@@ -187,8 +223,12 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 }
 
 func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (mk *payload.Meta_Keys, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/meta-cassandra.DeleteMetasInverse")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/meta-cassandra.DeleteMetasInverse")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	mk = new(payload.Meta_Keys)
 	mk.Keys, err = s.cassandra.DeleteInverseMultiple(vals.GetVals()...)
 	if err != nil {

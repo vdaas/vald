@@ -44,8 +44,12 @@ func New(opts ...Option) discoverer.DiscovererServer {
 }
 
 func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Pods, error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/discoverer-k8s.Pods")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/discoverer-k8s.Pods")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	pods, err := s.dsc.GetPods(req)
 	if err != nil {
 		log.Error(err)
@@ -55,8 +59,12 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 }
 
 func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/discoverer-k8s.Nodes")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/discoverer-k8s.Nodes")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	nodes, err := s.dsc.GetNodes(req)
 	if err != nil {
 		log.Error(err)

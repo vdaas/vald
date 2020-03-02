@@ -62,8 +62,12 @@ func New(opts ...Option) vald.ValdServer {
 }
 
 func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (*payload.Object_ID, error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/gateway-vald.Exists")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.Exists")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	uuid, err := s.metadata.GetUUID(ctx, meta.GetId())
 	if err != nil {
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Exists API meta %s's uuid not found", meta.GetId()), err, meta.GetId(), info.Get())
@@ -74,8 +78,12 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (*payload.
 }
 
 func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/gateway-vald.Search")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.Search")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	return s.search(ctx, req.GetConfig(),
 		func(ctx context.Context, ac agent.AgentClient, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return ac.Search(ctx, req, copts...)
@@ -84,8 +92,12 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (
 	res *payload.Search_Response, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/gateway-vald.SearchByID")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.SearchByID")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	metaID := req.GetId()
 	req.Id, err = s.metadata.GetUUID(ctx, metaID)
 	if err != nil {
@@ -235,8 +247,12 @@ func (s *server) StreamSearch(stream vald.Vald_StreamSearchServer) error {
 	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Search_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			ctx, _, end := trace.StartSpan(ctx, "vald/gateway-vald.StreamSearch")
-			defer end()
+			ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.StreamSearch")
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
 			return s.Search(ctx, data.(*payload.Search_Request))
 		})
 }
@@ -245,15 +261,23 @@ func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error
 	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Search_IDRequest) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			ctx, _, end := trace.StartSpan(ctx, "vald/gateway-vald.StreamSearchByID")
-			defer end()
+			ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.StreamSearchByID")
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
 			return s.SearchByID(ctx, data.(*payload.Search_IDRequest))
 		})
 }
 
 func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *payload.Empty, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/gateway-vald.Insert")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.Insert")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	meta := vec.GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err == nil || len(uuid) != 0 {
@@ -301,7 +325,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 			return nil, status.WrapWithInternal(fmt.Sprintf("Insert API failed to Backup Vectors %#v", vecs), err, info.Get())
 		}
 	}
-    log.Debugf("Insert API insert succeeded to %v", targets)
+	log.Debugf("Insert API insert succeeded to %v", targets)
 	return new(payload.Empty), nil
 }
 
@@ -309,15 +333,23 @@ func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
 	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_Vector) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			ctx, _, end := trace.StartSpan(ctx, "vald/gateway-vald.StreamInsert")
-			defer end()
+			ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.StreamInsert")
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
 			return s.Insert(ctx, data.(*payload.Object_Vector))
 		})
 }
 
 func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/gateway-vald.MultiInsert")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.MultiInsert")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	metaMap := make(map[string]string)
 	metas := make([]string, 0, len(vecs.GetVectors()))
 	for i, vec := range vecs.GetVectors() {
@@ -382,8 +414,12 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 }
 
 func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Empty, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/gateway-vald.Update")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.Update")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	meta := vec.GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil {
@@ -430,15 +466,23 @@ func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
 	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_Vector) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			ctx, _, end := trace.StartSpan(ctx, "vald/gateway-vald.StreamUpdate")
-			defer end()
+			ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.StreamUpdate")
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
 			return s.Update(ctx, data.(*payload.Object_Vector))
 		})
 }
 
 func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/gateway-vald.MultiUpdate")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.MultiUpdate")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	ids := make([]string, 0, len(vecs.GetVectors()))
 	for _, vec := range vecs.GetVectors() {
 		ids = append(ids, vec.GetId())
@@ -490,8 +534,12 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 }
 
 func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Empty, error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/gateway-vald.Remove")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.Remove")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	meta := id.GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil {
@@ -535,15 +583,23 @@ func (s *server) StreamRemove(stream vald.Vald_StreamRemoveServer) error {
 	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_ID) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			ctx, _, end := trace.StartSpan(ctx, "vald/gateway-vald.StreamRemove")
-			defer end()
+			ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.StreamRemove")
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
 			return s.Remove(ctx, data.(*payload.Object_ID))
 		})
 }
 
 func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res *payload.Empty, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/gateway-vald.MultiRemove")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.MultiRemove")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	uuids, err := s.metadata.GetUUIDs(ctx, ids.GetIds()...)
 	if err != nil {
 		return nil, status.WrapWithNotFound(fmt.Sprintf("MultiRemove API meta datas %v's uuid not found", ids.GetIds()), err, info.Get())
@@ -585,8 +641,12 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res 
 }
 
 func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *payload.Backup_MetaVector, err error) {
-	ctx, _, end := trace.StartSpan(ctx, "vald/gateway-vald.GetObject")
-	defer end()
+	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.GetObject")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	meta := id.GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil {
@@ -603,8 +663,12 @@ func (s *server) StreamGetObject(stream vald.Vald_StreamGetObjectServer) error {
 	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_ID) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			ctx, _, end := trace.StartSpan(ctx, "vald/gateway-vald.StreamGetObject")
-			defer end()
+			ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.StreamGetObject")
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
 			return s.GetObject(ctx, data.(*payload.Object_ID))
 		})
 }
