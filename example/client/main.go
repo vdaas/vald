@@ -35,6 +35,7 @@ var searchConfig = payload.Search_Config{
 }
 
 func init() {
+
 	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
 	flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "set gRPC server address")
 	flag.UintVar(&indexingWaitSeconds, "wait", 60, "set indexing wait seconds")
@@ -119,7 +120,7 @@ func load(path string) (ids []string, train, test [][]float32, err error) {
 		dims, _, _ := sp.SimpleExtentDims()
 		row, dim := int(dims[0]), int(dims[1])
 
-		vec := make([]float64, sp.SimpleExtentNPoints())
+		vec := make([]float32, sp.SimpleExtentNPoints())
 		if err := d.Read(&vec); err != nil {
 			return nil, err
 		}
@@ -128,7 +129,7 @@ func load(path string) (ids []string, train, test [][]float32, err error) {
 		for i := 0; i < row; i++ {
 			vecs[i] = make([]float32, dim)
 			for j := 0; j < dim; j++ {
-				vecs[i][j] = float32(vec[i*dim+j])
+				vecs[i][j] = vec[i*dim+j]
 			}
 		}
 
