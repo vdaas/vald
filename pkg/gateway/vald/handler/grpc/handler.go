@@ -70,6 +70,9 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (*payload.
 	}()
 	uuid, err := s.metadata.GetUUID(ctx, meta.GetId())
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Exists API meta %s's uuid not found", meta.GetId()), err, meta.GetId(), info.Get())
 	}
 	return &payload.Object_ID{
@@ -103,6 +106,9 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	if err != nil {
 		req.Id = metaID
 		log.Errorf("error at SearchByID\t%v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("SearchByID API meta %s's uuid not found", metaID), err, req, info.Get())
 	}
 	return s.search(ctx, req.GetConfig(),
@@ -114,6 +120,12 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	f func(ctx context.Context, ac agent.AgentClient, copts ...grpc.CallOption) (*payload.Search_Response, error)) (
 	res *payload.Search_Response, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.search")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	maxDist := uint32(math.MaxUint32)
 	num := int(cfg.GetNum())
 	res = new(payload.Search_Response)
@@ -281,6 +293,9 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	meta := vec.GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err == nil || len(uuid) != 0 {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
+		}
 		return nil, status.WrapWithAlreadyExists(fmt.Sprintf("Insert API meta %s already exists", meta),
 			errors.ErrMetaDataAlreadyExists(meta, uuid), info.Get())
 	}
@@ -289,6 +304,9 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	err = s.metadata.SetUUIDandMeta(ctx, uuid, meta)
 	if err != nil {
 		log.Error(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Insert API meta %s & uuid %s couldn't store", meta, uuid), err, info.Get())
 	}
 	vec.Id = uuid
@@ -310,6 +328,9 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	})
 	if err != nil {
 		log.Error(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Insert API failed to Execute DoMulti error = %s", err.Error()), err, info.Get())
 	}
 	if s.backup != nil {
@@ -322,6 +343,9 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 		err = s.backup.Register(ctx, vecs)
 		if err != nil {
 			log.Error(err)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
 			return nil, status.WrapWithInternal(fmt.Sprintf("Insert API failed to Backup Vectors %#v", vecs), err, info.Get())
 		}
 	}
@@ -367,6 +391,9 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 			}
 		}
 		if err != nil {
+			if span != nil {
+				span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
+			}
 			return nil, status.WrapWithAlreadyExists(fmt.Sprintf("MultiInsert API failed metadata already exists uuids metas = %v", metas), err, info.Get())
 		}
 	}
@@ -385,11 +412,17 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		return nil
 	})
 	if gerr != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiInsert API failed request %#v", vecs), errors.Wrap(gerr, err.Error()), info.Get())
 	}
 
 	err = s.metadata.SetUUIDandMetas(ctx, metaMap)
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiInsert API failed SetUUIDandMetas %#v", metaMap), err, info.Get())
 	}
 
@@ -407,6 +440,9 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		}
 		err = s.backup.RegisterMultiple(ctx, mvecs)
 		if err != nil {
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
 			return nil, status.WrapWithInternal(fmt.Sprintf("MultiInsert API failed RegisterMultiple %#v", mvecs), err, info.Get())
 		}
 	}
@@ -423,11 +459,17 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 	meta := vec.GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Update API failed GetUUID meta = %s", meta), err, info.Get())
 	}
 	vec.Id = uuid
 	locs, err := s.backup.GetLocation(ctx, uuid)
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Update API failed GetLocation meta = %s, uuid = %s", meta, uuid), err, info.Get())
 	}
 	lmap := make(map[string]struct{}, len(locs))
@@ -446,6 +488,9 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 		return nil
 	})
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Update API failed request %#v", vec), err, info.Get())
 	}
 	mvec := &payload.Backup_MetaVector{
@@ -456,6 +501,9 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 	}
 	err = s.backup.Register(ctx, mvec)
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Update API failed backup %#v", vec), err, info.Get())
 	}
 
@@ -491,16 +539,28 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 		Ids: ids,
 	})
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed Remove request %#v", ids), err, info.Get())
 	}
 	_, err = s.MultiInsert(ctx, vecs)
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed Insert request %#v", vecs), err, info.Get())
 	}
 	return new(payload.Empty), nil
 }
 
 func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*payload.Empty, error) {
+	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.Upsert")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	meta := vec.GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil || len(uuid) == 0 {
@@ -513,11 +573,23 @@ func (s *server) StreamUpsert(stream vald.Vald_StreamUpsertServer) error {
 	return grpc.BidirectionalStream(stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_Vector) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
+			ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.StreamUpsert")
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
 			return s.Upsert(ctx, data.(*payload.Object_Vector))
 		})
 }
 
 func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) (*payload.Empty, error) {
+	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.MultiUpsert")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	metas := make([]string, 0, len(vecs.GetVectors()))
 	for _, vec := range vecs.GetVectors() {
 		metas = append(metas, vec.GetId())
@@ -543,10 +615,16 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Em
 	meta := id.GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Remove API meta %s's uuid not found", meta), err, info.Get())
 	}
 	locs, err := s.backup.GetLocation(ctx, uuid)
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Remove API failed GetLocation meta = %s, uuid = %s", meta, uuid), err, info.Get())
 	}
 	lmap := make(map[string]struct{}, len(locs))
@@ -566,14 +644,23 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Em
 		return nil
 	})
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API failed request uuid %s", uuid), err, info.Get())
 	}
 	_, err = s.metadata.DeleteMeta(ctx, uuid)
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API failed Delete metadata uuid = %s", uuid), err, info.Get())
 	}
 	err = s.backup.Remove(ctx, uuid)
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API failed to Remove backup uuid = %s", uuid), err, info.Get())
 	}
 	return new(payload.Empty), nil
@@ -602,6 +689,9 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res 
 	}()
 	uuids, err := s.metadata.GetUUIDs(ctx, ids.GetIds()...)
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("MultiRemove API meta datas %v's uuid not found", ids.GetIds()), err, info.Get())
 	}
 	lmap := make(map[string][]string, s.gateway.GetAgentCount(ctx))
@@ -627,14 +717,23 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res 
 		return nil
 	})
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiRemove API failed to request uuids %v metas %v ", uuids, ids.GetIds()), err, info.Get())
 	}
 	_, err = s.metadata.DeleteMetas(ctx, uuids...)
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiRemove API failed to DeleteMetas uuids %v ", uuids), err, info.Get())
 	}
 	err = s.backup.RemoveMultiple(ctx, uuids...)
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiRemove API failed to Remove backup uuids %v ", uuids), err, info.Get())
 	}
 	return new(payload.Empty), nil
@@ -650,10 +749,16 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *pay
 	meta := id.GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("GetObject API meta %s's uuid not found", meta), err, info.Get())
 	}
 	vec, err = s.backup.GetObject(ctx, uuid)
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("GetObject API meta %s uuid %s Object not found", meta, uuid), err, info.Get())
 	}
 	return vec, nil

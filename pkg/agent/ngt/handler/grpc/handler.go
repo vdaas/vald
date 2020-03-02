@@ -62,6 +62,9 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 	if !ok {
 		err = errors.ErrObjectIDNotFound(uuid)
 		log.Warn(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Exists API uuid %s's oid not found", uuid), err, info.Get())
 	}
 	res = new(payload.Object_ID)
@@ -153,6 +156,9 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (res *p
 	err = s.ngt.Insert(vec.GetId(), vec.GetVector())
 	if err != nil {
 		log.Errorf("[Insert]\tUnknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Insert API failed to insert %#v", vec), err, info.Get())
 	}
 	return new(payload.Empty), nil
@@ -186,6 +192,9 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	err = s.ngt.InsertMultiple(vmap)
 	if err != nil {
 		log.Errorf("[MultiInsert]\tUnknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiInsert API failed insert %#v", vmap), err, info.Get())
 	}
 	return new(payload.Empty), nil
@@ -202,6 +211,9 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 	err = s.ngt.Update(vec.GetId(), vec.GetVector())
 	if err != nil {
 		log.Errorf("[Update]\tUnknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Update API failed to update %#v", vec), err, info.Get())
 	}
 	return res, nil
@@ -238,6 +250,9 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 	err = s.ngt.UpdateMultiple(vmap)
 	if err != nil {
 		log.Errorf("[MultiUpdate]\tUnknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed to update %#v", vmap), err, info.Get())
 	}
 	return res, err
@@ -255,6 +270,9 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (res *payloa
 	err = s.ngt.Delete(uuid)
 	if err != nil {
 		log.Errorf("[Remove]\tUnknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API failed to delete uuid %s", uuid), err, info.Get())
 	}
 	return res, nil
@@ -286,6 +304,9 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res 
 	err = s.ngt.DeleteMultiple(uuids...)
 	if err != nil {
 		log.Errorf("[MultiRemove]\tUnknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed to delete %#v", uuids), err, info.Get())
 	}
 	return res, nil
@@ -302,6 +323,9 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (res *pay
 	vec, err := s.ngt.GetObject(uuid)
 	if err != nil {
 		log.Warnf("[GetObject]\tUUID not found\t%v", uuid)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("GetObject API uuid %s Object not found", uuid), err, info.Get())
 	}
 	return &payload.Object_Vector{
@@ -335,6 +359,9 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 	err = s.ngt.CreateIndex(c.GetPoolSize())
 	if err != nil {
 		log.Errorf("[CreateIndex]\tUnknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("CreateIndex API failed to create indexes pool_size = %d", c.GetPoolSize()), err, info.Get())
 	}
 	return res, nil
@@ -351,6 +378,9 @@ func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.
 	err = s.ngt.SaveIndex()
 	if err != nil {
 		log.Errorf("[SaveIndex]\tUnknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal("SaveIndex API failed to save indexes ", err, info.Get())
 	}
 	return res, nil
@@ -367,6 +397,9 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 	err = s.ngt.CreateAndSaveIndex(c.GetPoolSize())
 	if err != nil {
 		log.Errorf("[CreateAndSaveIndex]\tUnknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("CreateAndSaveIndex API failed to create and save indexes pool_size = %d", c.GetPoolSize()), err, info.Get())
 	}
 	return res, nil

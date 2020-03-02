@@ -57,12 +57,18 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 	r, err := s.backup.GetObject(ctx, uuid)
 	if err != nil {
 		log.Errorf("[GetVector]\tunknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("GetVector API uuid %s's object not found", uuid), err, info.Get())
 	}
 
 	vector, err := s.compressor.Decompress(ctx, r.GetVector())
 	if err != nil {
 		log.Errorf("[GetVector]\tunknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("GetVector API uuid %s's object failed to decompress %#v", uuid, r), err, info.Get())
 	}
 
@@ -85,6 +91,9 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 	r, err := s.backup.GetLocation(ctx, uuid)
 	if err != nil {
 		log.Errorf("[Locations]\tunknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Locations API uuid %s's location not found", uuid), err, info.Get())
 	}
 
@@ -104,6 +113,9 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) 
 	vector, err := s.compressor.Compress(ctx, meta.GetVector())
 	if err != nil {
 		log.Errorf("[Register]\tunknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s's could not compress", uuid), err, info.Get())
 	}
 
@@ -117,6 +129,9 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) 
 	err = s.backup.Register(ctx, mvec)
 	if err != nil {
 		log.Errorf("[Register]\tunknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s's could not register %#v", uuid, mvec), err, info.Get())
 	}
 
@@ -143,6 +158,9 @@ func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVe
 		for _, mv := range mvs {
 			uuids = append(uuids, mv.GetUuid())
 		}
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("RegisterMulti API uuids %#v's could not compress", uuids), err, info.Get())
 	}
 
@@ -165,6 +183,9 @@ func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVe
 		for _, mv := range mvs {
 			uuids = append(uuids, mv.GetUuid())
 		}
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("RegisterMulti API uuids %#v's could not register %#v", uuids, compressedMVs), err, info.Get())
 	}
 
@@ -182,6 +203,9 @@ func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request)
 	err = s.backup.Remove(ctx, uuid)
 	if err != nil {
 		log.Errorf("[Remove]\tunknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API uuid %s could not remove", uuid), err, info.Get())
 	}
 
@@ -199,6 +223,9 @@ func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_Req
 	err = s.backup.RemoveMultiple(ctx, uuids...)
 	if err != nil {
 		log.Errorf("[RemoveMulti]\tunknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API uuids %#v could not remove", uuids), err, info.Get())
 	}
 
@@ -217,6 +244,9 @@ func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Registe
 	err = s.backup.RegisterIPs(ctx, uuid, ips)
 	if err != nil {
 		log.Errorf("[RegisterIPs]\tunknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("RegisterIPs API uuid %s ips %#v could not register", uuid, ips), err, info.Get())
 	}
 
@@ -234,6 +264,9 @@ func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Re
 	err = s.backup.RemoveIPs(ctx, ips)
 	if err != nil {
 		log.Errorf("[RemoveIPs]\tunknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("RemoveIPs API ips %#v could not remove", ips), err, info.Get())
 	}
 
