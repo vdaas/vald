@@ -21,7 +21,7 @@ metadata:
   labels:
     app: vald-meta
   annotations:
-    checksum/configmap: 0f914f8f95faa1b1bc500998154747a203f4464bb2f6f0cca8384d2e19578533
+    checksum/configmap: c58e0c97920e2a7ce5dc6c35c699c69f21dbd0dac4c91d53c07f7f7845c0ded5
 spec:
   progressDeadlineSeconds: 600
   replicas: 2
@@ -96,6 +96,9 @@ spec:
             - name: grpc
               protocol: TCP
               containerPort: 8081
+            - name: prometheus
+              protocol: TCP
+              containerPort: 6061
           resources:
             limits:
               cpu: 500m

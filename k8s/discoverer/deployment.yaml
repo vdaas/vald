@@ -21,7 +21,7 @@ metadata:
   labels:
     app: vald-discoverer
   annotations:
-    checksum/configmap: d564c5318ad3345e5bdb8e336d09f3f645c6ac2b7f0d4ddb20228df381e552bf
+    checksum/configmap: 224ad9a130fd31d769747f09b03d9dcf758377607bbd98022666989dca0ee462
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
@@ -74,6 +74,9 @@ spec:
             - name: grpc
               protocol: TCP
               containerPort: 8081
+            - name: prometheus
+              protocol: TCP
+              containerPort: 6061
           resources:
             null
           terminationMessagePath: /dev/termination-log

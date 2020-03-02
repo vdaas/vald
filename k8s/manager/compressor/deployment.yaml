@@ -21,7 +21,7 @@ metadata:
   labels:
     app: vald-manager-compressor
   annotations:
-    checksum/configmap: d3e758ef48afdec3b50bdb1d9ffda67c51f2bf96d23bf50b9e57ffbb9262a95c
+    checksum/configmap: 73ab60032ef016de055540d7af4dbd5b287a3342b142552f1a886c3522c87077
 spec:
   progressDeadlineSeconds: 600
   replicas: 3
@@ -86,6 +86,9 @@ spec:
             - name: grpc
               protocol: TCP
               containerPort: 8081
+            - name: prometheus
+              protocol: TCP
+              containerPort: 6061
           resources:
             limits:
               cpu: 500m

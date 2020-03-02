@@ -79,8 +79,21 @@ data:
           mode: ""
           probe_wait_time: 3s
       metrics_servers:
+        - name: prometheus
+          host: 0.0.0.0
+          port: 6061
+          http:
+            handler_timeout: 5s
+            idle_timeout: 2s
+            read_header_timeout: 1s
+            read_timeout: 1s
+            shutdown_duration: 5s
+            write_timeout: 1s
+          mode: REST
+          probe_wait_time: 3s
       startup_strategy:
         - liveness
+        - prometheus
         - grpc
         - readiness
       full_shutdown_duration: 600s
@@ -89,6 +102,29 @@ data:
         cert: /path/to/cert
         key: /path/to/key
         ca: /path/to/ca
+    observability:
+      enabled: true
+      collector:
+        duration: 5s
+        metrics:
+          enable_cgo: true
+          enable_cpu: true
+          enable_goroutine: true
+          enable_memory: true
+          enable_version_info: true
+      trace:
+        enabled: true
+        sampling_rate: 1
+      prometheus:
+        enabled: true
+      jaeger:
+          enabled: false
+          collector_endpoint: 
+          agent_endpoint: jaeger-agent.default.svc.cluster.local:6831
+          username: 
+          password: 
+          service_name: vald-gateway
+          buffer_max_count: 10
     gateway:
       agent_port: 8081
       agent_name: vald-agent-ngt
@@ -102,7 +138,7 @@ data:
         duration: 2s
         discover_client:
           addrs: []
-          connection_pool: 10
+          connection_pool: 3
           health_check_duration: 1s
           backoff:
             backoff_factor: 0
@@ -152,7 +188,7 @@ data:
             key: /path/to/key
         agent_client:
           addrs: []
-          connection_pool: 100
+          connection_pool: 3
           health_check_duration: 1s
           backoff:
             backoff_factor: 0
@@ -205,7 +241,7 @@ data:
         port: 8081
         client:
           addrs: []
-          connection_pool: 10
+          connection_pool: 3
           health_check_duration: 1s
           backoff:
             backoff_factor: 0
@@ -261,7 +297,7 @@ data:
         port: 8081
         client:
           addrs: []
-          connection_pool: 10
+          connection_pool: 3
           health_check_duration: 1s
           backoff:
             backoff_factor: 0
