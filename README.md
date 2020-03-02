@@ -43,12 +43,12 @@ If you use the default values.yaml, the `nightly` images will be installed.
 ### Using Helm-operator
 
 ```shell
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/helm-operator/serviceaccount.yaml
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/helm-operator/clusterrole.yaml
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/helm-operator/clusterrolebinding.yaml
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/helm-operator/operator.yaml
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/helm-operator/crd.yaml
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/helm-operator/cr.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/serviceaccount.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/clusterrole.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/clusterrolebinding.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/operator.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/cr.yaml
 ```
 
 ## Example

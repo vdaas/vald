@@ -127,11 +127,11 @@ docker/name/ci-container:
 docker/build/ci-container: docker/build/base
 	docker build -f dockers/ci/base/Dockerfile -t $(REPO)/$(CI_CONTAINER_IMAGE) .
 
-.PHONY: docker/name/helm-operator
-docker/name/helm-operator:
+.PHONY: docker/name/operator/helm
+docker/name/operator/helm:
 	@echo "$(REPO)/$(HELM_OPERATOR_IMAGE)"
 
-.PHONY: docker/build/helm-operator
+.PHONY: docker/build/operator/helm
 ## build helm-operator image
-docker/build/helm-operator:
-	docker build -f dockers/helm-operator/Dockerfile -t $(REPO)/$(HELM_OPERATOR_IMAGE) .
+docker/build/operator/helm:
+	docker build -f dockers/operator/helm/Dockerfile -t $(REPO)/$(HELM_OPERATOR_IMAGE) .
