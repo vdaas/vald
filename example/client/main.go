@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/kpango/fuid"
-	"github.com/vdaas/vald/apis/grpc/payload"
-	"github.com/vdaas/vald/apis/grpc/vald"
+	"github.com/vdaas/vald-client-go/gateway/vald"
+	"github.com/vdaas/vald-client-go/payload"
 
 	"github.com/cheggaaa/pb/v3"
 	"gonum.org/v1/hdf5"
@@ -98,7 +98,7 @@ func run() error {
 	return nil
 }
 
-func load(path string) (ids []string, train, test [][]float64, err error) {
+func load(path string) (ids []string, train, test [][]float32, err error) {
 	var f *hdf5.File
 	f, err = hdf5.OpenFile(path, hdf5.F_ACC_RDONLY)
 	if err != nil {
@@ -106,7 +106,7 @@ func load(path string) (ids []string, train, test [][]float64, err error) {
 	}
 	defer f.Close()
 
-	readFn := func(name string) ([][]float64, error) {
+	readFn := func(name string) ([][]float32, error) {
 		d, err := f.OpenDataset(name)
 		if err != nil {
 			return nil, err
@@ -124,11 +124,11 @@ func load(path string) (ids []string, train, test [][]float64, err error) {
 			return nil, err
 		}
 
-		vecs := make([][]float64, row)
+		vecs := make([][]float32, row)
 		for i := 0; i < row; i++ {
-			vecs[i] = make([]float64, dim)
+			vecs[i] = make([]float32, dim)
 			for j := 0; j < dim; j++ {
-				vecs[i][j] = vec[i*dim+j]
+				vecs[i][j] = float32(vec[i*dim+j])
 			}
 		}
 
