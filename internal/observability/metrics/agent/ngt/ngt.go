@@ -19,7 +19,6 @@ package ngt
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/pkg/agent/ngt/service"
@@ -43,17 +42,6 @@ func New(n service.NGT) metrics.Metric {
 		deleteVCacheCount:     *metrics.Int64(metrics.ValdOrg+"/ngt/delete_vcache_count", "NGT delete vcache count", metrics.UnitDimensionless),
 		isIndexing:            *metrics.Int64(metrics.ValdOrg+"/ngt/is_indexing", "currently indexing or not", metrics.UnitDimensionless),
 	}
-}
-
-func (n *ngtMetrics) MeasurementsCount() int {
-	cnt := 0
-	rv := reflect.ValueOf(*n)
-	for i := 0; i < rv.NumField(); i++ {
-		if metrics.IsMeasureType(rv.Field(i).Type()) {
-			cnt++
-		}
-	}
-	return cnt
 }
 
 func (n *ngtMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, error) {

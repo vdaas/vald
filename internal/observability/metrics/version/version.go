@@ -79,17 +79,6 @@ func labelKVs() (map[metrics.Key]string, error) {
 	return info, nil
 }
 
-func (v *version) MeasurementsCount() int {
-	cnt := 0
-	rv := reflect.ValueOf(*v)
-	for i := 0; i < rv.NumField(); i++ {
-		if metrics.IsMeasureType(rv.Field(i).Type()) {
-			cnt++
-		}
-	}
-	return cnt
-}
-
 func (v *version) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
 	return []metrics.Measurement{}, nil
 }

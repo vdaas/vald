@@ -19,7 +19,6 @@ package runtime
 
 import (
 	"context"
-	"reflect"
 	"runtime"
 
 	"github.com/vdaas/vald/internal/observability/metrics"
@@ -33,17 +32,6 @@ func NewGoroutineMetrics() metrics.Metric {
 	return &goroutines{
 		count: *metrics.Int64(metrics.ValdOrg+"/runtime/goroutine_count", "number of goroutines", metrics.UnitDimensionless),
 	}
-}
-
-func (g *goroutines) MeasurementsCount() int {
-	cnt := 0
-	rv := reflect.ValueOf(*g)
-	for i := 0; i < rv.NumField(); i++ {
-		if metrics.IsMeasureType(rv.Field(i).Type()) {
-			cnt++
-		}
-	}
-	return cnt
 }
 
 func (g *goroutines) Measurement(ctx context.Context) ([]metrics.Measurement, error) {

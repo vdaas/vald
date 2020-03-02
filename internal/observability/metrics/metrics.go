@@ -59,7 +59,6 @@ type MeasurementWithTags struct {
 }
 
 type Metric interface {
-	MeasurementsCount() int
 	Measurement(ctx context.Context) ([]Measurement, error)
 	MeasurementWithTags(ctx context.Context) ([]MeasurementWithTags, error)
 	View() []*View
@@ -87,12 +86,17 @@ func RecordWithTags(ctx context.Context, mwts ...MeasurementWithTags) (errs erro
 	return errs
 }
 
-func IsMeasureType(t reflect.Type) bool {
-	switch t.Name() {
-	case "Int64Measure":
-		return true
-	case "Float64Measure":
-		return true
+func MeasurementsCount(m Metric) int {
+	cnt := 0
+	rv := reflect.ValueOf(m)
+	for i := 0; i < rv.NumField(); i++ {
+		switch rv.Field(i).Type() {
+		case reflect.TypeOf(Int64Measure{}),
+			reflect.TypeOf(&Int64Measure{}),
+			reflect.TypeOf(Float64Measure{}),
+			reflect.TypeOf(&Float64Measure{}):
+			cnt++
+		}
 	}
-	return false
+	return cnt
 }

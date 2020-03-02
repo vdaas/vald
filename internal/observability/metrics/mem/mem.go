@@ -19,7 +19,6 @@ package mem
 
 import (
 	"context"
-	"reflect"
 	"runtime"
 
 	"github.com/vdaas/vald/internal/observability/metrics"
@@ -45,17 +44,6 @@ func New() metrics.Metric {
 		pauseTotalMs: *metrics.Float64(metrics.ValdOrg+"/memory/pause_ms_total", "the cumulative milliseconds in GC", metrics.UnitMilliseconds),
 		numGC:        *metrics.Int64(metrics.ValdOrg+"/memory/gc_count", "the number of completed GC cycles", metrics.UnitDimensionless),
 	}
-}
-
-func (m *memory) MeasurementsCount() int {
-	cnt := 0
-	rv := reflect.ValueOf(*m)
-	for i := 0; i < rv.NumField(); i++ {
-		if metrics.IsMeasureType(rv.Field(i).Type()) {
-			cnt++
-		}
-	}
-	return cnt
 }
 
 func (m *memory) Measurement(ctx context.Context) ([]metrics.Measurement, error) {

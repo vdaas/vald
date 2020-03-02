@@ -19,7 +19,6 @@ package runtime
 
 import (
 	"context"
-	"reflect"
 	"runtime"
 
 	"github.com/vdaas/vald/internal/observability/metrics"
@@ -33,17 +32,6 @@ func NewCGOMetrics() metrics.Metric {
 	return &cgo{
 		count: *metrics.Int64(metrics.ValdOrg+"/runtime/cgo_call_count", "number of cgo call", metrics.UnitDimensionless),
 	}
-}
-
-func (c *cgo) MeasurementsCount() int {
-	cnt := 0
-	rv := reflect.ValueOf(*c)
-	for i := 0; i < rv.NumField(); i++ {
-		if metrics.IsMeasureType(rv.Field(i).Type()) {
-			cnt++
-		}
-	}
-	return cnt
 }
 
 func (c *cgo) Measurement(ctx context.Context) ([]metrics.Measurement, error) {

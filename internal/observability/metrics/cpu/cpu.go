@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"reflect"
 	"strconv"
 
 	"github.com/shirou/gopsutil/cpu"
@@ -105,17 +104,6 @@ func infoStatsLabelKeys() (map[string]metrics.Key, error) {
 		info[kstr] = k
 	}
 	return info, nil
-}
-
-func (c *cpuInfo) MeasurementsCount() int {
-	cnt := 0
-	rv := reflect.ValueOf(*c)
-	for i := 0; i < rv.NumField(); i++ {
-		if metrics.IsMeasureType(rv.Field(i).Type()) {
-			cnt++
-		}
-	}
-	return cnt
 }
 
 func (c *cpuInfo) Measurement(ctx context.Context) ([]metrics.Measurement, error) {

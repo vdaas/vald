@@ -91,7 +91,7 @@ func (c *collector) Stop(ctx context.Context) {
 func (c *collector) collect(ctx context.Context) (err error) {
 	cnt := 0
 	for _, metric := range c.metrics {
-		measurementsCount := metric.MeasurementsCount()
+		measurementsCount := metrics.MeasurementsCount(metric)
 		if cnt < measurementsCount {
 			cnt = measurementsCount
 		}

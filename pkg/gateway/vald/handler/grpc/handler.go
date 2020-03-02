@@ -256,7 +256,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 }
 
 func (s *server) StreamSearch(stream vald.Vald_StreamSearchServer) error {
-	return grpc.BidirectionalStream(stream, s.streamConcurrency,
+	return grpc.BidirectionalStream(stream.Context(), stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Search_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.StreamSearch")
@@ -270,7 +270,7 @@ func (s *server) StreamSearch(stream vald.Vald_StreamSearchServer) error {
 }
 
 func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error {
-	return grpc.BidirectionalStream(stream, s.streamConcurrency,
+	return grpc.BidirectionalStream(stream.Context(), stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Search_IDRequest) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.StreamSearchByID")
@@ -354,7 +354,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 }
 
 func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
-	return grpc.BidirectionalStream(stream, s.streamConcurrency,
+	return grpc.BidirectionalStream(stream.Context(), stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_Vector) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.StreamInsert")
@@ -511,7 +511,7 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 }
 
 func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
-	return grpc.BidirectionalStream(stream, s.streamConcurrency,
+	return grpc.BidirectionalStream(stream.Context(), stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_Vector) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.StreamUpdate")
@@ -570,7 +570,7 @@ func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*paylo
 }
 
 func (s *server) StreamUpsert(stream vald.Vald_StreamUpsertServer) error {
-	return grpc.BidirectionalStream(stream, s.streamConcurrency,
+	return grpc.BidirectionalStream(stream.Context(), stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_Vector) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.StreamUpsert")
@@ -667,7 +667,7 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Em
 }
 
 func (s *server) StreamRemove(stream vald.Vald_StreamRemoveServer) error {
-	return grpc.BidirectionalStream(stream, s.streamConcurrency,
+	return grpc.BidirectionalStream(stream.Context(), stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_ID) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.StreamRemove")
@@ -765,7 +765,7 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *pay
 }
 
 func (s *server) StreamGetObject(stream vald.Vald_StreamGetObjectServer) error {
-	return grpc.BidirectionalStream(stream, s.streamConcurrency,
+	return grpc.BidirectionalStream(stream.Context(), stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_ID) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.StreamGetObject")
