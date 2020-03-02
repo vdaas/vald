@@ -143,13 +143,13 @@ func load(path string) (ids []string, train, test [][]float32, err error) {
 		return vecs, nil
 	}
 
-	// Get vector of train hierarchy.
+	// Gets vector of train hierarchy.
 	train, err = readFn("train")
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	// Get vector of test hierarchy.
+	// Gets vector of test hierarchy.
 	test, err = readFn("test")
 	if err != nil {
 		return nil, nil, nil, err
