@@ -44,7 +44,7 @@ func init() {
 func main() {
 	/**
 	Gets training and test data, and id based on the dataset path.
-	Ids and train lengths are equal.
+	Ids and training data lengths are equal.
 	**/
 	ids, train, test, err := load(datasetPath)
 	if err != nil {
@@ -55,7 +55,7 @@ func main() {
 
 	/**
 	Creates a client connection to the given the target.
-	And create a vad client based on this connection.
+	And create a vald client based on this connection.
 	**/
 	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
 	if err != nil {
@@ -112,7 +112,7 @@ func main() {
 	}
 }
 
-// load function loads train and test vector from hdf file. Ids are the same number as the train data, and a random id is generated.
+// load function loads training and test vector from hdf file. Ids are the same number as the train data, and a random id is generated.
 func load(path string) (ids []string, train, test [][]float32, err error) {
 	var f *hdf5.File
 	f, err = hdf5.OpenFile(path, hdf5.F_ACC_RDONLY)
@@ -158,19 +158,19 @@ func load(path string) (ids []string, train, test [][]float32, err error) {
 		return vecs, nil
 	}
 
-	// Gets vector of train hierarchy.
+	// Gets vector of `train` hierarchy.
 	train, err = readFn("train")
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	// Gets vector of test hierarchy.
+	// Gets vector of `test` hierarchy.
 	test, err = readFn("test")
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	// Generate as many random ids as train vectors.
+	// Generate as many random ids as training vectors.
 	ids = make([]string, 0, len(train))
 	for i := 0; i < len(train); i++ {
 		ids = append(ids, fuid.String())
