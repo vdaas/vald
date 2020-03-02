@@ -67,12 +67,15 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Creates vald client for gRPC.
 	client := vald.NewValdClient(conn)
 
 	/**
 	Starts inserting vectors specified by insertCount(400).
 	**/
 	for i := range ids[:insertCont] {
+		// Call `Insert` function of vald client.
+		// Send vector, id to server via gRPC.
 		_, err := client.Insert(ctx, &payload.Object_Vector{
 			Id:     ids[i],
 			Vector: train[i],
@@ -91,9 +94,20 @@ func main() {
 	In this example, gets 10 approximate vectors.
 	**/
 	for _, vec := range test[:testCount] {
+		// Call `Search` function of vald client.
+		// Send vector, configuration object to server via gRPC.
 		res, err := client.Search(ctx, &payload.Search_Request{
 			Vector: vec,
-			Config: &searchConfig,
+			// Conditions for hitting the search.
+			Config: &payload.Search_Config{
+				// Number of search results.
+				Num: 10,
+				// Range used as search results.
+				// Defaults to -1. That is, infinite circle.
+				Radius: -1,
+				// Parameters for searching outside the search range.
+				Epsilon: 0.01,
+			},
 		})
 		if err != nil {
 			log.Fatal(err)
