@@ -27,12 +27,6 @@ var (
 	indexingWaitSeconds uint
 )
 
-var searchConfig = payload.Search_Config{
-	Num:     10,
-	Radius:  -1,
-	Epsilon: 0.01,
-}
-
 func init() {
 	/**
 	Registers path, addr and wait option.
@@ -129,28 +123,35 @@ func load(path string) (ids []string, train, test [][]float32, err error) {
 
 	// readFn function reads vectors of the hierarchy with the given the name.
 	readFn := func(name string) ([][]float32, error) {
+		// Opens and returns a named Dataset.
+		// The returned dataset must be closed by the user when it is no longer needed.
 		d, err := f.OpenDataset(name)
 		if err != nil {
 			return nil, err
 		}
 		defer d.Close()
 
+		// Space returns an identifier for a copy of the dataspace for a dataset.
 		sp := d.Space()
 		defer sp.Close()
 
+		// SimpleExtentDims returns dataspace dimension size and maximum size.
 		dims, _, _ := sp.SimpleExtentDims()
 		row, dim := int(dims[0]), int(dims[1])
 
-		vec := make([]float32, sp.SimpleExtentNPoints())
+		// Gets the stored vector. All are represented as one-dimensional arrays.
+		vec := make([]float64, sp.SimpleExtentNPoints())
 		if err := d.Read(&vec); err != nil {
 			return nil, err
 		}
 
+		// Converts a one-dimensional array to a two-dimensional array.
+		// Use the `dim` variable as a separator.
 		vecs := make([][]float32, row)
 		for i := 0; i < row; i++ {
 			vecs[i] = make([]float32, dim)
 			for j := 0; j < dim; j++ {
-				vecs[i][j] = vec[i*dim+j]
+				vecs[i][j] = float32(vec[i*dim+j])
 			}
 		}
 
