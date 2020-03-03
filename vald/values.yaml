@@ -320,7 +320,7 @@ gateway:
       cpu: 200m
       memory: 150Mi
     limits:
-      cpu: 1500m
+      cpu: 2000m
       memory: 700Mi
   gateway_config:
     agent_namespace: _MY_POD_NAMESPACE_
@@ -390,7 +390,7 @@ agent:
   resources:
     requests:
       cpu: 300m
-      memory: 4Gi
+      memory: 4Gi # number of nodes / number of agent pods = cluster memory * 0.8
   ngt:
     # index_path: /path/to/index
     auto_index_limit: 10m
