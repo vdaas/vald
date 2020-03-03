@@ -28,6 +28,9 @@ data:
     server_config:
       {{- $servers := dict "Values" .Values.indexManager.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
+    observability:
+      {{- $observability := dict "Values" .Values.indexManager.observability "default" .Values.defaults.observability }}
+      {{- include "vald.observability" $observability | nindent 6 }}
     indexer:
       agent_port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.agent.server_config.servers.grpc.port }}
       agent_name: {{ .Values.agent.name }}
