@@ -128,8 +128,10 @@ func (c *compressor) Start(ctx context.Context) <-chan error {
 }
 
 func (c *compressor) dispatchCompress(ctx context.Context, vectors ...[]float32) (results [][]byte, errs error) {
+
 	results = make([][]byte, len(vectors))
 
+	mu := new(sync.Mutex)
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
 	c.eg.Go(safety.RecoverFunc(func() error {
@@ -154,7 +156,9 @@ func (c *compressor) dispatchCompress(ctx context.Context, vectors ...[]float32)
 							return err
 						}
 
+						mu.Lock()
 						results[i] = res
+						mu.Unlock()
 
 						return nil
 					}
