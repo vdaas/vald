@@ -102,8 +102,10 @@ spec:
           resources:
             limits:
               cpu: 500m
+              memory: 150Mi
             requests:
-              cpu: 200m
+              cpu: 100m
+              memory: 50Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           env:

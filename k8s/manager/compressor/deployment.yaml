@@ -21,7 +21,7 @@ metadata:
   labels:
     app: vald-manager-compressor
   annotations:
-    checksum/configmap: 73ab60032ef016de055540d7af4dbd5b287a3342b142552f1a886c3522c87077
+    checksum/configmap: 7051104fadb40c69f0ff9d8ce4a764f19efcff543dcb2d531dde199833a1e2dc
 spec:
   progressDeadlineSeconds: 600
   replicas: 3
@@ -92,8 +92,10 @@ spec:
           resources:
             limits:
               cpu: 500m
+              memory: 150Mi
             requests:
-              cpu: 200m
+              cpu: 300m
+              memory: 50Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           env:

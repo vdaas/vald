@@ -21,7 +21,7 @@ metadata:
   labels:
     app: vald-gateway
   annotations:
-    checksum/configmap: 262bef2190078ee11c495c22b20a63159300f42d8be6572649b19fea97e701a4
+    checksum/configmap: 68942a4a3c38f0ecaa997644312fe23ca21afa8ff6c33640add7acd082895178
 spec:
   progressDeadlineSeconds: 600
   replicas: 3
@@ -124,9 +124,11 @@ spec:
               containerPort: 6061
           resources:
             limits:
-              cpu: 500m
+              cpu: 2000m
+              memory: 700Mi
             requests:
               cpu: 200m
+              memory: 150Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           env:

@@ -135,19 +135,19 @@ data:
       discoverer:
         host: vald-discoverer.default.svc.cluster.local
         port: 8081
-        duration: 2s
+        duration: 200ms
         discover_client:
           addrs: []
           connection_pool: 3
           health_check_duration: 1s
           backoff:
-            backoff_factor: 0
-            backoff_time_limit: ""
-            enable_error_log: false
-            initial_duration: ""
-            jitter_limit: ""
-            maximum_duration: ""
-            retry_count: 0
+            backoff_factor: 1.1
+            backoff_time_limit: 5s
+            enable_error_log: true
+            initial_duration: 5ms
+            jitter_limit: 100ms
+            maximum_duration: 5s
+            retry_count: 100
           call_option:
             max_recv_msg_size: 0
             max_retry_rpc_buffer_size: 0
@@ -171,9 +171,9 @@ data:
                 keep_alive: ""
                 timeout: ""
               dns:
-                cache_enabled: false
-                cache_expiration: ""
-                refresh_duration: ""
+                cache_enabled: true
+                cache_expiration: 1h
+                refresh_duration: 30m
               tls:
                 ca: /path/to/ca
                 cert: /path/to/cert
@@ -191,13 +191,13 @@ data:
           connection_pool: 3
           health_check_duration: 1s
           backoff:
-            backoff_factor: 0
-            backoff_time_limit: ""
-            enable_error_log: false
-            initial_duration: ""
-            jitter_limit: ""
-            maximum_duration: ""
-            retry_count: 0
+            backoff_factor: 1.1
+            backoff_time_limit: 5s
+            enable_error_log: true
+            initial_duration: 5ms
+            jitter_limit: 100ms
+            maximum_duration: 5s
+            retry_count: 100
           call_option:
             max_recv_msg_size: 0
             max_retry_rpc_buffer_size: 0
@@ -221,9 +221,9 @@ data:
                 keep_alive: ""
                 timeout: ""
               dns:
-                cache_enabled: false
-                cache_expiration: ""
-                refresh_duration: ""
+                cache_enabled: true
+                cache_expiration: 1h
+                refresh_duration: 30m
               tls:
                 ca: /path/to/ca
                 cert: /path/to/cert
@@ -244,13 +244,13 @@ data:
           connection_pool: 3
           health_check_duration: 1s
           backoff:
-            backoff_factor: 0
-            backoff_time_limit: ""
-            enable_error_log: false
-            initial_duration: ""
-            jitter_limit: ""
-            maximum_duration: ""
-            retry_count: 0
+            backoff_factor: 1.1
+            backoff_time_limit: 5s
+            enable_error_log: true
+            initial_duration: 5ms
+            jitter_limit: 100ms
+            maximum_duration: 5s
+            retry_count: 100
           call_option:
             max_recv_msg_size: 0
             max_retry_rpc_buffer_size: 0
@@ -274,9 +274,9 @@ data:
                 keep_alive: ""
                 timeout: ""
               dns:
-                cache_enabled: false
-                cache_expiration: ""
-                refresh_duration: ""
+                cache_enabled: true
+                cache_expiration: 1h
+                refresh_duration: 30m
               tls:
                 ca: /path/to/ca
                 cert: /path/to/cert
@@ -300,13 +300,13 @@ data:
           connection_pool: 3
           health_check_duration: 1s
           backoff:
-            backoff_factor: 0
-            backoff_time_limit: ""
-            enable_error_log: false
-            initial_duration: ""
-            jitter_limit: ""
-            maximum_duration: ""
-            retry_count: 0
+            backoff_factor: 1.1
+            backoff_time_limit: 5s
+            enable_error_log: true
+            initial_duration: 5ms
+            jitter_limit: 100ms
+            maximum_duration: 5s
+            retry_count: 100
           call_option:
             max_recv_msg_size: 0
             max_retry_rpc_buffer_size: 0
@@ -330,9 +330,9 @@ data:
                 keep_alive: ""
                 timeout: ""
               dns:
-                cache_enabled: false
-                cache_expiration: ""
-                refresh_duration: ""
+                cache_enabled: true
+                cache_expiration: 1h
+                refresh_duration: 30m
               tls:
                 ca: /path/to/ca
                 cert: /path/to/cert

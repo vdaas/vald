@@ -78,7 +78,12 @@ spec:
               protocol: TCP
               containerPort: 6061
           resources:
-            null
+            limits:
+              cpu: 600m
+              memory: 200Mi
+            requests:
+              cpu: 200m
+              memory: 65Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           env:
