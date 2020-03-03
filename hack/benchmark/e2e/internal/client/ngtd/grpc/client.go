@@ -129,14 +129,17 @@ func (c *ngtdClient) StreamInsert(ctx context.Context, dataProvider func() *clie
 	}
 	defer st.CloseSend()
 
-	return grpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-		if d := dataProvider(); d != nil {
-			return d
-		}
-		return nil
-	}, func(_ interface{}, err error) {
-		f(err)
-	})
+	return grpc.BidirectionalStreamClient(st, c.streamConcurrency,
+		func() interface{} {
+			if d := dataProvider(); d != nil {
+				return d
+			}
+			return nil
+		}, func() interface{} {
+			return new(proto.InsertResponse)
+		}, func(_ interface{}, err error) {
+			f(err)
+		})
 }
 
 func (c *ngtdClient) MultiInsert(ctx context.Context, req *client.ObjectVectors) error {
