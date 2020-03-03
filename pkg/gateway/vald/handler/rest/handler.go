@@ -20,8 +20,8 @@ package rest
 import (
 	"net/http"
 
+	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
-	"github.com/vdaas/vald/apis/grpc/vald"
 	"github.com/vdaas/vald/internal/net/http/dump"
 	"github.com/vdaas/vald/internal/net/http/json"
 )

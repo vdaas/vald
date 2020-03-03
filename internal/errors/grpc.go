@@ -21,8 +21,6 @@ var (
 
 	// gRPC
 
-	ErrAgentClientNotConnected = New("agent client not connected")
-
 	ErrgRPCClientConnectionClose = func(name string, err error) error {
 		return Wrapf(err, "%s's gRPC connection close error", name)
 	}
@@ -30,6 +28,8 @@ var (
 	ErrInvalidGRPCClientConn = func(addr string) error {
 		return Errorf("invalid gRPC client connection to %s", addr)
 	}
+
+	ErrGRPCClientNotFound = New("vald internal gRPC client not found")
 
 	ErrGRPCClientConnNotFound = func(addr string) error {
 		return Errorf("gRPC client connection not found in %s", addr)

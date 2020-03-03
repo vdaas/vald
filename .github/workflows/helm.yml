@@ -18,6 +18,8 @@ jobs:
         with:
           fetch-depth: 1
       - uses: azure/setup-helm@v1
+        with:
+          version: 'v3.1.0'
       - name: Helm version
         run: |
           helm version
@@ -51,6 +53,8 @@ jobs:
         with:
           fetch-depth: 1
       - uses: azure/setup-helm@v1
+        with:
+          version: 'v3.1.0'
       - name: Helm version
         run: |
           helm version
@@ -62,9 +66,7 @@ jobs:
         run: |
           git checkout gh-pages
           mv -f vald-*.tgz charts/
-          pushd charts
-          helm repo index --url https://vald.vdaas.org/charts .
-          popd
+          helm repo index --url https://vald.vdaas.org/charts charts/
 
           git config --global user.name "vdaas-ci"
           git config --global user.email "ci@vdaas.org"

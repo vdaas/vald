@@ -18,5 +18,21 @@
 package errors
 
 var (
-	ErrAgentAddrCouldNotDiscover = New("agent addrs couldn't discover")
+	ErrAddrCouldNotDiscover = func(err error, record string) error {
+		return Wrapf(err, "addr %s ip couldn't discover", record)
+	}
+
+	ErrNodeNotFound = func(node string) error {
+		return Errorf("discover node %s not found", node)
+	}
+
+	ErrNamespaceNotFound = func(ns string) error {
+		return Errorf("discover namespace %s not found", ns)
+	}
+
+	ErrPodNameNotFound = func(name string) error {
+		return Errorf("discover pod %s not found", name)
+	}
+
+	ErrInvalidDiscoveryCache = New("cache type cast failed")
 )
