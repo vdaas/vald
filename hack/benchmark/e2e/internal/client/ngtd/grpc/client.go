@@ -132,7 +132,10 @@ func (c *ngtdClient) StreamInsert(ctx context.Context, dataProvider func() *clie
 	return grpc.BidirectionalStreamClient(st, c.streamConcurrency,
 		func() interface{} {
 			if d := dataProvider(); d != nil {
-				return d
+				return &proto.InsertRequest{
+					Id:     []byte(d.GetId()),
+					Vector: tofloat64(d.GetVector()),
+				}
 			}
 			return nil
 		}, func() interface{} {
