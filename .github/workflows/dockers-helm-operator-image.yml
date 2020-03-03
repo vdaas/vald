@@ -10,11 +10,11 @@ on:
        - 'v*.*.*-*'
     paths:
       - 'dockers/operator/helm/Dockerfile'
-      - 'vald'
+      - 'vald/**'
   pull_request:
     paths:
       - 'dockers/operator/helm/Dockerfile'
-      - 'vald'
+      - 'vald/**'
 
 jobs:
   build:
