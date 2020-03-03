@@ -18,9 +18,8 @@ type (
 	InfoIndex                 = payload.Info_Index
 	MetaObject                = payload.Backup_MetaVector
 	Empty                     = payload.Empty
+	SearchConfig              = payload.Search_Config
 )
-
-type SearchConfig = payload.Search_Config
 
 type Client interface {
 	Reader
