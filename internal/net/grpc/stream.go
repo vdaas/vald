@@ -90,7 +90,7 @@ func BidirectionalStreamClient(stream grpc.ClientStream,
 		default:
 			data := dataProvider()
 			if data == nil {
-				return eg.Wait()
+				return nil
 			}
 
 			err = stream.SendMsg(data)
@@ -98,12 +98,12 @@ func BidirectionalStreamClient(stream grpc.ClientStream,
 				return err
 			}
 
-			eg.Go(safety.RecoverFunc(func() (err error) {
-				var res interface{}
-				err = stream.RecvMsg(&res)
+			eg.Go(func() error {
+				res := newData()
+				err = stream.RecvMsg(res)
 				f(res, err)
-				return err
-			}))
+				return nil
+			})
 		}
 	}
 }

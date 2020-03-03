@@ -21,33 +21,33 @@ func NewStreamInsert(opts ...StreamInsertOption) e2e.Strategy {
 	return s
 }
 
-func (sisrt *streamInsert) dataProvider(b *testing.B, dataset assets.Dataset) func() *client.ObjectVector {
+func (sisrt *streamInsert) dataProvider(total *uint32, b *testing.B, dataset assets.Dataset) func() *client.ObjectVector {
 	ids, trains := dataset.IDs(), dataset.Train()
 
 	var cnt uint32
-
 	b.StopTimer()
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.StartTimer()
-	defer b.StopTimer()
 
 	return func() *client.ObjectVector {
-		n := int(atomic.AddUint32(&cnt, 1))
-		if n > b.N {
+		n := int(atomic.AddUint32(&cnt, 1)) - 1
+		if n >= b.N {
 			return nil
 		}
 
+		total := int(atomic.AddUint32(total, 1))
 		return &client.ObjectVector{
-			Id:     ids[n%len(ids)],
-			Vector: trains[n%len(trains)],
+			Id:     ids[total%len(ids)],
+			Vector: trains[total%len(trains)],
 		}
 	}
 }
 
 func (sisrt *streamInsert) Run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+	var total uint32
 	b.Run("StreamInsert", func(bb *testing.B) {
-		c.StreamInsert(ctx, sisrt.dataProvider(b, dataset), func(err error) {
+		c.StreamInsert(ctx, sisrt.dataProvider(&total, bb, dataset), func(err error) {
 			if err == io.EOF {
 				return
 			} else if err != nil {

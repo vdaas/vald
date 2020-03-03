@@ -54,7 +54,7 @@ func init() {
 	targets = strings.Split(strings.TrimSpace(dataset), ",")
 }
 
-func BenchmarkNGTD_REST_Sequential(b *testing.B) {
+func aBenchmarkNGTD_REST_Sequential(b *testing.B) {
 	ctx := context.Background()
 
 	client, err := rest.New(ctx)
@@ -87,7 +87,7 @@ func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 	}
 }
 
-func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
+func aBenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 	ctx := context.Background()
 
 	client, err := grpc.New(ctx)
@@ -142,13 +142,6 @@ func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 			e2e.WithClient(client),
 			e2e.WithStrategy(
 				strategy.NewStreamInsert(),
-				// strategy.NewCreateIndex(
-				// 	strategy.WithCreateIndexClient(client),
-				// ),
-				// strategy.NewStreamSearch(
-				// 	strategy.WithStreamSearchConfig(searchConfig),
-				// ),
-				// strategy.NewStreamRemove(),
 			),
 		)
 		bench.Run(ctx, b)
