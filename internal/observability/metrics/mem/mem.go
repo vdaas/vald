@@ -30,6 +30,13 @@ type memory struct {
 	sys          metrics.Int64Measure
 	mallocs      metrics.Int64Measure
 	frees        metrics.Int64Measure
+	heapAlloc    metrics.Int64Measure
+	heapSys      metrics.Int64Measure
+	heapIdle     metrics.Int64Measure
+	heapInuse    metrics.Int64Measure
+	heapReleased metrics.Int64Measure
+	stackInuse   metrics.Int64Measure
+	stackSys     metrics.Int64Measure
 	pauseTotalMs metrics.Float64Measure
 	numGC        metrics.Int64Measure
 }
@@ -41,6 +48,13 @@ func New() metrics.Metric {
 		sys:          *metrics.Int64(metrics.ValdOrg+"/memory/sys", "total bytes of memory obtained from the OS", metrics.UnitBytes),
 		mallocs:      *metrics.Int64(metrics.ValdOrg+"/memory/mallocs_total", "the cumulative count of heap objects allocated", metrics.UnitDimensionless),
 		frees:        *metrics.Int64(metrics.ValdOrg+"/memory/frees_total", "the cumulative count of heap objects freed", metrics.UnitDimensionless),
+		heapAlloc:    *metrics.Int64(metrics.ValdOrg+"/memory/heap_alloc", "bytes of allocated heap objects", metrics.UnitBytes),
+		heapSys:      *metrics.Int64(metrics.ValdOrg+"/memory/heap_sys", "bytes of heap memory obtained from the OS", metrics.UnitBytes),
+		heapIdle:     *metrics.Int64(metrics.ValdOrg+"/memory/heap_idle", "bytes in idle (unused) spans", metrics.UnitBytes),
+		heapInuse:    *metrics.Int64(metrics.ValdOrg+"/memory/heap_inuse", "bytes in in-use spans", metrics.UnitBytes),
+		heapReleased: *metrics.Int64(metrics.ValdOrg+"/memory/heap_released", "bytes of physical memory returned to the OS", metrics.UnitBytes),
+		stackInuse:   *metrics.Int64(metrics.ValdOrg+"/memory/stack_inuse", "bytes in stack spans", metrics.UnitBytes),
+		stackSys:     *metrics.Int64(metrics.ValdOrg+"/memory/stack_sys", "bytes of stack memory obtained from the OS", metrics.UnitBytes),
 		pauseTotalMs: *metrics.Float64(metrics.ValdOrg+"/memory/pause_ms_total", "the cumulative milliseconds in GC", metrics.UnitMilliseconds),
 		numGC:        *metrics.Int64(metrics.ValdOrg+"/memory/gc_count", "the number of completed GC cycles", metrics.UnitDimensionless),
 	}
@@ -61,6 +75,13 @@ func (m *memory) Measurement(ctx context.Context) ([]metrics.Measurement, error)
 		m.sys.M(int64(mstats.Sys)),
 		m.mallocs.M(int64(mstats.Mallocs)),
 		m.frees.M(int64(mstats.Frees)),
+		m.heapAlloc.M(int64(mstats.HeapAlloc)),
+		m.heapSys.M(int64(mstats.HeapSys)),
+		m.heapIdle.M(int64(mstats.HeapIdle)),
+		m.heapInuse.M(int64(mstats.HeapInuse)),
+		m.heapReleased.M(int64(mstats.HeapReleased)),
+		m.stackInuse.M(int64(mstats.StackInuse)),
+		m.stackSys.M(int64(mstats.StackSys)),
 		m.pauseTotalMs.M(float64(pauseTotalMs)),
 		m.numGC.M(int64(mstats.NumGC)),
 	}, nil
@@ -94,13 +115,55 @@ func (m *memory) View() []*metrics.View {
 			Name:        "mallocs_total",
 			Description: "the cumulative count of heap objects allocated",
 			Measure:     &m.mallocs,
-			Aggregation: metrics.Count(),
+			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "frees_total",
 			Description: "the cumulative count of heap objects freed",
 			Measure:     &m.frees,
-			Aggregation: metrics.Count(),
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "heap_alloc_bytes",
+			Description: "bytes of allocated heap objects",
+			Measure:     &m.heapAlloc,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "heap_sys_bytes",
+			Description: "bytes of heap memory obtained from the OS",
+			Measure:     &m.heapSys,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "heap_idle_bytes",
+			Description: "bytes in idle (unused) spans",
+			Measure:     &m.heapIdle,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "heap_inuse_bytes",
+			Description: "bytes in in-use spans",
+			Measure:     &m.heapInuse,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "heap_released_bytes",
+			Description: "bytes of physical memory returned to the OS",
+			Measure:     &m.heapReleased,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "stack_inuse_bytes",
+			Description: "bytes in stack spans",
+			Measure:     &m.stackInuse,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "stack_sys_bytes",
+			Description: "bytes of stack memory obtained from the OS",
+			Measure:     &m.stackSys,
+			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "pause_ms_total",
