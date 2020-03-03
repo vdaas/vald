@@ -88,7 +88,7 @@ func RecordWithTags(ctx context.Context, mwts ...MeasurementWithTags) (errs erro
 
 func MeasurementsCount(m Metric) int {
 	cnt := 0
-	rv := reflect.ValueOf(m)
+	rv := reflect.Indirect(reflect.ValueOf(m))
 	for i := 0; i < rv.NumField(); i++ {
 		switch rv.Field(i).Type() {
 		case reflect.TypeOf(Int64Measure{}),
