@@ -1,15 +1,11 @@
 name: 'Run e2e deploy test'
 on:
   push:
-    branches:
-      - master
     tags:
        - '*.*.*'
        - 'v*.*.*'
        - '*.*.*-*'
        - 'v*.*.*-*'
-    paths:
-      - 'versions/VALD_VERSION'
 
 jobs:
   e2e-deploy:
