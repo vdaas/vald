@@ -79,8 +79,8 @@ spec:
               containerPort: 6061
           resources:
             requests:
-              cpu: 300m
-              memory: 4Gi
+              cpu: 100m
+              memory: 50Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           env:

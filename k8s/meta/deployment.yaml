@@ -105,7 +105,7 @@ spec:
               memory: 100Mi
             requests:
               cpu: 100m
-              memory: 40Mi
+              memory: 30Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           env:

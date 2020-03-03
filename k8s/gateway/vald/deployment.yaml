@@ -127,8 +127,8 @@ spec:
               cpu: 2000m
               memory: 700Mi
             requests:
-              cpu: 200m
-              memory: 150Mi
+              cpu: 100m
+              memory: 50Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           env:
