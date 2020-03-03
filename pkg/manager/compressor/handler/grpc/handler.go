@@ -112,7 +112,7 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) 
 	uuid := meta.GetUuid()
 	vector, err := s.compressor.Compress(ctx, meta.GetVector())
 	if err != nil {
-		log.Errorf("[Register]\tunknown error\t%+v", err)
+		log.Errorf("[Register]\tcompress returns unknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -128,7 +128,7 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) 
 
 	err = s.backup.Register(ctx, mvec)
 	if err != nil {
-		log.Errorf("[Register]\tunknown error\t%+v", err)
+		log.Errorf("[Register]\tbackup returns unknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}

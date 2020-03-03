@@ -20,6 +20,7 @@ import (
 	"context"
 	"reflect"
 	"sync"
+	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/compress"
 	"github.com/vdaas/vald/internal/config"
@@ -43,6 +44,7 @@ type compressor struct {
 	compressor       compress.Compressor
 	limitation       int
 	buffer           int
+	running          atomic.Value
 	eg               errgroup.Group
 	jobCh            chan func() error
 }
@@ -54,6 +56,7 @@ func NewCompressor(opts ...CompressorOption) (Compressor, error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
+	c.running.Store(false)
 
 	return c, nil
 }
@@ -97,13 +100,26 @@ func (c *compressor) Start(ctx context.Context) <-chan error {
 
 	c.jobCh = make(chan func() error, c.buffer)
 
+	c.running.Store(true)
 	c.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(c.jobCh)
 		for {
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
-			case j := <-c.jobCh:
-				eg.Go(safety.RecoverFunc(j))
+				c.running.Store(false)
+				if err = ctx.Err(); err != nil {
+					return errors.Wrap(eg.Wait(), err.Error())
+				}
+				return eg.Wait()
+			case job := <-c.jobCh:
+				eg.Go(safety.RecoverFunc(func() (err error) {
+					err = job()
+					if err != nil {
+						ech <- err
+						err = nil
+					}
+					return nil
+				}))
 			}
 		}
 	}))
@@ -120,28 +136,30 @@ func (c *compressor) dispatchCompress(ctx context.Context, vectors ...[]float32)
 		defer wg.Done()
 
 		for iter, vector := range vectors {
-			wg.Add(1)
-			c.jobCh <- func(i int, v []float32) func() error {
-				return func() error {
-					defer wg.Done()
+			if c.running.Load().(bool) {
+				wg.Add(1)
+				c.jobCh <- func(i int, v []float32) func() error {
+					return func() error {
+						defer wg.Done()
 
-					select {
-					case <-ctx.Done():
-						return ctx.Err()
-					default:
+						select {
+						case <-ctx.Done():
+							return ctx.Err()
+						default:
+						}
+
+						res, err := c.compressor.CompressVector(v)
+						if err != nil {
+							errs = errors.Wrap(errs, err.Error())
+							return err
+						}
+
+						results[i] = res
+
+						return nil
 					}
-
-					res, err := c.compressor.CompressVector(v)
-					if err != nil {
-						errs = errors.Wrap(errs, err.Error())
-						return err
-					}
-
-					results[i] = res
-
-					return nil
-				}
-			}(iter, vector)
+				}(iter, vector)
+			}
 		}
 
 		return nil
@@ -151,7 +169,7 @@ func (c *compressor) dispatchCompress(ctx context.Context, vectors ...[]float32)
 
 	for _, result := range results {
 		if result == nil {
-			errs = errors.Wrap(errs, errors.ErrCompressFailed().Error())
+			errs = errors.Wrap(errs, errors.ErrCompressFailed.Error())
 		}
 	}
 
@@ -167,28 +185,30 @@ func (c *compressor) dispatchDecompress(ctx context.Context, bytess ...[]byte) (
 		defer wg.Done()
 
 		for iter, bytes := range bytess {
-			wg.Add(1)
-			c.jobCh <- func(i int, b []byte) func() error {
-				return func() error {
-					defer wg.Done()
+			if c.running.Load().(bool) {
+				wg.Add(1)
+				c.jobCh <- func(i int, b []byte) func() error {
+					return func() error {
+						defer wg.Done()
 
-					select {
-					case <-ctx.Done():
-						return ctx.Err()
-					default:
+						select {
+						case <-ctx.Done():
+							return ctx.Err()
+						default:
+						}
+
+						res, err := c.compressor.DecompressVector(b)
+						if err != nil {
+							errs = errors.Wrap(errs, err.Error())
+							return err
+						}
+
+						results[i] = res
+
+						return nil
 					}
-
-					res, err := c.compressor.DecompressVector(b)
-					if err != nil {
-						errs = errors.Wrap(errs, err.Error())
-						return err
-					}
-
-					results[i] = res
-
-					return nil
-				}
-			}(iter, bytes)
+				}(iter, bytes)
+			}
 		}
 
 		return nil
@@ -198,7 +218,7 @@ func (c *compressor) dispatchDecompress(ctx context.Context, bytess ...[]byte) (
 
 	for _, result := range results {
 		if result == nil {
-			errs = errors.Wrap(errs, errors.ErrDecompressFailed().Error())
+			errs = errors.Wrap(errs, errors.ErrDecompressFailed.Error())
 		}
 	}
 
@@ -207,20 +227,26 @@ func (c *compressor) dispatchDecompress(ctx context.Context, bytess ...[]byte) (
 
 func (c *compressor) Compress(ctx context.Context, vector []float32) ([]byte, error) {
 	ress, err := c.dispatchCompress(ctx, vector)
-	if len(ress) != 1 {
+	if err != nil {
 		return nil, err
 	}
+	if len(ress) != 1 {
+		return nil, errors.ErrCompressedDataNotFound
+	}
 
-	return ress[0], err
+	return ress[0], nil
 }
 
 func (c *compressor) Decompress(ctx context.Context, bytes []byte) ([]float32, error) {
 	ress, err := c.dispatchDecompress(ctx, bytes)
-	if len(ress) != 1 {
+	if err != nil {
 		return nil, err
 	}
+	if len(ress) != 1 {
+		return nil, errors.ErrDecompressedDataNotFound
+	}
 
-	return ress[0], err
+	return ress[0], nil
 }
 
 func (c *compressor) MultiCompress(ctx context.Context, vectors [][]float32) ([][]byte, error) {
