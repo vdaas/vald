@@ -48,12 +48,10 @@ func (sisrt *streamInsert) dataProvider(b *testing.B, dataset assets.Dataset) fu
 func (sisrt *streamInsert) Run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
 	b.Run("StreamInsert", func(bb *testing.B) {
 		c.StreamInsert(ctx, sisrt.dataProvider(b, dataset), func(err error) {
-			if err != nil {
-				if err == io.EOF {
-					return
-				} else if err != nil {
-					bb.Error(err)
-				}
+			if err == io.EOF {
+				return
+			} else if err != nil {
+				bb.Error(err)
 			}
 		})
 	})
