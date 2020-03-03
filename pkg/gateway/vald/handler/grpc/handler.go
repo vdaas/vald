@@ -327,6 +327,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 		return nil
 	})
 	if err != nil {
+		err = errors.Wrapf(err, "Insert API (do multiple) failed to Insert uuid = %s\tmeta = %s\t info = %#v", uuid, meta, info.Get())
 		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -342,11 +343,12 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 		}
 		err = s.backup.Register(ctx, vecs)
 		if err != nil {
+			err = errors.Wrapf(err, "Insert API (backup.Register) failed to Backup Vectors = %#v\t info = %#v", vecs, info.Get())
 			log.Error(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
-			return nil, status.WrapWithInternal(fmt.Sprintf("Insert API failed to Backup Vectors %#v", vecs), err, info.Get())
+			return nil, status.WrapWithInternal(err.Error(), err)
 		}
 	}
 	log.Debugf("Insert API insert succeeded to %v", targets)

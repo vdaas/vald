@@ -19,6 +19,7 @@ package service
 import (
 	"context"
 	"reflect"
+	"runtime"
 	"sync"
 	"sync/atomic"
 
@@ -26,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -115,6 +117,8 @@ func (c *compressor) Start(ctx context.Context) <-chan error {
 				eg.Go(safety.RecoverFunc(func() (err error) {
 					err = job()
 					if err != nil {
+						log.Debug(err)
+						runtime.Gosched()
 						ech <- err
 						err = nil
 					}
@@ -152,7 +156,9 @@ func (c *compressor) dispatchCompress(ctx context.Context, vectors ...[]float32)
 
 						res, err := c.compressor.CompressVector(v)
 						if err != nil {
+							mu.Lock()
 							errs = errors.Wrap(errs, err.Error())
+							mu.Unlock()
 							return err
 						}
 
@@ -183,6 +189,7 @@ func (c *compressor) dispatchCompress(ctx context.Context, vectors ...[]float32)
 func (c *compressor) dispatchDecompress(ctx context.Context, bytess ...[]byte) (results [][]float32, errs error) {
 	results = make([][]float32, len(bytess))
 
+	mu := new(sync.Mutex)
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
 	c.eg.Go(safety.RecoverFunc(func() error {
@@ -203,11 +210,15 @@ func (c *compressor) dispatchDecompress(ctx context.Context, bytess ...[]byte) (
 
 						res, err := c.compressor.DecompressVector(b)
 						if err != nil {
+							mu.Lock()
 							errs = errors.Wrap(errs, err.Error())
+							mu.Unlock()
 							return err
 						}
 
+						mu.Lock()
 						results[i] = res
+						mu.Unlock()
 
 						return nil
 					}
