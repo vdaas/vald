@@ -30,6 +30,7 @@ func (r *remove) Run(ctx context.Context, b *testing.B, c client.Client, dataset
 }
 
 func (r *remove) run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+	cnt := 0
 	b.Run("Remove", func(bb *testing.B) {
 		ids := dataset.IDs()
 
@@ -38,7 +39,8 @@ func (r *remove) run(ctx context.Context, b *testing.B, c client.Client, dataset
 		bb.ResetTimer()
 		bb.StartTimer()
 		for i := 0; i < bb.N; i++ {
-			r.do(ctx, bb, c, ids[i%len(ids)])
+			r.do(ctx, bb, c, ids[cnt%len(ids)])
+			cnt++
 		}
 		bb.StopTimer()
 	})
@@ -53,10 +55,10 @@ func (r *remove) runParallel(ctx context.Context, b *testing.B, c client.Client,
 		bb.ResetTimer()
 		bb.StartTimer()
 		bb.RunParallel(func(pb *testing.PB) {
-			i := 0
+			cnt := 0
 			for pb.Next() {
-				r.do(ctx, bb, c, ids[i%len(ids)])
-				i++
+				r.do(ctx, bb, c, ids[cnt%len(ids)])
+				cnt++
 			}
 		})
 		bb.StopTimer()
