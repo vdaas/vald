@@ -5,6 +5,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	proto "github.com/yahoojapan/ngtd/proto"
 	ggrpc "google.golang.org/grpc"
@@ -121,14 +122,14 @@ func (c *ngtdClient) Insert(ctx context.Context, req *client.ObjectVector) error
 	return err
 }
 
-func (c *ngtdClient) StreamInsert(ctx context.Context, dataProvider func() *client.ObjectVector, f func(error)) {
+func (c *ngtdClient) StreamInsert(ctx context.Context, dataProvider func() *client.ObjectVector, f func(error)) error {
 	st, err := c.NGTDClient.StreamInsert(ctx)
 	if err != nil {
-		// TODO: return err
+		return err
 	}
 	defer st.CloseSend()
 
-	grpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
+	return grpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
 		if d := dataProvider(); d != nil {
 			return d
 		}
@@ -139,22 +140,19 @@ func (c *ngtdClient) StreamInsert(ctx context.Context, dataProvider func() *clie
 }
 
 func (c *ngtdClient) MultiInsert(ctx context.Context, req *client.ObjectVectors) error {
-	// TODO: errors.NotSupportedClientMethod
-	return nil
+	return errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) Update(ctx context.Context, req *client.ObjectVector) error {
-	// TODO: errors.NotSupportedClientMethod
-	return nil
+	return errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) StreamUpdate(ctx context.Context, dataProvider func() *client.ObjectVector, f func(error)) {
-	// TODO: errors.NotSupportedClientMethod
+func (c *ngtdClient) StreamUpdate(ctx context.Context, dataProvider func() *client.ObjectVector, f func(error)) error {
+	return errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) MultiUpdate(ctx context.Context, req *client.ObjectVectors) error {
-	// TODO: errors.NotSupportedClientMethod
-	return nil
+	return errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) Remove(ctx context.Context, req *client.ObjectID) error {
@@ -164,13 +162,14 @@ func (c *ngtdClient) Remove(ctx context.Context, req *client.ObjectID) error {
 	return err
 }
 
-func (c *ngtdClient) StreamRemove(ctx context.Context, dataProvider func() *client.ObjectID, f func(error)) {
+func (c *ngtdClient) StreamRemove(ctx context.Context, dataProvider func() *client.ObjectID, f func(error)) error {
 	st, err := c.NGTDClient.StreamRemove(ctx)
 	if err != nil {
-		// TODO: return err
+		return err
 	}
 	defer st.CloseSend()
 
+	return nil
 	/**
 	grpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
 		return dataProvider()
@@ -181,8 +180,7 @@ func (c *ngtdClient) StreamRemove(ctx context.Context, dataProvider func() *clie
 }
 
 func (c *ngtdClient) MultiRemove(ctx context.Context, req *client.ObjectIDs) error {
-	// TODO: errors.NotSupportedClientMethod
-	return nil
+	return errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) GetObject(ctx context.Context, req *client.ObjectID) (*client.ObjectVector, error) {
@@ -202,7 +200,7 @@ func (c *ngtdClient) GetObject(ctx context.Context, req *client.ObjectID) (*clie
 func (c *ngtdClient) StreamGetObject(ctx context.Context, dataProvider func() *client.ObjectID, f func(*client.ObjectVector, error)) error {
 	st, err := c.NGTDClient.StreamGetObject(ctx)
 	if err != nil {
-		// TODO: return err
+		return err
 	}
 	defer st.CloseSend()
 

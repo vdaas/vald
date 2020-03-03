@@ -5,6 +5,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/errors"
 
 	proto "github.com/yahoojapan/ngtd/proto"
 )
@@ -30,8 +31,7 @@ func New(ctx context.Context, opts ...Option) (Client, error) {
 }
 
 func (c *ngtdClient) Exists(ctx context.Context, req *client.ObjectID) (*client.ObjectID, error) {
-	// TODO: errors.NotSupportedClientMethod
-	return nil, nil
+	return nil, errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) Search(ctx context.Context, req *client.SearchRequest) (*client.SearchResponse, error) {
@@ -73,13 +73,11 @@ func (c *ngtdClient) SearchByID(ctx context.Context, req *client.SearchIDRequest
 }
 
 func (c *ngtdClient) StreamSearch(ctx context.Context, dataProvider func() *client.SearchRequest, f func(*client.SearchResponse, error)) error {
-	// TODO: errors.NotSupportedClientMethod
-	return nil
+	return errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) StreamSearchByID(ctx context.Context, dataProvider func() *client.SearchRequest, f func(*client.SearchResponse, error)) error {
-	// TODO: errors.NotSupportedClientMethod
-	return nil
+	return errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) Insert(ctx context.Context, req *client.ObjectVector) error {
@@ -92,28 +90,24 @@ func (c *ngtdClient) Insert(ctx context.Context, req *client.ObjectVector) error
 	return nil
 }
 
-func (c *ngtdClient) StreamInsert(ctx context.Context, dataProvider func() *client.ObjectVector, f func(error)) {
-	// TODO: errors.NotSupportedClientMethod
-	return
+func (c *ngtdClient) StreamInsert(ctx context.Context, dataProvider func() *client.ObjectVector, f func(error)) error {
+	return errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) MultiInsert(ctx context.Context, req *client.ObjectVectors) error {
-	// TODO: errors.NotSupportedClientMethod
-	return nil
+	return errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) Update(ctx context.Context, req *client.ObjectVector) error {
-	// TODO: errors.NotSupportedClientMethod
-	return nil
+	return errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) StreamUpdate(ctx context.Context, dataProvider func() *client.ObjectVector, f func(error)) {
-	// TODO: errors.NotSupportedClientMethod
+func (c *ngtdClient) StreamUpdate(ctx context.Context, dataProvider func() *client.ObjectVector, f func(error)) error {
+	return errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) MultiUpdate(ctx context.Context, req *client.ObjectVectors) error {
-	// TODO: errors.NotSupportedClientMethod
-	return nil
+	return errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) Remove(ctx context.Context, req *client.ObjectID) error {
@@ -123,9 +117,8 @@ func (c *ngtdClient) Remove(ctx context.Context, req *client.ObjectID) error {
 	return nil
 }
 
-func (c *ngtdClient) StreamRemove(ctx context.Context, dataProvider func() *client.ObjectID, f func(error)) {
-	// TODO: errors.NotSupportedClientMethod
-	return
+func (c *ngtdClient) StreamRemove(ctx context.Context, dataProvider func() *client.ObjectID, f func(error)) error {
+	return errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) MultiRemove(ctx context.Context, req *client.ObjectIDs) error {
@@ -134,13 +127,11 @@ func (c *ngtdClient) MultiRemove(ctx context.Context, req *client.ObjectIDs) err
 }
 
 func (c *ngtdClient) GetObject(ctx context.Context, req *client.ObjectID) (*client.ObjectVector, error) {
-	// TODO: errors.NotSupportedClientMethod
-	return nil, nil
+	return nil, errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) StreamGetObject(ctx context.Context, dataProvider func() *client.ObjectID, f func(*client.ObjectVector, error)) error {
-	// TODO: errors.NotSupportedClientMethod
-	return nil
+	return errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) CreateIndex(ctx context.Context, req *client.ControlCreateIndexRequest) error {
@@ -158,13 +149,11 @@ func (c *ngtdClient) SaveIndex(ctx context.Context) error {
 }
 
 func (c *ngtdClient) CreateAndSaveIndex(ctx context.Context, req *client.ControlCreateIndexRequest) error {
-	// TODO: errors.NotSupportedClientMethod
-	return nil
+	return errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) IndexInfo(ctx context.Context) (*client.InfoIndex, error) {
-	// TODO: errors.NotSupportedClientMethod
-	return nil, nil
+	return nil, errors.ErrUnsupportedClientMethod
 }
 
 func tofloat64(in []float32) (out []float64) {
