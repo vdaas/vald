@@ -19,6 +19,7 @@ type (
 	MetaObject                = payload.Backup_MetaVector
 	Empty                     = payload.Empty
 	SearchConfig              = payload.Search_Config
+	ObjectDistance            = payload.Object_Distance
 )
 
 type Client interface {
@@ -31,7 +32,7 @@ type Reader interface {
 	Search(context.Context, *SearchRequest) (*SearchResponse, error)
 	SearchByID(context.Context, *SearchIDRequest) (*SearchResponse, error)
 	StreamSearch(context.Context, func() *SearchRequest, func(*SearchResponse, error)) error
-	StreamSearchByID(context.Context, func() *SearchRequest, func(*SearchResponse, error)) error
+	StreamSearchByID(context.Context, func() *SearchIDRequest, func(*SearchResponse, error)) error
 }
 
 type Writer interface {

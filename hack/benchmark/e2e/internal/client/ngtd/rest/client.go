@@ -76,7 +76,7 @@ func (c *ngtdClient) StreamSearch(ctx context.Context, dataProvider func() *clie
 	return errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) StreamSearchByID(ctx context.Context, dataProvider func() *client.SearchRequest, f func(*client.SearchResponse, error)) error {
+func (c *ngtdClient) StreamSearchByID(ctx context.Context, dataProvider func() *client.SearchIDRequest, f func(*client.SearchResponse, error)) error {
 	return errors.ErrUnsupportedClientMethod
 }
 

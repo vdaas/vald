@@ -25,6 +25,7 @@ func (sisrt *streamInsert) dataProvider(total *uint32, b *testing.B, dataset ass
 	ids, trains := dataset.IDs(), dataset.Train()
 
 	var cnt uint32
+
 	b.StopTimer()
 	b.ReportAllocs()
 	b.ResetTimer()

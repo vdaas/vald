@@ -142,6 +142,13 @@ func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 			e2e.WithClient(client),
 			e2e.WithStrategy(
 				strategy.NewStreamInsert(),
+				strategy.NewCreateIndex(
+					strategy.WithCreateIndexClient(client),
+				),
+				strategy.NewStreamSearch(
+					strategy.WithStreamSearchConfig(searchConfig),
+				),
+				// strategy.NewStreamRemove(),
 			),
 		)
 		bench.Run(ctx, b)

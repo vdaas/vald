@@ -21,7 +21,7 @@ func NewStreamRemove(opts ...StreamRemoveOption) e2e.Strategy {
 	return sr
 }
 
-func (sr *streamRemove) dataProvider(b *testing.B, dataset assets.Dataset) func() *client.ObjectID {
+func (sr *streamRemove) dataProvider(total *uint32, b *testing.B, dataset assets.Dataset) func() *client.ObjectID {
 	ids := dataset.IDs()
 
 	var cnt uint32
@@ -33,20 +33,22 @@ func (sr *streamRemove) dataProvider(b *testing.B, dataset assets.Dataset) func(
 	defer b.StopTimer()
 
 	return func() *client.ObjectID {
-		n := int(atomic.AddUint32(&cnt, 1))
-		if n > b.N {
+		n := int(atomic.AddUint32(&cnt, 1)) - 1
+		if n >= b.N {
 			return nil
 		}
 
+		total := int(atomic.AddUint32(total, 1))
 		return &client.ObjectID{
-			Id: ids[n%len(ids)],
+			Id: ids[total%len(ids)],
 		}
 	}
 }
 
 func (sr *streamRemove) Run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+	var total uint32
 	b.Run("StreamRemove", func(bb *testing.B) {
-		c.StreamRemove(ctx, sr.dataProvider(b, dataset), func(err error) {
+		c.StreamRemove(ctx, sr.dataProvider(&total, b, dataset), func(err error) {
 			if err != nil {
 				if err != io.EOF {
 					b.Error(err)

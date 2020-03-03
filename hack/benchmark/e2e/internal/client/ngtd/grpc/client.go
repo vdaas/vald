@@ -3,7 +3,6 @@ package grpc
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/client"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -30,7 +29,7 @@ func New(ctx context.Context, opts ...Option) (Client, error) {
 		opt(c)
 	}
 
-	conn, err := ggrpc.DialContext(ctx, c.addr, ggrpc.WithInsecure())
+	conn, err := ggrpc.DialContext(ctx, c.addr, ggrpc.WithInsecure(), ggrpc.WithMaxMsgSize(-1))
 	if err != nil {
 		return nil, err
 	}
@@ -44,33 +43,19 @@ func (c *ngtdClient) Exists(ctx context.Context, req *client.ObjectID) (*client.
 }
 
 func (c *ngtdClient) Search(ctx context.Context, req *client.SearchRequest) (*client.SearchResponse, error) {
-	resp, err := c.NGTDClient.Search(ctx, &proto.SearchRequest{
-		Vector:  tofloat64(req.GetVector()),
-		Epsilon: req.GetConfig().GetEpsilon(),
-		Size_:   int32(req.GetConfig().GetNum()),
-	})
+	resp, err := c.NGTDClient.Search(ctx, searchRequestToNGTDSearchRequest(req))
 	if err != nil {
 		return nil, err
 	}
-
-	return &client.SearchResponse{
-		Results: toObjectDistances(resp.GetResult()),
-	}, nil
+	return toSearchResponse(resp), nil
 }
 
 func (c *ngtdClient) SearchByID(ctx context.Context, req *client.SearchIDRequest) (*client.SearchResponse, error) {
-	resp, err := c.NGTDClient.SearchByID(ctx, &proto.SearchRequest{
-		Id:      []byte(req.GetId()),
-		Epsilon: req.GetConfig().GetEpsilon(),
-		Size_:   int32(req.GetConfig().GetNum()),
-	})
+	resp, err := c.NGTDClient.SearchByID(ctx, searchIDRequestToNGTDSearchRequest(req))
 	if err != nil {
 		return nil, err
 	}
-
-	return &client.SearchResponse{
-		Results: toObjectDistances(resp.GetResult()),
-	}, nil
+	return toSearchResponse(resp), nil
 }
 
 func (c *ngtdClient) StreamSearch(ctx context.Context, dataProvider func() *client.SearchRequest, f func(*client.SearchResponse, error)) error {
@@ -80,37 +65,45 @@ func (c *ngtdClient) StreamSearch(ctx context.Context, dataProvider func() *clie
 	}
 	defer st.CloseSend()
 
-	/**
-	grpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-		return dataProvider()
-	}, func(res interface{}, err error) {
-		_ = client.SearchResponse{
-			Results: toObjectDistances(res.GetResult()),
-		}
-	})
-	*/
-
-	return nil
+	return grpc.BidirectionalStreamClient(st, c.streamConcurrency,
+		func() interface{} {
+			if d := dataProvider(); d != nil {
+				return searchRequestToNGTDSearchRequest(d)
+			}
+			return nil
+		}, func() interface{} {
+			return new(proto.SearchResponse)
+		}, func(res interface{}, err error) {
+			if err != nil {
+				r := res.(*proto.SearchResponse)
+				f(toSearchResponse(r), err)
+			}
+			f(nil, err)
+		})
 }
 
-func (c *ngtdClient) StreamSearchByID(ctx context.Context, dataProvider func() *client.SearchRequest, f func(*client.SearchResponse, error)) error {
+func (c *ngtdClient) StreamSearchByID(ctx context.Context, dataProvider func() *client.SearchIDRequest, f func(*client.SearchResponse, error)) error {
 	st, err := c.NGTDClient.StreamSearchByID(ctx)
 	if err != nil {
 		return err
 	}
 	defer st.CloseSend()
 
-	/**
-	grpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-		return dataProvider()
-	}, func(res interface{}, err error) {
-		_ = client.SearchResponse{
-			Results: toObjectDistances(res.GetResult()),
-		}
-	})
-	*/
-
-	return nil
+	return grpc.BidirectionalStreamClient(st, c.streamConcurrency,
+		func() interface{} {
+			if d := dataProvider(); d != nil {
+				return searchIDRequestToNGTDSearchRequest(d)
+			}
+			return nil
+		}, func() interface{} {
+			return new(proto.SearchResponse)
+		}, func(res interface{}, err error) {
+			if err != nil {
+				r := res.(*proto.SearchResponse)
+				f(toSearchResponse(r), err)
+			}
+			f(nil, err)
+		})
 }
 
 func (c *ngtdClient) Insert(ctx context.Context, req *client.ObjectVector) error {
@@ -174,14 +167,19 @@ func (c *ngtdClient) StreamRemove(ctx context.Context, dataProvider func() *clie
 	}
 	defer st.CloseSend()
 
-	return nil
-	/**
-	grpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-		return dataProvider()
-	}, func(_ interface{}, err error) {
-		f(err)
-	})
-	*/
+	return grpc.BidirectionalStreamClient(st, c.streamConcurrency,
+		func() interface{} {
+			if d := dataProvider(); d != nil {
+				return &proto.RemoveRequest{
+					Id: []byte(d.GetId()),
+				}
+			}
+			return nil
+		}, func() interface{} {
+			return new(proto.RemoveResponse)
+		}, func(_ interface{}, err error) {
+			f(err)
+		})
 }
 
 func (c *ngtdClient) MultiRemove(ctx context.Context, req *client.ObjectIDs) error {
@@ -209,18 +207,27 @@ func (c *ngtdClient) StreamGetObject(ctx context.Context, dataProvider func() *c
 	}
 	defer st.CloseSend()
 
-	/**
-	grpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-		return dataProvider()
-	}, func(res interface{}, err error) {
-		r := res.(*proto.GetObjectResponse)
-		f(&client.ObjectVector {
-			Id: string(resp.GetId()),
-			Vector: resp.GetVector(),
-		},err)
-	})
-	*/
-	return nil
+	return grpc.BidirectionalStreamClient(st, c.streamConcurrency,
+		func() interface{} {
+			if d := dataProvider(); d != nil {
+				return &proto.GetObjectRequest{
+					Id: []byte(d.GetId()),
+				}
+			}
+			return nil
+		}, func() interface{} {
+			return new(proto.InsertResponse)
+		}, func(res interface{}, err error) {
+			if err != nil {
+				r := res.(*proto.GetObjectResponse)
+				f(&client.ObjectVector{
+					Id:     string(r.GetId()),
+					Vector: r.GetVector(),
+				}, err)
+			} else {
+				f(nil, err)
+			}
+		})
 }
 
 func (c *ngtdClient) CreateIndex(ctx context.Context, req *client.ControlCreateIndexRequest) error {
@@ -243,22 +250,63 @@ func (c *ngtdClient) IndexInfo(ctx context.Context) (*client.InfoIndex, error) {
 	return nil, errors.ErrUnsupportedClientMethod
 }
 
+func searchIDRequestToNGTDSearchRequest(req *client.SearchIDRequest) *proto.SearchRequest {
+	size, epsilon := getSizeAndEpsilon(req.GetConfig())
+	return &proto.SearchRequest{
+		Id:      []byte(req.GetId()),
+		Epsilon: epsilon,
+		Size_:   size,
+	}
+}
+
+func searchRequestToNGTDSearchRequest(req *client.SearchRequest) *proto.SearchRequest {
+	size, epsilon := getSizeAndEpsilon(req.GetConfig())
+	_ = size
+	return &proto.SearchRequest{
+		Vector:  tofloat64(req.GetVector()),
+		Epsilon: epsilon,
+		Size_:   1,
+	}
+}
+
+func getSizeAndEpsilon(cfg *client.SearchConfig) (size int32, epsilon float32) {
+	if cfg != nil {
+		size = int32(cfg.GetNum())
+		epsilon = float32(cfg.GetEpsilon())
+	}
+	return
+}
+
+func toSearchResponse(in *proto.SearchResponse) (to *client.SearchResponse) {
+	results := make([]*client.ObjectDistance, 0, len(in.GetResult()))
+	for _, r := range results {
+		results = append(results, &client.ObjectDistance{
+			Id:       string(r.GetId()),
+			Distance: r.GetDistance(),
+		})
+	}
+	return &client.SearchResponse{
+		Results: results,
+	}
+}
+
+func toNGTDSearchResponse(in *client.SearchResponse) (to *proto.SearchResponse) {
+	results := make([]*proto.ObjectDistance, 0, len(in.GetResults()))
+	for _, r := range results {
+		results = append(results, &proto.ObjectDistance{
+			Id:       r.GetId(),
+			Distance: r.GetDistance(),
+		})
+	}
+	return &proto.SearchResponse{
+		Result: results,
+	}
+}
+
 func tofloat64(in []float32) (out []float64) {
 	out = make([]float64, len(in))
 	for i := range in {
 		out[i] = float64(in[i])
 	}
 	return
-}
-
-func toObjectDistances(in []*proto.ObjectDistance) (to []*payload.Object_Distance) {
-	to = make([]*payload.Object_Distance, 0, len(in))
-
-	for _, elm := range in {
-		to = append(to, &payload.Object_Distance{
-			Id:       string(elm.GetId()),
-			Distance: elm.GetDistance(),
-		})
-	}
-	return nil
 }
