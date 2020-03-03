@@ -160,13 +160,13 @@ defaults:
       connection_pool: 3
       health_check_duration: "1s"
       backoff:
-        initial_duration: ""
-        backoff_time_limit: ""
-        maximum_duration: ""
-        jitter_limit: ""
-        backoff_factor: 0
-        retry_count: 0
-        enable_error_log: false
+        initial_duration: 5ms
+        backoff_time_limit: 5s
+        maximum_duration: 5s
+        jitter_limit: 100ms
+        backoff_factor: 1.1
+        retry_count: 100
+        enable_error_log: true
       call_option:
         wait_for_ready: true
         max_retry_rpc_buffer_size: 0
@@ -184,9 +184,9 @@ defaults:
         timeout: ""
         tcp:
           dns:
-            cache_enabled: false
-            refresh_duration: ""
-            cache_expiration: ""
+            cache_enabled: true
+            refresh_duration: 30m
+            cache_expiration: 1h
           dialer:
             timeout: ""
             keep_alive: ""
@@ -318,17 +318,18 @@ gateway:
   resources:
     requests:
       cpu: 200m
+      memory: 150Mi
     limits:
-      cpu: 500m
+      cpu: 2000m
+      memory: 700Mi
   gateway_config:
     agent_namespace: _MY_POD_NAMESPACE_
     # node_name: _MY_NODE_NAME_
     index_replica: 5
     discoverer:
-      duration: "2s"
+      duration: 200ms
       discover_client: {}
-      agent_client:
-        connection_pool: 3
+      agent_client: {}
     meta:
       client: {}
       enable_cache: true
@@ -386,6 +387,10 @@ agent:
   observability:
     jaeger:
       service_name: vald-agent-ngt
+  resources:
+    requests:
+      cpu: 300m
+      memory: 4Gi # = cluster memory * 0.4 / number of agent pods
   ngt:
     # index_path: /path/to/index
     auto_index_limit: 10m
@@ -447,6 +452,13 @@ discoverer:
   observability:
     jaeger:
       service_name: vald-discoverer
+  resources:
+    requests:
+      cpu: 200m
+      memory: 65Mi
+    limits:
+      cpu: 600m
+      memory: 200Mi
   discoverer:
     name: ""
     namespace: _MY_POD_NAMESPACE_
@@ -515,9 +527,11 @@ compressor:
       service_name: vald-manager-compressor
   resources:
     requests:
-      cpu: 200m
+      cpu: 300m
+      memory: 50Mi
     limits:
       cpu: 500m
+      memory: 150Mi
   backup:
     client: {}
   compress:
@@ -630,9 +644,11 @@ backupManager:
       service_name: vald-manager-backup
   resources:
     requests:
-      cpu: 200m
+      cpu: 100m
+      memory: 50Mi
     limits:
       cpu: 500m
+      memory: 150Mi
   mysql:
     enabled: true
     config:
@@ -784,6 +800,13 @@ indexManager:
   observability:
     jaeger:
       service_name: vald-manager-index
+  resources:
+    requests:
+      cpu: 200m
+      memory: 80Mi
+    limits:
+      cpu: 1
+      memory: 500Mi
   indexer:
     agent_namespace: _MY_POD_NAMESPACE_
     # node_name: _MY_NODE_NAME_
@@ -792,10 +815,9 @@ indexManager:
     auto_index_check_duration: 1m
     auto_index_length: 100
     discoverer:
-      duration: "2s"
+      duration: 500ms
       discover_client: {}
       agent_client:
-        connection_pool: 3
         dial_option:
           tcp:
             dialer:
@@ -904,9 +926,11 @@ meta:
       service_name: vald-meta
   resources:
     requests:
-      cpu: 200m
+      cpu: 100m
+      memory: 40Mi
     limits:
-      cpu: 500m
+      cpu: 300m
+      memory: 100Mi
   redis:
     enabled: true
     config:
