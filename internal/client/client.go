@@ -20,6 +20,8 @@ type (
 	Empty                     = payload.Empty
 )
 
+type SearchConfig = payload.Search_Config
+
 type Client interface {
 	Reader
 	Writer
