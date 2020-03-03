@@ -64,7 +64,7 @@ func WithDNSCacheExpiration(dur string) DialerOption {
 		}
 		pd, err := timeutil.Parse(dur)
 		if err != nil {
-			WithDNSRefreshDuration("1h")(d)
+			WithDNSCacheExpiration("1h")(d)
 			return
 		}
 		d.dnsCacheExpiration = pd

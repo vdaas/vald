@@ -185,8 +185,8 @@ defaults:
         tcp:
           dns:
             cache_enabled: true
-            refresh_duration: ""
-            cache_expiration: ""
+            refresh_duration: 30m
+            cache_expiration: 1h
           dialer:
             timeout: ""
             keep_alive: ""
