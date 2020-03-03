@@ -120,3 +120,37 @@ func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 		bench.Run(ctx, b)
 	}
 }
+
+func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
+	ctx := context.Background()
+
+	client, err := grpc.New(ctx)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	for _, name := range targets {
+		bench := e2e.New(
+			b,
+			e2e.WithName(name),
+			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
+				return ngtd.New(
+					ngtd.WithDimentaion(d.Dimension()),
+					ngtd.WithServerType(ngtd.ServerType(ngtd.GRPC)),
+				).Run(ctx, tb)
+			}),
+			e2e.WithClient(client),
+			e2e.WithStrategy(
+				strategy.NewStreamInsert(),
+				// strategy.NewCreateIndex(
+				// 	strategy.WithCreateIndexClient(client),
+				// ),
+				// strategy.NewStreamSearch(
+				// 	strategy.WithStreamSearchConfig(searchConfig),
+				// ),
+				// strategy.NewStreamRemove(),
+			),
+		)
+		bench.Run(ctx, b)
+	}
+}

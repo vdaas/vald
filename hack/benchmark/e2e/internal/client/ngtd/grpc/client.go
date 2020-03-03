@@ -5,6 +5,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/net/grpc"
 	proto "github.com/yahoojapan/ngtd/proto"
 	ggrpc "google.golang.org/grpc"
 )
@@ -127,13 +128,14 @@ func (c *ngtdClient) StreamInsert(ctx context.Context, dataProvider func() *clie
 	}
 	defer st.CloseSend()
 
-	/**
 	grpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-		return dataProvider()
+		if d := dataProvider(); d != nil {
+			return d
+		}
+		return nil
 	}, func(_ interface{}, err error) {
 		f(err)
 	})
-	*/
 }
 
 func (c *ngtdClient) MultiInsert(ctx context.Context, req *client.ObjectVectors) error {
