@@ -40,8 +40,7 @@ func New(ctx context.Context, opts ...Option) (Client, error) {
 }
 
 func (c *ngtdClient) Exists(ctx context.Context, req *client.ObjectID) (*client.ObjectID, error) {
-	// TODO: errors.NotSupportedClientMethod
-	return nil, nil
+	return nil, errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) Search(ctx context.Context, req *client.SearchRequest) (*client.SearchResponse, error) {
@@ -237,13 +236,11 @@ func (c *ngtdClient) SaveIndex(ctx context.Context) error {
 }
 
 func (c *ngtdClient) CreateAndSaveIndex(ctx context.Context, req *client.ControlCreateIndexRequest) error {
-	// TODO: errors.NotSupportedClientMethod
-	return nil
+	return errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) IndexInfo(ctx context.Context) (*client.InfoIndex, error) {
-	// TODO: errors.NotSupportedClientMethod
-	return nil, nil
+	return nil, errors.ErrUnsupportedClientMethod
 }
 
 func tofloat64(in []float32) (out []float64) {
