@@ -114,7 +114,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
     ```bash
     kubectl get pods
 
-    # If deployment is successed you can see such as infomation.
+    # If the deployment is successful, you can check the following infomation.
     NAME                                       READY   STATUS    RESTARTS   AGE
     scylla-0                                   1/1     Running   0          13m
     scylla-1                                   1/1     Running   0          12m
