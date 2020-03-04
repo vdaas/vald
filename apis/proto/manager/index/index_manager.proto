@@ -29,7 +29,7 @@ import "pb/gql.proto";
 
 service Index {
   option (gql.svc_type) = QUERY;
-  rpc IndexInfo(payload.Empty) returns (payload.Info.Index) {
+  rpc IndexInfo(payload.Empty) returns (payload.Info.Index.Count) {
     option (google.api.http).get = "/index/info";
   }
 }

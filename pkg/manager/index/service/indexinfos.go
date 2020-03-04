@@ -24,34 +24,34 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 )
 
-type infoMap struct {
+type indexInfos struct {
 	mu     sync.Mutex
 	read   atomic.Value
-	dirty  map[string]*entryInfoMap
+	dirty  map[string]*entryIndexInfos
 	misses int
 }
 
-type readOnlyInfoMap struct {
-	m       map[string]*entryInfoMap
+type readOnlyIndexInfos struct {
+	m       map[string]*entryIndexInfos
 	amended bool
 }
 
-var expungedInfoMap = unsafe.Pointer(new(*payload.Info_Index))
+var expungedIndexInfos = unsafe.Pointer(new(*payload.Info_Index_Count))
 
-type entryInfoMap struct {
+type entryIndexInfos struct {
 	p unsafe.Pointer
 }
 
-func newEntryInfoMap(i *payload.Info_Index) *entryInfoMap {
-	return &entryInfoMap{p: unsafe.Pointer(&i)}
+func newEntryIndexInfos(i *payload.Info_Index_Count) *entryIndexInfos {
+	return &entryIndexInfos{p: unsafe.Pointer(&i)}
 }
 
-func (m *infoMap) Load(key string) (value *payload.Info_Index, ok bool) {
-	read, _ := m.read.Load().(readOnlyInfoMap)
+func (m *indexInfos) Load(key string) (value *payload.Info_Index_Count, ok bool) {
+	read, _ := m.read.Load().(readOnlyIndexInfos)
 	e, ok := read.m[key]
 	if !ok && read.amended {
 		m.mu.Lock()
-		read, _ = m.read.Load().(readOnlyInfoMap)
+		read, _ = m.read.Load().(readOnlyIndexInfos)
 		e, ok = read.m[key]
 		if !ok && read.amended {
 			e, ok = m.dirty[key]
@@ -65,22 +65,22 @@ func (m *infoMap) Load(key string) (value *payload.Info_Index, ok bool) {
 	return e.load()
 }
 
-func (e *entryInfoMap) load() (value *payload.Info_Index, ok bool) {
+func (e *entryIndexInfos) load() (value *payload.Info_Index_Count, ok bool) {
 	p := atomic.LoadPointer(&e.p)
-	if p == nil || p == expungedInfoMap {
+	if p == nil || p == expungedIndexInfos {
 		return value, false
 	}
-	return *(**payload.Info_Index)(p), true
+	return *(**payload.Info_Index_Count)(p), true
 }
 
-func (m *infoMap) Store(key string, value *payload.Info_Index) {
-	read, _ := m.read.Load().(readOnlyInfoMap)
+func (m *indexInfos) Store(key string, value *payload.Info_Index_Count) {
+	read, _ := m.read.Load().(readOnlyIndexInfos)
 	if e, ok := read.m[key]; ok && e.tryStore(&value) {
 		return
 	}
 
 	m.mu.Lock()
-	read, _ = m.read.Load().(readOnlyInfoMap)
+	read, _ = m.read.Load().(readOnlyIndexInfos)
 	if e, ok := read.m[key]; ok {
 		if e.unexpungeLocked() {
 			m.dirty[key] = e
@@ -91,17 +91,17 @@ func (m *infoMap) Store(key string, value *payload.Info_Index) {
 	} else {
 		if !read.amended {
 			m.dirtyLocked()
-			m.read.Store(readOnlyInfoMap{m: read.m, amended: true})
+			m.read.Store(readOnlyIndexInfos{m: read.m, amended: true})
 		}
-		m.dirty[key] = newEntryInfoMap(value)
+		m.dirty[key] = newEntryIndexInfos(value)
 	}
 	m.mu.Unlock()
 }
 
-func (e *entryInfoMap) tryStore(i **payload.Info_Index) bool {
+func (e *entryIndexInfos) tryStore(i **payload.Info_Index_Count) bool {
 	for {
 		p := atomic.LoadPointer(&e.p)
-		if p == expungedInfoMap {
+		if p == expungedIndexInfos {
 			return false
 		}
 		if atomic.CompareAndSwapPointer(&e.p, p, unsafe.Pointer(i)) {
@@ -110,20 +110,20 @@ func (e *entryInfoMap) tryStore(i **payload.Info_Index) bool {
 	}
 }
 
-func (e *entryInfoMap) unexpungeLocked() (wasExpunged bool) {
-	return atomic.CompareAndSwapPointer(&e.p, expungedInfoMap, nil)
+func (e *entryIndexInfos) unexpungeLocked() (wasExpunged bool) {
+	return atomic.CompareAndSwapPointer(&e.p, expungedIndexInfos, nil)
 }
 
-func (e *entryInfoMap) storeLocked(i **payload.Info_Index) {
+func (e *entryIndexInfos) storeLocked(i **payload.Info_Index_Count) {
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
-func (m *infoMap) Delete(key string) {
-	read, _ := m.read.Load().(readOnlyInfoMap)
+func (m *indexInfos) Delete(key string) {
+	read, _ := m.read.Load().(readOnlyIndexInfos)
 	e, ok := read.m[key]
 	if !ok && read.amended {
 		m.mu.Lock()
-		read, _ = m.read.Load().(readOnlyInfoMap)
+		read, _ = m.read.Load().(readOnlyIndexInfos)
 		e, ok = read.m[key]
 		if !ok && read.amended {
 			delete(m.dirty, key)
@@ -135,10 +135,10 @@ func (m *infoMap) Delete(key string) {
 	}
 }
 
-func (e *entryInfoMap) delete() (hadValue bool) {
+func (e *entryIndexInfos) delete() (hadValue bool) {
 	for {
 		p := atomic.LoadPointer(&e.p)
-		if p == nil || p == expungedInfoMap {
+		if p == nil || p == expungedIndexInfos {
 			return false
 		}
 		if atomic.CompareAndSwapPointer(&e.p, p, nil) {
@@ -147,13 +147,13 @@ func (e *entryInfoMap) delete() (hadValue bool) {
 	}
 }
 
-func (m *infoMap) Range(f func(key string, value *payload.Info_Index) bool) {
-	read, _ := m.read.Load().(readOnlyInfoMap)
+func (m *indexInfos) Range(f func(key string, value *payload.Info_Index_Count) bool) {
+	read, _ := m.read.Load().(readOnlyIndexInfos)
 	if read.amended {
 		m.mu.Lock()
-		read, _ = m.read.Load().(readOnlyInfoMap)
+		read, _ = m.read.Load().(readOnlyIndexInfos)
 		if read.amended {
-			read = readOnlyInfoMap{m: m.dirty}
+			read = readOnlyIndexInfos{m: m.dirty}
 			m.read.Store(read)
 			m.dirty = nil
 			m.misses = 0
@@ -172,23 +172,23 @@ func (m *infoMap) Range(f func(key string, value *payload.Info_Index) bool) {
 	}
 }
 
-func (m *infoMap) missLocked() {
+func (m *indexInfos) missLocked() {
 	m.misses++
 	if m.misses < len(m.dirty) {
 		return
 	}
-	m.read.Store(readOnlyInfoMap{m: m.dirty})
+	m.read.Store(readOnlyIndexInfos{m: m.dirty})
 	m.dirty = nil
 	m.misses = 0
 }
 
-func (m *infoMap) dirtyLocked() {
+func (m *indexInfos) dirtyLocked() {
 	if m.dirty != nil {
 		return
 	}
 
-	read, _ := m.read.Load().(readOnlyInfoMap)
-	m.dirty = make(map[string]*entryInfoMap, len(read.m))
+	read, _ := m.read.Load().(readOnlyIndexInfos)
+	m.dirty = make(map[string]*entryIndexInfos, len(read.m))
 	for k, e := range read.m {
 		if !e.tryExpungeLocked() {
 			m.dirty[k] = e
@@ -196,13 +196,13 @@ func (m *infoMap) dirtyLocked() {
 	}
 }
 
-func (e *entryInfoMap) tryExpungeLocked() (isExpunged bool) {
+func (e *entryIndexInfos) tryExpungeLocked() (isExpunged bool) {
 	p := atomic.LoadPointer(&e.p)
 	for p == nil {
-		if atomic.CompareAndSwapPointer(&e.p, nil, expungedInfoMap) {
+		if atomic.CompareAndSwapPointer(&e.p, nil, expungedIndexInfos) {
 			return true
 		}
 		p = atomic.LoadPointer(&e.p)
 	}
-	return p == expungedInfoMap
+	return p == expungedIndexInfos
 }

@@ -405,20 +405,16 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 	return res, nil
 }
 
-func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.Info_Index, err error) {
+func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.Info_Index_Count, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.IndexInfo")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	uuids := s.ngt.UUIDs(ctx)
-	ucuuids := s.ngt.UncommittedUUIDs()
-	return &payload.Info_Index{
-		Stored:           uint32(len(uuids)),
-		Uncommitted:      uint32(len(ucuuids)),
-		Uuids:            uuids,
-		UncommittedUuids: ucuuids,
-		Indexing:         s.ngt.IsIndexing(),
+	return &payload.Info_Index_Count{
+		Stored:      uint32(len(s.ngt.UUIDs(ctx))),
+		Uncommitted: uint32(len(s.ngt.UncommittedUUIDs())),
+		Indexing:    s.ngt.IsIndexing(),
 	}, nil
 }
