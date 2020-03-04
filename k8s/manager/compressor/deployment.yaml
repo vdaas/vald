@@ -91,8 +91,8 @@ spec:
               containerPort: 6061
           resources:
             limits:
-              cpu: 500m
-              memory: 150Mi
+              cpu: 800m
+              memory: 500Mi
             requests:
               cpu: 100m
               memory: 50Mi
