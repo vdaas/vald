@@ -530,8 +530,8 @@ compressor:
       cpu: 300m
       memory: 50Mi
     limits:
-      cpu: 500m
-      memory: 150Mi
+      cpu: 800m
+      memory: 500Mi
   backup:
     client: {}
   compress:

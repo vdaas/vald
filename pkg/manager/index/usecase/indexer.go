@@ -52,19 +52,32 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		indexer service.Indexer
 	)
 
+	discovererClientOptions := append(
+		cfg.Indexer.Discoverer.Client.Opts(),
+		grpc.WithErrGroup(eg),
+	)
+
+	var obs observability.Observability
+	if cfg.Observability.Enabled {
+		obs, err = observability.NewWithConfig(cfg.Observability)
+		if err != nil {
+			return nil, err
+		}
+		discovererClientOptions = append(
+			discovererClientOptions,
+			grpc.WithDialOptions(
+				grpc.WithStatsHandler(metric.NewClientHandler()),
+			),
+		)
+	}
+
 	client, err := discoverer.New(
 		discoverer.WithAutoConnect(true),
 		discoverer.WithName(cfg.Indexer.AgentName),
 		discoverer.WithNamespace(cfg.Indexer.AgentNamespace),
 		discoverer.WithPort(cfg.Indexer.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Indexer.AgentDNS),
-		discoverer.WithDiscovererClient(grpc.New(
-			append(cfg.Indexer.Discoverer.Client.Opts(),
-				grpc.WithErrGroup(eg),
-				grpc.WithDialOptions(
-					grpc.WithStatsHandler(metric.NewClientHandler()),
-				),
-			)...)),
+		discoverer.WithDiscovererClient(grpc.New(discovererClientOptions...)),
 		discoverer.WithDiscovererHostPort(
 			cfg.Indexer.Discoverer.Host,
 			cfg.Indexer.Discoverer.Port,
@@ -106,12 +119,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 	}
 
-	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(cfg.Observability)
-		if err != nil {
-			return nil, err
-		}
 		grpcServerOptions = append(
 			grpcServerOptions,
 			server.WithGRPCOption(
