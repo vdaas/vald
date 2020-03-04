@@ -17,12 +17,19 @@
 // Package prometheus provides a prometheus exporter.
 package prometheus
 
+import "github.com/vdaas/vald/internal/log"
+
 type PrometheusOption func(*prometheusOptions) error
 
 var (
 	prometheusDefaultOpts = []PrometheusOption{
 		WithEndpoint("/metrics"),
 		WithNamespace("vald"),
+		WithOnErrorFunc(func(err error) {
+			if err != nil {
+				log.Warnf("Failed to export to Prometheus: %v", err)
+			}
+		}),
 	}
 )
 
@@ -39,6 +46,15 @@ func WithNamespace(ns string) PrometheusOption {
 	return func(po *prometheusOptions) error {
 		if ns != "" {
 			po.options.Namespace = ns
+		}
+		return nil
+	}
+}
+
+func WithOnErrorFunc(f func(error)) PrometheusOption {
+	return func(po *prometheusOptions) error {
+		if f != nil {
+			po.options.OnError = f
 		}
 		return nil
 	}

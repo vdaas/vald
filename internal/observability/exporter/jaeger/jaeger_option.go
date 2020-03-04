@@ -19,6 +19,7 @@ package jaeger
 
 import (
 	"contrib.go.opencensus.io/exporter/jaeger"
+	"github.com/vdaas/vald/internal/log"
 )
 
 type JaegerOption func(*jaegerOptions) error
@@ -26,6 +27,11 @@ type JaegerOption func(*jaegerOptions) error
 var (
 	jaegerDefaultOpts = []JaegerOption{
 		WithServiceName("vald"),
+		WithOnErrorFunc(func(err error) {
+			if err != nil {
+				log.Warnf("Error when uploading spans to Jaeger: %v", err)
+			}
+		}),
 	}
 )
 
@@ -77,6 +83,15 @@ func WithServiceName(serviceName string) JaegerOption {
 func WithBufferMaxCount(cnt int) JaegerOption {
 	return func(jo *jaegerOptions) error {
 		jo.BufferMaxCount = cnt
+		return nil
+	}
+}
+
+func WithOnErrorFunc(f func(error)) JaegerOption {
+	return func(jo *jaegerOptions) error {
+		if f != nil {
+			jo.OnError = f
+		}
 		return nil
 	}
 }
