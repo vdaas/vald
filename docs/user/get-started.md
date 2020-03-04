@@ -18,6 +18,7 @@ Vald is a distributed highly scalable and fast approximate nearest neighbor dens
 It provides the search result of any input (e.g. word, sentence, image and etc.) which is coverted to a multi-dimensional vector when searching the neighbor.<br>
 Vald is designed base on Cloud Native.
 It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors.
+(If you are interested in ANN benchmarks, please refer to [the official website](http://ann-benchmarks.com/).)
 
 ### Main Features
 
