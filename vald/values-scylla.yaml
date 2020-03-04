@@ -23,9 +23,9 @@ backupManager:
       image: cassandra:latest
       cassandra:
         hosts:
-          - scylla-0.default.svc.cluster.local
-          - scylla-1.default.svc.cluster.local
-          - scylla-2.default.svc.cluster.local
+          - scylla-0.scylla.default.svc.cluster.local
+          - scylla-1.scylla.default.svc.cluster.local
+          - scylla-2.scylla.default.svc.cluster.local
       sleepDuration: 2
   env: []
   mysql:
@@ -47,9 +47,9 @@ meta:
       image: cassandra:latest
       cassandra:
         hosts:
-          - scylla-0.default.svc.cluster.local
-          - scylla-1.default.svc.cluster.local
-          - scylla-2.default.svc.cluster.local
+          - scylla-0.scylla.default.svc.cluster.local
+          - scylla-1.scylla.default.svc.cluster.local
+          - scylla-2.scylla.default.svc.cluster.local
       sleepDuration: 2
   env: []
   redis:

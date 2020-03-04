@@ -14,10 +14,50 @@
 # limitations under the License.
 #
 
+gateway:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+
 agent:
   minReplicas: 5
   maxReplicas: 10
   podManagementPolicy: Parallel
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+
+discoverer:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+
+compressor:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+
+backupManager:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 30Mi
+
+indexManager:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 30Mi
+
+meta:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 30Mi
 
 initializer:
   mysql:

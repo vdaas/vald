@@ -22,7 +22,7 @@ import (
 	"os"
 
 	"github.com/vdaas/vald/apis/grpc/errors"
-	// "github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -53,8 +53,9 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 			switch v := detail.(type) {
 			case *errors.Errors_RPC:
 				data.Roots = append(data.Roots, v)
-			// case info.Detail:
-			// 	data.Details = append(data.Details, v.String())
+			case info.Detail:
+				log.Debug(v.String())
+				data.Details = append(data.Details, v.String())
 			default:
 				data.Details = append(data.Details, fmt.Sprintf("%#v", detail))
 			}

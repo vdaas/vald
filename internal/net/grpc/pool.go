@@ -97,7 +97,11 @@ func NewPool(ctx context.Context, addr string, size uint64, dopts ...DialOption)
 				}
 				log.Warn(err)
 			}
-			return ic.(*ClientConn)
+			conn, ok := ic.(*ClientConn)
+			if ok {
+				return conn
+			}
+			return nil
 		},
 	}
 	return cp.Connect(ctx)
