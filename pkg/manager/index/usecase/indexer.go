@@ -24,6 +24,8 @@ import (
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/metric"
+	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -36,10 +38,11 @@ import (
 )
 
 type run struct {
-	eg      errgroup.Group
-	cfg     *config.Data
-	server  starter.Server
-	indexer service.Indexer
+	eg            errgroup.Group
+	cfg           *config.Data
+	server        starter.Server
+	observability observability.Observability
+	indexer       service.Indexer
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
@@ -49,16 +52,32 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		indexer service.Indexer
 	)
 
+	discovererClientOptions := append(
+		cfg.Indexer.Discoverer.Client.Opts(),
+		grpc.WithErrGroup(eg),
+	)
+
+	var obs observability.Observability
+	if cfg.Observability.Enabled {
+		obs, err = observability.NewWithConfig(cfg.Observability)
+		if err != nil {
+			return nil, err
+		}
+		discovererClientOptions = append(
+			discovererClientOptions,
+			grpc.WithDialOptions(
+				grpc.WithStatsHandler(metric.NewClientHandler()),
+			),
+		)
+	}
+
 	client, err := discoverer.New(
 		discoverer.WithAutoConnect(true),
 		discoverer.WithName(cfg.Indexer.AgentName),
 		discoverer.WithNamespace(cfg.Indexer.AgentNamespace),
 		discoverer.WithPort(cfg.Indexer.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Indexer.AgentDNS),
-		discoverer.WithDiscovererClient(grpc.New(
-			append(cfg.Indexer.Discoverer.Client.Opts(),
-				grpc.WithErrGroup(eg),
-			)...)),
+		discoverer.WithDiscovererClient(grpc.New(discovererClientOptions...)),
 		discoverer.WithDiscovererHostPort(
 			cfg.Indexer.Discoverer.Host,
 			cfg.Indexer.Discoverer.Port,
@@ -90,6 +109,25 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	idx := handler.New(handler.WithIndexer(indexer))
 
+	grpcServerOptions := []server.Option{
+		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+			index.RegisterIndexServer(srv, idx)
+		}),
+		server.WithPreStopFunction(func() error {
+			// TODO notify another gateway and scheduler
+			return nil
+		}),
+	}
+
+	if cfg.Observability.Enabled {
+		grpcServerOptions = append(
+			grpcServerOptions,
+			server.WithGRPCOption(
+				grpc.StatsHandler(metric.NewServerHandler()),
+			),
+		)
+	}
+
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
 		starter.WithREST(func(sc *iconf.Server) []server.Option {
@@ -106,15 +144,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			}
 		}),
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
-			return []server.Option{
-				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-					index.RegisterIndexServer(srv, idx)
-				}),
-				server.WithPreStopFunction(func() error {
-					// TODO notify another gateway and scheduler
-					return nil
-				}),
-			}
+			return grpcServerOptions
 		}),
 		// TODO add GraphQL handler
 	)
@@ -123,21 +153,28 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
-		eg:      eg,
-		cfg:     cfg,
-		server:  srv,
-		indexer: indexer,
+		eg:            eg,
+		cfg:           cfg,
+		server:        srv,
+		observability: obs,
+		indexer:       indexer,
 	}, nil
 }
 
 func (r *run) PreStart(ctx context.Context) error {
+	if r.observability != nil {
+		return r.observability.PreStart(ctx)
+	}
 	return nil
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 5)
-	var iech, sech <-chan error
+	var iech, sech, oech <-chan error
 	var err error
+	if r.observability != nil {
+		oech = r.observability.Start(ctx)
+	}
 	if r.indexer != nil {
 		iech, err = r.indexer.Start(ctx)
 		if err != nil {
@@ -152,6 +189,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
+			case err = <-oech:
 			case err = <-iech:
 			case err = <-sech:
 			}
@@ -172,6 +210,9 @@ func (r *run) PreStop(ctx context.Context) error {
 }
 
 func (r *run) Stop(ctx context.Context) error {
+	if r.observability != nil {
+		r.observability.Stop(ctx)
+	}
 	return r.server.Shutdown(ctx)
 }
 

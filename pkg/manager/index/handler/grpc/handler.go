@@ -22,6 +22,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/manager/index"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/pkg/manager/index/service"
 )
 
@@ -38,14 +39,16 @@ func New(opts ...Option) index.IndexServer {
 	return s
 }
 
-func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.Info_Index, err error) {
-	uuids := s.indexer.UUIDs(ctx)
-	ucuuids := s.indexer.UncommittedUUIDs()
-	return &payload.Info_Index{
-		Stored:           uint32(len(uuids)),
-		Uncommitted:      uint32(len(ucuuids)),
-		Uuids:            uuids,
-		UncommittedUuids: ucuuids,
-		Indexing:         s.indexer.IsIndexing(),
+func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.Info_Index_Count, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-index.IndexInfo")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return &payload.Info_Index_Count{
+		Stored:      s.indexer.NumberOfUUIDs(),
+		Uncommitted: s.indexer.NumberOfUncommittedUUIDs(),
+		Indexing:    s.indexer.IsIndexing(),
 	}, nil
 }

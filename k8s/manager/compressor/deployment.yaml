@@ -21,7 +21,7 @@ metadata:
   labels:
     app: vald-manager-compressor
   annotations:
-    checksum/configmap: d3e758ef48afdec3b50bdb1d9ffda67c51f2bf96d23bf50b9e57ffbb9262a95c
+    checksum/configmap: 7051104fadb40c69f0ff9d8ce4a764f19efcff543dcb2d531dde199833a1e2dc
 spec:
   progressDeadlineSeconds: 600
   replicas: 3
@@ -47,7 +47,7 @@ spec:
             - /bin/sh
             - -e
             - -c
-            - >
+            - |
               until [ "$(wget --server-response --spider --quiet http://vald-manager-backup.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for manager-backup to be ready..."
                 sleep 2;
@@ -86,11 +86,16 @@ spec:
             - name: grpc
               protocol: TCP
               containerPort: 8081
+            - name: prometheus
+              protocol: TCP
+              containerPort: 6061
           resources:
             limits:
-              cpu: 500m
+              cpu: 800m
+              memory: 500Mi
             requests:
-              cpu: 200m
+              cpu: 100m
+              memory: 50Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           env:

@@ -79,8 +79,21 @@ data:
           mode: ""
           probe_wait_time: 3s
       metrics_servers:
+        - name: prometheus
+          host: 0.0.0.0
+          port: 6061
+          http:
+            handler_timeout: 5s
+            idle_timeout: 2s
+            read_header_timeout: 1s
+            read_timeout: 1s
+            shutdown_duration: 5s
+            write_timeout: 1s
+          mode: REST
+          probe_wait_time: 3s
       startup_strategy:
         - liveness
+        - prometheus
         - grpc
         - readiness
       full_shutdown_duration: 600s
@@ -89,6 +102,29 @@ data:
         cert: /path/to/cert
         key: /path/to/key
         ca: /path/to/ca
+    observability:
+      enabled: true
+      collector:
+        duration: 5s
+        metrics:
+          enable_cgo: true
+          enable_cpu: true
+          enable_goroutine: true
+          enable_memory: true
+          enable_version_info: true
+      trace:
+        enabled: true
+        sampling_rate: 1
+      prometheus:
+        enabled: true
+      jaeger:
+          enabled: false
+          collector_endpoint: 
+          agent_endpoint: jaeger-agent.default.svc.cluster.local:6831
+          username: 
+          password: 
+          service_name: vald-gateway
+          buffer_max_count: 10
     gateway:
       agent_port: 8081
       agent_name: vald-agent-ngt
@@ -99,19 +135,19 @@ data:
       discoverer:
         host: vald-discoverer.default.svc.cluster.local
         port: 8081
-        duration: 2s
+        duration: 200ms
         discover_client:
           addrs: []
-          connection_pool: 10
+          connection_pool: 3
           health_check_duration: 1s
           backoff:
-            backoff_factor: 0
-            backoff_time_limit: ""
-            enable_error_log: false
-            initial_duration: ""
-            jitter_limit: ""
-            maximum_duration: ""
-            retry_count: 0
+            backoff_factor: 1.1
+            backoff_time_limit: 5s
+            enable_error_log: true
+            initial_duration: 5ms
+            jitter_limit: 100ms
+            maximum_duration: 5s
+            retry_count: 100
           call_option:
             max_recv_msg_size: 0
             max_retry_rpc_buffer_size: 0
@@ -135,9 +171,9 @@ data:
                 keep_alive: ""
                 timeout: ""
               dns:
-                cache_enabled: false
-                cache_expiration: ""
-                refresh_duration: ""
+                cache_enabled: true
+                cache_expiration: 1h
+                refresh_duration: 30m
               tls:
                 ca: /path/to/ca
                 cert: /path/to/cert
@@ -152,16 +188,16 @@ data:
             key: /path/to/key
         agent_client:
           addrs: []
-          connection_pool: 100
+          connection_pool: 3
           health_check_duration: 1s
           backoff:
-            backoff_factor: 0
-            backoff_time_limit: ""
-            enable_error_log: false
-            initial_duration: ""
-            jitter_limit: ""
-            maximum_duration: ""
-            retry_count: 0
+            backoff_factor: 1.1
+            backoff_time_limit: 5s
+            enable_error_log: true
+            initial_duration: 5ms
+            jitter_limit: 100ms
+            maximum_duration: 5s
+            retry_count: 100
           call_option:
             max_recv_msg_size: 0
             max_retry_rpc_buffer_size: 0
@@ -185,9 +221,9 @@ data:
                 keep_alive: ""
                 timeout: ""
               dns:
-                cache_enabled: false
-                cache_expiration: ""
-                refresh_duration: ""
+                cache_enabled: true
+                cache_expiration: 1h
+                refresh_duration: 30m
               tls:
                 ca: /path/to/ca
                 cert: /path/to/cert
@@ -205,16 +241,16 @@ data:
         port: 8081
         client:
           addrs: []
-          connection_pool: 10
+          connection_pool: 3
           health_check_duration: 1s
           backoff:
-            backoff_factor: 0
-            backoff_time_limit: ""
-            enable_error_log: false
-            initial_duration: ""
-            jitter_limit: ""
-            maximum_duration: ""
-            retry_count: 0
+            backoff_factor: 1.1
+            backoff_time_limit: 5s
+            enable_error_log: true
+            initial_duration: 5ms
+            jitter_limit: 100ms
+            maximum_duration: 5s
+            retry_count: 100
           call_option:
             max_recv_msg_size: 0
             max_retry_rpc_buffer_size: 0
@@ -238,9 +274,9 @@ data:
                 keep_alive: ""
                 timeout: ""
               dns:
-                cache_enabled: false
-                cache_expiration: ""
-                refresh_duration: ""
+                cache_enabled: true
+                cache_expiration: 1h
+                refresh_duration: 30m
               tls:
                 ca: /path/to/ca
                 cert: /path/to/cert
@@ -261,16 +297,16 @@ data:
         port: 8081
         client:
           addrs: []
-          connection_pool: 10
+          connection_pool: 3
           health_check_duration: 1s
           backoff:
-            backoff_factor: 0
-            backoff_time_limit: ""
-            enable_error_log: false
-            initial_duration: ""
-            jitter_limit: ""
-            maximum_duration: ""
-            retry_count: 0
+            backoff_factor: 1.1
+            backoff_time_limit: 5s
+            enable_error_log: true
+            initial_duration: 5ms
+            jitter_limit: 100ms
+            maximum_duration: 5s
+            retry_count: 100
           call_option:
             max_recv_msg_size: 0
             max_retry_rpc_buffer_size: 0
@@ -294,9 +330,9 @@ data:
                 keep_alive: ""
                 timeout: ""
               dns:
-                cache_enabled: false
-                cache_expiration: ""
-                refresh_duration: ""
+                cache_enabled: true
+                cache_expiration: 1h
+                refresh_duration: 30m
               tls:
                 ca: /path/to/ca
                 cert: /path/to/cert

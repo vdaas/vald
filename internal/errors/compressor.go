@@ -28,11 +28,11 @@ var (
 		return Errorf("compressor %s not found", name)
 	}
 
-	ErrCompressFailed = func() error {
-		return New("compress failed")
-	}
+	ErrCompressedDataNotFound = New("compressed data not found")
 
-	ErrDecompressFailed = func() error {
-		return New("decompress failed")
-	}
+	ErrDecompressedDataNotFound = New("decompressed data not found")
+
+	ErrCompressFailed = New("compress failed")
+
+	ErrDecompressFailed = New("decompress failed")
 )

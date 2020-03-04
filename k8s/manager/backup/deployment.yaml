@@ -21,7 +21,7 @@ metadata:
   labels:
     app: vald-manager-backup
   annotations:
-    checksum/configmap: eb6097a83abec441a7f6a74a36fd510bc6191b665a11e3afd1221ba68327a05b
+    checksum/configmap: d968e1b77be1d9a89f70538d89f6181209775849fc49da4a943445517a82aca9
 spec:
   progressDeadlineSeconds: 600
   replicas: 3
@@ -47,7 +47,7 @@ spec:
             - /bin/sh
             - -e
             - -c
-            - >
+            - |
               hosts="mysql.default.svc.cluster.local"
               options="-uroot -p${MYSQL_PASSWORD}"
               for host in $hosts; do
@@ -96,11 +96,16 @@ spec:
             - name: grpc
               protocol: TCP
               containerPort: 8081
+            - name: prometheus
+              protocol: TCP
+              containerPort: 6061
           resources:
             limits:
               cpu: 500m
+              memory: 150Mi
             requests:
-              cpu: 200m
+              cpu: 100m
+              memory: 30Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           env:
