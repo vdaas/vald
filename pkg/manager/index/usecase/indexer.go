@@ -57,16 +57,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		grpc.WithErrGroup(eg),
 	)
 
-	grpcServerOptions := []server.Option{
-		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-			index.RegisterIndexServer(srv, idx)
-		}),
-		server.WithPreStopFunction(func() error {
-			// TODO notify another gateway and scheduler
-			return nil
-		}),
-	}
-
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(cfg.Observability)
@@ -77,12 +67,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			discovererClientOptions,
 			grpc.WithDialOptions(
 				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
-		grpcServerOptions = append(
-			grpcServerOptions,
-			server.WithGRPCOption(
-				grpc.StatsHandler(metric.NewServerHandler()),
 			),
 		)
 	}
@@ -124,6 +108,25 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 	idx := handler.New(handler.WithIndexer(indexer))
+
+	grpcServerOptions := []server.Option{
+		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+			index.RegisterIndexServer(srv, idx)
+		}),
+		server.WithPreStopFunction(func() error {
+			// TODO notify another gateway and scheduler
+			return nil
+		}),
+	}
+
+	if cfg.Observability.Enabled {
+		grpcServerOptions = append(
+			grpcServerOptions,
+			server.WithGRPCOption(
+				grpc.StatsHandler(metric.NewServerHandler()),
+			),
+		)
+	}
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
