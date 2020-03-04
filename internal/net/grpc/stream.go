@@ -21,6 +21,7 @@ import (
 	"context"
 	"io"
 	"runtime"
+	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/safety"
@@ -93,17 +94,19 @@ func BidirectionalStreamClient(stream grpc.ClientStream,
 				return nil
 			}
 
-			err = stream.SendMsg(data)
-			if err != nil {
-				return err
-			}
-
 			eg.Go(func() error {
 				res := newData()
 				err = stream.RecvMsg(res)
 				f(res, err)
 				return nil
 			})
+
+			time.Sleep(400 * time.Millisecond)
+			err = stream.SendMsg(data)
+			if err != nil {
+				return err
+			}
+
 		}
 	}
 }

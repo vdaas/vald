@@ -136,13 +136,6 @@ func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	/**
-	if err := client.Connect(); err != nil {
-		b.Fatal(err)
-	}
-	defer client.DisConnect()
-	**/
-
 	for _, name := range targets {
 		bench := e2e.New(
 			b,
@@ -155,14 +148,13 @@ func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 			}),
 			e2e.WithClient(client),
 			e2e.WithStrategy(
-				strategy.NewStreamInsert(),
+				strategy.NewInsert(),
 				strategy.NewCreateIndex(
 					strategy.WithCreateIndexClient(client),
 				),
 				strategy.NewStreamSearch(
 					strategy.WithStreamSearchConfig(searchConfig),
 				),
-				// strategy.NewStreamRemove(),
 			),
 		)
 		bench.Run(ctx, b)
