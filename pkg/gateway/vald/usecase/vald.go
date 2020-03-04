@@ -63,17 +63,67 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, errors.ErrInvalidBackupConfig
 	}
 
+	backupClientOptions := append(
+		cfg.Gateway.BackupManager.Client.Opts(),
+		grpc.WithErrGroup(eg),
+	)
+
+	discovererClientOptions := append(
+		cfg.Gateway.Discoverer.Client.Opts(),
+		grpc.WithErrGroup(eg),
+	)
+
+	metadataClientOptions := append(
+		cfg.Gateway.Meta.Client.Opts(),
+		grpc.WithErrGroup(eg),
+	)
+
+	grpcServerOptions := []server.Option{
+		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+			vald.RegisterValdServer(srv, v)
+		}),
+		server.WithPreStopFunction(func() error {
+			// TODO notify another gateway and scheduler
+			return nil
+		}),
+	}
+
+	var obs observability.Observability
+	if cfg.Observability.Enabled {
+		obs, err = observability.NewWithConfig(cfg.Observability)
+		if err != nil {
+			return nil, err
+		}
+		backupClientOptions = append(
+			backupClientOptions,
+			grpc.WithDialOptions(
+				grpc.WithStatsHandler(metric.NewClientHandler()),
+			),
+		)
+		discovererClientOptions = append(
+			discovererClientOptions,
+			grpc.WithDialOptions(
+				grpc.WithStatsHandler(metric.NewClientHandler()),
+			),
+		)
+		metadataClientOptions = append(
+			metadataClientOptions,
+			grpc.WithDialOptions(
+				grpc.WithStatsHandler(metric.NewClientHandler()),
+			),
+		)
+		grpcServerOptions = append(
+			grpcServerOptions,
+			server.WithGRPCOption(
+				grpc.StatsHandler(metric.NewServerHandler()),
+			),
+		)
+	}
+
 	backup, err = service.NewBackup(
 		service.WithBackupAddr(cfg.Gateway.BackupManager.Client.Addrs[0]),
 		service.WithBackupClient(
-			grpc.New(
-				append(cfg.Gateway.BackupManager.Client.Opts(),
-					grpc.WithErrGroup(eg),
-					grpc.WithDialOptions(
-						grpc.WithStatsHandler(metric.NewClientHandler()),
-					),
-				)...,
-			),
+			grpc.New(backupClientOptions...),
 		),
 	)
 	if err != nil {
@@ -85,13 +135,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithNamespace(cfg.Gateway.AgentNamespace),
 		discoverer.WithPort(cfg.Gateway.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Gateway.AgentDNS),
-		discoverer.WithDiscovererClient(grpc.New(
-			append(cfg.Gateway.Discoverer.Client.Opts(),
-				grpc.WithErrGroup(eg),
-				grpc.WithDialOptions(
-					grpc.WithStatsHandler(metric.NewClientHandler()),
-				),
-			)...)),
+		discoverer.WithDiscovererClient(grpc.New(discovererClientOptions...)),
 		discoverer.WithDiscovererHostPort(
 			cfg.Gateway.Discoverer.Host,
 			cfg.Gateway.Discoverer.Port,
@@ -117,14 +161,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	metadata, err = service.NewMeta(
 		service.WithMetaAddr(cfg.Gateway.Meta.Client.Addrs[0]),
 		service.WithMetaClient(
-			grpc.New(
-				append(cfg.Gateway.Meta.Client.Opts(),
-					grpc.WithErrGroup(eg),
-					grpc.WithDialOptions(
-						grpc.WithStatsHandler(metric.NewClientHandler()),
-					),
-				)...,
-			),
+			grpc.New(metadataClientOptions...),
 		),
 		service.WithMetaCacheEnabled(cfg.Gateway.Meta.EnableCache),
 		service.WithMetaCacheExpireDuration(cfg.Gateway.Meta.CacheExpiration),
@@ -139,16 +176,21 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		ef.Client != nil &&
 		ef.Client.Addrs != nil &&
 		len(ef.Client.Addrs) != 0 {
+		egressFilterClientOptions := append(
+			ef.Client.Opts(),
+			grpc.WithErrGroup(eg),
+		)
+		if cfg.Observability.Enabled {
+			egressFilterClientOptions = append(
+				egressFilterClientOptions,
+				grpc.WithDialOptions(
+					grpc.WithStatsHandler(metric.NewClientHandler()),
+				),
+			)
+		}
 		filter, err = service.NewFilter(
 			service.WithFilterClient(
-				grpc.New(
-					append(ef.Client.Opts(),
-						grpc.WithErrGroup(eg),
-						grpc.WithDialOptions(
-							grpc.WithStatsHandler(metric.NewClientHandler()),
-						),
-					)...,
-				),
+				grpc.New(egressFilterClientOptions...),
 			),
 		)
 	}
@@ -162,30 +204,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		handler.WithReplicationCount(cfg.Gateway.IndexReplica),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
-
-	grpcServerOptions := []server.Option{
-		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-			vald.RegisterValdServer(srv, v)
-		}),
-		server.WithPreStopFunction(func() error {
-			// TODO notify another gateway and scheduler
-			return nil
-		}),
-	}
-
-	var obs observability.Observability
-	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(cfg.Observability)
-		if err != nil {
-			return nil, err
-		}
-		grpcServerOptions = append(
-			grpcServerOptions,
-			server.WithGRPCOption(
-				grpc.StatsHandler(metric.NewServerHandler()),
-			),
-		)
-	}
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
