@@ -37,7 +37,7 @@ var (
 )
 
 var searchConfig = &payload.Search_Config{
-	Num:     10,
+	Num:     3,
 	Radius:  -1,
 	Epsilon: 0.01,
 }
@@ -131,7 +131,7 @@ func aBenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 	ctx := context.Background()
 
-	client, err := grpc.New(ctx)
+	client, err := grpc.New(ctx, grpc.WithStreamConcurrency(1000))
 	if err != nil {
 		b.Fatal(err)
 	}
