@@ -20,8 +20,6 @@ metadata:
   name: vald-agent-ngt
   labels:
     app: vald-agent-ngt
-  # annotations:
-  #   checksum/configmap: 53a52c1e100bea2b9fb595d797fcfef335dc9d883c782c6fe97ba51af2cb0e9b
 spec:
   serviceName: vald-agent-ngt
   podManagementPolicy: Parallel
@@ -39,6 +37,8 @@ spec:
       creationTimestamp: null
       labels:
         app: vald-agent-ngt
+      # annotations:
+      #   checksum/configmap: 53a52c1e100bea2b9fb595d797fcfef335dc9d883c782c6fe97ba51af2cb0e9b
     spec:
       containers:
         - name: vald-agent-ngt

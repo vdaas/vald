@@ -20,8 +20,6 @@ metadata:
   name: vald-manager-compressor
   labels:
     app: vald-manager-compressor
-  annotations:
-    checksum/configmap: 7051104fadb40c69f0ff9d8ce4a764f19efcff543dcb2d531dde199833a1e2dc
 spec:
   progressDeadlineSeconds: 600
   replicas: 3
@@ -39,6 +37,8 @@ spec:
       creationTimestamp: null
       labels:
         app: vald-manager-compressor
+      annotations:
+        checksum/configmap: 7051104fadb40c69f0ff9d8ce4a764f19efcff543dcb2d531dde199833a1e2dc
     spec:
       initContainers:
         - name: wait-for-manager-backup

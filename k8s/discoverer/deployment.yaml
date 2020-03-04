@@ -20,8 +20,6 @@ metadata:
   name: vald-discoverer
   labels:
     app: vald-discoverer
-  annotations:
-    checksum/configmap: 224ad9a130fd31d769747f09b03d9dcf758377607bbd98022666989dca0ee462
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
@@ -39,6 +37,8 @@ spec:
       creationTimestamp: null
       labels:
         app: vald-discoverer
+      annotations:
+        checksum/configmap: 224ad9a130fd31d769747f09b03d9dcf758377607bbd98022666989dca0ee462
     spec:
       containers:
         - name: vald-discoverer

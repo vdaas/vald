@@ -20,8 +20,6 @@ metadata:
   name: vald-gateway
   labels:
     app: vald-gateway
-  annotations:
-    checksum/configmap: 68942a4a3c38f0ecaa997644312fe23ca21afa8ff6c33640add7acd082895178
 spec:
   progressDeadlineSeconds: 600
   replicas: 3
@@ -39,6 +37,8 @@ spec:
       creationTimestamp: null
       labels:
         app: vald-gateway
+      annotations:
+        checksum/configmap: 68942a4a3c38f0ecaa997644312fe23ca21afa8ff6c33640add7acd082895178
     spec:
       initContainers:
         - name: wait-for-manager-compressor

@@ -20,8 +20,6 @@ metadata:
   name: vald-meta
   labels:
     app: vald-meta
-  annotations:
-    checksum/configmap: c58e0c97920e2a7ce5dc6c35c699c69f21dbd0dac4c91d53c07f7f7845c0ded5
 spec:
   progressDeadlineSeconds: 600
   replicas: 2
@@ -39,6 +37,8 @@ spec:
       creationTimestamp: null
       labels:
         app: vald-meta
+      annotations:
+        checksum/configmap: c58e0c97920e2a7ce5dc6c35c699c69f21dbd0dac4c91d53c07f7f7845c0ded5
     spec:
       initContainers:
         - name: wait-for-redis
