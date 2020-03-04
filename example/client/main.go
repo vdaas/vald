@@ -32,8 +32,7 @@ func init() {
 	Registers path, addr and wait option.
 	Path option specifies hdf file by path. By default, `fashion-mnist-784-euclidean.hdf5` is registered.
 	Addr option specifies grpc server address. By default, `127.0.0.1:8080` is registered.
-	Wait option specifies indexing wait time. When using Vald, indexing starts automatically after insert. Therefore, to wait until indexing is completed before searching.
-	By default `60` seconds is registered.
+	Wait option specifies indexing wait time. Vald starts indexing automatically after insert. Therefore, it needs to wait until indexing is completed before searching.By default `60` seconds is registered.
 	**/
 	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
 	flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "set gRPC server address")
@@ -44,7 +43,7 @@ func init() {
 func main() {
 	/**
 	Gets training data, test data and ids based on the dataset path.
-	the number of ids is equal to the number of training dataset.
+	the number of ids is equal to that of training dataset.
 	**/
 	ids, train, test, err := load(datasetPath)
 	if err != nil {
@@ -55,7 +54,7 @@ func main() {
 
 	/**
 	Creates a client connection to the given the target.
-	And create a Vald client based on this connection.
+	Then, creates a Vald client based on this connection.
 	**/
 	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
 	if err != nil {
@@ -69,7 +68,7 @@ func main() {
 	**/
 	for i := range ids[:insertCont] {
 		// Calls `Insert` function of Vald client.
-		// Sends vector and id to server via gRPC.
+		// Sends set of vector and id to server via gRPC.
 		_, err := client.Insert(ctx, &payload.Object_Vector{
 			Id:     ids[i],
 			Vector: train[i],
@@ -84,8 +83,8 @@ func main() {
 	time.Sleep(time.Duration(indexingWaitSeconds) * time.Second)
 
 	/**
-	Gets an approximate vector based on the value of `SearchConfig` from the indexed tree based on the test data.
-	In this example, gets 10 approximate vectors.
+	Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
+	In this example, Vald gets 10 approximate vectors each search vector.
 	**/
 	for _, vec := range test[:testCount] {
 		// Calls `Search` function of Vald client.
