@@ -60,7 +60,6 @@ If helm is not installed, please install helm (see below details) or [here](http
 <details><summary>optional installation</summary><br><pre>
 # install helm
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-
 # install hdf5
 yum install -y hdf5-devel
 apt-get install libhdf5-serial-dev
