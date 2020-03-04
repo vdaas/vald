@@ -16,7 +16,7 @@ var (
 					"127.0.0.1:8200",
 				},
 				CallOption: &config.CallOption{
-					MaxRecvMsgSize: -1,
+					MaxRecvMsgSize: 100000000000,
 				},
 				DialOption: &config.DialOption{
 					Insecure: true,

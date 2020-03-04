@@ -37,7 +37,7 @@ var (
 )
 
 var searchConfig = &payload.Search_Config{
-	Num:     3,
+	Num:     1,
 	Radius:  -1,
 	Epsilon: 0.01,
 }
@@ -131,7 +131,7 @@ func aBenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 	ctx := context.Background()
 
-	client, err := grpc.New(ctx, grpc.WithStreamConcurrency(1000))
+	client, err := grpc.New(ctx, grpc.WithStreamConcurrency(1000000))
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -141,10 +141,11 @@ func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 			b,
 			e2e.WithName(name),
 			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
-				return ngtd.New(
-					ngtd.WithDimentaion(d.Dimension()),
-					ngtd.WithServerType(ngtd.ServerType(ngtd.GRPC)),
-				).Run(ctx, tb)
+				return nil
+				// return ngtd.New(
+				// 	ngtd.WithDimentaion(d.Dimension()),
+				// 	ngtd.WithServerType(ngtd.ServerType(ngtd.GRPC)),
+				// ).Run(ctx, tb)
 			}),
 			e2e.WithClient(client),
 			e2e.WithStrategy(
