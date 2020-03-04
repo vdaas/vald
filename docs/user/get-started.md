@@ -1,8 +1,8 @@
 # Get Started
 
-For the one who is interested in Vald, this article will help you a way to deploy and run Vald on k8s.
-In this article, Scylla DB is used as a backend datastore for index-metadata and backup-manager.
-Fashion-mnist is used as an example dataset.
+For the one who is interested in Vald, this article will show you a way to deploy and run Vald on k8s.
+This article uses Scylla DB as the backend data store for metadata-management and backup-manager.
+Fashion-mnist is used as an example of a dataset.
 
 1. [About](#About)
     1. [Main Features](#Main-Features)
@@ -14,8 +14,8 @@ Fashion-mnist is used as an example dataset.
 
 ## About
 
-Vald is distributed high scalable and high-speed approximate nearest neighbor search engine.<br>
-It provides the searching result of any input (e.g. word, sentence, image ...) which is coverted to a multi-dimensional vector when searching the neighbor.<br>
+Vald is a distributed highly scalable and fast approximate nearest neighbor dense vector search engine.<br>
+It provides the search result of any input (e.g. word, sentence, image and etc.) which is coverted to a multi-dimensional vector when searching the neighbor.<br>
 Vald is designed base on Cloud Native.
 It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors.
 
@@ -56,10 +56,7 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
 
 If helm is not installed, please install helm (see below details) or [here](https://helm.sh/docs/intro/install).
 
-<details>
-    <summary>optional installation</summray>
-
-```bash
+<details><summary>optional installation</summary><br><pre>
 # install helm
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
@@ -67,8 +64,8 @@ curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bas
 yum install -y hdf5-devel
 apt-get install libhdf5-serial-dev
 brew install hdf5
-```
-</details>
+
+</pre></details>
 
 ## Starting Vald on k8s cluster
 
@@ -85,7 +82,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
     kubectl cluster-info
     ```
 
-2. Prepare scylla database and k8s metrics-server
+2. Prepare Scylla DB and k8s metrics-server
 
     At first, you have to apply scylla as backup database.
 
@@ -190,11 +187,11 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
 
 Vald is highly customizable.
 For example you can configure the number of vector dimension, the number of replica and etc.
-You can customiz Vald by creating/editing `values.yaml`.
+You can customize Vald by creating/editing `values.yaml`.
 We will publish the instructions of `values.yaml` soon.
 
 ### Another way to deploy Vlad
 
-In the `Get Started` section, we show how to deploy Vald with Scylla.
+In the `Get Started` section, we'll show you how to deploy Vald with Scylla DB.
 Vald can be deployed in another way, which is used by helm or `kind` command. (Compressor datastore is required, for example mysql + redis or casandora ).
 
