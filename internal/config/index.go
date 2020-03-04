@@ -40,7 +40,7 @@ type Indexer struct {
 	AutoIndexCheckDuration string `yaml:"auto_index_check_duration" json:"auto_index_check_duration"`
 
 	// AutoIndexLength represent minimum auto index length
-	AutoIndexLength int `yaml:"auto_index_length" json:"auto_index_length"`
+	AutoIndexLength uint32 `yaml:"auto_index_length" json:"auto_index_length"`
 
 	// NodeName represents node name
 	NodeName string `json:"node_name" yaml:"node_name"`

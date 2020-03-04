@@ -110,7 +110,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/InfoIndex"
+              "$ref": "#/definitions/IndexCount"
             }
           },
           "default": {
@@ -337,7 +337,7 @@
     }
   },
   "definitions": {
-    "InfoIndex": {
+    "IndexCount": {
       "type": "object",
       "properties": {
         "stored": {
@@ -347,18 +347,6 @@
         "uncommitted": {
           "type": "integer",
           "format": "int64"
-        },
-        "uuids": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "uncommittedUuids": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         },
         "indexing": {
           "type": "boolean",
