@@ -294,6 +294,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err == nil || len(uuid) != 0 {
 		if span != nil {
+			err = errors.Wrap(err, errors.ErrMetaDataAlreadyExists(meta, uuid).Error())
 			span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
 		}
 		return nil, status.WrapWithAlreadyExists(fmt.Sprintf("Insert API meta %s already exists", meta),
