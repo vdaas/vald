@@ -43,20 +43,17 @@ func (e *e2e) Run(ctx context.Context, b *testing.B) {
 	func() {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
-
 		defer e.serverStarter(ctx, b, assets.Data(e.name)(b))()
 
 		b.StopTimer()
 		b.ReportAllocs()
 		b.ResetTimer()
 		b.StartTimer()
-
 		b.Run(e.name, func(bb *testing.B) {
 			for _, strategy := range e.strategies {
 				strategy.Run(ctx, bb, e.client, e.dataset)
 			}
 		})
-
 		b.StopTimer()
 	}()
 }

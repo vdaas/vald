@@ -29,11 +29,9 @@ type server struct {
 
 func New(opts ...Option) starter.Starter {
 	srv := new(server)
-
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(srv)
 	}
-
 	return srv
 }
 

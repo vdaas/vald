@@ -95,6 +95,13 @@ func aBenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 		b.Fatal(err)
 	}
 
+	/**
+	if err := client.Connect(); err != nil {
+		b.Fatal(err)
+	}
+	defer client.DisConnect()
+	**/
+
 	for _, name := range targets {
 		bench := e2e.New(
 			b,
@@ -128,6 +135,13 @@ func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
+
+	/**
+	if err := client.Connect(); err != nil {
+		b.Fatal(err)
+	}
+	defer client.DisConnect()
+	**/
 
 	for _, name := range targets {
 		bench := e2e.New(
