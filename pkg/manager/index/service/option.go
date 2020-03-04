@@ -74,7 +74,7 @@ func WithIndexingDurationLimit(dur string) Option {
 	}
 }
 
-func WithMinUncommitted(n int) Option {
+func WithMinUncommitted(n uint32) Option {
 	return func(idx *index) error {
 		if n > 0 {
 			idx.minUncommitted = n
