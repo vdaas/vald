@@ -20,8 +20,6 @@ metadata:
   name: {{ .Values.discoverer.name }}
   labels:
     app: {{ .Values.discoverer.name }}
-  annotations:
-    checksum/configmap: {{ include (print $.Template.BasePath "/discoverer/configmap.yaml") . | sha256sum }}
 spec:
   revisionHistoryLimit: {{ .Values.discoverer.revisionHistoryLimit }}
   selector:
@@ -36,6 +34,8 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.discoverer.name }}
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/discoverer/configmap.yaml") . | sha256sum }}
     spec:
       {{- if .Values.discoverer.initContainers }}
       initContainers:

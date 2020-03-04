@@ -20,8 +20,6 @@ metadata:
   name: {{ .Values.compressor.name }}
   labels:
     app: {{ .Values.compressor.name }}
-  annotations:
-    checksum/configmap: {{ include (print $.Template.BasePath "/manager/compressor/configmap.yaml") . | sha256sum }}
 spec:
   revisionHistoryLimit: {{ .Values.compressor.revisionHistoryLimit }}
   selector:
@@ -36,6 +34,8 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.compressor.name }}
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/manager/compressor/configmap.yaml") . | sha256sum }}
     spec:
       {{- if .Values.compressor.initContainers }}
       initContainers:
