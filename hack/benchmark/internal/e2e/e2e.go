@@ -43,7 +43,7 @@ func (e *e2e) Run(ctx context.Context, b *testing.B) {
 	func() {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
-		// defer e.serverStarter(ctx, b, assets.Data(e.name)(b))()
+		defer e.serverStarter(ctx, b, assets.Data(e.name)(b))()
 
 		b.StopTimer()
 		b.ReportAllocs()

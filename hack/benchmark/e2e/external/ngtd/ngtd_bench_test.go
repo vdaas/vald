@@ -141,11 +141,10 @@ func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 			b,
 			e2e.WithName(name),
 			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
-				return nil
-				// return ngtd.New(
-				// 	ngtd.WithDimentaion(d.Dimension()),
-				// 	ngtd.WithServerType(ngtd.ServerType(ngtd.GRPC)),
-				// ).Run(ctx, tb)
+				return ngtd.New(
+					ngtd.WithDimentaion(d.Dimension()),
+					ngtd.WithServerType(ngtd.ServerType(ngtd.GRPC)),
+				).Run(ctx, tb)
 			}),
 			e2e.WithClient(client),
 			e2e.WithStrategy(
