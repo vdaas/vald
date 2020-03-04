@@ -21,6 +21,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/observability/metrics/cpu"
+	"github.com/vdaas/vald/internal/observability/metrics/custom/label"
 	"github.com/vdaas/vald/internal/observability/metrics/mem"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime/cgo"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime/goroutine"
@@ -124,5 +125,18 @@ func WithCGOMetrics(enabled bool) CollectorOption {
 			return nil
 		}
 		return WithMetrics(cgo.New())(c)
+	}
+}
+
+func WithCustomLabelMetrics(m map[string]string) CollectorOption {
+	return func(c *collector) error {
+		if m == nil {
+			return nil
+		}
+		cm, err := label.New(m)
+		if err != nil {
+			return err
+		}
+		return WithMetrics(cm)(c)
 	}
 }

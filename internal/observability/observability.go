@@ -56,6 +56,7 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 		collector.WithMemoryMetrics(cfg.Collector.Metrics.EnableMemory),
 		collector.WithGoroutineMetrics(cfg.Collector.Metrics.EnableGoroutine),
 		collector.WithCGOMetrics(cfg.Collector.Metrics.EnableCGO),
+		collector.WithCustomLabelMetrics(cfg.Collector.Metrics.CustomLabel),
 		collector.WithMetrics(metrics...),
 	)
 	if err != nil {

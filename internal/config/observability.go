@@ -36,11 +36,12 @@ type Trace struct {
 }
 
 type Metrics struct {
-	EnableVersionInfo bool `json:"enable_version_info" yaml:"enable_version_info"`
-	EnableCPU         bool `json:"enable_cpu" yaml:"enable_cpu"`
-	EnableMemory      bool `json:"enable_memory" yaml:"enable_memory"`
-	EnableGoroutine   bool `json:"enable_goroutine" yaml:"enable_goroutine"`
-	EnableCGO         bool `json:"enable_cgo" yaml:"enable_cgo"`
+	EnableVersionInfo bool              `json:"enable_version_info" yaml:"enable_version_info"`
+	EnableCPU         bool              `json:"enable_cpu" yaml:"enable_cpu"`
+	EnableMemory      bool              `json:"enable_memory" yaml:"enable_memory"`
+	EnableGoroutine   bool              `json:"enable_goroutine" yaml:"enable_goroutine"`
+	EnableCGO         bool              `json:"enable_cgo" yaml:"enable_cgo"`
+	CustomLabel       map[string]string `json:"custom_label" yaml:"custom_label"`
 }
 
 type Prometheus struct {
@@ -68,6 +69,12 @@ func (o *Observability) Bind() *Observability {
 		o.Collector.Duration = GetActualValue(o.Collector.Duration)
 	} else {
 		o.Collector = new(Collector)
+	}
+
+	if o.Collector.Metrics != nil && o.Collector.Metrics.CustomLabel != nil {
+		for k, v := range o.Collector.Metrics.CustomLabel {
+			o.Collector.Metrics.CustomLabel[k] = GetActualValue(v)
+		}
 	}
 
 	if o.Trace == nil {
