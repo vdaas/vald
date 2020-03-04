@@ -4,11 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
-	"fmt"
-	"log"
 	"time"
 
 	"github.com/kpango/fuid"
+	"github.com/kpango/glg"
 	"github.com/vdaas/vald-client-go/gateway/vald"
 	"github.com/vdaas/vald-client-go/payload"
 
@@ -47,7 +46,7 @@ func main() {
 	**/
 	ids, train, test, err := load(datasetPath)
 	if err != nil {
-		log.Fatal(err)
+		glg.Fatal(err)
 	}
 
 	ctx := context.Background()
@@ -58,15 +57,20 @@ func main() {
 	**/
 	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
 	if err != nil {
-		log.Fatal(err)
+		glg.Fatal(err)
 	}
 	// Creates Vald client for gRPC.
 	client := vald.NewValdClient(conn)
+
+	glg.Infof("Start Inserting %d Vector", insertCont)
 
 	/**
 	Starts inserting vectors specified by insertCount(400).
 	**/
 	for i := range ids[:insertCont] {
+		if i%10 == 0 {
+			glg.Infof("Inserted: %d", i)
+		}
 		// Calls `Insert` function of Vald client.
 		// Sends set of vector and id to server via gRPC.
 		_, err := client.Insert(ctx, &payload.Object_Vector{
@@ -74,19 +78,21 @@ func main() {
 			Vector: train[i],
 		})
 		if err != nil {
-			log.Fatal(err)
+			glg.Fatal(err)
 		}
 	}
 
-	fmt.Printf("Finish Inserting. \n\n")
-	fmt.Println("Wait for indexing to finish")
+	glg.Info("Finish Inserting. \n\n")
+	glg.Info("Wait for indexing to finish")
 	time.Sleep(time.Duration(indexingWaitSeconds) * time.Second)
+
+	glg.Infof("Start search %d times", testCount)
 
 	/**
 	Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
 	In this example, Vald gets 10 approximate vectors each search vector.
 	**/
-	for _, vec := range test[:testCount] {
+	for i, vec := range test[:testCount] {
 		// Calls `Search` function of Vald client.
 		// Sends vector and configuration object to server via gRPC.
 		res, err := client.Search(ctx, &payload.Search_Request{
@@ -103,11 +109,12 @@ func main() {
 			},
 		})
 		if err != nil {
-			log.Fatal(err)
+			glg.Fatal(err)
 		}
 
 		b, _ := json.MarshalIndent(res.GetResults(), "", " ")
-		fmt.Printf("results : %v\n\n", string(b))
+		glg.Infof("%d - Results : %s\n\n", i+1, string(b))
+		time.Sleep(1 * time.Second)
 	}
 }
 
