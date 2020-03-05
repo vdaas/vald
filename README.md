@@ -16,11 +16,12 @@
 [![Total visitor](https://visitor-count-badge.herokuapp.com/total.svg?repo_id=vald)](https://github.com/vdaas/vald/graphs/traffic)
 [![Visitors in today](https://visitor-count-badge.herokuapp.com/today.svg?repo_id=vald)](https://github.com/vdaas/vald/graphs/traffic)
 
-Vald is a high scalable distributed high-speed approximate nearest neighbor search engine.
-Due to Vald is designed based on Cloud Native, it can index and backup automatically.
-And, Vald enables to horizontal scalling and to use the resource in particular cpu and memory efficiency for billion scale of data.
-You can use Vald easily and custom it as you want.
-If you'd like to try Vald, please check [get started](#Get-Started) out.
+<div align="center">
+Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.<br>
+Designed on a cloud native architecture and enables automatic vector indexing and index backup and horizontal scalling which made for search billions of feature vector data.<br>
+Easy to use and can be customized as you needed.<br>
+If you'd like to try Vald, please check [get started](#Get-Started) out.<br>
+</div>
 
 ## Requirement
 

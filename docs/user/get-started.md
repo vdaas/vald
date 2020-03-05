@@ -55,21 +55,21 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
 - helm: 
 - hdf5: 
 
-If helm is not installed, please install helm (see below details) or [here](https://helm.sh/docs/intro/install).
+If helm/hdf5 is not installed, please install helm (see below details or [here](https://helm.sh/docs/intro/install))/hdf5 (see below details or [here](https://www.hdfgroup.org/)).
 
-<details><summary>optional installation</summary><br><pre>
-# install helm
+<details><summary>optional installation</summary><br>
+install helm
+<pre>
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-# install hdf5
+</pre>
+install hdf5
+<pre>
 yum install -y hdf5-devel
 apt-get install libhdf5-serial-dev
 brew install hdf5
-
 </pre></details>
 
 ## Starting Vald on k8s cluster
-
-You have to install helm. Please check [here](https://github.com/helm/helm#install).
 
 ### Deploy
 
@@ -110,8 +110,11 @@ If you want to learn about Scylla, please refer to [the official website](https:
 
     ```bash
     kubectl get pods
+    ```
 
-    # If the deployment is successful, you can check the following infomation.
+<details><summary>output example</summary><br>
+If the deployment is successful, you can check the following information.
+<pre>
     NAME                                       READY   STATUS    RESTARTS   AGE
     scylla-0                                   1/1     Running   0          13m
     scylla-1                                   1/1     Running   0          12m
@@ -137,7 +140,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
     vald-manager-index-59676f54bb-nzfwt        1/1     Running   0          5m49s
     vald-meta-559744db-bcrdw                   1/1     Running   0          5m49s
     vald-meta-559744db-hz7gd                   1/1     Running   0          5m49s
-    ```
+</pre></details>
 
 ### Run
 
@@ -163,20 +166,21 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
 
 3. Running example
 
-    Insert, Search and Remove will be running as follows.<br>
-    - Insert: insert and indexing training dataset to Vald agent
-    - Search: search neighbor vector of test vector.
-    - Remove: remove indexing from Vald agent.
-    
-    Also, Vald provides clients that support multiple langurages such as Java, Node.js, Python and so on.
-    In this case, we use the client which is written by golang.
+    Vald provides clients that support multiple langurages such as Java, Node.js, Python and so on.<br>
+    In this case, we use [vald-client-go](https://github.com/vdaas/vald-client-go) which is written by golang.
+
+    We use `example/client/main.go` for running example.
+    This will execute 4 steps.
+    1. init
+    - Recognition paremters.
+    2. load
+    - Loading from fashion-mnist dataset and set id for each vector that is loaded. This step will return the training dataset, test dataset, and ids list of ids when loading is completed with success.
+    3. insert
+    - Insert and Indexing training dataset to Vald agent.
+    4. search
+    - Seach neighbor vector fot test vector and return list of neighbor vector.
 
     ```bash
-    # if you don't install hdf5-devel, please install hdf5-devl at first.
-    # yum install -y hdf5-devel
-    # apt-get install libhdf5-serial-dev
-    # brew install hdf5
-
     # run example
     go run main.go
     ```
@@ -190,8 +194,8 @@ For example you can configure the number of vector dimension, the number of repl
 You can customize Vald by creating/editing `values.yaml`.
 We will publish the instructions of `values.yaml` soon.
 
-### Another way to deploy Vlad
+### Another way to deploy Vald
 
 In the `Get Started` section, we'll show you how to deploy Vald with Scylla DB.
-Vald can be deployed in another way, which is used by helm or `kind` command. (Compressor datastore is required, for example mysql + redis or casandora ).
+Vald can be deployed in another way, which is used by Helm or `kind` command. (Compressor datastore is required, for example mysql + redis or casandora ).
 
