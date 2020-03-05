@@ -2,7 +2,6 @@ package strategy
 
 import (
 	"context"
-	"io"
 	"sync/atomic"
 	"testing"
 
@@ -49,9 +48,7 @@ func (sisrt *streamInsert) Run(ctx context.Context, b *testing.B, c client.Clien
 	var total uint32
 	b.Run("StreamInsert", func(bb *testing.B) {
 		c.StreamInsert(ctx, sisrt.dataProvider(&total, bb, dataset), func(err error) {
-			if err == io.EOF {
-				return
-			} else if err != nil {
+			if err != nil {
 				bb.Error(err)
 			}
 		})

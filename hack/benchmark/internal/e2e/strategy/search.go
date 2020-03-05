@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
@@ -46,6 +47,7 @@ func (s *search) run(ctx context.Context, b *testing.B, c client.Client, dataset
 }
 
 func (s *search) runParallel(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+	var cnt int64
 	b.Run("ParallelSearch", func(bb *testing.B) {
 		queries := dataset.Query()
 
@@ -54,9 +56,8 @@ func (s *search) runParallel(ctx context.Context, b *testing.B, c client.Client,
 		bb.ResetTimer()
 		bb.StartTimer()
 		bb.RunParallel(func(pb *testing.PB) {
-			cnt := 0
 			for pb.Next() {
-				s.do(ctx, b, c, queries[cnt%len(queries)])
+				s.do(ctx, b, c, queries[int(atomic.AddInt64(&cnt, 1))%len(queries)])
 				cnt++
 			}
 		})

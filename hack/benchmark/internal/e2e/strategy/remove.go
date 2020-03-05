@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
@@ -47,6 +48,7 @@ func (r *remove) run(ctx context.Context, b *testing.B, c client.Client, dataset
 }
 
 func (r *remove) runParallel(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+	var cnt int64
 	b.Run("ParallelRemove", func(bb *testing.B) {
 		ids := dataset.IDs()
 
@@ -55,10 +57,8 @@ func (r *remove) runParallel(ctx context.Context, b *testing.B, c client.Client,
 		bb.ResetTimer()
 		bb.StartTimer()
 		bb.RunParallel(func(pb *testing.PB) {
-			cnt := 0
 			for pb.Next() {
-				r.do(ctx, bb, c, ids[cnt%len(ids)])
-				cnt++
+				r.do(ctx, bb, c, ids[int(atomic.AddInt64(&cnt, 1))%len(ids)])
 			}
 		})
 		bb.StopTimer()

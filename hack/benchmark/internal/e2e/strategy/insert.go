@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
@@ -47,6 +48,7 @@ func (isrt *insert) run(ctx context.Context, b *testing.B, c client.Client, data
 }
 
 func (isrt *insert) runParallel(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+	var cnt int64
 	b.Run("ParallelInsert", func(bb *testing.B) {
 		ids, train := dataset.IDs(), dataset.Train()
 
@@ -55,9 +57,9 @@ func (isrt *insert) runParallel(ctx context.Context, b *testing.B, c client.Clie
 		bb.ResetTimer()
 		bb.StartTimer()
 		bb.RunParallel(func(pb *testing.PB) {
-			cnt := 0
 			for pb.Next() {
-				isrt.do(ctx, bb, c, ids[cnt%len(ids)], train[cnt%len(train)])
+				n := int(atomic.AddInt64(&cnt, 1))
+				isrt.do(ctx, bb, c, ids[n%len(ids)], train[n%len(train)])
 				cnt++
 			}
 		})
