@@ -1,4 +1,4 @@
-package agent
+package rest
 
 import (
 	"context"
@@ -51,7 +51,7 @@ func (c *agentClient) StreamSearch(ctx context.Context, dataProvider func() *cli
 	return errors.ErrUnsupportedClientMethod
 }
 
-func (c *agentClient) StreamSearchByID(ctx context.Context, dataProvider func() *client.SearchRequest, f func(*client.SearchResponse, error)) error {
+func (c *agentClient) StreamSearchByID(ctx context.Context, dataProvider func() *client.SearchIDRequest, f func(*client.SearchResponse, error)) error {
 	return errors.ErrUnsupportedClientMethod
 }
 

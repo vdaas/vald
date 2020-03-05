@@ -1,4 +1,4 @@
-package agent
+package grpc
 
 import (
 	"context"
@@ -76,18 +76,23 @@ func (c *agentClient) StreamSearch(ctx context.Context, dataProvider func() *cli
 		if err != nil {
 			return nil, err
 		}
-		defer st.CloseSend()
 
-		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-			return dataProvider()
-		}, func(res interface{}, err error) {
-			f(res.(*client.SearchResponse), err)
-		})
+		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency,
+			func() interface{} {
+				if d := dataProvider(); d != nil {
+					return d
+				}
+				return nil
+			}, func() interface{} {
+				return new(client.SearchResponse)
+			}, func(res interface{}, err error) {
+				f(res.(*client.SearchResponse), err)
+			})
 	})
 	return err
 }
 
-func (c *agentClient) StreamSearchByID(ctx context.Context, dataProvider func() *client.SearchRequest, f func(*client.SearchResponse, error)) error {
+func (c *agentClient) StreamSearchByID(ctx context.Context, dataProvider func() *client.SearchIDRequest, f func(*client.SearchResponse, error)) error {
 	_, err := c.grpcClient.Do(ctx, c.addr, func(ctx context.Context, conn *igrpc.ClientConn, copts ...igrpc.CallOption) (res interface{}, err error) {
 		var st agent.Agent_StreamSearchByIDClient
 
@@ -95,13 +100,18 @@ func (c *agentClient) StreamSearchByID(ctx context.Context, dataProvider func() 
 		if err != nil {
 			return nil, err
 		}
-		defer st.CloseSend()
 
-		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-			return dataProvider()
-		}, func(res interface{}, err error) {
-			f(res.(*client.SearchResponse), err)
-		})
+		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency,
+			func() interface{} {
+				if d := dataProvider(); d != nil {
+					return d
+				}
+				return nil
+			}, func() interface{} {
+				return new(client.SearchResponse)
+			}, func(res interface{}, err error) {
+				f(res.(*client.SearchResponse), err)
+			})
 	})
 	return err
 }
@@ -121,10 +131,14 @@ func (c *agentClient) StreamInsert(ctx context.Context, dataProvider func() *cli
 		if err != nil {
 			return nil, err
 		}
-		defer st.CloseSend()
 
 		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-			return dataProvider()
+			if d := dataProvider(); d != nil {
+				return d
+			}
+			return nil
+		}, func() interface{} {
+			return new(client.Empty)
 		}, func(_ interface{}, err error) {
 			f(err)
 		})
@@ -154,10 +168,14 @@ func (c *agentClient) StreamUpdate(ctx context.Context, dataProvider func() *cli
 		if err != nil {
 			return nil, err
 		}
-		defer st.CloseSend()
 
 		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-			return dataProvider()
+			if d := dataProvider(); d != nil {
+				return d
+			}
+			return nil
+		}, func() interface{} {
+			return new(client.Empty)
 		}, func(_ interface{}, err error) {
 			f(err)
 		})
@@ -187,10 +205,14 @@ func (c *agentClient) StreamRemove(ctx context.Context, dataProvider func() *cli
 		if err != nil {
 			return nil, err
 		}
-		defer st.CloseSend()
 
 		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-			return dataProvider()
+			if d := dataProvider(); d != nil {
+				return d
+			}
+			return nil
+		}, func() interface{} {
+			return new(client.Empty)
 		}, func(_ interface{}, err error) {
 			f(err)
 		})
@@ -223,10 +245,14 @@ func (c *agentClient) StreamGetObject(ctx context.Context, dataProvider func() *
 		if err != nil {
 			return nil, err
 		}
-		defer st.CloseSend()
 
 		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-			return dataProvider()
+			if d := dataProvider(); d != nil {
+				return d
+			}
+			return nil
+		}, func() interface{} {
+			return new(client.ObjectVector)
 		}, func(res interface{}, err error) {
 			f(res.(*client.ObjectVector), err)
 		})

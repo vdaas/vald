@@ -1,4 +1,4 @@
-package agent
+package grpc
 
 import "github.com/vdaas/vald/internal/config"
 
