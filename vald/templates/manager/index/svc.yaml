@@ -17,6 +17,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Values.indexManager.name }}
+  {{- if .Values.indexManager.service }}
+  annotations:
+    {{- toYaml .Values.indexManager.service.annotations | nindent 4 }}
+  labels:
+    {{- toYaml .Values.indexManager.service.labels | nindent 4 }}
+  {{- end }}
 spec:
   {{- $servers := dict "Values" .Values.indexManager.server_config "default" .Values.defaults.server_config }}
   {{- include "vald.servicePorts" $servers | nindent 2 }}
