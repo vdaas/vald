@@ -131,7 +131,7 @@ func aBenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 	ctx := context.Background()
 
-	client, err := grpc.New(ctx, grpc.WithStreamConcurrency(1000000))
+	client, err := grpc.New(ctx)
 	if err != nil {
 		b.Fatal(err)
 	}
