@@ -16,11 +16,20 @@
 [![Total visitor](https://visitor-count-badge.herokuapp.com/total.svg?repo_id=vald)](https://github.com/vdaas/vald/graphs/traffic)
 [![Visitors in today](https://visitor-count-badge.herokuapp.com/today.svg?repo_id=vald)](https://github.com/vdaas/vald/graphs/traffic)
 
-vald is high scalable distributed high-speed approximate nearest neighbor search engine
+Vald is a high scalable distributed high-speed approximate nearest neighbor search engine.
+Due to Vald is designed based on Cloud Native, it can index and backup automatically.
+And, Vald enables to horizontal scalling and to use the resource in particular cpu and memory efficiency for billion scale of data.
+You can use Vald easily and custom it as you want.
+If you'd like to try Vald, please check [get started](#Get-Started) out.
 
 ## Requirement
 
 kubernetes 1.12~
+
+## Get Started
+
+Explore the get started and easily create Vald on your k8s cluster.<br>
+For more infomation, please refer to [Get Started](./docs/user/get-started.md).
 
 ## Installation
 
