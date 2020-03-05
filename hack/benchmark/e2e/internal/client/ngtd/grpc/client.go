@@ -94,7 +94,6 @@ func (c *ngtdClient) StreamSearchByID(ctx context.Context, dataProvider func() *
 		if err != nil {
 			return nil, err
 		}
-		defer st.CloseSend()
 
 		return nil, grpc.BidirectionalStreamClient(st, c.streamConcurrency,
 			func() interface{} {
@@ -129,7 +128,6 @@ func (c *ngtdClient) StreamInsert(ctx context.Context, dataProvider func() *clie
 		if err != nil {
 			return nil, err
 		}
-		defer st.CloseSend()
 
 		return nil, grpc.BidirectionalStreamClient(st, c.streamConcurrency,
 			func() interface{} {
@@ -181,7 +179,6 @@ func (c *ngtdClient) StreamRemove(ctx context.Context, dataProvider func() *clie
 		if err != nil {
 			return nil, err
 		}
-		defer st.CloseSend()
 
 		return nil, grpc.BidirectionalStreamClient(st, c.streamConcurrency,
 			func() interface{} {
@@ -230,7 +227,6 @@ func (c *ngtdClient) StreamGetObject(ctx context.Context, dataProvider func() *c
 		if err != nil {
 			return nil, err
 		}
-		defer st.CloseSend()
 
 		return nil, grpc.BidirectionalStreamClient(st, c.streamConcurrency,
 			func() interface{} {
