@@ -54,7 +54,7 @@ func init() {
 	targets = strings.Split(strings.TrimSpace(dataset), ",")
 }
 
-func aBenchmarkNGTD_REST_Sequential(b *testing.B) {
+func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 	ctx := context.Background()
 
 	client, err := rest.New(ctx)
@@ -87,20 +87,13 @@ func aBenchmarkNGTD_REST_Sequential(b *testing.B) {
 	}
 }
 
-func aBenchmarkNGTD_gRPC_Sequential(b *testing.B) {
+func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 	ctx := context.Background()
 
 	client, err := grpc.New(ctx)
 	if err != nil {
 		b.Fatal(err)
 	}
-
-	/**
-	if err := client.Connect(); err != nil {
-		b.Fatal(err)
-	}
-	defer client.DisConnect()
-	**/
 
 	for _, name := range targets {
 		bench := e2e.New(
