@@ -324,7 +324,7 @@ gateway:
       memory: 700Mi
   gateway_config:
     agent_namespace: _MY_POD_NAMESPACE_
-    # node_name: _MY_NODE_NAME_
+    node_name: "" # _MY_NODE_NAME_
     index_replica: 5
     discoverer:
       duration: 200ms
@@ -809,7 +809,7 @@ indexManager:
       memory: 500Mi
   indexer:
     agent_namespace: _MY_POD_NAMESPACE_
-    # node_name: _MY_NODE_NAME_
+    node_name: "" # _MY_NODE_NAME_
     concurrency: 1
     auto_index_duration_limit: 30m
     auto_index_check_duration: 1m
