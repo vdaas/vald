@@ -57,7 +57,7 @@ func init() {
 func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 	ctx := context.Background()
 
-	client, err := rest.New(ctx)
+	client, err := rest.New(ctx, rest.WithAddr("http://127.0.0.1:8200"))
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -80,7 +80,6 @@ func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 				strategy.NewSearch(
 					strategy.WithSearchConfig(searchConfig),
 				),
-				strategy.NewRemove(),
 			),
 		)
 		bench.Run(ctx, b)
@@ -114,7 +113,6 @@ func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 				strategy.NewSearch(
 					strategy.WithSearchConfig(searchConfig),
 				),
-				strategy.NewRemove(),
 			),
 		)
 		bench.Run(ctx, b)

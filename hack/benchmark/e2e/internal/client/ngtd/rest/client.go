@@ -39,21 +39,21 @@ func (c *ngtdClient) Exists(ctx context.Context, req *client.ObjectID) (*client.
 }
 
 func (c *ngtdClient) Search(ctx context.Context, req *client.SearchRequest) (*client.SearchResponse, error) {
-	var res interface{}
+	res := new(model.SearchResponse)
 	err := json.Request(ctx, http.MethodPost, c.addr+"/search", searchRequestToNgtdSearchRequest(req), &res)
 	if err != nil {
 		return nil, err
 	}
-	return ngtdSearchResponseToSearchResponse(res.(*model.SearchResponse)), nil
+	return ngtdSearchResponseToSearchResponse(res), nil
 }
 
 func (c *ngtdClient) SearchByID(ctx context.Context, req *client.SearchIDRequest) (*client.SearchResponse, error) {
-	var res interface{}
+	res := new(model.SearchResponse)
 	err := json.Request(ctx, http.MethodPost, c.addr+"/searchbyid", searchIDRequestToNgtdSearchRequest(req), res)
 	if err != nil {
 		return nil, err
 	}
-	return ngtdSearchResponseToSearchResponse(res.(*model.SearchResponse)), nil
+	return ngtdSearchResponseToSearchResponse(res), nil
 }
 
 func (c *ngtdClient) StreamSearch(ctx context.Context, dataProvider func() *client.SearchRequest, f func(*client.SearchResponse, error)) error {

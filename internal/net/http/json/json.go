@@ -66,11 +66,12 @@ func EncodeResponse(w http.ResponseWriter,
 }
 
 func DecodeResponse(res *http.Response, data interface{}) (err error) {
-	if res != nil && res.Body != nil && res.ContentLength != 0 {
+	if res != nil && res.Body != nil && data != nil && res.ContentLength != 0 {
 		err = Decode(res.Body, data)
 		if err != nil {
 			return err
 		}
+
 		_, err := io.Copy(ioutil.Discard, res.Body)
 		if err != nil {
 			return errors.ErrRequestBodyFlush(err)
@@ -89,11 +90,16 @@ func EncodeRequest(req *http.Request,
 	for _, ct := range contentTypes {
 		req.Header.Add(rest.ContentType, ct)
 	}
+
 	buf := new(bytes.Buffer)
 	if err := Encode(buf, data); err != nil {
 		return err
 	}
-	return req.Write(buf)
+
+	req.ContentLength = int64(buf.Len())
+	req.Body = ioutil.NopCloser(buf)
+
+	return nil
 }
 
 func DecodeRequest(r *http.Request, data interface{}) (err error) {
