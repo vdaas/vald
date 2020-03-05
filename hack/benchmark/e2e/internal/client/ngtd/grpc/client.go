@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 
+	"github.com/vdaas/vald/hack/benchmark/e2e/internal/conv"
 	"github.com/vdaas/vald/internal/client"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
@@ -46,7 +47,7 @@ func (c *ngtdClient) Exists(ctx context.Context, req *client.ObjectID) (*client.
 
 func (c *ngtdClient) Search(ctx context.Context, req *client.SearchRequest) (*client.SearchResponse, error) {
 	res, err := c.Client.Do(ctx, c.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-		res, err := proto.NewNGTDClient(conn).Search(ctx, SearchRequestToNGTDSearchRequest(req), copts...)
+		res, err := proto.NewNGTDClient(conn).Search(ctx, conv.SearchRequestToNGTDSearchRequest(req), copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -59,12 +60,12 @@ func (c *ngtdClient) Search(ctx context.Context, req *client.SearchRequest) (*cl
 	if err != nil {
 		return nil, err
 	}
-	return NGTDSearchResponseToSearchResponse(res.(*proto.SearchResponse)), nil
+	return conv.NGTDSearchResponseToSearchResponse(res.(*proto.SearchResponse)), nil
 }
 
 func (c *ngtdClient) SearchByID(ctx context.Context, req *client.SearchIDRequest) (*client.SearchResponse, error) {
 	res, err := c.Client.Do(ctx, c.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-		res, err := proto.NewNGTDClient(conn).SearchByID(ctx, SearchIDRequestToNGTDSearchRequest(req), copts...)
+		res, err := proto.NewNGTDClient(conn).SearchByID(ctx, conv.SearchIDRequestToNGTDSearchRequest(req), copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -77,7 +78,7 @@ func (c *ngtdClient) SearchByID(ctx context.Context, req *client.SearchIDRequest
 	if err != nil {
 		return nil, err
 	}
-	return NGTDSearchResponseToSearchResponse(res.(*proto.SearchResponse)), nil
+	return conv.NGTDSearchResponseToSearchResponse(res.(*proto.SearchResponse)), nil
 }
 
 func (c *ngtdClient) StreamSearch(ctx context.Context, dataProvider func() *client.SearchRequest, f func(*client.SearchResponse, error)) error {
@@ -90,7 +91,7 @@ func (c *ngtdClient) StreamSearch(ctx context.Context, dataProvider func() *clie
 		return nil, grpc.BidirectionalStreamClient(st, c.streamConcurrency,
 			func() interface{} {
 				if d := dataProvider(); d != nil {
-					return SearchRequestToNGTDSearchRequest(d)
+					return conv.SearchRequestToNGTDSearchRequest(d)
 				}
 				return nil
 			}, func() interface{} {
@@ -107,7 +108,7 @@ func (c *ngtdClient) StreamSearch(ctx context.Context, dataProvider func() *clie
 					return
 				}
 
-				f(NGTDSearchResponseToSearchResponse(res), err)
+				f(conv.NGTDSearchResponseToSearchResponse(res), err)
 			})
 	})
 	return err
@@ -123,7 +124,7 @@ func (c *ngtdClient) StreamSearchByID(ctx context.Context, dataProvider func() *
 		return nil, grpc.BidirectionalStreamClient(st, c.streamConcurrency,
 			func() interface{} {
 				if d := dataProvider(); d != nil {
-					return SearchIDRequestToNGTDSearchRequest(d)
+					return conv.SearchIDRequestToNGTDSearchRequest(d)
 				}
 				return nil
 			}, func() interface{} {
@@ -140,7 +141,7 @@ func (c *ngtdClient) StreamSearchByID(ctx context.Context, dataProvider func() *
 					return
 				}
 
-				f(NGTDSearchResponseToSearchResponse(res), err)
+				f(conv.NGTDSearchResponseToSearchResponse(res), err)
 			})
 	})
 	return err
@@ -148,7 +149,7 @@ func (c *ngtdClient) StreamSearchByID(ctx context.Context, dataProvider func() *
 
 func (c *ngtdClient) Insert(ctx context.Context, req *client.ObjectVector) error {
 	_, err := c.Client.Do(ctx, c.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-		res, err := proto.NewNGTDClient(conn).Insert(ctx, ObjectVectorToNGTDInsertRequest(req), copts...)
+		res, err := proto.NewNGTDClient(conn).Insert(ctx, conv.ObjectVectorToNGTDInsertRequest(req), copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -171,7 +172,7 @@ func (c *ngtdClient) StreamInsert(ctx context.Context, dataProvider func() *clie
 		return nil, grpc.BidirectionalStreamClient(st, c.streamConcurrency,
 			func() interface{} {
 				if d := dataProvider(); d != nil {
-					return ObjectVectorToNGTDInsertRequest(d)
+					return conv.ObjectVectorToNGTDInsertRequest(d)
 				}
 				return nil
 			}, func() interface{} {
@@ -212,7 +213,7 @@ func (c *ngtdClient) MultiUpdate(ctx context.Context, req *client.ObjectVectors)
 
 func (c *ngtdClient) Remove(ctx context.Context, req *client.ObjectID) error {
 	_, err := c.Client.Do(ctx, c.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-		res, err := proto.NewNGTDClient(conn).Remove(ctx, ObjectIDToNGTDRemoveRequest(req), copts...)
+		res, err := proto.NewNGTDClient(conn).Remove(ctx, conv.ObjectIDToNGTDRemoveRequest(req), copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -235,7 +236,7 @@ func (c *ngtdClient) StreamRemove(ctx context.Context, dataProvider func() *clie
 		return nil, grpc.BidirectionalStreamClient(st, c.streamConcurrency,
 			func() interface{} {
 				if d := dataProvider(); d != nil {
-					return ObjectIDToNGTDRemoveRequest(d)
+					return conv.ObjectIDToNGTDRemoveRequest(d)
 				}
 				return nil
 			}, func() interface{} {
@@ -264,7 +265,7 @@ func (c *ngtdClient) MultiRemove(ctx context.Context, req *client.ObjectIDs) err
 
 func (c *ngtdClient) GetObject(ctx context.Context, req *client.ObjectID) (*client.ObjectVector, error) {
 	resp, err := c.Client.Do(ctx, c.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-		res, err := proto.NewNGTDClient(conn).GetObject(ctx, ObjectIDToNGTDGetObjectRequest(req), copts...)
+		res, err := proto.NewNGTDClient(conn).GetObject(ctx, conv.ObjectIDToNGTDGetObjectRequest(req), copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -277,7 +278,7 @@ func (c *ngtdClient) GetObject(ctx context.Context, req *client.ObjectID) (*clie
 	if err != nil {
 		return nil, err
 	}
-	return NGTDGetObjectResponseToObjectVector(resp.(*proto.GetObjectResponse)), err
+	return conv.NGTDGetObjectResponseToObjectVector(resp.(*proto.GetObjectResponse)), err
 }
 
 func (c *ngtdClient) StreamGetObject(ctx context.Context, dataProvider func() *client.ObjectID, f func(*client.ObjectVector, error)) error {
@@ -290,7 +291,7 @@ func (c *ngtdClient) StreamGetObject(ctx context.Context, dataProvider func() *c
 		return nil, grpc.BidirectionalStreamClient(st, c.streamConcurrency,
 			func() interface{} {
 				if d := dataProvider(); d != nil {
-					return ObjectIDToNGTDGetObjectRequest(d)
+					return conv.ObjectIDToNGTDGetObjectRequest(d)
 				}
 				return nil
 			}, func() interface{} {
@@ -305,7 +306,7 @@ func (c *ngtdClient) StreamGetObject(ctx context.Context, dataProvider func() *c
 					f(nil, errors.New(res.GetError()))
 				}
 
-				f(NGTDGetObjectResponseToObjectVector(res), err)
+				f(conv.NGTDGetObjectResponseToObjectVector(res), err)
 			})
 	})
 	return err
@@ -313,7 +314,7 @@ func (c *ngtdClient) StreamGetObject(ctx context.Context, dataProvider func() *c
 
 func (c *ngtdClient) CreateIndex(ctx context.Context, req *client.ControlCreateIndexRequest) error {
 	_, err := c.Client.Do(ctx, c.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-		return proto.NewNGTDClient(conn).CreateIndex(ctx, ControlCreateIndexRequestToCreateIndexRequest(req), copts...)
+		return proto.NewNGTDClient(conn).CreateIndex(ctx, conv.ControlCreateIndexRequestToCreateIndexRequest(req), copts...)
 	})
 	return err
 }

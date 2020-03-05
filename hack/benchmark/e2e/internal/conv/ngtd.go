@@ -1,4 +1,4 @@
-package grpc
+package conv
 
 import (
 	"github.com/vdaas/vald/internal/client"
