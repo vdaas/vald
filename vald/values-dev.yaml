@@ -14,13 +14,27 @@
 # limitations under the License.
 #
 
+defaults:
+  server_config:
+    metrics:
+      pprof:
+        enabled: true
+
 gateway:
+  podAnnotations:
+    profefe.com/enable: "true"
+    profefe.com/port: "6060"
+    profefe.com/service: "vald-gateway"
   resources:
     requests:
       cpu: 100m
       memory: 50Mi
 
 agent:
+  podAnnotations:
+    profefe.com/enable: "true"
+    profefe.com/port: "6060"
+    profefe.com/service: "vald-agent-ngt"
   minReplicas: 5
   maxReplicas: 10
   podManagementPolicy: Parallel
@@ -30,30 +44,50 @@ agent:
       memory: 50Mi
 
 discoverer:
+  podAnnotations:
+    profefe.com/enable: "true"
+    profefe.com/port: "6060"
+    profefe.com/service: "vald-discoverer"
   resources:
     requests:
       cpu: 100m
       memory: 50Mi
 
 compressor:
+  podAnnotations:
+    profefe.com/enable: "true"
+    profefe.com/port: "6060"
+    profefe.com/service: "vald-manager-compressor"
   resources:
     requests:
       cpu: 100m
       memory: 50Mi
 
 backupManager:
+  podAnnotations:
+    profefe.com/enable: "true"
+    profefe.com/port: "6060"
+    profefe.com/service: "vald-manager-backup"
   resources:
     requests:
       cpu: 100m
       memory: 30Mi
 
 indexManager:
+  podAnnotations:
+    profefe.com/enable: "true"
+    profefe.com/port: "6060"
+    profefe.com/service: "vald-manager-index"
   resources:
     requests:
       cpu: 100m
       memory: 30Mi
 
 meta:
+  podAnnotations:
+    profefe.com/enable: "true"
+    profefe.com/port: "6060"
+    profefe.com/service: "vald-meta"
   resources:
     requests:
       cpu: 100m

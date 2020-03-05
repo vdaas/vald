@@ -20,6 +20,10 @@ metadata:
   name: {{ .Values.agent.name }}
   labels:
     app: {{ .Values.agent.name }}
+  {{- if .Values.agent.annotations }}
+  annotations:
+    {{- toYaml .Values.agent.annotations | nindent 4 }}
+  {{- end }}
 spec:
   serviceName: {{ .Values.agent.name }}
   podManagementPolicy: {{ .Values.agent.podManagementPolicy }}
@@ -37,6 +41,10 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.agent.name }}
+      {{- if .Values.agent.podAnnotations }}
+      annotations:
+        {{- toYaml .Values.agent.podAnnotations | nindent 8 }}
+      {{- end }}
       # annotations:
       #   checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
     spec:

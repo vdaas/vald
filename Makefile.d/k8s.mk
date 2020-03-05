@@ -205,6 +205,16 @@ k8s/metrics/jaeger/deploy:
 k8s/metrics/jaeger/remove:
 	-kubectl delete -f k8s/metrics/jaeger
 
+.PHONY: k8s/metrics/profefe/deploy
+## deploy profefe
+k8s/metrics/profefe/deploy:
+	kubectl apply -f k8s/metrics/profefe
+
+.PHONY: k8s/metrics/profefe/remove
+## remove profefe
+k8s/metrics/profefe/remove:
+	-kubectl delete -f k8s/metrics/profefe
+
 .PHONY: k8s/linkerd/deploy
 ## deploy linkerd to k8s
 k8s/linkerd/deploy:

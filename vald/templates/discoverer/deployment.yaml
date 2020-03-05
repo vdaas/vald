@@ -20,6 +20,10 @@ metadata:
   name: {{ .Values.discoverer.name }}
   labels:
     app: {{ .Values.discoverer.name }}
+  {{- if .Values.discoverer.annotations }}
+  annotations:
+    {{- toYaml .Values.discoverer.annotations | nindent 4 }}
+  {{- end }}
 spec:
   progressDeadlineSeconds: {{ .Values.discoverer.progressDeadlineSeconds }}
   replicas: {{ .Values.discoverer.minReplicas }}
@@ -39,6 +43,9 @@ spec:
         app: {{ .Values.discoverer.name }}
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/discoverer/configmap.yaml") . | sha256sum }}
+        {{- if .Values.discoverer.podAnnotations }}
+        {{- toYaml .Values.discoverer.podAnnotations | nindent 8 }}
+        {{- end }}
     spec:
       {{- if .Values.discoverer.initContainers }}
       initContainers:

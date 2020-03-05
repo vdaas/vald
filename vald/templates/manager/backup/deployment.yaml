@@ -20,6 +20,10 @@ metadata:
   name: {{ .Values.backupManager.name }}
   labels:
     app: {{ .Values.backupManager.name }}
+  {{- if .Values.backupManager.annotations }}
+  annotations:
+    {{- toYaml .Values.backupManager.annotations | nindent 4 }}
+  {{- end }}
 spec:
   progressDeadlineSeconds: {{ .Values.backupManager.progressDeadlineSeconds }}
   replicas: {{ .Values.backupManager.minReplicas }}
@@ -39,6 +43,9 @@ spec:
         app: {{ .Values.backupManager.name }}
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/manager/backup/configmap.yaml") . | sha256sum }}
+        {{- if .Values.backupManager.podAnnotations }}
+        {{- toYaml .Values.backupManager.podAnnotations | nindent 8 }}
+        {{- end }}
     spec:
       {{- if .Values.backupManager.initContainers }}
       initContainers:

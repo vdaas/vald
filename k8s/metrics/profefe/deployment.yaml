@@ -1,0 +1,50 @@
+---
+#
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profefe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: profefe
+  template:
+    metadata:
+      labels:
+        app: profefe
+    spec:
+      containers:
+        - name: profefe
+          image: profefe/profefe:latest
+          ports:
+            - containerPort: 10100
+          args:
+            - "-addr=:10100"
+            - "-badger.dir=/tmp"
+            - "-log.level=debug"
+          # args:
+          #   - "-addr=:10100"
+          #   - "-s3.endpoint-url=http://172.17.0.2:9000"
+          #   - "-s3.disable-ssl=true"
+          #   - "-s3.region=eu-central-1"
+          #   - "-s3.bucket=test.0"
+          # env:
+          #   - name: AWS_ACCESS_KEY_ID
+          #     value: ""
+          #   - name: AWS_SECRET_ACCESS_KEY
+          #     value: ""
