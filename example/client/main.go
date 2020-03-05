@@ -118,8 +118,8 @@ func main() {
 	}
 }
 
-// load function loads training and test vector from hdf file. the size of ids is same to the number of training data.
-// Each id, which is element of ids, will be set a randum number.
+// load function loads training and test vector from hdf file. The size of ids is same to the number of training data.
+// Each id, which is an element of ids, will be set a random number.
 func load(path string) (ids []string, train, test [][]float32, err error) {
 	var f *hdf5.File
 	f, err = hdf5.OpenFile(path, hdf5.F_ACC_RDONLY)
