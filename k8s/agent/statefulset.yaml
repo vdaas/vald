@@ -37,8 +37,12 @@ spec:
       creationTimestamp: null
       labels:
         app: vald-agent-ngt
+      annotations:
+        profefe.com/enable: "true"
+        profefe.com/port: "6060"
+        profefe.com/service: vald-agent-ngt
       # annotations:
-      #   checksum/configmap: 53a52c1e100bea2b9fb595d797fcfef335dc9d883c782c6fe97ba51af2cb0e9b
+      #   checksum/configmap: 031618f7752ad7571f3505d050ac45cc0dde92aeed3f8c06247ba572ad909240
     spec:
       affinity:
         podAntiAffinity:
@@ -86,6 +90,9 @@ spec:
             - name: grpc
               protocol: TCP
               containerPort: 8081
+            - name: pprof
+              protocol: TCP
+              containerPort: 6060
             - name: prometheus
               protocol: TCP
               containerPort: 6061

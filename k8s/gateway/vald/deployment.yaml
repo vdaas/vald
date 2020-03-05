@@ -38,7 +38,10 @@ spec:
       labels:
         app: vald-gateway
       annotations:
-        checksum/configmap: 68942a4a3c38f0ecaa997644312fe23ca21afa8ff6c33640add7acd082895178
+        checksum/configmap: a56ddacf2b700e49741e4fde4de702b1da95a54cd7bcfdc3f7bb4ec060970843
+        profefe.com/enable: "true"
+        profefe.com/port: "6060"
+        profefe.com/service: vald-gateway
     spec:
       initContainers:
         - name: wait-for-manager-compressor
@@ -85,6 +88,18 @@ spec:
                 echo "waiting for agent to be ready..."
                 sleep 2;
               done
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - vald-gateway
       containers:
         - name: vald-gateway
           image: "vdaas/vald-gateway:nightly"
@@ -119,6 +134,9 @@ spec:
             - name: grpc
               protocol: TCP
               containerPort: 8081
+            - name: pprof
+              protocol: TCP
+              containerPort: 6060
             - name: prometheus
               protocol: TCP
               containerPort: 6061
