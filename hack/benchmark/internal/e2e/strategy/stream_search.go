@@ -2,8 +2,6 @@ package strategy
 
 import (
 	"context"
-	"fmt"
-	"io"
 	"sync/atomic"
 	"testing"
 
@@ -36,8 +34,6 @@ func (s *streamSearch) dataProvider(total *uint32, b *testing.B, dataset assets.
 
 	return func() *client.SearchRequest {
 		n := int(atomic.AddUint32(&cnt, 1)) - 1
-		fmt.Println(n)
-		fmt.Println(b.N)
 		if n >= b.N {
 			return nil
 		}
@@ -55,11 +51,7 @@ func (s *streamSearch) Run(ctx context.Context, b *testing.B, c client.Client, d
 	b.Run("StreamSearch", func(bb *testing.B) {
 		c.StreamSearch(ctx, s.dataProvider(&total, bb, dataset), func(_ *client.SearchResponse, err error) {
 			if err != nil {
-				if err == io.EOF {
-					return
-				} else if err != nil {
-					bb.Error(err)
-				}
+				bb.Error(err)
 			}
 		})
 	})

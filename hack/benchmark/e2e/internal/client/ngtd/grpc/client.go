@@ -70,7 +70,6 @@ func (c *ngtdClient) StreamSearch(ctx context.Context, dataProvider func() *clie
 		if err != nil {
 			return nil, err
 		}
-		defer st.CloseSend()
 
 		return nil, grpc.BidirectionalStreamClient(st, c.streamConcurrency,
 			func() interface{} {
@@ -81,11 +80,8 @@ func (c *ngtdClient) StreamSearch(ctx context.Context, dataProvider func() *clie
 			}, func() interface{} {
 				return new(proto.SearchResponse)
 			}, func(res interface{}, err error) {
-				if err != nil {
-					r := res.(*proto.SearchResponse)
-					f(toSearchResponse(r), err)
-				}
-				f(nil, err)
+				r := res.(*proto.SearchResponse)
+				f(toSearchResponse(r), err)
 			})
 
 	})
@@ -109,11 +105,8 @@ func (c *ngtdClient) StreamSearchByID(ctx context.Context, dataProvider func() *
 			}, func() interface{} {
 				return new(proto.SearchResponse)
 			}, func(res interface{}, err error) {
-				if err != nil {
-					r := res.(*proto.SearchResponse)
-					f(toSearchResponse(r), err)
-				}
-				f(nil, err)
+				r := res.(*proto.SearchResponse)
+				f(toSearchResponse(r), err)
 			})
 
 	})
@@ -250,15 +243,11 @@ func (c *ngtdClient) StreamGetObject(ctx context.Context, dataProvider func() *c
 			}, func() interface{} {
 				return new(proto.InsertResponse)
 			}, func(res interface{}, err error) {
-				if err != nil {
-					r := res.(*proto.GetObjectResponse)
-					f(&client.ObjectVector{
-						Id:     string(r.GetId()),
-						Vector: r.GetVector(),
-					}, err)
-				} else {
-					f(nil, err)
-				}
+				r := res.(*proto.GetObjectResponse)
+				f(&client.ObjectVector{
+					Id:     string(r.GetId()),
+					Vector: r.GetVector(),
+				}, err)
 			})
 
 	})
