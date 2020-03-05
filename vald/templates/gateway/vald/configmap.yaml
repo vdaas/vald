@@ -22,15 +22,15 @@ data:
     ---
     version: {{ .Values.gateway.version }}
     time_zone: {{ default .Values.defaults.time_zone .Values.gateway.time_zone }}
-    {{- if .Values.gateway.logging }}
     logging:
-      logger: {{ .Values.gateway.logging.logger }}
-      level: {{ .Values.gateway.logging.level }}
-      format: {{ .Values.gateway.logging.format }}
-    {{- end }}
+      {{- $logging := dict "Values" .Values.gateway.logging "default" .Values.defaults.logging }}
+      {{- include "vald.logging" $logging | nindent 6 }}
     server_config:
       {{- $servers := dict "Values" .Values.gateway.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
+    observability:
+      {{- $observability := dict "Values" .Values.gateway.observability "default" .Values.defaults.observability }}
+      {{- include "vald.observability" $observability | nindent 6 }}
     gateway:
       agent_port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.agent.server_config.servers.grpc.port }}
       agent_name: {{ .Values.agent.name }}

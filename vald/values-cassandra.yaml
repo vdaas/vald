@@ -18,11 +18,17 @@ backupManager:
   image:
     repository: vdaas/vald-manager-backup-cassandra
   initContainers:
-    - type: waitFor
+    - type: wait-for-cassandra
       name: wait-for-cassandra
       image: cassandra:latest
-      target: cassandra.default.svc.cluster.local
-      untilCondition: $(cqlsh cassandra.default.svc.cluster.local -uroot -p${CASSANDRA_PASSWORD} -e "select now() from system.local" > /dev/null; echo $?) -eq 0
+      cassandra:
+        hosts:
+          - cassandra-0.default.svc.cluster.local
+          - cassandra-1.default.svc.cluster.local
+          - cassandra-2.default.svc.cluster.local
+        options:
+          - "-uroot"
+          - "-p${CASSANDRA_PASSWORD}"
       sleepDuration: 2
       env:
       - name: CASSANDRA_PASSWORD
@@ -50,11 +56,17 @@ meta:
   image:
     repository: vdaas/vald-meta-cassandra
   initContainers:
-    - type: waitFor
+    - type: wait-for-cassandra
       name: wait-for-cassandra
       image: cassandra:latest
-      target: cassandra.default.svc.cluster.local
-      untilCondition: $(cqlsh cassandra.default.svc.cluster.local -uroot -p${CASSANDRA_PASSWORD} -e "select now() from system.local" > /dev/null; echo $?) -eq 0
+      cassandra:
+        hosts:
+          - cassandra-0.default.svc.cluster.local
+          - cassandra-1.default.svc.cluster.local
+          - cassandra-2.default.svc.cluster.local
+        options:
+          - "-uroot"
+          - "-p${CASSANDRA_PASSWORD}"
       sleepDuration: 2
       env:
       - name: CASSANDRA_PASSWORD

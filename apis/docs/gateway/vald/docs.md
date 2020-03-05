@@ -4,12 +4,8 @@
 ## Table of Contents
 
 - [vald/vald.proto](#vald/vald.proto)
-  
-  
-  
     - [Vald](#vald.Vald)
   
-
 - [Scalar Value Types](#scalar-value-types)
 
 

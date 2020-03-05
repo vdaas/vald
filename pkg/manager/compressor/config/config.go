@@ -31,6 +31,9 @@ type Data struct {
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
+	// Observability represent observability configurations
+	Observability *config.Observability `json:"observability" yaml:"observability"`
+
 	// BackupManager represent backup manager configuration
 	BackupManager *config.BackupManager `json:"backup" yaml:"backup"`
 
@@ -51,6 +54,10 @@ func NewConfig(path string) (cfg *Data, err error) {
 
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()
+	}
+
+	if cfg.Observability != nil {
+		cfg.Observability = cfg.Observability.Bind()
 	}
 
 	if cfg.BackupManager != nil {

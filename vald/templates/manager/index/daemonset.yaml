@@ -20,8 +20,6 @@ metadata:
   name: {{ .Values.indexManager.name }}
   labels:
     app: {{ .Values.indexManager.name }}
-  annotations:
-    checksum/configmap: {{ include (print $.Template.BasePath "/manager/index/configmap.yaml") . | sha256sum }}
 spec:
   revisionHistoryLimit: {{ .Values.indexManager.revisionHistoryLimit }}
   selector:
@@ -36,15 +34,17 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.indexManager.name }}
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/manager/index/configmap.yaml") . | sha256sum }}
     spec:
       {{- if .Values.indexManager.initContainers }}
       initContainers:
         {{- $initContainers := dict "initContainers" .Values.indexManager.initContainers "Values" .Values "namespace" .Release.Namespace -}}
-        {{- include "vald.initContainers" $initContainers | nindent 8 }}
+        {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Values.indexManager.name }}
-          image: "{{ .Values.indexManager.image.repository }}:{{ .Values.indexManager.image.tag }}"
+          image: "{{ .Values.indexManager.image.repository }}:{{ default .Values.defaults.image.tag .Values.indexManager.image.tag }}"
           imagePullPolicy: {{ .Values.indexManager.image.pullPolicy }}
           {{- $servers := dict "Values" .Values.indexManager.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}

@@ -20,8 +20,6 @@ metadata:
   name: {{ .Values.gateway.name }}
   labels:
     app: {{ .Values.gateway.name }}
-  annotations:
-    checksum/configmap: {{ include (print $.Template.BasePath "/gateway/vald/configmap.yaml") . | sha256sum }}
 spec:
   progressDeadlineSeconds: {{ .Values.gateway.progressDeadlineSeconds }}
   replicas: {{ .Values.gateway.minReplicas }}
@@ -39,15 +37,17 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.gateway.name }}
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/gateway/vald/configmap.yaml") . | sha256sum }}
     spec:
       {{- if .Values.gateway.initContainers }}
       initContainers:
         {{- $initContainers := dict "initContainers" .Values.gateway.initContainers "Values" .Values "namespace" .Release.Namespace -}}
-        {{- include "vald.initContainers" $initContainers | nindent 8 }}
+        {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Values.gateway.name }}
-          image: "{{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag }}"
+          image: "{{ .Values.gateway.image.repository }}:{{ default .Values.defaults.image.tag .Values.gateway.image.tag }}"
           imagePullPolicy: {{ .Values.gateway.image.pullPolicy }}
           {{- $servers := dict "Values" .Values.gateway.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}

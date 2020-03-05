@@ -20,8 +20,6 @@ metadata:
   name: {{ .Values.agent.name }}
   labels:
     app: {{ .Values.agent.name }}
-  # annotations:
-  #   checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
 spec:
   serviceName: {{ .Values.agent.name }}
   podManagementPolicy: {{ .Values.agent.podManagementPolicy }}
@@ -39,15 +37,17 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.agent.name }}
+      # annotations:
+      #   checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
     spec:
       {{- if .Values.agent.initContainers }}
       initContainers:
         {{- $initContainers := dict "initContainers" .Values.agent.initContainers "Values" .Values "namespace" .Release.Namespace -}}
-        {{- include "vald.initContainers" $initContainers | nindent 8 }}
+        {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Values.agent.name }}
-          image: "{{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}"
+          image: "{{ .Values.agent.image.repository }}:{{ default .Values.defaults.image.tag .Values.agent.image.tag }}"
           imagePullPolicy: {{ .Values.agent.image.pullPolicy }}
           {{- $servers := dict "Values" .Values.agent.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}

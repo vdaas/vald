@@ -31,6 +31,9 @@ type Data struct {
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
+	// Observability represent observability configurations
+	Observability *config.Observability `json:"observability" yaml:"observability"`
+
 	// Cassandra represent Cassandra configurations
 	Cassandra *config.Cassandra `json:"cassandra_config" yaml:"cassandra_config"`
 }
@@ -48,6 +51,10 @@ func NewConfig(path string) (cfg *Data, err error) {
 
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()
+	}
+
+	if cfg.Observability != nil {
+		cfg.Observability = cfg.Observability.Bind()
 	}
 
 	if cfg.Cassandra != nil {

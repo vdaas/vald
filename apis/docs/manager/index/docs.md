@@ -4,12 +4,8 @@
 ## Table of Contents
 
 - [index/index_manager.proto](#index/index_manager.proto)
-  
-  
-  
     - [Index](#index_manager.Index)
   
-
 - [Scalar Value Types](#scalar-value-types)
 
 
@@ -34,7 +30,7 @@
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| IndexInfo | [.payload.Empty](#payload.Empty) | [.payload.Info.Index](#payload.Info.Index) |  |
+| IndexInfo | [.payload.Empty](#payload.Empty) | [.payload.Info.Index.Count](#payload.Info.Index.Count) |  |
 
  
 

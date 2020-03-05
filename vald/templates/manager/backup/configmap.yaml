@@ -22,15 +22,15 @@ data:
     ---
     version: {{ .Values.backupManager.version }}
     time_zone: {{ default .Values.defaults.time_zone .Values.backupManager.time_zone }}
-    {{- if .Values.backupManager.logging }}
     logging:
-      logger: {{ .Values.backupManager.logging.logger }}
-      level: {{ .Values.backupManager.logging.level }}
-      format: {{ .Values.backupManager.logging.format }}
-    {{- end }}
+      {{- $logging := dict "Values" .Values.backupManager.logging "default" .Values.defaults.logging }}
+      {{- include "vald.logging" $logging | nindent 6 }}
     server_config:
       {{- $servers := dict "Values" .Values.backupManager.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
+    observability:
+      {{- $observability := dict "Values" .Values.backupManager.observability "default" .Values.defaults.observability }}
+      {{- include "vald.observability" $observability | nindent 6 }}
     {{- if .Values.backupManager.mysql.enabled }}
     mysql_config:
       {{- toYaml .Values.backupManager.mysql.config | nindent 6 }}

@@ -45,6 +45,35 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
 {{/*
+joinListWithSpace
+*/}}
+{{- define "vald.utils.joinListWithSpace" -}}
+{{- $local := dict "first" true -}}
+{{- range $k, $v := . -}}{{- if not $local.first -}}{{- " " -}}{{- end -}}{{- $v -}}{{- $_ := set $local "first" false -}}{{- end -}}
+{{- end -}}
+
+{{/*
+joinListWithComma
+*/}}
+{{- define "vald.utils.joinListWithComma" -}}
+{{- $local := dict "first" true -}}
+{{- range $k, $v := . -}}{{- if not $local.first -}},{{- end -}}{{- $v -}}{{- $_ := set $local "first" false -}}{{- end -}}
+{{- end -}}
+
+{{/*
+logging settings
+*/}}
+{{- define "vald.logging"}}
+{{- if .Values -}}
+logger: {{ default .default.logger .Values.logger }}
+level: {{ default .default.level .Values.level }}
+format: {{ default .default.format .Values.format }}
+{{- else }}
+{{- toYaml .default }}
+{{- end }}
+{{- end -}}
+
+{{/*
 Container ports
 */}}
 {{- define "vald.containerPorts" -}}
@@ -119,6 +148,12 @@ ports:
     protocol: TCP
     containerPort: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
   {{- end }}
+  {{- $prometheusEnabled := default .default.metrics.prometheus.enabled .Values.metrics.prometheus.enabled }}
+  {{- if $prometheusEnabled }}
+  - name: prometheus
+    protocol: TCP
+    containerPort: {{ default .default.metrics.prometheus.port .Values.metrics.prometheus.port }}
+  {{- end }}
 {{- end -}}
 
 {/*
@@ -152,6 +187,13 @@ ports:
   - name: pprof
     port: {{ default .default.metrics.pprof.servicePort .Values.metrics.pprof.servicePort }}
     targetPort: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
+    protocol: TCP
+  {{- end }}
+  {{- $prometheusEnabled := default .default.metrics.prometheus.enabled .Values.metrics.prometheus.enabled }}
+  {{- if $prometheusEnabled }}
+  - name: prometheus
+    port: {{ default .default.metrics.prometheus.servicePort .Values.metrics.prometheus.servicePort }}
+    targetPort: {{ default .default.metrics.prometheus.port .Values.metrics.prometheus.port }}
     protocol: TCP
   {{- end }}
 {{- end -}}
@@ -293,12 +335,38 @@ metrics_servers:
     {{- toYaml .default.metrics.pprof.server | nindent 4 }}
     {{- end }}
   {{- end }}
+  {{- $prometheusEnabled := default .default.metrics.prometheus.enabled .Values.metrics.prometheus.enabled }}
+  {{- if $prometheusEnabled }}
+  - name: prometheus
+    host: {{ default .default.metrics.prometheus.host .Values.metrics.prometheus.host }}
+    port: {{ default .default.metrics.prometheus.port .Values.metrics.prometheus.port }}
+    {{- if .Values.metrics.prometheus.server }}
+    mode: {{ default .default.metrics.prometheus.server.mode .Values.metrics.prometheus.server.mode }}
+    probe_wait_time: {{ default .default.metrics.prometheus.server.probe_wait_time .Values.metrics.prometheus.server.probe_wait_time }}
+    http:
+      {{- if .Values.metrics.prometheus.server.http }}
+      shutdown_duration: {{ default .default.metrics.prometheus.server.http.shutdown_duration .Values.metrics.prometheus.server.http.shutdown_duration }}
+      handler_timeout: {{ default .default.metrics.prometheus.server.http.handler_timeout .Values.metrics.prometheus.server.http.handler_timeout }}
+      idle_timeout: {{ default .default.metrics.prometheus.server.http.idle_timeout .Values.metrics.prometheus.server.http.idle_timeout }}
+      read_header_timeout: {{ default .default.metrics.prometheus.server.http.read_header_timeout .Values.metrics.prometheus.server.http.read_header_timeout }}
+      read_timeout: {{ default .default.metrics.prometheus.server.http.read_timeout .Values.metrics.prometheus.server.http.read_timeout }}
+      write_timeout: {{ default .default.metrics.prometheus.server.http.write_timeout .Values.metrics.prometheus.server.http.write_timeout }}
+      {{- else }}
+      {{- toYaml .default.metrics.prometheus.server.http | nindent 6 }}
+      {{- end }}
+    {{- else }}
+    {{- toYaml .default.metrics.prometheus.server | nindent 4 }}
+    {{- end }}
+  {{- end }}
 startup_strategy:
   {{- if $livenessEnabled }}
   - liveness
   {{- end }}
   {{- if $pprofEnabled }}
   - pprof
+  {{- end }}
+  {{- if $prometheusEnabled }}
+  - prometheus
   {{- end }}
   {{- if $grpcEnabled }}
   - grpc
@@ -409,19 +477,67 @@ tls:
 {{- end -}}
 
 {{/*
+observability
+*/}}
+{{- define "vald.observability" -}}
+enabled: {{ default .default.enabled .Values.enabled }}
+collector:
+  {{- if .Values.collector }}
+  duration: {{ default .default.collector.duration .Values.collector.duration }}
+  metrics:
+    {{- if .Values.collector.metrics }}
+      enable_version_info: {{ default .default.collector.metrics.enable_version_info .Values.collector.metrics.enable_version_info }}
+      enable_cpu: {{ default .default.collector.metrics.enable_cpu .Values.collector.metrics.enable_cpu }}
+      enable_memory: {{ default .default.collector.metrics.enable_memory .Values.collector.metrics.enable_memory }}
+      enable_goroutine: {{ default .default.collector.metrics.enable_goroutine .Values.collector.metrics.enable_goroutine }}
+      enable_cgo: {{ default .default.collector.metrics.enable_cgo .Values.collector.metrics.enable_cgo }}
+    {{- else }}
+    {{- toYaml .default.collector.metrics | nindent 4 }}
+    {{- end }}
+  {{- else }}
+  {{- toYaml .default.collector | nindent 2 }}
+  {{- end }}
+trace:
+  {{- if .Values.trace }}
+  enabled: {{ default .default.trace.enabled .Values.trace.enabled }}
+  sampling_rate: {{ default .default.trace.sampling_rate .Values.trace.sampling_rate }}
+  {{- else }}
+  {{- toYaml .default.trace | nindent 2 }}
+  {{- end }}
+prometheus:
+  {{- if .Values.prometheus }}
+    enabled: {{ default .default.prometheus.enabled .Values.prometheus.enabled }}
+  {{- else }}
+  {{- toYaml .default.prometheus | nindent 2 }}
+  {{- end }}
+jaeger:
+  {{- if .Values.jaeger }}
+    enabled: {{ default .default.jaeger.enabled .Values.jaeger.enabled }}
+    collector_endpoint: {{ default .default.jaeger.collector_endpoint .Values.jaeger.collector_endpoint }}
+    agent_endpoint: {{ default .default.jaeger.agent_endpoint .Values.jaeger.agent_endpoint }}
+    username: {{ default .default.jaeger.username .Values.jaeger.username }}
+    password: {{ default .default.jaeger.password .Values.jaeger.password }}
+    service_name: {{ default .default.jaeger.service_name .Values.jaeger.service_name }}
+    buffer_max_count: {{ default .default.jaeger.buffer_max_count .Values.jaeger.buffer_max_count }}
+  {{- else }}
+  {{- toYaml .default.jaeger | nindent 2 }}
+  {{- end }}
+{{- end -}}
+
+{{/*
 initContainers
 */}}
 {{- define "vald.initContainers" -}}
-{{- range .initContainers }}
+{{- range .initContainers -}}
 {{- if .type }}
 - name: {{ .name }}
   image: {{ .image }}
-  {{- if eq .type "waitFor" }}
+  {{- if eq .type "wait-for" }}
   command:
     - /bin/sh
+    - -e
     - -c
-    - >
-      set -x;
+    - |
       {{- if eq .target "compressor" }}
       {{- $compressorReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.compressor.server_config.healths.readiness.port }}
       {{- $compressorReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
@@ -450,6 +566,61 @@ initContainers
         echo "waiting for {{ .target }} to be ready..."
         sleep {{ .sleepDuration }};
       done
+  {{- else if eq .type "wait-for-mysql" }}
+  command:
+    - /bin/sh
+    - -e
+    - -c
+    - |
+      hosts="{{ include "vald.utils.joinListWithSpace" .mysql.hosts }}"
+      options="{{ include "vald.utils.joinListWithSpace" .mysql.options }}"
+      for host in $hosts; do
+        until [ "$(mysqladmin -h$host $options --show-warnings=false ping | grep alive | awk '{print $3}')" = "alive" ]; do
+          echo "waiting for $host to be ready..."
+          sleep {{ .sleepDuration }};
+        done
+      done
+  {{- else if eq .type "wait-for-redis" }}
+  command:
+    - /bin/sh
+    - -e
+    - -c
+    - |
+      hosts="{{ include "vald.utils.joinListWithSpace" .redis.hosts }}"
+      options="{{ include "vald.utils.joinListWithSpace" .redis.options }}"
+      for host in $hosts; do
+        until [ "$(redis-cli -h $host $options ping)" = "PONG" ]; do
+          echo "waiting for $host to be ready..."
+          sleep {{ .sleepDuration }};
+        done
+      done
+  {{- else if eq .type "wait-for-cassandra" }}
+  command:
+    - /bin/sh
+    - -e
+    - -c
+    - |
+      hosts="{{ include "vald.utils.joinListWithSpace" .cassandra.hosts }}"
+      options="{{ include "vald.utils.joinListWithSpace" .cassandra.options }}"
+      for host in $hosts; do
+        until cqlsh $host $options -e "select now() from system.local" > /dev/null; do
+          echo "waiting for $host to be ready..."
+          sleep {{ .sleepDuration }};
+        done
+      done
+  {{- else if eq .type "limit-vsz" }}
+  command:
+    - /bin/sh
+    - -e
+    - -c
+    - |
+      set -eu
+      cgroup_rsslimit="/sys/fs/cgroup/memory/memory.limit_in_bytes"
+      if [ -r "$cgroup_rsslimit" ] ; then
+        rsslimit=`cat "$cgroup_rsslimit"`
+        vszlimit=`expr $rsslimit / 1024`
+        ulimit -v $vszlimit
+      fi
   {{- end }}
   {{- if .env }}
   env:
@@ -460,7 +631,7 @@ initContainers
     {{- toYaml .volumeMounts | nindent 4 }}
   {{- end }}
 {{- else }}
-- {{- toYaml . | nindent 2 }}
+- {{ . | toYaml | nindent 2 | trim }}
 {{- end }}
 {{- end }}
 {{- end -}}

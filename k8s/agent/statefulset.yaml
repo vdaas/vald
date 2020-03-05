@@ -20,8 +20,6 @@ metadata:
   name: vald-agent-ngt
   labels:
     app: vald-agent-ngt
-  # annotations:
-  #   checksum/configmap: 08e791c8a3222101161f397fe09f4783ba8463d05bf1a1d4205dd7aab5f947e6
 spec:
   serviceName: vald-agent-ngt
   podManagementPolicy: Parallel
@@ -39,6 +37,8 @@ spec:
       creationTimestamp: null
       labels:
         app: vald-agent-ngt
+      # annotations:
+      #   checksum/configmap: 53a52c1e100bea2b9fb595d797fcfef335dc9d883c782c6fe97ba51af2cb0e9b
     spec:
       containers:
         - name: vald-agent-ngt
@@ -74,8 +74,13 @@ spec:
             - name: grpc
               protocol: TCP
               containerPort: 8081
+            - name: prometheus
+              protocol: TCP
+              containerPort: 6061
           resources:
-            null
+            requests:
+              cpu: 100m
+              memory: 50Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           env:
