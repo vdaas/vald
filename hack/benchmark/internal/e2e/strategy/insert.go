@@ -58,9 +58,8 @@ func (isrt *insert) runParallel(ctx context.Context, b *testing.B, c client.Clie
 		bb.StartTimer()
 		bb.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				n := int(atomic.AddInt64(&cnt, 1))
+				n := int(atomic.AddInt64(&cnt, 1)) - 1
 				isrt.do(ctx, bb, c, ids[n%len(ids)], train[n%len(train)])
-				cnt++
 			}
 		})
 		bb.StopTimer()

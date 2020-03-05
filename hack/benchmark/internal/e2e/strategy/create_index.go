@@ -34,6 +34,6 @@ func (ci *createIndex) do(ctx context.Context, b *testing.B) {
 	if err := ci.idxc.CreateIndex(ctx, &client.ControlCreateIndexRequest{
 		PoolSize: ci.poolSize,
 	}); err != nil {
-		b.Fatal(err)
+		b.Error(err)
 	}
 }

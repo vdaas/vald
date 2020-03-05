@@ -57,8 +57,8 @@ func (s *search) runParallel(ctx context.Context, b *testing.B, c client.Client,
 		bb.StartTimer()
 		bb.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				s.do(ctx, b, c, queries[int(atomic.AddInt64(&cnt, 1))%len(queries)])
-				cnt++
+				n := int(atomic.AddInt64(&cnt, 1)) - 1
+				s.do(ctx, b, c, queries[n%len(queries)])
 			}
 		})
 		bb.StopTimer()

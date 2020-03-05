@@ -58,7 +58,8 @@ func (r *remove) runParallel(ctx context.Context, b *testing.B, c client.Client,
 		bb.StartTimer()
 		bb.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				r.do(ctx, bb, c, ids[int(atomic.AddInt64(&cnt, 1))%len(ids)])
+				n := int(atomic.AddInt64(&cnt, 1)) - 1
+				r.do(ctx, bb, c, ids[n%len(ids)])
 			}
 		})
 		bb.StopTimer()
