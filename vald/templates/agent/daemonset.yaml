@@ -38,6 +38,10 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.agent.name }}
+      {{- if .Values.agent.podAnnotations }}
+      annotations:
+        {{- toYaml .Values.agent.podAnnotations | nindent 8 }}
+      {{- end }}
       # annotations:
       #   checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
     spec:

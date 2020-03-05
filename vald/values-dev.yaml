@@ -21,7 +21,7 @@ defaults:
         enabled: true
 
 gateway:
-  annotations:
+  podAnnotations:
     profefe.com/enable: "true"
     profefe.com/port: "6060"
     profefe.com/service: "vald-gateway"
@@ -31,7 +31,7 @@ gateway:
       memory: 50Mi
 
 agent:
-  annotations:
+  podAnnotations:
     profefe.com/enable: "true"
     profefe.com/port: "6060"
     profefe.com/service: "vald-agent-ngt"
@@ -44,7 +44,7 @@ agent:
       memory: 50Mi
 
 discoverer:
-  annotations:
+  podAnnotations:
     profefe.com/enable: "true"
     profefe.com/port: "6060"
     profefe.com/service: "vald-discoverer"
@@ -54,7 +54,7 @@ discoverer:
       memory: 50Mi
 
 compressor:
-  annotations:
+  podAnnotations:
     profefe.com/enable: "true"
     profefe.com/port: "6060"
     profefe.com/service: "vald-manager-compressor"
@@ -64,7 +64,7 @@ compressor:
       memory: 50Mi
 
 backupManager:
-  annotations:
+  podAnnotations:
     profefe.com/enable: "true"
     profefe.com/port: "6060"
     profefe.com/service: "vald-manager-backup"
@@ -74,7 +74,7 @@ backupManager:
       memory: 30Mi
 
 indexManager:
-  annotations:
+  podAnnotations:
     profefe.com/enable: "true"
     profefe.com/port: "6060"
     profefe.com/service: "vald-manager-index"
@@ -84,7 +84,7 @@ indexManager:
       memory: 30Mi
 
 meta:
-  annotations:
+  podAnnotations:
     profefe.com/enable: "true"
     profefe.com/port: "6060"
     profefe.com/service: "vald-meta"

@@ -40,6 +40,9 @@ spec:
         app: {{ .Values.discoverer.name }}
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/discoverer/configmap.yaml") . | sha256sum }}
+        {{- if .Values.discoverer.podAnnotations }}
+        {{- toYaml .Values.discoverer.podAnnotations | nindent 8 }}
+        {{- end }}
     spec:
       {{- if .Values.discoverer.initContainers }}
       initContainers:

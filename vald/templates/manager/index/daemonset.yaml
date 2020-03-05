@@ -40,6 +40,9 @@ spec:
         app: {{ .Values.indexManager.name }}
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/manager/index/configmap.yaml") . | sha256sum }}
+        {{- if .Values.indexManager.podAnnotations }}
+        {{- toYaml .Values.indexManager.podAnnotations | nindent 8 }}
+        {{- end }}
     spec:
       {{- if .Values.indexManager.initContainers }}
       initContainers:

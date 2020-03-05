@@ -40,6 +40,9 @@ spec:
         app: {{ .Values.compressor.name }}
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/manager/compressor/configmap.yaml") . | sha256sum }}
+        {{- if .Values.compressor.podAnnotations }}
+        {{- toYaml .Values.compressor.podAnnotations | nindent 8 }}
+        {{- end }}
     spec:
       {{- if .Values.compressor.initContainers }}
       initContainers:

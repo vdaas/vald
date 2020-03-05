@@ -43,6 +43,9 @@ spec:
         app: {{ .Values.gateway.name }}
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/gateway/vald/configmap.yaml") . | sha256sum }}
+        {{- if .Values.gateway.podAnnotations }}
+        {{- toYaml .Values.gateway.podAnnotations | nindent 8 }}
+        {{- end }}
     spec:
       {{- if .Values.gateway.initContainers }}
       initContainers:
