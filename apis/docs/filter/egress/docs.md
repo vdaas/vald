@@ -4,12 +4,8 @@
 ## Table of Contents
 
 - [egress/egress_filter.proto](#egress/egress_filter.proto)
-  
-  
-  
     - [EgressFilter](#egress_filter.EgressFilter)
   
-
 - [Scalar Value Types](#scalar-value-types)
 
 

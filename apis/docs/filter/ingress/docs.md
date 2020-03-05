@@ -4,12 +4,8 @@
 ## Table of Contents
 
 - [ingress/ingress_filter.proto](#ingress/ingress_filter.proto)
-  
-  
-  
     - [IngressFilter](#ingress_filter.IngressFilter)
   
-
 - [Scalar Value Types](#scalar-value-types)
 
 

@@ -59,10 +59,6 @@
     - [Search.Request](#payload.Search.Request)
     - [Search.Response](#payload.Search.Response)
   
-  
-  
-  
-
 - [Scalar Value Types](#scalar-value-types)
 
 

@@ -57,18 +57,27 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 	uuid := req.GetUuid()
 	meta, err := s.cassandra.GetMeta(ctx, uuid)
 	if err != nil {
-		if errors.IsErrCassandraNotFound(errors.UnWrapAll(err)) {
+		switch {
+		case errors.IsErrCassandraNotFound(errors.UnWrapAll(err)):
 			log.Warnf("[GetVector]\tnot found\t%v\t%+v", req.Uuid, err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return nil, status.WrapWithNotFound(fmt.Sprintf("GetVector API cassandra uuid %s's object not found", uuid), err, info.Get())
+		case errors.IsErrCassandraUnavailable(errors.UnWrapAll(err)):
+			log.Warnf("[GetVector]\tunavailable\t%+v", err)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
+			}
+			return nil, status.WrapWithUnavailable(fmt.Sprintf("GetVector API Cassandra unavailable"), err, info.Get())
+
+		default:
+			log.Errorf("[GetVector]\tunknown error\t%+v", err)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeUnknown(err.Error()))
+			}
+			return nil, status.WrapWithUnknown(fmt.Sprintf("GetVector API cassandra uuid %s's unknown error occurred", uuid), err, info.Get())
 		}
-		log.Errorf("[GetVector]\tunknown error\t%+v", err)
-		if span != nil {
-			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
-		}
-		return nil, status.WrapWithUnknown(fmt.Sprintf("GetVector API cassandra uuid %s's unknown error occurred", uuid), err, info.Get())
 	}
 
 	return toBackupMetaVector(meta)
