@@ -79,6 +79,18 @@ data:
           mode: ""
           probe_wait_time: 3s
       metrics_servers:
+        - name: pprof
+          host: 0.0.0.0
+          port: 6060
+          http:
+            handler_timeout: 5s
+            idle_timeout: 2s
+            read_header_timeout: 1s
+            read_timeout: 1s
+            shutdown_duration: 5s
+            write_timeout: 1s
+          mode: REST
+          probe_wait_time: 3s
         - name: prometheus
           host: 0.0.0.0
           port: 6061
@@ -93,15 +105,16 @@ data:
           probe_wait_time: 3s
       startup_strategy:
         - liveness
+        - pprof
         - prometheus
         - grpc
         - readiness
       full_shutdown_duration: 600s
       tls:
         enabled: false
-        cert: /path/to/cert
-        key: /path/to/key
-        ca: /path/to/ca
+        cert: "/path/to/cert"
+        key: "/path/to/key"
+        ca: "/path/to/ca"
     observability:
       enabled: true
       collector:
@@ -119,11 +132,11 @@ data:
         enabled: true
       jaeger:
           enabled: false
-          collector_endpoint: 
-          agent_endpoint: jaeger-agent.default.svc.cluster.local:6831
-          username: 
-          password: 
-          service_name: vald-meta
+          collector_endpoint: ""
+          agent_endpoint: "jaeger-agent.default.svc.cluster.local:6831"
+          username: ""
+          password: ""
+          service_name: "vald-meta"
           buffer_max_count: 10
     redis_config:
       addrs:

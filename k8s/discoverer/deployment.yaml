@@ -38,7 +38,10 @@ spec:
       labels:
         app: vald-discoverer
       annotations:
-        checksum/configmap: 224ad9a130fd31d769747f09b03d9dcf758377607bbd98022666989dca0ee462
+        checksum/configmap: 7699217d856314545eb54d278ffb70a49f044ef1687de18c6692aee1806927f8
+        profefe.com/enable: "true"
+        profefe.com/port: "6060"
+        profefe.com/service: vald-discoverer
     spec:
       containers:
         - name: vald-discoverer
@@ -74,6 +77,9 @@ spec:
             - name: grpc
               protocol: TCP
               containerPort: 8081
+            - name: pprof
+              protocol: TCP
+              containerPort: 6060
             - name: prometheus
               protocol: TCP
               containerPort: 6061

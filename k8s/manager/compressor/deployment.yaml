@@ -38,7 +38,10 @@ spec:
       labels:
         app: vald-manager-compressor
       annotations:
-        checksum/configmap: 7051104fadb40c69f0ff9d8ce4a764f19efcff543dcb2d531dde199833a1e2dc
+        checksum/configmap: 7d45b87ad5b7e31ca6b203031cee451a48ce097a752a5b30419bf58fd774906c
+        profefe.com/enable: "true"
+        profefe.com/port: "6060"
+        profefe.com/service: vald-manager-compressor
     spec:
       initContainers:
         - name: wait-for-manager-backup
@@ -86,6 +89,9 @@ spec:
             - name: grpc
               protocol: TCP
               containerPort: 8081
+            - name: pprof
+              protocol: TCP
+              containerPort: 6060
             - name: prometheus
               protocol: TCP
               containerPort: 6061

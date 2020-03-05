@@ -38,7 +38,10 @@ spec:
       labels:
         app: vald-manager-backup
       annotations:
-        checksum/configmap: d968e1b77be1d9a89f70538d89f6181209775849fc49da4a943445517a82aca9
+        checksum/configmap: 5e5259f813f2223ffa99ee0886a82d7a311911a434db7b07b4a084a8e3dbf186
+        profefe.com/enable: "true"
+        profefe.com/port: "6060"
+        profefe.com/service: vald-manager-backup
     spec:
       initContainers:
         - name: wait-for-mysql
@@ -96,6 +99,9 @@ spec:
             - name: grpc
               protocol: TCP
               containerPort: 8081
+            - name: pprof
+              protocol: TCP
+              containerPort: 6060
             - name: prometheus
               protocol: TCP
               containerPort: 6061
