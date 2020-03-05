@@ -2,7 +2,6 @@ package strategy
 
 import (
 	"context"
-	"io"
 	"sync/atomic"
 	"testing"
 
@@ -48,11 +47,9 @@ func (sr *streamRemove) dataProvider(total *uint32, b *testing.B, dataset assets
 func (sr *streamRemove) Run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
 	var total uint32
 	b.Run("StreamRemove", func(bb *testing.B) {
-		c.StreamRemove(ctx, sr.dataProvider(&total, b, dataset), func(err error) {
+		c.StreamRemove(ctx, sr.dataProvider(&total, bb, dataset), func(err error) {
 			if err != nil {
-				if err != io.EOF {
-					b.Error(err)
-				}
+				b.Error(err)
 			}
 		})
 	})
