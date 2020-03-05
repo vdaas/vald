@@ -20,6 +20,7 @@ type (
 	Empty                     = payload.Empty
 	SearchConfig              = payload.Search_Config
 	ObjectDistance            = payload.Object_Distance
+	BackupMetaVector          = payload.Backup_MetaVector
 )
 
 type Client interface {
