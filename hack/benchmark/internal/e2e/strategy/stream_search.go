@@ -38,7 +38,7 @@ func (s *streamSearch) dataProvider(total *uint32, b *testing.B, dataset assets.
 			return nil
 		}
 
-		total := int(atomic.AddUint32(total, 1))
+		total := int(atomic.AddUint32(total, 1)) - 1
 		return &client.SearchRequest{
 			Vector: queries[total%len(queries)],
 			Config: s.cfg,

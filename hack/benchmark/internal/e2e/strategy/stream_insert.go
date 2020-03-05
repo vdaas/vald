@@ -36,7 +36,7 @@ func (sisrt *streamInsert) dataProvider(total *uint32, b *testing.B, dataset ass
 			return nil
 		}
 
-		total := int(atomic.AddUint32(total, 1))
+		total := int(atomic.AddUint32(total, 1)) - 1
 		return &client.ObjectVector{
 			Id:     ids[total%len(ids)],
 			Vector: trains[total%len(trains)],
