@@ -20,6 +20,10 @@ metadata:
   name: {{ .Values.indexManager.name }}
   labels:
     app: {{ .Values.indexManager.name }}
+  {{- if .Values.indexManager.annotations }}
+  annotations:
+    {{- toYaml .Values.indexManager.annotations | nindent 4 }}
+  {{- end }}
 spec:
   revisionHistoryLimit: {{ .Values.indexManager.revisionHistoryLimit }}
   selector:

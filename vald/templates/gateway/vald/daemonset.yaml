@@ -20,6 +20,10 @@ metadata:
   name: {{ .Values.gateway.name }}
   labels:
     app: {{ .Values.gateway.name }}
+  {{- if .Values.gateway.annotations }}
+  annotations:
+    {{- toYaml .Values.gateway.annotations | nindent 4 }}
+  {{- end }}
 spec:
   revisionHistoryLimit: {{ .Values.gateway.revisionHistoryLimit }}
   selector:

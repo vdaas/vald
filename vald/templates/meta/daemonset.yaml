@@ -20,6 +20,10 @@ metadata:
   name: {{.Values.meta.name }}
   labels:
     app: {{ .Values.meta.name }}
+  {{- if .Values.meta.annotations }}
+  annotations:
+    {{- toYaml .Values.meta.annotations | nindent 4 }}
+  {{- end }}
 spec:
   revisionHistoryLimit: {{ .Values.meta.revisionHistoryLimit }}
   selector:

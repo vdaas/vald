@@ -20,6 +20,10 @@ metadata:
   name: {{ .Values.discoverer.name }}
   labels:
     app: {{ .Values.discoverer.name }}
+  {{- if .Values.discoverer.annotations }}
+  annotations:
+    {{- toYaml .Values.discoverer.annotations | nindent 4 }}
+  {{- end }}
 spec:
   revisionHistoryLimit: {{ .Values.discoverer.revisionHistoryLimit }}
   selector:

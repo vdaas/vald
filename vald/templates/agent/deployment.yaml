@@ -20,6 +20,10 @@ metadata:
   name: {{ .Values.agent.name }}
   labels:
     app: {{ .Values.agent.name }}
+  {{- if .Values.agent.annotations }}
+  annotations:
+    {{- toYaml .Values.agent.annotations | nindent 4 }}
+  {{- end }}
 spec:
   progressDeadlineSeconds: {{ .Values.agent.progressDeadlineSeconds }}
   replicas: {{ .Values.agent.minReplicas }}
