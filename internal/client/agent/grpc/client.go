@@ -5,7 +5,6 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/internal/client"
-	"github.com/vdaas/vald/internal/config"
 	igrpc "github.com/vdaas/vald/internal/net/grpc"
 )
 
@@ -17,7 +16,7 @@ type Client interface {
 
 type agentClient struct {
 	addr              string
-	cfg               *config.GRPCClient
+	opts              []igrpc.Option
 	streamConcurrency int
 	grpcClient        igrpc.Client
 }
@@ -29,7 +28,7 @@ func New(ctx context.Context, opts ...Option) (Client, error) {
 		opt(c)
 	}
 
-	c.grpcClient = igrpc.New(c.cfg.Opts()...)
+	c.grpcClient = igrpc.New(c.opts...)
 
 	if err := c.grpcClient.Connect(ctx, c.addr); err != nil {
 		return nil, err
@@ -198,10 +197,8 @@ func (c *agentClient) Remove(ctx context.Context, req *client.ObjectID) error {
 }
 
 func (c *agentClient) StreamRemove(ctx context.Context, dataProvider func() *client.ObjectID, f func(error)) error {
-	_, err := c.grpcClient.Do(ctx, c.addr, func(ctx context.Context, conn *igrpc.ClientConn, copts ...igrpc.CallOption) (res interface{}, err error) {
-		var st agent.Agent_StreamRemoveClient
-
-		st, err = agent.NewAgentClient(conn).StreamRemove(ctx, copts...)
+	_, err := c.grpcClient.Do(ctx, c.addr, func(ctx context.Context, conn *igrpc.ClientConn, copts ...igrpc.CallOption) (interface{}, error) {
+		st, err := agent.NewAgentClient(conn).StreamRemove(ctx, copts...)
 		if err != nil {
 			return nil, err
 		}

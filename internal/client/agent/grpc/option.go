@@ -1,18 +1,28 @@
 package grpc
 
-import "github.com/vdaas/vald/internal/config"
+import (
+	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/net/grpc"
+)
 
 type Option func(*agentClient)
 
 var (
 	defaultOptions = []Option{
-		WithAddr("0.0.0.0:8081"),
+		WithAddr("127.0.0.1:8082"),
 		WithStreamConcurrency(5),
-		WithGRPCClientConfig(&config.GRPCClient{
-			Addrs: []string{
-				"0.0.0.0:8081",
-			},
-		}),
+		WithGRPCClientOption(
+			(&config.GRPCClient{
+				Addrs: []string{
+					"127.0.0.1:8200",
+				},
+				CallOption: &config.CallOption{
+					MaxRecvMsgSize: 100000000000,
+				},
+				DialOption: &config.DialOption{
+					Insecure: true,
+				},
+			}).Bind().Opts()...),
 	}
 )
 
@@ -32,10 +42,10 @@ func WithStreamConcurrency(n int) Option {
 	}
 }
 
-func WithGRPCClientConfig(cfg *config.GRPCClient) Option {
+func WithGRPCClientOption(opts ...grpc.Option) Option {
 	return func(c *agentClient) {
-		if cfg != nil {
-			c.cfg = cfg.Bind()
+		if len(opts) != 0 {
+			c.opts = append(c.opts, opts...)
 		}
 	}
 }

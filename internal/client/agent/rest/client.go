@@ -37,13 +37,13 @@ func (c *agentClient) Exists(ctx context.Context, req *client.ObjectID) (res *cl
 
 func (c *agentClient) Search(ctx context.Context, req *client.SearchRequest) (res *client.SearchResponse, err error) {
 	res = new(client.SearchResponse)
-	err = json.Request(ctx, http.MethodPost, "/search", req, res)
+	err = json.Request(ctx, http.MethodPost, c.addr+"/search", req, res)
 	return
 }
 
 func (c *agentClient) SearchByID(ctx context.Context, req *client.SearchIDRequest) (res *client.SearchResponse, err error) {
 	res = new(client.SearchResponse)
-	err = json.Request(ctx, http.MethodPost, "/search/id", req, res)
+	err = json.Request(ctx, http.MethodPost, c.addr+"/search/id", req, res)
 	return
 }
 
@@ -56,7 +56,7 @@ func (c *agentClient) StreamSearchByID(ctx context.Context, dataProvider func() 
 }
 
 func (c *agentClient) Insert(ctx context.Context, req *client.ObjectVector) error {
-	return json.Request(ctx, http.MethodPost, "/insert", req, nil)
+	return json.Request(ctx, http.MethodPost, c.addr+"/insert", req, nil)
 }
 
 func (c *agentClient) StreamInsert(ctx context.Context, dataProvider func() *client.ObjectVector, f func(error)) error {
@@ -68,7 +68,7 @@ func (c *agentClient) MultiInsert(ctx context.Context, objectVectors *client.Obj
 }
 
 func (c *agentClient) Update(ctx context.Context, req *client.ObjectVector) error {
-	return json.Request(ctx, http.MethodPost, "/update", req, nil)
+	return json.Request(ctx, http.MethodPost, c.addr+"/update", req, nil)
 }
 
 func (c *agentClient) StreamUpdate(ctx context.Context, dataProvider func() *client.ObjectVector, f func(error)) error {
@@ -80,7 +80,7 @@ func (c *agentClient) MultiUpdate(ctx context.Context, objectVectors *client.Obj
 }
 
 func (c *agentClient) Remove(ctx context.Context, req *client.ObjectID) error {
-	return json.Request(ctx, http.MethodDelete, "/remove/"+req.GetId(), req, nil)
+	return json.Request(ctx, http.MethodDelete, c.addr+"/remove/"+req.GetId(), req, nil)
 }
 
 func (c *agentClient) StreamRemove(ctx context.Context, dataProvider func() *client.ObjectID, f func(error)) error {
@@ -93,7 +93,7 @@ func (c *agentClient) MultiRemove(ctx context.Context, objectIDs *client.ObjectI
 
 func (c *agentClient) GetObject(ctx context.Context, req *client.ObjectID) (res *client.ObjectVector, err error) {
 	res = new(client.ObjectVector)
-	err = json.Request(ctx, http.MethodGet, "/object/"+req.GetId(), req, res)
+	err = json.Request(ctx, http.MethodGet, c.addr+"/object/"+req.GetId(), req, res)
 	return
 }
 
@@ -102,19 +102,19 @@ func (c *agentClient) StreamGetObject(ctx context.Context, dataProvider func() *
 }
 
 func (c *agentClient) CreateIndex(ctx context.Context, req *client.ControlCreateIndexRequest) error {
-	return json.Request(ctx, http.MethodGet, "/index/create", req, nil)
+	return json.Request(ctx, http.MethodGet, c.addr+"/index/create", req, nil)
 }
 
 func (c *agentClient) SaveIndex(ctx context.Context) error {
-	return json.Request(ctx, http.MethodGet, "/index/save", nil, nil)
+	return json.Request(ctx, http.MethodGet, c.addr+"/index/save", nil, nil)
 }
 
 func (c *agentClient) CreateAndSaveIndex(ctx context.Context, controlCreateIndexRequest *client.ControlCreateIndexRequest) error {
-	return json.Request(ctx, http.MethodGet, "/index/createandsave", nil, nil)
+	return json.Request(ctx, http.MethodGet, c.addr+"/index/createandsave", nil, nil)
 }
 
 func (c *agentClient) IndexInfo(ctx context.Context) (res *client.InfoIndex, err error) {
 	res = new(client.InfoIndex)
-	err = json.Request(ctx, http.MethodGet, "/index/info", nil, res)
+	err = json.Request(ctx, http.MethodGet, c.addr+"/index/info", nil, res)
 	return
 }

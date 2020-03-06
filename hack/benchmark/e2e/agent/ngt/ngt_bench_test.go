@@ -17,43 +17,72 @@ package ngt
 
 import (
 	"context"
+	"flag"
+	"strings"
 	"testing"
 
+	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/hack/benchmark/e2e/internal/starter/agent"
+	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
+	"github.com/vdaas/vald/internal/client/agent/grpc"
+	"github.com/vdaas/vald/internal/client/agent/rest"
+	"github.com/vdaas/vald/internal/log"
 )
 
-func BenchmarkAgentNGT_REST_Sequential(b *testing.B) {
-	for _, name := range targets {
-		bench := e2e.New(
-			b,
-			e2e.WithName(name),
-			e2e.WithClient(nil),
-			e2e.WithStrategy(
-				strategy.NewInsert(),
-				strategy.NewCreateIndex(
-					strategy.WithCreateIndexClient(nil),
-				),
-				strategy.NewSearch(
-					strategy.WithSearchConfig(searchConfig),
-				),
-				strategy.NewRemove(),
-			),
-		)
-		bench.Run(context.Background(), b)
-	}
+var (
+	targets []string
+)
+
+var searchConfig = &payload.Search_Config{
+	Num:     1,
+	Radius:  -1,
+	Epsilon: 0.01,
 }
 
-func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
+func init() {
+	testing.Init()
+	log.Init()
+
+	var (
+		dataset string
+		num     uint
+		radius  float64
+		epsilon float64
+	)
+
+	flag.StringVar(&dataset, "dataset", "", "set available dataset list (choice with comma)")
+	flag.UintVar(&num, "num", uint(searchConfig.Num), "search response size")
+	flag.Float64Var(&radius, "radius", float64(searchConfig.Radius), "search radius size")
+	flag.Float64Var(&epsilon, "epsilon", float64(searchConfig.Epsilon), "search epsilon size")
+	flag.Parse()
+
+	searchConfig.Num, searchConfig.Radius, searchConfig.Epsilon = uint32(num), float32(radius), float32(epsilon)
+	targets = strings.Split(strings.TrimSpace(dataset), ",")
+}
+
+func BenchmarkAgentNGT_REST_Sequential(b *testing.B) {
+	ctx := context.Background()
+
+	client := rest.New(ctx)
+
 	for _, name := range targets {
 		bench := e2e.New(
 			b,
 			e2e.WithName(name),
-			e2e.WithClient(nil),
+			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
+				return agent.New(
+					agent.WithDimentaion(d.Dimension()),
+					agent.WithDistanceType(d.DistanceType()),
+					agent.WithObjectType(d.ObjectType()),
+				).Run(ctx, tb)
+			}),
+			e2e.WithClient(client),
 			e2e.WithStrategy(
 				strategy.NewInsert(),
 				strategy.NewCreateIndex(
-					strategy.WithCreateIndexClient(nil),
+					strategy.WithCreateIndexClient(client),
 					strategy.WithCreateIndexPoolSize(10000),
 				),
 				strategy.NewSearch(
@@ -62,20 +91,70 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 				strategy.NewRemove(),
 			),
 		)
-		bench.Run(context.Background(), b)
+		bench.Run(ctx, b)
 	}
 }
 
-func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
+func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
+	ctx := context.Background()
+
+	client, err := grpc.New(ctx)
+	if err != nil {
+		b.Fatal(err)
+	}
+
 	for _, name := range targets {
 		bench := e2e.New(
 			b,
 			e2e.WithName(name),
-			e2e.WithClient(nil),
+			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
+				return agent.New(
+					agent.WithDimentaion(d.Dimension()),
+					agent.WithDistanceType(d.DistanceType()),
+					agent.WithObjectType(d.ObjectType()),
+				).Run(ctx, tb)
+			}),
+			e2e.WithClient(client),
+			e2e.WithStrategy(
+				strategy.NewInsert(),
+				strategy.NewCreateIndex(
+					strategy.WithCreateIndexClient(client),
+					strategy.WithCreateIndexPoolSize(10000),
+				),
+				strategy.NewSearch(
+					strategy.WithSearchConfig(searchConfig),
+				),
+				strategy.NewRemove(),
+			),
+		)
+		bench.Run(ctx, b)
+	}
+}
+
+func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
+	ctx := context.Background()
+
+	client, err := grpc.New(ctx)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	for _, name := range targets {
+		bench := e2e.New(
+			b,
+			e2e.WithName(name),
+			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
+				return agent.New(
+					agent.WithDimentaion(d.Dimension()),
+					agent.WithDistanceType(d.DistanceType()),
+					agent.WithObjectType(d.ObjectType()),
+				).Run(ctx, tb)
+			}),
+			e2e.WithClient(client),
 			e2e.WithStrategy(
 				strategy.NewStreamInsert(),
 				strategy.NewCreateIndex(
-					strategy.WithCreateIndexClient(nil),
+					strategy.WithCreateIndexClient(client),
 					strategy.WithCreateIndexPoolSize(10000),
 				),
 				strategy.NewStreamSearch(
@@ -84,6 +163,6 @@ func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 				strategy.NewStreamRemove(),
 			),
 		)
-		bench.Run(context.Background(), b)
+		bench.Run(ctx, b)
 	}
 }

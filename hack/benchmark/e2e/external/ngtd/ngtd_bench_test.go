@@ -33,7 +33,6 @@ import (
 
 var (
 	targets []string
-	dataset string
 )
 
 var searchConfig = &payload.Search_Config{
@@ -44,7 +43,6 @@ var searchConfig = &payload.Search_Config{
 
 func init() {
 	testing.Init()
-
 	log.Init()
 
 	var dataset string
