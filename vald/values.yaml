@@ -21,7 +21,7 @@ defaults:
     level: debug
     format: raw
   image:
-    tag: nightly
+    tag: v0.0.24
   server_config:
     servers:
       rest:
