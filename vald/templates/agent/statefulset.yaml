@@ -106,8 +106,8 @@ spec:
       nodeSelector:
         {{- toYaml .Values.agent.nodeSelector | nindent 8 }}
       {{- end }}
-      {{- if .Values.agent.podPriorityClass }}
-      {{- if .Values.agent.podPriorityClass.enabled }}
+      {{- if .Values.agent.podPriority }}
+      {{- if .Values.agent.podPriority.enabled }}
       priorityClassName: {{ .Values.agent.name }}-priority
       {{- end }}
       {{- end }}

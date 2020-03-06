@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{- if .Values.agent.podPriority.enabled }}
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
   name: {{ .Values.agent.name }}-priority
-value: 1000000
+value: {{ .Values.agent.podPriority.value }}
 preemptionPolicy: Never
 globalDefault: false
 description: "A priority class for Vald agent."
+{{- end }}

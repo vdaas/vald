@@ -353,8 +353,9 @@ agent:
   revisionHistoryLimit: 2
   terminationGracePeriodSeconds: 30
   podManagementPolicy: OrderedReady
-  podPriorityClass:
+  podPriority:
     enabled: true
+    value: 2000001000
   hpa:
     enabled: true
     targetCPUUtilizationPercentage: 80
