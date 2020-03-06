@@ -22,7 +22,6 @@ metadata:
     app: vald-meta
 spec:
   progressDeadlineSeconds: 600
-  replicas: 2
   revisionHistoryLimit: 2
   selector:
     matchLabels:

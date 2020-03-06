@@ -23,7 +23,6 @@ metadata:
 spec:
   serviceName: vald-agent-ngt
   podManagementPolicy: Parallel
-  replicas: 5
   revisionHistoryLimit: 2
   selector:
     matchLabels:
@@ -117,4 +116,5 @@ spec:
           configMap:
             defaultMode: 420
             name: vald-agent-ngt-config
+      priorityClassName: vald-agent-ngt-priority
 status:
