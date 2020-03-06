@@ -26,7 +26,10 @@ metadata:
   {{- end }}
 spec:
   progressDeadlineSeconds: {{ .Values.agent.progressDeadlineSeconds }}
+  {{- if .Values.agent.hpa.enabled -}}
+  {{- else }}
   replicas: {{ .Values.agent.minReplicas }}
+  {{- end }}
   revisionHistoryLimit: {{ .Values.agent.revisionHistoryLimit }}
   selector:
     matchLabels:
@@ -102,6 +105,11 @@ spec:
       {{- if .Values.agent.nodeSelector }}
       nodeSelector:
         {{- toYaml .Values.agent.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.agent.podPriority }}
+      {{- if .Values.agent.podPriority.enabled }}
+      priorityClassName: {{ .Values.agent.name }}-priority
+      {{- end }}
       {{- end }}
 status:
 {{- end }}

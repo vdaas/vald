@@ -26,7 +26,10 @@ metadata:
   {{- end }}
 spec:
   progressDeadlineSeconds: {{ .Values.compressor.progressDeadlineSeconds }}
+  {{- if .Values.compressor.hpa.enabled -}}
+  {{- else }}
   replicas: {{ .Values.compressor.minReplicas }}
+  {{- end }}
   revisionHistoryLimit: {{ .Values.compressor.revisionHistoryLimit }}
   selector:
     matchLabels:
