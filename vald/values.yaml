@@ -355,7 +355,7 @@ agent:
   podManagementPolicy: OrderedReady
   podPriority:
     enabled: true
-    value: 2000001000
+    value: 1000000000
   hpa:
     enabled: true
     targetCPUUtilizationPercentage: 80
