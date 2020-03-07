@@ -20,7 +20,6 @@ package collector
 import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/observability/metrics"
-	"github.com/vdaas/vald/internal/observability/metrics/cpu"
 	"github.com/vdaas/vald/internal/observability/metrics/mem"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime/cgo"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime/goroutine"
@@ -84,19 +83,6 @@ func WithVersionInfo(enabled bool) CollectorOption {
 			return err
 		}
 		return WithMetrics(versionInfo)(c)
-	}
-}
-
-func WithCPUMetrics(enabled bool) CollectorOption {
-	return func(c *collector) error {
-		if !enabled {
-			return nil
-		}
-		cpu, err := cpu.New()
-		if err != nil {
-			return err
-		}
-		return WithMetrics(cpu)(c)
 	}
 }
 

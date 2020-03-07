@@ -18,7 +18,7 @@ apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
   name: vald-agent-ngt-priority
-value: 2.000001e+09
+value: 1000000000
 preemptionPolicy: Never
 globalDefault: false
 description: "A priority class for Vald agent."
