@@ -37,7 +37,7 @@ spec:
       labels:
         app: vald-gateway
       annotations:
-        checksum/configmap: 9f96460214934bd183ef79d9f05f858435959e467bdf9bb60d9acf4dc56f3c8a
+        checksum/configmap: b499064e65cfbce6131143092d337de1b223ce5f34437143a79321e5d2669376
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-gateway
