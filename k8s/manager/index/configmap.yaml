@@ -17,7 +17,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: vald-manager-backup-config
+  name: vald-manager-index-config
 data:
   config.yaml: |
     ---
@@ -135,34 +135,119 @@ data:
           agent_endpoint: "jaeger-agent.default.svc.cluster.local:6831"
           username: ""
           password: ""
-          service_name: "vald-manager-backup"
+          service_name: "vald-manager-index"
           buffer_max_count: 10
-    mysql_config:
-      conn_max_life_time: 30s
-      db: mysql
-      host: mysql.default.svc.cluster.local
-      max_idle_conns: 100
-      max_open_conns: 100
-      name: vald
-      pass: _MYSQL_PASSWORD_
-      port: 3306
-      tcp:
-        dialer:
-          dual_stack_enabled: false
-          keep_alive: 5m
-          timeout: 5s
-        dns:
-          cache_enabled: true
-          cache_expiration: 24h
-          refresh_duration: 1h
-        tls:
-          ca: /path/to/ca
-          cert: /path/to/cert
-          enabled: false
-          key: /path/to/key
-      tls:
-        ca: /path/to/ca
-        cert: /path/to/cert
-        enabled: false
-        key: /path/to/key
-      user: root
+    indexer:
+      agent_port: 8081
+      agent_name: "vald-agent-ngt"
+      agent_dns: vald-agent-ngt.default.svc.cluster.local
+      agent_namespace: "_MY_POD_NAMESPACE_"
+      node_name: ""
+      discoverer:
+        host: vald-discoverer.default.svc.cluster.local
+        port: 8081
+        duration: 500ms
+        discover_client:
+          addrs: []
+          connection_pool: 3
+          health_check_duration: "1s"
+          backoff:
+            backoff_factor: 1.1
+            backoff_time_limit: 5s
+            enable_error_log: true
+            initial_duration: 5ms
+            jitter_limit: 100ms
+            maximum_duration: 5s
+            retry_count: 100
+          call_option:
+            max_recv_msg_size: 0
+            max_retry_rpc_buffer_size: 0
+            max_send_msg_size: 0
+            wait_for_ready: true
+          dial_option:
+            enable_backoff: false
+            initial_connection_window_size: 0
+            initial_window_size: 0
+            insecure: true
+            keep_alive:
+              permit_without_stream: false
+              time: ""
+              timeout: ""
+            max_backoff_delay: ""
+            max_msg_size: 0
+            read_buffer_size: 0
+            tcp:
+              dialer:
+                dual_stack_enabled: true
+                keep_alive: ""
+                timeout: ""
+              dns:
+                cache_enabled: true
+                cache_expiration: 1h
+                refresh_duration: 30m
+              tls:
+                ca: /path/to/ca
+                cert: /path/to/cert
+                enabled: false
+                key: /path/to/key
+            timeout: ""
+            write_buffer_size: 0
+          tls:
+            ca: /path/to/ca
+            cert: /path/to/cert
+            enabled: false
+            key: /path/to/key
+        agent_client:
+          addrs: []
+          connection_pool: 3
+          health_check_duration: "1s"
+          backoff:
+            backoff_factor: 1.1
+            backoff_time_limit: 5s
+            enable_error_log: true
+            initial_duration: 5ms
+            jitter_limit: 100ms
+            maximum_duration: 5s
+            retry_count: 100
+          call_option:
+            max_recv_msg_size: 0
+            max_retry_rpc_buffer_size: 0
+            max_send_msg_size: 0
+            wait_for_ready: true
+          dial_option:
+            write_buffer_size: 0
+            read_buffer_size: 0
+            initial_window_size: 0
+            initial_connection_window_size: 0
+            max_msg_size: 0
+            max_backoff_delay: ""
+            enable_backoff: false
+            insecure: true
+            timeout: ""
+            tcp:
+              dns:
+                cache_enabled: true
+                cache_expiration: 1h
+                refresh_duration: 30m
+              dialer:
+                timeout: ""
+                keep_alive: "15m"
+                dual_stack_enabled: true
+              tls:
+                ca: /path/to/ca
+                cert: /path/to/cert
+                enabled: false
+                key: /path/to/key
+            keep_alive:
+              permit_without_stream: false
+              time: ""
+              timeout: ""
+          tls:
+            ca: /path/to/ca
+            cert: /path/to/cert
+            enabled: false
+            key: /path/to/key
+      concurrency: 1
+      auto_index_duration_limit: 30m
+      auto_index_check_duration: 1m
+      auto_index_length: 100

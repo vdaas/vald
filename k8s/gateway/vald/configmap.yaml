@@ -121,7 +121,6 @@ data:
         duration: 5s
         metrics:
           enable_cgo: true
-          enable_cpu: true
           enable_goroutine: true
           enable_memory: true
           enable_version_info: true
