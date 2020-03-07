@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 2,
-  "iteration": 1582989539959,
+  "id": 1,
+  "iteration": 1583588261227,
   "links": [],
   "panels": [
     {
@@ -279,211 +279,263 @@
     },
     {
       "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": null,
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
       "gridPos": {
         "h": 6,
         "w": 4,
         "x": 12,
         "y": 0
       },
-      "id": 19,
+      "id": 4,
+      "interval": null,
       "links": [],
-      "options": {
-        "colorMode": "value",
-        "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
-          "defaults": {
-            "mappings": [
-              {
-                "id": 0,
-                "op": "=",
-                "text": "N/A",
-                "type": 1,
-                "value": "null"
-              }
-            ],
-            "max": 50,
-            "min": 0,
-            "nullValueMode": "connected",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                }
-              ]
-            },
-            "title": "",
-            "unit": "none"
-          },
-          "overrides": [],
-          "values": false
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
         },
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
       "pluginVersion": "6.6.2",
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "repeat": null,
+      "repeatDirection": "h",
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
       "targets": [
         {
-          "expr": "count(up{job=~\"$ReplicaSet\", node=~\"$Node\"})",
-          "format": "table",
-          "hide": false,
-          "instant": false,
+          "expr": "sum(vald_ngt_uncommitted_index_count{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"})",
+          "instant": true,
+          "legendFormat": "",
           "refId": "A"
         }
       ],
+      "thresholds": "100, 1000",
       "timeFrom": null,
       "timeShift": null,
-      "title": "Pods",
-      "type": "stat"
+      "title": "NGT uncommitted indices",
+      "type": "singlestat",
+      "valueFontSize": "200%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
     },
     {
       "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": null,
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
       "gridPos": {
         "h": 6,
         "w": 4,
         "x": 16,
         "y": 0
       },
-      "id": 20,
+      "id": 5,
+      "interval": null,
       "links": [],
-      "options": {
-        "colorMode": "value",
-        "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
-          "defaults": {
-            "mappings": [
-              {
-                "id": 0,
-                "op": "=",
-                "text": "N/A",
-                "type": 1,
-                "value": "null"
-              }
-            ],
-            "nullValueMode": "connected",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "#EAB839",
-                  "value": 100000000000
-                },
-                {
-                  "color": "orange",
-                  "value": 1000000000000
-                },
-                {
-                  "color": "red",
-                  "value": 5000000000000
-                }
-              ]
-            },
-            "title": "",
-            "unit": "decbytes"
-          },
-          "overrides": [],
-          "values": false
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
         },
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
       "pluginVersion": "6.6.2",
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(vald_alloc_bytes{job=~\"$ReplicaSet\", node=~\"$Node\", pod=\"$Pod\"})",
-          "format": "time_series",
+          "expr": "sum(vald_ngt_insert_vcache_count{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"})",
+          "instant": true,
+          "legendFormat": "",
           "refId": "A"
         }
       ],
+      "thresholds": "100, 1000",
       "timeFrom": null,
       "timeShift": null,
-      "title": "Total memory alloc",
-      "type": "stat"
+      "title": "insert vcache",
+      "type": "singlestat",
+      "valueFontSize": "200%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
     },
     {
       "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": null,
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
       "gridPos": {
         "h": 6,
         "w": 4,
         "x": 20,
         "y": 0
       },
-      "id": 21,
+      "id": 6,
+      "interval": null,
       "links": [],
-      "options": {
-        "colorMode": "value",
-        "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
-          "defaults": {
-            "mappings": [
-              {
-                "id": 0,
-                "op": "=",
-                "text": "N/A",
-                "type": 1,
-                "value": "null"
-              }
-            ],
-            "nullValueMode": "connected",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "#EAB839",
-                  "value": 1
-                },
-                {
-                  "color": "orange",
-                  "value": 3
-                },
-                {
-                  "color": "red",
-                  "value": 5
-                }
-              ]
-            },
-            "title": "",
-            "unit": "none"
-          },
-          "overrides": [],
-          "values": false
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
         },
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
       "pluginVersion": "6.6.2",
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(vald_ngt_is_indexing{job=~\"$ReplicaSet\", node=~\"$Node\"})",
-          "format": "time_series",
+          "expr": "sum(vald_ngt_delete_vcache_count{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"})",
+          "instant": true,
+          "legendFormat": "",
           "refId": "A"
         }
       ],
+      "thresholds": "100, 1000",
       "timeFrom": null,
       "timeShift": null,
-      "title": "Indexing pods",
-      "type": "stat"
+      "title": "delete vcache",
+      "type": "singlestat",
+      "valueFontSize": "200%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
     },
     {
       "cacheTimeout": null,
@@ -658,148 +710,68 @@
       "valueName": "current"
     },
     {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": null,
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
       "gridPos": {
         "h": 6,
-        "w": 6,
+        "w": 12,
         "x": 0,
         "y": 6
       },
-      "id": 8,
-      "options": {
-        "colorMode": "background",
-        "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
-          "defaults": {
-            "mappings": [
-              {
-                "from": "",
-                "id": 1,
-                "operator": "",
-                "text": "N/A",
-                "to": "",
-                "type": 1,
-                "value": "null"
-              },
-              {
-                "from": "",
-                "id": 2,
-                "operator": "",
-                "text": "Not Indexing",
-                "to": "",
-                "type": 1,
-                "value": "0"
-              },
-              {
-                "from": "1",
-                "id": 3,
-                "operator": "",
-                "text": "Indexing",
-                "to": "10000000",
-                "type": 2,
-                "value": "1"
-              }
-            ],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "blue",
-                  "value": 1
-                }
-              ]
-            }
-          },
-          "overrides": [],
-          "values": false
-        },
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "auto"
-      },
-      "pluginVersion": "6.6.2",
-      "targets": [
+      "id": 2,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
         {
-          "expr": "sum(vald_ngt_is_indexing{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"})",
-          "instant": true,
-          "legendFormat": "",
-          "refId": "A"
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Indexing status",
-      "type": "stat"
-    },
-    {
-      "cacheTimeout": null,
-      "datasource": null,
-      "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 6,
-        "y": 6
-      },
-      "id": 2,
-      "links": [],
-      "options": {
-        "colorMode": "value",
-        "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
-          "defaults": {
-            "mappings": [
-              {
-                "id": 0,
-                "op": "=",
-                "text": "N/A",
-                "type": 1,
-                "value": "null"
-              }
-            ],
-            "nullValueMode": "connected",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "red",
-                  "value": null
-                },
-                {
-                  "color": "orange",
-                  "value": 100
-                },
-                {
-                  "color": "yellow",
-                  "value": 1000
-                },
-                {
-                  "color": "green",
-                  "value": 10000
-                },
-                {
-                  "color": "blue",
-                  "value": 100000
-                }
-              ]
-            },
-            "unit": "none"
-          },
-          "overrides": [],
-          "values": false
-        },
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto"
-      },
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
       "pluginVersion": "6.6.2",
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
       "targets": [
         {
           "expr": "sum(vald_ngt_index_count{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"})",
@@ -808,225 +780,193 @@
           "refId": "A"
         }
       ],
+      "thresholds": "100000, 10000000",
       "timeFrom": null,
       "timeShift": null,
       "title": "NGT indices",
-      "type": "stat"
+      "type": "singlestat",
+      "valueFontSize": "200%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
     },
     {
       "cacheTimeout": null,
+      "colorBackground": true,
+      "colorPostfix": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": null,
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
       "gridPos": {
         "h": 6,
-        "w": 4,
+        "w": 6,
         "x": 12,
         "y": 6
       },
-      "id": 4,
+      "id": 21,
+      "interval": null,
       "links": [],
-      "maxPerRow": 6,
-      "options": {
-        "colorMode": "value",
-        "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
-          "defaults": {
-            "mappings": [
-              {
-                "id": 0,
-                "op": "=",
-                "text": "N/A",
-                "type": 1,
-                "value": "null"
-              }
-            ],
-            "nullValueMode": "connected",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "yellow",
-                  "value": 100
-                },
-                {
-                  "color": "orange",
-                  "value": 1000
-                },
-                {
-                  "color": "red",
-                  "value": 10000
-                }
-              ]
-            },
-            "unit": "none"
-          },
-          "overrides": [],
-          "values": false
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
         },
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
       "pluginVersion": "6.6.2",
-      "repeat": null,
-      "repeatDirection": "h",
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(vald_ngt_uncommitted_index_count{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"})",
-          "instant": true,
-          "legendFormat": "",
+          "expr": "sum(vald_ngt_is_indexing{job=~\"$ReplicaSet\", node=~\"$Node\"})",
+          "format": "time_series",
           "refId": "A"
         }
       ],
+      "thresholds": "1, 5",
       "timeFrom": null,
       "timeShift": null,
-      "title": "NGT uncommitted indices",
-      "type": "stat"
+      "title": "Indexing pods",
+      "type": "singlestat",
+      "valueFontSize": "200%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
     },
     {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": null,
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
       "gridPos": {
         "h": 6,
-        "w": 4,
-        "x": 16,
+        "w": 6,
+        "x": 18,
         "y": 6
       },
-      "id": 5,
-      "options": {
-        "colorMode": "value",
-        "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
-          "defaults": {
-            "mappings": [
-              {
-                "from": "",
-                "id": 1,
-                "operator": "",
-                "text": "N/A",
-                "to": "",
-                "type": 1,
-                "value": "null"
-              }
-            ],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "yellow",
-                  "value": 100
-                },
-                {
-                  "color": "orange",
-                  "value": 1000
-                },
-                {
-                  "color": "red",
-                  "value": 10000
-                }
-              ]
-            }
-          },
-          "overrides": [],
-          "values": false
+      "id": 19,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
         },
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto"
-      },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
       "pluginVersion": "6.6.2",
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(vald_ngt_insert_vcache_count{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"})",
-          "instant": true,
-          "legendFormat": "",
+          "expr": "count(up{job=~\"$ReplicaSet\", node=~\"$Node\"})",
+          "format": "table",
+          "hide": false,
+          "instant": false,
           "refId": "A"
         }
       ],
+      "thresholds": "100, 300",
       "timeFrom": null,
       "timeShift": null,
-      "title": "insert vcache",
-      "type": "stat"
-    },
-    {
-      "datasource": null,
-      "gridPos": {
-        "h": 6,
-        "w": 4,
-        "x": 20,
-        "y": 6
-      },
-      "id": 6,
-      "options": {
-        "colorMode": "value",
-        "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
-          "defaults": {
-            "mappings": [
-              {
-                "from": "",
-                "id": 1,
-                "operator": "",
-                "text": "N/A",
-                "to": "",
-                "type": 1,
-                "value": "null"
-              }
-            ],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "yellow",
-                  "value": 100
-                },
-                {
-                  "color": "orange",
-                  "value": 1000
-                },
-                {
-                  "color": "red",
-                  "value": 10000
-                }
-              ]
-            }
-          },
-          "overrides": [],
-          "values": false
-        },
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto"
-      },
-      "pluginVersion": "6.6.2",
-      "targets": [
+      "title": "Pods",
+      "type": "singlestat",
+      "valueFontSize": "200%",
+      "valueMaps": [
         {
-          "expr": "sum(vald_ngt_delete_vcache_count{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"})",
-          "instant": true,
-          "legendFormat": "",
-          "refId": "A"
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "delete vcache",
-      "type": "stat"
+      "valueName": "current"
     },
     {
       "aliasColors": {},
@@ -1034,11 +974,11 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "fill": 1,
+      "fill": 0,
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 8,
         "x": 0,
         "y": 12
       },
@@ -1121,100 +1061,13 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 12
-      },
-      "hiddenSeries": false,
-      "id": 12,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "vald_alloc_bytes{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}",
-          "legendFormat": "{{pod}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "memory alloc",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "decbytes",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fill": 1,
+      "fill": 0,
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 8,
-        "x": 0,
-        "y": 20
+        "x": 8,
+        "y": 12
       },
       "hiddenSeries": false,
       "id": 25,
@@ -1305,100 +1158,13 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 20
-      },
-      "hiddenSeries": false,
-      "id": 22,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "vald_cpu_utilization{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}",
-          "legendFormat": "{{pod}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "CPU utilization",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "percent",
-          "label": null,
-          "logBase": 1,
-          "max": "100",
-          "min": "0",
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fill": 1,
+      "fill": 0,
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 20
+        "y": 12
       },
       "hiddenSeries": false,
       "id": 10,
@@ -1483,10 +1249,8 @@
       {
         "allValue": null,
         "current": {
-          "isNone": true,
-          "selected": false,
-          "text": "None",
-          "value": ""
+          "text": "vald-agent-ngt",
+          "value": "vald-agent-ngt"
         },
         "datasource": "prometheus",
         "definition": "label_values(vald_ngt_is_indexing, job)",

@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 2,
-  "iteration": 1582989402357,
+  "iteration": 1583588399679,
   "links": [],
   "panels": [
     {
@@ -279,7 +279,23 @@
     },
     {
       "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": null,
+      "decimals": 2,
+      "format": "decbytes",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
       "gridPos": {
         "h": 6,
         "w": 12,
@@ -287,56 +303,44 @@
         "y": 0
       },
       "id": 13,
+      "interval": null,
       "links": [],
-      "options": {
-        "colorMode": "value",
-        "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
-          "defaults": {
-            "mappings": [
-              {
-                "id": 0,
-                "op": "=",
-                "text": "N/A",
-                "type": 1,
-                "value": "null"
-              }
-            ],
-            "nullValueMode": "connected",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "#EAB839",
-                  "value": 100000000000
-                },
-                {
-                  "color": "orange",
-                  "value": 1000000000000
-                },
-                {
-                  "color": "red",
-                  "value": 5000000000000
-                }
-              ]
-            },
-            "title": "",
-            "unit": "decbytes"
-          },
-          "overrides": [],
-          "values": false
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
         },
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
       "pluginVersion": "6.6.2",
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": true,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
       "targets": [
         {
           "expr": "sum(vald_alloc_bytes{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"})",
@@ -344,10 +348,20 @@
           "refId": "A"
         }
       ],
+      "thresholds": "10000000000, 1000000000000",
       "timeFrom": null,
       "timeShift": null,
-      "title": "Total memory alloc",
-      "type": "stat"
+      "title": "Total heap memory alloc",
+      "type": "singlestat",
+      "valueFontSize": "200%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
     },
     {
       "cacheTimeout": null,
@@ -523,7 +537,23 @@
     },
     {
       "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": null,
+      "decimals": 0,
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
       "gridPos": {
         "h": 6,
         "w": 4,
@@ -531,46 +561,44 @@
         "y": 6
       },
       "id": 14,
+      "interval": null,
       "links": [],
-      "options": {
-        "colorMode": "value",
-        "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
-          "defaults": {
-            "mappings": [
-              {
-                "id": 0,
-                "op": "=",
-                "text": "N/A",
-                "type": 1,
-                "value": "null"
-              }
-            ],
-            "max": 50,
-            "min": 0,
-            "nullValueMode": "connected",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                }
-              ]
-            },
-            "title": "",
-            "unit": "none"
-          },
-          "overrides": [],
-          "values": false
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
         },
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
       "pluginVersion": "6.6.2",
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": true,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
       "targets": [
         {
           "expr": "count(up{job=~\"$ValdAgentNGT\", node=~\"$Node\"})",
@@ -580,14 +608,40 @@
           "refId": "A"
         }
       ],
+      "thresholds": "",
       "timeFrom": null,
       "timeShift": null,
       "title": "Agent Pods",
-      "type": "stat"
+      "type": "singlestat",
+      "valueFontSize": "200%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
     },
     {
       "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": null,
+      "decimals": 0,
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
       "gridPos": {
         "h": 6,
         "w": 4,
@@ -595,46 +649,44 @@
         "y": 6
       },
       "id": 15,
+      "interval": null,
       "links": [],
-      "options": {
-        "colorMode": "value",
-        "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
-          "defaults": {
-            "mappings": [
-              {
-                "id": 0,
-                "op": "=",
-                "text": "N/A",
-                "type": 1,
-                "value": "null"
-              }
-            ],
-            "max": 50,
-            "min": 0,
-            "nullValueMode": "connected",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                }
-              ]
-            },
-            "title": "",
-            "unit": "none"
-          },
-          "overrides": [],
-          "values": false
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
         },
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
       "pluginVersion": "6.6.2",
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": true,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
       "targets": [
         {
           "expr": "count(up{job=~\"$ValdDiscovererK8s\", node=~\"$Node\"})",
@@ -644,14 +696,40 @@
           "refId": "A"
         }
       ],
+      "thresholds": "",
       "timeFrom": null,
       "timeShift": null,
       "title": "Discoverer Pods",
-      "type": "stat"
+      "type": "singlestat",
+      "valueFontSize": "200%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
     },
     {
       "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": null,
+      "decimals": 0,
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
       "gridPos": {
         "h": 6,
         "w": 4,
@@ -659,46 +737,44 @@
         "y": 6
       },
       "id": 16,
+      "interval": null,
       "links": [],
-      "options": {
-        "colorMode": "value",
-        "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
-          "defaults": {
-            "mappings": [
-              {
-                "id": 0,
-                "op": "=",
-                "text": "N/A",
-                "type": 1,
-                "value": "null"
-              }
-            ],
-            "max": 50,
-            "min": 0,
-            "nullValueMode": "connected",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                }
-              ]
-            },
-            "title": "",
-            "unit": "none"
-          },
-          "overrides": [],
-          "values": false
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
         },
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
       "pluginVersion": "6.6.2",
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": true,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
       "targets": [
         {
           "expr": "count(up{job=~\"$ValdGateway\", node=~\"$Node\"})",
@@ -708,14 +784,40 @@
           "refId": "A"
         }
       ],
+      "thresholds": "",
       "timeFrom": null,
       "timeShift": null,
       "title": "Gateway Pods",
-      "type": "stat"
+      "type": "singlestat",
+      "valueFontSize": "200%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
     },
     {
       "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": null,
+      "decimals": 0,
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
       "gridPos": {
         "h": 6,
         "w": 3,
@@ -723,46 +825,44 @@
         "y": 6
       },
       "id": 17,
+      "interval": null,
       "links": [],
-      "options": {
-        "colorMode": "value",
-        "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
-          "defaults": {
-            "mappings": [
-              {
-                "id": 0,
-                "op": "=",
-                "text": "N/A",
-                "type": 1,
-                "value": "null"
-              }
-            ],
-            "max": 50,
-            "min": 0,
-            "nullValueMode": "connected",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                }
-              ]
-            },
-            "title": "",
-            "unit": "none"
-          },
-          "overrides": [],
-          "values": false
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
         },
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
       "pluginVersion": "6.6.2",
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": true,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
       "targets": [
         {
           "expr": "count(up{job=~\"$ValdManagerBackup\", node=~\"$Node\"})",
@@ -772,14 +872,40 @@
           "refId": "A"
         }
       ],
+      "thresholds": "",
       "timeFrom": null,
       "timeShift": null,
       "title": "Backup Manager Pods",
-      "type": "stat"
+      "type": "singlestat",
+      "valueFontSize": "200%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
     },
     {
       "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": null,
+      "decimals": 0,
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
       "gridPos": {
         "h": 6,
         "w": 3,
@@ -787,46 +913,44 @@
         "y": 6
       },
       "id": 18,
+      "interval": null,
       "links": [],
-      "options": {
-        "colorMode": "value",
-        "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
-          "defaults": {
-            "mappings": [
-              {
-                "id": 0,
-                "op": "=",
-                "text": "N/A",
-                "type": 1,
-                "value": "null"
-              }
-            ],
-            "max": 50,
-            "min": 0,
-            "nullValueMode": "connected",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                }
-              ]
-            },
-            "title": "",
-            "unit": "none"
-          },
-          "overrides": [],
-          "values": false
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
         },
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
       "pluginVersion": "6.6.2",
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": true,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
       "targets": [
         {
           "expr": "count(up{job=~\"$ValdManagerCompressor\", node=~\"$Node\"})",
@@ -836,14 +960,40 @@
           "refId": "A"
         }
       ],
+      "thresholds": "",
       "timeFrom": null,
       "timeShift": null,
       "title": "Compressor Pods",
-      "type": "stat"
+      "type": "singlestat",
+      "valueFontSize": "200%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
     },
     {
       "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": null,
+      "decimals": 0,
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
       "gridPos": {
         "h": 6,
         "w": 3,
@@ -851,46 +1001,44 @@
         "y": 6
       },
       "id": 19,
+      "interval": null,
       "links": [],
-      "options": {
-        "colorMode": "value",
-        "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
-          "defaults": {
-            "mappings": [
-              {
-                "id": 0,
-                "op": "=",
-                "text": "N/A",
-                "type": 1,
-                "value": "null"
-              }
-            ],
-            "max": 50,
-            "min": 0,
-            "nullValueMode": "connected",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                }
-              ]
-            },
-            "title": "",
-            "unit": "none"
-          },
-          "overrides": [],
-          "values": false
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
         },
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
       "pluginVersion": "6.6.2",
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": true,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
       "targets": [
         {
           "expr": "count(up{job=~\"$ValdManagerIndex\", node=~\"$Node\"})",
@@ -900,14 +1048,40 @@
           "refId": "A"
         }
       ],
+      "thresholds": "",
       "timeFrom": null,
       "timeShift": null,
       "title": "Index Manager Pods",
-      "type": "stat"
+      "type": "singlestat",
+      "valueFontSize": "200%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
     },
     {
       "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": null,
+      "decimals": 0,
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
       "gridPos": {
         "h": 6,
         "w": 3,
@@ -915,46 +1089,44 @@
         "y": 6
       },
       "id": 20,
+      "interval": null,
       "links": [],
-      "options": {
-        "colorMode": "value",
-        "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
-          "defaults": {
-            "mappings": [
-              {
-                "id": 0,
-                "op": "=",
-                "text": "N/A",
-                "type": 1,
-                "value": "null"
-              }
-            ],
-            "max": 50,
-            "min": 0,
-            "nullValueMode": "connected",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                }
-              ]
-            },
-            "title": "",
-            "unit": "none"
-          },
-          "overrides": [],
-          "values": false
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
         },
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "horizontal"
-      },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
       "pluginVersion": "6.6.2",
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": true,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
       "targets": [
         {
           "expr": "count(up{job=~\"$ValdMeta\", node=~\"$Node\"})",
@@ -964,10 +1136,20 @@
           "refId": "A"
         }
       ],
+      "thresholds": "",
       "timeFrom": null,
       "timeShift": null,
       "title": "Meta Pods",
-      "type": "stat"
+      "type": "singlestat",
+      "valueFontSize": "200%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
     },
     {
       "aliasColors": {},
@@ -975,187 +1157,13 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "fill": 1,
+      "fill": 0,
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 8,
         "x": 0,
         "y": 12
-      },
-      "hiddenSeries": false,
-      "id": 24,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "vald_cpu_utilization{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}",
-          "legendFormat": "{{pod}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "CPU utilization",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "percent",
-          "label": null,
-          "logBase": 1,
-          "max": "100",
-          "min": "0",
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 12
-      },
-      "hiddenSeries": false,
-      "id": 22,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "vald_alloc_bytes{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}",
-          "legendFormat": "{{pod}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "memory alloc",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "decbytes",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 20
       },
       "hiddenSeries": false,
       "id": 26,
@@ -1236,13 +1244,100 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "fill": 1,
+      "fill": 0,
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 20
+        "w": 8,
+        "x": 8,
+        "y": 12
+      },
+      "hiddenSeries": false,
+      "id": 22,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "vald_alloc_bytes{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}",
+          "legendFormat": "{{pod}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Heap memory alloc",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "decbytes",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 12
       },
       "hiddenSeries": false,
       "id": 27,
@@ -1404,10 +1499,8 @@
       {
         "allValue": null,
         "current": {
-          "isNone": true,
-          "selected": false,
-          "text": "None",
-          "value": ""
+          "text": "vald-agent-ngt",
+          "value": "vald-agent-ngt"
         },
         "datasource": "prometheus",
         "definition": "label_values(vald_app_version_info{server_name=\"agent ngt\"}, job)",
@@ -1431,10 +1524,8 @@
       {
         "allValue": null,
         "current": {
-          "isNone": true,
-          "selected": false,
-          "text": "None",
-          "value": ""
+          "text": "vald-discoverer",
+          "value": "vald-discoverer"
         },
         "datasource": "prometheus",
         "definition": "label_values(vald_app_version_info{server_name=\"discoverer k8s\"}, job)",
@@ -1458,10 +1549,8 @@
       {
         "allValue": null,
         "current": {
-          "isNone": true,
-          "selected": false,
-          "text": "None",
-          "value": ""
+          "text": "vald-gateway",
+          "value": "vald-gateway"
         },
         "datasource": "prometheus",
         "definition": "label_values(vald_app_version_info{server_name=\"gateway vald\"}, job)",
@@ -1485,10 +1574,8 @@
       {
         "allValue": null,
         "current": {
-          "isNone": true,
-          "selected": false,
-          "text": "None",
-          "value": ""
+          "text": "vald-manager-backup",
+          "value": "vald-manager-backup"
         },
         "datasource": "prometheus",
         "definition": "label_values(vald_app_version_info{server_name=~\"manager backup .*\"}, job)",
@@ -1512,10 +1599,8 @@
       {
         "allValue": null,
         "current": {
-          "isNone": true,
-          "selected": false,
-          "text": "None",
-          "value": ""
+          "text": "vald-manager-compressor",
+          "value": "vald-manager-compressor"
         },
         "datasource": "prometheus",
         "definition": "label_values(vald_app_version_info{server_name=\"manager compressor\"}, job)",
@@ -1566,10 +1651,8 @@
       {
         "allValue": null,
         "current": {
-          "isNone": true,
-          "selected": false,
-          "text": "None",
-          "value": ""
+          "text": "vald-meta",
+          "value": "vald-meta"
         },
         "datasource": "prometheus",
         "definition": "label_values(vald_app_version_info{server_name=~\"meta .*\"}, job)",
