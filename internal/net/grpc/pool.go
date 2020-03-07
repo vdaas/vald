@@ -31,7 +31,25 @@ import (
 	"google.golang.org/grpc"
 )
 
-type ClientConnPool struct {
+type ClientConnPool interface {
+	Connect(ctx context.Context) (ClientConnPool, error)
+	Disconnect() error
+	Do(f func(conn *ClientConn) error) error
+	Get() (*ClientConn, bool)
+	IsHealthy() bool
+	Len() uint64
+	Put(conn *ClientConn) error
+	Reconnect(ctx context.Context) (ClientConnPool, error)
+}
+
+type clientConnPool struct {
+	pool  atomic.Value
+	addr  string
+	size  uint64
+	dopts []DialOption
+}
+
+type connPool struct {
 	ctx     context.Context
 	conn    *ClientConn // default connection
 	group   singleflight.Group
@@ -51,16 +69,68 @@ const (
 	defaultPort = "80"
 )
 
-func NewPool(ctx context.Context, addr string, size uint64, dopts ...DialOption) (*ClientConnPool, error) {
+func NewPool(ctx context.Context, addr string, size uint64, dopts ...DialOption) (ClientConnPool, error) {
 	if !strings.HasPrefix(addr, "::") && strings.HasPrefix(addr, ":") {
 		addr = localIPv4 + addr
 	}
+	cp, err := NewPool(ctx, addr, size, dopts...)
+	if err != nil {
+		return nil, err
+	}
+	ccp := new(clientConnPool)
+	ccp.pool.Store(cp)
+	return ccp, nil
+}
+
+func (c *clientConnPool) Connect(ctx context.Context) (ClientConnPool, error) {
+	_, err := c.pool.Load().(*connPool).connect(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+func (c *clientConnPool) Disconnect() error {
+	return c.pool.Load().(*connPool).disconnect()
+}
+
+func (c *clientConnPool) Do(f func(conn *ClientConn) error) error {
+	return c.pool.Load().(*connPool).do(f)
+}
+
+func (c *clientConnPool) Get() (*ClientConn, bool) {
+	return c.pool.Load().(*connPool).get()
+}
+
+func (c *clientConnPool) IsHealthy() bool {
+	return c.pool.Load().(*connPool).isHealthy()
+}
+
+func (c *clientConnPool) Len() uint64 {
+	return c.pool.Load().(*connPool).len()
+}
+
+func (c *clientConnPool) Put(conn *ClientConn) error {
+	return c.pool.Load().(*connPool).put(conn)
+}
+
+func (c *clientConnPool) Reconnect(ctx context.Context) (ClientConnPool, error) {
+	cp, err := newPool(ctx, c.addr, c.size, c.dopts...)
+	if err != nil {
+		return nil, err
+	}
+	ocp := c.pool.Load().(*connPool)
+	c.pool.Store(cp)
+	return c, ocp.disconnect()
+}
+
+func newPool(ctx context.Context, addr string, size uint64, dopts ...DialOption) (*connPool, error) {
 	host, port, err := net.SplitHostPort(addr)
 	if err != nil {
 		host = addr
 		port = defaultPort
 	}
-	cp := &ClientConnPool{
+	cp := &connPool{
 		ctx:    ctx,
 		addr:   addr,
 		host:   host,
@@ -104,10 +174,10 @@ func NewPool(ctx context.Context, addr string, size uint64, dopts ...DialOption)
 			return nil
 		},
 	}
-	return cp.Connect(ctx)
+	return cp.connect(ctx)
 }
 
-func (c *ClientConnPool) Disconnect() (rerr error) {
+func (c *connPool) disconnect() (rerr error) {
 	if c.closing.Load().(bool) {
 		return nil
 	}
@@ -118,7 +188,7 @@ func (c *ClientConnPool) Disconnect() (rerr error) {
 		rerr = errors.Wrap(rerr, err.Error())
 	}
 	for i := uint64(0); i < uint64(math.Max(float64(atomic.LoadUint64(&c.length)), float64(c.size)))*2; i++ {
-		conn, _ := c.Get()
+		conn, _ := c.get()
 		if conn != nil {
 			err = conn.Close()
 			if err != nil {
@@ -129,7 +199,7 @@ func (c *ClientConnPool) Disconnect() (rerr error) {
 	return
 }
 
-func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err error) {
+func (c *connPool) connect(ctx context.Context) (cp *connPool, err error) {
 	if c.closing.Load().(bool) {
 		return c, nil
 	}
@@ -155,7 +225,7 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 		for atomic.LoadUint64(&c.length) > c.size {
 			conn, err := grpc.DialContext(ctx, localIPv4+":"+c.port, c.dopts...)
 			if err == nil {
-				c.Put(conn)
+				c.put(conn)
 			} else {
 				log.Debugf("failed to dial pool connection ip = %s\tport = %s\terror = %v", localIPv4, c.port, err)
 				if conn != nil {
@@ -172,7 +242,7 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 		for atomic.LoadUint64(&c.length) > c.size {
 			conn, err := grpc.DialContext(ctx, c.addr, c.dopts...)
 			if err == nil {
-				c.Put(conn)
+				c.put(conn)
 			} else {
 				log.Debugf("failed to dial pool connection addr = %s\terror = %v", c.addr, err)
 				if conn != nil {
@@ -196,7 +266,7 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 		}
 		conn, err := grpc.DialContext(ctx, ip.String()+":"+c.port, c.dopts...)
 		if err == nil {
-			c.Put(conn)
+			c.put(conn)
 		} else {
 			log.Debugf("failed to dial pool connection ip = %s\tport = %s\terror = %v", ip.String, c.port, err)
 			if conn != nil {
@@ -211,7 +281,7 @@ func (c *ClientConnPool) Connect(ctx context.Context) (cp *ClientConnPool, err e
 	return c, nil
 }
 
-func (c *ClientConnPool) Get() (*ClientConn, bool) {
+func (c *connPool) get() (*ClientConn, bool) {
 	conn, ok := c.pool.Get().(*ClientConn)
 	if !ok {
 		return c.conn, true
@@ -231,7 +301,7 @@ func (c *ClientConnPool) Get() (*ClientConn, bool) {
 	return conn, false
 }
 
-func (c *ClientConnPool) Put(conn *ClientConn) error {
+func (c *connPool) put(conn *ClientConn) error {
 	if conn != nil {
 		if c.closing.Load().(bool) || atomic.LoadUint64(&c.length) > c.size {
 			return conn.Close()
@@ -245,20 +315,20 @@ func (c *ClientConnPool) Put(conn *ClientConn) error {
 	return nil
 }
 
-func (c *ClientConnPool) Do(f func(conn *ClientConn) error) (err error) {
-	conn, shared := c.Get()
+func (c *connPool) do(f func(conn *ClientConn) error) (err error) {
+	conn, shared := c.get()
 	if !shared {
-		c.Put(conn)
+		c.put(conn)
 	}
 	return f(conn)
 }
 
-func (c *ClientConnPool) IsHealthy() bool {
+func (c *connPool) isHealthy() bool {
 	for i := uint64(0); i < c.size; i++ {
-		conn, shared := c.Get()
+		conn, shared := c.get()
 		if conn != nil && isHealthy(conn) {
 			if !shared {
-				c.Put(conn)
+				c.put(conn)
 			}
 		} else {
 			if conn != nil {
@@ -270,6 +340,6 @@ func (c *ClientConnPool) IsHealthy() bool {
 	return true
 }
 
-func (c *ClientConnPool) Len() uint64 {
+func (c *connPool) len() uint64 {
 	return atomic.LoadUint64(&c.length)
 }

@@ -337,10 +337,12 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	}
 	if s.backup != nil {
 		vecs := &payload.Backup_MetaVector{
-			Uuid:   uuid,
-			Meta:   meta,
-			Vector: vec.GetVector(),
-			Ips:    targets,
+			Uuid: uuid,
+			Meta: meta,
+			Ips:  targets,
+		}
+		if vec != nil {
+			vecs.Vector = vec.GetVector()
 		}
 		err = s.backup.Register(ctx, vecs)
 		if err != nil {

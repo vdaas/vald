@@ -43,6 +43,7 @@ type Indexer interface {
 type index struct {
 	client                discoverer.Client
 	eg                    errgroup.Group
+	creationPoolSize      uint32
 	indexDuration         time.Duration
 	indexDurationLimit    time.Duration
 	concurrency           int
@@ -145,7 +146,7 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 					}
 				}
 				_, err := agent.NewAgentClient(conn).CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-					PoolSize: 10000,
+					PoolSize: idx.creationPoolSize,
 				}, copts...)
 				if err != nil {
 					log.Debug(addr, err)

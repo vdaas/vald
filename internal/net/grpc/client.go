@@ -128,7 +128,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 				return ctx.Err()
 			case <-tick.C:
 				reconnList := make([]string, 0, int(atomic.LoadUint64(&g.clientCount)))
-				g.conns.Range(func(addr string, pool *ClientConnPool) bool {
+				g.conns.Range(func(addr string, pool ClientConnPool) bool {
 					if len(addr) != 0 && !pool.IsHealthy() {
 						err = g.Disconnect(addr)
 						if err != nil {
@@ -159,7 +159,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 
 func (g *gRPCClient) Range(ctx context.Context,
 	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
-	g.conns.Range(func(addr string, pool *ClientConnPool) bool {
+	g.conns.Range(func(addr string, pool ClientConnPool) bool {
 		select {
 		case <-ctx.Done():
 			return false
@@ -196,7 +196,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) error {
 	eg, egctx := errgroup.New(ctx)
 	eg.Limitation(concurrency)
-	g.conns.Range(func(addr string, pool *ClientConnPool) bool {
+	g.conns.Range(func(addr string, pool ClientConnPool) bool {
 		eg.Go(safety.RecoverFunc(func() (err error) {
 			select {
 			case <-egctx.Done():
@@ -405,7 +405,7 @@ func (g *gRPCClient) Disconnect(addr string) error {
 
 func (g *gRPCClient) Close() error {
 	closeList := make([]string, 0, int(atomic.LoadUint64(&g.clientCount)))
-	g.conns.Range(func(addr string, pool *ClientConnPool) bool {
+	g.conns.Range(func(addr string, pool ClientConnPool) bool {
 		if pool != nil {
 			closeList = append(closeList, addr)
 		}

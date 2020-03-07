@@ -33,6 +33,7 @@ func RecoverFunc(fn func() error) func() error {
 				switch x := r.(type) {
 				case runtime.Error:
 					err = errors.ErrRuntimeError(err, x)
+					log.Error(err, info.Get())
 					panic(err)
 				case string:
 					err = errors.ErrPanicString(err, x)

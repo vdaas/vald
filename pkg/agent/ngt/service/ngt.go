@@ -21,6 +21,7 @@ import (
 	"context"
 	"os"
 	"runtime"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -51,6 +52,8 @@ type NGT interface {
 	Exists(string) (uint32, bool)
 	CreateAndSaveIndex(poolSize uint32) (err error)
 	IsIndexing() bool
+	Len() uint64
+	NumberOfCreateIndexExecution() uint64
 	UUIDs(context.Context) (uuids []string)
 	UncommittedUUIDs() (uuids []string)
 	DeleteVCacheLen() uint64
@@ -65,6 +68,7 @@ type ngt struct {
 	dur      time.Duration // auto indexing check duration
 	dps      uint32        // default pool size
 	ic       uint64        // insert count
+	nocie    uint64        // number of create index execution
 	eg       errgroup.Group
 	ivc      *vcaches // insertion vector cache
 	dvc      *vcaches // deletion vector cache
@@ -454,6 +458,7 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 	log.Info("create graph and tree phase finished")
 
 	log.Info("create index operation finished")
+	atomic.AddUint64(&n.nocie, 1)
 	return err
 }
 
@@ -511,12 +516,23 @@ func (n *ngt) UUIDs(ctx context.Context) (uuids []string) {
 }
 
 func (n *ngt) UncommittedUUIDs() (uuids []string) {
+	var mu sync.Mutex
 	uuids = make([]string, 0, atomic.LoadUint64(&n.ic))
 	n.ivc.Range(func(uuid string, vc vcache) bool {
+		mu.Lock()
 		uuids = append(uuids, uuid)
+		mu.Unlock()
 		return true
 	})
 	return uuids
+}
+
+func (n *ngt) NumberOfCreateIndexExecution() uint64 {
+	return atomic.LoadUint64(&n.nocie)
+}
+
+func (n *ngt) Len() uint64 {
+	return n.kvs.Len()
 }
 
 func (n *ngt) InsertVCacheLen() uint64 {

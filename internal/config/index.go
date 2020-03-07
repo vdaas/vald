@@ -42,6 +42,9 @@ type Indexer struct {
 	// AutoIndexLength represent minimum auto index length
 	AutoIndexLength uint32 `yaml:"auto_index_length" json:"auto_index_length"`
 
+	// CreationPoolSize represent create index batch pool size
+	CreationPoolSize uint32 `yaml:"creation_pool_size" json:"creation_pool_size"`
+
 	// NodeName represents node name
 	NodeName string `json:"node_name" yaml:"node_name"`
 
