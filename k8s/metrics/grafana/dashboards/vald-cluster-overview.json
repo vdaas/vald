@@ -1201,7 +1201,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "goroutine count",
+      "title": "Goroutine count",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1366,7 +1366,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "vald_gc_count{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}",
+          "expr": "rate(vald_gc_count{job=~\"$ReplicaSet\", node=~\"$Node\", pod=~\"$Pod\"}[1m])",
           "legendFormat": "{{pod}}",
           "refId": "A"
         }
@@ -1375,7 +1375,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "GC count",
+      "title": "GC count increase rate [1m]",
       "tooltip": {
         "shared": true,
         "sort": 0,
