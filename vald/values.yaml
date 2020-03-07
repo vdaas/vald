@@ -211,7 +211,6 @@ defaults:
       duration: 5s
       metrics:
         enable_version_info: true
-        enable_cpu: true
         enable_memory: true
         enable_goroutine: true
         enable_cgo: true

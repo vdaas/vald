@@ -52,7 +52,6 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 	col, err := collector.New(
 		collector.WithDuration(cfg.Collector.Duration),
 		collector.WithVersionInfo(cfg.Collector.Metrics.EnableVersionInfo),
-		collector.WithCPUMetrics(cfg.Collector.Metrics.EnableCPU),
 		collector.WithMemoryMetrics(cfg.Collector.Metrics.EnableMemory),
 		collector.WithGoroutineMetrics(cfg.Collector.Metrics.EnableGoroutine),
 		collector.WithCGOMetrics(cfg.Collector.Metrics.EnableCGO),
