@@ -211,7 +211,6 @@ defaults:
       duration: 5s
       metrics:
         enable_version_info: true
-        enable_cpu: true
         enable_memory: true
         enable_goroutine: true
         enable_cgo: true
@@ -355,7 +354,7 @@ agent:
   podManagementPolicy: OrderedReady
   podPriority:
     enabled: true
-    value: 2000001000
+    value: 1000000000
   hpa:
     enabled: true
     targetCPUUtilizationPercentage: 80

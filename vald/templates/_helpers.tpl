@@ -487,7 +487,6 @@ collector:
   metrics:
     {{- if .Values.collector.metrics }}
       enable_version_info: {{ default .default.collector.metrics.enable_version_info .Values.collector.metrics.enable_version_info }}
-      enable_cpu: {{ default .default.collector.metrics.enable_cpu .Values.collector.metrics.enable_cpu }}
       enable_memory: {{ default .default.collector.metrics.enable_memory .Values.collector.metrics.enable_memory }}
       enable_goroutine: {{ default .default.collector.metrics.enable_goroutine .Values.collector.metrics.enable_goroutine }}
       enable_cgo: {{ default .default.collector.metrics.enable_cgo .Values.collector.metrics.enable_cgo }}

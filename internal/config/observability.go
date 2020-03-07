@@ -37,7 +37,6 @@ type Trace struct {
 
 type Metrics struct {
 	EnableVersionInfo bool `json:"enable_version_info" yaml:"enable_version_info"`
-	EnableCPU         bool `json:"enable_cpu" yaml:"enable_cpu"`
 	EnableMemory      bool `json:"enable_memory" yaml:"enable_memory"`
 	EnableGoroutine   bool `json:"enable_goroutine" yaml:"enable_goroutine"`
 	EnableCGO         bool `json:"enable_cgo" yaml:"enable_cgo"`
