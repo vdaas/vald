@@ -19,14 +19,16 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"math"
-	"net"
-	"strings"
+	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"golang.org/x/sync/singleflight"
 	"google.golang.org/grpc"
 )
@@ -39,12 +41,14 @@ type ClientConnPool interface {
 	IsHealthy() bool
 	Len() uint64
 	Put(conn *ClientConn) error
-	Reconnect(ctx context.Context) (ClientConnPool, error)
+	Reconnect(ctx context.Context, force bool) (ClientConnPool, error)
 }
 
 type clientConnPool struct {
 	pool  atomic.Value
-	addr  string
+	host  string
+	port  string
+	isIP  bool
 	size  uint64
 	dopts []DialOption
 }
@@ -63,23 +67,53 @@ type connPool struct {
 	closing atomic.Value
 }
 
-const (
-	localIPv4   = "127.0.0.1"
-	localHost   = "localhost"
-	defaultPort = "80"
-)
-
 func NewPool(ctx context.Context, addr string, size uint64, dopts ...DialOption) (ClientConnPool, error) {
-	if !strings.HasPrefix(addr, "::") && strings.HasPrefix(addr, ":") {
-		addr = localIPv4 + addr
-	}
-	cp, err := NewPool(ctx, addr, size, dopts...)
+	var ok bool
+	host, port, isIP, err := net.Parse(addr)
 	if err != nil {
-		return nil, err
+		log.Warn(err)
+		if len(host) == 0 {
+			host = addr
+		}
+		p, ok := scanGRPCPort(ctx, host)
+		if ok {
+			port = p
+		}
 	}
-	ccp := new(clientConnPool)
+	cp, err := newPool(ctx, host, port, size, dopts...)
+	if err != nil {
+		if cp != nil {
+			err = errors.Wrap(cp.disconnect(), err.Error())
+		}
+		port, ok = scanGRPCPort(ctx, host)
+		if !ok {
+			return nil, err
+		}
+		cp, err = newPool(ctx, host, port, size, dopts...)
+	}
+	ccp := &clientConnPool{
+		size:  size,
+		dopts: dopts,
+		host:  host,
+		port:  port,
+		isIP:  isIP,
+	}
 	ccp.pool.Store(cp)
 	return ccp, nil
+}
+
+func scanGRPCPort(ctx context.Context, host string) (string, bool) {
+	ports, err := net.ScanPorts(ctx, 1, 65535, host)
+	if err != nil {
+		log.Error(err)
+		return "", false
+	}
+	for _, port := range ports {
+		if isGRPCPort(ctx, host, port) {
+			return strconv.Itoa(int(port)), true
+		}
+	}
+	return "", false
 }
 
 func (c *clientConnPool) Connect(ctx context.Context) (ClientConnPool, error) {
@@ -114,8 +148,11 @@ func (c *clientConnPool) Put(conn *ClientConn) error {
 	return c.pool.Load().(*connPool).put(conn)
 }
 
-func (c *clientConnPool) Reconnect(ctx context.Context) (ClientConnPool, error) {
-	cp, err := newPool(ctx, c.addr, c.size, c.dopts...)
+func (c *clientConnPool) Reconnect(ctx context.Context, force bool) (ClientConnPool, error) {
+	if !force && c.isIP {
+		return c, nil
+	}
+	cp, err := newPool(ctx, c.host, c.port, c.size, c.dopts...)
 	if err != nil {
 		return nil, err
 	}
@@ -124,15 +161,10 @@ func (c *clientConnPool) Reconnect(ctx context.Context) (ClientConnPool, error) 
 	return c, ocp.disconnect()
 }
 
-func newPool(ctx context.Context, addr string, size uint64, dopts ...DialOption) (*connPool, error) {
-	host, port, err := net.SplitHostPort(addr)
-	if err != nil {
-		host = addr
-		port = defaultPort
-	}
+func newPool(ctx context.Context, host, port string, size uint64, dopts ...DialOption) (*connPool, error) {
 	cp := &connPool{
 		ctx:    ctx,
-		addr:   addr,
+		addr:   host + ":" + port,
 		host:   host,
 		port:   port,
 		size:   size,
@@ -187,6 +219,9 @@ func (c *connPool) disconnect() (rerr error) {
 	if err != nil {
 		rerr = errors.Wrap(rerr, err.Error())
 	}
+	if c.size <= 1 {
+		return nil
+	}
 	for i := uint64(0); i < uint64(math.Max(float64(atomic.LoadUint64(&c.length)), float64(c.size)))*2; i++ {
 		conn, _ := c.get()
 		if conn != nil {
@@ -211,23 +246,26 @@ func (c *connPool) connect(ctx context.Context) (cp *connPool, err error) {
 			if conn != nil {
 				return c, errors.Wrap(conn.Close(), err.Error())
 			}
-			return nil, err
+			return c, err
 		}
 		c.conn = conn
+	}
+
+	if c.size <= 1 {
+		return c, nil
 	}
 
 	if atomic.LoadUint64(&c.length) > c.size {
 		return c, nil
 	}
 
-	if c.host == localHost ||
-		c.host == localIPv4 {
+	if net.IsLocal(c.host) {
 		for atomic.LoadUint64(&c.length) > c.size {
-			conn, err := grpc.DialContext(ctx, localIPv4+":"+c.port, c.dopts...)
+			conn, err := grpc.DialContext(ctx, c.host+":"+c.port, c.dopts...)
 			if err == nil {
 				c.put(conn)
 			} else {
-				log.Debugf("failed to dial pool connection ip = %s\tport = %s\terror = %v", localIPv4, c.port, err)
+				log.Debugf("failed to dial pool connection ip = %s\tport = %s\terror = %v", c.host, c.port, err)
 				if conn != nil {
 					return c, errors.Wrap(conn.Close(), err.Error())
 				}
@@ -282,6 +320,9 @@ func (c *connPool) connect(ctx context.Context) (cp *connPool, err error) {
 }
 
 func (c *connPool) get() (*ClientConn, bool) {
+	if c.size <= 1 {
+		return c.conn, true
+	}
 	conn, ok := c.pool.Get().(*ClientConn)
 	if !ok {
 		return c.conn, true
@@ -302,6 +343,9 @@ func (c *connPool) get() (*ClientConn, bool) {
 }
 
 func (c *connPool) put(conn *ClientConn) error {
+	if c.size <= 1 {
+		return nil
+	}
 	if conn != nil {
 		if c.closing.Load().(bool) || atomic.LoadUint64(&c.length) > c.size {
 			return conn.Close()
@@ -316,6 +360,9 @@ func (c *connPool) put(conn *ClientConn) error {
 }
 
 func (c *connPool) do(f func(conn *ClientConn) error) (err error) {
+	if c.size <= 1 {
+		return f(c.conn)
+	}
 	conn, shared := c.get()
 	if !shared {
 		c.put(conn)
@@ -324,6 +371,12 @@ func (c *connPool) do(f func(conn *ClientConn) error) (err error) {
 }
 
 func (c *connPool) isHealthy() bool {
+	if c.conn == nil || !isHealthy(c.conn) {
+		return false
+	}
+	if c.size <= 1 {
+		return true
+	}
 	for i := uint64(0); i < c.size; i++ {
 		conn, shared := c.get()
 		if conn != nil && isHealthy(conn) {
@@ -342,4 +395,21 @@ func (c *connPool) isHealthy() bool {
 
 func (c *connPool) len() uint64 {
 	return atomic.LoadUint64(&c.length)
+}
+
+func isGRPCPort(ctx context.Context, host string, port uint16) bool {
+	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*3)
+	defer cancel()
+	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", host, port),
+		grpc.WithInsecure(),
+		grpc.WithBlock(),
+	)
+	if err != nil {
+		return false
+	}
+	err = conn.Close()
+	if err != nil {
+		return false
+	}
+	return true
 }

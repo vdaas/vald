@@ -21,7 +21,6 @@ require (
 	bou.ke/monkey v1.0.2 // indirect
 	contrib.go.opencensus.io/exporter/jaeger v0.2.0
 	contrib.go.opencensus.io/exporter/prometheus v0.1.0
-	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/certifi/gocertifi v0.0.0-20200211180108-c7c1fbc02894 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/cockroachdb/errors v1.2.4
@@ -29,7 +28,6 @@ require (
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
 	github.com/envoyproxy/protoc-gen-validate v0.3.0
 	github.com/getsentry/raven-go v0.2.0 // indirect
-	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/go-redis/redis/v7 v7.2.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
@@ -47,7 +45,6 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.0.3
 	github.com/pierrec/lz4/v3 v3.2.1
 	github.com/scylladb/gocqlx v1.4.0
-	github.com/shirou/gopsutil v2.20.2+incompatible
 	github.com/tensorflow/tensorflow v2.1.0+incompatible
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20190510080733-0c37ddc5e720
@@ -57,7 +54,7 @@ require (
 	golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/plot v0.7.0
-	google.golang.org/genproto v0.0.0-20200306153348-d950eab6f860
+	google.golang.org/genproto v0.0.0-20200309141739-5b75447e413d
 	google.golang.org/grpc v1.27.1
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.3

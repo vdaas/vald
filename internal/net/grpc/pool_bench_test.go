@@ -17,12 +17,12 @@ package grpc
 
 import (
 	"context"
-	"net"
 	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/discoverer"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/net"
 	"google.golang.org/grpc"
 )
 

@@ -19,13 +19,13 @@ package redis
 import (
 	"context"
 	"crypto/tls"
-	"net"
 	"reflect"
 	"time"
 
 	redis "github.com/go-redis/redis/v7"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 )
 
 var (

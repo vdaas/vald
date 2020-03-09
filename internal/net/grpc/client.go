@@ -33,6 +33,7 @@ import (
 )
 
 type Server = grpc.Server
+type ServerOption = grpc.ServerOption
 type ClientConn = grpc.ClientConn
 type CallOption = grpc.CallOption
 type DialOption = grpc.DialOption
@@ -75,15 +76,17 @@ type Client interface {
 }
 
 type gRPCClient struct {
-	addrs       []string
-	poolSize    uint64
-	clientCount uint64
-	conns       grpcConns
-	hcDur       time.Duration
-	dopts       []DialOption
-	copts       []CallOption
-	eg          errgroup.Group
-	bo          backoff.Backoff
+	addrs               []string
+	poolSize            uint64
+	clientCount         uint64
+	conns               grpcConns
+	hcDur               time.Duration
+	prDur               time.Duration
+	enablePoolRebalance bool
+	dopts               []DialOption
+	copts               []CallOption
+	eg                  errgroup.Group
+	bo                  backoff.Backoff
 }
 
 func New(opts ...Option) (c Client) {
@@ -118,15 +121,41 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 	}
 
 	g.eg.Go(safety.RecoverFunc(func() (err error) {
-		tick := time.NewTicker(g.hcDur)
+		prTick := &time.Ticker{
+			C: make(chan time.Time),
+		}
+		if g.enablePoolRebalance {
+			prTick.Stop()
+			prTick = time.NewTicker(g.prDur)
+		}
+		hcTick := time.NewTicker(g.hcDur)
 		defer close(ech)
 		defer g.Close()
-		defer tick.Stop()
+		defer hcTick.Stop()
+		defer prTick.Stop()
 		for {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case <-tick.C:
+			case <-prTick.C:
+				if g.enablePoolRebalance {
+					g.conns.Range(func(addr string, pool ClientConnPool) bool {
+						if len(addr) != 0 && !pool.IsHealthy() {
+							err = g.Disconnect(addr)
+							if err != nil {
+								log.Error(err)
+							}
+						} else {
+							cp, err := pool.Reconnect(ctx, false)
+							if err != nil {
+								log.Error(err)
+							}
+							g.conns.Store(addr, cp)
+						}
+						return true
+					})
+				}
+			case <-hcTick.C:
 				reconnList := make([]string, 0, int(atomic.LoadUint64(&g.clientCount)))
 				g.conns.Range(func(addr string, pool ClientConnPool) bool {
 					if len(addr) != 0 && !pool.IsHealthy() {

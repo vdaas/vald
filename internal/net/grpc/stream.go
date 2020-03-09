@@ -23,6 +23,7 @@ import (
 	"runtime"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
 )
@@ -38,14 +39,25 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 	for {
 		select {
 		case <-ctx.Done():
-			return eg.Wait()
+			err = eg.Wait()
+			if err != nil {
+				log.Error(err)
+				return err
+			}
+			return nil
 		default:
 			data := newData()
 			err = stream.RecvMsg(data)
 			if err != nil {
 				if err == io.EOF {
-					return eg.Wait()
+					err = eg.Wait()
+					if err != nil {
+						log.Error(err)
+						return err
+					}
+					return nil
 				}
+				log.Error(err)
 				return err
 			}
 			if data != nil {
