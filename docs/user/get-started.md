@@ -187,7 +187,7 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
 
 <details><summary>A brief of description about <code>main.go</code></summary><br>
 
-- Import packages. In this case, we use `vald-client-go` as client for running example. 
+- Import packages. In this case, we use `vald-client-go` as client for running an example. 
 <pre>
 package main
 
@@ -206,7 +206,7 @@ import (
 	"google.golang.org/grpc"
 )
 </pre>
-- Constant number of training dataset and test dataset.
+- The constant number of training datasets and test datasets.
 <pre>
 const (
 	insertCont = 400
@@ -241,7 +241,7 @@ func main() {
 		glg.Fatal(err)
 	}
 </pre>
-- Create connection to given context.
+- Create a connection to the given context.
 <pre>
 	ctx := context.Background()
 
@@ -276,8 +276,8 @@ func main() {
 	glg.Info("Wait for indexing to finish")
 	time.Sleep(time.Duration(indexingWaitSeconds) * time.Second)
 </pre>
-- Seach 10 neighbor vectors for each test dataset.
-- When get approximate vectors, Vald client send search config and vector to server via gRPC. 
+- Seach 10 neighbor vectors for each 20 test dataset.
+- When getting approximate vectors, Vald client sends search config and vector to the server via gRPC. 
 <pre>
 	glg.Infof("Start search %d times", testCount)
 
