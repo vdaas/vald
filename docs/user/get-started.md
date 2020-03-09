@@ -185,7 +185,8 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
     go run main.go
     ```
 
-<details><summary>A brief of description about `main.go`</summary><br>
+<details><summary>A brief of description about <code>main.go</code></summary><br>
+
 - Import packages. In this case, we use `vald-client-go` as client for running example. 
 <pre>
 package main
