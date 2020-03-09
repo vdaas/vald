@@ -213,7 +213,7 @@ const (
 	testCount  = 20
 )
 </pre>
-- Variable for configuration value.
+- Variable for configuration values.
 <pre>
 var (
 	datasetPath         string
@@ -241,7 +241,7 @@ func main() {
 		glg.Fatal(err)
 	}
 </pre>
-- Create connection to given context. Then, create a Vlad client for grpc.
+- Create connection to given context.
 <pre>
 	ctx := context.Background()
 
@@ -249,6 +249,9 @@ func main() {
 	if err != nil {
 		glg.Fatal(err)
 	}
+</pre>
+- Create a new Vald client with gRPC connection.
+<pre>
 	client := vald.NewValdClient(conn)
 </pre>
 - Insert 400 training data, which consist of the pair of id and vector, to the Vald agents.
