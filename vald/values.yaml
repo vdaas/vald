@@ -40,7 +40,7 @@ defaults:
             read_timeout: 1s
             write_timeout: 1s
       grpc:
-        enabled: false
+        enabled: true
         host: 0.0.0.0
         port: 8081
         servicePort: 8081
@@ -68,7 +68,7 @@ defaults:
           restart: true
     healths:
       liveness:
-        enabled: false
+        enabled: true
         host: 0.0.0.0
         port: 3000
         servicePort: 3000
@@ -93,7 +93,7 @@ defaults:
             read_timeout: ""
             write_timeout: ""
       readiness:
-        enabled: false
+        enabled: true
         host: 0.0.0.0
         port: 3001
         servicePort: 3001
@@ -206,7 +206,7 @@ defaults:
         key: /path/to/key
         ca: /path/to/ca
   observability:
-    enabled: true
+    enabled: false
     collector:
       duration: 5s
       metrics:
@@ -215,10 +215,10 @@ defaults:
         enable_goroutine: true
         enable_cgo: true
     trace:
-      enabled: true
+      enabled: false
       sampling_rate: 1.0
     prometheus:
-      enabled: true
+      enabled: false
     jaeger:
       enabled: false
       collector_endpoint: "" # http://jaeger-collector.default.svc.cluster.local:14268/api/traces
@@ -283,21 +283,21 @@ gateway:
           fieldPath: metadata.namespace
   server_config:
     prefix: gateway
-    servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: true
-    healths:
-      liveness:
-        enabled: true
-      readiness:
-        enabled: true
-    metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: true
+    # servers:
+    #   rest:
+    #     enabled: false
+    #   grpc:
+    #     enabled: false
+    # healths:
+    #   liveness:
+    #     enabled: false
+    #   readiness:
+    #     enabled: false
+    # metrics:
+    #   pprof:
+    #     enabled: false
+    #   prometheus:
+    #     enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -356,7 +356,7 @@ agent:
     enabled: true
     value: 1000000000
   hpa:
-    enabled: true
+    enabled: false
     targetCPUUtilizationPercentage: 80
   image:
     repository: vdaas/vald-agent-ngt
@@ -368,21 +368,21 @@ agent:
     partition: 0
   server_config:
     prefix: agent
-    servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: true
-    healths:
-      liveness:
-        enabled: true
-      readiness:
-        enabled: true
-    metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: true
+    # servers:
+    #   rest:
+    #     enabled: false
+    #   grpc:
+    #     enabled: false
+    # healths:
+    #   liveness:
+    #     enabled: false
+    #   readiness:
+    #     enabled: false
+    # metrics:
+    #   pprof:
+    #     enabled: false
+    #   prometheus:
+    #     enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -395,8 +395,8 @@ agent:
       memory: 4Gi # = cluster memory * 0.4 / number of agent pods
   ngt:
     # index_path: /path/to/index
-    auto_index_limit: 10m
-    auto_index_check_duration: 1m
+    auto_index_limit: 24h
+    auto_index_check_duration: 30m
     auto_index_length: 100
     dimension: 4096
     bulk_insert_chunk_size: 10
@@ -433,21 +433,21 @@ discoverer:
           fieldPath: metadata.namespace
   server_config:
     prefix: discoverer
-    servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: true
-    healths:
-      liveness:
-        enabled: true
-      readiness:
-        enabled: true
-    metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: true
+    # servers:
+    #   rest:
+    #     enabled: false
+    #   grpc:
+    #     enabled: false
+    # healths:
+    #   liveness:
+    #     enabled: false
+    #   readiness:
+    #     enabled: false
+    # metrics:
+    #   pprof:
+    #     enabled: false
+    #   prometheus:
+    #     enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -506,21 +506,21 @@ compressor:
       sleepDuration: 2
   server_config:
     prefix: manager-compressor
-    servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: true
-    healths:
-      liveness:
-        enabled: true
-      readiness:
-        enabled: true
-    metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: true
+    # servers:
+    #   rest:
+    #     enabled: false
+    #   grpc:
+    #     enabled: false
+    # healths:
+    #   liveness:
+    #     enabled: false
+    #   readiness:
+    #     enabled: false
+    # metrics:
+    #   pprof:
+    #     enabled: false
+    #   prometheus:
+    #     enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -623,21 +623,21 @@ backupManager:
     #       key: password
   server_config:
     prefix: backup-manager
-    servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: true
-    healths:
-      liveness:
-        enabled: true
-      readiness:
-        enabled: true
-    metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: true
+    # servers:
+    #   rest:
+    #     enabled: false
+    #   grpc:
+    #     enabled: false
+    # healths:
+    #   liveness:
+    #     enabled: false
+    #   readiness:
+    #     enabled: false
+    # metrics:
+    #   pprof:
+    #     enabled: false
+    #   prometheus:
+    #     enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -781,21 +781,21 @@ indexManager:
           fieldPath: metadata.namespace
   server_config:
     prefix: index-manager
-    servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: true
-    healths:
-      liveness:
-        enabled: true
-      readiness:
-        enabled: true
-    metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: true
+    # servers:
+    #   rest:
+    #     enabled: false
+    #   grpc:
+    #     enabled: false
+    # healths:
+    #   liveness:
+    #     enabled: false
+    #   readiness:
+    #     enabled: false
+    # metrics:
+    #   pprof:
+    #     enabled: false
+    #   prometheus:
+    #     enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -905,21 +905,21 @@ meta:
     #       key: password
   server_config:
     prefix: meta
-    servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: true
-    healths:
-      liveness:
-        enabled: true
-      readiness:
-        enabled: true
-    metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: true
+    # servers:
+    #   rest:
+    #     enabled: false
+    #   grpc:
+    #     enabled: false
+    # healths:
+    #   liveness:
+    #     enabled: false
+    #   readiness:
+    #     enabled: false
+    # metrics:
+    #   pprof:
+    #     enabled: false
+    #   prometheus:
+    #     enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
