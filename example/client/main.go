@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	insertCont = 400
+	insertCount = 400
 	testCount  = 20
 )
 
@@ -62,12 +62,12 @@ func main() {
 	// Creates Vald client for gRPC.
 	client := vald.NewValdClient(conn)
 
-	glg.Infof("Start Inserting %d Vector", insertCont)
+	glg.Infof("Start Inserting %d Vector", insertCount)
 
 	/**
 	Starts inserting vectors specified by insertCount(400).
 	**/
-	for i := range ids[:insertCont] {
+	for i := range ids[:insertCount] {
 		if i%10 == 0 {
 			glg.Infof("Inserted: %d", i)
 		}
