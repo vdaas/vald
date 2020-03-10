@@ -173,133 +173,118 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
     This will execute 4 steps.
     1. init
     - Import packages
-    <details><summary>example code</summary><br><pre>
-    package main
+        <details><summary>example code</summary><br><pre>
+        package main
 
-    import (
-    	"context"
-    	"encoding/json"
-        "flag"
-        "time"
+        import (
+            "context"
+            "encoding/json"
+            "flag"
+            "time"
 
-    	"github.com/kpango/fuid"
-        "github.com/kpango/glg"
-        "github.com/vdaas/vald-client-go/gateway/vald"
-        "github.com/vdaas/vald-client-go/payload"
+            "github.com/kpango/fuid"
+            "github.com/kpango/glg"
+            "github.com/vdaas/vald-client-go/gateway/vald"
+            "github.com/vdaas/vald-client-go/payload"
 
-    	"gonum.org/v1/hdf5"
-        "google.golang.org/grpc"
-    )
-    </pre></details>
+            "gonum.org/v1/hdf5"
+            "google.golang.org/grpc"
+        )
+        </pre></details>
     - Set variables
         - The constant number of training datasets and test datasets.
-        <details><summary>example code</summary><br><pre>
-        const (
-            insertCount = 400
-            testCount = 20
-        )
-        </pre></details>
+            <details><summary>example code</summary><br><pre>
+            const (
+                insertCount = 400
+                testCount = 20
+            )
+            </pre></details>
+
         - The variables for configuration.
-        <details><summary>example code</summary><br><pre>
-        const (
-            datasetPath         string
-            grpcServerAddr      string
-            indexingWaitSeconds uint
-        )
-        </pre></details>
+            <details><summary>example code</summary><br><pre>
+            const (
+                datasetPath         string
+                grpcServerAddr      string
+                indexingWaitSeconds uint
+            )
+            </pre></details>
     - Recognition paremters.
-    <details><summary>example code</summary><br><pre>
-    func init() {
-	    flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
-	    flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "set gRPC server address")
-	    flag.UintVar(&indexingWaitSeconds, "wait", 60, "set indexing wait seconds")
-	    flag.Parse()
-    }
-    </pre></details>
+        <details><summary>example code</summary><br><pre>
+        func init() {
+	        flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
+	        flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "set gRPC server address")
+	        flag.UintVar(&indexingWaitSeconds, "wait", 60, "set indexing wait seconds")
+	        flag.Parse()
+        }
+        </pre></details>
     2. load
     - Loading from fashion-mnist dataset and set id for each vector that is loaded. This step will return the training dataset, test dataset, and ids list of ids when loading is completed with success.
-    3. insert
-    - Insert and Indexing training dataset to Vald agent.
-    4. search
-    - Seach neighbor vector fot test vector and return list of neighbor vector.
+        <details><summary>example code</summary><br><pre>
+        ids, train, test, err := load(datasetPath)
+        if err != nil {
+            glg.Fatal(err)
+        }
+        </pre></details>
+    3. Create the gRPC connection and Vald client with gRPC connection.
+        <details><summary>example code</summary><br><pre>
+        ctx := context.Background()
+
+        conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
+        if err != nil {
+            glg.Fatal(err)
+        }
+
+        client := vald.NewValdClient(conn)
+        </pre></details>
+    4. Insert and Index
+    - Insert and Indexing 400 training datasets to the Vald agent.
+        <details><summary>example code</summary><br><pre>
+        for i := range ids [:insertCount] {
+            if i%10 == 0 {
+                glg.Infof("Inserted %d", i)
+            }
+            _, err := client.Insert(ctx, &payload.Object_Vector{
+                Id: ids[i],
+                Vector: train[i],
+            })
+            if err != nil {
+                glg.Fatal(err)
+            }
+        }
+        </pre></details>
+    - Wait until indexing finish.
+        <details><summary>example code</summary><br><pre>
+        glg.Info("Wait for indexing to finish")
+        time.Sleep(time.Duration(indexingWaitSeconds) * time.Second)
+        </pre></details>
+    5. search
+    - Seach 10 neighbor vectors fot each 20 test datasets and return list of neighbor vector.
+    - When getting approximate vectors, the Vald client sends search config and vector to the server via gRPC.
+        <details><summary>example code</summary><br><pre>
+        glg.Infof("Start search %d times", testCount)
+        for i, vec := range test[:testCount] {
+            res, err := client.Seach(ctx, &payload.Search_Request){
+                Vector: vec,
+                Config: &payload.Search_Config{
+                    Num: 10,
+                    Radius: -1,
+                    Epsilon: 0.01,
+                }
+            }
+            if err != nil {
+                glg.Fatal(err)
+            }
+
+            b, _ := json.MarshalIndent(res.GetResults(), "", " ")
+            glg.Infof("%d - Results : %s\n\n", i+1, string(b))
+            time.Sleep(1 * time.Second)
+        }
+        </pre></details>
 
     ```bash
     # run example
     go run main.go
     ```
-
-<details><summary>A brief of description about <code>main.go</code></summary><br>
-- Running `func main()`
-<pre>
-func main() {
-</pre>
-- Load fashion-mnist data from file.
-<pre>
-	ids, train, test, err := load(datasetPath)
-	if err != nil {
-		glg.Fatal(err)
-	}
-</pre>
-- Create a connection to the given context.
-<pre>
-	ctx := context.Background()
-
-	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
-	if err != nil {
-		glg.Fatal(err)
-	}
-</pre>
-- Create a new Vald client with gRPC connection.
-<pre>
-	client := vald.NewValdClient(conn)
-</pre>
-- Insert 400 training data, which consist of the pair of id and vector, to the Vald agents.
-<pre>
-	for i := range ids[:insertCont] {
-		if i%10 == 0 {
-			glg.Infof("Inserted: %d", i)
-		}
-		_, err := client.Insert(ctx, &payload.Object_Vector{
-			Id:     ids[i],
-			Vector: train[i],
-		})
-		if err != nil {
-			glg.Fatal(err)
-		}
-	}
-
-	glg.Info("Finish Inserting. \n\n")
-</pre>
-- Wait until indexing finish.
-<pre>
-	glg.Info("Wait for indexing to finish")
-	time.Sleep(time.Duration(indexingWaitSeconds) * time.Second)
-</pre>
-- Seach 10 neighbor vectors for each 20 test dataset.
-- When getting approximate vectors, Vald client sends search config and vector to the server via gRPC. 
-<pre>
-	glg.Infof("Start search %d times", testCount)
-
-	for i, vec := range test[:testCount] {
-		res, err := client.Search(ctx, &payload.Search_Request{
-			Vector: vec,
-			Config: &payload.Search_Config{
-				Num: 10,
-				Radius: -1,
-				Epsilon: 0.01,
-			},
-		})
-		if err != nil {
-			glg.Fatal(err)
-		}
-
-		b, _ := json.MarshalIndent(res.GetResults(), "", " ")
-		glg.Infof("%d - Results : %s\n\n", i+1, string(b))
-		time.Sleep(1 * time.Second)
-	}
-}
-</pre>
-</details>
 
 ## Advanced
 
