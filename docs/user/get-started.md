@@ -200,40 +200,54 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
         </details>
     - Set variables
         - The constant number of training datasets and test datasets.
-            <details><summary>example code</summary><br><pre>
+            <details><summary>example code</summary><br>
+
+            ```go
             const (
                 insertCount = 400
                 testCount = 20
             )
-            </pre></details>
+            ```
+            </details>
 
         - The variables for configuration.
-            <details><summary>example code</summary><br><pre>
+            <details><summary>example code</summary><br>
+
+            ```go
             const (
                 datasetPath         string
                 grpcServerAddr      string
                 indexingWaitSeconds uint
             )
-            </pre></details>
+            ```
+            </details>
     - Recognition paremters.
-        <details><summary>example code</summary><br><pre>
+        <details><summary>example code</summary><br>
+        
+        ```go
         func init() {
 	        flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
 	        flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "set gRPC server address")
 	        flag.UintVar(&indexingWaitSeconds, "wait", 60, "set indexing wait seconds")
 	        flag.Parse()
         }
-        </pre></details>
+        ```
+        </details>
     2. load
     - Loading from fashion-mnist dataset and set id for each vector that is loaded. This step will return the training dataset, test dataset, and ids list of ids when loading is completed with success.
-        <details><summary>example code</summary><br><pre>
+        <details><summary>example code</summary><br>
+
+        ```go
         ids, train, test, err := load(datasetPath)
         if err != nil {
             glg.Fatal(err)
         }
-        </pre></details>
+        ```
+        </details>
     3. Create the gRPC connection and Vald client with gRPC connection.
-        <details><summary>example code</summary><br><pre>
+        <details><summary>example code</summary><br>
+
+        ```go
         ctx := context.Background()
 
         conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
@@ -242,10 +256,13 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
         }
 
         client := vald.NewValdClient(conn)
-        </pre></details>
+        ```
+        </details>
     4. Insert and Index
     - Insert and Indexing 400 training datasets to the Vald agent.
-        <details><summary>example code</summary><br><pre>
+        <details><summary>example code</summary><br>
+
+        ```go
         for i := range ids [:insertCount] {
             if i%10 == 0 {
                 glg.Infof("Inserted %d", i)
@@ -258,16 +275,21 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
                 glg.Fatal(err)
             }
         }
-        </pre></details>
+        ```
+        </details>
     - Wait until indexing finish.
-        <details><summary>example code</summary><br><pre>
+        <details><summary>example code</summary><br>
+
+        ```go
         glg.Info("Wait for indexing to finish")
         time.Sleep(time.Duration(indexingWaitSeconds) * time.Second)
-        </pre></details>
+        ```
+        </details>
     5. search
     - Seach 10 neighbor vectors fot each 20 test datasets and return list of neighbor vector.
     - When getting approximate vectors, the Vald client sends search config and vector to the server via gRPC.
-        <details><summary>example code</summary><br><pre>
+        <details><summary>example code</summary><br>
+        ```go
         glg.Infof("Start search %d times", testCount)
         for i, vec := range test[:testCount] {
             res, err := client.Seach(ctx, &payload.Search_Request){
@@ -286,7 +308,8 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
             glg.Infof("%d - Results : %s\n\n", i+1, string(b))
             time.Sleep(1 * time.Second)
         }
-        </pre></details>
+        ```
+        </details>
 
     ```bash
     # run example
