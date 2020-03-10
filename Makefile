@@ -213,7 +213,7 @@ prettier/install:
 
 .PHONY: dockfmt/install
 dockfmt/install:
-	go get -u github.com/jessfraz/dockfmt
+	go get github.com/jessfraz/dockfmt
 
 .PHONY: version/go
 ## print go version
