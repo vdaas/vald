@@ -155,7 +155,7 @@ func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 				strategy.NewStreamInsert(),
 				strategy.NewCreateIndex(
 					strategy.WithCreateIndexClient(client),
-					strategy.WithCreateIndexPoolSize(10000),
+					strategy.WithCreateIndexPoolSize(10),
 				),
 				strategy.NewStreamSearch(
 					strategy.WithStreamSearchConfig(searchConfig),
