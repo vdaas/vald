@@ -31,6 +31,10 @@
     - [Info.CPU](#payload.Info.CPU)
     - [Info.IPs](#payload.Info.IPs)
     - [Info.Index](#payload.Info.Index)
+    - [Info.Index.Count](#payload.Info.Index.Count)
+    - [Info.Index.UUID](#payload.Info.Index.UUID)
+    - [Info.Index.UUID.Committed](#payload.Info.Index.UUID.Committed)
+    - [Info.Index.UUID.Uncommitted](#payload.Info.Index.UUID.Uncommitted)
     - [Info.Memory](#payload.Info.Memory)
     - [Info.Node](#payload.Info.Node)
     - [Info.Nodes](#payload.Info.Nodes)
@@ -55,10 +59,6 @@
     - [Search.Request](#payload.Search.Request)
     - [Search.Response](#payload.Search.Response)
   
-  
-  
-  
-
 - [Scalar Value Types](#scalar-value-types)
 
 
@@ -417,13 +417,61 @@
 
 
 
+
+
+
+
+<a name="payload.Info.Index.Count"></a>
+
+### Info.Index.Count
+
+
+
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | stored | [uint32](#uint32) |  |  |
 | uncommitted | [uint32](#uint32) |  |  |
-| uuids | [string](#string) | repeated |  |
-| uncommitted_uuids | [string](#string) | repeated |  |
 | indexing | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="payload.Info.Index.UUID"></a>
+
+### Info.Index.UUID
+
+
+
+
+
+
+
+<a name="payload.Info.Index.UUID.Committed"></a>
+
+### Info.Index.UUID.Committed
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="payload.Info.Index.UUID.Uncommitted"></a>
+
+### Info.Index.UUID.Uncommitted
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
 
 
 

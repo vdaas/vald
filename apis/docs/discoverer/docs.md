@@ -4,12 +4,8 @@
 ## Table of Contents
 
 - [discoverer.proto](#discoverer.proto)
-  
-  
-  
     - [Discoverer](#discoverer.Discoverer)
   
-
 - [Scalar Value Types](#scalar-value-types)
 
 

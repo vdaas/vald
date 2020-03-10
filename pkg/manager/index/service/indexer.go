@@ -20,7 +20,6 @@ package service
 import (
 	"context"
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -36,22 +35,24 @@ import (
 
 type Indexer interface {
 	Start(ctx context.Context) (<-chan error, error)
-	UUIDs(context.Context) []string
-	UncommittedUUIDs() []string
+	NumberOfUUIDs() uint32
+	NumberOfUncommittedUUIDs() uint32
 	IsIndexing() bool
 }
 
 type index struct {
-	client             discoverer.Client
-	eg                 errgroup.Group
-	indexDuration      time.Duration
-	indexDurationLimit time.Duration
-	concurrency        int
-	indexInfos         infoMap
-	indexing           atomic.Value // bool
-	minUncommitted     int
-	uncommittedUUIDs   atomic.Value // []string uncommitted uuid
-	uuids              atomic.Value // []string uuid
+	client                discoverer.Client
+	eg                    errgroup.Group
+	indexDuration         time.Duration
+	indexDurationLimit    time.Duration
+	concurrency           int
+	indexInfos            indexInfos
+	indexing              atomic.Value // bool
+	minUncommitted        uint32
+	uuidsCount            uint32
+	uncommittedUUIDsCount uint32
+	uncommittedUUIDs      atomic.Value // []string uncommitted uuid
+	uuids                 atomic.Value // []string uuid
 }
 
 func New(opts ...Option) (idx Indexer, err error) {
@@ -129,7 +130,7 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 	}
 	idx.indexing.Store(true)
 	defer idx.indexing.Store(false)
-	err = idx.client.GetClient().OrderedRangeConcurrent(ctx, idx.client.GetAddrs(),
+	err = idx.client.GetClient().OrderedRangeConcurrent(ctx, idx.client.GetAddrs(ctx),
 		idx.concurrency,
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
@@ -139,7 +140,7 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 			default:
 				if enableLowIndexSkip {
 					info, ok := idx.indexInfos.Load(addr)
-					if ok && len(info.GetUncommittedUuids()) < idx.minUncommitted {
+					if ok && info.GetUncommitted() < idx.minUncommitted {
 						return nil
 					}
 				}
@@ -160,9 +161,9 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 }
 
 func (idx *index) loadInfos(ctx context.Context) (err error) {
-	var uuids sync.Map
-	var ucuuids sync.Map
-	err = idx.client.GetClient().RangeConcurrent(ctx, len(idx.client.GetAddrs()),
+	var u, ucu uint32
+	var infoMap indexInfos
+	err = idx.client.GetClient().RangeConcurrent(ctx, len(idx.client.GetAddrs(ctx)),
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 			select {
@@ -172,33 +173,32 @@ func (idx *index) loadInfos(ctx context.Context) (err error) {
 				info, err := agent.NewAgentClient(conn).IndexInfo(ctx, new(payload.Empty), copts...)
 				if err != nil {
 					log.Debug(addr, err)
-					return err
+					return nil
 				}
-				idx.indexInfos.Store(addr, info)
-				for _, uuid := range info.GetUuids() {
-					uuids.Store(uuid, struct{}{})
-				}
-				for _, ucuuid := range info.GetUncommittedUuids() {
-					ucuuids.Store(ucuuid, struct{}{})
-				}
+				infoMap.Store(addr, info)
+				atomic.AddUint32(&u, info.GetStored())
+				atomic.AddUint32(&ucu, info.GetUncommitted())
 			}
 			return nil
 		})
 	if err != nil {
 		return err
 	}
-	us := make([]string, 0, len(idx.uuids.Load().([]string)))
-	uuids.Range(func(uuid, _ interface{}) bool {
-		us = append(us, uuid.(string))
+	atomic.StoreUint32(&idx.uuidsCount, atomic.LoadUint32(&u))
+	atomic.StoreUint32(&idx.uncommittedUUIDsCount, atomic.LoadUint32(&ucu))
+	idx.indexInfos.Range(func(addr string, _ *payload.Info_Index_Count) bool {
+		info, ok := infoMap.Load(addr)
+		if !ok {
+			idx.indexInfos.Delete(addr)
+		}
+		idx.indexInfos.Store(addr, info)
+		infoMap.Delete(addr)
 		return true
 	})
-	ucus := make([]string, 0, len(idx.uncommittedUUIDs.Load().([]string)))
-	ucuuids.Range(func(uuid, _ interface{}) bool {
-		ucus = append(ucus, uuid.(string))
+	infoMap.Range(func(addr string, info *payload.Info_Index_Count) bool {
+		idx.indexInfos.Store(addr, info)
 		return true
 	})
-	idx.uuids.Store(us)
-	idx.uncommittedUUIDs.Store(ucus)
 	return nil
 }
 
@@ -206,9 +206,9 @@ func (idx *index) IsIndexing() bool {
 	return idx.indexing.Load().(bool)
 }
 
-func (idx *index) UUIDs(context.Context) []string {
-	return idx.uuids.Load().([]string)
+func (idx *index) NumberOfUUIDs() uint32 {
+	return atomic.LoadUint32(&idx.uuidsCount)
 }
-func (idx *index) UncommittedUUIDs() []string {
-	return idx.uncommittedUUIDs.Load().([]string)
+func (idx *index) NumberOfUncommittedUUIDs() uint32 {
+	return atomic.LoadUint32(&idx.uncommittedUUIDsCount)
 }

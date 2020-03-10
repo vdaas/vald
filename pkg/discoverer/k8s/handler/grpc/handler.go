@@ -19,7 +19,6 @@ package grpc
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/vdaas/vald/apis/grpc/discoverer"
@@ -27,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
 )
 
@@ -44,21 +44,37 @@ func New(opts ...Option) discoverer.DiscovererServer {
 }
 
 func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Pods, error) {
+	ctx, span := trace.StartSpan(ctx, "vald/discoverer-k8s.Pods")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	pods, err := s.dsc.GetPods(req)
 	if err != nil {
 		log.Error(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Pods API request %#v pods not found", req), err, info.Get())
 	}
 	return pods, nil
 }
 
 func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
+	ctx, span := trace.StartSpan(ctx, "vald/discoverer-k8s.Nodes")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	nodes, err := s.dsc.GetNodes(req)
 	if err != nil {
 		log.Error(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Nodes API request %#v nodes not found", req), err, info.Get())
 	}
-	b, _ := json.MarshalIndent(nodes, "", "\t")
-	log.Info(string(b))
 	return nodes, nil
 }

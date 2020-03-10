@@ -22,14 +22,14 @@ data:
     ---
     version: {{ .Values.agent.version }}
     time_zone: {{ default .Values.defaults.time_zone .Values.agent.time_zone }}
-    {{- if .Values.agent.logging }}
     logging:
-      logger: {{ .Values.agent.logging.logger }}
-      level: {{ .Values.agent.logging.level }}
-      format: {{ .Values.agent.logging.format }}
-    {{- end }}
+      {{- $logging := dict "Values" .Values.agent.logging "default" .Values.defaults.logging }}
+      {{- include "vald.logging" $logging | nindent 6 }}
     server_config:
       {{- $servers := dict "Values" .Values.agent.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
+    observability:
+      {{- $observability := dict "Values" .Values.agent.observability "default" .Values.defaults.observability }}
+      {{- include "vald.observability" $observability | nindent 6 }}
     ngt:
       {{- toYaml .Values.agent.ngt | nindent 6 }}

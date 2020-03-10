@@ -22,15 +22,15 @@ data:
     ---
     version: {{ .Values.meta.version }}
     time_zone: {{ default .Values.defaults.time_zone .Values.meta.time_zone }}
-    {{- if .Values.meta.logging }}
     logging:
-      logger: {{ .Values.meta.logging.logger }}
-      level: {{ .Values.meta.logging.level }}
-      format: {{ .Values.meta.logging.format }}
-    {{- end }}
+      {{- $logging := dict "Values" .Values.meta.logging "default" .Values.defaults.logging }}
+      {{- include "vald.logging" $logging | nindent 6 }}
     server_config:
       {{- $servers := dict "Values" .Values.meta.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
+    observability:
+      {{- $observability := dict "Values" .Values.meta.observability "default" .Values.defaults.observability }}
+      {{- include "vald.observability" $observability | nindent 6 }}
     {{- if .Values.meta.redis.enabled }}
     redis_config:
       {{- toYaml .Values.meta.redis.config | nindent 6 }}

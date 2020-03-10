@@ -20,11 +20,8 @@ metadata:
   name: vald-meta
   labels:
     app: vald-meta
-  annotations:
-    checksum/configmap: c6f1b01d1e9aff3f79061235ce96e0b56f154c41931452641d3a20d706369193
 spec:
   progressDeadlineSeconds: 600
-  replicas: 2
   revisionHistoryLimit: 2
   selector:
     matchLabels:
@@ -39,19 +36,27 @@ spec:
       creationTimestamp: null
       labels:
         app: vald-meta
+      annotations:
+        checksum/configmap: 7d2d897b8133d1f38a7a674a79437e021233b67f265336273104eca47fd970b8
+        profefe.com/enable: "true"
+        profefe.com/port: "6060"
+        profefe.com/service: vald-meta
     spec:
       initContainers:
-        
         - name: wait-for-redis
           image: redis:latest
           command:
             - /bin/sh
+            - -e
             - -c
-            - >
-              set -x;
-              until [ "$(redis-cli -h redis.default.svc.cluster.local -a ${REDIS_PASSWORD} ping)" = "PONG" ]; do
-                echo "waiting for redis.default.svc.cluster.local to be ready..."
-                sleep 2;
+            - |
+              hosts="redis.default.svc.cluster.local"
+              options="-a ${REDIS_PASSWORD}"
+              for host in $hosts; do
+                until [ "$(redis-cli -h $host $options ping)" = "PONG" ]; do
+                  echo "waiting for $host to be ready..."
+                  sleep 2;
+                done
               done
           env:
             - name: REDIS_PASSWORD
@@ -93,11 +98,19 @@ spec:
             - name: grpc
               protocol: TCP
               containerPort: 8081
+            - name: pprof
+              protocol: TCP
+              containerPort: 6060
+            - name: prometheus
+              protocol: TCP
+              containerPort: 6061
           resources:
             limits:
-              cpu: 500m
+              cpu: 300m
+              memory: 100Mi
             requests:
-              cpu: 200m
+              cpu: 100m
+              memory: 30Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           env:

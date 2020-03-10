@@ -24,6 +24,8 @@ kubernetes 1.12~
 
 ## Installation
 
+### Using Helm
+
 ```shell
 helm repo add vald https://vald.vdaas.org/charts
 helm install --generate-name vald/vald
@@ -31,12 +33,23 @@ helm install --generate-name vald/vald
 
 If you use the default values.yaml, the `nightly` images will be installed.
 
-### Docker image tagging policy
+#### Docker image tagging policy
 
 - `nightly` ... latest build of master branch
 - `vX.X.X` ... released versions
 - `latest` ... latest build of release versions
 - `stable` ... latest long-term supported version
+
+### Using Helm-operator
+
+```shell
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/serviceaccount.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/clusterrole.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/clusterrolebinding.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/operator.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/cr.yaml
+```
 
 ## Example
 
@@ -136,6 +149,12 @@ vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas
     <td></td>
     <td><a href="https://hub.docker.com/r/vdaas/vald-manager-index">vdaas/vald-manager-index</a></td>
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20manager-index/badge.svg"></td>
+  </tr>
+  <tr>
+    <td>helm-operator</td>
+    <td></td>
+    <td><a href="https://hub.docker.com/r/vdaas/vald-helm-operator">vdaas/vald-helm-operator</a></td>
+    <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20helm-operator/badge.svg"></td>
   </tr>
 </table>
 

@@ -4,12 +4,8 @@
 ## Table of Contents
 
 - [compressor/compressor.proto](#compressor/compressor.proto)
-  
-  
-  
     - [Backup](#compressor.Backup)
   
-
 - [Scalar Value Types](#scalar-value-types)
 
 

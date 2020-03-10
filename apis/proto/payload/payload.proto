@@ -143,11 +143,19 @@ message Backup {
 
 message Info {
   message Index {
-    uint32 stored = 1;
-    uint32 uncommitted = 2;
-    repeated string uuids = 3;
-    repeated string uncommitted_uuids = 4;
-    bool indexing = 5;
+    message Count {
+      uint32 stored = 1;
+      uint32 uncommitted = 2;
+      bool indexing = 3;
+    }
+    message UUID {
+      message Committed {
+        string uuid = 1;
+      }
+      message Uncommitted {
+        string uuid = 1;
+      }
+    }
   }
   message Pod {
     string app_name = 1;

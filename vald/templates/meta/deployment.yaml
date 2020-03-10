@@ -20,11 +20,16 @@ metadata:
   name: {{.Values.meta.name }}
   labels:
     app: {{ .Values.meta.name }}
+  {{- if .Values.meta.annotations }}
   annotations:
-    checksum/configmap: {{ include (print $.Template.BasePath "/meta/configmap.yaml") . | sha256sum }}
+    {{- toYaml .Values.meta.annotations | nindent 4 }}
+  {{- end }}
 spec:
   progressDeadlineSeconds: {{ .Values.meta.progressDeadlineSeconds }}
+  {{- if .Values.meta.hpa.enabled -}}
+  {{- else }}
   replicas: {{ .Values.meta.minReplicas }}
+  {{- end }}
   revisionHistoryLimit: {{ .Values.meta.revisionHistoryLimit }}
   selector:
     matchLabels:
@@ -39,15 +44,20 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.meta.name }}
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/meta/configmap.yaml") . | sha256sum }}
+        {{- if .Values.meta.podAnnotations }}
+        {{- toYaml .Values.meta.podAnnotations | nindent 8 }}
+        {{- end }}
     spec:
       {{- if .Values.meta.initContainers }}
       initContainers:
         {{- $initContainers := dict "initContainers" .Values.meta.initContainers "Values" .Values "namespace" .Release.Namespace -}}
-        {{- include "vald.initContainers" $initContainers | nindent 8 }}
+        {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Values.meta.name }}
-          image: "{{ .Values.meta.image.repository }}:{{ .Values.meta.image.tag }}"
+          image: "{{ .Values.meta.image.repository }}:{{ default .Values.defaults.image.tag .Values.meta.image.tag }}"
           imagePullPolicy: {{ .Values.meta.image.pullPolicy }}
           {{- $servers := dict "Values" .Values.meta.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}

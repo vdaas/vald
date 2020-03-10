@@ -20,11 +20,16 @@ metadata:
   name: {{ .Values.backupManager.name }}
   labels:
     app: {{ .Values.backupManager.name }}
+  {{- if .Values.backupManager.annotations }}
   annotations:
-    checksum/configmap: {{ include (print $.Template.BasePath "/manager/backup/configmap.yaml") . | sha256sum }}
+    {{- toYaml .Values.backupManager.annotations | nindent 4 }}
+  {{- end }}
 spec:
   progressDeadlineSeconds: {{ .Values.backupManager.progressDeadlineSeconds }}
+  {{- if .Values.backupManager.hpa.enabled -}}
+  {{- else }}
   replicas: {{ .Values.backupManager.minReplicas }}
+  {{- end }}
   revisionHistoryLimit: {{ .Values.backupManager.revisionHistoryLimit }}
   selector:
     matchLabels:
@@ -39,15 +44,20 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.backupManager.name }}
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/manager/backup/configmap.yaml") . | sha256sum }}
+        {{- if .Values.backupManager.podAnnotations }}
+        {{- toYaml .Values.backupManager.podAnnotations | nindent 8 }}
+        {{- end }}
     spec:
       {{- if .Values.backupManager.initContainers }}
       initContainers:
         {{- $initContainers := dict "initContainers" .Values.backupManager.initContainers "Values" .Values "namespace" .Release.Namespace -}}
-        {{- include "vald.initContainers" $initContainers | nindent 8 }}
+        {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Values.backupManager.name }}
-          image: "{{ .Values.backupManager.image.repository }}:{{ .Values.backupManager.image.tag }}"
+          image: "{{ .Values.backupManager.image.repository }}:{{ default .Values.defaults.image.tag .Values.backupManager.image.tag }}"
           imagePullPolicy: {{ .Values.backupManager.image.pullPolicy }}
           {{- $servers := dict "Values" .Values.backupManager.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
