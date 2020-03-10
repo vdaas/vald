@@ -57,17 +57,17 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
 
 If helm/hdf5 is not installed, please install helm (see below details or [here](https://helm.sh/docs/intro/install))/hdf5 (see below details or [here](https://www.hdfgroup.org/)).
 
-    <details><summary>optional installation</summary><br>
-    install helm
-    <pre>
-    curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-    </pre>
-    install hdf5
-    <pre>
-    yum install -y hdf5-devel
-    apt-get install libhdf5-serial-dev
-    brew install hdf5
-    </pre></details>
+<details><summary>optional installation</summary><br>
+install helm
+<pre>
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+</pre>
+install hdf5
+<pre>
+yum install -y hdf5-devel
+apt-get install libhdf5-serial-dev
+brew install hdf5
+</pre></details>
 
 ## Starting Vald on k8s cluster
 
