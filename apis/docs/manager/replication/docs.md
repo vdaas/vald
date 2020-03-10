@@ -4,12 +4,8 @@
 ## Table of Contents
 
 - [replication/replication_manager.proto](#replication/replication_manager.proto)
-  
-  
-  
     - [Replication](#replication_manager.Replication)
   
-
 - [Scalar Value Types](#scalar-value-types)
 
 

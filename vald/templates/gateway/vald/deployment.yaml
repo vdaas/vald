@@ -20,11 +20,16 @@ metadata:
   name: {{ .Values.gateway.name }}
   labels:
     app: {{ .Values.gateway.name }}
+  {{- if .Values.gateway.annotations }}
   annotations:
-    checksum/configmap: {{ include (print $.Template.BasePath "/gateway/vald/configmap.yaml") . | sha256sum }}
+    {{- toYaml .Values.gateway.annotations | nindent 4 }}
+  {{- end }}
 spec:
   progressDeadlineSeconds: {{ .Values.gateway.progressDeadlineSeconds }}
+  {{- if .Values.gateway.hpa.enabled -}}
+  {{- else }}
   replicas: {{ .Values.gateway.minReplicas }}
+  {{- end }}
   revisionHistoryLimit: {{ .Values.gateway.revisionHistoryLimit }}
   selector:
     matchLabels:
@@ -39,12 +44,29 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.gateway.name }}
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/gateway/vald/configmap.yaml") . | sha256sum }}
+        {{- if .Values.gateway.podAnnotations }}
+        {{- toYaml .Values.gateway.podAnnotations | nindent 8 }}
+        {{- end }}
     spec:
       {{- if .Values.gateway.initContainers }}
       initContainers:
         {{- $initContainers := dict "initContainers" .Values.gateway.initContainers "Values" .Values "namespace" .Release.Namespace -}}
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - {{ .Values.gateway.name }}
       containers:
         - name: {{ .Values.gateway.name }}
           image: "{{ .Values.gateway.image.repository }}:{{ default .Values.defaults.image.tag .Values.gateway.image.tag }}"

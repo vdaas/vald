@@ -20,11 +20,8 @@ metadata:
   name: vald-meta
   labels:
     app: vald-meta
-  annotations:
-    checksum/configmap: c58e0c97920e2a7ce5dc6c35c699c69f21dbd0dac4c91d53c07f7f7845c0ded5
 spec:
   progressDeadlineSeconds: 600
-  replicas: 2
   revisionHistoryLimit: 2
   selector:
     matchLabels:
@@ -39,6 +36,11 @@ spec:
       creationTimestamp: null
       labels:
         app: vald-meta
+      annotations:
+        checksum/configmap: 7d2d897b8133d1f38a7a674a79437e021233b67f265336273104eca47fd970b8
+        profefe.com/enable: "true"
+        profefe.com/port: "6060"
+        profefe.com/service: vald-meta
     spec:
       initContainers:
         - name: wait-for-redis
@@ -96,6 +98,9 @@ spec:
             - name: grpc
               protocol: TCP
               containerPort: 8081
+            - name: pprof
+              protocol: TCP
+              containerPort: 6060
             - name: prometheus
               protocol: TCP
               containerPort: 6061

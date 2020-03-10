@@ -4,12 +4,8 @@
 ## Table of Contents
 
 - [index/index_manager.proto](#index/index_manager.proto)
-  
-  
-  
     - [Index](#index_manager.Index)
   
-
 - [Scalar Value Types](#scalar-value-types)
 
 

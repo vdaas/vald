@@ -20,8 +20,10 @@ metadata:
   name: {{.Values.meta.name }}
   labels:
     app: {{ .Values.meta.name }}
+  {{- if .Values.meta.annotations }}
   annotations:
-    checksum/configmap: {{ include (print $.Template.BasePath "/meta/configmap.yaml") . | sha256sum }}
+    {{- toYaml .Values.meta.annotations | nindent 4 }}
+  {{- end }}
 spec:
   revisionHistoryLimit: {{ .Values.meta.revisionHistoryLimit }}
   selector:
@@ -36,6 +38,11 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.meta.name }}
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/meta/configmap.yaml") . | sha256sum }}
+        {{- if .Values.meta.podAnnotations }}
+        {{- toYaml .Values.meta.podAnnotations | nindent 8 }}
+        {{- end }}
     spec:
       {{- if .Values.meta.initContainers }}
       initContainers:

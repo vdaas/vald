@@ -4,12 +4,8 @@
 ## Table of Contents
 
 - [agent.proto](#agent.proto)
-  
-  
-  
     - [Agent](#agent.Agent)
   
-
 - [Scalar Value Types](#scalar-value-types)
 
 

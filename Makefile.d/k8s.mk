@@ -40,6 +40,7 @@ k8s/manifest/update: \
 	mv tmp-k8s/vald/templates/gateway/vald k8s/gateway/vald
 	mv tmp-k8s/vald/templates/manager/backup k8s/manager/backup
 	mv tmp-k8s/vald/templates/manager/compressor k8s/manager/compressor
+	mv tmp-k8s/vald/templates/manager/index k8s/manager/index
 	mv tmp-k8s/vald/templates/meta k8s/meta
 	mv tmp-k8s/vald/templates/jobs k8s/jobs
 	rm -rf tmp-k8s
@@ -52,6 +53,7 @@ k8s/vald/deploy: \
 	kubectl apply -f k8s/metrics/metrics-server
 	kubectl apply -f k8s/manager/backup
 	kubectl apply -f k8s/manager/compressor
+	kubectl apply -f k8s/manager/index
 	kubectl apply -f k8s/agent
 	kubectl apply -f k8s/discoverer
 	kubectl apply -f k8s/meta
@@ -65,6 +67,7 @@ k8s/vald/remove: \
 	-kubectl delete -f k8s/gateway/vald
 	-kubectl delete -f k8s/manager/backup
 	-kubectl delete -f k8s/manager/compressor
+	-kubectl delete -f k8s/manager/index
 	-kubectl delete -f k8s/meta
 	-kubectl delete -f k8s/discoverer
 	-kubectl delete -f k8s/agent
@@ -81,6 +84,7 @@ k8s/vald/deploy/cassandra: \
 	kubectl apply -f k8s/metrics/metrics-server
 	kubectl apply -f tmp-k8s/vald/templates/manager/backup
 	kubectl apply -f tmp-k8s/vald/templates/manager/compressor
+	kubectl apply -f tmp-k8s/vald/templates/manager/index
 	kubectl apply -f tmp-k8s/vald/templates/agent
 	kubectl apply -f tmp-k8s/vald/templates/discoverer
 	kubectl apply -f tmp-k8s/vald/templates/meta
@@ -98,6 +102,7 @@ k8s/vald/deploy/scylla: \
 	kubectl apply -f k8s/metrics/metrics-server
 	kubectl apply -f tmp-k8s/vald/templates/manager/backup
 	kubectl apply -f tmp-k8s/vald/templates/manager/compressor
+	kubectl apply -f tmp-k8s/vald/templates/manager/index
 	kubectl apply -f tmp-k8s/vald/templates/agent
 	kubectl apply -f tmp-k8s/vald/templates/discoverer
 	kubectl apply -f tmp-k8s/vald/templates/meta
@@ -204,6 +209,16 @@ k8s/metrics/jaeger/deploy:
 ## remove jaeger
 k8s/metrics/jaeger/remove:
 	-kubectl delete -f k8s/metrics/jaeger
+
+.PHONY: k8s/metrics/profefe/deploy
+## deploy profefe
+k8s/metrics/profefe/deploy:
+	kubectl apply -f k8s/metrics/profefe
+
+.PHONY: k8s/metrics/profefe/remove
+## remove profefe
+k8s/metrics/profefe/remove:
+	-kubectl delete -f k8s/metrics/profefe
 
 .PHONY: k8s/linkerd/deploy
 ## deploy linkerd to k8s

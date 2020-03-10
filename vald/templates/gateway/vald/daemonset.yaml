@@ -20,8 +20,10 @@ metadata:
   name: {{ .Values.gateway.name }}
   labels:
     app: {{ .Values.gateway.name }}
+  {{- if .Values.gateway.annotations }}
   annotations:
-    checksum/configmap: {{ include (print $.Template.BasePath "/gateway/vald/configmap.yaml") . | sha256sum }}
+    {{- toYaml .Values.gateway.annotations | nindent 4 }}
+  {{- end }}
 spec:
   revisionHistoryLimit: {{ .Values.gateway.revisionHistoryLimit }}
   selector:
@@ -36,6 +38,11 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.gateway.name }}
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/gateway/vald/configmap.yaml") . | sha256sum }}
+        {{- if .Values.gateway.podAnnotations }}
+        {{- toYaml .Values.gateway.podAnnotations | nindent 8 }}
+        {{- end }}
     spec:
       {{- if .Values.gateway.initContainers }}
       initContainers:

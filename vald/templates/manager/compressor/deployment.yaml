@@ -20,11 +20,16 @@ metadata:
   name: {{ .Values.compressor.name }}
   labels:
     app: {{ .Values.compressor.name }}
+  {{- if .Values.compressor.annotations }}
   annotations:
-    checksum/configmap: {{ include (print $.Template.BasePath "/manager/compressor/configmap.yaml") . | sha256sum }}
+    {{- toYaml .Values.compressor.annotations | nindent 4 }}
+  {{- end }}
 spec:
   progressDeadlineSeconds: {{ .Values.compressor.progressDeadlineSeconds }}
+  {{- if .Values.compressor.hpa.enabled -}}
+  {{- else }}
   replicas: {{ .Values.compressor.minReplicas }}
+  {{- end }}
   revisionHistoryLimit: {{ .Values.compressor.revisionHistoryLimit }}
   selector:
     matchLabels:
@@ -39,6 +44,11 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.compressor.name }}
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/manager/compressor/configmap.yaml") . | sha256sum }}
+        {{- if .Values.compressor.podAnnotations }}
+        {{- toYaml .Values.compressor.podAnnotations | nindent 8 }}
+        {{- end }}
     spec:
       {{- if .Values.compressor.initContainers }}
       initContainers:

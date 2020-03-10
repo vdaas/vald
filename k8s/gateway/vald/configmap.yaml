@@ -79,6 +79,18 @@ data:
           mode: ""
           probe_wait_time: 3s
       metrics_servers:
+        - name: pprof
+          host: 0.0.0.0
+          port: 6060
+          http:
+            handler_timeout: 5s
+            idle_timeout: 2s
+            read_header_timeout: 1s
+            read_timeout: 1s
+            shutdown_duration: 5s
+            write_timeout: 1s
+          mode: REST
+          probe_wait_time: 3s
         - name: prometheus
           host: 0.0.0.0
           port: 6061
@@ -93,22 +105,22 @@ data:
           probe_wait_time: 3s
       startup_strategy:
         - liveness
+        - pprof
         - prometheus
         - grpc
         - readiness
       full_shutdown_duration: 600s
       tls:
         enabled: false
-        cert: /path/to/cert
-        key: /path/to/key
-        ca: /path/to/ca
+        cert: "/path/to/cert"
+        key: "/path/to/key"
+        ca: "/path/to/ca"
     observability:
       enabled: true
       collector:
         duration: 5s
         metrics:
           enable_cgo: true
-          enable_cpu: true
           enable_goroutine: true
           enable_memory: true
           enable_version_info: true
@@ -119,18 +131,18 @@ data:
         enabled: true
       jaeger:
           enabled: false
-          collector_endpoint: 
-          agent_endpoint: jaeger-agent.default.svc.cluster.local:6831
-          username: 
-          password: 
-          service_name: vald-gateway
+          collector_endpoint: ""
+          agent_endpoint: "jaeger-agent.default.svc.cluster.local:6831"
+          username: ""
+          password: ""
+          service_name: "vald-gateway"
           buffer_max_count: 10
     gateway:
       agent_port: 8081
-      agent_name: vald-agent-ngt
+      agent_name: "vald-agent-ngt"
       agent_dns: vald-agent-ngt.default.svc.cluster.local
-      agent_namespace: _MY_POD_NAMESPACE_
-      node_name: 
+      agent_namespace: "_MY_POD_NAMESPACE_"
+      node_name: ""
       index_replica: 5
       discoverer:
         host: vald-discoverer.default.svc.cluster.local
@@ -139,7 +151,7 @@ data:
         discover_client:
           addrs: []
           connection_pool: 3
-          health_check_duration: 1s
+          health_check_duration: "1s"
           backoff:
             backoff_factor: 1.1
             backoff_time_limit: 5s
@@ -189,7 +201,7 @@ data:
         agent_client:
           addrs: []
           connection_pool: 3
-          health_check_duration: 1s
+          health_check_duration: "1s"
           backoff:
             backoff_factor: 1.1
             backoff_time_limit: 5s
@@ -242,7 +254,7 @@ data:
         client:
           addrs: []
           connection_pool: 3
-          health_check_duration: 1s
+          health_check_duration: "1s"
           backoff:
             backoff_factor: 1.1
             backoff_time_limit: 5s
@@ -298,7 +310,7 @@ data:
         client:
           addrs: []
           connection_pool: 3
-          health_check_duration: 1s
+          health_check_duration: "1s"
           backoff:
             backoff_factor: 1.1
             backoff_time_limit: 5s

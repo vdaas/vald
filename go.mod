@@ -57,7 +57,7 @@ require (
 	golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/plot v0.7.0
-	google.golang.org/genproto v0.0.0-20200303153909-beee998c1893
+	google.golang.org/genproto v0.0.0-20200304201815-d429ff31ee6c
 	google.golang.org/grpc v1.27.1
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.3

@@ -160,7 +160,10 @@ func (r *run) PreStart(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return r.observability.PreStart(ctx)
+	if r.observability != nil {
+		return r.observability.PreStart(ctx)
+	}
+	return nil
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {

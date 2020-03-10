@@ -33,10 +33,10 @@ data:
       {{- include "vald.observability" $observability | nindent 6 }}
     gateway:
       agent_port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.agent.server_config.servers.grpc.port }}
-      agent_name: {{ .Values.agent.name }}
+      agent_name: {{ .Values.agent.name | quote }}
       agent_dns: {{ .Values.agent.name }}.{{ .Release.Namespace }}.svc.cluster.local
-      agent_namespace: {{ .Values.gateway.gateway_config.agent_namespace }}
-      node_name: {{ .Values.gateway.gateway_config.node_name }}
+      agent_namespace: {{ .Values.gateway.gateway_config.agent_namespace | quote }}
+      node_name: {{ .Values.gateway.gateway_config.node_name | quote }}
       index_replica: {{ .Values.gateway.gateway_config.index_replica }}
       discoverer:
         host: {{ .Values.discoverer.name }}.{{ .Release.Namespace }}.svc.cluster.local

@@ -20,8 +20,10 @@ metadata:
   name: {{ .Values.agent.name }}
   labels:
     app: {{ .Values.agent.name }}
-  # annotations:
-  #   checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
+  {{- if .Values.agent.annotations }}
+  annotations:
+    {{- toYaml .Values.agent.annotations | nindent 4 }}
+  {{- end }}
 spec:
   revisionHistoryLimit: {{ .Values.agent.revisionHistoryLimit }}
   selector:
@@ -36,6 +38,12 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.agent.name }}
+      {{- if .Values.agent.podAnnotations }}
+      annotations:
+        {{- toYaml .Values.agent.podAnnotations | nindent 8 }}
+      {{- end }}
+      # annotations:
+      #   checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
     spec:
       {{- if .Values.agent.initContainers }}
       initContainers:
@@ -79,6 +87,11 @@ spec:
       {{- if .Values.agent.nodeSelector }}
       nodeSelector:
         {{- toYaml .Values.agent.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.agent.podPriority }}
+      {{- if .Values.agent.podPriority.enabled }}
+      priorityClassName: {{ .Values.agent.name }}-priority
+      {{- end }}
       {{- end }}
 status:
 {{- end }}

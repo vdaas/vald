@@ -4,12 +4,8 @@
 ## Table of Contents
 
 - [backup/backup_manager.proto](#backup/backup_manager.proto)
-  
-  
-  
     - [Backup](#backup_manager.Backup)
   
-
 - [Scalar Value Types](#scalar-value-types)
 
 
