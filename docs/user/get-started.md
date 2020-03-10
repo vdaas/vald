@@ -50,10 +50,10 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
 
 ### Requirements
 
-- k8s: 
-- go: 
-- helm: 
-- hdf5: 
+- k8s:  v1.17 ~
+- go:   v1.14 ~
+- helm: v3 ~
+- hdf5 
 
 If helm/hdf5 is not installed, please install helm (see below details or [here](https://helm.sh/docs/intro/install))/hdf5 (see below details or [here](https://www.hdfgroup.org/)).
 

@@ -26,7 +26,7 @@ If you'd like to try Vald, please check <a href="#Get-Started">get started</a> o
 
 ## Requirement
 
-kubernetes 1.12~
+kubernetes 1.17~
 
 ## Get Started
 
