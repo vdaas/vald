@@ -190,8 +190,13 @@ update/yaml:
 ## install dependencies
 deps: \
 	proto/deps \
+	goimports/install \
 	prettier/install
 	go mod tidy
+
+.PHONY: goimports/install
+goimports/install:
+	go get -u golang.org/x/tools/cmd/goimports
 
 .PHONY: prettier/install
 prettier/install:
