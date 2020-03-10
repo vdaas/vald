@@ -53,7 +53,9 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
 - k8s:  v1.17 ~
 - go:   v1.14 ~
 - helm: v3 ~
-- hdf5 
+- libhdf5[^footnote]
+
+[^footnote]: `libhdf5` is only required doing Get-Started, is not required Vald.
 
 If helm/hdf5 is not installed, please install helm (see below details or [here](https://helm.sh/docs/intro/install))/hdf5 (see below details or [here](https://www.hdfgroup.org/)).
 
