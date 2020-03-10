@@ -57,17 +57,17 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
 
 If helm/hdf5 is not installed, please install helm (see below details or [here](https://helm.sh/docs/intro/install))/hdf5 (see below details or [here](https://www.hdfgroup.org/)).
 
-<details><summary>optional installation</summary><br>
-install helm
-<pre>
-curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-</pre>
-install hdf5
-<pre>
-yum install -y hdf5-devel
-apt-get install libhdf5-serial-dev
-brew install hdf5
-</pre></details>
+    <details><summary>optional installation</summary><br>
+    install helm
+    <pre>
+    curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+    </pre>
+    install hdf5
+    <pre>
+    yum install -y hdf5-devel
+    apt-get install libhdf5-serial-dev
+    brew install hdf5
+    </pre></details>
 
 ## Starting Vald on k8s cluster
 
@@ -112,35 +112,35 @@ If you want to learn about Scylla, please refer to [the official website](https:
     kubectl get pods
     ```
 
-<details><summary>output example</summary><br>
-If the deployment is successful, you can check the following information.
-<pre>
-    NAME                                       READY   STATUS    RESTARTS   AGE
-    scylla-0                                   1/1     Running   0          13m
-    scylla-1                                   1/1     Running   0          12m
-    scylla-2                                   1/1     Running   0          10m
-    vald-agent-ngt-0                           1/1     Running   0          5m49s
-    vald-agent-ngt-1                           1/1     Running   0          5m49s
-    vald-agent-ngt-2                           1/1     Running   0          5m49s
-    vald-agent-ngt-3                           1/1     Running   0          5m49s
-    vald-agent-ngt-4                           1/1     Runnnig   0          5m49s
-    vald-discoverer-97c88678b-wj6xn            1/1     Running   0          5m49s
-    vald-gateway-5bf95f8d97-2v76g              1/1     Running   0          5m49s
-    vald-gateway-5bf95f8d97-5wtb2              1/1     Running   0          78s
-    vald-gateway-5bf95f8d97-7d6j7              1/1     Running   0          78s
-    vald-gateway-5bf95f8d97-gx45c              1/1     Running   0          5m49s
-    vald-gateway-5bf95f8d97-kx2c5              1/1     Running   0          78s
-    vald-gateway-5bf95f8d97-np2lc              1/1     Running   0          5m49s
-    vald-manager-backup-6c9695b69b-9xngp       1/1     Running   0          5m49s
-    vald-manager-backup-6c9695b69b-jvwft       1/1     Running   0          5m49s
-    vald-manager-backup-6c9695b69b-mjs2r       1/1     Running   0          5m49s
-    vald-manager-compressor-6c95bdbfb5-m5t7t   1/1     Running   0          5m49s
-    vald-manager-compressor-6c95bdbfb5-q8hc6   1/1     Running   0          5m49s
-    vald-manager-compressor-6c95bdbfb5-zp8hb   1/1     Running   0          5m49s
-    vald-manager-index-59676f54bb-nzfwt        1/1     Running   0          5m49s
-    vald-meta-559744db-bcrdw                   1/1     Running   0          5m49s
-    vald-meta-559744db-hz7gd                   1/1     Running   0          5m49s
-</pre></details>
+    <details><summary>output example</summary><br>
+    If the deployment is successful, you can check the following information.
+    <pre>
+        NAME                                       READY   STATUS    RESTARTS   AGE
+        scylla-0                                   1/1     Running   0          13m
+        scylla-1                                   1/1     Running   0          12m
+        scylla-2                                   1/1     Running   0          10m
+        vald-agent-ngt-0                           1/1     Running   0          5m49s
+        vald-agent-ngt-1                           1/1     Running   0          5m49s
+        vald-agent-ngt-2                           1/1     Running   0          5m49s
+        vald-agent-ngt-3                           1/1     Running   0          5m49s
+        vald-agent-ngt-4                           1/1     Runnnig   0          5m49s
+        vald-discoverer-97c88678b-wj6xn            1/1     Running   0          5m49s
+        vald-gateway-5bf95f8d97-2v76g              1/1     Running   0          5m49s
+        vald-gateway-5bf95f8d97-5wtb2              1/1     Running   0          78s
+        vald-gateway-5bf95f8d97-7d6j7              1/1     Running   0          78s
+        vald-gateway-5bf95f8d97-gx45c              1/1     Running   0          5m49s
+        vald-gateway-5bf95f8d97-kx2c5              1/1     Running   0          78s
+        vald-gateway-5bf95f8d97-np2lc              1/1     Running   0          5m49s
+        vald-manager-backup-6c9695b69b-9xngp       1/1     Running   0          5m49s
+        vald-manager-backup-6c9695b69b-jvwft       1/1     Running   0          5m49s
+        vald-manager-backup-6c9695b69b-mjs2r       1/1     Running   0          5m49s
+        vald-manager-compressor-6c95bdbfb5-m5t7t   1/1     Running   0          5m49s
+        vald-manager-compressor-6c95bdbfb5-q8hc6   1/1     Running   0          5m49s
+        vald-manager-compressor-6c95bdbfb5-zp8hb   1/1     Running   0          5m49s
+        vald-manager-index-59676f54bb-nzfwt        1/1     Running   0          5m49s
+        vald-meta-559744db-bcrdw                   1/1     Running   0          5m49s
+        vald-meta-559744db-hz7gd                   1/1     Running   0          5m49s
+    </pre></details>
 
 ### Run
 
