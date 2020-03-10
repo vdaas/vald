@@ -172,7 +172,50 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
     We use `example/client/main.go` for running example.
     This will execute 4 steps.
     1. init
+    - Import packages
+    <details><summary>example code</summary><br><pre>
+    package main
+
+    import (
+    	"context"
+    	"encoding/json"
+        "flag"
+        "time"
+
+    	"github.com/kpango/fuid"
+        "github.com/kpango/glg"
+        "github.com/vdaas/vald-client-go/gateway/vald"
+        "github.com/vdaas/vald-client-go/payload"
+
+    	"gonum.org/v1/hdf5"
+        "google.golang.org/grpc"
+    )
+    </pre></details>
+    - Set variables
+        - The constant number of training datasets and test datasets.
+        <details><summary>example code</summary><br><pre>
+        const (
+            insertCount = 400
+            testCount = 20
+        )
+        </pre></details>
+        - The variables for configuration.
+        <details><summary>example code</summary><br><pre>
+        const (
+            datasetPath         string
+            grpcServerAddr      string
+            indexingWaitSeconds uint
+        )
+        </pre></details>
     - Recognition paremters.
+    <details><summary>example code</summary><br><pre>
+    func init() {
+	    flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
+	    flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "set gRPC server address")
+	    flag.UintVar(&indexingWaitSeconds, "wait", 60, "set indexing wait seconds")
+	    flag.Parse()
+    }
+    </pre></details>
     2. load
     - Loading from fashion-mnist dataset and set id for each vector that is loaded. This step will return the training dataset, test dataset, and ids list of ids when loading is completed with success.
     3. insert
@@ -186,50 +229,6 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
     ```
 
 <details><summary>A brief of description about <code>main.go</code></summary><br>
-
-- Import packages. In this case, we use `vald-client-go` as client for running an example. 
-<pre>
-package main
-
-import (
-	"context"
-	"encoding/json"
-	"flag"
-	"time"
-
-	"github.com/kpango/fuid"
-	"github.com/kpango/glg"
-	"github.com/vdaas/vald-client-go/gateway/vald"
-	"github.com/vdaas/vald-client-go/payload"
-
-	"gonum.org/v1/hdf5"
-	"google.golang.org/grpc"
-)
-</pre>
-- The constant number of training datasets and test datasets.
-<pre>
-const (
-	insertCont = 400
-	testCount  = 20
-)
-</pre>
-- Variable for configuration values.
-<pre>
-var (
-	datasetPath         string
-	grpcServerAddr      string
-	indexingWaitSeconds uint
-)
-</pre>
-- Initialize (Register) value of path, addr, and wait for running Vald.
-<pre>
-func init() {
-	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
-	flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "set gRPC server address")
-	flag.UintVar(&indexingWaitSeconds, "wait", 60, "set indexing wait seconds")
-	flag.Parse()
-}
-</pre>
 - Running `func main()`
 <pre>
 func main() {
