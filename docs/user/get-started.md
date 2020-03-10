@@ -169,7 +169,7 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
     Vald provides clients that support multiple langurages such as Java, Node.js, Python and so on.<br>
     In this case, we use [vald-client-go](https://github.com/vdaas/vald-client-go) which is written by golang.
 
-    We use `example/client/main.go` for running example.
+    We use [`example/client/main.go`](../../example/client/main.go) for running example.
     This will execute 4 steps.
     1. init
     - Import packages
