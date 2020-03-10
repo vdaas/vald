@@ -6,6 +6,8 @@ jobs:
   label:
     name: Add labels
     runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
     steps:
       - name: check PR Comments
         id: check_comments_label
@@ -18,7 +20,6 @@ jobs:
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
-          sudo wget -O /usr/local/bin/yq -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod a+x /usr/local/bin/yq
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
           roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
           if [ "$roles" = "" ]; then
@@ -54,6 +55,8 @@ jobs:
   rebase:
     name: Rebase
     runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
     steps:
       - name: check PR Comments
         id: check_comments_rebase
@@ -66,7 +69,6 @@ jobs:
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
-          sudo wget -O /usr/local/bin/yq -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod a+x /usr/local/bin/yq
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
           roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
           if [ "$roles" = "" ]; then
@@ -124,6 +126,8 @@ jobs:
     needs:
       - rebase
     runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
     steps:
       - name: check PR Comments
         id: check_comments_add_contributors
@@ -136,7 +140,6 @@ jobs:
         if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
-          sudo wget -O /usr/local/bin/yq -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod a+x /usr/local/bin/yq
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
           roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
           if [ "$roles" = "" ]; then
@@ -230,6 +233,8 @@ jobs:
       - rebase
       - add-contributors
     runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
     steps:
       - name: check PR Comments
         id: check_comments_format
@@ -242,7 +247,6 @@ jobs:
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
-          sudo wget -O /usr/local/bin/yq -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod a+x /usr/local/bin/yq
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
           roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
           if [ "$roles" = "" ]; then
@@ -292,15 +296,12 @@ jobs:
 
           git checkout ${HEAD_BRANCH}
 
-          echo "Update license headers and format go codes"
+          echo "Update license headers and format go codes/yaml/Dockerfile"
 
-          pushd /tmp
-          go get -u golang.org/x/tools/cmd/goimports
-          popd
-          export PATH=$(go env GOPATH)/bin:$PATH
-
-          make license
           make update/goimports
+          make format/yaml
+          make format/docker
+          make license
 
           if git diff --quiet --exit-code; then
             echo "Nothing updated"
@@ -340,6 +341,8 @@ jobs:
       - add-contributors
       - format
     runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
     steps:
       - name: check PR Comments
         id: check_comments_approve
@@ -352,7 +355,6 @@ jobs:
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
-          sudo wget -O /usr/local/bin/yq -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod a+x /usr/local/bin/yq
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
           roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
           if [ "$roles" = "" ]; then
