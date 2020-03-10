@@ -170,18 +170,32 @@ update: \
 ## format go codes
 format: \
 	license \
-	update/goimports
+	update/goimports \
+	update/yaml
 
 .PHONY: update/goimports
 ## run goimports for all go files
 update/goimports:
 	find ./ -type f -regex ".*\.go" | xargs goimports -w
 
+.PHONY: update/yaml
+update/yaml:
+	prettier --write \
+	    ".github/**/*.yaml" \
+	    "cmd/**/*.yaml" \
+	    "hack/**/*.yaml" \
+	    "k8s/**/*.yaml"
+
 .PHONY: deps
 ## install dependencies
 deps: \
-	proto/deps
+	proto/deps \
+	prettier/install
 	go mod tidy
+
+.PHONY: prettier/install
+prettier/install:
+	npm install -g prettier
 
 .PHONY: version/go
 ## print go version
