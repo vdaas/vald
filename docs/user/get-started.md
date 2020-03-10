@@ -289,6 +289,7 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
     - Seach 10 neighbor vectors fot each 20 test datasets and return list of neighbor vector.
     - When getting approximate vectors, the Vald client sends search config and vector to the server via gRPC.
         <details><summary>example code</summary><br>
+
         ```go
         glg.Infof("Start search %d times", testCount)
         for i, vec := range test[:testCount] {
