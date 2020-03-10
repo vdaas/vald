@@ -296,11 +296,12 @@ jobs:
 
           git checkout ${HEAD_BRANCH}
 
-          echo "Update license headers and format go codes"
+          echo "Update license headers and format go codes/yaml/Dockerfile"
 
-          make license
           make update/goimports
-          make update/yaml
+          make format/yaml
+          make format/docker
+          make license
 
           if git diff --quiet --exit-code; then
             echo "Nothing updated"

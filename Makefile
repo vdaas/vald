@@ -171,27 +171,36 @@ update: \
 format: \
 	license \
 	update/goimports \
-	update/yaml
+	format/yaml \
+	format/docker
 
 .PHONY: update/goimports
 ## run goimports for all go files
 update/goimports:
 	find ./ -type f -regex ".*\.go" | xargs goimports -w
 
-.PHONY: update/yaml
-update/yaml:
+.PHONY: format/yaml
+format/yaml:
 	prettier --write \
 	    ".github/**/*.yaml" \
 	    "cmd/**/*.yaml" \
 	    "hack/**/*.yaml" \
 	    "k8s/**/*.yaml"
 
+.PHONY: format/docker
+format/docker:
+	dockfmt fmt -w \
+	    dockers/*/Dockerfile \
+	    dockers/*/*/Dockerfile \
+	    dockers/*/*/*/Dockerfile
+
 .PHONY: deps
 ## install dependencies
 deps: \
 	proto/deps \
 	goimports/install \
-	prettier/install
+	prettier/install \
+	dockfmt/install
 	go mod tidy
 
 .PHONY: goimports/install
@@ -201,6 +210,10 @@ goimports/install:
 .PHONY: prettier/install
 prettier/install:
 	npm install -g prettier
+
+.PHONY: dockfmt/install
+dockfmt/install:
+	go get -u github.com/jessfraz/dockfmt
 
 .PHONY: version/go
 ## print go version

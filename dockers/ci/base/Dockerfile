@@ -16,6 +16,8 @@
 
 FROM vdaas/vald-base:latest AS builder
 ARG PROTOBUF_VERSION=3.11.4
+ARG GOLANGCI_LINT_VERSION=v1.23.6
+ARG REVIEWDOG_VERSION=v0.9.17
 
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 
@@ -55,9 +57,9 @@ RUN curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s 
     && chmod a+x /usr/local/bin/kubectl
 
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v1.23.6
+    | sh -s -- -b $(go env GOPATH)/bin ${GOLANGCI_LINT_VERSION}
 RUN curl -sSfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v0.9.17
+    | sh -s -- -b $(go env GOPATH)/bin ${REVIEWDOG_VERSION}
 
 RUN curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
     && chmod a+x /usr/local/bin/yq
