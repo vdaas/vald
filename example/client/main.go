@@ -17,7 +17,7 @@ import (
 
 const (
 	insertCount = 400
-	testCount  = 20
+	testCount   = 20
 )
 
 var (
