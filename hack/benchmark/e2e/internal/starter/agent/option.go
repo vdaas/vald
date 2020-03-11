@@ -54,6 +54,9 @@ var (
 					Enabled: false,
 				},
 			},
+			Observability: &iconfig.Observability{
+				Enabled: false,
+			},
 			NGT: &iconfig.NGT{
 				Dimension:          0,
 				DistanceType:       "unknown",
