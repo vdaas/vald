@@ -76,7 +76,7 @@ func (c *agentClient) StreamSearch(ctx context.Context, dataProvider func() *cli
 			return nil, err
 		}
 
-		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency,
+		return nil, igrpc.BidirectionalStreamClient(st,
 			func() interface{} {
 				if d := dataProvider(); d != nil {
 					return d
@@ -100,7 +100,7 @@ func (c *agentClient) StreamSearchByID(ctx context.Context, dataProvider func() 
 			return nil, err
 		}
 
-		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency,
+		return nil, igrpc.BidirectionalStreamClient(st,
 			func() interface{} {
 				if d := dataProvider(); d != nil {
 					return d
@@ -131,16 +131,17 @@ func (c *agentClient) StreamInsert(ctx context.Context, dataProvider func() *cli
 			return nil, err
 		}
 
-		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-			if d := dataProvider(); d != nil {
-				return d
-			}
-			return nil
-		}, func() interface{} {
-			return new(client.Empty)
-		}, func(_ interface{}, err error) {
-			f(err)
-		})
+		return nil, igrpc.BidirectionalStreamClient(st,
+			func() interface{} {
+				if d := dataProvider(); d != nil {
+					return d
+				}
+				return nil
+			}, func() interface{} {
+				return new(client.Empty)
+			}, func(_ interface{}, err error) {
+				f(err)
+			})
 	})
 	return err
 }
@@ -168,16 +169,17 @@ func (c *agentClient) StreamUpdate(ctx context.Context, dataProvider func() *cli
 			return nil, err
 		}
 
-		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-			if d := dataProvider(); d != nil {
-				return d
-			}
-			return nil
-		}, func() interface{} {
-			return new(client.Empty)
-		}, func(_ interface{}, err error) {
-			f(err)
-		})
+		return nil, igrpc.BidirectionalStreamClient(st,
+			func() interface{} {
+				if d := dataProvider(); d != nil {
+					return d
+				}
+				return nil
+			}, func() interface{} {
+				return new(client.Empty)
+			}, func(_ interface{}, err error) {
+				f(err)
+			})
 	})
 	return err
 }
@@ -203,16 +205,17 @@ func (c *agentClient) StreamRemove(ctx context.Context, dataProvider func() *cli
 			return nil, err
 		}
 
-		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-			if d := dataProvider(); d != nil {
-				return d
-			}
-			return nil
-		}, func() interface{} {
-			return new(client.Empty)
-		}, func(_ interface{}, err error) {
-			f(err)
-		})
+		return nil, igrpc.BidirectionalStreamClient(st,
+			func() interface{} {
+				if d := dataProvider(); d != nil {
+					return d
+				}
+				return nil
+			}, func() interface{} {
+				return new(client.Empty)
+			}, func(_ interface{}, err error) {
+				f(err)
+			})
 	})
 	return err
 }
@@ -243,16 +246,17 @@ func (c *agentClient) StreamGetObject(ctx context.Context, dataProvider func() *
 			return nil, err
 		}
 
-		return nil, igrpc.BidirectionalStreamClient(st, c.streamConcurrency, func() interface{} {
-			if d := dataProvider(); d != nil {
-				return d
-			}
-			return nil
-		}, func() interface{} {
-			return new(client.ObjectVector)
-		}, func(res interface{}, err error) {
-			f(res.(*client.ObjectVector), err)
-		})
+		return nil, igrpc.BidirectionalStreamClient(st,
+			func() interface{} {
+				if d := dataProvider(); d != nil {
+					return d
+				}
+				return nil
+			}, func() interface{} {
+				return new(client.ObjectVector)
+			}, func(res interface{}, err error) {
+				f(res.(*client.ObjectVector), err)
+			})
 	})
 	return err
 }

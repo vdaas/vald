@@ -72,7 +72,6 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 }
 
 func BidirectionalStreamClient(stream grpc.ClientStream,
-	concurrency int,
 	dataProvider func() interface{},
 	newData func() interface{},
 	f func(interface{}, error)) (err error) {

@@ -87,7 +87,7 @@ func (c *ngtdClient) StreamSearch(ctx context.Context, dataProvider func() *clie
 			return nil, err
 		}
 
-		return nil, grpc.BidirectionalStreamClient(st, c.streamConcurrency,
+		return nil, grpc.BidirectionalStreamClient(st,
 			func() interface{} {
 				if d := dataProvider(); d != nil {
 					return searchRequestToNgtdSearchRequest(d)
@@ -120,7 +120,7 @@ func (c *ngtdClient) StreamSearchByID(ctx context.Context, dataProvider func() *
 			return nil, err
 		}
 
-		return nil, grpc.BidirectionalStreamClient(st, c.streamConcurrency,
+		return nil, grpc.BidirectionalStreamClient(st,
 			func() interface{} {
 				if d := dataProvider(); d != nil {
 					return searchIDRequestToNgtdSearchRequest(d)
@@ -168,7 +168,7 @@ func (c *ngtdClient) StreamInsert(ctx context.Context, dataProvider func() *clie
 			return nil, err
 		}
 
-		return nil, grpc.BidirectionalStreamClient(st, c.streamConcurrency,
+		return nil, grpc.BidirectionalStreamClient(st,
 			func() interface{} {
 				if d := dataProvider(); d != nil {
 					return objectVectorToNGTDInsertRequest(d)
@@ -232,7 +232,7 @@ func (c *ngtdClient) StreamRemove(ctx context.Context, dataProvider func() *clie
 			return nil, err
 		}
 
-		return nil, grpc.BidirectionalStreamClient(st, c.streamConcurrency,
+		return nil, grpc.BidirectionalStreamClient(st,
 			func() interface{} {
 				if d := dataProvider(); d != nil {
 					return objectIDToNGTDRemoveRequest(d)
@@ -287,7 +287,7 @@ func (c *ngtdClient) StreamGetObject(ctx context.Context, dataProvider func() *c
 			return nil, err
 		}
 
-		return nil, grpc.BidirectionalStreamClient(st, c.streamConcurrency,
+		return nil, grpc.BidirectionalStreamClient(st,
 			func() interface{} {
 				if d := dataProvider(); d != nil {
 					return objectIDToNGTDGetObjectRequest(d)
