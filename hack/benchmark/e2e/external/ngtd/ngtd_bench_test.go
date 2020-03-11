@@ -52,7 +52,7 @@ func init() {
 	targets = strings.Split(strings.TrimSpace(dataset), ",")
 }
 
-func Benchmark_NGTD_REST_Sequential(b *testing.B) {
+func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 	ctx := context.Background()
 
 	client, err := rest.New(ctx)
@@ -84,7 +84,7 @@ func Benchmark_NGTD_REST_Sequential(b *testing.B) {
 	}
 }
 
-func Benchmark_NGTD_gRPC_Sequential(b *testing.B) {
+func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 	ctx := context.Background()
 
 	client, err := grpc.New(ctx)
@@ -117,7 +117,7 @@ func Benchmark_NGTD_gRPC_Sequential(b *testing.B) {
 	}
 }
 
-func Benchmark_NGTD_gRPC_Stream(b *testing.B) {
+func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 	ctx := context.Background()
 
 	client, err := grpc.New(ctx)
