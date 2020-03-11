@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/hack/benchmark/e2e/internal/starter"
+	"github.com/vdaas/vald/hack/benchmark/internal/starter"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/pkg/agent/ngt/config"

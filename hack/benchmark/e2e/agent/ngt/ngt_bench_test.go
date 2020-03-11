@@ -22,10 +22,10 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/payload"
-	"github.com/vdaas/vald/hack/benchmark/e2e/internal/starter/agent"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
+	"github.com/vdaas/vald/hack/benchmark/internal/starter/agent"
 	"github.com/vdaas/vald/internal/client/agent/grpc"
 	"github.com/vdaas/vald/internal/client/agent/rest"
 	"github.com/vdaas/vald/internal/log"

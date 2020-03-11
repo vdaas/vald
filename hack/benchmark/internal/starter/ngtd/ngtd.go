@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/hack/benchmark/e2e/internal/starter"
+	"github.com/vdaas/vald/hack/benchmark/internal/starter"
 	"github.com/yahoojapan/gongt"
 	"github.com/yahoojapan/ngtd"
 	"github.com/yahoojapan/ngtd/kvs"

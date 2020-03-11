@@ -7,6 +7,7 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
+
 	proto "github.com/yahoojapan/ngtd/proto"
 )
 

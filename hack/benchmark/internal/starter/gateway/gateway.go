@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/vdaas/vald/hack/benchmark/e2e/internal/starter"
+	"github.com/vdaas/vald/hack/benchmark/internal/starter"
 	"github.com/vdaas/vald/pkg/gateway/vald/config"
 	"github.com/vdaas/vald/pkg/gateway/vald/usecase"
 )
