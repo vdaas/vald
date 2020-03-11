@@ -4,12 +4,8 @@
 ## Table of Contents
 
 - [meta.proto](#meta.proto)
-  
-  
-  
     - [Meta](#meta_manager.Meta)
   
-
 - [Scalar Value Types](#scalar-value-types)
 
 

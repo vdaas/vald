@@ -425,13 +425,15 @@ func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.I
 	ns := nodes.Nodes
 	for name, n := range nbn {
 		req.Node = name
-		n.Pods.Pods = nil
-		ps, err := d.GetPods(req)
-		if err == nil {
-			for i := range ps.Pods {
-				ps.Pods[i].Node = nil
+		if n.Pods != nil {
+			n.Pods.Pods = nil
+			ps, err := d.GetPods(req)
+			if err == nil && ps != nil {
+				for i := range ps.Pods {
+					ps.Pods[i].Node = nil
+				}
+				n.Pods = ps
 			}
-			n.Pods = ps
 		}
 		ns = append(ns, n)
 	}

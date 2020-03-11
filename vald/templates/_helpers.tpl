@@ -45,6 +45,35 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
 {{/*
+joinListWithSpace
+*/}}
+{{- define "vald.utils.joinListWithSpace" -}}
+{{- $local := dict "first" true -}}
+{{- range $k, $v := . -}}{{- if not $local.first -}}{{- " " -}}{{- end -}}{{- $v -}}{{- $_ := set $local "first" false -}}{{- end -}}
+{{- end -}}
+
+{{/*
+joinListWithComma
+*/}}
+{{- define "vald.utils.joinListWithComma" -}}
+{{- $local := dict "first" true -}}
+{{- range $k, $v := . -}}{{- if not $local.first -}},{{- end -}}{{- $v -}}{{- $_ := set $local "first" false -}}{{- end -}}
+{{- end -}}
+
+{{/*
+logging settings
+*/}}
+{{- define "vald.logging"}}
+{{- if .Values -}}
+logger: {{ default .default.logger .Values.logger | quote }}
+level: {{ default .default.level .Values.level | quote }}
+format: {{ default .default.format .Values.format | quote }}
+{{- else }}
+{{- toYaml .default }}
+{{- end }}
+{{- end -}}
+
+{{/*
 Container ports
 */}}
 {{- define "vald.containerPorts" -}}
@@ -119,6 +148,12 @@ ports:
     protocol: TCP
     containerPort: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
   {{- end }}
+  {{- $prometheusEnabled := default .default.metrics.prometheus.enabled .Values.metrics.prometheus.enabled }}
+  {{- if $prometheusEnabled }}
+  - name: prometheus
+    protocol: TCP
+    containerPort: {{ default .default.metrics.prometheus.port .Values.metrics.prometheus.port }}
+  {{- end }}
 {{- end -}}
 
 {/*
@@ -152,6 +187,13 @@ ports:
   - name: pprof
     port: {{ default .default.metrics.pprof.servicePort .Values.metrics.pprof.servicePort }}
     targetPort: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
+    protocol: TCP
+  {{- end }}
+  {{- $prometheusEnabled := default .default.metrics.prometheus.enabled .Values.metrics.prometheus.enabled }}
+  {{- if $prometheusEnabled }}
+  - name: prometheus
+    port: {{ default .default.metrics.prometheus.servicePort .Values.metrics.prometheus.servicePort }}
+    targetPort: {{ default .default.metrics.prometheus.port .Values.metrics.prometheus.port }}
     protocol: TCP
   {{- end }}
 {{- end -}}
@@ -191,7 +233,7 @@ servers:
     port: {{ default .default.servers.grpc.port .Values.servers.grpc.port }}
     {{- if .Values.servers.grpc.server }}
     mode: {{ default .default.servers.grpc.server.mode .Values.servers.grpc.server.mode }}
-    probe_wait_time: {{ default .default.servers.grpc.server.probe_wait_time .Values.servers.grpc.server.probe_wait_time }}
+    probe_wait_time: {{ default .default.servers.grpc.server.probe_wait_time .Values.servers.grpc.server.probe_wait_time | quote }}
     grpc:
       {{- if .Values.servers.grpc.server.grpc }}
       max_receive_message_size: {{ default .default.servers.grpc.server.grpc.max_receive_message_size .Values.servers.grpc.server.grpc.max_receive_message_size }}
@@ -200,17 +242,17 @@ servers:
       initial_conn_window_size: {{ default .default.servers.grpc.server.grpc.initial_conn_window_size .Values.servers.grpc.server.grpc.initial_conn_window_size }}
       keepalive:
         {{- if .Values.servers.grpc.server.grpc.keepalive }}
-        max_conn_idle: {{ default .default.servers.grpc.server.grpc.keepalive.max_conn_idle .Values.servers.grpc.server.grpc.keepalive.max_conn_idle }}
-        max_conn_age: {{ default .default.servers.grpc.server.grpc.keepalive.max_conn_age .Values.servers.grpc.server.grpc.keepalive.max_conn_age }}
-        max_conn_age_grace: {{ default .default.servers.grpc.server.grpc.keepalive.max_conn_age_grace .Values.servers.grpc.server.grpc.keepalive.max_conn_age_grace }}
-        time: {{ default .default.servers.grpc.server.grpc.keepalive.time .Values.servers.grpc.server.grpc.keepalive.time }}
-        timeout: {{ default .default.servers.grpc.server.grpc.keepalive.timeout .Values.servers.grpc.server.grpc.keepalive.timeout }}
+        max_conn_idle: {{ default .default.servers.grpc.server.grpc.keepalive.max_conn_idle .Values.servers.grpc.server.grpc.keepalive.max_conn_idle | quote }}
+        max_conn_age: {{ default .default.servers.grpc.server.grpc.keepalive.max_conn_age .Values.servers.grpc.server.grpc.keepalive.max_conn_age | quote }}
+        max_conn_age_grace: {{ default .default.servers.grpc.server.grpc.keepalive.max_conn_age_grace .Values.servers.grpc.server.grpc.keepalive.max_conn_age_grace | quote }}
+        time: {{ default .default.servers.grpc.server.grpc.keepalive.time .Values.servers.grpc.server.grpc.keepalive.time | quote }}
+        timeout: {{ default .default.servers.grpc.server.grpc.keepalive.timeout .Values.servers.grpc.server.grpc.keepalive.timeout | quote }}
         {{- else }}
         {{- toYaml .default.servers.grpc.server.grpc.keepalive | nindent 8 }}
         {{- end }}
       write_buffer_size: {{ default .default.servers.grpc.server.grpc.write_buffer_size .Values.servers.grpc.server.grpc.write_buffer_size }}
       read_buffer_size: {{ default .default.servers.grpc.server.grpc.read_buffer_size .Values.servers.grpc.server.grpc.read_buffer_size }}
-      connection_timeout: {{ default .default.servers.grpc.server.grpc.connection_timeout .Values.servers.grpc.server.grpc.connection_timeout }}
+      connection_timeout: {{ default .default.servers.grpc.server.grpc.connection_timeout .Values.servers.grpc.server.grpc.connection_timeout | quote }}
       max_header_list_size: {{ default .default.servers.grpc.server.grpc.max_header_list_size .Values.servers.grpc.server.grpc.max_header_list_size }}
       header_table_size: {{ default .default.servers.grpc.server.grpc.header_table_size .Values.servers.grpc.server.grpc.header_table_size }}
       interceptors: {{ default .default.servers.grpc.server.grpc.interceptors .Values.servers.grpc.server.grpc.interceptors }}
@@ -229,16 +271,16 @@ health_check_servers:
     host: {{ default .default.healths.liveness.host .Values.healths.liveness.host }}
     port: {{ default .default.healths.liveness.port .Values.healths.liveness.port }}
     {{- if .Values.healths.liveness.server }}
-    mode: {{ default .default.healths.liveness.server.mode .Values.healths.liveness.server.mode }}
-    probe_wait_time: {{ default .default.healths.liveness.server.probe_wait_time .Values.healths.liveness.server.probe_wait_time }}
+    mode: {{ default .default.healths.liveness.server.mode .Values.healths.liveness.server.mode | quote }}
+    probe_wait_time: {{ default .default.healths.liveness.server.probe_wait_time .Values.healths.liveness.server.probe_wait_time | quote }}
     http:
       {{- if .Values.healths.liveness.server.http }}
-      shutdown_duration: {{ default .default.healths.liveness.server.http.shutdown_duration .Values.healths.liveness.server.http.shutdown_duration }}
-      handler_timeout: {{ default .default.healths.liveness.server.http.handler_timeout .Values.healths.liveness.server.http.handler_timeout }}
-      idle_timeout: {{ default .default.healths.liveness.server.http.idle_timeout .Values.healths.liveness.server.http.idle_timeout }}
-      read_header_timeout: {{ default .default.healths.liveness.server.http.read_header_timeout .Values.healths.liveness.server.http.read_header_timeout }}
-      read_timeout: {{ default .default.healths.liveness.server.http.read_timeout .Values.healths.liveness.server.http.read_timeout }}
-      write_timeout: {{ default .default.healths.liveness.server.http.write_timeout .Values.healths.liveness.server.http.write_timeout }}
+      shutdown_duration: {{ default .default.healths.liveness.server.http.shutdown_duration .Values.healths.liveness.server.http.shutdown_duration | quote }}
+      handler_timeout: {{ default .default.healths.liveness.server.http.handler_timeout .Values.healths.liveness.server.http.handler_timeout | quote }}
+      idle_timeout: {{ default .default.healths.liveness.server.http.idle_timeout .Values.healths.liveness.server.http.idle_timeout | quote }}
+      read_header_timeout: {{ default .default.healths.liveness.server.http.read_header_timeout .Values.healths.liveness.server.http.read_header_timeout | quote }}
+      read_timeout: {{ default .default.healths.liveness.server.http.read_timeout .Values.healths.liveness.server.http.read_timeout | quote }}
+      write_timeout: {{ default .default.healths.liveness.server.http.write_timeout .Values.healths.liveness.server.http.write_timeout | quote }}
       {{- else }}
       {{- toYaml .default.healths.liveness.server.http | nindent 6 }}
       {{- end }}
@@ -252,16 +294,16 @@ health_check_servers:
     host: {{ default .default.healths.readiness.host .Values.healths.readiness.host }}
     port: {{ default .default.healths.readiness.port .Values.healths.readiness.port }}
     {{- if .Values.healths.readiness.server }}
-    mode: {{ default .default.healths.readiness.server.mode .Values.healths.readiness.server.mode }}
-    probe_wait_time: {{ default .default.healths.readiness.server.probe_wait_time .Values.healths.readiness.server.probe_wait_time }}
+    mode: {{ default .default.healths.readiness.server.mode .Values.healths.readiness.server.mode | quote }}
+    probe_wait_time: {{ default .default.healths.readiness.server.probe_wait_time .Values.healths.readiness.server.probe_wait_time | quote }}
     http:
       {{- if .Values.healths.readiness.server.http }}
-      shutdown_duration: {{ default .default.healths.readiness.server.http.shutdown_duration .Values.healths.readiness.server.http.shutdown_duration }}
-      handler_timeout: {{ default .default.healths.readiness.server.http.handler_timeout .Values.healths.readiness.server.http.handler_timeout }}
-      idle_timeout: {{ default .default.healths.readiness.server.http.idle_timeout .Values.healths.readiness.server.http.idle_timeout }}
-      read_header_timeout: {{ default .default.healths.readiness.server.http.read_header_timeout .Values.healths.readiness.server.http.read_header_timeout }}
-      read_timeout: {{ default .default.healths.readiness.server.http.read_timeout .Values.healths.readiness.server.http.read_timeout }}
-      write_timeout: {{ default .default.healths.readiness.server.http.write_timeout .Values.healths.readiness.server.http.write_timeout }}
+      shutdown_duration: {{ default .default.healths.readiness.server.http.shutdown_duration .Values.healths.readiness.server.http.shutdown_duration | quote }}
+      handler_timeout: {{ default .default.healths.readiness.server.http.handler_timeout .Values.healths.readiness.server.http.handler_timeout | quote }}
+      idle_timeout: {{ default .default.healths.readiness.server.http.idle_timeout .Values.healths.readiness.server.http.idle_timeout | quote }}
+      read_header_timeout: {{ default .default.healths.readiness.server.http.read_header_timeout .Values.healths.readiness.server.http.read_header_timeout | quote }}
+      read_timeout: {{ default .default.healths.readiness.server.http.read_timeout .Values.healths.readiness.server.http.read_timeout | quote }}
+      write_timeout: {{ default .default.healths.readiness.server.http.write_timeout .Values.healths.readiness.server.http.write_timeout | quote }}
       {{- else }}
       {{- toYaml .default.healths.readiness.server.http | nindent 6 }}
       {{- end }}
@@ -293,12 +335,38 @@ metrics_servers:
     {{- toYaml .default.metrics.pprof.server | nindent 4 }}
     {{- end }}
   {{- end }}
+  {{- $prometheusEnabled := default .default.metrics.prometheus.enabled .Values.metrics.prometheus.enabled }}
+  {{- if $prometheusEnabled }}
+  - name: prometheus
+    host: {{ default .default.metrics.prometheus.host .Values.metrics.prometheus.host }}
+    port: {{ default .default.metrics.prometheus.port .Values.metrics.prometheus.port }}
+    {{- if .Values.metrics.prometheus.server }}
+    mode: {{ default .default.metrics.prometheus.server.mode .Values.metrics.prometheus.server.mode }}
+    probe_wait_time: {{ default .default.metrics.prometheus.server.probe_wait_time .Values.metrics.prometheus.server.probe_wait_time }}
+    http:
+      {{- if .Values.metrics.prometheus.server.http }}
+      shutdown_duration: {{ default .default.metrics.prometheus.server.http.shutdown_duration .Values.metrics.prometheus.server.http.shutdown_duration }}
+      handler_timeout: {{ default .default.metrics.prometheus.server.http.handler_timeout .Values.metrics.prometheus.server.http.handler_timeout }}
+      idle_timeout: {{ default .default.metrics.prometheus.server.http.idle_timeout .Values.metrics.prometheus.server.http.idle_timeout }}
+      read_header_timeout: {{ default .default.metrics.prometheus.server.http.read_header_timeout .Values.metrics.prometheus.server.http.read_header_timeout }}
+      read_timeout: {{ default .default.metrics.prometheus.server.http.read_timeout .Values.metrics.prometheus.server.http.read_timeout }}
+      write_timeout: {{ default .default.metrics.prometheus.server.http.write_timeout .Values.metrics.prometheus.server.http.write_timeout }}
+      {{- else }}
+      {{- toYaml .default.metrics.prometheus.server.http | nindent 6 }}
+      {{- end }}
+    {{- else }}
+    {{- toYaml .default.metrics.prometheus.server | nindent 4 }}
+    {{- end }}
+  {{- end }}
 startup_strategy:
   {{- if $livenessEnabled }}
   - liveness
   {{- end }}
   {{- if $pprofEnabled }}
   - pprof
+  {{- end }}
+  {{- if $prometheusEnabled }}
+  - prometheus
   {{- end }}
   {{- if $grpcEnabled }}
   - grpc
@@ -312,9 +380,9 @@ startup_strategy:
 full_shutdown_duration: {{ default .default.full_shutdown_duration .Values.full_shutdown_duration }}
 tls:
   enabled: {{ default .default.tls.enabled .Values.tls.enabled }}
-  cert: {{ default .default.tls.cert .Values.tls.cert }}
-  key: {{ default .default.tls.key .Values.tls.key }}
-  ca: {{ default .default.tls.ca .Values.tls.ca }}
+  cert: {{ default .default.tls.cert .Values.tls.cert | quote }}
+  key: {{ default .default.tls.key .Values.tls.key | quote }}
+  ca: {{ default .default.tls.ca .Values.tls.ca | quote }}
 {{- end -}}
 
 {{/*
@@ -323,13 +391,13 @@ gRPC client configuration
 {{- define "vald.grpc.client" -}}
 addrs: {{ default .default.addrs .Values.addrs }}
 connection_pool: {{ default .default.connection_pool .Values.connection_pool }}
-health_check_duration: {{ default .default.health_check_duration .Values.health_check_duration }}
+health_check_duration: {{ default .default.health_check_duration .Values.health_check_duration | quote }}
 backoff:
   {{- if .Values.backoff }}
-  initial_duration: {{ default .default.backoff.initial_duration .Values.backoff.initial_duration }}
-  backoff_time_limit: {{ default .default.backoff.backoff_time_limit .Values.backoff.backoff_time_limit }}
-  maximum_duration: {{ default .default.backoff.maximum_duration .Values.backoff.maximum_duration }}
-  jitter_limit: {{ default .default.backoff.jitter_limit .Values.backoff.jitter_limit }}
+  initial_duration: {{ default .default.backoff.initial_duration .Values.backoff.initial_duration | quote }}
+  backoff_time_limit: {{ default .default.backoff.backoff_time_limit .Values.backoff.backoff_time_limit | quote }}
+  maximum_duration: {{ default .default.backoff.maximum_duration .Values.backoff.maximum_duration | quote }}
+  jitter_limit: {{ default .default.backoff.jitter_limit .Values.backoff.jitter_limit | quote }}
   backoff_factor: {{ default .default.backoff.backoff_factor .Values.backoff.backoff_factor }}
   retry_count: {{ default .default.backoff.retry_count .Values.backoff.retry_count }}
   enable_error_log: {{ default .default.backoff.enable_error_log .Values.backoff.enable_error_log }}
@@ -352,24 +420,24 @@ dial_option:
   initial_window_size: {{ default .default.dial_option.initial_window_size .Values.dial_option.initial_window_size }}
   initial_connection_window_size: {{ default .default.dial_option.initial_connection_window_size .Values.dial_option.initial_connection_window_size }}
   max_msg_size: {{ default .default.dial_option.max_msg_size .Values.dial_option.max_msg_size }}
-  max_backoff_delay: {{ default .default.dial_option.max_backoff_delay .Values.dial_option.max_backoff_delay }}
+  max_backoff_delay: {{ default .default.dial_option.max_backoff_delay .Values.dial_option.max_backoff_delay | quote }}
   enable_backoff: {{ default .default.dial_option.enable_backoff .Values.dial_option.enable_backoff }}
   insecure: {{ default .default.dial_option.insecure .Values.dial_option.insecure }}
-  timeout: {{ default .default.dial_option.timeout .Values.dial_option.timeout }}
+  timeout: {{ default .default.dial_option.timeout .Values.dial_option.timeout | quote }}
   tcp:
     {{- if .Values.dial_option.tcp }}
     dns:
       {{- if .Values.dial_option.tcp.dns }}
       cache_enabled: {{ default .default.dial_option.tcp.dns.cache_enabled .Values.dial_option.tcp.dns.cache_enabled }}
-      refresh_duration: {{ default .default.dial_option.tcp.dns.refresh_duration .Values.dial_option.tcp.dns.refresh_duration }}
-      cache_expiration: {{ default .default.dial_option.tcp.dns.cache_expiration .Values.dial_option.tcp.dns.cache_expiration }}
+      refresh_duration: {{ default .default.dial_option.tcp.dns.refresh_duration .Values.dial_option.tcp.dns.refresh_duration | quote }}
+      cache_expiration: {{ default .default.dial_option.tcp.dns.cache_expiration .Values.dial_option.tcp.dns.cache_expiration | quote }}
       {{- else }}
       {{- toYaml .default.dial_option.tcp.dns | nindent 6 }}
       {{- end }}
     dialer:
       {{- if .Values.dial_option.tcp.dialer }}
-      timeout: {{ default .default.dial_option.tcp.dialer.timeout .Values.dial_option.tcp.dialer.timeout }}
-      keep_alive: {{ default .default.dial_option.tcp.dialer.keep_alive .Values.dial_option.tcp.dialer.keep_alive }}
+      timeout: {{ default .default.dial_option.tcp.dialer.timeout .Values.dial_option.tcp.dialer.timeout | quote }}
+      keep_alive: {{ default .default.dial_option.tcp.dialer.keep_alive .Values.dial_option.tcp.dialer.keep_alive | quote }}
       dual_stack_enabled: {{ default .default.dial_option.tcp.dialer.dual_stack_enabled .Values.dial_option.tcp.dialer.dual_stack_enabled }}
       {{- else }}
       {{- toYaml .default.dial_option.tcp.dialer | nindent 6 }}
@@ -377,9 +445,9 @@ dial_option:
     tls:
       {{- if .Values.dial_option.tcp.tls }}
       enabled: {{ default .default.dial_option.tcp.tls.enabled .Values.dial_option.tcp.tls.enabled }}
-      cert: {{ default .default.dial_option.tcp.tls.cert .Values.dial_option.tcp.tls.cert }}
-      key: {{ default .default.dial_option.tcp.tls.key .Values.dial_option.tcp.tls.key }}
-      ca: {{ default .default.dial_option.tcp.tls.ca .Values.dial_option.tcp.tls.ca }}
+      cert: {{ default .default.dial_option.tcp.tls.cert .Values.dial_option.tcp.tls.cert | quote }}
+      key: {{ default .default.dial_option.tcp.tls.key .Values.dial_option.tcp.tls.key | quote }}
+      ca: {{ default .default.dial_option.tcp.tls.ca .Values.dial_option.tcp.tls.ca | quote }}
       {{- else }}
       {{- toYaml .default.dial_option.tcp.tls | nindent 6 }}
       {{- end }}
@@ -388,8 +456,8 @@ dial_option:
     {{- end }}
   keep_alive:
     {{- if .Values.dial_option.keep_alive }}
-    time: {{ default .default.dial_option.keep_alive.time .Values.dial_option.keep_alive.time }}
-    timeout: {{ default .default.dial_option.keep_alive.timeout .Values.dial_option.keep_alive.timeout }}
+    time: {{ default .default.dial_option.keep_alive.time .Values.dial_option.keep_alive.time | quote }}
+    timeout: {{ default .default.dial_option.keep_alive.timeout .Values.dial_option.keep_alive.timeout | quote }}
     permit_without_stream: {{ default .default.dial_option.keep_alive.permit_without_stream .Values.dial_option.keep_alive.permit_without_stream }}
     {{- else }}
     {{- toYaml .default.dial_option.keep_alive | nindent 4 }}
@@ -400,11 +468,58 @@ dial_option:
 tls:
   {{- if .Values.tls }}
   enabled: {{ default .default.tls.enabled .Values.tls.enabled }}
-  cert: {{ default .default.tls.cert .Values.tls.cert }}
-  key: {{ default .default.tls.key .Values.tls.key }}
-  ca: {{ default .default.tls.ca .Values.tls.ca }}
+  cert: {{ default .default.tls.cert .Values.tls.cert | quote }}
+  key: {{ default .default.tls.key .Values.tls.key | quote }}
+  ca: {{ default .default.tls.ca .Values.tls.ca | quote }}
   {{- else }}
   {{- toYaml .default.tls | nindent 2 }}
+  {{- end }}
+{{- end -}}
+
+{{/*
+observability
+*/}}
+{{- define "vald.observability" -}}
+enabled: {{ default .default.enabled .Values.enabled }}
+collector:
+  {{- if .Values.collector }}
+  duration: {{ default .default.collector.duration .Values.collector.duration }}
+  metrics:
+    {{- if .Values.collector.metrics }}
+      enable_version_info: {{ default .default.collector.metrics.enable_version_info .Values.collector.metrics.enable_version_info }}
+      enable_memory: {{ default .default.collector.metrics.enable_memory .Values.collector.metrics.enable_memory }}
+      enable_goroutine: {{ default .default.collector.metrics.enable_goroutine .Values.collector.metrics.enable_goroutine }}
+      enable_cgo: {{ default .default.collector.metrics.enable_cgo .Values.collector.metrics.enable_cgo }}
+    {{- else }}
+    {{- toYaml .default.collector.metrics | nindent 4 }}
+    {{- end }}
+  {{- else }}
+  {{- toYaml .default.collector | nindent 2 }}
+  {{- end }}
+trace:
+  {{- if .Values.trace }}
+  enabled: {{ default .default.trace.enabled .Values.trace.enabled }}
+  sampling_rate: {{ default .default.trace.sampling_rate .Values.trace.sampling_rate }}
+  {{- else }}
+  {{- toYaml .default.trace | nindent 2 }}
+  {{- end }}
+prometheus:
+  {{- if .Values.prometheus }}
+    enabled: {{ default .default.prometheus.enabled .Values.prometheus.enabled }}
+  {{- else }}
+  {{- toYaml .default.prometheus | nindent 2 }}
+  {{- end }}
+jaeger:
+  {{- if .Values.jaeger }}
+    enabled: {{ default .default.jaeger.enabled .Values.jaeger.enabled }}
+    collector_endpoint: {{ default .default.jaeger.collector_endpoint .Values.jaeger.collector_endpoint | quote }}
+    agent_endpoint: {{ default .default.jaeger.agent_endpoint .Values.jaeger.agent_endpoint | quote }}
+    username: {{ default .default.jaeger.username .Values.jaeger.username | quote }}
+    password: {{ default .default.jaeger.password .Values.jaeger.password | quote }}
+    service_name: {{ default .default.jaeger.service_name .Values.jaeger.service_name | quote }}
+    buffer_max_count: {{ default .default.jaeger.buffer_max_count .Values.jaeger.buffer_max_count }}
+  {{- else }}
+  {{- toYaml .default.jaeger | nindent 2 }}
   {{- end }}
 {{- end -}}
 
@@ -412,16 +527,16 @@ tls:
 initContainers
 */}}
 {{- define "vald.initContainers" -}}
-{{- range .initContainers }}
+{{- range .initContainers -}}
 {{- if .type }}
 - name: {{ .name }}
   image: {{ .image }}
-  {{- if eq .type "waitFor" }}
+  {{- if eq .type "wait-for" }}
   command:
     - /bin/sh
+    - -e
     - -c
-    - >
-      set -x;
+    - |
       {{- if eq .target "compressor" }}
       {{- $compressorReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.compressor.server_config.healths.readiness.port }}
       {{- $compressorReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
@@ -450,6 +565,61 @@ initContainers
         echo "waiting for {{ .target }} to be ready..."
         sleep {{ .sleepDuration }};
       done
+  {{- else if eq .type "wait-for-mysql" }}
+  command:
+    - /bin/sh
+    - -e
+    - -c
+    - |
+      hosts="{{ include "vald.utils.joinListWithSpace" .mysql.hosts }}"
+      options="{{ include "vald.utils.joinListWithSpace" .mysql.options }}"
+      for host in $hosts; do
+        until [ "$(mysqladmin -h$host $options --show-warnings=false ping | grep alive | awk '{print $3}')" = "alive" ]; do
+          echo "waiting for $host to be ready..."
+          sleep {{ .sleepDuration }};
+        done
+      done
+  {{- else if eq .type "wait-for-redis" }}
+  command:
+    - /bin/sh
+    - -e
+    - -c
+    - |
+      hosts="{{ include "vald.utils.joinListWithSpace" .redis.hosts }}"
+      options="{{ include "vald.utils.joinListWithSpace" .redis.options }}"
+      for host in $hosts; do
+        until [ "$(redis-cli -h $host $options ping)" = "PONG" ]; do
+          echo "waiting for $host to be ready..."
+          sleep {{ .sleepDuration }};
+        done
+      done
+  {{- else if eq .type "wait-for-cassandra" }}
+  command:
+    - /bin/sh
+    - -e
+    - -c
+    - |
+      hosts="{{ include "vald.utils.joinListWithSpace" .cassandra.hosts }}"
+      options="{{ include "vald.utils.joinListWithSpace" .cassandra.options }}"
+      for host in $hosts; do
+        until cqlsh $host $options -e "select now() from system.local" > /dev/null; do
+          echo "waiting for $host to be ready..."
+          sleep {{ .sleepDuration }};
+        done
+      done
+  {{- else if eq .type "limit-vsz" }}
+  command:
+    - /bin/sh
+    - -e
+    - -c
+    - |
+      set -eu
+      cgroup_rsslimit="/sys/fs/cgroup/memory/memory.limit_in_bytes"
+      if [ -r "$cgroup_rsslimit" ] ; then
+        rsslimit=`cat "$cgroup_rsslimit"`
+        vszlimit=`expr $rsslimit / 1024`
+        ulimit -v $vszlimit
+      fi
   {{- end }}
   {{- if .env }}
   env:
@@ -460,7 +630,7 @@ initContainers
     {{- toYaml .volumeMounts | nindent 4 }}
   {{- end }}
 {{- else }}
-- {{- toYaml . | nindent 2 }}
+- {{ . | toYaml | nindent 2 | trim }}
 {{- end }}
 {{- end }}
 {{- end -}}

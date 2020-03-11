@@ -150,4 +150,4 @@ redis_config:
       ca: /path/to/ca
   kv_prefix: ""
   vk_prefix: ""
-  prefix_delimiter: "
+  prefix_delimiter: ""

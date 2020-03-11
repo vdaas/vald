@@ -28,6 +28,14 @@ spec:
       port: 3001
       targetPort: 3001
       protocol: TCP
+    - name: pprof
+      port: 6060
+      targetPort: 6060
+      protocol: TCP
+    - name: prometheus
+      port: 6061
+      targetPort: 6061
+      protocol: TCP
   selector:
     app: vald-meta
   clusterIP: None

@@ -20,8 +20,10 @@ metadata:
   name: {{ .Values.discoverer.name }}
   labels:
     app: {{ .Values.discoverer.name }}
+  {{- if .Values.discoverer.annotations }}
   annotations:
-    checksum/configmap: {{ include (print $.Template.BasePath "/discoverer/configmap.yaml") . | sha256sum }}
+    {{- toYaml .Values.discoverer.annotations | nindent 4 }}
+  {{- end }}
 spec:
   revisionHistoryLimit: {{ .Values.discoverer.revisionHistoryLimit }}
   selector:
@@ -36,15 +38,20 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.discoverer.name }}
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/discoverer/configmap.yaml") . | sha256sum }}
+        {{- if .Values.discoverer.podAnnotations }}
+        {{- toYaml .Values.discoverer.podAnnotations | nindent 8 }}
+        {{- end }}
     spec:
       {{- if .Values.discoverer.initContainers }}
       initContainers:
         {{- $initContainers := dict "initContainers" .Values.discoverer.initContainers "Values" .Values "namespace" .Release.Namespace -}}
-        {{- include "vald.initContainers" $initContainers | nindent 8 }}
+        {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Values.discoverer.name }}
-          image: "{{ .Values.discoverer.image.repository }}:{{ .Values.discoverer.image.tag }}"
+          image: "{{ .Values.discoverer.image.repository }}:{{ default .Values.defaults.image.tag .Values.discoverer.image.tag }}"
           imagePullPolicy: {{ .Values.discoverer.image.pullPolicy }}
           {{- $servers := dict "Values" .Values.discoverer.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}

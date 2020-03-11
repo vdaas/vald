@@ -29,6 +29,7 @@ BACKUP_MANAGER_CASSANDRA_IMAGE  = $(NAME)-manager-backup-cassandra
 MANAGER_COMPRESSOR_IMAGE        = $(NAME)-manager-compressor
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
+HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 
 NGT_VERSION := $(shell cat versions/NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
@@ -169,18 +170,50 @@ update: \
 ## format go codes
 format: \
 	license \
-	update/goimports
+	update/goimports \
+	format/yaml \
+	format/docker
 
 .PHONY: update/goimports
 ## run goimports for all go files
 update/goimports:
 	find ./ -type f -regex ".*\.go" | xargs goimports -w
 
+.PHONY: format/yaml
+format/yaml:
+	prettier --write \
+	    ".github/**/*.yaml" \
+	    "cmd/**/*.yaml" \
+	    "hack/**/*.yaml" \
+	    "k8s/**/*.yaml"
+
+.PHONY: format/docker
+format/docker:
+	dockfmt fmt -w \
+	    dockers/*/Dockerfile \
+	    dockers/*/*/Dockerfile \
+	    dockers/*/*/*/Dockerfile
+
 .PHONY: deps
 ## install dependencies
 deps: \
-	proto/deps
+	proto/deps \
+	goimports/install \
+	prettier/install \
+	dockfmt/install
 	go mod tidy
+
+.PHONY: goimports/install
+goimports/install:
+	go get -u golang.org/x/tools/cmd/goimports
+
+.PHONY: prettier/install
+prettier/install:
+	npm install -g prettier
+
+.PHONY: dockfmt/install
+dockfmt/install:
+	go get -u github.com/jessfraz/dockfmt
 
 .PHONY: version/go
 ## print go version

@@ -17,6 +17,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Values.meta.name }}
+  {{- if .Values.meta.service }}
+  annotations:
+    {{- toYaml .Values.meta.service.annotations | nindent 4 }}
+  labels:
+    {{- toYaml .Values.meta.service.labels | nindent 4 }}
+  {{- end }}
 spec:
   {{- $servers := dict "Values" .Values.meta.server_config "default" .Values.defaults.server_config }}
   {{- include "vald.servicePorts" $servers | nindent 2 }}

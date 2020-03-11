@@ -3,6 +3,11 @@ on:
   push:
     branches:
       - master
+    tags:
+       - '*.*.*'
+       - 'v*.*.*'
+       - '*.*.*-*'
+       - 'v*.*.*-*'
     paths:
       - 'vald/**'
 
@@ -17,9 +22,6 @@ jobs:
         uses: actions/checkout@v1
         with:
           fetch-depth: 1
-      - uses: azure/setup-helm@v1
-        with:
-          version: 'v3.1.0'
       - name: Helm version
         run: |
           helm version
@@ -47,14 +49,12 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: vdaas/vald-ci-container:nightly
+    if: startsWith( github.ref, 'refs/tags/')
     steps:
       - name: Check out code.
         uses: actions/checkout@v1
         with:
           fetch-depth: 1
-      - uses: azure/setup-helm@v1
-        with:
-          version: 'v3.1.0'
       - name: Helm version
         run: |
           helm version

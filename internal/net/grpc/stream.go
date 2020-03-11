@@ -27,12 +27,10 @@ import (
 	"google.golang.org/grpc"
 )
 
-// TODO rename BidirectionalStreamServer
-func BidirectionalStream(stream grpc.ServerStream,
+func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 	concurrency int,
 	newData func() interface{},
 	f func(context.Context, interface{}) (interface{}, error)) (err error) {
-	ctx := stream.Context()
 	eg, ctx := errgroup.New(ctx)
 	if concurrency > 0 {
 		eg.Limitation(concurrency)

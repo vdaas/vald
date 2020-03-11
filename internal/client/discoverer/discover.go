@@ -32,12 +32,13 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/safety"
 )
 
 type Client interface {
 	Start(ctx context.Context) (<-chan error, error)
-	GetAddrs() []string
+	GetAddrs(ctx context.Context) []string
 	GetClient() grpc.Client
 }
 
@@ -91,6 +92,9 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 				c.opts,
 				grpc.WithAddrs(addrs...),
 				grpc.WithErrGroup(c.eg),
+				grpc.WithDialOptions(
+					grpc.WithStatsHandler(metric.NewClientHandler()),
+				),
 			)...,
 		)
 		if c.client != nil {
@@ -161,19 +165,24 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 					return finalize()
 				case ech <- err:
 				}
-			} else {
-				log.Debug(c.GetAddrs())
 			}
 		}
 	}))
 	return ech, nil
 }
 
-func (c *client) GetAddrs() (addrs []string) {
+func (c *client) GetAddrs(ctx context.Context) (addrs []string) {
 	var ok bool
 	addrs, ok = c.addrs.Load().([]string)
 	if !ok {
-		return nil
+		ips, err := net.DefaultResolver.LookupIPAddr(ctx, c.dns)
+		if err != nil {
+			return nil
+		}
+		addrs = make([]string, 0, len(ips))
+		for _, ip := range ips {
+			addrs = append(addrs, ip.String())
+		}
 	}
 	return addrs
 }
@@ -223,7 +232,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 		return errors.ErrGRPCClientNotFound
 	}
 	log.Info("starting discoverer discovery")
-	connected := make([]string, 0, len(c.GetAddrs()))
+	connected := make([]string, 0, len(c.GetAddrs(ctx)))
 	var cur sync.Map
 	if _, err = c.dscClient.Do(ctx, c.dscAddr, func(ictx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
@@ -297,6 +306,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 	}
 
 	c.addrs.Store(connected)
+
 	if c.autoconn && c.client != nil {
 		if err = c.client.RangeConcurrent(ctx, len(connected)/3, func(ctx context.Context,
 			addr string,
