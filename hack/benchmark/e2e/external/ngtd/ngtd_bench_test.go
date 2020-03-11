@@ -55,7 +55,7 @@ func init() {
 func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 	ctx := context.Background()
 
-	client, err := rest.New(ctx, rest.WithAddr("http://127.0.0.1:8200"))
+	client, err := rest.New(ctx)
 	if err != nil {
 		b.Fatal(err)
 	}

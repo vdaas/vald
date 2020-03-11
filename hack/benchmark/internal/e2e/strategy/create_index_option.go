@@ -6,7 +6,7 @@ type CreateIndexOption func(*createIndex)
 
 var (
 	defaultCreateIndexOptions = []CreateIndexOption{
-		WithCreateIndexPoolSize(1000),
+		WithCreateIndexPoolSize(10000),
 	}
 )
 

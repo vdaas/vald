@@ -80,13 +80,8 @@ func BidirectionalStreamClient(stream grpc.ClientStream,
 	f func(interface{}, error)) (err error) {
 	ctx, cancel := context.WithCancel(stream.Context())
 	eg, ctx := errgroup.New(ctx)
-	if concurrency > 0 {
-		eg.Limitation(concurrency)
-	}
 
-	defer stream.CloseSend()
-
-	eg.Go(func() error {
+	eg.Go(safety.RecoverFunc(func() (err error) {
 		for {
 			select {
 			case <-ctx.Done():
@@ -101,24 +96,28 @@ func BidirectionalStreamClient(stream grpc.ClientStream,
 				f(res, err)
 			}
 		}
-	})
+	}))
 
-	for {
-		select {
-		case <-ctx.Done():
-			return eg.Wait()
-		default:
-			data := dataProvider()
-			if data == nil {
-				stream.CloseSend()
-				cancel()
+	defer stream.CloseSend()
+
+	return func() (err error) {
+		for {
+			select {
+			case <-ctx.Done():
 				return eg.Wait()
-			}
+			default:
+				data := dataProvider()
+				if data == nil {
+					stream.CloseSend()
+					cancel()
+					return eg.Wait()
+				}
 
-			err = stream.SendMsg(data)
-			if err != nil {
-				return err
+				err = stream.SendMsg(data)
+				if err != nil {
+					return err
+				}
 			}
 		}
-	}
+	}()
 }
