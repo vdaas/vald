@@ -54,7 +54,6 @@ func init() {
 
 func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 	ctx := context.Background()
-
 	client, err := rest.New(ctx)
 	if err != nil {
 		b.Fatal(err)
@@ -86,7 +85,6 @@ func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 
 func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 	ctx := context.Background()
-
 	client, err := grpc.New(ctx)
 	if err != nil {
 		b.Fatal(err)
@@ -119,7 +117,6 @@ func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 
 func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 	ctx := context.Background()
-
 	client, err := grpc.New(ctx)
 	if err != nil {
 		b.Fatal(err)

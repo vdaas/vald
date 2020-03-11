@@ -66,7 +66,6 @@ func init() {
 
 func BenchmarkAgentNGT_REST_Sequential(b *testing.B) {
 	ctx := context.Background()
-
 	client := rest.New(ctx)
 
 	for _, name := range targets {
@@ -97,7 +96,6 @@ func BenchmarkAgentNGT_REST_Sequential(b *testing.B) {
 
 func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 	ctx := context.Background()
-
 	client, err := grpc.New(ctx)
 	if err != nil {
 		b.Fatal(err)
@@ -131,7 +129,6 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 
 func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 	ctx := context.Background()
-
 	client, err := grpc.New(ctx)
 	if err != nil {
 		b.Fatal(err)

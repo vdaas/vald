@@ -114,7 +114,6 @@ func BenchmarkGateway_REST_Stream(b *testing.B) {
 
 func BenchmarkGateway_gRPC_Sequential(b *testing.B) {
 	ctx := context.Background()
-
 	client, err := grpc.New(ctx,
 		grpc.WithAddr(
 			grpcAddr,
@@ -142,7 +141,6 @@ func BenchmarkGateway_gRPC_Sequential(b *testing.B) {
 
 func BenchmarkGateway_gRPC_Stream(b *testing.B) {
 	ctx := context.Background()
-
 	client, err := grpc.New(ctx,
 		grpc.WithAddr(
 			grpcAddr,
