@@ -25,13 +25,16 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
+	"github.com/vdaas/vald/internal/client/gateway/grpc"
+	"github.com/vdaas/vald/internal/client/gateway/rest"
 	"github.com/vdaas/vald/internal/log"
 )
 
 var (
-	targets   []string
-	addresses []string
-	wait      time.Duration
+	targets  []string
+	restAddr string
+	grpcAddr string
+	wait     time.Duration
 )
 
 var searchConfig = &payload.Search_Config{
@@ -42,57 +45,125 @@ var searchConfig = &payload.Search_Config{
 
 func init() {
 	testing.Init()
-
 	log.Init()
 
 	var (
 		dataset     string
-		address     string
 		waitSeconds uint
 	)
 
 	flag.StringVar(&dataset, "dataset", "", "set dataset (choice with comma)")
-	flag.StringVar(&address, "address", "0.0.0.0:5001", "set vald gateway address")
-	flag.UintVar(&waitSeconds, "wait", 30, "indexing wait time(secs)")
+	flag.StringVar(&restAddr, "rest_address", "http://127.0.0.1:8080", "set vald gateway address for REST")
+	flag.StringVar(&grpcAddr, "grpc_address", "127.0.0.1:8081", "set vald gateway address for gRPC")
+	flag.UintVar(&waitSeconds, "wait", 30, "indexing wait time (secs)")
 	flag.Parse()
 
 	targets = strings.Split(strings.TrimSpace(dataset), ",")
-	addresses = strings.Split(strings.TrimSpace(address), ",")
 	wait = time.Duration(time.Duration(waitSeconds) * time.Second)
 }
 
-func BenchmarkValdGateway_Sequential(b *testing.B) {
+func Benchmark_Gateway_REST_Sequential(b *testing.B) {
+	ctx := context.Background()
+
 	for _, name := range targets {
 		bench := e2e.New(
 			b,
 			e2e.WithName(name),
-			e2e.WithClient(nil),
+			e2e.WithClient(
+				rest.New(
+					rest.WithAddr(
+						restAddr,
+					),
+				),
+			),
 			e2e.WithStrategy(
 				strategy.NewInsert(),
 				strategy.NewSearch(
 					strategy.WithSearchConfig(searchConfig),
 				),
-				strategy.NewRemove(),
 			),
 		)
-		bench.Run(context.Background(), b)
+		bench.Run(ctx, b)
 	}
 }
 
-func BenchmarkValdGateway_Stream(b *testing.B) {
+func Benchmark_Gateway_REST_Stream(b *testing.B) {
+	ctx := context.Background()
+
 	for _, name := range targets {
 		bench := e2e.New(
 			b,
 			e2e.WithName(name),
-			e2e.WithClient(nil),
+			e2e.WithClient(
+				rest.New(
+					rest.WithAddr(
+						restAddr,
+					),
+				),
+			),
 			e2e.WithStrategy(
 				strategy.NewStreamInsert(),
 				strategy.NewStreamSearch(
 					strategy.WithStreamSearchConfig(searchConfig),
 				),
-				strategy.NewStreamRemove(),
 			),
 		)
-		bench.Run(context.Background(), b)
+		bench.Run(ctx, b)
+	}
+}
+
+func Benchmark_Gateway_gRPC_Sequential(b *testing.B) {
+	ctx := context.Background()
+
+	client, err := grpc.New(ctx,
+		grpc.WithAddr(
+			grpcAddr,
+		),
+	)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	for _, name := range targets {
+		bench := e2e.New(
+			b,
+			e2e.WithName(name),
+			e2e.WithClient(client),
+			e2e.WithStrategy(
+				strategy.NewStreamInsert(),
+				strategy.NewStreamSearch(
+					strategy.WithStreamSearchConfig(searchConfig),
+				),
+			),
+		)
+		bench.Run(ctx, b)
+	}
+}
+
+func Benchmark_Gateway_gRPC_Stream(b *testing.B) {
+	ctx := context.Background()
+
+	client, err := grpc.New(ctx,
+		grpc.WithAddr(
+			grpcAddr,
+		),
+	)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	for _, name := range targets {
+		bench := e2e.New(
+			b,
+			e2e.WithName(name),
+			e2e.WithClient(client),
+			e2e.WithStrategy(
+				strategy.NewStreamInsert(),
+				strategy.NewStreamSearch(
+					strategy.WithStreamSearchConfig(searchConfig),
+				),
+			),
+		)
+		bench.Run(ctx, b)
 	}
 }

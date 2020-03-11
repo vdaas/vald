@@ -19,14 +19,12 @@ type gatewayClient struct {
 	addr string
 }
 
-func New(opts ...Option) (Client, error) {
+func New(opts ...Option) Client {
 	c := new(gatewayClient)
-
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(c)
 	}
-
-	return c, nil
+	return c
 }
 
 func (c *gatewayClient) Exists(ctx context.Context, req *client.ObjectID) (resp *client.ObjectID, err error) {

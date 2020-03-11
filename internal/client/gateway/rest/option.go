@@ -4,7 +4,7 @@ type Option func(*gatewayClient)
 
 var (
 	defaultOptions = []Option{
-		WithAddr("0.0.0.0:8081"),
+		WithAddr("http://127.0.0.1:8080"),
 	}
 )
 
