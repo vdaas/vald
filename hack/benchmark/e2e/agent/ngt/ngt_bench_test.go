@@ -25,9 +25,9 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
-	"github.com/vdaas/vald/hack/benchmark/internal/starter/agent"
-	"github.com/vdaas/vald/internal/client/agent/grpc"
-	"github.com/vdaas/vald/internal/client/agent/rest"
+	"github.com/vdaas/vald/hack/benchmark/internal/starter/agent/ngt"
+	"github.com/vdaas/vald/internal/client/agent/ngt/grpc"
+	"github.com/vdaas/vald/internal/client/agent/ngt/rest"
 	"github.com/vdaas/vald/internal/log"
 )
 
@@ -74,10 +74,10 @@ func BenchmarkAgentNGT_REST_Sequential(b *testing.B) {
 			b,
 			e2e.WithName(name),
 			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
-				return agent.New(
-					agent.WithDimentaion(d.Dimension()),
-					agent.WithDistanceType(d.DistanceType()),
-					agent.WithObjectType(d.ObjectType()),
+				return ngt.New(
+					ngt.WithDimentaion(d.Dimension()),
+					ngt.WithDistanceType(d.DistanceType()),
+					ngt.WithObjectType(d.ObjectType()),
 				).Run(ctx, tb)
 			}),
 			e2e.WithClient(client),
@@ -108,10 +108,10 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 			b,
 			e2e.WithName(name),
 			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
-				return agent.New(
-					agent.WithDimentaion(d.Dimension()),
-					agent.WithDistanceType(d.DistanceType()),
-					agent.WithObjectType(d.ObjectType()),
+				return ngt.New(
+					ngt.WithDimentaion(d.Dimension()),
+					ngt.WithDistanceType(d.DistanceType()),
+					ngt.WithObjectType(d.ObjectType()),
 				).Run(ctx, tb)
 			}),
 			e2e.WithClient(client),
@@ -142,10 +142,10 @@ func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 			b,
 			e2e.WithName(name),
 			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
-				return agent.New(
-					agent.WithDimentaion(d.Dimension()),
-					agent.WithDistanceType(d.DistanceType()),
-					agent.WithObjectType(d.ObjectType()),
+				return ngt.New(
+					ngt.WithDimentaion(d.Dimension()),
+					ngt.WithDistanceType(d.DistanceType()),
+					ngt.WithObjectType(d.ObjectType()),
 				).Run(ctx, tb)
 			}),
 			e2e.WithClient(client),

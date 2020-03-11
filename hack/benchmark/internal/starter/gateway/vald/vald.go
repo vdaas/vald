@@ -1,4 +1,4 @@
-package gateway
+package vald
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/internal/starter"
 	"github.com/vdaas/vald/pkg/gateway/vald/config"
-	"github.com/vdaas/vald/pkg/gateway/vald/usecase"
 )
 
 type server struct {
@@ -24,15 +23,7 @@ func New(opts ...Option) starter.Starter {
 func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 	tb.Helper()
 
-	daemon, err := usecase.New(s.cfg)
-	if err != nil {
-		tb.Fatal(err)
-	}
-
-	go func() {
-
-	}()
-	_ = daemon
+	// TODO (@hlts2): Make when divided gateway.
 
 	return func() {}
 }

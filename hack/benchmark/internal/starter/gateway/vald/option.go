@@ -1,4 +1,4 @@
-package gateway
+package vald
 
 type Option func(*server)
 

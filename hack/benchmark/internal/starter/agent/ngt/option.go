@@ -1,4 +1,4 @@
-package agent
+package ngt
 
 import (
 	iconfig "github.com/vdaas/vald/internal/config"
