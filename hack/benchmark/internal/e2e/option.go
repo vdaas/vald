@@ -11,7 +11,13 @@ import (
 type Option func(*e2e)
 
 var (
-	defaultOptions = []Option{}
+	defaultOptions = []Option{
+		WithServerStarter(
+			func(context.Context, testing.TB, assets.Dataset) func() {
+				return func() {}
+			},
+		),
+	}
 )
 
 func WithName(name string) Option {
@@ -41,7 +47,7 @@ func WithStrategy(strategis ...Strategy) Option {
 func WithServerStarter(f func(context.Context, testing.TB, assets.Dataset) func()) Option {
 	return func(e *e2e) {
 		if f != nil {
-			e.serverStarter = f
+			e.srvStarter = f
 		}
 	}
 }
