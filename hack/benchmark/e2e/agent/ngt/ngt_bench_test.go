@@ -58,7 +58,9 @@ func init() {
 	flag.Float64Var(&epsilon, "epsilon", float64(searchConfig.Epsilon), "search epsilon size")
 	flag.Parse()
 
-	searchConfig.Num, searchConfig.Radius, searchConfig.Epsilon = uint32(num), float32(radius), float32(epsilon)
+	searchConfig.Num = uint32(num)
+	searchConfig.Radius = float32(radius)
+	searchConfig.Epsilon = float32(epsilon)
 	targets = strings.Split(strings.TrimSpace(dataset), ",")
 }
 
