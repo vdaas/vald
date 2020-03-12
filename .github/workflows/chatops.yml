@@ -16,7 +16,7 @@ jobs:
           TRIGGER_PHRASE: "/label"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq and check permissions
+      - name: check permissions
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
@@ -65,7 +65,7 @@ jobs:
           TRIGGER_PHRASE: "/rebase"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq and check permissions
+      - name: check permissions
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
@@ -136,7 +136,7 @@ jobs:
           TRIGGER_PHRASE: "/add-contributors"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq and check permissions
+      - name: check permissions
         if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
@@ -180,7 +180,7 @@ jobs:
         continue-on-error: true
         run: |
           PR_RESP=`curl ${PR_INFO_URL}`
-          HEAD_BRANCH=$(echo "$PR_RESP" | jq -r .head.ref)
+          HEAD_BRANCH=$(echo "$PR_RESP" | tr '\r\n' ' ' | jq -r .head.ref)
           if [[ -z "$HEAD_BRANCH" ]]; then
             echo "Cannot get head branch information for PR #${PR_NUM}!"
             echo "API response: $PR_RESP"
@@ -243,7 +243,7 @@ jobs:
           TRIGGER_PHRASE: "/format"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq and check permissions
+      - name: check permissions
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
@@ -286,7 +286,7 @@ jobs:
         continue-on-error: true
         run: |
           PR_RESP=`curl ${PR_INFO_URL}`
-          HEAD_BRANCH=$(echo "$PR_RESP" | jq -r .head.ref)
+          HEAD_BRANCH=$(echo "$PR_RESP" | tr '\r\n' ' ' | jq -r .head.ref)
           if [[ -z "$HEAD_BRANCH" ]]; then
             echo "Cannot get head branch information for PR #${PR_NUM}!"
             echo "API response: $PR_RESP"
@@ -351,7 +351,7 @@ jobs:
           TRIGGER_PHRASE: "/approve"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq and check permissions
+      - name: check permissions
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
