@@ -7,7 +7,6 @@ import (
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/internal/client"
 	igrpc "github.com/vdaas/vald/internal/net/grpc"
-	"google.golang.org/grpc"
 )
 
 // Client represents agent NGT client interface.
@@ -171,24 +170,21 @@ func (c *agentClient) StreamInsert(
 				return nil, err
 			}
 
-			return nil, sendObjectVector(st, dataProvider, f)
+			return nil, igrpc.BidirectionalStreamClient(st,
+				func() interface{} {
+					if d := dataProvider(); d != nil {
+						return d
+					}
+					return nil
+				}, func() interface{} {
+					return new(client.Empty)
+				}, func(_ interface{}, err error) {
+					f(err)
+				},
+			)
 		},
 	)
 	return err
-}
-
-func sendObjectVector(st grpc.ClientStream, dataProvider func() *client.ObjectVector, f func(error)) error {
-	return igrpc.BidirectionalStreamClient(st,
-		func() interface{} {
-			if d := dataProvider(); d != nil {
-				return d
-			}
-			return nil
-		}, func() interface{} {
-			return new(client.Empty)
-		}, func(_ interface{}, err error) {
-			f(err)
-		})
 }
 
 func (c *agentClient) MultiInsert(
@@ -229,7 +225,18 @@ func (c *agentClient) StreamUpdate(
 				return nil, err
 			}
 
-			return nil, sendObjectVector(st, dataProvider, f)
+			return nil, igrpc.BidirectionalStreamClient(st,
+				func() interface{} {
+					if d := dataProvider(); d != nil {
+						return d
+					}
+					return nil
+				}, func() interface{} {
+					return new(client.Empty)
+				}, func(_ interface{}, err error) {
+					f(err)
+				},
+			)
 		},
 	)
 	return err
