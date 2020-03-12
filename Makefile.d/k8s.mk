@@ -22,6 +22,7 @@ k8s/manifest/clean:
 	    k8s/gateway/vald \
 	    k8s/manager/backup \
 	    k8s/manager/compressor \
+	    k8s/manager/index \
 	    k8s/meta \
 	    k8s/jobs
 

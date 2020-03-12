@@ -78,7 +78,7 @@ jobs:
           helm repo add vald https://vald.vdaas.org/charts
           tag=$(cat versions/VALD_VERSION)
           helm install \
-            --values vald/values-ci.yaml \
+            --values charts/vald/values-ci.yaml \
             --set defaults.image.tag=${tag} \
             --generate-name vald/vald
           until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 11 ]
