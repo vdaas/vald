@@ -1,3 +1,4 @@
+// Package grpc provides gRPC client functions
 package grpc
 
 import (
@@ -9,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// Client represents agent NGT client interface.
 type Client interface {
 	client.Client
 	client.ObjectReader
@@ -16,12 +18,12 @@ type Client interface {
 }
 
 type agentClient struct {
-	addr              string
-	opts              []igrpc.Option
-	streamConcurrency int
+	addr string
+	opts []igrpc.Option
 	igrpc.Client
 }
 
+// New returns Client implementation if no error occurs.
 func New(ctx context.Context, opts ...Option) (Client, error) {
 	c := new(agentClient)
 

@@ -1,3 +1,4 @@
+// Package rest provides rest client functions
 package rest
 
 import (

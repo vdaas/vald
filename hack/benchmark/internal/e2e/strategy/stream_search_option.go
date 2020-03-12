@@ -1,3 +1,4 @@
+// Package strategy provides strategy for e2e testing functions
 package strategy
 
 import "github.com/vdaas/vald/internal/client"

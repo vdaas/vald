@@ -1,3 +1,4 @@
+// Package rest provides gRPC client functions
 package rest
 
 import (

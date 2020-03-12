@@ -1,3 +1,4 @@
+// Package e2e provides e2e testing framework functions
 package e2e
 
 import (

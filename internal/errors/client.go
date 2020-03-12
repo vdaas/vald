@@ -18,5 +18,6 @@
 package errors
 
 var (
+	// ErrUnsupportedClientMethod is unsupported method error for gRPC/REST client
 	ErrUnsupportedClientMethod = New("unsupported method")
 )

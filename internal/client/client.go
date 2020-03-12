@@ -1,3 +1,4 @@
+// Package client provides Client interface
 package client
 
 import (
