@@ -10,6 +10,7 @@ import (
 	"github.com/vdaas/vald/internal/net/http/json"
 )
 
+// Client represents gateway client interface.
 type Client interface {
 	client.Client
 	client.MetaObjectReader
@@ -20,6 +21,7 @@ type gatewayClient struct {
 	addr string
 }
 
+// New returns Client implementation.
 func New(opts ...Option) Client {
 	c := new(gatewayClient)
 	for _, opt := range append(defaultOptions, opts...) {

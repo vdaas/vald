@@ -3,7 +3,7 @@ package grpc
 
 import (
 	"github.com/vdaas/vald/internal/config"
-	igrpc "github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc"
 )
 
 type Option func(*ngtdClient)
@@ -35,7 +35,7 @@ func WithAddr(addr string) Option {
 	}
 }
 
-func WithGRPCClientOption(opts ...igrpc.Option) Option {
+func WithGRPCClientOption(opts ...grpc.Option) Option {
 	return func(c *ngtdClient) {
 		if len(opts) != 0 {
 			c.opts = opts

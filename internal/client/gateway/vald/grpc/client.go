@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// Client represents gateway client interface.
 type Client interface {
 	client.Client
 	client.MetaObjectReader
@@ -23,6 +24,7 @@ type gatewayClient struct {
 	igrpc.Client
 }
 
+// New returns Client implementation if no error occurs.
 func New(ctx context.Context, opts ...Option) (Client, error) {
 	c := new(gatewayClient)
 
@@ -142,20 +144,6 @@ func (c *gatewayClient) StreamSearchByID(
 		},
 	)
 	return err
-}
-
-func streamSearch(
-	st grpc.ClientStream,
-	dataProvider func() interface{},
-	f func(*client.SearchResponse, error),
-) error {
-	return igrpc.BidirectionalStreamClient(st, dataProvider,
-		func() interface{} {
-			return new(client.SearchResponse)
-		}, func(res interface{}, err error) {
-			f(res.(*client.SearchResponse), err)
-		},
-	)
 }
 
 func (c *gatewayClient) Insert(

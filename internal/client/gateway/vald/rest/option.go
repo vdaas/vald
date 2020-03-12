@@ -1,6 +1,7 @@
 // Package rest provides rest client functions
 package rest
 
+// Option is gatewayClient configure
 type Option func(*gatewayClient)
 
 var (
@@ -9,6 +10,7 @@ var (
 	}
 )
 
+// WithAddr returns Option that sets addr
 func WithAddr(addr string) Option {
 	return func(c *gatewayClient) {
 		if len(addr) != 0 {
