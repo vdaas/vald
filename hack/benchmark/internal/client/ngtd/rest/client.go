@@ -34,11 +34,17 @@ func New(ctx context.Context, opts ...Option) (Client, error) {
 	return c, nil
 }
 
-func (c *ngtdClient) Exists(ctx context.Context, req *client.ObjectID) (*client.ObjectID, error) {
+func (c *ngtdClient) Exists(
+	ctx context.Context,
+	req *client.ObjectID,
+) (*client.ObjectID, error) {
 	return nil, errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) Search(ctx context.Context, req *client.SearchRequest) (*client.SearchResponse, error) {
+func (c *ngtdClient) Search(
+	ctx context.Context,
+	req *client.SearchRequest,
+) (*client.SearchResponse, error) {
 	res := new(model.SearchResponse)
 	err := json.Request(ctx, http.MethodPost, c.addr+"/search", searchRequestToNgtdSearchRequest(req), &res)
 	if err != nil {
@@ -47,7 +53,10 @@ func (c *ngtdClient) Search(ctx context.Context, req *client.SearchRequest) (*cl
 	return ngtdSearchResponseToSearchResponse(res), nil
 }
 
-func (c *ngtdClient) SearchByID(ctx context.Context, req *client.SearchIDRequest) (*client.SearchResponse, error) {
+func (c *ngtdClient) SearchByID(
+	ctx context.Context,
+	req *client.SearchIDRequest,
+) (*client.SearchResponse, error) {
 	res := new(model.SearchResponse)
 	err := json.Request(ctx, http.MethodPost, c.addr+"/searchbyid", searchIDRequestToNgtdSearchRequest(req), res)
 	if err != nil {
@@ -56,15 +65,26 @@ func (c *ngtdClient) SearchByID(ctx context.Context, req *client.SearchIDRequest
 	return ngtdSearchResponseToSearchResponse(res), nil
 }
 
-func (c *ngtdClient) StreamSearch(ctx context.Context, dataProvider func() *client.SearchRequest, f func(*client.SearchResponse, error)) error {
+func (c *ngtdClient) StreamSearch(
+	ctx context.Context,
+	dataProvider func() *client.SearchRequest,
+	f func(*client.SearchResponse, error),
+) error {
 	return errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) StreamSearchByID(ctx context.Context, dataProvider func() *client.SearchIDRequest, f func(*client.SearchResponse, error)) error {
+func (c *ngtdClient) StreamSearchByID(
+	ctx context.Context,
+	dataProvider func() *client.SearchIDRequest,
+	f func(*client.SearchResponse, error),
+) error {
 	return errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) Insert(ctx context.Context, req *client.ObjectVector) error {
+func (c *ngtdClient) Insert(
+	ctx context.Context,
+	req *client.ObjectVector,
+) error {
 	err := json.Request(ctx, http.MethodPost, c.addr+"/insert", objectVectorToNgtdInsertRequest(req), nil)
 	if err != nil {
 		return err
@@ -72,11 +92,18 @@ func (c *ngtdClient) Insert(ctx context.Context, req *client.ObjectVector) error
 	return nil
 }
 
-func (c *ngtdClient) StreamInsert(ctx context.Context, dataProvider func() *client.ObjectVector, f func(error)) error {
+func (c *ngtdClient) StreamInsert(
+	ctx context.Context,
+	dataProvider func() *client.ObjectVector,
+	f func(error),
+) error {
 	return errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) MultiInsert(ctx context.Context, req *client.ObjectVectors) error {
+func (c *ngtdClient) MultiInsert(
+	ctx context.Context,
+	req *client.ObjectVectors,
+) error {
 	err := json.Request(ctx, http.MethodPost, c.addr+"/multiinsert", objectVectorsToNgtdMultiInsertRequest(req), nil)
 	if err != nil {
 		return err
@@ -84,27 +111,47 @@ func (c *ngtdClient) MultiInsert(ctx context.Context, req *client.ObjectVectors)
 	return nil
 }
 
-func (c *ngtdClient) Update(ctx context.Context, req *client.ObjectVector) error {
+func (c *ngtdClient) Update(
+	ctx context.Context,
+	req *client.ObjectVector,
+) error {
 	return errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) StreamUpdate(ctx context.Context, dataProvider func() *client.ObjectVector, f func(error)) error {
+func (c *ngtdClient) StreamUpdate(
+	ctx context.Context,
+	dataProvider func() *client.ObjectVector,
+	f func(error),
+) error {
 	return errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) MultiUpdate(ctx context.Context, req *client.ObjectVectors) error {
+func (c *ngtdClient) MultiUpdate(
+	ctx context.Context,
+	req *client.ObjectVectors,
+) error {
 	return errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) Remove(ctx context.Context, req *client.ObjectID) error {
+func (c *ngtdClient) Remove(
+	ctx context.Context,
+	req *client.ObjectID,
+) error {
 	return json.Request(ctx, http.MethodGet, c.addr+"/remove/"+req.GetId(), nil, nil)
 }
 
-func (c *ngtdClient) StreamRemove(ctx context.Context, dataProvider func() *client.ObjectID, f func(error)) error {
+func (c *ngtdClient) StreamRemove(
+	ctx context.Context,
+	dataProvider func() *client.ObjectID,
+	f func(error),
+) error {
 	return errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) MultiRemove(ctx context.Context, req *client.ObjectIDs) (err error) {
+func (c *ngtdClient) MultiRemove(
+	ctx context.Context,
+	req *client.ObjectIDs,
+) (err error) {
 	res := new(model.MultiRemoveResponse)
 	err = json.Request(ctx, http.MethodGet, c.addr+"/multiremove/", objectIDsToNgtdMultiRemoveRequest(req), res)
 	if err != nil {
@@ -124,15 +171,25 @@ func (c *ngtdClient) MultiRemove(ctx context.Context, req *client.ObjectIDs) (er
 	return
 }
 
-func (c *ngtdClient) GetObject(ctx context.Context, req *client.ObjectID) (*client.ObjectVector, error) {
+func (c *ngtdClient) GetObject(
+	ctx context.Context,
+	req *client.ObjectID,
+) (*client.ObjectVector, error) {
 	return nil, errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) StreamGetObject(ctx context.Context, dataProvider func() *client.ObjectID, f func(*client.ObjectVector, error)) error {
+func (c *ngtdClient) StreamGetObject(
+	ctx context.Context,
+	dataProvider func() *client.ObjectID,
+	f func(*client.ObjectVector, error),
+) error {
 	return errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) CreateIndex(ctx context.Context, req *client.ControlCreateIndexRequest) error {
+func (c *ngtdClient) CreateIndex(
+	ctx context.Context,
+	req *client.ControlCreateIndexRequest,
+) error {
 	res := new(model.DefaultResponse)
 	err := json.Request(ctx, http.MethodGet, c.addr+"/index/create/"+strconv.Itoa(int(req.GetPoolSize())), nil, res)
 	if err != nil {
@@ -149,7 +206,10 @@ func (c *ngtdClient) SaveIndex(ctx context.Context) error {
 	return json.Request(ctx, http.MethodGet, c.addr+"/index/save", nil, nil)
 }
 
-func (c *ngtdClient) CreateAndSaveIndex(ctx context.Context, req *client.ControlCreateIndexRequest) error {
+func (c *ngtdClient) CreateAndSaveIndex(
+	ctx context.Context,
+	req *client.ControlCreateIndexRequest,
+) error {
 	return errors.ErrUnsupportedClientMethod
 }
 

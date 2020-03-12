@@ -23,6 +23,7 @@ import (
 	"runtime"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
 )
@@ -95,7 +96,16 @@ func BidirectionalStreamClient(stream grpc.ClientStream,
 		}
 	}))
 
-	defer stream.CloseSend()
+	defer func() {
+		cerr := stream.CloseSend()
+		if err != nil {
+			if cerr != nil {
+				err = errors.Wrap(err, cerr.Error())
+			}
+		} else {
+			err = cerr
+		}
+	}()
 
 	return func() (err error) {
 		for {

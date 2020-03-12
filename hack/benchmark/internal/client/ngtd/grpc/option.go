@@ -34,14 +34,6 @@ func WithAddr(addr string) Option {
 	}
 }
 
-func WithStreamConcurrency(n int) Option {
-	return func(c *ngtdClient) {
-		if n > 0 {
-			c.streamConcurrency = n
-		}
-	}
-}
-
 func WithGRPCClientOption(opts ...igrpc.Option) Option {
 	return func(c *ngtdClient) {
 		if len(opts) != 0 {
