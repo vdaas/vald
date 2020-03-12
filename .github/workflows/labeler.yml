@@ -14,21 +14,11 @@ jobs:
       with:
         ref: ${{ github.head_ref }}
         fetch-depth: 0
-    - name: Add labels 
+    - name: Add labels
       run: |
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
         branch_name=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.head.ref"`
-        type_labels=(
-            "type/test"
-            "type/bug"
-            "type/documentation"
-            "type/feature"
-            "type/refactoring"
-            "type/security"
-            "type/test"
-            "type/ci"
-            "type/dependency"
-        )
+        type_labels=($(curl -s "https://api.github.com/repos/${REPOSITORY}/labels?per_page=5000" | jq -r ".[].name" | grep -e "^type/"))
         send_labels=()
 
         git fetch origin master
@@ -36,7 +26,7 @@ jobs:
         echo "branch name: " $branch_name
         for label in ${type_labels[@]}
         do
-          if [ "${branch_name%%/*}" = "${label#type/}" ] ; then
+          if [[ "${label#type/}" =~ "${branch_name%%/*}" ]] || [[ "${branch_name%%/*}" =~ "${label#type/}" ]]; then
             send_labels+=(\"$label\")
           fi
         done
@@ -69,8 +59,11 @@ jobs:
           data="{\"labels\": [$str]}"
           echo "send data: " $data
           curl --request POST \
-               --url https://api.github.com/repos/${{ github.repository }}/issues/${pr_num}/labels \
-               --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+               --url "https://api.github.com/repos/${REPOSITORY}/issues/${pr_num}/labels" \
+               --header "authorization: Bearer ${GITHUB_TOKEN}" \
                --header 'content-type: application/json' \
                --data "$data"
         fi
+      env:
+        REPOSITORY: ${{ github.repository }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
