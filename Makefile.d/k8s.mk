@@ -273,3 +273,54 @@ $(BINDIR)/telepresence:
 	rm -rf telepresence.tar.gz
 	env PREFIX=$(BINDIR:%/bin=%) telepresence-$(TELEPRESENCE_VERSION)/install.sh
 	rm -rf telepresence-$(TELEPRESENCE_VERSION)
+
+.PHONY: telepresence/swap/agent-ngt
+## swap agent-ngt deployment using telepresence
+telepresence/swap/agent-ngt:
+	telepresence \
+	    --swap-deployment vald-agent-ngt \
+	    --docker-run --rm -it $(SWAP_IMAGE):$(SWAP_TAG)
+	    ## will be available after telepresence 0.105 released
+	    ## --deployment-type "$(SWAP_DEPLOYMENT_TYPE)"
+
+.PHONY: telepresence/swap/gateway
+## swap gateway deployment using telepresence
+telepresence/swap/gateway:
+	telepresence \
+	    --swap-deployment vald-gateway \
+	    --docker-run --rm -it $(SWAP_IMAGE):$(SWAP_TAG)
+
+.PHONY: telepresence/swap/discoverer
+## swap discoverer deployment using telepresence
+telepresence/swap/discoverer:
+	telepresence \
+	    --swap-deployment vald-discoverer \
+	    --docker-run --rm -it $(SWAP_IMAGE):$(SWAP_TAG)
+
+.PHONY: telepresence/swap/meta
+## swap meta deployment using telepresence
+telepresence/swap/meta:
+	telepresence \
+	    --swap-deployment vald-meta \
+	    --docker-run --rm -it $(SWAP_IMAGE):$(SWAP_TAG)
+
+.PHONY: telepresence/swap/manager-backup
+## swap manager-backup deployment using telepresence
+telepresence/swap/manager-backup:
+	telepresence \
+	    --swap-deployment vald-manager-backup \
+	    --docker-run --rm -it $(SWAP_IMAGE):$(SWAP_TAG)
+
+.PHONY: telepresence/swap/manager-compressor
+## swap manager-compressor deployment using telepresence
+telepresence/swap/manager-compressor:
+	telepresence \
+	    --swap-deployment vald-manager-compressor \
+	    --docker-run --rm -it $(SWAP_IMAGE):$(SWAP_TAG)
+
+.PHONY: telepresence/swap/manager-index
+## swap manager-index deployment using telepresence
+telepresence/swap/manager-index:
+	telepresence \
+	    --swap-deployment vald-manager-index \
+	    --docker-run --rm -it $(SWAP_IMAGE):$(SWAP_TAG)
