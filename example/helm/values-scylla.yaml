@@ -14,12 +14,45 @@
 # limitations under the License.
 #
 
+gateway:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+
 agent:
-  minReplicas: 5
-  maxReplicas: 10
+  minReplicas: 3
+  maxReplicas: 5
+  # Set Parallel to podManagementPolicy is not recommended for production.
+  # In this time, it is just an example, we set Parallel to podManagementPolicy.
   podManagementPolicy: Parallel
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
   ngt:
+    # The number of dimensions for feature vector of fashion-mnist dataset.
     dimension: 784
+    # We use L2-Norm for distance_type.
+    distance_type: 12
+    # the type of fashion-mnist's feature vectors.
+    object_type: float
+
+discoverer:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+compressor:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+indexManager:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 30Mi
 
 backupManager:
   image:
@@ -35,6 +68,10 @@ backupManager:
           - scylla-2.scylla.default.svc.cluster.local
       sleepDuration: 2
   env: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 30Mi
   mysql:
     enabled: false
   cassandra:
@@ -59,6 +96,10 @@ meta:
           - scylla-2.scylla.default.svc.cluster.local
       sleepDuration: 2
   env: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 30Mi
   redis:
     enabled: false
   cassandra:

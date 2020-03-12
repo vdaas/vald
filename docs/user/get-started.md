@@ -1,6 +1,6 @@
 # Get Started
 
-For the one who is interested in Vald, this article will show you a way to deploy and run Vald on k8s.
+For the one who is interested in Vald, this article will show you how to deploy and run Vald on k8s.
 This article uses Scylla DB as the backend data store for metadata-management and backup-manager.
 Fashion-mnist is used as an example of a dataset.
 
@@ -14,8 +14,8 @@ Fashion-mnist is used as an example of a dataset.
 
 ## About
 
-Vald is a distributed highly scalable and fast approximate nearest neighbor dense vector search engine.<br>
-It provides the search result of any input (e.g. word, sentence, image and etc.) which is coverted to a multi-dimensional vector when searching the neighbor.<br>
+Vald is a distributed highly scalable and fast approximate nearest neighbor dense feature vector search engine.<br>
+Vald can handle large amount of specific objects, such as image, text, videa, and etc.<br>
 Vald is designed base on Cloud Native.
 It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors.
 (If you are interested in ANN benchmarks, please refer to [the official website](http://ann-benchmarks.com/).)
@@ -27,8 +27,8 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
     - Therefore, Vald automatically indexes distributed Graphs sequentially.
 
 - Ingress/Egress Filltering
-    - Vald has flexible customizability, which is the Ingress/Egress filter.
-    - These can be freely configured by the user to fit the Vald grpc interface.
+    - Vald has it's own highly customizable Ingress/Egress filter.
+    - Which can be configured by the user to fit the gRPC interface.
         - Ingress Filter: Ability to Vectorize through filter on request.
         - Egress Filter: A function to rerank or filter the Search response with your own algorithm.
 
@@ -39,11 +39,11 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
     - Vald has auto index backup feature using MySQL + Redis or Cassndora which enables disaster recovery.
 
 - Distributed Indexing
-    - Vald indexes vecotr to distributed multiple agent. It means each agent has different graph index.
+    - Vald distribute indexes vecotr to multiple agent. Which means each agent has different graph index.
 
 - Index Replication
     - Vald stores each index in multiple agents which enables index replicas.
-    - Rebalance replica when some pods go down.
+    - Rebalance the replica when some pods go down.
 
 - Easy to use
     - Vald can be easily installed in a few steps and Vald is highly customizable.
@@ -65,8 +65,13 @@ curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bas
 ```
 install hdf5
 ```bash
+## yum
 yum install -y hdf5-devel
+
+## apt
 apt-get install libhdf5-serial-dev
+
+## homebrew
 brew install hdf5
 ```
 </details>
@@ -148,7 +153,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
 
 ### Run
 
-This chapter shows the procudure of run Vald with fashion-mnist dataset.
+This chapter shows the procedure to run Vald with fashion-mnist dataset.
 
 1. Port Forward
 
@@ -170,10 +175,10 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
 
 3. Running example
 
-    Vald provides clients that support multiple langurages such as Java, Node.js, Python and so on.<br>
+    Vald provides multiple langurages client library such as golang, Java, Node.js, Python and so on.<br>
     In this case, we use [vald-client-go](https://github.com/vdaas/vald-client-go) which is written by golang.
 
-    We use [`example/client/main.go`](../../example/client/main.go) for running example.
+    We use [`example/client/main.go`](../../example/client/main.go) to run the example.
     This will execute 4 steps.
     1. init
     - Import packages
@@ -285,8 +290,8 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
         time.Sleep(time.Duration(indexingWaitSeconds) * time.Second)
         ```
         </details>
-    5. search
-    - Seach 10 neighbor vectors fot each 20 test datasets and return list of neighbor vector.
+    5. Search
+    - Search 10 neighbor vectors for each 20 test datasets and return list of neighbor vector.
     - When getting approximate vectors, the Vald client sends search config and vector to the server via gRPC.
         <details><summary>example code</summary><br>
 
@@ -324,10 +329,11 @@ This chapter shows the procudure of run Vald with fashion-mnist dataset.
 Vald is highly customizable.
 For example you can configure the number of vector dimension, the number of replica and etc.
 You can customize Vald by creating/editing `values.yaml`.
-We will publish the instructions of `values.yaml` soon.
+We will publish the description of `values.yaml` soon.
 
 ### Another way to deploy Vald
 
-In the `Get Started` section, we'll show you how to deploy Vald with Scylla DB.
-Vald can be deployed in another way, which is used by Helm or `kind` command. (Compressor datastore is required, for example mysql + redis or casandora ).
+In the `Get Started` section, we show you how to deploy Vald with Scylla DB.
+Vald can also be deployed by Helm or `kind` command. (Compressor datastore is required, for example mysql + redis or casandora ).
+We will publish the document about this in near future.
 

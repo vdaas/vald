@@ -18,10 +18,10 @@
 
 <div align="center">
 Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.<br>
-Designed on a cloud native architecture and enables automatic vector indexing and index backup,<br>
-and horizontal scalling which made for search billions of feature vector data.<br>
-Easy to use and can be customized as you needed.<br>
-If you'd like to try Vald, please check <a href="#Get-Started">get started</a> out.<br>
+Vald is designed and implemented based on the Cloud-Native architecture, <br>
+and enables automatic vector indexing and index backup, and horizontal scaling which made for searching from billions of feature vector data.<br>
+Vald is easy to use, feature-rich and highly customizable as you needed.<br>
+Go to [Get Started](./docs/user/get-started.md) page to stear trying out Vald :)
 </div>
 
 ## Requirement
@@ -31,7 +31,7 @@ kubernetes 1.17~
 ## Get Started
 
 Explore the get started and easily create Vald on your k8s cluster.<br>
-For more infomation, please refer to [Get Started](./docs/user/get-started.md).
+Please refer to [Get Started](./docs/user/get-started.md).
 
 ## Installation
 
