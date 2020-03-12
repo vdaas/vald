@@ -7,6 +7,7 @@ import (
 	"github.com/vdaas/vald/internal/client"
 	"github.com/vdaas/vald/internal/config"
 	igrpc "github.com/vdaas/vald/internal/net/grpc"
+	"google.golang.org/grpc"
 )
 
 type Client interface {
@@ -168,20 +169,24 @@ func (c *gatewayClient) StreamInsert(
 				return nil, err
 			}
 
-			return nil, igrpc.BidirectionalStreamClient(st,
-				func() interface{} {
-					if d := dataProvider(); d != nil {
-						return d
-					}
-					return nil
-				}, func() interface{} {
-					return new(client.Empty)
-				}, func(_ interface{}, err error) {
-					f(err)
-				})
+			return nil, sendObjectVector(st, dataProvider, f)
 		},
 	)
 	return err
+}
+
+func sendObjectVector(st grpc.ClientStream, dataProvider func() *client.ObjectVector, f func(error)) error {
+	return igrpc.BidirectionalStreamClient(st,
+		func() interface{} {
+			if d := dataProvider(); d != nil {
+				return d
+			}
+			return nil
+		}, func() interface{} {
+			return new(client.Empty)
+		}, func(_ interface{}, err error) {
+			f(err)
+		})
 }
 
 func (c *gatewayClient) MultiInsert(
@@ -222,17 +227,7 @@ func (c *gatewayClient) StreamUpdate(
 				return nil, err
 			}
 
-			return nil, igrpc.BidirectionalStreamClient(st,
-				func() interface{} {
-					if d := dataProvider(); d != nil {
-						return d
-					}
-					return nil
-				}, func() interface{} {
-					return new(client.Empty)
-				}, func(_ interface{}, err error) {
-					f(err)
-				})
+			return nil, sendObjectVector(st, dataProvider, f)
 		},
 	)
 	return err
