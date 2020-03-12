@@ -4,6 +4,7 @@ on:
 
 jobs:
   triage:
+    name: Triage
     runs-on: ubuntu-latest
     steps:
     - uses: actions/labeler@v2
@@ -67,3 +68,81 @@ jobs:
       env:
         REPOSITORY: ${{ github.repository }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  remove-duplication:
+    name: Remove duplication
+    needs:
+      - triage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove duplication
+        run: |
+          declare -A SIZES
+          declare -A PRIORITIES
+          SIZES=(
+            ["size/S"]=0
+            ["size/M"]=30
+            ["size/L"]=100
+            ["size/XL"]=500
+            ["size/XXL"]=1000
+            ["size/XXXL"]=5000
+          )
+          PRIORITIES=(
+            ["priority/low"]=10
+            ["priority/medium"]=20
+            ["priority/high"]=30
+          )
+
+          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+          existing_labels=($(curl -s "https://api.github.com/repos/${REPOSITORY}/issues/${pr_num}/labels" | jq -r ".[].name"))
+          send_labels=()
+          size_label=""
+          priority_label=""
+
+          for label in ${existing_labels[@]}
+          do
+            if [ "${label%%/*}" = "size" ]; then
+              if [ -z "${size_label}" ]; then
+                size_label=$label
+              else
+                c="${SIZES[$size_label]}"
+                s="${SIZES[$label]}"
+                if [ ! -z "${s}" ] && [ $c -lt $s ]; then
+                  size_label=$label
+                fi
+              fi
+            elif [ "${label%%/*}" = "priority" ]; then
+              if [ -z "${priority_label}" ]; then
+                priority_label=$label
+              else
+                c="${PRIORITIES[$priority_label]}"
+                s="${PRIORITIES[$label]}"
+                if [ ! -z "${s}" ] && [ $c -lt $s ]; then
+                  priority_label=$label
+                fi
+              fi
+            else
+              send_labels+=(\"$label\")
+            fi
+          done
+
+          if [ ! -z "${size_label}" ]; then
+            send_labels+=(\"$size_label\")
+          fi
+
+          if [ ! -z "${priority_label}" ]; then
+            send_labels+=(\"$priority_label\")
+          fi
+
+          if [ ${#send_labels[@]} -gt 0 ]; then
+            str="$(IFS=,; echo "${send_labels[*]}")"
+            data="{\"labels\": [$str]}"
+            echo "send data: " $data
+            curl --request PUT \
+                 --url "https://api.github.com/repos/${REPOSITORY}/issues/${pr_num}/labels" \
+                 --header "authorization: Bearer ${GITHUB_TOKEN}" \
+                 --header 'content-type: application/json' \
+                 --data "$data"
+          fi
+        env:
+          REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
