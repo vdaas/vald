@@ -97,14 +97,7 @@ func BidirectionalStreamClient(stream grpc.ClientStream,
 	}))
 
 	defer func() {
-		cerr := stream.CloseSend()
-		if err != nil {
-			if cerr != nil {
-				err = errors.Wrap(err, cerr.Error())
-			}
-		} else {
-			err = cerr
-		}
+		err = wrapError(err, stream.CloseSend())
 	}()
 
 	return func() (err error) {
@@ -115,9 +108,9 @@ func BidirectionalStreamClient(stream grpc.ClientStream,
 			default:
 				data := dataProvider()
 				if data == nil {
-					stream.CloseSend()
+					err = stream.CloseSend()
 					cancel()
-					return eg.Wait()
+					return wrapError(err, eg.Wait())
 				}
 
 				err = stream.SendMsg(data)
@@ -127,4 +120,14 @@ func BidirectionalStreamClient(stream grpc.ClientStream,
 			}
 		}
 	}()
+}
+
+func wrapError(left, right error) error {
+	if left != nil {
+		if right != nil {
+			return errors.Wrap(left, right.Error())
+		}
+		return left
+	}
+	return right
 }
