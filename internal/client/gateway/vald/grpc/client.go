@@ -100,17 +100,14 @@ func (c *gatewayClient) StreamSearch(
 				return nil, err
 			}
 
-			return nil, igrpc.BidirectionalStreamClient(st,
+			return nil, streamSearch(st,
 				func() interface{} {
 					if d := dataProvider(); d != nil {
 						return d
 					}
 					return nil
-				}, func() interface{} {
-					return new(client.SearchResponse)
-				}, func(res interface{}, err error) {
-					f(res.(*client.SearchResponse), err)
-				})
+				}, f,
+			)
 		},
 	)
 	return err
@@ -130,20 +127,31 @@ func (c *gatewayClient) StreamSearchByID(
 				return nil, err
 			}
 
-			return nil, igrpc.BidirectionalStreamClient(st,
+			return nil, streamSearch(st,
 				func() interface{} {
 					if d := dataProvider(); d != nil {
 						return d
 					}
 					return nil
-				}, func() interface{} {
-					return new(client.SearchResponse)
-				}, func(res interface{}, err error) {
-					f(res.(*client.SearchResponse), err)
-				})
+				}, f,
+			)
 		},
 	)
 	return err
+}
+
+func streamSearch(
+	st grpc.ClientStream,
+	dataProvider func() interface{},
+	f func(*client.SearchResponse, error),
+) error {
+	return igrpc.BidirectionalStreamClient(st, dataProvider,
+		func() interface{} {
+			return new(client.SearchResponse)
+		}, func(res interface{}, err error) {
+			f(res.(*client.SearchResponse), err)
+		},
+	)
 }
 
 func (c *gatewayClient) Insert(
