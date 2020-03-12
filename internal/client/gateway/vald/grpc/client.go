@@ -144,6 +144,20 @@ func (c *gatewayClient) StreamSearchByID(
 	return err
 }
 
+func streamSearch(
+	st grpc.ClientStream,
+	dataProvider func() interface{},
+	f func(*client.SearchResponse, error),
+) error {
+	return igrpc.BidirectionalStreamClient(st, dataProvider,
+		func() interface{} {
+			return new(client.SearchResponse)
+		}, func(res interface{}, err error) {
+			f(res.(*client.SearchResponse), err)
+		},
+	)
+}
+
 func (c *gatewayClient) Insert(
 	ctx context.Context,
 	req *client.ObjectVector,
@@ -170,24 +184,25 @@ func (c *gatewayClient) StreamInsert(
 				return nil, err
 			}
 
-			return nil, sendObjectVector(st, dataProvider, f)
+			return nil, stream(st, func() interface{} {
+				if d := dataProvider(); d != nil {
+					return d
+				}
+				return nil
+			}, f)
 		},
 	)
 	return err
 }
 
-func sendObjectVector(st grpc.ClientStream, dataProvider func() *client.ObjectVector, f func(error)) error {
-	return igrpc.BidirectionalStreamClient(st,
+func stream(st grpc.ClientStream, dataProvider func() interface{}, f func(error)) error {
+	return igrpc.BidirectionalStreamClient(st, dataProvider,
 		func() interface{} {
-			if d := dataProvider(); d != nil {
-				return d
-			}
-			return nil
-		}, func() interface{} {
 			return new(client.Empty)
 		}, func(_ interface{}, err error) {
 			f(err)
-		})
+		},
+	)
 }
 
 func (c *gatewayClient) MultiInsert(
@@ -228,7 +243,12 @@ func (c *gatewayClient) StreamUpdate(
 				return nil, err
 			}
 
-			return nil, sendObjectVector(st, dataProvider, f)
+			return nil, stream(st, func() interface{} {
+				if d := dataProvider(); d != nil {
+					return d
+				}
+				return nil
+			}, f)
 		},
 	)
 	return err
@@ -284,17 +304,14 @@ func (c *gatewayClient) StreamUpsert(
 				return nil, err
 			}
 
-			return nil, igrpc.BidirectionalStreamClient(st,
+			return nil, stream(st,
 				func() interface{} {
 					if d := dataProvider(); d != nil {
 						return d
 					}
 					return nil
-				}, func() interface{} {
-					return new(client.Empty)
-				}, func(_ interface{}, err error) {
-					f(err)
-				})
+				}, f,
+			)
 		},
 	)
 	return err
@@ -326,14 +343,11 @@ func (c *gatewayClient) StreamRemove(
 				return nil, err
 			}
 
-			return nil, igrpc.BidirectionalStreamClient(st,
+			return nil, stream(st,
 				func() interface{} {
 					return dataProvider()
-				}, func() interface{} {
-					return new(client.Empty)
-				}, func(_ interface{}, err error) {
-					f(err)
-				})
+				}, f,
+			)
 		},
 	)
 	return err
