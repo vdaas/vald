@@ -95,8 +95,8 @@ jobs:
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
           existing_labels=($(curl -s "https://api.github.com/repos/${REPOSITORY}/issues/${pr_num}/labels" | jq -r ".[].name"))
           send_labels=()
-          size_label=""
-          priority_label=""
+          size_label="size/S"
+          priority_label="priority/low"
 
           for label in ${existing_labels[@]}
           do
@@ -122,6 +122,22 @@ jobs:
               fi
             else
               send_labels+=(\"$label\")
+            fi
+
+            if [ "${label}" = "type/security" ]; then
+              l="priority/high"
+              c="${PRIORITIES[$priority_label]}"
+              s="${PRIORITIES[$l]}"
+              if [ ! -z "${s}" ] && [ $c -lt $s ]; then
+                priority_label=$l
+              fi
+            elif [ "${label}" = "type/bug" ] || [ "${label}" = "type/feature" ]; then
+              l="priority/medium"
+              c="${PRIORITIES[$priority_label]}"
+              s="${PRIORITIES[$l]}"
+              if [ ! -z "${s}" ] && [ $c -lt $s ]; then
+                priority_label=$l
+              fi
             fi
           done
 
