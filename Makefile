@@ -47,7 +47,7 @@ VALDCLI_VERSION      ?= v0.0.1
 TELEPRESENCE_VERSION ?= 0.104
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
-SWAP_IMAGE           ?= vdaas/vald-gateway
+SWAP_IMAGE           ?= ""
 SWAP_TAG             ?= latest
 
 BINDIR ?= /usr/local/bin
