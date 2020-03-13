@@ -85,6 +85,7 @@ func DecodeResponse(res *http.Response, data interface{}) (err error) {
 	return nil
 }
 
+// EncodeRequest encodes http request.
 func EncodeRequest(req *http.Request,
 	data interface{}, contentTypes ...string) error {
 	for _, ct := range contentTypes {
@@ -102,6 +103,7 @@ func EncodeRequest(req *http.Request,
 	return nil
 }
 
+// DecodeRequest decodes http request body.
 func DecodeRequest(r *http.Request, data interface{}) (err error) {
 	if r != nil && r.Body != nil && r.ContentLength != 0 {
 		err = Decode(r.Body, data)
@@ -173,6 +175,7 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request,
 	return err
 }
 
+// Request sends http json request.
 func Request(ctx context.Context, method string, url string, payloyd interface{}, data interface{}) error {
 	req, err := http.NewRequestWithContext(ctx, method, url, nil)
 	if err != nil {
