@@ -40,6 +40,7 @@ GOCACHE := $(shell go env GOCACHE)
 
 TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION)
 
+DOCKFMT_VERSION      ?= v0.3.3
 KIND_VERSION         ?= v0.7.0
 VALDCLI_VERSION      ?= v0.0.1
 TELEPRESENCE_VERSION ?= 0.104
@@ -210,10 +211,6 @@ goimports/install:
 .PHONY: prettier/install
 prettier/install:
 	npm install -g prettier
-
-.PHONY: dockfmt/install
-dockfmt/install:
-	go get -u github.com/jessfraz/dockfmt
 
 .PHONY: version/go
 ## print go version
