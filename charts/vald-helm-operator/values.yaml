@@ -19,7 +19,7 @@ replicas: 1
 
 image:
   repository: vdaas/vald-helm-operator
-  tag: v0.0.24
+  tag: v0.0.25
   pullPolicy: Always
 
 crd:
