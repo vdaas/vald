@@ -46,6 +46,25 @@ k8s/manifest/update: \
 	mv tmp-k8s/vald/templates/jobs k8s/jobs
 	rm -rf tmp-k8s
 
+.PHONY: k8s/manifest/helm-operator/clean
+## clean k8s manifests for helm-operator
+k8s/manifest/helm-operator/clean:
+	rm -rf \
+	    k8s/operator/helm
+
+.PHONY: k8s/manifest/helm-operator/update
+## update k8s manifests for helm-operatorusing helm templates
+k8s/manifest/helm-operator/update: \
+	k8s/manifest/helm-operator/clean
+	helm template \
+	    --set vald.create=true \
+	    --output-dir tmp-k8s \
+	    charts/vald-helm-operator
+	mkdir -p k8s/operator
+	mv tmp-k8s/vald-helm-operator/templates k8s/operator/helm
+	rm -rf tmp-k8s
+
+
 .PHONY: k8s/vald/deploy
 ## deploy vald sample cluster to k8s
 k8s/vald/deploy: \
