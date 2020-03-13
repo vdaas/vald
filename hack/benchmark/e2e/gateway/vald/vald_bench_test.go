@@ -94,9 +94,7 @@ func BenchmarkGateway_REST_Stream(b *testing.B) {
 			),
 			e2e.WithStrategy(
 				strategy.NewStreamInsert(),
-				strategy.NewStreamSearch(
-					strategy.WithStreamSearchConfig(searchConfig),
-				),
+				strategy.NewStreamSearch(),
 			),
 		)
 		bench.Run(ctx, b)

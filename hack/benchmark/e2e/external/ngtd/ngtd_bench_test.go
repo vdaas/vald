@@ -21,7 +21,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/client/ngtd/grpc"
 	"github.com/vdaas/vald/hack/benchmark/internal/client/ngtd/rest"
@@ -34,12 +33,6 @@ import (
 var (
 	targets []string
 )
-
-var searchConfig = &payload.Search_Config{
-	Num:     1,
-	Radius:  -1,
-	Epsilon: 0.01,
-}
 
 func init() {
 	testing.Init()
@@ -74,9 +67,7 @@ func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 				strategy.NewCreateIndex(
 					strategy.WithCreateIndexClient(client),
 				),
-				strategy.NewSearch(
-					strategy.WithSearchConfig(searchConfig),
-				),
+				strategy.NewSearch(),
 			),
 		)
 		bench.Run(ctx, b)
@@ -106,9 +97,7 @@ func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 				strategy.NewCreateIndex(
 					strategy.WithCreateIndexClient(client),
 				),
-				strategy.NewSearch(
-					strategy.WithSearchConfig(searchConfig),
-				),
+				strategy.NewSearch(),
 			),
 		)
 		bench.Run(ctx, b)
@@ -138,9 +127,7 @@ func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 				strategy.NewCreateIndex(
 					strategy.WithCreateIndexClient(client),
 				),
-				strategy.NewStreamSearch(
-					strategy.WithStreamSearchConfig(searchConfig),
-				),
+				strategy.NewStreamSearch(),
 			),
 		)
 		bench.Run(ctx, b)

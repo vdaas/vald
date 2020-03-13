@@ -21,7 +21,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
@@ -35,32 +34,15 @@ var (
 	targets []string
 )
 
-var searchConfig = &payload.Search_Config{
-	Num:     1,
-	Radius:  -1,
-	Epsilon: 0.01,
-}
-
 func init() {
 	testing.Init()
 	log.Init()
 
-	var (
-		dataset string
-		num     uint
-		radius  float64
-		epsilon float64
-	)
+	var dataset string
 
 	flag.StringVar(&dataset, "dataset", "", "set available dataset list (choice with comma)")
-	flag.UintVar(&num, "num", uint(searchConfig.Num), "search response size")
-	flag.Float64Var(&radius, "radius", float64(searchConfig.Radius), "search radius size")
-	flag.Float64Var(&epsilon, "epsilon", float64(searchConfig.Epsilon), "search epsilon size")
 	flag.Parse()
 
-	searchConfig.Num = uint32(num)
-	searchConfig.Radius = float32(radius)
-	searchConfig.Epsilon = float32(epsilon)
 	targets = strings.Split(strings.TrimSpace(dataset), ",")
 }
 
@@ -85,9 +67,7 @@ func BenchmarkAgentNGT_REST_Sequential(b *testing.B) {
 				strategy.NewCreateIndex(
 					strategy.WithCreateIndexClient(client),
 				),
-				strategy.NewSearch(
-					strategy.WithSearchConfig(searchConfig),
-				),
+				strategy.NewSearch(),
 			),
 		)
 		bench.Run(ctx, b)
@@ -118,9 +98,7 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 				strategy.NewCreateIndex(
 					strategy.WithCreateIndexClient(client),
 				),
-				strategy.NewSearch(
-					strategy.WithSearchConfig(searchConfig),
-				),
+				strategy.NewSearch(),
 			),
 		)
 		bench.Run(ctx, b)
@@ -151,9 +129,7 @@ func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 				strategy.NewCreateIndex(
 					strategy.WithCreateIndexClient(client),
 				),
-				strategy.NewStreamSearch(
-					strategy.WithStreamSearchConfig(searchConfig),
-				),
+				strategy.NewStreamSearch(),
 			),
 		)
 		bench.Run(ctx, b)
