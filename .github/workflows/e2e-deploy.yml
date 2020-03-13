@@ -11,8 +11,6 @@ jobs:
   e2e-deploy:
     name: e2e deploy test
     runs-on: ubuntu-latest
-    container:
-      image: vdaas/vald-ci-container:nightly
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v1
@@ -34,6 +32,22 @@ jobs:
               sleep 2
             done
           done
+      - name: Fetch golang version
+        run: |
+          KIND_VERSION=`make version/kind`
+          HELM_VERSION=`make version/helm`
+          VALDCLI_VERSION=`make version/valdcli`
+          echo "::set-output name=kind::${KIND_VERSION}"
+          echo "::set-output name=helm::${HELM_VERSION}"
+          echo "::set-output name=valdcli::${VALDCLI_VERSION}"
+        id: version
+      - uses: engineerd/setup-kind@v0.2.0
+        with:
+          version: ${{ steps.version.outputs.kind }}
+          skipClusterCreation: true
+      - uses: azure/setup-helm@v1
+        with:
+          version: ${{ steps.version.outputs.helm }}
       - name: Helm version
         run: |
           helm version
@@ -41,6 +55,14 @@ jobs:
         run: |
           kind create cluster --name vald
           kubectl cluster-info
+      - name: install valdcli
+        run: |
+          curl -OL "https://github.com/rinx/vald-client-clj/releases/download/${VALDCLI_VERSION}/valdcli-linux-static.zip"
+          unzip valdcli-linux-static.zip
+          chmod a+x valdcli
+          sudo mv valdcli /usr/local/bin/valdcli
+        env:
+          VALDCLI_VERSION: ${{ steps.version.outputs.valdcli }}
       - name: deploy vald
         run: |
           sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
