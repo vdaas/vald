@@ -121,9 +121,7 @@ func BenchmarkGateway_gRPC_Sequential(b *testing.B) {
 			e2e.WithClient(client),
 			e2e.WithStrategy(
 				strategy.NewStreamInsert(),
-				strategy.NewStreamSearch(
-					strategy.WithStreamSearchConfig(searchConfig),
-				),
+				strategy.NewStreamSearch(),
 			),
 		)
 		bench.Run(ctx, b)
@@ -148,9 +146,7 @@ func BenchmarkGateway_gRPC_Stream(b *testing.B) {
 			e2e.WithClient(client),
 			e2e.WithStrategy(
 				strategy.NewStreamInsert(),
-				strategy.NewStreamSearch(
-					strategy.WithStreamSearchConfig(searchConfig),
-				),
+				strategy.NewStreamSearch(),
 			),
 		)
 		bench.Run(ctx, b)
