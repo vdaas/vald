@@ -65,6 +65,7 @@ func EncodeResponse(w http.ResponseWriter,
 	return Encode(w, data)
 }
 
+// DecodeResponse decodes http response body.
 func DecodeResponse(res *http.Response, data interface{}) (err error) {
 	if res != nil && res.Body != nil && data != nil && res.ContentLength != 0 {
 		err = Decode(res.Body, data)
