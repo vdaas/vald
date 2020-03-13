@@ -42,6 +42,7 @@ TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION)
 
 DOCKFMT_VERSION      ?= v0.3.3
 KIND_VERSION         ?= v0.7.0
+HELM_VERSION         ?= v3.1.2
 VALDCLI_VERSION      ?= v0.0.1
 TELEPRESENCE_VERSION ?= 0.104
 
@@ -206,7 +207,7 @@ deps: \
 
 .PHONY: goimports/install
 goimports/install:
-	go get -u golang.org/x/tools/cmd/goimports
+	GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
 
 .PHONY: prettier/install
 prettier/install:
@@ -221,6 +222,22 @@ version/go:
 ## print NGT version
 version/ngt:
 	@echo $(NGT_VERSION)
+
+.PHONY: version/kind
+version/kind:
+	@echo $(KIND_VERSION)
+
+.PHONY: version/helm
+version/helm:
+	@echo $(HELM_VERSION)
+
+.PHONY: version/valdcli
+version/valdcli:
+	@echo $(VALDCLI_VERSION)
+
+.PHONY: version/telepresence
+version/telepresence:
+	@echo $(TELEPRESENCE_VERSION)
 
 .PHONY: ngt/install
 ## install NGT
