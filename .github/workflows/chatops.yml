@@ -324,13 +324,13 @@ jobs:
           echo "install dependencies"
           make goimports/install
           sudo make prettier/install
-          sudo make dockfmt/install
+          # sudo make dockfmt/install
 
           echo "Update license headers and format go codes/yaml/Dockerfile"
 
           make update/goimports
           make format/yaml
-          make format/docker
+          # make format/docker
           make license
 
           if git diff --quiet --exit-code; then
