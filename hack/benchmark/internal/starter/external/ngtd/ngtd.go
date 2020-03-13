@@ -75,7 +75,7 @@ func (ns *server) createIndexDir() error {
 		return err
 	}
 
-	if err := os.MkdirAll(ns.indexDir, 0755); err != nil {
+	if err := os.MkdirAll(ns.indexDir, os.ModeTemporary); err != nil {
 		return err
 	}
 
