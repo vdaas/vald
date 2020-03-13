@@ -55,7 +55,7 @@ func init() {
 	wait = time.Duration(time.Duration(waitSeconds) * time.Second)
 }
 
-func BenchmarkGateway_REST_Sequential(b *testing.B) {
+func BenchmarkValdGateway_REST_Sequential(b *testing.B) {
 	ctx := context.Background()
 
 	for _, name := range targets {
@@ -78,7 +78,7 @@ func BenchmarkGateway_REST_Sequential(b *testing.B) {
 	}
 }
 
-func BenchmarkGateway_REST_Stream(b *testing.B) {
+func BenchmarkValdGateway_REST_Stream(b *testing.B) {
 	ctx := context.Background()
 
 	for _, name := range targets {
@@ -101,7 +101,7 @@ func BenchmarkGateway_REST_Stream(b *testing.B) {
 	}
 }
 
-func BenchmarkGateway_gRPC_Sequential(b *testing.B) {
+func BenchmarkValdGateway_gRPC_Sequential(b *testing.B) {
 	ctx := context.Background()
 	client, err := grpc.New(ctx,
 		grpc.WithAddr(
@@ -126,7 +126,7 @@ func BenchmarkGateway_gRPC_Sequential(b *testing.B) {
 	}
 }
 
-func BenchmarkGateway_gRPC_Stream(b *testing.B) {
+func BenchmarkValdGateway_gRPC_Stream(b *testing.B) {
 	ctx := context.Background()
 	client, err := grpc.New(ctx,
 		grpc.WithAddr(
