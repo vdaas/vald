@@ -31,4 +31,4 @@ RUN { \
         echo "  kind: ${KIND}"; \
         echo "  chart: helm-charts/vald"; \
     } > ${HOME}/watches.yaml
-COPY vald ${HOME}/helm-charts/vald
+COPY charts/vald ${HOME}/helm-charts/vald
