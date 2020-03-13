@@ -7,6 +7,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/agent"
 	"github.com/vdaas/vald/internal/client"
 	igrpc "github.com/vdaas/vald/internal/net/grpc"
+	"google.golang.org/grpc"
 )
 
 // Client represents agent NGT client interface.
@@ -97,17 +98,13 @@ func (c *agentClient) StreamSearch(
 				return nil, err
 			}
 
-			return nil, igrpc.BidirectionalStreamClient(st,
+			return nil, streamSearch(st,
 				func() interface{} {
 					if d := dataProvider(); d != nil {
 						return d
 					}
 					return nil
-				}, func() interface{} {
-					return new(client.SearchResponse)
-				}, func(res interface{}, err error) {
-					f(res.(*client.SearchResponse), err)
-				})
+				}, f)
 		},
 	)
 	return err
@@ -127,17 +124,14 @@ func (c *agentClient) StreamSearchByID(
 				return nil, err
 			}
 
-			return nil, igrpc.BidirectionalStreamClient(st,
+			return nil, streamSearch(st,
 				func() interface{} {
 					if d := dataProvider(); d != nil {
 						return d
 					}
 					return nil
-				}, func() interface{} {
-					return new(client.SearchResponse)
-				}, func(res interface{}, err error) {
-					f(res.(*client.SearchResponse), err)
-				})
+				}, f,
+			)
 		},
 	)
 	return err
@@ -169,17 +163,13 @@ func (c *agentClient) StreamInsert(
 				return nil, err
 			}
 
-			return nil, igrpc.BidirectionalStreamClient(st,
+			return nil, stream(st,
 				func() interface{} {
 					if d := dataProvider(); d != nil {
 						return d
 					}
 					return nil
-				}, func() interface{} {
-					return new(client.Empty)
-				}, func(_ interface{}, err error) {
-					f(err)
-				},
+				}, f,
 			)
 		},
 	)
@@ -224,17 +214,13 @@ func (c *agentClient) StreamUpdate(
 				return nil, err
 			}
 
-			return nil, igrpc.BidirectionalStreamClient(st,
+			return nil, stream(st,
 				func() interface{} {
 					if d := dataProvider(); d != nil {
 						return d
 					}
 					return nil
-				}, func() interface{} {
-					return new(client.Empty)
-				}, func(_ interface{}, err error) {
-					f(err)
-				},
+				}, f,
 			)
 		},
 	)
@@ -277,17 +263,14 @@ func (c *agentClient) StreamRemove(
 				return nil, err
 			}
 
-			return nil, igrpc.BidirectionalStreamClient(st,
+			return nil, stream(st,
 				func() interface{} {
 					if d := dataProvider(); d != nil {
 						return d
 					}
 					return nil
-				}, func() interface{} {
-					return new(client.Empty)
-				}, func(_ interface{}, err error) {
-					f(err)
-				})
+				}, f,
+			)
 		},
 	)
 	return err
@@ -393,4 +376,30 @@ func (c *agentClient) IndexInfo(ctx context.Context) (*client.InfoIndex, error) 
 		return nil, err
 	}
 	return res.(*client.InfoIndex), err
+}
+
+func streamSearch(
+	st grpc.ClientStream,
+	dataProvider func() interface{},
+	f func(*client.SearchResponse, error),
+) error {
+	return igrpc.BidirectionalStreamClient(st, dataProvider,
+		func() interface{} {
+			return new(client.SearchResponse)
+		}, func(res interface{}, err error) {
+			f(res.(*client.SearchResponse), err)
+		})
+}
+
+func stream(
+	st grpc.ClientStream,
+	dataProvider func() interface{},
+	f func(error),
+) error {
+	return igrpc.BidirectionalStreamClient(st, dataProvider,
+		func() interface{} {
+			return new(client.Empty)
+		}, func(_ interface{}, err error) {
+			f(err)
+		})
 }

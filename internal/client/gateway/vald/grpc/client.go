@@ -140,20 +140,6 @@ func (c *gatewayClient) StreamSearchByID(
 	return err
 }
 
-func streamSearch(
-	st grpc.ClientStream,
-	dataProvider func() interface{},
-	f func(*client.SearchResponse, error),
-) error {
-	return igrpc.BidirectionalStreamClient(st, dataProvider,
-		func() interface{} {
-			return new(client.SearchResponse)
-		}, func(res interface{}, err error) {
-			f(res.(*client.SearchResponse), err)
-		},
-	)
-}
-
 func (c *gatewayClient) Insert(
 	ctx context.Context,
 	req *client.ObjectVector,
@@ -189,16 +175,6 @@ func (c *gatewayClient) StreamInsert(
 		},
 	)
 	return err
-}
-
-func stream(st grpc.ClientStream, dataProvider func() interface{}, f func(error)) error {
-	return igrpc.BidirectionalStreamClient(st, dataProvider,
-		func() interface{} {
-			return new(client.Empty)
-		}, func(_ interface{}, err error) {
-			f(err)
-		},
-	)
 }
 
 func (c *gatewayClient) MultiInsert(
@@ -401,4 +377,32 @@ func (c *gatewayClient) StreamGetObject(
 		},
 	)
 	return err
+}
+
+func streamSearch(
+	st grpc.ClientStream,
+	dataProvider func() interface{},
+	f func(*client.SearchResponse, error),
+) error {
+	return igrpc.BidirectionalStreamClient(st, dataProvider,
+		func() interface{} {
+			return new(client.SearchResponse)
+		}, func(res interface{}, err error) {
+			f(res.(*client.SearchResponse), err)
+		},
+	)
+}
+
+func stream(
+	st grpc.ClientStream,
+	dataProvider func() interface{},
+	f func(error),
+) error {
+	return igrpc.BidirectionalStreamClient(st, dataProvider,
+		func() interface{} {
+			return new(client.Empty)
+		}, func(_ interface{}, err error) {
+			f(err)
+		},
+	)
 }
