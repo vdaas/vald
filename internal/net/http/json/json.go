@@ -169,8 +169,8 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request,
 	w.Header().Add(rest.ContentType, rest.ProblemJSON)
 	w.Header().Add(rest.ContentType, rest.CharsetUTF8)
 	w.WriteHeader(code)
-	w.Write(res)
-	return nil
+	_, err = w.Write(res)
+	return err
 }
 
 func Request(ctx context.Context, method string, url string, payloyd interface{}, data interface{}) error {

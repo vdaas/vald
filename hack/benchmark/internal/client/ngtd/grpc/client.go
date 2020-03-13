@@ -5,7 +5,6 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/internal/client"
-	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 
@@ -20,7 +19,6 @@ type Client interface {
 
 type ngtdClient struct {
 	addr string
-	cfg  *config.GRPCClient
 	grpc.Client
 	opts []grpc.Option
 }
@@ -441,15 +439,17 @@ func ngtdSearchResponseToSearchResponse(in *proto.SearchResponse) *client.Search
 		return nil
 	}
 
-	results := make([]*client.ObjectDistance, 0, len(in.GetResult()))
-	for i, _ := range results {
-		if len(in.Result[i].GetError()) == 0 {
+	results := make([]*client.ObjectDistance, len(in.GetResult()))
+
+	for _, r := range in.GetResult() {
+		if len(r.GetError()) == 0 {
 			results = append(results, &client.ObjectDistance{
-				Id:       string(in.Result[i].GetId()),
-				Distance: in.Result[i].GetDistance(),
+				Id:       string(r.GetId()),
+				Distance: r.GetDistance(),
 			})
 		}
 	}
+
 	return &client.SearchResponse{
 		Results: results,
 	}

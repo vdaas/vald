@@ -5,11 +5,10 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/starter"
-	"github.com/vdaas/vald/pkg/gateway/vald/config"
 )
 
 type server struct {
-	cfg *config.Data
+	// cfg *config.Data
 }
 
 func New(opts ...Option) starter.Starter {

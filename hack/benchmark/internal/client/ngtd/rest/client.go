@@ -240,7 +240,7 @@ func objectVectorToNgtdInsertRequest(in *client.ObjectVector) *model.InsertReque
 }
 
 func objectVectorsToNgtdMultiInsertRequest(in *client.ObjectVectors) *model.MultiInsertRequest {
-	reqs := make([]model.InsertRequest, 0, len(in.GetVectors()))
+	reqs := make([]model.InsertRequest, len(in.GetVectors()))
 
 	for _, v := range in.GetVectors() {
 		reqs = append(reqs, model.InsertRequest{
@@ -261,13 +261,15 @@ func objectIDsToNgtdMultiRemoveRequest(in *client.ObjectIDs) *model.MultiRemoveR
 }
 
 func ngtdSearchResponseToSearchResponse(in *model.SearchResponse) *client.SearchResponse {
-	results := make([]*client.ObjectDistance, 0, len(in.Result))
-	for i, _ := range results {
-		results[i] = &client.ObjectDistance{
-			Id:       in.Result[i].ID,
-			Distance: in.Result[i].Distance,
-		}
+	results := make([]*client.ObjectDistance, len(in.Result))
+
+	for _, r := range in.Result {
+		results = append(results, &client.ObjectDistance{
+			Id:       r.ID,
+			Distance: r.Distance,
+		})
 	}
+
 	return &client.SearchResponse{
 		Results: results,
 	}
