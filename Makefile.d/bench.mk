@@ -110,7 +110,7 @@ bench/agent: \
 ## run benchmark for agent gRPC stream
 bench/agent/stream: \
 	ngt/install
-	$(call bench-pprof,pprof/agent/ngt,agent,gRPCStream,stream,\
+	$(call bench-pprof,pprof/agent/ngt,agent,gRPC_Stream,stream,\
 		./hack/benchmark/e2e/agent/ngt/ngt_bench_test.go \
 		 -dataset=$(DATASET_ARGS))
 
