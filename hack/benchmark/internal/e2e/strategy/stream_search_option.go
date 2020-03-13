@@ -6,7 +6,13 @@ import "github.com/vdaas/vald/internal/client"
 type StreamSearchOption func(*streamSearch)
 
 var (
-	defaultStreamSearchOptions = []StreamSearchOption{}
+	defaultStreamSearchOptions = []StreamSearchOption{
+		WithStreamSearchConfig(&client.SearchConfig{
+			Num:     10,
+			Radius:  -1,
+			Epsilon: 0.01,
+		}),
+	}
 )
 
 func WithStreamSearchConfig(cfg *client.SearchConfig) StreamSearchOption {

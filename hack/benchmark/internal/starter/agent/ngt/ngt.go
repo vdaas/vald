@@ -28,15 +28,14 @@ func New(opts ...Option) starter.Starter {
 
 func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 	tb.Helper()
-
 	log.Init()
-
-	ctx, cancel := context.WithCancel(ctx)
 
 	daemon, err := usecase.New(s.cfg)
 	if err != nil {
 		tb.Fatal(err)
 	}
+
+	ctx, cancel := context.WithCancel(ctx)
 
 	go func() {
 		err := runner.Run(ctx, daemon, name)

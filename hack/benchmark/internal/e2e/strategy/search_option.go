@@ -6,12 +6,14 @@ import "github.com/vdaas/vald/internal/client"
 type SearchOption func(*search)
 
 var (
-	defaultSearchOptions = []SearchOption{}
+	defaultSearchOptions = []SearchOption{
+		WithSearchParallel(false),
+	}
 )
 
-func WithSearchParallel() SearchOption {
+func WithSearchParallel(flag bool) SearchOption {
 	return func(s *search) {
-		s.parallel = true
+		s.parallel = flag
 	}
 }
 

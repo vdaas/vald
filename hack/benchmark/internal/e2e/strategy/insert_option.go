@@ -4,11 +4,13 @@ package strategy
 type InsertOption func(*insert)
 
 var (
-	defaultInsertOption = []InsertOption{}
+	defaultInsertOption = []InsertOption{
+		WithParallelInsert(false),
+	}
 )
 
-func WithParallelInsert() InsertOption {
+func WithParallelInsert(flag bool) InsertOption {
 	return func(e *insert) {
-		e.parallel = true
+		e.parallel = flag
 	}
 }

@@ -4,6 +4,7 @@ type Option func(*server)
 
 var (
 	defaultOptions = []Option{
+		WithDimentaion(128),
 		WithIndexDir("/tmp/ngtd/"),
 		WithServerType(HTTP),
 		WithPort(8200),

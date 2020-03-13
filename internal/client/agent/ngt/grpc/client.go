@@ -25,7 +25,6 @@ type agentClient struct {
 // New returns Client implementation if no error occurs.
 func New(ctx context.Context, opts ...Option) (Client, error) {
 	c := new(agentClient)
-
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(c)
 	}

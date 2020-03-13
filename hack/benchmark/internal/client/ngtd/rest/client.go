@@ -6,13 +6,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/client"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/http/json"
 
 	"github.com/yahoojapan/ngtd/model"
-	proto "github.com/yahoojapan/ngtd/proto"
 )
 
 type Client interface {
@@ -275,18 +273,6 @@ func ngtdSearchResponseToSearchResponse(in *model.SearchResponse) *client.Search
 	return &client.SearchResponse{
 		Results: results,
 	}
-}
-
-func toObjectDistances(in []*proto.ObjectDistance) (to []*payload.Object_Distance) {
-	to = make([]*payload.Object_Distance, 0, len(in))
-
-	for _, elm := range in {
-		to = append(to, &payload.Object_Distance{
-			Id:       string(elm.GetId()),
-			Distance: elm.GetDistance(),
-		})
-	}
-	return nil
 }
 
 func getSizeAndEpsilon(cfg *client.SearchConfig) (size int, epsilon float32) {
