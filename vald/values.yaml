@@ -21,7 +21,7 @@ defaults:
     level: debug
     format: raw
   image:
-    tag: v0.0.24
+    tag: v0.0.25
   server_config:
     servers:
       rest:
