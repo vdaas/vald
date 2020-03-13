@@ -23,6 +23,7 @@ import (
 	"runtime"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
 )
@@ -35,6 +36,7 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 	if concurrency > 0 {
 		eg.Limitation(concurrency)
 	}
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -68,4 +70,65 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 			}
 		}
 	}
+}
+
+// BidirectionalStreamClient is gRPC client stream.
+func BidirectionalStreamClient(stream grpc.ClientStream,
+	dataProvider func() interface{},
+	newData func() interface{},
+	f func(interface{}, error)) (err error) {
+	ctx, cancel := context.WithCancel(stream.Context())
+	eg, ctx := errgroup.New(ctx)
+
+	eg.Go(safety.RecoverFunc(func() (err error) {
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+				res := newData()
+				err = stream.RecvMsg(res)
+				if err == io.EOF {
+					cancel()
+					return nil
+				}
+				f(res, err)
+			}
+		}
+	}))
+
+	defer func() {
+		err = wrapError(err, stream.CloseSend())
+	}()
+
+	return func() (err error) {
+		for {
+			select {
+			case <-ctx.Done():
+				return eg.Wait()
+			default:
+				data := dataProvider()
+				if data == nil {
+					err = stream.CloseSend()
+					cancel()
+					return wrapError(err, eg.Wait())
+				}
+
+				err = stream.SendMsg(data)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}()
+}
+
+func wrapError(left, right error) error {
+	if left != nil {
+		if right != nil {
+			return errors.Wrap(left, right.Error())
+		}
+		return left
+	}
+	return right
 }
