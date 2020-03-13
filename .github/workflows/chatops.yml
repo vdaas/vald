@@ -310,9 +310,7 @@ jobs:
           git checkout ${HEAD_BRANCH}
 
           echo "install dependencies"
-          pushd /tmp
-          go get -u golang.org/x/tools/cmd/goimports
-          popd
+          make goimports/install
           export PATH=$(go env GOPATH)/bin:$PATH
           sudo make prettier/install
           sudo make dockfmt/install
