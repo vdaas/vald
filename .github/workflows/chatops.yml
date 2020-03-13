@@ -294,9 +294,21 @@ jobs:
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 1
+      - name: Fetch golang version
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v1
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: update and push
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
+          export PATH=$(go env GOPATH)/bin:$PATH
+
           curl -s ${PR_INFO_URL} > /tmp/pr_info.json
           PR_RESP=`cat /tmp/pr_info.json`
           HEAD_BRANCH=$(cat /tmp/pr_info.json | jq -r .head.ref)
@@ -311,7 +323,6 @@ jobs:
 
           echo "install dependencies"
           make goimports/install
-          export PATH=$(go env GOPATH)/bin:$PATH
           sudo make prettier/install
           sudo make dockfmt/install
 
