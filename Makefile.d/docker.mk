@@ -135,3 +135,18 @@ docker/name/operator/helm:
 ## build helm-operator image
 docker/build/operator/helm:
 	docker build -f dockers/operator/helm/Dockerfile -t $(REPO)/$(HELM_OPERATOR_IMAGE) .
+
+.PHONY: dockfmt/install
+dockfmt/install: $(BINDIR)/dockfmt
+
+ifeq ($(UNAME),Darwin)
+$(BINDIR)/dockfmt:
+	mkdir -p $(BINDIR)
+	curl -fSL https://github.com/jessfraz/dockfmt/releases/download/$(DOCKFMT_VERSION)/dockfmt-darwin-amd64 -o $(BINDIR)/dockfmt
+	chmod a+x $(BINDIR)/dockfmt
+else
+$(BINDIR)/dockfmt:
+	mkdir -p $(BINDIR)
+	curl -fSL https://github.com/jessfraz/dockfmt/releases/download/$(DOCKFMT_VERSION)/dockfmt-linux-amd64 -o $(BINDIR)/dockfmt
+	chmod a+x $(BINDIR)/dockfmt
+endif
