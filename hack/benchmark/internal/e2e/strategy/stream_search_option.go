@@ -7,11 +7,7 @@ type StreamSearchOption func(*streamSearch)
 
 var (
 	defaultStreamSearchOptions = []StreamSearchOption{
-		WithStreamSearchConfig(&client.SearchConfig{
-			Num:     10,
-			Radius:  -1,
-			Epsilon: 0.01,
-		}),
+		WithStreamSearchConfig(searchCfg),
 	}
 )
 

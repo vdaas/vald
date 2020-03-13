@@ -25,11 +25,9 @@ type ngtdClient struct {
 
 func New(ctx context.Context, opts ...Option) (Client, error) {
 	c := new(ngtdClient)
-
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(c)
 	}
-
 	return c, nil
 }
 

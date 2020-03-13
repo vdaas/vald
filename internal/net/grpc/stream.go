@@ -72,6 +72,7 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 	}
 }
 
+// BidirectionalStreamClient is gRPC client stream.
 func BidirectionalStreamClient(stream grpc.ClientStream,
 	dataProvider func() interface{},
 	newData func() interface{},

@@ -5,9 +5,16 @@ import "github.com/vdaas/vald/internal/client"
 
 type SearchOption func(*search)
 
+var searchCfg = &client.SearchConfig{
+	Num:     10,
+	Radius:  -1,
+	Epsilon: 0.01,
+}
+
 var (
 	defaultSearchOptions = []SearchOption{
 		WithSearchParallel(false),
+		WithSearchConfig(searchCfg),
 	}
 )
 

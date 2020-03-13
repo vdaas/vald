@@ -22,7 +22,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
 	"github.com/vdaas/vald/internal/client/gateway/vald/grpc"
@@ -36,12 +35,6 @@ var (
 	grpcAddr string
 	wait     time.Duration
 )
-
-var searchConfig = &payload.Search_Config{
-	Num:     10,
-	Radius:  -1,
-	Epsilon: 0.01,
-}
 
 func init() {
 	testing.Init()
@@ -78,9 +71,7 @@ func BenchmarkGateway_REST_Sequential(b *testing.B) {
 			),
 			e2e.WithStrategy(
 				strategy.NewInsert(),
-				strategy.NewSearch(
-					strategy.WithSearchConfig(searchConfig),
-				),
+				strategy.NewSearch(),
 			),
 		)
 		bench.Run(ctx, b)
