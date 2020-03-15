@@ -321,7 +321,8 @@ jobs:
 
           git checkout ${HEAD_BRANCH}
 
-          echo "install dependencies"
+          echo "Install format dependencies"
+
           make goimports/install
           sudo make prettier/install
           # sudo make dockfmt/install

@@ -126,8 +126,8 @@ data:
           buffer_max_count: 10
     ngt:
       auto_index_check_duration: 30m
+      auto_index_duration_limit: 24h
       auto_index_length: 100
-      auto_index_limit: 24h
       bulk_insert_chunk_size: 10
       creation_edge_size: 20
       dimension: 4096

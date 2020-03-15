@@ -20,7 +20,6 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"net"
 	"reflect"
 	"sync/atomic"
 	"time"
@@ -29,6 +28,7 @@ import (
 	dbr "github.com/gocraft/dbr/v2"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 )
 
 const (

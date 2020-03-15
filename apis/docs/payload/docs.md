@@ -53,6 +53,10 @@
     - [Object.IDs](#payload.Object.IDs)
     - [Object.Vector](#payload.Object.Vector)
     - [Object.Vectors](#payload.Object.Vectors)
+    - [Replication](#payload.Replication)
+    - [Replication.Agents](#payload.Replication.Agents)
+    - [Replication.Rebalance](#payload.Replication.Rebalance)
+    - [Replication.Recovery](#payload.Replication.Recovery)
     - [Search](#payload.Search)
     - [Search.Config](#payload.Search.Config)
     - [Search.IDRequest](#payload.Search.IDRequest)
@@ -748,6 +752,64 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | vectors | [Object.Vector](#payload.Object.Vector) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Replication"></a>
+
+### Replication
+
+
+
+
+
+
+
+<a name="payload.Replication.Agents"></a>
+
+### Replication.Agents
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| agents | [string](#string) | repeated |  |
+| removed_agents | [string](#string) | repeated |  |
+| replicating_agent | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Replication.Rebalance"></a>
+
+### Replication.Rebalance
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| high_usage_agents | [string](#string) | repeated |  |
+| low_usage_agents | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Replication.Recovery"></a>
+
+### Replication.Recovery
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| deleted_agents | [string](#string) | repeated |  |
 
 
 

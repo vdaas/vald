@@ -133,17 +133,27 @@ func New(opts ...Option) (Cassandra, error) {
 		NumConns:       c.numConns,
 		Consistency:    c.consistency,
 		Compressor:     c.compressor,
-		Authenticator: &gocql.PasswordAuthenticator{
-			Username: c.username,
-			Password: c.password,
-		},
+		Authenticator: func() *gocql.PasswordAuthenticator {
+			if len(c.username)+len(c.password) == 0 {
+				return nil
+			}
+			return &gocql.PasswordAuthenticator{
+				Username: c.username,
+				Password: c.password,
+			}
+		}(),
 		AuthProvider: c.authProvider,
-		RetryPolicy: &gocql.ExponentialBackoffRetryPolicy{
-			NumRetries: c.retryPolicy.numRetries,
-			Min:        c.retryPolicy.minDuration,
-			Max:        c.retryPolicy.maxDuration,
-		},
-		ConvictionPolicy: &gocql.SimpleConvictionPolicy{},
+		RetryPolicy: func() *gocql.ExponentialBackoffRetryPolicy {
+			if c.retryPolicy.numRetries < 1 {
+				return nil
+			}
+			return &gocql.ExponentialBackoffRetryPolicy{
+				NumRetries: c.retryPolicy.numRetries,
+				Min:        c.retryPolicy.minDuration,
+				Max:        c.retryPolicy.maxDuration,
+			}
+		}(),
+		ConvictionPolicy: NewConvictionPolicy(),
 		ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{
 			MaxRetries:      c.reconnectionPolicy.maxRetries,
 			InitialInterval: c.reconnectionPolicy.initialInterval,
@@ -176,7 +186,12 @@ func New(opts ...Option) (Cassandra, error) {
 		},
 		ReconnectInterval:      c.reconnectInterval,
 		MaxWaitSchemaAgreement: c.maxWaitSchemaAgreement,
-		// HostFilter
+		HostFilter: func() gocql.HostFilter {
+			if c.poolConfig.enableDCAwareRouting && len(c.poolConfig.dataCenterName) != 0 {
+				return gocql.DataCentreHostFilter(c.poolConfig.dataCenterName)
+			}
+			return nil
+		}(),
 		// AddressTranslator
 		IgnorePeerAddr:           c.ignorePeerAddr,
 		DisableInitialHostLookup: c.disableInitialHostLookup,
@@ -196,16 +211,18 @@ func New(opts ...Option) (Cassandra, error) {
 		// FrameHeaderObserver
 		DefaultIdempotence:    c.defaultIdempotence,
 		WriteCoalesceWaitTime: c.writeCoalesceWaitTime,
-	}
-
-	if c.tls != nil {
-		c.cluster.SslOpts = &gocql.SslOptions{
-			Config:                 c.tls,
-			CertPath:               c.tlsCertPath,
-			KeyPath:                c.tlsKeyPath,
-			CaPath:                 c.tlsCAPath,
-			EnableHostVerification: c.enableHostVerification,
-		}
+		SslOpts: func() *gocql.SslOptions {
+			if c.tls != nil {
+				return &gocql.SslOptions{
+					Config:                 c.tls,
+					CertPath:               c.tlsCertPath,
+					KeyPath:                c.tlsKeyPath,
+					CaPath:                 c.tlsCAPath,
+					EnableHostVerification: c.enableHostVerification,
+				}
+			}
+			return nil
+		}(),
 	}
 
 	return c, nil

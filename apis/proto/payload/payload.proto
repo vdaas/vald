@@ -83,6 +83,23 @@ message Control {
   }
 }
 
+message Replication {
+  message Recovery {
+    repeated string deleted_agents = 1;
+  }
+
+  message Rebalance {
+    repeated string high_usage_agents = 1;
+    repeated string low_usage_agents = 2;
+  }
+
+  message Agents {
+    repeated string agents = 1;
+    repeated string removed_agents = 2;
+    repeated string replicating_agent = 3;
+  }
+}
+
 message Discoverer {
   message Request {
     string name = 1 [ (validate.rules).string.min_len = 1 ];
@@ -157,6 +174,7 @@ message Info {
       }
     }
   }
+
   message Pod {
     string app_name = 1;
     string name = 2;

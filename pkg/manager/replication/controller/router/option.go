@@ -14,18 +14,36 @@
 // limitations under the License.
 //
 
-syntax = "proto3";
+// Package router provides implementation of Go API for routing http Handler wrapped by rest.Func
+package router
 
-package replication_manager;
+import (
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/pkg/manager/replication/controller/handler/rest"
+)
 
-option go_package = "github.com/vdaas/vald/apis/grpc/manager/replication";
+type Option func(*router)
 
-option java_multiple_files = true;
-option java_package = "org.vdaas.vald.manager.replication";
-option java_outer_classname = "ValdReplicationManager";
+var (
+	defaultOpts = []Option{
+		WithTimeout("3s"),
+	}
+)
 
-import "payload.proto";
-import "google/api/annotations.proto";
-import "pb/gql.proto";
+func WithHandler(h rest.Handler) Option {
+	return func(r *router) {
+		r.handler = h
+	}
+}
 
-service Replication {}
+func WithTimeout(timeout string) Option {
+	return func(r *router) {
+		r.timeout = timeout
+	}
+}
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(r *router) {
+		r.eg = eg
+	}
+}

@@ -83,6 +83,15 @@ func WithMinUncommitted(n uint32) Option {
 	}
 }
 
+func WithCreationPoolSize(size uint32) Option {
+	return func(idx *index) error {
+		if size > 0 {
+			idx.creationPoolSize = size
+		}
+		return nil
+	}
+}
+
 func WithDiscoverer(c discoverer.Client) Option {
 	return func(idx *index) error {
 		if c != nil {

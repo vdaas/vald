@@ -1,18 +1,18 @@
 module github.com/vdaas/vald
 
-go 1.13
+go 1.14
 
 replace (
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql master
 	github.com/gocql/gocql => github.com/gocql/gocql master
 	github.com/gogo/protobuf => github.com/gogo/protobuf master
-	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.8.0
+	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.9.0
 	github.com/gorilla/mux => github.com/gorilla/mux master
 	golang.org/x/crypto => golang.org/x/crypto master
-	k8s.io/api => k8s.io/api v0.17.3
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.3
-	k8s.io/apimachinery => k8s.io/apimachinery v0.17.3
-	k8s.io/client-go => k8s.io/client-go v0.17.3
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.5.0
+	k8s.io/api => k8s.io/api v0.17.4
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.4
+	k8s.io/apimachinery => k8s.io/apimachinery v0.17.4
+	k8s.io/client-go => k8s.io/client-go v0.17.4
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.5.1
 )

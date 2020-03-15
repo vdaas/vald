@@ -24,10 +24,12 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
 )
 
+// BidirectionalStream represents gRPC bidirectional stream server handler.
 func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 	concurrency int,
 	newData func() interface{},
@@ -40,14 +42,25 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 	for {
 		select {
 		case <-ctx.Done():
-			return eg.Wait()
+			err = eg.Wait()
+			if err != nil {
+				log.Error(err)
+				return err
+			}
+			return nil
 		default:
 			data := newData()
 			err = stream.RecvMsg(data)
 			if err != nil {
 				if err == io.EOF {
-					return eg.Wait()
+					err = eg.Wait()
+					if err != nil {
+						log.Error(err)
+						return err
+					}
+					return nil
 				}
+				log.Error(err)
 				return err
 			}
 			if data != nil {
@@ -98,7 +111,11 @@ func BidirectionalStreamClient(stream grpc.ClientStream,
 	}))
 
 	defer func() {
-		err = wrapError(err, stream.CloseSend())
+		if err != nil {
+			err = errors.Wrap(stream.CloseSend(), err.Error())
+		} else {
+			err = stream.CloseSend()
+		}
 	}()
 
 	return func() (err error) {
@@ -111,7 +128,10 @@ func BidirectionalStreamClient(stream grpc.ClientStream,
 				if data == nil {
 					err = stream.CloseSend()
 					cancel()
-					return wrapError(err, eg.Wait())
+					if err != nil {
+						return errors.Wrap(eg.Wait(), err.Error())
+					}
+					return eg.Wait()
 				}
 
 				err = stream.SendMsg(data)
@@ -121,14 +141,4 @@ func BidirectionalStreamClient(stream grpc.ClientStream,
 			}
 		}
 	}()
-}
-
-func wrapError(left, right error) error {
-	if left != nil {
-		if right != nil {
-			return errors.Wrap(left, right.Error())
-		}
-		return left
-	}
-	return right
 }

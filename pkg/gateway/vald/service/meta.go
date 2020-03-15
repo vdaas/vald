@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+// Package service provides meta service
 package service
 
 import (

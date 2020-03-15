@@ -55,6 +55,8 @@ func NewConfig(path string) (cfg *Data, err error) {
 
 	if cfg.Observability != nil {
 		cfg.Observability = cfg.Observability.Bind()
+	} else {
+		cfg.Observability = new(config.Observability)
 	}
 
 	if cfg.NGT != nil {
