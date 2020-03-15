@@ -1,6 +1,8 @@
 on:
   issue_comment:
     types: [created]
+env:
+  YQ_VERSION: 3.2.1
 name: ChatOps
 jobs:
   label:
@@ -16,7 +18,12 @@ jobs:
           TRIGGER_PHRASE: "/label"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq and check permissions
+      - name: install yq
+        if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
+          sudo chmod a+x /usr/local/bin/yq
+      - name: check permissions
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
@@ -65,7 +72,12 @@ jobs:
           TRIGGER_PHRASE: "/rebase"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq and check permissions
+      - name: install yq
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
+          sudo chmod a+x /usr/local/bin/yq
+      - name: check permissions
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
@@ -104,7 +116,6 @@ jobs:
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
       - name: Automatic Rebase
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        continue-on-error: true
         uses: cirrus-actions/rebase@1.2
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
@@ -136,7 +147,12 @@ jobs:
           TRIGGER_PHRASE: "/add-contributors"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq and check permissions
+      - name: install yq
+        if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
+          sudo chmod a+x /usr/local/bin/yq
+      - name: check permissions
         if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
@@ -177,10 +193,10 @@ jobs:
           fetch-depth: 1
       - name: Add contributor and push
         if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        continue-on-error: true
         run: |
-          PR_RESP=`curl ${PR_INFO_URL}`
-          HEAD_BRANCH=$(echo "$PR_RESP" | jq -r .head.ref)
+          curl -s ${PR_INFO_URL} > /tmp/pr_info.json
+          PR_RESP=`cat /tmp/pr_info.json`
+          HEAD_BRANCH=$(cat /tmp/pr_info.json | jq -r .head.ref)
           if [[ -z "$HEAD_BRANCH" ]]; then
             echo "Cannot get head branch information for PR #${PR_NUM}!"
             echo "API response: $PR_RESP"
@@ -243,7 +259,12 @@ jobs:
           TRIGGER_PHRASE: "/format"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq and check permissions
+      - name: install yq
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
+          sudo chmod a+x /usr/local/bin/yq
+      - name: check permissions
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
@@ -281,12 +302,24 @@ jobs:
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 1
+      - name: Fetch golang version
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v1
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: update and push
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        continue-on-error: true
         run: |
-          PR_RESP=`curl ${PR_INFO_URL}`
-          HEAD_BRANCH=$(echo "$PR_RESP" | jq -r .head.ref)
+          export PATH=$(go env GOPATH)/bin:$PATH
+
+          curl -s ${PR_INFO_URL} > /tmp/pr_info.json
+          PR_RESP=`cat /tmp/pr_info.json`
+          HEAD_BRANCH=$(cat /tmp/pr_info.json | jq -r .head.ref)
           if [[ -z "$HEAD_BRANCH" ]]; then
             echo "Cannot get head branch information for PR #${PR_NUM}!"
             echo "API response: $PR_RESP"
@@ -296,11 +329,17 @@ jobs:
 
           git checkout ${HEAD_BRANCH}
 
+          echo "Install format dependencies"
+
+          make goimports/install
+          sudo make prettier/install
+          # sudo make dockfmt/install
+
           echo "Update license headers and format go codes/yaml/Dockerfile"
 
           make update/goimports
           make format/yaml
-          make format/docker
+          # make format/docker
           make license
 
           if git diff --quiet --exit-code; then
@@ -351,7 +390,12 @@ jobs:
           TRIGGER_PHRASE: "/approve"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq and check permissions
+      - name: install yq
+        if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
+          sudo chmod a+x /usr/local/bin/yq
+      - name: check permissions
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
