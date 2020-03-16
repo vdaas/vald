@@ -66,6 +66,7 @@ func BenchmarkAgentNGT_REST_Sequential(b *testing.B) {
 				strategy.NewInsert(),
 				strategy.NewCreateIndex(
 					strategy.WithCreateIndexClient(client),
+					strategy.WithCreateIndexPoolSize(10000),
 				),
 				strategy.NewSearch(),
 			),
@@ -97,6 +98,7 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 				strategy.NewInsert(),
 				strategy.NewCreateIndex(
 					strategy.WithCreateIndexClient(client),
+					strategy.WithCreateIndexPoolSize(10000),
 				),
 				strategy.NewSearch(),
 			),
@@ -128,6 +130,7 @@ func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 				strategy.NewStreamInsert(),
 				strategy.NewCreateIndex(
 					strategy.WithCreateIndexClient(client),
+					strategy.WithCreateIndexPoolSize(10000),
 				),
 				strategy.NewStreamSearch(),
 			),
