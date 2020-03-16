@@ -20,9 +20,9 @@ metadata:
   name: {{ .Values.serviceAccount.name }}
   namespace: {{ .Release.Namespace }}
 subjects:
-- kind: ServiceAccount
-  name: {{ .Values.serviceAccount.name }}
-  namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: {{ .Values.serviceAccount.name }}
+    namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
   name: {{ .Values.rbac.name }}

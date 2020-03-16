@@ -27,12 +27,12 @@ spec:
     singular: valdrelease
   scope: Namespaced
   additionalPrinterColumns:
-  - name: Ingress
-    type: string
-    JSONPath: .spec.gateway.ingress.host
-  - name: Age
-    type: date
-    JSONPath: .metadata.creationTimestamp
+    - name: Ingress
+      type: string
+      JSONPath: .spec.gateway.ingress.host
+    - name: Age
+      type: date
+      JSONPath: .metadata.creationTimestamp
   subresources:
     status: {}
   validation:
@@ -40,7 +40,7 @@ spec:
       type: object
       x-kubernetes-preserve-unknown-fields: true
   versions:
-  - name: v1alpha1
-    served: true
-    storage: true
+    - name: v1alpha1
+      served: true
+      storage: true
 {{- end }}
