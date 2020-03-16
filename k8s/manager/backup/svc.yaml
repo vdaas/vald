@@ -32,10 +32,6 @@ spec:
       port: 6060
       targetPort: 6060
       protocol: TCP
-    - name: prometheus
-      port: 6061
-      targetPort: 6061
-      protocol: TCP
   selector:
     app: vald-manager-backup
   clusterIP: None

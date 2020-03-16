@@ -23,6 +23,7 @@ metadata:
 spec:
   serviceName: vald-agent-ngt
   podManagementPolicy: Parallel
+  replicas: 5
   revisionHistoryLimit: 2
   selector:
     matchLabels:
@@ -41,7 +42,7 @@ spec:
         profefe.com/port: "6060"
         profefe.com/service: vald-agent-ngt
       # annotations:
-      #   checksum/configmap: 7df09c85e43c260ce2984e192bb4d5120d1af9f7916216263f80c9964cd42282
+      #   checksum/configmap: af2fe1ff78c47da8f88312d09290a86c0408fafabf2cd14389429fd5cd39cfab
     spec:
       affinity:
         podAntiAffinity:
@@ -92,9 +93,6 @@ spec:
             - name: pprof
               protocol: TCP
               containerPort: 6060
-            - name: prometheus
-              protocol: TCP
-              containerPort: 6061
           resources:
             requests:
               cpu: 100m

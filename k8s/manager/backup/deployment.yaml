@@ -37,7 +37,7 @@ spec:
       labels:
         app: vald-manager-backup
       annotations:
-        checksum/configmap: 88ef4adc0f663181861bfb2fa348439786ef8a878ba92990124df1038dc85300
+        checksum/configmap: 490a1e40bd5ca4b274dd8be660dea082dd87a456f4e5b8772e246e437554e5fb
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-backup
@@ -101,9 +101,6 @@ spec:
             - name: pprof
               protocol: TCP
               containerPort: 6060
-            - name: prometheus
-              protocol: TCP
-              containerPort: 6061
           resources:
             limits:
               cpu: 500m

@@ -24,80 +24,80 @@ discoverer:
   cache_sync_duration: 5s
 server_config:
   servers:
-  - name: agent-rest
-    host: 127.0.0.1
-    port: 9090
-    mode: REST
-    probe_wait_time: 
-    http:
-      shutdown_duration: 
-      handler_timeout: 5s
-      idle_timeout: 2s
-      read_header_timeout: 1s
-      read_timeout: 1s
-      write_timeout: 1s
-  - name: agent-grpc
-    host: 127.0.0.1
-    port: 8082
-    mode: GRPC
-    probe_wait_time: 
-    http:
-      shutdown_duration: 
-      handler_timeout: ""
-      idle_timeout: ""
-      read_header_timeout: ""
-      read_timeout: ""
-      write_timeout: ""
+    - name: agent-rest
+      host: 127.0.0.1
+      port: 9090
+      mode: REST
+      probe_wait_time:
+      http:
+        shutdown_duration:
+        handler_timeout: 5s
+        idle_timeout: 2s
+        read_header_timeout: 1s
+        read_timeout: 1s
+        write_timeout: 1s
+    - name: agent-grpc
+      host: 127.0.0.1
+      port: 8082
+      mode: GRPC
+      probe_wait_time:
+      http:
+        shutdown_duration:
+        handler_timeout: ""
+        idle_timeout: ""
+        read_header_timeout: ""
+        read_timeout: ""
+        write_timeout: ""
   health_check_servers:
-  - name: livenesss
-    host: 127.0.0.1
-    port: 3000
-    mode: ""
-    probe_wait_time: 
-    http:
-      shutdown_duration:
-      handler_timeout: ""
-      idle_timeout: ""
-      read_header_timeout: ""
-      read_timeout: ""
-      write_timeout: ""
-  - name: readiness
-    host: 127.0.0.1
-    port: 3001
-    mode: ""
-    probe_wait_time:
-    http:
-      shutdown_duration:
-      handler_timeout: ""
-      idle_timeout: ""
-      read_header_timeout: ""
-      read_timeout: ""
-      write_timeout: ""
+    - name: livenesss
+      host: 127.0.0.1
+      port: 3000
+      mode: ""
+      probe_wait_time:
+      http:
+        shutdown_duration:
+        handler_timeout: ""
+        idle_timeout: ""
+        read_header_timeout: ""
+        read_timeout: ""
+        write_timeout: ""
+    - name: readiness
+      host: 127.0.0.1
+      port: 3001
+      mode: ""
+      probe_wait_time:
+      http:
+        shutdown_duration:
+        handler_timeout: ""
+        idle_timeout: ""
+        read_header_timeout: ""
+        read_timeout: ""
+        write_timeout: ""
   metrics_servers:
-  - name: pprof
-    host: 127.0.0.1
-    port: 6060
-    mode: REST
-    probe_wait_time:
-    http:
-      shutdown_duration:
-      handler_timeout: 5s
-      idle_timeout: 2s
-      read_header_timeout: 1s
-      read_timeout: 1s
-      write_timeout: 1s
+    - name: pprof
+      host: 127.0.0.1
+      port: 6060
+      mode: REST
+      probe_wait_time:
+      http:
+        shutdown_duration:
+        handler_timeout: 5s
+        idle_timeout: 2s
+        read_header_timeout: 1s
+        read_timeout: 1s
+        write_timeout: 1s
   startup_strategy:
-  - livenesss
-  - pprof
-  - agent-grpc
-  - agent-rest
-  - readiness
+    - livenesss
+    - pprof
+    - agent-grpc
+    - agent-rest
+    - readiness
   shutdown_strategy:
-  - readiness
-  - agent-rest
-  - agent-grpc
-  - pprof
-  - livenesss
+    - readiness
+    - agent-rest
+    - agent-grpc
+    - pprof
+    - livenesss
   full_shutdown_duration: 600s
   tls:
     enabled: false

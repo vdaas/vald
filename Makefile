@@ -40,7 +40,9 @@ GOCACHE := $(shell go env GOCACHE)
 
 TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION)
 
+DOCKFMT_VERSION      ?= v0.3.3
 KIND_VERSION         ?= v0.7.0
+HELM_VERSION         ?= v3.1.2
 VALDCLI_VERSION      ?= v0.0.1
 TELEPRESENCE_VERSION ?= 0.104
 
@@ -170,18 +172,46 @@ update: \
 ## format go codes
 format: \
 	license \
-	update/goimports
+	update/goimports \
+	format/yaml \
+	format/docker
 
 .PHONY: update/goimports
 ## run goimports for all go files
 update/goimports:
 	find ./ -type f -regex ".*\.go" | xargs goimports -w
 
+.PHONY: format/yaml
+format/yaml:
+	prettier --write \
+	    ".github/**/*.yaml" \
+	    "cmd/**/*.yaml" \
+	    "hack/**/*.yaml" \
+	    "k8s/**/*.yaml"
+
+.PHONY: format/docker
+format/docker:
+	dockfmt fmt -w \
+	    dockers/*/Dockerfile \
+	    dockers/*/*/Dockerfile \
+	    dockers/*/*/*/Dockerfile
+
 .PHONY: deps
 ## install dependencies
 deps: \
-	proto/deps
+	proto/deps \
+	goimports/install \
+	prettier/install \
+	dockfmt/install
 	go mod tidy
+
+.PHONY: goimports/install
+goimports/install:
+	GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
+
+.PHONY: prettier/install
+prettier/install:
+	npm install -g prettier
 
 .PHONY: version/go
 ## print go version
@@ -192,6 +222,22 @@ version/go:
 ## print NGT version
 version/ngt:
 	@echo $(NGT_VERSION)
+
+.PHONY: version/kind
+version/kind:
+	@echo $(KIND_VERSION)
+
+.PHONY: version/helm
+version/helm:
+	@echo $(HELM_VERSION)
+
+.PHONY: version/valdcli
+version/valdcli:
+	@echo $(VALDCLI_VERSION)
+
+.PHONY: version/telepresence
+version/telepresence:
+	@echo $(TELEPRESENCE_VERSION)
 
 .PHONY: ngt/install
 ## install NGT

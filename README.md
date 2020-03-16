@@ -58,7 +58,7 @@ kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operato
 kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/clusterrolebinding.yaml
 kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/operator.yaml
 kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/crd.yaml
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/cr.yaml
+kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/valdrelease.yaml
 ```
 
 ## Example

@@ -110,25 +110,25 @@ bench/agent: \
 ## run benchmark for agent gRPC stream
 bench/agent/stream: \
 	ngt/install
-	$(call bench-pprof,pprof/agent/ngt,agent,gRPCStream,stream,\
+	$(call bench-pprof,pprof/agent/ngt,agent,gRPC_Stream,stream,\
 		./hack/benchmark/e2e/agent/ngt/ngt_bench_test.go \
-		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
+		 -dataset=$(DATASET_ARGS))
 
 .PHONY: bench/agent/sequential/grpc
 ## run benchmark for agent gRPC sequential
 bench/agent/sequential/grpc: \
 	ngt/install
-	$(call bench-pprof,pprof/agent/ngt,agent,gRPCSequential,sequential-grpc,\
+	$(call bench-pprof,pprof/agent/ngt,agent,gRPC_Sequential,sequential-grpc,\
 		./hack/benchmark/e2e/agent/ngt/ngt_bench_test.go \
-		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
+		 -dataset=$(DATASET_ARGS))
 
 .PHONY: bench/agent/sequential/rest
 ## run benchmark for agent REST
 bench/agent/sequential/rest: \
 	ngt/install
-	$(call bench-pprof,pprof/agent/ngt,agent,RESTSequential,sequential-rest,\
+	$(call bench-pprof,pprof/agent/ngt,agent,REST_Sequential,sequential-rest,\
 		./hack/benchmark/e2e/agent/ngt/ngt_bench_test.go \
-		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
+		 -dataset=$(DATASET_ARGS))
 
 .PHONY: bench/ngtd
 ## run benchmarks for NGTD
@@ -141,25 +141,25 @@ bench/ngtd: \
 ## run benchmark for NGTD gRPC stream
 bench/ngtd/stream: \
 	ngt/install
-	$(call bench-pprof,pprof/external/ngtd,ngtd,gRPCStream,stream,\
+	$(call bench-pprof,pprof/external/ngtd,ngtd,gRPC_Stream,stream,\
 		./hack/benchmark/e2e/external/ngtd/ngtd_bench_test.go \
-		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
+		 -dataset=$(DATASET_ARGS))
 
 .PHONY: bench/ngtd/sequential/grpc
 ## run benchmark for NGTD gRPC sequential
 bench/ngtd/sequential/grpc: \
 	ngt/install
-	$(call bench-pprof,pprof/external/ngtd,ngtd,gRPCSequential,sequential-grpc,\
+	$(call bench-pprof,pprof/external/ngtd,ngtd,gRPC_Sequential,sequential-grpc,\
 		./hack/benchmark/e2e/external/ngtd/ngtd_bench_test.go \
-		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
+		 -dataset=$(DATASET_ARGS))
 
 .PHONY: bench/ngtd/sequential/rest
 ## run benchmark for NGTD REST stream
 bench/ngtd/sequential/rest: \
 	ngt/install
-	$(call bench-pprof,pprof/external/ngtd,ngtd,RESTSequential,sequential-rest,\
+	$(call bench-pprof,pprof/external/ngtd,ngtd,REST_Sequential,sequential-rest,\
 		./hack/benchmark/e2e/external/ngtd/ngtd_bench_test.go \
-		 -dataset=$(DATASET_ARGS) -address=$(ADDRESS_ARGS))
+		 -dataset=$(DATASET_ARGS))
 
 .PHONY: bench/gateway
 ## run benchmarks for gateway

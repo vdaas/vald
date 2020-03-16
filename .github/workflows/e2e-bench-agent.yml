@@ -1,0 +1,67 @@
+name: 'Run e2e bench: bench-agent'
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/e2e-bench-agent.yml'
+      - 'internal/**'
+      - 'apis/grpc/**'
+      - 'pkg/agent/ngt/**'
+      - 'cmd/agent/ngt/**'
+      - 'hack/benchmark/**'
+      - 'versions/GO_VERSION'
+      - 'versions/NGT_VERSION'
+  pull_request:
+    paths:
+      - '.github/workflows/e2e-bench-agent.yml'
+      - 'internal/**'
+      - 'apis/grpc/**'
+      - 'pkg/agent/ngt/**'
+      - 'cmd/agent/ngt/**'
+      - 'hack/benchmark/**'
+      - 'versions/GO_VERSION'
+      - 'versions/NGT_VERSION'
+
+jobs:
+  grpc-sequential:
+    name: grpc-sequential
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: Run grpc-sequential
+        run: |
+          make bench/agent/sequential/grpc
+  
+  grpc-stream:
+    name: grpc-stream
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: Run grpc-stream
+        run: |
+          make bench/agent/stream
+  
+  rest:
+    name: rest
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: Run rest
+        run: |
+          make bench/agent/sequential/rest

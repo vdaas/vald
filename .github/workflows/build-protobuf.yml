@@ -15,27 +15,12 @@ jobs:
   build:
     name: build all
     runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
     steps:
-      - name: Install dependencies
-        run: |
-          echo "Install dependencies"
-          sudo apt-get update
-          sudo apt-get install -y libprotobuf-dev libprotoc-dev protobuf-compiler
       - uses: actions/checkout@v1
         with:
           fetch-depth: 1
-      - name: Fetch golang version
+      - name: build protobuf
         run: |
-          echo "Fetch golang version"
-          GO_VERSION=`make version/go`
-          echo "GO_VERSION=${GO_VERSION}"
-          echo "::set-output name=version::${GO_VERSION}"
-        id: golang_version
-      - uses: actions/setup-go@v1
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
-      - run: |
-          echo "build protobuf"
-          export GOPATH=$HOME/go
-          export PATH=$PATH:$HOME/go/bin
           make proto/all

@@ -33,38 +33,38 @@ spec:
         app: mysql
     spec:
       containers:
-      # - image: mariadb:latest
-      - image: mysql:latest
-        imagePullPolicy: Always 
-        env:
-        - name: MYSQL_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: password
-        name: mysql
-        ports:
-        - containerPort: 3306
+        # - image: mariadb:latest
+        - image: mysql:latest
+          imagePullPolicy: Always
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: password
           name: mysql
-          protocol: TCP
-        resources:
-          requests:
-            cpu: 100m
-            memory: 100Mi
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - name: mysql-persistent-storage
-          mountPath: /var/lib/mysql/
-        - name: mysql-initdb
-          mountPath: /docker-entrypoint-initdb.d/
+          ports:
+            - containerPort: 3306
+              name: mysql
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql/
+            - name: mysql-initdb
+              mountPath: /docker-entrypoint-initdb.d/
       volumes:
-      - name: mysql-persistent-storage
-        persistentVolumeClaim:
-          claimName: mysql-pv-claim
-      - name: mysql-initdb
-        configMap:
-          name: mysql-config
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pv-claim
+        - name: mysql-initdb
+          configMap:
+            name: mysql-config
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
