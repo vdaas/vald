@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+// Package strategy provides strategy for e2e testing functions
 package strategy
 
 import (
