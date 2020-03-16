@@ -30,7 +30,6 @@ kubernetes 1.17~
 
 ## Get Started
 
-Explore the get started and easily create Vald on your k8s cluster.<br>
 Please refer to [Get Started](./docs/user/get-started.md).
 
 ## Installation

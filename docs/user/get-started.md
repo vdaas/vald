@@ -1,6 +1,6 @@
 # Get Started
 
-For the one who is interested in Vald, this article will show you how to deploy and run Vald on k8s.
+For the one who is interested in Vald, this article will show you how to deploy and run Vald on your k8s cluster.
 This article uses Scylla DB as the backend data store for metadata-management and backup-manager.
 Fashion-mnist is used as an example of a dataset.
 
@@ -15,7 +15,7 @@ Fashion-mnist is used as an example of a dataset.
 ## About
 
 Vald is a distributed highly scalable and fast approximate nearest neighbor dense feature vector search engine.<br>
-Vald can handle large amount of specific objects, such as image, text, videa, and etc.<br>
+Vald can handle large amount of specific objects, such as image, text, video, and etc.<br>
 Vald is designed base on Cloud Native.
 It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors.
 (If you are interested in ANN benchmarks, please refer to [the official website](http://ann-benchmarks.com/).)
