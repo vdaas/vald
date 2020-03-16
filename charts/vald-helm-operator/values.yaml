@@ -14,30 +14,45 @@
 # limitations under the License.
 #
 
+# name -- name of the deployment
 name: vald-helm-operator
+# replicas -- (int) number of replicas
 replicas: 1
 
 image:
+  # image.repository -- image repository
   repository: vdaas/vald-helm-operator
+  # image.tag -- image tag
   tag: v0.0.25
+  # image.pullPolicy -- image pull policy
   pullPolicy: Always
 
 crd:
+  # crd.create -- ValdRelease crd will be created
   create: true
 
 vald:
+  # vald.create -- ValdRelease resource will be created
   create: false
+  # vald.name -- name of ValdRelease resource
   name: vald-cluster
+  # vald.spec -- spec field of ValdRelease resource = the values of Helm chart for Vald
   spec: {}
 
 rbac:
+  # rbac.create -- required roles and rolebindings will be created
   create: true
+  # rbac.name -- name of roles and rolebindings
   name: vald-helm-operator
 
 serviceAccount:
+  # serviceAccount.create -- service account will be created
   create: true
+  # serviceAccount.name -- name of service account
   name: vald-helm-operator
 
+# resources -- k8s resources of pod
 resources: {}
 
+# nodeSelector -- node labels for pod assignment
 nodeSelector: {}

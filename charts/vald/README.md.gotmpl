@@ -1,0 +1,23 @@
+Vald
+===
+
+This is a Helm chart to install Vald components.
+
+{{ template "chart.versionLine" . }}
+
+Install
+---
+
+Add Vald Helm repository
+
+    $ helm repo add vald https://vald.vdaas.org/charts
+
+Run the following command to install the chart,
+
+    $ helm install --generate-name vald/vald
+
+
+Configuration
+---
+
+{{ template "chart.valuesTable" . }}

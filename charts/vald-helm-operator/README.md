@@ -3,6 +3,7 @@ vald-helm-operator
 
 This is a Helm chart to install vald-helm-operator.
 
+Current chart version is `v0.0.25`
 
 Install
 ---
@@ -19,20 +20,20 @@ Run the following command to install the chart,
 Configuration
 ---
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `name` | name of the deployment | `vald-helm-operator` |
-| `replicas` | number of replicas | `1` |
-| `image.repository` | image repository | `vdaas/vald-helm-operator` |
-| `image.tag` | image tag | version |
-| `image.pullPolicy` | image pull policy | `Always` |
-| `crd.create` | ValdRelease crd will be created | `true` |
-| `vald.create` | ValdRelease resource will be created | `false` |
-| `vald.name` | name of ValdRelease resource | `vald-cluster` |
-| `vald.spec` | spec field of ValdRelease resource = the values of Helm chart for Vald | `{}` |
-| `rbac.create` | required roles and rolebindings will be created | `true` |
-| `rbac.name` | name of roles and rolebindings | `vald-helm-operator` |
-| `serviceAccount.create` | service account will be created | `false` |
-| `serviceAccount.name` | name of service account | `vald-helm-operator` |
-| `resources` | k8s resources of pod | `{}` |
-| `nodeSelector` | node labels for pod assignment | `{}` |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| crd.create | bool | `true` | ValdRelease crd will be created |
+| image.pullPolicy | string | `"Always"` | image pull policy |
+| image.repository | string | `"vdaas/vald-helm-operator"` | image repository |
+| image.tag | string | `"v0.0.25"` | image tag |
+| name | string | `"vald-helm-operator"` | name of the deployment |
+| nodeSelector | object | `{}` | node labels for pod assignment |
+| rbac.create | bool | `true` | required roles and rolebindings will be created |
+| rbac.name | string | `"vald-helm-operator"` | name of roles and rolebindings |
+| replicas | int | `1` | (int) number of replicas |
+| resources | object | `{}` | k8s resources of pod |
+| serviceAccount.create | bool | `true` | service account will be created |
+| serviceAccount.name | string | `"vald-helm-operator"` | name of service account |
+| vald.create | bool | `false` | ValdRelease resource will be created |
+| vald.name | string | `"vald-cluster"` | name of ValdRelease resource |
+| vald.spec | object | `{}` | spec field of ValdRelease resource = the values of Helm chart for Vald |
