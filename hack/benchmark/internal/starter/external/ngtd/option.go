@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package ngtd provides ngtd starter  functionality 
+// Package ngtd provides ngtd starter  functionality
 package ngtd
 
 type Option func(*server)

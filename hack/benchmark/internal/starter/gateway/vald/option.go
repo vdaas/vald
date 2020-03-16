@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package vald provides vald starter  functionality 
+// Package vald provides vald starter  functionality
 package vald
 
 type Option func(*server)
