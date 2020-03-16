@@ -37,27 +37,27 @@ spec:
         app: redis
     spec:
       containers:
-      - image: redis:latest
-        imagePullPolicy: Always 
-        name: redis
-        args:
-        - "--requirepass $(REDIS_PASSWORD)"
-        ports:
-        - containerPort: 6379
+        - image: redis:latest
+          imagePullPolicy: Always
           name: redis
-          protocol: TCP
-        resources:
-          requests:
-            cpu: 100m
-            memory: 100Mi
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        env:
-        - name: REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: redis-secret
-              key: password
+          args:
+            - "--requirepass $(REDIS_PASSWORD)"
+          ports:
+            - containerPort: 6379
+              name: redis
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: password
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler

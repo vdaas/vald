@@ -26,15 +26,15 @@ spec:
       template:
         spec:
           containers:
-          - args:
-            - --all-namespaces
-            - --profefe-hostport
-            - http://profefe:10100
-            image: profefe/kprofefe:latest
-            imagePullPolicy: IfNotPresent
-            name: kprofefe
+            - args:
+                - --all-namespaces
+                - --profefe-hostport
+                - http://profefe:10100
+              image: profefe/kprofefe:latest
+              imagePullPolicy: IfNotPresent
+              name: kprofefe
           restartPolicy: Never
           serviceAccount: kprofefe
           serviceAccountName: kprofefe
-  schedule: '*/3 * * * *'
+  schedule: "*/3 * * * *"
   successfulJobsHistoryLimit: 3
