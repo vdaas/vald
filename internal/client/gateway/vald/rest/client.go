@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+// Package rest provides vald REST client functions
 package rest
 
 import (
