@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+// Package grpc provides vald gRPC client functions
 package grpc
 
 import "github.com/vdaas/vald/internal/config"
