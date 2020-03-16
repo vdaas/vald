@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+// Package grpc provides agent ngt gRPC client functions
 package grpc
 
 import (
