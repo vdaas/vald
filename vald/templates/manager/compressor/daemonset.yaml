@@ -59,8 +59,10 @@ spec:
             {{- toYaml .Values.compressor.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          {{- if .Values.compressor.env }}
           env:
             {{- toYaml .Values.compressor.env | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: {{ .Values.compressor.name }}-config
               mountPath: /etc/server/

@@ -26,9 +26,9 @@ metadata:
   name: {{ .Values.gateway.name }}-ingress
 spec:
   rules:
-  - host: {{ .Values.gateway.ingress.host }}
-    http:
-      paths:
-      - backend:
-          serviceName: {{ .Values.gateway.name }}
-          servicePort: {{ .Values.gateway.ingress.servicePort }}
+    - host: {{ .Values.gateway.ingress.host }}
+      http:
+        paths:
+          - backend:
+              serviceName: {{ .Values.gateway.name }}
+              servicePort: {{ .Values.gateway.ingress.servicePort }}

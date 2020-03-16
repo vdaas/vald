@@ -22,19 +22,19 @@ spec:
   template:
     spec:
       containers:
-      - name: {{ .Values.initializer.cassandra.name }}
-        image: "{{ .Values.initializer.cassandra.image.repository }}:{{ .Values.initializer.cassandra.image.tag }}"
-        imagePullPolicy: {{ .Values.initializer.cassandra.image.pullPolicy }}
-        command:
-          - /bin/sh
-          - -c
-          - |
-            cqlsh -u${CASSANDRA_USER} -p${CASSANDRA_PASSWORD} ${CASSANDRA_HOST} < /initdb/{{ .Values.initializer.cassandra.configmap.filename }}
-        env:
-          {{- toYaml .Values.initializer.cassandra.env | nindent 10 }}
-        volumeMounts:
-          - name: {{ .Values.initializer.cassandra.configmap.name }}
-            mountPath: /initdb
+        - name: {{ .Values.initializer.cassandra.name }}
+          image: "{{ .Values.initializer.cassandra.image.repository }}:{{ .Values.initializer.cassandra.image.tag }}"
+          imagePullPolicy: {{ .Values.initializer.cassandra.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              cqlsh -u${CASSANDRA_USER} -p${CASSANDRA_PASSWORD} ${CASSANDRA_HOST} < /initdb/{{ .Values.initializer.cassandra.configmap.filename }}
+          env:
+            {{- toYaml .Values.initializer.cassandra.env | nindent 10 }}
+          volumeMounts:
+            - name: {{ .Values.initializer.cassandra.configmap.name }}
+              mountPath: /initdb
       restartPolicy: {{ .Values.initializer.cassandra.restartPolicy }}
       volumes:
         - name: {{ .Values.initializer.cassandra.configmap.name }}
