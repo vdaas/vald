@@ -37,15 +37,22 @@ jobs:
           echo "version updated: ${GITWERK_RESULT}"
           echo "${GITWERK_RESULT}" > versions/VALD_VERSION
 
-          sed -i -e "s/^version: .*$/version: ${GITWERK_RESULT}/" vald/Chart.yaml
-          sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${GITWERK_RESULT}/" vald/values.yaml
+          sed -i -e "s/^version: .*$/version: ${GITWERK_RESULT}/" charts/vald/Chart.yaml
+          sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${GITWERK_RESULT}/" charts/vald/values.yaml
+          sed -i -e "s/^version: .*$/version: ${GITWERK_RESULT}/" charts/vald-helm-operator/Chart.yaml
+          sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${GITWERK_RESULT}/" charts/vald-helm-operator/values.yaml
 
           git checkout master
 
           git config --global user.name "vdaas-ci"
           git config --global user.email "ci@vdaas.org"
 
-          git add versions/VALD_VERSION vald/Chart.yaml vald/values.yaml
+          git add \
+            versions/VALD_VERSION \
+            charts/vald/Chart.yaml \
+            charts/vald/values.yaml \
+            charts/vald-helm-operator/Chart.yaml \
+            charts/vald-helm-operator/values.yaml
           git commit --signoff -m ":bookmark: :robot: Release ${GITWERK_RESULT}"
 
           git tag ${GITWERK_RESULT}

@@ -40,6 +40,6 @@ spec:
             - name: config-volume
               mountPath: /mnt/etc/
       volumes:
-      - name: config-volume
-        configMap:
-          name: prometheus-config
+        - name: config-volume
+          configMap:
+            name: prometheus-config

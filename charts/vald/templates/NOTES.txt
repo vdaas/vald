@@ -1,0 +1,3 @@
+Release {{ .Release.Name }} is created.
+
+Ingress: {{ .Values.gateway.ingress.host }}

@@ -31,44 +31,44 @@ spec:
         app: cassandra
     spec:
       containers:
-      - name: cassandra
-        image: cassandra:latest
-        imagePullPolicy: Always
-        lifecycle:
-          postStart:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - |
-                  until cqlsh -e 'describe cluster'
-                  do
-                    echo 'waiting for cassandra ready'
-                    sleep 2
-                  done
-                  cqlsh < /initdb/init.cql
-          preStop:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - nodetool drain
-        env:
-          - name: CASSANDRA_SEEDS
-            value: "cassandra-0.cassandra.default.svc.cluster.local"
-        volumeMounts:
-          - name: cassandra-initdb
-            mountPath: /initdb
-        ports:
-          - containerPort: 9042
-            name: cassandra
-            protocol: TCP
-        resources:
-          requests:
-            cpu: 100m
-            memory: 100Mi
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
+        - name: cassandra
+          image: cassandra:latest
+          imagePullPolicy: Always
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    until cqlsh -e 'describe cluster'
+                    do
+                      echo 'waiting for cassandra ready'
+                      sleep 2
+                    done
+                    cqlsh < /initdb/init.cql
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - nodetool drain
+          env:
+            - name: CASSANDRA_SEEDS
+              value: "cassandra-0.cassandra.default.svc.cluster.local"
+          volumeMounts:
+            - name: cassandra-initdb
+              mountPath: /initdb
+          ports:
+            - containerPort: 9042
+              name: cassandra
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
       volumes:
         - name: cassandra-initdb
           configMap:

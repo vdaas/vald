@@ -103,8 +103,7 @@ spec:
               memory: 50Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-          env:
-            null
+          env: null
           volumeMounts:
             - name: vald-manager-compressor-config
               mountPath: /etc/server/

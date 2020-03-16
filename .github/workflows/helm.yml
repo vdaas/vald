@@ -29,6 +29,7 @@ jobs:
         run: |
           git checkout master
           make k8s/manifest/update
+          make k8s/manifest/helm-operator/update
           make license
       - name: Push to master
         continue-on-error: true
@@ -58,9 +59,10 @@ jobs:
       - name: Helm version
         run: |
           helm version
-      - name: Update k8s
+      - name: Packaging
         run: |
           make helm/package/vald
+          make helm/package/vald-helm-operator
       - name: Push to gh-pages
         continue-on-error: true
         run: |

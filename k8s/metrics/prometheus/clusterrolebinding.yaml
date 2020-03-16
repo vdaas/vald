@@ -23,6 +23,6 @@ roleRef:
   kind: ClusterRole
   name: metrics-reader
 subjects:
-- kind: ServiceAccount
-  name: prometheus
-  namespace: default
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: default

@@ -18,9 +18,9 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: vald-helm-operator
 subjects:
-- kind: ServiceAccount
-  name: vald-helm-operator
-  namespace: default
+  - kind: ServiceAccount
+    name: vald-helm-operator
+    namespace: default
 roleRef:
   kind: ClusterRole
   name: vald-helm-operator

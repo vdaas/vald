@@ -22,6 +22,7 @@ k8s/manifest/clean:
 	    k8s/gateway/vald \
 	    k8s/manager/backup \
 	    k8s/manager/compressor \
+	    k8s/manager/index \
 	    k8s/meta \
 	    k8s/jobs
 
@@ -30,9 +31,9 @@ k8s/manifest/clean:
 k8s/manifest/update: \
 	k8s/manifest/clean
 	helm template \
-	    --values vald/values-dev.yaml \
+	    --values charts/vald/values-dev.yaml \
 	    --output-dir tmp-k8s \
-	    vald
+	    charts/vald
 	mkdir -p k8s/gateway
 	mkdir -p k8s/manager
 	mv tmp-k8s/vald/templates/agent k8s/agent
@@ -44,6 +45,25 @@ k8s/manifest/update: \
 	mv tmp-k8s/vald/templates/meta k8s/meta
 	mv tmp-k8s/vald/templates/jobs k8s/jobs
 	rm -rf tmp-k8s
+
+.PHONY: k8s/manifest/helm-operator/clean
+## clean k8s manifests for helm-operator
+k8s/manifest/helm-operator/clean:
+	rm -rf \
+	    k8s/operator/helm
+
+.PHONY: k8s/manifest/helm-operator/update
+## update k8s manifests for helm-operatorusing helm templates
+k8s/manifest/helm-operator/update: \
+	k8s/manifest/helm-operator/clean
+	helm template \
+	    --set vald.create=true \
+	    --output-dir tmp-k8s \
+	    charts/vald-helm-operator
+	mkdir -p k8s/operator
+	mv tmp-k8s/vald-helm-operator/templates k8s/operator/helm
+	rm -rf tmp-k8s
+
 
 .PHONY: k8s/vald/deploy
 ## deploy vald sample cluster to k8s
@@ -78,9 +98,9 @@ k8s/vald/remove: \
 k8s/vald/deploy/cassandra: \
 	k8s/external/cassandra/deploy
 	helm template \
-	    --values vald/values-cassandra.yaml \
+	    --values charts/vald/values-cassandra.yaml \
 	    --output-dir tmp-k8s \
-	    vald
+	    charts/vald
 	kubectl apply -f k8s/metrics/metrics-server
 	kubectl apply -f tmp-k8s/vald/templates/manager/backup
 	kubectl apply -f tmp-k8s/vald/templates/manager/compressor
@@ -96,9 +116,9 @@ k8s/vald/deploy/cassandra: \
 k8s/vald/deploy/scylla: \
 	k8s/external/scylla/deploy
 	helm template \
-	    --values vald/values-scylla.yaml \
+	    --values charts/vald/values-scylla.yaml \
 	    --output-dir tmp-k8s \
-	    vald
+	    charts/vald
 	kubectl apply -f k8s/metrics/metrics-server
 	kubectl apply -f tmp-k8s/vald/templates/manager/backup
 	kubectl apply -f tmp-k8s/vald/templates/manager/compressor
@@ -246,12 +266,12 @@ $(BINDIR)/helm:
 .PHONY: helm/package/vald
 ## packaging Helm chart for Vald
 helm/package/vald:
-	helm package vald
+	helm package charts/vald
 
-.PHONY: helm/repo/index/create
-## create Helm chart repository index
-helm/repo/index/create:
-	helm repo index --url https://vald.vdaas.org/charts .
+.PHONY: helm/package/vald-helm-operator
+## packaging Helm chart for vald-helm-operator
+helm/package/vald-helm-operator:
+	helm package charts/vald-helm-operator
 
 .PHONY: helm/repo/add
 ## add Helm chart repository

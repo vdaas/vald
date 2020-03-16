@@ -56,7 +56,7 @@ area/internal:
   - internal/**/*
 
 area/helm:
-  - vald/**/*
+  - charts/**/*
 
 area/makefile:
   - Makefile
