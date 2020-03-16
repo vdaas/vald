@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+// Package ngtd provides ngtd starter  functionality 
 package ngtd
 
 import (
