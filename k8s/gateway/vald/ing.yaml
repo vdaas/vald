@@ -27,9 +27,9 @@ metadata:
   name: vald-gateway-ingress
 spec:
   rules:
-    - host: vald.gateway.vdaas.org
-      http:
-        paths:
-          - backend:
-              serviceName: vald-gateway
-              servicePort: grpc
+  - host: vald.gateway.vdaas.org
+    http:
+      paths:
+      - backend:
+          serviceName: vald-gateway
+          servicePort: grpc

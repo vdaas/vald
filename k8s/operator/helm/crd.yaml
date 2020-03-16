@@ -1,3 +1,4 @@
+---
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -25,6 +26,13 @@ spec:
     plural: valdreleases
     singular: valdrelease
   scope: Namespaced
+  additionalPrinterColumns:
+    - name: Ingress
+      type: string
+      JSONPath: .spec.gateway.ingress.host
+    - name: Age
+      type: date
+      JSONPath: .metadata.creationTimestamp
   subresources:
     status: {}
   validation:

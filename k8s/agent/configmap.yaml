@@ -91,22 +91,9 @@ data:
             write_timeout: 1s
           mode: REST
           probe_wait_time: 3s
-        - name: prometheus
-          host: 0.0.0.0
-          port: 6061
-          http:
-            handler_timeout: 5s
-            idle_timeout: 2s
-            read_header_timeout: 1s
-            read_timeout: 1s
-            shutdown_duration: 5s
-            write_timeout: 1s
-          mode: REST
-          probe_wait_time: 3s
       startup_strategy:
         - liveness
         - pprof
-        - prometheus
         - grpc
         - readiness
       full_shutdown_duration: 600s
@@ -116,7 +103,7 @@ data:
         key: "/path/to/key"
         ca: "/path/to/ca"
     observability:
-      enabled: true
+      enabled: false
       collector:
         duration: 5s
         metrics:
@@ -125,10 +112,10 @@ data:
           enable_memory: true
           enable_version_info: true
       trace:
-        enabled: true
+        enabled: false
         sampling_rate: 1
       prometheus:
-        enabled: true
+        enabled: false
       jaeger:
           enabled: false
           collector_endpoint: ""
@@ -138,9 +125,9 @@ data:
           service_name: "vald-agent-ngt"
           buffer_max_count: 10
     ngt:
-      auto_index_check_duration: 1m
+      auto_index_check_duration: 30m
       auto_index_length: 100
-      auto_index_limit: 10m
+      auto_index_limit: 24h
       bulk_insert_chunk_size: 10
       creation_edge_size: 20
       dimension: 4096

@@ -1,3 +1,4 @@
+---
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -17,4 +18,6 @@ apiVersion: vald.vdaas.org/v1alpha1
 kind: ValdRelease
 metadata:
   name: vald-cluster
-spec: {}
+  namespace: default
+# the values of Helm chart for Vald can be placed under the `spec` field.
+spec: map[]

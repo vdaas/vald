@@ -37,7 +37,7 @@ spec:
       labels:
         app: vald-meta
       annotations:
-        checksum/configmap: 7d2d897b8133d1f38a7a674a79437e021233b67f265336273104eca47fd970b8
+        checksum/configmap: c938572bb42720319532c9808184fa75f32684ce3fa2cb865c28a2c7f442d52d
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-meta
@@ -101,9 +101,6 @@ spec:
             - name: pprof
               protocol: TCP
               containerPort: 6060
-            - name: prometheus
-              protocol: TCP
-              containerPort: 6061
           resources:
             limits:
               cpu: 300m

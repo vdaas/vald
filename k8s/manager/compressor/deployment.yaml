@@ -37,7 +37,7 @@ spec:
       labels:
         app: vald-manager-compressor
       annotations:
-        checksum/configmap: 8abc7d93d9cc0a728f23f8f28af9cdc6bdbb9caab56506f512af5cf11fe484ea
+        checksum/configmap: 15c00996a4198b0521fe2898eceffe499bf5e1f35be122ab1bd794848437c7c2
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-compressor
@@ -91,9 +91,6 @@ spec:
             - name: pprof
               protocol: TCP
               containerPort: 6060
-            - name: prometheus
-              protocol: TCP
-              containerPort: 6061
           resources:
             limits:
               cpu: 800m
@@ -103,7 +100,8 @@ spec:
               memory: 50Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-          env: null
+          env:
+            null
           volumeMounts:
             - name: vald-manager-compressor-config
               mountPath: /etc/server/

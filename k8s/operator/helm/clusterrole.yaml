@@ -1,3 +1,4 @@
+---
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -18,6 +19,7 @@ kind: ClusterRole
 metadata:
   creationTimestamp: null
   name: vald-helm-operator
+  namespace: default
 rules:
   - apiGroups:
       - ""
@@ -31,7 +33,7 @@ rules:
       - configmaps
       - secrets
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - ""
     resources:
@@ -44,7 +46,7 @@ rules:
       - clusterrolebindings
       - clusterroles
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - ""
     resources:
@@ -52,32 +54,33 @@ rules:
       - serviceaccounts
       - services
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - apps
     resources:
+      - replicasets
       - deployments
       - statefulsets
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - autoscaling
     resources:
       - horizontalpodautoscalers
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - networking.k8s.io
     resources:
       - ingresses
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - policy
     resources:
       - poddisruptionbudgets
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - monitoring.coreos.com
     resources:
@@ -85,6 +88,12 @@ rules:
     verbs:
       - get
       - create
+  - apiGroups:
+      - scheduling.k8s.io
+    resources:
+      - priorityclasses
+    verbs:
+      - '*'
   - apiGroups:
       - apps
     resourceNames:
@@ -100,16 +109,9 @@ rules:
     verbs:
       - get
   - apiGroups:
-      - apps
-    resources:
-      - replicasets
-      - deployments
-    verbs:
-      - get
-  - apiGroups:
       - vald.vdaas.org
     resources:
-      - "*"
+      - '*'
     verbs:
       - create
       - delete
