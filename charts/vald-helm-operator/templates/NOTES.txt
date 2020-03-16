@@ -1,0 +1,15 @@
+Release {{ .Release.Name }} is created.
+
+Once the {{ .Values.name }} deployment in the {{ .Release.Name }} namespace is ready, you can create ValdRelease resource like:
+
+kubectl apply -f - <<EOF
+apiVersion: vald.vdaas.org/v1alpha1
+kind: ValdRelease
+metadata:
+  name: vald-cluster
+spec: {}
+EOF
+
+You can get statuses of ValdRelease resource like:
+
+kubectl get valdrelease

@@ -283,21 +283,21 @@ gateway:
           fieldPath: metadata.namespace
   server_config:
     prefix: gateway
-    # servers:
-    #   rest:
-    #     enabled: false
-    #   grpc:
-    #     enabled: false
-    # healths:
-    #   liveness:
-    #     enabled: false
-    #   readiness:
-    #     enabled: false
-    # metrics:
-    #   pprof:
-    #     enabled: false
-    #   prometheus:
-    #     enabled: false
+    servers:
+      rest:
+        enabled: false
+      grpc:
+        enabled: false
+    healths:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false
+    metrics:
+      pprof:
+        enabled: false
+      prometheus:
+        enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -368,21 +368,21 @@ agent:
     partition: 0
   server_config:
     prefix: agent
-    # servers:
-    #   rest:
-    #     enabled: false
-    #   grpc:
-    #     enabled: false
-    # healths:
-    #   liveness:
-    #     enabled: false
-    #   readiness:
-    #     enabled: false
-    # metrics:
-    #   pprof:
-    #     enabled: false
-    #   prometheus:
-    #     enabled: false
+    servers:
+      rest:
+        enabled: false
+      grpc:
+        enabled: false
+    healths:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false
+    metrics:
+      pprof:
+        enabled: false
+      prometheus:
+        enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -433,21 +433,21 @@ discoverer:
           fieldPath: metadata.namespace
   server_config:
     prefix: discoverer
-    # servers:
-    #   rest:
-    #     enabled: false
-    #   grpc:
-    #     enabled: false
-    # healths:
-    #   liveness:
-    #     enabled: false
-    #   readiness:
-    #     enabled: false
-    # metrics:
-    #   pprof:
-    #     enabled: false
-    #   prometheus:
-    #     enabled: false
+    servers:
+      rest:
+        enabled: false
+      grpc:
+        enabled: false
+    healths:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false
+    metrics:
+      pprof:
+        enabled: false
+      prometheus:
+        enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -506,21 +506,21 @@ compressor:
       sleepDuration: 2
   server_config:
     prefix: manager-compressor
-    # servers:
-    #   rest:
-    #     enabled: false
-    #   grpc:
-    #     enabled: false
-    # healths:
-    #   liveness:
-    #     enabled: false
-    #   readiness:
-    #     enabled: false
-    # metrics:
-    #   pprof:
-    #     enabled: false
-    #   prometheus:
-    #     enabled: false
+    servers:
+      rest:
+        enabled: false
+      grpc:
+        enabled: false
+    healths:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false
+    metrics:
+      pprof:
+        enabled: false
+      prometheus:
+        enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -623,21 +623,21 @@ backupManager:
     #       key: password
   server_config:
     prefix: backup-manager
-    # servers:
-    #   rest:
-    #     enabled: false
-    #   grpc:
-    #     enabled: false
-    # healths:
-    #   liveness:
-    #     enabled: false
-    #   readiness:
-    #     enabled: false
-    # metrics:
-    #   pprof:
-    #     enabled: false
-    #   prometheus:
-    #     enabled: false
+    servers:
+      rest:
+        enabled: false
+      grpc:
+        enabled: false
+    healths:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false
+    metrics:
+      pprof:
+        enabled: false
+      prometheus:
+        enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -781,21 +781,21 @@ indexManager:
           fieldPath: metadata.namespace
   server_config:
     prefix: index-manager
-    # servers:
-    #   rest:
-    #     enabled: false
-    #   grpc:
-    #     enabled: false
-    # healths:
-    #   liveness:
-    #     enabled: false
-    #   readiness:
-    #     enabled: false
-    # metrics:
-    #   pprof:
-    #     enabled: false
-    #   prometheus:
-    #     enabled: false
+    servers:
+      rest:
+        enabled: false
+      grpc:
+        enabled: false
+    healths:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false
+    metrics:
+      pprof:
+        enabled: false
+      prometheus:
+        enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false
@@ -905,21 +905,21 @@ meta:
     #       key: password
   server_config:
     prefix: meta
-    # servers:
-    #   rest:
-    #     enabled: false
-    #   grpc:
-    #     enabled: false
-    # healths:
-    #   liveness:
-    #     enabled: false
-    #   readiness:
-    #     enabled: false
-    # metrics:
-    #   pprof:
-    #     enabled: false
-    #   prometheus:
-    #     enabled: false
+    servers:
+      rest:
+        enabled: false
+      grpc:
+        enabled: false
+    healths:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false
+    metrics:
+      pprof:
+        enabled: false
+      prometheus:
+        enabled: false
     full_shutdown_duration: 600s
     tls:
       enabled: false

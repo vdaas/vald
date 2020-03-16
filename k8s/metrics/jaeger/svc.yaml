@@ -34,18 +34,18 @@ metadata:
   name: jaeger-collector
 spec:
   ports:
-  - name: jaeger-collector-tchannel
-    port: 14267
-    protocol: TCP
-    targetPort: 14267
-  - name: jaeger-collector-http
-    port: 14268
-    protocol: TCP
-    targetPort: 14268
-  - name: jaeger-collector-zipkin
-    port: 9411
-    protocol: TCP
-    targetPort: 9411
+    - name: jaeger-collector-tchannel
+      port: 14267
+      protocol: TCP
+      targetPort: 14267
+    - name: jaeger-collector-http
+      port: 14268
+      protocol: TCP
+      targetPort: 14268
+    - name: jaeger-collector-zipkin
+      port: 9411
+      protocol: TCP
+      targetPort: 9411
   type: ClusterIP
   selector:
     app: jaeger
@@ -56,22 +56,22 @@ metadata:
   name: jaeger-agent
 spec:
   ports:
-  - name: agent-zipkin-thrift
-    port: 5775
-    protocol: UDP
-    targetPort: 5775
-  - name: agent-compact
-    port: 6831
-    protocol: UDP
-    targetPort: 6831
-  - name: agent-binary
-    port: 6832
-    protocol: UDP
-    targetPort: 6832
-  - name: agent-configs
-    port: 5778
-    protocol: TCP
-    targetPort: 5778
+    - name: agent-zipkin-thrift
+      port: 5775
+      protocol: UDP
+      targetPort: 5775
+    - name: agent-compact
+      port: 6831
+      protocol: UDP
+      targetPort: 6831
+    - name: agent-binary
+      port: 6832
+      protocol: UDP
+      targetPort: 6832
+    - name: agent-configs
+      port: 5778
+      protocol: TCP
+      targetPort: 5778
   clusterIP: None
   selector:
     app: jaeger
@@ -82,10 +82,10 @@ metadata:
   name: zipkin
 spec:
   ports:
-  - name: jaeger-collector-zipkin
-    port: 9411
-    protocol: TCP
-    targetPort: 9411
+    - name: jaeger-collector-zipkin
+      port: 9411
+      protocol: TCP
+      targetPort: 9411
   clusterIP: None
   selector:
     app: jaeger

@@ -38,7 +38,7 @@ spec:
       labels:
         app: vald-manager-index
       annotations:
-        checksum/configmap: aa29191f1c3135ee7decf6a8bbcffacba4f7252b6bacb0154e68bc66cbe7d742
+        checksum/configmap: d25f9662d8fbdd5c431a4f4e9be94c0aa8757dcdde567af7d609e39031de666e
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-index
@@ -92,9 +92,6 @@ spec:
             - name: pprof
               protocol: TCP
               containerPort: 6060
-            - name: prometheus
-              protocol: TCP
-              containerPort: 6061
           resources:
             limits:
               cpu: 1

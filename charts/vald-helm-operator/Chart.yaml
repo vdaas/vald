@@ -13,8 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: vald.vdaas.org/v1alpha1
-kind: ValdRelease
-metadata:
-  name: vald-cluster
-spec: {}
+
+apiVersion: v1
+appVersion: "1.0"
+description: A Helm chart for vald-helm-operator
+name: vald-helm-operator
+version: v0.0.25
+keywords:
+  - Vald
+  - NGT
+home: https://vdaas.org
+icon: https://raw.githubusercontent.com/vdaas/vald/master/assets/image/icon_color.svg
+sources:
+  - https://github.com/vdaas/vald
+maintainers:
+  - name: kpango
+    email: i.can.feel.gravity@gmail.com
+  - name: rinx
+    email: rintaro.okamura@gmail.com
+  - name: kmrmt
+    email: kou.morimoto@gmail.com

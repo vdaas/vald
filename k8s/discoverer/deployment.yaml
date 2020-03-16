@@ -38,7 +38,7 @@ spec:
       labels:
         app: vald-discoverer
       annotations:
-        checksum/configmap: f70accd9e423af99dc64f8fc9b862f34d20f94393bc18ccce841f7718e07244d
+        checksum/configmap: b71a63a9b0e8b3253178f130381722fb54c113bf5af3b7660fb4463c96d68af5
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-discoverer
@@ -80,9 +80,6 @@ spec:
             - name: pprof
               protocol: TCP
               containerPort: 6060
-            - name: prometheus
-              protocol: TCP
-              containerPort: 6061
           resources:
             limits:
               cpu: 600m

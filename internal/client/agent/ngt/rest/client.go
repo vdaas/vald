@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package rest provides gRPC client functions
+// Package rest provides agent ngt REST client functions
 package rest
 
 import (
