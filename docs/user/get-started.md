@@ -55,7 +55,7 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
 - helm: v3 ~
 - libhdf5 (_`libhdf5` is only required doing Get-Started, is not required Vald._)
 
-If helm/hdf5 is not installed, please install helm (see below details or [here](https://helm.sh/docs/intro/install))/hdf5 (see below details or [here](https://www.hdfgroup.org/)).
+Helm and hdf5 is required for this tutorial. If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install)) and [hdf5](https://www.hdfgroup.org/)).
 
 <details><summary>optional installation</summary><br>
 install helm
