@@ -106,7 +106,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
     kubectl apply -f k8s/metrics/metrics-server
     ```
 
-3. Deployment from helm template command
+3. Deploy Vald using helm
 
     ```bash
     helm repo add vald https://vald.vdaas.org/charts
