@@ -328,7 +328,7 @@ This chapter shows how to run Vald with fashion-mnist dataset.
 
 Vald is highly customizable.
 For example you can configure the number of vector dimension, the number of replica and etc.
-You can customize Vald by creating/editing `values.yaml`.
+You can customize Vald by creating/editing [`values.yaml`](../../charts/vald/values.yaml).
 We will publish the description of `values.yaml` soon.
 
 ### Another way to deploy Vald
