@@ -120,7 +120,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
     ```
 
     <details><summary>Example output</summary><br>
-    If the deployment is successful, you can check the following information.
+    If the deployment is successful, all Vald components should be running.
 
     ```bash
     NAME                                       READY   STATUS    RESTARTS   AGE
