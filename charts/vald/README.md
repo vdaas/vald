@@ -424,7 +424,7 @@ Configuration
 | discoverer.serviceType | string | `"ClusterIP"` |  |
 | discoverer.terminationGracePeriodSeconds | int | `30` |  |
 | discoverer.version | string | `"v0.0.0"` |  |
-| gateway.annotations | string | `nil` | deployment annotations |
+| gateway.annotations | list | `nil` | deployment annotations |
 | gateway.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
 | gateway.externalTrafficPolicy | string | `nil` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | gateway.filter.egress | list | `[""]` | egress filters |
@@ -455,22 +455,22 @@ Configuration
 | gateway.minReplicas | int | `3` | minimum number of replicas |
 | gateway.name | string | `"vald-gateway"` | name of vald-gateway |
 | gateway.nodeName | string | `nil` | node name |
-| gateway.nodeSelector | string | `nil` | node selector |
+| gateway.nodeSelector | object | `nil` | node selector |
 | gateway.observability | object | `{"jaeger":{"service_name":"vald-gateway"}}` | observability config (overrides defaults.observability) |
-| gateway.podAnnotations | string | `nil` | pod annotations |
+| gateway.podAnnotations | list | `nil` | pod annotations |
 | gateway.progressDeadlineSeconds | int | `600` | progress deadline seconds |
 | gateway.resources | object | `{"limits":{"cpu":"2000m","memory":"700Mi"},"requests":{"cpu":"200m","memory":"150Mi"}}` | compute resources |
 | gateway.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
 | gateway.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | gateway.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | gateway.server_config | object | `{"full_shutdown_duration":"600s","healths":{"liveness":{"enabled":false},"readiness":{"enabled":false}},"metrics":{"pprof":{"enabled":false},"prometheus":{"enabled":false}},"prefix":"gateway","servers":{"grpc":{"enabled":false},"rest":{"enabled":false}},"tls":{"enabled":false}}` | server config (overrides defaults.server_config) |
-| gateway.service.annotations | string | `nil` | service annotations |
-| gateway.service.labels | string | `nil` | service labels |
+| gateway.service.annotations | list | `nil` | service annotations |
+| gateway.service.labels | list | `nil` | service labels |
 | gateway.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | gateway.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
 | gateway.version | string | `"v0.0.0"` | version of gateway config |
-| gateway.volumeMounts | string | `nil` | volume mounts |
-| gateway.volumes | string | `nil` | volumes |
+| gateway.volumeMounts | list | `nil` | volume mounts |
+| gateway.volumes | list | `nil` | volumes |
 | indexManager.env[0].name | string | `"MY_POD_NAMESPACE"` |  |
 | indexManager.env[0].valueFrom.fieldRef.fieldPath | string | `"metadata.namespace"` |  |
 | indexManager.image.pullPolicy | string | `"Always"` |  |

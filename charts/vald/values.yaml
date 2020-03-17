@@ -402,7 +402,7 @@ gateway:
   kind: Deployment
   # gateway.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # gateway.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  # gateway.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
   externalTrafficPolicy: null
   # gateway.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
@@ -416,14 +416,14 @@ gateway:
   revisionHistoryLimit: 2
   # gateway.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
-  # gateway.annotations -- deployment annotations
+  # gateway.annotations -- (list) deployment annotations
   annotations: null
-  # gateway.podAnnotations -- pod annotations
+  # gateway.podAnnotations -- (list) pod annotations
   podAnnotations: null
   service:
-    # gateway.service.annotations -- service annotations
+    # gateway.service.annotations -- (list) service annotations
     annotations: null
-    # gateway.service.labels -- service labels
+    # gateway.service.labels -- (list) service labels
     labels: null
   hpa:
     # gateway.hpa.enabled -- HPA enabled
@@ -433,7 +433,7 @@ gateway:
   image:
     # gateway.image.repository -- image repository
     repository: vdaas/vald-gateway
-    # gateway.image.tag -- image tag (overrides defaults.image.tag)
+    # gateway.image.tag -- (string) image tag (overrides defaults.image.tag)
     tag: null
     # gateway.image.pullPolicy -- image pull policy
     pullPolicy: Always
@@ -474,13 +474,13 @@ gateway:
       valueFrom:
         fieldRef:
           fieldPath: metadata.namespace
-  # gateway.volumeMounts -- volume mounts
+  # gateway.volumeMounts -- (list) volume mounts
   volumeMounts: null
-  # gateway.volumes -- volumes
+  # gateway.volumes -- (list) volumes
   volumes: null
-  # gateway.nodeName -- node name
+  # gateway.nodeName -- (string) node name
   nodeName: null
-  # gateway.nodeSelector -- node selector
+  # gateway.nodeSelector -- (object) node selector
   nodeSelector: null
   # gateway.server_config -- server config (overrides defaults.server_config)
   server_config:
