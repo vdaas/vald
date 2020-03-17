@@ -1,6 +1,6 @@
 # Get Started
 
-For the one who is interested in Vald, this article will show you how to deploy and run Vald on your k8s cluster.
+This article will show you how to deploy and run Vald on your k8s cluster.
 This article uses Scylla DB as the backend data store for metadata-management and backup-manager.
 Fashion-mnist is used as an example of a dataset.
 
