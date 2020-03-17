@@ -30,7 +30,7 @@ Configuration
 | nodeSelector | object | `{}` | node labels for pod assignment |
 | rbac.create | bool | `true` | required roles and rolebindings will be created |
 | rbac.name | string | `"vald-helm-operator"` | name of roles and rolebindings |
-| replicas | int | `1` | (int) number of replicas |
+| replicas | int | `1` | number of replicas |
 | resources | object | `{}` | k8s resources of pod |
 | serviceAccount.create | bool | `true` | service account will be created |
 | serviceAccount.name | string | `"vald-helm-operator"` | name of service account |

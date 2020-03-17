@@ -16,7 +16,7 @@
 
 # name -- name of the deployment
 name: vald-helm-operator
-# replicas -- (int) number of replicas
+# replicas -- number of replicas
 replicas: 1
 
 image:
