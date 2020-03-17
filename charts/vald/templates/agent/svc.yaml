@@ -17,9 +17,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Values.agent.name }}
-  {{- if .Values.agent.service }}
+  {{- if .Values.agent.service.annotations }}
   annotations:
     {{- toYaml .Values.agent.service.annotations | nindent 4 }}
+  {{- end }}
+  {{- if .Values.agent.service.labels }}
   labels:
     {{- toYaml .Values.agent.service.labels | nindent 4 }}
   {{- end }}

@@ -396,7 +396,7 @@ defaults:
 gateway:
   # gateway.version -- version of gateway config
   version: v0.0.0
-  # gateway.name -- name of vald-gateway
+  # gateway.name -- name of gateway deployment
   name: vald-gateway
   # gateway.kind -- deployment kind: Deployment or DaemonSet
   kind: Deployment
@@ -558,34 +558,75 @@ gateway:
       client: {}
 
 agent:
+  # agent.version -- version of agent config
   version: v0.0.0
+  # agent.name -- name of agent deployment
   name: vald-agent-ngt
+  # agent.kind -- deployment kind: Deployment, DaemonSet or StatefulSet
   kind: StatefulSet
-  # kind: DaemonSet
-  # kind: Deployment
+  # agent.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # externalTrafficPolicy: Cluster
+  # agent.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: null
+  # agent.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
+  # agent.minReplicas -- minimum number of replicas
   minReplicas: 20
+  # agent.maxReplicas -- maximum number of replicas
   maxReplicas: 300
+  # agent.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 1
+  # agent.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
+  # agent.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  # agent.podManagementPolicy -- pod management policy: OrderedReady or Parallel
   podManagementPolicy: OrderedReady
   podPriority:
+    # agent.podPriority.enabled -- agent pod PriorityClass enabled
     enabled: true
+    # agent.podPriority.value -- agent pod PriorityClass value
     value: 1000000000
+  # agent.annotations -- (list) deployment annotations
+  annotations: null
+  # agent.podAnnotations -- (list) pod annotations
+  podAnnotations: null
+  service:
+    # agent.service.annotations -- (list) service annotations
+    annotations: null
+    # agent.service.labels -- (list) service labels
+    labels: null
   hpa:
+    # agent.hpa.enabled -- HPA enabled
     enabled: false
+    # agent.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
     targetCPUUtilizationPercentage: 80
   image:
+    # agent.image.repository -- image repository
     repository: vdaas/vald-agent-ngt
-    # tag: nightly
+    # agent.image.tag -- (string) image tag (overrides defaults.image.tag)
+    tag: null
+    # agent.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
+    # agent.rollingUpdate.maxSurge -- max surge of rolling update
     maxSurge: 25%
+    # agent.rollingUpdate.maxUnavailable -- max unavailable of rolling update
     maxUnavailable: 25%
     partition: 0
+  # agent.initContainers -- (list) init containers
+  initContainers: null
+  # agent.env -- (list) environment variables
+  env: null
+  # agent.volumeMounts -- (list) volume mounts
+  volumeMounts: null
+  # agent.volumes -- (list) volumes
+  volumes: null
+  # agent.nodeName -- (string) node name
+  nodeName: null
+  # agent.nodeSelector -- (object) node selector
+  nodeSelector: null
+  # agent.server_config -- server config (overrides defaults.server_config)
   server_config:
     prefix: agent
     servers:
@@ -606,24 +647,37 @@ agent:
     full_shutdown_duration: 600s
     tls:
       enabled: false
+  # agent.observability -- observability config (overrides defaults.observability)
   observability:
     jaeger:
       service_name: vald-agent-ngt
+  # agent.resources -- compute resources
   resources:
     requests:
       cpu: 300m
       memory: 4Gi # = cluster memory * 0.4 / number of agent pods
   ngt:
-    # index_path: /path/to/index
+    # agent.ngt.index_path -- (string) path to index data
+    index_path: null
+    # agent.ngt.auto_index_limit -- limit duration of automatic indexing
     auto_index_limit: 24h
+    # agent.ngt.auto_index_check_duration -- check duration of automatic indexing
     auto_index_check_duration: 30m
+    # agent.ngt.auto_index_length -- number of cache to trigger automatic indexing
     auto_index_length: 100
+    # agent.ngt.dimension -- dimension
     dimension: 4096
+    # agent.ngt.bulk_insert_chunk_size -- bulk insert chunk size
     bulk_insert_chunk_size: 10
+    # agent.ngt.distance_type -- distance type: l1, l2, angle, hamming, cosine, normalizedangle or normalizedcosine
     distance_type: l2
+    # agent.ngt.object_type -- object type: float or uint8
     object_type: float
+    # agent.ngt.creation_edge_size -- creation edge size
     creation_edge_size: 20
+    # agent.ngt.search_edge_size -- search edge size
     search_edge_size: 10
+    # agent.ngt.enable_in_memory_mode -- in-memory mode enabled
     enable_in_memory_mode: true
 
 discoverer:

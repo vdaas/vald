@@ -22,48 +22,52 @@ Configuration
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| agent.hpa.enabled | bool | `false` |  |
-| agent.hpa.targetCPUUtilizationPercentage | int | `80` |  |
-| agent.image.pullPolicy | string | `"Always"` |  |
-| agent.image.repository | string | `"vdaas/vald-agent-ngt"` |  |
-| agent.kind | string | `"StatefulSet"` |  |
-| agent.maxReplicas | int | `300` |  |
-| agent.maxUnavailable | int | `1` |  |
-| agent.minReplicas | int | `20` |  |
-| agent.name | string | `"vald-agent-ngt"` |  |
-| agent.ngt.auto_index_check_duration | string | `"30m"` |  |
-| agent.ngt.auto_index_length | int | `100` |  |
-| agent.ngt.auto_index_limit | string | `"24h"` |  |
-| agent.ngt.bulk_insert_chunk_size | int | `10` |  |
-| agent.ngt.creation_edge_size | int | `20` |  |
-| agent.ngt.dimension | int | `4096` |  |
-| agent.ngt.distance_type | string | `"l2"` |  |
-| agent.ngt.enable_in_memory_mode | bool | `true` |  |
-| agent.ngt.object_type | string | `"float"` |  |
-| agent.ngt.search_edge_size | int | `10` |  |
-| agent.observability.jaeger.service_name | string | `"vald-agent-ngt"` |  |
-| agent.podManagementPolicy | string | `"OrderedReady"` |  |
-| agent.podPriority.enabled | bool | `true` |  |
-| agent.podPriority.value | int | `1000000000` |  |
-| agent.progressDeadlineSeconds | int | `600` |  |
-| agent.resources.requests.cpu | string | `"300m"` |  |
-| agent.resources.requests.memory | string | `"4Gi"` |  |
-| agent.revisionHistoryLimit | int | `2` |  |
-| agent.rollingUpdate.maxSurge | string | `"25%"` |  |
-| agent.rollingUpdate.maxUnavailable | string | `"25%"` |  |
+| agent.annotations | list | `nil` | deployment annotations |
+| agent.env | list | `nil` | environment variables |
+| agent.externalTrafficPolicy | string | `nil` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
+| agent.hpa.enabled | bool | `false` | HPA enabled |
+| agent.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |
+| agent.image.pullPolicy | string | `"Always"` | image pull policy |
+| agent.image.repository | string | `"vdaas/vald-agent-ngt"` | image repository |
+| agent.image.tag | string | `nil` | image tag (overrides defaults.image.tag) |
+| agent.initContainers | list | `nil` | init containers |
+| agent.kind | string | `"StatefulSet"` | deployment kind: Deployment, DaemonSet or StatefulSet |
+| agent.maxReplicas | int | `300` | maximum number of replicas |
+| agent.maxUnavailable | int | `1` | maximum number of unavailable replicas |
+| agent.minReplicas | int | `20` | minimum number of replicas |
+| agent.name | string | `"vald-agent-ngt"` | name of agent deployment |
+| agent.ngt.auto_index_check_duration | string | `"30m"` | check duration of automatic indexing |
+| agent.ngt.auto_index_length | int | `100` | number of cache to trigger automatic indexing |
+| agent.ngt.auto_index_limit | string | `"24h"` | limit duration of automatic indexing |
+| agent.ngt.bulk_insert_chunk_size | int | `10` | bulk insert chunk size |
+| agent.ngt.creation_edge_size | int | `20` | creation edge size |
+| agent.ngt.dimension | int | `4096` | dimension |
+| agent.ngt.distance_type | string | `"l2"` | distance type: l1, l2, angle, hamming, cosine, normalizedangle or normalizedcosine |
+| agent.ngt.enable_in_memory_mode | bool | `true` | in-memory mode enabled |
+| agent.ngt.index_path | string | `nil` | path to index data |
+| agent.ngt.object_type | string | `"float"` | object type: float or uint8 |
+| agent.ngt.search_edge_size | int | `10` | search edge size |
+| agent.nodeName | string | `nil` | node name |
+| agent.nodeSelector | object | `nil` | node selector |
+| agent.observability | object | `{"jaeger":{"service_name":"vald-agent-ngt"}}` | observability config (overrides defaults.observability) |
+| agent.podAnnotations | list | `nil` | pod annotations |
+| agent.podManagementPolicy | string | `"OrderedReady"` | pod management policy: OrderedReady or Parallel |
+| agent.podPriority.enabled | bool | `true` | agent pod PriorityClass enabled |
+| agent.podPriority.value | int | `1000000000` | agent pod PriorityClass value |
+| agent.progressDeadlineSeconds | int | `600` | progress deadline seconds |
+| agent.resources | object | `{"requests":{"cpu":"300m","memory":"4Gi"}}` | compute resources |
+| agent.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
+| agent.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
+| agent.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | agent.rollingUpdate.partition | int | `0` |  |
-| agent.server_config.full_shutdown_duration | string | `"600s"` |  |
-| agent.server_config.healths.liveness.enabled | bool | `false` |  |
-| agent.server_config.healths.readiness.enabled | bool | `false` |  |
-| agent.server_config.metrics.pprof.enabled | bool | `false` |  |
-| agent.server_config.metrics.prometheus.enabled | bool | `false` |  |
-| agent.server_config.prefix | string | `"agent"` |  |
-| agent.server_config.servers.grpc.enabled | bool | `false` |  |
-| agent.server_config.servers.rest.enabled | bool | `false` |  |
-| agent.server_config.tls.enabled | bool | `false` |  |
-| agent.serviceType | string | `"ClusterIP"` |  |
-| agent.terminationGracePeriodSeconds | int | `30` |  |
-| agent.version | string | `"v0.0.0"` |  |
+| agent.server_config | object | `{"full_shutdown_duration":"600s","healths":{"liveness":{"enabled":false},"readiness":{"enabled":false}},"metrics":{"pprof":{"enabled":false},"prometheus":{"enabled":false}},"prefix":"agent","servers":{"grpc":{"enabled":false},"rest":{"enabled":false}},"tls":{"enabled":false}}` | server config (overrides defaults.server_config) |
+| agent.service.annotations | list | `nil` | service annotations |
+| agent.service.labels | list | `nil` | service labels |
+| agent.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
+| agent.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| agent.version | string | `"v0.0.0"` | version of agent config |
+| agent.volumeMounts | list | `nil` | volume mounts |
+| agent.volumes | list | `nil` | volumes |
 | backupManager.cassandra.config.connect_timeout | string | `"600ms"` |  |
 | backupManager.cassandra.config.consistency | string | `"quorum"` |  |
 | backupManager.cassandra.config.cql_version | string | `"3.0.0"` |  |
@@ -453,7 +457,7 @@ Configuration
 | gateway.maxReplicas | int | `9` | maximum number of replicas |
 | gateway.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
 | gateway.minReplicas | int | `3` | minimum number of replicas |
-| gateway.name | string | `"vald-gateway"` | name of vald-gateway |
+| gateway.name | string | `"vald-gateway"` | name of gateway deployment |
 | gateway.nodeName | string | `nil` | node name |
 | gateway.nodeSelector | object | `nil` | node selector |
 | gateway.observability | object | `{"jaeger":{"service_name":"vald-gateway"}}` | observability config (overrides defaults.observability) |
