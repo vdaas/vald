@@ -14,10 +14,11 @@ type Benchmark interface {
 }
 
 type benchmark struct {
-	name     string
-	ngt      ngt.NGT
-	dataset  assets.Dataset
-	prestart func(context.Context, *testing.B, assets.Dataset, ngt.NGT)
+	name       string
+	ngt        ngt.NGT
+	dataset    assets.Dataset
+	strategies []Strategy
+	prestart   func(context.Context, *testing.B, assets.Dataset, ngt.NGT)
 }
 
 func New(b *testing.B, opts ...Option) Benchmark {
@@ -51,7 +52,9 @@ func (bm *benchmark) Run(ctx context.Context, b *testing.B) {
 		b.ResetTimer()
 		b.StartTimer()
 		b.Run(bm.name, func(bb *testing.B) {
-
+			for _, strategy := range bm.strategies {
+				strategy.Run(ctx, bb, bm.ngt, bm.dataset)
+			}
 		})
 		b.StopTimer()
 	}()
