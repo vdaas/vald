@@ -94,8 +94,6 @@ If you want to learn about Scylla, please refer to [the official website](https:
     Deploy Scylla as a backup database.
 
     ```bash
-    cd path/to/vald/root 
-    
     kubectl apply -f k8s/jobs/db/initialize/cassandra/configmap.yaml
     kubectl apply -f k8s/external/scylla
     ```
