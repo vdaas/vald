@@ -18,7 +18,7 @@
 
 <div align="center">
 Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.<br>
-Vald is designed and implemented based on the Cloud-Native architecture, <br>
+Vald is designed and implemented based on the Cloud-Native architecture. <br>
 and enables automatic vector indexing and index backup, and horizontal scaling which made for searching from billions of feature vector data.<br>
 Vald is easy to use, feature-rich and highly customizable as you needed.<br>
 Go to [Get Started](./docs/user/get-started.md) page to stear trying out Vald :)
