@@ -333,7 +333,6 @@ We will publish the description of `values.yaml` soon.
 
 ### Another way to deploy Vald
 
-In the `Get Started` section, we show you how to deploy Vald with Scylla DB.
+In the `Get Started` section, you learnt how to deploy Vald with Scylla DB using Helm.
 Vald can also be deployed by Helm or `kind` command. (Compressor datastore is required, for example mysql + redis or casandora ).
 We will publish the document about this in near future.
-
