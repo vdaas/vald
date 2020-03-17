@@ -58,15 +58,15 @@ spec:
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              topologyKey: kubernetes.io/hostname
-              labelSelector:
-                matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                  - {{ .Values.gateway.name }}
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - {{ .Values.gateway.name }}
       containers:
         - name: {{ .Values.gateway.name }}
           image: "{{ .Values.gateway.image.repository }}:{{ default .Values.defaults.image.tag .Values.gateway.image.tag }}"
@@ -77,8 +77,10 @@ spec:
             {{- toYaml .Values.gateway.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          {{- if .Values.gateway.env }}
           env:
             {{- toYaml .Values.gateway.env | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: {{ .Values.gateway.name }}-config
               mountPath: /etc/server/

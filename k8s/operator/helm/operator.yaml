@@ -45,5 +45,4 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "vald-helm-operator"
-          resources:
-            {}
+          resources: {}
