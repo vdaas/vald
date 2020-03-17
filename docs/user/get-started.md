@@ -39,7 +39,7 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
     - Vald has auto index backup feature using MySQL + Redis or Cassndora which enables disaster recovery.
 
 - Distributed Indexing
-    - Vald distribute indexes vecotr to multiple agent. Which means each agent has different graph index.
+    - Vald distribute vector index to multiple agent, each agent stores different index.
 
 - Index Replication
     - Vald stores each index in multiple agents which enables index replicas.
