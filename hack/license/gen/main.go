@@ -94,6 +94,7 @@ func dirwalk(dir string) []string {
 			".gitignore",
 			".gitkeep",
 			".gitmodules",
+			".gotmpl",
 			".hdf5",
 			".helmignore",
 			".html",
