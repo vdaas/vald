@@ -935,6 +935,11 @@ indexManager:
       target: agent
       image: busybox
       sleepDuration: 2
+    - type: wait-for
+      name: wait-for-discoverer
+      target: discoverer
+      image: busybox
+      sleepDuration: 2
   env:
     # - name: MY_NODE_NAME
     #   valueFrom:
