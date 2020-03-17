@@ -424,74 +424,53 @@ Configuration
 | discoverer.serviceType | string | `"ClusterIP"` |  |
 | discoverer.terminationGracePeriodSeconds | int | `30` |  |
 | discoverer.version | string | `"v0.0.0"` |  |
-| gateway.env[0].name | string | `"MY_POD_NAMESPACE"` |  |
-| gateway.env[0].valueFrom.fieldRef.fieldPath | string | `"metadata.namespace"` |  |
-| gateway.filter.egress[0] | string | `""` |  |
-| gateway.filter.ingress[0] | string | `""` |  |
-| gateway.gateway_config.agent_namespace | string | `"_MY_POD_NAMESPACE_"` |  |
-| gateway.gateway_config.backup.client | object | `{}` |  |
-| gateway.gateway_config.discoverer.agent_client | object | `{}` |  |
-| gateway.gateway_config.discoverer.discover_client | object | `{}` |  |
-| gateway.gateway_config.discoverer.duration | string | `"200ms"` |  |
-| gateway.gateway_config.index_replica | int | `5` |  |
-| gateway.gateway_config.meta.cache_expiration | string | `"30m"` |  |
-| gateway.gateway_config.meta.client | object | `{}` |  |
-| gateway.gateway_config.meta.enable_cache | bool | `true` |  |
-| gateway.gateway_config.meta.expired_cache_check_duration | string | `"3m"` |  |
-| gateway.gateway_config.node_name | string | `""` |  |
-| gateway.hpa.enabled | bool | `true` |  |
-| gateway.hpa.targetCPUUtilizationPercentage | int | `80` |  |
-| gateway.image.pullPolicy | string | `"Always"` |  |
-| gateway.image.repository | string | `"vdaas/vald-gateway"` |  |
-| gateway.ingress.annotations."nginx.ingress.kubernetes.io/grpc-backend" | string | `"true"` |  |
-| gateway.ingress.host | string | `"vald.gateway.vdaas.org"` |  |
-| gateway.ingress.servicePort | string | `"grpc"` |  |
-| gateway.initContainers[0].image | string | `"busybox"` |  |
-| gateway.initContainers[0].name | string | `"wait-for-manager-compressor"` |  |
-| gateway.initContainers[0].sleepDuration | int | `2` |  |
-| gateway.initContainers[0].target | string | `"compressor"` |  |
-| gateway.initContainers[0].type | string | `"wait-for"` |  |
-| gateway.initContainers[1].image | string | `"busybox"` |  |
-| gateway.initContainers[1].name | string | `"wait-for-meta"` |  |
-| gateway.initContainers[1].sleepDuration | int | `2` |  |
-| gateway.initContainers[1].target | string | `"meta"` |  |
-| gateway.initContainers[1].type | string | `"wait-for"` |  |
-| gateway.initContainers[2].image | string | `"busybox"` |  |
-| gateway.initContainers[2].name | string | `"wait-for-discoverer"` |  |
-| gateway.initContainers[2].sleepDuration | int | `2` |  |
-| gateway.initContainers[2].target | string | `"discoverer"` |  |
-| gateway.initContainers[2].type | string | `"wait-for"` |  |
-| gateway.initContainers[3].image | string | `"busybox"` |  |
-| gateway.initContainers[3].name | string | `"wait-for-agent"` |  |
-| gateway.initContainers[3].sleepDuration | int | `2` |  |
-| gateway.initContainers[3].target | string | `"agent"` |  |
-| gateway.initContainers[3].type | string | `"wait-for"` |  |
-| gateway.kind | string | `"Deployment"` |  |
-| gateway.maxReplicas | int | `9` |  |
-| gateway.maxUnavailable | string | `"50%"` |  |
-| gateway.minReplicas | int | `3` |  |
-| gateway.name | string | `"vald-gateway"` |  |
-| gateway.observability.jaeger.service_name | string | `"vald-gateway"` |  |
-| gateway.progressDeadlineSeconds | int | `600` |  |
-| gateway.resources.limits.cpu | string | `"2000m"` |  |
-| gateway.resources.limits.memory | string | `"700Mi"` |  |
-| gateway.resources.requests.cpu | string | `"200m"` |  |
-| gateway.resources.requests.memory | string | `"150Mi"` |  |
-| gateway.revisionHistoryLimit | int | `2` |  |
-| gateway.rollingUpdate.maxSurge | string | `"25%"` |  |
-| gateway.rollingUpdate.maxUnavailable | string | `"25%"` |  |
-| gateway.server_config.full_shutdown_duration | string | `"600s"` |  |
-| gateway.server_config.healths.liveness.enabled | bool | `false` |  |
-| gateway.server_config.healths.readiness.enabled | bool | `false` |  |
-| gateway.server_config.metrics.pprof.enabled | bool | `false` |  |
-| gateway.server_config.metrics.prometheus.enabled | bool | `false` |  |
-| gateway.server_config.prefix | string | `"gateway"` |  |
-| gateway.server_config.servers.grpc.enabled | bool | `false` |  |
-| gateway.server_config.servers.rest.enabled | bool | `false` |  |
-| gateway.server_config.tls.enabled | bool | `false` |  |
-| gateway.serviceType | string | `"ClusterIP"` |  |
-| gateway.terminationGracePeriodSeconds | int | `30` |  |
-| gateway.version | string | `"v0.0.0"` |  |
+| gateway.annotations | string | `nil` | deployment annotations |
+| gateway.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
+| gateway.externalTrafficPolicy | string | `nil` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
+| gateway.filter.egress | list | `[""]` | egress filters |
+| gateway.filter.ingress | list | `[""]` | ingress filters |
+| gateway.gateway_config.agent_namespace | string | `"_MY_POD_NAMESPACE_"` | agent namespace |
+| gateway.gateway_config.backup.client | object | `{}` | gRPC client for backup (overrides defaults.grpc.client) |
+| gateway.gateway_config.discoverer.agent_client | object | `{}` | gRPC client for agents (overrides defaults.grpc.client) |
+| gateway.gateway_config.discoverer.discover_client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
+| gateway.gateway_config.discoverer.duration | string | `"200ms"` | discoverer duration |
+| gateway.gateway_config.index_replica | int | `5` | number of index replica |
+| gateway.gateway_config.meta.cache_expiration | string | `"30m"` | meta cache expire duration |
+| gateway.gateway_config.meta.client | object | `{}` | gRPC client for meta (overrides defaults.grpc.client) |
+| gateway.gateway_config.meta.enable_cache | bool | `true` | meta cache enabled |
+| gateway.gateway_config.meta.expired_cache_check_duration | string | `"3m"` | meta cache expired check duration |
+| gateway.gateway_config.node_name | string | `""` | node name |
+| gateway.hpa.enabled | bool | `true` | HPA enabled |
+| gateway.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |
+| gateway.image.pullPolicy | string | `"Always"` | image pull policy |
+| gateway.image.repository | string | `"vdaas/vald-gateway"` | image repository |
+| gateway.image.tag | string | `nil` | image tag (overrides defaults.image.tag) |
+| gateway.ingress.annotations | object | `{"nginx.ingress.kubernetes.io/grpc-backend":"true"}` | annotations for ingress |
+| gateway.ingress.host | string | `"vald.gateway.vdaas.org"` | ingress hostname |
+| gateway.ingress.servicePort | string | `"grpc"` | service port to be exposed by ingress |
+| gateway.initContainers | list | `[{"image":"busybox","name":"wait-for-manager-compressor","sleepDuration":2,"target":"compressor","type":"wait-for"},{"image":"busybox","name":"wait-for-meta","sleepDuration":2,"target":"meta","type":"wait-for"},{"image":"busybox","name":"wait-for-discoverer","sleepDuration":2,"target":"discoverer","type":"wait-for"},{"image":"busybox","name":"wait-for-agent","sleepDuration":2,"target":"agent","type":"wait-for"}]` | init containers |
+| gateway.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
+| gateway.maxReplicas | int | `9` | maximum number of replicas |
+| gateway.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
+| gateway.minReplicas | int | `3` | minimum number of replicas |
+| gateway.name | string | `"vald-gateway"` | name of vald-gateway |
+| gateway.nodeName | string | `nil` | node name |
+| gateway.nodeSelector | string | `nil` | node selector |
+| gateway.observability | object | `{"jaeger":{"service_name":"vald-gateway"}}` | observability config (overrides defaults.observability) |
+| gateway.podAnnotations | string | `nil` | pod annotations |
+| gateway.progressDeadlineSeconds | int | `600` | progress deadline seconds |
+| gateway.resources | object | `{"limits":{"cpu":"2000m","memory":"700Mi"},"requests":{"cpu":"200m","memory":"150Mi"}}` | compute resources |
+| gateway.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
+| gateway.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
+| gateway.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
+| gateway.server_config | object | `{"full_shutdown_duration":"600s","healths":{"liveness":{"enabled":false},"readiness":{"enabled":false}},"metrics":{"pprof":{"enabled":false},"prometheus":{"enabled":false}},"prefix":"gateway","servers":{"grpc":{"enabled":false},"rest":{"enabled":false}},"tls":{"enabled":false}}` | server config (overrides defaults.server_config) |
+| gateway.service.annotations | string | `nil` | service annotations |
+| gateway.service.labels | string | `nil` | service labels |
+| gateway.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
+| gateway.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| gateway.version | string | `"v0.0.0"` | version of gateway config |
+| gateway.volumeMounts | string | `nil` | volume mounts |
+| gateway.volumes | string | `nil` | volumes |
 | indexManager.env[0].name | string | `"MY_POD_NAMESPACE"` |  |
 | indexManager.env[0].valueFrom.fieldRef.fieldPath | string | `"metadata.namespace"` |  |
 | indexManager.image.pullPolicy | string | `"Always"` |  |
@@ -510,6 +489,11 @@ Configuration
 | indexManager.initContainers[0].sleepDuration | int | `2` |  |
 | indexManager.initContainers[0].target | string | `"agent"` |  |
 | indexManager.initContainers[0].type | string | `"wait-for"` |  |
+| indexManager.initContainers[1].image | string | `"busybox"` |  |
+| indexManager.initContainers[1].name | string | `"wait-for-discoverer"` |  |
+| indexManager.initContainers[1].sleepDuration | int | `2` |  |
+| indexManager.initContainers[1].target | string | `"discoverer"` |  |
+| indexManager.initContainers[1].type | string | `"wait-for"` |  |
 | indexManager.kind | string | `"Deployment"` |  |
 | indexManager.maxUnavailable | string | `"50%"` |  |
 | indexManager.name | string | `"vald-manager-index"` |  |

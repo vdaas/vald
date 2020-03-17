@@ -394,28 +394,55 @@ defaults:
       buffer_max_count: 10
 
 gateway:
+  # gateway.version -- version of gateway config
   version: v0.0.0
+  # gateway.name -- name of vald-gateway
   name: vald-gateway
+  # gateway.kind -- deployment kind: Deployment or DaemonSet
   kind: Deployment
-  # kind: DaemonSet
+  # gateway.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # externalTrafficPolicy: Cluster
+  # gateway.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: null
+  # gateway.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
+  # gateway.minReplicas -- minimum number of replicas
   minReplicas: 3
+  # gateway.maxReplicas -- maximum number of replicas
   maxReplicas: 9
+  # gateway.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
+  # gateway.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
+  # gateway.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  # gateway.annotations -- deployment annotations
+  annotations: null
+  # gateway.podAnnotations -- pod annotations
+  podAnnotations: null
+  service:
+    # gateway.service.annotations -- service annotations
+    annotations: null
+    # gateway.service.labels -- service labels
+    labels: null
   hpa:
+    # gateway.hpa.enabled -- HPA enabled
     enabled: true
+    # gateway.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
     targetCPUUtilizationPercentage: 80
   image:
+    # gateway.image.repository -- image repository
     repository: vdaas/vald-gateway
-    # tag: nightly
+    # gateway.image.tag -- image tag (overrides defaults.image.tag)
+    tag: null
+    # gateway.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
+    # gateway.rollingUpdate.maxSurge -- max surge of rolling update
     maxSurge: 25%
+    # gateway.rollingUpdate.maxUnavailable -- max unavailable of rolling update
     maxUnavailable: 25%
+  # gateway.initContainers -- init containers
   initContainers:
     - type: wait-for
       name: wait-for-manager-compressor
@@ -437,6 +464,7 @@ gateway:
       target: agent
       image: busybox
       sleepDuration: 2
+  # gateway.env -- environment variables
   env:
     # - name: MY_NODE_NAME
     #   valueFrom:
@@ -446,6 +474,15 @@ gateway:
       valueFrom:
         fieldRef:
           fieldPath: metadata.namespace
+  # gateway.volumeMounts -- volume mounts
+  volumeMounts: null
+  # gateway.volumes -- volumes
+  volumes: null
+  # gateway.nodeName -- node name
+  nodeName: null
+  # gateway.nodeSelector -- node selector
+  nodeSelector: null
+  # gateway.server_config -- server config (overrides defaults.server_config)
   server_config:
     prefix: gateway
     servers:
@@ -466,19 +503,26 @@ gateway:
     full_shutdown_duration: 600s
     tls:
       enabled: false
+  # gateway.observability -- observability config (overrides defaults.observability)
   observability:
     jaeger:
       service_name: vald-gateway
   filter:
+    # gateway.filter.egress -- egress filters
     egress:
       - ""
+    # gateway.filter.ingress -- ingress filters
     ingress:
       - ""
   ingress:
+    # gateway.ingress.annotations -- annotations for ingress
     annotations:
       nginx.ingress.kubernetes.io/grpc-backend: "true"
+    # gateway.ingress.host -- ingress hostname
     host: vald.gateway.vdaas.org
+    # gateway.ingress.servicePort -- service port to be exposed by ingress
     servicePort: grpc
+  # gateway.resources -- compute resources
   resources:
     requests:
       cpu: 200m
@@ -487,19 +531,30 @@ gateway:
       cpu: 2000m
       memory: 700Mi
   gateway_config:
+    # gateway.gateway_config.agent_namespace -- agent namespace
     agent_namespace: _MY_POD_NAMESPACE_
+    # gateway.gateway_config.node_name -- node name
     node_name: "" # _MY_NODE_NAME_
+    # gateway.gateway_config.index_replica -- number of index replica
     index_replica: 5
     discoverer:
+      # gateway.gateway_config.discoverer.duration -- discoverer duration
       duration: 200ms
+      # gateway.gateway_config.discoverer.discover_client -- gRPC client for discoverer (overrides defaults.grpc.client)
       discover_client: {}
+      # gateway.gateway_config.discoverer.agent_client -- gRPC client for agents (overrides defaults.grpc.client)
       agent_client: {}
     meta:
+      # gateway.gateway_config.meta.client -- gRPC client for meta (overrides defaults.grpc.client)
       client: {}
+      # gateway.gateway_config.meta.enable_cache -- meta cache enabled
       enable_cache: true
+      # gateway.gateway_config.meta.cache_expiration -- meta cache expire duration
       cache_expiration: "30m"
+      # gateway.gateway_config.meta.expired_cache_check_duration -- meta cache expired check duration
       expired_cache_check_duration: "3m"
     backup:
+      # gateway.gateway_config.backup.client -- gRPC client for backup (overrides defaults.grpc.client)
       client: {}
 
 agent:
