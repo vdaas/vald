@@ -91,7 +91,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
 
 2. Prepare Scylla DB and k8s metrics-server
 
-    At first, you have to apply scylla as backup database.
+    Deploy Scylla as a backup database.
 
     ```bash
     cd path/to/vald/root 
