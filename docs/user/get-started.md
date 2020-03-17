@@ -83,7 +83,7 @@ brew install hdf5
 This section shows how to deploy Vald with Scylla, which is used as a datastore for index-metadata and backup-manager.
 If you want to learn about Scylla, please refer to [the official website](https://www.scylladb.com/).
 
-1. Confirm the right cluster to deploy
+1. Confirm which cluster to deploy
 
     ```bash
     kubectl cluster-info
