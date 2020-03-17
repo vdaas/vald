@@ -9,7 +9,14 @@ on:
        - '*.*.*-*'
        - 'v*.*.*-*'
     paths:
-      - 'vald/**'
+      - 'charts/vald/README.md.gotmpl'
+      - 'charts/vald/Chart.yaml'
+      - 'charts/vald/values.yaml'
+      - 'charts/vald/templates/**'
+      - 'charts/vald-helm-operator/README.md.gotmpl'
+      - 'charts/vald-helm-operator/Chart.yaml'
+      - 'charts/vald-helm-operator/values.yaml'
+      - 'charts/vald-helm-operator/templates/**'
 
 jobs:
   update-k8s-manifest:
@@ -30,6 +37,8 @@ jobs:
           git checkout master
           make k8s/manifest/update
           make k8s/manifest/helm-operator/update
+          make helm/docs/vald
+          make helm/docs/vald-helm-operator
           make license
       - name: Push to master
         continue-on-error: true
@@ -37,7 +46,7 @@ jobs:
           git config --global user.name "vdaas-ci"
           git config --global user.email "ci@vdaas.org"
 
-          git add k8s
+          git add k8s charts/vald/README.md charts/vald-helm-operator/README.md
           git commit --signoff -m ":robot: Automatically update k8s manifests"
 
           git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"

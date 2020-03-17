@@ -56,3 +56,19 @@ helm/package/vald-helm-operator:
 ## add Helm chart repository
 helm/repo/add:
 	helm repo add vald https://vald.vdaas.org/charts
+
+.PHONY: helm/docs/vald
+helm/docs/vald: charts/vald/README.md
+
+charts/vald/README.md: \
+	charts/vald/README.md.gotmpl \
+	charts/vald/values.yaml
+	helm-docs
+
+.PHONY: helm/docs/vald-helm-operator
+helm/docs/vald-helm-operator: charts/vald-helm-operator/README.md
+
+charts/vald-helm-operator/README.md: \
+	charts/vald-helm-operator/README.md.gotmpl \
+	charts/vald-helm-operator/values.yaml
+	helm-docs
