@@ -27,7 +27,7 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
     - Therefore, Vald automatically indexes distributed Graphs sequentially.
 
 - Ingress/Egress Filltering
-    - Vald has it's own highly customizable Ingress/Egress filter.
+    - Vald implements it's own highly customizable Ingress/Egress filter.
     - Which can be configured by the user to fit the gRPC interface.
         - Ingress Filter: Ability to Vectorize through filter on request.
         - Egress Filter: A function to rerank or filter the Search response with your own algorithm.
