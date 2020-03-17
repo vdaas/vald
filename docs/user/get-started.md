@@ -35,7 +35,7 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
 - Horizontal Scalable
     - Vald is a cloud-native vector search engine running on Kubernetes, which enables horizontal scalling of memory and cpu for billion scale of vector data.
 
-- Auto Index Backup
+- Auto Indexing Backup
     - Vald has auto index backup feature using MySQL + Redis or Cassndora which enables disaster recovery.
 
 - Distributed Indexing
