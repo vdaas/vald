@@ -30,7 +30,7 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
     - Vald implements it's own highly customizable Ingress/Egress filter.
     - Which can be configured by the user to fit the gRPC interface.
         - Ingress Filter: Ability to Vectorize through filter on request.
-        - Egress Filter: A function to rerank or filter the Search response with your own algorithm.
+        - Egress Filter: rerank or filter the searching result with your own algorithm.
 
 - Horizontal Scaling
     - Vald is a cloud-native vector search engine running on Kubernetes, which enables horizontal scalling of memory and cpu for billion scale of vector data.
