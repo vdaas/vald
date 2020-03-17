@@ -63,7 +63,7 @@ var (
 				ObjectType:         "unknown",
 				CreationEdgeSize:   20,
 				SearchEdgeSize:     10,
-				EnableInMemoryMode: true,
+				EnableInMemoryMode: false,
 			},
 		}),
 	}
