@@ -119,7 +119,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
     kubectl get pods
     ```
 
-    <details><summary>output example</summary><br>
+    <details><summary>Example output</summary><br>
     If the deployment is successful, you can check the following information.
 
     ```bash
