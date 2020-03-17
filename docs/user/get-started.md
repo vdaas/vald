@@ -153,7 +153,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
 
 ### Run
 
-This chapter shows the procedure to run Vald with fashion-mnist dataset.
+This chapter shows how to run Vald with fashion-mnist dataset.
 
 1. Port Forward
 
