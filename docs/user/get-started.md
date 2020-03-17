@@ -76,7 +76,7 @@ brew install hdf5
 ```
 </details>
 
-## Starting Vald on k8s cluster
+## Deploy and Run Vald on K8s cluster
 
 ### Deploy
 
