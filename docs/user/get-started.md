@@ -43,7 +43,7 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
 
 - Index Replication
     - Vald stores each index in multiple agents which enables index replicas.
-    - Rebalance the replica when some pods go down.
+    - Automatically rebalance the replica when some Vald agent goes down.
 
 - Easy to use
     - Vald can be easily installed in a few steps and Vald is highly customizable.
