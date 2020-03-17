@@ -66,7 +66,6 @@ func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 				strategy.NewInsert(),
 				strategy.NewCreateIndex(
 					strategy.WithCreateIndexClient(client),
-					strategy.WithCreateIndexPoolSize(100),
 				),
 				strategy.NewSearch(),
 			),
@@ -97,7 +96,6 @@ func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 				strategy.NewInsert(),
 				strategy.NewCreateIndex(
 					strategy.WithCreateIndexClient(client),
-					strategy.WithCreateIndexPoolSize(100),
 				),
 				strategy.NewSearch(),
 			),
@@ -128,7 +126,6 @@ func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 				strategy.NewStreamInsert(),
 				strategy.NewCreateIndex(
 					strategy.WithCreateIndexClient(client),
-					strategy.WithCreateIndexPoolSize(100),
 				),
 				strategy.NewStreamSearch(),
 			),
