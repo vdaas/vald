@@ -18,7 +18,6 @@ type benchmark struct {
 	ngt        ngt.NGT
 	dataset    assets.Dataset
 	strategies []Strategy
-	prestart   func(context.Context, *testing.B, assets.Dataset, ngt.NGT)
 }
 
 func New(b *testing.B, opts ...Option) Benchmark {
@@ -44,8 +43,6 @@ func (bm *benchmark) Run(ctx context.Context, b *testing.B) {
 	func() {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
-
-		bm.prestart(ctx, b, bm.dataset, bm.ngt)
 
 		b.StopTimer()
 		b.ReportAllocs()
