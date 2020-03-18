@@ -11,7 +11,7 @@ import (
 
 type createAndSaveIndex struct {
 	poolSize uint32
-	preStart func(context.Context, *testing.B, ngt.NGT, assets.Dataset)
+	preStart PreStart
 }
 
 func NewCreateAndSaveIndex(opts ...CreateAndSaveIndexOption) benchmark.Strategy {

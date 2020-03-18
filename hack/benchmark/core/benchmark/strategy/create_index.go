@@ -9,7 +9,10 @@ import (
 	"github.com/vdaas/vald/internal/core/ngt"
 )
 
-type createIndex struct{}
+type createIndex struct {
+	poolSize uint32
+	preStart PreStart
+}
 
 func NewCreateIndex(opts ...CreateIndexOption) benchmark.Strategy {
 	c := new(createIndex)
@@ -21,8 +24,17 @@ func NewCreateIndex(opts ...CreateIndexOption) benchmark.Strategy {
 
 func (c *createIndex) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, dataset assets.Dataset) {
 	b.Run("CreateIndex", func(bb *testing.B) {
-		for i := 0; i < bb.N; i++ {
+		c.preStart(ctx, b, ngt, dataset)
 
+		bb.StopTimer()
+		bb.ReportAllocs()
+		bb.ResetTimer()
+		bb.StartTimer()
+		for i := 0; i < bb.N; i++ {
+			if err := ngt.CreateIndex(c.poolSize); err != nil {
+				bb.Error(err)
+			}
 		}
+		bb.StopTimer()
 	})
 }
