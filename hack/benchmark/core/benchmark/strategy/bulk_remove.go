@@ -12,7 +12,7 @@ import (
 type bulkRemove struct {
 	ids       []uint
 	chunkSize int
-	fn        PreStart
+	preStart  PreStart
 }
 
 func NewBulkRemove(opts ...BulkRemoveOption) benchmark.Strategy {
@@ -26,7 +26,7 @@ func NewBulkRemove(opts ...BulkRemoveOption) benchmark.Strategy {
 func (br *bulkRemove) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, dataset assets.Dataset) {
 	cnt := 1
 	b.Run("BulkRemove", func(bb *testing.B) {
-		br.ids = append(br.ids, br.fn(ctx, b, ngt, dataset)...)
+		br.ids = append(br.ids, br.preStart(ctx, bb, ngt, dataset)...)
 
 		bb.StopTimer()
 		bb.ReportAllocs()

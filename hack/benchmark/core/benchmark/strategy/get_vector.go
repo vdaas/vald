@@ -25,7 +25,7 @@ func NewGetVector(opts ...GetVectorOption) benchmark.Strategy {
 func (g *getVector) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, dataset assets.Dataset) {
 	cnt := 0
 	b.Run("GetVector", func(bb *testing.B) {
-		g.ids = append(g.ids, g.preStart(ctx, b, ngt, dataset)...)
+		g.ids = append(g.ids, g.preStart(ctx, bb, ngt, dataset)...)
 
 		bb.StopTimer()
 		bb.ReportAllocs()
