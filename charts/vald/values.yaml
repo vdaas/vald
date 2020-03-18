@@ -1626,13 +1626,20 @@ meta:
 
 initializer:
   mysql:
+    # initializer.mysql.enabled -- mysql initializer job enabled
     enabled: false
+    # initializer.mysql.name -- mysql initializer job name
     name: mysql-init
     image:
+      # initializer.mysql.image.repository -- image repository
       repository: mysql
+      # initializer.mysql.image.tag -- image tag
       tag: latest
+      # initializer.mysql.image.pullPolicy -- image pull policy
       pullPolicy: Always
+    # initializer.mysql.restartPolicy -- restart policy
     restartPolicy: Never
+    # initializer.mysql.env -- environment variables
     env:
       - name: MYSQL_HOST
         value: mysql.default.svc.cluster.local
@@ -1644,23 +1651,37 @@ initializer:
             name: mysql-secret
             key: password
     configmap:
+      # initializer.mysql.configmap.enabled -- mysql schema configmap will be created
       enabled: false
+      # initializer.mysql.configmap.name -- mysql schema configmap name
       name: mysql-config
+      # initializer.mysql.configmap.filename -- mysql schema filename
       filename: ddl.sql
+      # initializer.mysql.configmap.schema -- mysql schema name
       schema: vald
     secret:
+      # initializer.mysql.secret.enabled -- mysql secret will be created
       enabled: false
+      # initializer.mysql.secret.name -- mysql secret name
       name: mysql-secret
+      # initializer.mysql.secret.data -- mysql secret data
       data:
         password: cGFzc3dvcmQ=
   redis:
+    # initializer.redis.enabled -- redis initializer job enabled
     enabled: false
+    # initializer.redis.name -- redis initializer job name
     name: redis-init
     image:
+      # initializer.redis.image.repository -- image repository
       repository: redis
+      # initializer.redis.image.tag -- image tag
       tag: latest
+      # initializer.redis.image.pullPolicy -- image pull policy
       pullPolicy: Always
+    # initializer.redis.restartPolicy -- restart policy
     restartPolicy: Never
+    # initializer.redis.env -- environment variables
     env:
       - name: REDIS_HOST
         value: redis.default.svc.cluster.local
@@ -1670,18 +1691,28 @@ initializer:
             name: redis-secret
             key: password
     secret:
+      # initializer.redis.secret.enabled -- redis secret will be created
       enabled: false
+      # initializer.redis.secret.name -- redis secret name
       name: redis-secret
+      # initializer.redis.secret.data -- redis secret data
       data:
         password: cGFzc3dvcmQ=
   cassandra:
+    # initializer.cassandra.enabled -- cassandra initializer job enabled
     enabled: false
+    # initializer.cassandra.name -- cassandra initializer job name
     name: cassandra-init
     image:
+      # initializer.cassandra.image.repository -- image repository
       repository: cassandra
+      # initializer.cassandra.image.tag -- image tag
       tag: latest
+      # initializer.cassandra.image.pullPolicy -- image pull policy
       pullPolicy: Always
+    # initializer.cassandra.restartPolicy -- restart policy
     restartPolicy: Never
+    # initializer.cassandra.env -- environment variables
     env:
       - name: CASSANDRA_HOST
         value: cassandra.default.svc.cluster.local
@@ -1693,22 +1724,36 @@ initializer:
             name: cassandra-secret
             key: password
     configmap:
+      # initializer.cassandra.configmap.enabled -- cassandra schema configmap will be created
       enabled: false
+      # initializer.cassandra.configmap.name -- cassandra schema configmap name
       name: cassandra-initdb
+      # initializer.cassandra.configmap.filename -- cassandra schema filename
       filename: init.cql
+      # initializer.cassandra.configmap.keyspace -- cassandra keyspace
       keyspace: vald
+      # initializer.cassandra.configmap.replication_class -- cassandra replication class
       replication_class: SimpleStrategy
+      # initializer.cassandra.configmap.replication_factor -- cassandra replication factor
       replication_factor: 3
       meta:
+        # initializer.cassandra.configmap.meta.enabled -- meta table enabled
         enabled: true
         name:
+          # initializer.cassandra.configmap.meta.name.kv -- name of KV table
           kv: kv
+          # initializer.cassandra.configmap.meta.name.vk -- name of VK table
           vk: vk
       backup:
+        # initializer.cassandra.configmap.backup.enabled -- backup table enabled
         enabled: true
+        # initializer.cassandra.configmap.backup.name -- name of backup table
         name: meta_vector
     secret:
+      # initializer.cassandra.secret.enabled -- cassandra secret will be created
       enabled: false
+      # initializer.cassandra.secret.name -- cassandra secret name
       name: cassandra-secret
+      # initializer.cassandra.secret.data -- cassandra secret data
       data:
         password: cGFzc3dvcmQ=
