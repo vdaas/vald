@@ -1293,29 +1293,57 @@ indexManager:
               keep_alive: 15m
 
 meta:
+  # meta.version -- version of meta config
   version: v0.0.0
+  # meta.name -- name of meta deployment
   name: vald-meta
+  # meta.kind -- deployment kind: Deployment or DaemonSet
   kind: Deployment
-  # kind: DaemonSet
+  # meta.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # externalTrafficPolicy: Cluster
+  # meta.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: null
+  # meta.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
+  # meta.minReplicas -- minimum number of replicas
   minReplicas: 2
+  # meta.maxReplicas -- maximum number of replicas
   maxReplicas: 10
+  # meta.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
+  # meta.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
+  # meta.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  # meta.annotations -- (list) deployment annotations
+  annotations: null
+  # meta.podAnnotations -- (list) pod annotations
+  podAnnotations: null
+  service:
+    # meta.service.annotations -- (list) service annotations
+    annotations: null
+    # meta.service.labels -- (list) service labels
+    labels: null
+
   hpa:
+    # meta.hpa.enabled -- HPA enabled
     enabled: true
+    # meta.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
     targetCPUUtilizationPercentage: 80
   image:
+    # meta.image.repository -- image repository
     repository: vdaas/vald-meta-redis
     # repository: vdaas/vald-meta-cassandra
-    # tag: nightly
+    # meta.image.tag -- (string) image tag (overrides defaults.image.tag)
+    tag: null
+    # meta.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
+    # meta.rollingUpdate.maxSurge -- max surge of rolling update
     maxSurge: 25%
+    # meta.rollingUpdate.maxUnavailable -- max unavailable of rolling update
     maxUnavailable: 25%
+  # meta.initContainers -- init containers
   initContainers:
     - type: wait-for-redis
       name: wait-for-redis
@@ -1359,6 +1387,7 @@ meta:
     #       - scylla-1.scylla.default.svc.cluster.local
     #       - scylla-2.scylla.default.svc.cluster.local
     #   sleepDuration: 2
+  # meta.env -- environment variables
   env:
     - name: REDIS_PASSWORD
       valueFrom:
@@ -1370,6 +1399,15 @@ meta:
     #     secretKeyRef:
     #       name: cassandra-secret
     #       key: password
+  # meta.volumeMounts -- (list) volume mounts
+  volumeMounts: null
+  # meta.volumes -- (list) volumes
+  volumes: null
+  # meta.nodeName -- (string) node name
+  nodeName: null
+  # meta.nodeSelector -- (object) node selector
+  nodeSelector: null
+  # meta.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
       rest: {}
@@ -1380,9 +1418,11 @@ meta:
     metrics:
       pprof: {}
       prometheus: {}
+  # meta.observability -- observability config (overrides defaults.observability)
   observability:
     jaeger:
       service_name: vald-meta
+  # meta.resources -- compute resources
   resources:
     requests:
       cpu: 100m
@@ -1391,48 +1431,94 @@ meta:
       cpu: 300m
       memory: 100Mi
   redis:
+    # meta.redis.enabled -- redis config enabled
     enabled: true
     config:
+      # meta.redis.config.addrs -- redis hosts and ports
       addrs:
         - redis.default.svc.cluster.local:6379
+      # meta.redis.config.db -- database to be selected
       db: 0
+      # meta.redis.config.dial_timeout -- dial timeout
       dial_timeout: 5s
+      # meta.redis.config.idle_check_frequency -- idle check frequency
       idle_check_frequency: 1m
+      # meta.redis.config.idle_timeout -- idle timeout
       idle_timeout: 5m
+      # meta.redis.config.key_pref -- key prefix
       key_pref: ""
+      # meta.redis.config.max_conn_age -- max connection age
       max_conn_age: 0s
+      # meta.redis.config.max_redirects -- max redirects
       max_redirects: 3
+      # meta.redis.config.max_retries -- max retries
       max_retries: 0
+      # meta.redis.config.max_retry_backoff -- max retry backoff
       max_retry_backoff: 512ms
+      # meta.redis.config.min_idle_conns -- min idle connections
       min_idle_conns: 0
+      # meta.redis.config.min_retry_backoff -- min retry backoff
       min_retry_backoff: 8ms
+      # meta.redis.config.password -- redis password
       password: _REDIS_PASSWORD_
+      # meta.redis.config.pool_size -- pool size
       pool_size: 10
+      # meta.redis.config.pool_timeout -- pool timeout
       pool_timeout: 4s
+      # meta.redis.config.read_only -- read only enabled
       read_only: false
+      # meta.redis.config.read_timeout -- read timeout
       read_timeout: 3s
+      # meta.redis.config.write_timeout -- write timeout
       write_timeout: 3s
+      # meta.redis.config.route_by_latency -- latency based routing enabled
       route_by_latency: false
+      # meta.redis.config.route_randomly -- random routing enabled
       route_randomly: true
       tls:
+        # meta.redis.config.tls.enabled -- TLS enabled
         enabled: false
+        # meta.redis.config.tls.cert -- path to TLS cert
+        cert: /path/to/cert
+        # meta.redis.config.tls.key -- path to TLS key
+        key: /path/to/key
+        # meta.redis.config.tls.ca -- path to TLS ca
+        ca: /path/to/ca
       tcp:
         dns:
+          # meta.redis.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
           cache_enabled: true
+          # meta.redis.config.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
           refresh_duration: 1h
+          # meta.redis.config.tcp.dns.cache_expiration -- TCP DNS cache expiration
           cache_expiration: 24h
         dialer:
+          # meta.redis.config.tcp.dialer.timeout -- TCP dialer timeout
           timeout: 5s
+          # meta.redis.config.tcp.dialer.keep_alive -- TCP dialer keep alive
           keep_alive: 5m
+          # meta.redis.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
           dual_stack_enabled: false
         tls:
+          # meta.redis.config.tcp.tls.enabled -- TCP TLS enabled
           enabled: false
+          # meta.redis.config.tcp.tls.cert -- path to TCP TLS cert
+          cert: /path/to/cert
+          # meta.redis.config.tcp.tls.key -- path to TCP TLS key
+          key: /path/to/key
+          # meta.redis.config.tcp.tls.ca -- path to TCP TLS ca
+          ca: /path/to/ca
+      # meta.redis.config.kv_prefix -- KV prefix
       kv_prefix: ""
+      # meta.redis.config.vk_prefix -- VK prefix
       vk_prefix: ""
+      # meta.redis.config.prefix_delimiter -- prefix delimiter
       prefix_delimiter: ""
   cassandra:
+    # meta.cassandra.enabled -- cassandra config enabled
     enabled: false
     config:
+      # meta.cassandra.config.hosts -- cassandra hosts
       hosts:
         - cassandra-0.cassandra.default.svc.cluster.local
         - cassandra-1.cassandra.default.svc.cluster.local
@@ -1440,58 +1526,102 @@ meta:
         # - scylla-0.scylla.default.svc.cluster.local
         # - scylla-1.scylla.default.svc.cluster.local
         # - scylla-2.scylla.default.svc.cluster.local
+      # meta.cassandra.config.cql_version -- cassandra CQL version
       cql_version: 3.0.0
+      # meta.cassandra.config.proto_version -- cassandra proto version
       proto_version: 0
+      # meta.cassandra.config.timeout -- timeout
       timeout: 600ms
+      # meta.cassandra.config.connect_timeout -- connect timeout
       connect_timeout: 600ms
+      # meta.cassandra.config.port -- cassandra port
       port: 9042
+      # meta.cassandra.config.keyspace -- cassandra keyspace
       keyspace: vald
+      # meta.cassandra.config.num_conns -- number of connections per hosts
       num_conns: 2
+      # meta.cassandra.config.consistency -- consistency type
       consistency:  quorum
+      # meta.cassandra.config.username -- cassandra username
       username: root
+      # meta.cassandra.config.password -- cassandra password
       password: _CASSANDRA_PASSWORD_
       retry_policy:
+        # meta.cassandra.config.retry_policy.num_retries -- number of retries
         num_retries: 3
+        # meta.cassandra.config.retry_policy.min_duration -- minimum duration to retry
         min_duration: 1s
+        # meta.cassandra.config.retry_policy.max_duration -- maximum duration to retry
         max_duration: 30s
       reconnection_policy:
+        # meta.cassandra.config.reconnection_policy.max_retries -- maximum number of retries to reconnect
         max_retries: 3
+        # meta.cassandra.config.reconnection_policy.initial_interval -- initial interval to reconnect
         initial_interval: 1m
+      # meta.cassandra.config.socket_keepalive -- socket keep alive time
       socket_keepalive: 0s
+      # meta.cassandra.config.max_prepared_stmts -- maximum number of prepared statements
       max_prepared_stmts: 1000
+      # meta.cassandra.config.max_routing_key_info -- maximum number of routing key info
       max_routing_key_info: 1000
+      # meta.cassandra.config.page_size -- page size
       page_size: 5000
       tls:
+        # meta.cassandra.config.tls.enabled -- TLS enabled
         enabled: false
+        # meta.cassandra.config.tls.cert -- path to TLS cert
         cert: /path/to/cert
+        # meta.cassandra.config.tls.key -- path to TLS key
         key: /path/to/key
+        # meta.cassandra.config.tls.ca -- path to TLS ca
         ca: /path/to/ca
       tcp:
         dns:
+          # meta.cassandra.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
           cache_enabled: true
+          # meta.cassandra.config.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
           refresh_duration: 5m
+          # meta.cassandra.config.tcp.dns.cache_expiration -- TCP DNS cache expiration
           cache_expiration: 24h
         dialer:
+          # meta.cassandra.config.tcp.dialer.timeout -- TCP dialer timeout
           timeout: 30s
+          # meta.cassandra.config.tcp.dialer.keep_alive -- TCP dialer keep alive
           keep_alive: 10m
+          # meta.cassandra.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
           dual_stack_enabled: false
+      # meta.cassandra.config.enable_host_verification -- host verification enabled
       enable_host_verification: false
+      # meta.cassandra.config.default_timestamp -- default timestamp enabled
       default_timestamp: true
+      # meta.cassandra.config.reconnect_interval -- interval of reconnection
       reconnect_interval: 1m
+      # meta.cassandra.config.max_wait_schema_agreement -- maximum duration to wait for schema agreement
       max_wait_schema_agreement: 1m
+      # meta.cassandra.config.ignore_peer_addr -- ignore peer addresses
       ignore_peer_addr: false
+      # meta.cassandra.config.disable_initial_host_lookup -- initial host lookup disabled
       disable_initial_host_lookup: false
+      # meta.cassandra.config.disable_node_status_events -- node status events disabled
       disable_node_status_events: false
+      # meta.cassandra.config.disable_topology_events -- topology events disabled
       disable_topology_events: false
+      # meta.cassandra.config.disable_skip_metadata -- skip metadata disabled
       disable_skip_metadata: false
+      # meta.cassandra.config.default_idempotence -- default idempotence enabled
       default_idempotence: false
+      # meta.cassandra.config.write_coalesce_wait_time -- write coalesce wait time
       write_coalesce_wait_time: 200ms
-      kv_table: kv
-      vk_table: vk
+      # meta.cassandra.config.meta_table -- table name of backup
+      meta_table: meta_vector
       pool_config:
+        # meta.cassandra.config.pool_config.data_center -- name of data center
         data_center: ""
+        # meta.cassandra.config.pool_config.dc_aware_routing -- data center aware routine enabled
         dc_aware_routing: false
+        # meta.cassandra.config.pool_config.non_local_replicas_fallback -- non-local replica fallback enabled
         non_local_replicas_fallback: false
+        # meta.cassandra.config.pool_config.shuffle_replicas -- shuffle replica enabled
         shuffle_replicas: false
 
 initializer:

@@ -554,124 +554,119 @@ Configuration
 | initializer.redis.secret.data.password | string | `"cGFzc3dvcmQ="` |  |
 | initializer.redis.secret.enabled | bool | `false` |  |
 | initializer.redis.secret.name | string | `"redis-secret"` |  |
-| meta.cassandra.config.connect_timeout | string | `"600ms"` |  |
-| meta.cassandra.config.consistency | string | `"quorum"` |  |
-| meta.cassandra.config.cql_version | string | `"3.0.0"` |  |
-| meta.cassandra.config.default_idempotence | bool | `false` |  |
-| meta.cassandra.config.default_timestamp | bool | `true` |  |
-| meta.cassandra.config.disable_initial_host_lookup | bool | `false` |  |
-| meta.cassandra.config.disable_node_status_events | bool | `false` |  |
-| meta.cassandra.config.disable_skip_metadata | bool | `false` |  |
-| meta.cassandra.config.disable_topology_events | bool | `false` |  |
-| meta.cassandra.config.enable_host_verification | bool | `false` |  |
-| meta.cassandra.config.hosts[0] | string | `"cassandra-0.cassandra.default.svc.cluster.local"` |  |
-| meta.cassandra.config.hosts[1] | string | `"cassandra-1.cassandra.default.svc.cluster.local"` |  |
-| meta.cassandra.config.hosts[2] | string | `"cassandra-2.cassandra.default.svc.cluster.local"` |  |
-| meta.cassandra.config.ignore_peer_addr | bool | `false` |  |
-| meta.cassandra.config.keyspace | string | `"vald"` |  |
-| meta.cassandra.config.kv_table | string | `"kv"` |  |
-| meta.cassandra.config.max_prepared_stmts | int | `1000` |  |
-| meta.cassandra.config.max_routing_key_info | int | `1000` |  |
-| meta.cassandra.config.max_wait_schema_agreement | string | `"1m"` |  |
-| meta.cassandra.config.num_conns | int | `2` |  |
-| meta.cassandra.config.page_size | int | `5000` |  |
-| meta.cassandra.config.password | string | `"_CASSANDRA_PASSWORD_"` |  |
-| meta.cassandra.config.pool_config.data_center | string | `""` |  |
-| meta.cassandra.config.pool_config.dc_aware_routing | bool | `false` |  |
-| meta.cassandra.config.pool_config.non_local_replicas_fallback | bool | `false` |  |
-| meta.cassandra.config.pool_config.shuffle_replicas | bool | `false` |  |
-| meta.cassandra.config.port | int | `9042` |  |
-| meta.cassandra.config.proto_version | int | `0` |  |
-| meta.cassandra.config.reconnect_interval | string | `"1m"` |  |
-| meta.cassandra.config.reconnection_policy.initial_interval | string | `"1m"` |  |
-| meta.cassandra.config.reconnection_policy.max_retries | int | `3` |  |
-| meta.cassandra.config.retry_policy.max_duration | string | `"30s"` |  |
-| meta.cassandra.config.retry_policy.min_duration | string | `"1s"` |  |
-| meta.cassandra.config.retry_policy.num_retries | int | `3` |  |
-| meta.cassandra.config.socket_keepalive | string | `"0s"` |  |
-| meta.cassandra.config.tcp.dialer.dual_stack_enabled | bool | `false` |  |
-| meta.cassandra.config.tcp.dialer.keep_alive | string | `"10m"` |  |
-| meta.cassandra.config.tcp.dialer.timeout | string | `"30s"` |  |
-| meta.cassandra.config.tcp.dns.cache_enabled | bool | `true` |  |
-| meta.cassandra.config.tcp.dns.cache_expiration | string | `"24h"` |  |
-| meta.cassandra.config.tcp.dns.refresh_duration | string | `"5m"` |  |
-| meta.cassandra.config.timeout | string | `"600ms"` |  |
-| meta.cassandra.config.tls.ca | string | `"/path/to/ca"` |  |
-| meta.cassandra.config.tls.cert | string | `"/path/to/cert"` |  |
-| meta.cassandra.config.tls.enabled | bool | `false` |  |
-| meta.cassandra.config.tls.key | string | `"/path/to/key"` |  |
-| meta.cassandra.config.username | string | `"root"` |  |
-| meta.cassandra.config.vk_table | string | `"vk"` |  |
-| meta.cassandra.config.write_coalesce_wait_time | string | `"200ms"` |  |
-| meta.cassandra.enabled | bool | `false` |  |
-| meta.env[0].name | string | `"REDIS_PASSWORD"` |  |
-| meta.env[0].valueFrom.secretKeyRef.key | string | `"password"` |  |
-| meta.env[0].valueFrom.secretKeyRef.name | string | `"redis-secret"` |  |
-| meta.hpa.enabled | bool | `true` |  |
-| meta.hpa.targetCPUUtilizationPercentage | int | `80` |  |
-| meta.image.pullPolicy | string | `"Always"` |  |
-| meta.image.repository | string | `"vdaas/vald-meta-redis"` |  |
-| meta.initContainers[0].env[0].name | string | `"REDIS_PASSWORD"` |  |
-| meta.initContainers[0].env[0].valueFrom.secretKeyRef.key | string | `"password"` |  |
-| meta.initContainers[0].env[0].valueFrom.secretKeyRef.name | string | `"redis-secret"` |  |
-| meta.initContainers[0].image | string | `"redis:latest"` |  |
-| meta.initContainers[0].name | string | `"wait-for-redis"` |  |
-| meta.initContainers[0].redis.hosts[0] | string | `"redis.default.svc.cluster.local"` |  |
-| meta.initContainers[0].redis.options[0] | string | `"-a ${REDIS_PASSWORD}"` |  |
-| meta.initContainers[0].sleepDuration | int | `2` |  |
-| meta.initContainers[0].type | string | `"wait-for-redis"` |  |
-| meta.kind | string | `"Deployment"` |  |
-| meta.maxReplicas | int | `10` |  |
-| meta.maxUnavailable | string | `"50%"` |  |
-| meta.minReplicas | int | `2` |  |
-| meta.name | string | `"vald-meta"` |  |
-| meta.observability.jaeger.service_name | string | `"vald-meta"` |  |
-| meta.progressDeadlineSeconds | int | `600` |  |
-| meta.redis.config.addrs[0] | string | `"redis.default.svc.cluster.local:6379"` |  |
-| meta.redis.config.db | int | `0` |  |
-| meta.redis.config.dial_timeout | string | `"5s"` |  |
-| meta.redis.config.idle_check_frequency | string | `"1m"` |  |
-| meta.redis.config.idle_timeout | string | `"5m"` |  |
-| meta.redis.config.key_pref | string | `""` |  |
-| meta.redis.config.kv_prefix | string | `""` |  |
-| meta.redis.config.max_conn_age | string | `"0s"` |  |
-| meta.redis.config.max_redirects | int | `3` |  |
-| meta.redis.config.max_retries | int | `0` |  |
-| meta.redis.config.max_retry_backoff | string | `"512ms"` |  |
-| meta.redis.config.min_idle_conns | int | `0` |  |
-| meta.redis.config.min_retry_backoff | string | `"8ms"` |  |
-| meta.redis.config.password | string | `"_REDIS_PASSWORD_"` |  |
-| meta.redis.config.pool_size | int | `10` |  |
-| meta.redis.config.pool_timeout | string | `"4s"` |  |
-| meta.redis.config.prefix_delimiter | string | `""` |  |
-| meta.redis.config.read_only | bool | `false` |  |
-| meta.redis.config.read_timeout | string | `"3s"` |  |
-| meta.redis.config.route_by_latency | bool | `false` |  |
-| meta.redis.config.route_randomly | bool | `true` |  |
-| meta.redis.config.tcp.dialer.dual_stack_enabled | bool | `false` |  |
-| meta.redis.config.tcp.dialer.keep_alive | string | `"5m"` |  |
-| meta.redis.config.tcp.dialer.timeout | string | `"5s"` |  |
-| meta.redis.config.tcp.dns.cache_enabled | bool | `true` |  |
-| meta.redis.config.tcp.dns.cache_expiration | string | `"24h"` |  |
-| meta.redis.config.tcp.dns.refresh_duration | string | `"1h"` |  |
-| meta.redis.config.tcp.tls.enabled | bool | `false` |  |
-| meta.redis.config.tls.enabled | bool | `false` |  |
-| meta.redis.config.vk_prefix | string | `""` |  |
-| meta.redis.config.write_timeout | string | `"3s"` |  |
-| meta.redis.enabled | bool | `true` |  |
-| meta.resources.limits.cpu | string | `"300m"` |  |
-| meta.resources.limits.memory | string | `"100Mi"` |  |
-| meta.resources.requests.cpu | string | `"100m"` |  |
-| meta.resources.requests.memory | string | `"40Mi"` |  |
-| meta.revisionHistoryLimit | int | `2` |  |
-| meta.rollingUpdate.maxSurge | string | `"25%"` |  |
-| meta.rollingUpdate.maxUnavailable | string | `"25%"` |  |
-| meta.server_config.healths.liveness | object | `{}` |  |
-| meta.server_config.healths.readiness | object | `{}` |  |
-| meta.server_config.metrics.pprof | object | `{}` |  |
-| meta.server_config.metrics.prometheus | object | `{}` |  |
-| meta.server_config.servers.grpc | object | `{}` |  |
-| meta.server_config.servers.rest | object | `{}` |  |
-| meta.serviceType | string | `"ClusterIP"` |  |
-| meta.terminationGracePeriodSeconds | int | `30` |  |
-| meta.version | string | `"v0.0.0"` |  |
+| meta.annotations | list | `nil` | deployment annotations |
+| meta.cassandra.config.connect_timeout | string | `"600ms"` | connect timeout |
+| meta.cassandra.config.consistency | string | `"quorum"` | consistency type |
+| meta.cassandra.config.cql_version | string | `"3.0.0"` | cassandra CQL version |
+| meta.cassandra.config.default_idempotence | bool | `false` | default idempotence enabled |
+| meta.cassandra.config.default_timestamp | bool | `true` | default timestamp enabled |
+| meta.cassandra.config.disable_initial_host_lookup | bool | `false` | initial host lookup disabled |
+| meta.cassandra.config.disable_node_status_events | bool | `false` | node status events disabled |
+| meta.cassandra.config.disable_skip_metadata | bool | `false` | skip metadata disabled |
+| meta.cassandra.config.disable_topology_events | bool | `false` | topology events disabled |
+| meta.cassandra.config.enable_host_verification | bool | `false` | host verification enabled |
+| meta.cassandra.config.hosts | list | `["cassandra-0.cassandra.default.svc.cluster.local","cassandra-1.cassandra.default.svc.cluster.local","cassandra-2.cassandra.default.svc.cluster.local"]` | cassandra hosts |
+| meta.cassandra.config.ignore_peer_addr | bool | `false` | ignore peer addresses |
+| meta.cassandra.config.keyspace | string | `"vald"` | cassandra keyspace |
+| meta.cassandra.config.max_prepared_stmts | int | `1000` | maximum number of prepared statements |
+| meta.cassandra.config.max_routing_key_info | int | `1000` | maximum number of routing key info |
+| meta.cassandra.config.max_wait_schema_agreement | string | `"1m"` | maximum duration to wait for schema agreement |
+| meta.cassandra.config.meta_table | string | `"meta_vector"` | table name of backup |
+| meta.cassandra.config.num_conns | int | `2` | number of connections per hosts |
+| meta.cassandra.config.page_size | int | `5000` | page size |
+| meta.cassandra.config.password | string | `"_CASSANDRA_PASSWORD_"` | cassandra password |
+| meta.cassandra.config.pool_config.data_center | string | `""` | name of data center |
+| meta.cassandra.config.pool_config.dc_aware_routing | bool | `false` | data center aware routine enabled |
+| meta.cassandra.config.pool_config.non_local_replicas_fallback | bool | `false` | non-local replica fallback enabled |
+| meta.cassandra.config.pool_config.shuffle_replicas | bool | `false` | shuffle replica enabled |
+| meta.cassandra.config.port | int | `9042` | cassandra port |
+| meta.cassandra.config.proto_version | int | `0` | cassandra proto version |
+| meta.cassandra.config.reconnect_interval | string | `"1m"` | interval of reconnection |
+| meta.cassandra.config.reconnection_policy.initial_interval | string | `"1m"` | initial interval to reconnect |
+| meta.cassandra.config.reconnection_policy.max_retries | int | `3` | maximum number of retries to reconnect |
+| meta.cassandra.config.retry_policy.max_duration | string | `"30s"` | maximum duration to retry |
+| meta.cassandra.config.retry_policy.min_duration | string | `"1s"` | minimum duration to retry |
+| meta.cassandra.config.retry_policy.num_retries | int | `3` | number of retries |
+| meta.cassandra.config.socket_keepalive | string | `"0s"` | socket keep alive time |
+| meta.cassandra.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
+| meta.cassandra.config.tcp.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
+| meta.cassandra.config.tcp.dialer.timeout | string | `"30s"` | TCP dialer timeout |
+| meta.cassandra.config.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
+| meta.cassandra.config.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
+| meta.cassandra.config.tcp.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
+| meta.cassandra.config.timeout | string | `"600ms"` | timeout |
+| meta.cassandra.config.tls.ca | string | `"/path/to/ca"` | path to TLS ca |
+| meta.cassandra.config.tls.cert | string | `"/path/to/cert"` | path to TLS cert |
+| meta.cassandra.config.tls.enabled | bool | `false` | TLS enabled |
+| meta.cassandra.config.tls.key | string | `"/path/to/key"` | path to TLS key |
+| meta.cassandra.config.username | string | `"root"` | cassandra username |
+| meta.cassandra.config.write_coalesce_wait_time | string | `"200ms"` | write coalesce wait time |
+| meta.cassandra.enabled | bool | `false` | cassandra config enabled |
+| meta.env | list | `[{"name":"REDIS_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"redis-secret"}}}]` | environment variables |
+| meta.externalTrafficPolicy | string | `nil` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
+| meta.hpa.enabled | bool | `true` | HPA enabled |
+| meta.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |
+| meta.image.pullPolicy | string | `"Always"` | image pull policy |
+| meta.image.repository | string | `"vdaas/vald-meta-redis"` | image repository |
+| meta.image.tag | string | `nil` | image tag (overrides defaults.image.tag) |
+| meta.initContainers | list | `[{"env":[{"name":"REDIS_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"redis-secret"}}}],"image":"redis:latest","name":"wait-for-redis","redis":{"hosts":["redis.default.svc.cluster.local"],"options":["-a ${REDIS_PASSWORD}"]},"sleepDuration":2,"type":"wait-for-redis"}]` | init containers |
+| meta.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
+| meta.maxReplicas | int | `10` | maximum number of replicas |
+| meta.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
+| meta.minReplicas | int | `2` | minimum number of replicas |
+| meta.name | string | `"vald-meta"` | name of meta deployment |
+| meta.nodeName | string | `nil` | node name |
+| meta.nodeSelector | object | `nil` | node selector |
+| meta.observability | object | `{"jaeger":{"service_name":"vald-meta"}}` | observability config (overrides defaults.observability) |
+| meta.podAnnotations | list | `nil` | pod annotations |
+| meta.progressDeadlineSeconds | int | `600` | progress deadline seconds |
+| meta.redis.config.addrs | list | `["redis.default.svc.cluster.local:6379"]` | redis hosts and ports |
+| meta.redis.config.db | int | `0` | database to be selected |
+| meta.redis.config.dial_timeout | string | `"5s"` | dial timeout |
+| meta.redis.config.idle_check_frequency | string | `"1m"` | idle check frequency |
+| meta.redis.config.idle_timeout | string | `"5m"` | idle timeout |
+| meta.redis.config.key_pref | string | `""` | key prefix |
+| meta.redis.config.kv_prefix | string | `""` | KV prefix |
+| meta.redis.config.max_conn_age | string | `"0s"` | max connection age |
+| meta.redis.config.max_redirects | int | `3` | max redirects |
+| meta.redis.config.max_retries | int | `0` | max retries |
+| meta.redis.config.max_retry_backoff | string | `"512ms"` | max retry backoff |
+| meta.redis.config.min_idle_conns | int | `0` | min idle connections |
+| meta.redis.config.min_retry_backoff | string | `"8ms"` | min retry backoff |
+| meta.redis.config.password | string | `"_REDIS_PASSWORD_"` | redis password |
+| meta.redis.config.pool_size | int | `10` | pool size |
+| meta.redis.config.pool_timeout | string | `"4s"` | pool timeout |
+| meta.redis.config.prefix_delimiter | string | `""` | prefix delimiter |
+| meta.redis.config.read_only | bool | `false` | read only enabled |
+| meta.redis.config.read_timeout | string | `"3s"` | read timeout |
+| meta.redis.config.route_by_latency | bool | `false` | latency based routing enabled |
+| meta.redis.config.route_randomly | bool | `true` | random routing enabled |
+| meta.redis.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
+| meta.redis.config.tcp.dialer.keep_alive | string | `"5m"` | TCP dialer keep alive |
+| meta.redis.config.tcp.dialer.timeout | string | `"5s"` | TCP dialer timeout |
+| meta.redis.config.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
+| meta.redis.config.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
+| meta.redis.config.tcp.dns.refresh_duration | string | `"1h"` | TCP DNS cache refresh duration |
+| meta.redis.config.tcp.tls.ca | string | `"/path/to/ca"` | path to TCP TLS ca |
+| meta.redis.config.tcp.tls.cert | string | `"/path/to/cert"` | path to TCP TLS cert |
+| meta.redis.config.tcp.tls.enabled | bool | `false` | TCP TLS enabled |
+| meta.redis.config.tcp.tls.key | string | `"/path/to/key"` | path to TCP TLS key |
+| meta.redis.config.tls.ca | string | `"/path/to/ca"` | path to TLS ca |
+| meta.redis.config.tls.cert | string | `"/path/to/cert"` | path to TLS cert |
+| meta.redis.config.tls.enabled | bool | `false` | TLS enabled |
+| meta.redis.config.tls.key | string | `"/path/to/key"` | path to TLS key |
+| meta.redis.config.vk_prefix | string | `""` | VK prefix |
+| meta.redis.config.write_timeout | string | `"3s"` | write timeout |
+| meta.redis.enabled | bool | `true` | redis config enabled |
+| meta.resources | object | `{"limits":{"cpu":"300m","memory":"100Mi"},"requests":{"cpu":"100m","memory":"40Mi"}}` | compute resources |
+| meta.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
+| meta.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
+| meta.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
+| meta.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| meta.service.annotations | list | `nil` | service annotations |
+| meta.service.labels | list | `nil` | service labels |
+| meta.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
+| meta.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| meta.version | string | `"v0.0.0"` | version of meta config |
+| meta.volumeMounts | list | `nil` | volume mounts |
+| meta.volumes | list | `nil` | volumes |
