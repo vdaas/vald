@@ -1,13 +1,5 @@
 package strategy
 
-import (
-	"context"
-	"testing"
-
-	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/internal/core/ngt"
-)
-
 type BulkRemoveOption func(*bulkRemove)
 
 var (
@@ -28,7 +20,7 @@ func WithBulkRemoveChunkSize(chunk int) BulkRemoveOption {
 }
 
 func WithBulkRemovePrestart(
-	fn func(context.Context, *testing.B, ngt.NGT, assets.Dataset) []uint,
+	fn PreStart,
 ) BulkRemoveOption {
 	return func(br *bulkRemove) {
 		if fn != nil {
