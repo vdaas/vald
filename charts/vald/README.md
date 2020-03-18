@@ -68,119 +68,108 @@ Configuration
 | agent.version | string | `"v0.0.0"` | version of agent config |
 | agent.volumeMounts | list | `nil` | volume mounts |
 | agent.volumes | list | `nil` | volumes |
-| backupManager.cassandra.config.connect_timeout | string | `"600ms"` |  |
-| backupManager.cassandra.config.consistency | string | `"quorum"` |  |
-| backupManager.cassandra.config.cql_version | string | `"3.0.0"` |  |
-| backupManager.cassandra.config.default_idempotence | bool | `false` |  |
-| backupManager.cassandra.config.default_timestamp | bool | `true` |  |
-| backupManager.cassandra.config.disable_initial_host_lookup | bool | `false` |  |
-| backupManager.cassandra.config.disable_node_status_events | bool | `false` |  |
-| backupManager.cassandra.config.disable_skip_metadata | bool | `false` |  |
-| backupManager.cassandra.config.disable_topology_events | bool | `false` |  |
-| backupManager.cassandra.config.enable_host_verification | bool | `false` |  |
-| backupManager.cassandra.config.hosts[0] | string | `"cassandra-0.cassandra.default.svc.cluster.local"` |  |
-| backupManager.cassandra.config.hosts[1] | string | `"cassandra-1.cassandra.default.svc.cluster.local"` |  |
-| backupManager.cassandra.config.hosts[2] | string | `"cassandra-2.cassandra.default.svc.cluster.local"` |  |
-| backupManager.cassandra.config.ignore_peer_addr | bool | `false` |  |
-| backupManager.cassandra.config.keyspace | string | `"vald"` |  |
-| backupManager.cassandra.config.max_prepared_stmts | int | `1000` |  |
-| backupManager.cassandra.config.max_routing_key_info | int | `1000` |  |
-| backupManager.cassandra.config.max_wait_schema_agreement | string | `"1m"` |  |
-| backupManager.cassandra.config.meta_table | string | `"meta_vector"` |  |
-| backupManager.cassandra.config.num_conns | int | `2` |  |
-| backupManager.cassandra.config.page_size | int | `5000` |  |
-| backupManager.cassandra.config.password | string | `"_CASSANDRA_PASSWORD_"` |  |
-| backupManager.cassandra.config.pool_config.data_center | string | `""` |  |
-| backupManager.cassandra.config.pool_config.dc_aware_routing | bool | `false` |  |
-| backupManager.cassandra.config.pool_config.non_local_replicas_fallback | bool | `false` |  |
-| backupManager.cassandra.config.pool_config.shuffle_replicas | bool | `false` |  |
-| backupManager.cassandra.config.port | int | `9042` |  |
-| backupManager.cassandra.config.proto_version | int | `0` |  |
-| backupManager.cassandra.config.reconnect_interval | string | `"1m"` |  |
-| backupManager.cassandra.config.reconnection_policy.initial_interval | string | `"1m"` |  |
-| backupManager.cassandra.config.reconnection_policy.max_retries | int | `3` |  |
-| backupManager.cassandra.config.retry_policy.max_duration | string | `"30s"` |  |
-| backupManager.cassandra.config.retry_policy.min_duration | string | `"1s"` |  |
-| backupManager.cassandra.config.retry_policy.num_retries | int | `3` |  |
-| backupManager.cassandra.config.socket_keepalive | string | `"0s"` |  |
-| backupManager.cassandra.config.tcp.dialer.dual_stack_enabled | bool | `false` |  |
-| backupManager.cassandra.config.tcp.dialer.keep_alive | string | `"10m"` |  |
-| backupManager.cassandra.config.tcp.dialer.timeout | string | `"30s"` |  |
-| backupManager.cassandra.config.tcp.dns.cache_enabled | bool | `true` |  |
-| backupManager.cassandra.config.tcp.dns.cache_expiration | string | `"24h"` |  |
-| backupManager.cassandra.config.tcp.dns.refresh_duration | string | `"5m"` |  |
-| backupManager.cassandra.config.timeout | string | `"600ms"` |  |
-| backupManager.cassandra.config.tls.ca | string | `"/path/to/ca"` |  |
-| backupManager.cassandra.config.tls.cert | string | `"/path/to/cert"` |  |
-| backupManager.cassandra.config.tls.enabled | bool | `false` |  |
-| backupManager.cassandra.config.tls.key | string | `"/path/to/key"` |  |
-| backupManager.cassandra.config.username | string | `"root"` |  |
-| backupManager.cassandra.config.write_coalesce_wait_time | string | `"200ms"` |  |
-| backupManager.cassandra.enabled | bool | `false` |  |
-| backupManager.env[0].name | string | `"MYSQL_PASSWORD"` |  |
-| backupManager.env[0].valueFrom.secretKeyRef.key | string | `"password"` |  |
-| backupManager.env[0].valueFrom.secretKeyRef.name | string | `"mysql-secret"` |  |
-| backupManager.hpa.enabled | bool | `true` |  |
-| backupManager.hpa.targetCPUUtilizationPercentage | int | `80` |  |
-| backupManager.image.pullPolicy | string | `"Always"` |  |
-| backupManager.image.repository | string | `"vdaas/vald-manager-backup-mysql"` |  |
-| backupManager.initContainers[0].env[0].name | string | `"MYSQL_PASSWORD"` |  |
-| backupManager.initContainers[0].env[0].valueFrom.secretKeyRef.key | string | `"password"` |  |
-| backupManager.initContainers[0].env[0].valueFrom.secretKeyRef.name | string | `"mysql-secret"` |  |
-| backupManager.initContainers[0].image | string | `"mysql:latest"` |  |
-| backupManager.initContainers[0].mysql.hosts[0] | string | `"mysql.default.svc.cluster.local"` |  |
-| backupManager.initContainers[0].mysql.options[0] | string | `"-uroot"` |  |
-| backupManager.initContainers[0].mysql.options[1] | string | `"-p${MYSQL_PASSWORD}"` |  |
-| backupManager.initContainers[0].name | string | `"wait-for-mysql"` |  |
-| backupManager.initContainers[0].sleepDuration | int | `2` |  |
-| backupManager.initContainers[0].type | string | `"wait-for-mysql"` |  |
-| backupManager.kind | string | `"Deployment"` |  |
-| backupManager.maxReplicas | int | `15` |  |
-| backupManager.maxUnavailable | string | `"50%"` |  |
-| backupManager.minReplicas | int | `3` |  |
-| backupManager.mysql.config.conn_max_life_time | string | `"30s"` |  |
-| backupManager.mysql.config.db | string | `"mysql"` |  |
+| backupManager.annotations | list | `nil` | deployment annotations |
+| backupManager.cassandra.config.connect_timeout | string | `"600ms"` | connect timeout |
+| backupManager.cassandra.config.consistency | string | `"quorum"` | consistency type |
+| backupManager.cassandra.config.cql_version | string | `"3.0.0"` | cassandra CQL version |
+| backupManager.cassandra.config.default_idempotence | bool | `false` | default idempotence enabled |
+| backupManager.cassandra.config.default_timestamp | bool | `true` | default timestamp enabled |
+| backupManager.cassandra.config.disable_initial_host_lookup | bool | `false` | initial host lookup disabled |
+| backupManager.cassandra.config.disable_node_status_events | bool | `false` | node status events disabled |
+| backupManager.cassandra.config.disable_skip_metadata | bool | `false` | skip metadata disabled |
+| backupManager.cassandra.config.disable_topology_events | bool | `false` | topology events disabled |
+| backupManager.cassandra.config.enable_host_verification | bool | `false` | host verification enabled |
+| backupManager.cassandra.config.hosts | list | `["cassandra-0.cassandra.default.svc.cluster.local","cassandra-1.cassandra.default.svc.cluster.local","cassandra-2.cassandra.default.svc.cluster.local"]` | cassandra hosts |
+| backupManager.cassandra.config.ignore_peer_addr | bool | `false` | ignore peer addresses |
+| backupManager.cassandra.config.keyspace | string | `"vald"` | cassandra keyspace |
+| backupManager.cassandra.config.max_prepared_stmts | int | `1000` | maximum number of prepared statements |
+| backupManager.cassandra.config.max_routing_key_info | int | `1000` | maximum number of routing key info |
+| backupManager.cassandra.config.max_wait_schema_agreement | string | `"1m"` | maximum duration to wait for schema agreement |
+| backupManager.cassandra.config.meta_table | string | `"meta_vector"` | table name of backup |
+| backupManager.cassandra.config.num_conns | int | `2` | number of connections per hosts |
+| backupManager.cassandra.config.page_size | int | `5000` | page size |
+| backupManager.cassandra.config.password | string | `"_CASSANDRA_PASSWORD_"` | cassandra password |
+| backupManager.cassandra.config.pool_config.data_center | string | `""` | name of data center |
+| backupManager.cassandra.config.pool_config.dc_aware_routing | bool | `false` | data center aware routine enabled |
+| backupManager.cassandra.config.pool_config.non_local_replicas_fallback | bool | `false` | non-local replica fallback enabled |
+| backupManager.cassandra.config.pool_config.shuffle_replicas | bool | `false` | shuffle replica enabled |
+| backupManager.cassandra.config.port | int | `9042` | cassandra port |
+| backupManager.cassandra.config.proto_version | int | `0` | cassandra proto version |
+| backupManager.cassandra.config.reconnect_interval | string | `"1m"` | interval of reconnection |
+| backupManager.cassandra.config.reconnection_policy.initial_interval | string | `"1m"` | initial interval to reconnect |
+| backupManager.cassandra.config.reconnection_policy.max_retries | int | `3` | maximum number of retries to reconnect |
+| backupManager.cassandra.config.retry_policy.max_duration | string | `"30s"` | maximum duration to retry |
+| backupManager.cassandra.config.retry_policy.min_duration | string | `"1s"` | minimum duration to retry |
+| backupManager.cassandra.config.retry_policy.num_retries | int | `3` | number of retries |
+| backupManager.cassandra.config.socket_keepalive | string | `"0s"` | socket keep alive time |
+| backupManager.cassandra.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
+| backupManager.cassandra.config.tcp.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
+| backupManager.cassandra.config.tcp.dialer.timeout | string | `"30s"` | TCP dialer timeout |
+| backupManager.cassandra.config.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
+| backupManager.cassandra.config.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
+| backupManager.cassandra.config.tcp.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
+| backupManager.cassandra.config.timeout | string | `"600ms"` | timeout |
+| backupManager.cassandra.config.tls.ca | string | `"/path/to/ca"` | path to TLS ca |
+| backupManager.cassandra.config.tls.cert | string | `"/path/to/cert"` | path to TLS cert |
+| backupManager.cassandra.config.tls.enabled | bool | `false` | TLS enabled |
+| backupManager.cassandra.config.tls.key | string | `"/path/to/key"` | path to TLS key |
+| backupManager.cassandra.config.username | string | `"root"` | cassandra username |
+| backupManager.cassandra.config.write_coalesce_wait_time | string | `"200ms"` | write coalesce wait time |
+| backupManager.cassandra.enabled | bool | `false` | cassandra config enabled |
+| backupManager.env | list | `[{"name":"MYSQL_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"mysql-secret"}}}]` | (list) environment variables |
+| backupManager.externalTrafficPolicy | string | `nil` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
+| backupManager.hpa.enabled | bool | `true` | HPA enabled |
+| backupManager.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |
+| backupManager.image.pullPolicy | string | `"Always"` | image pull policy |
+| backupManager.image.repository | string | `"vdaas/vald-manager-backup-mysql"` | image repository |
+| backupManager.image.tag | string | `nil` | image tag (overrides defaults.image.tag) |
+| backupManager.initContainers | list | `[{"env":[{"name":"MYSQL_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"mysql-secret"}}}],"image":"mysql:latest","mysql":{"hosts":["mysql.default.svc.cluster.local"],"options":["-uroot","-p${MYSQL_PASSWORD}"]},"name":"wait-for-mysql","sleepDuration":2,"type":"wait-for-mysql"}]` | init containers |
+| backupManager.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
+| backupManager.maxReplicas | int | `15` | maximum number of replicas |
+| backupManager.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
+| backupManager.minReplicas | int | `3` | minimum number of replicas |
+| backupManager.mysql.config.conn_max_life_time | string | `"30s"` | connection maximum life time |
+| backupManager.mysql.config.db | string | `"mysql"` | mysql db name |
 | backupManager.mysql.config.host | string | `"mysql.default.svc.cluster.local"` |  |
-| backupManager.mysql.config.max_idle_conns | int | `100` |  |
-| backupManager.mysql.config.max_open_conns | int | `100` |  |
+| backupManager.mysql.config.max_idle_conns | int | `100` | maximum number of idle connections |
+| backupManager.mysql.config.max_open_conns | int | `100` | maximum number of open connections |
 | backupManager.mysql.config.name | string | `"vald"` |  |
 | backupManager.mysql.config.pass | string | `"_MYSQL_PASSWORD_"` |  |
 | backupManager.mysql.config.port | int | `3306` |  |
-| backupManager.mysql.config.tcp.dialer.dual_stack_enabled | bool | `false` |  |
-| backupManager.mysql.config.tcp.dialer.keep_alive | string | `"5m"` |  |
-| backupManager.mysql.config.tcp.dialer.timeout | string | `"5s"` |  |
-| backupManager.mysql.config.tcp.dns.cache_enabled | bool | `true` |  |
-| backupManager.mysql.config.tcp.dns.cache_expiration | string | `"24h"` |  |
-| backupManager.mysql.config.tcp.dns.refresh_duration | string | `"1h"` |  |
-| backupManager.mysql.config.tcp.tls.ca | string | `"/path/to/ca"` |  |
-| backupManager.mysql.config.tcp.tls.cert | string | `"/path/to/cert"` |  |
-| backupManager.mysql.config.tcp.tls.enabled | bool | `false` |  |
-| backupManager.mysql.config.tcp.tls.key | string | `"/path/to/key"` |  |
-| backupManager.mysql.config.tls.ca | string | `"/path/to/ca"` |  |
-| backupManager.mysql.config.tls.cert | string | `"/path/to/cert"` |  |
-| backupManager.mysql.config.tls.enabled | bool | `false` |  |
-| backupManager.mysql.config.tls.key | string | `"/path/to/key"` |  |
+| backupManager.mysql.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
+| backupManager.mysql.config.tcp.dialer.keep_alive | string | `"5m"` | TCP dialer keep alive |
+| backupManager.mysql.config.tcp.dialer.timeout | string | `"5s"` | TCP dialer timeout |
+| backupManager.mysql.config.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
+| backupManager.mysql.config.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
+| backupManager.mysql.config.tcp.dns.refresh_duration | string | `"1h"` | TCP DNS cache refresh duration |
+| backupManager.mysql.config.tcp.tls.ca | string | `"/path/to/ca"` | path to TCP TLS ca |
+| backupManager.mysql.config.tcp.tls.cert | string | `"/path/to/cert"` | path to TCP TLS cert |
+| backupManager.mysql.config.tcp.tls.enabled | bool | `false` | TCP TLS enabled |
+| backupManager.mysql.config.tcp.tls.key | string | `"/path/to/key"` | path to TCP TLS key |
+| backupManager.mysql.config.tls.ca | string | `"/path/to/ca"` | path to TLS ca |
+| backupManager.mysql.config.tls.cert | string | `"/path/to/cert"` | path to TLS cert |
+| backupManager.mysql.config.tls.enabled | bool | `false` | TLS enabled |
+| backupManager.mysql.config.tls.key | string | `"/path/to/key"` | path to TLS key |
 | backupManager.mysql.config.user | string | `"root"` |  |
-| backupManager.mysql.enabled | bool | `true` |  |
-| backupManager.name | string | `"vald-manager-backup"` |  |
-| backupManager.observability.jaeger.service_name | string | `"vald-manager-backup"` |  |
-| backupManager.progressDeadlineSeconds | int | `600` |  |
-| backupManager.resources.limits.cpu | string | `"500m"` |  |
-| backupManager.resources.limits.memory | string | `"150Mi"` |  |
-| backupManager.resources.requests.cpu | string | `"100m"` |  |
-| backupManager.resources.requests.memory | string | `"50Mi"` |  |
-| backupManager.revisionHistoryLimit | int | `2` |  |
-| backupManager.rollingUpdate.maxSurge | string | `"25%"` |  |
-| backupManager.rollingUpdate.maxUnavailable | string | `"25%"` |  |
-| backupManager.server_config.healths.liveness | object | `{}` |  |
-| backupManager.server_config.healths.readiness | object | `{}` |  |
-| backupManager.server_config.metrics.pprof | object | `{}` |  |
-| backupManager.server_config.metrics.prometheus | object | `{}` |  |
-| backupManager.server_config.servers.grpc | object | `{}` |  |
-| backupManager.server_config.servers.rest | object | `{}` |  |
-| backupManager.serviceType | string | `"ClusterIP"` |  |
-| backupManager.terminationGracePeriodSeconds | int | `30` |  |
-| backupManager.version | string | `"v0.0.0"` |  |
+| backupManager.mysql.enabled | bool | `true` | mysql config enabled |
+| backupManager.name | string | `"vald-manager-backup"` | name of backup manager deployment |
+| backupManager.nodeName | string | `nil` | node name |
+| backupManager.nodeSelector | object | `nil` | node selector |
+| backupManager.observability | object | `{"jaeger":{"service_name":"vald-manager-backup"}}` | observability config (overrides defaults.observability) |
+| backupManager.podAnnotations | list | `nil` | pod annotations |
+| backupManager.progressDeadlineSeconds | int | `600` | progress deadline seconds |
+| backupManager.resources | object | `{"limits":{"cpu":"500m","memory":"150Mi"},"requests":{"cpu":"100m","memory":"50Mi"}}` | compute resources |
+| backupManager.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
+| backupManager.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
+| backupManager.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
+| backupManager.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| backupManager.service.annotations | list | `nil` | service annotations |
+| backupManager.service.labels | list | `nil` | service labels |
+| backupManager.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
+| backupManager.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| backupManager.version | string | `"v0.0.0"` | version of backup manager config |
+| backupManager.volumeMounts | list | `nil` | volume mounts |
+| backupManager.volumes | list | `nil` | volumes |
 | compressor.annotations | list | `nil` | deployment annotations |
 | compressor.backup.client | object | `{}` | grpc client for backup (overrides defaults.grpc.client) |
 | compressor.compress.buffer | int | `100` | size of buffer |

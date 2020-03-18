@@ -870,29 +870,56 @@ compressor:
     buffer: 100
 
 backupManager:
+  # backupManager.version -- version of backup manager config
   version: v0.0.0
+  # backupManager.name -- name of backup manager deployment
   name: vald-manager-backup
+  # backupManager.kind -- deployment kind: Deployment or DaemonSet
   kind: Deployment
-  # kind: DaemonSet
+  # backupManager.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # externalTrafficPolicy: Cluster
+  # backupManager.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: null
+  # backupManager.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
+  # backupManager.minReplicas -- minimum number of replicas
   minReplicas: 3
+  # backupManager.maxReplicas -- maximum number of replicas
   maxReplicas: 15
+  # backupManager.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
+  # backupManager.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
+  # backupManager.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  # backupManager.annotations -- (list) deployment annotations
+  annotations: null
+  # backupManager.podAnnotations -- (list) pod annotations
+  podAnnotations: null
+  service:
+    # backupManager.service.annotations -- (list) service annotations
+    annotations: null
+    # backupManager.service.labels -- (list) service labels
+    labels: null
   hpa:
+    # backupManager.hpa.enabled -- HPA enabled
     enabled: true
+    # backupManager.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
     targetCPUUtilizationPercentage: 80
   image:
+    # backupManager.image.repository -- image repository
     repository: vdaas/vald-manager-backup-mysql
     # repository: vdaas/vald-manager-backup-cassandra
-    # tag: nightly
+    # backupManager.image.tag -- (string) image tag (overrides defaults.image.tag)
+    tag: null
+    # backupManager.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
+    # backupManager.rollingUpdate.maxSurge -- max surge of rolling update
     maxSurge: 25%
+    # backupManager.rollingUpdate.maxUnavailable -- max unavailable of rolling update
     maxUnavailable: 25%
+  # backupManager.initContainers -- init containers
   initContainers:
     - type: wait-for-mysql
       name: wait-for-mysql
@@ -937,6 +964,7 @@ backupManager:
     #       - scylla-1.scylla.default.svc.cluster.local
     #       - scylla-2.scylla.default.svc.cluster.local
     #   sleepDuration: 2
+  # backupManager.env -- (list) environment variables
   env:
     - name: MYSQL_PASSWORD
       valueFrom:
@@ -948,6 +976,15 @@ backupManager:
     #     secretKeyRef:
     #       name: cassandra-secret
     #       key: password
+  # backupManager.volumeMounts -- (list) volume mounts
+  volumeMounts: null
+  # backupManager.volumes -- (list) volumes
+  volumes: null
+  # backupManager.nodeName -- (string) node name
+  nodeName: null
+  # backupManager.nodeSelector -- (object) node selector
+  nodeSelector: null
+  # backupManager.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
       rest: {}
@@ -958,9 +995,11 @@ backupManager:
     metrics:
       pprof: {}
       prometheus: {}
+  # backupManager.observability -- observability config (overrides defaults.observability)
   observability:
     jaeger:
       service_name: vald-manager-backup
+  # backupManager.resources -- compute resources
   resources:
     requests:
       cpu: 100m
@@ -969,39 +1008,65 @@ backupManager:
       cpu: 500m
       memory: 150Mi
   mysql:
+    # backupManager.mysql.enabled -- mysql config enabled
     enabled: true
     config:
+      # backupManager.mysql.config.db -- mysql db: mysql, postgres or sqlite3
       db: mysql
+      # backupManager.mysql.config.db -- mysql hostname
       host: mysql.default.svc.cluster.local
+      # backupManager.mysql.config.db -- mysql port
       port: 3306
+      # backupManager.mysql.config.db -- mysql username
       user: root
+      # backupManager.mysql.config.db -- mysql password
       pass: _MYSQL_PASSWORD_
+      # backupManager.mysql.config.db -- mysql db name
       name: vald
+      # backupManager.mysql.config.conn_max_life_time -- connection maximum life time
       conn_max_life_time: 30s
+      # backupManager.mysql.config.max_open_conns -- maximum number of open connections
       max_open_conns: 100
+      # backupManager.mysql.config.max_idle_conns -- maximum number of idle connections
       max_idle_conns: 100
       tls:
+        # backupManager.mysql.config.tls.enabled -- TLS enabled
         enabled: false
+        # backupManager.mysql.config.tls.cert -- path to TLS cert
         cert: /path/to/cert
+        # backupManager.mysql.config.tls.key -- path to TLS key
         key: /path/to/key
+        # backupManager.mysql.config.tls.ca -- path to TLS ca
         ca: /path/to/ca
       tcp:
         dns:
+          # backupManager.mysql.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
           cache_enabled: true
+          # backupManager.mysql.config.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
           refresh_duration: 1h
+          # backupManager.mysql.config.tcp.dns.cache_expiration -- TCP DNS cache expiration
           cache_expiration: 24h
         dialer:
+          # backupManager.mysql.config.tcp.dialer.timeout -- TCP dialer timeout
           timeout: 5s
+          # backupManager.mysql.config.tcp.dialer.keep_alive -- TCP dialer keep alive
           keep_alive: 5m
+          # backupManager.mysql.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
           dual_stack_enabled: false
         tls:
+          # backupManager.mysql.config.tcp.tls.enabled -- TCP TLS enabled
           enabled: false
+          # backupManager.mysql.config.tcp.tls.cert -- path to TCP TLS cert
           cert: /path/to/cert
+          # backupManager.mysql.config.tcp.tls.key -- path to TCP TLS key
           key: /path/to/key
+          # backupManager.mysql.config.tcp.tls.ca -- path to TCP TLS ca
           ca: /path/to/ca
   cassandra:
+    # backupManager.cassandra.enabled -- cassandra config enabled
     enabled: false
     config:
+      # backupManager.cassandra.config.hosts -- cassandra hosts
       hosts:
         - cassandra-0.cassandra.default.svc.cluster.local
         - cassandra-1.cassandra.default.svc.cluster.local
@@ -1009,57 +1074,102 @@ backupManager:
         # - scylla-0.scylla.default.svc.cluster.local
         # - scylla-1.scylla.default.svc.cluster.local
         # - scylla-2.scylla.default.svc.cluster.local
+      # backupManager.cassandra.config.cql_version -- cassandra CQL version
       cql_version: 3.0.0
+      # backupManager.cassandra.config.proto_version -- cassandra proto version
       proto_version: 0
+      # backupManager.cassandra.config.timeout -- timeout
       timeout: 600ms
+      # backupManager.cassandra.config.connect_timeout -- connect timeout
       connect_timeout: 600ms
+      # backupManager.cassandra.config.port -- cassandra port
       port: 9042
+      # backupManager.cassandra.config.keyspace -- cassandra keyspace
       keyspace: vald
+      # backupManager.cassandra.config.num_conns -- number of connections per hosts
       num_conns: 2
+      # backupManager.cassandra.config.consistency -- consistency type
       consistency:  quorum
+      # backupManager.cassandra.config.username -- cassandra username
       username: root
+      # backupManager.cassandra.config.password -- cassandra password
       password: _CASSANDRA_PASSWORD_
       retry_policy:
+        # backupManager.cassandra.config.retry_policy.num_retries -- number of retries
         num_retries: 3
+        # backupManager.cassandra.config.retry_policy.min_duration -- minimum duration to retry
         min_duration: 1s
+        # backupManager.cassandra.config.retry_policy.max_duration -- maximum duration to retry
         max_duration: 30s
       reconnection_policy:
+        # backupManager.cassandra.config.reconnection_policy.max_retries -- maximum number of retries to reconnect
         max_retries: 3
+        # backupManager.cassandra.config.reconnection_policy.initial_interval -- initial interval to reconnect
         initial_interval: 1m
+      # backupManager.cassandra.config.socket_keepalive -- socket keep alive time
       socket_keepalive: 0s
+      # backupManager.cassandra.config.max_prepared_stmts -- maximum number of prepared statements
       max_prepared_stmts: 1000
+      # backupManager.cassandra.config.max_routing_key_info -- maximum number of routing key info
       max_routing_key_info: 1000
+      # backupManager.cassandra.config.page_size -- page size
       page_size: 5000
       tls:
+        # backupManager.cassandra.config.tls.enabled -- TLS enabled
         enabled: false
+        # backupManager.cassandra.config.tls.cert -- path to TLS cert
         cert: /path/to/cert
+        # backupManager.cassandra.config.tls.key -- path to TLS key
         key: /path/to/key
+        # backupManager.cassandra.config.tls.ca -- path to TLS ca
         ca: /path/to/ca
       tcp:
         dns:
+          # backupManager.cassandra.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
           cache_enabled: true
+          # backupManager.cassandra.config.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
           refresh_duration: 5m
+          # backupManager.cassandra.config.tcp.dns.cache_expiration -- TCP DNS cache expiration
           cache_expiration: 24h
         dialer:
+          # backupManager.cassandra.config.tcp.dialer.timeout -- TCP dialer timeout
           timeout: 30s
+          # backupManager.cassandra.config.tcp.dialer.keep_alive -- TCP dialer keep alive
           keep_alive: 10m
+          # backupManager.cassandra.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
           dual_stack_enabled: false
+      # backupManager.cassandra.config.enable_host_verification -- host verification enabled
       enable_host_verification: false
+      # backupManager.cassandra.config.default_timestamp -- default timestamp enabled
       default_timestamp: true
+      # backupManager.cassandra.config.reconnect_interval -- interval of reconnection
       reconnect_interval: 1m
+      # backupManager.cassandra.config.max_wait_schema_agreement -- maximum duration to wait for schema agreement
       max_wait_schema_agreement: 1m
+      # backupManager.cassandra.config.ignore_peer_addr -- ignore peer addresses
       ignore_peer_addr: false
+      # backupManager.cassandra.config.disable_initial_host_lookup -- initial host lookup disabled
       disable_initial_host_lookup: false
+      # backupManager.cassandra.config.disable_node_status_events -- node status events disabled
       disable_node_status_events: false
+      # backupManager.cassandra.config.disable_topology_events -- topology events disabled
       disable_topology_events: false
+      # backupManager.cassandra.config.disable_skip_metadata -- skip metadata disabled
       disable_skip_metadata: false
+      # backupManager.cassandra.config.default_idempotence -- default idempotence enabled
       default_idempotence: false
+      # backupManager.cassandra.config.write_coalesce_wait_time -- write coalesce wait time
       write_coalesce_wait_time: 200ms
+      # backupManager.cassandra.config.meta_table -- table name of backup
       meta_table: meta_vector
       pool_config:
+        # backupManager.cassandra.config.pool_config.data_center -- name of data center
         data_center: ""
+        # backupManager.cassandra.config.pool_config.dc_aware_routing -- data center aware routine enabled
         dc_aware_routing: false
+        # backupManager.cassandra.config.pool_config.non_local_replicas_fallback -- non-local replica fallback enabled
         non_local_replicas_fallback: false
+        # backupManager.cassandra.config.pool_config.shuffle_replicas -- shuffle replica enabled
         shuffle_replicas: false
 
 indexManager:
