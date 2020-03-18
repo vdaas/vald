@@ -9,7 +9,10 @@ import (
 	"github.com/vdaas/vald/internal/core/ngt"
 )
 
-type saveIndex struct{}
+type saveIndex struct {
+	poolSize uint32
+	preStart PreStart
+}
 
 func NewSaveIndex(opts ...SaveIndexOption) benchmark.Strategy {
 	s := new(saveIndex)
@@ -21,8 +24,17 @@ func NewSaveIndex(opts ...SaveIndexOption) benchmark.Strategy {
 
 func (s *saveIndex) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, dataset assets.Dataset) {
 	b.Run("SaveIndex", func(bb *testing.B) {
-		for i := 0; i < bb.N; i++ {
+		s.preStart(ctx, bb, ngt, dataset)
 
+		bb.StopTimer()
+		bb.ReportAllocs()
+		bb.ResetTimer()
+		bb.StartTimer()
+		for i := 0; i < bb.N; i++ {
+			if err := ngt.CreateIndex(s.poolSize); err != nil {
+				bb.Error(err)
+			}
 		}
+		bb.StopTimer()
 	})
 }
