@@ -14,18 +14,7 @@ var (
 	defaultBulkRemoveOptions = []BulkRemoveOption{
 		WithBulkRemoveChunkSize(1000),
 		WithBulkRemovePrestart(
-			func(ctx context.Context, b *testing.B, ngt ngt.NGT, dataset assets.Dataset) (ids []uint) {
-				ids = make([]uint, 0, len(dataset.Train()))
-				isrtIds, errs := ngt.BulkInsert(dataset.Train())
-				for i, err := range errs {
-					if err != nil {
-						b.Error(err)
-					} else {
-						ids = append(ids, isrtIds[i])
-					}
-				}
-				return
-			},
+			(new(preStart)).Func,
 		),
 	}
 )
