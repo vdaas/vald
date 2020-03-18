@@ -26,15 +26,17 @@ type SessionOptions = tf.SessionOptions
 type Operation = tf.Operation
 
 type TF interface {
-	GetVector(feeds []Feed, fetch Fetch, targets ...*Operation) ([]float64, error)
-	GetValue(feeds []Feed, fetch Fetch, targets ...*Operation) (interface{}, error)
-	GetValues(feeds []Feed, fetches []Fetch, targets ...*Operation) (values []interface{}, err error)
+	GetVector(inputs ...string) ([]float64, error)
+	GetValue(inputs ...string) (interface{}, error)
+	GetValues(inputs ...string) (values []interface{}, err error)
 	Close() error
 }
 
 type tensorflow struct {
 	exportDir     string
 	tags          []string
+	feeds         []OutputSpec
+	fetches       []OutputSpec
 	operations    []*Operation
 	sessionTarget string
 	sessionConfig []byte
@@ -44,15 +46,9 @@ type tensorflow struct {
 	ndim          int8
 }
 
-type Feed struct {
-	Input         interface{}
-	OperationName string
-	OutputIndex   int
-}
-
-type Fetch struct {
-	OperationName string
-	OutputIndex   int
+type OutputSpec struct {
+	operationName string
+	outputIndex   int
 }
 
 func New(opts ...Option) (TF, error) {
@@ -81,32 +77,35 @@ func (t *tensorflow) Close() error {
 	return t.session.Close()
 }
 
-func (t *tensorflow) run(feeds []Feed, fetches []Fetch, targets ...*Operation) ([]*tf.Tensor, error) {
-	input := make(map[tf.Output]*tf.Tensor, len(feeds))
-	for _, feed := range feeds {
-		inputTensor, err := tf.NewTensor(feed.Input)
+func (t *tensorflow) run(inputs ...string) ([]*tf.Tensor, error) {
+	if len(inputs) != len(t.feeds) {
+		return nil, errors.ErrInputLength(len(inputs), len(t.feeds))
+	}
+
+	feeds := make(map[tf.Output]*tf.Tensor, len(inputs))
+	for i, val := range inputs {
+		inputTensor, err := tf.NewTensor(val)
 		if err != nil {
 			return nil, err
 		}
-		input[t.graph.Operation(feed.OperationName).Output(feed.OutputIndex)] = inputTensor
+		feeds[t.graph.Operation(t.feeds[i].operationName).Output(t.feeds[i].outputIndex)] = inputTensor
 	}
 
-	output := make([]tf.Output, 0, len(fetches))
-	for _, fetch := range fetches {
-		output = append(output, t.graph.Operation(fetch.OperationName).Output(fetch.OutputIndex))
+	fetches := make([]tf.Output, 0, len(t.fetches))
+	for _, fetch := range t.fetches {
+		fetches = append(fetches, t.graph.Operation(fetch.operationName).Output(fetch.outputIndex))
 	}
 
-	if targets == nil {
-		targets = t.operations
-	}
-
-	return t.session.Run(input, output, targets)
+	return t.session.Run(feeds, fetches, t.operations)
 }
 
-func (t *tensorflow) GetVector(feeds []Feed, fetch Fetch, targets ...*Operation) ([]float64, error) {
-	tensors, err := t.run(feeds, []Fetch{fetch}, targets...)
+func (t *tensorflow) GetVector(inputs ...string) ([]float64, error) {
+	tensors, err := t.run(inputs...)
 	if err != nil {
 		return nil, err
+	}
+	if tensors == nil || tensors[0] == nil || tensors[0].Value() == nil {
+		return nil, errors.ErrNilTensorTF(tensors)
 	}
 
 	switch t.ndim {
@@ -115,35 +114,39 @@ func (t *tensorflow) GetVector(feeds []Feed, fetch Fetch, targets ...*Operation)
 		if ok {
 			return value[0], nil
 		} else {
-			return nil, errors.ErrFailedToCastTF(result.Value())
+			return nil, errors.ErrFailedToCastTF(tensors[0].Value())
 		}
 	case 3:
 		value, ok := tensors[0].Value().([][][]float64)
 		if ok {
 			return value[0][0], nil
 		} else {
-			return nil, errors.ErrFailedToCastTF(result.Value())
+			return nil, errors.ErrFailedToCastTF(tensors[0].Value())
 		}
 	default:
 		value, ok := tensors[0].Value().([]float64)
 		if ok {
 			return value, nil
 		} else {
-			return nil, errors.ErrFailedToCastTF(result.Value())
+			return nil, errors.ErrFailedToCastTF(tensors[0].Value())
 		}
 	}
 }
 
-func (t *tensorflow) GetValue(feeds []Feed, fetch Fetch, targets ...*Operation) (interface{}, error) {
-	tensors, err := t.run(feeds, []Fetch{fetch}, targets...)
+func (t *tensorflow) GetValue(inputs ...string) (interface{}, error) {
+	tensors, err := t.run(inputs...)
 	if err != nil {
 		return nil, err
+	}
+
+	if tensors == nil || tensors[0] == nil {
+		return nil, errors.ErrNilTensorTF(tensors)
 	}
 	return tensors[0].Value(), nil
 }
 
-func (t *tensorflow) GetValues(feeds []Feed, fetches []Fetch, targets ...*Operation) (values []interface{}, err error) {
-	tensors, err := t.run(feeds, fetches, targets...)
+func (t *tensorflow) GetValues(inputs ...string) (values []interface{}, err error) {
+	tensors, err := t.run(inputs...)
 	if err != nil {
 		return nil, err
 	}
