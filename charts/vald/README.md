@@ -60,7 +60,7 @@ Configuration
 | agent.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | agent.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | agent.rollingUpdate.partition | int | `0` |  |
-| agent.server_config | object | `{"full_shutdown_duration":"600s","healths":{"liveness":{"enabled":false},"readiness":{"enabled":false}},"metrics":{"pprof":{"enabled":false},"prometheus":{"enabled":false}},"prefix":"agent","servers":{"grpc":{"enabled":false},"rest":{"enabled":false}},"tls":{"enabled":false}}` | server config (overrides defaults.server_config) |
+| agent.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | agent.service.annotations | list | `nil` | service annotations |
 | agent.service.labels | list | `nil` | service labels |
 | agent.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
@@ -172,15 +172,12 @@ Configuration
 | backupManager.revisionHistoryLimit | int | `2` |  |
 | backupManager.rollingUpdate.maxSurge | string | `"25%"` |  |
 | backupManager.rollingUpdate.maxUnavailable | string | `"25%"` |  |
-| backupManager.server_config.full_shutdown_duration | string | `"600s"` |  |
-| backupManager.server_config.healths.liveness.enabled | bool | `false` |  |
-| backupManager.server_config.healths.readiness.enabled | bool | `false` |  |
-| backupManager.server_config.metrics.pprof.enabled | bool | `false` |  |
-| backupManager.server_config.metrics.prometheus.enabled | bool | `false` |  |
-| backupManager.server_config.prefix | string | `"backup-manager"` |  |
-| backupManager.server_config.servers.grpc.enabled | bool | `false` |  |
-| backupManager.server_config.servers.rest.enabled | bool | `false` |  |
-| backupManager.server_config.tls.enabled | bool | `false` |  |
+| backupManager.server_config.healths.liveness | object | `{}` |  |
+| backupManager.server_config.healths.readiness | object | `{}` |  |
+| backupManager.server_config.metrics.pprof | object | `{}` |  |
+| backupManager.server_config.metrics.prometheus | object | `{}` |  |
+| backupManager.server_config.servers.grpc | object | `{}` |  |
+| backupManager.server_config.servers.rest | object | `{}` |  |
 | backupManager.serviceType | string | `"ClusterIP"` |  |
 | backupManager.terminationGracePeriodSeconds | int | `30` |  |
 | backupManager.version | string | `"v0.0.0"` |  |
@@ -212,15 +209,12 @@ Configuration
 | compressor.revisionHistoryLimit | int | `2` |  |
 | compressor.rollingUpdate.maxSurge | string | `"25%"` |  |
 | compressor.rollingUpdate.maxUnavailable | string | `"25%"` |  |
-| compressor.server_config.full_shutdown_duration | string | `"600s"` |  |
-| compressor.server_config.healths.liveness.enabled | bool | `false` |  |
-| compressor.server_config.healths.readiness.enabled | bool | `false` |  |
-| compressor.server_config.metrics.pprof.enabled | bool | `false` |  |
-| compressor.server_config.metrics.prometheus.enabled | bool | `false` |  |
-| compressor.server_config.prefix | string | `"manager-compressor"` |  |
-| compressor.server_config.servers.grpc.enabled | bool | `false` |  |
-| compressor.server_config.servers.rest.enabled | bool | `false` |  |
-| compressor.server_config.tls.enabled | bool | `false` |  |
+| compressor.server_config.healths.liveness | object | `{}` |  |
+| compressor.server_config.healths.readiness | object | `{}` |  |
+| compressor.server_config.metrics.pprof | object | `{}` |  |
+| compressor.server_config.metrics.prometheus | object | `{}` |  |
+| compressor.server_config.servers.grpc | object | `{}` |  |
+| compressor.server_config.servers.rest | object | `{}` |  |
 | compressor.serviceType | string | `"ClusterIP"` |  |
 | compressor.terminationGracePeriodSeconds | int | `30` |  |
 | compressor.version | string | `"v0.0.0"` |  |
@@ -389,45 +383,44 @@ Configuration
 | defaults.server_config.tls.enabled | bool | `false` | TLS enabled |
 | defaults.server_config.tls.key | string | `"/path/to/key"` | TLS key path |
 | defaults.time_zone | string | `"UTC"` | Time zone |
-| discoverer.clusterRole.enabled | bool | `true` |  |
-| discoverer.clusterRole.name | string | `"discoverer"` |  |
-| discoverer.clusterRoleBinding.enabled | bool | `true` |  |
-| discoverer.clusterRoleBinding.name | string | `"discoverer"` |  |
-| discoverer.discoverer.cache_sync_duration | string | `"3s"` |  |
-| discoverer.discoverer.name | string | `""` |  |
-| discoverer.discoverer.namespace | string | `"_MY_POD_NAMESPACE_"` |  |
-| discoverer.env[0].name | string | `"MY_POD_NAMESPACE"` |  |
-| discoverer.env[0].valueFrom.fieldRef.fieldPath | string | `"metadata.namespace"` |  |
-| discoverer.image.pullPolicy | string | `"Always"` |  |
-| discoverer.image.repository | string | `"vdaas/vald-discoverer-k8s"` |  |
-| discoverer.kind | string | `"Deployment"` |  |
-| discoverer.maxReplicas | int | `2` |  |
-| discoverer.maxUnavailable | string | `"50%"` |  |
-| discoverer.minReplicas | int | `1` |  |
-| discoverer.name | string | `"vald-discoverer"` |  |
-| discoverer.observability.jaeger.service_name | string | `"vald-discoverer"` |  |
-| discoverer.progressDeadlineSeconds | int | `600` |  |
-| discoverer.resources.limits.cpu | string | `"600m"` |  |
-| discoverer.resources.limits.memory | string | `"200Mi"` |  |
-| discoverer.resources.requests.cpu | string | `"200m"` |  |
-| discoverer.resources.requests.memory | string | `"65Mi"` |  |
-| discoverer.revisionHistoryLimit | int | `2` |  |
-| discoverer.rollingUpdate.maxSurge | string | `"25%"` |  |
-| discoverer.rollingUpdate.maxUnavailable | string | `"25%"` |  |
-| discoverer.server_config.full_shutdown_duration | string | `"600s"` |  |
-| discoverer.server_config.healths.liveness.enabled | bool | `false` |  |
-| discoverer.server_config.healths.readiness.enabled | bool | `false` |  |
-| discoverer.server_config.metrics.pprof.enabled | bool | `false` |  |
-| discoverer.server_config.metrics.prometheus.enabled | bool | `false` |  |
-| discoverer.server_config.prefix | string | `"discoverer"` |  |
-| discoverer.server_config.servers.grpc.enabled | bool | `false` |  |
-| discoverer.server_config.servers.rest.enabled | bool | `false` |  |
-| discoverer.server_config.tls.enabled | bool | `false` |  |
-| discoverer.serviceAccount.enabled | bool | `true` |  |
-| discoverer.serviceAccount.name | string | `"vald"` |  |
-| discoverer.serviceType | string | `"ClusterIP"` |  |
-| discoverer.terminationGracePeriodSeconds | int | `30` |  |
-| discoverer.version | string | `"v0.0.0"` |  |
+| discoverer.annotations | list | `nil` | deployment annotations |
+| discoverer.clusterRole.enabled | bool | `true` | creates clusterRole resource |
+| discoverer.clusterRole.name | string | `"discoverer"` | name of clusterRole |
+| discoverer.clusterRoleBinding.enabled | bool | `true` | creates clusterRoleBinding resource |
+| discoverer.clusterRoleBinding.name | string | `"discoverer"` | name of clusterRoleBinding |
+| discoverer.discoverer.cache_sync_duration | string | `"3s"` | duration to sync cache |
+| discoverer.discoverer.name | string | `""` | name to discovery |
+| discoverer.discoverer.namespace | string | `"_MY_POD_NAMESPACE_"` | namespace to discovery |
+| discoverer.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
+| discoverer.externalTrafficPolicy | string | `nil` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
+| discoverer.image.pullPolicy | string | `"Always"` | image pull policy |
+| discoverer.image.repository | string | `"vdaas/vald-discoverer-k8s"` | image repository |
+| discoverer.image.tag | string | `nil` | image tag (overrides defaults.image.tag) |
+| discoverer.initContainers | list | `nil` | init containers |
+| discoverer.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
+| discoverer.maxReplicas | int | `2` | maximum number of replicas |
+| discoverer.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
+| discoverer.minReplicas | int | `1` | minimum number of replicas |
+| discoverer.name | string | `"vald-discoverer"` | name of discoverer deployment |
+| discoverer.nodeName | string | `nil` | node name |
+| discoverer.nodeSelector | object | `nil` | node selector |
+| discoverer.observability | object | `{"jaeger":{"service_name":"vald-discoverer"}}` | observability config (overrides defaults.observability) |
+| discoverer.podAnnotations | list | `nil` | pod annotations |
+| discoverer.progressDeadlineSeconds | int | `600` | progress deadline seconds |
+| discoverer.resources | object | `{"limits":{"cpu":"600m","memory":"200Mi"},"requests":{"cpu":"200m","memory":"65Mi"}}` | compute resources |
+| discoverer.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
+| discoverer.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
+| discoverer.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
+| discoverer.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| discoverer.service.annotations | list | `nil` | service annotations |
+| discoverer.service.labels | list | `nil` | service labels |
+| discoverer.serviceAccount.enabled | bool | `true` | creates service account |
+| discoverer.serviceAccount.name | string | `"vald"` | name of service account |
+| discoverer.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
+| discoverer.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| discoverer.version | string | `"v0.0.0"` | version of discoverer config |
+| discoverer.volumeMounts | list | `nil` | volume mounts |
+| discoverer.volumes | list | `nil` | volumes |
 | gateway.annotations | list | `nil` | deployment annotations |
 | gateway.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
 | gateway.externalTrafficPolicy | string | `nil` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
@@ -467,7 +460,7 @@ Configuration
 | gateway.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
 | gateway.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | gateway.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
-| gateway.server_config | object | `{"full_shutdown_duration":"600s","healths":{"liveness":{"enabled":false},"readiness":{"enabled":false}},"metrics":{"pprof":{"enabled":false},"prometheus":{"enabled":false}},"prefix":"gateway","servers":{"grpc":{"enabled":false},"rest":{"enabled":false}},"tls":{"enabled":false}}` | server config (overrides defaults.server_config) |
+| gateway.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | gateway.service.annotations | list | `nil` | service annotations |
 | gateway.service.labels | list | `nil` | service labels |
 | gateway.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
@@ -511,15 +504,12 @@ Configuration
 | indexManager.revisionHistoryLimit | int | `2` |  |
 | indexManager.rollingUpdate.maxSurge | string | `"25%"` |  |
 | indexManager.rollingUpdate.maxUnavailable | string | `"25%"` |  |
-| indexManager.server_config.full_shutdown_duration | string | `"600s"` |  |
-| indexManager.server_config.healths.liveness.enabled | bool | `false` |  |
-| indexManager.server_config.healths.readiness.enabled | bool | `false` |  |
-| indexManager.server_config.metrics.pprof.enabled | bool | `false` |  |
-| indexManager.server_config.metrics.prometheus.enabled | bool | `false` |  |
-| indexManager.server_config.prefix | string | `"index-manager"` |  |
-| indexManager.server_config.servers.grpc.enabled | bool | `false` |  |
-| indexManager.server_config.servers.rest.enabled | bool | `false` |  |
-| indexManager.server_config.tls.enabled | bool | `false` |  |
+| indexManager.server_config.healths.liveness | object | `{}` |  |
+| indexManager.server_config.healths.readiness | object | `{}` |  |
+| indexManager.server_config.metrics.pprof | object | `{}` |  |
+| indexManager.server_config.metrics.prometheus | object | `{}` |  |
+| indexManager.server_config.servers.grpc | object | `{}` |  |
+| indexManager.server_config.servers.rest | object | `{}` |  |
 | indexManager.serviceType | string | `"ClusterIP"` |  |
 | indexManager.terminationGracePeriodSeconds | int | `30` |  |
 | indexManager.version | string | `"v0.0.0"` |  |
@@ -696,15 +686,12 @@ Configuration
 | meta.revisionHistoryLimit | int | `2` |  |
 | meta.rollingUpdate.maxSurge | string | `"25%"` |  |
 | meta.rollingUpdate.maxUnavailable | string | `"25%"` |  |
-| meta.server_config.full_shutdown_duration | string | `"600s"` |  |
-| meta.server_config.healths.liveness.enabled | bool | `false` |  |
-| meta.server_config.healths.readiness.enabled | bool | `false` |  |
-| meta.server_config.metrics.pprof.enabled | bool | `false` |  |
-| meta.server_config.metrics.prometheus.enabled | bool | `false` |  |
-| meta.server_config.prefix | string | `"meta"` |  |
-| meta.server_config.servers.grpc.enabled | bool | `false` |  |
-| meta.server_config.servers.rest.enabled | bool | `false` |  |
-| meta.server_config.tls.enabled | bool | `false` |  |
+| meta.server_config.healths.liveness | object | `{}` |  |
+| meta.server_config.healths.readiness | object | `{}` |  |
+| meta.server_config.metrics.pprof | object | `{}` |  |
+| meta.server_config.metrics.prometheus | object | `{}` |  |
+| meta.server_config.servers.grpc | object | `{}` |  |
+| meta.server_config.servers.rest | object | `{}` |  |
 | meta.serviceType | string | `"ClusterIP"` |  |
 | meta.terminationGracePeriodSeconds | int | `30` |  |
 | meta.version | string | `"v0.0.0"` |  |
