@@ -8,7 +8,6 @@ import (
 	"github.com/vdaas/vald/internal/core/ngt"
 )
 
-// Option is benchmark configure.
 type Option func(*benchmark)
 
 var (
@@ -19,7 +18,6 @@ var (
 	}
 )
 
-// WithName returns Option that sets name.
 func WithName(name string) Option {
 	return func(b *benchmark) {
 		if len(name) != 0 {
@@ -28,7 +26,6 @@ func WithName(name string) Option {
 	}
 }
 
-// WithPreStart returns Option that sets prestart.
 func WithPreStart(
 	f func(context.Context, *testing.B, assets.Dataset, ngt.NGT),
 ) Option {
@@ -47,7 +44,10 @@ func WithNGT(ngt ngt.NGT) Option {
 	}
 }
 
-// WithStrategy returns Option that sets benchmark strategy.
-func WithStrategy() Option {
-	return func(b *benchmark) {}
+func WithStrategy(strategies ...Strategy) Option {
+	return func(b *benchmark) {
+		if len(strategies) != 0 {
+			b.strategies = strategies
+		}
+	}
 }
