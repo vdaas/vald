@@ -456,51 +456,43 @@ Configuration
 | gateway.version | string | `"v0.0.0"` | version of gateway config |
 | gateway.volumeMounts | list | `nil` | volume mounts |
 | gateway.volumes | list | `nil` | volumes |
-| indexManager.env[0].name | string | `"MY_POD_NAMESPACE"` |  |
-| indexManager.env[0].valueFrom.fieldRef.fieldPath | string | `"metadata.namespace"` |  |
-| indexManager.image.pullPolicy | string | `"Always"` |  |
-| indexManager.image.repository | string | `"vdaas/vald-manager-index"` |  |
-| indexManager.indexer.agent_namespace | string | `"_MY_POD_NAMESPACE_"` |  |
-| indexManager.indexer.auto_index_check_duration | string | `"1m"` |  |
-| indexManager.indexer.auto_index_duration_limit | string | `"30m"` |  |
-| indexManager.indexer.auto_index_length | int | `100` |  |
-| indexManager.indexer.concurrency | int | `1` |  |
-| indexManager.indexer.discoverer.agent_client.dial_option.tcp.dialer.keep_alive | string | `"15m"` |  |
-| indexManager.indexer.discoverer.discover_client | object | `{}` |  |
-| indexManager.indexer.discoverer.duration | string | `"500ms"` |  |
-| indexManager.indexer.node_name | string | `""` |  |
-| indexManager.initContainers[0].image | string | `"busybox"` |  |
-| indexManager.initContainers[0].name | string | `"wait-for-agent"` |  |
-| indexManager.initContainers[0].sleepDuration | int | `2` |  |
-| indexManager.initContainers[0].target | string | `"agent"` |  |
-| indexManager.initContainers[0].type | string | `"wait-for"` |  |
-| indexManager.initContainers[1].image | string | `"busybox"` |  |
-| indexManager.initContainers[1].name | string | `"wait-for-discoverer"` |  |
-| indexManager.initContainers[1].sleepDuration | int | `2` |  |
-| indexManager.initContainers[1].target | string | `"discoverer"` |  |
-| indexManager.initContainers[1].type | string | `"wait-for"` |  |
-| indexManager.kind | string | `"Deployment"` |  |
-| indexManager.maxUnavailable | string | `"50%"` |  |
-| indexManager.name | string | `"vald-manager-index"` |  |
-| indexManager.observability.jaeger.service_name | string | `"vald-manager-index"` |  |
-| indexManager.progressDeadlineSeconds | int | `600` |  |
-| indexManager.replicas | int | `1` |  |
-| indexManager.resources.limits.cpu | int | `1` |  |
-| indexManager.resources.limits.memory | string | `"500Mi"` |  |
-| indexManager.resources.requests.cpu | string | `"200m"` |  |
-| indexManager.resources.requests.memory | string | `"80Mi"` |  |
-| indexManager.revisionHistoryLimit | int | `2` |  |
-| indexManager.rollingUpdate.maxSurge | string | `"25%"` |  |
-| indexManager.rollingUpdate.maxUnavailable | string | `"25%"` |  |
-| indexManager.server_config.healths.liveness | object | `{}` |  |
-| indexManager.server_config.healths.readiness | object | `{}` |  |
-| indexManager.server_config.metrics.pprof | object | `{}` |  |
-| indexManager.server_config.metrics.prometheus | object | `{}` |  |
-| indexManager.server_config.servers.grpc | object | `{}` |  |
-| indexManager.server_config.servers.rest | object | `{}` |  |
-| indexManager.serviceType | string | `"ClusterIP"` |  |
-| indexManager.terminationGracePeriodSeconds | int | `30` |  |
-| indexManager.version | string | `"v0.0.0"` |  |
+| indexManager.annotations | list | `nil` | deployment annotations |
+| indexManager.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | (list) environment variables |
+| indexManager.externalTrafficPolicy | string | `nil` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
+| indexManager.image.pullPolicy | string | `"Always"` | image pull policy |
+| indexManager.image.repository | string | `"vdaas/vald-manager-index"` | image repository |
+| indexManager.image.tag | string | `nil` | image tag (overrides defaults.image.tag) |
+| indexManager.indexer.agent_namespace | string | `"_MY_POD_NAMESPACE_"` | namespace of agent pods to manage |
+| indexManager.indexer.auto_index_check_duration | string | `"1m"` | check duration of automatic indexing |
+| indexManager.indexer.auto_index_duration_limit | string | `"30m"` | limit duration of automatic indexing |
+| indexManager.indexer.auto_index_length | int | `100` | number of cache to trigger automatic indexing |
+| indexManager.indexer.concurrency | int | `1` | concurrency |
+| indexManager.indexer.discoverer.agent_client | object | `{"dial_option":{"tcp":{"dialer":{"keep_alive":"15m"}}}}` | gRPC client for agents (overrides defaults.grpc.client) |
+| indexManager.indexer.discoverer.discover_client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
+| indexManager.indexer.discoverer.duration | string | `"500ms"` | refresh duration to discover |
+| indexManager.indexer.node_name | string | `""` | node name |
+| indexManager.initContainers | list | `[{"image":"busybox","name":"wait-for-agent","sleepDuration":2,"target":"agent","type":"wait-for"},{"image":"busybox","name":"wait-for-discoverer","sleepDuration":2,"target":"discoverer","type":"wait-for"}]` | init containers |
+| indexManager.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
+| indexManager.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
+| indexManager.name | string | `"vald-manager-index"` | name of index manager deployment |
+| indexManager.nodeName | string | `nil` | node name |
+| indexManager.nodeSelector | object | `nil` | node selector |
+| indexManager.observability | object | `{"jaeger":{"service_name":"vald-manager-index"}}` | observability config (overrides defaults.observability) |
+| indexManager.podAnnotations | list | `nil` | pod annotations |
+| indexManager.progressDeadlineSeconds | int | `600` | progress deadline seconds |
+| indexManager.replicas | int | `1` | number of replicas |
+| indexManager.resources | object | `{"limits":{"cpu":1,"memory":"500Mi"},"requests":{"cpu":"200m","memory":"80Mi"}}` | compute resources |
+| indexManager.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
+| indexManager.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
+| indexManager.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
+| indexManager.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| indexManager.service.annotations | list | `nil` | service annotations |
+| indexManager.service.labels | list | `nil` | service labels |
+| indexManager.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
+| indexManager.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| indexManager.version | string | `"v0.0.0"` | version of index manager config |
+| indexManager.volumeMounts | list | `nil` | volume mounts |
+| indexManager.volumes | list | `nil` | volumes |
 | initializer.cassandra.configmap.backup.enabled | bool | `true` |  |
 | initializer.cassandra.configmap.backup.name | string | `"meta_vector"` |  |
 | initializer.cassandra.configmap.enabled | bool | `false` |  |

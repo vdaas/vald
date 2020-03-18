@@ -1173,24 +1173,48 @@ backupManager:
         shuffle_replicas: false
 
 indexManager:
+  # indexManager.version -- version of index manager config
   version: v0.0.0
+  # indexManager.name -- name of index manager deployment
   name: vald-manager-index
+  # indexManager.kind -- deployment kind: Deployment or DaemonSet
   kind: Deployment
-  # kind: DaemonSet
+  # indexManager.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # externalTrafficPolicy: Cluster
+  # indexManager.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: null
+  # indexManager.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
+  # indexManager.replicas -- number of replicas
   replicas: 1
+  # indexManager.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
+  # indexManager.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
+  # indexManager.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  # indexManager.annotations -- (list) deployment annotations
+  annotations: null
+  # indexManager.podAnnotations -- (list) pod annotations
+  podAnnotations: null
+  service:
+    # indexManager.service.annotations -- (list) service annotations
+    annotations: null
+    # indexManager.service.labels -- (list) service labels
+    labels: null
   image:
+    # indexManager.image.repository -- image repository
     repository: vdaas/vald-manager-index
-    # tag: nightly
+    # indexManager.image.tag -- (string) image tag (overrides defaults.image.tag)
+    tag: null
+    # indexManager.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
+    # indexManager.rollingUpdate.maxSurge -- max surge of rolling update
     maxSurge: 25%
+    # indexManager.rollingUpdate.maxUnavailable -- max unavailable of rolling update
     maxUnavailable: 25%
+  # indexManager.initContainers -- init containers
   initContainers:
     - type: wait-for
       name: wait-for-agent
@@ -1202,6 +1226,7 @@ indexManager:
       target: discoverer
       image: busybox
       sleepDuration: 2
+  # indexManager.env -- (list) environment variables
   env:
     # - name: MY_NODE_NAME
     #   valueFrom:
@@ -1211,6 +1236,15 @@ indexManager:
       valueFrom:
         fieldRef:
           fieldPath: metadata.namespace
+  # indexManager.volumeMounts -- (list) volume mounts
+  volumeMounts: null
+  # indexManager.volumes -- (list) volumes
+  volumes: null
+  # indexManager.nodeName -- (string) node name
+  nodeName: null
+  # indexManager.nodeSelector -- (object) node selector
+  nodeSelector: null
+  # indexManager.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
       rest: {}
@@ -1221,9 +1255,11 @@ indexManager:
     metrics:
       pprof: {}
       prometheus: {}
+  # indexManager.observability -- observability config (overrides defaults.observability)
   observability:
     jaeger:
       service_name: vald-manager-index
+  # indexManager.resources -- compute resources
   resources:
     requests:
       cpu: 200m
@@ -1232,15 +1268,24 @@ indexManager:
       cpu: 1
       memory: 500Mi
   indexer:
+    # indexManager.indexer.agent_namespace -- namespace of agent pods to manage
     agent_namespace: _MY_POD_NAMESPACE_
+    # indexManager.indexer.node_name -- node name
     node_name: "" # _MY_NODE_NAME_
+    # indexManager.indexer.concurrency -- concurrency
     concurrency: 1
+    # indexManager.indexer.auto_index_duration_limit -- limit duration of automatic indexing
     auto_index_duration_limit: 30m
+    # indexManager.indexer.auto_index_check_duration -- check duration of automatic indexing
     auto_index_check_duration: 1m
+    # indexManager.indexer.auto_index_length -- number of cache to trigger automatic indexing
     auto_index_length: 100
     discoverer:
+      # indexManager.indexer.discoverer.duration -- refresh duration to discover
       duration: 500ms
+      # indexManager.indexer.discoverer.discover_client -- gRPC client for discoverer (overrides defaults.grpc.client)
       discover_client: {}
+      # indexManager.indexer.discoverer.agent_client -- gRPC client for agents (overrides defaults.grpc.client)
       agent_client:
         dial_option:
           tcp:
