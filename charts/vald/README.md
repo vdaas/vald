@@ -481,7 +481,7 @@ Configuration
 | indexManager.podAnnotations | list | `nil` | pod annotations |
 | indexManager.progressDeadlineSeconds | int | `600` | progress deadline seconds |
 | indexManager.replicas | int | `1` | number of replicas |
-| indexManager.resources | object | `{"limits":{"cpu":1,"memory":"500Mi"},"requests":{"cpu":"200m","memory":"80Mi"}}` | compute resources |
+| indexManager.resources | object | `{"limits":{"cpu":"1000m","memory":"500Mi"},"requests":{"cpu":"200m","memory":"80Mi"}}` | compute resources |
 | indexManager.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
 | indexManager.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | indexManager.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |

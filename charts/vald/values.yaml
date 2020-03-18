@@ -1265,7 +1265,7 @@ indexManager:
       cpu: 200m
       memory: 80Mi
     limits:
-      cpu: 1
+      cpu: 1000m
       memory: 500Mi
   indexer:
     # indexManager.indexer.agent_namespace -- namespace of agent pods to manage
