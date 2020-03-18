@@ -19,12 +19,10 @@ func WithBulkRemoveChunkSize(chunk int) BulkRemoveOption {
 	}
 }
 
-func WithBulkRemovePrestart(
-	fn PreStart,
-) BulkRemoveOption {
+func WithBulkRemovePrestart(fn PreStart) BulkRemoveOption {
 	return func(br *bulkRemove) {
 		if fn != nil {
-			br.fn = fn
+			br.preStart = fn
 		}
 	}
 }

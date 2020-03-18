@@ -24,7 +24,7 @@ func NewCreateIndex(opts ...CreateIndexOption) benchmark.Strategy {
 
 func (c *createIndex) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, dataset assets.Dataset) {
 	b.Run("CreateIndex", func(bb *testing.B) {
-		c.preStart(ctx, b, ngt, dataset)
+		c.preStart(ctx, bb, ngt, dataset)
 
 		bb.StopTimer()
 		bb.ReportAllocs()

@@ -25,7 +25,7 @@ func NewRemove(opts ...RemoveOption) benchmark.Strategy {
 func (r *remove) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, dataset assets.Dataset) {
 	cnt := 0
 	b.Run("Remove", func(bb *testing.B) {
-		r.ids = append(r.ids, r.preStart(ctx, b, ngt, dataset)...)
+		r.ids = append(r.ids, r.preStart(ctx, bb, ngt, dataset)...)
 
 		bb.StopTimer()
 		bb.ReportAllocs()
