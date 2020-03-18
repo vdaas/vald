@@ -269,14 +269,14 @@ Configuration
 | defaults.server_config.full_shutdown_duration | string | `"600s"` | server full shutdown duration |
 | defaults.server_config.healths.liveness.enabled | bool | `true` | liveness server enabled |
 | defaults.server_config.healths.liveness.host | string | `"0.0.0.0"` | liveness server host |
-| defaults.server_config.healths.liveness.livenessProbe.failureThreshold | int | `2` |  |
+| defaults.server_config.healths.liveness.livenessProbe.failureThreshold | int | `2` | liveness probe failure threshold |
 | defaults.server_config.healths.liveness.livenessProbe.httpGet.path | string | `"/liveness"` | liveness probe path |
 | defaults.server_config.healths.liveness.livenessProbe.httpGet.port | string | `"liveness"` | liveness probe port |
 | defaults.server_config.healths.liveness.livenessProbe.httpGet.scheme | string | `"HTTP"` | liveness probe scheme |
-| defaults.server_config.healths.liveness.livenessProbe.initialDelaySeconds | int | `5` |  |
-| defaults.server_config.healths.liveness.livenessProbe.periodSeconds | int | `3` |  |
-| defaults.server_config.healths.liveness.livenessProbe.successThreshold | int | `1` |  |
-| defaults.server_config.healths.liveness.livenessProbe.timeoutSeconds | int | `2` |  |
+| defaults.server_config.healths.liveness.livenessProbe.initialDelaySeconds | int | `5` | liveness probe initial delay seconds |
+| defaults.server_config.healths.liveness.livenessProbe.periodSeconds | int | `3` | liveness probe period seconds |
+| defaults.server_config.healths.liveness.livenessProbe.successThreshold | int | `1` | liveness probe success threshold |
+| defaults.server_config.healths.liveness.livenessProbe.timeoutSeconds | int | `2` | liveness probe timeout seconds |
 | defaults.server_config.healths.liveness.port | int | `3000` | liveness server port |
 | defaults.server_config.healths.liveness.server.http.handler_timeout | string | `""` | liveness server handler timeout |
 | defaults.server_config.healths.liveness.server.http.idle_timeout | string | `""` | liveness server idle timeout |

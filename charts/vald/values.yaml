@@ -124,15 +124,15 @@ defaults:
             port: liveness
             # defaults.server_config.healths.liveness.livenessProbe.httpGet.scheme -- liveness probe scheme
             scheme: HTTP
-          # defaults.server_config.healths.livensss.livenessProbe.initialDelaySeconds -- liveness probe initial delay seconds
+          # defaults.server_config.healths.liveness.livenessProbe.initialDelaySeconds -- liveness probe initial delay seconds
           initialDelaySeconds: 5
-          # defaults.server_config.healths.livensss.livenessProbe.timeoutSeconds -- liveness probe timeout seconds
+          # defaults.server_config.healths.liveness.livenessProbe.timeoutSeconds -- liveness probe timeout seconds
           timeoutSeconds: 2
-          # defaults.server_config.healths.livensss.livenessProbe.successThreshold -- liveness probe success threshold
+          # defaults.server_config.healths.liveness.livenessProbe.successThreshold -- liveness probe success threshold
           successThreshold: 1
-          # defaults.server_config.healths.livensss.livenessProbe.failureThreshold -- liveness probe failure threshold
+          # defaults.server_config.healths.liveness.livenessProbe.failureThreshold -- liveness probe failure threshold
           failureThreshold: 2
-          # defaults.server_config.healths.livensss.livenessProbe.periodSeconds -- liveness probe period seconds
+          # defaults.server_config.healths.liveness.livenessProbe.periodSeconds -- liveness probe period seconds
           periodSeconds: 3
         server:
           # defaults.server_config.healths.liveness.server.mode -- liveness server mode
