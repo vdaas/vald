@@ -59,7 +59,7 @@ Configuration
 | agent.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
 | agent.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | agent.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
-| agent.rollingUpdate.partition | int | `0` |  |
+| agent.rollingUpdate.partition | int | `0` | StatefulSet partition |
 | agent.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | agent.service.annotations | list | `nil` | service annotations |
 | agent.service.labels | list | `nil` | service labels |
@@ -181,43 +181,42 @@ Configuration
 | backupManager.serviceType | string | `"ClusterIP"` |  |
 | backupManager.terminationGracePeriodSeconds | int | `30` |  |
 | backupManager.version | string | `"v0.0.0"` |  |
-| compressor.backup.client | object | `{}` |  |
-| compressor.compress.buffer | int | `100` |  |
-| compressor.compress.compress_algorithm | string | `"zstd"` |  |
-| compressor.compress.compression_level | int | `10` |  |
-| compressor.compress.concurrent_limit | int | `10` |  |
-| compressor.hpa.enabled | bool | `true` |  |
-| compressor.hpa.targetCPUUtilizationPercentage | int | `80` |  |
-| compressor.image.pullPolicy | string | `"Always"` |  |
-| compressor.image.repository | string | `"vdaas/vald-manager-compressor"` |  |
-| compressor.initContainers[0].image | string | `"busybox"` |  |
-| compressor.initContainers[0].name | string | `"wait-for-manager-backup"` |  |
-| compressor.initContainers[0].sleepDuration | int | `2` |  |
-| compressor.initContainers[0].target | string | `"manager-backup"` |  |
-| compressor.initContainers[0].type | string | `"wait-for"` |  |
-| compressor.kind | string | `"Deployment"` |  |
-| compressor.maxReplicas | int | `15` |  |
-| compressor.maxUnavailable | string | `"50%"` |  |
-| compressor.minReplicas | int | `3` |  |
-| compressor.name | string | `"vald-manager-compressor"` |  |
-| compressor.observability.jaeger.service_name | string | `"vald-manager-compressor"` |  |
-| compressor.progressDeadlineSeconds | int | `600` |  |
-| compressor.resources.limits.cpu | string | `"800m"` |  |
-| compressor.resources.limits.memory | string | `"500Mi"` |  |
-| compressor.resources.requests.cpu | string | `"300m"` |  |
-| compressor.resources.requests.memory | string | `"50Mi"` |  |
-| compressor.revisionHistoryLimit | int | `2` |  |
-| compressor.rollingUpdate.maxSurge | string | `"25%"` |  |
-| compressor.rollingUpdate.maxUnavailable | string | `"25%"` |  |
-| compressor.server_config.healths.liveness | object | `{}` |  |
-| compressor.server_config.healths.readiness | object | `{}` |  |
-| compressor.server_config.metrics.pprof | object | `{}` |  |
-| compressor.server_config.metrics.prometheus | object | `{}` |  |
-| compressor.server_config.servers.grpc | object | `{}` |  |
-| compressor.server_config.servers.rest | object | `{}` |  |
-| compressor.serviceType | string | `"ClusterIP"` |  |
-| compressor.terminationGracePeriodSeconds | int | `30` |  |
-| compressor.version | string | `"v0.0.0"` |  |
+| compressor.annotations | list | `nil` | deployment annotations |
+| compressor.backup.client | object | `{}` | grpc client for backup (overrides defaults.grpc.client) |
+| compressor.compress.buffer | int | `100` | size of buffer |
+| compressor.compress.compress_algorithm | string | `"zstd"` | compression algorithm: gob, gzip, lz4 or zstd |
+| compressor.compress.compression_level | int | `3` | compression level |
+| compressor.compress.concurrent_limit | int | `10` | concurrency limit |
+| compressor.env | list | `nil` | environment variables |
+| compressor.externalTrafficPolicy | string | `nil` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
+| compressor.hpa.enabled | bool | `true` | HPA enabled |
+| compressor.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |
+| compressor.image.pullPolicy | string | `"Always"` | image pull policy |
+| compressor.image.repository | string | `"vdaas/vald-manager-compressor"` | image repository |
+| compressor.image.tag | string | `nil` | image tag (overrides defaults.image.tag) |
+| compressor.initContainers | list | `[{"image":"busybox","name":"wait-for-manager-backup","sleepDuration":2,"target":"manager-backup","type":"wait-for"}]` | init containers |
+| compressor.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
+| compressor.maxReplicas | int | `15` | maximum number of replicas |
+| compressor.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
+| compressor.minReplicas | int | `3` | minimum number of replicas |
+| compressor.name | string | `"vald-manager-compressor"` | name of compressor deployment |
+| compressor.nodeName | string | `nil` | node name |
+| compressor.nodeSelector | object | `nil` | node selector |
+| compressor.observability | object | `{"jaeger":{"service_name":"vald-manager-compressor"}}` | observability config (overrides defaults.observability) |
+| compressor.podAnnotations | list | `nil` | pod annotations |
+| compressor.progressDeadlineSeconds | int | `600` | progress deadline seconds |
+| compressor.resources | object | `{"limits":{"cpu":"800m","memory":"500Mi"},"requests":{"cpu":"300m","memory":"50Mi"}}` | compute resources |
+| compressor.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
+| compressor.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
+| compressor.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
+| compressor.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| compressor.service.annotations | list | `nil` | service annotations |
+| compressor.service.labels | list | `nil` | service labels |
+| compressor.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
+| compressor.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| compressor.version | string | `"v0.0.0"` | version of compressor config |
+| compressor.volumeMounts | list | `nil` | volume mounts |
+| compressor.volumes | list | `nil` | volumes |
 | defaults.grpc.client.addrs | list | `[]` | gRPC client addresses |
 | defaults.grpc.client.backoff.backoff_factor | float | `1.1` | gRPC client backoff factor |
 | defaults.grpc.client.backoff.backoff_time_limit | string | `"5s"` | gRPC client backoff time limit |

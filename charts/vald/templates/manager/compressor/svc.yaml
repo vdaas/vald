@@ -17,9 +17,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Values.compressor.name }}
-  {{- if .Values.compressor.service }}
+  {{- if .Values.compressor.service.annotations }}
   annotations:
     {{- toYaml .Values.compressor.service.annotations | nindent 4 }}
+  {{- end }}
+  {{- if .Values.compressor.service.labels }}
   labels:
     {{- toYaml .Values.compressor.service.labels | nindent 4 }}
   {{- end }}

@@ -603,6 +603,7 @@ agent:
     maxSurge: 25%
     # agent.rollingUpdate.maxUnavailable -- max unavailable of rolling update
     maxUnavailable: 25%
+    # agent.rollingUpdate.partition -- StatefulSet partition
     partition: 0
   # agent.initContainers -- (list) init containers
   initContainers: null
@@ -767,34 +768,72 @@ discoverer:
     name: vald
 
 compressor:
+  # compressor.version -- version of compressor config
   version: v0.0.0
+  # compressor.name -- name of compressor deployment
   name: vald-manager-compressor
+  # compressor.kind -- deployment kind: Deployment or DaemonSet
   kind: Deployment
-  # kind: DaemonSet
+  # compressor.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # externalTrafficPolicy: Cluster
+  # compressor.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: null
+  # compressor.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
+  # compressor.minReplicas -- minimum number of replicas
   minReplicas: 3
+  # compressor.maxReplicas -- maximum number of replicas
   maxReplicas: 15
+  # compressor.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
+  # compressor.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
+  # compressor.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  # compressor.annotations -- (list) deployment annotations
+  annotations: null
+  # compressor.podAnnotations -- (list) pod annotations
+  podAnnotations: null
+  service:
+    # compressor.service.annotations -- (list) service annotations
+    annotations: null
+    # compressor.service.labels -- (list) service labels
+    labels: null
   hpa:
+    # compressor.hpa.enabled -- HPA enabled
     enabled: true
+    # compressor.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
     targetCPUUtilizationPercentage: 80
   image:
+    # compressor.image.repository -- image repository
     repository: vdaas/vald-manager-compressor
-    # tag: nightly
+    # compressor.image.tag -- (string) image tag (overrides defaults.image.tag)
+    tag: null
+    # compressor.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
+    # compressor.rollingUpdate.maxSurge -- max surge of rolling update
     maxSurge: 25%
+    # compressor.rollingUpdate.maxUnavailable -- max unavailable of rolling update
     maxUnavailable: 25%
+  # compressor.initContainers -- init containers
   initContainers:
     - type: wait-for
       name: wait-for-manager-backup
       target: manager-backup
       image: busybox
       sleepDuration: 2
+  # compressor.env -- (list) environment variables
+  env: null
+  # compressor.volumeMounts -- (list) volume mounts
+  volumeMounts: null
+  # compressor.volumes -- (list) volumes
+  volumes: null
+  # compressor.nodeName -- (string) node name
+  nodeName: null
+  # compressor.nodeSelector -- (object) node selector
+  nodeSelector: null
+  # compressor.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
       rest: {}
@@ -805,9 +844,11 @@ compressor:
     metrics:
       pprof: {}
       prometheus: {}
+  # compressor.observability -- observability config (overrides defaults.observability)
   observability:
     jaeger:
       service_name: vald-manager-compressor
+  # compressor.resources -- compute resources
   resources:
     requests:
       cpu: 300m
@@ -816,11 +857,16 @@ compressor:
       cpu: 800m
       memory: 500Mi
   backup:
+    # compressor.backup.client -- grpc client for backup (overrides defaults.grpc.client)
     client: {}
   compress:
+    # compressor.compress.compress_algorithm -- compression algorithm: gob, gzip, lz4 or zstd
     compress_algorithm: zstd
-    compression_level: 10
+    # compressor.compress.compression_level -- compression level
+    compression_level: 3
+    # compressor.compress.concurrent_limit -- concurrency limit
     concurrent_limit: 10
+    # compressor.compress.buffer -- size of buffer
     buffer: 100
 
 backupManager:
