@@ -484,25 +484,15 @@ gateway:
   nodeSelector: null
   # gateway.server_config -- server config (overrides defaults.server_config)
   server_config:
-    prefix: gateway
     servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: false
+      rest: {}
+      grpc: {}
     healths:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
+      liveness: {}
+      readiness: {}
     metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: false
-    full_shutdown_duration: 600s
-    tls:
-      enabled: false
+      pprof: {}
+      prometheus: {}
   # gateway.observability -- observability config (overrides defaults.observability)
   observability:
     jaeger:
@@ -628,25 +618,15 @@ agent:
   nodeSelector: null
   # agent.server_config -- server config (overrides defaults.server_config)
   server_config:
-    prefix: agent
     servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: false
+      rest: {}
+      grpc: {}
     healths:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
+      liveness: {}
+      readiness: {}
     metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: false
-    full_shutdown_duration: 600s
-    tls:
-      enabled: false
+      pprof: {}
+      prometheus: {}
   # agent.observability -- observability config (overrides defaults.observability)
   observability:
     jaeger:
@@ -706,25 +686,15 @@ discoverer:
         fieldRef:
           fieldPath: metadata.namespace
   server_config:
-    prefix: discoverer
     servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: false
+      rest: {}
+      grpc: {}
     healths:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
+      liveness: {}
+      readiness: {}
     metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: false
-    full_shutdown_duration: 600s
-    tls:
-      enabled: false
+      pprof: {}
+      prometheus: {}
   observability:
     jaeger:
       service_name: vald-discoverer
@@ -779,25 +749,15 @@ compressor:
       image: busybox
       sleepDuration: 2
   server_config:
-    prefix: manager-compressor
     servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: false
+      rest: {}
+      grpc: {}
     healths:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
+      liveness: {}
+      readiness: {}
     metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: false
-    full_shutdown_duration: 600s
-    tls:
-      enabled: false
+      pprof: {}
+      prometheus: {}
   observability:
     jaeger:
       service_name: vald-manager-compressor
@@ -896,25 +856,15 @@ backupManager:
     #       name: cassandra-secret
     #       key: password
   server_config:
-    prefix: backup-manager
     servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: false
+      rest: {}
+      grpc: {}
     healths:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
+      liveness: {}
+      readiness: {}
     metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: false
-    full_shutdown_duration: 600s
-    tls:
-      enabled: false
+      pprof: {}
+      prometheus: {}
   observability:
     jaeger:
       service_name: vald-manager-backup
@@ -1059,25 +1009,15 @@ indexManager:
         fieldRef:
           fieldPath: metadata.namespace
   server_config:
-    prefix: index-manager
     servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: false
+      rest: {}
+      grpc: {}
     healths:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
+      liveness: {}
+      readiness: {}
     metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: false
-    full_shutdown_duration: 600s
-    tls:
-      enabled: false
+      pprof: {}
+      prometheus: {}
   observability:
     jaeger:
       service_name: vald-manager-index
@@ -1183,25 +1123,15 @@ meta:
     #       name: cassandra-secret
     #       key: password
   server_config:
-    prefix: meta
     servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: false
+      rest: {}
+      grpc: {}
     healths:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
+      liveness: {}
+      readiness: {}
     metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: false
-    full_shutdown_duration: 600s
-    tls:
-      enabled: false
+      pprof: {}
+      prometheus: {}
   observability:
     jaeger:
       service_name: vald-meta
