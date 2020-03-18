@@ -51,6 +51,11 @@ type OutputSpec struct {
 	outputIndex   int
 }
 
+const (
+	TWO_DIM   int8 = 2
+	THREE_DIM int8 = 3
+)
+
 func New(opts ...Option) (TF, error) {
 	t := new(tensorflow)
 	for _, opt := range append(defaultOpts, opts...) {
@@ -109,16 +114,22 @@ func (t *tensorflow) GetVector(inputs ...string) ([]float64, error) {
 	}
 
 	switch t.ndim {
-	case 2:
+	case TWO_DIM:
 		value, ok := tensors[0].Value().([][]float64)
 		if ok {
+			if value == nil {
+				return nil, errors.ErrNilTensorValueTF(value)
+			}
 			return value[0], nil
 		} else {
 			return nil, errors.ErrFailedToCastTF(tensors[0].Value())
 		}
-	case 3:
+	case THREE_DIM:
 		value, ok := tensors[0].Value().([][][]float64)
 		if ok {
+			if value == nil || value[0] == nil {
+				return nil, errors.ErrNilTensorValueTF(value)
+			}
 			return value[0][0], nil
 		} else {
 			return nil, errors.ErrFailedToCastTF(tensors[0].Value())
@@ -138,7 +149,6 @@ func (t *tensorflow) GetValue(inputs ...string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	if tensors == nil || tensors[0] == nil {
 		return nil, errors.ErrNilTensorTF(tensors)
 	}

@@ -27,4 +27,7 @@ var (
 	ErrNilTensorTF = func(v interface{}) error {
 		return Errorf("nil tensorflow tensor %+v", v)
 	}
+	ErrNilTensorValueTF = func(v interface{}) error {
+		return Errorf("nil tensorflow tensor value %+v", v)
+	}
 )
