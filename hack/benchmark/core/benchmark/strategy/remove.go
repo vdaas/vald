@@ -10,7 +10,8 @@ import (
 )
 
 type remove struct {
-	ids []uint
+	ids      []uint
+	preStart PreStart
 }
 
 func NewRemove(opts ...RemoveOption) benchmark.Strategy {
@@ -22,13 +23,19 @@ func NewRemove(opts ...RemoveOption) benchmark.Strategy {
 }
 
 func (r *remove) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, dataset assets.Dataset) {
+	cnt := 0
 	b.Run("Remove", func(bb *testing.B) {
+		r.ids = append(r.ids, r.preStart(ctx, b, ngt, dataset)...)
+
 		bb.StopTimer()
 		bb.ReportAllocs()
 		bb.ResetTimer()
 		bb.StartTimer()
 		for i := 0; i < bb.N; i++ {
-
+			if err := ngt.Remove(r.ids[cnt%len(r.ids)]); err != nil {
+				b.Error(err)
+			}
+			cnt++
 		}
 		bb.StopTimer()
 	})
