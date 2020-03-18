@@ -12,7 +12,7 @@ import (
 type bulkRemove struct {
 	ids       []uint
 	chunkSize int
-	fn        func(context.Context, *testing.B, ngt.NGT, assets.Dataset) []uint
+	fn        PreStart
 }
 
 func NewBulkRemove(opts ...BulkRemoveOption) benchmark.Strategy {
