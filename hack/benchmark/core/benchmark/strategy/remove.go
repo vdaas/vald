@@ -9,7 +9,9 @@ import (
 	"github.com/vdaas/vald/internal/core/ngt"
 )
 
-type remove struct{}
+type remove struct {
+	ids []uint
+}
 
 func NewRemove(opts ...RemoveOption) benchmark.Strategy {
 	r := new(remove)
@@ -21,8 +23,13 @@ func NewRemove(opts ...RemoveOption) benchmark.Strategy {
 
 func (r *remove) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, dataset assets.Dataset) {
 	b.Run("Remove", func(bb *testing.B) {
+		bb.StopTimer()
+		bb.ReportAllocs()
+		bb.ResetTimer()
+		bb.StartTimer()
 		for i := 0; i < bb.N; i++ {
 
 		}
+		bb.StopTimer()
 	})
 }

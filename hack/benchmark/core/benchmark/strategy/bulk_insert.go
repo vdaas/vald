@@ -20,7 +20,7 @@ func NewBulkInsert(opts ...BulkInsertOption) benchmark.Strategy {
 }
 
 func (bi *bulkInsert) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, dataset assets.Dataset) {
-	b.Run("Insert", func(bb *testing.B) {
+	b.Run("BulkInsert", func(bb *testing.B) {
 		train := dataset.Train()
 
 		bb.StopTimer()
@@ -28,8 +28,11 @@ func (bi *bulkInsert) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, datase
 		bb.ResetTimer()
 		bb.StartTimer()
 		for i := 0; i < bb.N; i++ {
-			if _, err := ngt.BulkInsert(train); err != nil {
-				b.Error(err)
+			_, errs := ngt.BulkInsert(train)
+			for _, err := range errs {
+				if err != nil {
+					bb.Error(err)
+				}
 			}
 		}
 		bb.StopTimer()
