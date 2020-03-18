@@ -31,7 +31,7 @@ func (isrt *insert) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, dataset 
 		bb.StartTimer()
 		for i := 0; i < bb.N; i++ {
 			if _, err := ngt.Insert(train[cnt%len(train)]); err != nil {
-				b.Error(err)
+				bb.Error(err)
 			}
 			cnt++
 		}
