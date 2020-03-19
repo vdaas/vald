@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/gongt"
 	"github.com/vdaas/vald/internal/core/ngt"
 )
 
@@ -16,6 +17,7 @@ type Benchmark interface {
 type benchmark struct {
 	name       string
 	ngt        ngt.NGT
+	gongt      gongt.NGT
 	dataset    assets.Dataset
 	strategies []Strategy
 }
@@ -50,7 +52,7 @@ func (bm *benchmark) Run(ctx context.Context, b *testing.B) {
 		b.StartTimer()
 		b.Run(bm.name, func(bb *testing.B) {
 			for _, strategy := range bm.strategies {
-				strategy.Run(ctx, bb, bm.ngt, bm.dataset)
+				strategy.Run(ctx, bb, bm.ngt, bm.gongt, bm.dataset)
 			}
 		})
 		b.StopTimer()
