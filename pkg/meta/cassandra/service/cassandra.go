@@ -194,17 +194,15 @@ func (c *client) GetInverseMultiple(vals ...string) (keys []string, err error) {
 }
 
 func (c *client) Set(key, val string) error {
-	if err := c.db.Query(cassandra.Insert(c.kvTable, uuidColumn, metaColumn).ToCql()).BindMap(map[string]interface{}{
-		uuidColumn: key,
-		metaColumn: val,
-	}).ExecRelease(); err != nil {
-		return err
-	}
-
-	return c.db.Query(cassandra.Insert(c.vkTable, metaColumn, uuidColumn).ToCql()).BindMap(map[string]interface{}{
-		metaColumn: val,
-		uuidColumn: key,
-	}).ExecRelease()
+	return c.db.Query(
+		cassandra.Batch().Add(
+			cassandra.Insert(c.kvTable).Columns(uuidColumn, metaColumn),
+		).Add(
+			cassandra.Insert(c.vkTable).Columns(uuidColumn, metaColumn),
+		).ToCql(),
+	).Bind(
+		[]interface{}{key, val, key, val}...,
+	).ExecRelease()
 }
 
 func (c *client) SetMultiple(kvs map[string]string) (err error) {
