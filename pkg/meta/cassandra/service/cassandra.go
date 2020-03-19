@@ -123,16 +123,15 @@ func (c *client) GetMultiple(keys ...string) (vals []string, err error) {
 
 	vals = make([]string, 0, len(keyvals))
 	for _, key := range keys {
-		if kvs[key] == "" {
-			if err != nil {
-				err = errors.Wrap(err, errors.ErrCassandraNotFound(key).Error())
-			} else {
-				err = errors.ErrCassandraNotFound(key)
-			}
-			vals = append(vals, "")
+		if kvs[key] != "" {
+			vals = append(vals, kvs[key])
 			continue
 		}
-		vals = append(vals, kvs[key])
+		if err != nil {
+			err = errors.Wrap(err, errors.ErrCassandraNotFound(key).Error())
+			continue
+		}
+		err = errors.ErrCassandraNotFound(key)
 	}
 	if err != nil {
 		return nil, err
@@ -173,16 +172,15 @@ func (c *client) GetInverseMultiple(vals ...string) (keys []string, err error) {
 
 	keys = make([]string, 0, len(keyvals))
 	for _, val := range vals {
-		if kvs[val] == "" {
-			if err != nil {
-				err = errors.Wrap(err, errors.ErrCassandraNotFound(val).Error())
-			} else {
-				err = errors.ErrCassandraNotFound(val)
-			}
-			keys = append(keys, "")
+		if kvs[val] != "" {
+			keys = append(keys, kvs[val])
 			continue
 		}
-		keys = append(keys, kvs[val])
+		if err != nil {
+			err = errors.Wrap(err, errors.ErrCassandraNotFound(val).Error())
+			continue
+		}
+		err = errors.ErrCassandraNotFound(val)
 	}
 	if err != nil {
 		return nil, err
