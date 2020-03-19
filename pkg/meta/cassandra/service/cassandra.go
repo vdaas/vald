@@ -30,6 +30,12 @@ const (
 	metaColumn = "meta"
 )
 
+var (
+	uuidColumnSlice = []string{uuidColumn}
+	metaColumnSlice = []string{metaColumn}
+	kvsColumnSlice  = []string{uuidColumn, metaColumn}
+)
+
 type Cassandra interface {
 	Connect(context.Context) error
 	Close(context.Context) error
@@ -84,25 +90,14 @@ func (c *client) Close(ctx context.Context) error {
 	return c.db.Close(ctx)
 }
 
-func wrapErrorWithKeys(err error, keys ...string) error {
-	switch err {
-	case cassandra.ErrNotFound:
-		return errors.ErrCassandraNotFound(keys...)
-	case cassandra.ErrUnavailable:
-		return errors.ErrCassandraUnavailable()
-	default:
-		return err
-	}
-}
-
 func (c *client) Get(key string) (string, error) {
 	var val string
 	if err := c.db.Query(cassandra.Select(c.kvTable,
-		[]string{metaColumn},
+		metaColumnSlice,
 		cassandra.Eq(uuidColumn))).BindMap(map[string]interface{}{
 		uuidColumn: key,
 	}).GetRelease(&val); err != nil {
-		return "", wrapErrorWithKeys(err, key)
+		return "", cassandra.WrapErrorWithKeys(err, key)
 	}
 	return val, nil
 }
@@ -113,11 +108,11 @@ func (c *client) GetMultiple(keys ...string) (vals []string, err error) {
 		Meta string
 	}
 	if err = c.db.Query(cassandra.Select(c.kvTable,
-		[]string{uuidColumn, metaColumn},
+		kvsColumnSlice,
 		cassandra.In(uuidColumn))).BindMap(map[string]interface{}{
 		uuidColumn: keys,
 	}).SelectRelease(&keyvals); err != nil {
-		return nil, wrapErrorWithKeys(err, keys...)
+		return nil, cassandra.WrapErrorWithKeys(err, keys...)
 	}
 
 	kvs := make(map[string]string, len(keyvals))
@@ -147,11 +142,11 @@ func (c *client) GetMultiple(keys ...string) (vals []string, err error) {
 func (c *client) GetInverse(val string) (string, error) {
 	var key string
 	if err := c.db.Query(cassandra.Select(c.vkTable,
-		[]string{uuidColumn},
+		uuidColumnSlice,
 		cassandra.Eq(metaColumn))).BindMap(map[string]interface{}{
 		metaColumn: val,
 	}).GetRelease(&key); err != nil {
-		return "", wrapErrorWithKeys(err, val)
+		return "", cassandra.WrapErrorWithKeys(err, val)
 	}
 	return key, nil
 }
@@ -162,11 +157,11 @@ func (c *client) GetInverseMultiple(vals ...string) (keys []string, err error) {
 		Meta string
 	}
 	if err = c.db.Query(cassandra.Select(c.vkTable,
-		[]string{uuidColumn, metaColumn},
+		kvsColumnSlice,
 		cassandra.In(metaColumn))).BindMap(map[string]interface{}{
 		metaColumn: vals,
 	}).SelectRelease(&keyvals); err != nil {
-		return nil, wrapErrorWithKeys(err, vals...)
+		return nil, cassandra.WrapErrorWithKeys(err, vals...)
 	}
 
 	kvs := make(map[string]string, len(keyvals))

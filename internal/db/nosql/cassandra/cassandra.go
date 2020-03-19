@@ -232,6 +232,10 @@ func (c *client) Close(ctx context.Context) error {
 	return nil
 }
 
+func (c *client) Query(stmt string, names []string) *Queryx {
+	return gocqlx.Query(c.session.Query(stmt), names)
+}
+
 func Select(table string, columns []string, cmps ...Cmp) (stmt string, names []string) {
 	sb := qb.Select(table).Columns(columns...)
 	for _, cmp := range cmps {
@@ -272,6 +276,35 @@ func Contains(column string) Cmp {
 	return qb.Contains(column)
 }
 
-func (c *client) Query(stmt string, names []string) *Queryx {
-	return gocqlx.Query(c.session.Query(stmt), names)
+func WrapErrorWithKeys(err error, keys ...string) error {
+	switch err {
+	case ErrNotFound:
+		return errors.ErrCassandraNotFound(keys...)
+	case ErrUnavailable:
+		return errors.ErrCassandraUnavailable()
+	case ErrUnsupported:
+		return err
+	case ErrTooManyStmts:
+		return err
+	case ErrUseStmt:
+		return err
+	case ErrSessionClosed:
+		return err
+	case ErrNoConnections:
+		return err
+	case ErrNoKeyspace:
+		return err
+	case ErrKeyspaceDoesNotExist:
+		return err
+	case ErrNoMetadata:
+		return err
+	case ErrNoHosts:
+		return err
+	case ErrNoConnectionsStarted:
+		return err
+	case ErrHostQueryFailed:
+		return err
+	default:
+		return err
+	}
 }
