@@ -102,6 +102,7 @@ func (c *client) Get(key string) (string, error) {
 	return val, nil
 }
 
+// nolint:dupl
 func (c *client) GetMultiple(keys ...string) (vals []string, err error) {
 	var keyvals []struct {
 		UUID string
@@ -151,6 +152,7 @@ func (c *client) GetInverse(val string) (string, error) {
 	return key, nil
 }
 
+// nolint:dupl
 func (c *client) GetInverseMultiple(vals ...string) (keys []string, err error) {
 	var keyvals []struct {
 		UUID string
@@ -205,7 +207,7 @@ func (c *client) SetMultiple(kvs map[string]string) (err error) {
 	vki := cassandra.Insert(c.vkTable).Columns(uuidColumn, metaColumn)
 
 	bt := cassandra.Batch()
-	entities := make([]interface{}, 0, len(kvs)*4)
+	entities := make([]interface{}, 0, len(kvs)*4) // nolint:gomnd // 4 means pairs of key-val and key-val
 	for key, val := range kvs {
 		bt = bt.Add(kvi).Add(vki)
 		entities = append(entities, key, val, key, val)
@@ -223,7 +225,7 @@ func (c *client) deleteByKeys(keys ...string) ([]string, error) {
 	vkd := cassandra.Delete(c.vkTable).Where(cassandra.Eq(metaColumn))
 
 	bt := cassandra.Batch()
-	uuids := make([]interface{}, 0, len(keys)*2)
+	uuids := make([]interface{}, 0, len(keys)*2) // nolint:gomnd // 2 means key-val pair
 	for i, key := range keys {
 		bt = bt.Add(kvd).Add(vkd)
 		uuids = append(uuids, key, vals[i])
