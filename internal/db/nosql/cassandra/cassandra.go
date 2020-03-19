@@ -28,11 +28,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-const (
-	uuidColumn = "uuid"
-	metaColumn = "meta"
-)
-
 var (
 	ErrNotFound             = gocql.ErrNotFound
 	ErrUnavailable          = gocql.ErrUnavailable
