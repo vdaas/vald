@@ -20,6 +20,32 @@ Run the following command to install the chart,
 Configuration
 ---
 
+### Overview
+
+`values.yaml` is composed of the following sections:
+
+- `defaults`
+    - default configurations of common parts
+    - be overridden by the fields in each components' configurations
+- `gateway`
+    - configurations of vald-gateway
+- `agent`
+    - configurations of vald-agent
+- `discoverer`
+    - configurations of vald-discoverer
+- `compressor`
+    - configurations of vald-manager-compressor
+- `backupManager`
+    - configurations of vald-manager-backup
+- `indexManager`
+    - configurations of vald-manager-index
+- `meta`
+    - configurations of vald-meta
+- `initializer`
+    - configurations of MySQL, Cassandra and Redis initializer jobs
+
+### Parameters
+
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | agent.annotations | list | `nil` | deployment annotations |
