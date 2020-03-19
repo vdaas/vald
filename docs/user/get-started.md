@@ -52,14 +52,12 @@ Fashion-mnist is used as an example of a dataset.
 Helm and hdf5 is required for this tutorial. If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install)) and [hdf5](https://www.hdfgroup.org/)).
 
 <details><summary>[Optional] Install helm</summary><br>
-install helm
-
 ```bash
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 ```
 </details>
+
 <details><summary>[Optional] Install hdf5</summary><br>
-install hdf5
 ```bash
 ## yum
 yum install -y hdf5-devel
@@ -76,7 +74,7 @@ brew install hdf5
 
 ### Deploy
 
-This section shows how to deploy Vald with Scylla, which is used as a datastore for index-metadata and backup-manager.
+This section shows how to deploy Vald with Scylla using Helm. Scylla is used as a datastore for index-metadata and backup-manager.
 If you want to learn about Scylla, please refer to [the official website](https://www.scylladb.com/).
 
 1. Confirm which cluster to deploy
