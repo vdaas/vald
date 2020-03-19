@@ -37,7 +37,7 @@ spec:
       labels:
         app: vald-manager-compressor
       annotations:
-        checksum/configmap: 15c00996a4198b0521fe2898eceffe499bf5e1f35be122ab1bd794848437c7c2
+        checksum/configmap: 48a8953d4df16ecb499485762584062e7ae3b1a387656fc1dd41abf8e69d6f62
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-compressor
@@ -100,7 +100,6 @@ spec:
               memory: 50Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-          env: null
           volumeMounts:
             - name: vald-manager-compressor-config
               mountPath: /etc/server/
