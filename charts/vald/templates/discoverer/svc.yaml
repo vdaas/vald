@@ -17,9 +17,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Values.discoverer.name }}
-  {{- if .Values.discoverer.service }}
+  {{- if .Values.discoverer.service.annotations }}
   annotations:
     {{- toYaml .Values.discoverer.service.annotations | nindent 4 }}
+  {{- end }}
+  {{- if .Values.discoverer.service.labels }}
   labels:
     {{- toYaml .Values.discoverer.service.labels | nindent 4 }}
   {{- end }}

@@ -43,6 +43,7 @@ TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION)
 DOCKFMT_VERSION      ?= v0.3.3
 KIND_VERSION         ?= v0.7.0
 HELM_VERSION         ?= v3.1.2
+HELM_DOCS_VERSION    ?= 0.9.0
 VALDCLI_VERSION      ?= v0.0.1
 TELEPRESENCE_VERSION ?= 0.104
 
@@ -296,6 +297,7 @@ readme/update/contributors:
 include Makefile.d/bench.mk
 include Makefile.d/docker.mk
 include Makefile.d/git.mk
+include Makefile.d/helm.mk
 include Makefile.d/proto.mk
 include Makefile.d/k8s.mk
 include Makefile.d/kind.mk

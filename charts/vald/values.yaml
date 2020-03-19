@@ -15,242 +15,434 @@
 #
 
 defaults:
+  # defaults.time_zone -- Time zone
   time_zone: UTC
   logging:
+    # defaults.logging.logger -- logger name
     logger: glg
+    # defaults.logging.level -- logging level
     level: debug
+    # defaults.logging.format -- logging format
     format: raw
   image:
+    # defaults.image.tag -- image tag
     tag: v0.0.25
   server_config:
     servers:
       rest:
+        # defaults.server_config.servers.rest.enabled -- REST server enabled
         enabled: false
+        # defaults.server_config.servers.rest.host -- REST server host
         host: 0.0.0.0
+        # defaults.server_config.servers.rest.port -- REST server port
         port: 8080
+        # defaults.server_config.servers.rest.servicePort -- REST server service port
         servicePort: 8080
         server:
+          # defaults.server_config.servers.rest.server.mode -- REST server server mode
           mode: REST
+          # defaults.server_config.servers.rest.server.probe_wait_time -- REST server probe wait time
           probe_wait_time: 3s
           http:
+            # defaults.server_config.servers.rest.server.http.shutdown_duration -- REST server shutdown duration
             shutdown_duration: 5s
+            # defaults.server_config.servers.rest.server.http.handler_timeout -- REST server handler timeout
             handler_timeout: 5s
+            # defaults.server_config.servers.rest.server.http.idle_timeout -- REST server idle timeout
             idle_timeout: 2s
+            # defaults.server_config.servers.rest.server.http.read_header_timeout -- REST server read header timeout
             read_header_timeout: 1s
+            # defaults.server_config.servers.rest.server.http.read_timeout -- REST server read timeout
             read_timeout: 1s
+            # defaults.server_config.servers.rest.server.http.write_timeout -- REST server write timeout
             write_timeout: 1s
       grpc:
+        # defaults.server_config.servers.grpc.enabled -- gRPC server enabled
         enabled: true
+        # defaults.server_config.servers.grpc.host -- gRPC server host
         host: 0.0.0.0
+        # defaults.server_config.servers.grpc.port -- gRPC server port
         port: 8081
+        # defaults.server_config.servers.grpc.servicePort -- gRPC server service port
         servicePort: 8081
         server:
+          # defaults.server_config.servers.grpc.server.mode -- gRPC server server mode
           mode: GRPC
+          # defaults.server_config.servers.grpc.server.probe_wait_time -- gRPC server probe wait time
           probe_wait_time: "3s"
           grpc:
+            # defaults.server_config.servers.grpc.server.grpc.bidirectional_stream_concurrency -- gRPC server bidirectional stream concurrency
             bidirectional_stream_concurrency: 20
+            # defaults.server_config.servers.grpc.server.grpc.max_receive_message_size -- gRPC server max receive message size
             max_receive_message_size: 0
+            # defaults.server_config.servers.grpc.server.grpc.max_send_message_size -- gRPC server max send message size
             max_send_message_size: 0
+            # defaults.server_config.servers.grpc.server.grpc.initial_window_size -- gRPC server initial window size
             initial_window_size: 0
+            # defaults.server_config.servers.grpc.server.grpc.initial_conn_window_size -- gRPC server initial connection window size
             initial_conn_window_size: 0
             keepalive:
+              # defaults.server_config.servers.grpc.server.grpc.keepalive.max_conn_idle -- gRPC server keep alive max connection idle
               max_conn_idle: ""
+              # defaults.server_config.servers.grpc.server.grpc.keepalive.max_conn_age -- gRPC server keep alive max connection age
               max_conn_age: ""
+              # defaults.server_config.servers.grpc.server.grpc.keepalive.max_conn_age_grace -- gRPC server keep alive max connection age grace
               max_conn_age_grace: ""
+              # defaults.server_config.servers.grpc.server.grpc.keepalive.time -- gRPC server keep alive time
               time: ""
+              # defaults.server_config.servers.grpc.server.grpc.keepalive.timeout -- gRPC server keep alive timeout
               timeout: ""
+            # defaults.server_config.servers.grpc.server.grpc.write_buffer_size -- gRPC server write buffer size
             write_buffer_size: 0
+            # defaults.server_config.servers.grpc.server.grpc.read_buffer_size -- gRPC server read buffer size
             read_buffer_size: 0
+            # defaults.server_config.servers.grpc.server.grpc.connection_timeout -- gRPC server connection timeout
             connection_timeout: ""
+            # defaults.server_config.servers.grpc.server.grpc.max_header_list_size -- gRPC server max header list size
             max_header_list_size: 0
+            # defaults.server_config.servers.grpc.server.grpc.header_table_size -- gRPC server header table size
             header_table_size: 0
+            # defaults.server_config.servers.grpc.server.grpc.interceptors -- gRPC server interceptors
             interceptors: []
+          # defaults.server_config.servers.grpc.server.restart -- gRPC server restart
           restart: true
     healths:
       liveness:
+        # defaults.server_config.healths.liveness.enabled -- liveness server enabled
         enabled: true
+        # defaults.server_config.healths.liveness.host -- liveness server host
         host: 0.0.0.0
+        # defaults.server_config.healths.liveness.port -- liveness server port
         port: 3000
+        # defaults.server_config.healths.liveness.servicePort -- liveness server service port
         servicePort: 3000
         livenessProbe:
           httpGet:
+            # defaults.server_config.healths.liveness.livenessProbe.httpGet.path -- liveness probe path
             path: /liveness
+            # defaults.server_config.healths.liveness.livenessProbe.httpGet.port -- liveness probe port
             port: liveness
+            # defaults.server_config.healths.liveness.livenessProbe.httpGet.scheme -- liveness probe scheme
             scheme: HTTP
+          # defaults.server_config.healths.liveness.livenessProbe.initialDelaySeconds -- liveness probe initial delay seconds
           initialDelaySeconds: 5
+          # defaults.server_config.healths.liveness.livenessProbe.timeoutSeconds -- liveness probe timeout seconds
           timeoutSeconds: 2
+          # defaults.server_config.healths.liveness.livenessProbe.successThreshold -- liveness probe success threshold
           successThreshold: 1
+          # defaults.server_config.healths.liveness.livenessProbe.failureThreshold -- liveness probe failure threshold
           failureThreshold: 2
+          # defaults.server_config.healths.liveness.livenessProbe.periodSeconds -- liveness probe period seconds
           periodSeconds: 3
         server:
+          # defaults.server_config.healths.liveness.server.mode -- liveness server mode
           mode: ""
+          # defaults.server_config.healths.liveness.server.probe_wait_time -- liveness server probe wait time
           probe_wait_time: "3s"
           http:
+            # defaults.server_config.healths.liveness.server.http.shutdown_duration -- liveness server shutdown duration
             shutdown_duration: "5s"
+            # defaults.server_config.healths.liveness.server.http.handler_timeout -- liveness server handler timeout
             handler_timeout: ""
+            # defaults.server_config.healths.liveness.server.http.idle_timeout -- liveness server idle timeout
             idle_timeout: ""
+            # defaults.server_config.healths.liveness.server.http.read_header_timeout -- liveness server read header timeout
             read_header_timeout: ""
+            # defaults.server_config.healths.liveness.server.http.read_timeout -- liveness server read timeout
             read_timeout: ""
+            # defaults.server_config.healths.liveness.server.http.write_timeout -- liveness server write timeout
             write_timeout: ""
       readiness:
+        # defaults.server_config.healths.readiness.enabled -- readiness server enabled
         enabled: true
+        # defaults.server_config.healths.readiness.host -- readiness server host
         host: 0.0.0.0
+        # defaults.server_config.healths.readiness.port -- readiness server port
         port: 3001
+        # defaults.server_config.healths.readiness.servicePort -- readiness server service port
         servicePort: 3001
         readinessProbe:
           httpGet:
+            # defaults.server_config.healths.readiness.readinessProbe.httpGet.path -- readiness probe path
             path: /readiness
+            # defaults.server_config.healths.readiness.readinessProbe.httpGet.port -- readiness probe port
             port: readiness
+            # defaults.server_config.healths.readiness.readinessProbe.httpGet.scheme -- readiness probe scheme
             scheme: HTTP
+          # defaults.server_config.healths.readiness.readinessProbe.initialDelaySeconds -- readiness probe initial delay seconds
           initialDelaySeconds: 10
+          # defaults.server_config.healths.readiness.readinessProbe.timeoutSeconds -- readiness probe timeout seconds
           timeoutSeconds: 2
+          # defaults.server_config.healths.readiness.readinessProbe.successThreshold -- readiness probe success threshold
           successThreshold: 1
+          # defaults.server_config.healths.readiness.readinessProbe.failureThreshold -- readiness probe failure threshold
           failureThreshold: 2
+          # defaults.server_config.healths.readiness.readinessProbe.periodSeconds -- readiness probe period seconds
           periodSeconds: 3
         server:
+          # defaults.server_config.healths.readiness.server.mode -- readiness server mode
           mode: ""
+          # defaults.server_config.healths.readiness.server.probe_wait_time -- readiness server probe wait time
           probe_wait_time: "3s"
           http:
+            # defaults.server_config.healths.readiness.server.http.shutdown_duration -- readiness server shutdown duration
             shutdown_duration: "5s"
+            # defaults.server_config.healths.readiness.server.http.handler_timeout -- readiness server handler timeout
             handler_timeout: ""
+            # defaults.server_config.healths.readiness.server.http.idle_timeout -- readiness server idle timeout
             idle_timeout: ""
+            # defaults.server_config.healths.readiness.server.http.read_header_timeout -- readiness server read header timeout
             read_header_timeout: ""
+            # defaults.server_config.healths.readiness.server.http.read_timeout -- readiness server read timeout
             read_timeout: ""
+            # defaults.server_config.healths.readiness.server.http.write_timeout -- readiness server write timeout
             write_timeout: ""
     metrics:
       pprof:
+        # defaults.server_config.metrics.pprof.enabled -- pprof server enabled
         enabled: false
+        # defaults.server_config.metrics.pprof.host -- pprof server host
         host: 0.0.0.0
+        # defaults.server_config.metrics.pprof.port -- pprof server port
         port: 6060
+        # defaults.server_config.metrics.pprof.servicePort -- pprof server service port
         servicePort: 6060
         server:
+          # defaults.server_config.metrics.pprof.server.mode -- pprof server mode
           mode: REST
+          # defaults.server_config.metrics.pprof.server.probe_wait_time -- pprof server probe wait time
           probe_wait_time: 3s
           http:
+            # defaults.server_config.metrics.pprof.server.http.shutdown_duration -- pprof server shutdown duration
             shutdown_duration: 5s
+            # defaults.server_config.metrics.pprof.server.http.handler_timeout -- pprof server handler timeout
             handler_timeout: 5s
+            # defaults.server_config.metrics.pprof.server.http.idle_timeout -- pprof server idle timeout
             idle_timeout: 2s
+            # defaults.server_config.metrics.pprof.server.http.read_header_timeout -- pprof server read header timeout
             read_header_timeout: 1s
+            # defaults.server_config.metrics.pprof.server.http.read_timeout -- pprof server read timeout
             read_timeout: 1s
+            # defaults.server_config.metrics.pprof.server.http.write_timeout -- pprof server write timeout
             write_timeout: 1s
       prometheus:
+        # defaults.server_config.metrics.prometheus.enabled -- prometheus server enabled
         enabled: false
+        # defaults.server_config.metrics.prometheus.host -- prometheus server host
         host: 0.0.0.0
+        # defaults.server_config.metrics.prometheus.port -- prometheus server port
         port: 6061
+        # defaults.server_config.metrics.prometheus.servicePort -- prometheus server service port
         servicePort: 6061
         server:
+          # defaults.server_config.metrics.prometheus.server.mode -- prometheus server mode
           mode: REST
+          # defaults.server_config.metrics.prometheus.server.probe_wait_time -- prometheus server probe wait time
           probe_wait_time: 3s
           http:
+            # defaults.server_config.metrics.prometheus.server.http.shutdown_duration -- prometheus server shutdown duration
             shutdown_duration: 5s
+            # defaults.server_config.metrics.prometheus.server.http.handler_timeout -- prometheus server handler timeout
             handler_timeout: 5s
+            # defaults.server_config.metrics.prometheus.server.http.idle_timeout -- prometheus server idle timeout
             idle_timeout: 2s
+            # defaults.server_config.metrics.prometheus.server.http.read_header_timeout -- prometheus server read header timeout
             read_header_timeout: 1s
+            # defaults.server_config.metrics.prometheus.server.http.read_timeout -- prometheus server read timeout
             read_timeout: 1s
+            # defaults.server_config.metrics.prometheus.server.http.write_timeout -- prometheus server write timeout
             write_timeout: 1s
+    # defaults.server_config.full_shutdown_duration -- server full shutdown duration
     full_shutdown_duration: 600s
     tls:
+      # defaults.server_config.tls.enabled -- TLS enabled
       enabled: false
+      # defaults.server_config.tls.cert -- TLS cert path
       cert: /path/to/cert
+      # defaults.server_config.tls.key -- TLS key path
       key: /path/to/key
+      # defaults.server_config.tls.ca -- TLS ca path
       ca: /path/to/ca
   grpc:
     client:
+      # defaults.grpc.client.addrs -- gRPC client addresses
       addrs: []
+      # defaults.grpc.client.connection_pool -- number of gRPC client connection pool
       connection_pool: 3
+      # defaults.grpc.client.health_check_duration -- gRPC client health check duration
       health_check_duration: "1s"
       backoff:
+        # defaults.grpc.client.backoff.initial_duration -- gRPC client backoff initial duration
         initial_duration: 5ms
+        # defaults.grpc.client.backoff.backoff_time_limit -- gRPC client backoff time limit
         backoff_time_limit: 5s
+        # defaults.grpc.client.backoff.maximum_duration -- gRPC client backoff maximum duration
         maximum_duration: 5s
+        # defaults.grpc.client.backoff.jitter_limit -- gRPC client backoff jitter limit
         jitter_limit: 100ms
+        # defaults.grpc.client.backoff.backoff_factor -- gRPC client backoff factor
         backoff_factor: 1.1
+        # defaults.grpc.client.backoff.retry_count -- gRPC client backoff retry count
         retry_count: 100
+        # defaults.grpc.client.backoff.enable_error_log -- gRPC client backoff log enabled
         enable_error_log: true
       call_option:
+        # defaults.grpc.client.call_option.wait_for_ready -- gRPC client call option wait for ready
         wait_for_ready: true
+        # defaults.grpc.client.call_option.max_retry_rpc_buffer_size -- gRPC client call option max retry rpc buffer size
         max_retry_rpc_buffer_size: 0
+        # defaults.grpc.client.call_option.max_recv_msg_size -- gRPC client call option max receive message size
         max_recv_msg_size: 0
+        # defaults.grpc.client.call_option.max_send_msg_size -- gRPC client call option max send message size
         max_send_msg_size: 0
       dial_option:
+        # defaults.grpc.client.dial_option.write_buffer_size -- gRPC client dial option write buffer size
         write_buffer_size: 0
+        # defaults.grpc.client.dial_option.read_buffer_size -- gRPC client dial option read buffer size
         read_buffer_size: 0
+        # defaults.grpc.client.dial_option.initial_window_size -- gRPC client dial option initial window size
         initial_window_size: 0
+        # defaults.grpc.client.dial_option.initial_connection_window_size -- gRPC client dial option initial connection window size
         initial_connection_window_size: 0
+        # defaults.grpc.client.dial_option.max_msg_size -- gRPC client dial option max message size
         max_msg_size: 0
+        # defaults.grpc.client.dial_option.max_backoff_delay -- gRPC client dial option max backoff delay
         max_backoff_delay: ""
+        # defaults.grpc.client.dial_option.enable_backoff -- gRPC client dial option backoff enabled
         enable_backoff: false
+        # defaults.grpc.client.dial_option.insecure -- gRPC client dial option insecure enabled
         insecure: true
+        # defaults.grpc.client.dial_option.timeout -- gRPC client dial option timeout
         timeout: ""
         tcp:
           dns:
+            # defaults.grpc.client.dial_option.tcp.dns.cache_enabled -- gRPC client TCP DNS cache enabled
             cache_enabled: true
+            # defaults.grpc.client.dial_option.tcp.dns.refresh_duration -- gRPC client TCP DNS cache refresh duration
             refresh_duration: 30m
+            # defaults.grpc.client.dial_option.tcp.dns.cache_expiration -- gRPC client TCP DNS cache expiration
             cache_expiration: 1h
           dialer:
+            # defaults.grpc.client.dial_option.tcp.dialer.timeout -- gRPC client TCP dialer timeout
             timeout: ""
+            # defaults.grpc.client.dial_option.tcp.dialer.keep_alive -- gRPC client TCP dialer keep alive
             keep_alive: ""
+            # defaults.grpc.client.dial_option.tcp.dialer.dual_stack_enabled -- gRPC client TCP dialer dual stack enabled
             dual_stack_enabled: true
           tls:
+            # defaults.grpc.client.dial_option.tcp.tls.enabled -- gRPC client TCP TLS enabled
             enabled: false
+            # defaults.grpc.client.dial_option.tcp.tls.cert -- gRPC client TCP TLS cert path
             cert: /path/to/cert
+            # defaults.grpc.client.dial_option.tcp.tls.key -- gRPC client TCP TLS key path
             key: /path/to/key
+            # defaults.grpc.client.dial_option.tcp.tls.ca -- gRPC client TCP TLS ca path
             ca: /path/to/ca
         keep_alive:
+          # defaults.grpc.client.dial_option.keep_alive.time -- gRPC client keep alive time
           time: ""
+          # defaults.grpc.client.dial_option.keep_alive.timeout -- gRPC client keep alive timeout
           timeout: ""
+          # defaults.grpc.client.dial_option.keep_alive.permit_without_stream -- gRPC client keep alive permit without stream
           permit_without_stream: false
       tls:
+        # defaults.grpc.client.tls.enabled -- gRPC client TLS enabled
         enabled: false
+        # defaults.grpc.client.tls.cert -- gRPC client TLS cert path
         cert: /path/to/cert
+        # defaults.grpc.client.tls.key -- gRPC client TLS key path
         key: /path/to/key
+        # defaults.grpc.client.tls.ca -- gRPC client TLS ca path
         ca: /path/to/ca
   observability:
+    # defaults.observability.enabled -- observability enabled
     enabled: false
     collector:
+      # defaults.observability.collector.duration -- observability collector collect duration
       duration: 5s
       metrics:
+        # defaults.observability.collector.metrics.enable_version_info -- observability collector version info enabled
         enable_version_info: true
+        # defaults.observability.collector.metrics.enable_memory -- observability collector memory metrics enabled
         enable_memory: true
+        # defaults.observability.collector.metrics.enable_goroutine -- observability collector goroutine metrics enabled
         enable_goroutine: true
+        # defaults.observability.collector.metrics.enable_cgo -- observability collector cgo metrics enabled
         enable_cgo: true
     trace:
+      # defaults.observability.trace.enabled -- trace enabled
       enabled: false
+      # defaults.observability.trace.sampling_rate -- trace sampling rate
       sampling_rate: 1.0
     prometheus:
+      # defaults.observability.prometheus.enabled -- Prometheus exporter enabled
       enabled: false
     jaeger:
+      # defaults.observability.jaeger.enabled -- Jaeger exporter enabled
       enabled: false
+      # defaults.observability.jaeger.collector_endpoint -- Jaeger collector endpoint
       collector_endpoint: "" # http://jaeger-collector.default.svc.cluster.local:14268/api/traces
+      # defaults.observability.jaeger.agent_endpoint -- Jaeger agent endpoint
       agent_endpoint: jaeger-agent.default.svc.cluster.local:6831
+      # defaults.observability.jaeger.username -- Jaeger username
       username: ""
+      # defaults.observability.jaeger.password -- Jaeger password
       password: ""
+      # defaults.observability.jaeger.service_name -- Jaeger service name
       service_name: vald
+      # defaults.observability.jaeger.buffer_max_count -- Jaeger buffer max count
       buffer_max_count: 10
 
 gateway:
+  # gateway.version -- version of gateway config
   version: v0.0.0
+  # gateway.name -- name of gateway deployment
   name: vald-gateway
+  # gateway.kind -- deployment kind: Deployment or DaemonSet
   kind: Deployment
-  # kind: DaemonSet
+  # gateway.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # externalTrafficPolicy: Cluster
+  # gateway.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: null
+  # gateway.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
+  # gateway.minReplicas -- minimum number of replicas
   minReplicas: 3
+  # gateway.maxReplicas -- maximum number of replicas
   maxReplicas: 9
+  # gateway.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
+  # gateway.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
+  # gateway.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  # gateway.annotations -- (list) deployment annotations
+  annotations: null
+  # gateway.podAnnotations -- (list) pod annotations
+  podAnnotations: null
+  service:
+    # gateway.service.annotations -- (list) service annotations
+    annotations: null
+    # gateway.service.labels -- (list) service labels
+    labels: null
   hpa:
+    # gateway.hpa.enabled -- HPA enabled
     enabled: true
+    # gateway.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
     targetCPUUtilizationPercentage: 80
   image:
+    # gateway.image.repository -- image repository
     repository: vdaas/vald-gateway
-    # tag: nightly
+    # gateway.image.tag -- (string) image tag (overrides defaults.image.tag)
+    tag: null
+    # gateway.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
+    # gateway.rollingUpdate.maxSurge -- max surge of rolling update
     maxSurge: 25%
+    # gateway.rollingUpdate.maxUnavailable -- max unavailable of rolling update
     maxUnavailable: 25%
+  # gateway.initContainers -- init containers
   initContainers:
     - type: wait-for
       name: wait-for-manager-compressor
@@ -272,6 +464,7 @@ gateway:
       target: agent
       image: busybox
       sleepDuration: 2
+  # gateway.env -- environment variables
   env:
     # - name: MY_NODE_NAME
     #   valueFrom:
@@ -281,39 +474,45 @@ gateway:
       valueFrom:
         fieldRef:
           fieldPath: metadata.namespace
+  # gateway.volumeMounts -- (list) volume mounts
+  volumeMounts: null
+  # gateway.volumes -- (list) volumes
+  volumes: null
+  # gateway.nodeName -- (string) node name
+  nodeName: null
+  # gateway.nodeSelector -- (object) node selector
+  nodeSelector: null
+  # gateway.server_config -- server config (overrides defaults.server_config)
   server_config:
-    prefix: gateway
     servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: false
+      rest: {}
+      grpc: {}
     healths:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
+      liveness: {}
+      readiness: {}
     metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: false
-    full_shutdown_duration: 600s
-    tls:
-      enabled: false
+      pprof: {}
+      prometheus: {}
+  # gateway.observability -- observability config (overrides defaults.observability)
   observability:
     jaeger:
       service_name: vald-gateway
   filter:
+    # gateway.filter.egress -- egress filters
     egress:
       - ""
+    # gateway.filter.ingress -- ingress filters
     ingress:
       - ""
   ingress:
+    # gateway.ingress.annotations -- annotations for ingress
     annotations:
       nginx.ingress.kubernetes.io/grpc-backend: "true"
+    # gateway.ingress.host -- ingress hostname
     host: vald.gateway.vdaas.org
+    # gateway.ingress.servicePort -- service port to be exposed by ingress
     servicePort: grpc
+  # gateway.resources -- compute resources
   resources:
     requests:
       cpu: 200m
@@ -322,138 +521,222 @@ gateway:
       cpu: 2000m
       memory: 700Mi
   gateway_config:
+    # gateway.gateway_config.agent_namespace -- agent namespace
     agent_namespace: _MY_POD_NAMESPACE_
+    # gateway.gateway_config.node_name -- node name
     node_name: "" # _MY_NODE_NAME_
+    # gateway.gateway_config.index_replica -- number of index replica
     index_replica: 5
     discoverer:
+      # gateway.gateway_config.discoverer.duration -- discoverer duration
       duration: 200ms
+      # gateway.gateway_config.discoverer.discover_client -- gRPC client for discoverer (overrides defaults.grpc.client)
       discover_client: {}
+      # gateway.gateway_config.discoverer.agent_client -- gRPC client for agents (overrides defaults.grpc.client)
       agent_client: {}
     meta:
+      # gateway.gateway_config.meta.client -- gRPC client for meta (overrides defaults.grpc.client)
       client: {}
+      # gateway.gateway_config.meta.enable_cache -- meta cache enabled
       enable_cache: true
+      # gateway.gateway_config.meta.cache_expiration -- meta cache expire duration
       cache_expiration: "30m"
+      # gateway.gateway_config.meta.expired_cache_check_duration -- meta cache expired check duration
       expired_cache_check_duration: "3m"
     backup:
+      # gateway.gateway_config.backup.client -- gRPC client for backup (overrides defaults.grpc.client)
       client: {}
 
 agent:
+  # agent.version -- version of agent config
   version: v0.0.0
+  # agent.name -- name of agent deployment
   name: vald-agent-ngt
+  # agent.kind -- deployment kind: Deployment, DaemonSet or StatefulSet
   kind: StatefulSet
-  # kind: DaemonSet
-  # kind: Deployment
+  # agent.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # externalTrafficPolicy: Cluster
+  # agent.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: null
+  # agent.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
+  # agent.minReplicas -- minimum number of replicas
   minReplicas: 20
+  # agent.maxReplicas -- maximum number of replicas
   maxReplicas: 300
+  # agent.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 1
+  # agent.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
+  # agent.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  # agent.podManagementPolicy -- pod management policy: OrderedReady or Parallel
   podManagementPolicy: OrderedReady
   podPriority:
+    # agent.podPriority.enabled -- agent pod PriorityClass enabled
     enabled: true
+    # agent.podPriority.value -- agent pod PriorityClass value
     value: 1000000000
+  # agent.annotations -- (list) deployment annotations
+  annotations: null
+  # agent.podAnnotations -- (list) pod annotations
+  podAnnotations: null
+  service:
+    # agent.service.annotations -- (list) service annotations
+    annotations: null
+    # agent.service.labels -- (list) service labels
+    labels: null
   hpa:
+    # agent.hpa.enabled -- HPA enabled
     enabled: false
+    # agent.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
     targetCPUUtilizationPercentage: 80
   image:
+    # agent.image.repository -- image repository
     repository: vdaas/vald-agent-ngt
-    # tag: nightly
+    # agent.image.tag -- (string) image tag (overrides defaults.image.tag)
+    tag: null
+    # agent.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
+    # agent.rollingUpdate.maxSurge -- max surge of rolling update
     maxSurge: 25%
+    # agent.rollingUpdate.maxUnavailable -- max unavailable of rolling update
     maxUnavailable: 25%
+    # agent.rollingUpdate.partition -- StatefulSet partition
     partition: 0
+  # agent.initContainers -- (list) init containers
+  initContainers: null
+  # agent.env -- (list) environment variables
+  env: null
+  # agent.volumeMounts -- (list) volume mounts
+  volumeMounts: null
+  # agent.volumes -- (list) volumes
+  volumes: null
+  # agent.nodeName -- (string) node name
+  nodeName: null
+  # agent.nodeSelector -- (object) node selector
+  nodeSelector: null
+  # agent.server_config -- server config (overrides defaults.server_config)
   server_config:
-    prefix: agent
     servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: false
+      rest: {}
+      grpc: {}
     healths:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
+      liveness: {}
+      readiness: {}
     metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: false
-    full_shutdown_duration: 600s
-    tls:
-      enabled: false
+      pprof: {}
+      prometheus: {}
+  # agent.observability -- observability config (overrides defaults.observability)
   observability:
     jaeger:
       service_name: vald-agent-ngt
+  # agent.resources -- compute resources
   resources:
     requests:
       cpu: 300m
       memory: 4Gi # = cluster memory * 0.4 / number of agent pods
   ngt:
-    # index_path: /path/to/index
+    # agent.ngt.index_path -- (string) path to index data
+    index_path: null
+    # agent.ngt.auto_index_limit -- limit duration of automatic indexing
     auto_index_limit: 24h
+    # agent.ngt.auto_index_check_duration -- check duration of automatic indexing
     auto_index_check_duration: 30m
+    # agent.ngt.auto_index_length -- number of cache to trigger automatic indexing
     auto_index_length: 100
+    # agent.ngt.dimension -- dimension
     dimension: 4096
+    # agent.ngt.bulk_insert_chunk_size -- bulk insert chunk size
     bulk_insert_chunk_size: 10
+    # agent.ngt.distance_type -- distance type: l1, l2, angle, hamming, cosine, normalizedangle or normalizedcosine
     distance_type: l2
+    # agent.ngt.object_type -- object type: float or uint8
     object_type: float
+    # agent.ngt.creation_edge_size -- creation edge size
     creation_edge_size: 20
+    # agent.ngt.search_edge_size -- search edge size
     search_edge_size: 10
+    # agent.ngt.enable_in_memory_mode -- in-memory mode enabled
     enable_in_memory_mode: true
 
 discoverer:
+  # discoverer.version -- version of discoverer config
   version: v0.0.0
+  # discoverer.name -- name of discoverer deployment
   name: vald-discoverer
+  # discoverer.kind -- deployment kind: Deployment or DaemonSet
   kind: Deployment
-  # kind: DaemonSet
+  # discoverer.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # externalTrafficPolicy: Cluster
+  # discoverer.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: null
+  # discoverer.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
+  # discoverer.minReplicas -- minimum number of replicas
   minReplicas: 1
+  # discoverer.maxReplicas -- maximum number of replicas
   maxReplicas: 2
+  # discoverer.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
+  # discoverer.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
+  # discoverer.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  # discoverer.annotations -- (list) deployment annotations
+  annotations: null
+  # discoverer.podAnnotations -- (list) pod annotations
+  podAnnotations: null
+  service:
+    # discoverer.service.annotations -- (list) service annotations
+    annotations: null
+    # discoverer.service.labels -- (list) service labels
+    labels: null
   image:
+    # discoverer.image.repository -- image repository
     repository: vdaas/vald-discoverer-k8s
-    # tag: nightly
+    # discoverer.image.tag -- (string) image tag (overrides defaults.image.tag)
+    tag: null
+    # discoverer.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
+    # discoverer.rollingUpdate.maxSurge -- max surge of rolling update
     maxSurge: 25%
+    # discoverer.rollingUpdate.maxUnavailable -- max unavailable of rolling update
     maxUnavailable: 25%
+  # discoverer.initContainers -- (list) init containers
+  initContainers: null
+  # discoverer.env -- environment variables
   env:
     - name: MY_POD_NAMESPACE
       valueFrom:
         fieldRef:
           fieldPath: metadata.namespace
+  # discoverer.volumeMounts -- (list) volume mounts
+  volumeMounts: null
+  # discoverer.volumes -- (list) volumes
+  volumes: null
+  # discoverer.nodeName -- (string) node name
+  nodeName: null
+  # discoverer.nodeSelector -- (object) node selector
+  nodeSelector: null
+  # discoverer.server_config -- server config (overrides defaults.server_config)
   server_config:
-    prefix: discoverer
     servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: false
+      rest: {}
+      grpc: {}
     healths:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
+      liveness: {}
+      readiness: {}
     metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: false
-    full_shutdown_duration: 600s
-    tls:
-      enabled: false
+      pprof: {}
+      prometheus: {}
+  # discoverer.observability -- observability config (overrides defaults.observability)
   observability:
     jaeger:
       service_name: vald-discoverer
+  # discoverer.resources -- compute resources
   resources:
     requests:
       cpu: 200m
@@ -462,71 +745,110 @@ discoverer:
       cpu: 600m
       memory: 200Mi
   discoverer:
+    # discoverer.discoverer.name -- name to discovery
     name: ""
+    # discoverer.discoverer.namespace -- namespace to discovery
     namespace: _MY_POD_NAMESPACE_
+    # discoverer.discoverer.cache_sync_duration -- duration to sync cache
     cache_sync_duration: 3s
   clusterRole:
+    # discoverer.clusterRole.enabled -- creates clusterRole resource
     enabled: true
+    # discoverer.clusterRole.name -- name of clusterRole
     name: discoverer
   clusterRoleBinding:
+    # discoverer.clusterRoleBinding.enabled -- creates clusterRoleBinding resource
     enabled: true
+    # discoverer.clusterRoleBinding.name -- name of clusterRoleBinding
     name: discoverer
   serviceAccount:
+    # discoverer.serviceAccount.enabled -- creates service account
     enabled: true
+    # discoverer.serviceAccount.name -- name of service account
     name: vald
 
 compressor:
+  # compressor.version -- version of compressor config
   version: v0.0.0
+  # compressor.name -- name of compressor deployment
   name: vald-manager-compressor
+  # compressor.kind -- deployment kind: Deployment or DaemonSet
   kind: Deployment
-  # kind: DaemonSet
+  # compressor.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # externalTrafficPolicy: Cluster
+  # compressor.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: null
+  # compressor.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
+  # compressor.minReplicas -- minimum number of replicas
   minReplicas: 3
+  # compressor.maxReplicas -- maximum number of replicas
   maxReplicas: 15
+  # compressor.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
+  # compressor.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
+  # compressor.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  # compressor.annotations -- (list) deployment annotations
+  annotations: null
+  # compressor.podAnnotations -- (list) pod annotations
+  podAnnotations: null
+  service:
+    # compressor.service.annotations -- (list) service annotations
+    annotations: null
+    # compressor.service.labels -- (list) service labels
+    labels: null
   hpa:
+    # compressor.hpa.enabled -- HPA enabled
     enabled: true
+    # compressor.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
     targetCPUUtilizationPercentage: 80
   image:
+    # compressor.image.repository -- image repository
     repository: vdaas/vald-manager-compressor
-    # tag: nightly
+    # compressor.image.tag -- (string) image tag (overrides defaults.image.tag)
+    tag: null
+    # compressor.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
+    # compressor.rollingUpdate.maxSurge -- max surge of rolling update
     maxSurge: 25%
+    # compressor.rollingUpdate.maxUnavailable -- max unavailable of rolling update
     maxUnavailable: 25%
+  # compressor.initContainers -- init containers
   initContainers:
     - type: wait-for
       name: wait-for-manager-backup
       target: manager-backup
       image: busybox
       sleepDuration: 2
+  # compressor.env -- (list) environment variables
+  env: null
+  # compressor.volumeMounts -- (list) volume mounts
+  volumeMounts: null
+  # compressor.volumes -- (list) volumes
+  volumes: null
+  # compressor.nodeName -- (string) node name
+  nodeName: null
+  # compressor.nodeSelector -- (object) node selector
+  nodeSelector: null
+  # compressor.server_config -- server config (overrides defaults.server_config)
   server_config:
-    prefix: manager-compressor
     servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: false
+      rest: {}
+      grpc: {}
     healths:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
+      liveness: {}
+      readiness: {}
     metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: false
-    full_shutdown_duration: 600s
-    tls:
-      enabled: false
+      pprof: {}
+      prometheus: {}
+  # compressor.observability -- observability config (overrides defaults.observability)
   observability:
     jaeger:
       service_name: vald-manager-compressor
+  # compressor.resources -- compute resources
   resources:
     requests:
       cpu: 300m
@@ -535,37 +857,69 @@ compressor:
       cpu: 800m
       memory: 500Mi
   backup:
+    # compressor.backup.client -- grpc client for backup (overrides defaults.grpc.client)
     client: {}
   compress:
+    # compressor.compress.compress_algorithm -- compression algorithm: gob, gzip, lz4 or zstd
     compress_algorithm: zstd
-    compression_level: 10
+    # compressor.compress.compression_level -- compression level
+    compression_level: 3
+    # compressor.compress.concurrent_limit -- concurrency limit
     concurrent_limit: 10
+    # compressor.compress.buffer -- size of buffer
     buffer: 100
 
 backupManager:
+  # backupManager.version -- version of backup manager config
   version: v0.0.0
+  # backupManager.name -- name of backup manager deployment
   name: vald-manager-backup
+  # backupManager.kind -- deployment kind: Deployment or DaemonSet
   kind: Deployment
-  # kind: DaemonSet
+  # backupManager.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # externalTrafficPolicy: Cluster
+  # backupManager.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: null
+  # backupManager.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
+  # backupManager.minReplicas -- minimum number of replicas
   minReplicas: 3
+  # backupManager.maxReplicas -- maximum number of replicas
   maxReplicas: 15
+  # backupManager.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
+  # backupManager.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
+  # backupManager.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  # backupManager.annotations -- (list) deployment annotations
+  annotations: null
+  # backupManager.podAnnotations -- (list) pod annotations
+  podAnnotations: null
+  service:
+    # backupManager.service.annotations -- (list) service annotations
+    annotations: null
+    # backupManager.service.labels -- (list) service labels
+    labels: null
   hpa:
+    # backupManager.hpa.enabled -- HPA enabled
     enabled: true
+    # backupManager.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
     targetCPUUtilizationPercentage: 80
   image:
+    # backupManager.image.repository -- image repository
     repository: vdaas/vald-manager-backup-mysql
     # repository: vdaas/vald-manager-backup-cassandra
-    # tag: nightly
+    # backupManager.image.tag -- (string) image tag (overrides defaults.image.tag)
+    tag: null
+    # backupManager.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
+    # backupManager.rollingUpdate.maxSurge -- max surge of rolling update
     maxSurge: 25%
+    # backupManager.rollingUpdate.maxUnavailable -- max unavailable of rolling update
     maxUnavailable: 25%
+  # backupManager.initContainers -- init containers
   initContainers:
     - type: wait-for-mysql
       name: wait-for-mysql
@@ -610,6 +964,7 @@ backupManager:
     #       - scylla-1.scylla.default.svc.cluster.local
     #       - scylla-2.scylla.default.svc.cluster.local
     #   sleepDuration: 2
+  # backupManager.env -- (list) environment variables
   env:
     - name: MYSQL_PASSWORD
       valueFrom:
@@ -621,29 +976,30 @@ backupManager:
     #     secretKeyRef:
     #       name: cassandra-secret
     #       key: password
+  # backupManager.volumeMounts -- (list) volume mounts
+  volumeMounts: null
+  # backupManager.volumes -- (list) volumes
+  volumes: null
+  # backupManager.nodeName -- (string) node name
+  nodeName: null
+  # backupManager.nodeSelector -- (object) node selector
+  nodeSelector: null
+  # backupManager.server_config -- server config (overrides defaults.server_config)
   server_config:
-    prefix: backup-manager
     servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: false
+      rest: {}
+      grpc: {}
     healths:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
+      liveness: {}
+      readiness: {}
     metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: false
-    full_shutdown_duration: 600s
-    tls:
-      enabled: false
+      pprof: {}
+      prometheus: {}
+  # backupManager.observability -- observability config (overrides defaults.observability)
   observability:
     jaeger:
       service_name: vald-manager-backup
+  # backupManager.resources -- compute resources
   resources:
     requests:
       cpu: 100m
@@ -652,39 +1008,65 @@ backupManager:
       cpu: 500m
       memory: 150Mi
   mysql:
+    # backupManager.mysql.enabled -- mysql config enabled
     enabled: true
     config:
+      # backupManager.mysql.config.db -- mysql db: mysql, postgres or sqlite3
       db: mysql
+      # backupManager.mysql.config.db -- mysql hostname
       host: mysql.default.svc.cluster.local
+      # backupManager.mysql.config.db -- mysql port
       port: 3306
+      # backupManager.mysql.config.db -- mysql username
       user: root
+      # backupManager.mysql.config.db -- mysql password
       pass: _MYSQL_PASSWORD_
+      # backupManager.mysql.config.db -- mysql db name
       name: vald
+      # backupManager.mysql.config.conn_max_life_time -- connection maximum life time
       conn_max_life_time: 30s
+      # backupManager.mysql.config.max_open_conns -- maximum number of open connections
       max_open_conns: 100
+      # backupManager.mysql.config.max_idle_conns -- maximum number of idle connections
       max_idle_conns: 100
       tls:
+        # backupManager.mysql.config.tls.enabled -- TLS enabled
         enabled: false
+        # backupManager.mysql.config.tls.cert -- path to TLS cert
         cert: /path/to/cert
+        # backupManager.mysql.config.tls.key -- path to TLS key
         key: /path/to/key
+        # backupManager.mysql.config.tls.ca -- path to TLS ca
         ca: /path/to/ca
       tcp:
         dns:
+          # backupManager.mysql.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
           cache_enabled: true
+          # backupManager.mysql.config.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
           refresh_duration: 1h
+          # backupManager.mysql.config.tcp.dns.cache_expiration -- TCP DNS cache expiration
           cache_expiration: 24h
         dialer:
+          # backupManager.mysql.config.tcp.dialer.timeout -- TCP dialer timeout
           timeout: 5s
+          # backupManager.mysql.config.tcp.dialer.keep_alive -- TCP dialer keep alive
           keep_alive: 5m
+          # backupManager.mysql.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
           dual_stack_enabled: false
         tls:
+          # backupManager.mysql.config.tcp.tls.enabled -- TCP TLS enabled
           enabled: false
+          # backupManager.mysql.config.tcp.tls.cert -- path to TCP TLS cert
           cert: /path/to/cert
+          # backupManager.mysql.config.tcp.tls.key -- path to TCP TLS key
           key: /path/to/key
+          # backupManager.mysql.config.tcp.tls.ca -- path to TCP TLS ca
           ca: /path/to/ca
   cassandra:
+    # backupManager.cassandra.enabled -- cassandra config enabled
     enabled: false
     config:
+      # backupManager.cassandra.config.hosts -- cassandra hosts
       hosts:
         - cassandra-0.cassandra.default.svc.cluster.local
         - cassandra-1.cassandra.default.svc.cluster.local
@@ -692,84 +1074,159 @@ backupManager:
         # - scylla-0.scylla.default.svc.cluster.local
         # - scylla-1.scylla.default.svc.cluster.local
         # - scylla-2.scylla.default.svc.cluster.local
+      # backupManager.cassandra.config.cql_version -- cassandra CQL version
       cql_version: 3.0.0
+      # backupManager.cassandra.config.proto_version -- cassandra proto version
       proto_version: 0
+      # backupManager.cassandra.config.timeout -- timeout
       timeout: 600ms
+      # backupManager.cassandra.config.connect_timeout -- connect timeout
       connect_timeout: 600ms
+      # backupManager.cassandra.config.port -- cassandra port
       port: 9042
+      # backupManager.cassandra.config.keyspace -- cassandra keyspace
       keyspace: vald
+      # backupManager.cassandra.config.num_conns -- number of connections per hosts
       num_conns: 2
+      # backupManager.cassandra.config.consistency -- consistency type
       consistency:  quorum
+      # backupManager.cassandra.config.username -- cassandra username
       username: root
+      # backupManager.cassandra.config.password -- cassandra password
       password: _CASSANDRA_PASSWORD_
       retry_policy:
+        # backupManager.cassandra.config.retry_policy.num_retries -- number of retries
         num_retries: 3
+        # backupManager.cassandra.config.retry_policy.min_duration -- minimum duration to retry
         min_duration: 1s
+        # backupManager.cassandra.config.retry_policy.max_duration -- maximum duration to retry
         max_duration: 30s
       reconnection_policy:
+        # backupManager.cassandra.config.reconnection_policy.max_retries -- maximum number of retries to reconnect
         max_retries: 3
+        # backupManager.cassandra.config.reconnection_policy.initial_interval -- initial interval to reconnect
         initial_interval: 1m
+      # backupManager.cassandra.config.socket_keepalive -- socket keep alive time
       socket_keepalive: 0s
+      # backupManager.cassandra.config.max_prepared_stmts -- maximum number of prepared statements
       max_prepared_stmts: 1000
+      # backupManager.cassandra.config.max_routing_key_info -- maximum number of routing key info
       max_routing_key_info: 1000
+      # backupManager.cassandra.config.page_size -- page size
       page_size: 5000
       tls:
+        # backupManager.cassandra.config.tls.enabled -- TLS enabled
         enabled: false
+        # backupManager.cassandra.config.tls.cert -- path to TLS cert
         cert: /path/to/cert
+        # backupManager.cassandra.config.tls.key -- path to TLS key
         key: /path/to/key
+        # backupManager.cassandra.config.tls.ca -- path to TLS ca
         ca: /path/to/ca
       tcp:
         dns:
+          # backupManager.cassandra.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
           cache_enabled: true
+          # backupManager.cassandra.config.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
           refresh_duration: 5m
+          # backupManager.cassandra.config.tcp.dns.cache_expiration -- TCP DNS cache expiration
           cache_expiration: 24h
         dialer:
+          # backupManager.cassandra.config.tcp.dialer.timeout -- TCP dialer timeout
           timeout: 30s
+          # backupManager.cassandra.config.tcp.dialer.keep_alive -- TCP dialer keep alive
           keep_alive: 10m
+          # backupManager.cassandra.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
           dual_stack_enabled: false
+      # backupManager.cassandra.config.enable_host_verification -- host verification enabled
       enable_host_verification: false
+      # backupManager.cassandra.config.default_timestamp -- default timestamp enabled
       default_timestamp: true
+      # backupManager.cassandra.config.reconnect_interval -- interval of reconnection
       reconnect_interval: 1m
+      # backupManager.cassandra.config.max_wait_schema_agreement -- maximum duration to wait for schema agreement
       max_wait_schema_agreement: 1m
+      # backupManager.cassandra.config.ignore_peer_addr -- ignore peer addresses
       ignore_peer_addr: false
+      # backupManager.cassandra.config.disable_initial_host_lookup -- initial host lookup disabled
       disable_initial_host_lookup: false
+      # backupManager.cassandra.config.disable_node_status_events -- node status events disabled
       disable_node_status_events: false
+      # backupManager.cassandra.config.disable_topology_events -- topology events disabled
       disable_topology_events: false
+      # backupManager.cassandra.config.disable_skip_metadata -- skip metadata disabled
       disable_skip_metadata: false
+      # backupManager.cassandra.config.default_idempotence -- default idempotence enabled
       default_idempotence: false
+      # backupManager.cassandra.config.write_coalesce_wait_time -- write coalesce wait time
       write_coalesce_wait_time: 200ms
+      # backupManager.cassandra.config.meta_table -- table name of backup
       meta_table: meta_vector
       pool_config:
+        # backupManager.cassandra.config.pool_config.data_center -- name of data center
         data_center: ""
+        # backupManager.cassandra.config.pool_config.dc_aware_routing -- data center aware routine enabled
         dc_aware_routing: false
+        # backupManager.cassandra.config.pool_config.non_local_replicas_fallback -- non-local replica fallback enabled
         non_local_replicas_fallback: false
+        # backupManager.cassandra.config.pool_config.shuffle_replicas -- shuffle replica enabled
         shuffle_replicas: false
 
 indexManager:
+  # indexManager.version -- version of index manager config
   version: v0.0.0
+  # indexManager.name -- name of index manager deployment
   name: vald-manager-index
+  # indexManager.kind -- deployment kind: Deployment or DaemonSet
   kind: Deployment
-  # kind: DaemonSet
+  # indexManager.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # externalTrafficPolicy: Cluster
+  # indexManager.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: null
+  # indexManager.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
+  # indexManager.replicas -- number of replicas
   replicas: 1
+  # indexManager.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
+  # indexManager.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
+  # indexManager.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  # indexManager.annotations -- (list) deployment annotations
+  annotations: null
+  # indexManager.podAnnotations -- (list) pod annotations
+  podAnnotations: null
+  service:
+    # indexManager.service.annotations -- (list) service annotations
+    annotations: null
+    # indexManager.service.labels -- (list) service labels
+    labels: null
   image:
+    # indexManager.image.repository -- image repository
     repository: vdaas/vald-manager-index
-    # tag: nightly
+    # indexManager.image.tag -- (string) image tag (overrides defaults.image.tag)
+    tag: null
+    # indexManager.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
+    # indexManager.rollingUpdate.maxSurge -- max surge of rolling update
     maxSurge: 25%
+    # indexManager.rollingUpdate.maxUnavailable -- max unavailable of rolling update
     maxUnavailable: 25%
+  # indexManager.initContainers -- init containers
   initContainers:
     - type: wait-for
       name: wait-for-agent
       target: agent
       image: busybox
       sleepDuration: 2
+    - type: wait-for
+      name: wait-for-discoverer
+      target: discoverer
+      image: busybox
+      sleepDuration: 2
+  # indexManager.env -- (list) environment variables
   env:
     # - name: MY_NODE_NAME
     #   valueFrom:
@@ -779,46 +1236,56 @@ indexManager:
       valueFrom:
         fieldRef:
           fieldPath: metadata.namespace
+  # indexManager.volumeMounts -- (list) volume mounts
+  volumeMounts: null
+  # indexManager.volumes -- (list) volumes
+  volumes: null
+  # indexManager.nodeName -- (string) node name
+  nodeName: null
+  # indexManager.nodeSelector -- (object) node selector
+  nodeSelector: null
+  # indexManager.server_config -- server config (overrides defaults.server_config)
   server_config:
-    prefix: index-manager
     servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: false
+      rest: {}
+      grpc: {}
     healths:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
+      liveness: {}
+      readiness: {}
     metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: false
-    full_shutdown_duration: 600s
-    tls:
-      enabled: false
+      pprof: {}
+      prometheus: {}
+  # indexManager.observability -- observability config (overrides defaults.observability)
   observability:
     jaeger:
       service_name: vald-manager-index
+  # indexManager.resources -- compute resources
   resources:
     requests:
       cpu: 200m
       memory: 80Mi
     limits:
-      cpu: 1
+      cpu: 1000m
       memory: 500Mi
   indexer:
+    # indexManager.indexer.agent_namespace -- namespace of agent pods to manage
     agent_namespace: _MY_POD_NAMESPACE_
+    # indexManager.indexer.node_name -- node name
     node_name: "" # _MY_NODE_NAME_
+    # indexManager.indexer.concurrency -- concurrency
     concurrency: 1
+    # indexManager.indexer.auto_index_duration_limit -- limit duration of automatic indexing
     auto_index_duration_limit: 30m
+    # indexManager.indexer.auto_index_check_duration -- check duration of automatic indexing
     auto_index_check_duration: 1m
+    # indexManager.indexer.auto_index_length -- number of cache to trigger automatic indexing
     auto_index_length: 100
     discoverer:
+      # indexManager.indexer.discoverer.duration -- refresh duration to discover
       duration: 500ms
+      # indexManager.indexer.discoverer.discover_client -- gRPC client for discoverer (overrides defaults.grpc.client)
       discover_client: {}
+      # indexManager.indexer.discoverer.agent_client -- gRPC client for agents (overrides defaults.grpc.client)
       agent_client:
         dial_option:
           tcp:
@@ -826,29 +1293,57 @@ indexManager:
               keep_alive: 15m
 
 meta:
+  # meta.version -- version of meta config
   version: v0.0.0
+  # meta.name -- name of meta deployment
   name: vald-meta
+  # meta.kind -- deployment kind: Deployment or DaemonSet
   kind: Deployment
-  # kind: DaemonSet
+  # meta.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # externalTrafficPolicy: Cluster
+  # meta.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: null
+  # meta.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
+  # meta.minReplicas -- minimum number of replicas
   minReplicas: 2
+  # meta.maxReplicas -- maximum number of replicas
   maxReplicas: 10
+  # meta.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
+  # meta.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
+  # meta.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  # meta.annotations -- (list) deployment annotations
+  annotations: null
+  # meta.podAnnotations -- (list) pod annotations
+  podAnnotations: null
+  service:
+    # meta.service.annotations -- (list) service annotations
+    annotations: null
+    # meta.service.labels -- (list) service labels
+    labels: null
+
   hpa:
+    # meta.hpa.enabled -- HPA enabled
     enabled: true
+    # meta.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
     targetCPUUtilizationPercentage: 80
   image:
+    # meta.image.repository -- image repository
     repository: vdaas/vald-meta-redis
     # repository: vdaas/vald-meta-cassandra
-    # tag: nightly
+    # meta.image.tag -- (string) image tag (overrides defaults.image.tag)
+    tag: null
+    # meta.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
+    # meta.rollingUpdate.maxSurge -- max surge of rolling update
     maxSurge: 25%
+    # meta.rollingUpdate.maxUnavailable -- max unavailable of rolling update
     maxUnavailable: 25%
+  # meta.initContainers -- init containers
   initContainers:
     - type: wait-for-redis
       name: wait-for-redis
@@ -892,6 +1387,7 @@ meta:
     #       - scylla-1.scylla.default.svc.cluster.local
     #       - scylla-2.scylla.default.svc.cluster.local
     #   sleepDuration: 2
+  # meta.env -- environment variables
   env:
     - name: REDIS_PASSWORD
       valueFrom:
@@ -903,29 +1399,30 @@ meta:
     #     secretKeyRef:
     #       name: cassandra-secret
     #       key: password
+  # meta.volumeMounts -- (list) volume mounts
+  volumeMounts: null
+  # meta.volumes -- (list) volumes
+  volumes: null
+  # meta.nodeName -- (string) node name
+  nodeName: null
+  # meta.nodeSelector -- (object) node selector
+  nodeSelector: null
+  # meta.server_config -- server config (overrides defaults.server_config)
   server_config:
-    prefix: meta
     servers:
-      rest:
-        enabled: false
-      grpc:
-        enabled: false
+      rest: {}
+      grpc: {}
     healths:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
+      liveness: {}
+      readiness: {}
     metrics:
-      pprof:
-        enabled: false
-      prometheus:
-        enabled: false
-    full_shutdown_duration: 600s
-    tls:
-      enabled: false
+      pprof: {}
+      prometheus: {}
+  # meta.observability -- observability config (overrides defaults.observability)
   observability:
     jaeger:
       service_name: vald-meta
+  # meta.resources -- compute resources
   resources:
     requests:
       cpu: 100m
@@ -934,48 +1431,94 @@ meta:
       cpu: 300m
       memory: 100Mi
   redis:
+    # meta.redis.enabled -- redis config enabled
     enabled: true
     config:
+      # meta.redis.config.addrs -- redis hosts and ports
       addrs:
         - redis.default.svc.cluster.local:6379
+      # meta.redis.config.db -- database to be selected
       db: 0
+      # meta.redis.config.dial_timeout -- dial timeout
       dial_timeout: 5s
+      # meta.redis.config.idle_check_frequency -- idle check frequency
       idle_check_frequency: 1m
+      # meta.redis.config.idle_timeout -- idle timeout
       idle_timeout: 5m
+      # meta.redis.config.key_pref -- key prefix
       key_pref: ""
+      # meta.redis.config.max_conn_age -- max connection age
       max_conn_age: 0s
+      # meta.redis.config.max_redirects -- max redirects
       max_redirects: 3
+      # meta.redis.config.max_retries -- max retries
       max_retries: 0
+      # meta.redis.config.max_retry_backoff -- max retry backoff
       max_retry_backoff: 512ms
+      # meta.redis.config.min_idle_conns -- min idle connections
       min_idle_conns: 0
+      # meta.redis.config.min_retry_backoff -- min retry backoff
       min_retry_backoff: 8ms
+      # meta.redis.config.password -- redis password
       password: _REDIS_PASSWORD_
+      # meta.redis.config.pool_size -- pool size
       pool_size: 10
+      # meta.redis.config.pool_timeout -- pool timeout
       pool_timeout: 4s
+      # meta.redis.config.read_only -- read only enabled
       read_only: false
+      # meta.redis.config.read_timeout -- read timeout
       read_timeout: 3s
+      # meta.redis.config.write_timeout -- write timeout
       write_timeout: 3s
+      # meta.redis.config.route_by_latency -- latency based routing enabled
       route_by_latency: false
+      # meta.redis.config.route_randomly -- random routing enabled
       route_randomly: true
       tls:
+        # meta.redis.config.tls.enabled -- TLS enabled
         enabled: false
+        # meta.redis.config.tls.cert -- path to TLS cert
+        cert: /path/to/cert
+        # meta.redis.config.tls.key -- path to TLS key
+        key: /path/to/key
+        # meta.redis.config.tls.ca -- path to TLS ca
+        ca: /path/to/ca
       tcp:
         dns:
+          # meta.redis.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
           cache_enabled: true
+          # meta.redis.config.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
           refresh_duration: 1h
+          # meta.redis.config.tcp.dns.cache_expiration -- TCP DNS cache expiration
           cache_expiration: 24h
         dialer:
+          # meta.redis.config.tcp.dialer.timeout -- TCP dialer timeout
           timeout: 5s
+          # meta.redis.config.tcp.dialer.keep_alive -- TCP dialer keep alive
           keep_alive: 5m
+          # meta.redis.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
           dual_stack_enabled: false
         tls:
+          # meta.redis.config.tcp.tls.enabled -- TCP TLS enabled
           enabled: false
+          # meta.redis.config.tcp.tls.cert -- path to TCP TLS cert
+          cert: /path/to/cert
+          # meta.redis.config.tcp.tls.key -- path to TCP TLS key
+          key: /path/to/key
+          # meta.redis.config.tcp.tls.ca -- path to TCP TLS ca
+          ca: /path/to/ca
+      # meta.redis.config.kv_prefix -- KV prefix
       kv_prefix: ""
+      # meta.redis.config.vk_prefix -- VK prefix
       vk_prefix: ""
+      # meta.redis.config.prefix_delimiter -- prefix delimiter
       prefix_delimiter: ""
   cassandra:
+    # meta.cassandra.enabled -- cassandra config enabled
     enabled: false
     config:
+      # meta.cassandra.config.hosts -- cassandra hosts
       hosts:
         - cassandra-0.cassandra.default.svc.cluster.local
         - cassandra-1.cassandra.default.svc.cluster.local
@@ -983,69 +1526,120 @@ meta:
         # - scylla-0.scylla.default.svc.cluster.local
         # - scylla-1.scylla.default.svc.cluster.local
         # - scylla-2.scylla.default.svc.cluster.local
+      # meta.cassandra.config.cql_version -- cassandra CQL version
       cql_version: 3.0.0
+      # meta.cassandra.config.proto_version -- cassandra proto version
       proto_version: 0
+      # meta.cassandra.config.timeout -- timeout
       timeout: 600ms
+      # meta.cassandra.config.connect_timeout -- connect timeout
       connect_timeout: 600ms
+      # meta.cassandra.config.port -- cassandra port
       port: 9042
+      # meta.cassandra.config.keyspace -- cassandra keyspace
       keyspace: vald
+      # meta.cassandra.config.num_conns -- number of connections per hosts
       num_conns: 2
+      # meta.cassandra.config.consistency -- consistency type
       consistency:  quorum
+      # meta.cassandra.config.username -- cassandra username
       username: root
+      # meta.cassandra.config.password -- cassandra password
       password: _CASSANDRA_PASSWORD_
       retry_policy:
+        # meta.cassandra.config.retry_policy.num_retries -- number of retries
         num_retries: 3
+        # meta.cassandra.config.retry_policy.min_duration -- minimum duration to retry
         min_duration: 1s
+        # meta.cassandra.config.retry_policy.max_duration -- maximum duration to retry
         max_duration: 30s
       reconnection_policy:
+        # meta.cassandra.config.reconnection_policy.max_retries -- maximum number of retries to reconnect
         max_retries: 3
+        # meta.cassandra.config.reconnection_policy.initial_interval -- initial interval to reconnect
         initial_interval: 1m
+      # meta.cassandra.config.socket_keepalive -- socket keep alive time
       socket_keepalive: 0s
+      # meta.cassandra.config.max_prepared_stmts -- maximum number of prepared statements
       max_prepared_stmts: 1000
+      # meta.cassandra.config.max_routing_key_info -- maximum number of routing key info
       max_routing_key_info: 1000
+      # meta.cassandra.config.page_size -- page size
       page_size: 5000
       tls:
+        # meta.cassandra.config.tls.enabled -- TLS enabled
         enabled: false
+        # meta.cassandra.config.tls.cert -- path to TLS cert
         cert: /path/to/cert
+        # meta.cassandra.config.tls.key -- path to TLS key
         key: /path/to/key
+        # meta.cassandra.config.tls.ca -- path to TLS ca
         ca: /path/to/ca
       tcp:
         dns:
+          # meta.cassandra.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
           cache_enabled: true
+          # meta.cassandra.config.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
           refresh_duration: 5m
+          # meta.cassandra.config.tcp.dns.cache_expiration -- TCP DNS cache expiration
           cache_expiration: 24h
         dialer:
+          # meta.cassandra.config.tcp.dialer.timeout -- TCP dialer timeout
           timeout: 30s
+          # meta.cassandra.config.tcp.dialer.keep_alive -- TCP dialer keep alive
           keep_alive: 10m
+          # meta.cassandra.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
           dual_stack_enabled: false
+      # meta.cassandra.config.enable_host_verification -- host verification enabled
       enable_host_verification: false
+      # meta.cassandra.config.default_timestamp -- default timestamp enabled
       default_timestamp: true
+      # meta.cassandra.config.reconnect_interval -- interval of reconnection
       reconnect_interval: 1m
+      # meta.cassandra.config.max_wait_schema_agreement -- maximum duration to wait for schema agreement
       max_wait_schema_agreement: 1m
+      # meta.cassandra.config.ignore_peer_addr -- ignore peer addresses
       ignore_peer_addr: false
+      # meta.cassandra.config.disable_initial_host_lookup -- initial host lookup disabled
       disable_initial_host_lookup: false
+      # meta.cassandra.config.disable_node_status_events -- node status events disabled
       disable_node_status_events: false
+      # meta.cassandra.config.disable_topology_events -- topology events disabled
       disable_topology_events: false
+      # meta.cassandra.config.disable_skip_metadata -- skip metadata disabled
       disable_skip_metadata: false
+      # meta.cassandra.config.default_idempotence -- default idempotence enabled
       default_idempotence: false
+      # meta.cassandra.config.write_coalesce_wait_time -- write coalesce wait time
       write_coalesce_wait_time: 200ms
-      kv_table: kv
-      vk_table: vk
+      # meta.cassandra.config.meta_table -- table name of backup
+      meta_table: meta_vector
       pool_config:
+        # meta.cassandra.config.pool_config.data_center -- name of data center
         data_center: ""
+        # meta.cassandra.config.pool_config.dc_aware_routing -- data center aware routine enabled
         dc_aware_routing: false
+        # meta.cassandra.config.pool_config.non_local_replicas_fallback -- non-local replica fallback enabled
         non_local_replicas_fallback: false
+        # meta.cassandra.config.pool_config.shuffle_replicas -- shuffle replica enabled
         shuffle_replicas: false
 
 initializer:
   mysql:
+    # initializer.mysql.enabled -- mysql initializer job enabled
     enabled: false
+    # initializer.mysql.name -- mysql initializer job name
     name: mysql-init
     image:
+      # initializer.mysql.image.repository -- image repository
       repository: mysql
+      # initializer.mysql.image.tag -- image tag
       tag: latest
+      # initializer.mysql.image.pullPolicy -- image pull policy
       pullPolicy: Always
+    # initializer.mysql.restartPolicy -- restart policy
     restartPolicy: Never
+    # initializer.mysql.env -- environment variables
     env:
       - name: MYSQL_HOST
         value: mysql.default.svc.cluster.local
@@ -1057,23 +1651,37 @@ initializer:
             name: mysql-secret
             key: password
     configmap:
+      # initializer.mysql.configmap.enabled -- mysql schema configmap will be created
       enabled: false
+      # initializer.mysql.configmap.name -- mysql schema configmap name
       name: mysql-config
+      # initializer.mysql.configmap.filename -- mysql schema filename
       filename: ddl.sql
+      # initializer.mysql.configmap.schema -- mysql schema name
       schema: vald
     secret:
+      # initializer.mysql.secret.enabled -- mysql secret will be created
       enabled: false
+      # initializer.mysql.secret.name -- mysql secret name
       name: mysql-secret
+      # initializer.mysql.secret.data -- mysql secret data
       data:
         password: cGFzc3dvcmQ=
   redis:
+    # initializer.redis.enabled -- redis initializer job enabled
     enabled: false
+    # initializer.redis.name -- redis initializer job name
     name: redis-init
     image:
+      # initializer.redis.image.repository -- image repository
       repository: redis
+      # initializer.redis.image.tag -- image tag
       tag: latest
+      # initializer.redis.image.pullPolicy -- image pull policy
       pullPolicy: Always
+    # initializer.redis.restartPolicy -- restart policy
     restartPolicy: Never
+    # initializer.redis.env -- environment variables
     env:
       - name: REDIS_HOST
         value: redis.default.svc.cluster.local
@@ -1083,18 +1691,28 @@ initializer:
             name: redis-secret
             key: password
     secret:
+      # initializer.redis.secret.enabled -- redis secret will be created
       enabled: false
+      # initializer.redis.secret.name -- redis secret name
       name: redis-secret
+      # initializer.redis.secret.data -- redis secret data
       data:
         password: cGFzc3dvcmQ=
   cassandra:
+    # initializer.cassandra.enabled -- cassandra initializer job enabled
     enabled: false
+    # initializer.cassandra.name -- cassandra initializer job name
     name: cassandra-init
     image:
+      # initializer.cassandra.image.repository -- image repository
       repository: cassandra
+      # initializer.cassandra.image.tag -- image tag
       tag: latest
+      # initializer.cassandra.image.pullPolicy -- image pull policy
       pullPolicy: Always
+    # initializer.cassandra.restartPolicy -- restart policy
     restartPolicy: Never
+    # initializer.cassandra.env -- environment variables
     env:
       - name: CASSANDRA_HOST
         value: cassandra.default.svc.cluster.local
@@ -1106,22 +1724,36 @@ initializer:
             name: cassandra-secret
             key: password
     configmap:
+      # initializer.cassandra.configmap.enabled -- cassandra schema configmap will be created
       enabled: false
+      # initializer.cassandra.configmap.name -- cassandra schema configmap name
       name: cassandra-initdb
+      # initializer.cassandra.configmap.filename -- cassandra schema filename
       filename: init.cql
+      # initializer.cassandra.configmap.keyspace -- cassandra keyspace
       keyspace: vald
+      # initializer.cassandra.configmap.replication_class -- cassandra replication class
       replication_class: SimpleStrategy
+      # initializer.cassandra.configmap.replication_factor -- cassandra replication factor
       replication_factor: 3
       meta:
+        # initializer.cassandra.configmap.meta.enabled -- meta table enabled
         enabled: true
         name:
+          # initializer.cassandra.configmap.meta.name.kv -- name of KV table
           kv: kv
+          # initializer.cassandra.configmap.meta.name.vk -- name of VK table
           vk: vk
       backup:
+        # initializer.cassandra.configmap.backup.enabled -- backup table enabled
         enabled: true
+        # initializer.cassandra.configmap.backup.name -- name of backup table
         name: meta_vector
     secret:
+      # initializer.cassandra.secret.enabled -- cassandra secret will be created
       enabled: false
+      # initializer.cassandra.secret.name -- cassandra secret name
       name: cassandra-secret
+      # initializer.cassandra.secret.data -- cassandra secret data
       data:
         password: cGFzc3dvcmQ=
