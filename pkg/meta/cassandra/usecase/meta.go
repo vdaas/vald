@@ -169,5 +169,5 @@ func (r *run) Stop(ctx context.Context) error {
 }
 
 func (r *run) PostStop(ctx context.Context) error {
-	return r.c.Disconnect(ctx)
+	return r.c.Close(ctx)
 }

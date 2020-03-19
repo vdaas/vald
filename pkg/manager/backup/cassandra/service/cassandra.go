@@ -94,6 +94,8 @@ func (c *client) getMetaVector(ctx context.Context, uuid string) (*model.MetaVec
 		}).GetRelease(&metaVector); err {
 	case cassandra.ErrNotFound:
 		return nil, errors.ErrCassandraNotFound(uuid)
+	case cassandra.ErrUnavailable:
+		return nil, errors.ErrCassandraUnavailable()
 	case nil:
 		return &metaVector, nil
 	default:

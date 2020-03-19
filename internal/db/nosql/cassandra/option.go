@@ -432,17 +432,3 @@ func WithWriteCoalesceWaitTime(writeCoalesceWaitTime string) Option {
 		return nil
 	}
 }
-
-func WithKVTable(kvTable string) Option {
-	return func(c *client) error {
-		c.kvTable = kvTable
-		return nil
-	}
-}
-
-func WithVKTable(vkTable string) Option {
-	return func(c *client) error {
-		c.vkTable = vkTable
-		return nil
-	}
-}

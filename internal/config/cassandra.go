@@ -163,8 +163,6 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 		cassandra.WithDisableSkipMetadata(cfg.DisableSkipMetadata),
 		cassandra.WithDefaultIdempotence(cfg.DefaultIdempotence),
 		cassandra.WithWriteCoalesceWaitTime(cfg.WriteCoalesceWaitTime),
-		cassandra.WithKVTable(cfg.KVTable),
-		cassandra.WithVKTable(cfg.VKTable),
 	}
 
 	if cfg.PoolConfig != nil {
