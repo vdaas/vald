@@ -14,26 +14,20 @@ Fashion-mnist is used as an example of a dataset.
 
 ## About
 
-Vald is a distributed highly scalable and fast approximate nearest neighbor dense feature vector search engine.<br>
-Vald can handle large amount of specific objects, such as image, text, video, and etc.<br>
-Vald is designed base on Cloud Native.
-It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors.
-(If you are interested in ANN benchmarks, please refer to [the official website](http://ann-benchmarks.com/).)
 
 ### Main Features
 
-- Auto Indexing
-    - Normally, when changing the Graph Index, the Graph must be locked, but Vald uses distributed index graph, it is extremely difficult for the user to reconstruct the Graph.
-    - Therefore, Vald automatically indexes distributed Graphs sequentially.
+- Asynchronize Auto Indexing
+    - Usually the graph requires locking during indexing, which cause stop-the-world. But Vald uses distributed index graph so it continues to work duing indexing.
 
-- Ingress/Egress Filltering
+- Customizable Ingress/Egress Filtering
     - Vald implements it's own highly customizable Ingress/Egress filter.
-    - Which can be configured by the user to fit the gRPC interface.
+    - Which can be configured to fit the gRPC interface.
         - Ingress Filter: Ability to Vectorize through filter on request.
         - Egress Filter: rerank or filter the searching result with your own algorithm.
 
-- Horizontal Scalable
-    - Vald is a cloud-native vector search engine running on Kubernetes, which enables horizontal scalling of memory and cpu for billion scale of vector data.
+- Cloud-native based vector searching engine
+    - Horizontal scalable on memory and cpu for your demand.
 
 - Auto Indexing Backup
     - Vald has auto index backup feature using MySQL + Redis or Cassndora which enables disaster recovery.
@@ -57,12 +51,14 @@ It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to se
 
 Helm and hdf5 is required for this tutorial. If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install)) and [hdf5](https://www.hdfgroup.org/)).
 
-<details><summary>optional installation</summary><br>
+<details><summary>[Optional] Install helm</summary><br>
 install helm
 
 ```bash
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 ```
+</details>
+<details><summary>[Optional] Install hdf5</summary><br>
 install hdf5
 ```bash
 ## yum
