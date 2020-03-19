@@ -3,7 +3,11 @@ package ngt
 type Option func(*core)
 
 var (
-	defaultOptions = []Option{}
+	defaultOptions = []Option{
+		WithIndexPath("/tmp/ngt"),
+		WithObjectType(Float),
+		WithDimension(128),
+	}
 )
 
 func WithIndexPath(path string) Option {
