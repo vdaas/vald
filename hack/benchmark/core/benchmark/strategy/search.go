@@ -6,6 +6,7 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/gongt"
 	"github.com/vdaas/vald/internal/core/ngt"
 )
 
@@ -24,7 +25,7 @@ func NewSearch(opts ...SearchOption) benchmark.Strategy {
 	return s
 }
 
-func (s *search) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, dataset assets.Dataset) {
+func (s *search) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, gongt gongt.NGT, dataset assets.Dataset) {
 	cnt := 0
 	b.Run("Search", func(bb *testing.B) {
 		query := dataset.Query()

@@ -6,6 +6,7 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/gongt"
 	"github.com/vdaas/vald/internal/core/ngt"
 )
 
@@ -22,7 +23,7 @@ func NewRemove(opts ...RemoveOption) benchmark.Strategy {
 	return r
 }
 
-func (r *remove) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, dataset assets.Dataset) {
+func (r *remove) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, gongt gongt.NGT, dataset assets.Dataset) {
 	cnt := 0
 	b.Run("Remove", func(bb *testing.B) {
 		r.ids = append(r.ids, r.preStart(ctx, bb, ngt, dataset)...)

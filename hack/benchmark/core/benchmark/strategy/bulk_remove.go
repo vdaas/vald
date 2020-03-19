@@ -6,6 +6,7 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/gongt"
 	"github.com/vdaas/vald/internal/core/ngt"
 )
 
@@ -23,7 +24,7 @@ func NewBulkRemove(opts ...BulkRemoveOption) benchmark.Strategy {
 	return br
 }
 
-func (br *bulkRemove) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, dataset assets.Dataset) {
+func (br *bulkRemove) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, gongt gongt.NGT, dataset assets.Dataset) {
 	cnt := 1
 	b.Run("BulkRemove", func(bb *testing.B) {
 		br.ids = append(br.ids, br.preStart(ctx, bb, ngt, dataset)...)

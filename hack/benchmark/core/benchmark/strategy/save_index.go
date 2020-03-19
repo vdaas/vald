@@ -6,6 +6,7 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/gongt"
 	"github.com/vdaas/vald/internal/core/ngt"
 )
 
@@ -22,7 +23,7 @@ func NewSaveIndex(opts ...SaveIndexOption) benchmark.Strategy {
 	return s
 }
 
-func (s *saveIndex) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, dataset assets.Dataset) {
+func (s *saveIndex) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, gongt gongt.NGT, dataset assets.Dataset) {
 	b.Run("SaveIndex", func(bb *testing.B) {
 		s.preStart(ctx, bb, ngt, dataset)
 

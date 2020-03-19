@@ -6,6 +6,7 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/gongt"
 	"github.com/vdaas/vald/internal/core/ngt"
 )
 
@@ -19,7 +20,7 @@ func NewBulkInsert(opts ...BulkInsertOption) benchmark.Strategy {
 	return bi
 }
 
-func (bi *bulkInsert) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, dataset assets.Dataset) {
+func (bi *bulkInsert) Run(ctx context.Context, b *testing.B, ngt ngt.NGT, gongt gongt.NGT, dataset assets.Dataset) {
 	b.Run("BulkInsert", func(bb *testing.B) {
 		train := dataset.Train()
 
