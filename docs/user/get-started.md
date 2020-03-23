@@ -4,12 +4,13 @@ This article will show you how to deploy and run Vald on your k8s cluster.
 This article uses Scylla DB as the backend data store for metadata-management and backup-manager.
 Fashion-mnist is used as an example of a dataset.
 
-1. [About](#About)
-    2. [Requirements](#Requirements)
-2. [Starting Vald on k8s cluster](#Starting-Vald-on-k8s-cluster)
-    1. [Deploy](#Deploy)
-    2. [Run](#Run)
-3. [Advanced](#Advanced)
+- [Get Started](#get-started)
+  - [About](#about)
+    - [Requirements](#requirements)
+  - [Deploy and Run Vald on K8s cluster](#deploy-and-run-vald-on-k8s-cluster)
+    - [Deploy](#deploy)
+    - [Example](#example)
+  - [Another way to deploy Vald](#another-way-to-deploy-vald)
 
 ## About
 
@@ -24,20 +25,23 @@ Fashion-mnist is used as an example of a dataset.
 Helm and hdf5 is required for this tutorial. If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install)) and [hdf5](https://www.hdfgroup.org/)).
 
 <details><summary>[Optional] Install helm</summary><br>
+
 ```bash
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 ```
 </details>
 
 <details><summary>[Optional] Install hdf5</summary><br>
+
+
 ```bash
-## yum
+# yum
 yum install -y hdf5-devel
 
-## apt
+# apt
 apt-get install libhdf5-serial-dev
 
-## homebrew
+# homebrew
 brew install hdf5
 ```
 </details>
@@ -115,7 +119,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
     ```
     </details>
 
-### Example code
+### Example
 
 This chapter shows how to perform a search action in Vald with fashion-mnist dataset.
 
@@ -133,7 +137,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
     # move to working directory
     cd example/client
     
-    # get fashion-mnist
+    # download fashion-mnist testing dataset
     wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
     ```
 
