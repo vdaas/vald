@@ -25,10 +25,13 @@ import (
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 )
 
 type Meta interface {
 	Start(ctx context.Context) (<-chan error, error)
+	Exists(context.Context, string) (bool, error)
+	MultiExists(context.Context, ...string) ([]bool, error)
 	GetMeta(context.Context, string) (string, error)
 	GetMetas(context.Context, ...string) ([]string, error)
 	GetUUID(context.Context, string) (string, error)
@@ -82,6 +85,95 @@ func (m *meta) Start(ctx context.Context) (<-chan error, error) {
 		m.cache.Start(ctx)
 	}
 	return m.client.StartConnectionMonitor(ctx)
+}
+
+func (m *meta) Exists(ctx context.Context, meta string) (bool, error) {
+	if m.enableCache {
+		_, ok := m.cache.Get(uuidCacheKeyPref + meta)
+		if ok {
+			return true, nil
+		}
+	}
+	key, err := m.client.Do(ctx, m.addr, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		key, err := gmeta.NewMetaClient(conn).GetMetaInverse(ctx, &payload.Meta_Val{
+			Val: meta,
+		}, copts...)
+		if err != nil {
+			if status.Code(err) == status.NotFound {
+				return "", nil
+			}
+			return nil, err
+		}
+		return key.GetKey(), nil
+	})
+	if err != nil {
+		return false, err
+	}
+
+	k := key.(string)
+	if k == "" {
+		return false, nil
+	}
+
+	if m.enableCache {
+		m.cache.Set(uuidCacheKeyPref+meta, k)
+		m.cache.Set(metaCacheKeyPref+k, meta)
+	}
+	return true, nil
+}
+
+func (m *meta) MultiExists(ctx context.Context, metas ...string) ([]bool, error) {
+	if m.enableCache {
+		bools, ok := func() (bools []bool, ok bool) {
+			for _, meta := range metas {
+				_, ok := m.cache.Get(uuidCacheKeyPref + meta)
+				if !ok {
+					return nil, false
+				}
+				bools = append(bools, ok)
+			}
+			return bools, true
+		}()
+		if ok {
+			return bools, nil
+		}
+	}
+	keys, err := m.client.Do(ctx, m.addr, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		keys, err := gmeta.NewMetaClient(conn).GetMetasInverse(ctx, &payload.Meta_Vals{
+			Vals: metas,
+		}, copts...)
+		if err != nil {
+			if status.Code(err) != status.NotFound {
+				return nil, err
+			}
+		}
+		if keys != nil {
+			return keys.GetKeys(), nil
+		}
+		return nil, errors.ErrMetaDataCannotFetch()
+	})
+	if keys != nil {
+		ks, ok := keys.([]string)
+		if ok {
+			bools := make([]bool, 0, len(metas))
+			for i, k := range ks {
+				if k != "" {
+					if m.enableCache {
+						meta := metas[i]
+						m.cache.Set(uuidCacheKeyPref+meta, k)
+						m.cache.Set(metaCacheKeyPref+k, meta)
+					}
+					bools = append(bools, true)
+					continue
+				}
+				bools = append(bools, false)
+			}
+			return bools, err
+		}
+	}
+	return nil, err
 }
 
 func (m *meta) GetMeta(ctx context.Context, uuid string) (v string, err error) {

@@ -127,6 +127,7 @@ func (c *client) GetMultiple(keys ...string) (vals []string, err error) {
 			vals = append(vals, kvs[key])
 			continue
 		}
+		vals = append(vals, "")
 		if err != nil {
 			err = errors.Wrap(err, errors.ErrCassandraNotFound(key).Error())
 			continue
@@ -176,6 +177,7 @@ func (c *client) GetInverseMultiple(vals ...string) (keys []string, err error) {
 			keys = append(keys, kvs[val])
 			continue
 		}
+		keys = append(keys, "")
 		if err != nil {
 			err = errors.Wrap(err, errors.ErrCassandraNotFound(val).Error())
 			continue
