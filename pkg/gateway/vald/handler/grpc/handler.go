@@ -297,7 +297,8 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Insert API meta %s couldn't check meta already exists or not", meta), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("Insert API meta %s couldn't check meta already exists or not", meta), err, info.Get())
 	}
 	if exist {
 		err = errors.Wrap(err, errors.ErrMetaDataAlreadyExists(meta).Error())
@@ -397,7 +398,8 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("MultiInsert API couldn't check metadata exists or not metas = %v", metas), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("MultiInsert API couldn't check metadata exists or not metas = %v", metas), err, info.Get())
 	}
 	for i, meta := range metas {
 		if exists[i] {
@@ -408,7 +410,8 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		if span != nil {
 			span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
 		}
-		return nil, status.WrapWithAlreadyExists(fmt.Sprintf("MultiInsert API failed metadata already exists uuids metas = %v", metas), err, info.Get())
+		return nil, status.WrapWithAlreadyExists(
+			fmt.Sprintf("MultiInsert API failed metadata already exists uuids metas = %v", metas), err, info.Get())
 	}
 
 	mu := new(sync.Mutex)

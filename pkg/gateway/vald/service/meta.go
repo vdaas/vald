@@ -125,15 +125,15 @@ func (m *meta) Exists(ctx context.Context, meta string) (bool, error) {
 
 func (m *meta) MultiExists(ctx context.Context, metas ...string) ([]bool, error) {
 	if m.enableCache {
-		bools, ok := func() (bools []bool, ok bool) {
+		bools, ok := func() (bs []bool, ok bool) {
 			for _, meta := range metas {
 				_, ok := m.cache.Get(uuidCacheKeyPref + meta)
 				if !ok {
 					return nil, false
 				}
-				bools = append(bools, ok)
+				bs = append(bs, ok)
 			}
-			return bools, true
+			return bs, true
 		}()
 		if ok {
 			return bools, nil
@@ -154,26 +154,24 @@ func (m *meta) MultiExists(ctx context.Context, metas ...string) ([]bool, error)
 		}
 		return nil, errors.ErrMetaDataCannotFetch()
 	})
-	if keys != nil {
-		ks, ok := keys.([]string)
-		if ok {
-			bools := make([]bool, 0, len(metas))
-			for i, k := range ks {
-				if k != "" {
-					if m.enableCache {
-						meta := metas[i]
-						m.cache.Set(uuidCacheKeyPref+meta, k)
-						m.cache.Set(metaCacheKeyPref+k, meta)
-					}
-					bools = append(bools, true)
-					continue
-				}
-				bools = append(bools, false)
-			}
-			return bools, err
-		}
+	if err != nil {
+		return nil, err
 	}
-	return nil, err
+
+	ks, ok := keys.([]string)
+	if ok {
+		bs := make([]bool, 0, len(metas))
+		for i, k := range ks {
+			if k != "" && m.enableCache {
+				meta := metas[i]
+				m.cache.Set(uuidCacheKeyPref+meta, k)
+				m.cache.Set(metaCacheKeyPref+k, meta)
+			}
+			bs = append(bs, k != "")
+		}
+		return bs, err
+	}
+	return nil, errors.ErrMetaDataCannotFetch()
 }
 
 func (m *meta) GetMeta(ctx context.Context, uuid string) (v string, err error) {
