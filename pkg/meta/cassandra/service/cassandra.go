@@ -195,9 +195,7 @@ func (c *client) Set(key, val string) error {
 		).Add(
 			cassandra.Insert(c.vkTable).Columns(uuidColumn, metaColumn),
 		).ToCql(),
-	).Bind(
-		[]interface{}{key, val, key, val}...,
-	).ExecRelease()
+	).Bind(key, val, key, val).ExecRelease()
 }
 
 func (c *client) SetMultiple(kvs map[string]string) (err error) {
