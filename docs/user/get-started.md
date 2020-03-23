@@ -140,7 +140,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
 3. Perform a search action in Vald
 
     In this example, the fashion-mnist dataset will insert into the vald cluster and perform a search using [vald-client-go](https://github.com/vdaas/vald-client-go).
-    Full example code is [`here`](../../example/client/main.go) and the explaination is [here](https://github.com/kevindiu/vald-client-go/docs/users/code-explanation.md).
+    Full example code is [`here`](../../example/client/main.go) and the explaination is [here](https://github.com/vdaas/vald-client-go/docs/users/code-explanation.md).
 
     ```bash
     # run example
