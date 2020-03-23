@@ -28,51 +28,38 @@ var (
 
 func init() {
 	/**
-	Registers path, addr and wait option.
-	Path option specifies hdf file by path. By default, `fashion-mnist-784-euclidean.hdf5` is registered.
-	Addr option specifies grpc server address. By default, `127.0.0.1:8080` is registered.
-	Wait option specifies indexing wait time. Vald starts indexing automatically after insert. Therefore, it needs to wait until indexing is completed before searching.By default `60` seconds is registered.
+	Path option specifies hdf file by path. Default value is `fashion-mnist-784-euclidean.hdf5`.
+	Addr option specifies grpc server address. Default value is `127.0.0.1:8080`.
+	Wait option specifies indexing wait time (in seconds). Default value is  `60`.
 	**/
-	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
-	flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "set gRPC server address")
-	flag.UintVar(&indexingWaitSeconds, "wait", 60, "set indexing wait seconds")
+	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "dataset path")
+	flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "gRPC server address")
+	flag.UintVar(&indexingWaitSeconds, "wait", 60, "indexing wait seconds")
 	flag.Parse()
 }
 
 func main() {
-	/**
-	Gets training data, test data and ids based on the dataset path.
-	the number of ids is equal to that of training dataset.
-	**/
+	ctx := context.Background()
+
+	// Create a Vald client for connecting to the Vald cluster.
+	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
+	if err != nil {
+		glg.Fatal(err)
+	}
+	client := vald.NewValdClient(conn)
+
+	// Gets training data, test data and ids based on the dataset path.
+	glg.Infof("Start Inserting %d testing Vector to Vald", insertCount)
 	ids, train, test, err := load(datasetPath)
 	if err != nil {
 		glg.Fatal(err)
 	}
 
-	ctx := context.Background()
-
-	/**
-	Creates a client connection to the given the target.
-	Then, creates a Vald client based on this connection.
-	**/
-	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
-	if err != nil {
-		glg.Fatal(err)
-	}
-	// Creates Vald client for gRPC.
-	client := vald.NewValdClient(conn)
-
-	glg.Infof("Start Inserting %d Vector", insertCount)
-
-	/**
-	Starts inserting vectors specified by insertCount(400).
-	**/
+	// Insert 400 example vectors into Vald cluster.
 	for i := range ids[:insertCount] {
 		if i%10 == 0 {
 			glg.Infof("Inserted: %d", i)
 		}
-		// Calls `Insert` function of Vald client.
-		// Sends set of vector and id to server via gRPC.
 		_, err := client.Insert(ctx, &payload.Object_Vector{
 			Id:     ids[i],
 			Vector: train[i],
@@ -81,31 +68,23 @@ func main() {
 			glg.Fatal(err)
 		}
 	}
+	glg.Info("Finish Inserting dataset. \n\n")
 
-	glg.Info("Finish Inserting. \n\n")
+	// Vald starts indexing automatically after insert. It needs to wait until the indexing is completed before a search action is performed.
 	glg.Info("Wait for indexing to finish")
 	time.Sleep(time.Duration(indexingWaitSeconds) * time.Second)
 
-	glg.Infof("Start search %d times", testCount)
-
-	/**
-	Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
-	In this example, Vald gets 10 approximate vectors each search vector.
-	**/
+	// Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
+	// In this example, Vald gets 10 approximate vectors each search vector.
+	glg.Infof("Start searching %d times", testCount)
 	for i, vec := range test[:testCount] {
-		// Calls `Search` function of Vald client.
-		// Sends vector and configuration object to server via gRPC.
+		// Send searching vector and configuration object to the Vald server via gRPC.
 		res, err := client.Search(ctx, &payload.Search_Request{
 			Vector: vec,
-			// Conditions for hitting the search.
 			Config: &payload.Search_Config{
-				// the number of search results.
-				Num: 10,
-				// Radius is used to determine the space of search candidate radius for neighborhood vectors.
-				// Defaults to -1. That is, infinite circle.
-				Radius: -1,
-				// Epsilon is the parameter that determines how much to expand from search candidate radius.
-				Epsilon: 0.01,
+				Num:     10,   // the number of search results.
+				Radius:  -1,   // Radius is used to determine the space of search candidate radius for neighborhood vectors. -1 means infinite circle.
+				Epsilon: 0.01, // Epsilon is used to determines how much to expand from search candidate radius.
 			},
 		})
 		if err != nil {
@@ -131,7 +110,6 @@ func load(path string) (ids []string, train, test [][]float32, err error) {
 	// readFn function reads vectors of the hierarchy with the given the name.
 	readFn := func(name string) ([][]float32, error) {
 		// Opens and returns a named Dataset.
-		// The returned dataset must be closed by the user when it is no longer needed.
 		d, err := f.OpenDataset(name)
 		if err != nil {
 			return nil, err
