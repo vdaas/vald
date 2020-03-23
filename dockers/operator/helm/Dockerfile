@@ -16,19 +16,26 @@
 ARG OPERATOR_SDK_VERSION="v0.15.2"
 ARG VERSION="v1alpha1"
 ARG GROUP="vald.vdaas.org"
-ARG KIND="ValdRelease"
+ARG VALD_KIND="ValdRelease"
+ARG VALD_HELM_OPERATOR_KIND="ValdHelmOperatorRelease"
 
 FROM quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION}
 ARG OPERATOR_SDK_VERSION
 ARG VERSION
 ARG GROUP
-ARG KIND
+ARG VALD_KIND
+ARG VALD_HELM_OPERATOR_KIND
 
 RUN { \
         echo "---"; \
         echo "- version: ${VERSION}"; \
         echo "  group: ${GROUP}"; \
-        echo "  kind: ${KIND}"; \
+        echo "  kind: ${VALD_KIND}"; \
         echo "  chart: helm-charts/vald"; \
+        echo "- version: ${VERSION}"; \
+        echo "  group: ${GROUP}"; \
+        echo "  kind: ${VALD_HELM_OPERATOR_KIND}"; \
+        echo "  chart: helm-charts/vald-helm-operator"; \
     } > ${HOME}/watches.yaml
 COPY charts/vald ${HOME}/helm-charts/vald
+COPY charts/vald-helm-operator ${HOME}/helm-charts/vald-helm-operator

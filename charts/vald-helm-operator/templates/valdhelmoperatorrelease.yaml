@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if .Values.vald.create }}
+{{- if .Values.operator.release.create }}
 apiVersion: vald.vdaas.org/v1alpha1
-kind: ValdRelease
+kind: ValdHelmOperatorRelease
 metadata:
-  name: {{ .Values.vald.name }}
+  name: {{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
-# the values of Helm chart for Vald can be placed under the `spec` field.
+# the values of Helm chart for vald-helm-operator can be placed under the `spec` field.
 spec:
-  {{- toYaml .Values.vald.spec | nindent 2 }}
+  {{- toYaml .Values | nindent 2 }}
 {{- end }}

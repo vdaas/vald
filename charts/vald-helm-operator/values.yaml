@@ -27,10 +27,6 @@ image:
   # image.pullPolicy -- image pull policy
   pullPolicy: Always
 
-crd:
-  # crd.create -- ValdRelease crd will be created
-  create: true
-
 vald:
   # vald.create -- ValdRelease resource will be created
   create: false
@@ -56,3 +52,8 @@ resources: {}
 
 # nodeSelector -- node labels for pod assignment
 nodeSelector: {}
+
+operator:
+  release:
+    # operator.release.create -- ValdHelmOperatorRelease resource will be created
+    create: true
