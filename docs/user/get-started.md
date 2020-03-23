@@ -5,7 +5,6 @@ This article uses Scylla DB as the backend data store for metadata-management an
 Fashion-mnist is used as an example of a dataset.
 
 1. [About](#About)
-    1. [Main Features](#Main-Features)
     2. [Requirements](#Requirements)
 2. [Starting Vald on k8s cluster](#Starting-Vald-on-k8s-cluster)
     1. [Deploy](#Deploy)
@@ -14,33 +13,6 @@ Fashion-mnist is used as an example of a dataset.
 
 ## About
 
-
-### Main Features
-
-- Asynchronize Auto Indexing
-    - Usually the graph requires locking during indexing, which cause stop-the-world. But Vald uses distributed index graph so it continues to work duing indexing.
-
-- Customizable Ingress/Egress Filtering
-    - Vald implements it's own highly customizable Ingress/Egress filter.
-    - Which can be configured to fit the gRPC interface.
-        - Ingress Filter: Ability to Vectorize through filter on request.
-        - Egress Filter: rerank or filter the searching result with your own algorithm.
-
-- Cloud-native based vector searching engine
-    - Horizontal scalable on memory and cpu for your demand.
-
-- Auto Indexing Backup
-    - Vald has auto index backup feature using MySQL + Redis or Cassndora which enables disaster recovery.
-
-- Distributed Indexing
-    - Vald distribute vector index to multiple agent, each agent stores different index.
-
-- Index Replication
-    - Vald stores each index in multiple agents which enables index replicas.
-    - Automatically rebalance the replica when some Vald agent goes down.
-
-- Easy to use
-    - Vald can be easily installed in a few steps and Vald is highly customizable.
 
 ### Requirements
 
@@ -143,9 +115,9 @@ If you want to learn about Scylla, please refer to [the official website](https:
     ```
     </details>
 
-### Run
+### Example code
 
-This chapter shows how to run Vald with fashion-mnist dataset.
+This chapter shows how to perform a search action in Vald with fashion-mnist dataset.
 
 1. Port Forward
 
@@ -165,165 +137,17 @@ This chapter shows how to run Vald with fashion-mnist dataset.
     wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
     ```
 
-3. Running example
+3. Perform a search action in Vald
 
-    Vald provides multiple langurages client library such as golang, Java, Node.js, Python and so on.<br>
-    In this case, we use [vald-client-go](https://github.com/vdaas/vald-client-go) which is written by golang.
-
-    We use [`example/client/main.go`](../../example/client/main.go) to run the example.
-    This will execute 4 steps.
-    1. init
-    - Import packages
-        <details><summary>example code</summary><br>
-
-        ```go
-        package main
-
-        import (
-            "context"
-            "encoding/json"
-            "flag"
-            "time"
-
-            "github.com/kpango/fuid"
-            "github.com/kpango/glg"
-            "github.com/vdaas/vald-client-go/gateway/vald"
-            "github.com/vdaas/vald-client-go/payload"
-
-            "gonum.org/v1/hdf5"
-            "google.golang.org/grpc"
-        )
-        ```
-        </details>
-    - Set variables
-        - The constant number of training datasets and test datasets.
-            <details><summary>example code</summary><br>
-
-            ```go
-            const (
-                insertCount = 400
-                testCount = 20
-            )
-            ```
-            </details>
-
-        - The variables for configuration.
-            <details><summary>example code</summary><br>
-
-            ```go
-            const (
-                datasetPath         string
-                grpcServerAddr      string
-                indexingWaitSeconds uint
-            )
-            ```
-            </details>
-    - Recognition paremters.
-        <details><summary>example code</summary><br>
-        
-        ```go
-        func init() {
-	        flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
-	        flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "set gRPC server address")
-	        flag.UintVar(&indexingWaitSeconds, "wait", 60, "set indexing wait seconds")
-	        flag.Parse()
-        }
-        ```
-        </details>
-    2. load
-    - Loading from fashion-mnist dataset and set id for each vector that is loaded. This step will return the training dataset, test dataset, and ids list of ids when loading is completed with success.
-        <details><summary>example code</summary><br>
-
-        ```go
-        ids, train, test, err := load(datasetPath)
-        if err != nil {
-            glg.Fatal(err)
-        }
-        ```
-        </details>
-    3. Create the gRPC connection and Vald client with gRPC connection.
-        <details><summary>example code</summary><br>
-
-        ```go
-        ctx := context.Background()
-
-        conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
-        if err != nil {
-            glg.Fatal(err)
-        }
-
-        client := vald.NewValdClient(conn)
-        ```
-        </details>
-    4. Insert and Index
-    - Insert and Indexing 400 training datasets to the Vald agent.
-        <details><summary>example code</summary><br>
-
-        ```go
-        for i := range ids [:insertCount] {
-            if i%10 == 0 {
-                glg.Infof("Inserted %d", i)
-            }
-            _, err := client.Insert(ctx, &payload.Object_Vector{
-                Id: ids[i],
-                Vector: train[i],
-            })
-            if err != nil {
-                glg.Fatal(err)
-            }
-        }
-        ```
-        </details>
-    - Wait until indexing finish.
-        <details><summary>example code</summary><br>
-
-        ```go
-        glg.Info("Wait for indexing to finish")
-        time.Sleep(time.Duration(indexingWaitSeconds) * time.Second)
-        ```
-        </details>
-    5. Search
-    - Search 10 neighbor vectors for each 20 test datasets and return list of neighbor vector.
-    - When getting approximate vectors, the Vald client sends search config and vector to the server via gRPC.
-        <details><summary>example code</summary><br>
-
-        ```go
-        glg.Infof("Start search %d times", testCount)
-        for i, vec := range test[:testCount] {
-            res, err := client.Seach(ctx, &payload.Search_Request){
-                Vector: vec,
-                Config: &payload.Search_Config{
-                    Num: 10,
-                    Radius: -1,
-                    Epsilon: 0.01,
-                }
-            }
-            if err != nil {
-                glg.Fatal(err)
-            }
-
-            b, _ := json.MarshalIndent(res.GetResults(), "", " ")
-            glg.Infof("%d - Results : %s\n\n", i+1, string(b))
-            time.Sleep(1 * time.Second)
-        }
-        ```
-        </details>
+    In this example, the fashion-mnist dataset will insert into the vald cluster and perform a search using [vald-client-go](https://github.com/vdaas/vald-client-go).
+    Full example code is [`here`](../../example/client/main.go) and the explaination is [here](https://github.com/kevindiu/vald-client-go/docs/users/code-explanation.md).
 
     ```bash
     # run example
     go run main.go
     ```
 
-## Advanced
-
-### Customize Vald
-
-Vald is highly customizable.
-For example you can configure the number of vector dimension, the number of replica and etc.
-You can customize Vald by creating/editing [`values.yaml`](../../charts/vald/values.yaml).
-We will publish the description of `values.yaml` soon.
-
-### Another way to deploy Vald
+## Another way to deploy Vald
 
 In the `Get Started` section, you learnt how to deploy Vald with Scylla DB using Helm.
 Vald can be deployed by Helm or `kind` command. (Compressor datastore is required, for example mysql + redis or casandora ).
