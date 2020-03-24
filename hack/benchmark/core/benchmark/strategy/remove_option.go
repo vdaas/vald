@@ -1,19 +1,24 @@
-package strategy
+package stratedy
+
+import (
+	"context"
+	"testing"
+
+	"github.com/vdaas/vald/hack/benchmark/internal/assets"
+)
 
 type RemoveOption func(*remove)
 
 var (
-	defaultRemoveOptions = []RemoveOption{
-		WithRemovePreStart(
-			(new(preStart)).Func,
-		),
-	}
+	defaultOptions = []RemoveOption{}
 )
 
-func WithRemovePreStart(fn PreStart) RemoveOption {
-	return func(r *remove) {
+func WithPreStart(
+	fn func(context.Context, *testing.B, assets.Dataset) (interface{}, error),
+) RemoveOption {
+	return func(d *remove) {
 		if fn != nil {
-			r.preStart = fn
+			d.preStart = fn
 		}
 	}
 }

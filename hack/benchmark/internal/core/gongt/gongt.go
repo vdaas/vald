@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/vdaas/vald/hack/benchmark/internal/core"
 	"github.com/yahoojapan/gongt"
 )
 
@@ -19,26 +20,11 @@ const (
 	Float
 )
 
-type NGT interface {
-	Search(vec []float64, size int, epsilon float64) ([]SearchResult, error)
-	Insert(vec []float64) (int, error)
-	InsertCommit(vec []float64, poolSize int) (int, error)
-	BulkInsert(vecs [][]float64) ([]int, []error)
-	BulkInsertCommit(vecs [][]float64, poolSize int) ([]int, []error)
-	CreateAndSaveIndex(poolSize int) error
-	CreateIndex(poolSize int) error
-	SaveIndex() error
-	Remove(id int) error
-	BulkRemove(ids ...uint) error
-	GetVector(id int) ([]float64, error)
-	Close()
-}
-
 var (
 	ErrNotSupportedMethod = errors.New("not supported method")
 )
 
-type ngt struct {
+type agent struct {
 	indexPath  string
 	tmpdir     string
 	objectType ObjectType
@@ -46,33 +32,73 @@ type ngt struct {
 	*gongt.NGT
 }
 
-func New(opts ...Option) (NGT, error) {
-	n := new(ngt)
+func New(opts ...Option) (core.Core, error) {
+	a := new(agent)
 	for _, opt := range append(defaultOptions, opts...) {
-		opt(n)
+		opt(a)
 	}
 
-	tmpdir, err := ioutil.TempDir("", n.indexPath)
+	tmpdir, err := ioutil.TempDir("", a.indexPath)
 	if err != nil {
 		return nil, err
 	}
-	n.tmpdir = tmpdir
+	a.tmpdir = tmpdir
 
-	n.NGT = gongt.New(tmpdir).
-		SetObjectType(n.objectType).
-		SetDimension(n.dimension).
+	a.NGT = gongt.New(tmpdir).
+		SetObjectType(a.objectType).
+		SetDimension(a.dimension).
 		Open()
 
-	return n, nil
+	return a, nil
 }
 
-func (n *ngt) BulkRemove(ids ...uint) error {
+func (a *agent) Search(vec, size, epsilon, radius interface{}) (interface{}, error) {
+	return a.NGT.Search(vec.([]float64), size.(int), epsilon.(float64))
+}
+
+func (a *agent) Insert(vec interface{}) (interface{}, error) {
+	return a.NGT.Insert(vec.([]float64))
+}
+
+func (a *agent) InsertCommit(vec, poolSize interface{}) (interface{}, error) {
+	return a.NGT.InsertCommit(vec.([]float64), poolSize.(int))
+}
+
+func (a *agent) BulkInsert(vecs interface{}) (interface{}, []error) {
+	return a.NGT.BulkInsert(vecs.([][]float64))
+}
+
+func (a *agent) BulkInsertCommit(vecs, poolSize interface{}) (interface{}, []error) {
+	return a.NGT.BulkInsertCommit(vecs.([][]float64), poolSize.(int))
+}
+
+func (a *agent) CreateAndSaveIndex(poolSize interface{}) error {
+	return a.NGT.CreateAndSaveIndex(poolSize.(int))
+}
+
+func (a *agent) CreateIndex(poolSize interface{}) error {
+	return a.NGT.CreateIndex(poolSize.(int))
+}
+
+func (a *agent) SaveIndex() error {
+	return a.NGT.SaveIndex()
+}
+
+func (a *agent) Remove(id interface{}) error {
+	return a.NGT.Remove(id.(int))
+}
+
+func (a *agent) BulkRemove(ids interface{}) error {
 	return ErrNotSupportedMethod
 }
 
-func (n *ngt) Close() {
-	if len(n.indexPath) != 0 {
-		os.RemoveAll(n.tmpdir)
+func (a *agent) GetVector(id interface{}) (interface{}, error) {
+	return a.NGT.GetVector(id.(int))
+}
+
+func (a *agent) Close() {
+	if len(a.indexPath) != 0 {
+		os.RemoveAll(a.tmpdir)
 	}
-	n.NGT.Close()
+	a.NGT.Close()
 }
