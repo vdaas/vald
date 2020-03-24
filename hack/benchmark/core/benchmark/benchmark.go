@@ -5,8 +5,6 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/hack/benchmark/internal/core/gongt"
-	"github.com/vdaas/vald/internal/core/ngt"
 )
 
 // Benchmark is an interface for NGT benchmark.
@@ -14,11 +12,18 @@ type Benchmark interface {
 	Run(context.Context, *testing.B)
 }
 
+type Type uint32
+
+const (
+	Float32 Type = iota
+	Float64
+)
+
 type benchmark struct {
 	name       string
-	ngt        ngt.NGT
-	gongt      gongt.NGT
+	core       interface{}
 	dataset    assets.Dataset
+	typ        Type
 	strategies []Strategy
 }
 
@@ -52,7 +57,7 @@ func (bm *benchmark) Run(ctx context.Context, b *testing.B) {
 		b.StartTimer()
 		b.Run(bm.name, func(bb *testing.B) {
 			for _, strategy := range bm.strategies {
-				strategy.Run(ctx, bb, bm.ngt, bm.gongt, bm.dataset)
+				strategy.Run(ctx, bb, bm.core, bm.typ, bm.dataset)
 			}
 		})
 		b.StopTimer()

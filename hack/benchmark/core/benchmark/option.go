@@ -1,7 +1,7 @@
 package benchmark
 
 import (
-	"github.com/vdaas/vald/internal/core/ngt"
+	"github.com/vdaas/vald/hack/benchmark/internal/core"
 )
 
 type Option func(*benchmark)
@@ -18,17 +18,25 @@ func WithName(name string) Option {
 	}
 }
 
-func WithNGT(ngt ngt.NGT) Option {
+func WithCore(core core.Core) Option {
 	return func(b *benchmark) {
-		if ngt != nil {
-			b.ngt = ngt
+		b.core = core
+	}
+}
+
+func WithFloat32(core core.Core32, strategies ...Strategy) Option {
+	return func(b *benchmark) {
+		if len(strategies) != 0 {
+			b.typ = Float32
+			b.strategies = strategies
 		}
 	}
 }
 
-func WithStrategy(strategies ...Strategy) Option {
+func WithFloat64(core core.Core32, strategies ...Strategy) Option {
 	return func(b *benchmark) {
 		if len(strategies) != 0 {
+			b.typ = Float64
 			b.strategies = strategies
 		}
 	}

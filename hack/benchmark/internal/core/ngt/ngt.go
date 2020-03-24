@@ -1,9 +1,9 @@
 package ngt
 
 import (
-	"io/ioutil"
 	"os"
 
+	"github.com/vdaas/vald/hack/benchmark/internal/core"
 	"github.com/vdaas/vald/internal/core/ngt"
 )
 
@@ -15,7 +15,7 @@ const (
 	Float
 )
 
-type core struct {
+type agent struct {
 	idxPath    string
 	tmpdir     string
 	objectType ObjectType
@@ -23,42 +23,53 @@ type core struct {
 	ngt.NGT
 }
 
-func New(opts ...Option) (ngt.NGT, error) {
-	c := new(core)
+func New(opts ...Option) (core.Core, error) {
+	a := new(agent)
 	for _, opt := range append(defaultOptions, opts...) {
-		opt(c)
+		opt(a)
 	}
-
-	tmpdir, err := ioutil.TempDir("", c.idxPath)
-	if err != nil {
-		return nil, err
-	}
-	c.tmpdir = tmpdir
-
-	var typ = ngt.ObjectNone
-	switch c.objectType {
-	case Uint8:
-		typ = ngt.Uint8
-	case Float:
-		typ = ngt.Float
-	}
-
-	n, err := ngt.New(
-		ngt.WithIndexPath(tmpdir),
-		ngt.WithDimension(c.dimension),
-		ngt.WithObjectType(typ),
-	)
-	if err != nil {
-		return nil, err
-	}
-	c.NGT = n
-
-	return c, nil
+	return a, nil
 }
 
-func (c *core) Close() {
-	if len(c.tmpdir) != 0 {
-		os.RemoveAll(c.tmpdir)
+func (a *agent) InsertCommit(vec, poolSize interface{}) (interface{}, error) {
+	return a.NGT.InsertCommit(vec.([]float32), poolSize.(uint32))
+}
+
+func (a *agent) BulkInsert(vecs interface{}) (interface{}, []error) {
+	return a.NGT.BulkInsert(vecs.([][]float32))
+}
+
+func (a *agent) BulkInsertCommit(vecs, poolSize interface{}) (interface{}, []error) {
+	return a.NGT.BulkInsertCommit(vecs.([][]float32), poolSize.(uint32))
+}
+
+func (a *agent) CreateAndSaveIndex(poolSize interface{}) error {
+	return a.NGT.CreateAndSaveIndex(poolSize.(uint32))
+}
+
+func (a *agent) CreateIndex(poolSize interface{}) error {
+	return a.NGT.CreateIndex(poolSize.(uint32))
+}
+
+func (a *agent) SaveIndex() error {
+	return a.NGT.SaveIndex()
+}
+
+func (a *agent) Remove(id interface{}) error {
+	return a.NGT.Remove(id.(uint))
+}
+
+func (a *agent) BulkRemove(ids interface{}) error {
+	return a.NGT.BulkRemove(ids.([]uint)...)
+}
+
+func (a *agent) GetVector(id interface{}) (interface{}, error) {
+	return a.NGT.GetVector(id.(uint))
+}
+
+func (a *agent) Close() {
+	if len(a.tmpdir) != 0 {
+		os.RemoveAll(a.tmpdir)
 	}
-	c.NGT.Close()
+	a.NGT.Close()
 }
