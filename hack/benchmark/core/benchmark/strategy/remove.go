@@ -1,4 +1,4 @@
-package stratedy
+package strategy
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 type remove struct {
-	preStart func(context.Context, *testing.B, assets.Dataset) (interface{}, error)
+	preStart PreStart
 }
 
 func NewRemove(opts ...RemoveOption) benchmark.Strategy {
@@ -24,7 +24,7 @@ func NewRemove(opts ...RemoveOption) benchmark.Strategy {
 func (d *remove) Run(ctx context.Context, b *testing.B, c interface{}, typ benchmark.Type, dataset assets.Dataset) {
 	cnt := 0
 	b.Run("Remove", func(bb *testing.B) {
-		obj, err := d.preStart(ctx, b, dataset)
+		obj, err := d.preStart(ctx, b, c, dataset)
 		if err != nil {
 			b.Error(err)
 		}
@@ -51,6 +51,7 @@ func (d *remove) float32(ctx context.Context, b *testing.B, core core.Core32, id
 		core.Remove(ids[*cnt%len(ids)])
 		*cnt++
 	}
+
 	b.StopTimer()
 }
 

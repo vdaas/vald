@@ -1,4 +1,4 @@
-package stratedy
+package strategy
 
 type InsertOption func(*insert)
 
