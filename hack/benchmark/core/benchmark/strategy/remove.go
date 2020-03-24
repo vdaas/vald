@@ -21,10 +21,10 @@ func NewRemove(opts ...RemoveOption) benchmark.Strategy {
 	return r
 }
 
-func (d *remove) Run(ctx context.Context, b *testing.B, c interface{}, typ benchmark.Type, dataset assets.Dataset) {
+func (r *remove) Run(ctx context.Context, b *testing.B, c interface{}, typ benchmark.Type, dataset assets.Dataset) {
 	cnt := 0
 	b.Run("Remove", func(bb *testing.B) {
-		obj, err := d.preStart(ctx, b, c, dataset)
+		obj, err := r.preStart(ctx, b, c, dataset)
 		if err != nil {
 			b.Error(err)
 		}
@@ -33,16 +33,16 @@ func (d *remove) Run(ctx context.Context, b *testing.B, c interface{}, typ bench
 
 		switch typ {
 		case benchmark.Float32:
-			d.float32(ctx, bb, c.(core.Core32), ids, &cnt)
+			r.float32(ctx, bb, c.(core.Core32), ids, &cnt)
 		case benchmark.Float64:
-			d.float64(ctx, bb, c.(core.Core64), ids, &cnt)
+			r.float64(ctx, bb, c.(core.Core64), ids, &cnt)
 		default:
 			bb.Fatal("invalid data type")
 		}
 	})
 }
 
-func (d *remove) float32(ctx context.Context, b *testing.B, core core.Core32, ids []uint, cnt *int) {
+func (r *remove) float32(ctx context.Context, b *testing.B, core core.Core32, ids []uint, cnt *int) {
 	b.StopTimer()
 	b.ReportAllocs()
 	b.ResetTimer()

@@ -20,9 +20,8 @@ func (d *defaultPreStart) PreStart(ctx context.Context, b *testing.B, c interfac
 		return d.float64(ctx, b, dataset, core)
 	default:
 		b.Fatal("not implementated")
+		return nil, nil
 	}
-
-	return nil, nil
 }
 
 func (d *defaultPreStart) float32(ctx context.Context, b *testing.B, dataset assets.Dataset, core core.Core32) (interface{}, error) {
