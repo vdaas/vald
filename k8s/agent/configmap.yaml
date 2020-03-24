@@ -98,10 +98,10 @@ data:
         - readiness
       full_shutdown_duration: 600s
       tls:
+        ca: /path/to/ca
+        cert: /path/to/cert
         enabled: false
-        cert: "/path/to/cert"
-        key: "/path/to/key"
-        ca: "/path/to/ca"
+        key: /path/to/key
     observability:
       enabled: false
       collector:
@@ -133,5 +133,6 @@ data:
       dimension: 4096
       distance_type: l2
       enable_in_memory_mode: true
+      index_path: null
       object_type: float
       search_edge_size: 10

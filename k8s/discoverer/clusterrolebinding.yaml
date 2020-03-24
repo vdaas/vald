@@ -23,6 +23,6 @@ roleRef:
   kind: ClusterRole
   name: discoverer
 subjects:
-- kind: ServiceAccount
-  name: vald
-  namespace: default
+  - kind: ServiceAccount
+    name: vald
+    namespace: default

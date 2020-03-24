@@ -79,3 +79,13 @@ define go-lint
 	find ./ -type f -regex ".*\.go" | xargs goimports -w
 	golangci-lint run --enable-all --disable=gochecknoglobals --fix --color always -j 16 --skip-dirs apis/grpc --exclude-use-default=false ./...
 endef
+
+define telepresence
+	[ -z $(SWAP_IMAGE) ] && IMAGE=$2 || IMAGE=$(SWAP_IMAGE) \
+	&& echo "telepresence replaces $(SWAP_DEPLOYMENT_TYPE)/$1 with $${IMAGE}:$(SWAP_TAG)" \
+	&& telepresence \
+	    --swap-deployment $1 \
+	    --docker-run --rm -it $${IMAGE}:$(SWAP_TAG)
+	    ## will be available after telepresence 0.105 released
+	    ## --deployment-type "$(SWAP_DEPLOYMENT_TYPE)"
+endef

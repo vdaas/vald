@@ -37,7 +37,7 @@ spec:
       labels:
         app: vald-gateway
       annotations:
-        checksum/configmap: c2d2ebd980bc98c4d77bc7150d57a4b742adf9251855338208a6d33a5a88655f
+        checksum/configmap: f6d3b8e4118e05c8173a8c0048acb83c5a96f18c94d9e6e860395e47d54be457
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-gateway
@@ -90,15 +90,15 @@ spec:
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              topologyKey: kubernetes.io/hostname
-              labelSelector:
-                matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                  - vald-gateway
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - vald-gateway
       containers:
         - name: vald-gateway
           image: "vdaas/vald-gateway:nightly"

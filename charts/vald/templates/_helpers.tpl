@@ -77,7 +77,10 @@ format: {{ default .default.format .Values.format | quote }}
 Container ports
 */}}
 {{- define "vald.containerPorts" -}}
-{{- $livenessEnabled := default .default.healths.liveness.enabled .Values.healths.liveness.enabled }}
+{{- $livenessEnabled := .default.healths.liveness.enabled }}
+{{- if hasKey .Values.healths.liveness "enabled" }}
+{{- $livenessEnabled = .Values.healths.liveness.enabled }}
+{{- end }}
 {{- if $livenessEnabled }}
 livenessProbe:
   {{- if .Values.healths.liveness.livenessProbe }}
@@ -98,7 +101,10 @@ livenessProbe:
   {{- toYaml .default.healths.liveness.livenessProbe | nindent 2 }}
   {{- end }}
 {{- end }}
-{{- $readinessEnabled := default .default.healths.readiness.enabled .Values.healths.readiness.enabled }}
+{{- $readinessEnabled := .default.healths.readiness.enabled }}
+{{- if hasKey .Values.healths.readiness "enabled" }}
+{{- $readinessEnabled = .Values.healths.readiness.enabled }}
+{{- end }}
 {{- if $readinessEnabled }}
 readinessProbe:
   {{- if .Values.healths.readiness.readinessProbe }}
@@ -130,25 +136,37 @@ ports:
     protocol: TCP
     containerPort: {{ default .default.healths.readiness.port .Values.healths.readiness.port }}
   {{- end }}
-  {{- $restEnabled := default .default.servers.rest.enabled .Values.servers.rest.enabled }}
+  {{- $restEnabled := .default.servers.rest.enabled }}
+  {{- if hasKey .Values.servers.rest "enabled" }}
+  {{- $restEnabled = .Values.servers.rest.enabled }}
+  {{- end }}
   {{- if $restEnabled }}
   - name: rest
     protocol: TCP
     containerPort: {{ default .default.servers.rest.port .Values.servers.rest.port }}
   {{- end }}
-  {{- $grpcEnabled := default .default.servers.grpc.enabled .Values.servers.grpc.enabled }}
+  {{- $grpcEnabled := .default.servers.grpc.enabled }}
+  {{- if hasKey .Values.servers.grpc "enabled" }}
+  {{- $grpcEnabled = .Values.servers.grpc.enabled }}
+  {{- end }}
   {{- if $grpcEnabled }}
   - name: grpc
     protocol: TCP
     containerPort: {{ default .default.servers.grpc.port .Values.servers.grpc.port }}
   {{- end }}
-  {{- $pprofEnabled := default .default.metrics.pprof.enabled .Values.metrics.pprof.enabled }}
+  {{- $pprofEnabled := .default.metrics.pprof.enabled }}
+  {{- if hasKey .Values.metrics.pprof "enabled" }}
+  {{- $pprofEnabled = .Values.metrics.pprof.enabled }}
+  {{- end }}
   {{- if $pprofEnabled }}
   - name: pprof
     protocol: TCP
     containerPort: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
   {{- end }}
-  {{- $prometheusEnabled := default .default.metrics.prometheus.enabled .Values.metrics.prometheus.enabled }}
+  {{- $prometheusEnabled := .default.metrics.prometheus.enabled }}
+  {{- if hasKey .Values.metrics.prometheus "enabled" }}
+  {{- $prometheusEnabled = .Values.metrics.prometheus.enabled }}
+  {{- end }}
   {{- if $prometheusEnabled }}
   - name: prometheus
     protocol: TCP
@@ -161,35 +179,50 @@ Service ports
 */}
 {{- define "vald.servicePorts" -}}
 ports:
-  {{- $restEnabled := default .default.servers.rest.enabled .Values.servers.rest.enabled }}
+  {{- $restEnabled := .default.servers.rest.enabled }}
+  {{- if hasKey .Values.servers.rest "enabled" }}
+  {{- $restEnabled = .Values.servers.rest.enabled }}
+  {{- end }}
   {{- if $restEnabled }}
   - name: rest
     port: {{ default .default.servers.rest.servicePort .Values.servers.rest.servicePort }}
     targetPort: {{ default .default.servers.rest.port .Values.servers.rest.port }}
     protocol: TCP
   {{- end }}
-  {{- $grpcEnabled := default .default.servers.grpc.enabled .Values.servers.grpc.enabled }}
+  {{- $grpcEnabled := .default.servers.grpc.enabled }}
+  {{- if hasKey .Values.servers.grpc "enabled" }}
+  {{- $grpcEnabled = .Values.servers.grpc.enabled }}
+  {{- end }}
   {{- if $grpcEnabled }}
   - name: grpc
     port: {{ default .default.servers.grpc.servicePort .Values.servers.grpc.servicePort }}
     targetPort: {{ default .default.servers.grpc.port .Values.servers.grpc.port }}
     protocol: TCP
   {{- end }}
-  {{- $readinessEnabled := default .default.healths.readiness.enabled .Values.healths.readiness.enabled }}
+  {{- $readinessEnabled := .default.healths.readiness.enabled }}
+  {{- if hasKey .Values.healths.readiness "enabled" }}
+  {{- $readinessEnabled = .Values.healths.readiness.enabled }}
+  {{- end }}
   {{- if $readinessEnabled }}
   - name: readiness
     port: {{ default .default.healths.readiness.servicePort .Values.healths.readiness.servicePort }}
     targetPort: {{ default .default.healths.readiness.port .Values.healths.readiness.port }}
     protocol: TCP
   {{- end }}
-  {{- $pprofEnabled := default .default.metrics.pprof.enabled .Values.metrics.pprof.enabled }}
+  {{- $pprofEnabled := .default.metrics.pprof.enabled }}
+  {{- if hasKey .Values.metrics.pprof "enabled" }}
+  {{- $pprofEnabled = .Values.metrics.pprof.enabled }}
+  {{- end }}
   {{- if $pprofEnabled }}
   - name: pprof
     port: {{ default .default.metrics.pprof.servicePort .Values.metrics.pprof.servicePort }}
     targetPort: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
     protocol: TCP
   {{- end }}
-  {{- $prometheusEnabled := default .default.metrics.prometheus.enabled .Values.metrics.prometheus.enabled }}
+  {{- $prometheusEnabled := .default.metrics.prometheus.enabled }}
+  {{- if hasKey .Values.metrics.prometheus "enabled" }}
+  {{- $prometheusEnabled = .Values.metrics.prometheus.enabled }}
+  {{- end }}
   {{- if $prometheusEnabled }}
   - name: prometheus
     port: {{ default .default.metrics.prometheus.servicePort .Values.metrics.prometheus.servicePort }}
@@ -203,7 +236,10 @@ Server configures that inserted into server_config
 */}}
 {{- define "vald.servers" -}}
 servers:
-  {{- $restEnabled := default .default.servers.rest.enabled .Values.servers.rest.enabled }}
+  {{- $restEnabled := .default.servers.rest.enabled }}
+  {{- if hasKey .Values.servers.rest "enabled" }}
+  {{- $restEnabled = .Values.servers.rest.enabled }}
+  {{- end }}
   {{- if $restEnabled }}
   - name: rest
     host: {{ default .default.servers.rest.host .Values.servers.rest.host }}
@@ -226,7 +262,10 @@ servers:
     {{- toYaml .default.servers.rest.server | nindent 4 }}
     {{- end }}
   {{- end }}
-  {{- $grpcEnabled := default .default.servers.grpc.enabled .Values.servers.grpc.enabled }}
+  {{- $grpcEnabled := .default.servers.grpc.enabled }}
+  {{- if hasKey .Values.servers.grpc "enabled" }}
+  {{- $grpcEnabled = .Values.servers.grpc.enabled }}
+  {{- end }}
   {{- if $grpcEnabled }}
   - name: grpc
     host: {{ default .default.servers.grpc.host .Values.servers.grpc.host }}
@@ -265,7 +304,10 @@ servers:
     {{- end }}
   {{- end }}
 health_check_servers:
-  {{- $livenessEnabled := default .default.healths.liveness.enabled .Values.healths.liveness.enabled }}
+  {{- $livenessEnabled := .default.healths.liveness.enabled }}
+  {{- if hasKey .Values.healths.liveness "enabled" }}
+  {{- $livenessEnabled = .Values.healths.liveness.enabled }}
+  {{- end }}
   {{- if $livenessEnabled }}
   - name: liveness
     host: {{ default .default.healths.liveness.host .Values.healths.liveness.host }}
@@ -288,7 +330,10 @@ health_check_servers:
     {{- toYaml .default.healths.liveness.server | nindent 4 }}
     {{- end }}
   {{- end }}
-  {{- $readinessEnabled := default .default.healths.readiness.enabled .Values.healths.readiness.enabled }}
+  {{- $readinessEnabled := .default.healths.readiness.enabled }}
+  {{- if hasKey .Values.healths.readiness "enabled" }}
+  {{- $readinessEnabled = .Values.healths.readiness.enabled }}
+  {{- end }}
   {{- if $readinessEnabled }}
   - name: readiness
     host: {{ default .default.healths.readiness.host .Values.healths.readiness.host }}
@@ -312,7 +357,10 @@ health_check_servers:
     {{- end }}
   {{- end }}
 metrics_servers:
-  {{- $pprofEnabled := default .default.metrics.pprof.enabled .Values.metrics.pprof.enabled }}
+  {{- $pprofEnabled := .default.metrics.pprof.enabled }}
+  {{- if hasKey .Values.metrics.pprof "enabled" }}
+  {{- $pprofEnabled = .Values.metrics.pprof.enabled }}
+  {{- end }}
   {{- if $pprofEnabled }}
   - name: pprof
     host: {{ default .default.metrics.pprof.host .Values.metrics.pprof.host }}
@@ -335,7 +383,10 @@ metrics_servers:
     {{- toYaml .default.metrics.pprof.server | nindent 4 }}
     {{- end }}
   {{- end }}
-  {{- $prometheusEnabled := default .default.metrics.prometheus.enabled .Values.metrics.prometheus.enabled }}
+  {{- $prometheusEnabled := .default.metrics.prometheus.enabled }}
+  {{- if hasKey .Values.metrics.prometheus "enabled" }}
+  {{- $prometheusEnabled = .Values.metrics.prometheus.enabled }}
+  {{- end }}
   {{- if $prometheusEnabled }}
   - name: prometheus
     host: {{ default .default.metrics.prometheus.host .Values.metrics.prometheus.host }}
@@ -379,10 +430,14 @@ startup_strategy:
   {{- end }}
 full_shutdown_duration: {{ default .default.full_shutdown_duration .Values.full_shutdown_duration }}
 tls:
+  {{- if .Values.tls }}
   enabled: {{ default .default.tls.enabled .Values.tls.enabled }}
   cert: {{ default .default.tls.cert .Values.tls.cert | quote }}
   key: {{ default .default.tls.key .Values.tls.key | quote }}
   ca: {{ default .default.tls.ca .Values.tls.ca | quote }}
+  {{- else }}
+  {{- toYaml .default.tls | nindent 2 }}
+  {{- end }}
 {{- end -}}
 
 {{/*

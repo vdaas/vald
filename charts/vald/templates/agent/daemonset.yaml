@@ -60,8 +60,10 @@ spec:
             {{- toYaml .Values.agent.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          {{- if .Values.agent.env }}
           env:
             {{- toYaml .Values.agent.env | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: {{ .Values.agent.name }}-config
               mountPath: /etc/server/

@@ -98,10 +98,10 @@ data:
         - readiness
       full_shutdown_duration: 600s
       tls:
+        ca: /path/to/ca
+        cert: /path/to/cert
         enabled: false
-        cert: "/path/to/cert"
-        key: "/path/to/key"
-        ca: "/path/to/ca"
+        key: /path/to/key
     observability:
       enabled: false
       collector:
@@ -157,8 +157,14 @@ data:
           cache_expiration: 24h
           refresh_duration: 1h
         tls:
+          ca: /path/to/ca
+          cert: /path/to/cert
           enabled: false
+          key: /path/to/key
       tls:
+        ca: /path/to/ca
+        cert: /path/to/cert
         enabled: false
+        key: /path/to/key
       vk_prefix: ""
       write_timeout: 3s

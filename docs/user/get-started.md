@@ -166,7 +166,7 @@ This chapter shows how to run Vald with fashion-mnist dataset.
     ```bash
     # move to working directory
     cd example/client
-    
+
     # get fashion-mnist
     wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
     ```
@@ -226,13 +226,13 @@ This chapter shows how to run Vald with fashion-mnist dataset.
             </details>
     - Recognition paremters.
         <details><summary>example code</summary><br>
-        
+
         ```go
         func init() {
-	        flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
-	        flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "set gRPC server address")
-	        flag.UintVar(&indexingWaitSeconds, "wait", 60, "set indexing wait seconds")
-	        flag.Parse()
+            flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
+            flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "set gRPC server address")
+            flag.UintVar(&indexingWaitSeconds, "wait", 60, "set indexing wait seconds")
+            flag.Parse()
         }
         ```
         </details>

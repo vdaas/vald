@@ -98,10 +98,10 @@ data:
         - readiness
       full_shutdown_duration: 600s
       tls:
+        ca: /path/to/ca
+        cert: /path/to/cert
         enabled: false
-        cert: "/path/to/cert"
-        key: "/path/to/key"
-        ca: "/path/to/ca"
+        key: /path/to/key
     observability:
       enabled: false
       collector:
@@ -180,5 +180,5 @@ data:
     compressor:
       buffer: 100
       compress_algorithm: zstd
-      compression_level: 10
+      compression_level: 3
       concurrent_limit: 10
