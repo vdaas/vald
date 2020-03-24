@@ -169,15 +169,22 @@ func initTable(b *testing.B, metas []MetaVector) {
 
 func BenchmarkGocqlxSelectBindMap(b *testing.B) {
 	var val MetaVector
-	var key string
 
 	metas := loadData()
 	initTable(b, metas)
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		key = metas[i%len(metas)].UUID
+	keys := make([]map[string]interface{}, 0, len(metas))
+	for _, m := range metas {
+		keys = append(keys, map[string]interface{}{
+			uuidColumn: m.UUID,
+		})
+	}
 
+	b.StopTimer()
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
 		// query
 		if err := c.Query(
 			cassandra.Select(
@@ -185,32 +192,36 @@ func BenchmarkGocqlxSelectBindMap(b *testing.B) {
 				metaColumnSlice,
 				cassandra.Eq(uuidColumn),
 			),
-		).BindMap(
-			map[string]interface{}{
-				uuidColumn: key,
-			},
-		).GetRelease(&val); err != nil {
+		).BindMap(keys[i%len(metas)]).GetRelease(&val); err != nil {
 			b.Errorf("Error: %s", err)
 		}
 
 		// verify
-		if val.UUID != key {
-			b.Errorf("Verify failed: %s != %s", val.UUID, key)
+		if val.UUID != keys[i%len(metas)][uuidColumn] {
+			b.Errorf("Verify failed: %s != %s", val.UUID, keys[i%len(metas)][uuidColumn])
 		}
 	}
+	b.StopTimer()
 }
 
 func BenchmarkGocqlxSelectBindStruct(b *testing.B) {
 	var val MetaVector
-	var key string
 
 	metas := loadData()
 	initTable(b, metas)
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		key = metas[i%len(metas)].UUID
+	keys := make([]MetaVector, 0, len(metas))
+	for _, m := range metas {
+		keys = append(keys, MetaVector{
+			UUID: m.UUID,
+		})
+	}
 
+	b.StopTimer()
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
 		// query
 		if err := c.Query(
 			cassandra.Select(
@@ -218,17 +229,14 @@ func BenchmarkGocqlxSelectBindStruct(b *testing.B) {
 				metaColumnSlice,
 				cassandra.Eq(uuidColumn),
 			),
-		).BindStruct(
-			MetaVector{
-				UUID: key,
-			},
-		).GetRelease(&val); err != nil {
+		).BindStruct(keys[i%len(metas)]).GetRelease(&val); err != nil {
 			b.Errorf("Error: %s", err)
 		}
 
 		// verify
-		if val.UUID != key {
-			b.Errorf("Verify failed: %s != %s", val.UUID, key)
+		if val.UUID != keys[i%len(metas)].UUID {
+			b.Errorf("Verify failed: %s != %s", val.UUID, keys[i%len(metas)].UUID)
 		}
 	}
+	b.StopTimer()
 }
