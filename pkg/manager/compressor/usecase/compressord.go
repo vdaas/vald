@@ -31,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
+	"github.com/vdaas/vald/internal/worker"
 	"github.com/vdaas/vald/pkg/manager/compressor/config"
 	handler "github.com/vdaas/vald/pkg/manager/compressor/handler/grpc"
 	"github.com/vdaas/vald/pkg/manager/compressor/handler/rest"
@@ -78,8 +79,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	c, err := service.NewCompressor(
 		service.WithCompressAlgorithm(cfg.Compressor.CompressAlgorithm),
 		service.WithCompressionLevel(cfg.Compressor.CompressionLevel),
-		service.WithLimitation(cfg.Compressor.ConcurrentLimit),
-		service.WithBuffer(cfg.Compressor.Buffer),
+		service.WithWorker(
+			worker.WithName("compressor"),
+			worker.WithLimitation(cfg.Compressor.ConcurrentLimit),
+			worker.WithBuffer(cfg.Compressor.Buffer),
+		),
 		service.WithErrGroup(eg),
 	)
 	if err != nil {

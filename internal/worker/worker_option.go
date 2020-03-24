@@ -14,53 +14,51 @@
 // limitations under the License.
 //
 
-// Package service
-package service
+// Package worker provides worker processes
+package worker
 
 import (
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/worker"
 )
 
-type CompressorOption func(c *compressor) error
+type WorkerOption func(w *worker) error
 
 var (
-	defaultCompressorOpts = []CompressorOption{
-		WithWorker(),
-		WithCompressAlgorithm("gob"),
+	defaultWorkerOpts = []WorkerOption{
+		WithName("worker"),
+		WithLimitation(0),
+		WithBuffer(10),
 		WithErrGroup(errgroup.Get()),
 	}
 )
 
-func WithCompressAlgorithm(name string) CompressorOption {
-	return func(c *compressor) error {
-		c.algorithm = name
-		return nil
-	}
-}
-
-func WithCompressionLevel(level int) CompressorOption {
-	return func(c *compressor) error {
-		c.compressionLevel = level
-		return nil
-	}
-}
-
-func WithWorker(opts ...worker.WorkerOption) CompressorOption {
-	return func(c *compressor) error {
-		w, err := worker.NewWorker(opts...)
-		if err != nil {
-			return err
+func WithName(name string) WorkerOption {
+	return func(w *worker) error {
+		if name != "" {
+			w.name = name
 		}
-		c.worker = w
 		return nil
 	}
 }
 
-func WithErrGroup(eg errgroup.Group) CompressorOption {
-	return func(c *compressor) error {
+func WithLimitation(limit int) WorkerOption {
+	return func(w *worker) error {
+		w.limitation = limit
+		return nil
+	}
+}
+
+func WithBuffer(b int) WorkerOption {
+	return func(w *worker) error {
+		w.buffer = b
+		return nil
+	}
+}
+
+func WithErrGroup(eg errgroup.Group) WorkerOption {
+	return func(w *worker) error {
 		if eg != nil {
-			c.eg = eg
+			w.eg = eg
 		}
 		return nil
 	}
