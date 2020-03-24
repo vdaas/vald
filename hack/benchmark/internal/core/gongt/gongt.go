@@ -52,8 +52,8 @@ func New(opts ...Option) (core.Core64, error) {
 	return n, nil
 }
 
-func (n *ngt) Search(vec []float64, size int, epsilon, radius float64) (interface{}, error) {
-	return n.NGT.Search(vec, size, epsilon)
+func (n *ngt) Search(vec []float64, size int, epsilon, radius float32) (interface{}, error) {
+	return n.NGT.Search(vec, size, float64(epsilon))
 }
 
 func (n *ngt) Insert(vec []float64) (uint, error) {
