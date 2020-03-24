@@ -22,7 +22,7 @@ Fashion-mnist is used as an example of a dataset.
 - helm: v3 ~
 - libhdf5 (_only required for this tutorial._)
 
-Helm and hdf5 is required for this tutorial. If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install)) and [hdf5](https://www.hdfgroup.org/)).
+Helm and hdf5 is required for this tutorial. If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install) and [hdf5](https://www.hdfgroup.org/).
 
 <details><summary>[Optional] Install helm</summary><br>
 
