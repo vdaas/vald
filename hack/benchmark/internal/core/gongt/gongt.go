@@ -24,7 +24,7 @@ var (
 	ErrNotSupportedMethod = errors.New("not supported method")
 )
 
-type agent struct {
+type ngt struct {
 	indexPath  string
 	tmpdir     string
 	objectType ObjectType
@@ -32,73 +32,77 @@ type agent struct {
 	*gongt.NGT
 }
 
-func New(opts ...Option) (core.Core, error) {
-	a := new(agent)
+func New(opts ...Option) (core.Core64, error) {
+	n := new(ngt)
 	for _, opt := range append(defaultOptions, opts...) {
-		opt(a)
+		opt(n)
 	}
 
-	tmpdir, err := ioutil.TempDir("", a.indexPath)
+	tmpdir, err := ioutil.TempDir("", n.indexPath)
 	if err != nil {
 		return nil, err
 	}
-	a.tmpdir = tmpdir
+	n.tmpdir = tmpdir
 
-	a.NGT = gongt.New(tmpdir).
-		SetObjectType(a.objectType).
-		SetDimension(a.dimension).
+	n.NGT = gongt.New(tmpdir).
+		SetObjectType(n.objectType).
+		SetDimension(n.dimension).
 		Open()
 
-	return a, nil
+	return n, nil
 }
 
-func (a *agent) Search(vec, size, epsilon, radius interface{}) (interface{}, error) {
-	return a.NGT.Search(vec.([]float64), size.(int), epsilon.(float64))
+func (n *ngt) Search(vec []float64, size int, epsilon, radius float64) (interface{}, error) {
+	return n.NGT.Search(vec, size, epsilon)
 }
 
-func (a *agent) Insert(vec interface{}) (interface{}, error) {
-	return a.NGT.Insert(vec.([]float64))
+func (n *ngt) Insert(vec []float64) (uint, error) {
+	id, err := n.NGT.Insert(vec)
+	return uint(id), err
 }
 
-func (a *agent) InsertCommit(vec, poolSize interface{}) (interface{}, error) {
-	return a.NGT.InsertCommit(vec.([]float64), poolSize.(int))
+func (n *ngt) InsertCommit(vec []float64, poolSize uint32) (uint, error) {
+	id, err := n.NGT.Insert(vec)
+	return uint(id), err
 }
 
-func (a *agent) BulkInsert(vecs interface{}) (interface{}, []error) {
-	return a.NGT.BulkInsert(vecs.([][]float64))
+func (n *ngt) BulkInsert(vecs [][]float64) ([]uint, []error) {
+	ids, errs := n.NGT.BulkInsert(vecs)
+	return toUint(ids), errs
 }
 
-func (a *agent) BulkInsertCommit(vecs, poolSize interface{}) (interface{}, []error) {
-	return a.NGT.BulkInsertCommit(vecs.([][]float64), poolSize.(int))
+func (n *ngt) BulkInsertCommit(vecs [][]float64, poolSize uint32) ([]uint, []error) {
+	ids, errs := n.NGT.BulkInsertCommit(vecs, int(poolSize))
+	return toUint(ids), errs
 }
 
-func (a *agent) CreateAndSaveIndex(poolSize interface{}) error {
-	return a.NGT.CreateAndSaveIndex(poolSize.(int))
+func (n *ngt) CreateAndSaveIndex(poolSize uint32) error {
+	return n.NGT.CreateAndSaveIndex(int(poolSize))
 }
 
-func (a *agent) CreateIndex(poolSize interface{}) error {
-	return a.NGT.CreateIndex(poolSize.(int))
+func (n *ngt) CreateIndex(poolSize uint32) error {
+	return n.NGT.CreateIndex(int(poolSize))
 }
 
-func (a *agent) SaveIndex() error {
-	return a.NGT.SaveIndex()
+func (n *ngt) Remove(id uint) error {
+	return n.NGT.StrictRemove(id)
 }
 
-func (a *agent) Remove(id interface{}) error {
-	return a.NGT.Remove(id.(int))
-}
-
-func (a *agent) BulkRemove(ids interface{}) error {
+func (n *ngt) BulkRemove(ids ...uint) error {
 	return ErrNotSupportedMethod
 }
 
-func (a *agent) GetVector(id interface{}) (interface{}, error) {
-	return a.NGT.GetVector(id.(int))
+func (n *ngt) Close() {
+	if len(n.indexPath) != 0 {
+		os.RemoveAll(n.tmpdir)
+	}
+	n.NGT.Close()
 }
 
-func (a *agent) Close() {
-	if len(a.indexPath) != 0 {
-		os.RemoveAll(a.tmpdir)
+func toUint(in []int) (out []uint) {
+	out = make([]uint, len(in))
+	for i := range in {
+		out[i] = uint(in[i])
 	}
-	a.NGT.Close()
+	return
 }

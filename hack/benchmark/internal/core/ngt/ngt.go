@@ -1,6 +1,7 @@
 package ngt
 
 import (
+	"io/ioutil"
 	"os"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/core"
@@ -23,48 +24,41 @@ type agent struct {
 	ngt.NGT
 }
 
-func New(opts ...Option) (core.Core, error) {
+func New(opts ...Option) (core.Core32, error) {
 	a := new(agent)
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(a)
 	}
+
+	tmpdir, err := ioutil.TempDir("", a.idxPath)
+	if err != nil {
+		return nil, err
+	}
+	a.tmpdir = tmpdir
+
+	var typ = ngt.ObjectNone
+	switch a.objectType {
+	case Uint8:
+		typ = ngt.Uint8
+	case Float:
+		typ = ngt.Float
+	}
+
+	n, err := ngt.New(
+		ngt.WithIndexPath(tmpdir),
+		ngt.WithDimension(a.dimension),
+		ngt.WithObjectType(typ),
+	)
+	if err != nil {
+		return nil, err
+	}
+	a.NGT = n
+
 	return a, nil
 }
 
-func (a *agent) InsertCommit(vec, poolSize interface{}) (interface{}, error) {
-	return a.NGT.InsertCommit(vec.([]float32), poolSize.(uint32))
-}
-
-func (a *agent) BulkInsert(vecs interface{}) (interface{}, []error) {
-	return a.NGT.BulkInsert(vecs.([][]float32))
-}
-
-func (a *agent) BulkInsertCommit(vecs, poolSize interface{}) (interface{}, []error) {
-	return a.NGT.BulkInsertCommit(vecs.([][]float32), poolSize.(uint32))
-}
-
-func (a *agent) CreateAndSaveIndex(poolSize interface{}) error {
-	return a.NGT.CreateAndSaveIndex(poolSize.(uint32))
-}
-
-func (a *agent) CreateIndex(poolSize interface{}) error {
-	return a.NGT.CreateIndex(poolSize.(uint32))
-}
-
-func (a *agent) SaveIndex() error {
-	return a.NGT.SaveIndex()
-}
-
-func (a *agent) Remove(id interface{}) error {
-	return a.NGT.Remove(id.(uint))
-}
-
-func (a *agent) BulkRemove(ids interface{}) error {
-	return a.NGT.BulkRemove(ids.([]uint)...)
-}
-
-func (a *agent) GetVector(id interface{}) (interface{}, error) {
-	return a.NGT.GetVector(id.(uint))
+func (a *agent) Search(vec []float32, size int, epsilon, radius float32) (interface{}, error) {
+	return a.Search(vec, size, epsilon, radius)
 }
 
 func (a *agent) Close() {

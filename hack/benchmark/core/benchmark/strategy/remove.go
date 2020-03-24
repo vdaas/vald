@@ -31,11 +31,6 @@ func (d *remove) Run(ctx context.Context, b *testing.B, c interface{}, typ bench
 
 		ids := obj.([]uint)
 
-		b.StopTimer()
-		b.ReportAllocs()
-		b.ResetTimer()
-		b.StartTimer()
-
 		switch typ {
 		case benchmark.Float32:
 			d.float32(ctx, bb, c.(core.Core32), ids, &cnt)
@@ -44,21 +39,29 @@ func (d *remove) Run(ctx context.Context, b *testing.B, c interface{}, typ bench
 		default:
 			bb.Fatal("invalid data type")
 		}
-
-		b.StopTimer()
 	})
 }
 
 func (d *remove) float32(ctx context.Context, b *testing.B, core core.Core32, ids []uint, cnt *int) {
+	b.StopTimer()
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		core.Remove(ids[*cnt%len(ids)])
 		*cnt++
 	}
+	b.StopTimer()
 }
 
 func (d *remove) float64(ctx context.Context, b *testing.B, core core.Core64, ids []uint, cnt *int) {
+	b.StopTimer()
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		core.Remove(ids[*cnt%len(ids)])
 		*cnt++
 	}
+	b.StopTimer()
 }
