@@ -1,6 +1,6 @@
 package gongt
 
-type Option func(n *ngt)
+type Option func(c *core)
 
 var (
 	defaultOptions = []Option{
@@ -11,28 +11,28 @@ var (
 )
 
 func WithIndexPath(path string) Option {
-	return func(n *ngt) {
+	return func(c *core) {
 		if len(path) != 0 {
-			n.indexPath = path
+			c.indexPath = path
 		}
 	}
 }
 
 func WithObjectType(typ ObjectType) Option {
-	return func(n *ngt) {
+	return func(c *core) {
 		switch typ {
 		case Uint8, Float:
-			n.objectType = typ
+			c.objectType = typ
 		default:
-			n.objectType = ObjectNone
+			c.objectType = ObjectNone
 		}
 	}
 }
 
 func WithDimension(dimension int) Option {
-	return func(n *ngt) {
+	return func(c *core) {
 		if dimension > 0 {
-			n.dimension = dimension
+			c.dimension = dimension
 		}
 	}
 }
