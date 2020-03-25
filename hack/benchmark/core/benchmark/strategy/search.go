@@ -27,16 +27,16 @@ func NewSearch(opts ...SearchOption) benchmark.Strategy {
 func (s *search) Run(ctx context.Context, b *testing.B, c interface{}, typ benchmark.Type, dataset assets.Dataset) {
 	cnt := 0
 	b.Run("Search", func(bb *testing.B) {
-		_, err := s.preStart(ctx, b, c, dataset)
+		_, err := s.preStart(ctx, bb, c, dataset)
 		if err != nil {
 			b.Fatal(err)
 		}
 
 		switch typ {
 		case benchmark.Float32:
-			s.float32(ctx, b, c.(core.Core32), dataset, &cnt)
+			s.float32(ctx, bb, c.(core.Core32), dataset, &cnt)
 		case benchmark.Float64:
-			s.float64(ctx, b, c.(core.Core64), dataset, &cnt)
+			s.float64(ctx, bb, c.(core.Core64), dataset, &cnt)
 		default:
 			bb.Fatal("invalid data type")
 		}
