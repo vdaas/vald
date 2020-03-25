@@ -47,28 +47,6 @@ func BenchmarkNGT_Insert(b *testing.B) {
 	}
 }
 
-func BenchmarkNGT_BulkInsert(b *testing.B) {
-	for _, target := range targets {
-		benchmark.New(
-			b,
-			benchmark.WithName(target),
-			benchmark.WithFloat32(
-				func(ctx context.Context, b *testing.B, dataset assets.Dataset) (interface{}, func(), error) {
-					n, err := ngt.New(
-						ngt.WithDimension(dataset.Dimension()),
-						ngt.WithIndexPath(dataset.ObjectType()),
-					)
-					if err != nil {
-						return nil, nil, err
-					}
-					return n, n.Close, nil
-				},
-				strategy.NewBulkInsert(),
-			),
-		).Run(context.Background(), b)
-	}
-}
-
 func BenchmarkNGT_Remove(b *testing.B) {
 	for _, target := range targets {
 		benchmark.New(
