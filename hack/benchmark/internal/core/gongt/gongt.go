@@ -92,6 +92,10 @@ func (n *ngt) BulkRemove(ids ...uint) error {
 	return ErrNotSupportedMethod
 }
 
+func (n *ngt) GetVector(id uint) ([]float64, error) {
+	return n.NGT.GetVector(int(id))
+}
+
 func (n *ngt) Close() {
 	if len(n.indexPath) != 0 {
 		os.RemoveAll(n.tmpdir)

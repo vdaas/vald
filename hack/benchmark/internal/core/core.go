@@ -26,6 +26,6 @@ type Core64 interface {
 	SaveIndex() error
 	Remove(id uint) error
 	BulkRemove(ids ...uint) error
-	GetVector(id int) ([]float64, error)
+	GetVector(id uint) ([]float64, error)
 	Close()
 }
