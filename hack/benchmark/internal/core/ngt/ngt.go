@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/vdaas/vald/hack/benchmark/internal/core"
+	icore "github.com/vdaas/vald/hack/benchmark/internal/core"
 	"github.com/vdaas/vald/internal/core/ngt"
 )
 
@@ -16,7 +16,7 @@ const (
 	Float
 )
 
-type agent struct {
+type core struct {
 	idxPath    string
 	tmpdir     string
 	objectType ObjectType
@@ -24,20 +24,20 @@ type agent struct {
 	ngt.NGT
 }
 
-func New(opts ...Option) (core.Core32, error) {
-	a := new(agent)
+func New(opts ...Option) (icore.Core32, error) {
+	c := new(core)
 	for _, opt := range append(defaultOptions, opts...) {
-		opt(a)
+		opt(c)
 	}
 
-	tmpdir, err := ioutil.TempDir("", a.idxPath)
+	tmpdir, err := ioutil.TempDir("", c.idxPath)
 	if err != nil {
 		return nil, err
 	}
-	a.tmpdir = tmpdir
+	c.tmpdir = tmpdir
 
 	var typ = ngt.ObjectNone
-	switch a.objectType {
+	switch c.objectType {
 	case Uint8:
 		typ = ngt.Uint8
 	case Float:
@@ -46,24 +46,24 @@ func New(opts ...Option) (core.Core32, error) {
 
 	n, err := ngt.New(
 		ngt.WithIndexPath(tmpdir),
-		ngt.WithDimension(a.dimension),
+		ngt.WithDimension(c.dimension),
 		ngt.WithObjectType(typ),
 	)
 	if err != nil {
 		return nil, err
 	}
-	a.NGT = n
+	c.NGT = n
 
-	return a, nil
+	return c, nil
 }
 
-func (a *agent) Search(vec []float32, size int, epsilon, radius float32) (interface{}, error) {
-	return a.Search(vec, size, epsilon, radius)
+func (c *core) Search(vec []float32, size int, epsilon, radius float32) (interface{}, error) {
+	return c.Search(vec, size, epsilon, radius)
 }
 
-func (a *agent) Close() {
-	if len(a.tmpdir) != 0 {
-		os.RemoveAll(a.tmpdir)
+func (c *core) Close() {
+	if len(c.tmpdir) != 0 {
+		os.RemoveAll(c.tmpdir)
 	}
-	a.NGT.Close()
+	c.NGT.Close()
 }

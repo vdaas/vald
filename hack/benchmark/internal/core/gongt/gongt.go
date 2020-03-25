@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/vdaas/vald/hack/benchmark/internal/core"
+	icore "github.com/vdaas/vald/hack/benchmark/internal/core"
 	"github.com/yahoojapan/gongt"
 )
 
@@ -24,7 +24,7 @@ var (
 	ErrNotSupportedMethod = errors.New("not supported method")
 )
 
-type ngt struct {
+type core struct {
 	indexPath  string
 	tmpdir     string
 	objectType ObjectType
@@ -32,75 +32,75 @@ type ngt struct {
 	*gongt.NGT
 }
 
-func New(opts ...Option) (core.Core64, error) {
-	n := new(ngt)
+func New(opts ...Option) (icore.Core64, error) {
+	c := new(core)
 	for _, opt := range append(defaultOptions, opts...) {
-		opt(n)
+		opt(c)
 	}
 
-	tmpdir, err := ioutil.TempDir("", n.indexPath)
+	tmpdir, err := ioutil.TempDir("", c.indexPath)
 	if err != nil {
 		return nil, err
 	}
-	n.tmpdir = tmpdir
+	c.tmpdir = tmpdir
 
-	n.NGT = gongt.New(tmpdir).
-		SetObjectType(n.objectType).
-		SetDimension(n.dimension).
+	c.NGT = gongt.New(tmpdir).
+		SetObjectType(c.objectType).
+		SetDimension(c.dimension).
 		Open()
 
-	return n, nil
+	return c, nil
 }
 
-func (n *ngt) Search(vec []float64, size int, epsilon, radius float32) (interface{}, error) {
-	return n.NGT.Search(vec, size, float64(epsilon))
+func (c *core) Search(vec []float64, size int, epsilon, radius float32) (interface{}, error) {
+	return c.NGT.Search(vec, size, float64(epsilon))
 }
 
-func (n *ngt) Insert(vec []float64) (uint, error) {
-	id, err := n.NGT.Insert(vec)
+func (c *core) Insert(vec []float64) (uint, error) {
+	id, err := c.NGT.Insert(vec)
 	return uint(id), err
 }
 
-func (n *ngt) InsertCommit(vec []float64, poolSize uint32) (uint, error) {
-	id, err := n.NGT.Insert(vec)
+func (c *core) InsertCommit(vec []float64, poolSize uint32) (uint, error) {
+	id, err := c.NGT.Insert(vec)
 	return uint(id), err
 }
 
-func (n *ngt) BulkInsert(vecs [][]float64) ([]uint, []error) {
-	ids, errs := n.NGT.BulkInsert(vecs)
+func (c *core) BulkInsert(vecs [][]float64) ([]uint, []error) {
+	ids, errs := c.NGT.BulkInsert(vecs)
 	return toUint(ids), errs
 }
 
-func (n *ngt) BulkInsertCommit(vecs [][]float64, poolSize uint32) ([]uint, []error) {
-	ids, errs := n.NGT.BulkInsertCommit(vecs, int(poolSize))
+func (c *core) BulkInsertCommit(vecs [][]float64, poolSize uint32) ([]uint, []error) {
+	ids, errs := c.NGT.BulkInsertCommit(vecs, int(poolSize))
 	return toUint(ids), errs
 }
 
-func (n *ngt) CreateAndSaveIndex(poolSize uint32) error {
-	return n.NGT.CreateAndSaveIndex(int(poolSize))
+func (c *core) CreateAndSaveIndex(poolSize uint32) error {
+	return c.NGT.CreateAndSaveIndex(int(poolSize))
 }
 
-func (n *ngt) CreateIndex(poolSize uint32) error {
-	return n.NGT.CreateIndex(int(poolSize))
+func (c *core) CreateIndex(poolSize uint32) error {
+	return c.NGT.CreateIndex(int(poolSize))
 }
 
-func (n *ngt) Remove(id uint) error {
-	return n.NGT.StrictRemove(id)
+func (c *core) Remove(id uint) error {
+	return c.NGT.StrictRemove(id)
 }
 
-func (n *ngt) BulkRemove(ids ...uint) error {
+func (c *core) BulkRemove(ids ...uint) error {
 	return ErrNotSupportedMethod
 }
 
-func (n *ngt) GetVector(id uint) ([]float64, error) {
-	return n.NGT.GetVector(int(id))
+func (c *core) GetVector(id uint) ([]float64, error) {
+	return c.NGT.GetVector(int(id))
 }
 
-func (n *ngt) Close() {
-	if len(n.indexPath) != 0 {
-		os.RemoveAll(n.tmpdir)
+func (c *core) Close() {
+	if len(c.indexPath) != 0 {
+		os.RemoveAll(c.tmpdir)
 	}
-	n.NGT.Close()
+	c.NGT.Close()
 }
 
 func toUint(in []int) (out []uint) {
