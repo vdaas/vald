@@ -15,7 +15,7 @@ type remove struct {
 
 func NewRemove(opts ...RemoveOption) benchmark.Strategy {
 	r := new(remove)
-	for _, opt := range append(defaultOptions, opts...) {
+	for _, opt := range append(defaultRemoveOptions, opts...) {
 		opt(r)
 	}
 	return r
