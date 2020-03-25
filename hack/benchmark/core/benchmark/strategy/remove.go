@@ -26,7 +26,7 @@ func (r *remove) Run(ctx context.Context, b *testing.B, c interface{}, typ bench
 	b.Run("Remove", func(bb *testing.B) {
 		obj, err := r.preStart(ctx, b, c, dataset)
 		if err != nil {
-			b.Error(err)
+			b.Fatal(err)
 		}
 
 		ids := obj.([]uint)

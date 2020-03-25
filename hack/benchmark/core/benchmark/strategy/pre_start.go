@@ -32,7 +32,7 @@ func (d *defaultInsert) float32(ctx context.Context, b *testing.B, dataset asset
 		for _, vec := range train {
 			id, err := core.Insert(vec)
 			if err != nil {
-				return ids, err
+				return nil, err
 			}
 			ids = append(ids, id)
 		}
@@ -49,7 +49,7 @@ func (d *defaultInsert) float64(ctx context.Context, b *testing.B, dataset asset
 		for _, vec := range train {
 			id, err := core.Insert(vec)
 			if err != nil {
-				return ids, err
+				return nil, err
 			}
 			ids = append(ids, id)
 		}
