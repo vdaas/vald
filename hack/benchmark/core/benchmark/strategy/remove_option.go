@@ -3,7 +3,7 @@ package strategy
 type RemoveOption func(*remove)
 
 var (
-	defaultOptions = []RemoveOption{
+	defaultRemoveOptions = []RemoveOption{
 		WithPreStart(
 			(new(defaultPreStart)).PreStart,
 		),
