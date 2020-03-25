@@ -21,28 +21,28 @@ func NewBulkInsertCommit(opts ...BulkInsertCommitOption) benchmark.Strategy {
 	return bi
 }
 
-func (bi *bulkInsertCommit) Run(ctx context.Context, b *testing.B, c interface{}, typ benchmark.Type, dataset assets.Dataset) {
+func (bic *bulkInsertCommit) Run(ctx context.Context, b *testing.B, c interface{}, typ benchmark.Type, dataset assets.Dataset) {
 	cnt := 0
 	b.Run("BulkInsertCommit", func(bb *testing.B) {
 		switch typ {
 		case benchmark.Float32:
-			bi.float32(ctx, bb, c.(core.Core32), dataset, &cnt)
+			bic.float32(ctx, bb, c.(core.Core32), dataset, &cnt)
 		case benchmark.Float64:
-			bi.float64(ctx, bb, c.(core.Core64), dataset, &cnt)
+			bic.float64(ctx, bb, c.(core.Core64), dataset, &cnt)
 		default:
 			bb.Fatal("invalid data type")
 		}
 	})
 }
 
-func (bi *bulkInsertCommit) float32(ctx context.Context, b *testing.B, core core.Core32, dataset assets.Dataset, cnt *int) {
+func (bic *bulkInsertCommit) float32(ctx context.Context, b *testing.B, core core.Core32, dataset assets.Dataset, cnt *int) {
 	train := dataset.Train()
 
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		_, errs := core.BulkInsertCommit(train, bi.poolSize)
+		_, errs := core.BulkInsertCommit(train, bic.poolSize)
 		if err := wrapErrors(errs); err != nil {
 			b.Error(err)
 		}
@@ -51,7 +51,7 @@ func (bi *bulkInsertCommit) float32(ctx context.Context, b *testing.B, core core
 	b.StopTimer()
 }
 
-func (bi *bulkInsertCommit) float64(ctx context.Context, b *testing.B, core core.Core64, dataset assets.Dataset, cnt *int) {
+func (bic *bulkInsertCommit) float64(ctx context.Context, b *testing.B, core core.Core64, dataset assets.Dataset, cnt *int) {
 	train := dataset.TrainAsFloat64()
 
 	b.StopTimer()
@@ -59,7 +59,7 @@ func (bi *bulkInsertCommit) float64(ctx context.Context, b *testing.B, core core
 	b.ResetTimer()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		_, errs := core.BulkInsertCommit(train, bi.poolSize)
+		_, errs := core.BulkInsertCommit(train, bic.poolSize)
 		if err := wrapErrors(errs); err != nil {
 			b.Error(err)
 		}
