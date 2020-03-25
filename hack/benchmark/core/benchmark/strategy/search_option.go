@@ -54,7 +54,7 @@ func WithSearchRadius(radius float32) SearchOption {
 
 func WithSearchPreStart(fn PreStart) SearchOption {
 	return func(s *search) {
-		if s.preStart != nil {
+		if fn != nil {
 			s.preStart = fn
 		}
 	}

@@ -90,3 +90,25 @@ func BenchmarkNGT_Remove(b *testing.B) {
 		).Run(context.Background(), b)
 	}
 }
+
+func BenchmarkNGT_Search(b *testing.B) {
+	for _, target := range targets {
+		benchmark.New(
+			b,
+			benchmark.WithName(target),
+			benchmark.WithFloat32(
+				func(ctx context.Context, b *testing.B, dataset assets.Dataset) (interface{}, func(), error) {
+					n, err := ngt.New(
+						ngt.WithDimension(dataset.Dimension()),
+						ngt.WithIndexPath(dataset.ObjectType()),
+					)
+					if err != nil {
+						return nil, nil, err
+					}
+					return n, n.Close, nil
+				},
+				strategy.NewSearch(),
+			),
+		).Run(context.Background(), b)
+	}
+}
