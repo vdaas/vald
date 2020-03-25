@@ -38,6 +38,7 @@ func (bic *bulkInsertCommit) Run(ctx context.Context, b *testing.B, c interface{
 func (bic *bulkInsertCommit) float32(ctx context.Context, b *testing.B, core core.Core32, dataset assets.Dataset, cnt *int) {
 	train := dataset.Train()
 
+	b.StopTimer()
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.StartTimer()
