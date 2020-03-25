@@ -43,7 +43,7 @@ func (ci *createIndex) float32(ctx context.Context, b *testing.B, core core.Core
 	for i := 0; i < b.N; i++ {
 		err := core.CreateIndex(ci.poolSize)
 		if err != nil {
-			b.Error(err)
+			b.Fatal(err)
 		}
 	}
 	b.StopTimer()
