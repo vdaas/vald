@@ -21,21 +21,21 @@ func NewInsertCommit(opts ...InsertCommitOption) benchmark.Strategy {
 	return isrt
 }
 
-func (isrt *insertCommit) Run(ctx context.Context, b *testing.B, c interface{}, typ benchmark.Type, dataset assets.Dataset) {
+func (ic *insertCommit) Run(ctx context.Context, b *testing.B, c interface{}, typ benchmark.Type, dataset assets.Dataset) {
 	cnt := 0
 	b.Run("InsertCommit", func(bb *testing.B) {
 		switch typ {
 		case benchmark.Float32:
-			isrt.float32(ctx, bb, c.(core.Core32), dataset, &cnt)
+			ic.float32(ctx, bb, c.(core.Core32), dataset, &cnt)
 		case benchmark.Float64:
-			isrt.float64(ctx, bb, c.(core.Core64), dataset, &cnt)
+			ic.float64(ctx, bb, c.(core.Core64), dataset, &cnt)
 		default:
 			bb.Fatal("invalid data type")
 		}
 	})
 }
 
-func (isrt *insertCommit) float32(ctx context.Context, b *testing.B, core core.Core32, dataset assets.Dataset, cnt *int) {
+func (ic *insertCommit) float32(ctx context.Context, b *testing.B, core core.Core32, dataset assets.Dataset, cnt *int) {
 	train := dataset.Train()
 
 	b.StopTimer()
@@ -43,7 +43,7 @@ func (isrt *insertCommit) float32(ctx context.Context, b *testing.B, core core.C
 	b.ResetTimer()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		_, err := core.InsertCommit(train[*cnt%len(train)], isrt.poolSize)
+		_, err := core.InsertCommit(train[*cnt%len(train)], ic.poolSize)
 		if err != nil {
 			b.Error(err)
 		}
@@ -52,7 +52,7 @@ func (isrt *insertCommit) float32(ctx context.Context, b *testing.B, core core.C
 	b.StopTimer()
 }
 
-func (isrt *insertCommit) float64(ctx context.Context, b *testing.B, core core.Core64, dataset assets.Dataset, cnt *int) {
+func (ic *insertCommit) float64(ctx context.Context, b *testing.B, core core.Core64, dataset assets.Dataset, cnt *int) {
 	train := dataset.TrainAsFloat64()
 
 	b.StopTimer()
@@ -60,7 +60,7 @@ func (isrt *insertCommit) float64(ctx context.Context, b *testing.B, core core.C
 	b.ResetTimer()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		_, err := core.InsertCommit(train[*cnt%len(train)], isrt.poolSize)
+		_, err := core.InsertCommit(train[*cnt%len(train)], ic.poolSize)
 		if err != nil {
 			b.Error(err)
 		}

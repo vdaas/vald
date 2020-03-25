@@ -11,9 +11,9 @@ var (
 )
 
 func WithPreStart(fn PreStart) RemoveOption {
-	return func(d *remove) {
+	return func(r *remove) {
 		if fn != nil {
-			d.preStart = fn
+			r.preStart = fn
 		}
 	}
 }

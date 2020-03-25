@@ -9,9 +9,9 @@ var (
 )
 
 func WithBulkInsertCommitPoolSize(size int) BulkInsertCommitOption {
-	return func(bi *bulkInsertCommit) {
+	return func(bic *bulkInsertCommit) {
 		if size > 0 {
-			bi.poolSize = uint32(size)
+			bic.poolSize = uint32(size)
 		}
 	}
 }
