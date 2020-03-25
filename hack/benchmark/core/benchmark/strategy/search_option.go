@@ -1,5 +1,12 @@
 package strategy
 
+import (
+	"context"
+	"testing"
+
+	"github.com/vdaas/vald/hack/benchmark/internal/assets"
+)
+
 type SearchOption func(*search)
 
 var (
@@ -8,7 +15,19 @@ var (
 		WithSearchEpsilon(0.01),
 		WithSearchRadius(-1),
 		WithSearchPreStart(
-			(new(defaultPreStart)).PreStart,
+			func(ctx context.Context, b *testing.B, c interface{}, dataset assets.Dataset) (interface{}, error) {
+				ids, err := (new(defaultInsert)).PreStart(ctx, b, c, dataset)
+				if err != nil {
+					return ids, err
+				}
+
+				_, err = (new(defaultCreateIndex)).PreStart(ctx, b, c, dataset)
+				if err != nil {
+					return ids, err
+				}
+
+				return ids, nil
+			},
 		),
 	}
 )
