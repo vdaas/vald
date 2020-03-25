@@ -29,11 +29,13 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 )
 
+type WorkerJobFunc func(context.Context) error
+
 type Worker interface {
 	Start(ctx context.Context) <-chan error
 	IsRunning() bool
 	Name() string
-	Dispatch(ctx context.Context, f func() error) error
+	Dispatch(ctx context.Context, f WorkerJobFunc) error
 }
 
 type worker struct {
@@ -42,7 +44,7 @@ type worker struct {
 	buffer     int
 	running    atomic.Value
 	eg         errgroup.Group
-	jobCh      chan func() error
+	jobCh      chan WorkerJobFunc
 }
 
 func NewWorker(opts ...WorkerOption) (Worker, error) {
@@ -63,7 +65,7 @@ func (w *worker) Start(ctx context.Context) <-chan error {
 	eg, ctx := errgroup.New(ctx)
 	eg.Limitation(w.limitation)
 
-	w.jobCh = make(chan func() error, w.buffer)
+	w.jobCh = make(chan WorkerJobFunc, w.buffer)
 
 	w.running.Store(true)
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -78,7 +80,7 @@ func (w *worker) Start(ctx context.Context) <-chan error {
 				return eg.Wait()
 			case job := <-w.jobCh:
 				eg.Go(safety.RecoverFunc(func() (err error) {
-					err = job()
+					err = job(ctx)
 					if err != nil {
 						log.Debug(err)
 						runtime.Gosched()
@@ -101,7 +103,7 @@ func (w *worker) Name() string {
 	return w.name
 }
 
-func (w *worker) Dispatch(ctx context.Context, f func() error) error {
+func (w *worker) Dispatch(ctx context.Context, f WorkerJobFunc) error {
 	if f != nil {
 		select {
 		case w.jobCh <- f:

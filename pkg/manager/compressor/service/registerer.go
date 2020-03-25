@@ -27,6 +27,7 @@ import (
 )
 
 type Registerer interface {
+	PreStart(ctx context.Context) error
 	Start(ctx context.Context) <-chan error
 	PreStop(ctx context.Context) error
 	Register(ctx context.Context, meta *payload.Backup_MetaVector) error
@@ -35,6 +36,7 @@ type Registerer interface {
 
 type registerer struct {
 	worker     worker.Worker
+	workerOpts []worker.WorkerOption
 	eg         errgroup.Group
 	backup     Backup
 	compressor Compressor
@@ -51,6 +53,17 @@ func NewRegisterer(opts ...RegistererOption) (Registerer, error) {
 	return r, nil
 }
 
+func (r *registerer) PreStart(ctx context.Context) error {
+	w, err := worker.NewWorker(append(r.workerOpts, worker.WithErrGroup(r.eg))...)
+	if err != nil {
+		return err
+	}
+
+	r.worker = w
+
+	return nil
+}
+
 func (r *registerer) Start(ctx context.Context) <-chan error {
 	return r.worker.Start(ctx)
 }
@@ -65,9 +78,7 @@ func (r *registerer) Register(ctx context.Context, meta *payload.Backup_MetaVect
 		return errors.ErrWorkerIsNotRunning(r.worker.Name())
 	}
 
-	return r.worker.Dispatch(ctx, func() error {
-		// TODO use parent ctx
-		ctx := context.Background()
+	return r.worker.Dispatch(ctx, func(ctx context.Context) error {
 		vector, err := r.compressor.Compress(ctx, meta.GetVector())
 		if err != nil {
 			return err

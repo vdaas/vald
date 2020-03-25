@@ -84,7 +84,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			worker.WithName("compressor"),
 			worker.WithLimitation(cfg.Compressor.ConcurrentLimit),
 			worker.WithBuffer(cfg.Compressor.Buffer),
-			worker.WithErrGroup(eg),
 		),
 		service.WithCompressorErrGroup(eg),
 	)
@@ -97,7 +96,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			worker.WithName("registerer"),
 			worker.WithLimitation(cfg.Compressor.ConcurrentLimit),
 			worker.WithBuffer(cfg.Compressor.Buffer),
-			worker.WithErrGroup(eg),
 		),
 		service.WithRegistererErrGroup(eg),
 		service.WithRegistererBackup(b),
@@ -181,6 +179,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 func (r *run) PreStart(ctx context.Context) error {
 	log.Info("daemon pre-start")
 	err := r.compressor.PreStart(ctx)
+	if err != nil {
+		return err
+	}
+	err = r.registerer.PreStart(ctx)
 	if err != nil {
 		return err
 	}

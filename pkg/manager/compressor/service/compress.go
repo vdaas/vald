@@ -43,6 +43,7 @@ type compressor struct {
 	compressionLevel int
 	compressor       compress.Compressor
 	worker           worker.Worker
+	workerOpts       []worker.WorkerOption
 	eg               errgroup.Group
 }
 
@@ -85,6 +86,13 @@ func (c *compressor) PreStart(ctx context.Context) (err error) {
 
 	c.compressor = compressor
 
+	w, err := worker.NewWorker(append(c.workerOpts, worker.WithErrGroup(c.eg))...)
+	if err != nil {
+		return err
+	}
+
+	c.worker = w
+
 	return nil
 }
 
@@ -104,8 +112,8 @@ func (c *compressor) dispatchCompress(ctx context.Context, vectors ...[]float32)
 		for iter, vector := range vectors {
 			if c.worker.IsRunning() {
 				wg.Add(1)
-				err := c.worker.Dispatch(ctx, func(i int, v []float32) func() error {
-					return func() error {
+				err := c.worker.Dispatch(ctx, func(i int, v []float32) worker.WorkerJobFunc {
+					return func(ctx context.Context) error {
 						defer wg.Done()
 
 						select {
@@ -162,8 +170,8 @@ func (c *compressor) dispatchDecompress(ctx context.Context, bytess ...[]byte) (
 		for iter, bytes := range bytess {
 			if c.worker.IsRunning() {
 				wg.Add(1)
-				err := c.worker.Dispatch(ctx, func(i int, b []byte) func() error {
-					return func() error {
+				err := c.worker.Dispatch(ctx, func(i int, b []byte) worker.WorkerJobFunc {
+					return func(ctx context.Context) error {
 						defer wg.Done()
 
 						select {

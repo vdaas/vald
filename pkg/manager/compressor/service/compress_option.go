@@ -48,11 +48,7 @@ func WithCompressionLevel(level int) CompressorOption {
 
 func WithCompressorWorker(opts ...worker.WorkerOption) CompressorOption {
 	return func(c *compressor) error {
-		w, err := worker.NewWorker(opts...)
-		if err != nil {
-			return err
-		}
-		c.worker = w
+		c.workerOpts = opts
 		return nil
 	}
 }

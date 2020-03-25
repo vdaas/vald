@@ -33,11 +33,7 @@ var (
 
 func WithRegistererWorker(opts ...worker.WorkerOption) RegistererOption {
 	return func(r *registerer) error {
-		w, err := worker.NewWorker(opts...)
-		if err != nil {
-			return err
-		}
-		r.worker = w
+		r.workerOpts = opts
 		return nil
 	}
 }
