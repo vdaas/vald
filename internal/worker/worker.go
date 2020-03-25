@@ -35,6 +35,7 @@ type Worker interface {
 	Start(ctx context.Context) <-chan error
 	IsRunning() bool
 	Name() string
+	Len() int
 	Dispatch(ctx context.Context, f WorkerJobFunc) error
 }
 
@@ -54,6 +55,7 @@ func NewWorker(opts ...WorkerOption) (Worker, error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
+
 	w.running.Store(false)
 
 	return w, nil
@@ -101,6 +103,10 @@ func (w *worker) IsRunning() bool {
 
 func (w *worker) Name() string {
 	return w.name
+}
+
+func (w *worker) Len() int {
+	return len(w.jobCh)
 }
 
 func (w *worker) Dispatch(ctx context.Context, f WorkerJobFunc) error {

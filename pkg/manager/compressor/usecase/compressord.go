@@ -194,8 +194,10 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 5)
+
 	var bech, cech, rech, sech, oech <-chan error
 	var err error
+
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)
 	}
