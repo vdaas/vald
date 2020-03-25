@@ -24,7 +24,7 @@ func NewGetVector(opts ...GetVectorOption) benchmark.Strategy {
 
 func (g *getVector) Run(ctx context.Context, b *testing.B, c interface{}, typ benchmark.Type, dataset assets.Dataset) {
 	cnt := 0
-	b.Run("Search", func(bb *testing.B) {
+	b.Run("GetVector", func(bb *testing.B) {
 		obj, err := g.preStart(ctx, bb, c, dataset)
 		if err != nil {
 			b.Fatal(err)
