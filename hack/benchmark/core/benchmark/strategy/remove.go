@@ -57,7 +57,7 @@ func (r *remove) float32(ctx context.Context, b *testing.B, core core.Core32, id
 	b.StopTimer()
 }
 
-func (d *remove) float64(ctx context.Context, b *testing.B, core core.Core64, ids []uint, cnt *int) {
+func (r *remove) float64(ctx context.Context, b *testing.B, core core.Core64, ids []uint, cnt *int) {
 	b.StopTimer()
 	b.ReportAllocs()
 	b.ResetTimer()
