@@ -59,8 +59,10 @@ spec:
             {{- toYaml .Values.gateway.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          {{- if .Values.gateway.env }}
           env:
             {{- toYaml .Values.gateway.env | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: {{ .Values.gateway.name }}-config
               mountPath: /etc/server/

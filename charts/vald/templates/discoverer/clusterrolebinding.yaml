@@ -23,7 +23,7 @@ roleRef:
   kind: ClusterRole
   name: {{ .Values.discoverer.clusterRole.name }}
 subjects:
-- kind: ServiceAccount
-  name: {{ .Values.discoverer.serviceAccount.name }}
-  namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: {{ .Values.discoverer.serviceAccount.name }}
+    namespace: {{ .Release.Namespace }}
 {{- end }}

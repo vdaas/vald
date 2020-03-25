@@ -22,22 +22,22 @@ spec:
   template:
     spec:
       containers:
-      - name: {{ .Values.initializer.mysql.name }}
-        image: "{{ .Values.initializer.mysql.image.repository }}:{{ .Values.initializer.mysql.image.tag }}"
-        imagePullPolicy: {{ .Values.initializer.mysql.image.pullPolicy }}
-        command:
-          - /bin/sh
-          - -c
-          - |
-            mysql -h ${MYSQL_HOST} -u ${MYSQL_USER} -p${MYSQL_PASSWORD} < /initdb/{{ .Values.initializer.mysql.configmap.filename }}
-        env:
-          {{- toYaml .Values.initializer.mysql.env | nindent 10 }}
-        volumeMounts:
-        - name: {{ .Values.initializer.mysql.configmap.name }}
-          mountPath: /initdb/
+        - name: {{ .Values.initializer.mysql.name }}
+          image: "{{ .Values.initializer.mysql.image.repository }}:{{ .Values.initializer.mysql.image.tag }}"
+          imagePullPolicy: {{ .Values.initializer.mysql.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              mysql -h ${MYSQL_HOST} -u ${MYSQL_USER} -p${MYSQL_PASSWORD} < /initdb/{{ .Values.initializer.mysql.configmap.filename }}
+          env:
+            {{- toYaml .Values.initializer.mysql.env | nindent 10 }}
+          volumeMounts:
+            - name: {{ .Values.initializer.mysql.configmap.name }}
+              mountPath: /initdb/
       restartPolicy: {{ .Values.initializer.mysql.restartPolicy }}
       volumes:
-      - name: {{ .Values.initializer.mysql.configmap.name }}
-        configMap:
-          name: {{ .Values.initializer.mysql.configmap.name }}
+        - name: {{ .Values.initializer.mysql.configmap.name }}
+          configMap:
+            name: {{ .Values.initializer.mysql.configmap.name }}
 {{- end }}

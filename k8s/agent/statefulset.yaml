@@ -42,20 +42,20 @@ spec:
         profefe.com/port: "6060"
         profefe.com/service: vald-agent-ngt
       # annotations:
-      #   checksum/configmap: af2fe1ff78c47da8f88312d09290a86c0408fafabf2cd14389429fd5cd39cfab
+      #   checksum/configmap: 7263128c49f52551cb2643e7b723178363933db62e5729f06551f048839a3076
     spec:
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              topologyKey: kubernetes.io/hostname
-              labelSelector:
-                matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                  - vald-agent-ngt
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - vald-agent-ngt
       containers:
         - name: vald-agent-ngt
           image: "vdaas/vald-agent-ngt:nightly"
@@ -99,8 +99,6 @@ spec:
               memory: 50Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-          env:
-            null
           volumeMounts:
             - name: vald-agent-ngt-config
               mountPath: /etc/server/

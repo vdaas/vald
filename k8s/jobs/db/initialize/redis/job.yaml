@@ -22,15 +22,15 @@ spec:
   template:
     spec:
       containers:
-      - name: redis-init
-        image: "redis:latest"
-        imagePullPolicy: Always
-        command:
-          - /bin/sh
-          - -c
-          - |
-            redis-cli -c -a ${REDIS_PASSWORD} -h ${REDIS_HOST} FLUSHALL
-        env:
+        - name: redis-init
+          image: "redis:latest"
+          imagePullPolicy: Always
+          command:
+            - /bin/sh
+            - -c
+            - |
+              redis-cli -c -a ${REDIS_PASSWORD} -h ${REDIS_HOST} FLUSHALL
+          env:
           - name: REDIS_HOST
             value: redis.default.svc.cluster.local
           - name: REDIS_PASSWORD

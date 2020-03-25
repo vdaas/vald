@@ -44,8 +44,10 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "{{ .Values.name }}"
+          {{- with .Values.resources }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | indent 8 }}
