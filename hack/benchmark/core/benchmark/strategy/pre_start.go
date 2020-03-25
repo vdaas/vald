@@ -73,14 +73,14 @@ func (d *defaultCreateIndex) PreStart(ctx context.Context, b *testing.B, c inter
 }
 
 func (d *defaultCreateIndex) float32(ctx context.Context, b *testing.B, dataset assets.Dataset, core core.Core32) (interface{}, error) {
-	if err := core.CreateAndSaveIndex(10000); err != nil {
+	if err := core.CreateIndex(10000); err != nil {
 		return nil, err
 	}
 	return []uint{}, nil
 }
 
 func (d *defaultCreateIndex) float64(ctx context.Context, b *testing.B, dataset assets.Dataset, core core.Core64) (interface{}, error) {
-	if err := core.CreateAndSaveIndex(10000); err != nil {
+	if err := core.CreateIndex(10000); err != nil {
 		return nil, err
 	}
 	return []uint{}, nil

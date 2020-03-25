@@ -20,11 +20,11 @@ const (
 )
 
 type benchmark struct {
-	name       string
-	core       interface{}
-	dataset    assets.Dataset
-	typ        Type
-	strategies []Strategy
+	name        string
+	initializer func(context.Context, *testing.B, assets.Dataset) (interface{}, func(), error)
+	dataset     assets.Dataset
+	typ         Type
+	strategies  []Strategy
 }
 
 func New(b *testing.B, opts ...Option) Benchmark {
@@ -51,13 +51,19 @@ func (bm *benchmark) Run(ctx context.Context, b *testing.B) {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
 
+		core, close, err := bm.initializer(ctx, b, bm.dataset)
+		if err != nil {
+			b.Fatal(err)
+		}
+		defer close()
+
 		b.StopTimer()
 		b.ReportAllocs()
 		b.ResetTimer()
 		b.StartTimer()
 		b.Run(bm.name, func(bb *testing.B) {
 			for _, strategy := range bm.strategies {
-				strategy.Run(ctx, bb, bm.core, bm.typ, bm.dataset)
+				strategy.Run(ctx, bb, core, bm.typ, bm.dataset)
 			}
 		})
 		b.StopTimer()

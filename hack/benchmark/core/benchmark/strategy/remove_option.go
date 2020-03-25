@@ -11,7 +11,7 @@ type RemoveOption func(*remove)
 
 var (
 	defaultRemoveOptions = []RemoveOption{
-		WithPreStart(
+		WithRemovePreStart(
 			func(ctx context.Context, b *testing.B, c interface{}, dataset assets.Dataset) (interface{}, error) {
 				ids, err := (new(defaultInsert)).PreStart(ctx, b, c, dataset)
 				if err != nil {
@@ -29,7 +29,7 @@ var (
 	}
 )
 
-func WithPreStart(fn PreStart) RemoveOption {
+func WithRemovePreStart(fn PreStart) RemoveOption {
 	return func(r *remove) {
 		if fn != nil {
 			r.preStart = fn

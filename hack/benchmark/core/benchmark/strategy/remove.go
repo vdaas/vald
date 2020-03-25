@@ -10,6 +10,7 @@ import (
 )
 
 type remove struct {
+	ids      []uint
 	preStart PreStart
 }
 
@@ -29,26 +30,26 @@ func (r *remove) Run(ctx context.Context, b *testing.B, c interface{}, typ bench
 			b.Fatal(err)
 		}
 
-		ids := obj.([]uint)
+		r.ids = append(r.ids, obj.([]uint)...)
 
 		switch typ {
 		case benchmark.Float32:
-			r.float32(ctx, bb, c.(core.Core32), ids, &cnt)
+			r.float32(ctx, bb, c.(core.Core32), &cnt)
 		case benchmark.Float64:
-			r.float64(ctx, bb, c.(core.Core64), ids, &cnt)
+			r.float64(ctx, bb, c.(core.Core64), &cnt)
 		default:
 			bb.Fatal("invalid data type")
 		}
 	})
 }
 
-func (r *remove) float32(ctx context.Context, b *testing.B, core core.Core32, ids []uint, cnt *int) {
+func (r *remove) float32(ctx context.Context, b *testing.B, core core.Core32, cnt *int) {
 	b.StopTimer()
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		if err := core.Remove(ids[*cnt%len(ids)]); err != nil {
+		if err := core.Remove(r.ids[*cnt%len(r.ids)]); err != nil {
 			b.Error(err)
 		}
 		*cnt++
@@ -57,13 +58,13 @@ func (r *remove) float32(ctx context.Context, b *testing.B, core core.Core32, id
 	b.StopTimer()
 }
 
-func (r *remove) float64(ctx context.Context, b *testing.B, core core.Core64, ids []uint, cnt *int) {
+func (r *remove) float64(ctx context.Context, b *testing.B, core core.Core64, cnt *int) {
 	b.StopTimer()
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		if err := core.Remove(ids[*cnt%len(ids)]); err != nil {
+		if err := core.Remove(r.ids[*cnt%len(r.ids)]); err != nil {
 			b.Error(err)
 		}
 		*cnt++
