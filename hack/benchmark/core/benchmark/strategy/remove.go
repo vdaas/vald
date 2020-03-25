@@ -48,7 +48,9 @@ func (r *remove) float32(ctx context.Context, b *testing.B, core core.Core32, id
 	b.ResetTimer()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		core.Remove(ids[*cnt%len(ids)])
+		if err := core.Remove(ids[*cnt%len(ids)]); err != nil {
+			b.Error(err)
+		}
 		*cnt++
 	}
 
@@ -61,7 +63,9 @@ func (d *remove) float64(ctx context.Context, b *testing.B, core core.Core64, id
 	b.ResetTimer()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		core.Remove(ids[*cnt%len(ids)])
+		if err := core.Remove(ids[*cnt%len(ids)]); err != nil {
+			b.Error(err)
+		}
 		*cnt++
 	}
 	b.StopTimer()
