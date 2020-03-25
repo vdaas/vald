@@ -18,6 +18,10 @@
 package errors
 
 var (
+	ErrWorkerIsNotRunning = func(name string) error {
+		return Errorf("worker %s is not running", name)
+	}
+
 	ErrWorkerChannelIsFull = func(name string) error {
 		return Errorf("worker channel is full. cannot send job to worker: %s", name)
 	}

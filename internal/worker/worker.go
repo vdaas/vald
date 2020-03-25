@@ -32,6 +32,7 @@ import (
 type Worker interface {
 	Start(ctx context.Context) <-chan error
 	IsRunning() bool
+	Name() string
 	Dispatch(ctx context.Context, f func() error) error
 }
 
@@ -94,6 +95,10 @@ func (w *worker) Start(ctx context.Context) <-chan error {
 
 func (w *worker) IsRunning() bool {
 	return w.running.Load().(bool)
+}
+
+func (w *worker) Name() string {
+	return w.name
 }
 
 func (w *worker) Dispatch(ctx context.Context, f func() error) error {

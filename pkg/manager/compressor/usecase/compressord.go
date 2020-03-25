@@ -44,6 +44,7 @@ type run struct {
 	cfg           *config.Data
 	backup        service.Backup
 	compressor    service.Compressor
+	registerer    service.Registerer
 	server        starter.Server
 	observability observability.Observability
 }
@@ -79,19 +80,37 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	c, err := service.NewCompressor(
 		service.WithCompressAlgorithm(cfg.Compressor.CompressAlgorithm),
 		service.WithCompressionLevel(cfg.Compressor.CompressionLevel),
-		service.WithWorker(
+		service.WithCompressorWorker(
 			worker.WithName("compressor"),
 			worker.WithLimitation(cfg.Compressor.ConcurrentLimit),
 			worker.WithBuffer(cfg.Compressor.Buffer),
+			worker.WithErrGroup(eg),
 		),
-		service.WithErrGroup(eg),
+		service.WithCompressorErrGroup(eg),
 	)
 	if err != nil {
 		return nil, err
 	}
+
+	rg, err := service.NewRegisterer(
+		service.WithRegistererWorker(
+			worker.WithName("registerer"),
+			worker.WithLimitation(cfg.Compressor.ConcurrentLimit),
+			worker.WithBuffer(cfg.Compressor.Buffer),
+			worker.WithErrGroup(eg),
+		),
+		service.WithRegistererErrGroup(eg),
+		service.WithRegistererBackup(b),
+		service.WithRegistererCompressor(c),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	g := handler.New(
 		handler.WithCompressor(c),
 		handler.WithBackup(b),
+		handler.WithRegisterer(rg),
 	)
 
 	grpcServerOptions := []server.Option{
@@ -153,6 +172,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		cfg:           cfg,
 		backup:        b,
 		compressor:    c,
+		registerer:    rg,
 		server:        srv,
 		observability: obs,
 	}, nil
@@ -171,8 +191,8 @@ func (r *run) PreStart(ctx context.Context) error {
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 4)
-	var bech, cech, sech, oech <-chan error
+	ech := make(chan error, 5)
+	var bech, cech, rech, sech, oech <-chan error
 	var err error
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)
@@ -187,6 +207,9 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	if r.compressor != nil {
 		cech = r.compressor.Start(ctx)
 	}
+	if r.registerer != nil {
+		rech = r.registerer.Start(ctx)
+	}
 	sech = r.server.ListenAndServe(ctx)
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		log.Info("daemon start")
@@ -198,6 +221,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			case err = <-oech:
 			case err = <-bech:
 			case err = <-cech:
+			case err = <-rech:
 			case err = <-sech:
 			}
 			if err != nil {
@@ -213,6 +237,9 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (r *run) PreStop(ctx context.Context) error {
+	if r.registerer != nil {
+		return r.registerer.PreStop(ctx)
+	}
 	return nil
 }
 

@@ -22,45 +22,48 @@ import (
 	"github.com/vdaas/vald/internal/worker"
 )
 
-type CompressorOption func(c *compressor) error
+type RegistererOption func(r *registerer) error
 
 var (
-	defaultCompressorOpts = []CompressorOption{
-		WithCompressorWorker(),
-		WithCompressAlgorithm("gob"),
-		WithCompressorErrGroup(errgroup.Get()),
+	defaultRegistererOpts = []RegistererOption{
+		WithRegistererWorker(),
+		WithRegistererErrGroup(errgroup.Get()),
 	}
 )
 
-func WithCompressAlgorithm(name string) CompressorOption {
-	return func(c *compressor) error {
-		c.algorithm = name
-		return nil
-	}
-}
-
-func WithCompressionLevel(level int) CompressorOption {
-	return func(c *compressor) error {
-		c.compressionLevel = level
-		return nil
-	}
-}
-
-func WithCompressorWorker(opts ...worker.WorkerOption) CompressorOption {
-	return func(c *compressor) error {
+func WithRegistererWorker(opts ...worker.WorkerOption) RegistererOption {
+	return func(r *registerer) error {
 		w, err := worker.NewWorker(opts...)
 		if err != nil {
 			return err
 		}
-		c.worker = w
+		r.worker = w
 		return nil
 	}
 }
 
-func WithCompressorErrGroup(eg errgroup.Group) CompressorOption {
-	return func(c *compressor) error {
+func WithRegistererErrGroup(eg errgroup.Group) RegistererOption {
+	return func(r *registerer) error {
 		if eg != nil {
-			c.eg = eg
+			r.eg = eg
+		}
+		return nil
+	}
+}
+
+func WithRegistererBackup(b Backup) RegistererOption {
+	return func(r *registerer) error {
+		if b != nil {
+			r.backup = b
+		}
+		return nil
+	}
+}
+
+func WithRegistererCompressor(c Compressor) RegistererOption {
+	return func(r *registerer) error {
+		if c != nil {
+			r.compressor = c
 		}
 		return nil
 	}
