@@ -53,6 +53,53 @@ func BenchmarkGONGT_Insert(b *testing.B) {
 	}
 }
 
+func BenchmarkGONGT_BulkInsert(b *testing.B) {
+	for _, target := range targets {
+		benchmark.New(b,
+			benchmark.WithName(target),
+			benchmark.WithStrategy(
+				strategy.NewBulkInsert(
+					strategy.WithCore64(
+						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core64, core.Closer, error) {
+							ngt, err := gongt.New(
+								gongt.WithDimension(dataset.Dimension()),
+								gongt.WithObjectType(dataset.ObjectType()),
+							)
+							if err != nil {
+								return nil, nil, err
+							}
+							return ngt, ngt, nil
+						}),
+				),
+			),
+		).Run(context.Background(), b)
+	}
+}
+
+func BenchmarkGONGT_InsertCommit(b *testing.B) {
+	for _, target := range targets {
+		benchmark.New(b,
+			benchmark.WithName(target),
+			benchmark.WithStrategy(
+				strategy.NewInsertCommit(
+					10,
+					strategy.WithCore64(
+						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core64, core.Closer, error) {
+							ngt, err := gongt.New(
+								gongt.WithDimension(dataset.Dimension()),
+								gongt.WithObjectType(dataset.ObjectType()),
+							)
+							if err != nil {
+								return nil, nil, err
+							}
+							return ngt, ngt, nil
+						}),
+				),
+			),
+		).Run(context.Background(), b)
+	}
+}
+
 func BenchmarkGONGT_Search(b *testing.B) {
 	for _, target := range targets {
 		benchmark.New(b,
