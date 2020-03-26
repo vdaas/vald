@@ -5,9 +5,13 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
+	"github.com/vdaas/vald/hack/benchmark/internal/core"
 )
 
 // Strategy is an interface for benchmark.
 type Strategy interface {
-	Run(ctx context.Context, b *testing.B, dataset assets.Dataset)
+	Run(context.Context, *testing.B, assets.Dataset, []uint)
+	Init(context.Context, *testing.B, assets.Dataset) error
+	PreProp(context.Context, *testing.B, assets.Dataset) ([]uint, error)
+	core.Closer
 }

@@ -38,19 +38,36 @@ func New(b *testing.B, opts ...Option) Benchmark {
 }
 
 func (bm *benchmark) Run(ctx context.Context, b *testing.B) {
-	func() {
-		ctx, cancel := context.WithCancel(ctx)
-		defer cancel()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
-		b.StopTimer()
-		b.ReportAllocs()
-		b.ResetTimer()
-		b.StartTimer()
-		b.Run(bm.name, func(bb *testing.B) {
-			for _, strategy := range bm.strategies {
-				strategy.Run(ctx, bb, bm.dataset)
+	b.StopTimer()
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.StartTimer()
+	b.Run(bm.name, func(bb *testing.B) {
+		for _, strategy := range bm.strategies {
+			err := func() error {
+				bb.Helper()
+
+				err := strategy.Init(ctx, bb, bm.dataset)
+				if err != nil {
+					return err
+				}
+				defer strategy.Close()
+
+				obj, err := strategy.PreProp(ctx, bb, bm.dataset)
+				if err != nil {
+					return err
+				}
+
+				strategy.Run(ctx, bb, bm.dataset, obj)
+				return nil
+			}()
+			if err != nil {
+				b.Fatal(err)
 			}
-		})
-		b.StopTimer()
-	}()
+		}
+	})
+	b.StopTimer()
 }

@@ -8,14 +8,18 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/core"
+	"github.com/vdaas/vald/hack/benchmark/internal/errors"
 )
 
 type strategy struct {
-	initCore32 func(context.Context, assets.Dataset) (core.Core32, func(), error)
-	initCore64 func(context.Context, assets.Dataset) (core.Core64, func(), error)
+	core32     core.Core32
+	core64     core.Core64
+	initCore32 func(context.Context, *testing.B, assets.Dataset) (core.Core32, core.Closer, error)
+	initCore64 func(context.Context, *testing.B, assets.Dataset) (core.Core64, core.Closer, error)
+	closer     core.Closer
 	propName   string
-	preProp32  func(context.Context, *testing.B, core.Core32, assets.Dataset) (interface{}, error)
-	preProp64  func(context.Context, *testing.B, core.Core64, assets.Dataset) (interface{}, error)
+	preProp32  func(context.Context, *testing.B, core.Core32, assets.Dataset) ([]uint, error)
+	preProp64  func(context.Context, *testing.B, core.Core64, assets.Dataset) ([]uint, error)
 	mode       core.Mode
 	prop32     func(context.Context, *testing.B, core.Core32, assets.Dataset, []uint, *uint64) (interface{}, error)
 	prop64     func(context.Context, *testing.B, core.Core64, assets.Dataset, []uint, *uint64) (interface{}, error)
@@ -32,63 +36,95 @@ func newStrategy(opts ...StrategyOption) benchmark.Strategy {
 	return s
 }
 
-func (s *strategy) Run(ctx context.Context, b *testing.B, dataset assets.Dataset) {
+func (s *strategy) Init(ctx context.Context, b *testing.B, dataset assets.Dataset) error {
+	b.Helper()
+	switch s.mode {
+	case core.Float32:
+		core32, closer, err := s.initCore32(ctx, b, dataset)
+		if err != nil {
+			b.Error(err)
+			return err
+		}
+		s.core32, s.closer = core32, closer
+	case core.Float64:
+		core64, closer, err := s.initCore64(ctx, b, dataset)
+		if err != nil {
+			b.Error(err)
+			return err
+		}
+		s.core64, s.closer = core64, closer
+	default:
+		b.Error(errors.ErrInvalidCoreMode)
+		return errors.ErrInvalidCoreMode
+	}
+	return nil
+}
+
+func (s *strategy) PreProp(ctx context.Context, b *testing.B, dataset assets.Dataset) ([]uint, error) {
+	b.Helper()
+
+	switch s.mode {
+	case core.Float32:
+		return s.preProp32(ctx, b, s.core32, dataset)
+	case core.Float64:
+		return s.preProp32(ctx, b, s.core32, dataset)
+	default:
+		return nil, errors.ErrInvalidCoreMode
+	}
+}
+
+func (s *strategy) Run(ctx context.Context, b *testing.B, dataset assets.Dataset, ids []uint) {
+	b.Helper()
+
+	defer s.closer.Close()
 	var cnt uint64
 	switch s.mode {
 	case core.Float32:
-		c, close, err := s.initCore32(ctx, dataset)
-		if err != nil {
-			b.Fatal(err)
-		}
-		defer close()
-
 		b.Run(s.propName, func(bb *testing.B) {
-			s.float32(ctx, bb, c, dataset, nil, &cnt)
+			s.float32(ctx, bb, dataset, ids, &cnt)
 		})
 	case core.Float64:
-		c, close, err := s.initCore64(ctx, dataset)
-		if err != nil {
-			b.Fatal(err)
-		}
-		defer close()
-
 		b.Run(s.propName, func(bb *testing.B) {
-			s.float64(ctx, bb, c, dataset, nil, &cnt)
+			s.float64(ctx, bb, dataset, ids, &cnt)
 		})
 	default:
-		b.Fatalf("invalid mode: %v", s.mode)
+		b.Fatal(errors.ErrInvalidCoreMode)
 	}
 }
 
-func toUint(in interface{}) (out []uint) {
-	if in != nil {
-		var ok bool
-		if out, ok = in.([]uint); ok {
-			return
-		}
-	}
-	return
+func (s *strategy) Close() {
+	s.closer.Close()
 }
 
-func (s *strategy) float32(ctx context.Context, b *testing.B, c core.Core32, dataset assets.Dataset, ids []uint, cnt *uint64) {
+func (s *strategy) float32(ctx context.Context, b *testing.B, dataset assets.Dataset, ids []uint, cnt *uint64) {
+	b.Helper()
+
 	b.StopTimer()
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		s.prop32(ctx, b, c, dataset, ids, cnt)
+		_, err := s.prop32(ctx, b, s.core32, dataset, ids, cnt)
+		if err != nil {
+			b.Error(err)
+		}
 		atomic.AddUint64(cnt, 1)
 	}
 	b.StopTimer()
 }
 
-func (s *strategy) float64(ctx context.Context, b *testing.B, c core.Core64, dataset assets.Dataset, ids []uint, cnt *uint64) {
+func (s *strategy) float64(ctx context.Context, b *testing.B, dataset assets.Dataset, ids []uint, cnt *uint64) {
+	b.Helper()
+
 	b.StopTimer()
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		s.prop64(ctx, b, c, dataset, ids, cnt)
+		_, err := s.prop64(ctx, b, s.core64, dataset, ids, cnt)
+		if err != nil {
+			b.Error(err)
+		}
 		atomic.AddUint64(cnt, 1)
 	}
 	b.StopTimer()

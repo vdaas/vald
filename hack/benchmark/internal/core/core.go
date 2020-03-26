@@ -7,6 +7,10 @@ const (
 	Float64
 )
 
+type Closer interface {
+	Close()
+}
+
 type Core32 interface {
 	Search(vec []float32, size int, epsilon, radius float32) (interface{}, error)
 	Insert(vec []float32) (uint, error)
@@ -19,7 +23,7 @@ type Core32 interface {
 	Remove(id uint) error
 	BulkRemove(ids ...uint) error
 	GetVector(id uint) ([]float32, error)
-	Close()
+	Closer
 }
 
 type Core64 interface {
@@ -34,5 +38,5 @@ type Core64 interface {
 	Remove(id uint) error
 	BulkRemove(ids ...uint) error
 	GetVector(id uint) ([]float64, error)
-	Close()
+	Closer
 }

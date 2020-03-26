@@ -31,8 +31,8 @@ func BenchmarkNGT_Insert(b *testing.B) {
 				benchmark.WithName(target),
 				benchmark.WithStrategy(
 					strategy.NewInsert(
-						strategy.WithCore32Initializer(
-							func(ctx context.Context, dataset assets.Dataset) (core.Core32, func(), error) {
+						strategy.WithCore32(
+							func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core32, core.Closer, error) {
 								ngt, err := ngt.New(
 									ngt.WithDimension(dataset.Dimension()),
 									ngt.WithObjectType(dataset.ObjectType()),
@@ -40,7 +40,7 @@ func BenchmarkNGT_Insert(b *testing.B) {
 								if err != nil {
 									return nil, nil, err
 								}
-								return ngt, ngt.Close, nil
+								return ngt, ngt, nil
 							}),
 					),
 				),
