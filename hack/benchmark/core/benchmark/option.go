@@ -21,8 +21,6 @@ func WithName(name string) Option {
 func WithFloat32(core core.Core32, strategies ...Strategy) Option {
 	return func(b *benchmark) {
 		if len(strategies) != 0 {
-			b.typ = Float32
-			b.core = core
 			b.strategies = strategies
 		}
 	}
@@ -31,8 +29,6 @@ func WithFloat32(core core.Core32, strategies ...Strategy) Option {
 func WithFloat64(core core.Core32, strategies ...Strategy) Option {
 	return func(b *benchmark) {
 		if len(strategies) != 0 {
-			b.typ = Float64
-			b.core = core
 			b.strategies = strategies
 		}
 	}

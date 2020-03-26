@@ -9,5 +9,6 @@ import (
 
 // Strategy is an interface for benchmark.
 type Strategy interface {
-	Run(context.Context, *testing.B, interface{}, Type, assets.Dataset)
+	PreProcess(ctx context.Context, b *testing.B, dataset assets.Dataset) (interface{}, error)
+	Run(ctx context.Context, b *testing.B, dataset assets.Dataset)
 }

@@ -1,5 +1,12 @@
 package core
 
+type Mode uint32
+
+const (
+	Float32 Mode = iota
+	Float64
+)
+
 type Core32 interface {
 	Search(vec []float32, size int, epsilon, radius float32) (interface{}, error)
 	Insert(vec []float32) (uint, error)
