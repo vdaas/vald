@@ -117,7 +117,8 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) 
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s could not processed", meta.GetUuid()), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("Register API uuid %s could not processed", meta.GetUuid()), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
