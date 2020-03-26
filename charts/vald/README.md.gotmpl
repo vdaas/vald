@@ -1,0 +1,49 @@
+Vald
+===
+
+This is a Helm chart to install Vald components.
+
+{{ template "chart.versionLine" . }}
+
+Install
+---
+
+Add Vald Helm repository
+
+    $ helm repo add vald https://vald.vdaas.org/charts
+
+Run the following command to install the chart,
+
+    $ helm install --generate-name vald/vald
+
+
+Configuration
+---
+
+### Overview
+
+`values.yaml` is composed of the following sections:
+
+- `defaults`
+    - default configurations of common parts
+    - be overridden by the fields in each components' configurations
+- `gateway`
+    - configurations of vald-gateway
+- `agent`
+    - configurations of vald-agent
+- `discoverer`
+    - configurations of vald-discoverer
+- `compressor`
+    - configurations of vald-manager-compressor
+- `backupManager`
+    - configurations of vald-manager-backup
+- `indexManager`
+    - configurations of vald-manager-index
+- `meta`
+    - configurations of vald-meta
+- `initializer`
+    - configurations of MySQL, Cassandra and Redis initializer jobs
+
+### Parameters
+
+{{ template "chart.valuesTable" . }}

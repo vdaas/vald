@@ -38,7 +38,7 @@ spec:
       labels:
         app: vald-manager-index
       annotations:
-        checksum/configmap: d25f9662d8fbdd5c431a4f4e9be94c0aa8757dcdde567af7d609e39031de666e
+        checksum/configmap: 101649367c2df28b43294163c250f5ac7a29fc2ed6554d2350f82427e956d600
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-index
@@ -53,6 +53,17 @@ spec:
             - |
               until [ "$(wget --server-response --spider --quiet http://vald-agent-ngt.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for agent to be ready..."
+                sleep 2;
+              done
+        - name: wait-for-discoverer
+          image: busybox
+          command:
+            - /bin/sh
+            - -e
+            - -c
+            - |
+              until [ "$(wget --server-response --spider --quiet http://vald-discoverer.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+                echo "waiting for discoverer to be ready..."
                 sleep 2;
               done
       containers:
@@ -94,7 +105,7 @@ spec:
               containerPort: 6060
           resources:
             limits:
-              cpu: 1
+              cpu: 1000m
               memory: 500Mi
             requests:
               cpu: 100m

@@ -66,39 +66,39 @@ docker/build/gateway-vald: docker/build/base
 
 .PHONY: docker/name/meta-redis
 docker/name/meta-redis:
-	@echo "$(REPO)/$(KVS_IMAGE)"
+	@echo "$(REPO)/$(META_REDIS_IMAGE)"
 
 .PHONY: docker/build/meta-redis
 ## build meta-redis image
 docker/build/meta-redis: docker/build/base
-	docker build -f dockers/meta/redis/Dockerfile -t $(REPO)/$(KVS_IMAGE) .
+	docker build -f dockers/meta/redis/Dockerfile -t $(REPO)/$(META_REDIS_IMAGE) .
 
 .PHONY: docker/name/meta-cassandra
 docker/name/meta-cassandra:
-	@echo "$(REPO)/$(NOSQL_IMAGE)"
+	@echo "$(REPO)/$(META_CASSANDRA_IMAGE)"
 
 .PHONY: docker/build/meta-cassandra
 ## build meta-cassandra image
 docker/build/meta-cassandra: docker/build/base
-	docker build -f dockers/meta/cassandra/Dockerfile -t $(REPO)/$(NOSQL_IMAGE) .
+	docker build -f dockers/meta/cassandra/Dockerfile -t $(REPO)/$(META_CASSANDRA_IMAGE) .
 
 .PHONY: docker/name/backup-manager-mysql
 docker/name/backup-manager-mysql:
-	@echo "$(REPO)/$(BACKUP_MANAGER_MYSQL_IMAGE)"
+	@echo "$(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE)"
 
 .PHONY: docker/build/backup-manager-mysql
 ## build backup-manager-mysql image
 docker/build/backup-manager-mysql: docker/build/base
-	docker build -f dockers/manager/backup/mysql/Dockerfile -t $(REPO)/$(BACKUP_MANAGER_MYSQL_IMAGE) .
+	docker build -f dockers/manager/backup/mysql/Dockerfile -t $(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE) .
 
 .PHONY: docker/name/backup-manager-cassandra
 docker/name/backup-manager-cassandra:
-	@echo "$(REPO)/$(BACKUP_MANAGER_CASSANDRA_IMAGE)"
+	@echo "$(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE)"
 
 .PHONY: docker/build/backup-manager-cassandra
 ## build backup-manager-cassandra image
 docker/build/backup-manager-cassandra: docker/build/base
-	docker build -f dockers/manager/backup/cassandra/Dockerfile -t $(REPO)/$(BACKUP_MANAGER_CASSANDRA_IMAGE) .
+	docker build -f dockers/manager/backup/cassandra/Dockerfile -t $(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE) .
 
 .PHONY: docker/name/manager-compressor
 docker/name/manager-compressor:

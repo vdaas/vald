@@ -59,8 +59,10 @@ spec:
             {{- toYaml .Values.discoverer.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          {{- if .Values.discoverer.env }}
           env:
             {{- toYaml .Values.discoverer.env | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: {{ .Values.discoverer.name }}-config
               mountPath: /etc/server/

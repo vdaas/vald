@@ -22,15 +22,15 @@ spec:
   template:
     spec:
       containers:
-      - name: {{ .Values.initializer.redis.name }}
-        image: "{{ .Values.initializer.redis.image.repository }}:{{ .Values.initializer.redis.image.tag }}"
-        imagePullPolicy: {{ .Values.initializer.redis.image.pullPolicy }}
-        command:
-          - /bin/sh
-          - -c
-          - |
-            redis-cli -c -a ${REDIS_PASSWORD} -h ${REDIS_HOST} FLUSHALL
-        env:
-          {{- toYaml .Values.initializer.redis.env | nindent 10 }}
+        - name: {{ .Values.initializer.redis.name }}
+          image: "{{ .Values.initializer.redis.image.repository }}:{{ .Values.initializer.redis.image.tag }}"
+          imagePullPolicy: {{ .Values.initializer.redis.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              redis-cli -c -a ${REDIS_PASSWORD} -h ${REDIS_HOST} FLUSHALL
+          env:
+            {{- toYaml .Values.initializer.redis.env | nindent 10 }}
       restartPolicy: {{ .Values.initializer.redis.restartPolicy }}
 {{- end }}

@@ -62,8 +62,10 @@ spec:
             {{- toYaml .Values.indexManager.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          {{- if .Values.indexManager.env }}
           env:
             {{- toYaml .Values.indexManager.env | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: {{ .Values.indexManager.name }}-config
               mountPath: /etc/server/

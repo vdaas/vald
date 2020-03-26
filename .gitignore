@@ -45,3 +45,5 @@ hack/**/*.hdf5
 
 # for mac
 .DS_Store
+
+telepresence.log
