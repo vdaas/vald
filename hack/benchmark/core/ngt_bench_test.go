@@ -76,3 +76,26 @@ func BenchmarkNGT_Search(b *testing.B) {
 		).Run(context.Background(), b)
 	}
 }
+
+func BenchmarkNGT_Delete(b *testing.B) {
+	for _, target := range targets {
+		benchmark.New(b,
+			benchmark.WithName(target),
+			benchmark.WithStrategy(
+				strategy.NewDelete(
+					strategy.WithCore32(
+						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core32, core.Closer, error) {
+							ngt, err := ngt.New(
+								ngt.WithDimension(dataset.Dimension()),
+								ngt.WithObjectType(dataset.ObjectType()),
+							)
+							if err != nil {
+								return nil, nil, err
+							}
+							return ngt, ngt, nil
+						}),
+				),
+			),
+		).Run(context.Background(), b)
+	}
+}
