@@ -26,25 +26,23 @@ func init() {
 
 func BenchmarkNGT_Insert(b *testing.B) {
 	for _, target := range targets {
-		func() {
-			benchmark.New(b,
-				benchmark.WithName(target),
-				benchmark.WithStrategy(
-					strategy.NewInsert(
-						strategy.WithCore32(
-							func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core32, core.Closer, error) {
-								ngt, err := ngt.New(
-									ngt.WithDimension(dataset.Dimension()),
-									ngt.WithObjectType(dataset.ObjectType()),
-								)
-								if err != nil {
-									return nil, nil, err
-								}
-								return ngt, ngt, nil
-							}),
-					),
+		benchmark.New(b,
+			benchmark.WithName(target),
+			benchmark.WithStrategy(
+				strategy.NewInsert(
+					strategy.WithCore32(
+						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core32, core.Closer, error) {
+							ngt, err := ngt.New(
+								ngt.WithDimension(dataset.Dimension()),
+								ngt.WithObjectType(dataset.ObjectType()),
+							)
+							if err != nil {
+								return nil, nil, err
+							}
+							return ngt, ngt, nil
+						}),
 				),
-			).Run(context.Background(), b)
-		}()
+			),
+		).Run(context.Background(), b)
 	}
 }
