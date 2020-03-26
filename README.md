@@ -29,7 +29,7 @@ Go to [Get Started](./docs/user/get-started.md) page to try out Vald :)
 ### Main Features
 
 - Asynchronize Auto Indexing
-    - Usually the graph requires locking during indexing, which cause stop-the-world. But Vald uses distributed index graph so it continues to work duing indexing.
+    - Usually the graph requires locking during indexing, which cause stop-the-world. But Vald uses distributed index graph so it continues to work during indexing.
 
 - Customizable Ingress/Egress Filtering
     - Vald implements it's own highly customizable Ingress/Egress filter.
@@ -41,7 +41,7 @@ Go to [Get Started](./docs/user/get-started.md) page to try out Vald :)
     - Horizontal scalable on memory and cpu for your demand.
 
 - Auto Indexing Backup
-    - Vald has auto index backup feature using MySQL + Redis or Cassndora which enables disaster recovery.
+    - Vald has auto index backup feature using MySQL + Redis or Cassandra which enables disaster recovery.
 
 - Distributed Indexing
     - Vald distribute vector index to multiple agent, each agent stores different index.
