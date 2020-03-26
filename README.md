@@ -16,13 +16,48 @@
 [![Total visitor](https://visitor-count-badge.herokuapp.com/total.svg?repo_id=vald)](https://github.com/vdaas/vald/graphs/traffic)
 [![Visitors in today](https://visitor-count-badge.herokuapp.com/today.svg?repo_id=vald)](https://github.com/vdaas/vald/graphs/traffic)
 
-<div align="center">
+## What is Vald?
 Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.<br>
 Vald is designed and implemented based on the Cloud-Native architecture. <br>
-and enables automatic vector indexing and index backup, and horizontal scaling which made for searching from billions of feature vector data.<br>
+It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors.<br>
+It has automatic vector indexing and index backup, and horizontal scaling which made for searching from billions of feature vector data.<br>
 Vald is easy to use, feature-rich and highly customizable as you needed.<br>
 Go to [Get Started](./docs/user/get-started.md) page to try out Vald :)
-</div>
+
+(If you are interested in ANN benchmarks, please refer to [the official website](http://ann-benchmarks.com/).)<br>
+
+### Main Features
+
+- Asynchronize Auto Indexing
+    - Usually the graph requires locking during indexing, which cause stop-the-world. But Vald uses distributed index graph so it continues to work duing indexing.
+
+- Customizable Ingress/Egress Filtering
+    - Vald implements it's own highly customizable Ingress/Egress filter.
+    - Which can be configured to fit the gRPC interface.
+        - Ingress Filter: Ability to Vectorize through filter on request.
+        - Egress Filter: rerank or filter the searching result with your own algorithm.
+
+- Cloud-native based vector searching engine
+    - Horizontal scalable on memory and cpu for your demand.
+
+- Auto Indexing Backup
+    - Vald has auto index backup feature using MySQL + Redis or Cassndora which enables disaster recovery.
+
+- Distributed Indexing
+    - Vald distribute vector index to multiple agent, each agent stores different index.
+
+- Index Replication
+    - Vald stores each index in multiple agents which enables index replicas.
+    - Automatically rebalance the replica when some Vald agent goes down.
+
+- Easy to use
+    - Vald can be easily installed in a few steps.
+
+- Highly customizable
+    - You can configure the number of vector dimension, the number of replica and etc.
+
+- Multi language supported
+    - Golang, Java, Nodejs and python is supported.
 
 ## Requirement
 

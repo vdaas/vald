@@ -4,74 +4,40 @@ This article will show you how to deploy and run Vald on your k8s cluster.
 This article uses Scylla DB as the backend data store for metadata-management and backup-manager.
 Fashion-mnist is used as an example of a dataset.
 
-1. [About](#About)
-    1. [Main Features](#Main-Features)
-    2. [Requirements](#Requirements)
-2. [Starting Vald on k8s cluster](#Starting-Vald-on-k8s-cluster)
-    1. [Deploy](#Deploy)
-    2. [Run](#Run)
-3. [Advanced](#Advanced)
+1. [Requirements](#requirements)
+2. [Deploy and Run Vald on k8s cluster](#deploy-and-run-vald-on-k8s-cluster)
+    1. [Deploy](#deploy)
+    2. [Run](#run)
+3. [Advanced](#advanced)
+    1. [Customize Vald](#customize-vald)
+    2. [Another way to deploy Vald](#another-way-to-deploy-vald)
 
-## About
-
-Vald is a distributed highly scalable and fast approximate nearest neighbor dense feature vector search engine.<br>
-Vald can handle large amount of specific objects, such as image, text, video, and etc.<br>
-Vald is designed base on Cloud Native.
-It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors.
-(If you are interested in ANN benchmarks, please refer to [the official website](http://ann-benchmarks.com/).)
-
-### Main Features
-
-- Auto Indexing
-    - Normally, when changing the Graph Index, the Graph must be locked, but Vald uses distributed index graph, it is extremely difficult for the user to reconstruct the Graph.
-    - Therefore, Vald automatically indexes distributed Graphs sequentially.
-
-- Ingress/Egress Filltering
-    - Vald implements it's own highly customizable Ingress/Egress filter.
-    - Which can be configured by the user to fit the gRPC interface.
-        - Ingress Filter: Ability to Vectorize through filter on request.
-        - Egress Filter: rerank or filter the searching result with your own algorithm.
-
-- Horizontal Scalable
-    - Vald is a cloud-native vector search engine running on Kubernetes, which enables horizontal scalling of memory and cpu for billion scale of vector data.
-
-- Auto Indexing Backup
-    - Vald has auto index backup feature using MySQL + Redis or Cassndora which enables disaster recovery.
-
-- Distributed Indexing
-    - Vald distribute vector index to multiple agent, each agent stores different index.
-
-- Index Replication
-    - Vald stores each index in multiple agents which enables index replicas.
-    - Automatically rebalance the replica when some Vald agent goes down.
-
-- Easy to use
-    - Vald can be easily installed in a few steps and Vald is highly customizable.
-
-### Requirements
+## Requirements
 
 - k8s:  v1.17 ~
 - go:   v1.14 ~
 - helm: v3 ~
 - libhdf5 (_only required for this tutorial._)
 
-Helm and hdf5 is required for this tutorial. If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install)) and [hdf5](https://www.hdfgroup.org/)).
+Helm and hdf5 is required for this tutorial. If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install) and [hdf5](https://www.hdfgroup.org/).
 
-<details><summary>optional installation</summary><br>
-install helm
+<details><summary>[Optional] Install helm</summary><br>
 
 ```bash
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 ```
-install hdf5
+</details>
+
+<details><summary>[Optional] Install hdf5</summary><br>
+
 ```bash
-## yum
+# yum
 yum install -y hdf5-devel
 
-## apt
+# apt
 apt-get install libhdf5-serial-dev
 
-## homebrew
+# homebrew
 brew install hdf5
 ```
 </details>
@@ -80,7 +46,8 @@ brew install hdf5
 
 ### Deploy
 
-This section shows how to deploy Vald with Scylla, which is used as a datastore for index-metadata and backup-manager.
+This section shows how to deploy Vald with Scylla using Helm.
+Scylla is used as a datastore for index-metadata and backup-manager.
 If you want to learn about Scylla, please refer to [the official website](https://www.scylladb.com/).
 
 1. Confirm which cluster to deploy
@@ -149,9 +116,9 @@ If you want to learn about Scylla, please refer to [the official website](https:
     ```
     </details>
 
-### Run
+### Run using example code
 
-This chapter shows how to run Vald with fashion-mnist dataset.
+This chapter shows how to perform a search action in Vald with fashion-mnist dataset.
 
 1. Port Forward
 
@@ -166,8 +133,8 @@ This chapter shows how to run Vald with fashion-mnist dataset.
     ```bash
     # move to working directory
     cd example/client
-
-    # get fashion-mnist
+    
+    # download fashion-mnist testing dataset
     wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
     ```
 
