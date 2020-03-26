@@ -4,8 +4,8 @@ type Option func(c *core)
 
 var (
 	defaultOptions = []Option{
-		WithIndexPath("/tmp/gongt"),
-		WithObjectType(Float),
+		WithIndexPath("tmpdir"),
+		WithObjectType("float"),
 		WithDimension(128),
 	}
 )
@@ -18,11 +18,13 @@ func WithIndexPath(path string) Option {
 	}
 }
 
-func WithObjectType(typ ObjectType) Option {
+func WithObjectType(typ string) Option {
 	return func(c *core) {
 		switch typ {
-		case Uint8, Float:
-			c.objectType = typ
+		case "uint8":
+			c.objectType = Uint8
+		case "float":
+			c.objectType = Float
 		default:
 			c.objectType = ObjectNone
 		}

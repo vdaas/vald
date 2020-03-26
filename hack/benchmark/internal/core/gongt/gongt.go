@@ -10,8 +10,7 @@ import (
 )
 
 type (
-	SearchResult = gongt.SearchResult
-	ObjectType   = gongt.ObjectType
+	ObjectType = gongt.ObjectType
 )
 
 const (

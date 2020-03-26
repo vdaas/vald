@@ -67,7 +67,7 @@ func (s *strategy) PreProp(ctx context.Context, b *testing.B, dataset assets.Dat
 	case core.Float32:
 		return s.preProp32(ctx, b, s.core32, dataset)
 	case core.Float64:
-		return s.preProp32(ctx, b, s.core32, dataset)
+		return s.preProp64(ctx, b, s.core64, dataset)
 	default:
 		return nil, errors.ErrInvalidCoreMode
 	}
