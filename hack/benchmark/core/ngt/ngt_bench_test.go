@@ -53,6 +53,77 @@ func BenchmarkNGT_Insert(b *testing.B) {
 	}
 }
 
+func BenchmarkNGT_BulkInsert(b *testing.B) {
+	for _, target := range targets {
+		benchmark.New(b,
+			benchmark.WithName(target),
+			benchmark.WithStrategy(
+				strategy.NewBulkInsert(
+					strategy.WithCore32(
+						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core32, core.Closer, error) {
+							ngt, err := ngt.New(
+								ngt.WithDimension(dataset.Dimension()),
+								ngt.WithObjectType(dataset.ObjectType()),
+							)
+							if err != nil {
+								return nil, nil, err
+							}
+							return ngt, ngt, nil
+						}),
+				),
+			),
+		).Run(context.Background(), b)
+	}
+}
+
+func BenchmarkNGT_InsertCommit(b *testing.B) {
+	for _, target := range targets {
+		benchmark.New(b,
+			benchmark.WithName(target),
+			benchmark.WithStrategy(
+				strategy.NewInsertCommit(
+					10,
+					strategy.WithCore32(
+						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core32, core.Closer, error) {
+							ngt, err := ngt.New(
+								ngt.WithDimension(dataset.Dimension()),
+								ngt.WithObjectType(dataset.ObjectType()),
+							)
+							if err != nil {
+								return nil, nil, err
+							}
+							return ngt, ngt, nil
+						}),
+				),
+			),
+		).Run(context.Background(), b)
+	}
+}
+
+func BenchmarkNGT_BulkInsertCommit(b *testing.B) {
+	for _, target := range targets {
+		benchmark.New(b,
+			benchmark.WithName(target),
+			benchmark.WithStrategy(
+				strategy.NewBulkInsertCommit(
+					10,
+					strategy.WithCore32(
+						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core32, core.Closer, error) {
+							ngt, err := ngt.New(
+								ngt.WithDimension(dataset.Dimension()),
+								ngt.WithObjectType(dataset.ObjectType()),
+							)
+							if err != nil {
+								return nil, nil, err
+							}
+							return ngt, ngt, nil
+						}),
+				),
+			),
+		).Run(context.Background(), b)
+	}
+}
+
 func BenchmarkNGT_Search(b *testing.B) {
 	for _, target := range targets {
 		benchmark.New(b,
