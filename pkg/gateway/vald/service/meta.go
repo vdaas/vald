@@ -336,7 +336,7 @@ func (m *meta) SetUUIDandMetas(ctx context.Context, kvs map[string]string) (err 
 		}
 	}()
 
-	data := make([]*payload.Meta_KeyVal, len(kvs))
+	data := make([]*payload.Meta_KeyVal, 0, len(kvs))
 	for uuid, meta := range kvs {
 		data = append(data, &payload.Meta_KeyVal{
 			Key: uuid,
