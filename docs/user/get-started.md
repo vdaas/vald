@@ -141,7 +141,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
 3. Running example
 
     Vald provides multiple langurages client library such as golang, Java, Node.js, Python and so on.<br>
-    In this case, we use [vald-client-go](https://github.com/vdaas/vald-client-go) which is written by golang.
+    In this example, the fashion-mnist dataset will insert into the vald cluster and perform a search using [vald-client-go](https://github.com/vdaas/vald-client-go).
 
     We use [`example/client/main.go`](../../example/client/main.go) to run the example.
     This will execute 4 steps.
