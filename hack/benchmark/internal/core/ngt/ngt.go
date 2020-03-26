@@ -65,5 +65,5 @@ func (c *core) Close() {
 	if len(c.tmpdir) != 0 {
 		os.RemoveAll(c.tmpdir)
 	}
-	c.NGT.Close()
+	// c.NGT.Close()
 }

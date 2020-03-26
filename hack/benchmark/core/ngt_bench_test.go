@@ -1,9 +1,16 @@
 package ngt
 
 import (
+	"context"
 	"flag"
 	"strings"
 	"testing"
+
+	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
+	"github.com/vdaas/vald/hack/benchmark/core/benchmark/strategy"
+	"github.com/vdaas/vald/hack/benchmark/internal/assets"
+	"github.com/vdaas/vald/hack/benchmark/internal/core"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/ngt"
 )
 
 var targets []string
@@ -18,4 +25,26 @@ func init() {
 }
 
 func BenchmarkNGT_Insert(b *testing.B) {
+	for _, target := range targets {
+		func() {
+			benchmark.New(b,
+				benchmark.WithName(target),
+				benchmark.WithStrategy(
+					strategy.NewInsert(
+						strategy.WithCore32Initializer(
+							func(ctx context.Context, dataset assets.Dataset) (core.Core32, func(), error) {
+								ngt, err := ngt.New(
+									ngt.WithDimension(dataset.Dimension()),
+									ngt.WithObjectType(dataset.ObjectType()),
+								)
+								if err != nil {
+									return nil, nil, err
+								}
+								return ngt, ngt.Close, nil
+							}),
+					),
+				),
+			).Run(context.Background(), b)
+		}()
+	}
 }

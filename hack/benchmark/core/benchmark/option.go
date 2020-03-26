@@ -1,9 +1,5 @@
 package benchmark
 
-import (
-	"github.com/vdaas/vald/hack/benchmark/internal/core"
-)
-
 type Option func(*benchmark)
 
 var (
@@ -18,15 +14,7 @@ func WithName(name string) Option {
 	}
 }
 
-func WithFloat32(core core.Core32, strategies ...Strategy) Option {
-	return func(b *benchmark) {
-		if len(strategies) != 0 {
-			b.strategies = strategies
-		}
-	}
-}
-
-func WithFloat64(core core.Core32, strategies ...Strategy) Option {
+func WithStrategy(strategies ...Strategy) Option {
 	return func(b *benchmark) {
 		if len(strategies) != 0 {
 			b.strategies = strategies
