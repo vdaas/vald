@@ -191,7 +191,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
             )
             ```
             </details>
-    - Recognition paremters.
+    - Recognition parameters.
         <details><summary>example code</summary><br>
 
         ```go
@@ -293,8 +293,8 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
 
 Vald is highly customizable.
 For example you can configure the number of vector dimension, the number of replica and etc.
-You can customize Vald by creating/editing [`values.yaml`](../../charts/vald/values.yaml).
-We will publish the description of `values.yaml` soon.
+You can customize Vald by creating/editing [`values.yaml`](../../charts/vald/values.yaml).<br>
+If you'd like to configure your Vald's parameters, please refer to [Vald's helm charts document](../../charts/vald/README.md)
 
 ### Another way to deploy Vald
 
