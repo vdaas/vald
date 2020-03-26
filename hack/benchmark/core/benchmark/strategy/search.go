@@ -15,24 +15,7 @@ func NewSearch(size int, epsilon, radius float32, opts ...StrategyOption) benchm
 		WithPropName("Search"),
 		WithPreProp32(
 			func(ctx context.Context, b *testing.B, c core.Core32, dataset assets.Dataset) (ids []uint, err error) {
-				train := dataset.Train()
-
-				ids = make([]uint, 0, len(train))
-				var id uint
-				for _, v := range train {
-					id, err = c.Insert(v)
-					if err != nil {
-						return nil, err
-					}
-					ids = append(ids, id)
-				}
-
-				err = c.CreateIndex(10)
-				if err != nil {
-					return nil, err
-				}
-
-				return
+				return insertAndCreateIndex32(ctx, c, dataset)
 			},
 		),
 		WithProp32(
@@ -43,24 +26,7 @@ func NewSearch(size int, epsilon, radius float32, opts ...StrategyOption) benchm
 		),
 		WithPreProp64(
 			func(ctx context.Context, b *testing.B, c core.Core64, dataset assets.Dataset) (ids []uint, err error) {
-				train := dataset.TrainAsFloat64()
-
-				ids = make([]uint, 0, len(train))
-				var id uint
-				for _, v := range train {
-					id, err = c.Insert(v)
-					if err != nil {
-						return nil, err
-					}
-					ids = append(ids, id)
-				}
-
-				err = c.CreateIndex(10)
-				if err != nil {
-					return nil, err
-				}
-
-				return
+				return insertAndCreateIndex64(ctx, c, dataset)
 			},
 		),
 		WithProp64(
