@@ -255,29 +255,6 @@ k8s/linkerd/deploy:
 k8s/linkerd/remove:
 	linkerd install --ignore-cluster | kubectl delete -f -
 
-.PHONY: helm/install
-## install helm
-helm/install: $(BINDIR)/helm
-
-$(BINDIR)/helm:
-	mkdir -p $(BINDIR)
-	curl "https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3" | HELM_INSTALL_DIR=$(BINDIR) bash
-
-.PHONY: helm/package/vald
-## packaging Helm chart for Vald
-helm/package/vald:
-	helm package charts/vald
-
-.PHONY: helm/package/vald-helm-operator
-## packaging Helm chart for vald-helm-operator
-helm/package/vald-helm-operator:
-	helm package charts/vald-helm-operator
-
-.PHONY: helm/repo/add
-## add Helm chart repository
-helm/repo/add:
-	helm repo add vald https://vald.vdaas.org/charts
-
 .PHONY: telepresence/install
 ## install telepresence
 telepresence/install: $(BINDIR)/telepresence
@@ -293,3 +270,38 @@ $(BINDIR)/telepresence:
 	rm -rf telepresence.tar.gz
 	env PREFIX=$(BINDIR:%/bin=%) telepresence-$(TELEPRESENCE_VERSION)/install.sh
 	rm -rf telepresence-$(TELEPRESENCE_VERSION)
+
+.PHONY: telepresence/swap/agent-ngt
+## swap agent-ngt deployment using telepresence
+telepresence/swap/agent-ngt:
+	@$(call telepresence,vald-agent-ngt,vdaas/vald-agent-ngt)
+
+.PHONY: telepresence/swap/gateway
+## swap gateway deployment using telepresence
+telepresence/swap/gateway:
+	@$(call telepresence,vald-gateway,vdaas/vald-gateway)
+
+.PHONY: telepresence/swap/discoverer
+## swap discoverer deployment using telepresence
+telepresence/swap/discoverer:
+	@$(call telepresence,vald-discoverer,vdaas/vald-discoverer-k8s)
+
+.PHONY: telepresence/swap/meta
+## swap meta deployment using telepresence
+telepresence/swap/meta:
+	@$(call telepresence,vald-meta,vdaas/vald-meta-redis)
+
+.PHONY: telepresence/swap/manager-backup
+## swap manager-backup deployment using telepresence
+telepresence/swap/manager-backup:
+	@$(call telepresence,vald-manager-backup,vdaas/vald-manager-backup-mysql)
+
+.PHONY: telepresence/swap/manager-compressor
+## swap manager-compressor deployment using telepresence
+telepresence/swap/manager-compressor:
+	@$(call telepresence,vald-manager-compressor,vdaas/vald-manager-compressor)
+
+.PHONY: telepresence/swap/manager-index
+## swap manager-index deployment using telepresence
+telepresence/swap/manager-index:
+	@$(call telepresence,vald-manager-index,vdaas/vald-manager-index)

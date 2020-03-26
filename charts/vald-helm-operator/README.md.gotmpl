@@ -1,0 +1,23 @@
+vald-helm-operator
+===
+
+This is a Helm chart to install vald-helm-operator.
+
+{{ template "chart.versionLine" . }}
+
+Install
+---
+
+Add Vald Helm repository
+
+    $ helm repo add vald https://vald.vdaas.org/charts
+
+Run the following command to install the chart,
+
+    $ helm install --generate-name vald/vald-helm-operator
+
+
+Configuration
+---
+
+{{ template "chart.valuesTable" . }}

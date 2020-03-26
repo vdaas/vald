@@ -65,8 +65,10 @@ spec:
             {{- toYaml .Values.backupManager.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          {{- if .Values.backupManager.env }}
           env:
             {{- toYaml .Values.backupManager.env | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: {{ .Values.backupManager.name }}-config
               mountPath: /etc/server/

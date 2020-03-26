@@ -22,10 +22,10 @@ BASE_IMAGE                      = $(NAME)-base
 AGENT_IMAGE                     = $(NAME)-agent-ngt
 GATEWAY_IMAGE                   = $(NAME)-gateway
 DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
-KVS_IMAGE                       = $(NAME)-meta-redis
-NOSQL_IMAGE                     = $(NAME)-meta-cassandra
-BACKUP_MANAGER_MYSQL_IMAGE      = $(NAME)-manager-backup-mysql
-BACKUP_MANAGER_CASSANDRA_IMAGE  = $(NAME)-manager-backup-cassandra
+META_REDIS_IMAGE                = $(NAME)-meta-redis
+META_CASSANDRA_IMAGE            = $(NAME)-meta-cassandra
+MANAGER_BACKUP_MYSQL_IMAGE      = $(NAME)-manager-backup-mysql
+MANAGER_BACKUP_CASSANDRA_IMAGE  = $(NAME)-manager-backup-cassandra
 MANAGER_COMPRESSOR_IMAGE        = $(NAME)-manager-compressor
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
@@ -43,8 +43,13 @@ TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION)
 DOCKFMT_VERSION      ?= v0.3.3
 KIND_VERSION         ?= v0.7.0
 HELM_VERSION         ?= v3.1.2
+HELM_DOCS_VERSION    ?= 0.9.0
 VALDCLI_VERSION      ?= v0.0.1
 TELEPRESENCE_VERSION ?= 0.104
+
+SWAP_DEPLOYMENT_TYPE ?= deployment
+SWAP_IMAGE           ?= ""
+SWAP_TAG             ?= latest
 
 BINDIR ?= /usr/local/bin
 
@@ -292,6 +297,7 @@ readme/update/contributors:
 include Makefile.d/bench.mk
 include Makefile.d/docker.mk
 include Makefile.d/git.mk
+include Makefile.d/helm.mk
 include Makefile.d/proto.mk
 include Makefile.d/k8s.mk
 include Makefile.d/kind.mk

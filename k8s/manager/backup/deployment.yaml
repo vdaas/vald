@@ -37,7 +37,7 @@ spec:
       labels:
         app: vald-manager-backup
       annotations:
-        checksum/configmap: 490a1e40bd5ca4b274dd8be660dea082dd87a456f4e5b8772e246e437554e5fb
+        checksum/configmap: 238c21dc8795eaf29e1b9605584f4256d1afb625f1f8e6ffbc191b66cad3f3c6
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-backup

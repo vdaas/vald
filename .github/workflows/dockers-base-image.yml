@@ -21,7 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
       with:
-        fetch-depth: 1
+        fetch-depth: 10
     - name: Build the Docker image
       run: |
         echo 'Build docker image'

@@ -22,15 +22,15 @@ spec:
   template:
     spec:
       containers:
-      - name: cassandra-init
-        image: "cassandra:latest"
-        imagePullPolicy: Always
-        command:
-          - /bin/sh
-          - -c
-          - |
-            cqlsh -u${CASSANDRA_USER} -p${CASSANDRA_PASSWORD} ${CASSANDRA_HOST} < /initdb/init.cql
-        env:
+        - name: cassandra-init
+          image: "cassandra:latest"
+          imagePullPolicy: Always
+          command:
+            - /bin/sh
+            - -c
+            - |
+              cqlsh -u${CASSANDRA_USER} -p${CASSANDRA_PASSWORD} ${CASSANDRA_HOST} < /initdb/init.cql
+          env:
           - name: CASSANDRA_HOST
             value: cassandra.default.svc.cluster.local
           - name: CASSANDRA_USER
@@ -40,9 +40,9 @@ spec:
               secretKeyRef:
                 key: password
                 name: cassandra-secret
-        volumeMounts:
-          - name: cassandra-initdb
-            mountPath: /initdb
+          volumeMounts:
+            - name: cassandra-initdb
+              mountPath: /initdb
       restartPolicy: Never
       volumes:
         - name: cassandra-initdb

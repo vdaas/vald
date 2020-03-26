@@ -66,7 +66,10 @@ func main() {
 	}
 	for _, path := range dirwalk(os.Args[1]) {
 		fmt.Println(path)
-		readAndRewrite(path)
+		err := readAndRewrite(path)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 func dirwalk(dir string) []string {
@@ -94,6 +97,7 @@ func dirwalk(dir string) []string {
 			".gitignore",
 			".gitkeep",
 			".gitmodules",
+			".gotmpl",
 			".hdf5",
 			".helmignore",
 			".html",

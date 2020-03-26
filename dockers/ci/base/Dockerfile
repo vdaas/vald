@@ -51,6 +51,7 @@ RUN make ngt/install
 RUN make tensorflow/install
 
 RUN make helm/install
+RUN make helm-docs/install
 RUN make kind/install
 RUN make valdcli/install
 
