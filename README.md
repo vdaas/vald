@@ -13,8 +13,8 @@
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/vdaas/vald)
 [![DepShield Badge](https://depshield.sonatype.org/badges/vdaas/vald/depshield.svg?style=flat-square)](https://depshield.github.io)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fvdaas%2Fvald.svg?type=small&style=flat-square)](https://app.fossa.com/projects/git%2Bgithub.com%2Fvdaas%2Fvald?ref=badge_small)
-[![Total visitor](https://visitor-count-badge.herokuapp.com/total.svg?repo_id=vald)](https://github.com/vdaas/vald/graphs/traffic)
-[![Visitors in today](https://visitor-count-badge.herokuapp.com/today.svg?repo_id=vald)](https://github.com/vdaas/vald/graphs/traffic)
+[![DeepSource](https://static.deepsource.io/deepsource-badge-light.svg)](https://deepsource.io/gh/vdaas/vald/?ref=repository-badge)
+[![Contributors](https://img.shields.io/github/contributors/vdaas/vald?style=flat-square)](https://github.com/vdaas/vald/graphs/contributors)
 
 ## What is Vald?
 Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.<br>
@@ -134,8 +134,6 @@ Please read the [contribution guide](https://github.com/vdaas/vald/blob/master/C
 ## LICENSE
 
 vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas/vald/blob/master/LICENSE) file.
-
-[![DeepSource](https://static.deepsource.io/deepsource-badge-light.svg)](https://deepsource.io/gh/vdaas/vald/?ref=repository-badge)
 
 <table>
   <tr>
