@@ -62,18 +62,24 @@ func WithPropName(str string) StrategyOption {
 	}
 }
 
-func WithCore32(c core.Core32) StrategyOption {
+func WithCore32Initializer(
+	fn func(context.Context, assets.Dataset) (core.Core32, func(), error),
+) StrategyOption {
 	return func(s *strategy) {
-		if c != nil {
-			s.core32 = c
+		if fn != nil {
+			s.initCore32 = fn
+			s.mode = core.Float32
 		}
 	}
 }
 
-func WithCore64(c core.Core64) StrategyOption {
+func WithCore64Initializer(
+	fn func(context.Context, assets.Dataset) (core.Core64, func(), error),
+) StrategyOption {
 	return func(s *strategy) {
-		if c != nil {
-			s.core64 = c
+		if fn != nil {
+			s.initCore64 = fn
+			s.mode = core.Float64
 		}
 	}
 }

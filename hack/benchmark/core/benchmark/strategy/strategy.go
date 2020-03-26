@@ -10,56 +10,49 @@ import (
 )
 
 type strategy struct {
-	core32    core.Core32
-	core64    core.Core64
-	propName  string
-	preProp32 func(context.Context, *testing.B, core.Core32, assets.Dataset) (interface{}, error)
-	preProp64 func(context.Context, *testing.B, core.Core64, assets.Dataset) (interface{}, error)
-	mode      core.Mode
-	prop32    func(context.Context, *testing.B, core.Core32, assets.Dataset, []uint, *uint64) (interface{}, error)
-	prop64    func(context.Context, *testing.B, core.Core64, assets.Dataset, []uint, *uint64) (interface{}, error)
+	initCore32 func(context.Context, assets.Dataset) (core.Core32, func(), error)
+	initCore64 func(context.Context, assets.Dataset) (core.Core64, func(), error)
+	propName   string
+	preProp32  func(context.Context, *testing.B, core.Core32, assets.Dataset) (interface{}, error)
+	preProp64  func(context.Context, *testing.B, core.Core64, assets.Dataset) (interface{}, error)
+	mode       core.Mode
+	prop32     func(context.Context, *testing.B, core.Core32, assets.Dataset, []uint, *uint64) (interface{}, error)
+	prop64     func(context.Context, *testing.B, core.Core64, assets.Dataset, []uint, *uint64) (interface{}, error)
 }
 
 func newStrategy(opts ...StrategyOption) *strategy {
-	s := new(strategy)
+	s := &strategy{
+		// invalid mode.
+		mode: core.Mode(100),
+	}
 	for _, opt := range append(defaultStrategyOptions, opts...) {
 		opt(s)
 	}
 	return s
 }
 
-func (s *strategy) PreProcess(ctx context.Context, b *testing.B, dataset assets.Dataset) (interface{}, error) {
-	switch s.mode {
-	case core.Float32:
-		return s.preProp32(ctx, b, s.core32, dataset)
-	case core.Float64:
-		return s.preProp64(ctx, b, s.core64, dataset)
-	default:
-		b.Fatalf("invalid mode: %v", s.mode)
-		return nil, nil
-	}
-}
-
 func (s *strategy) Run(ctx context.Context, b *testing.B, dataset assets.Dataset) {
 	var cnt uint64
 	switch s.mode {
 	case core.Float32:
-		obj, err := s.preProp32(ctx, b, s.core32, dataset)
+		c, close, err := s.initCore32(ctx, dataset)
 		if err != nil {
 			b.Fatal(err)
 		}
+		defer close()
 
 		b.Run(s.propName, func(bb *testing.B) {
-			s.float32(ctx, b, dataset, toUint(obj), &cnt)
+			s.float32(ctx, bb, c, dataset, nil, &cnt)
 		})
 	case core.Float64:
-		obj, err := s.preProp32(ctx, b, s.core32, dataset)
+		c, close, err := s.initCore64(ctx, dataset)
 		if err != nil {
 			b.Fatal(err)
 		}
+		defer close()
 
 		b.Run(s.propName, func(bb *testing.B) {
-			s.float64(ctx, b, dataset, toUint(obj), &cnt)
+			s.float64(ctx, bb, c, dataset, nil, &cnt)
 		})
 	default:
 		b.Fatalf("invalid mode: %v", s.mode)
@@ -76,25 +69,25 @@ func toUint(in interface{}) (out []uint) {
 	return
 }
 
-func (s *strategy) float32(ctx context.Context, b *testing.B, dataset assets.Dataset, ids []uint, cnt *uint64) {
+func (s *strategy) float32(ctx context.Context, b *testing.B, c core.Core32, dataset assets.Dataset, ids []uint, cnt *uint64) {
 	b.StopTimer()
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		s.prop32(ctx, b, s.core32, dataset, ids, cnt)
+		s.prop32(ctx, b, c, dataset, ids, cnt)
 		atomic.AddUint64(cnt, 1)
 	}
 	b.StopTimer()
 }
 
-func (s *strategy) float64(ctx context.Context, b *testing.B, dataset assets.Dataset, ids []uint, cnt *uint64) {
+func (s *strategy) float64(ctx context.Context, b *testing.B, c core.Core64, dataset assets.Dataset, ids []uint, cnt *uint64) {
 	b.StopTimer()
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		s.prop64(ctx, b, s.core64, dataset, ids, cnt)
+		s.prop64(ctx, b, c, dataset, ids, cnt)
 		atomic.AddUint64(cnt, 1)
 	}
 	b.StopTimer()
