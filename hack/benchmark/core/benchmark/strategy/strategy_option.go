@@ -29,7 +29,7 @@ func WithProp32(
 	fn func(context.Context, *testing.B, core.Core32, assets.Dataset, []uint, *uint64) (interface{}, error),
 ) StrategyOption {
 	return func(s *strategy) error {
-		if fn != nil && s.mode == core.Float32 {
+		if fn != nil {
 			s.prop32 = fn
 		}
 		return nil
@@ -51,7 +51,7 @@ func WithProp64(
 	fn func(context.Context, *testing.B, core.Core64, assets.Dataset, []uint, *uint64) (interface{}, error),
 ) StrategyOption {
 	return func(s *strategy) error {
-		if fn != nil && s.mode == core.Float64 {
+		if fn != nil {
 			s.prop64 = fn
 		}
 		return nil
