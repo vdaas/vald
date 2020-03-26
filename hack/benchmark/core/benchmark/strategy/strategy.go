@@ -5,6 +5,7 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/core"
 )
@@ -20,7 +21,7 @@ type strategy struct {
 	prop64     func(context.Context, *testing.B, core.Core64, assets.Dataset, []uint, *uint64) (interface{}, error)
 }
 
-func newStrategy(opts ...StrategyOption) *strategy {
+func newStrategy(opts ...StrategyOption) benchmark.Strategy {
 	s := &strategy{
 		// invalid mode.
 		mode: core.Mode(100),
