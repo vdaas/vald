@@ -1,11 +1,11 @@
 package gongt
 
 import (
-	"errors"
 	"io/ioutil"
 	"os"
 
 	icore "github.com/vdaas/vald/hack/benchmark/internal/core"
+	"github.com/vdaas/vald/hack/benchmark/internal/errors"
 	"github.com/yahoojapan/gongt"
 )
 
@@ -17,10 +17,6 @@ const (
 	ObjectNone ObjectType = iota
 	Uint8
 	Float
-)
-
-var (
-	ErrNotSupportedMethod = errors.New("not supported method")
 )
 
 type core struct {
@@ -88,7 +84,7 @@ func (c *core) Remove(id uint) error {
 }
 
 func (c *core) BulkRemove(ids ...uint) error {
-	return ErrNotSupportedMethod
+	return errors.ErrGoNGTNotSupportedMethod
 }
 
 func (c *core) GetVector(id uint) ([]float64, error) {
