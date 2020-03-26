@@ -122,7 +122,11 @@ func (w *worker) Dispatch(ctx context.Context, f WorkerJobFunc) error {
 		select {
 		case w.jobCh <- f:
 		default:
-			return errors.ErrWorkerChannelIsFull(w.name)
+			err := errors.ErrWorkerChannelIsFull(w.name)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
+			}
+			return err
 		}
 	}
 	return nil

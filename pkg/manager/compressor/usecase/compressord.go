@@ -178,17 +178,21 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 func (r *run) PreStart(ctx context.Context) error {
 	log.Info("daemon pre-start")
+
 	err := r.compressor.PreStart(ctx)
 	if err != nil {
 		return err
 	}
+
 	err = r.registerer.PreStart(ctx)
 	if err != nil {
 		return err
 	}
+
 	if r.observability != nil {
 		return r.observability.PreStart(ctx)
 	}
+
 	return nil
 }
 
@@ -201,6 +205,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)
 	}
+
 	if r.backup != nil {
 		bech, err = r.backup.Start(ctx)
 		if err != nil {
@@ -208,13 +213,17 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			return nil, err
 		}
 	}
+
 	if r.compressor != nil {
 		cech = r.compressor.Start(ctx)
 	}
+
 	if r.registerer != nil {
 		rech = r.registerer.Start(ctx)
 	}
+
 	sech = r.server.ListenAndServe(ctx)
+
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		log.Info("daemon start")
 		defer close(ech)

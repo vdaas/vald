@@ -228,6 +228,12 @@ func (c *compressor) dispatchDecompress(ctx context.Context, bytess ...[]byte) (
 		}
 	}
 
+	if errs != nil && span != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(errs.Error()))
+		}
+	}
+
 	return results, errs
 }
 
@@ -241,10 +247,17 @@ func (c *compressor) Compress(ctx context.Context, vector []float32) ([]byte, er
 
 	ress, err := c.dispatchCompress(ctx, vector)
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, err
 	}
 	if len(ress) != 1 {
-		return nil, errors.ErrCompressedDataNotFound
+		err = errors.ErrCompressedDataNotFound
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, err
 	}
 
 	return ress[0], nil
@@ -260,10 +273,17 @@ func (c *compressor) Decompress(ctx context.Context, bytes []byte) ([]float32, e
 
 	ress, err := c.dispatchDecompress(ctx, bytes)
 	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
 		return nil, err
 	}
 	if len(ress) != 1 {
-		return nil, errors.ErrDecompressedDataNotFound
+		err = errors.ErrDecompressedDataNotFound
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, err
 	}
 
 	return ress[0], nil
@@ -277,7 +297,12 @@ func (c *compressor) MultiCompress(ctx context.Context, vectors [][]float32) ([]
 		}
 	}()
 
-	return c.dispatchCompress(ctx, vectors...)
+	bytess, err := c.dispatchCompress(ctx, vectors...)
+	if err != nil && span != nil {
+		span.SetStatus(trace.StatusCodeInternal(err.Error()))
+	}
+
+	return bytess, err
 }
 
 func (c *compressor) MultiDecompress(ctx context.Context, bytess [][]byte) ([][]float32, error) {
@@ -288,5 +313,10 @@ func (c *compressor) MultiDecompress(ctx context.Context, bytess [][]byte) ([][]
 		}
 	}()
 
-	return c.dispatchDecompress(ctx, bytess...)
+	vectors, err := c.dispatchDecompress(ctx, bytess...)
+	if err != nil && span != nil {
+		span.SetStatus(trace.StatusCodeInternal(err.Error()))
+	}
+
+	return vectors, err
 }

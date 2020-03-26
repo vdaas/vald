@@ -83,10 +83,15 @@ func (r *registerer) Register(ctx context.Context, meta *payload.Backup_MetaVect
 	}()
 
 	if !r.worker.IsRunning() {
-		return errors.ErrWorkerIsNotRunning(r.worker.Name())
+		err := errors.ErrWorkerIsNotRunning(r.worker.Name())
+		if span != nil {
+			span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
+		}
+
+		return err
 	}
 
-	return r.worker.Dispatch(ctx, func(ctx context.Context) error {
+	err := r.worker.Dispatch(ctx, func(ctx context.Context) error {
 		ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.Register.DispatchedJob")
 		defer func() {
 			if span != nil {
@@ -96,10 +101,13 @@ func (r *registerer) Register(ctx context.Context, meta *payload.Backup_MetaVect
 
 		vector, err := r.compressor.Compress(ctx, meta.GetVector())
 		if err != nil {
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
 			return err
 		}
 
-		return r.backup.Register(
+		err = r.backup.Register(
 			ctx,
 			&payload.Backup_Compressed_MetaVector{
 				Uuid:   meta.GetUuid(),
@@ -108,7 +116,18 @@ func (r *registerer) Register(ctx context.Context, meta *payload.Backup_MetaVect
 				Ips:    meta.GetIps(),
 			},
 		)
+		if err != nil && span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+
+		return err
 	})
+
+	if err != nil && span != nil {
+		span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
+	}
+
+	return err
 }
 
 func (r *registerer) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) error {
@@ -126,5 +145,10 @@ func (r *registerer) RegisterMulti(ctx context.Context, metas *payload.Backup_Me
 			errs = errors.Wrap(errs, err.Error())
 		}
 	}
+
+	if errs != nil && span != nil {
+		span.SetStatus(trace.StatusCodeUnavailable(errs.Error()))
+	}
+
 	return errs
 }
