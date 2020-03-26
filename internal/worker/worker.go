@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -110,6 +111,13 @@ func (w *worker) Len() int {
 }
 
 func (w *worker) Dispatch(ctx context.Context, f WorkerJobFunc) error {
+	ctx, span := trace.StartSpan(ctx, "vald/internal/worker/Worker.Dispatch")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
 	if f != nil {
 		select {
 		case w.jobCh <- f:

@@ -23,6 +23,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/worker"
 )
 
@@ -74,11 +75,25 @@ func (r *registerer) PreStop(ctx context.Context) error {
 }
 
 func (r *registerer) Register(ctx context.Context, meta *payload.Backup_MetaVector) error {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.Register")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
 	if !r.worker.IsRunning() {
 		return errors.ErrWorkerIsNotRunning(r.worker.Name())
 	}
 
 	return r.worker.Dispatch(ctx, func(ctx context.Context) error {
+		ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.Register.DispatchedJob")
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
+
 		vector, err := r.compressor.Compress(ctx, meta.GetVector())
 		if err != nil {
 			return err
@@ -97,6 +112,13 @@ func (r *registerer) Register(ctx context.Context, meta *payload.Backup_MetaVect
 }
 
 func (r *registerer) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) error {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.RegisterMulti")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
 	var err, errs error
 	for _, meta := range metas.GetVectors() {
 		err = r.Register(ctx, meta)

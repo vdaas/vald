@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/worker"
 )
@@ -101,6 +102,13 @@ func (c *compressor) Start(ctx context.Context) <-chan error {
 }
 
 func (c *compressor) dispatchCompress(ctx context.Context, vectors ...[]float32) (results [][]byte, errs error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Compressor.dispatchCompress")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
 	results = make([][]byte, len(vectors))
 
 	mu := new(sync.Mutex)
@@ -159,6 +167,13 @@ func (c *compressor) dispatchCompress(ctx context.Context, vectors ...[]float32)
 }
 
 func (c *compressor) dispatchDecompress(ctx context.Context, bytess ...[]byte) (results [][]float32, errs error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Compressor.dispatchDecompress")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
 	results = make([][]float32, len(bytess))
 
 	mu := new(sync.Mutex)
@@ -217,6 +232,13 @@ func (c *compressor) dispatchDecompress(ctx context.Context, bytess ...[]byte) (
 }
 
 func (c *compressor) Compress(ctx context.Context, vector []float32) ([]byte, error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Compressor.Compress")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
 	ress, err := c.dispatchCompress(ctx, vector)
 	if err != nil {
 		return nil, err
@@ -229,6 +251,13 @@ func (c *compressor) Compress(ctx context.Context, vector []float32) ([]byte, er
 }
 
 func (c *compressor) Decompress(ctx context.Context, bytes []byte) ([]float32, error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Compressor.Decompress")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
 	ress, err := c.dispatchDecompress(ctx, bytes)
 	if err != nil {
 		return nil, err
@@ -241,9 +270,23 @@ func (c *compressor) Decompress(ctx context.Context, bytes []byte) ([]float32, e
 }
 
 func (c *compressor) MultiCompress(ctx context.Context, vectors [][]float32) ([][]byte, error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Compressor.MultiCompress")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
 	return c.dispatchCompress(ctx, vectors...)
 }
 
 func (c *compressor) MultiDecompress(ctx context.Context, bytess [][]byte) ([][]float32, error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Compressor.MultiDecompress")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
 	return c.dispatchDecompress(ctx, bytess...)
 }
