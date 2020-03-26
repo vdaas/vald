@@ -291,7 +291,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 		}
 	}()
 	meta := vec.GetId()
-	exist, err := s.metadata.Exists(ctx, meta)
+	exists, err := s.metadata.Exists(ctx, meta)
 	if err != nil {
 		log.Error(err)
 		if span != nil {
@@ -300,7 +300,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 		return nil, status.WrapWithInternal(
 			fmt.Sprintf("Insert API meta %s couldn't check meta already exists or not", meta), err, info.Get())
 	}
-	if exist {
+	if exists {
 		err = errors.Wrap(err, errors.ErrMetaDataAlreadyExists(meta).Error())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
@@ -393,25 +393,24 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		metas = append(metas, meta)
 		vecs.Vectors[i].Id = uuid
 	}
-	exists, err := s.metadata.MultiExists(ctx, metas...)
-	if err != nil {
-		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+
+	for _, meta := range metas {
+		exists, err := s.metadata.Exists(ctx, meta)
+		if err != nil {
+			log.Error(err)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
+			return nil, status.WrapWithInternal(
+				fmt.Sprintf("MultiInsert API couldn't check metadata exists or not metas = %v", metas), err, info.Get())
 		}
-		return nil, status.WrapWithInternal(
-			fmt.Sprintf("MultiInsert API couldn't check metadata exists or not metas = %v", metas), err, info.Get())
-	}
-	for i, meta := range metas {
-		if exists[i] {
-			err = errors.Wrap(err, errors.ErrMetaDataAlreadyExists(meta).Error())
+		if exists {
+			if span != nil {
+				span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
+			}
+			return nil, status.WrapWithAlreadyExists(
+				fmt.Sprintf("MultiInsert API failed metadata already exists meta = %s", meta), err, info.Get())
 		}
-	}
-	if err != nil {
-		if span != nil {
-			span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
-		}
-		return nil, status.WrapWithAlreadyExists(
-			fmt.Sprintf("MultiInsert API failed metadata already exists uuids metas = %v", metas), err, info.Get())
 	}
 
 	mu := new(sync.Mutex)
@@ -577,12 +576,23 @@ func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*paylo
 			span.End()
 		}
 	}()
+
 	meta := vec.GetId()
-	uuid, err := s.metadata.GetUUID(ctx, meta)
-	if err != nil || len(uuid) == 0 {
-		return s.Insert(ctx, vec)
+	exists, err := s.metadata.Exists(ctx, meta)
+	if err != nil {
+		log.Error(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("Upsert API meta = %s: couldn't check meta already exists or not", meta), err, info.Get())
 	}
-	return s.Update(ctx, vec)
+
+	if exists {
+		return s.Update(ctx, vec)
+	}
+
+	return s.Insert(ctx, vec)
 }
 
 func (s *server) StreamUpsert(stream vald.Vald_StreamUpsertServer) error {
@@ -606,19 +616,56 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 			span.End()
 		}
 	}()
-	metas := make([]string, 0, len(vecs.GetVectors()))
+
+	insertVecs := make([]*payload.Object_Vector, 0, len(vecs.GetVectors()))
+	updateVecs := make([]*payload.Object_Vector, 0, len(vecs.GetVectors()))
+
 	for _, vec := range vecs.GetVectors() {
-		metas = append(metas, vec.GetId())
-	}
-	uuids, err := s.metadata.GetUUIDs(ctx, metas...)
-	if err == nil {
-		for i := range uuids {
-			if len(uuids) > i && len(uuids[i]) != 0 {
-				return s.MultiUpdate(ctx, vecs)
+		exists, err := s.metadata.Exists(ctx, vec.GetId())
+		if err != nil {
+			log.Error(err)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
+			return nil, status.WrapWithInternal(
+				fmt.Sprintf("MultiUpsert API meta = %s: couldn't check meta already exists or not", vec.GetId()), err, info.Get())
+		}
+
+		if exists {
+			updateVecs = append(updateVecs, vec)
+		} else {
+			insertVecs = append(insertVecs, vec)
 		}
 	}
-	return s.MultiInsert(ctx, vecs)
+
+	eg, ectx := errgroup.New(ctx)
+
+	eg.Go(safety.RecoverFunc(func() error {
+		var err error
+		if len(updateVecs) > 0 {
+			_, err = s.MultiUpdate(ectx, &payload.Object_Vectors{
+				Vectors: updateVecs,
+			})
+		}
+		return err
+	}))
+
+	eg.Go(safety.RecoverFunc(func() error {
+		var err error
+		if len(insertVecs) > 0 {
+			_, err = s.MultiInsert(ectx, &payload.Object_Vectors{
+				Vectors: insertVecs,
+			})
+		}
+		return err
+	}))
+
+	err := eg.Wait()
+	if err != nil {
+		return nil, status.WrapWithInternal("MultiUpsert API failed", err, info.Get())
+	}
+
+	return new(payload.Empty), nil
 }
 
 func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Empty, error) {
