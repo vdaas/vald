@@ -12,18 +12,9 @@ type Benchmark interface {
 	Run(context.Context, *testing.B)
 }
 
-type Type uint32
-
-const (
-	Float32 Type = iota
-	Float64
-)
-
 type benchmark struct {
 	name       string
-	core       interface{}
 	dataset    assets.Dataset
-	typ        Type
 	strategies []Strategy
 }
 
@@ -57,7 +48,7 @@ func (bm *benchmark) Run(ctx context.Context, b *testing.B) {
 		b.StartTimer()
 		b.Run(bm.name, func(bb *testing.B) {
 			for _, strategy := range bm.strategies {
-				strategy.Run(ctx, bb, bm.core, bm.typ, bm.dataset)
+				strategy.Run(ctx, bb, bm.dataset)
 			}
 		})
 		b.StopTimer()
