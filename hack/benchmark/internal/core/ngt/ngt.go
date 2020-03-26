@@ -58,7 +58,7 @@ func New(opts ...Option) (icore.Core32, error) {
 }
 
 func (c *core) Search(vec []float32, size int, epsilon, radius float32) (interface{}, error) {
-	return c.Search(vec, size, epsilon, radius)
+	return c.NGT.Search(vec, size, epsilon, radius)
 }
 
 func (c *core) Close() {
