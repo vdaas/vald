@@ -413,6 +413,14 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		}
 	}
 
+	err = s.metadata.SetUUIDandMetas(ctx, metaMap)
+	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, status.WrapWithInternal(fmt.Sprintf("MultiInsert API failed SetUUIDandMetas %#v", metaMap), err, info.Get())
+	}
+
 	mu := new(sync.Mutex)
 	targets := make([]string, 0, s.replica)
 	gerr := s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) (err error) {
@@ -431,14 +439,6 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiInsert API failed request %#v", vecs), errors.Wrap(gerr, err.Error()), info.Get())
-	}
-
-	err = s.metadata.SetUUIDandMetas(ctx, metaMap)
-	if err != nil {
-		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
-		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("MultiInsert API failed SetUUIDandMetas %#v", metaMap), err, info.Get())
 	}
 
 	if s.backup != nil {
@@ -578,21 +578,27 @@ func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*paylo
 	}()
 
 	meta := vec.GetId()
-	exists, err := s.metadata.Exists(ctx, meta)
-	if err != nil {
-		log.Error(err)
+	exists, errs := s.metadata.Exists(ctx, meta)
+	if errs != nil {
+		log.Error(errs)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.SetStatus(trace.StatusCodeInternal(errs.Error()))
 		}
-		return nil, status.WrapWithInternal(
-			fmt.Sprintf("Upsert API meta = %s: couldn't check meta already exists or not", meta), err, info.Get())
 	}
 
 	if exists {
-		return s.Update(ctx, vec)
+		_, err := s.Update(ctx, vec)
+		if err != nil {
+			errs = errors.Wrap(errs, err.Error())
+		}
+	} else {
+		_, err := s.Insert(ctx, vec)
+		if err != nil {
+			errs = errors.Wrap(errs, err.Error())
+		}
 	}
 
-	return s.Insert(ctx, vec)
+	return new(payload.Empty), errs
 }
 
 func (s *server) StreamUpsert(stream vald.Vald_StreamUpsertServer) error {
@@ -620,6 +626,7 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	insertVecs := make([]*payload.Object_Vector, 0, len(vecs.GetVectors()))
 	updateVecs := make([]*payload.Object_Vector, 0, len(vecs.GetVectors()))
 
+	var errs error
 	for _, vec := range vecs.GetVectors() {
 		exists, err := s.metadata.Exists(ctx, vec.GetId())
 		if err != nil {
@@ -627,8 +634,7 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
-			return nil, status.WrapWithInternal(
-				fmt.Sprintf("MultiUpsert API meta = %s: couldn't check meta already exists or not", vec.GetId()), err, info.Get())
+			errs = errors.Wrap(errs, err.Error())
 		}
 
 		if exists {
@@ -662,10 +668,11 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 
 	err := eg.Wait()
 	if err != nil {
-		return nil, status.WrapWithInternal("MultiUpsert API failed", err, info.Get())
+		errs = errors.Wrap(errs, err.Error())
+		return nil, status.WrapWithInternal("MultiUpsert API failed", errs, info.Get())
 	}
 
-	return new(payload.Empty), nil
+	return new(payload.Empty), errs
 }
 
 func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Empty, error) {
