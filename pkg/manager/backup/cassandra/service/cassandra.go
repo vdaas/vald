@@ -22,7 +22,6 @@ import (
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/model"
 )
 
@@ -86,19 +85,15 @@ func (c *client) Close(ctx context.Context) error {
 
 func (c *client) getMetaVector(ctx context.Context, uuid string) (*model.MetaVector, error) {
 	var metaVector model.MetaVector
-	switch err := c.db.Query(cassandra.Select(c.metaTable,
+	if err := c.db.Query(cassandra.Select(c.metaTable,
 		metaColumns,
 		cassandra.Eq(uuidColumn))).
 		BindMap(map[string]interface{}{
 			uuidColumn: uuid,
-		}).GetRelease(&metaVector); err {
-	case cassandra.ErrNotFound:
-		return nil, errors.ErrCassandraNotFound(uuid)
-	case nil:
-		return &metaVector, nil
-	default:
-		return nil, err
+		}).GetRelease(&metaVector); err != nil {
+		return nil, cassandra.WrapErrorWithKeys(err, uuid)
 	}
+	return &metaVector, nil
 }
 
 func (c *client) GetMeta(ctx context.Context, uuid string) (*model.MetaVector, error) {
