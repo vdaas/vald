@@ -69,8 +69,8 @@ type Compressor struct {
 	// Buffer represents capacity of buffer for compression
 	Buffer int `json:"buffer" yaml:"buffer"`
 
-	// PodName represents pod name of compressor instance. it is recommended to use metadata.name field of k8s pod
-	PodName string `json:"pod_name" yaml:"pod_name"`
+	// PodIP represents pod ip of compressor instance. it is recommended to use status.podIP field of k8s pod
+	PodIP string `json:"pod_ip" yaml:"pod_ip"`
 
 	// CompressorPort represents compressor port number
 	CompressorPort int `json:"compressor_port" yaml:"compressor_port"`
@@ -116,7 +116,7 @@ type Worker struct {
 func (c *Compressor) Bind() *Compressor {
 	c.CompressAlgorithm = GetActualValue(c.CompressAlgorithm)
 
-	c.PodName = GetActualValue(c.PodName)
+	c.PodIP = GetActualValue(c.PodIP)
 
 	c.CompressorName = GetActualValue(c.CompressorName)
 	c.CompressorNamespace = GetActualValue(c.CompressorNamespace)

@@ -20,12 +20,16 @@ import (
 	"context"
 	"reflect"
 	"runtime"
+	"sync/atomic"
 
+	gcomp "github.com/vdaas/vald/apis/grpc/manager/compressor"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/worker"
@@ -48,6 +52,7 @@ type registerer struct {
 	client     discoverer.Client
 	ch         chan *payload.Backup_MetaVector
 	buffer     int
+	running    atomic.Value
 	backoff    backoff.Backoff
 }
 
@@ -58,6 +63,8 @@ func NewRegisterer(opts ...RegistererOption) (Registerer, error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
+
+	r.running.Store(false)
 
 	return r, nil
 }
@@ -128,12 +135,55 @@ func (r *registerer) Start(ctx context.Context) (<-chan error, error) {
 		}
 	}))
 
+	r.running.Store(true)
+
 	return ech, nil
 }
 
-func (r *registerer) PreStop(ctx context.Context) error {
-	// TODO backup all index data here
-	return nil
+func (r *registerer) PreStop(ctx context.Context) (errs error) {
+	r.running.Store(false)
+	r.worker.Pause(ctx)
+	close(r.ch)
+
+	var err error
+
+	addrs := r.client.GetAddrs(ctx)
+
+	for {
+		v, ok := <-r.ch
+		if !ok {
+			break
+		}
+
+		for i, addr := range addrs {
+			_, err = r.client.GetClient().Do(
+				ctx,
+				addr,
+				func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+					return gcomp.NewBackupClient(conn).Register(
+						ctx,
+						v,
+						copts...,
+					)
+				},
+			)
+
+			if err == nil {
+				// re-order addrs
+				addrs = append(append(addrs[:i], addrs[i+1:]...), addrs[i])
+				break
+			}
+
+			log.Debugf("failed to send register request: %v", err)
+		}
+
+		if err != nil {
+			log.Errorf("failed to send register request of meta %v, %v", v, err)
+			errs = errors.Wrap(errs, err.Error())
+		}
+	}
+
+	return err
 }
 
 func (r *registerer) Register(ctx context.Context, meta *payload.Backup_MetaVector) error {
@@ -185,11 +235,15 @@ func (r *registerer) RegisterMulti(ctx context.Context, metas *payload.Backup_Me
 }
 
 func (r *registerer) sendToCh(ctx context.Context, meta *payload.Backup_MetaVector) error {
+	if !r.running.Load().(bool) {
+		return errors.ErrCompressorRegistererIsNotRunning()
+	}
+
 	f := func() error {
 		select {
 		case r.ch <- meta:
 		default:
-			return errors.Errorf("registerer channel is full. cannot send meta %v", meta)
+			return errors.ErrCompressorRegistererChannelIsFull()
 		}
 		return nil
 	}

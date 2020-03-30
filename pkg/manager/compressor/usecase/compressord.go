@@ -128,7 +128,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 					return err
 				}
 
-				if host == cfg.Compressor.PodName {
+				if host == cfg.Compressor.PodIP {
 					addrs = append(addrs[:i], addrs[i+1:]...)
 					addrs[len(addrs)-1] = ""
 					break

@@ -34,6 +34,8 @@ type WorkerJobFunc func(context.Context) error
 
 type Worker interface {
 	Start(ctx context.Context) <-chan error
+	Pause(ctx context.Context)
+	Resume(ctx context.Context)
 	IsRunning() bool
 	Name() string
 	Len() int
@@ -96,6 +98,14 @@ func (w *worker) Start(ctx context.Context) <-chan error {
 	}))
 
 	return ech
+}
+
+func (w *worker) Pause(ctx context.Context) {
+	w.running.Store(false)
+}
+
+func (w *worker) Resume(ctx context.Context) {
+	w.running.Store(true)
 }
 
 func (w *worker) IsRunning() bool {
