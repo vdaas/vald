@@ -382,6 +382,10 @@ defaults:
     prometheus:
       # defaults.observability.prometheus.enabled -- Prometheus exporter enabled
       enabled: false
+      # defaults.observability.prometheus.endpoint -- Prometheus exporter endpoint
+      endpoint: /metrics
+      # defaults.observability.prometheus.namespace -- prefix of exported metrics name
+      namespace: vald
     jaeger:
       # defaults.observability.jaeger.enabled -- Jaeger exporter enabled
       enabled: false
@@ -844,8 +848,16 @@ compressor:
       target: manager-backup
       image: busybox
       sleepDuration: 2
-  # compressor.env -- (list) environment variables
-  env: null
+  # compressor.env -- environment variables
+  env:
+    - name: MY_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: MY_POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
   # compressor.volumeMounts -- (list) volume mounts
   volumeMounts: null
   # compressor.volumes -- (list) volumes
@@ -890,6 +902,36 @@ compressor:
     concurrent_limit: 10
     # compressor.compress.buffer -- size of buffer
     buffer: 100
+    # compressor.compress.pod_ip -- ip address of the pod
+    pod_ip: _MY_POD_IP_
+    # compressor.compress.compressor_namespace -- namespace of compressor
+    compressor_namespace: _MY_POD_NAMESPACE_
+    # compressor.compress.node_name -- node name
+    node_name: ""
+    discoverer:
+      # compressor.compress.discoverer.duration -- discoverer duration
+      duration: 1s
+      # compressor.compress.discoverer.discover_client -- gRPC client for discoverer (overrides defaults.grpc.client)
+      discover_client: {}
+      # compressor.compress.discoverer.agent_client -- gRPC client for compressor (overrides defaults.grpc.client)
+      agent_client: {}
+    registerer:
+      # compressor.compress.registerer.buffer -- size of registerer buffer
+      buffer: 100
+      # compressor.compress.registerer.backoff -- backoff configuration of registerer
+      backoff:
+        initial_duration: 5ms
+        backoff_time_limit: 5s
+        maximum_duration: 5s
+        jitter_limit: 100ms
+        backoff_factor: 1.1
+        retry_count: 100
+        enable_error_log: true
+      worker:
+        # compressor.compress.registerer.worker.concurrent_limit -- concurrency limit of registerer worker
+        concurrent_limit: 10
+        # compressor.compress.registerer.worker.buffer -- size of registerer worker buffer
+        buffer: 100
 
 backupManager:
   # backupManager.version -- version of backup manager config

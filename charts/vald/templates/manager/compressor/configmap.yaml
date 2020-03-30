@@ -38,4 +38,36 @@ data:
         {{- $backupClient := dict "Values" .Values.compressor.backup.client "default" .Values.defaults.grpc.client }}
         {{- include "vald.grpc.client" $backupClient | nindent 8 }}
     compressor:
-      {{- toYaml .Values.compressor.compress | nindent 6 }}
+      compress_algorithm: {{ .Values.compressor.compress.compress_algorithm }}
+      compression_level:  {{ .Values.compressor.compress.compression_level }}
+      concurrent_limit: {{ .Values.compressor.compress.concurrent_limit }}
+      buffer: {{ .Values.compressor.compress.buffer }}
+      pod_ip: {{ .Values.compressor.compress.pod_ip }}
+      compressor_port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.compressor.server_config.servers.grpc.port }}
+      compressor_name: {{ .Values.compressor.name | quote }}
+      compressor_namespace: {{ .Values.compressor.compress.compressor_namespace | quote }}
+      compressor_dns: {{ .Values.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
+      node_name: {{ .Values.compressor.compress.node_name }}
+      discoverer:
+        host: {{ .Values.discoverer.name }}.{{ .Release.Namespace }}.svc.cluster.local
+        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.discoverer.server_config.servers.grpc.port }}
+        duration: {{ .Values.compressor.compress.discoverer.duration }}
+        discover_client:
+          {{- $discoverClient := dict "Values" .Values.compressor.compress.discoverer.discover_client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $discoverClient | nindent 10 }}
+        agent_client:
+          {{- $agentClient := dict "Values" .Values.compressor.compress.discoverer.agent_client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $agentClient | nindent 10 }}
+      registerer:
+        buffer: {{ .Values.compressor.compress.registerer.buffer }}
+        backoff:
+          initial_duration: {{ .Values.compressor.compress.registerer.backoff.initial_duration }}
+          backoff_time_limit:  {{ .Values.compressor.compress.registerer.backoff.backoff_time_limit }}
+          maximum_duration:  {{ .Values.compressor.compress.registerer.backoff.maximum_duration }}
+          jitter_limit:  {{ .Values.compressor.compress.registerer.backoff.jitter_limit }}
+          backoff_factor:  {{ .Values.compressor.compress.registerer.backoff.backoff_factor }}
+          retry_count:  {{ .Values.compressor.compress.registerer.backoff.retry_count }}
+          enable_error_log:  {{ .Values.compressor.compress.registerer.backoff.enable_error_log }}
+        worker:
+          concurrent_limit: {{ .Values.compressor.compress.registerer.worker.concurrent_limit }}
+          buffer: {{ .Values.compressor.compress.registerer.worker.buffer }}
