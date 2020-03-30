@@ -19,17 +19,21 @@ package service
 import (
 	"context"
 	"reflect"
+	"runtime"
 
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/worker"
 )
 
 type Registerer interface {
 	PreStart(ctx context.Context) error
-	Start(ctx context.Context) <-chan error
+	Start(ctx context.Context) (<-chan error, error)
 	PreStop(ctx context.Context) error
 	Register(ctx context.Context, meta *payload.Backup_MetaVector) error
 	RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) error
@@ -41,6 +45,10 @@ type registerer struct {
 	eg         errgroup.Group
 	backup     Backup
 	compressor Compressor
+	client     discoverer.Client
+	ch         chan *payload.Backup_MetaVector
+	buffer     int
+	backoff    backoff.Backoff
 }
 
 func NewRegisterer(opts ...RegistererOption) (Registerer, error) {
@@ -55,6 +63,8 @@ func NewRegisterer(opts ...RegistererOption) (Registerer, error) {
 }
 
 func (r *registerer) PreStart(ctx context.Context) error {
+	r.ch = make(chan *payload.Backup_MetaVector, r.buffer)
+
 	w, err := worker.NewWorker(append(r.workerOpts, worker.WithErrGroup(r.eg))...)
 	if err != nil {
 		return err
@@ -65,8 +75,60 @@ func (r *registerer) PreStart(ctx context.Context) error {
 	return nil
 }
 
-func (r *registerer) Start(ctx context.Context) <-chan error {
-	return r.worker.Start(ctx)
+func (r *registerer) Start(ctx context.Context) (<-chan error, error) {
+	ech := make(chan error, 3)
+
+	var wech, cech <-chan error
+	var err error
+
+	rech := make(chan error, 1)
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(r.ch)
+
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case meta := <-r.ch:
+				err = r.worker.Dispatch(ctx, r.registerJob(meta))
+				if err != nil {
+					err = errors.Wrap(r.sendToCh(ctx, meta), err.Error())
+					runtime.Gosched()
+					rech <- err
+				}
+			}
+		}
+	}))
+
+	wech = r.worker.Start(ctx)
+
+	cech, err = r.client.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(ech)
+
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case err = <-rech:
+			case err = <-wech:
+			case err = <-cech:
+			}
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case ech <- err:
+				}
+			}
+		}
+	}))
+
+	return ech, nil
 }
 
 func (r *registerer) PreStop(ctx context.Context) error {
@@ -91,38 +153,7 @@ func (r *registerer) Register(ctx context.Context, meta *payload.Backup_MetaVect
 		return err
 	}
 
-	err := r.worker.Dispatch(ctx, func(ctx context.Context) error {
-		ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.Register.DispatchedJob")
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
-
-		vector, err := r.compressor.Compress(ctx, meta.GetVector())
-		if err != nil {
-			if span != nil {
-				span.SetStatus(trace.StatusCodeInternal(err.Error()))
-			}
-			return err
-		}
-
-		err = r.backup.Register(
-			ctx,
-			&payload.Backup_Compressed_MetaVector{
-				Uuid:   meta.GetUuid(),
-				Meta:   meta.GetMeta(),
-				Vector: vector,
-				Ips:    meta.GetIps(),
-			},
-		)
-		if err != nil && span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
-		}
-
-		return err
-	})
-
+	err := r.sendToCh(ctx, meta)
 	if err != nil && span != nil {
 		span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 	}
@@ -151,4 +182,61 @@ func (r *registerer) RegisterMulti(ctx context.Context, metas *payload.Backup_Me
 	}
 
 	return errs
+}
+
+func (r *registerer) sendToCh(ctx context.Context, meta *payload.Backup_MetaVector) error {
+	f := func() error {
+		select {
+		case r.ch <- meta:
+		default:
+			return errors.Errorf("registerer channel is full. cannot send meta %v", meta)
+		}
+		return nil
+	}
+
+	if r.backoff != nil {
+		_, err := r.backoff.Do(ctx, func() (interface{}, error) {
+			return nil, f()
+		})
+		return err
+	}
+
+	return f()
+}
+
+func (r *registerer) registerJob(meta *payload.Backup_MetaVector) worker.WorkerJobFunc {
+	return func(ctx context.Context) (err error) {
+		ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.Register.DispatchedJob")
+		defer func() {
+			if err != nil {
+				err = errors.Wrap(r.sendToCh(ctx, meta), err.Error())
+			}
+			if span != nil {
+				span.End()
+			}
+		}()
+
+		vector, err := r.compressor.Compress(ctx, meta.GetVector())
+		if err != nil {
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
+			return err
+		}
+
+		err = r.backup.Register(
+			ctx,
+			&payload.Backup_Compressed_MetaVector{
+				Uuid:   meta.GetUuid(),
+				Meta:   meta.GetMeta(),
+				Vector: vector,
+				Ips:    meta.GetIps(),
+			},
+		)
+		if err != nil && span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+
+		return err
+	}
 }

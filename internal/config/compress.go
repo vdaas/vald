@@ -57,13 +57,90 @@ func CompressAlgorithm(ca string) compressAlgorithm {
 }
 
 type Compressor struct {
+	// CompressorAlgorithm represents compression algorithm type
 	CompressAlgorithm string `json:"compress_algorithm" yaml:"compress_algorithm"`
-	CompressionLevel  int    `json:"compression_level" yaml:"compression_level"`
-	ConcurrentLimit   int    `json:"concurrent_limit" yaml:"concurrent_limit"`
-	Buffer            int    `json:"buffer" yaml:"buffer"`
+
+	// CompressionLevel represents compression level
+	CompressionLevel int `json:"compression_level" yaml:"compression_level"`
+
+	// ConcurrentLimit represents limitation of compression worker concurrency
+	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
+
+	// Buffer represents capacity of buffer for compression
+	Buffer int `json:"buffer" yaml:"buffer"`
+
+	// PodName represents pod name of compressor instance. it is recommended to use metadata.name field of k8s pod
+	PodName string `json:"pod_name" yaml:"pod_name"`
+
+	// CompressorPort represents compressor port number
+	CompressorPort int `json:"compressor_port" yaml:"compressor_port"`
+
+	// CompressorName represents compressors meta_name for service discovery
+	CompressorName string `json:"compressor_name" yaml:"compressor_name"`
+
+	// CompressorNamespace represents compressor namespace location
+	CompressorNamespace string `json:"compressor_namespace" yaml:"compressor_namespace"`
+
+	// CompressorDNS represents compressor dns A record for service discovery
+	CompressorDNS string `json:"compressor_dns" yaml:"compressor_dns"`
+
+	// NodeName represents node name
+	NodeName string `json:"node_name" yaml:"node_name"`
+
+	// Discoverer represents agent discoverer service configuration
+	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
+
+	// Registerer represents registerer options
+	Registerer *CompressorRegisterer `json:"registerer" yaml:"registerer"`
+}
+
+type CompressorRegisterer struct {
+	// Buffer represents capacity of buffer for registerer
+	Buffer int `json:"buffer" yaml:"buffer"`
+
+	// Backoff represents backoff configuration of registerer
+	Backoff *Backoff `json:"backoff" yaml:"backoff"`
+
+	// Worker represents worker options
+	Worker *Worker `json:"worker" yaml:"worker"`
+}
+
+type Worker struct {
+	// ConcurrentLimit represents limitation of worker
+	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
+
+	// Buffer represents capacity of buffer for worker
+	Buffer int `json:"buffer" yaml:"buffer"`
 }
 
 func (c *Compressor) Bind() *Compressor {
 	c.CompressAlgorithm = GetActualValue(c.CompressAlgorithm)
+
+	c.PodName = GetActualValue(c.PodName)
+
+	c.CompressorName = GetActualValue(c.CompressorName)
+	c.CompressorNamespace = GetActualValue(c.CompressorNamespace)
+	c.CompressorDNS = GetActualValue(c.CompressorDNS)
+
+	if c.Discoverer != nil {
+		c.Discoverer = c.Discoverer.Bind()
+	} else {
+		c.Discoverer = new(DiscovererClient)
+	}
+
+	if c.Registerer != nil {
+		if c.Registerer.Backoff != nil {
+			c.Registerer.Backoff = c.Registerer.Backoff.Bind()
+		} else {
+			c.Registerer.Backoff = new(Backoff)
+		}
+	} else {
+		c.Registerer = new(CompressorRegisterer)
+	}
+
+	if c.Registerer.Worker == nil {
+		c.Registerer.Worker = new(Worker)
+	}
+
 	return c
 }
