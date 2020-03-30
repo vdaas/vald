@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.25`
+Current chart version is `v0.0.26`
 
 Install
 ---
@@ -272,7 +272,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.25"` | image tag |
+| defaults.image.tag | string | `"v0.0.26"` | image tag |
 | defaults.logging.format | string | `"raw"` | logging format |
 | defaults.logging.level | string | `"debug"` | logging level |
 | defaults.logging.logger | string | `"glg"` | logger name |
