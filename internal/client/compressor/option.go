@@ -14,11 +14,31 @@
 // limitations under the License.
 //
 
-// Package grpc provides grpc server logic
-package grpc
+// Package compressor represents compressor client
+package compressor
 
-type Option func(*server)
+import (
+	"github.com/vdaas/vald/internal/net/grpc"
+)
+
+type Option func(c *client) error
 
 var (
 	defaultOpts = []Option{}
 )
+
+func WithBackupAddr(addr string) Option {
+	return func(c *client) error {
+		c.addr = addr
+		return nil
+	}
+}
+
+func WithBackupClient(gc grpc.Client) Option {
+	return func(c *client) error {
+		if gc != nil {
+			c.client = gc
+		}
+		return nil
+	}
+}

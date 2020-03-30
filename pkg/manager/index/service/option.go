@@ -34,6 +34,7 @@ var (
 		WithIndexingDuration("1m"),
 		WithIndexingDurationLimit("30m"),
 		WithMinUncommitted(100),
+		WithCreationPoolSize(10000),
 	}
 )
 

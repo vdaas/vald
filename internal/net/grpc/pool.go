@@ -90,6 +90,9 @@ func NewPool(ctx context.Context, addr string, size uint64, dopts ...DialOption)
 			return nil, err
 		}
 		cp, err = newPool(ctx, host, port, size, dopts...)
+		if err != nil {
+			return nil, err
+		}
 	}
 	ccp := &clientConnPool{
 		size:  size,

@@ -19,7 +19,7 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/discoverer"
+	"github.com/vdaas/vald/apis/grpc/manager/replication/controller"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
@@ -40,25 +40,25 @@ import (
 type run struct {
 	eg            errgroup.Group
 	cfg           *config.Data
-	dsc           service.Discoverer
+	rpl           service.Replicator
 	server        starter.Server
 	observability observability.Observability
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
-	dsc, err := service.New(
-		service.WithDiscoverDuration(cfg.Discoverer.DiscoveryDuration),
+	rpl, err := service.New(
+		service.WithRecoverCheckDuration(cfg.Discoverer.DiscoveryDuration),
 		service.WithErrGroup(eg),
 	)
 	if err != nil {
 		return nil, err
 	}
-	g := handler.New(handler.WithDiscoverer(dsc))
+	g := handler.New(handler.WithReplicator(rpl))
 
 	grpcServerOptions := []server.Option{
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-			discoverer.RegisterDiscovererServer(srv, g)
+			controller.RegisterReplicationServer(srv, g)
 		}),
 		server.WithPreStartFunc(func() error {
 			// TODO check unbackupped upstream
@@ -94,7 +94,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 						router.WithErrGroup(eg),
 						router.WithHandler(
 							rest.New(
-								rest.WithDiscoverer(g),
+								rest.WithReplicator(g),
 							),
 						),
 					)),
@@ -113,7 +113,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	return &run{
 		eg:            eg,
 		cfg:           cfg,
-		dsc:           dsc,
+		rpl:           rpl,
 		server:        srv,
 		observability: obs,
 	}, nil
@@ -128,14 +128,14 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 3)
-	var oech, dech, sech <-chan error
+	var oech, rech, sech <-chan error
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		log.Info("daemon start")
 		defer close(ech)
 		if r.observability != nil {
 			oech = r.observability.Start(ctx)
 		}
-		dech, err = r.dsc.Start(ctx)
+		rech, err = r.rpl.Start(ctx)
 		if err != nil {
 			ech <- err
 			return err
@@ -146,7 +146,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return ctx.Err()
 			case err = <-oech:
-			case err = <-dech:
+			case err = <-rech:
 			case err = <-sech:
 			}
 			if err != nil {

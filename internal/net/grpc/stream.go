@@ -29,6 +29,8 @@ import (
 	"google.golang.org/grpc"
 )
 
+type ClientStream = grpc.ClientStream
+
 // BidirectionalStream represents gRPC bidirectional stream server handler.
 func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 	concurrency int,

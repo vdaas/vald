@@ -111,6 +111,7 @@ message Discoverer {
 message Backup {
   message GetVector {
     message Request { string uuid = 1 [ (validate.rules).string.min_len = 1 ]; }
+    message Owner { string ip = 1 [ (validate.rules).string.min_len = 1 ]; }
   }
 
   message Locations {

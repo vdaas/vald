@@ -25,8 +25,10 @@ var (
 	defaultOpts = []Option{}
 )
 
-func WithDiscoverer(dsc service.Discoverer) Option {
+func WithReplicator(ctrl service.Replicator) Option {
 	return func(s *server) {
-		s.dsc = dsc
+		if ctrl != nil {
+			s.controller = ctrl
+		}
 	}
 }

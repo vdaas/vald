@@ -28,8 +28,9 @@ type Option func(r *replicator) error
 
 var (
 	defaultOpts = []Option{
-		WithDiscoverDuration("2s"),
+		WithRecoverCheckDuration("1m"),
 		WithErrGroup(errgroup.Get()),
+		WithNamespace("vald"),
 	}
 )
 
@@ -51,7 +52,7 @@ func WithNamespace(ns string) Option {
 	}
 }
 
-func WithDiscoverDuration(dur string) Option {
+func WithRecoverCheckDuration(dur string) Option {
 	return func(r *replicator) error {
 		if dur == "" {
 			return nil
@@ -60,7 +61,7 @@ func WithDiscoverDuration(dur string) Option {
 		if err != nil {
 			pd = time.Second
 		}
-		r.csd = pd
+		r.rdur = pd
 		return nil
 	}
 }

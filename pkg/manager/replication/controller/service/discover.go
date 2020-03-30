@@ -20,19 +20,24 @@ package service
 import (
 	"context"
 	"reflect"
+	"sync"
 	"sync/atomic"
+	"time"
 
+	"github.com/vdaas/vald/apis/grpc/manager/replication/agent"
+	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/pod"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
 )
 
 type Replicator interface {
 	Start(context.Context) (<-chan error, error)
-	GetDeletedPods() ([]string, bool)
+	GetCurrentPodIPs() ([]string, bool)
 }
 
 type replicator struct {
@@ -41,6 +46,9 @@ type replicator struct {
 	namespace string
 	name      string
 	eg        errgroup.Group
+	rdur      time.Duration
+	rpods     sync.Map
+	client    grpc.Client
 }
 
 func New(opts ...Option) (rp Replicator, err error) {
@@ -80,9 +88,8 @@ func New(opts ...Option) (rp Replicator, err error) {
 					}
 				}
 
-                r.pods.Store(pods)
+				r.pods.Store(pods)
 
-                deletedIPs := make([]string, 0, len(currentPods))
 				for name, cpod := range currentPods {
 					p, ok := pods[name]
 					if !ok ||
@@ -90,13 +97,11 @@ func New(opts ...Option) (rp Replicator, err error) {
 						p.Namespace != cpod.Namespace ||
 						p.IP != cpod.IP ||
 						p.NodeName != cpod.NodeName {
-                            deletedIPs = append(deletedIPs, p.IP)
-                    }
+						if _, ok := r.rpods.Load(name); !ok {
+							r.rpods.Store(name, cpod)
+						}
+					}
 				}
-
-                r.eg.Go(safety.RecoverFunc(func() error{
-                    return nil
-                }))
 
 				log.Debugf("pod resource reconciled\t%#v", podList)
 			}),
@@ -109,9 +114,74 @@ func New(opts ...Option) (rp Replicator, err error) {
 }
 
 func (r *replicator) Start(ctx context.Context) (<-chan error, error) {
-	return r.ctrl.Start(ctx)
+	rech, err := r.ctrl.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ech := make(chan error, 2)
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(ech)
+		rt := time.NewTicker(r.rdur)
+		defer rt.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-rt.C:
+				err = r.SendRecoveryRequest(ctx)
+				if err != nil {
+					log.Error(err)
+					ech <- err
+				}
+			case err = <-rech:
+				if err != nil {
+					ech <- err
+				}
+			}
+
+		}
+	}))
+	return ech, nil
 }
 
-func (r *replicator) GetDeletedPods() ([]string, bool) {
-	return nil, false
+func (r *replicator) GetCurrentPodIPs() ([]string, bool) {
+	pods, ok := r.pods.Load().(map[string]pod.Pod)
+	if !ok {
+		return nil, false
+	}
+
+	ips := make([]string, 0, len(pods))
+	for _, pod := range pods {
+		ips = append(ips, pod.IP)
+	}
+
+	return ips, true
+}
+
+func (r *replicator) SendRecoveryRequest(ctx context.Context) (err error) {
+	var mu sync.Mutex
+	r.rpods.Range(func(name, rpod interface{}) bool {
+		select {
+		case <-ctx.Done():
+			return false
+		default:
+			r.rpods.Delete(name)
+			r.eg.Go(safety.RecoverFunc(func() error {
+				_, cerr := r.client.Do(ctx, rpod.(pod.Pod).IP, func(ctx context.Context,
+					conn *grpc.ClientConn,
+					copts ...grpc.CallOption) (interface{}, error) {
+					return agent.NewReplicationClient(conn).Recover(ctx, &payload.Replication_Recovery{}, copts...)
+				})
+				if cerr != nil {
+					r.rpods.Store(name, rpod)
+					mu.Lock()
+					err = errors.Wrap(err, cerr.Error())
+					mu.Unlock()
+				}
+				return nil
+			}))
+		}
+		return true
+	})
+	return err
 }

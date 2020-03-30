@@ -17,7 +17,9 @@
 // Package rest provides rest api logic
 package rest
 
-import "github.com/vdaas/vald/apis/grpc/discoverer"
+import (
+	"github.com/vdaas/vald/apis/grpc/manager/replication/controller"
+)
 
 type Option func(*handler)
 
@@ -25,8 +27,10 @@ var (
 	defaultOpts = []Option{}
 )
 
-func WithDiscoverer(dsc discoverer.DiscovererServer) Option {
+func WithReplicator(rpl controller.ReplicationServer) Option {
 	return func(h *handler) {
-		h.dsc = dsc
+		if rpl != nil {
+			h.rpl = rpl
+		}
 	}
 }

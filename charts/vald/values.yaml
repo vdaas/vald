@@ -271,6 +271,13 @@ defaults:
       connection_pool: 3
       # defaults.grpc.client.health_check_duration -- gRPC client health check duration
       health_check_duration: "1s"
+      connection_pool:
+        # defaults.grpc.client.connection_pool.enable_rebalance -- enables gRPC client connection pool rebalance
+        enable_rebalance: true
+        # defaults.grpc.client.connection_pool.enable_rebalance -- gRPC client connection pool rebalance duration
+        rebalance_duration: 30m
+        # defaults.grpc.client.connection_pool.enable_rebalance -- gRPC client connection pool size
+        size: 3
       backoff:
         # defaults.grpc.client.backoff.initial_duration -- gRPC client backoff initial duration
         initial_duration: 5ms
@@ -1287,6 +1294,8 @@ indexManager:
     auto_index_check_duration: 1m
     # indexManager.indexer.auto_index_length -- number of cache to trigger automatic indexing
     auto_index_length: 100
+    # indexManager.indexer.creation_pool_size -- number of pool size of create index processing
+    creation_pool_size: 10000
     discoverer:
       # indexManager.indexer.discoverer.duration -- refresh duration to discover
       duration: 500ms

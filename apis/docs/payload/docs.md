@@ -9,6 +9,7 @@
     - [Backup.Compressed.MetaVector](#payload.Backup.Compressed.MetaVector)
     - [Backup.Compressed.MetaVectors](#payload.Backup.Compressed.MetaVectors)
     - [Backup.GetVector](#payload.Backup.GetVector)
+    - [Backup.GetVector.Owner](#payload.Backup.GetVector.Owner)
     - [Backup.GetVector.Request](#payload.Backup.GetVector.Request)
     - [Backup.IP](#payload.Backup.IP)
     - [Backup.IP.Register](#payload.Backup.IP.Register)
@@ -131,6 +132,21 @@
 
 ### Backup.GetVector
 
+
+
+
+
+
+
+<a name="payload.Backup.GetVector.Owner"></a>
+
+### Backup.GetVector.Owner
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ip | [string](#string) |  |  |
 
 
 
