@@ -128,14 +128,14 @@ func (c *Compressor) Bind() *Compressor {
 		c.Discoverer = new(DiscovererClient)
 	}
 
-	if c.Registerer != nil {
-		if c.Registerer.Backoff != nil {
-			c.Registerer.Backoff = c.Registerer.Backoff.Bind()
-		} else {
-			c.Registerer.Backoff = new(Backoff)
-		}
-	} else {
+	if c.Registerer == nil {
 		c.Registerer = new(CompressorRegisterer)
+	}
+
+	if c.Registerer.Backoff != nil {
+		c.Registerer.Backoff = c.Registerer.Backoff.Bind()
+	} else {
+		c.Registerer.Backoff = new(Backoff)
 	}
 
 	if c.Registerer.Worker == nil {
