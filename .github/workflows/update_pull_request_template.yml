@@ -1,0 +1,39 @@
+name: 'Update PULL_REQUEST_TEMPLATE'
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'versions/GO_VERSION'
+      - 'versions/NGT_VERSION'
+
+jobs:
+  update-pr-template:
+    name: Update PULL_REQUEST_TEMPLATE
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 10
+      - name: Push to master
+        run: |
+          GO_VERSION=$(make version/go)
+          NGT_VERSION=$(make version/ngt)
+
+          sed -i -e "s/^- Golang Version: .*$/- Golang Version: ${GO_VERSION}/" .github/PULL_REQUEST_TEMPLATE.md
+          sed -i -e "s/^- NGT Version: .*$/- NGT Version: ${NGT_VERSION}/" .github/PULL_REQUEST_TEMPLATE.md
+
+          git config --global user.name "vdaas-ci"
+          git config --global user.email "ci@vdaas.org"
+
+          git add .github/PULL_REQUEST_TEMPLATE.md
+          git commit --signoff -m ":robot: Automatically update PULL_REQUEST_TEMPLATE"
+
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin master
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}

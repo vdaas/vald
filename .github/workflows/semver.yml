@@ -15,13 +15,66 @@ jobs:
           fetch-depth: 0
       - name: Get latest gitwerk
         run: |
-          wget "https://github.com/rinx/gitwerk/releases/latest/download/gitwerk-linux-amd64.zip"
+          wget "https://github.com/rinx/gitwerk/releases/download/v0.1.2/gitwerk-linux-amd64.zip"
           unzip gitwerk-linux-amd64.zip
       - name: Run gitwerk semver-auto
+        id: semver
         run: |
-          ./gitwerk semver-auto
+          GITWERK_RESULT=`./gitwerk sci << EOF
+          (let [ctx {:options {:dry-run? true}}
+                res (semver-auto ctx nil)
+                status (get-in res [:console-out :status])
+                oldv (get-in res [:console-out :old-version])
+                newv (get-in res [:console-out :new-version])]
+            (if (= status :updated)
+              newv
+              "not-updated"))
+          EOF`
+          if [ "${GITWERK_RESULT}" = "not-updated" ]; then
+            echo "version not updated"
+            exit 0
+          fi
+          echo "version updated: ${GITWERK_RESULT}"
+          echo "${GITWERK_RESULT}" > versions/VALD_VERSION
+
+          sed -i -e "s/^version: .*$/version: ${GITWERK_RESULT}/" charts/vald/Chart.yaml
+          sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${GITWERK_RESULT}/" charts/vald/values.yaml
+          sed -i -e "s/^version: .*$/version: ${GITWERK_RESULT}/" charts/vald-helm-operator/Chart.yaml
+          sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${GITWERK_RESULT}/" charts/vald-helm-operator/values.yaml
+
+          git checkout master
+
+          git config --global user.name "vdaas-ci"
+          git config --global user.email "ci@vdaas.org"
+
+          git add \
+            versions/VALD_VERSION \
+            charts/vald/Chart.yaml \
+            charts/vald/values.yaml \
+            charts/vald-helm-operator/Chart.yaml \
+            charts/vald-helm-operator/values.yaml
+          git commit --signoff -m ":bookmark: :robot: Release ${GITWERK_RESULT}"
+
+          git tag ${GITWERK_RESULT}
+
           git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push origin --tags
+
+          git push origin master
+          git push origin ${GITWERK_RESULT}
+
+          echo "::set-output name=RELEASE::true"
+          echo "::set-output name=VERSION::${GITWERK_RESULT}"
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+      - name: Create release
+        if: steps.semver.outputs.RELEASE == 'true'
+        id: create_release
+        uses: actions/create-release@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+        with:
+          tag_name: ${{ steps.semver.outputs.VERSION }}
+          release_name: Release ${{ steps.semver.outputs.VERSION }}
+          draft: false
+          prerelease: false

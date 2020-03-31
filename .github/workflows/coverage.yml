@@ -8,7 +8,7 @@ on:
       - 'internal/**'
       - 'pkg/**'
       - 'cmd/**'
-      - 'resources/GO_VERSION'
+      - 'versions/GO_VERSION'
 
 jobs:
   coverage:
@@ -20,7 +20,7 @@ jobs:
       - name: Check out code.
         uses: actions/checkout@v1
         with:
-          fetch-depth: 1
+          fetch-depth: 10
       - name: Run coverage
         continue-on-error: true
         run: |

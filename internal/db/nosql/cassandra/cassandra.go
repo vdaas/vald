@@ -28,23 +28,26 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-const (
-	uuidColumn = "uuid"
-	metaColumn = "meta"
-)
-
 var (
-	ErrNotFound = gocql.ErrNotFound
+	ErrNotFound             = gocql.ErrNotFound
+	ErrUnavailable          = gocql.ErrUnavailable
+	ErrUnsupported          = gocql.ErrUnsupported
+	ErrTooManyStmts         = gocql.ErrTooManyStmts
+	ErrUseStmt              = gocql.ErrUseStmt
+	ErrSessionClosed        = gocql.ErrSessionClosed
+	ErrNoConnections        = gocql.ErrNoConnections
+	ErrNoKeyspace           = gocql.ErrNoKeyspace
+	ErrKeyspaceDoesNotExist = gocql.ErrKeyspaceDoesNotExist
+	ErrNoMetadata           = gocql.ErrNoMetadata
+	ErrNoHosts              = gocql.ErrNoHosts
+	ErrNoConnectionsStarted = gocql.ErrNoConnectionsStarted
+	ErrHostQueryFailed      = gocql.ErrHostQueryFailed
 )
 
 type Cassandra interface {
 	Open(ctx context.Context) error
 	Close(ctx context.Context) error
-	Lister
-	Getter
-	Setter
-	Deleter
-	Querier
+	Query(stmt string, names []string) *Queryx
 }
 
 type Session = gocql.Session
@@ -104,9 +107,8 @@ type client struct {
 	disableSchemaEvents      bool
 	disableSkipMetadata      bool
 	defaultIdempotence       bool
+	dialer                   gocql.Dialer
 	writeCoalesceWaitTime    time.Duration
-	kvTable                  string
-	vkTable                  string
 
 	cluster *gocql.ClusterConfig
 	session *gocql.Session
@@ -146,6 +148,7 @@ func New(opts ...Option) (Cassandra, error) {
 			MaxRetries:      c.reconnectionPolicy.maxRetries,
 			InitialInterval: c.reconnectionPolicy.initialInterval,
 		},
+		Dialer:            c.dialer,
 		SocketKeepalive:   c.socketKeepalive,
 		MaxPreparedStmts:  c.maxPreparedStmts,
 		MaxRoutingKeyInfo: c.maxRoutingKeyInfo,
@@ -224,6 +227,10 @@ func (c *client) Close(ctx context.Context) error {
 	return nil
 }
 
+func (c *client) Query(stmt string, names []string) *Queryx {
+	return gocqlx.Query(c.session.Query(stmt), names)
+}
+
 func Select(table string, columns []string, cmps ...Cmp) (stmt string, names []string) {
 	sb := qb.Select(table).Columns(columns...)
 	for _, cmp := range cmps {
@@ -256,205 +263,43 @@ func Eq(column string) Cmp {
 	return qb.Eq(column)
 }
 
+func In(column string) Cmp {
+	return qb.In(column)
+}
+
 func Contains(column string) Cmp {
 	return qb.Contains(column)
 }
 
-func (c *client) Query(stmt string, names []string) *Queryx {
-	return gocqlx.Query(c.session.Query(stmt), names)
-}
-
-func (c *client) GetValue(key string) (string, error) {
-	var value string
-
-	stmt, names := qb.Select(c.kvTable).Columns(metaColumn).Where(qb.Eq(uuidColumn)).ToCql()
-	q := gocqlx.Query(c.session.Query(stmt), names).BindMap(qb.M{
-		uuidColumn: key,
-	})
-	if err := q.GetRelease(&value); err != nil {
-		switch err {
-		case gocql.ErrNotFound:
-			return "", errors.ErrCassandraNotFound(key)
-		default:
-			return "", err
-		}
-	}
-	return value, nil
-}
-
-func (c *client) GetKey(value string) (string, error) {
-	var key string
-
-	stmt, names := qb.Select(c.vkTable).Columns(uuidColumn).Where(qb.Eq(metaColumn)).ToCql()
-	q := gocqlx.Query(c.session.Query(stmt), names).BindMap(qb.M{
-		metaColumn: value,
-	})
-	if err := q.GetRelease(&key); err != nil {
-		switch err {
-		case gocql.ErrNotFound:
-			return "", errors.ErrCassandraNotFound(value)
-		default:
-			return "", err
-		}
-	}
-	return key, nil
-}
-
-func (c *client) MultiGetValue(keys ...string) ([]string, error) {
-	var keyvals []struct {
-		UUID string
-		Meta string
-	}
-	stmt, names := qb.Select(c.kvTable).Columns(uuidColumn, metaColumn).Where(qb.In(uuidColumn)).ToCql()
-	q := gocqlx.Query(c.session.Query(stmt), names).BindMap(qb.M{
-		uuidColumn: keys,
-	})
-	if err := q.SelectRelease(&keyvals); err != nil {
-		return nil, err
-	}
-
-	kvs := make(map[string]string, len(keyvals))
-	for _, keyval := range keyvals {
-		kvs[keyval.UUID] = keyval.Meta
-	}
-
-	var errs error
-	values := make([]string, 0, len(keyvals))
-	for _, key := range keys {
-		if kvs[key] == "" {
-			if errs != nil {
-				errs = errors.Wrap(errs, errors.ErrCassandraNotFound(key).Error())
-			} else {
-				errs = errors.ErrCassandraNotFound(key)
-			}
-			values = append(values, "")
-			continue
-		}
-		values = append(values, kvs[key])
-	}
-
-	return values, errs
-}
-
-func (c *client) MultiGetKey(values ...string) ([]string, error) {
-	var keyvals []struct {
-		UUID string
-		Meta string
-	}
-	stmt, names := qb.Select(c.vkTable).Columns(uuidColumn, metaColumn).Where(qb.In(metaColumn)).ToCql()
-	q := gocqlx.Query(c.session.Query(stmt), names).BindMap(qb.M{
-		metaColumn: values,
-	})
-	if err := q.SelectRelease(&keyvals); err != nil {
-		return nil, err
-	}
-
-	kvs := make(map[string]string, len(keyvals))
-	for _, keyval := range keyvals {
-		kvs[keyval.Meta] = keyval.UUID
-	}
-
-	var errs error
-	keys := make([]string, 0, len(keyvals))
-	for _, value := range values {
-		if kvs[value] == "" {
-			if errs != nil {
-				errs = errors.Wrap(errs, errors.ErrCassandraNotFound(value).Error())
-			} else {
-				errs = errors.ErrCassandraNotFound(value)
-			}
-			keys = append(keys, "")
-			continue
-		}
-		keys = append(keys, kvs[value])
-	}
-
-	return keys, errs
-}
-
-func (c *client) Set(key, value string) error {
-	stmt, names := qb.Insert(c.kvTable).Columns(uuidColumn, metaColumn).ToCql()
-	q := gocqlx.Query(c.session.Query(stmt), names).BindMap(qb.M{
-		uuidColumn: key,
-		metaColumn: value,
-	})
-
-	if err := q.ExecRelease(); err != nil {
+func WrapErrorWithKeys(err error, keys ...string) error {
+	switch err {
+	case ErrNotFound:
+		return errors.ErrCassandraNotFound(keys...)
+	case ErrUnavailable:
+		return errors.ErrCassandraUnavailable()
+	case ErrUnsupported:
+		return err
+	case ErrTooManyStmts:
+		return err
+	case ErrUseStmt:
+		return err
+	case ErrSessionClosed:
+		return err
+	case ErrNoConnections:
+		return err
+	case ErrNoKeyspace:
+		return err
+	case ErrKeyspaceDoesNotExist:
+		return err
+	case ErrNoMetadata:
+		return err
+	case ErrNoHosts:
+		return err
+	case ErrNoConnectionsStarted:
+		return err
+	case ErrHostQueryFailed:
+		return err
+	default:
 		return err
 	}
-
-	stmt, names = qb.Insert(c.vkTable).Columns(metaColumn, uuidColumn).ToCql()
-	q = gocqlx.Query(c.session.Query(stmt), names).BindMap(qb.M{
-		metaColumn: value,
-		uuidColumn: key,
-	})
-
-	return q.ExecRelease()
-}
-
-func (c *client) MultiSet(keyvals map[string]string) error {
-	kvi := qb.Insert(c.kvTable).Columns(uuidColumn, metaColumn)
-	vki := qb.Insert(c.vkTable).Columns(uuidColumn, metaColumn)
-
-	bt := qb.Batch()
-	entities := make([]interface{}, 0, len(keyvals)*4)
-	for key, val := range keyvals {
-		bt = bt.Add(kvi).Add(vki)
-		entities = append(entities, key, val, key, val)
-	}
-
-	stmt, names := bt.ToCql()
-	q := gocqlx.Query(c.session.Query(stmt), names).Bind(entities...)
-
-	return q.ExecRelease()
-}
-
-func (c *client) DeleteByKeys(keys ...string) ([]string, error) {
-	vals, err := c.MultiGetValue(keys...)
-	if err != nil {
-		return nil, err
-	}
-	kvd := qb.Delete(c.kvTable).Where(qb.Eq(uuidColumn))
-	vkd := qb.Delete(c.vkTable).Where(qb.Eq(metaColumn))
-
-	bt := qb.Batch()
-	uuids := make([]interface{}, 0, len(keys)*2)
-	for i, key := range keys {
-		bt = bt.Add(kvd).Add(vkd)
-		uuids = append(uuids, key, vals[i])
-	}
-
-	stmt, names := bt.ToCql()
-	q := gocqlx.Query(c.session.Query(stmt), names).Bind(uuids...)
-	err = q.ExecRelease()
-	if err != nil {
-		return nil, err
-	}
-
-	return vals, nil
-}
-
-func (c *client) DeleteByValues(values ...string) ([]string, error) {
-	keys, err := c.MultiGetKey(values...)
-	if err != nil {
-		return nil, err
-	}
-	kvd := qb.Delete(c.kvTable).Where(qb.Eq(uuidColumn))
-	vkd := qb.Delete(c.vkTable).Where(qb.Eq(metaColumn))
-
-	bt := qb.Batch()
-	metas := make([]interface{}, 0, len(values)*2)
-	for i, value := range values {
-		bt = bt.Add(kvd).Add(vkd)
-		metas = append(metas, keys[i], value)
-	}
-
-	stmt, names := bt.ToCql()
-	q := gocqlx.Query(c.session.Query(stmt), names).Bind(metas...)
-	err = q.ExecRelease()
-	if err != nil {
-		return nil, err
-	}
-
-	return keys, nil
 }

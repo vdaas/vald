@@ -21,16 +21,16 @@ import "testing"
 
 func TestGobCompressVector(t *testing.T) {
 	tests := []struct {
-		vector []float64
+		vector []float32
 	}{
 		{
-			vector: []float64{0.1, 0.2, 0.3},
+			vector: []float32{0.1, 0.2, 0.3},
 		},
 		{
-			vector: []float64{0.4, 0.2, 0.3, 0.1},
+			vector: []float32{0.4, 0.2, 0.3, 0.1},
 		},
 		{
-			vector: []float64{0.1, 0.5, 0.12, 0.13, 1.0},
+			vector: []float32{0.1, 0.5, 0.12, 0.13, 1.0},
 		},
 	}
 

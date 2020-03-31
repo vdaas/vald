@@ -21,13 +21,18 @@ import (
 	"github.com/vdaas/vald/internal/config"
 )
 
+type GlobalConfig = config.GlobalConfig
+
 // Config represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
-	config.Default `json:",inline" yaml:",inline"`
+	config.GlobalConfig `json:",inline" yaml:",inline"`
 
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
+
+	// Observability represent observability configurations
+	Observability *config.Observability `json:"observability" yaml:"observability"`
 
 	// Redis represent redis configurations
 	Redis *config.Redis `json:"redis_config" yaml:"redis_config"`
@@ -47,6 +52,11 @@ func NewConfig(path string) (cfg *Data, err error) {
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()
 	}
+
+	if cfg.Observability != nil {
+		cfg.Observability = cfg.Observability.Bind()
+	}
+
 	if cfg.Redis != nil {
 		cfg.Redis = cfg.Redis.Bind()
 	}

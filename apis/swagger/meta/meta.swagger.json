@@ -20,6 +20,12 @@
             "schema": {
               "$ref": "#/definitions/MetaKey"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -42,6 +48,12 @@
             "schema": {
               "$ref": "#/definitions/MetaKey"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "tags": [
@@ -57,6 +69,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/MetaKeys"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -84,6 +102,12 @@
             "schema": {
               "$ref": "#/definitions/MetaKeys"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "tags": [
@@ -99,6 +123,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/MetaVal"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -122,6 +152,12 @@
             "schema": {
               "$ref": "#/definitions/payloadEmpty"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "tags": [
@@ -137,6 +173,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/MetaVals"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -163,6 +205,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/payloadEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -224,6 +272,39 @@
     },
     "payloadEmpty": {
       "type": "object"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
     }
   }
 }

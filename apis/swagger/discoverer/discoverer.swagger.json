@@ -11,29 +11,63 @@
     "application/json"
   ],
   "paths": {
-    "/discover/{name}": {
-      "get": {
-        "operationId": "Discover",
+    "/discover/nodes": {
+      "post": {
+        "operationId": "Nodes",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/InfoServers"
+              "$ref": "#/definitions/InfoNodes"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "name",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string"
+            "schema": {
+              "$ref": "#/definitions/payloadDiscovererRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Discoverer"
+        ]
+      }
+    },
+    "/discover/pods": {
+      "post": {
+        "operationId": "Pods",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/InfoPods"
+            }
           },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
           {
-            "name": "node",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/payloadDiscovererRequest"
+            }
           }
         ],
         "tags": [
@@ -43,35 +77,154 @@
     }
   },
   "definitions": {
-    "InfoServer": {
+    "InfoCPU": {
       "type": "object",
       "properties": {
-        "name": {
-          "type": "string"
-        },
-        "ip": {
-          "type": "string"
-        },
-        "server": {
-          "$ref": "#/definitions/InfoServer"
-        },
-        "cpu": {
+        "limit": {
           "type": "number",
           "format": "double"
         },
-        "mem": {
+        "request": {
+          "type": "number",
+          "format": "double"
+        },
+        "usage": {
           "type": "number",
           "format": "double"
         }
       }
     },
-    "InfoServers": {
+    "InfoMemory": {
       "type": "object",
       "properties": {
-        "Servers": {
+        "limit": {
+          "type": "number",
+          "format": "double"
+        },
+        "request": {
+          "type": "number",
+          "format": "double"
+        },
+        "usage": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "InfoNode": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalAddr": {
+          "type": "string"
+        },
+        "externalAddr": {
+          "type": "string"
+        },
+        "cpu": {
+          "$ref": "#/definitions/InfoCPU"
+        },
+        "memory": {
+          "$ref": "#/definitions/InfoMemory"
+        },
+        "Pods": {
+          "$ref": "#/definitions/InfoPods"
+        }
+      }
+    },
+    "InfoNodes": {
+      "type": "object",
+      "properties": {
+        "nodes": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/InfoServer"
+            "$ref": "#/definitions/InfoNode"
+          }
+        }
+      }
+    },
+    "InfoPod": {
+      "type": "object",
+      "properties": {
+        "appName": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "ip": {
+          "type": "string"
+        },
+        "cpu": {
+          "$ref": "#/definitions/InfoCPU"
+        },
+        "memory": {
+          "$ref": "#/definitions/InfoMemory"
+        },
+        "node": {
+          "$ref": "#/definitions/InfoNode"
+        }
+      }
+    },
+    "InfoPods": {
+      "type": "object",
+      "properties": {
+        "pods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InfoPod"
+          }
+        }
+      }
+    },
+    "payloadDiscovererRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "node": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
           }
         }
       }

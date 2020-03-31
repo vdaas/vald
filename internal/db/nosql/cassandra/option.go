@@ -51,6 +51,15 @@ func WithHosts(hosts ...string) Option {
 	}
 }
 
+func WithDialer(der gocql.Dialer) Option {
+	return func(c *client) error {
+		if der != nil {
+			c.dialer = der
+		}
+		return nil
+	}
+}
+
 func WithCQLVersion(version string) Option {
 	return func(c *client) error {
 		c.cqlVersion = version
@@ -420,20 +429,6 @@ func WithWriteCoalesceWaitTime(writeCoalesceWaitTime string) Option {
 			return err
 		}
 		c.writeCoalesceWaitTime = d
-		return nil
-	}
-}
-
-func WithKVTable(kvTable string) Option {
-	return func(c *client) error {
-		c.kvTable = kvTable
-		return nil
-	}
-}
-
-func WithVKTable(vkTable string) Option {
-	return func(c *client) error {
-		c.vkTable = vkTable
 		return nil
 	}
 }

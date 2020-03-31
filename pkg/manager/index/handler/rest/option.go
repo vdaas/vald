@@ -17,7 +17,7 @@
 // Package rest provides rest api logic
 package rest
 
-import "github.com/vdaas/vald/apis/grpc/vald"
+import "github.com/vdaas/vald/apis/grpc/manager/index"
 
 type Option func(*handler)
 
@@ -25,8 +25,8 @@ var (
 	defaultOpts = []Option{}
 )
 
-func WithVald(v vald.ValdServer) Option {
+func WithIndexer(i index.IndexServer) Option {
 	return func(h *handler) {
-		h.vald = v
+		h.indexer = i
 	}
 }

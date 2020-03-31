@@ -24,6 +24,9 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/metric"
+	"github.com/vdaas/vald/internal/observability"
+	ngtmetrics "github.com/vdaas/vald/internal/observability/metrics/agent/ngt"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -36,10 +39,11 @@ import (
 )
 
 type run struct {
-	eg     errgroup.Group
-	cfg    *config.Data
-	ngt    service.NGT
-	server starter.Server
+	eg            errgroup.Group
+	cfg           *config.Data
+	ngt           service.NGT
+	server        starter.Server
+	observability observability.Observability
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
@@ -47,8 +51,42 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-	g := handler.New(handler.WithNGT(ngt))
+	g := handler.New(
+		handler.WithNGT(ngt),
+		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
+	)
 	eg := errgroup.Get()
+
+	grpcServerOptions := []server.Option{
+		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+			agent.RegisterAgentServer(srv, g)
+		}),
+		server.WithPreStartFunc(func() error {
+			// TODO check unbackupped upstream
+			return nil
+		}),
+		server.WithPreStopFunction(func() error {
+			// TODO backup all index data here
+			return nil
+		}),
+	}
+
+	var obs observability.Observability
+	if cfg.Observability.Enabled {
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			ngtmetrics.New(ngt),
+		)
+		if err != nil {
+			return nil, err
+		}
+		grpcServerOptions = append(
+			grpcServerOptions,
+			server.WithGRPCOption(
+				grpc.StatsHandler(metric.NewServerHandler()),
+			),
+		)
+	}
 
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
@@ -68,19 +106,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			}
 		}),
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
-			return []server.Option{
-				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-					agent.RegisterAgentServer(srv, g)
-				}),
-				server.WithPreStartFunc(func() error {
-					// TODO check unbackupped upstream
-					return nil
-				}),
-				server.WithPreStopFunction(func() error {
-					// TODO backup all index data here
-					return nil
-				}),
-			}
+			return grpcServerOptions
 		}),
 		// TODO add GraphQL handler
 	)
@@ -90,28 +116,37 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
-		eg:     eg,
-		ngt:    ngt,
-		cfg:    cfg,
-		server: srv,
+		eg:            eg,
+		ngt:           ngt,
+		cfg:           cfg,
+		server:        srv,
+		observability: obs,
 	}, nil
 }
 
 func (r *run) PreStart(ctx context.Context) error {
+	if r.observability != nil {
+		return r.observability.PreStart(ctx)
+	}
 	return nil
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 2)
+	ech := make(chan error, 3)
+	var oech, nech, sech <-chan error
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		log.Info("daemon start")
 		defer close(ech)
-		nech := r.ngt.Start(ctx)
-		sech := r.server.ListenAndServe(ctx)
+		if r.observability != nil {
+			oech = r.observability.Start(ctx)
+		}
+		nech = r.ngt.Start(ctx)
+		sech = r.server.ListenAndServe(ctx)
 		for {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
+			case err = <-oech:
 			case err = <-nech:
 			case err = <-sech:
 			}
@@ -132,6 +167,9 @@ func (r *run) PreStop(ctx context.Context) error {
 }
 
 func (r *run) Stop(ctx context.Context) error {
+	if r.observability != nil {
+		r.observability.Stop(ctx)
+	}
 	return r.server.Shutdown(ctx)
 }
 

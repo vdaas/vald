@@ -3,6 +3,11 @@ on:
   push:
     branches:
       - master
+    tags:
+       - '*.*.*'
+       - 'v*.*.*'
+       - '*.*.*-*'
+       - 'v*.*.*-*'
     paths:
       - ".github/workflows/update-protobuf.yml"
       - "apis/proto/**"

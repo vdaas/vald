@@ -66,7 +66,10 @@ func main() {
 	}
 	for _, path := range dirwalk(os.Args[1]) {
 		fmt.Println(path)
-		readAndRewrite(path)
+		err := readAndRewrite(path)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 func dirwalk(dir string) []string {
@@ -77,7 +80,9 @@ func dirwalk(dir string) []string {
 	var paths []string
 	for _, file := range files {
 		if file.IsDir() {
-			if !strings.Contains(file.Name(), "vendor") && !strings.Contains(file.Name(), ".git") {
+			if !strings.Contains(file.Name(), "vendor") &&
+				!strings.Contains(file.Name(), "versions") &&
+				!strings.Contains(file.Name(), ".git") {
 				paths = append(paths, dirwalk(filepath.Join(dir, file.Name()))...)
 			}
 			continue
@@ -85,23 +90,27 @@ func dirwalk(dir string) []string {
 		switch filepath.Ext(file.Name()) {
 		case
 			".cfg",
+			".crt",
+			".default",
 			".drawio",
 			".git",
 			".gitignore",
 			".gitkeep",
 			".gitmodules",
+			".gotmpl",
+			".hdf5",
 			".helmignore",
 			".html",
 			".json",
+			".key",
 			".lock",
 			".md",
 			".md5",
-			".hdf5",
 			".mod",
-			".default",
+			".pem",
 			".png",
-			".sum",
 			".ssv",
+			".sum",
 			".svg",
 			".tpl",
 			".txt",
@@ -141,7 +150,10 @@ func readAndRewrite(path string) error {
 	}
 	fi, err := f.Stat()
 	if err != nil {
-		f.Close()
+		err = f.Close()
+		if err != nil {
+			log.Fatal("error")
+		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
 	buf := bytes.NewBuffer(make([]byte, 0, fi.Size()))
@@ -152,7 +164,10 @@ func readAndRewrite(path string) error {
 		Escape:   sharpEscape,
 	}
 	if fi.Name() == "LICENSE" {
-		license.Execute(buf, d)
+		err = license.Execute(buf, d)
+		if err != nil {
+			log.Fatal("error")
+		}
 	} else {
 		switch filepath.Ext(path) {
 		case ".go", ".proto":
@@ -167,22 +182,51 @@ func readAndRewrite(path string) error {
 			if filepath.Ext(path) == ".go" && strings.HasPrefix(line, "// +build") ||
 				filepath.Ext(path) == ".py" && strings.HasPrefix(line, "# -*-") {
 				bf = true
-				buf.WriteString(line)
-				buf.WriteString("\n")
-				buf.WriteString("\n")
+				_, err = buf.WriteString(line)
+				if err != nil {
+					log.Fatal("error")
+				}
+				_, err = buf.WriteString("\n")
+				if err != nil {
+					log.Fatal("error")
+				}
+				_, err = buf.WriteString("\n")
+				if err != nil {
+					log.Fatal("error")
+				}
+				continue
+			}
+			if (filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml") && strings.HasPrefix(line, "---") {
+				_, err = buf.WriteString(line)
+				if err != nil {
+					log.Fatal("error")
+				}
+				_, err = buf.WriteString("\n")
+				if err != nil {
+					log.Fatal("error")
+				}
 				continue
 			}
 			if lf && strings.HasPrefix(line, d.Escape) {
 				continue
 			} else if !bf {
 				once.Do(func() {
-					apache.Execute(buf, d)
+					err = apache.Execute(buf, d)
+					if err != nil {
+						log.Fatal("error")
+					}
 				})
 				lf = false
 			}
 			if !lf {
-				buf.WriteString(line)
-				buf.WriteString("\n")
+				_, err = buf.WriteString(line)
+				if err != nil {
+					log.Fatal("error")
+				}
+				_, err = buf.WriteString("\n")
+				if err != nil {
+					log.Fatal("error")
+				}
 			}
 			bf = false
 		}
@@ -197,11 +241,20 @@ func readAndRewrite(path string) error {
 	}
 	f, err = os.Create(path)
 	if err != nil {
-		f.Close()
+		err = f.Close()
+		if err != nil {
+			log.Fatal("error")
+		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
-	f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"))
-	f.Close()
+	_, err = f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"))
+	if err != nil {
+		log.Fatal("error")
+	}
+	err = f.Close()
+	if err != nil {
+		log.Fatal("error")
+	}
 	return nil
 }
 

@@ -27,6 +27,6 @@ var (
 
 func WithMySQL(m service.MySQL) Option {
 	return func(s *server) {
-		s.mySQL = m
+		s.mysql = m
 	}
 }

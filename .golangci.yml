@@ -15,6 +15,9 @@
 #
 run:
   deadline: 30m
+  skip-dirs:
+    - (^|/)apis($|/)
+    - (^|/)hack/benchmark($|/)
 
 output:
   format: line-number

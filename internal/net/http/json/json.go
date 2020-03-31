@@ -17,6 +17,8 @@
 package json
 
 import (
+	"bytes"
+	"context"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -63,6 +65,46 @@ func EncodeResponse(w http.ResponseWriter,
 	return Encode(w, data)
 }
 
+// DecodeResponse decodes http response body.
+func DecodeResponse(res *http.Response, data interface{}) (err error) {
+	if res != nil && res.Body != nil && data != nil && res.ContentLength != 0 {
+		err = Decode(res.Body, data)
+		if err != nil {
+			return err
+		}
+
+		_, err := io.Copy(ioutil.Discard, res.Body)
+		if err != nil {
+			return errors.ErrRequestBodyFlush(err)
+		}
+		// close
+		err = res.Body.Close()
+		if err != nil {
+			return errors.ErrRequestBodyClose(err)
+		}
+	}
+	return nil
+}
+
+// EncodeRequest encodes http request.
+func EncodeRequest(req *http.Request,
+	data interface{}, contentTypes ...string) error {
+	for _, ct := range contentTypes {
+		req.Header.Add(rest.ContentType, ct)
+	}
+
+	buf := new(bytes.Buffer)
+	if err := Encode(buf, data); err != nil {
+		return err
+	}
+
+	req.ContentLength = int64(buf.Len())
+	req.Body = ioutil.NopCloser(buf)
+
+	return nil
+}
+
+// DecodeRequest decodes http request body.
 func DecodeRequest(r *http.Request, data interface{}) (err error) {
 	if r != nil && r.Body != nil && r.ContentLength != 0 {
 		err = Decode(r.Body, data)
@@ -130,6 +172,28 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request,
 	w.Header().Add(rest.ContentType, rest.ProblemJSON)
 	w.Header().Add(rest.ContentType, rest.CharsetUTF8)
 	w.WriteHeader(code)
-	w.Write(res)
-	return nil
+	_, err = w.Write(res)
+	return err
+}
+
+// Request sends http json request.
+func Request(ctx context.Context, method string, url string, payloyd interface{}, data interface{}) error {
+	req, err := http.NewRequestWithContext(ctx, method, url, nil)
+	if err != nil {
+		return err
+	}
+
+	if payloyd != nil && method != http.MethodGet {
+		if err := EncodeRequest(req, payloyd, rest.ApplicationJSON, rest.CharsetUTF8); err != nil {
+			return err
+		}
+	}
+
+	// TODO replace vald original client.
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	return DecodeResponse(resp, data)
 }

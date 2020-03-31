@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -51,7 +52,7 @@ var (
 						w.WriteHeader(http.StatusOK)
 						_, err := fmt.Fprint(w, http.StatusText(http.StatusOK))
 						if err != nil {
-							log.Fatal(err)
+							log.Error(err, info.Get())
 						}
 					}
 				})
@@ -72,43 +73,49 @@ var (
 
 func WithHost(host string) Option {
 	return func(s *server) {
-		if host == "" {
-			return
+		if host != "" {
+			s.host = host
 		}
-		s.host = host
 	}
 }
 
 func WithPort(port uint) Option {
 	return func(s *server) {
-		if port == 0 {
-			return
+		if port != 0 {
+			s.port = port
 		}
-		s.port = port
 	}
 }
 
 func WithName(name string) Option {
 	return func(s *server) {
-		s.name = name
+		if name != "" {
+			s.name = name
+		}
 	}
 }
 
 func WithErrorGroup(eg errgroup.Group) Option {
 	return func(s *server) {
-		s.eg = eg
+		if eg != nil {
+			s.eg = eg
+		}
 	}
 }
 
 func WithPreStopFunction(f func() error) Option {
 	return func(s *server) {
-		s.preStopFunc = f
+		if f != nil {
+			s.preStopFunc = f
+		}
 	}
 }
 
 func WithPreStartFunc(f func() error) Option {
 	return func(s *server) {
-		s.preStartFunc = f
+		if f != nil {
+			s.preStartFunc = f
+		}
 	}
 }
 
@@ -182,7 +189,10 @@ func WithListenConfig(lc *net.ListenConfig) Option {
 
 func WithServerMode(m mode) Option {
 	return func(s *server) {
-		s.mode = m
+		switch m {
+		case GRPC, REST, GQL:
+			s.mode = m
+		}
 	}
 }
 
@@ -196,31 +206,41 @@ func WithTLSConfig(cfg *tls.Config) Option {
 
 func WithHTTPHandler(h http.Handler) Option {
 	return func(s *server) {
-		s.http.h = h
+		if h != nil {
+			s.http.h = h
+		}
 	}
 }
 
 func WithHTTPServer(srv *http.Server) Option {
 	return func(s *server) {
-		s.http.srv = srv
+		if srv != nil {
+			s.http.srv = srv
+		}
 	}
 }
 
 func WithGRPCServer(srv *grpc.Server) Option {
 	return func(s *server) {
-		s.grpc.srv = srv
+		if srv != nil {
+			s.grpc.srv = srv
+		}
 	}
 }
 
 func WithGRPCOption(opts ...grpc.ServerOption) Option {
 	return func(s *server) {
-		s.grpc.opts = opts
+		if opts != nil {
+			s.grpc.opts = opts
+		}
 	}
 }
 
 func WithGRPCRegistFunc(f func(*grpc.Server)) Option {
 	return func(s *server) {
-		s.grpc.reg = f
+		if f != nil {
+			s.grpc.reg = f
+		}
 	}
 }
 
@@ -238,28 +258,28 @@ func WithDisableRestart() Option {
 
 func WithGRPCMaxReceiveMessageSize(size int) Option {
 	return func(s *server) {
-		if size > 0 {
+		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.MaxRecvMsgSize(size))
 		}
 	}
 }
 func WithGRPCMaxSendMessageSize(size int) Option {
 	return func(s *server) {
-		if size > 0 {
+		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.MaxSendMsgSize(size))
 		}
 	}
 }
 func WithGRPCInitialWindowSize(size int) Option {
 	return func(s *server) {
-		if size > 0 {
+		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.InitialWindowSize(int32(size)))
 		}
 	}
 }
 func WithGRPCInitialConnWindowSize(size int) Option {
 	return func(s *server) {
-		if size > 0 {
+		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.InitialConnWindowSize(int32(size)))
 		}
 	}
@@ -342,14 +362,14 @@ func WithGRPCKeepaliveTimeout(dur string) Option {
 }
 func WithGRPCWriteBufferSize(size int) Option {
 	return func(s *server) {
-		if size > 0 {
+		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.WriteBufferSize(size))
 		}
 	}
 }
 func WithGRPCReadBufferSize(size int) Option {
 	return func(s *server) {
-		if size > 0 {
+		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.ReadBufferSize(size))
 		}
 	}

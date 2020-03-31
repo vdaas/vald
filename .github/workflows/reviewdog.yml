@@ -12,12 +12,6 @@ jobs:
       - name: go build
         run: |
           go build ./...
-      - name: Install
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.22.2
-          curl -sSfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v0.9.15
-          GOBIN=$(go env GOPATH)/bin
-          echo "::set-env name=PATH::$PATH:$GOBIN"
       - name: Run golangci-lint
         run: |
           golangci-lint run --config .golangci.yml --issues-exit-code 0

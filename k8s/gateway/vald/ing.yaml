@@ -1,3 +1,4 @@
+---
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -14,22 +15,21 @@
 # limitations under the License.
 #
 
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 # apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
     nginx.ingress.kubernetes.io/grpc-backend: "true"
   labels:
-    name: gateway-ingress
-    app: gateway-ingress
-  name: gateway-ingress
-  namespace: default
+    name: vald-gateway-ingress
+    app: vald-gateway-ingress
+  name: vald-gateway-ingress
 spec:
   rules:
-  - host: vald.gateway.vdaas.org
-    http:
-      paths:
-      - backend:
-          serviceName: gateway
-          servicePort: grpc
+    - host: vald.gateway.vdaas.org
+      http:
+        paths:
+          - backend:
+              serviceName: vald-gateway
+              servicePort: grpc

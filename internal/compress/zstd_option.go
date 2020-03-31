@@ -18,8 +18,7 @@
 package compress
 
 import (
-	"github.com/DataDog/zstd"
-	"github.com/vdaas/vald/internal/errors"
+	"github.com/klauspost/compress/zstd"
 )
 
 type ZstdOption func(c *zstdCompressor) error
@@ -27,7 +26,7 @@ type ZstdOption func(c *zstdCompressor) error
 var (
 	defaultZstdOpts = []ZstdOption{
 		WithZstdGob(),
-		WithZstdCompressionLevel(zstd.DefaultCompression),
+		WithZstdCompressionLevel(3),
 	}
 )
 
@@ -44,10 +43,7 @@ func WithZstdGob(opts ...GobOption) ZstdOption {
 
 func WithZstdCompressionLevel(level int) ZstdOption {
 	return func(c *zstdCompressor) error {
-		if level < zstd.BestSpeed || level > zstd.BestCompression {
-			return errors.ErrInvalidCompressionLevel(level)
-		}
-		c.compressionLevel = level
+		c.eoptions = append(c.eoptions, zstd.WithEncoderLevel(zstd.EncoderLevelFromZstd(level)))
 		return nil
 	}
 }
