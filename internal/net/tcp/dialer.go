@@ -24,32 +24,33 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kpango/gache"
+	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 )
 
-// type Dialer func(ctx context.Context, network, addr string) (net.Conn, error)
-
 type Dialer interface {
 	GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error)
 	StartDialerCache(ctx context.Context)
+	DialContext(ctx context.Context, network, address string) (net.Conn, error)
 }
 
 type dialer struct {
-	cache              gache.Gache
-	dnsCache           bool
-	tlsConfig          *tls.Config
-	dnsRefreshDuration time.Duration
-	dnsCacheExpiration time.Duration
-	dialerTimeout      time.Duration
-	dialerKeepAlive    time.Duration
-	dialerDualStack    bool
-	der                *net.Dialer
-	dialer             func(ctx context.Context, network, addr string) (net.Conn, error)
+	cache                 cache.Cache
+	dnsCache              bool
+	tlsConfig             *tls.Config
+	dnsRefreshDurationStr string
+	dnsCacheExpirationStr string
+	dnsRefreshDuration    time.Duration
+	dnsCacheExpiration    time.Duration
+	dialerTimeout         time.Duration
+	dialerKeepAlive       time.Duration
+	dialerDualStack       bool
+	der                   *net.Dialer
+	dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
 }
 
-func NewDialer(opts ...DialerOption) Dialer {
+func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 	d := new(dialer)
 	for _, opt := range append(defaultDialerOptions, opts...) {
 		opt(d)
@@ -62,12 +63,7 @@ func NewDialer(opts ...DialerOption) Dialer {
 		Control:   Control,
 	}
 
-	d.der.Resolver = &net.Resolver{
-		PreferGo: false,
-		Dial:     d.der.DialContext,
-	}
-
-	if !d.dnsCache || d.cache == nil {
+	if !d.dnsCache {
 		if d.tlsConfig != nil {
 			d.dialer = func(ctx context.Context, network,
 				addr string) (conn net.Conn, err error) {
@@ -80,20 +76,46 @@ func NewDialer(opts ...DialerOption) Dialer {
 		} else {
 			d.dialer = d.der.DialContext
 		}
-		return d
-	}
-	if d.cache == nil {
-		d.cache = gache.New()
+		d.der.Resolver = &net.Resolver{
+			PreferGo: false,
+			Dial:     d.dialer,
+		}
+		return d, nil
 	}
 
 	if d.dnsRefreshDuration > d.dnsCacheExpiration {
 		d.dnsRefreshDuration, d.dnsCacheExpiration =
 			d.dnsCacheExpiration, d.dnsRefreshDuration
+		d.dnsRefreshDurationStr, d.dnsCacheExpirationStr =
+			d.dnsCacheExpirationStr, d.dnsRefreshDurationStr
+	}
+
+	if d.cache == nil {
+		d.cache, err = cache.New(
+			cache.WithExpireDuration(d.dnsCacheExpirationStr),
+			cache.WithExpireCheckDuration(d.dnsRefreshDurationStr),
+			cache.WithExpiredHook(func(ctx context.Context, addr string) {
+				if err := safety.RecoverFunc(func() (err error) {
+					_, err = d.lookup(ctx, addr)
+					return err
+				}); err != nil {
+					log.Error(err)
+				}
+			}),
+		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	d.dialer = d.cachedDialer
 
-	return d
+	d.der.Resolver = &net.Resolver{
+		PreferGo: false,
+		Dial:     d.dialer,
+	}
+
+	return d, nil
 }
 
 func (d *dialer) GetDialer() func(ctx context.Context,
@@ -118,26 +140,18 @@ func (d *dialer) lookup(ctx context.Context,
 		ips[i] = ip.String()
 	}
 
-	d.cache.SetWithExpire(addr, ips,
-		d.dnsCacheExpiration)
-
+	d.cache.Set(addr, ips)
 	return ips, nil
 }
 
 func (d *dialer) StartDialerCache(ctx context.Context) {
 	if d.dnsCache && d.cache != nil {
-		d.cache.SetDefaultExpire(d.dnsCacheExpiration).
-			SetExpiredHook(func(gctx context.Context, addr string) {
-				if err := safety.RecoverFunc(func() (err error) {
-					_, err = d.lookup(gctx, addr)
-					return err
-				}); err != nil {
-					log.Error(err)
-				}
-			}).
-			EnableExpiredHook().
-			StartExpired(ctx, d.dnsRefreshDuration)
+		d.cache.Start(ctx)
 	}
+}
+
+func (d *dialer) DialContext(ctx context.Context, network, address string) (net.Conn, error) {
+	return d.GetDialer()(ctx, network, address)
 }
 
 func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (

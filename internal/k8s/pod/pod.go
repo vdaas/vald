@@ -19,42 +19,41 @@ package pod
 
 import (
 	"context"
-	"sync"
+	"strings"
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/log"
 
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-type PodWatcher interface {
-	k8s.ResourceController
-	GetPods(name string) (pods []Pod, ok bool)
-}
+type PodWatcher k8s.ResourceController
 
 type reconciler struct {
-	mu          sync.RWMutex
-	podList     map[string][]Pod
+	ctx         context.Context
 	mgr         manager.Manager
 	name        string
+	namespace   string
 	onError     func(err error)
 	onReconcile func(podList map[string][]Pod)
 }
 
 type Pod struct {
-	Name     string
-	NodeName string
-	IP       string
-	CPU      float64
-	Mem      float64
+	Name       string
+	NodeName   string
+	Namespace  string
+	IP         string
+	CPULimit   float64
+	CPURequest float64
+	MemLimit   float64
+	MemRequest float64
 }
 
 func New(opts ...Option) PodWatcher {
@@ -70,8 +69,7 @@ func New(opts ...Option) PodWatcher {
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
 	ps := &corev1.PodList{}
 
-	err = r.mgr.GetClient().List(context.TODO(), ps, client.InNamespace(req.Namespace))
-	// err = r.mgr.GetClient().Get(context.TODO(), req.NamespacedName, ps)
+	err = r.mgr.GetClient().List(r.ctx, ps)
 
 	if err != nil {
 		if r.onError != nil {
@@ -82,49 +80,60 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			RequeueAfter: time.Millisecond * 100,
 		}
 		if errors.IsNotFound(err) {
-			res = reconcile.Result{
+			log.Error("not found", err)
+			return reconcile.Result{
 				Requeue:      true,
 				RequeueAfter: time.Second,
-			}
+			}, nil
 		}
 		return
 	}
 
 	var (
-		cpuUsage float64
-		memUsage float64
-		pods     = make(map[string][]Pod, len(ps.Items))
+		cpuLimit   float64
+		cpuRequest float64
+		memLimit   float64
+		memRequest float64
+		pods       = make(map[string][]Pod, len(ps.Items))
 	)
 
 	for _, pod := range ps.Items {
 		if pod.Status.Phase == corev1.PodRunning {
-			cpuUsage = 0.0
-			memUsage = 0.0
+			cpuLimit = 0.0
+			memLimit = 0.0
+			cpuRequest = 0.0
+			memRequest = 0.0
 			for _, container := range pod.Spec.Containers {
 				request := container.Resources.Requests
 				limit := container.Resources.Limits
-				cpuUsage += (float64(request.Cpu().Value()) /
-					float64(limit.Cpu().Value())) * 100.0
-				memUsage += (float64(request.Memory().Value()) /
-					float64(limit.Memory().Value())) * 100.0
+				cpuLimit += float64(limit.Cpu().Value())
+				memLimit += float64(limit.Memory().Value())
+				cpuRequest += float64(request.Cpu().Value())
+				memRequest += float64(request.Memory().Value())
+			}
+			cpuLimit /= float64(len(pod.Spec.Containers))
+			memLimit /= float64(len(pod.Spec.Containers))
+			cpuRequest /= float64(len(pod.Spec.Containers))
+			memRequest /= float64(len(pod.Spec.Containers))
+			podName, ok := pod.GetObjectMeta().GetLabels()["app"]
+			if !ok {
+				pns := strings.Split(pod.GetName(), "-")
+				podName = strings.Join(pns[:len(pns)-1], "-")
 			}
 
-			cpuUsage = cpuUsage / float64(len(pod.Spec.Containers))
-			memUsage = memUsage / float64(len(pod.Spec.Containers))
-
-			// pod.GetObjectMeta().GetLabels()["app"]
-			podMetaName := pod.GetObjectMeta().GetName()
-
-			if _, ok := pods[podMetaName]; !ok {
-				pods[podMetaName] = make([]Pod, 0, len(ps.Items))
+			if _, ok := pods[podName]; !ok {
+				pods[podName] = make([]Pod, 0, len(ps.Items))
 			}
 
-			pods[podMetaName] = append(pods[podMetaName], Pod{
-				Name:     pod.GetName(),
-				NodeName: pod.Spec.NodeName,
-				IP:       pod.Status.PodIP,
-				CPU:      cpuUsage,
-				Mem:      memUsage,
+			pods[podName] = append(pods[podName], Pod{
+				Name:       pod.GetName(),
+				NodeName:   pod.Spec.NodeName,
+				Namespace:  pod.GetNamespace(),
+				IP:         pod.Status.PodIP,
+				CPULimit:   cpuLimit,
+				CPURequest: cpuRequest,
+				MemLimit:   memLimit,
+				MemRequest: memRequest,
 			})
 		}
 	}
@@ -132,18 +141,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	if r.onReconcile != nil {
 		r.onReconcile(pods)
 	}
-
-	r.mu.Lock()
-	r.podList = pods
-	r.mu.Lock()
-
-	return
-}
-
-func (r *reconciler) GetPods(name string) (pods []Pod, ok bool) {
-	r.mu.RLock()
-	pods, ok = r.podList[name]
-	r.mu.RUnlock()
 	return
 }
 
@@ -151,25 +148,26 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
-	if r.mgr == nil {
+func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
+	if r.ctx == nil && ctx != nil {
+		r.ctx = ctx
+	}
+	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
 	corev1.AddToScheme(r.mgr.GetScheme())
-	appsv1.AddToScheme(r.mgr.GetScheme())
 	return r
 }
 
 func (r *reconciler) For() runtime.Object {
-	// return new(appsv1.ReplicaSet)
-	return nil
+	return new(corev1.Pod)
 }
 
 func (r *reconciler) Owns() runtime.Object {
-	// return new(corev1.Pod)
 	return nil
 }
 
 func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
-	return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
+	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
+	return nil, nil
 }

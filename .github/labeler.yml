@@ -55,10 +55,20 @@ area/meta:
 area/internal:
   - internal/**/*
 
+area/helm:
+  - charts/**/*
+
+area/makefile:
+  - Makefile
+  - Makefile.d/**/*
+
 team/set:
   - "**/*_test.go"
 
 team/sre:
   - Makefile
   - Makefile.d/**/*
+  - .github/**/*
+
+type/ci:
   - .github/**/*

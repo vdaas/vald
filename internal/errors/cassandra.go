@@ -17,8 +17,6 @@
 // Package errors provides error types and function
 package errors
 
-// "github.com/pkg/errors"
-
 var (
 
 	// Cassandra
@@ -28,12 +26,29 @@ var (
 
 	NewErrCassandraNotFoundIdentity = func() error {
 		return &ErrCassandraNotFoundIdentity{
-			err: New("error cassandra entry not found"),
+			err: New("cassandra entry not found"),
 		}
 	}
 
-	ErrCassandraNotFound = func(key string) error {
-		return Wrapf(NewErrCassandraNotFoundIdentity(), "error cassandra key '%s' not found", key)
+	NewErrCassandraUnavailableIdentity = func() error {
+		return &ErrCassandraUnavailableIdentity{
+			err: New("cassandra unavailable"),
+		}
+	}
+
+	ErrCassandraUnavailable = func() error {
+		return NewErrCassandraUnavailableIdentity()
+	}
+
+	ErrCassandraNotFound = func(keys ...string) error {
+		switch {
+		case len(keys) == 1:
+			return Wrapf(NewErrCassandraNotFoundIdentity(), "cassandra key '%s' not found", keys[0])
+		case len(keys) > 1:
+			return Wrapf(NewErrCassandraNotFoundIdentity(), "cassandra keys '%v' not found", keys)
+		default:
+			return nil
+		}
 	}
 
 	ErrCassandraGetOperationFailed = func(key string, err error) error {
@@ -60,6 +75,23 @@ func (e *ErrCassandraNotFoundIdentity) Error() string {
 func IsErrCassandraNotFound(err error) bool {
 	switch err.(type) {
 	case *ErrCassandraNotFoundIdentity:
+		return true
+	default:
+		return false
+	}
+}
+
+type ErrCassandraUnavailableIdentity struct {
+	err error
+}
+
+func (e *ErrCassandraUnavailableIdentity) Error() string {
+	return e.err.Error()
+}
+
+func IsErrCassandraUnavailable(err error) bool {
+	switch err.(type) {
+	case *ErrCassandraUnavailableIdentity:
 		return true
 	default:
 		return false

@@ -17,7 +17,9 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-import "github.com/vdaas/vald/internal/servers/server"
+import (
+	"github.com/vdaas/vald/internal/servers/server"
+)
 
 type Servers struct {
 	// Server represent server configuration.
@@ -133,6 +135,15 @@ func (s *Servers) Bind() *Servers {
 		}
 	}
 	return s
+}
+
+func (s *Servers) GetGRPCStreamConcurrency() (c int) {
+	for _, s := range s.Servers {
+		if s.GRPC != nil {
+			return s.GRPC.BidirectionalStreamConcurrency
+		}
+	}
+	return 0
 }
 
 func (h *HTTP) Bind() *HTTP {

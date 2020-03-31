@@ -24,7 +24,9 @@ docker/build: \
 	docker/build/meta-cassandra \
 	docker/build/backup-manager-mysql \
 	docker/build/backup-manager-cassandra \
-	docker/build/manager-compressor
+	docker/build/manager-compressor \
+	docker/build/manager-index \
+	docker/build/helm-operator
 
 .PHONY: docker/name/base
 docker/name/base:
@@ -64,39 +66,39 @@ docker/build/gateway-vald: docker/build/base
 
 .PHONY: docker/name/meta-redis
 docker/name/meta-redis:
-	@echo "$(REPO)/$(KVS_IMAGE)"
+	@echo "$(REPO)/$(META_REDIS_IMAGE)"
 
 .PHONY: docker/build/meta-redis
 ## build meta-redis image
 docker/build/meta-redis: docker/build/base
-	docker build -f dockers/meta/redis/Dockerfile -t $(REPO)/$(KVS_IMAGE) .
+	docker build -f dockers/meta/redis/Dockerfile -t $(REPO)/$(META_REDIS_IMAGE) .
 
 .PHONY: docker/name/meta-cassandra
 docker/name/meta-cassandra:
-	@echo "$(REPO)/$(NOSQL_IMAGE)"
+	@echo "$(REPO)/$(META_CASSANDRA_IMAGE)"
 
 .PHONY: docker/build/meta-cassandra
 ## build meta-cassandra image
 docker/build/meta-cassandra: docker/build/base
-	docker build -f dockers/meta/cassandra/Dockerfile -t $(REPO)/$(NOSQL_IMAGE) .
+	docker build -f dockers/meta/cassandra/Dockerfile -t $(REPO)/$(META_CASSANDRA_IMAGE) .
 
 .PHONY: docker/name/backup-manager-mysql
 docker/name/backup-manager-mysql:
-	@echo "$(REPO)/$(BACKUP_MANAGER_MYSQL_IMAGE)"
+	@echo "$(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE)"
 
 .PHONY: docker/build/backup-manager-mysql
 ## build backup-manager-mysql image
 docker/build/backup-manager-mysql: docker/build/base
-	docker build -f dockers/manager/backup/mysql/Dockerfile -t $(REPO)/$(BACKUP_MANAGER_MYSQL_IMAGE) .
+	docker build -f dockers/manager/backup/mysql/Dockerfile -t $(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE) .
 
 .PHONY: docker/name/backup-manager-cassandra
 docker/name/backup-manager-cassandra:
-	@echo "$(REPO)/$(BACKUP_MANAGER_CASSANDRA_IMAGE)"
+	@echo "$(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE)"
 
 .PHONY: docker/build/backup-manager-cassandra
 ## build backup-manager-cassandra image
 docker/build/backup-manager-cassandra: docker/build/base
-	docker build -f dockers/manager/backup/cassandra/Dockerfile -t $(REPO)/$(BACKUP_MANAGER_CASSANDRA_IMAGE) .
+	docker build -f dockers/manager/backup/cassandra/Dockerfile -t $(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE) .
 
 .PHONY: docker/name/manager-compressor
 docker/name/manager-compressor:
@@ -107,6 +109,15 @@ docker/name/manager-compressor:
 docker/build/manager-compressor: docker/build/base
 	docker build -f dockers/manager/compressor/Dockerfile -t $(REPO)/$(MANAGER_COMPRESSOR_IMAGE) .
 
+.PHONY: docker/name/manager-index
+docker/name/manager-index:
+	@echo "$(REPO)/$(MANAGER_INDEX_IMAGE)"
+
+.PHONY: docker/build/manager-index
+## build manager-index image
+docker/build/manager-index: docker/build/base
+	docker build -f dockers/manager/index/Dockerfile -t $(REPO)/$(MANAGER_INDEX_IMAGE) .
+
 .PHONY: docker/name/ci-container
 docker/name/ci-container:
 	@echo "$(REPO)/$(CI_CONTAINER_IMAGE)"
@@ -115,3 +126,27 @@ docker/name/ci-container:
 ## build ci-container image
 docker/build/ci-container: docker/build/base
 	docker build -f dockers/ci/base/Dockerfile -t $(REPO)/$(CI_CONTAINER_IMAGE) .
+
+.PHONY: docker/name/operator/helm
+docker/name/operator/helm:
+	@echo "$(REPO)/$(HELM_OPERATOR_IMAGE)"
+
+.PHONY: docker/build/operator/helm
+## build helm-operator image
+docker/build/operator/helm:
+	docker build -f dockers/operator/helm/Dockerfile -t $(REPO)/$(HELM_OPERATOR_IMAGE) .
+
+.PHONY: dockfmt/install
+dockfmt/install: $(BINDIR)/dockfmt
+
+ifeq ($(UNAME),Darwin)
+$(BINDIR)/dockfmt:
+	mkdir -p $(BINDIR)
+	curl -fSL https://github.com/jessfraz/dockfmt/releases/download/$(DOCKFMT_VERSION)/dockfmt-darwin-amd64 -o $(BINDIR)/dockfmt
+	chmod a+x $(BINDIR)/dockfmt
+else
+$(BINDIR)/dockfmt:
+	mkdir -p $(BINDIR)
+	curl -fSL https://github.com/jessfraz/dockfmt/releases/download/$(DOCKFMT_VERSION)/dockfmt-linux-amd64 -o $(BINDIR)/dockfmt
+	chmod a+x $(BINDIR)/dockfmt
+endif

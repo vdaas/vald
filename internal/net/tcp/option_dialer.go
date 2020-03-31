@@ -21,7 +21,7 @@ import (
 	"crypto/tls"
 	"time"
 
-	"github.com/kpango/gache"
+	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
@@ -36,7 +36,7 @@ var (
 	}
 )
 
-func WithCache(c gache.Gache) DialerOption {
+func WithCache(c cache.Cache) DialerOption {
 	return func(d *dialer) {
 		d.cache = c
 	}
@@ -49,9 +49,11 @@ func WithDNSRefreshDuration(dur string) DialerOption {
 		}
 		pd, err := timeutil.Parse(dur)
 		if err != nil {
-			pd = time.Minute * 30
+			WithDNSRefreshDuration("30m")(d)
+			return
 		}
 		d.dnsRefreshDuration = pd
+		d.dnsRefreshDurationStr = dur
 	}
 }
 
@@ -62,9 +64,11 @@ func WithDNSCacheExpiration(dur string) DialerOption {
 		}
 		pd, err := timeutil.Parse(dur)
 		if err != nil {
-			pd = time.Hour
+			WithDNSCacheExpiration("1h")(d)
+			return
 		}
 		d.dnsCacheExpiration = pd
+		d.dnsCacheExpirationStr = dur
 		if d.dnsCacheExpiration > 0 {
 			WithEnableDNSCache()(d)
 		}

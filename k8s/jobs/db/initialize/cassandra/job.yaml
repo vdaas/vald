@@ -1,3 +1,4 @@
+---
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -21,22 +22,27 @@ spec:
   template:
     spec:
       containers:
-      - name: cassandra-init
-        image: cassandra:latest
-        imagePullPolicy: Always
-        command:
-          - /bin/sh
-          - -c
-          - |
-            cqlsh -u${CASSANDRA_USER} ${CASSANDRA_HOST} < /initdb/init.cql
-        env:
-        - name: CASSANDRA_HOST
-          value: cassandra.default.svc.cluster.local
-        - name: CASSANDRA_USER
-          value: root
-        volumeMounts:
-          - name: cassandra-initdb
-            mountPath: /initdb
+        - name: cassandra-init
+          image: "cassandra:latest"
+          imagePullPolicy: Always
+          command:
+            - /bin/sh
+            - -c
+            - |
+              cqlsh -u${CASSANDRA_USER} -p${CASSANDRA_PASSWORD} ${CASSANDRA_HOST} < /initdb/init.cql
+          env:
+          - name: CASSANDRA_HOST
+            value: cassandra.default.svc.cluster.local
+          - name: CASSANDRA_USER
+            value: root
+          - name: CASSANDRA_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: cassandra-secret
+          volumeMounts:
+            - name: cassandra-initdb
+              mountPath: /initdb
       restartPolicy: Never
       volumes:
         - name: cassandra-initdb

@@ -40,6 +40,7 @@ COPY .git .
 RUN GO_VERSION="$(cat GO_VERSION)" \
     && VALD_VERSION="$(cat VALD_VERSION)" \
     && GIT_COMMIT="$(git rev-list -1 HEAD)" \
+    && CPU_INFO_FLAGS="$(cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1)" \
     && GOOS="$(go env GOOS)" \
     && GOARCH="$(go env GOARCH)" \
     && CGO_ENABLED=0 \
@@ -52,7 +53,8 @@ RUN GO_VERSION="$(cat GO_VERSION)" \
     -X 'github.com/${ORG}/${REPO}/internal/info.GoVersion=${GO_VERSION}' \
     -X 'github.com/${ORG}/${REPO}/internal/info.GoOS=${GOOS}' \
     -X 'github.com/${ORG}/${REPO}/internal/info.GoArch=${GOARCH}' \
-    -X 'github.com/${ORG}/${REPO}/internal/info.CGOEnabled=${CGO_ENABLED}'" \
+    -X 'github.com/${ORG}/${REPO}/internal/info.CGOEnabled=${CGO_ENABLED}' \
+    -X 'github.com/${ORG}/${REPO}/internal/info.BuildCPUInfoFlags=${CPU_INFO_FLAGS}'" \
     -a \
     -tags netgo \
     -installsuffix netgo \

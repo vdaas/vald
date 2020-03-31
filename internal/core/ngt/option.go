@@ -72,6 +72,9 @@ func WithBulkInsertChunkSize(size int) Option {
 
 func WithDimension(size int) Option {
 	return func(n *ngt) error {
+		if size > dimensionLimit {
+			return errors.ErrDimensionLimitExceed(size, dimensionLimit)
+		}
 		if C.ngt_set_property_dimension(n.prop, C.int32_t(size), n.ebuf) == ErrorCode {
 			return errors.ErrFailedToSetDimension(n.newGoError(n.ebuf))
 		}

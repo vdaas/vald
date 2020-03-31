@@ -19,6 +19,7 @@ package config
 
 import (
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
+	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/tls"
 )
 
@@ -45,6 +46,7 @@ type Cassandra struct {
 	MaxRoutingKeyInfo        int    `json:"max_routing_key_info" yaml:"max_routing_key_info"`
 	PageSize                 int    `json:"page_size" yaml:"page_size"`
 	TLS                      *TLS   `json:"tls" yaml:"tls"`
+	TCP                      *TCP   `json:"tcp" yaml:"tcp"`
 	EnableHostVerification   bool   `json:"enable_host_verification" yaml:"enable_host_verification"`
 	DefaultTimestamp         bool   `json:"default_timestamp" yaml:"default_timestamp"`
 	ReconnectInterval        string `json:"reconnect_interval" yaml:"reconnect_interval"`
@@ -111,6 +113,11 @@ func (c *Cassandra) Bind() *Cassandra {
 	} else {
 		c.TLS = new(TLS)
 	}
+	if c.TCP != nil {
+		c.TCP.Bind()
+	} else {
+		c.TCP = new(TCP)
+	}
 	c.ReconnectInterval = GetActualValue(c.ReconnectInterval)
 	c.MaxWaitSchemaAgreement = GetActualValue(c.MaxWaitSchemaAgreement)
 	c.WriteCoalesceWaitTime = GetActualValue(c.WriteCoalesceWaitTime)
@@ -156,8 +163,6 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 		cassandra.WithDisableSkipMetadata(cfg.DisableSkipMetadata),
 		cassandra.WithDefaultIdempotence(cfg.DefaultIdempotence),
 		cassandra.WithWriteCoalesceWaitTime(cfg.WriteCoalesceWaitTime),
-		cassandra.WithKVTable(cfg.KVTable),
-		cassandra.WithVKTable(cfg.VKTable),
 	}
 
 	if cfg.PoolConfig != nil {
@@ -170,6 +175,17 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 		}
 		if cfg.PoolConfig.ShuffleReplicas {
 			opts = append(opts, cassandra.WithEnableShuffleReplicas())
+		}
+	}
+
+	if cfg.TCP != nil {
+		der, err := tcp.NewDialer(cfg.TCP.Opts()...)
+		if err == nil {
+			opts = append(opts,
+				cassandra.WithDialer(
+					der,
+				),
+			)
 		}
 	}
 

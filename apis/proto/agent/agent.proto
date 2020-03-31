@@ -85,17 +85,17 @@ service Agent {
   rpc StreamGetObject(stream payload.Object.ID)
       returns (stream payload.Object.Vector) {}
 
-  rpc CreateIndex(payload.Controll.CreateIndexRequest) returns (payload.Empty) {
+  rpc CreateIndex(payload.Control.CreateIndexRequest) returns (payload.Empty) {
     option (google.api.http).get = "/index/create";
   }
   rpc SaveIndex(payload.Empty) returns (payload.Empty) {
     option (google.api.http).get = "/index/save";
   }
-  rpc CreateAndSaveIndex(payload.Controll.CreateIndexRequest)
+  rpc CreateAndSaveIndex(payload.Control.CreateIndexRequest)
       returns (payload.Empty) {
     option (google.api.http).get = "/index/createandsave";
   }
-  rpc IndexInfo(payload.Empty) returns (payload.Info.Index) {
+  rpc IndexInfo(payload.Empty) returns (payload.Info.Index.Count) {
     option (google.api.http).get = "/index/info";
   }
 }

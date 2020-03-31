@@ -1,0 +1,55 @@
+---
+#
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: grafana-datasource-provider
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: grafana-dashboard-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+            - name: grafana-dashboards
+              mountPath: /var/lib/grafana/dashboards
+      volumes:
+        - name: grafana-datasource-provider
+          configMap:
+            defaultMode: 420
+            name: grafana-datasource-provider
+        - name: grafana-dashboard-provider
+          configMap:
+            defaultMode: 420
+            name: grafana-dashboard-provider
+        - name: grafana-dashboards
+          configMap:
+            defaultMode: 420
+            name: grafana-dashboards

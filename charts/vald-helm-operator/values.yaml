@@ -1,0 +1,58 @@
+#
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# name -- name of the deployment
+name: vald-helm-operator
+# replicas -- number of replicas
+replicas: 1
+
+image:
+  # image.repository -- image repository
+  repository: vdaas/vald-helm-operator
+  # image.tag -- image tag
+  tag: v0.0.26
+  # image.pullPolicy -- image pull policy
+  pullPolicy: Always
+
+crd:
+  # crd.create -- ValdRelease crd will be created
+  create: true
+
+vald:
+  # vald.create -- ValdRelease resource will be created
+  create: false
+  # vald.name -- name of ValdRelease resource
+  name: vald-cluster
+  # vald.spec -- spec field of ValdRelease resource = the values of Helm chart for Vald
+  spec: {}
+
+rbac:
+  # rbac.create -- required roles and rolebindings will be created
+  create: true
+  # rbac.name -- name of roles and rolebindings
+  name: vald-helm-operator
+
+serviceAccount:
+  # serviceAccount.create -- service account will be created
+  create: true
+  # serviceAccount.name -- name of service account
+  name: vald-helm-operator
+
+# resources -- k8s resources of pod
+resources: {}
+
+# nodeSelector -- node labels for pod assignment
+nodeSelector: {}

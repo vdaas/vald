@@ -59,7 +59,8 @@ func (b *backup) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backup_Compressed_MetaVector, err error) {
-	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
+	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		vec, err = gback.NewBackupClient(conn).GetVector(ctx, &payload.Backup_GetVector_Request{
 			Uuid: uuid,
 		}, copts...)
@@ -72,7 +73,8 @@ func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backu
 }
 
 func (b *backup) GetLocation(ctx context.Context, uuid string) (ipList []string, err error) {
-	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
+	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		ips, err := gback.NewBackupClient(conn).Locations(ctx, &payload.Backup_Locations_Request{
 			Uuid: uuid,
 		}, copts...)
@@ -86,7 +88,8 @@ func (b *backup) GetLocation(ctx context.Context, uuid string) (ipList []string,
 }
 
 func (b *backup) Register(ctx context.Context, vec *payload.Backup_Compressed_MetaVector) (err error) {
-	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
+	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = gback.NewBackupClient(conn).Register(ctx, vec, copts...)
 		if err != nil {
 			return nil, err
@@ -97,7 +100,8 @@ func (b *backup) Register(ctx context.Context, vec *payload.Backup_Compressed_Me
 }
 
 func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Backup_Compressed_MetaVectors) (err error) {
-	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
+	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = gback.NewBackupClient(conn).RegisterMulti(ctx, vecs, copts...)
 		if err != nil {
 			return nil, err
@@ -108,7 +112,8 @@ func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Backup_Comp
 }
 
 func (b *backup) Remove(ctx context.Context, uuid string) (err error) {
-	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
+	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = gback.NewBackupClient(conn).Remove(ctx, &payload.Backup_Remove_Request{
 			Uuid: uuid,
 		}, copts...)
@@ -122,8 +127,9 @@ func (b *backup) Remove(ctx context.Context, uuid string) (err error) {
 
 func (b *backup) RemoveMultiple(ctx context.Context, uuids ...string) (err error) {
 	req := new(payload.Backup_Remove_RequestMulti)
-	req.Uuid = uuids
-	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
+	req.Uuids = uuids
+	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = gback.NewBackupClient(conn).RemoveMulti(ctx, req, copts...)
 		if err != nil {
 			return nil, err
@@ -137,7 +143,8 @@ func (b *backup) RegisterIPs(ctx context.Context, uuid string, ips []string) (er
 	req := new(payload.Backup_IP_Register_Request)
 	req.Uuid = uuid
 	req.Ips = ips
-	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
+	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = gback.NewBackupClient(conn).RegisterIPs(ctx, req, copts...)
 		if err != nil {
 			return nil, err
@@ -150,7 +157,8 @@ func (b *backup) RegisterIPs(ctx context.Context, uuid string, ips []string) (er
 func (b *backup) RemoveIPs(ctx context.Context, ips []string) (err error) {
 	req := new(payload.Backup_IP_Remove_Request)
 	req.Ips = ips
-	_, err = b.client.Do(ctx, b.addr, func(conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
+	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = gback.NewBackupClient(conn).RemoveIPs(ctx, req, copts...)
 		if err != nil {
 			return nil, err

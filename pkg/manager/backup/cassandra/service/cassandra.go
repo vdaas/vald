@@ -22,7 +22,6 @@ import (
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/model"
 )
 
@@ -86,19 +85,14 @@ func (c *client) Close(ctx context.Context) error {
 
 func (c *client) getMetaVector(ctx context.Context, uuid string) (*model.MetaVector, error) {
 	var metaVector model.MetaVector
-
-	stmt, names := cassandra.Select(c.metaTable, metaColumns, cassandra.Eq(uuidColumn))
-	err := c.db.Query(stmt, names).BindMap(map[string]interface{}{uuidColumn: uuid}).GetRelease(&metaVector)
-
-	if err != nil {
-		switch err {
-		case cassandra.ErrNotFound:
-			return nil, errors.ErrCassandraNotFound(uuid)
-		default:
-			return nil, err
-		}
+	if err := c.db.Query(cassandra.Select(c.metaTable,
+		metaColumns,
+		cassandra.Eq(uuidColumn))).
+		BindMap(map[string]interface{}{
+			uuidColumn: uuid,
+		}).GetRelease(&metaVector); err != nil {
+		return nil, cassandra.WrapErrorWithKeys(err, uuid)
 	}
-
 	return &metaVector, nil
 }
 
@@ -134,13 +128,14 @@ func (c *client) SetMetas(ctx context.Context, metas ...*model.MetaVector) error
 		entities[prefix+"."+ipsColumn] = mv.IPs
 	}
 
-	stmt, names := bt.ToCql()
-	return c.db.Query(stmt, names).BindMap(entities).ExecRelease()
+	return c.db.Query(bt.ToCql()).BindMap(entities).ExecRelease()
 }
 
 func (c *client) DeleteMeta(ctx context.Context, uuid string) error {
-	stmt, names := cassandra.Delete(c.metaTable, cassandra.Eq(uuidColumn)).ToCql()
-	return c.db.Query(stmt, names).BindMap(map[string]interface{}{uuidColumn: uuid}).ExecRelease()
+	return c.db.Query(cassandra.Delete(c.metaTable,
+		cassandra.Eq(uuidColumn)).ToCql()).
+		BindMap(map[string]interface{}{uuidColumn: uuid}).
+		ExecRelease()
 }
 
 func (c *client) DeleteMetas(ctx context.Context, uuids ...string) error {
@@ -153,21 +148,28 @@ func (c *client) DeleteMetas(ctx context.Context, uuids ...string) error {
 		bindUUIDs[prefix+"."+uuidColumn] = uuid
 	}
 
-	stmt, names := bt.ToCql()
-	return c.db.Query(stmt, names).BindMap(bindUUIDs).ExecRelease()
+	return c.db.Query(bt.ToCql()).BindMap(bindUUIDs).ExecRelease()
 }
 
 func (c *client) SetIPs(ctx context.Context, uuid string, ips ...string) error {
-	stmt, names := cassandra.Update(c.metaTable).AddNamed(ipsColumn, ipsColumn).Where(cassandra.Eq(uuidColumn)).ToCql()
-	return c.db.Query(stmt, names).BindMap(map[string]interface{}{uuidColumn: uuid, ipsColumn: ips}).ExecRelease()
+	return c.db.Query(cassandra.Update(c.metaTable).
+		AddNamed(ipsColumn, ipsColumn).
+		Where(cassandra.Eq(uuidColumn)).ToCql()).
+		BindMap(map[string]interface{}{
+			uuidColumn: uuid,
+			ipsColumn:  ips,
+		}).ExecRelease()
 }
 
 func (c *client) RemoveIPs(ctx context.Context, ips ...string) error {
 	var metaVectors []model.MetaVector
 
 	for _, ip := range ips {
-		stmt, names := cassandra.Select(c.metaTable, []string{uuidColumn, ipsColumn}, cassandra.Contains(ipsColumn))
-		err := c.db.Query(stmt, names).BindMap(map[string]interface{}{ipsColumn: ip}).SelectRelease(&metaVectors)
+		err := c.db.Query(cassandra.Select(c.metaTable,
+			[]string{uuidColumn, ipsColumn},
+			cassandra.Contains(ipsColumn))).
+			BindMap(map[string]interface{}{ipsColumn: ip}).
+			SelectRelease(&metaVectors)
 		if err != nil {
 			return err
 		}
@@ -185,8 +187,12 @@ func (c *client) RemoveIPs(ctx context.Context, ips ...string) error {
 				newIPs = append(newIPs, cIP)
 			}
 
-			stmt, names = cassandra.Update(c.metaTable).Set(ipsColumn).Where(cassandra.Eq(uuidColumn)).ToCql()
-			err = c.db.Query(stmt, names).BindMap(map[string]interface{}{uuidColumn: mv.UUID, ipsColumn: newIPs}).ExecRelease()
+			err = c.db.Query(cassandra.Update(c.metaTable).Set(ipsColumn).
+				Where(cassandra.Eq(uuidColumn)).ToCql()).
+				BindMap(map[string]interface{}{
+					uuidColumn: mv.UUID,
+					ipsColumn:  newIPs,
+				}).ExecRelease()
 			if err != nil {
 				return err
 			}

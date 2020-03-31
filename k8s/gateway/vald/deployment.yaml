@@ -1,3 +1,4 @@
+---
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -16,16 +17,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: vald-gateway
   labels:
-    app: gateway
-  name: gateway
+    app: vald-gateway
 spec:
   progressDeadlineSeconds: 600
-  replicas: 1
   revisionHistoryLimit: 2
   selector:
     matchLabels:
-      app: gateway
+      app: vald-gateway
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -35,103 +35,132 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app: gateway
+        app: vald-gateway
+      annotations:
+        checksum/configmap: f6d3b8e4118e05c8173a8c0048acb83c5a96f18c94d9e6e860395e47d54be457
+        profefe.com/enable: "true"
+        profefe.com/port: "6060"
+        profefe.com/service: vald-gateway
     spec:
       initContainers:
-      - name: wait-for-manager-compressor
-        image: busybox
-        command:
-        - /bin/sh
-        - -c
-        - >
-          set -x;
-          while [ $(curl -sw '%{http_code}' "http://manager-compressor.default.svc.cluster.local:3001" -o /dev/null) -ne 200]; do
-            sleep 2;
-          done
-      - name: wait-for-meta-redis
-        image: busybox
-        command:
-        - /bin/sh
-        - -c
-        - >
-          set -x;
-          while [ $(curl -sw '%{http_code}' "http://meta-redis.default.svc.cluster.local:3001" -o /dev/null) -ne 200]; do
-            sleep 2;
-          done
-      # - name: wait-for-discoverer
-      #   image: busybox
-      #   command:
-      #   - /bin/sh
-      #   - -c
-      #   - >
-      #     set -x;
-      #     while [ $(curl -sw '%{http_code}' "http://discoverer-k8s.default.svc.cluster.local:3001" -o /dev/null) -ne 200]; do
-      #       sleep 2;
-      #     done
-      - name: wait-for-agent-ngt
-        image: busybox
-        command:
-        - /bin/sh
-        - -c
-        - >
-          set -x;
-          while [ $(curl -sw '%{http_code}' "http://agent-ngt.default.svc.cluster.local:3001" -o /dev/null) -ne 200]; do
-            sleep 2;
-          done
+        - name: wait-for-manager-compressor
+          image: busybox
+          command:
+            - /bin/sh
+            - -e
+            - -c
+            - |
+              until [ "$(wget --server-response --spider --quiet http://vald-manager-compressor.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+                echo "waiting for compressor to be ready..."
+                sleep 2;
+              done
+        - name: wait-for-meta
+          image: busybox
+          command:
+            - /bin/sh
+            - -e
+            - -c
+            - |
+              until [ "$(wget --server-response --spider --quiet http://vald-meta.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+                echo "waiting for meta to be ready..."
+                sleep 2;
+              done
+        - name: wait-for-discoverer
+          image: busybox
+          command:
+            - /bin/sh
+            - -e
+            - -c
+            - |
+              until [ "$(wget --server-response --spider --quiet http://vald-discoverer.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+                echo "waiting for discoverer to be ready..."
+                sleep 2;
+              done
+        - name: wait-for-agent
+          image: busybox
+          command:
+            - /bin/sh
+            - -e
+            - -c
+            - |
+              until [ "$(wget --server-response --spider --quiet http://vald-agent-ngt.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+                echo "waiting for agent to be ready..."
+                sleep 2;
+              done
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - vald-gateway
       containers:
-      - image: vdaas/vald-gateway:nightly
-        imagePullPolicy: Always
-        livenessProbe:
-          httpGet:
-            path: /liveness
-            port: liveness
-            scheme: HTTP
-          initialDelaySeconds: 6
-          timeoutSeconds: 2
-          successThreshold: 1
-          failureThreshold: 3
-          periodSeconds: 3
-        readinessProbe:
-          httpGet:
-            path: /readiness
-            port: readiness
-            scheme: HTTP
-          initialDelaySeconds: 6
-          timeoutSeconds: 2
-          successThreshold: 2
-          failureThreshold: 3
-          periodSeconds: 2
-        name: gateway
-        ports:
-        - containerPort: 3000
-          name: liveness
-          protocol: TCP
-        - containerPort: 3001
-          name: readiness
-          protocol: TCP
-        - containerPort: 8081
-          name: grpc
-          protocol: TCP
-        - containerPort: 8080
-          name: rest
-          protocol: TCP
-        - containerPort: 6060
-          name: pprof
-          protocol: TCP
-        resources: {}
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /etc/server/
-          name: gateway-config
+        - name: vald-gateway
+          image: "vdaas/vald-gateway:nightly"
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /liveness
+              port: liveness
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 2
+          readinessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /readiness
+              port: readiness
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 2
+          ports:
+            - name: liveness
+              protocol: TCP
+              containerPort: 3000
+            - name: readiness
+              protocol: TCP
+              containerPort: 3001
+            - name: grpc
+              protocol: TCP
+              containerPort: 8081
+            - name: pprof
+              protocol: TCP
+              containerPort: 6060
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 700Mi
+            requests:
+              cpu: 100m
+              memory: 50Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          env:
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - name: vald-gateway-config
+              mountPath: /etc/server/
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
       volumes:
-      - configMap:
-          defaultMode: 420
-          name: gateway-config
-        name: gateway-config
+        - name: vald-gateway-config
+          configMap:
+            defaultMode: 420
+            name: vald-gateway-config
 status:

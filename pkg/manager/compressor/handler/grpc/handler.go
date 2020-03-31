@@ -19,10 +19,14 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/vdaas/vald/apis/grpc/manager/compressor"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/pkg/manager/compressor/service"
 )
 
@@ -31,12 +35,6 @@ type Server compressor.BackupServer
 type server struct {
 	backup     service.Backup
 	compressor service.Compressor
-}
-
-type errDetail struct {
-	method string
-	uuid   string
-	uuids  []string
 }
 
 func New(opts ...Option) Server {
@@ -49,16 +47,29 @@ func New(opts ...Option) Server {
 }
 
 func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_MetaVector, err error) {
-	r, err := s.backup.GetObject(ctx, req.GetUuid())
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.GetVector")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	uuid := req.GetUuid()
+	r, err := s.backup.GetObject(ctx, uuid)
 	if err != nil {
-		detail := errDetail{method: "GetVector", uuid: req.Uuid}
-		return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
+		log.Errorf("[GetVector]\tunknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
+		return nil, status.WrapWithNotFound(fmt.Sprintf("GetVector API uuid %s's object not found", uuid), err, info.Get())
 	}
 
 	vector, err := s.compressor.Decompress(ctx, r.GetVector())
 	if err != nil {
-		detail := errDetail{method: "GetVector", uuid: req.Uuid}
-		return nil, status.WrapWithInternal("Internal error occurred", &detail, err)
+		log.Errorf("[GetVector]\tunknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, status.WrapWithInternal(fmt.Sprintf("GetVector API uuid %s's object failed to decompress %#v", uuid, r), err, info.Get())
 	}
 
 	return &payload.Backup_MetaVector{
@@ -70,10 +81,20 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 }
 
 func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Request) (res *payload.Info_IPs, err error) {
-	r, err := s.backup.GetLocation(ctx, req.GetUuid())
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.Locations")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	uuid := req.GetUuid()
+	r, err := s.backup.GetLocation(ctx, uuid)
 	if err != nil {
-		detail := errDetail{method: "Locations", uuid: req.Uuid}
-		return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
+		log.Errorf("[Locations]\tunknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
+		return nil, status.WrapWithNotFound(fmt.Sprintf("Locations API uuid %s's location not found", uuid), err, info.Get())
 	}
 
 	return &payload.Info_IPs{
@@ -82,41 +103,65 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 }
 
 func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) (res *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.Register")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	uuid := meta.GetUuid()
 	vector, err := s.compressor.Compress(ctx, meta.GetVector())
 	if err != nil {
-		detail := errDetail{method: "Register", uuid: meta.Uuid}
-		return nil, status.WrapWithInternal("Internal error occurred", &detail, err)
+		log.Errorf("[Register]\tcompress returns unknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s's could not compress", uuid), err, info.Get())
 	}
 
-	err = s.backup.Register(ctx, &payload.Backup_Compressed_MetaVector{
+	mvec := &payload.Backup_Compressed_MetaVector{
 		Uuid:   meta.GetUuid(),
 		Meta:   meta.GetMeta(),
 		Vector: vector,
 		Ips:    meta.GetIps(),
-	})
+	}
+
+	err = s.backup.Register(ctx, mvec)
 	if err != nil {
-		detail := errDetail{method: "Register", uuid: meta.Uuid}
-		return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
+		log.Errorf("[Register]\tbackup returns unknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s's could not register %#v", uuid, mvec), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
 }
 
 func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) (res *payload.Empty, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.RegisterMulti")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	mvs := metas.GetVectors()
-	vectors := make([][]float64, 0, len(mvs))
+	vectors := make([][]float32, 0, len(mvs))
 	for _, mv := range mvs {
 		vectors = append(vectors, mv.GetVector())
 	}
 
 	compressedVecs, err := s.compressor.MultiCompress(ctx, vectors)
 	if err != nil {
+		log.Errorf("[RegisterMulti]\tinternal error\t%+v", err)
 		uuids := make([]string, 0, len(mvs))
 		for _, mv := range mvs {
 			uuids = append(uuids, mv.GetUuid())
 		}
-		detail := errDetail{method: "RegisterMulti", uuids: uuids}
-		return nil, status.WrapWithInternal("Internal error occurred", &detail, err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, status.WrapWithInternal(fmt.Sprintf("RegisterMulti API uuids %#v's could not compress", uuids), err, info.Get())
 	}
 
 	compressedMVs := make([]*payload.Backup_Compressed_MetaVector, 0, len(mvs))
@@ -133,52 +178,96 @@ func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVe
 		Vectors: compressedMVs,
 	})
 	if err != nil {
+		log.Errorf("[RegisterMulti]\tunknown error\t%+v", err)
 		uuids := make([]string, 0, len(mvs))
 		for _, mv := range mvs {
 			uuids = append(uuids, mv.GetUuid())
 		}
-		detail := errDetail{method: "RegisterMulti", uuids: uuids}
-		return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, status.WrapWithInternal(fmt.Sprintf("RegisterMulti API uuids %#v's could not register %#v", uuids, compressedMVs), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
 }
 
 func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request) (res *payload.Empty, err error) {
-	err = s.backup.Remove(ctx, req.GetUuid())
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.Remove")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	uuid := req.GetUuid()
+	err = s.backup.Remove(ctx, uuid)
 	if err != nil {
-		detail := errDetail{method: "Remove", uuid: req.GetUuid()}
-		return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
+		log.Errorf("[Remove]\tunknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API uuid %s could not remove", uuid), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
 }
 
 func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_RequestMulti) (res *payload.Empty, err error) {
-	err = s.backup.RemoveMultiple(ctx, req.GetUuid()...)
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.RemoveMulti")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	uuids := req.GetUuids()
+	err = s.backup.RemoveMultiple(ctx, uuids...)
 	if err != nil {
-		detail := errDetail{method: "RemoveMulti", uuids: req.GetUuid()}
-		return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
+		log.Errorf("[RemoveMulti]\tunknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API uuids %#v could not remove", uuids), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
 }
 
 func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Register_Request) (res *payload.Empty, err error) {
-	err = s.backup.RegisterIPs(ctx, req.GetUuid(), req.GetIps())
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.RegisterIPs")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	uuid := req.GetUuid()
+	ips := req.GetIps()
+	err = s.backup.RegisterIPs(ctx, uuid, ips)
 	if err != nil {
-		detail := errDetail{method: "RegisterIPs", uuid: req.GetUuid()}
-		return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
+		log.Errorf("[RegisterIPs]\tunknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, status.WrapWithInternal(fmt.Sprintf("RegisterIPs API uuid %s ips %#v could not register", uuid, ips), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
 }
 
 func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Request) (res *payload.Empty, err error) {
-	err = s.backup.RemoveIPs(ctx, req.GetIps())
+	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.RemoveIPs")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	ips := req.GetIps()
+	err = s.backup.RemoveIPs(ctx, ips)
 	if err != nil {
-		detail := errDetail{method: "RemoveIPs"}
-		return nil, status.WrapWithUnknown("Unknown error occurred", &detail, err)
+		log.Errorf("[RemoveIPs]\tunknown error\t%+v", err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, status.WrapWithInternal(fmt.Sprintf("RemoveIPs API ips %#v could not remove", ips), err, info.Get())
 	}
 
 	return new(payload.Empty), nil

@@ -19,7 +19,6 @@ package grpc
 
 import (
 	"context"
-	"runtime"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -43,18 +42,33 @@ type Client interface {
 	Connect(ctx context.Context, addr string, dopts ...DialOption) error
 	Disconnect(addr string) error
 	Range(ctx context.Context,
-		f func(addr string,
+		f func(ctx context.Context,
+			addr string,
 			conn *ClientConn,
 			copts ...CallOption) error) error
 	RangeConcurrent(ctx context.Context,
 		concurrency int,
-		f func(addr string,
+		f func(ctx context.Context,
+			addr string,
 			conn *ClientConn,
 			copts ...CallOption) error) error
-	Do(ctx context.Context,
-		addr string, f func(conn *ClientConn,
+	OrderedRange(ctx context.Context,
+		order []string,
+		f func(ctx context.Context,
+			addr string,
+			conn *ClientConn,
+			copts ...CallOption) error) error
+	OrderedRangeConcurrent(ctx context.Context,
+		order []string,
+		concurrency int,
+		f func(ctx context.Context,
+			addr string,
+			conn *ClientConn,
+			copts ...CallOption) error) error
+	Do(ctx context.Context, addr string,
+		f func(ctx context.Context,
+			conn *ClientConn,
 			copts ...CallOption) (interface{}, error)) (interface{}, error)
-	GetAddrs() ([]string, []string)
 	GetDialOption() []DialOption
 	GetCallOption() []CallOption
 	Close() error
@@ -62,8 +76,9 @@ type Client interface {
 
 type gRPCClient struct {
 	addrs       []string
+	poolSize    uint64
 	clientCount uint64
-	conns       gRPCConns
+	conns       grpcConns
 	hcDur       time.Duration
 	dopts       []DialOption
 	copts       []CallOption
@@ -113,21 +128,23 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 				return ctx.Err()
 			case <-tick.C:
 				reconnList := make([]string, 0, int(atomic.LoadUint64(&g.clientCount)))
-				g.conns.Range(func(addr string, conn *ClientConn) bool {
-					if len(addr) != 0 && !g.isHealthy(conn) {
+				g.conns.Range(func(addr string, pool *ClientConnPool) bool {
+					if len(addr) != 0 && !pool.IsHealthy() {
+						err = g.Disconnect(addr)
+						if err != nil {
+							log.Error(err)
+						}
 						reconnList = append(reconnList, addr)
 					}
 					return true
 				})
-
 				for _, addr := range reconnList {
 					if g.bo != nil {
 						_, err = g.bo.Do(ctx, func() (interface{}, error) {
-							_, err := g.reconnect(ctx, addr, nil)
-							return nil, err
+							return nil, g.Connect(ctx, addr, g.dopts...)
 						})
 					} else {
-						_, err = g.reconnect(ctx, addr, nil)
+						err = g.Connect(ctx, addr, g.dopts...)
 					}
 					if err != nil {
 						log.Error(err)
@@ -141,15 +158,8 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 }
 
 func (g *gRPCClient) Range(ctx context.Context,
-	f func(addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
-	g.conns.Range(func(addr string, conn *ClientConn) bool {
-		wrapf := func(addr string, conn *ClientConn, copts ...CallOption) (err error) {
-			conn, err = g.reconnect(ctx, addr, conn)
-			if err != nil {
-				return errors.Wrap(err, errors.ErrGRPCClientConnNotFound(addr).Error())
-			}
-			return f(addr, conn, copts...)
-		}
+	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
+	g.conns.Range(func(addr string, pool *ClientConnPool) bool {
 		select {
 		case <-ctx.Done():
 			return false
@@ -157,13 +167,21 @@ func (g *gRPCClient) Range(ctx context.Context,
 			var err error
 			if g.bo != nil {
 				_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-					err = wrapf(addr, conn, g.copts...)
-					return
+					return nil, pool.Do(func(conn *ClientConn) (err error) {
+						if conn == nil {
+							return errors.ErrGRPCClientConnNotFound(addr)
+						}
+						return f(ctx, addr, conn, g.copts...)
+					})
 				})
 			} else {
-				err = wrapf(addr, conn, g.copts...)
+				err = pool.Do(func(conn *ClientConn) (err error) {
+					if conn == nil {
+						return errors.ErrGRPCClientConnNotFound(addr)
+					}
+					return f(ctx, addr, conn, g.copts...)
+				})
 			}
-
 			if err != nil {
 				rerr = errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
 			}
@@ -175,63 +193,164 @@ func (g *gRPCClient) Range(ctx context.Context,
 
 func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	concurrency int,
-	f func(addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
-	wrapf := func(addr string, conn *ClientConn, copts ...CallOption) (err error) {
-		conn, err = g.reconnect(ctx, addr, conn)
-		if err != nil {
-			return errors.Wrap(err, errors.ErrGRPCClientConnNotFound(addr).Error())
-		}
-		return f(addr, conn, copts...)
-	}
-	eg, ctx := errgroup.New(ctx)
+	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) error {
+	eg, egctx := errgroup.New(ctx)
 	eg.Limitation(concurrency)
-	g.conns.Range(func(addr string, conn *ClientConn) bool {
+	g.conns.Range(func(addr string, pool *ClientConnPool) bool {
 		eg.Go(safety.RecoverFunc(func() (err error) {
 			select {
-			case <-ctx.Done():
-				return ctx.Err()
+			case <-egctx.Done():
+				return nil
 			default:
-				var err error
 				if g.bo != nil {
-					_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-						err = wrapf(addr, conn, g.copts...)
-						return
+					_, err = g.bo.Do(egctx, func() (r interface{}, err error) {
+						return nil, pool.Do(func(conn *ClientConn) (err error) {
+							if conn == nil {
+								return errors.ErrGRPCClientConnNotFound(addr)
+							}
+							return f(egctx, addr, conn, g.copts...)
+						})
 					})
 				} else {
-					err = wrapf(addr, conn, g.copts...)
+					err = pool.Do(func(conn *ClientConn) (err error) {
+						if conn == nil {
+							return errors.ErrGRPCClientConnNotFound(addr)
+						}
+						return f(egctx, addr, conn, g.copts...)
+					})
 				}
 				if err != nil {
-					return errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
+					return errors.ErrRPCCallFailed(addr, err)
 				}
+				return nil
 			}
-			return nil
 		}))
 		return true
 	})
 	return eg.Wait()
 }
 
-func (g *gRPCClient) Do(ctx context.Context, addr string,
-	f func(conn *ClientConn,
-		copts ...CallOption) (interface{}, error)) (data interface{}, err error) {
-	var conn *ClientConn
-	wrapf := func(_ *ClientConn, copts ...CallOption) (ret interface{}, err error) {
-		conn, err = g.reconnect(ctx, addr, conn)
-		if err != nil {
-			return nil, errors.Wrap(err, errors.ErrGRPCClientConnNotFound(addr).Error())
+func (g *gRPCClient) OrderedRange(ctx context.Context,
+	orders []string,
+	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
+	if orders == nil {
+		log.Warn("no order found for OrderedRange")
+		return g.Range(ctx, f)
+	}
+	var err error
+	for _, addr := range orders {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			pool, ok := g.conns.Load(addr)
+			if ok {
+				if g.bo != nil {
+					_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
+						return nil, pool.Do(func(conn *ClientConn) (err error) {
+							if conn == nil {
+								return errors.ErrGRPCClientConnNotFound(addr)
+							}
+							return f(ctx, addr, conn, g.copts...)
+						})
+					})
+				} else {
+					err = pool.Do(func(conn *ClientConn) (err error) {
+						if conn == nil {
+							return errors.ErrGRPCClientConnNotFound(addr)
+						}
+						return f(ctx, addr, conn, g.copts...)
+					})
+				}
+				if err != nil {
+					rerr = errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
+				}
+			} else {
+				log.Warnf("connection %s not found for OrderedRange", addr)
+			}
 		}
-		return f(conn, copts...)
+	}
+	return rerr
+}
+
+func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
+	orders []string,
+	concurrency int,
+	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (err error) {
+	if orders == nil {
+		log.Warn("no order found for OrderedRangeConcurrent")
+		return g.RangeConcurrent(ctx, concurrency, f)
+	}
+	eg, egctx := errgroup.New(ctx)
+	eg.Limitation(concurrency)
+	for _, order := range orders {
+		addr := order
+		pool, ok := g.conns.Load(addr)
+		if ok {
+			eg.Go(safety.RecoverFunc(func() (err error) {
+				select {
+				case <-egctx.Done():
+					return nil
+				default:
+					if g.bo != nil {
+						_, err = g.bo.Do(egctx, func() (r interface{}, err error) {
+							return nil, pool.Do(func(conn *ClientConn) (err error) {
+								if conn == nil {
+									return errors.ErrGRPCClientConnNotFound(addr)
+								}
+								return f(egctx, addr, conn, g.copts...)
+							})
+						})
+					} else {
+						err = pool.Do(func(conn *ClientConn) (err error) {
+							if conn == nil {
+								return errors.ErrGRPCClientConnNotFound(addr)
+							}
+							return f(egctx, addr, conn, g.copts...)
+						})
+					}
+					if err != nil {
+						return errors.ErrRPCCallFailed(addr, err)
+					}
+					return nil
+				}
+			}))
+		} else {
+			log.Warnf("connection %s not found for OrderedRangeConcurrent", addr)
+		}
+	}
+	return eg.Wait()
+}
+
+func (g *gRPCClient) Do(ctx context.Context, addr string,
+	f func(ctx context.Context,
+		conn *ClientConn, copts ...CallOption) (interface{}, error)) (data interface{}, err error) {
+	pool, ok := g.conns.Load(addr)
+	if !ok {
+		return nil, errors.ErrGRPCClientConnNotFound(addr)
 	}
 	if g.bo != nil {
 		data, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-			r, err = wrapf(conn, g.copts...)
+			err = pool.Do(func(conn *ClientConn) (err error) {
+				if conn == nil {
+					return errors.ErrGRPCClientConnNotFound(addr)
+				}
+				r, err = f(ctx, conn, g.copts...)
+				return err
+			})
 			if err != nil {
 				return nil, err
 			}
-			return r, nil
+			return r, err
 		})
 	} else {
-		data, err = wrapf(conn, g.copts...)
+		err = pool.Do(func(conn *ClientConn) (err error) {
+			if conn == nil {
+				return errors.ErrGRPCClientConnNotFound(addr)
+			}
+			data, err = f(ctx, conn, g.copts...)
+			return err
+		})
 	}
 	if err != nil {
 		return nil, errors.ErrRPCCallFailed(addr, err)
@@ -248,41 +367,46 @@ func (g *gRPCClient) GetCallOption() []CallOption {
 }
 
 func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOption) (err error) {
-	conn, ok := g.conns.Load(addr)
+	pool, ok := g.conns.Load(addr)
 	if ok {
-		if g.isHealthy(conn) {
+		if pool.IsHealthy() {
 			return nil
 		}
-		_, err = g.reconnect(ctx, addr, conn)
-		return err
+		pool, err = pool.Connect(ctx)
+		if err != nil {
+			log.Warn(err)
+			return err
+		}
+		g.conns.Store(addr, pool)
+		return nil
 	}
-	conn, err = grpc.DialContext(ctx, addr, append(g.dopts, dopts...)...)
+	log.Warn("creating new pool for", addr)
+	pool, err = NewPool(ctx, addr, g.poolSize, append(g.dopts, dopts...)...)
 	if err != nil {
-		runtime.Gosched()
 		return err
 	}
 	atomic.AddUint64(&g.clientCount, 1)
-	g.conns.Store(addr, conn)
+	g.conns.Store(addr, pool)
 	return nil
 }
 
 func (g *gRPCClient) Disconnect(addr string) error {
-	conn, ok := g.conns.Load(addr)
+	pool, ok := g.conns.Load(addr)
 	if !ok {
 		return errors.ErrGRPCClientConnNotFound(addr)
 	}
 	g.conns.Delete(addr)
 	atomic.AddUint64(&g.clientCount, ^uint64(0))
-	if conn != nil {
-		return conn.Close()
+	if pool != nil {
+		return pool.Disconnect()
 	}
 	return nil
 }
 
 func (g *gRPCClient) Close() error {
 	closeList := make([]string, 0, int(atomic.LoadUint64(&g.clientCount)))
-	g.conns.Range(func(addr string, conn *ClientConn) bool {
-		if conn != nil {
+	g.conns.Range(func(addr string, pool *ClientConnPool) bool {
+		if pool != nil {
 			closeList = append(closeList, addr)
 		}
 		return true
@@ -293,55 +417,8 @@ func (g *gRPCClient) Close() error {
 	return nil
 }
 
-func (g *gRPCClient) GetAddrs() (connected []string, disconnected []string) {
-	g.conns.Range(func(addr string, conn *ClientConn) bool {
-		if g.isHealthy(conn) {
-			connected = append(connected, addr)
-		} else {
-			disconnected = append(disconnected, addr)
-		}
-		return true
-	})
-	return
-}
-
-func (g *gRPCClient) isHealthy(conn *ClientConn) bool {
+func isHealthy(conn *ClientConn) bool {
 	return conn != nil &&
 		conn.GetState() != connectivity.Shutdown &&
 		conn.GetState() != connectivity.TransientFailure
-}
-
-func (g *gRPCClient) reconnect(ctx context.Context, addr string, conn *ClientConn) (rconn *ClientConn, err error) {
-	defer func() {
-		if err != nil {
-			g.conns.Delete(addr)
-		}
-	}()
-	if conn == nil {
-		var ok bool
-		conn, ok = g.conns.Load(addr)
-		if !ok {
-			return nil, errors.ErrGRPCClientConnNotFound(addr)
-		}
-	}
-	if g.isHealthy(conn) {
-		return conn, nil
-	}
-	if len(addr) != 0 {
-		g.conns.Delete(addr)
-	}
-	if conn != nil {
-		err = conn.Close()
-		if err != nil {
-			log.Error(err)
-		}
-		conn = nil
-	}
-	conn, err = grpc.DialContext(ctx, addr, g.dopts...)
-	if err != nil {
-		runtime.Gosched()
-		return nil, err
-	}
-	g.conns.Store(addr, conn)
-	return conn, nil
 }

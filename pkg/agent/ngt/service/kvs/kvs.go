@@ -17,10 +17,12 @@
 package kvs
 
 import (
+	"context"
+	"sync"
 	"sync/atomic"
 	"unsafe"
 
-	"github.com/cespare/xxhash"
+	xxhash "github.com/cespare/xxhash/v2"
 )
 
 type BidiMap interface {
@@ -29,6 +31,7 @@ type BidiMap interface {
 	Set(string, uint32)
 	Delete(string) (uint32, bool)
 	DeleteInverse(uint32) (string, bool)
+	Range(ctx context.Context, f func(string, uint32) bool)
 	Len() uint64
 }
 
@@ -96,6 +99,26 @@ func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
 	b.ou[val&mask].Delete(val)
 	atomic.AddUint64(&b.l, ^uint64(0))
 	return key, true
+}
+
+func (b *bidi) Range(ctx context.Context, f func(string, uint32) bool) {
+	wg := new(sync.WaitGroup)
+	for i := range b.uo {
+		wg.Add(1)
+		go func(c context.Context, idx int) {
+			b.uo[idx].Range(func(uuid string, oid uint32) bool {
+				select {
+				case <-c.Done():
+					return false
+				default:
+					f(uuid, oid)
+					return true
+				}
+			})
+			wg.Done()
+		}(ctx, i)
+	}
+	wg.Wait()
 }
 
 func (b *bidi) Len() uint64 {

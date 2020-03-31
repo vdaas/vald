@@ -21,16 +21,21 @@ import (
 	"github.com/vdaas/vald/internal/config"
 )
 
+type GlobalConfig = config.GlobalConfig
+
 // Config represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
-	config.Default `json:",inline" yaml:",inline"`
+	config.GlobalConfig `json:",inline" yaml:",inline"`
 
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
-	// Gateway represent agent gateway service configuration
-	Gateway *config.Gateway `json:"gateway" yaml:"gateway"`
+	// Observability represent observability configurations
+	Observability *config.Observability `json:"observability" yaml:"observability"`
+
+	// Indexer represent agent auto indexing service configuration
+	Indexer *config.Indexer `json:"indexer" yaml:"indexer"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
@@ -48,10 +53,13 @@ func NewConfig(path string) (cfg *Data, err error) {
 		cfg.Server = cfg.Server.Bind()
 	}
 
-	if cfg.Gateway != nil {
-		cfg.Gateway = cfg.Gateway.Bind()
+	if cfg.Observability != nil {
+		cfg.Observability = cfg.Observability.Bind()
 	}
 
+	if cfg.Indexer != nil {
+		cfg.Indexer = cfg.Indexer.Bind()
+	}
 	return cfg, nil
 }
 

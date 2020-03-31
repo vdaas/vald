@@ -1,0 +1,92 @@
+name: 'Update Helm charts'
+on:
+  push:
+    branches:
+      - master
+    tags:
+       - '*.*.*'
+       - 'v*.*.*'
+       - '*.*.*-*'
+       - 'v*.*.*-*'
+    paths:
+      - 'charts/vald/README.md.gotmpl'
+      - 'charts/vald/Chart.yaml'
+      - 'charts/vald/values.yaml'
+      - 'charts/vald/templates/**'
+      - 'charts/vald-helm-operator/README.md.gotmpl'
+      - 'charts/vald-helm-operator/Chart.yaml'
+      - 'charts/vald-helm-operator/values.yaml'
+      - 'charts/vald-helm-operator/templates/**'
+
+jobs:
+  update-k8s-manifest:
+    name: Update k8s manifest
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 10
+      - name: Helm version
+        run: |
+          helm version
+      - name: Update k8s
+        run: |
+          git checkout master
+          make k8s/manifest/update
+          make k8s/manifest/helm-operator/update
+          make helm/docs/vald
+          make helm/docs/vald-helm-operator
+          make license
+      - name: Push to master
+        continue-on-error: true
+        run: |
+          git config --global user.name "vdaas-ci"
+          git config --global user.email "ci@vdaas.org"
+
+          git add k8s charts/vald/README.md charts/vald-helm-operator/README.md
+          git commit --signoff -m ":robot: Automatically update k8s manifests"
+
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin master
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+  update-helm-chart:
+    name: Update Helm chart
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    if: startsWith( github.ref, 'refs/tags/')
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 10
+      - name: Helm version
+        run: |
+          helm version
+      - name: Packaging
+        run: |
+          make helm/package/vald
+          make helm/package/vald-helm-operator
+      - name: Push to gh-pages
+        continue-on-error: true
+        run: |
+          git checkout gh-pages
+          mv -f vald-*.tgz charts/
+          helm repo index --url https://vald.vdaas.org/charts charts/
+
+          git config --global user.name "vdaas-ci"
+          git config --global user.email "ci@vdaas.org"
+
+          git add charts
+          git commit --signoff -m ":robot: Automatically update Helm charts"
+
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin gh-pages
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}

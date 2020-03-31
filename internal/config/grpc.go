@@ -27,6 +27,7 @@ import (
 type GRPCClient struct {
 	Addrs               []string    `json:"addrs" yaml:"addrs"`
 	HealthCheckDuration string      `json:"health_check_duration" yaml:"health_check_duration"`
+	ConnectionPool      int         `json:"connection_pool" yaml:"connection_pool"`
 	Backoff             *Backoff    `json:"backoff" yaml:"backoff"`
 	CallOption          *CallOption `json:"call_option" yaml:"call_option"`
 	DialOption          *DialOption `json:"dial_option" yaml:"dial_option"`
@@ -50,7 +51,7 @@ type DialOption struct {
 	EnableBackoff               bool                 `json:"enable_backoff" yaml:"enable_backoff"`
 	Insecure                    bool                 `json:"insecure" yaml:"insecure"`
 	Timeout                     string               `json:"timeout" yaml:"timeout"`
-	Dialer                      *TCP                 `json:"dialer" yaml:"dialer"`
+	TCP                         *TCP                 `json:"tcp" yaml:"tcp"`
 	KeepAlive                   *GRPCClientKeepalive `json:"keep_alive" yaml:"keep_alive"`
 }
 
@@ -122,6 +123,7 @@ func (g *GRPCClient) Opts() []grpc.Option {
 	opts := make([]grpc.Option, 0, 18)
 	opts = append(opts,
 		grpc.WithHealthCheckDuration(g.HealthCheckDuration),
+		grpc.WithConnectionPool(g.ConnectionPool),
 	)
 	if g.Addrs != nil && len(g.Addrs) != 0 {
 		opts = append(opts,
@@ -153,18 +155,24 @@ func (g *GRPCClient) Opts() []grpc.Option {
 			grpc.WithInitialWindowSize(g.DialOption.InitialWindowSize),
 			grpc.WithInitialConnectionWindowSize(g.DialOption.InitialWindowSize),
 			grpc.WithMaxMsgSize(g.DialOption.MaxMsgSize),
-			grpc.WithMaxBackoffDelay(g.DialOption.MaxBackoffDelay),
 			grpc.WithInsecure(g.DialOption.Insecure),
+			grpc.WithMaxBackoffDelay(g.DialOption.MaxBackoffDelay),
 			grpc.WithDialTimeout(g.DialOption.Timeout),
 		)
 
-		if g.DialOption.Dialer != nil &&
-			len(g.DialOption.Dialer.Dialer.Timeout) != 0 {
-			opts = append(opts,
-				grpc.WithDialer(
-					tcp.NewDialer(g.DialOption.Dialer.Opts()...),
-				),
-			)
+		if g.DialOption.TCP != nil &&
+			len(g.DialOption.TCP.Dialer.Timeout) != 0 {
+			if g.DialOption.TCP.TLS != nil && g.DialOption.TCP.TLS.Enabled {
+				opts = append(opts,
+					grpc.WithInsecure(false),
+				)
+			}
+			der, err := tcp.NewDialer(g.DialOption.TCP.Opts()...)
+			if err == nil {
+				opts = append(opts,
+					grpc.WithDialer(der),
+				)
+			}
 		}
 
 		if g.DialOption.KeepAlive != nil {

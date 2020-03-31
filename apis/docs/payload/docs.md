@@ -22,16 +22,24 @@
     - [Backup.Remove](#payload.Backup.Remove)
     - [Backup.Remove.Request](#payload.Backup.Remove.Request)
     - [Backup.Remove.RequestMulti](#payload.Backup.Remove.RequestMulti)
-    - [Controll](#payload.Controll)
-    - [Controll.CreateIndexRequest](#payload.Controll.CreateIndexRequest)
+    - [Control](#payload.Control)
+    - [Control.CreateIndexRequest](#payload.Control.CreateIndexRequest)
     - [Discoverer](#payload.Discoverer)
     - [Discoverer.Request](#payload.Discoverer.Request)
     - [Empty](#payload.Empty)
     - [Info](#payload.Info)
+    - [Info.CPU](#payload.Info.CPU)
     - [Info.IPs](#payload.Info.IPs)
     - [Info.Index](#payload.Info.Index)
-    - [Info.Server](#payload.Info.Server)
-    - [Info.Servers](#payload.Info.Servers)
+    - [Info.Index.Count](#payload.Info.Index.Count)
+    - [Info.Index.UUID](#payload.Info.Index.UUID)
+    - [Info.Index.UUID.Committed](#payload.Info.Index.UUID.Committed)
+    - [Info.Index.UUID.Uncommitted](#payload.Info.Index.UUID.Uncommitted)
+    - [Info.Memory](#payload.Info.Memory)
+    - [Info.Node](#payload.Info.Node)
+    - [Info.Nodes](#payload.Info.Nodes)
+    - [Info.Pod](#payload.Info.Pod)
+    - [Info.Pods](#payload.Info.Pods)
     - [Meta](#payload.Meta)
     - [Meta.Key](#payload.Meta.Key)
     - [Meta.KeyVal](#payload.Meta.KeyVal)
@@ -51,10 +59,6 @@
     - [Search.Request](#payload.Search.Request)
     - [Search.Response](#payload.Search.Response)
   
-  
-  
-  
-
 - [Scalar Value Types](#scalar-value-types)
 
 
@@ -240,7 +244,7 @@
 | ----- | ---- | ----- | ----------- |
 | uuid | [string](#string) |  |  |
 | meta | [string](#string) |  |  |
-| vector | [double](#double) | repeated |  |
+| vector | [float](#float) | repeated |  |
 | ips | [string](#string) | repeated |  |
 
 
@@ -296,26 +300,26 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| uuid | [string](#string) | repeated |  |
+| uuids | [string](#string) | repeated |  |
 
 
 
 
 
 
-<a name="payload.Controll"></a>
+<a name="payload.Control"></a>
 
-### Controll
-
-
+### Control
 
 
 
 
 
-<a name="payload.Controll.CreateIndexRequest"></a>
 
-### Controll.CreateIndexRequest
+
+<a name="payload.Control.CreateIndexRequest"></a>
+
+### Control.CreateIndexRequest
 
 
 
@@ -347,6 +351,7 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | [string](#string) |  |  |
+| namespace | [string](#string) |  |  |
 | node | [string](#string) |  |  |
 
 
@@ -374,6 +379,23 @@
 
 
 
+<a name="payload.Info.CPU"></a>
+
+### Info.CPU
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| limit | [double](#double) |  |  |
+| request | [double](#double) |  |  |
+| usage | [double](#double) |  |  |
+
+
+
+
+
+
 <a name="payload.Info.IPs"></a>
 
 ### Info.IPs
@@ -395,46 +417,149 @@
 
 
 
+
+
+
+
+<a name="payload.Info.Index.Count"></a>
+
+### Info.Index.Count
+
+
+
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| count | [uint32](#uint32) |  |  |
-| uncommitted_index | [uint32](#uint32) |  |  |
-| uuids | [string](#string) | repeated |  |
-| uncommitted_uuid | [string](#string) | repeated |  |
+| stored | [uint32](#uint32) |  |  |
+| uncommitted | [uint32](#uint32) |  |  |
+| indexing | [bool](#bool) |  |  |
 
 
 
 
 
 
-<a name="payload.Info.Server"></a>
+<a name="payload.Info.Index.UUID"></a>
 
-### Info.Server
+### Info.Index.UUID
+
+
+
+
+
+
+
+<a name="payload.Info.Index.UUID.Committed"></a>
+
+### Info.Index.UUID.Committed
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="payload.Info.Index.UUID.Uncommitted"></a>
+
+### Info.Index.UUID.Uncommitted
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="payload.Info.Memory"></a>
+
+### Info.Memory
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| limit | [double](#double) |  |  |
+| request | [double](#double) |  |  |
+| usage | [double](#double) |  |  |
+
+
+
+
+
+
+<a name="payload.Info.Node"></a>
+
+### Info.Node
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | [string](#string) |  |  |
-| ip | [string](#string) |  |  |
-| server | [Info.Server](#payload.Info.Server) |  |  |
-| cpu | [double](#double) |  |  |
-| mem | [double](#double) |  |  |
+| internal_addr | [string](#string) |  |  |
+| external_addr | [string](#string) |  |  |
+| cpu | [Info.CPU](#payload.Info.CPU) |  |  |
+| memory | [Info.Memory](#payload.Info.Memory) |  |  |
+| Pods | [Info.Pods](#payload.Info.Pods) |  |  |
 
 
 
 
 
 
-<a name="payload.Info.Servers"></a>
+<a name="payload.Info.Nodes"></a>
 
-### Info.Servers
+### Info.Nodes
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| Servers | [Info.Server](#payload.Info.Server) | repeated |  |
+| nodes | [Info.Node](#payload.Info.Node) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Info.Pod"></a>
+
+### Info.Pod
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| app_name | [string](#string) |  |  |
+| name | [string](#string) |  |  |
+| namespace | [string](#string) |  |  |
+| ip | [string](#string) |  |  |
+| cpu | [Info.CPU](#payload.Info.CPU) |  |  |
+| memory | [Info.Memory](#payload.Info.Memory) |  |  |
+| node | [Info.Node](#payload.Info.Node) |  |  |
+
+
+
+
+
+
+<a name="payload.Info.Pods"></a>
+
+### Info.Pods
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| pods | [Info.Pod](#payload.Info.Pod) | repeated |  |
 
 
 
@@ -607,7 +732,7 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | id | [string](#string) |  |  |
-| vector | [double](#double) | repeated |  |
+| vector | [float](#float) | repeated |  |
 
 
 
@@ -681,7 +806,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| vector | [double](#double) | repeated |  |
+| vector | [float](#float) | repeated |  |
 | config | [Search.Config](#payload.Search.Config) |  |  |
 
 
@@ -715,21 +840,21 @@
 
 ## Scalar Value Types
 
-| .proto Type | Notes | C++ Type | Java Type | Python Type |
-| ----------- | ----- | -------- | --------- | ----------- |
-| <a name="double" /> double |  | double | double | float |
-| <a name="float" /> float |  | float | float | float |
-| <a name="int32" /> int32 | Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint32 instead. | int32 | int | int |
-| <a name="int64" /> int64 | Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint64 instead. | int64 | long | int/long |
-| <a name="uint32" /> uint32 | Uses variable-length encoding. | uint32 | int | int/long |
-| <a name="uint64" /> uint64 | Uses variable-length encoding. | uint64 | long | int/long |
-| <a name="sint32" /> sint32 | Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int32s. | int32 | int | int |
-| <a name="sint64" /> sint64 | Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int64s. | int64 | long | int/long |
-| <a name="fixed32" /> fixed32 | Always four bytes. More efficient than uint32 if values are often greater than 2^28. | uint32 | int | int |
-| <a name="fixed64" /> fixed64 | Always eight bytes. More efficient than uint64 if values are often greater than 2^56. | uint64 | long | int/long |
-| <a name="sfixed32" /> sfixed32 | Always four bytes. | int32 | int | int |
-| <a name="sfixed64" /> sfixed64 | Always eight bytes. | int64 | long | int/long |
-| <a name="bool" /> bool |  | bool | boolean | boolean |
-| <a name="string" /> string | A string must always contain UTF-8 encoded or 7-bit ASCII text. | string | String | str/unicode |
-| <a name="bytes" /> bytes | May contain any arbitrary sequence of bytes. | string | ByteString | str |
+| .proto Type | Notes | C++ | Java | Python | Go | C# | PHP | Ruby |
+| ----------- | ----- | --- | ---- | ------ | -- | -- | --- | ---- |
+| <a name="double" /> double |  | double | double | float | float64 | double | float | Float |
+| <a name="float" /> float |  | float | float | float | float32 | float | float | Float |
+| <a name="int32" /> int32 | Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint32 instead. | int32 | int | int | int32 | int | integer | Bignum or Fixnum (as required) |
+| <a name="int64" /> int64 | Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint64 instead. | int64 | long | int/long | int64 | long | integer/string | Bignum |
+| <a name="uint32" /> uint32 | Uses variable-length encoding. | uint32 | int | int/long | uint32 | uint | integer | Bignum or Fixnum (as required) |
+| <a name="uint64" /> uint64 | Uses variable-length encoding. | uint64 | long | int/long | uint64 | ulong | integer/string | Bignum or Fixnum (as required) |
+| <a name="sint32" /> sint32 | Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int32s. | int32 | int | int | int32 | int | integer | Bignum or Fixnum (as required) |
+| <a name="sint64" /> sint64 | Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int64s. | int64 | long | int/long | int64 | long | integer/string | Bignum |
+| <a name="fixed32" /> fixed32 | Always four bytes. More efficient than uint32 if values are often greater than 2^28. | uint32 | int | int | uint32 | uint | integer | Bignum or Fixnum (as required) |
+| <a name="fixed64" /> fixed64 | Always eight bytes. More efficient than uint64 if values are often greater than 2^56. | uint64 | long | int/long | uint64 | ulong | integer/string | Bignum |
+| <a name="sfixed32" /> sfixed32 | Always four bytes. | int32 | int | int | int32 | int | integer | Bignum or Fixnum (as required) |
+| <a name="sfixed64" /> sfixed64 | Always eight bytes. | int64 | long | int/long | int64 | long | integer/string | Bignum |
+| <a name="bool" /> bool |  | bool | boolean | boolean | bool | bool | boolean | TrueClass/FalseClass |
+| <a name="string" /> string | A string must always contain UTF-8 encoded or 7-bit ASCII text. | string | String | str/unicode | string | string | string | String (UTF-8) |
+| <a name="bytes" /> bytes | May contain any arbitrary sequence of bytes. | string | ByteString | str | []byte | ByteString | string | String (ASCII-8BIT) |
 

@@ -20,7 +20,6 @@ package service
 import (
 	"context"
 
-	"github.com/kpango/gache"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/kvs/redis"
 	"github.com/vdaas/vald/internal/errors"
@@ -76,7 +75,6 @@ func New(cfg *config.Redis) (Redis, error) {
 	if cfg.TCP != nil {
 		if cfg.TCP.DNS != nil && cfg.TCP.DNS.CacheEnabled {
 			c.topts = append(c.topts,
-				tcp.WithCache(gache.New()),
 				tcp.WithEnableDNSCache(),
 				tcp.WithDNSCacheExpiration(cfg.TCP.DNS.CacheExpiration),
 				tcp.WithDNSRefreshDuration(cfg.TCP.DNS.RefreshDuration),
@@ -162,7 +160,10 @@ func (c *client) Disconnect() error {
 }
 
 func (c *client) Connect(ctx context.Context) error {
-	der := tcp.NewDialer(c.topts...)
+	der, err := tcp.NewDialer(c.topts...)
+	if err != nil {
+		return err
+	}
 	der.StartDialerCache(ctx)
 	r, err := redis.New(ctx, append(c.opts,
 		redis.WithDialer(der.GetDialer()),
