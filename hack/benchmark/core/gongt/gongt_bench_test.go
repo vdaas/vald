@@ -30,23 +30,24 @@ func init() {
 	targets = strings.Split(strings.TrimSpace(dataset), ",")
 }
 
+func initCore(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core64, core.Closer, error) {
+	ngt, err := gongt.New(
+		gongt.WithDimension(dataset.Dimension()),
+		gongt.WithObjectType(dataset.ObjectType()),
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+	return ngt, ngt, nil
+}
+
 func BenchmarkGONGT_Insert(b *testing.B) {
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
 			benchmark.WithStrategy(
 				strategy.NewInsert(
-					strategy.WithCore64(
-						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core64, core.Closer, error) {
-							ngt, err := gongt.New(
-								gongt.WithDimension(dataset.Dimension()),
-								gongt.WithObjectType(dataset.ObjectType()),
-							)
-							if err != nil {
-								return nil, nil, err
-							}
-							return ngt, ngt, nil
-						}),
+					strategy.WithCore64(initCore),
 				),
 			),
 		).Run(context.Background(), b)
@@ -59,17 +60,7 @@ func BenchmarkGONGT_BulkInsert(b *testing.B) {
 			benchmark.WithName(target),
 			benchmark.WithStrategy(
 				strategy.NewBulkInsert(
-					strategy.WithCore64(
-						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core64, core.Closer, error) {
-							ngt, err := gongt.New(
-								gongt.WithDimension(dataset.Dimension()),
-								gongt.WithObjectType(dataset.ObjectType()),
-							)
-							if err != nil {
-								return nil, nil, err
-							}
-							return ngt, ngt, nil
-						}),
+					strategy.WithCore64(initCore),
 				),
 			),
 		).Run(context.Background(), b)
@@ -83,17 +74,7 @@ func BenchmarkGONGT_InsertCommit(b *testing.B) {
 			benchmark.WithStrategy(
 				strategy.NewInsertCommit(
 					10,
-					strategy.WithCore64(
-						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core64, core.Closer, error) {
-							ngt, err := gongt.New(
-								gongt.WithDimension(dataset.Dimension()),
-								gongt.WithObjectType(dataset.ObjectType()),
-							)
-							if err != nil {
-								return nil, nil, err
-							}
-							return ngt, ngt, nil
-						}),
+					strategy.WithCore64(initCore),
 				),
 			),
 		).Run(context.Background(), b)
@@ -107,40 +88,20 @@ func BenchmarkGONGT_Search(b *testing.B) {
 			benchmark.WithStrategy(
 				strategy.NewSearch(
 					size, radius, epsilon,
-					strategy.WithCore64(
-						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core64, core.Closer, error) {
-							ngt, err := gongt.New(
-								gongt.WithDimension(dataset.Dimension()),
-								gongt.WithObjectType(dataset.ObjectType()),
-							)
-							if err != nil {
-								return nil, nil, err
-							}
-							return ngt, ngt, nil
-						}),
+					strategy.WithCore64(initCore),
 				),
 			),
 		).Run(context.Background(), b)
 	}
 }
 
-func BenchmarkGONGT_Delete(b *testing.B) {
+func BenchmarkGONGT_Remove(b *testing.B) {
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
 			benchmark.WithStrategy(
-				strategy.NewDelete(
-					strategy.WithCore64(
-						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core64, core.Closer, error) {
-							ngt, err := gongt.New(
-								gongt.WithDimension(dataset.Dimension()),
-								gongt.WithObjectType(dataset.ObjectType()),
-							)
-							if err != nil {
-								return nil, nil, err
-							}
-							return ngt, ngt, nil
-						}),
+				strategy.NewRemove(
+					strategy.WithCore64(initCore),
 				),
 			),
 		).Run(context.Background(), b)

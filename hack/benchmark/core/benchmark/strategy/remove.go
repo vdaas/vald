@@ -10,7 +10,7 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/core"
 )
 
-func NewDelete(opts ...StrategyOption) benchmark.Strategy {
+func NewRemove(opts ...StrategyOption) benchmark.Strategy {
 	return newStrategy(append([]StrategyOption{
 		WithPropName("Delete"),
 		WithPreProp32(
