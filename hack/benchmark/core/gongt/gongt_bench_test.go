@@ -107,3 +107,16 @@ func BenchmarkGONGT_Remove(b *testing.B) {
 		).Run(context.Background(), b)
 	}
 }
+
+func BenchmarkGONGT_GetVector(b *testing.B) {
+	for _, target := range targets {
+		benchmark.New(b,
+			benchmark.WithName(target),
+			benchmark.WithStrategy(
+				strategy.NewGetVector(
+					strategy.WithCore64(initCore),
+				),
+			),
+		).Run(context.Background(), b)
+	}
+}

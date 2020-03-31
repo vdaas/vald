@@ -121,3 +121,16 @@ func BenchmarkNGT_Remove(b *testing.B) {
 		).Run(context.Background(), b)
 	}
 }
+
+func BenchmarkNGT_GetVector(b *testing.B) {
+	for _, target := range targets {
+		benchmark.New(b,
+			benchmark.WithName(target),
+			benchmark.WithStrategy(
+				strategy.NewGetVector(
+					strategy.WithCore32(initCore),
+				),
+			),
+		).Run(context.Background(), b)
+	}
+}

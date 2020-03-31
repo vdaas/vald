@@ -12,7 +12,7 @@ import (
 
 func NewRemove(opts ...StrategyOption) benchmark.Strategy {
 	return newStrategy(append([]StrategyOption{
-		WithPropName("Delete"),
+		WithPropName("Remove"),
 		WithPreProp32(
 			func(ctx context.Context, b *testing.B, c core.Core32, dataset assets.Dataset) (ids []uint, err error) {
 				return insertAndCreateIndex32(ctx, c, dataset)

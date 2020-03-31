@@ -12,7 +12,7 @@ import (
 
 func NewInsertCommit(poolSize uint32, opts ...StrategyOption) benchmark.Strategy {
 	return newStrategy(append([]StrategyOption{
-		WithPropName("BulkInsertCommit"),
+		WithPropName("InsertCommit"),
 		WithPreProp32(func(context.Context, *testing.B, core.Core32, assets.Dataset) ([]uint, error) {
 			return nil, nil
 		}),
