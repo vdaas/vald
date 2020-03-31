@@ -120,7 +120,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			cfg.Compressor.Discoverer.Port,
 		),
 		discoverer.WithDiscoverDuration(cfg.Compressor.Discoverer.Duration),
-		discoverer.WithOptions(cfg.Compressor.Discoverer.Client.Opts()...),
+		discoverer.WithOptions(cfg.Compressor.Discoverer.AgentClient.Opts()...),
 		discoverer.WithNodeName(cfg.Compressor.NodeName),
 		discoverer.WithOnDiscoverFunc(func(ctx context.Context, c discoverer.Client, addrs []string) error {
 			for i, addr := range addrs {
