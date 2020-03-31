@@ -25,7 +25,6 @@ import (
 	gcomp "github.com/vdaas/vald/apis/grpc/manager/compressor"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/backoff"
-	"github.com/vdaas/vald/internal/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -51,7 +50,8 @@ type registerer struct {
 	eg         errgroup.Group
 	backup     Backup
 	compressor Compressor
-	client     discoverer.Client
+	addr       string
+	client     grpc.Client
 	ch         chan *payload.Backup_MetaVector
 	buffer     int
 	running    atomic.Value
@@ -111,7 +111,7 @@ func (r *registerer) Start(ctx context.Context) (<-chan error, error) {
 
 	wech = r.worker.Start(ctx)
 
-	cech, err = r.client.Start(ctx)
+	cech, err = r.client.StartConnectionMonitor(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -142,76 +142,21 @@ func (r *registerer) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (r *registerer) PreStop(ctx context.Context) (errs error) {
+func (r *registerer) PreStop(ctx context.Context) error {
 	log.Info("compressor registerer service prestop processing...")
 
 	r.running.Store(false)
 	r.worker.Pause(ctx)
 
-	var err error
-
-	addrs := r.client.GetAddrs(ctx)
-
-	func() {
-		for {
-			select {
-			case v, ok := <-r.ch:
-				if !ok {
-					return
-				}
-				for i, addr := range addrs {
-					log.Debugf(
-						"compressor registerer backup uuid %s to %s",
-						v.GetUuid(),
-						addr,
-					)
-
-					_, err = r.client.GetClient().Do(
-						ctx,
-						addr,
-						func(
-							ctx context.Context,
-							conn *grpc.ClientConn,
-							copts ...grpc.CallOption,
-						) (interface{}, error) {
-							return gcomp.NewBackupClient(conn).Register(
-								ctx,
-								v,
-								copts...,
-							)
-						},
-					)
-					if err == nil {
-						// re-order addrs
-						addrs = append(append(addrs[:i], addrs[i+1:]...), addrs[i])
-						break
-					}
-
-					log.Debugf(
-						"compressor registerer failed to backup uuid %s to %s: %v",
-						v.GetUuid(),
-						addr,
-						err,
-					)
-				}
-
-				if err != nil {
-					log.Errorf(
-						"compressor registerer failed to backup meta %v, %v",
-						v,
-						err,
-					)
-					errs = errors.Wrap(errs, err.Error())
-				}
-			default:
-				return
-			}
-		}
-	}()
+	err := r.forwardMetas(ctx)
+	if err != nil {
+		log.Errorf("compressor registerer service prestop failed: %v", err)
+		return err
+	}
 
 	log.Info("compressor registerer service prestop completed")
 
-	return err
+	return nil
 }
 
 func (r *registerer) Register(ctx context.Context, meta *payload.Backup_MetaVector) error {
@@ -321,6 +266,47 @@ func (r *registerer) registerJob(meta *payload.Backup_MetaVector) worker.WorkerJ
 
 		return err
 	}
+}
+
+func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
+	var err error
+
+	func() {
+		for {
+			select {
+			case v, ok := <-r.ch:
+				if !ok {
+					return
+				}
+				_, err = r.client.Do(
+					ctx,
+					r.addr,
+					func(
+						ctx context.Context,
+						conn *grpc.ClientConn,
+						copts ...grpc.CallOption,
+					) (interface{}, error) {
+						return gcomp.NewBackupClient(conn).Register(
+							ctx,
+							v,
+							copts...,
+						)
+					},
+				)
+				if err != nil {
+					log.Debugf(
+						"compressor registerer failed to backup uuid %s: %v",
+						v.GetUuid(),
+						err,
+					)
+				}
+			default:
+				return
+			}
+		}
+	}()
+
+	return
 }
 
 func (r *registerer) Len() int {

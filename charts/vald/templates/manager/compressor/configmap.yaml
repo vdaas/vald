@@ -43,21 +43,6 @@ data:
       concurrent_limit: {{ .Values.compressor.compress.concurrent_limit }}
       buffer: {{ .Values.compressor.compress.buffer }}
       pod_ip: {{ .Values.compressor.compress.pod_ip | quote }}
-      compressor_port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.compressor.server_config.servers.grpc.port }}
-      compressor_name: {{ .Values.compressor.name | quote }}
-      compressor_namespace: {{ .Values.compressor.compress.compressor_namespace | quote }}
-      compressor_dns: {{ .Values.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
-      node_name: {{ .Values.compressor.compress.node_name | quote }}
-      discoverer:
-        host: {{ .Values.discoverer.name }}.{{ .Release.Namespace }}.svc.cluster.local
-        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.discoverer.server_config.servers.grpc.port }}
-        duration: {{ .Values.compressor.compress.discoverer.duration }}
-        discover_client:
-          {{- $discoverClient := dict "Values" .Values.compressor.compress.discoverer.discover_client "default" .Values.defaults.grpc.client }}
-          {{- include "vald.grpc.client" $discoverClient | nindent 10 }}
-        agent_client:
-          {{- $agentClient := dict "Values" .Values.compressor.compress.discoverer.agent_client "default" .Values.defaults.grpc.client }}
-          {{- include "vald.grpc.client" $agentClient | nindent 10 }}
       registerer:
         buffer: {{ .Values.compressor.compress.registerer.buffer }}
         backoff:
@@ -71,3 +56,9 @@ data:
         worker:
           concurrent_limit: {{ .Values.compressor.compress.registerer.worker.concurrent_limit }}
           buffer: {{ .Values.compressor.compress.registerer.worker.buffer }}
+        compressor:
+          host: {{ .Values.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
+          port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.compressor.server_config.servers.grpc.port }}
+          client:
+            {{- $compressorClient := dict "Values" .Values.compressor.compress.registerer.compressor.client "default" .Values.defaults.grpc.client }}
+            {{- include "vald.grpc.client" $compressorClient | nindent 12 }}

@@ -72,24 +72,6 @@ type Compressor struct {
 	// PodIP represents pod ip of compressor instance. it is recommended to use status.podIP field of k8s pod
 	PodIP string `json:"pod_ip" yaml:"pod_ip"`
 
-	// CompressorPort represents compressor port number
-	CompressorPort int `json:"compressor_port" yaml:"compressor_port"`
-
-	// CompressorName represents compressors meta_name for service discovery
-	CompressorName string `json:"compressor_name" yaml:"compressor_name"`
-
-	// CompressorNamespace represents compressor namespace location
-	CompressorNamespace string `json:"compressor_namespace" yaml:"compressor_namespace"`
-
-	// CompressorDNS represents compressor dns A record for service discovery
-	CompressorDNS string `json:"compressor_dns" yaml:"compressor_dns"`
-
-	// NodeName represents node name
-	NodeName string `json:"node_name" yaml:"node_name"`
-
-	// Discoverer represents agent discoverer service configuration
-	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
-
 	// Registerer represents registerer options
 	Registerer *CompressorRegisterer `json:"registerer" yaml:"registerer"`
 }
@@ -103,6 +85,9 @@ type CompressorRegisterer struct {
 
 	// Worker represents worker options
 	Worker *Worker `json:"worker" yaml:"worker"`
+
+	// Compressor represents gRPC client config of compressor client (for forwarding use)
+	Compressor *BackupManager `json:"compressor" yaml:"compressor"`
 }
 
 type Worker struct {
@@ -118,16 +103,6 @@ func (c *Compressor) Bind() *Compressor {
 
 	c.PodIP = GetActualValue(c.PodIP)
 
-	c.CompressorName = GetActualValue(c.CompressorName)
-	c.CompressorNamespace = GetActualValue(c.CompressorNamespace)
-	c.CompressorDNS = GetActualValue(c.CompressorDNS)
-
-	if c.Discoverer != nil {
-		c.Discoverer = c.Discoverer.Bind()
-	} else {
-		c.Discoverer = new(DiscovererClient)
-	}
-
 	if c.Registerer == nil {
 		c.Registerer = new(CompressorRegisterer)
 	}
@@ -140,6 +115,12 @@ func (c *Compressor) Bind() *Compressor {
 
 	if c.Registerer.Worker == nil {
 		c.Registerer.Worker = new(Worker)
+	}
+
+	if c.Registerer.Compressor != nil {
+		c.Registerer.Compressor = c.Registerer.Compressor.Bind()
+	} else {
+		c.Registerer.Compressor = new(BackupManager)
 	}
 
 	return c

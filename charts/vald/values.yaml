@@ -855,10 +855,6 @@ compressor:
       sleepDuration: 2
   # compressor.env -- environment variables
   env:
-    - name: MY_POD_NAMESPACE
-      valueFrom:
-        fieldRef:
-          fieldPath: metadata.namespace
     - name: MY_POD_IP
       valueFrom:
         fieldRef:
@@ -909,17 +905,6 @@ compressor:
     buffer: 100
     # compressor.compress.pod_ip -- ip address of the pod
     pod_ip: _MY_POD_IP_
-    # compressor.compress.compressor_namespace -- namespace of compressor
-    compressor_namespace: _MY_POD_NAMESPACE_
-    # compressor.compress.node_name -- node name
-    node_name: ""
-    discoverer:
-      # compressor.compress.discoverer.duration -- discoverer duration
-      duration: 1s
-      # compressor.compress.discoverer.discover_client -- gRPC client for discoverer (overrides defaults.grpc.client)
-      discover_client: {}
-      # compressor.compress.discoverer.agent_client -- gRPC client for compressor (overrides defaults.grpc.client)
-      agent_client: {}
     registerer:
       # compressor.compress.registerer.buffer -- size of registerer buffer
       buffer: 100
@@ -937,6 +922,9 @@ compressor:
         concurrent_limit: 10
         # compressor.compress.registerer.worker.buffer -- size of registerer worker buffer
         buffer: 100
+      compressor:
+        # compressor.compress.registerer.compressor.client -- gRPC client for compressor (overrides defaults.grpc.client)
+        client: {}
 
 backupManager:
   # backupManager.version -- version of backup manager config

@@ -19,9 +19,9 @@ package service
 
 import (
 	"github.com/vdaas/vald/internal/backoff"
-	"github.com/vdaas/vald/internal/client/discoverer"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/worker"
 )
 
@@ -78,7 +78,14 @@ func WithRegistererCompressor(c Compressor) RegistererOption {
 	}
 }
 
-func WithRegistererDiscoverer(c discoverer.Client) RegistererOption {
+func WithRegistererAddr(addr string) RegistererOption {
+	return func(r *registerer) error {
+		r.addr = addr
+		return nil
+	}
+}
+
+func WithRegistererClient(c grpc.Client) RegistererOption {
 	return func(r *registerer) error {
 		if c != nil {
 			r.client = c

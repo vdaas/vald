@@ -18,10 +18,8 @@ package usecase
 
 import (
 	"context"
-	"net"
 
 	"github.com/vdaas/vald/apis/grpc/manager/compressor"
-	"github.com/vdaas/vald/internal/client/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -94,52 +92,18 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	discovererClientOptions := append(
-		cfg.Compressor.Discoverer.Client.Opts(),
+	compressorClientOptions := append(
+		cfg.Compressor.Registerer.Compressor.Client.Opts(),
 		grpc.WithErrGroup(eg),
 	)
 
 	if cfg.Observability.Enabled {
-		discovererClientOptions = append(
-			discovererClientOptions,
+		compressorClientOptions = append(
+			compressorClientOptions,
 			grpc.WithDialOptions(
 				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
 		)
-	}
-
-	client, err := discoverer.New(
-		discoverer.WithAutoConnect(true),
-		discoverer.WithName(cfg.Compressor.CompressorName),
-		discoverer.WithNamespace(cfg.Compressor.CompressorNamespace),
-		discoverer.WithPort(cfg.Compressor.CompressorPort),
-		discoverer.WithServiceDNSARecord(cfg.Compressor.CompressorDNS),
-		discoverer.WithDiscovererClient(grpc.New(discovererClientOptions...)),
-		discoverer.WithDiscovererHostPort(
-			cfg.Compressor.Discoverer.Host,
-			cfg.Compressor.Discoverer.Port,
-		),
-		discoverer.WithDiscoverDuration(cfg.Compressor.Discoverer.Duration),
-		discoverer.WithOptions(cfg.Compressor.Discoverer.AgentClient.Opts()...),
-		discoverer.WithNodeName(cfg.Compressor.NodeName),
-		discoverer.WithOnDiscoverFunc(func(ctx context.Context, c discoverer.Client, addrs []string) error {
-			for i, addr := range addrs {
-				host, _, err := net.SplitHostPort(addr)
-				if err != nil {
-					return err
-				}
-
-				if host == cfg.Compressor.PodIP {
-					addrs = append(addrs[:i], addrs[i+1:]...)
-					addrs[len(addrs)-1] = ""
-					break
-				}
-			}
-			return nil
-		}),
-	)
-	if err != nil {
-		return nil, err
 	}
 
 	rg, err := service.NewRegisterer(
@@ -152,7 +116,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithRegistererBuffer(cfg.Compressor.Registerer.Buffer),
 		service.WithRegistererBackup(b),
 		service.WithRegistererCompressor(c),
-		service.WithRegistererDiscoverer(client),
+		service.WithRegistererAddr(cfg.Compressor.Registerer.Compressor.Client.Addrs[0]),
+		service.WithRegistererClient(grpc.New(compressorClientOptions...)),
 		service.WithRegistererBackoff(cfg.Compressor.Registerer.Backoff),
 	)
 	if err != nil {
