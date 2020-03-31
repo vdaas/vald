@@ -504,7 +504,9 @@ func Test_group_Go(t *testing.T) {
 					g: g,
 				},
 				checkFunc: func() error {
-					g.Wait()
+					if err := g.Wait(); err != nil {
+						return errors.Wrap(err, "failed to wait")
+					}
 
 					if len(g.emap) != 1 {
 						return errors.Errorf("emap count is wrong. want: %d, got: %d", 1, len(g.emap))
