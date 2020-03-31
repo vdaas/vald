@@ -147,46 +147,67 @@ func (r *registerer) PreStop(ctx context.Context) (errs error) {
 
 	r.running.Store(false)
 	r.worker.Pause(ctx)
-	close(r.ch)
 
 	var err error
 
 	addrs := r.client.GetAddrs(ctx)
 
-	for {
-		v, ok := <-r.ch
-		if !ok {
-			break
-		}
-
-		for i, addr := range addrs {
-			_, err = r.client.GetClient().Do(
-				ctx,
-				addr,
-				func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-					log.Debugf("compressor registerer backup uuid %s to %s", v.GetUuid(), addr)
-					return gcomp.NewBackupClient(conn).Register(
-						ctx,
-						v,
-						copts...,
+	func() {
+		for {
+			select {
+			case v, ok := <-r.ch:
+				if !ok {
+					return
+				}
+				for i, addr := range addrs {
+					log.Debugf(
+						"compressor registerer backup uuid %s to %s",
+						v.GetUuid(),
+						addr,
 					)
-				},
-			)
 
-			if err == nil {
-				// re-order addrs
-				addrs = append(append(addrs[:i], addrs[i+1:]...), addrs[i])
-				break
+					_, err = r.client.GetClient().Do(
+						ctx,
+						addr,
+						func(
+							ctx context.Context,
+							conn *grpc.ClientConn,
+							copts ...grpc.CallOption,
+						) (interface{}, error) {
+							return gcomp.NewBackupClient(conn).Register(
+								ctx,
+								v,
+								copts...,
+							)
+						},
+					)
+					if err == nil {
+						// re-order addrs
+						addrs = append(append(addrs[:i], addrs[i+1:]...), addrs[i])
+						break
+					}
+
+					log.Debugf(
+						"compressor registerer failed to backup uuid %s to %s: %v",
+						v.GetUuid(),
+						addr,
+						err,
+					)
+				}
+
+				if err != nil {
+					log.Errorf(
+						"compressor registerer failed to backup meta %v, %v",
+						v,
+						err,
+					)
+					errs = errors.Wrap(errs, err.Error())
+				}
+			default:
+				return
 			}
-
-			log.Debugf("compressor registerer failed to backup uuid %s to %s: %v", v.GetUuid(), addr, err)
 		}
-
-		if err != nil {
-			log.Errorf("compressor registerer failed to backup meta %v, %v", v, err)
-			errs = errors.Wrap(errs, err.Error())
-		}
-	}
+	}()
 
 	log.Info("compressor registerer service prestop completed")
 

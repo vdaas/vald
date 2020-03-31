@@ -34,11 +34,20 @@ type compressorMetrics struct {
 
 func New(c service.Compressor, r service.Registerer) metrics.Metric {
 	return &compressorMetrics{
-		compressor:                  c,
-		registerer:                  r,
-		compressorBufferCount:       *metrics.Int64(metrics.ValdOrg+"/manager/compressor/compressor_buffer_count", "Compressor compressor buffer count", metrics.UnitDimensionless),
-		registererBufferCount:       *metrics.Int64(metrics.ValdOrg+"/manager/compressor/registerer_buffer_count", "Compressor registerer buffer count", metrics.UnitDimensionless),
-		registererWorkerBufferCount: *metrics.Int64(metrics.ValdOrg+"/manager/compressor/registerer_worker_buffer_count", "Compressor registerer worker buffer count", metrics.UnitDimensionless),
+		compressor: c,
+		registerer: r,
+		compressorBufferCount: *metrics.Int64(
+			metrics.ValdOrg+"/manager/compressor/compressor_buffer_count",
+			"Compressor compressor buffer count",
+			metrics.UnitDimensionless),
+		registererBufferCount: *metrics.Int64(
+			metrics.ValdOrg+"/manager/compressor/registerer_buffer_count",
+			"Compressor registerer buffer count",
+			metrics.UnitDimensionless),
+		registererWorkerBufferCount: *metrics.Int64(
+			metrics.ValdOrg+"/manager/compressor/registerer_worker_buffer_count",
+			"Compressor registerer worker buffer count",
+			metrics.UnitDimensionless),
 	}
 }
 
