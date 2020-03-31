@@ -30,23 +30,24 @@ func init() {
 	targets = strings.Split(strings.TrimSpace(dataset), ",")
 }
 
+func initCore(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core32, core.Closer, error) {
+	ngt, err := ngt.New(
+		ngt.WithDimension(dataset.Dimension()),
+		ngt.WithObjectType(dataset.ObjectType()),
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+	return ngt, ngt, nil
+}
+
 func BenchmarkNGT_Insert(b *testing.B) {
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
 			benchmark.WithStrategy(
 				strategy.NewInsert(
-					strategy.WithCore32(
-						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core32, core.Closer, error) {
-							ngt, err := ngt.New(
-								ngt.WithDimension(dataset.Dimension()),
-								ngt.WithObjectType(dataset.ObjectType()),
-							)
-							if err != nil {
-								return nil, nil, err
-							}
-							return ngt, ngt, nil
-						}),
+					strategy.WithCore32(initCore),
 				),
 			),
 		).Run(context.Background(), b)
@@ -59,17 +60,7 @@ func BenchmarkNGT_BulkInsert(b *testing.B) {
 			benchmark.WithName(target),
 			benchmark.WithStrategy(
 				strategy.NewBulkInsert(
-					strategy.WithCore32(
-						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core32, core.Closer, error) {
-							ngt, err := ngt.New(
-								ngt.WithDimension(dataset.Dimension()),
-								ngt.WithObjectType(dataset.ObjectType()),
-							)
-							if err != nil {
-								return nil, nil, err
-							}
-							return ngt, ngt, nil
-						}),
+					strategy.WithCore32(initCore),
 				),
 			),
 		).Run(context.Background(), b)
@@ -83,17 +74,7 @@ func BenchmarkNGT_InsertCommit(b *testing.B) {
 			benchmark.WithStrategy(
 				strategy.NewInsertCommit(
 					10,
-					strategy.WithCore32(
-						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core32, core.Closer, error) {
-							ngt, err := ngt.New(
-								ngt.WithDimension(dataset.Dimension()),
-								ngt.WithObjectType(dataset.ObjectType()),
-							)
-							if err != nil {
-								return nil, nil, err
-							}
-							return ngt, ngt, nil
-						}),
+					strategy.WithCore32(initCore),
 				),
 			),
 		).Run(context.Background(), b)
@@ -107,17 +88,7 @@ func BenchmarkNGT_BulkInsertCommit(b *testing.B) {
 			benchmark.WithStrategy(
 				strategy.NewBulkInsertCommit(
 					10,
-					strategy.WithCore32(
-						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core32, core.Closer, error) {
-							ngt, err := ngt.New(
-								ngt.WithDimension(dataset.Dimension()),
-								ngt.WithObjectType(dataset.ObjectType()),
-							)
-							if err != nil {
-								return nil, nil, err
-							}
-							return ngt, ngt, nil
-						}),
+					strategy.WithCore32(initCore),
 				),
 			),
 		).Run(context.Background(), b)
@@ -131,40 +102,20 @@ func BenchmarkNGT_Search(b *testing.B) {
 			benchmark.WithStrategy(
 				strategy.NewSearch(
 					size, radius, epsilon,
-					strategy.WithCore32(
-						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core32, core.Closer, error) {
-							ngt, err := ngt.New(
-								ngt.WithDimension(dataset.Dimension()),
-								ngt.WithObjectType(dataset.ObjectType()),
-							)
-							if err != nil {
-								return nil, nil, err
-							}
-							return ngt, ngt, nil
-						}),
+					strategy.WithCore32(initCore),
 				),
 			),
 		).Run(context.Background(), b)
 	}
 }
 
-func BenchmarkNGT_Delete(b *testing.B) {
+func BenchmarkNGT_Remove(b *testing.B) {
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
 			benchmark.WithStrategy(
-				strategy.NewDelete(
-					strategy.WithCore32(
-						func(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core32, core.Closer, error) {
-							ngt, err := ngt.New(
-								ngt.WithDimension(dataset.Dimension()),
-								ngt.WithObjectType(dataset.ObjectType()),
-							)
-							if err != nil {
-								return nil, nil, err
-							}
-							return ngt, ngt, nil
-						}),
+				strategy.NewRemove(
+					strategy.WithCore32(initCore),
 				),
 			),
 		).Run(context.Background(), b)
