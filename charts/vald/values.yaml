@@ -848,6 +848,11 @@ compressor:
       target: manager-backup
       image: busybox
       sleepDuration: 2
+    - type: wait-for
+      name: wait-for-discoverer
+      target: discoverer
+      image: busybox
+      sleepDuration: 2
   # compressor.env -- environment variables
   env:
     - name: MY_POD_NAMESPACE

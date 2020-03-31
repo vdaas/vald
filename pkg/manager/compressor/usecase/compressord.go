@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
+	compressormetrics "github.com/vdaas/vald/internal/observability/metrics/manager/compressor"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -180,7 +181,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(cfg.Observability)
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			compressormetrics.New(c, rg),
+		)
 		if err != nil {
 			return nil, err
 		}

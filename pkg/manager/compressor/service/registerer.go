@@ -41,6 +41,8 @@ type Registerer interface {
 	PreStop(ctx context.Context) error
 	Register(ctx context.Context, meta *payload.Backup_MetaVector) error
 	RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) error
+	Len() int
+	WorkerLen() int
 }
 
 type registerer struct {
@@ -141,6 +143,8 @@ func (r *registerer) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (r *registerer) PreStop(ctx context.Context) (errs error) {
+	log.Info("compressor registerer service prestop processing...")
+
 	r.running.Store(false)
 	r.worker.Pause(ctx)
 	close(r.ch)
@@ -160,6 +164,7 @@ func (r *registerer) PreStop(ctx context.Context) (errs error) {
 				ctx,
 				addr,
 				func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+					log.Debugf("compressor registerer backup uuid %s to %s", v.GetUuid(), addr)
 					return gcomp.NewBackupClient(conn).Register(
 						ctx,
 						v,
@@ -174,14 +179,16 @@ func (r *registerer) PreStop(ctx context.Context) (errs error) {
 				break
 			}
 
-			log.Debugf("failed to send register request: %v", err)
+			log.Debugf("compressor registerer failed to backup uuid %s to %s: %v", v.GetUuid(), addr, err)
 		}
 
 		if err != nil {
-			log.Errorf("failed to send register request of meta %v, %v", v, err)
+			log.Errorf("compressor registerer failed to backup meta %v, %v", v, err)
 			errs = errors.Wrap(errs, err.Error())
 		}
 	}
+
+	log.Info("compressor registerer service prestop completed")
 
 	return err
 }
@@ -293,4 +300,12 @@ func (r *registerer) registerJob(meta *payload.Backup_MetaVector) worker.WorkerJ
 
 		return err
 	}
+}
+
+func (r *registerer) Len() int {
+	return len(r.ch)
+}
+
+func (r *registerer) WorkerLen() int {
+	return r.worker.Len()
 }

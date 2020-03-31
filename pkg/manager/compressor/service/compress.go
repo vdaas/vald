@@ -37,6 +37,7 @@ type Compressor interface {
 	Decompress(ctx context.Context, bytes []byte) ([]float32, error)
 	MultiCompress(ctx context.Context, vectors [][]float32) ([][]byte, error)
 	MultiDecompress(ctx context.Context, bytess [][]byte) ([][]float32, error)
+	WorkerLen() int
 }
 
 type compressor struct {
@@ -319,4 +320,8 @@ func (c *compressor) MultiDecompress(ctx context.Context, bytess [][]byte) ([][]
 	}
 
 	return vectors, err
+}
+
+func (c *compressor) WorkerLen() int {
+	return c.worker.Len()
 }
