@@ -306,7 +306,7 @@ func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 		}
 	}()
 
-	return
+	return errs
 }
 
 func (r *registerer) Len() int {
