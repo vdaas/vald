@@ -623,7 +623,8 @@ agent:
       rest: {}
       grpc: {}
     healths:
-      liveness: {}
+      liveness:
+        enabled: false
       readiness: {}
     metrics:
       pprof: {}
@@ -839,7 +840,8 @@ compressor:
       rest: {}
       grpc: {}
     healths:
-      liveness: {}
+      liveness:
+        enabled: false
       readiness: {}
     metrics:
       pprof: {}
