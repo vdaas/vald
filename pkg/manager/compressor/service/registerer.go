@@ -87,48 +87,13 @@ func (r *registerer) PreStart(ctx context.Context) error {
 func (r *registerer) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 3)
 
-	var wech <-chan error
+	var wech, rech, cech <-chan error
 
-	rech := make(chan error, 1)
-	r.eg.Go(safety.RecoverFunc(func() (err error) {
-		defer close(r.ch)
-
-		for {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case meta := <-r.ch:
-				err = r.worker.Dispatch(ctx, r.registerJob(meta))
-				if err != nil {
-					err = errors.Wrap(r.sendToCh(ctx, meta), err.Error())
-					runtime.Gosched()
-					rech <- err
-				}
-			}
-		}
-	}))
+	rech = r.startDispatcherLoop(ctx)
 
 	wech = r.worker.Start(ctx)
 
-	cech := make(chan error, 1)
-	r.eg.Go(safety.RecoverFunc(func() (err error) {
-		ch, err := r.client.StartConnectionMonitor(ctx)
-		if err != nil {
-			cech <- err
-		}
-
-		for {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case err := <-ch:
-				if err != nil {
-					runtime.Gosched()
-					cech <- err
-				}
-			}
-		}
-	}))
+	cech = r.startConnectionMonitor(ctx)
 
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
@@ -221,6 +186,63 @@ func (r *registerer) RegisterMulti(ctx context.Context, metas *payload.Backup_Me
 	return errs
 }
 
+func (r *registerer) Len() int {
+	return len(r.ch)
+}
+
+func (r *registerer) WorkerLen() int {
+	return r.worker.Len()
+}
+
+func (r *registerer) startDispatcherLoop(ctx context.Context) <-chan error {
+	ech := make(chan error, 1)
+
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(r.ch)
+
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case meta := <-r.ch:
+				err = r.worker.Dispatch(ctx, r.registerJob(meta))
+				if err != nil {
+					err = errors.Wrap(r.sendToCh(ctx, meta), err.Error())
+					runtime.Gosched()
+					ech <- err
+				}
+			}
+		}
+	}))
+
+	return ech
+}
+
+func (r *registerer) startConnectionMonitor(ctx context.Context) <-chan error {
+	ech := make(chan error, 1)
+
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
+		ch, err := r.client.StartConnectionMonitor(ctx)
+		if err != nil {
+			ech <- err
+		}
+
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case err := <-ch:
+				if err != nil {
+					runtime.Gosched()
+					ech <- err
+				}
+			}
+		}
+	}))
+
+	return ech
+}
+
 func (r *registerer) sendToCh(ctx context.Context, meta *payload.Backup_MetaVector) error {
 	if !r.running.Load().(bool) {
 		return errors.ErrCompressorRegistererIsNotRunning()
@@ -308,11 +330,12 @@ func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 					},
 				)
 				if err != nil {
-					log.Debugf(
+					log.Errorf(
 						"compressor registerer failed to backup uuid %s: %v",
 						v.GetUuid(),
 						err,
 					)
+					errs = errors.Wrap(errs, err.Error())
 				}
 			default:
 				return
@@ -321,12 +344,4 @@ func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 	}()
 
 	return errs
-}
-
-func (r *registerer) Len() int {
-	return len(r.ch)
-}
-
-func (r *registerer) WorkerLen() int {
-	return r.worker.Len()
 }
