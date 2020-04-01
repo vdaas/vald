@@ -6,7 +6,7 @@
 - [Introduction](#Introduction)
 - [Style](#Style)
 - [Test](#Test)
-	- [TableDrivenTests](#TableDrivenTests)
+	- [Table-Driven-Test](#Table-Driven-Test)
 
 ## Introduction
 
@@ -18,16 +18,17 @@
 
 This section will describe the rule for writing test code in Vald.
 
-### TableDrivenTests
+### Table-Driven-Test
 
-Use table-driven tests with subtests. Given a table of test cases, the actual test simply iterates through all table entries and for each entry performs the necessary tests.
+Use table-driven tests with subtests to avoid duplicating code. 
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
 <tbody>
 <tr>
 <td>
-```
+	
+```go
 ## case 1
 host, port, err := net.SplitHostPort("192.0.2.0:8000")
 if err != nil {
@@ -59,17 +60,20 @@ if want, got := "http", port; want != got {
 
 </td>
 <td>
-```
+
+```go
 tests := []struct {
     str string
     wantHost string
     wantPort string
 } {
+    ## case 1
     {
         str: "192.0.2.0:8000",
         wantHost: "192.0.2.0",
         wantPort: "8000",
     },
+    ## case 2
     {
     	str: "192.0.2.0:8000",
     	wantHost: "192.0.2.0",
@@ -97,3 +101,8 @@ for _, tt := range tests {
 </tr>
 </tbody>
 </table>
+
+Table-Driven-Test makes it easy to add new test case.
+
+
+
