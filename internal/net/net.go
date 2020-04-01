@@ -111,6 +111,9 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 		})
 	}
 	err = eg.Wait()
+	if err != nil {
+		return nil, err
+	}
 
 	return ports, nil
 }

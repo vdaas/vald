@@ -274,7 +274,7 @@ defaults:
       connection_pool:
         # defaults.grpc.client.connection_pool.enable_rebalance -- enables gRPC client connection pool rebalance
         enable_rebalance: true
-        # defaults.grpc.client.connection_pool.enable_rebalance -- gRPC client connection pool rebalance duration
+        # defaults.grpc.client.connection_pool.rebalance_duration-- gRPC client connection pool rebalance duration
         rebalance_duration: 30m
         # defaults.grpc.client.connection_pool.size-- gRPC client connection pool size
         size: 3
