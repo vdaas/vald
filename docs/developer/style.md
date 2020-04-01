@@ -175,7 +175,8 @@ type test struct {
 }
 
 tests := map[string]func(*testing.T) test {
-    "test case name": func(tt *testing.T) test {
+    "test name": func(tt *testing.T) test {
+        tt.Helper()
 
         return test {
             args: args {
