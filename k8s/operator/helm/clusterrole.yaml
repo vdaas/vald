@@ -33,7 +33,7 @@ rules:
       - configmaps
       - secrets
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - ""
     resources:
@@ -46,7 +46,7 @@ rules:
       - clusterrolebindings
       - clusterroles
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - ""
     resources:
@@ -54,7 +54,7 @@ rules:
       - serviceaccounts
       - services
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - apps
     resources:
@@ -62,25 +62,25 @@ rules:
       - deployments
       - statefulsets
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - autoscaling
     resources:
       - horizontalpodautoscalers
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - networking.k8s.io
     resources:
       - ingresses
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - policy
     resources:
       - poddisruptionbudgets
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - monitoring.coreos.com
     resources:
@@ -93,7 +93,7 @@ rules:
     resources:
       - priorityclasses
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - apps
     resourceNames:
@@ -111,7 +111,7 @@ rules:
   - apiGroups:
       - vald.vdaas.org
     resources:
-      - "*"
+      - '*'
     verbs:
       - create
       - delete
