@@ -10,8 +10,6 @@
 
 ## Introduction
 
-
-
 ## Style
 
 ## Test
@@ -105,4 +103,110 @@ for _, tt := range tests {
 Table-Driven-Test makes it easy to add new test case.
 
 
+We follow the convention that the `map[string]func(*testing.T)test` is referred to as tests and each test case tt. 
 
+```go
+tests := map[string]func(t *testing.T) test {
+    "test case name": func(tt *testing.T) test {
+        return test {
+
+        }
+    }
+}
+```
+
+The following are the steps to create a Table-Driven-Test.
+
+1. `args` structure
+
+If there are two or more arguments to be passed to the method, create a `args` structure. If there is one argument, do not create an `args` structure.
+
+```go
+type args struct {
+    host string
+    port string
+}
+```
+
+
+2. `field` structure
+
+If you create an object and test its methods, create a `field` struct if object has two or more fields to initialize. If there is one field, do not create `field` structure.
+
+
+```go
+type field struct {
+    host string
+    port string
+}
+```
+
+3. `test` structure
+
+`test` structure has `args` and `field` structure and `checkFunc` function. If you need one of `args` and `field` structure, create `field` and `args` structure.
+The `checkFunc` function is used to check the return value of the function being tested.
+
+```go
+type test struct {
+    args args
+    field field
+    checkFunc func(t *testing.T, err error)
+}
+```
+
+
+Hole example is this.
+
+```go
+
+type args struct {
+    addr string
+    txt string
+}
+
+type field struct {
+    timeout time.Duration
+}
+
+type test struct {
+    args args
+    field field
+    checkFunc func(t *testing.T, err error)
+}
+
+tests := map[string]func(*testing.T) test {
+    "test case name": func(tt *testing.T) test {
+
+        return test {
+            args: args {
+                host: "host",
+                port: "port",
+            },
+            field: field {
+                host: "host",
+                port: "port",
+            },
+            checkFunc func(tt *testing.T, err error) {
+                t.Helper()
+                if err != nil {
+                    tt.Errorf("error is not nil: %v", err)
+                }
+            },
+        }
+    } 
+}
+
+for name, fn := range tests {
+    t.Run(name, func(tt *tesint.T) {
+        test := fn(tt)
+
+        c := client {
+            timeout: test.field.timeout,
+        }
+
+        err := c.Send(test.args.addr, test.args.txt)
+        test.checkFunc(tt, err)
+    })
+}
+
+```
