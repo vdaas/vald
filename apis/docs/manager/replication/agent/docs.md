@@ -3,17 +3,17 @@
 
 ## Table of Contents
 
-- [replication/replication_manager.proto](#replication/replication_manager.proto)
+- [replication/agent/replication_manager.proto](#replication/agent/replication_manager.proto)
     - [Replication](#replication_manager.Replication)
   
 - [Scalar Value Types](#scalar-value-types)
 
 
 
-<a name="replication/replication_manager.proto"></a>
+<a name="replication/agent/replication_manager.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## replication/replication_manager.proto
+## replication/agent/replication_manager.proto
 
 
  
@@ -30,6 +30,9 @@
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
+| Recover | [.payload.Replication.Recovery](#payload.Replication.Recovery) | [.payload.Empty](#payload.Empty) |  |
+| Rebalance | [.payload.Replication.Rebalance](#payload.Replication.Rebalance) | [.payload.Empty](#payload.Empty) |  |
+| AgentInfo | [.payload.Empty](#payload.Empty) | [.payload.Replication.Agents](#payload.Replication.Agents) |  |
 
  
 

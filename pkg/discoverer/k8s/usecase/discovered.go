@@ -41,6 +41,7 @@ type run struct {
 	eg            errgroup.Group
 	cfg           *config.Data
 	dsc           service.Discoverer
+	h             handler.DiscovererServer
 	server        starter.Server
 	observability observability.Observability
 }
@@ -48,17 +49,25 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 	dsc, err := service.New(
-		service.WithDiscoverDuration(cfg.Discoverer.CacheSyncDuration),
+		service.WithDiscoverDuration(cfg.Discoverer.DiscoveryDuration),
 		service.WithErrGroup(eg),
 	)
 	if err != nil {
 		return nil, err
 	}
-	g := handler.New(handler.WithDiscoverer(dsc))
+	h, err := handler.New(
+		handler.WithDiscoverer(dsc),
+		handler.WithCacheEnabled(cfg.Discoverer.Cache.Enabled),
+		handler.WithCacheExpireDuration(cfg.Discoverer.Cache.ExpireDuration),
+		handler.WithCacheExpiredCheckDuration(cfg.Discoverer.Cache.ExpiredCacheCheckDuration),
+	)
+	if err != nil {
+		return nil, err
+	}
 
 	grpcServerOptions := []server.Option{
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-			discoverer.RegisterDiscovererServer(srv, g)
+			discoverer.RegisterDiscovererServer(srv, h)
 		}),
 		server.WithPreStartFunc(func() error {
 			// TODO check unbackupped upstream
@@ -94,7 +103,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 						router.WithErrGroup(eg),
 						router.WithHandler(
 							rest.New(
-								rest.WithDiscoverer(g),
+								rest.WithDiscoverer(h),
 							),
 						),
 					)),
@@ -114,6 +123,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		eg:            eg,
 		cfg:           cfg,
 		dsc:           dsc,
+		h:             h,
 		server:        srv,
 		observability: obs,
 	}, nil
@@ -140,7 +150,11 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			ech <- err
 			return err
 		}
+
+		r.h.Start(ctx)
+
 		sech = r.server.ListenAndServe(ctx)
+
 		for {
 			select {
 			case <-ctx.Done():

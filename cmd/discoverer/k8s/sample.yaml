@@ -21,7 +21,7 @@ logging:
   level: info
   format: raw
 discoverer:
-  cache_sync_duration: 5s
+  discovery_duration: 5s
 server_config:
   servers:
     - name: agent-rest

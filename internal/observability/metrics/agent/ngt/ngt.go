@@ -51,8 +51,8 @@ func (n *ngtMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, er
 	}
 
 	return []metrics.Measurement{
-		n.indexCount.M(int64(len(n.ngt.UUIDs(ctx)))),
-		n.uncommittedIndexCount.M(int64(len(n.ngt.UncommittedUUIDs()))),
+		n.indexCount.M(int64(n.ngt.Len())),
+		n.uncommittedIndexCount.M(int64(n.ngt.InsertVCacheLen() + n.ngt.DeleteVCacheLen())),
 		n.insertVCacheCount.M(int64(n.ngt.InsertVCacheLen())),
 		n.deleteVCacheCount.M(int64(n.ngt.DeleteVCacheLen())),
 		n.isIndexing.M(isIndexing),

@@ -9,6 +9,7 @@
     - [Backup.Compressed.MetaVector](#payload.Backup.Compressed.MetaVector)
     - [Backup.Compressed.MetaVectors](#payload.Backup.Compressed.MetaVectors)
     - [Backup.GetVector](#payload.Backup.GetVector)
+    - [Backup.GetVector.Owner](#payload.Backup.GetVector.Owner)
     - [Backup.GetVector.Request](#payload.Backup.GetVector.Request)
     - [Backup.IP](#payload.Backup.IP)
     - [Backup.IP.Register](#payload.Backup.IP.Register)
@@ -53,6 +54,10 @@
     - [Object.IDs](#payload.Object.IDs)
     - [Object.Vector](#payload.Object.Vector)
     - [Object.Vectors](#payload.Object.Vectors)
+    - [Replication](#payload.Replication)
+    - [Replication.Agents](#payload.Replication.Agents)
+    - [Replication.Rebalance](#payload.Replication.Rebalance)
+    - [Replication.Recovery](#payload.Replication.Recovery)
     - [Search](#payload.Search)
     - [Search.Config](#payload.Search.Config)
     - [Search.IDRequest](#payload.Search.IDRequest)
@@ -127,6 +132,21 @@
 
 ### Backup.GetVector
 
+
+
+
+
+
+
+<a name="payload.Backup.GetVector.Owner"></a>
+
+### Backup.GetVector.Owner
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ip | [string](#string) |  |  |
 
 
 
@@ -748,6 +768,64 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | vectors | [Object.Vector](#payload.Object.Vector) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Replication"></a>
+
+### Replication
+
+
+
+
+
+
+
+<a name="payload.Replication.Agents"></a>
+
+### Replication.Agents
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| agents | [string](#string) | repeated |  |
+| removed_agents | [string](#string) | repeated |  |
+| replicating_agent | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Replication.Rebalance"></a>
+
+### Replication.Rebalance
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| high_usage_agents | [string](#string) | repeated |  |
+| low_usage_agents | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Replication.Recovery"></a>
+
+### Replication.Recovery
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| deleted_agents | [string](#string) | repeated |  |
 
 
 

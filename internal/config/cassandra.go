@@ -93,7 +93,6 @@ func (c *Cassandra) Bind() *Cassandra {
 	c.ConnectTimeout = GetActualValue(c.ConnectTimeout)
 	c.Keyspace = GetActualValue(c.Keyspace)
 	c.Consistency = GetActualValue(c.Consistency)
-
 	c.Username = GetActualValue(c.Username)
 	c.Password = GetActualValue(c.Password)
 
