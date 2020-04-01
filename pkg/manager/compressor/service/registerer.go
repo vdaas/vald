@@ -87,8 +87,7 @@ func (r *registerer) PreStart(ctx context.Context) error {
 func (r *registerer) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 3)
 
-	var wech, cech <-chan error
-	var err error
+	var wech <-chan error
 
 	rech := make(chan error, 1)
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -111,10 +110,25 @@ func (r *registerer) Start(ctx context.Context) (<-chan error, error) {
 
 	wech = r.worker.Start(ctx)
 
-	cech, err = r.client.StartConnectionMonitor(ctx)
-	if err != nil {
-		return nil, err
-	}
+	cech := make(chan error, 1)
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
+		ch, err := r.client.StartConnectionMonitor(ctx)
+		if err != nil {
+			cech <- err
+		}
+
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case err := <-ch:
+				if err != nil {
+					runtime.Gosched()
+					cech <- err
+				}
+			}
+		}
+	}))
 
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
