@@ -20,33 +20,15 @@ package config
 import "fmt"
 
 type Discoverer struct {
-	Name              string          `json:"name" yaml:"name"`
-	Namespace         string          `json:"namespace" yaml:"namespace"`
-	DiscoveryDuration string          `json:"discovery_duration" yaml:"discovery_duration"`
-	Cache             *DiscoveryCache `json:"cache" yaml:"cache"`
+	Name              string `json:"name" yaml:"name"`
+	Namespace         string `json:"namespace" yaml:"namespace"`
+	DiscoveryDuration string `json:"discovery_duration" yaml:"discovery_duration"`
 }
 
 func (d *Discoverer) Bind() *Discoverer {
 	d.Name = GetActualValue(d.Name)
 	d.Namespace = GetActualValue(d.Namespace)
 	d.DiscoveryDuration = GetActualValue(d.DiscoveryDuration)
-	if d.Cache != nil {
-		d.Cache = d.Cache.Bind()
-	} else {
-		d.Cache = new(DiscoveryCache)
-	}
-	return d
-}
-
-type DiscoveryCache struct {
-	Enabled                   bool   `json:"enabled" yaml:"enabled"`
-	ExpireDuration            string `json:"expire_duration" yaml:"expire_duration"`
-	ExpiredCacheCheckDuration string `json:"expired_cache_check_duration" yaml:"expired_cache_check_duration"`
-}
-
-func (d *DiscoveryCache) Bind() *DiscoveryCache {
-	d.ExpireDuration = GetActualValue(d.ExpireDuration)
-	d.ExpiredCacheCheckDuration = GetActualValue(d.ExpiredCacheCheckDuration)
 	return d
 }
 
