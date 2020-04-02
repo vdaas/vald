@@ -257,6 +257,8 @@ func (r *registerer) sendToChWithRunningCheck(ctx context.Context, meta *payload
 }
 
 func (r *registerer) sendToCh(ctx context.Context, meta *payload.Backup_MetaVector) error {
+	log.Debugf("enqueueing uuid %s", meta.GetUuid())
+
 	f := func() error {
 		select {
 		case r.ch <- meta:
@@ -281,6 +283,7 @@ func (r *registerer) registerJob(meta *payload.Backup_MetaVector) worker.WorkerJ
 		ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.Register.DispatchedJob")
 		defer func() {
 			if err != nil {
+				log.Debugf("re-enqueueing uuid %s", meta.GetUuid())
 				err = errors.Wrap(r.sendToCh(ctx, meta), err.Error())
 			}
 			if span != nil {
@@ -288,7 +291,9 @@ func (r *registerer) registerJob(meta *payload.Backup_MetaVector) worker.WorkerJ
 			}
 		}()
 
-		vector, err := r.compressor.Compress(ctx, meta.GetVector())
+		var vector []byte
+
+		vector, err = r.compressor.Compress(ctx, meta.GetVector())
 		if err != nil {
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
