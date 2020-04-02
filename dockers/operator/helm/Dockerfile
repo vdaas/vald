@@ -26,6 +26,8 @@ ARG GROUP
 ARG VALD_KIND
 ARG VALD_HELM_OPERATOR_KIND
 
+LABEL maintainer "rinx <rintaro.okamura@gmail.com>"
+
 RUN { \
         echo "---"; \
         echo "- version: ${VERSION}"; \
