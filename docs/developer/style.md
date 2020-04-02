@@ -1,4 +1,3 @@
-
 # Go Style Guide in Vald
 
 ## Table of Contents
@@ -6,7 +5,7 @@
 - [Introduction](#Introduction)
 - [Style](#Style)
 - [Test](#Test)
-	- [Table-Driven-Test](#Table-Driven-Test)
+	- [Table-Driven-Test](#"The guideline of Table-Driven-Test for Vald")
 
 ## Introduction
 
@@ -16,7 +15,7 @@
 
 This section will describe the rule for writing test code in Vald.
 
-### Table-Driven-Test
+### The guideline of Table-Driven-Test for Vald
 
 Use table-driven tests with subtests to avoid duplicating code. 
 
@@ -103,24 +102,28 @@ for _, tt := range tests {
 Table-Driven-Test makes it easy to add new test case.
 
 
-We follow the convention that the `map[string]func(*testing.T)test` is referred to as tests and each test case tt. 
-
+We define the test case table as `map[string]func(*testing.T)test`, which is referred as the test case name and the test case implementation `tt`. 
 ```go
 tests := map[string]func(t *testing.T) test {
     "test case name": func(tt *testing.T) test {
         return test {
-
+            args: args {
+                host: "host",
+                port: "port",
+            },
+            field: field {
+                timeout: 1 * time.Second,
+            },
         }
     }
 }
 ```
 
-The following are the steps to create a Table-Driven-Test.
+### The steps to create a Table-Driven-Test.
 
 1. `args` structure
 
-If there are two or more arguments to be passed to the method, create a `args` structure. If there is one argument, do not create an `args` structure.
-
+If there are two or more arguments to be passed to the method, create a `args` structure. If there is only one argument, do not create an `args` structure.
 ```go
 type args struct {
     host string
@@ -131,8 +134,7 @@ type args struct {
 
 2. `field` structure
 
-If you create an object and test its methods, create a `field` struct if object has two or more fields to initialize. If there is one field, do not create `field` structure.
-
+If you create an object and test its methods, create a `field` struct if the object has two or more fields to initialize. If there is only one field, do not create `field` structure.
 
 ```go
 type field struct {
@@ -155,7 +157,7 @@ type test struct {
 ```
 
 
-Hole example is this.
+Example:
 
 ```go
 
