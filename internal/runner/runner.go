@@ -80,7 +80,7 @@ func Do(ctx context.Context, opts ...Option) error {
 
 	cfg, ccfg, err := r.loadConfig(p.ConfigFilePath())
 	if err != nil {
-		log.Init()
+		log.Init(log.WithLevel(level.FATAL.String()))
 		return err
 	}
 
