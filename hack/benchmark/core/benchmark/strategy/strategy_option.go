@@ -11,7 +11,14 @@ import (
 type StrategyOption func(*strategy) error
 
 var (
-	defaultStrategyOptions = []StrategyOption{}
+	defaultStrategyOptions = []StrategyOption{
+		WithPreProp32(func(context.Context, *testing.B, core.Core32, assets.Dataset) ([]uint, error) {
+			return nil, nil
+		}),
+		WithPreProp64(func(context.Context, *testing.B, core.Core64, assets.Dataset) ([]uint, error) {
+			return nil, nil
+		}),
+	}
 )
 
 func WithPreProp32(
