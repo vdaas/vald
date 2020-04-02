@@ -31,15 +31,15 @@ spec:
             - |
               mysql -h ${MYSQL_HOST} -u ${MYSQL_USER} -p${MYSQL_PASSWORD} < /initdb/ddl.sql
           env:
-          - name: MYSQL_HOST
-            value: mysql.default.svc.cluster.local
-          - name: MYSQL_USER
-            value: root
-          - name: MYSQL_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                key: password
-                name: mysql-secret
+            - name: MYSQL_HOST
+              value: mysql.default.svc.cluster.local
+            - name: MYSQL_USER
+              value: root
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: mysql-secret
           volumeMounts:
             - name: mysql-config
               mountPath: /initdb/
