@@ -314,6 +314,7 @@ func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 				if !ok {
 					return
 				}
+				log.Debugf("forwarding uuid %s", v.GetUuid())
 				_, err = r.client.Do(
 					ctx,
 					r.addr,
