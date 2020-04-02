@@ -3,7 +3,7 @@ vald-helm-operator
 
 This is a Helm chart to install vald-helm-operator.
 
-Current chart version is `v0.0.26`
+Current chart version is `v0.0.27`
 
 Install
 ---
@@ -25,7 +25,7 @@ Configuration
 | crd.create | bool | `true` | ValdRelease crd will be created |
 | image.pullPolicy | string | `"Always"` | image pull policy |
 | image.repository | string | `"vdaas/vald-helm-operator"` | image repository |
-| image.tag | string | `"v0.0.26"` | image tag |
+| image.tag | string | `"v0.0.27"` | image tag |
 | name | string | `"vald-helm-operator"` | name of the deployment |
 | nodeSelector | object | `{}` | node labels for pod assignment |
 | rbac.create | bool | `true` | required roles and rolebindings will be created |

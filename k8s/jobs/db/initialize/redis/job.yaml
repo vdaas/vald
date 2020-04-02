@@ -31,11 +31,11 @@ spec:
             - |
               redis-cli -c -a ${REDIS_PASSWORD} -h ${REDIS_HOST} FLUSHALL
           env:
-            - name: REDIS_HOST
-              value: redis.default.svc.cluster.local
-            - name: REDIS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  key: password
-                  name: redis-secret
+          - name: REDIS_HOST
+            value: redis.default.svc.cluster.local
+          - name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: redis-secret
       restartPolicy: Never
