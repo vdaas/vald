@@ -93,13 +93,15 @@ func (w *worker) Start(ctx context.Context) <-chan error {
 			case job := <-w.jobCh:
 				w.wg.Add(1)
 				eg.Go(safety.RecoverFunc(func() (err error) {
-					defer w.wg.Done()
 					err = job(ctx)
 					if err != nil {
 						log.Debug(err)
+						w.wg.Done()
 						runtime.Gosched()
 						ech <- err
+						return err
 					}
+					w.wg.Done()
 					return nil
 				}))
 			}

@@ -282,10 +282,6 @@ func (r *registerer) registerJob(meta *payload.Backup_MetaVector) worker.WorkerJ
 	return func(ctx context.Context) (err error) {
 		ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.Register.DispatchedJob")
 		defer func() {
-			if err != nil {
-				log.Debugf("re-enqueueing uuid %s", meta.GetUuid())
-				err = errors.Wrap(r.sendToCh(ctx, meta), err.Error())
-			}
 			if span != nil {
 				span.End()
 			}
@@ -295,9 +291,13 @@ func (r *registerer) registerJob(meta *payload.Backup_MetaVector) worker.WorkerJ
 
 		vector, err = r.compressor.Compress(ctx, meta.GetVector())
 		if err != nil {
+			log.Debugf("re-enqueueing uuid %s", meta.GetUuid())
+			err = errors.Wrap(r.sendToCh(ctx, meta), err.Error())
+
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
+
 			return err
 		}
 
@@ -310,8 +310,13 @@ func (r *registerer) registerJob(meta *payload.Backup_MetaVector) worker.WorkerJ
 				Ips:    meta.GetIps(),
 			},
 		)
-		if err != nil && span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		if err != nil {
+			log.Debugf("re-enqueueing uuid %s", meta.GetUuid())
+			err = errors.Wrap(r.sendToCh(ctx, meta), err.Error())
+
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
 		}
 
 		return err
@@ -321,7 +326,7 @@ func (r *registerer) registerJob(meta *payload.Backup_MetaVector) worker.WorkerJ
 func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 	var err error
 
-	log.Debugf("compressor registerer queued meta-vector count: %s", r.Len())
+	log.Debugf("compressor registerer queued meta-vector count: %d", r.Len())
 
 	func() {
 		for {
