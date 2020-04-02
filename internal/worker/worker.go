@@ -21,6 +21,7 @@ import (
 	"context"
 	"reflect"
 	"runtime"
+	"sync"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errgroup"
@@ -34,8 +35,10 @@ type WorkerJobFunc func(context.Context) error
 
 type Worker interface {
 	Start(ctx context.Context) <-chan error
-	Pause(ctx context.Context)
-	Resume(ctx context.Context)
+	PreStop(ctx context.Context) error
+	Wait()
+	Pause()
+	Resume()
 	IsRunning() bool
 	Name() string
 	Len() int
@@ -48,6 +51,7 @@ type worker struct {
 	buffer     int
 	running    atomic.Value
 	eg         errgroup.Group
+	wg         *sync.WaitGroup
 	jobCh      chan WorkerJobFunc
 }
 
@@ -70,6 +74,9 @@ func (w *worker) Start(ctx context.Context) <-chan error {
 	eg, ctx := errgroup.New(ctx)
 	eg.Limitation(w.limitation)
 
+	w.wg = new(sync.WaitGroup)
+	w.wg.Add(1)
+
 	w.jobCh = make(chan WorkerJobFunc, w.buffer)
 
 	w.running.Store(true)
@@ -84,7 +91,9 @@ func (w *worker) Start(ctx context.Context) <-chan error {
 				}
 				return eg.Wait()
 			case job := <-w.jobCh:
+				w.wg.Add(1)
 				eg.Go(safety.RecoverFunc(func() (err error) {
+					defer w.wg.Done()
 					err = job(ctx)
 					if err != nil {
 						log.Debug(err)
@@ -100,11 +109,22 @@ func (w *worker) Start(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (w *worker) Pause(ctx context.Context) {
+func (w *worker) PreStop(ctx context.Context) error {
+	w.Pause()
+	w.wg.Done()
+
+	return nil
+}
+
+func (w *worker) Wait() {
+	w.wg.Wait()
+}
+
+func (w *worker) Pause() {
 	w.running.Store(false)
 }
 
-func (w *worker) Resume(ctx context.Context) {
+func (w *worker) Resume() {
 	w.running.Store(true)
 }
 

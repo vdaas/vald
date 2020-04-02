@@ -125,9 +125,14 @@ func (r *registerer) PreStop(ctx context.Context) error {
 	log.Info("compressor registerer service prestop processing...")
 
 	r.running.Store(false)
-	r.worker.Pause(ctx)
+	err := r.worker.PreStop(ctx)
+	if err != nil {
+		return err
+	}
 
-	err := r.forwardMetas(ctx)
+	r.worker.Wait()
+
+	err = r.forwardMetas(ctx)
 	if err != nil {
 		log.Errorf("compressor registerer service prestop failed: %v", err)
 		return err
