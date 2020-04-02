@@ -54,17 +54,18 @@ type clientConnPool struct {
 }
 
 type connPool struct {
-	ctx     context.Context
-	conn    *ClientConn // default connection
-	group   singleflight.Group
-	pool    sync.Pool
-	addr    string
-	host    string
-	port    string
-	size    uint64
-	length  uint64
-	dopts   []DialOption
-	closing atomic.Value
+	ctx        context.Context
+	conn       *ClientConn // default connection
+	group      singleflight.Group
+	pool       sync.Pool
+	addr       string
+	host       string
+	port       string
+	size       uint64
+	length     uint64
+	dopts      []DialOption
+	closing    atomic.Value
+	avgConnDur atomic.Value
 }
 
 func NewPool(ctx context.Context, addr string, size uint64, dopts ...DialOption) (ClientConnPool, error) {
@@ -182,6 +183,7 @@ func newPool(ctx context.Context, host, port string, size uint64, dopts ...DialO
 		dopts:  dopts,
 		length: 0,
 	}
+	cp.avgConnDur.Store(50 * time.Millisecond)
 	cp.closing.Store(false)
 	cp.pool = sync.Pool{
 		New: func() interface{} {
@@ -193,13 +195,16 @@ func newPool(ctx context.Context, host, port string, size uint64, dopts ...DialO
 			}
 			ic, err, _ := cp.group.Do(cp.addr, func() (interface{}, error) {
 				log.Warn("establishing new connection to " + cp.addr)
+				start := time.Now()
 				conn, err := grpc.DialContext(ctx, cp.addr, cp.dopts...)
 				if err != nil {
 					log.Error(err)
 					return nil, nil
 				}
+				cp.avgConnDur.Store(time.Since(start))
 				if cp.conn != nil {
-					cp.conn.Close()
+					ocp := cp.conn
+					defer ocp.Close()
 				}
 				cp.conn = conn
 				return cp.conn, nil
@@ -251,6 +256,7 @@ func (c *connPool) connect(ctx context.Context) (cp *connPool, err error) {
 	}
 
 	if c.conn == nil || (c.conn != nil && !isHealthy(c.conn)) {
+		start := time.Now()
 		conn, err := grpc.DialContext(ctx, c.addr, c.dopts...)
 		if err != nil {
 			log.Debugf("failed to dial pool connection addr = %s\terror = %v", c.addr, err)
@@ -259,6 +265,7 @@ func (c *connPool) connect(ctx context.Context) (cp *connPool, err error) {
 			}
 			return c, err
 		}
+		c.avgConnDur.Store(time.Since(start))
 		c.conn = conn
 	}
 
@@ -271,9 +278,11 @@ func (c *connPool) connect(ctx context.Context) (cp *connPool, err error) {
 	}
 
 	if net.IsLocal(c.host) {
+		sctx, cancel := context.WithTimeout(ctx, c.avgConnDur.Load().(time.Duration))
+		defer cancel()
 		for atomic.LoadUint64(&c.length) < c.size {
 			select {
-			case <-ctx.Done():
+			case <-sctx.Done():
 				return c, nil
 			default:
 				addr := c.host + ":" + c.port
@@ -296,9 +305,11 @@ func (c *connPool) connect(ctx context.Context) (cp *connPool, err error) {
 	ips, err := net.DefaultResolver.LookupIPAddr(ctx, c.host)
 	if err != nil {
 		log.Error(err)
+		sctx, cancel := context.WithTimeout(ctx, c.avgConnDur.Load().(time.Duration))
+		defer cancel()
 		for atomic.LoadUint64(&c.length) < c.size {
 			select {
-			case <-ctx.Done():
+			case <-sctx.Done():
 				return c, nil
 			default:
 				log.Debugf("establishing default host connection to %s", c.addr)
