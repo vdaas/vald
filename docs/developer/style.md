@@ -15,7 +15,7 @@
 
 This section will describe the rule for writing test code in Vald.
 
-### The guideline of Table-Driven-Test for Vald
+### Table-Driven-Test
 
 Use table-driven tests with subtests to avoid duplicating code. 
 
