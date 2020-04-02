@@ -15,7 +15,8 @@
 
 Testing guideline has 2 important rules for the coding quality and readability
 1. Use Table-Driven-Test
-2. Coverage
+2. Keep code coverage over 85%
+   - test coverage != high testing quality, but low coverage means bad testing quality
 3. Test all use cases and error cases
 
 ### Table-Driven-Test
