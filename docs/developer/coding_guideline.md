@@ -2,12 +2,13 @@
 
 ## Introduction
 
-This guideline includes the coding style for all Vald contributors and reviewers. Everyone should following this guideline to keep the style consistent so everyone can understand and contribute to Vald easier once they learn this guideline. You should have the basic knowledge of how to write Golang before contributing to Vald. If you found any bug please create a github issue and we will working on it.
+This guideline includes the coding style for all Vald contributors and reviewers. Everyone should follow this guideline to keep the style consistent so everyone can understand and contribute to Vald easier once they learn this guideline. You should have the basic knowledge of how to write Golang before contributing to Vald. If you found any bug please create a GitHub issue and we will work on it.
 This guideline is based on [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md), [CodeReviewComments](https://github.com/golang/go/wiki/CodeReviewComments), [Gitlab Go standard and style guideline](https://docs.gitlab.com/ee/development/go_guide/) and [Effective Go](https://golang.org/doc/effective_go.html).
 For the guideline to write test code please refer to [here](xxxxxxxxx).
 
-## Code Formatting
-Code formatting is very important, it affects the code readability and maintainability. Every developers have different coding style. Luckily Golang provide tools to format the code, and we suggest using [gofmt](https://golang.org/cmd/gofmt/) to format the source code in Vald. We suggest everyone install the plugin for your editor to automatically format the code once you edit the code.
+## Code Formatting and Naming Convension
+
+Code formatting and naming conventions affect coding readability and maintainability. Every developer has a different coding style, luckily Golang provides tools to format source code and checking for the potential issue in the source code. We suggest using [gofmt](https://golang.org/cmd/gofmt/) to format the source code in Vald, and [golint](https://github.com/golang/lint). We suggest everyone install the plugin for your editor to automatically format the code once you edit the code.
 But having a tools to format source code doesn't mean you do not need to care the formatting of the code, for example:
 ```golang
 yamlStr := "apiVersion: v1\n" +
@@ -22,7 +23,7 @@ yamlStr := "apiVersion: v1\n" +
    "      protocol: TCP\n"
 ```
 
-It is very hard to read and maintain, in this case we should use the following style.
+It is very hard to read and maintain, in this case, we should follow this style.
 ```golang
 yamlStr1 := `apiVersion: v1
 kind: Service
@@ -37,27 +38,53 @@ spec:
 `
 ```
 
-## Naming convension
-This section describe the naming rules of every objects of the source code in Vald. Please refer the sub-section for the detail naming convension of each objects in Vald.
+### Project Layout
 
-### Source code file name
+The project layout includes the folder and the file structure in the project. Basically we follow the [prject-layout](https://github.com/golang-standards/project-layout) example in Vald.
 
-### Package name
+### Packages
 
-### Interface name
+The package defines the context of the objects in the package, for example the corresponding functions and structs belongs to corresponding package. Unlike other languages like Java, in Golang we use the package name to declar which context of the object we are going to use. For example in [time](https://golang.org/pkg/time/) package, it defines all the objects about time like `time.Now()` function to get the current time.
 
-### Struct name
+Package name should be the same as the folder name.
+Package name should keep as simple as it should, and should contain only one specific context in the package.
+Package name should not be too general, for example `util` or `helper`, which will cause all the objects from different contexts to be store in one package. If you really want to name the package as `util`,  please define the more specific package  name more  `ioutil` or `httputil`.
+All packages should write the comments on the `doc.go` under the package to describe the corresponding package.
 
-### Function name
+For example, under the folder name called `
+
+### Interfaces
+
+Interface defines the program interface for usability and future extendability. 
+Interface name should be defined as MixedCaps rather than underscores.
+
+### Structs
+
+### Functions
 
 #### Getter and Setter
 
-### Variable name
+#### Defer functions
+
+### Variables
 
 ## Program comments
+
 Program comments makes the code more easier to understand. Basically we suggest not to write many comments inside the source code, unless the source code is very complicated and confusing; otherwise we should divide the source code into functions to keep the readability of the source code.
 
 Everyone should write the comments to all the public objects on your source code, like public packages or interface.
 
-## Initialization
+## Documentation
+
+Documentation is generated based on the program comments. 
+
+## Object initialization
+
 There are many ways to initialize objects in Golang. Base on the use case we can decide which style to follow to initialize objects in Golang.
+
+## Internal packages
+
+Vald implement its only internal package to extend the functionality of the standard library and third-party library. 
+
+## Dependency management and Build
+We should use `go mod tidy` to manage the dependencies of the project.
