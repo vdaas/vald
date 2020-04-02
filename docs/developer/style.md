@@ -5,7 +5,7 @@
 - [Introduction](#Introduction)
 - [Style](#Style)
 - [Test](#Test)
-	- [Table-Driven-Test](#"The guideline of Table-Driven-Test for Vald")
+	- [Table-Driven-Test](#Table-Driven-Test)
 
 ## Introduction
 
