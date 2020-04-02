@@ -756,13 +756,6 @@ discoverer:
     namespace: _MY_POD_NAMESPACE_
     # discoverer.discoverer.discovery_duration -- duration to discovery
     discovery_duration: 3s
-    cache:
-      # discoverer.discoverer.cache.enabled -- enables discovery cache for performance and reduce cpu usage
-      enabled: true
-      # discoverer.discoverer.cache.expire_duration -- discovery cache expire duration
-      expire_duration: "3s"
-      # discoverer.discoverer.cache.expire_duration -- discovery cache expire check duration
-      expired_cache_check_duration: "1500ms"
   clusterRole:
     # discoverer.clusterRole.enabled -- creates clusterRole resource
     enabled: true

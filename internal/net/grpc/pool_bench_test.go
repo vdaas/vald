@@ -22,6 +22,8 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/discoverer"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/net"
 	"google.golang.org/grpc"
 )
@@ -33,6 +35,11 @@ const (
 
 type server struct {
 	discoverer.DiscovererServer
+}
+
+func init() {
+	testing.Init()
+	log.Init(log.WithLevel(level.ERROR.String()))
 }
 
 func (s *server) Pods(context.Context, *payload.Discoverer_Request) (*payload.Info_Pods, error) {

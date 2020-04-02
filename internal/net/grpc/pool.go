@@ -29,7 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
-	"golang.org/x/sync/singleflight"
+	"github.com/vdaas/vald/internal/singleflight"
 	"google.golang.org/grpc"
 )
 
@@ -182,6 +182,7 @@ func newPool(ctx context.Context, host, port string, size uint64, dopts ...DialO
 		size:   size,
 		dopts:  dopts,
 		length: 0,
+		group:  singleflight.New(1),
 	}
 	cp.avgConnDur.Store(50 * time.Millisecond)
 	cp.closing.Store(false)
@@ -193,7 +194,7 @@ func newPool(ctx context.Context, host, port string, size uint64, dopts ...DialO
 			if cp.conn != nil && isHealthy(cp.conn) {
 				return cp.conn
 			}
-			ic, err, _ := cp.group.Do(cp.addr, func() (interface{}, error) {
+			ic, err, _ := cp.group.Do(ctx, cp.addr, func() (interface{}, error) {
 				log.Warn("establishing new connection to " + cp.addr)
 				start := time.Now()
 				conn, err := grpc.DialContext(ctx, cp.addr, cp.dopts...)
