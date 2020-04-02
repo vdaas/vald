@@ -155,7 +155,7 @@ func (r *registerer) Register(ctx context.Context, meta *payload.Backup_MetaVect
 		return err
 	}
 
-	err := r.sendToCh(ctx, meta)
+	err := r.sendToChWithRunningCheck(ctx, meta)
 	if err != nil && span != nil {
 		span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 	}
@@ -243,11 +243,15 @@ func (r *registerer) startConnectionMonitor(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (r *registerer) sendToCh(ctx context.Context, meta *payload.Backup_MetaVector) error {
+func (r *registerer) sendToChWithRunningCheck(ctx context.Context, meta *payload.Backup_MetaVector) error {
 	if !r.running.Load().(bool) {
 		return errors.ErrCompressorRegistererIsNotRunning()
 	}
 
+	return r.sendToCh(ctx, meta)
+}
+
+func (r *registerer) sendToCh(ctx context.Context, meta *payload.Backup_MetaVector) error {
 	f := func() error {
 		select {
 		case r.ch <- meta:
