@@ -267,16 +267,14 @@ defaults:
     client:
       # defaults.grpc.client.addrs -- gRPC client addresses
       addrs: []
-      # defaults.grpc.client.connection_pool -- number of gRPC client connection pool
-      connection_pool: 3
       # defaults.grpc.client.health_check_duration -- gRPC client health check duration
       health_check_duration: "1s"
       connection_pool:
         # defaults.grpc.client.connection_pool.enable_rebalance -- enables gRPC client connection pool rebalance
         enable_rebalance: true
-        # defaults.grpc.client.connection_pool.rebalance_duration-- gRPC client connection pool rebalance duration
+        # defaults.grpc.client.connection_pool.rebalance_duration -- gRPC client connection pool rebalance duration
         rebalance_duration: 30m
-        # defaults.grpc.client.connection_pool.size-- gRPC client connection pool size
+        # defaults.grpc.client.connection_pool.size -- gRPC client connection pool size
         size: 3
       backoff:
         # defaults.grpc.client.backoff.initial_duration -- gRPC client backoff initial duration
