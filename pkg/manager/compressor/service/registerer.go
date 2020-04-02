@@ -125,14 +125,11 @@ func (r *registerer) PreStop(ctx context.Context) error {
 	log.Info("compressor registerer service prestop processing...")
 
 	r.running.Store(false)
-	err := r.worker.PreStop(ctx)
-	if err != nil {
-		return err
-	}
 
+	r.worker.Pause()
 	r.worker.Wait()
 
-	err = r.forwardMetas(ctx)
+	err := r.forwardMetas(ctx)
 	if err != nil {
 		log.Errorf("compressor registerer service prestop failed: %v", err)
 		return err
@@ -212,6 +209,7 @@ func (r *registerer) startDispatcherLoop(ctx context.Context) <-chan error {
 			case meta := <-r.ch:
 				err = r.worker.Dispatch(ctx, r.registerJob(meta))
 				if err != nil {
+					log.Debugf("re-enqueueing uuid %s causing: %v", meta.GetUuid(), err.Error())
 					err = errors.Wrap(r.sendToCh(ctx, meta), err.Error())
 					runtime.Gosched()
 					ech <- err

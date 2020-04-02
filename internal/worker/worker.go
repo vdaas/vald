@@ -35,7 +35,6 @@ type WorkerJobFunc func(context.Context) error
 
 type Worker interface {
 	Start(ctx context.Context) <-chan error
-	PreStop(ctx context.Context) error
 	Wait()
 	Pause()
 	Resume()
@@ -86,6 +85,7 @@ func (w *worker) Start(ctx context.Context) <-chan error {
 			select {
 			case <-ctx.Done():
 				w.running.Store(false)
+				w.wg.Done()
 				if err = ctx.Err(); err != nil {
 					return errors.Wrap(eg.Wait(), err.Error())
 				}
@@ -94,15 +94,16 @@ func (w *worker) Start(ctx context.Context) <-chan error {
 				w.wg.Add(1)
 				eg.Go(safety.RecoverFunc(func() (err error) {
 					err = job(ctx)
+
+					w.wg.Done()
+
 					if err != nil {
 						log.Debug(err)
-						w.wg.Done()
 						runtime.Gosched()
 						ech <- err
-						return err
 					}
-					w.wg.Done()
-					return nil
+
+					return err
 				}))
 			}
 		}
@@ -111,15 +112,12 @@ func (w *worker) Start(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (w *worker) PreStop(ctx context.Context) error {
-	w.Pause()
-	w.wg.Done()
-
-	return nil
-}
-
 func (w *worker) Wait() {
+	log.Debug("worker %s: waiting for rest jobs to be completed...", w.name)
+
 	w.wg.Wait()
+
+	log.Debug("worker %s: all of the queued worker jobs completed.", w.name)
 }
 
 func (w *worker) Pause() {
