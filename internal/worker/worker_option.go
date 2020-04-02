@@ -27,7 +27,7 @@ var (
 	defaultWorkerOpts = []WorkerOption{
 		WithName("worker"),
 		WithLimitation(0),
-		WithBuffer(10),
+		WithBuffer(0),
 		WithErrGroup(errgroup.Get()),
 	}
 )

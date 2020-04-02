@@ -321,6 +321,8 @@ func (r *registerer) registerJob(meta *payload.Backup_MetaVector) worker.WorkerJ
 func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 	var err error
 
+	log.Debugf("compressor registerer queued meta-vector count: %s", r.Len())
+
 	func() {
 		for {
 			select {

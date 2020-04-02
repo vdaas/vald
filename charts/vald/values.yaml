@@ -902,7 +902,7 @@ compressor:
     pod_ip: _MY_POD_IP_
     registerer:
       # compressor.compress.registerer.buffer -- size of registerer buffer
-      buffer: 100
+      buffer: 1000000
       # compressor.compress.registerer.backoff -- backoff configuration of registerer
       backoff:
         initial_duration: 5ms
@@ -916,7 +916,7 @@ compressor:
         # compressor.compress.registerer.worker.concurrent_limit -- concurrency limit of registerer worker
         concurrent_limit: 10
         # compressor.compress.registerer.worker.buffer -- size of registerer worker buffer
-        buffer: 100
+        buffer: 0
       compressor:
         # compressor.compress.registerer.compressor.client -- gRPC client for compressor (overrides defaults.grpc.client)
         client: {}
