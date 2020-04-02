@@ -25,13 +25,13 @@ import (
 )
 
 type GRPCClient struct {
-	Addrs               []string    `json:"addrs" yaml:"addrs"`
-	HealthCheckDuration string      `json:"health_check_duration" yaml:"health_check_duration"`
-	ConnectionPool      int         `json:"connection_pool" yaml:"connection_pool"`
-	Backoff             *Backoff    `json:"backoff" yaml:"backoff"`
-	CallOption          *CallOption `json:"call_option" yaml:"call_option"`
-	DialOption          *DialOption `json:"dial_option" yaml:"dial_option"`
-	TLS                 *TLS        `json:"tls" yaml:"tls"`
+	Addrs               []string        `json:"addrs" yaml:"addrs"`
+	HealthCheckDuration string          `json:"health_check_duration" yaml:"health_check_duration"`
+	ConnectionPool      *ConnectionPool `json:"connection_pool" yaml:"connection_pool"`
+	Backoff             *Backoff        `json:"backoff" yaml:"backoff"`
+	CallOption          *CallOption     `json:"call_option" yaml:"call_option"`
+	DialOption          *DialOption     `json:"dial_option" yaml:"dial_option"`
+	TLS                 *TLS            `json:"tls" yaml:"tls"`
 }
 
 type CallOption struct {
@@ -55,6 +55,12 @@ type DialOption struct {
 	KeepAlive                   *GRPCClientKeepalive `json:"keep_alive" yaml:"keep_alive"`
 }
 
+type ConnectionPool struct {
+	EnableRebalance   bool   `json:"enable_rebalance" yaml:"enable_rebalance"`
+	RebalanceDuration string `json:"rebalance_duration" yaml:"rebalance_duration"`
+	Size              int    `json:"size" yaml:"size"`
+}
+
 type GRPCClientKeepalive struct {
 	Time                string `json:"time" yaml:"time"`
 	Timeout             string `json:"timeout" yaml:"timeout"`
@@ -70,9 +76,14 @@ func newGRPCClientConfig() *GRPCClient {
 }
 
 func (g *GRPCClient) Bind() *GRPCClient {
+	g.Addrs = GetActualValues(g.Addrs)
 	g.HealthCheckDuration = GetActualValue(g.HealthCheckDuration)
 
-	g.Addrs = GetActualValues(g.Addrs)
+	if g.ConnectionPool != nil {
+		g.ConnectionPool.RebalanceDuration = GetActualValue(g.ConnectionPool.RebalanceDuration)
+	} else {
+		g.ConnectionPool = new(ConnectionPool)
+	}
 
 	if g.Backoff != nil {
 		g.Backoff.Bind()
@@ -123,11 +134,18 @@ func (g *GRPCClient) Opts() []grpc.Option {
 	opts := make([]grpc.Option, 0, 18)
 	opts = append(opts,
 		grpc.WithHealthCheckDuration(g.HealthCheckDuration),
-		grpc.WithConnectionPool(g.ConnectionPool),
+		grpc.WithConnectionPoolSize(g.ConnectionPool.Size),
 	)
 	if g.Addrs != nil && len(g.Addrs) != 0 {
 		opts = append(opts,
 			grpc.WithAddrs(g.Addrs...),
+		)
+	}
+
+	if g.ConnectionPool.EnableRebalance {
+		opts = append(opts,
+			grpc.WithEnableConnectionPoolRebalance(g.ConnectionPool.EnableRebalance),
+			grpc.WithConnectionPoolRebalanceDuration(g.ConnectionPool.RebalanceDuration),
 		)
 	}
 	if g.Backoff != nil &&

@@ -34,6 +34,10 @@ service Backup {
     option (google.api.http).get = "/vector/{uuid}";
   }
 
+  // rpc GetVectorsByOwner(payload.Backup.GetVector.Owner) returns (stream payload.Backup.MetaVector) {
+  //   option (google.api.http).get = "/vector/{uuid}";
+  // } 
+
   rpc Locations(payload.Backup.Locations.Request) returns (payload.Info.IPs) {
     option (google.api.http).get = "/locations/{uuid}";
   }

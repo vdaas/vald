@@ -20,10 +20,10 @@ package redis
 import (
 	"context"
 	"crypto/tls"
-	"net"
 	"time"
 
 	redis "github.com/go-redis/redis/v7"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 

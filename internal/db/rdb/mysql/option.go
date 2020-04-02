@@ -19,9 +19,9 @@ package mysql
 import (
 	"context"
 	"crypto/tls"
-	"net"
 	"time"
 
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 

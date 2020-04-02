@@ -63,8 +63,8 @@ Configuration
 | agent.minReplicas | int | `20` | minimum number of replicas |
 | agent.name | string | `"vald-agent-ngt"` | name of agent deployment |
 | agent.ngt.auto_index_check_duration | string | `"30m"` | check duration of automatic indexing |
+| agent.ngt.auto_index_duration_limit | string | `"24h"` | limit duration of automatic indexing |
 | agent.ngt.auto_index_length | int | `100` | number of cache to trigger automatic indexing |
-| agent.ngt.auto_index_limit | string | `"24h"` | limit duration of automatic indexing |
 | agent.ngt.bulk_insert_chunk_size | int | `10` | bulk insert chunk size |
 | agent.ngt.creation_edge_size | int | `20` | creation edge size |
 | agent.ngt.dimension | int | `4096` | dimension |
@@ -244,7 +244,8 @@ Configuration
 | defaults.grpc.client.call_option.max_retry_rpc_buffer_size | int | `0` | gRPC client call option max retry rpc buffer size |
 | defaults.grpc.client.call_option.max_send_msg_size | int | `0` | gRPC client call option max send message size |
 | defaults.grpc.client.call_option.wait_for_ready | bool | `true` | gRPC client call option wait for ready |
-| defaults.grpc.client.connection_pool | int | `3` | number of gRPC client connection pool |
+| defaults.grpc.client.connection_pool | object | `{"enable_rebalance":true,"rebalance_duration":"30m","size":3}` | number of gRPC client connection pool |
+| defaults.grpc.client.connection_pool.enable_rebalance | bool | `true` | enables gRPC client connection pool rebalance |
 | defaults.grpc.client.dial_option.enable_backoff | bool | `false` | gRPC client dial option backoff enabled |
 | defaults.grpc.client.dial_option.initial_connection_window_size | int | `0` | gRPC client dial option initial connection window size |
 | defaults.grpc.client.dial_option.initial_window_size | int | `0` | gRPC client dial option initial window size |
@@ -402,7 +403,10 @@ Configuration
 | discoverer.clusterRole.name | string | `"discoverer"` | name of clusterRole |
 | discoverer.clusterRoleBinding.enabled | bool | `true` | creates clusterRoleBinding resource |
 | discoverer.clusterRoleBinding.name | string | `"discoverer"` | name of clusterRoleBinding |
-| discoverer.discoverer.cache_sync_duration | string | `"3s"` | duration to sync cache |
+| discoverer.discoverer.cache.enabled | bool | `true` | enables discovery cache for performance and reduce cpu usage |
+| discoverer.discoverer.cache.expire_duration | string | `"3s"` | discovery cache expire check duration |
+| discoverer.discoverer.cache.expired_cache_check_duration | string | `"1500ms"` |  |
+| discoverer.discoverer.discovery_duration | string | `"3s"` | duration to discovery |
 | discoverer.discoverer.name | string | `""` | name to discovery |
 | discoverer.discoverer.namespace | string | `"_MY_POD_NAMESPACE_"` | namespace to discovery |
 | discoverer.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
@@ -493,6 +497,7 @@ Configuration
 | indexManager.indexer.auto_index_duration_limit | string | `"30m"` | limit duration of automatic indexing |
 | indexManager.indexer.auto_index_length | int | `100` | number of cache to trigger automatic indexing |
 | indexManager.indexer.concurrency | int | `1` | concurrency |
+| indexManager.indexer.creation_pool_size | int | `10000` | number of pool size of create index processing |
 | indexManager.indexer.discoverer.agent_client | object | `{"dial_option":{"tcp":{"dialer":{"keep_alive":"15m"}}}}` | gRPC client for agents (overrides defaults.grpc.client) |
 | indexManager.indexer.discoverer.discover_client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
 | indexManager.indexer.discoverer.duration | string | `"500ms"` | refresh duration to discover |

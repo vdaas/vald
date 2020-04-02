@@ -33,7 +33,7 @@ var (
 	defaultOpts = []Option{
 		WithErrGroup(errgroup.Get()),
 		WithAutoConnect(true),
-		WithNamespace("default"),
+		WithNamespace("vald"),
 	}
 )
 

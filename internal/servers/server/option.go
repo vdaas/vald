@@ -20,13 +20,13 @@ package server
 import (
 	"crypto/tls"
 	"fmt"
-	"net"
 	"net/http"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/timeutil"
 	"google.golang.org/grpc"

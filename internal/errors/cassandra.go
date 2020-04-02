@@ -52,15 +52,19 @@ var (
 	}
 
 	ErrCassandraGetOperationFailed = func(key string, err error) error {
-		return Wrapf(err, "Failed to fetch key (%s)", key)
+		return Wrapf(err, "error failed to fetch key (%s)", key)
 	}
 
 	ErrCassandraSetOperationFailed = func(key string, err error) error {
-		return Wrapf(err, "Failed to set key (%s)", key)
+		return Wrapf(err, "error failed to set key (%s)", key)
 	}
 
 	ErrCassandraDeleteOperationFailed = func(key string, err error) error {
-		return Wrapf(err, "Failed to delete key (%s)", key)
+		return Wrapf(err, "error failed to delete key (%s)", key)
+	}
+
+	ErrCassandraHostDownDetected = func(err error, nodeInfo string) error {
+		return Wrapf(err, "error cassandra host down detected\t%s", nodeInfo)
 	}
 )
 

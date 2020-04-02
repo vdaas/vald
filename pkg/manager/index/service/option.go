@@ -34,6 +34,7 @@ var (
 		WithIndexingDuration("1m"),
 		WithIndexingDurationLimit("30m"),
 		WithMinUncommitted(100),
+		WithCreationPoolSize(10000),
 	}
 )
 
@@ -78,6 +79,15 @@ func WithMinUncommitted(n uint32) Option {
 	return func(idx *index) error {
 		if n > 0 {
 			idx.minUncommitted = n
+		}
+		return nil
+	}
+}
+
+func WithCreationPoolSize(size uint32) Option {
+	return func(idx *index) error {
+		if size > 0 {
+			idx.creationPoolSize = size
 		}
 		return nil
 	}

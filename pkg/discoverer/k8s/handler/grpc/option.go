@@ -17,16 +17,67 @@
 // Package grpc provides grpc server logic
 package grpc
 
-import "github.com/vdaas/vald/pkg/discoverer/k8s/service"
+import (
+	"github.com/vdaas/vald/internal/cache"
+	"github.com/vdaas/vald/internal/timeutil"
+	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
+)
 
-type Option func(*server)
+type Option func(*server) error
 
 var (
 	defaultOpts = []Option{}
 )
 
 func WithDiscoverer(dsc service.Discoverer) Option {
-	return func(s *server) {
-		s.dsc = dsc
+	return func(s *server) error {
+		if dsc != nil {
+			s.dsc = dsc
+		}
+		return nil
+	}
+}
+
+func WithCacheEnabled(flg bool) Option {
+	return func(s *server) error {
+		s.enableCache = flg
+		return nil
+	}
+}
+
+func WithCache(c cache.Cache) Option {
+	return func(s *server) error {
+		if c != nil {
+			s.cache = c
+		}
+		return nil
+	}
+}
+
+func WithCacheExpireDuration(dur string) Option {
+	return func(s *server) error {
+		if len(dur) == 0 {
+			return nil
+		}
+		_, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+		s.expireDuration = dur
+		return nil
+	}
+}
+
+func WithCacheExpiredCheckDuration(dur string) Option {
+	return func(s *server) error {
+		if len(dur) == 0 {
+			return nil
+		}
+		_, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+		s.expireCheckDuration = dur
+		return nil
 	}
 }

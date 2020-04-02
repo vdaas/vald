@@ -33,7 +33,7 @@ type Indexer struct {
 	// Concurrency represents indexing concurrency
 	Concurrency int `json:"concurrency" yaml:"concurrency"`
 
-	// AutoIndexLimit auto indexing duration limit
+	// AutoIndexDurationLimit represents auto indexing duration limit
 	AutoIndexDurationLimit string `yaml:"auto_index_duration_limit" json:"auto_index_duration_limit"`
 
 	// AutoIndexCheckDuration represent checking loop duration about auto indexing execution
@@ -41,6 +41,9 @@ type Indexer struct {
 
 	// AutoIndexLength represent minimum auto index length
 	AutoIndexLength uint32 `yaml:"auto_index_length" json:"auto_index_length"`
+
+	// CreationPoolSize represent create index batch pool size
+	CreationPoolSize uint32 `yaml:"creation_pool_size" json:"creation_pool_size"`
 
 	// NodeName represents node name
 	NodeName string `json:"node_name" yaml:"node_name"`
