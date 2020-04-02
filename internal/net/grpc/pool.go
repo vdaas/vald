@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"sort"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -45,12 +46,13 @@ type ClientConnPool interface {
 }
 
 type clientConnPool struct {
-	pool  atomic.Value
-	host  string
-	port  string
-	isIP  bool
-	size  uint64
-	dopts []DialOption
+	pool          atomic.Value
+	host          string
+	port          string
+	isIP          bool
+	size          uint64
+	reconnectHash string
+	dopts         []DialOption
 }
 
 type connPool struct {
@@ -160,9 +162,20 @@ func (c *clientConnPool) Put(conn *ClientConn) error {
 }
 
 func (c *clientConnPool) Reconnect(ctx context.Context, force bool) (ClientConnPool, error) {
-	if !force && c.isIP {
+	if !force && (c.isIP || net.IsLocal(c.host)) {
 		return c, nil
 	}
+	ips, err := net.DefaultResolver.LookupIPAddr(ctx, c.host)
+	if err != nil {
+		return c, nil
+	}
+	// if c.reconnectHash != nil
+	ipList := make([]string, 0, len(ips))
+	for _, ip := range ips {
+		ipList = append(ipList, ip.String())
+	}
+	sort.Strings(ipList)
+	c.reconnectHash.Join(ipList, "-")
 	log.Debugf("reconnection to %s:%s size: %d", c.host, c.port, c.size)
 	cp, err := newPool(ctx, c.host, c.port, c.size, c.dopts...)
 	if err != nil {
@@ -279,7 +292,7 @@ func (c *connPool) connect(ctx context.Context) (cp *connPool, err error) {
 	}
 
 	if net.IsLocal(c.host) {
-		sctx, cancel := context.WithTimeout(ctx, c.avgConnDur.Load().(time.Duration))
+		sctx, cancel := context.WithTimeout(ctx, c.avgConnDur.Load().(time.Duration)*time.Duration(c.size-atomic.LoadUint64(&c.length)))
 		defer cancel()
 		for atomic.LoadUint64(&c.length) < c.size {
 			select {
@@ -306,7 +319,7 @@ func (c *connPool) connect(ctx context.Context) (cp *connPool, err error) {
 	ips, err := net.DefaultResolver.LookupIPAddr(ctx, c.host)
 	if err != nil {
 		log.Error(err)
-		sctx, cancel := context.WithTimeout(ctx, c.avgConnDur.Load().(time.Duration))
+		sctx, cancel := context.WithTimeout(ctx, c.avgConnDur.Load().(time.Duration)*time.Duration(c.size-atomic.LoadUint64(&c.length)))
 		defer cancel()
 		for atomic.LoadUint64(&c.length) < c.size {
 			select {

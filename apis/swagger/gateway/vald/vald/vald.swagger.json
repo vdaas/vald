@@ -13,7 +13,7 @@
   "paths": {
     "/exists/{id}": {
       "get": {
-        "operationId": "Exists",
+        "operationId": "Vald_Exists",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -43,7 +43,7 @@
     },
     "/insert": {
       "post": {
-        "operationId": "Insert",
+        "operationId": "Vald_Insert",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -75,7 +75,7 @@
     },
     "/object/{id}": {
       "get": {
-        "operationId": "GetObject",
+        "operationId": "Vald_GetObject",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -105,7 +105,7 @@
     },
     "/remove/{id}": {
       "delete": {
-        "operationId": "Remove",
+        "operationId": "Vald_Remove",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -135,7 +135,7 @@
     },
     "/search": {
       "post": {
-        "operationId": "Search",
+        "operationId": "Vald_Search",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -167,7 +167,7 @@
     },
     "/search/id": {
       "post": {
-        "operationId": "SearchByID",
+        "operationId": "Vald_SearchByID",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -199,7 +199,7 @@
     },
     "/update": {
       "post": {
-        "operationId": "Update",
+        "operationId": "Vald_Update",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -231,7 +231,7 @@
     },
     "/upsert": {
       "post": {
-        "operationId": "Upsert",
+        "operationId": "Vald_Upsert",
         "responses": {
           "200": {
             "description": "A successful response.",

@@ -136,6 +136,10 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 		for {
 			select {
 			case <-ctx.Done():
+				err = g.Close()
+				if err != nil {
+					return errors.Wrap(ctx.Err(), err.Error())
+				}
 				return ctx.Err()
 			case <-prTick.C:
 				if g.enablePoolRebalance {
@@ -160,15 +164,16 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 				reconnList := make([]string, 0, int(atomic.LoadUint64(&g.clientCount)))
 				g.conns.Range(func(addr string, pool ClientConnPool) bool {
 					if len(addr) != 0 && !pool.IsHealthy() {
-						err = g.Disconnect(addr)
-						if err != nil {
-							log.Error(err)
-						}
 						reconnList = append(reconnList, addr)
 					}
 					return true
 				})
 				for _, addr := range reconnList {
+					err = g.Disconnect(addr)
+					if err != nil {
+						log.Error(err)
+						ech <- err
+					}
 					if g.bo != nil {
 						_, err = g.bo.Do(ctx, func() (interface{}, error) {
 							return nil, g.Connect(ctx, addr, g.dopts...)
@@ -179,6 +184,10 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 					if err != nil {
 						log.Error(err)
 						ech <- err
+						err = g.Disconnect(addr)
+						if err != nil {
+							log.Error(err)
+						}
 					}
 				}
 			}
@@ -398,21 +407,32 @@ func (g *gRPCClient) GetCallOption() []CallOption {
 
 func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOption) (err error) {
 	pool, ok := g.conns.Load(addr)
-	if ok {
+	if ok && pool != nil {
 		if pool.IsHealthy() {
 			return nil
 		}
+		log.Debugf("connecting unhealthy pool addr= %s", addr)
 		pool, err = pool.Connect(ctx)
-		if err != nil {
-			log.Warn(err)
-			return err
+		if err == nil {
+			g.conns.Store(addr, pool)
+			return nil
 		}
-		g.conns.Store(addr, pool)
-		return nil
+		log.Warnf("failed to reconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
+		g.conns.Delete(addr)
+		atomic.AddUint64(&g.clientCount, ^uint64(0))
+		err = pool.Disconnect()
+		if err != nil {
+			log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
+			g.conns.Delete(addr)
+		}
+	} else if pool == nil {
+		g.conns.Delete(addr)
 	}
-	log.Warn("creating new pool for", addr)
+
+	log.Warnf("creating new connection pool for addr= %s", addr)
 	pool, err = NewPool(ctx, addr, g.poolSize, append(g.dopts, dopts...)...)
 	if err != nil {
+		g.conns.Delete(addr)
 		return err
 	}
 	atomic.AddUint64(&g.clientCount, 1)
