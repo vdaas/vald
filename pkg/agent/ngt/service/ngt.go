@@ -486,10 +486,10 @@ func (n *ngt) insertCache(uuid string) (*vcache, bool) {
 	if ok {
 		dv, ok := n.dvc.Load(uuid)
 		if !ok {
-			return &iv, ok
+			return &iv, true
 		}
 		if ok && dv.date <= iv.date {
-			return &iv, ok
+			return &iv, true
 		}
 		n.ivc.Delete(uuid)
 		atomic.AddUint64(&n.ic, ^uint64(0))

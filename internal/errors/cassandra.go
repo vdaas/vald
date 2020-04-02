@@ -45,7 +45,7 @@ var (
 		case len(keys) == 1:
 			return Wrapf(NewErrCassandraNotFoundIdentity(), "cassandra key '%s' not found", keys[0])
 		case len(keys) > 1:
-			return Wrapf(NewErrCassandraNotFoundIdentity(), "cassandra keys '%s' not found", keys)
+			return Wrapf(NewErrCassandraNotFoundIdentity(), "cassandra keys '%v' not found", keys)
 		default:
 			return nil
 		}

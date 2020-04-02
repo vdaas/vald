@@ -13,14 +13,14 @@
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/vdaas/vald)
 [![DepShield Badge](https://depshield.sonatype.org/badges/vdaas/vald/depshield.svg?style=flat-square)](https://depshield.github.io)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fvdaas%2Fvald.svg?type=small&style=flat-square)](https://app.fossa.com/projects/git%2Bgithub.com%2Fvdaas%2Fvald?ref=badge_small)
-[![Total visitor](https://visitor-count-badge.herokuapp.com/total.svg?repo_id=vald)](https://github.com/vdaas/vald/graphs/traffic)
-[![Visitors in today](https://visitor-count-badge.herokuapp.com/today.svg?repo_id=vald)](https://github.com/vdaas/vald/graphs/traffic)
+[![DeepSource](https://static.deepsource.io/deepsource-badge-light-mini.svg)](https://deepsource.io/gh/vdaas/vald/?ref=repository-badge)
+[![Contributors](https://img.shields.io/github/contributors/vdaas/vald?style=flat-square)](https://github.com/vdaas/vald/graphs/contributors)
 
 ## What is Vald?
 Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.<br>
 Vald is designed and implemented based on the Cloud-Native architecture. <br>
 It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors.<br>
-It has automatic vector indexing and index backup, and horizontal scaling which made for searching from billions of feature vector data.<br>
+Vald has automatic vector indexing and index backup, and horizontal scaling which made for searching from billions of feature vector data.<br>
 Vald is easy to use, feature-rich and highly customizable as you needed.<br>
 Go to [Get Started](./docs/user/get-started.md) page to try out Vald :)
 
@@ -29,7 +29,7 @@ Go to [Get Started](./docs/user/get-started.md) page to try out Vald :)
 ### Main Features
 
 - Asynchronize Auto Indexing
-    - Usually the graph requires locking during indexing, which cause stop-the-world. But Vald uses distributed index graph so it continues to work duing indexing.
+    - Usually the graph requires locking during indexing, which cause stop-the-world. But Vald uses distributed index graph so it continues to work during indexing.
 
 - Customizable Ingress/Egress Filtering
     - Vald implements it's own highly customizable Ingress/Egress filter.
@@ -41,7 +41,7 @@ Go to [Get Started](./docs/user/get-started.md) page to try out Vald :)
     - Horizontal scalable on memory and cpu for your demand.
 
 - Auto Indexing Backup
-    - Vald has auto index backup feature using MySQL + Redis or Cassndora which enables disaster recovery.
+    - Vald has auto index backup feature using MySQL + Redis or Cassandra which enables disaster recovery.
 
 - Distributed Indexing
     - Vald distribute vector index to multiple agent, each agent stores different index.
@@ -134,8 +134,6 @@ Please read the [contribution guide](https://github.com/vdaas/vald/blob/master/C
 ## LICENSE
 
 vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas/vald/blob/master/LICENSE) file.
-
-[![DeepSource](https://static.deepsource.io/deepsource-badge-light.svg)](https://deepsource.io/gh/vdaas/vald/?ref=repository-badge)
 
 <table>
   <tr>

@@ -28,6 +28,27 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+var (
+	Canceled           = codes.Canceled
+	Unknown            = codes.Unknown
+	InvalidArgument    = codes.InvalidArgument
+	DeadlineExceeded   = codes.DeadlineExceeded
+	NotFound           = codes.NotFound
+	AlreadyExists      = codes.AlreadyExists
+	PermissionDenied   = codes.PermissionDenied
+	ResourceExhausted  = codes.ResourceExhausted
+	FailedPrecondition = codes.FailedPrecondition
+	Aborted            = codes.Aborted
+	OutOfRange         = codes.OutOfRange
+	Unimplemented      = codes.Unimplemented
+	Internal           = codes.Internal
+	Unavailable        = codes.Unavailable
+	DataLoss           = codes.DataLoss
+	Unauthenticated    = codes.Unauthenticated
+
+	Code = status.Code
+)
+
 func newStatus(code codes.Code, msg string, err error, details ...interface{}) (st *status.Status) {
 	st = status.New(code, msg)
 	defer func() {
