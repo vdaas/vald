@@ -119,37 +119,40 @@ func (c *compressor) dispatchCompress(ctx context.Context, vectors ...[]float32)
 		defer wg.Done()
 
 		for iter, vector := range vectors {
-			if c.worker.IsRunning() {
-				wg.Add(1)
-				err := c.worker.Dispatch(ctx, func(i int, v []float32) worker.JobFunc {
-					return func(ctx context.Context) error {
-						defer wg.Done()
+			wg.Add(1)
+			err := c.worker.Dispatch(ctx, func(i int, v []float32) *worker.Job {
+				f := func(ctx context.Context) error {
+					defer wg.Done()
 
-						select {
-						case <-ctx.Done():
-							return ctx.Err()
-						default:
-						}
-
-						res, err := c.compressor.CompressVector(v)
-						if err != nil {
-							mu.Lock()
-							errs = errors.Wrap(errs, err.Error())
-							mu.Unlock()
-							return err
-						}
-
-						mu.Lock()
-						results[i] = res
-						mu.Unlock()
-
-						return nil
+					select {
+					case <-ctx.Done():
+						return ctx.Err()
+					default:
 					}
-				}(iter, vector))
-				if err != nil {
-					errs = errors.Wrap(errs, err.Error())
-					wg.Done()
+
+					res, err := c.compressor.CompressVector(v)
+					if err != nil {
+						mu.Lock()
+						errs = errors.Wrap(errs, err.Error())
+						mu.Unlock()
+						return err
+					}
+
+					mu.Lock()
+					results[i] = res
+					mu.Unlock()
+
+					return nil
 				}
+
+				return &worker.Job{
+					Fn:   f,
+					Data: vector,
+				}
+			}(iter, vector))
+			if err != nil {
+				errs = errors.Wrap(errs, err.Error())
+				wg.Done()
 			}
 		}
 
@@ -184,37 +187,40 @@ func (c *compressor) dispatchDecompress(ctx context.Context, bytess ...[]byte) (
 		defer wg.Done()
 
 		for iter, bytes := range bytess {
-			if c.worker.IsRunning() {
-				wg.Add(1)
-				err := c.worker.Dispatch(ctx, func(i int, b []byte) worker.JobFunc {
-					return func(ctx context.Context) error {
-						defer wg.Done()
+			wg.Add(1)
+			err := c.worker.Dispatch(ctx, func(i int, b []byte) *worker.Job {
+				f := func(ctx context.Context) error {
+					defer wg.Done()
 
-						select {
-						case <-ctx.Done():
-							return ctx.Err()
-						default:
-						}
-
-						res, err := c.compressor.DecompressVector(b)
-						if err != nil {
-							mu.Lock()
-							errs = errors.Wrap(errs, err.Error())
-							mu.Unlock()
-							return err
-						}
-
-						mu.Lock()
-						results[i] = res
-						mu.Unlock()
-
-						return nil
+					select {
+					case <-ctx.Done():
+						return ctx.Err()
+					default:
 					}
-				}(iter, bytes))
-				if err != nil {
-					errs = errors.Wrap(errs, err.Error())
-					wg.Done()
+
+					res, err := c.compressor.DecompressVector(b)
+					if err != nil {
+						mu.Lock()
+						errs = errors.Wrap(errs, err.Error())
+						mu.Unlock()
+						return err
+					}
+
+					mu.Lock()
+					results[i] = res
+					mu.Unlock()
+
+					return nil
 				}
+
+				return &worker.Job{
+					Fn:   f,
+					Data: bytes,
+				}
+			}(iter, bytes))
+			if err != nil {
+				errs = errors.Wrap(errs, err.Error())
+				wg.Done()
 			}
 		}
 

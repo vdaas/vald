@@ -32,6 +32,11 @@ import (
 
 type JobFunc func(context.Context) error
 
+type Job struct {
+	Fn   JobFunc
+	Data interface{}
+}
+
 type Worker interface {
 	Start(ctx context.Context) (<-chan error, error)
 	Wait()
@@ -40,7 +45,7 @@ type Worker interface {
 	IsRunning() bool
 	Name() string
 	Len() uint64
-	Dispatch(ctx context.Context, f JobFunc) error
+	Dispatch(ctx context.Context, f *Job) error
 }
 
 type worker struct {
@@ -49,10 +54,10 @@ type worker struct {
 	running    atomic.Value
 	eg         errgroup.Group
 	wg         *sync.WaitGroup
-	inCh       chan JobFunc
-	q          []JobFunc
+	inCh       chan *Job
+	q          []*Job
 	qLen       uint64
-	jobCh      chan JobFunc
+	jobCh      chan *Job
 }
 
 func New(opts ...WorkerOption) (Worker, error) {
@@ -71,8 +76,8 @@ func New(opts ...WorkerOption) (Worker, error) {
 func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 1)
 
-	w.inCh = make(chan JobFunc, w.limitation)
-	w.jobCh = make(chan JobFunc)
+	w.inCh = make(chan *Job, w.limitation)
+	w.jobCh = make(chan *Job)
 
 	w.running.Store(true)
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -120,7 +125,7 @@ func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 				eg.Go(safety.RecoverFunc(func() (err error) {
 					defer w.wg.Done()
 
-					err = job(ctx)
+					err = job.Fn(ctx)
 					if err != nil {
 						log.Debug(err)
 						ech <- err
@@ -163,7 +168,7 @@ func (w *worker) Len() uint64 {
 	return atomic.LoadUint64(&w.qLen)
 }
 
-func (w *worker) Dispatch(ctx context.Context, f JobFunc) error {
+func (w *worker) Dispatch(ctx context.Context, f *Job) error {
 	ctx, span := trace.StartSpan(ctx, "vald/internal/worker/Worker.Dispatch")
 	defer func() {
 		if span != nil {
@@ -180,7 +185,9 @@ func (w *worker) Dispatch(ctx context.Context, f JobFunc) error {
 		return err
 	}
 
-	w.jobCh <- f
+	if f != nil && f.Fn != nil {
+		w.jobCh <- f
+	}
 
 	return nil
 }

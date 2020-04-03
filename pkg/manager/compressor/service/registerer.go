@@ -195,8 +195,8 @@ func (r *registerer) startConnectionMonitor(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) worker.JobFunc {
-	return func(ctx context.Context) (err error) {
+func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) *worker.Job {
+	f := func(ctx context.Context) (err error) {
 		ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.Register.DispatchedJob")
 		defer func() {
 			if span != nil {
@@ -209,7 +209,6 @@ func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) worker
 		vector, err = r.compressor.Compress(ctx, meta.GetVector())
 		if err != nil {
 			log.Debugf("re-enqueueing uuid %s", meta.GetUuid())
-			err = errors.Wrap(r.worker.Dispatch(ctx, r.registerProcessFunc(meta)), err.Error())
 
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -229,7 +228,6 @@ func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) worker
 		)
 		if err != nil {
 			log.Debugf("re-enqueueing uuid %s", meta.GetUuid())
-			err = errors.Wrap(r.worker.Dispatch(ctx, r.registerProcessFunc(meta)), err.Error())
 
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -237,6 +235,11 @@ func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) worker
 		}
 
 		return err
+	}
+
+	return &worker.Job{
+		Fn:   f,
+		Data: meta,
 	}
 }
 
