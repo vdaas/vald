@@ -1,8 +1,6 @@
 package caser
 
 import (
-	"testing"
-
 	"github.com/vdaas/vald/internal/test"
 )
 
@@ -10,7 +8,7 @@ type caser struct {
 	name      string
 	args      []interface{}
 	fields    []interface{}
-	checkFunc func(t *testing.T, gots ...interface{})
+	checkFunc func(gots ...interface{}) error
 }
 
 func New(opts ...Option) test.Caser {
@@ -33,6 +31,6 @@ func (c *caser) Fields() []interface{} {
 	return c.fields
 }
 
-func (c *caser) CheckFunc() func(*testing.T, ...interface{}) {
+func (c *caser) CheckFunc() func(...interface{}) error {
 	return c.checkFunc
 }

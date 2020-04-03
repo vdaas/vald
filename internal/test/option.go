@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"testing"
 )
 
 type Option func(*test)
@@ -19,13 +18,7 @@ func WithCase(cs ...Caser) Option {
 	}
 }
 
-func WithTarget(
-	fn func(ctx context.Context,
-		t *testing.T,
-		args, fields []interface{},
-		checkFunc func(t *testing.T, gots ...interface{}),
-	),
-) Option {
+func WithTarget(fn func(context.Context, Caser) error) Option {
 	return func(t *test) {
 		if fn != nil {
 			t.target = fn

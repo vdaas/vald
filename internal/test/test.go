@@ -11,11 +11,7 @@ type Test interface {
 
 type test struct {
 	cs     []Caser
-	target func(ctx context.Context,
-		t *testing.T,
-		args, fields []interface{},
-		checkFunc func(t *testing.T, gots ...interface{}),
-	)
+	target func(ctx context.Context, c Caser) error
 }
 
 func New(opts ...Option) Test {
@@ -32,7 +28,11 @@ func (test *test) Run(ctx context.Context, t *testing.T) {
 		t.Run(c.Name(), func(tt *testing.T) {
 			ctx, cancel := context.WithCancel(ctx)
 			defer cancel()
-			test.target(ctx, tt, c.Args(), c.Fields(), c.CheckFunc())
+
+			err := test.target(ctx, c)
+			if err != nil {
+				tt.Error(err)
+			}
 		})
 	}
 }
