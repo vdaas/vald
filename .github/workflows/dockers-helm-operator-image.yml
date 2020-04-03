@@ -53,6 +53,8 @@ jobs:
         tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
         docker tag ${imagename} ${imagename}:${tag_name}
         docker push ${imagename}:${tag_name}
+        docker tag ${imagename} ${imagename}:nightly
+        docker push ${imagename}:nightly
   slack:
     name: Slack notification
     needs: build
