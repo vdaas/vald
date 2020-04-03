@@ -118,7 +118,6 @@ func (r *registerer) PreStop(ctx context.Context) error {
 	r.running.Store(false)
 
 	r.worker.Pause()
-	r.worker.Wait()
 
 	err := r.forwardMetas(ctx)
 	if err != nil {

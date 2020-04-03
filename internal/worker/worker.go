@@ -20,7 +20,6 @@ package worker
 import (
 	"context"
 	"reflect"
-	"sync"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errgroup"
@@ -34,7 +33,6 @@ type JobFunc func(context.Context) error
 
 type Worker interface {
 	Start(ctx context.Context) (<-chan error, error)
-	Wait()
 	Pause()
 	Resume()
 	IsRunning() bool
@@ -48,7 +46,6 @@ type worker struct {
 	limitation int
 	running    atomic.Value
 	eg         errgroup.Group
-	wg         *sync.WaitGroup
 	queue      Queue
 }
 
@@ -87,8 +84,6 @@ func (w *worker) startJobLoop(ctx context.Context) (<-chan error, error) {
 	eg, ctx := errgroup.New(ctx)
 	eg.Limitation(w.limitation)
 
-	w.wg = new(sync.WaitGroup)
-
 	w.running.Store(true)
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
 		for {
@@ -101,9 +96,6 @@ func (w *worker) startJobLoop(ctx context.Context) (<-chan error, error) {
 				return eg.Wait()
 			case job := <-w.queue.OutCh():
 				eg.Go(safety.RecoverFunc(func() (err error) {
-					w.wg.Add(1)
-					defer w.wg.Done()
-
 					err = job(ctx)
 					if err != nil {
 						log.Debug(err)
@@ -116,14 +108,6 @@ func (w *worker) startJobLoop(ctx context.Context) (<-chan error, error) {
 	}))
 
 	return ech, nil
-}
-
-func (w *worker) Wait() {
-	log.Debugf("worker %s: waiting for queuing jobs to be completed...", w.Name())
-
-	w.wg.Wait()
-
-	log.Debugf("worker %s: all of the queuing jobs completed.", w.Name())
 }
 
 func (w *worker) Pause() {
