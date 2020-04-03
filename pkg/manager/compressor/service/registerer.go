@@ -208,8 +208,6 @@ func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) *worke
 
 		vector, err = r.compressor.Compress(ctx, meta.GetVector())
 		if err != nil {
-			log.Debugf("re-enqueueing uuid %s", meta.GetUuid())
-
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
@@ -227,8 +225,6 @@ func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) *worke
 			},
 		)
 		if err != nil {
-			log.Debugf("re-enqueueing uuid %s", meta.GetUuid())
-
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
@@ -238,8 +234,9 @@ func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) *worke
 	}
 
 	return &worker.Job{
-		Fn:   f,
-		Data: meta,
+		Fn:    f,
+		Data:  meta,
+		Retry: true,
 	}
 }
 

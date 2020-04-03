@@ -33,8 +33,10 @@ import (
 type JobFunc func(context.Context) error
 
 type Job struct {
-	Fn   JobFunc
-	Data interface{}
+	Fn         JobFunc
+	Data       interface{}
+	Retry      bool
+	RetryCount int
 }
 
 type Worker interface {
@@ -75,12 +77,17 @@ func New(opts ...WorkerOption) (Worker, error) {
 }
 
 func (w *worker) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 1)
-
 	w.inCh = make(chan *Job, w.limitation)
 	w.jobCh = make(chan *Job)
 
+	w.startQueueLoop(ctx)
+
+	return w.startJobLoop(ctx)
+}
+
+func (w *worker) startQueueLoop(ctx context.Context) {
 	w.running.Store(true)
+
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(w.inCh)
 		for {
@@ -93,6 +100,7 @@ func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 				atomic.AddUint64(&w.qLen, 1)
 			default:
 			}
+
 			if len(w.q) > 0 {
 				j := w.q[0]
 				select {
@@ -104,12 +112,27 @@ func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 			}
 		}
 	}))
+}
+
+func (w *worker) startJobLoop(ctx context.Context) (<-chan error, error) {
+	ech := make(chan error, 1)
 
 	eg, ctx := errgroup.New(ctx)
 	eg.Limitation(w.limitation)
 
 	w.wg = new(sync.WaitGroup)
 	w.wg.Add(1)
+
+	retryFn := func(j *Job) error {
+		j.RetryCount++
+
+		if !w.IsRunning() {
+			w.q = append(w.q, j)
+			return nil
+		}
+
+		return w.Dispatch(ctx, j)
+	}
 
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(w.jobCh)
@@ -128,6 +151,9 @@ func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 
 					err = job.Fn(ctx)
 					if err != nil {
+						if job.Retry {
+							retryFn(job)
+						}
 						log.Debug(err)
 						ech <- err
 					}
@@ -191,7 +217,7 @@ func (w *worker) Dispatch(ctx context.Context, f *Job) error {
 	}
 
 	if f != nil && f.Fn != nil {
-		w.jobCh <- f
+		w.inCh <- f
 	}
 
 	return nil
