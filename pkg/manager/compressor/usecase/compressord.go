@@ -92,7 +92,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	compressorClientOptions := append(
-		cfg.Compressor.Registerer.Compressor.Client.Opts(),
+		cfg.Registerer.Compressor.Client.Opts(),
 		grpc.WithErrGroup(eg),
 	)
 
@@ -108,12 +108,12 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	rg, err := service.NewRegisterer(
 		service.WithRegistererWorker(
 			worker.WithName("registerer"),
-			worker.WithLimitation(cfg.Compressor.Registerer.Worker.ConcurrentLimit),
+			worker.WithLimitation(cfg.Registerer.ConcurrentLimit),
 		),
 		service.WithRegistererErrGroup(eg),
 		service.WithRegistererBackup(b),
 		service.WithRegistererCompressor(c),
-		service.WithRegistererAddr(cfg.Compressor.Registerer.Compressor.Client.Addrs[0]),
+		service.WithRegistererAddr(cfg.Registerer.Compressor.Client.Addrs[0]),
 		service.WithRegistererClient(grpc.New(compressorClientOptions...)),
 	)
 	if err != nil {

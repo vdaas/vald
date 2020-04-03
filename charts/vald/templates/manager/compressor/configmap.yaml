@@ -41,24 +41,11 @@ data:
       compress_algorithm: {{ .Values.compressor.compress.compress_algorithm | quote }}
       compression_level: {{ .Values.compressor.compress.compression_level }}
       concurrent_limit: {{ .Values.compressor.compress.concurrent_limit }}
-      buffer: {{ .Values.compressor.compress.buffer }}
-      pod_ip: {{ .Values.compressor.compress.pod_ip | quote }}
-      registerer:
-        buffer: {{ .Values.compressor.compress.registerer.buffer }}
-        backoff:
-          initial_duration: {{ .Values.compressor.compress.registerer.backoff.initial_duration | quote }}
-          backoff_time_limit: {{ .Values.compressor.compress.registerer.backoff.backoff_time_limit | quote }}
-          maximum_duration: {{ .Values.compressor.compress.registerer.backoff.maximum_duration | quote }}
-          jitter_limit: {{ .Values.compressor.compress.registerer.backoff.jitter_limit | quote }}
-          backoff_factor: {{ .Values.compressor.compress.registerer.backoff.backoff_factor }}
-          retry_count: {{ .Values.compressor.compress.registerer.backoff.retry_count }}
-          enable_error_log: {{ .Values.compressor.compress.registerer.backoff.enable_error_log }}
-        worker:
-          concurrent_limit: {{ .Values.compressor.compress.registerer.worker.concurrent_limit }}
-          buffer: {{ .Values.compressor.compress.registerer.worker.buffer }}
-        compressor:
-          host: {{ .Values.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
-          port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.compressor.server_config.servers.grpc.port }}
-          client:
-            {{- $compressorClient := dict "Values" .Values.compressor.compress.registerer.compressor.client "default" .Values.defaults.grpc.client }}
-            {{- include "vald.grpc.client" $compressorClient | nindent 12 }}
+    registerer:
+      concurrent_limit: {{ .Values.compressor.registerer.concurrent_limit }}
+      compressor:
+        host: {{ .Values.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
+        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.compressor.server_config.servers.grpc.port }}
+        client:
+          {{- $compressorClient := dict "Values" .Values.compressor.registerer.compressor.client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $compressorClient | nindent 12 }}

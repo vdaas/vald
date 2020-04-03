@@ -896,30 +896,12 @@ compressor:
     compression_level: 3
     # compressor.compress.concurrent_limit -- concurrency limit
     concurrent_limit: 10
-    # compressor.compress.buffer -- size of buffer
-    buffer: 100
-    # compressor.compress.pod_ip -- ip address of the pod
-    pod_ip: _MY_POD_IP_
-    registerer:
-      # compressor.compress.registerer.buffer -- size of registerer buffer
-      buffer: 1000000
-      # compressor.compress.registerer.backoff -- backoff configuration of registerer
-      backoff:
-        initial_duration: 5ms
-        backoff_time_limit: 5s
-        maximum_duration: 5s
-        jitter_limit: 100ms
-        backoff_factor: 1.1
-        retry_count: 100
-        enable_error_log: true
-      worker:
-        # compressor.compress.registerer.worker.concurrent_limit -- concurrency limit of registerer worker
-        concurrent_limit: 10
-        # compressor.compress.registerer.worker.buffer -- size of registerer worker buffer
-        buffer: 0
-      compressor:
-        # compressor.compress.registerer.compressor.client -- gRPC client for compressor (overrides defaults.grpc.client)
-        client: {}
+  registerer:
+    # compressor.registerer.concurrent_limit -- concurrency limit of registerer worker
+    concurrent_limit: 10
+    compressor:
+      # compressor.registerer.compressor.client -- gRPC client for compressor (overrides defaults.grpc.client)
+      client: {}
 
 backupManager:
   # backupManager.version -- version of backup manager config

@@ -65,63 +65,28 @@ type Compressor struct {
 
 	// ConcurrentLimit represents limitation of compression worker concurrency
 	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
-
-	// Buffer represents capacity of buffer for compression
-	Buffer int `json:"buffer" yaml:"buffer"`
-
-	// PodIP represents pod ip of compressor instance. it is recommended to use status.podIP field of k8s pod
-	PodIP string `json:"pod_ip" yaml:"pod_ip"`
-
-	// Registerer represents registerer options
-	Registerer *CompressorRegisterer `json:"registerer" yaml:"registerer"`
-}
-
-type CompressorRegisterer struct {
-	// Buffer represents capacity of buffer for registerer
-	Buffer int `json:"buffer" yaml:"buffer"`
-
-	// Backoff represents backoff configuration of registerer
-	Backoff *Backoff `json:"backoff" yaml:"backoff"`
-
-	// Worker represents worker options
-	Worker *Worker `json:"worker" yaml:"worker"`
-
-	// Compressor represents gRPC client config of compressor client (for forwarding use)
-	Compressor *BackupManager `json:"compressor" yaml:"compressor"`
-}
-
-type Worker struct {
-	// ConcurrentLimit represents limitation of worker
-	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
-
-	// Buffer represents capacity of buffer for worker
-	Buffer int `json:"buffer" yaml:"buffer"`
 }
 
 func (c *Compressor) Bind() *Compressor {
 	c.CompressAlgorithm = GetActualValue(c.CompressAlgorithm)
 
-	c.PodIP = GetActualValue(c.PodIP)
-
-	if c.Registerer == nil {
-		c.Registerer = new(CompressorRegisterer)
-	}
-
-	if c.Registerer.Backoff != nil {
-		c.Registerer.Backoff = c.Registerer.Backoff.Bind()
-	} else {
-		c.Registerer.Backoff = new(Backoff)
-	}
-
-	if c.Registerer.Worker == nil {
-		c.Registerer.Worker = new(Worker)
-	}
-
-	if c.Registerer.Compressor != nil {
-		c.Registerer.Compressor = c.Registerer.Compressor.Bind()
-	} else {
-		c.Registerer.Compressor = new(BackupManager)
-	}
-
 	return c
+}
+
+type CompressorRegisterer struct {
+	// ConcurrentLimit represents limitation of worker
+	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
+
+	// Compressor represents gRPC client config of compressor client (for forwarding use)
+	Compressor *BackupManager `json:"compressor" yaml:"compressor"`
+}
+
+func (cr *CompressorRegisterer) Bind() *CompressorRegisterer {
+	if cr.Compressor != nil {
+		cr.Compressor = cr.Compressor.Bind()
+	} else {
+		cr.Compressor = new(BackupManager)
+	}
+
+	return cr
 }
