@@ -32,14 +32,6 @@ import (
 
 type JobFunc func(context.Context) error
 
-type Job struct {
-	Name       string
-	Fn         JobFunc
-	Data       interface{}
-	Retry      bool
-	RetryCount int
-}
-
 type Worker interface {
 	Start(ctx context.Context) (<-chan error, error)
 	Wait()
@@ -48,8 +40,7 @@ type Worker interface {
 	IsRunning() bool
 	Name() string
 	Len() uint64
-	Jobs() []*Job
-	Dispatch(ctx context.Context, f *Job) error
+	Dispatch(ctx context.Context, f JobFunc) error
 }
 
 type worker struct {
@@ -58,10 +49,7 @@ type worker struct {
 	running    atomic.Value
 	eg         errgroup.Group
 	wg         *sync.WaitGroup
-	inCh       chan *Job
-	q          []*Job
-	qLen       uint64
-	jobCh      chan *Job
+	queue      Queue
 }
 
 func New(opts ...WorkerOption) (Worker, error) {
@@ -78,41 +66,19 @@ func New(opts ...WorkerOption) (Worker, error) {
 }
 
 func (w *worker) Start(ctx context.Context) (<-chan error, error) {
-	w.inCh = make(chan *Job, w.limitation)
-	w.jobCh = make(chan *Job)
+	var err error
 
-	w.startQueueLoop(ctx)
+	w.queue, err = NewQueue(
+		WithQueueBuffer(w.limitation),
+		WithQueueErrGroup(w.eg),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	w.queue.Start(ctx)
 
 	return w.startJobLoop(ctx)
-}
-
-func (w *worker) startQueueLoop(ctx context.Context) {
-	w.running.Store(true)
-
-	w.eg.Go(safety.RecoverFunc(func() (err error) {
-		defer close(w.inCh)
-		for {
-			select {
-			case <-ctx.Done():
-				w.running.Store(false)
-				return ctx.Err()
-			case j := <-w.inCh:
-				w.q = append(w.q, j)
-				atomic.AddUint64(&w.qLen, 1)
-			default:
-			}
-
-			if len(w.q) > 0 {
-				j := w.q[0]
-				select {
-				case w.jobCh <- j:
-					w.q = w.q[1:]
-					atomic.AddUint64(&w.qLen, ^uint64(0))
-				default:
-				}
-			}
-		}
-	}))
 }
 
 func (w *worker) startJobLoop(ctx context.Context) (<-chan error, error) {
@@ -122,47 +88,25 @@ func (w *worker) startJobLoop(ctx context.Context) (<-chan error, error) {
 	eg.Limitation(w.limitation)
 
 	w.wg = new(sync.WaitGroup)
-	w.wg.Add(1)
 
-	retryFn := func(j *Job) error {
-		j.RetryCount++
-
-		if !w.IsRunning() {
-			log.Debugf("worker %s: append job [%s] to queue slice", w.Name(), j.Name)
-
-			w.q = append(w.q, j)
-
-			return nil
-		}
-
-		log.Debugf("worker %s: retrying job [%s]", w.Name(), j.Name)
-
-		return w.Dispatch(ctx, j)
-	}
-
+	w.running.Store(true)
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
-		defer close(w.jobCh)
-		defer w.wg.Done()
-
 		for {
 			select {
 			case <-ctx.Done():
+				w.running.Store(false)
 				if err = ctx.Err(); err != nil {
 					return errors.Wrap(eg.Wait(), err.Error())
 				}
 				return eg.Wait()
-			case job := <-w.jobCh:
+			case job := <-w.queue.OutCh():
 				eg.Go(safety.RecoverFunc(func() (err error) {
 					w.wg.Add(1)
 					defer w.wg.Done()
 
-					err = job.Fn(ctx)
+					err = job(ctx)
 					if err != nil {
 						log.Debug(err)
-
-						if job.Retry {
-							err = errors.Wrap(retryFn(job), err.Error())
-						}
 					}
 
 					return err
@@ -199,14 +143,10 @@ func (w *worker) Name() string {
 }
 
 func (w *worker) Len() uint64 {
-	return atomic.LoadUint64(&w.qLen)
+	return w.queue.Len()
 }
 
-func (w *worker) Jobs() []*Job {
-	return w.q
-}
-
-func (w *worker) Dispatch(ctx context.Context, f *Job) error {
+func (w *worker) Dispatch(ctx context.Context, f JobFunc) error {
 	ctx, span := trace.StartSpan(ctx, "vald/internal/worker/Worker.Dispatch")
 	defer func() {
 		if span != nil {
@@ -223,8 +163,8 @@ func (w *worker) Dispatch(ctx context.Context, f *Job) error {
 		return err
 	}
 
-	if f != nil && f.Fn != nil {
-		w.inCh <- f
+	if f != nil {
+		w.queue.InCh() <- f
 	}
 
 	return nil

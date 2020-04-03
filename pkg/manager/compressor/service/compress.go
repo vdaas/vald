@@ -120,8 +120,8 @@ func (c *compressor) dispatchCompress(ctx context.Context, vectors ...[]float32)
 
 		for iter, vector := range vectors {
 			wg.Add(1)
-			err := c.worker.Dispatch(ctx, func(i int, v []float32) *worker.Job {
-				f := func(ctx context.Context) error {
+			err := c.worker.Dispatch(ctx, func(i int, v []float32) worker.JobFunc {
+				return func(ctx context.Context) error {
 					defer wg.Done()
 
 					select {
@@ -143,11 +143,6 @@ func (c *compressor) dispatchCompress(ctx context.Context, vectors ...[]float32)
 					mu.Unlock()
 
 					return nil
-				}
-
-				return &worker.Job{
-					Fn:   f,
-					Data: vector,
 				}
 			}(iter, vector))
 			if err != nil {
@@ -188,8 +183,8 @@ func (c *compressor) dispatchDecompress(ctx context.Context, bytess ...[]byte) (
 
 		for iter, bytes := range bytess {
 			wg.Add(1)
-			err := c.worker.Dispatch(ctx, func(i int, b []byte) *worker.Job {
-				f := func(ctx context.Context) error {
+			err := c.worker.Dispatch(ctx, func(i int, b []byte) worker.JobFunc {
+				return func(ctx context.Context) error {
 					defer wg.Done()
 
 					select {
@@ -211,11 +206,6 @@ func (c *compressor) dispatchDecompress(ctx context.Context, bytess ...[]byte) (
 					mu.Unlock()
 
 					return nil
-				}
-
-				return &worker.Job{
-					Fn:   f,
-					Data: bytes,
 				}
 			}(iter, bytes))
 			if err != nil {

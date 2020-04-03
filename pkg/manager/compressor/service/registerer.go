@@ -18,9 +18,9 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"runtime"
+	"sync"
 	"sync/atomic"
 
 	gcomp "github.com/vdaas/vald/apis/grpc/manager/compressor"
@@ -52,6 +52,8 @@ type registerer struct {
 	addr       string
 	client     grpc.Client
 	running    atomic.Value
+	metas      map[string]*payload.Backup_MetaVector
+	metasMux   sync.Mutex
 }
 
 func NewRegisterer(opts ...RegistererOption) (Registerer, error) {
@@ -63,6 +65,7 @@ func NewRegisterer(opts ...RegistererOption) (Registerer, error) {
 	}
 
 	r.running.Store(false)
+	r.metas = make(map[string]*payload.Backup_MetaVector, 0)
 
 	return r, nil
 }
@@ -136,7 +139,7 @@ func (r *registerer) Register(ctx context.Context, meta *payload.Backup_MetaVect
 		}
 	}()
 
-	err := r.worker.Dispatch(ctx, r.registerProcessFunc(meta))
+	err := r.dispatch(ctx, meta)
 	if err != nil && span != nil {
 		span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 	}
@@ -196,10 +199,22 @@ func (r *registerer) startConnectionMonitor(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) *worker.Job {
-	f := func(ctx context.Context) (err error) {
+func (r *registerer) dispatch(ctx context.Context, meta *payload.Backup_MetaVector) error {
+	r.metasMux.Lock()
+	r.metas[meta.GetUuid()] = meta
+	r.metasMux.Unlock()
+
+	return r.worker.Dispatch(ctx, r.registerProcessFunc(meta))
+}
+
+func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) worker.JobFunc {
+	return func(ctx context.Context) (err error) {
 		ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.Register.DispatchedJob")
 		defer func() {
+			r.metasMux.Lock()
+			delete(r.metas, meta.GetUuid())
+			r.metasMux.Unlock()
+
 			if span != nil {
 				span.End()
 			}
@@ -225,34 +240,23 @@ func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) *worke
 				Ips:    meta.GetIps(),
 			},
 		)
-		if err != nil {
-			if span != nil {
-				span.SetStatus(trace.StatusCodeInternal(err.Error()))
-			}
+		if err != nil && span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
 
 		return err
-	}
-
-	return &worker.Job{
-		Name:  fmt.Sprintf("registering uuid %s", meta.GetUuid()),
-		Fn:    f,
-		Data:  meta,
-		Retry: true,
 	}
 }
 
 func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 	var err error
-	var meta *payload.Backup_MetaVector
 
-	jobs := r.worker.Jobs()
-	log.Debugf("compressor registerer queued meta-vector count: %d", len(jobs))
+	r.metasMux.Lock()
 
-	for _, job := range jobs {
-		meta = job.Data.(*payload.Backup_MetaVector)
+	log.Debugf("compressor registerer queued meta-vector count: %d", len(r.metas))
 
-		log.Debugf("forwarding uuid %s", meta.GetUuid())
+	for uuid, meta := range r.metas {
+		log.Debugf("forwarding uuid %s", uuid)
 
 		_, err = r.client.Do(
 			ctx,
@@ -270,14 +274,12 @@ func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 			},
 		)
 		if err != nil {
-			log.Errorf(
-				"compressor registerer failed to backup uuid %s: %v",
-				meta.GetUuid(),
-				err,
-			)
+			log.Errorf("compressor registerer failed to backup uuid %s: %v", uuid, err)
 			errs = errors.Wrap(errs, err.Error())
 		}
 	}
+
+	r.metasMux.Unlock()
 
 	return errs
 }

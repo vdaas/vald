@@ -1,0 +1,49 @@
+//
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+// Package worker provides worker processes
+package worker
+
+import (
+	"github.com/vdaas/vald/internal/errgroup"
+)
+
+type QueueOption func(q *queue) error
+
+var (
+	defaultQueueOpts = []QueueOption{
+		WithQueueBuffer(10),
+		WithQueueErrGroup(errgroup.Get()),
+	}
+)
+
+func WithQueueBuffer(buffer int) QueueOption {
+	return func(q *queue) error {
+		if buffer > 0 {
+			q.buffer = buffer
+		}
+		return nil
+	}
+}
+
+func WithQueueErrGroup(eg errgroup.Group) QueueOption {
+	return func(q *queue) error {
+		if eg != nil {
+			q.eg = eg
+		}
+		return nil
+	}
+}
