@@ -245,13 +245,14 @@ func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) *worke
 
 func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 	var err error
+	var meta *payload.Backup_MetaVector
 
-	log.Debugf("compressor registerer queued meta-vector count: %d", r.Len())
+	jobs := r.worker.Jobs()
+	log.Debugf("compressor registerer queued meta-vector count: %d", len(jobs))
 
-	// TODO read all metas from worker queue
-	var metas []*payload.Backup_MetaVector
+	for _, job := range jobs {
+		meta = job.Data.(*payload.Backup_MetaVector)
 
-	for _, meta := range metas {
 		log.Debugf("forwarding uuid %s", meta.GetUuid())
 
 		_, err = r.client.Do(

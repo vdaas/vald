@@ -45,6 +45,7 @@ type Worker interface {
 	IsRunning() bool
 	Name() string
 	Len() uint64
+	Jobs() []*Job
 	Dispatch(ctx context.Context, f *Job) error
 }
 
@@ -166,6 +167,10 @@ func (w *worker) Name() string {
 
 func (w *worker) Len() uint64 {
 	return atomic.LoadUint64(&w.qLen)
+}
+
+func (w *worker) Jobs() []*Job {
+	return w.q
 }
 
 func (w *worker) Dispatch(ctx context.Context, f *Job) error {
