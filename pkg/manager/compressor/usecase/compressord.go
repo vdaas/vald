@@ -84,7 +84,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithCompressorWorker(
 			worker.WithName("compressor"),
 			worker.WithLimitation(cfg.Compressor.ConcurrentLimit),
-			worker.WithBuffer(cfg.Compressor.Buffer),
 		),
 		service.WithCompressorErrGroup(eg),
 	)
@@ -110,15 +109,12 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithRegistererWorker(
 			worker.WithName("registerer"),
 			worker.WithLimitation(cfg.Compressor.Registerer.Worker.ConcurrentLimit),
-			worker.WithBuffer(cfg.Compressor.Registerer.Worker.Buffer),
 		),
 		service.WithRegistererErrGroup(eg),
-		service.WithRegistererBuffer(cfg.Compressor.Registerer.Buffer),
 		service.WithRegistererBackup(b),
 		service.WithRegistererCompressor(c),
 		service.WithRegistererAddr(cfg.Compressor.Registerer.Compressor.Client.Addrs[0]),
 		service.WithRegistererClient(grpc.New(compressorClientOptions...)),
-		service.WithRegistererBackoff(cfg.Compressor.Registerer.Backoff),
 	)
 	if err != nil {
 		return nil, err
@@ -237,7 +233,11 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	}
 
 	if r.compressor != nil {
-		cech = r.compressor.Start(ctx)
+		cech, err = r.compressor.Start(ctx)
+		if err != nil {
+			close(ech)
+			return nil, err
+		}
 	}
 
 	if r.registerer != nil {

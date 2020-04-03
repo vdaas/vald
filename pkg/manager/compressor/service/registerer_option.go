@@ -18,8 +18,6 @@
 package service
 
 import (
-	"github.com/vdaas/vald/internal/backoff"
-	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/worker"
@@ -31,7 +29,6 @@ var (
 	defaultRegistererOpts = []RegistererOption{
 		WithRegistererWorker(),
 		WithRegistererErrGroup(errgroup.Get()),
-		WithRegistererBuffer(100),
 	}
 )
 
@@ -46,15 +43,6 @@ func WithRegistererErrGroup(eg errgroup.Group) RegistererOption {
 	return func(r *registerer) error {
 		if eg != nil {
 			r.eg = eg
-		}
-		return nil
-	}
-}
-
-func WithRegistererBuffer(buffer int) RegistererOption {
-	return func(r *registerer) error {
-		if buffer > 0 {
-			r.buffer = buffer
 		}
 		return nil
 	}
@@ -89,17 +77,6 @@ func WithRegistererClient(c grpc.Client) RegistererOption {
 	return func(r *registerer) error {
 		if c != nil {
 			r.client = c
-		}
-		return nil
-	}
-}
-
-func WithRegistererBackoff(cfg *config.Backoff) RegistererOption {
-	return func(r *registerer) error {
-		if cfg != nil &&
-			len(cfg.InitialDuration) != 0 &&
-			cfg.RetryCount > 2 {
-			r.backoff = backoff.New(cfg.Opts()...)
 		}
 		return nil
 	}

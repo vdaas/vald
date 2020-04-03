@@ -26,8 +26,7 @@ type WorkerOption func(w *worker) error
 var (
 	defaultWorkerOpts = []WorkerOption{
 		WithName("worker"),
-		WithLimitation(0),
-		WithBuffer(0),
+		WithLimitation(10),
 		WithErrGroup(errgroup.Get()),
 	}
 )
@@ -43,14 +42,9 @@ func WithName(name string) WorkerOption {
 
 func WithLimitation(limit int) WorkerOption {
 	return func(w *worker) error {
-		w.limitation = limit
-		return nil
-	}
-}
-
-func WithBuffer(b int) WorkerOption {
-	return func(w *worker) error {
-		w.buffer = b
+		if limit > 0 {
+			w.limitation = limit
+		}
 		return nil
 	}
 }

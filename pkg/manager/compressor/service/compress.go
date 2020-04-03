@@ -32,12 +32,12 @@ import (
 
 type Compressor interface {
 	PreStart(ctx context.Context) error
-	Start(ctx context.Context) <-chan error
+	Start(ctx context.Context) (<-chan error, error)
 	Compress(ctx context.Context, vector []float32) ([]byte, error)
 	Decompress(ctx context.Context, bytes []byte) ([]float32, error)
 	MultiCompress(ctx context.Context, vectors [][]float32) ([][]byte, error)
 	MultiDecompress(ctx context.Context, bytess [][]byte) ([][]float32, error)
-	WorkerLen() int
+	Len() uint64
 }
 
 type compressor struct {
@@ -88,7 +88,7 @@ func (c *compressor) PreStart(ctx context.Context) (err error) {
 
 	c.compressor = compressor
 
-	w, err := worker.NewWorker(append(c.workerOpts, worker.WithErrGroup(c.eg))...)
+	w, err := worker.New(append(c.workerOpts, worker.WithErrGroup(c.eg))...)
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func (c *compressor) PreStart(ctx context.Context) (err error) {
 	return nil
 }
 
-func (c *compressor) Start(ctx context.Context) <-chan error {
+func (c *compressor) Start(ctx context.Context) (<-chan error, error) {
 	return c.worker.Start(ctx)
 }
 
@@ -121,7 +121,7 @@ func (c *compressor) dispatchCompress(ctx context.Context, vectors ...[]float32)
 		for iter, vector := range vectors {
 			if c.worker.IsRunning() {
 				wg.Add(1)
-				err := c.worker.Dispatch(ctx, func(i int, v []float32) worker.WorkerJobFunc {
+				err := c.worker.Dispatch(ctx, func(i int, v []float32) worker.JobFunc {
 					return func(ctx context.Context) error {
 						defer wg.Done()
 
@@ -186,7 +186,7 @@ func (c *compressor) dispatchDecompress(ctx context.Context, bytess ...[]byte) (
 		for iter, bytes := range bytess {
 			if c.worker.IsRunning() {
 				wg.Add(1)
-				err := c.worker.Dispatch(ctx, func(i int, b []byte) worker.WorkerJobFunc {
+				err := c.worker.Dispatch(ctx, func(i int, b []byte) worker.JobFunc {
 					return func(ctx context.Context) error {
 						defer wg.Done()
 
@@ -322,6 +322,6 @@ func (c *compressor) MultiDecompress(ctx context.Context, bytess [][]byte) ([][]
 	return vectors, err
 }
 
-func (c *compressor) WorkerLen() int {
+func (c *compressor) Len() uint64 {
 	return c.worker.Len()
 }

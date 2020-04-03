@@ -44,18 +44,13 @@ func New(c service.Compressor, r service.Registerer) metrics.Metric {
 			metrics.ValdOrg+"/manager/compressor/registerer_buffer_count",
 			"Compressor registerer buffer count",
 			metrics.UnitDimensionless),
-		registererWorkerBufferCount: *metrics.Int64(
-			metrics.ValdOrg+"/manager/compressor/registerer_worker_buffer_count",
-			"Compressor registerer worker buffer count",
-			metrics.UnitDimensionless),
 	}
 }
 
 func (c *compressorMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
 	return []metrics.Measurement{
-		c.compressorBufferCount.M(int64(c.compressor.WorkerLen())),
+		c.compressorBufferCount.M(int64(c.compressor.Len())),
 		c.registererBufferCount.M(int64(c.registerer.Len())),
-		c.registererWorkerBufferCount.M(int64(c.registerer.WorkerLen())),
 	}, nil
 }
 
@@ -75,12 +70,6 @@ func (c *compressorMetrics) View() []*metrics.View {
 			Name:        "compressor_registerer_buffer_count",
 			Description: "Compressor registerer buffer count",
 			Measure:     &c.registererBufferCount,
-			Aggregation: metrics.LastValue(),
-		},
-		&metrics.View{
-			Name:        "compressor_registerer_worker_buffer_count",
-			Description: "Compressor registerer worker buffer count",
-			Measure:     &c.registererWorkerBufferCount,
 			Aggregation: metrics.LastValue(),
 		},
 	}

@@ -20,7 +20,6 @@ package worker
 import (
 	"context"
 	"reflect"
-	"runtime"
 	"sync"
 	"sync/atomic"
 
@@ -31,30 +30,32 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 )
 
-type WorkerJobFunc func(context.Context) error
+type JobFunc func(context.Context) error
 
 type Worker interface {
-	Start(ctx context.Context) <-chan error
+	Start(ctx context.Context) (<-chan error, error)
 	Wait()
 	Pause()
 	Resume()
 	IsRunning() bool
 	Name() string
-	Len() int
-	Dispatch(ctx context.Context, f WorkerJobFunc) error
+	Len() uint64
+	Dispatch(ctx context.Context, f JobFunc) error
 }
 
 type worker struct {
 	name       string
 	limitation int
-	buffer     int
 	running    atomic.Value
 	eg         errgroup.Group
 	wg         *sync.WaitGroup
-	jobCh      chan WorkerJobFunc
+	inCh       chan JobFunc
+	q          []JobFunc
+	qLen       uint64
+	jobCh      chan JobFunc
 }
 
-func NewWorker(opts ...WorkerOption) (Worker, error) {
+func New(opts ...WorkerOption) (Worker, error) {
 	w := new(worker)
 	for _, opt := range append(defaultWorkerOpts, opts...) {
 		if err := opt(w); err != nil {
@@ -67,8 +68,36 @@ func NewWorker(opts ...WorkerOption) (Worker, error) {
 	return w, nil
 }
 
-func (w *worker) Start(ctx context.Context) <-chan error {
+func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 1)
+
+	w.inCh = make(chan JobFunc, w.limitation)
+	w.jobCh = make(chan JobFunc)
+
+	w.running.Store(true)
+	w.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(w.inCh)
+		for {
+			select {
+			case <-ctx.Done():
+				w.running.Store(false)
+				return ctx.Err()
+			case j := <-w.inCh:
+				w.q = append(w.q, j)
+				atomic.AddUint64(&w.qLen, 1)
+			default:
+			}
+			if len(w.q) > 0 {
+				j := w.q[0]
+				select {
+				case w.jobCh <- j:
+					w.q = w.q[1:]
+					atomic.AddUint64(&w.qLen, ^uint64(0))
+				default:
+				}
+			}
+		}
+	}))
 
 	eg, ctx := errgroup.New(ctx)
 	eg.Limitation(w.limitation)
@@ -76,15 +105,11 @@ func (w *worker) Start(ctx context.Context) <-chan error {
 	w.wg = new(sync.WaitGroup)
 	w.wg.Add(1)
 
-	w.jobCh = make(chan WorkerJobFunc, w.buffer)
-
-	w.running.Store(true)
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(w.jobCh)
 		for {
 			select {
 			case <-ctx.Done():
-				w.running.Store(false)
 				w.wg.Done()
 				if err = ctx.Err(); err != nil {
 					return errors.Wrap(eg.Wait(), err.Error())
@@ -93,13 +118,11 @@ func (w *worker) Start(ctx context.Context) <-chan error {
 			case job := <-w.jobCh:
 				w.wg.Add(1)
 				eg.Go(safety.RecoverFunc(func() (err error) {
+					defer w.wg.Done()
+
 					err = job(ctx)
-
-					w.wg.Done()
-
 					if err != nil {
 						log.Debug(err)
-						runtime.Gosched()
 						ech <- err
 					}
 
@@ -109,15 +132,15 @@ func (w *worker) Start(ctx context.Context) <-chan error {
 		}
 	}))
 
-	return ech
+	return ech, nil
 }
 
 func (w *worker) Wait() {
-	log.Debug("worker %s: waiting for rest jobs to be completed...", w.name)
+	log.Debugf("worker %s: waiting for rest jobs to be completed...", w.Name())
 
 	w.wg.Wait()
 
-	log.Debug("worker %s: all of the queued worker jobs completed.", w.name)
+	log.Debugf("worker %s: all of the queued worker jobs completed.", w.Name())
 }
 
 func (w *worker) Pause() {
@@ -136,11 +159,11 @@ func (w *worker) Name() string {
 	return w.name
 }
 
-func (w *worker) Len() int {
-	return len(w.jobCh)
+func (w *worker) Len() uint64 {
+	return atomic.LoadUint64(&w.qLen)
 }
 
-func (w *worker) Dispatch(ctx context.Context, f WorkerJobFunc) error {
+func (w *worker) Dispatch(ctx context.Context, f JobFunc) error {
 	ctx, span := trace.StartSpan(ctx, "vald/internal/worker/Worker.Dispatch")
 	defer func() {
 		if span != nil {
@@ -148,16 +171,16 @@ func (w *worker) Dispatch(ctx context.Context, f WorkerJobFunc) error {
 		}
 	}()
 
-	if f != nil {
-		select {
-		case w.jobCh <- f:
-		default:
-			err := errors.ErrWorkerChannelIsFull(w.name)
-			if span != nil {
-				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
-			}
-			return err
+	if !w.IsRunning() {
+		err := errors.ErrWorkerIsNotRunning(w.Name())
+		if span != nil {
+			span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 		}
+
+		return err
 	}
+
+	w.jobCh <- f
+
 	return nil
 }

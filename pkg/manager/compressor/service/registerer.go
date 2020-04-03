@@ -24,7 +24,6 @@ import (
 
 	gcomp "github.com/vdaas/vald/apis/grpc/manager/compressor"
 	"github.com/vdaas/vald/apis/grpc/payload"
-	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -40,8 +39,7 @@ type Registerer interface {
 	PreStop(ctx context.Context) error
 	Register(ctx context.Context, meta *payload.Backup_MetaVector) error
 	RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) error
-	Len() int
-	WorkerLen() int
+	Len() uint64
 }
 
 type registerer struct {
@@ -52,10 +50,7 @@ type registerer struct {
 	compressor Compressor
 	addr       string
 	client     grpc.Client
-	ch         chan *payload.Backup_MetaVector
-	buffer     int
 	running    atomic.Value
-	backoff    backoff.Backoff
 }
 
 func NewRegisterer(opts ...RegistererOption) (Registerer, error) {
@@ -71,27 +66,20 @@ func NewRegisterer(opts ...RegistererOption) (Registerer, error) {
 	return r, nil
 }
 
-func (r *registerer) PreStart(ctx context.Context) error {
-	r.ch = make(chan *payload.Backup_MetaVector, r.buffer)
-
-	w, err := worker.NewWorker(append(r.workerOpts, worker.WithErrGroup(r.eg))...)
-	if err != nil {
-		return err
-	}
-
-	r.worker = w
-
-	return nil
+func (r *registerer) PreStart(ctx context.Context) (err error) {
+	r.worker, err = worker.New(append(r.workerOpts, worker.WithErrGroup(r.eg))...)
+	return err
 }
 
 func (r *registerer) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 3)
 
-	var wech, rech, cech <-chan error
+	var wech, cech <-chan error
 
-	rech = r.startDispatcherLoop(ctx)
-
-	wech = r.worker.Start(ctx)
+	wech, err := r.worker.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	cech = r.startConnectionMonitor(ctx)
 
@@ -102,7 +90,6 @@ func (r *registerer) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case err = <-rech:
 			case err = <-wech:
 			case err = <-cech:
 			}
@@ -148,16 +135,7 @@ func (r *registerer) Register(ctx context.Context, meta *payload.Backup_MetaVect
 		}
 	}()
 
-	if !r.worker.IsRunning() {
-		err := errors.ErrWorkerIsNotRunning(r.worker.Name())
-		if span != nil {
-			span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
-		}
-
-		return err
-	}
-
-	err := r.sendToChWithRunningCheck(ctx, meta)
+	err := r.worker.Dispatch(ctx, r.registerProcessFunc(meta))
 	if err != nil && span != nil {
 		span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 	}
@@ -188,37 +166,8 @@ func (r *registerer) RegisterMulti(ctx context.Context, metas *payload.Backup_Me
 	return errs
 }
 
-func (r *registerer) Len() int {
-	return len(r.ch)
-}
-
-func (r *registerer) WorkerLen() int {
+func (r *registerer) Len() uint64 {
 	return r.worker.Len()
-}
-
-func (r *registerer) startDispatcherLoop(ctx context.Context) <-chan error {
-	ech := make(chan error, 1)
-
-	r.eg.Go(safety.RecoverFunc(func() (err error) {
-		defer close(r.ch)
-
-		for {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case meta := <-r.ch:
-				err = r.worker.Dispatch(ctx, r.registerJob(meta))
-				if err != nil {
-					log.Debugf("re-enqueueing uuid %s causing: %v", meta.GetUuid(), err.Error())
-					err = errors.Wrap(r.sendToCh(ctx, meta), err.Error())
-					runtime.Gosched()
-					ech <- err
-				}
-			}
-		}
-	}))
-
-	return ech
 }
 
 func (r *registerer) startConnectionMonitor(ctx context.Context) <-chan error {
@@ -246,37 +195,7 @@ func (r *registerer) startConnectionMonitor(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (r *registerer) sendToChWithRunningCheck(ctx context.Context, meta *payload.Backup_MetaVector) error {
-	if !r.running.Load().(bool) {
-		return errors.ErrCompressorRegistererIsNotRunning()
-	}
-
-	return r.sendToCh(ctx, meta)
-}
-
-func (r *registerer) sendToCh(ctx context.Context, meta *payload.Backup_MetaVector) error {
-	log.Debugf("enqueueing uuid %s", meta.GetUuid())
-
-	f := func() error {
-		select {
-		case r.ch <- meta:
-		default:
-			return errors.ErrCompressorRegistererChannelIsFull()
-		}
-		return nil
-	}
-
-	if r.backoff != nil {
-		_, err := r.backoff.Do(ctx, func() (interface{}, error) {
-			return nil, f()
-		})
-		return err
-	}
-
-	return f()
-}
-
-func (r *registerer) registerJob(meta *payload.Backup_MetaVector) worker.WorkerJobFunc {
+func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) worker.JobFunc {
 	return func(ctx context.Context) (err error) {
 		ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.Register.DispatchedJob")
 		defer func() {
@@ -290,7 +209,7 @@ func (r *registerer) registerJob(meta *payload.Backup_MetaVector) worker.WorkerJ
 		vector, err = r.compressor.Compress(ctx, meta.GetVector())
 		if err != nil {
 			log.Debugf("re-enqueueing uuid %s", meta.GetUuid())
-			err = errors.Wrap(r.sendToCh(ctx, meta), err.Error())
+			err = errors.Wrap(r.worker.Dispatch(ctx, r.registerProcessFunc(meta)), err.Error())
 
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -310,7 +229,7 @@ func (r *registerer) registerJob(meta *payload.Backup_MetaVector) worker.WorkerJ
 		)
 		if err != nil {
 			log.Debugf("re-enqueueing uuid %s", meta.GetUuid())
-			err = errors.Wrap(r.sendToCh(ctx, meta), err.Error())
+			err = errors.Wrap(r.worker.Dispatch(ctx, r.registerProcessFunc(meta)), err.Error())
 
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -326,42 +245,36 @@ func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 
 	log.Debugf("compressor registerer queued meta-vector count: %d", r.Len())
 
-	func() {
-		for {
-			select {
-			case v, ok := <-r.ch:
-				if !ok {
-					return
-				}
-				log.Debugf("forwarding uuid %s", v.GetUuid())
-				_, err = r.client.Do(
+	// TODO read all metas from worker queue
+	var metas []*payload.Backup_MetaVector
+
+	for _, meta := range metas {
+		log.Debugf("forwarding uuid %s", meta.GetUuid())
+
+		_, err = r.client.Do(
+			ctx,
+			r.addr,
+			func(
+				ctx context.Context,
+				conn *grpc.ClientConn,
+				copts ...grpc.CallOption,
+			) (interface{}, error) {
+				return gcomp.NewBackupClient(conn).Register(
 					ctx,
-					r.addr,
-					func(
-						ctx context.Context,
-						conn *grpc.ClientConn,
-						copts ...grpc.CallOption,
-					) (interface{}, error) {
-						return gcomp.NewBackupClient(conn).Register(
-							ctx,
-							v,
-							copts...,
-						)
-					},
+					meta,
+					copts...,
 				)
-				if err != nil {
-					log.Errorf(
-						"compressor registerer failed to backup uuid %s: %v",
-						v.GetUuid(),
-						err,
-					)
-					errs = errors.Wrap(errs, err.Error())
-				}
-			default:
-				return
-			}
+			},
+		)
+		if err != nil {
+			log.Errorf(
+				"compressor registerer failed to backup uuid %s: %v",
+				meta.GetUuid(),
+				err,
+			)
+			errs = errors.Wrap(errs, err.Error())
 		}
-	}()
+	}
 
 	return errs
 }
