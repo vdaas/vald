@@ -66,22 +66,25 @@ func (q *queue) Start(ctx context.Context) {
 		defer close(q.outCh)
 
 		for {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case j := <-q.inCh:
-				s = append(s, j)
-				q.qLen.Store(uint64(len(s)))
-			default:
-			}
-
 			if len(s) > 0 {
 				j := s[0]
 				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case j := <-q.inCh:
+					s = append(s, j)
+					q.qLen.Store(uint64(len(s)))
 				case q.outCh <- j:
 					s = s[1:]
 					q.qLen.Store(uint64(len(s)))
-				default:
+				}
+			} else {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case j := <-q.inCh:
+					s = append(s, j)
+					q.qLen.Store(uint64(len(s)))
 				}
 			}
 		}
