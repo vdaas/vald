@@ -1,12 +1,12 @@
 package caser
 
-import "testing"
-
 type Option func(*caser)
 
 var (
 	defaultOptions = []Option{
-		WithCheck(func(*testing.T, ...interface{}) {}),
+		WithCheck(func(...interface{}) error {
+			return nil
+		}),
 	}
 )
 
@@ -34,7 +34,7 @@ func WithField(fields ...interface{}) Option {
 	}
 }
 
-func WithCheck(fn func(t *testing.T, gots ...interface{})) Option {
+func WithCheck(fn func(gots ...interface{}) error) Option {
 	return func(c *caser) {
 		if fn != nil {
 			c.checkFunc = fn
