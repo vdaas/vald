@@ -31,6 +31,6 @@ func (c *caser) Fields() []interface{} {
 	return c.fields
 }
 
-func (c *caser) CheckFunc() func(...interface{}) error {
+func (c *caser) Check() func(...interface{}) error {
 	return c.checkFunc
 }
