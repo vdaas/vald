@@ -142,17 +142,18 @@ func (w *worker) startJobLoop(ctx context.Context) (<-chan error, error) {
 
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(w.jobCh)
+		defer w.wg.Done()
+
 		for {
 			select {
 			case <-ctx.Done():
-				w.wg.Done()
 				if err = ctx.Err(); err != nil {
 					return errors.Wrap(eg.Wait(), err.Error())
 				}
 				return eg.Wait()
 			case job := <-w.jobCh:
-				w.wg.Add(1)
 				eg.Go(safety.RecoverFunc(func() (err error) {
+					w.wg.Add(1)
 					defer w.wg.Done()
 
 					err = job.Fn(ctx)
@@ -174,11 +175,11 @@ func (w *worker) startJobLoop(ctx context.Context) (<-chan error, error) {
 }
 
 func (w *worker) Wait() {
-	log.Debugf("worker %s: waiting for rest jobs to be completed...", w.Name())
+	log.Debugf("worker %s: waiting for queuing jobs to be completed...", w.Name())
 
 	w.wg.Wait()
 
-	log.Debugf("worker %s: all of the queued worker jobs completed.", w.Name())
+	log.Debugf("worker %s: all of the queuing jobs completed.", w.Name())
 }
 
 func (w *worker) Pause() {

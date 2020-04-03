@@ -243,6 +243,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	if r.registerer != nil {
 		rech, err = r.registerer.Start(ctx)
 		if err != nil {
+			close(ech)
 			return nil, err
 		}
 	}
