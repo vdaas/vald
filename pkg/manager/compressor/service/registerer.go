@@ -18,6 +18,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"runtime"
 	"sync/atomic"
@@ -234,6 +235,7 @@ func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) *worke
 	}
 
 	return &worker.Job{
+		Name:  fmt.Sprintf("registering uuid %s", meta.GetUuid()),
 		Fn:    f,
 		Data:  meta,
 		Retry: true,

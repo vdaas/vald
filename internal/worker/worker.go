@@ -33,6 +33,7 @@ import (
 type JobFunc func(context.Context) error
 
 type Job struct {
+	Name       string
 	Fn         JobFunc
 	Data       interface{}
 	Retry      bool
@@ -127,9 +128,14 @@ func (w *worker) startJobLoop(ctx context.Context) (<-chan error, error) {
 		j.RetryCount++
 
 		if !w.IsRunning() {
+			log.Debugf("worker %s: append job [%s] to queue slice", w.Name(), j.Name)
+
 			w.q = append(w.q, j)
+
 			return nil
 		}
+
+		log.Debugf("worker %s: retrying job [%s]", w.Name(), j.Name)
 
 		return w.Dispatch(ctx, j)
 	}
@@ -151,11 +157,11 @@ func (w *worker) startJobLoop(ctx context.Context) (<-chan error, error) {
 
 					err = job.Fn(ctx)
 					if err != nil {
-						if job.Retry {
-							retryFn(job)
-						}
 						log.Debug(err)
-						ech <- err
+
+						if job.Retry {
+							err = errors.Wrap(retryFn(job), err.Error())
+						}
 					}
 
 					return err
