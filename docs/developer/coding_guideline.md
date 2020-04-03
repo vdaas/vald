@@ -42,12 +42,12 @@ The project layout includes the folder and the file structure in the project. Ba
 ### Packages
 The package defines the context of the objects in the package, for example the corresponding methods and structs belongs to corresponding package. Unlike other languages like Java, in Golang we use the package name to declar which context of the object we are going to use. For example in [time](https://golang.org/pkg/time/) package, it defines all the objects about time like `time.Now()` method to get the current time.
 
-Package name should be the same as the folder name.
-Package name should keep as simple as it should, and should contain only one specific context in the package.
-Package name should not be too general, for example `util` or `helper`, which will cause all the objects from different contexts to be store in one package. If you really want to name the package as `util`,  please define the more specific package  name more  `ioutil` or `httputil`.
-All packages should write the comments on the `doc.go` under the package to describe the corresponding package.
+Here is the naming conventions of the package:
+- Package name should be the same as the folder name.
+- Package name should keep as simple as it should, and should contain only one specific context in the package.
+- Package name should not be too general, for example `util` or `helper`, which will cause all the objects from different contexts to be store in one package. If you really want to name the package as `util`,  please define the more specific package  name more  `ioutil` or `httputil`.
 
-For example, under the folder name called `cache` should contains a file named `doc.go`, which contains the package documentation. For example
+All packages should contains `doc.go` file under the package to describe what is the package is. For example, under the folder name called `cache` should contains a file named `doc.go`, which contains the package documentation. For example
 
 ```golang
 // Package cache provides implementation of cache
@@ -57,7 +57,9 @@ package cache
 ### Interfaces
 Interface defines the program interface for usability and future extendability.
 Unlike other languages like Java, golang support implicit interface implementation. The type implements do not need to specify the interface name; to "implments" the interface the structs only needs to defined the methods same as the interface, so please be careful to define the method name inside the interface.
-Interface name should be defined as MixedCaps rather than underscores.
+
+Here is the naming conventions of the interface:
+- Use MixedCaps
 
 ```golang
 type RoundTripper interface {
@@ -66,17 +68,21 @@ type RoundTripper interface {
 ```
 
 ### Structs
+Structs in golang is the object definition, we can attach any fields and methods to the struct.
 
-#### Object initialization
-There are many ways to initialize objects in Golang. Base on the use case we can decide which style to follow to initialize objects in Golang.
+Here is the naming conventions of the struct:
+- Use MixedCaps
+
+#### Struct initialization
+There are many ways to initialize structs in Golang, base on the use case we can decide which way to initialize objects in Golang.
+
+### Variables and Constant
 
 ### Methods
 
 #### Getter and Setter
 
 #### Defer functions
-
-### Variables
 
 ## Program comments
 Program comments makes the code more easier to understand. Basically we suggest not to write many comments inside the source code, unless the source code is very complicated and confusing; otherwise we should divide the source code into methods to keep the readability and usability of the source code.
