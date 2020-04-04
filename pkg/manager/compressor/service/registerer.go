@@ -19,7 +19,6 @@ package service
 import (
 	"context"
 	"reflect"
-	"runtime"
 	"sync"
 	"sync/atomic"
 
@@ -78,40 +77,9 @@ func (r *registerer) PreStart(ctx context.Context) (err error) {
 }
 
 func (r *registerer) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 3)
-
-	var wech, cech <-chan error
-
-	wech, err := r.worker.Start(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	cech = r.startConnectionMonitor(ctx)
-
-	r.eg.Go(safety.RecoverFunc(func() (err error) {
-		defer close(ech)
-
-		for {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case err = <-wech:
-			case err = <-cech:
-			}
-			if err != nil {
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				case ech <- err:
-				}
-			}
-		}
-	}))
-
 	r.running.Store(true)
 
-	return ech, nil
+	return r.worker.Start(ctx)
 }
 
 func (r *registerer) PreStop(ctx context.Context) error {
@@ -121,7 +89,29 @@ func (r *registerer) PreStop(ctx context.Context) error {
 
 	r.worker.Pause()
 
-	err := r.forwardMetas(ctx)
+	ech, err := r.client.StartConnectionMonitor(ctx)
+	if err != nil {
+		return err
+	}
+
+	cctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	eg, cctx := errgroup.New(cctx)
+	eg.Go(safety.RecoverFunc(func() error {
+		for {
+			select {
+			case <-cctx.Done():
+				return cctx.Err()
+			case err := <-ech:
+				if err != nil {
+					log.Error(err)
+				}
+			}
+		}
+	}))
+
+	err = r.forwardMetas(ctx)
 	if err != nil {
 		log.Errorf("compressor registerer service prestop failed: %v", err)
 		return err
@@ -181,31 +171,6 @@ func (r *registerer) TotalRequested() uint64 {
 
 func (r *registerer) TotalCompleted() uint64 {
 	return r.worker.TotalCompleted()
-}
-
-func (r *registerer) startConnectionMonitor(ctx context.Context) <-chan error {
-	ech := make(chan error, 1)
-
-	r.eg.Go(safety.RecoverFunc(func() (err error) {
-		ch, err := r.client.StartConnectionMonitor(ctx)
-		if err != nil {
-			ech <- err
-		}
-
-		for {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case err := <-ch:
-				if err != nil {
-					runtime.Gosched()
-					ech <- err
-				}
-			}
-		}
-	}))
-
-	return ech
 }
 
 func (r *registerer) dispatch(ctx context.Context, meta *payload.Backup_MetaVector) error {
