@@ -41,6 +41,8 @@ type Registerer interface {
 	Register(ctx context.Context, meta *payload.Backup_MetaVector) error
 	RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) error
 	Len() uint64
+	TotalRequested() uint64
+	TotalCompleted() uint64
 }
 
 type registerer struct {
@@ -171,6 +173,14 @@ func (r *registerer) RegisterMulti(ctx context.Context, metas *payload.Backup_Me
 
 func (r *registerer) Len() uint64 {
 	return r.worker.Len()
+}
+
+func (r *registerer) TotalRequested() uint64 {
+	return r.worker.TotalRequested()
+}
+
+func (r *registerer) TotalCompleted() uint64 {
+	return r.worker.TotalCompleted()
 }
 
 func (r *registerer) startConnectionMonitor(ctx context.Context) <-chan error {

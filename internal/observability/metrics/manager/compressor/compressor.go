@@ -27,30 +27,53 @@ import (
 type compressorMetrics struct {
 	compressor                  service.Compressor
 	registerer                  service.Registerer
-	compressorBufferCount       metrics.Int64Measure
-	registererBufferCount       metrics.Int64Measure
-	registererWorkerBufferCount metrics.Int64Measure
+	compressorBuffer            metrics.Int64Measure
+	compressorTotalRequestedJob metrics.Int64Measure
+	compressorTotalCompletedJob metrics.Int64Measure
+	registererBuffer            metrics.Int64Measure
+	registererTotalRequestedJob metrics.Int64Measure
+	registererTotalCompletedJob metrics.Int64Measure
 }
 
 func New(c service.Compressor, r service.Registerer) metrics.Metric {
 	return &compressorMetrics{
 		compressor: c,
 		registerer: r,
-		compressorBufferCount: *metrics.Int64(
-			metrics.ValdOrg+"/manager/compressor/compressor_buffer_count",
-			"Compressor compressor buffer count",
+		compressorBuffer: *metrics.Int64(
+			metrics.ValdOrg+"/manager/compressor/compressor_buffer",
+			"the current number of compressor compress worker buffer elements",
 			metrics.UnitDimensionless),
-		registererBufferCount: *metrics.Int64(
-			metrics.ValdOrg+"/manager/compressor/registerer_buffer_count",
-			"Compressor registerer buffer count",
+		compressorTotalRequestedJob: *metrics.Int64(
+			metrics.ValdOrg+"/manager/compressor/compressor_requested_jobs_total",
+			"the cumulative count of compressor compress worker requested job",
+			metrics.UnitDimensionless),
+		compressorTotalCompletedJob: *metrics.Int64(
+			metrics.ValdOrg+"/manager/compressor/compressor_completed_jobs_total",
+			"the cumulative count of compressor compress worker completed job",
+			metrics.UnitDimensionless),
+		registererBuffer: *metrics.Int64(
+			metrics.ValdOrg+"/manager/compressor/registerer_buffer",
+			"the current number of compressor registerer worker buffer elements",
+			metrics.UnitDimensionless),
+		registererTotalRequestedJob: *metrics.Int64(
+			metrics.ValdOrg+"/manager/compressor/registerer_requested_jobs_total",
+			"the cumulative count of compressor registerer worker requested job",
+			metrics.UnitDimensionless),
+		registererTotalCompletedJob: *metrics.Int64(
+			metrics.ValdOrg+"/manager/compressor/registerer_completed_jobs_total",
+			"the cumulative count of compressor registerer worker completed job",
 			metrics.UnitDimensionless),
 	}
 }
 
 func (c *compressorMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
 	return []metrics.Measurement{
-		c.compressorBufferCount.M(int64(c.compressor.Len())),
-		c.registererBufferCount.M(int64(c.registerer.Len())),
+		c.compressorBuffer.M(int64(c.compressor.Len())),
+		c.compressorTotalRequestedJob.M(int64(c.compressor.TotalRequested())),
+		c.compressorTotalCompletedJob.M(int64(c.compressor.TotalCompleted())),
+		c.registererBuffer.M(int64(c.registerer.Len())),
+		c.registererTotalRequestedJob.M(int64(c.registerer.TotalRequested())),
+		c.registererTotalCompletedJob.M(int64(c.registerer.TotalCompleted())),
 	}, nil
 }
 
@@ -61,16 +84,40 @@ func (c *compressorMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.
 func (c *compressorMetrics) View() []*metrics.View {
 	return []*metrics.View{
 		&metrics.View{
-			Name:        "compressor_compressor_buffer_count",
-			Description: "Compressor compressor buffer count",
-			Measure:     &c.compressorBufferCount,
+			Name:        "compressor_compressor_buffer",
+			Description: "the current number of compressor compress worker buffer elements",
+			Measure:     &c.compressorBuffer,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
-			Name:        "compressor_registerer_buffer_count",
-			Description: "Compressor registerer buffer count",
-			Measure:     &c.registererBufferCount,
+			Name:        "compressor_compressor_requested_jobs_total",
+			Description: "the cumulative count of compressor compress worker requested job",
+			Measure:     &c.compressorTotalRequestedJob,
+			Aggregation: metrics.Count(),
+		},
+		&metrics.View{
+			Name:        "compressor_compressor_completed_jobs_total",
+			Description: "the cumulative count of compressor compress worker completed job",
+			Measure:     &c.compressorTotalCompletedJob,
+			Aggregation: metrics.Count(),
+		},
+		&metrics.View{
+			Name:        "compressor_registerer_buffer",
+			Description: "the current number of compressor registerer worker buffer elements",
+			Measure:     &c.registererBuffer,
 			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "compressor_registerer_requested_jobs_total",
+			Description: "the cumulative count of compressor registerer worker requested job",
+			Measure:     &c.registererTotalRequestedJob,
+			Aggregation: metrics.Count(),
+		},
+		&metrics.View{
+			Name:        "compressor_registerer_completed_jobs_total",
+			Description: "the cumulative count of compressor registerer worker completed job",
+			Measure:     &c.registererTotalCompletedJob,
+			Aggregation: metrics.Count(),
 		},
 	}
 }

@@ -38,15 +38,19 @@ type Worker interface {
 	IsRunning() bool
 	Name() string
 	Len() uint64
+	TotalRequested() uint64
+	TotalCompleted() uint64
 	Dispatch(ctx context.Context, f JobFunc) error
 }
 
 type worker struct {
-	name       string
-	limitation int
-	running    atomic.Value
-	eg         errgroup.Group
-	queue      Queue
+	name           string
+	limitation     int
+	running        atomic.Value
+	eg             errgroup.Group
+	queue          Queue
+	requestedCount uint64
+	completedCount uint64
 }
 
 func New(opts ...WorkerOption) (Worker, error) {
@@ -96,6 +100,7 @@ func (w *worker) startJobLoop(ctx context.Context) (<-chan error, error) {
 				return eg.Wait()
 			case job := <-w.queue.OutCh():
 				eg.Go(safety.RecoverFunc(func() (err error) {
+					defer atomic.AddUint64(&w.completedCount, 1)
 					err = job(ctx)
 					if err != nil {
 						log.Debug(err)
@@ -130,6 +135,14 @@ func (w *worker) Len() uint64 {
 	return w.queue.Len()
 }
 
+func (w *worker) TotalRequested() uint64 {
+	return atomic.LoadUint64(&w.requestedCount)
+}
+
+func (w *worker) TotalCompleted() uint64 {
+	return atomic.LoadUint64(&w.completedCount)
+}
+
 func (w *worker) Dispatch(ctx context.Context, f JobFunc) error {
 	ctx, span := trace.StartSpan(ctx, "vald/internal/worker/Worker.Dispatch")
 	defer func() {
@@ -149,6 +162,7 @@ func (w *worker) Dispatch(ctx context.Context, f JobFunc) error {
 
 	if f != nil {
 		w.queue.InCh() <- f
+		atomic.AddUint64(&w.requestedCount, 1)
 	}
 
 	return nil

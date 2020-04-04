@@ -38,6 +38,8 @@ type Compressor interface {
 	MultiCompress(ctx context.Context, vectors [][]float32) ([][]byte, error)
 	MultiDecompress(ctx context.Context, bytess [][]byte) ([][]float32, error)
 	Len() uint64
+	TotalRequested() uint64
+	TotalCompleted() uint64
 }
 
 type compressor struct {
@@ -320,4 +322,12 @@ func (c *compressor) MultiDecompress(ctx context.Context, bytess [][]byte) ([][]
 
 func (c *compressor) Len() uint64 {
 	return c.worker.Len()
+}
+
+func (c *compressor) TotalRequested() uint64 {
+	return c.worker.TotalRequested()
+}
+
+func (c *compressor) TotalCompleted() uint64 {
+	return c.worker.TotalCompleted()
 }
