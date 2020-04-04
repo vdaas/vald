@@ -61,17 +61,24 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, errors.ErrInvalidBackupConfig
 	}
 
+	backupClientOptions := append(
+		cfg.BackupManager.Client.Opts(),
+		grpc.WithErrGroup(eg),
+	)
+
+	if cfg.Observability.Enabled {
+		backupClientOptions = append(
+			backupClientOptions,
+			grpc.WithDialOptions(
+				grpc.WithStatsHandler(metric.NewClientHandler()),
+			),
+		)
+	}
+
 	b, err = service.NewBackup(
 		service.WithBackupAddr(cfg.BackupManager.Client.Addrs[0]),
 		service.WithBackupClient(
-			grpc.New(
-				append(cfg.BackupManager.Client.Opts(),
-					grpc.WithErrGroup(eg),
-					grpc.WithDialOptions(
-						grpc.WithStatsHandler(metric.NewClientHandler()),
-					),
-				)...,
-			),
+			grpc.New(backupClientOptions...),
 		),
 	)
 	if err != nil {
