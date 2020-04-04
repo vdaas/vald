@@ -71,11 +71,11 @@ func (q *queue) Start(ctx context.Context) {
 				select {
 				case <-ctx.Done():
 					return ctx.Err()
-				case j := <-q.inCh:
-					s = append(s, j)
-					q.qLen.Store(uint64(len(s)))
 				case q.outCh <- j:
 					s = s[1:]
+					q.qLen.Store(uint64(len(s)))
+				case j := <-q.inCh:
+					s = append(s, j)
 					q.qLen.Store(uint64(len(s)))
 				}
 			} else {
