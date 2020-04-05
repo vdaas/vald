@@ -20,7 +20,6 @@ import (
 	"context"
 	"reflect"
 	"sync"
-	"sync/atomic"
 
 	gcomp "github.com/vdaas/vald/apis/grpc/manager/compressor"
 	"github.com/vdaas/vald/apis/grpc/payload"
@@ -52,7 +51,6 @@ type registerer struct {
 	compressor Compressor
 	addr       string
 	client     grpc.Client
-	running    atomic.Value
 	metas      map[string]*payload.Backup_MetaVector
 	metasMux   sync.Mutex
 }
@@ -65,7 +63,6 @@ func NewRegisterer(opts ...RegistererOption) (Registerer, error) {
 		}
 	}
 
-	r.running.Store(false)
 	r.metas = make(map[string]*payload.Backup_MetaVector, 0)
 
 	return r, nil
@@ -77,15 +74,11 @@ func (r *registerer) PreStart(ctx context.Context) (err error) {
 }
 
 func (r *registerer) Start(ctx context.Context) (<-chan error, error) {
-	r.running.Store(true)
-
 	return r.worker.Start(ctx)
 }
 
 func (r *registerer) PreStop(ctx context.Context) error {
 	log.Info("compressor registerer service prestop processing...")
-
-	r.running.Store(false)
 
 	r.worker.Pause()
 
