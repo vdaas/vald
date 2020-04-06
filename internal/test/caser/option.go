@@ -3,11 +3,7 @@ package caser
 type Option func(*caser)
 
 var (
-	defaultOptions = []Option{
-		WithCheckFunc(func() error {
-			return nil
-		}),
-	}
+	defaultOptions = []Option{}
 )
 
 func WithName(str string) Option {
@@ -42,7 +38,7 @@ func WithWant(wants []interface{}) Option {
 	}
 }
 
-func WithCheckFunc(fn func() error) Option {
+func WithCheckFunc(fn func(gots, wants []interface{}) error) Option {
 	return func(c *caser) {
 		if fn != nil {
 			c.checkFunc = fn

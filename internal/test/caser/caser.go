@@ -9,7 +9,7 @@ type caser struct {
 	args      []interface{}
 	fields    []interface{}
 	wants     []interface{}
-	checkFunc func() error
+	checkFunc func(gots, wants []interface{}) error
 }
 
 func New(opts ...Option) test.Caser {
@@ -36,6 +36,6 @@ func (c *caser) Wants() []interface{} {
 	return c.wants
 }
 
-func (c *caser) CheckFunc() func() error {
+func (c *caser) CheckFunc() func(gots, wants []interface{}) error {
 	return c.checkFunc
 }
