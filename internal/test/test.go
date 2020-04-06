@@ -40,7 +40,7 @@ func (test *test) Run(ctx context.Context, t *testing.T) {
 			}
 
 			for i, want := range c.Wants() {
-				if reflect.DeepEqual(want, gots[i]) {
+				if !reflect.DeepEqual(want, gots[i]) {
 					tt.Errorf("not equals. want: %v, but got: %v", want, gots[i])
 				}
 			}
