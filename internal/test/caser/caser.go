@@ -1,15 +1,18 @@
 package caser
 
 import (
+	"testing"
+
 	"github.com/vdaas/vald/internal/test"
 )
 
 type caser struct {
-	name      string
-	args      []interface{}
-	fields    []interface{}
-	wants     []interface{}
-	checkFunc func(gots, wants []interface{}) error
+	name       string
+	args       []interface{}
+	fields     []interface{}
+	fieldFunc  func(*testing.T) []interface{}
+	wants      []interface{}
+	assertFunc func(gots, wants []interface{}) error
 }
 
 func New(opts ...Option) test.Caser {
@@ -32,10 +35,20 @@ func (c *caser) Fields() []interface{} {
 	return c.fields
 }
 
+func (c *caser) SetField(fields []interface{}) {
+	if len(fields) != 0 {
+		c.fields = fields
+	}
+}
+
+func (c *caser) FieldFunc() func(*testing.T) []interface{} {
+	return c.fieldFunc
+}
+
 func (c *caser) Wants() []interface{} {
 	return c.wants
 }
 
-func (c *caser) CheckFunc() func(gots, wants []interface{}) error {
-	return c.checkFunc
+func (c *caser) AssertFunc() func(gots, wants []interface{}) error {
+	return c.assertFunc
 }
