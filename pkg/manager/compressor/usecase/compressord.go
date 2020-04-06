@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/manager/compressor"
+	cclient "github.com/vdaas/vald/internal/client/compressor"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -112,6 +113,14 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		)
 	}
 
+	cc, err := cclient.New(
+		cclient.WithAddr(cfg.Registerer.Compressor.Client.Addrs[0]),
+		cclient.WithClient(grpc.New(compressorClientOptions...)),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	rg, err := service.NewRegisterer(
 		service.WithRegistererWorker(
 			worker.WithName("registerer"),
@@ -120,8 +129,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithRegistererErrGroup(eg),
 		service.WithRegistererBackup(b),
 		service.WithRegistererCompressor(c),
-		service.WithRegistererAddr(cfg.Registerer.Compressor.Client.Addrs[0]),
-		service.WithRegistererClient(grpc.New(compressorClientOptions...)),
+		service.WithRegistererClient(cc),
 	)
 	if err != nil {
 		return nil, err

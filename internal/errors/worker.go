@@ -21,4 +21,8 @@ var (
 	ErrWorkerIsNotRunning = func(name string) error {
 		return Errorf("worker %s is not running", name)
 	}
+
+	ErrJobFuncIsNil = func() error {
+		return New("JobFunc is nil")
+	}
 )

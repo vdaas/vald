@@ -28,9 +28,9 @@ import (
 )
 
 type Queue interface {
-	Start(ctx context.Context)
-	InCh() chan<- JobFunc
-	OutCh() <-chan JobFunc
+	Start(ctx context.Context) (<-chan error, error)
+	Push(ctx context.Context, job JobFunc) error
+	Pop(ctx context.Context) (JobFunc, error)
 	Len() uint64
 }
 
@@ -52,18 +52,29 @@ func NewQueue(opts ...QueueOption) (Queue, error) {
 
 	q.qLen.Store(uint64(0))
 
-	return q, nil
-}
-
-func (q *queue) Start(ctx context.Context) {
 	q.inCh = make(chan JobFunc, q.buffer)
 	q.outCh = make(chan JobFunc)
 
-	s := make([]JobFunc, 0)
+	return q, nil
+}
+
+func (q *queue) Start(ctx context.Context) (<-chan error, error) {
+	ech := make(chan error, 1)
 
 	q.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(q.inCh)
 		defer close(q.outCh)
+
+		s := make([]JobFunc, 0, q.buffer)
+
+		inFn := func(j JobFunc) {
+			s = append(s, j)
+			q.qLen.Store(uint64(len(s)))
+		}
+		outFn := func() {
+			s = s[1:]
+			q.qLen.Store(uint64(len(s)))
+		}
 
 		for {
 			if len(s) > 0 {
@@ -72,31 +83,48 @@ func (q *queue) Start(ctx context.Context) {
 				case <-ctx.Done():
 					return ctx.Err()
 				case q.outCh <- j:
-					s = s[1:]
-					q.qLen.Store(uint64(len(s)))
+					outFn()
 				case j := <-q.inCh:
-					s = append(s, j)
-					q.qLen.Store(uint64(len(s)))
+					inFn(j)
 				}
 			} else {
 				select {
 				case <-ctx.Done():
 					return ctx.Err()
 				case j := <-q.inCh:
-					s = append(s, j)
-					q.qLen.Store(uint64(len(s)))
+					inFn(j)
 				}
 			}
 		}
 	}))
+
+	return ech, nil
 }
 
-func (q *queue) InCh() chan<- JobFunc {
-	return q.inCh
+func (q *queue) Push(ctx context.Context, job JobFunc) error {
+	if job == nil {
+		return errors.ErrJobFuncIsNil()
+	}
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case q.inCh <- job:
+		return nil
+	}
 }
 
-func (q *queue) OutCh() <-chan JobFunc {
-	return q.outCh
+func (q *queue) Pop(ctx context.Context) (JobFunc, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case job := <-q.outCh:
+		if job == nil {
+			return job, errors.ErrJobFuncIsNil()
+		}
+
+		return job, nil
+	}
 }
 
 func (q *queue) Len() uint64 {

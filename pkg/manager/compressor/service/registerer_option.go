@@ -18,8 +18,8 @@
 package service
 
 import (
+	client "github.com/vdaas/vald/internal/client/compressor"
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/worker"
 )
 
@@ -66,14 +66,7 @@ func WithRegistererCompressor(c Compressor) RegistererOption {
 	}
 }
 
-func WithRegistererAddr(addr string) RegistererOption {
-	return func(r *registerer) error {
-		r.addr = addr
-		return nil
-	}
-}
-
-func WithRegistererClient(c grpc.Client) RegistererOption {
+func WithRegistererClient(c client.Client) RegistererOption {
 	return func(r *registerer) error {
 		if c != nil {
 			r.client = c

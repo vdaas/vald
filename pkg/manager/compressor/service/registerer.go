@@ -21,12 +21,11 @@ import (
 	"reflect"
 	"sync"
 
-	gcomp "github.com/vdaas/vald/apis/grpc/manager/compressor"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	client "github.com/vdaas/vald/internal/client/compressor"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/worker"
@@ -50,7 +49,7 @@ type registerer struct {
 	backup     Backup
 	compressor Compressor
 	addr       string
-	client     grpc.Client
+	client     client.Client
 	metas      map[string]*payload.Backup_MetaVector
 	metasMux   sync.Mutex
 }
@@ -82,7 +81,7 @@ func (r *registerer) PreStop(ctx context.Context) error {
 
 	r.worker.Pause()
 
-	ech, err := r.client.StartConnectionMonitor(ctx)
+	ech, err := r.client.Start(ctx)
 	if err != nil {
 		return err
 	}
@@ -225,21 +224,7 @@ func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 	for uuid, meta := range r.metas {
 		log.Debugf("forwarding uuid %s", uuid)
 
-		_, err = r.client.Do(
-			ctx,
-			r.addr,
-			func(
-				ctx context.Context,
-				conn *grpc.ClientConn,
-				copts ...grpc.CallOption,
-			) (interface{}, error) {
-				return gcomp.NewBackupClient(conn).Register(
-					ctx,
-					meta,
-					copts...,
-				)
-			},
-		)
+		err = r.client.Register(ctx, meta)
 		if err != nil {
 			log.Errorf("compressor registerer failed to backup uuid %s: %v", uuid, err)
 			errs = errors.Wrap(errs, err.Error())

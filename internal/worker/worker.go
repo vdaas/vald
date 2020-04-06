@@ -63,12 +63,7 @@ func New(opts ...WorkerOption) (Worker, error) {
 
 	w.running.Store(false)
 
-	return w, nil
-}
-
-func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 	var err error
-
 	w.queue, err = NewQueue(
 		WithQueueBuffer(w.limitation),
 		WithQueueErrGroup(w.eg),
@@ -77,40 +72,53 @@ func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 		return nil, err
 	}
 
-	w.queue.Start(ctx)
-
-	return w.startJobLoop(ctx)
+	return w, nil
 }
 
-func (w *worker) startJobLoop(ctx context.Context) (<-chan error, error) {
+func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 1)
+
+	var qech <-chan error
+	var err error
+
+	qech, err = w.queue.Start(ctx)
+	if err != nil {
+		close(ech)
+		return nil, err
+	}
 
 	eg, ctx := errgroup.New(ctx)
 	eg.Limitation(w.limitation)
 
 	w.running.Store(true)
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(ech)
 		for {
 			select {
 			case <-ctx.Done():
 				w.running.Store(false)
-				if err = ctx.Err(); err != nil {
-					return errors.Wrap(eg.Wait(), err.Error())
-				}
-				return eg.Wait()
-			case job := <-w.queue.OutCh():
-				if job != nil {
-					eg.Go(safety.RecoverFunc(func() (err error) {
-						defer atomic.AddUint64(&w.completedCount, 1)
-						err = job(ctx)
-						if err != nil {
-							log.Debug(err)
-						}
-
-						return err
-					}))
+				return errors.Wrap(eg.Wait(), err.Error())
+			case err = <-qech:
+				if err != nil {
+					ech <- err
 				}
 			}
+
+			job, err := w.queue.Pop(ctx)
+			if err != nil {
+				ech <- err
+				continue
+			}
+
+			eg.Go(safety.RecoverFunc(func() (err error) {
+				defer atomic.AddUint64(&w.completedCount, 1)
+				err = job(ctx)
+				if err != nil {
+					log.Debug(err)
+				}
+
+				return err
+			}))
 		}
 	}))
 
@@ -163,7 +171,10 @@ func (w *worker) Dispatch(ctx context.Context, f JobFunc) error {
 	}
 
 	if f != nil {
-		w.queue.InCh() <- f
+		err := w.queue.Push(ctx, f)
+		if err != nil {
+			return err
+		}
 		atomic.AddUint64(&w.requestedCount, 1)
 	}
 
