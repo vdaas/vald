@@ -35,7 +35,7 @@ func (c *caser) Fields() []interface{} {
 	return c.fields
 }
 
-func (c *caser) SetFields(fields ...interface{}) {
+func (c *caser) SetField(fields ...interface{}) {
 	if len(fields) != 0 {
 		c.fields = fields
 	}

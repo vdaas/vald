@@ -31,7 +31,7 @@ func (test *test) Run(ctx context.Context, t *testing.T) {
 			defer cancel()
 
 			if fn := c.FieldFunc(); fn != nil {
-				c.SetFields(fn(tt)...)
+				c.SetField(fn(tt)...)
 			}
 
 			gots, err := test.target(ctx, c)
