@@ -5,7 +5,7 @@ import "testing"
 type Caser interface {
 	Name() string
 	DataProvider
-	SetField(...interface{})
+	SetFields(...interface{})
 	FieldFunc() func(*testing.T) []interface{}
 	AssertFunc() func(gots, want []interface{}) error
 }
