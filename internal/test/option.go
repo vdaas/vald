@@ -18,7 +18,7 @@ func WithCase(cs ...Caser) Option {
 	}
 }
 
-func WithTarget(fn func(context.Context, Caser) error) Option {
+func WithTarget(fn func(context.Context, Caser) ([]interface{}, error)) Option {
 	return func(t *test) {
 		if fn != nil {
 			t.target = fn
