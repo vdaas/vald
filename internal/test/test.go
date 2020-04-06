@@ -46,7 +46,7 @@ func (test *test) Run(ctx context.Context, t *testing.T) {
 			}
 
 			if err := c.CheckFunc()(); err != nil {
-				tt.Errorf("checkFunc returns error: %d", err)
+				tt.Errorf("checkFunc returns error: %v", err)
 			}
 		})
 	}
