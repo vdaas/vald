@@ -36,7 +36,9 @@ func WithField(fields ...interface{}) Option {
 
 func WithWant(wants []interface{}) Option {
 	return func(c *caser) {
-
+		if len(wants) != 0 {
+			c.wants = wants
+		}
 	}
 }
 
