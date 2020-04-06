@@ -305,3 +305,4 @@ include Makefile.d/proto.mk
 include Makefile.d/k8s.mk
 include Makefile.d/kind.mk
 include Makefile.d/client.mk
+include Makefile.d/ml.mk
