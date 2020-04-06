@@ -57,9 +57,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	h, err := handler.New(
 		handler.WithDiscoverer(dsc),
-		handler.WithCacheEnabled(cfg.Discoverer.Cache.Enabled),
-		handler.WithCacheExpireDuration(cfg.Discoverer.Cache.ExpireDuration),
-		handler.WithCacheExpiredCheckDuration(cfg.Discoverer.Cache.ExpiredCacheCheckDuration),
 	)
 	if err != nil {
 		return nil, err

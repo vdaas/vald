@@ -24,12 +24,12 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/discoverer"
 	"github.com/vdaas/vald/apis/grpc/payload"
-	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/singleflight"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
 )
 
@@ -39,11 +39,8 @@ type DiscovererServer interface {
 }
 
 type server struct {
-	dsc                 service.Discoverer
-	cache               cache.Cache
-	enableCache         bool
-	expireCheckDuration string
-	expireDuration      string
+	dsc   service.Discoverer
+	group singleflight.Group
 }
 
 const (
@@ -62,45 +59,12 @@ func New(opts ...Option) (ds DiscovererServer, err error) {
 		}
 	}
 
-	if s.enableCache {
-		if s.cache == nil {
-			c, err := cache.New(
-				cache.WithExpireDuration(s.expireDuration),
-				cache.WithExpireCheckDuration(s.expireCheckDuration),
-				cache.WithExpiredHook(func(ctx context.Context, key string) {
-					pref, req := toRequest(key)
-					switch pref {
-					case podPrefix:
-						pods, err := s.dsc.GetPods(req)
-						if err != nil {
-							log.Error(err)
-							return
-						}
-						s.cache.Set(key, pods)
-					case nodePrefix:
-						nodes, err := s.dsc.GetNodes(req)
-						if err != nil {
-							log.Error(err)
-							return
-						}
-						s.cache.Set(key, nodes)
-					}
-				}),
-			)
-			if err != nil {
-				return nil, err
-			}
-			s.cache = c
-		}
-	}
+	s.group = singleflight.New(10)
 
 	return s, nil
 }
 
 func (s *server) Start(ctx context.Context) {
-	if s.enableCache && s.cache != nil {
-		s.cache.Start(ctx)
-	}
 }
 
 func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Pods, error) {
@@ -110,15 +74,9 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 			span.End()
 		}
 	}()
-	var cacheKey string
-	if s.cache != nil {
-		cacheKey = toCacheKey(podPrefix, req)
-		cp, ok := s.cache.Get(cacheKey)
-		if ok && cp != nil {
-			return proto.Clone(cp.(*payload.Info_Pods)).(*payload.Info_Pods), nil
-		}
-	}
-	pods, err := s.dsc.GetPods(req)
+	res, err, _ := s.group.Do(ctx, singleflightKey(podPrefix, req), func() (interface{}, error) {
+		return s.dsc.GetPods(req)
+	})
 	if err != nil {
 		log.Error(err)
 		if span != nil {
@@ -126,10 +84,7 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Pods API request %#v pods not found", req), err, info.Get())
 	}
-	if s.cache != nil && len(cacheKey) != 0 {
-		s.cache.Set(cacheKey, pods)
-	}
-	return proto.Clone(pods).(*payload.Info_Pods), nil
+	return proto.Clone(res.(*payload.Info_Pods)).(*payload.Info_Pods), nil
 }
 
 func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
@@ -139,15 +94,9 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 			span.End()
 		}
 	}()
-	var cacheKey string
-	if s.cache != nil {
-		cacheKey = toCacheKey(nodePrefix, req)
-		cn, ok := s.cache.Get(cacheKey)
-		if ok && cn != nil {
-			return proto.Clone(cn.(*payload.Info_Nodes)).(*payload.Info_Nodes), nil
-		}
-	}
-	nodes, err := s.dsc.GetNodes(req)
+	res, err, _ := s.group.Do(ctx, singleflightKey(nodePrefix, req), func() (interface{}, error) {
+		return s.dsc.GetNodes(req)
+	})
 	if err != nil {
 		log.Error(err)
 		if span != nil {
@@ -155,22 +104,10 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Nodes API request %#v nodes not found", req), err, info.Get())
 	}
-	if s.cache != nil && len(cacheKey) != 0 {
-		s.cache.Set(cacheKey, nodes)
-	}
-	return proto.Clone(nodes).(*payload.Info_Nodes), nil
+	return proto.Clone(res.(*payload.Info_Nodes)).(*payload.Info_Nodes), nil
 }
 
-func toRequest(key string) (pref string, req *payload.Discoverer_Request) {
-	infos := strings.Split(key, keyDelim)
-	return infos[0], &payload.Discoverer_Request{
-		Node:      infos[1],
-		Namespace: infos[2],
-		Name:      infos[3],
-	}
-}
-
-func toCacheKey(pref string, req *payload.Discoverer_Request) string {
+func singleflightKey(pref string, req *payload.Discoverer_Request) string {
 	return strings.Join([]string{
 		pref,
 		req.GetNode(),

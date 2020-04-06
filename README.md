@@ -15,6 +15,7 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fvdaas%2Fvald.svg?type=small&style=flat-square)](https://app.fossa.com/projects/git%2Bgithub.com%2Fvdaas%2Fvald?ref=badge_small)
 [![DeepSource](https://static.deepsource.io/deepsource-badge-light-mini.svg)](https://deepsource.io/gh/vdaas/vald/?ref=repository-badge)
 [![Contributors](https://img.shields.io/github/contributors/vdaas/vald?style=flat-square)](https://github.com/vdaas/vald/graphs/contributors)
+[![Slack](https://img.shields.io/badge/slack-join-brightgreen?logo=slack&style=flat-square)](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA)
 
 ## What is Vald?
 Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.<br>
