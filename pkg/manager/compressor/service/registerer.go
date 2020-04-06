@@ -48,7 +48,6 @@ type registerer struct {
 	eg         errgroup.Group
 	backup     Backup
 	compressor Compressor
-	addr       string
 	client     client.Client
 	metas      map[string]*payload.Backup_MetaVector
 	metasMux   sync.Mutex
