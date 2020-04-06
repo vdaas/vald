@@ -1,5 +1,7 @@
 package caser
 
+import "testing"
+
 type Option func(*caser)
 
 var (
@@ -30,6 +32,14 @@ func WithField(fields ...interface{}) Option {
 	}
 }
 
+func WithFieldFunc(fn func(*testing.T) []interface{}) Option {
+	return func(c *caser) {
+		if fn != nil {
+			c.fieldFunc = fn
+		}
+	}
+}
+
 func WithWant(wants ...interface{}) Option {
 	return func(c *caser) {
 		if len(wants) != 0 {
@@ -38,10 +48,10 @@ func WithWant(wants ...interface{}) Option {
 	}
 }
 
-func WithCheckFunc(fn func(gots, wants []interface{}) error) Option {
+func WithAssertFunc(fn func(gots, wants []interface{}) error) Option {
 	return func(c *caser) {
 		if fn != nil {
-			c.checkFunc = fn
+			c.assertFunc = fn
 		}
 	}
 }

@@ -12,7 +12,7 @@ type Test interface {
 
 type test struct {
 	cs     []Caser
-	target func(ctx context.Context, c Caser) ([]interface{}, error)
+	target func(context.Context, DataProvider) ([]interface{}, error)
 }
 
 func New(opts ...Option) Test {
@@ -30,14 +30,18 @@ func (test *test) Run(ctx context.Context, t *testing.T) {
 			ctx, cancel := context.WithCancel(ctx)
 			defer cancel()
 
+			if fn := c.FieldFunc(); fn != nil {
+				c.SetField(fn(tt))
+			}
+
 			gots, err := test.target(ctx, c)
 			if err != nil {
 				tt.Error(err)
 			}
 
-			if fn := c.CheckFunc(); fn != nil {
+			if fn := c.AssertFunc(); fn != nil {
 				if err := fn(gots, c.Wants()); err != nil {
-					t.Errorf("checkFunc returns error: %v", err)
+					tt.Errorf("checkFunc returns error: %v", err)
 				}
 			} else {
 				if len(c.Wants()) != len(gots) {
