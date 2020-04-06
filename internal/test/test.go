@@ -31,7 +31,7 @@ func (test *test) Run(ctx context.Context, t *testing.T) {
 			defer cancel()
 
 			if fn := c.FieldFunc(); fn != nil {
-				c.SetField(fn(tt)...)
+				c.SetFields(fn(tt)...)
 			}
 
 			gots, err := test.target(ctx, c)
@@ -41,7 +41,7 @@ func (test *test) Run(ctx context.Context, t *testing.T) {
 
 			if fn := c.AssertFunc(); fn != nil {
 				if err := fn(gots, c.Wants()); err != nil {
-					tt.Errorf("checkFunc returns error: %v", err)
+					tt.Errorf("AssertFunc returns error: %v", err)
 				}
 			} else {
 				if len(c.Wants()) != len(gots) {
