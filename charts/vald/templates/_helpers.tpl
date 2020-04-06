@@ -445,8 +445,15 @@ gRPC client configuration
 */}}
 {{- define "vald.grpc.client" -}}
 addrs: {{ default .default.addrs .Values.addrs }}
-connection_pool: {{ default .default.connection_pool .Values.connection_pool }}
 health_check_duration: {{ default .default.health_check_duration .Values.health_check_duration | quote }}
+connection_pool:
+  {{- if .Values.connection_pool }}
+  enable_rebalance: {{ default .default.connection_pool.enable_rebalance .Values.connection_pool.enable_rebalance }}
+  rebalance_duration: {{ default .default.connection_pool.rebalance_duration .Values.connection_pool.rebalance_duration | quote }}
+  size: {{ default .default.connection_pool.size .Values.connection_pool.size }}
+  {{- else }}
+  {{- toYaml .default.connection_pool | nindent 2 }}
+  {{- end }}
 backoff:
   {{- if .Values.backoff }}
   initial_duration: {{ default .default.backoff.initial_duration .Values.backoff.initial_duration | quote }}

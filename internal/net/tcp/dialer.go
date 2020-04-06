@@ -20,12 +20,12 @@ package tcp
 import (
 	"context"
 	"crypto/tls"
-	"net"
 	"strings"
 	"time"
 
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
 )
 

@@ -212,7 +212,8 @@ deps: \
 
 .PHONY: goimports/install
 goimports/install:
-	GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
+	go get -u golang.org/x/tools/cmd/goimports
+	# GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
 
 .PHONY: prettier/install
 prettier/install:

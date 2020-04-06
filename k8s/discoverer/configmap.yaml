@@ -125,6 +125,10 @@ data:
           service_name: "vald-discoverer"
           buffer_max_count: 10
     discoverer:
-      cache_sync_duration: 3s
+      cache:
+        enabled: true
+        expire_duration: 3s
+        expired_cache_check_duration: 1500ms
+      discovery_duration: 3s
       name: ""
       namespace: _MY_POD_NAMESPACE_

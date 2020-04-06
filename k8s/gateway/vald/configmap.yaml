@@ -137,8 +137,11 @@ data:
         duration: 200ms
         discover_client:
           addrs: []
-          connection_pool: 3
           health_check_duration: "1s"
+          connection_pool:
+            enable_rebalance: true
+            rebalance_duration: 30m
+            size: 3
           backoff:
             backoff_factor: 1.1
             backoff_time_limit: 5s
@@ -187,8 +190,11 @@ data:
             key: /path/to/key
         agent_client:
           addrs: []
-          connection_pool: 3
           health_check_duration: "1s"
+          connection_pool:
+            enable_rebalance: true
+            rebalance_duration: 30m
+            size: 3
           backoff:
             backoff_factor: 1.1
             backoff_time_limit: 5s
@@ -240,8 +246,11 @@ data:
         port: 8081
         client:
           addrs: []
-          connection_pool: 3
           health_check_duration: "1s"
+          connection_pool:
+            enable_rebalance: true
+            rebalance_duration: 30m
+            size: 3
           backoff:
             backoff_factor: 1.1
             backoff_time_limit: 5s
@@ -296,8 +305,11 @@ data:
         port: 8081
         client:
           addrs: []
-          connection_pool: 3
           health_check_duration: "1s"
+          connection_pool:
+            enable_rebalance: true
+            rebalance_duration: 30m
+            size: 3
           backoff:
             backoff_factor: 1.1
             backoff_time_limit: 5s
