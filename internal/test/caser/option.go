@@ -4,7 +4,7 @@ type Option func(*caser)
 
 var (
 	defaultOptions = []Option{
-		WithCheck(func(...interface{}) error {
+		WithCheckFunc(func() error {
 			return nil
 		}),
 	}
@@ -34,7 +34,13 @@ func WithField(fields ...interface{}) Option {
 	}
 }
 
-func WithCheck(fn func(gots ...interface{}) error) Option {
+func WithWant(wants []interface{}) Option {
+	return func(c *caser) {
+
+	}
+}
+
+func WithCheckFunc(fn func() error) Option {
 	return func(c *caser) {
 		if fn != nil {
 			c.checkFunc = fn

@@ -4,5 +4,6 @@ type Caser interface {
 	Name() string
 	Args() []interface{}
 	Fields() []interface{}
-	Check() func(...interface{}) error
+	Wants() []interface{}
+	CheckFunc() func() error
 }
