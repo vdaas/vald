@@ -25,6 +25,10 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
+const (
+	bulkInsertCnt = 1000
+)
+
 func wrapErrors(errs []error) (wrapped error) {
 	for _, err := range errs {
 		if err != nil {
@@ -39,12 +43,10 @@ func wrapErrors(errs []error) (wrapped error) {
 }
 
 func insertAndCreateIndex32(ctx context.Context, c core.Core32, dataset assets.Dataset) (ids []uint, err error) {
-	n := 1000
-
 	train := dataset.Train()
-	ids = make([]uint, 0, len(train)*n)
+	ids = make([]uint, 0, len(train)*bulkInsertCnt)
 
-	for i := 0; i < n; i++ {
+	for i := 0; i < bulkInsertCnt; i++ {
 		inserted, errs := c.BulkInsert(train)
 		err = wrapErrors(errs)
 		if err != nil {
@@ -53,7 +55,7 @@ func insertAndCreateIndex32(ctx context.Context, c core.Core32, dataset assets.D
 		ids = append(ids, inserted...)
 	}
 
-	err = c.CreateIndex(10)
+	err = c.CreateIndex(uint32((len(train) * bulkInsertCnt) / 100))
 	if err != nil {
 		return nil, err
 	}
@@ -61,12 +63,10 @@ func insertAndCreateIndex32(ctx context.Context, c core.Core32, dataset assets.D
 }
 
 func insertAndCreateIndex64(ctx context.Context, c core.Core64, dataset assets.Dataset) (ids []uint, err error) {
-	n := 1000
-
 	train := dataset.TrainAsFloat64()
-	ids = make([]uint, 0, len(train)*n)
+	ids = make([]uint, 0, len(train)*bulkInsertCnt)
 
-	for i := 0; i < n; i++ {
+	for i := 0; i < bulkInsertCnt; i++ {
 		inserted, errs := c.BulkInsert(train)
 		err = wrapErrors(errs)
 		if err != nil {
@@ -75,7 +75,7 @@ func insertAndCreateIndex64(ctx context.Context, c core.Core64, dataset assets.D
 		ids = append(ids, inserted...)
 	}
 
-	err = c.CreateIndex(10)
+	err = c.CreateIndex(uint32((len(train) * bulkInsertCnt) / 100))
 	if err != nil {
 		return nil, err
 	}
