@@ -2,8 +2,8 @@
 
 ## Introduction
 This guideline includes the coding style for all Vald contributors and reviewers. Everyone should follow this guideline to keep the style consistent so everyone can understand and contribute to Vald easier once they learn this guideline. You should have the basic knowledge of how to write Golang before contributing to Vald. If you found any bug please create a GitHub issue and we will work on it.
-This guideline is based on [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md), [CodeReviewComments](https://github.com/golang/go/wiki/CodeReviewComments), [Gitlab Go standard and style guideline](https://docs.gitlab.com/ee/development/go_guide/) and [Effective Go](https://golang.org/doc/effective_go.html).
-For the guideline to write test code please refer to [here](xxxxxxxxx).
+
+Please also read the [Contribution guideline](https://github.com/vdaas/vald/blob/master/CONTRIBUTING.md) before you start contributing to Vald.
 
 ## Code Formatting and Naming Convension
 Code formatting and naming conventions affect coding readability and maintainability. Every developer has a different coding style, luckily Golang provides tools to format source code and checking for the potential issue in the source code. We suggest using [gofmt](https://golang.org/cmd/gofmt/) to format the source code in Vald, and [golint](https://github.com/golang/lint). We suggest everyone install the plugin for your editor to automatically format the code once you edit the code.
@@ -43,9 +43,11 @@ The project layout includes the folder and the file structure in the project. Ba
 The package defines the context of the objects in the package, for example the corresponding methods and structs belongs to corresponding package. Unlike other languages like Java, in Golang we use the package name to declar which context of the object we are going to use. For example in [time](https://golang.org/pkg/time/) package, it defines all the objects about time like `time.Now()` method to get the current time.
 
 Here is the naming conventions of the package:
-- Package name should be the same as the folder name.
-- Package name should keep as simple as it should, and should contain only one specific context in the package.
-- Package name should not be too general, for example `util` or `helper`, which will cause all the objects from different contexts to be store in one package. If you really want to name the package as `util`,  please define the more specific package  name more  `ioutil` or `httputil`.
+- All lower case.
+- No plurals.
+- Should be the same as the folder name.
+- Should keep as simple as it should, and should contain only one specific context in the package.
+- Should not be too general, for example `util` or `helper`, which will cause all the objects from different contexts to be store in one package. If you really want to name the package as `util`,  please define the more specific package  name more  `ioutil` or `httputil`.
 
 All packages should contains `doc.go` file under the package to describe what is the package is. For example, under the folder name called `cache` should contains a file named `doc.go`, which contains the package documentation. For example
 
@@ -58,8 +60,9 @@ package cache
 Interface defines the program interface for usability and future extendability.
 Unlike other languages like Java, golang support implicit interface implementation. The type implements do not need to specify the interface name; to "implments" the interface the structs only needs to defined the methods same as the interface, so please be careful to define the method name inside the interface.
 
-Here is the naming conventions of the interface:
+The interface should be named as:
 - Use MixedCaps
+- Do not use short form unless it is a common terms.
 
 ```golang
 type RoundTripper interface {
@@ -68,21 +71,69 @@ type RoundTripper interface {
 ```
 
 ### Structs
-Structs in golang is the object definition, we can attach any fields and methods to the struct.
+Structs in golang is the object definition, we can attach any fields and methods to the struct. The naming convension is the same as the interface one.
+If the structs is implementing the interface, the structs name should be related to the interface, for example:
 
-Here is the naming conventions of the struct:
-- Use MixedCaps
+```golang
+type Listener interface {
+   // Interface definition
+}
+
+// Listener instance for file
+type FileListener struct {
+
+}
+
+// Listener instance for HTTP
+type HttpListener struct {
+
+}
+```
 
 #### Struct initialization
 There are many ways to initialize structs in Golang, base on the use case we can decide which way to initialize objects in Golang.
+In Vald we use [functional option pattern](https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis) to initialize complex structs. Please read [server.go](https://github.com/vdaas/vald/blob/master/internal/servers/servers.go) and [option.go](https://github.com/vdaas/vald/blob/master/internal/servers/option.go) for the reference implementation.
+The functional options should be separated as another file to improve the readability of the source code, and the method name should be start with `With` word to differentiate with other methods.
+
+Also you can use `&T{}` to initialize the struct. Do not use `new(T)` method to initialize the struct.
 
 ### Variables and Constant
+The variable and the constant should be named as:
+- Use MixedCaps
+- Global variable and constant should not use short form unless it is a common terms.
+- Private variable and contant should use short form to improve readability.
+
+The variable and constant name may lead to misunderstanding or confusing, so if the variable and constant name is different to understand, please write some comment even if it is a private member.
+If multiple variables and constants have the same grouping, please use the grouping name as the prefix of the variable and constant name.
+
+Here is some example of the declaration of variables and constants:
+```
+/* Global variables */
+// Same group of variable (error), so add a prefix `Err` to each error variables
+ErrInvalidCacherType = New("invalid cacher type")
+// ErrXXXXXXX 
+
+/* Private variables */
+// This variable needs comment in order to understand
+// sds represent the shut down strategy
+sds     []string
+
+// This variable name is common so no comment requires for this variable
+eg      errgroup.Group
+```
 
 ### Methods
+The method name should be named as:
+- Use MixedCaps.
+- Should not use short form unless it is a common terms.
+- Should be understandable for everyone even if it is a private method.
 
 #### Getter and Setter
+The Getter and Setter is almost the same as another languages, but the naming convension of the Getter method is different with other languages. Instead of `GetVar1()`, the getter of `Var1` should be the same as the variable name itself `Var1()`.
 
-#### Defer functions
+### Error handling
+
+### Logging
 
 ## Program comments
 Program comments makes the code more easier to understand. Basically we suggest not to write many comments inside the source code, unless the source code is very complicated and confusing; otherwise we should divide the source code into methods to keep the readability and usability of the source code.
@@ -97,3 +148,10 @@ Vald implement its own internal package to extend the functionality of the stand
 
 ## Dependency management and Build
 We should use `go mod tidy` to manage the `go.mod` file in the project.
+
+
+## Reference
+- [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md)
+- [CodeReviewComments](https://github.com/golang/go/wiki/CodeReviewComments)
+- [Gitlab Go standard and style guideline](https://docs.gitlab.com/ee/development/go_guide/)
+- [Effective Go](https://golang.org/doc/effective_go.html).
