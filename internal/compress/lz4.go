@@ -43,21 +43,27 @@ func NewLZ4(opts ...LZ4Option) (Compressor, error) {
 }
 
 func (l *lz4Compressor) CompressVector(vector []float32) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	zw := lz4.NewWriter(buf)
-	zw.Header.CompressionLevel = l.compressionLevel
-
 	gob, err := l.gobc.CompressVector(vector)
 	if err != nil {
 		return nil, err
 	}
+
+	buf := new(bytes.Buffer)
+	zw := lz4.NewWriter(buf)
+	zw.Header.CompressionLevel = l.compressionLevel
+	defer func() {
+		cerr := zw.Close()
+		if cerr != nil {
+			err = errors.Wrap(err, cerr.Error())
+		}
+	}()
 
 	_, err = zw.Write(gob)
 	if err != nil {
 		return nil, err
 	}
 
-	err = zw.Close()
+	err = zw.Flush()
 	if err != nil {
 		return nil, err
 	}

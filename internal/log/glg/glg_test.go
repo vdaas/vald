@@ -339,7 +339,7 @@ func TestSetLogFormat(t *testing.T) {
 
 				var obj map[string]interface{}
 				if err := json.NewDecoder(buf).Decode(&obj); err != nil {
-					return errors.New("not in JSON output mode")
+					return errors.New("not in JSON output logger")
 				}
 				return nil
 			},
@@ -360,7 +360,7 @@ func TestSetLogFormat(t *testing.T) {
 
 				var obj map[string]interface{}
 				if err := json.NewDecoder(buf).Decode(&obj); err == nil {
-					return errors.New("not in RAW output mode")
+					return errors.New("not in RAW output logger")
 				}
 				return nil
 			},

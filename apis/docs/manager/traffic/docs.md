@@ -4,11 +4,6 @@
 ## Table of Contents
 
 - [traffic/traffic_manager.proto](#traffic/traffic_manager.proto)
-  
-  
-  
-  
-
 - [Scalar Value Types](#scalar-value-types)
 
 

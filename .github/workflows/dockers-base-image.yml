@@ -7,13 +7,13 @@ on:
       - 'go.mod'
       - 'go.sum'
       - 'dockers/base/Dockerfile'
-      - 'resources/GO_VERSION'
+      - 'versions/GO_VERSION'
   pull_request:
     paths:
       - 'go.mod'
       - 'go.sum'
       - 'dockers/base/Dockerfile'
-      - 'resources/GO_VERSION'
+      - 'versions/GO_VERSION'
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
       with:
-        fetch-depth: 1
+        fetch-depth: 10
     - name: Build the Docker image
       run: |
         echo 'Build docker image'
@@ -38,7 +38,6 @@ jobs:
       run: |
         echo 'Push to DockerHub (master)'
         imagename=`make docker/name/base`
-        docker push ${imagename}:latest
         docker tag ${imagename} ${imagename}:nightly
         docker push ${imagename}:nightly
     - name: push to DockerHub (pull request)
@@ -54,6 +53,9 @@ jobs:
       run: |
         echo 'Push to DockerHub (tags)'
         imagename=`make docker/name/base`
+        docker push ${imagename}:latest
         tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
         docker tag ${imagename} ${imagename}:${tag_name}
         docker push ${imagename}:${tag_name}
+        docker tag ${imagename} ${imagename}:nightly
+        docker push ${imagename}:nightly

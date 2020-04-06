@@ -19,10 +19,10 @@ package compress
 
 import (
 	"bytes"
-	"compress/gzip"
 	"io"
 	"reflect"
 
+	"github.com/klauspost/compress/gzip"
 	"github.com/vdaas/vald/internal/errors"
 )
 

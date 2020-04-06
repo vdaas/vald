@@ -31,6 +31,9 @@ type Data struct {
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
+	// Observability represent observability configurations
+	Observability *config.Observability `json:"observability" yaml:"observability"`
+
 	// NGT represent ngt core configuration
 	NGT *config.NGT `json:"ngt" yaml:"ngt"`
 }
@@ -49,6 +52,13 @@ func NewConfig(path string) (cfg *Data, err error) {
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()
 	}
+
+	if cfg.Observability != nil {
+		cfg.Observability = cfg.Observability.Bind()
+	} else {
+		cfg.Observability = new(config.Observability)
+	}
+
 	if cfg.NGT != nil {
 		cfg.NGT = cfg.NGT.Bind()
 	}

@@ -28,6 +28,10 @@ spec:
       port: 3001
       targetPort: 3001
       protocol: TCP
+    - name: pprof
+      port: 6060
+      targetPort: 6060
+      protocol: TCP
   selector:
     app: vald-manager-compressor
   clusterIP: None

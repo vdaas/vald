@@ -20,7 +20,7 @@ import (
 	"sync"
 
 	"github.com/vdaas/vald/internal/log/glg"
-	loggertype "github.com/vdaas/vald/internal/log/logger_type"
+	logger "github.com/vdaas/vald/internal/log/logger"
 )
 
 type Logger interface {
@@ -37,8 +37,8 @@ type Logger interface {
 }
 
 var (
-	logger Logger
-	once   sync.Once
+	l    Logger
+	once sync.Once
 )
 
 func Init(opts ...Option) {
@@ -47,20 +47,20 @@ func Init(opts ...Option) {
 		for _, opt := range append(defaultOptions, opts...) {
 			opt(o)
 		}
-		logger = getLogger(o)
+		l = getLogger(o)
 	})
 }
 
 func getLogger(o *option) Logger {
-	switch o.loggerType {
-	case loggertype.GLG:
+	switch o.logType {
+	case logger.GLG:
+		fallthrough
+	default:
 		gopts := []glg.Option{
 			glg.WithLevel(o.level.String()),
 			glg.WithFormat(o.format.String()),
 		}
 		return glg.New(gopts...)
-	default:
-		return o.logger
 	}
 }
 
@@ -69,41 +69,41 @@ func Bold(str string) string {
 }
 
 func Debug(vals ...interface{}) {
-	logger.Debug(vals...)
+	l.Debug(vals...)
 }
 
 func Debugf(format string, vals ...interface{}) {
-	logger.Debugf(format, vals...)
+	l.Debugf(format, vals...)
 }
 
 func Info(vals ...interface{}) {
-	logger.Info(vals...)
+	l.Info(vals...)
 }
 
 func Infof(format string, vals ...interface{}) {
-	logger.Infof(format, vals...)
+	l.Infof(format, vals...)
 }
 
 func Warn(vals ...interface{}) {
-	logger.Warn(vals...)
+	l.Warn(vals...)
 }
 
 func Warnf(format string, vals ...interface{}) {
-	logger.Warnf(format, vals...)
+	l.Warnf(format, vals...)
 }
 
 func Error(vals ...interface{}) {
-	logger.Error(vals...)
+	l.Error(vals...)
 }
 
 func Errorf(format string, vals ...interface{}) {
-	logger.Errorf(format, vals...)
+	l.Errorf(format, vals...)
 }
 
 func Fatal(vals ...interface{}) {
-	logger.Fatal(vals...)
+	l.Fatal(vals...)
 }
 
 func Fatalf(format string, vals ...interface{}) {
-	logger.Fatalf(format, vals...)
+	l.Fatalf(format, vals...)
 }

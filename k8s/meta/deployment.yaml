@@ -22,7 +22,6 @@ metadata:
     app: vald-meta
 spec:
   progressDeadlineSeconds: 600
-  replicas: 2
   revisionHistoryLimit: 2
   selector:
     matchLabels:
@@ -37,19 +36,27 @@ spec:
       creationTimestamp: null
       labels:
         app: vald-meta
+      annotations:
+        checksum/configmap: 8139b8ddae9de9720f93eca6b083d527e2fc8dd046bd9aa05b30478370ac7dae
+        profefe.com/enable: "true"
+        profefe.com/port: "6060"
+        profefe.com/service: vald-meta
     spec:
       initContainers:
-        
         - name: wait-for-redis
           image: redis:latest
           command:
             - /bin/sh
+            - -e
             - -c
-            - >
-              set -x;
-              until [ "$(redis-cli -h redis.default.svc.cluster.local -a ${REDIS_PASSWORD} ping)" = "PONG" ]; do
-                echo "waiting for redis.default.svc.cluster.local to be ready..."
-                sleep 2;
+            - |
+              hosts="redis.default.svc.cluster.local"
+              options="-a ${REDIS_PASSWORD}"
+              for host in $hosts; do
+                until [ "$(redis-cli -h $host $options ping)" = "PONG" ]; do
+                  echo "waiting for $host to be ready..."
+                  sleep 2;
+                done
               done
           env:
             - name: REDIS_PASSWORD
@@ -61,7 +68,6 @@ spec:
         - name: vald-meta
           image: "vdaas/vald-meta-redis:nightly"
           imagePullPolicy: Always
-          
           livenessProbe:
             failureThreshold: 2
             httpGet:
@@ -92,11 +98,16 @@ spec:
             - name: grpc
               protocol: TCP
               containerPort: 8081
+            - name: pprof
+              protocol: TCP
+              containerPort: 6060
           resources:
             limits:
-              cpu: 500m
+              cpu: 300m
+              memory: 100Mi
             requests:
-              cpu: 200m
+              cpu: 100m
+              memory: 30Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           env:
@@ -114,8 +125,8 @@ spec:
       securityContext: {}
       terminationGracePeriodSeconds: 30
       volumes:
-      - name: vald-meta-config
-        configMap:
-          defaultMode: 420
-          name: vald-meta-config
+        - name: vald-meta-config
+          configMap:
+            defaultMode: 420
+            name: vald-meta-config
 status:

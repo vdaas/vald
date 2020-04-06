@@ -7,10 +7,6 @@
     - [Errors](#errors.Errors)
     - [Errors.RPC](#errors.Errors.RPC)
   
-  
-  
-  
-
 - [Scalar Value Types](#scalar-value-types)
 
 

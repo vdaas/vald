@@ -4,12 +4,8 @@
 ## Table of Contents
 
 - [agent.proto](#agent.proto)
-  
-  
-  
     - [Agent](#agent.Agent)
   
-
 - [Scalar Value Types](#scalar-value-types)
 
 
@@ -50,10 +46,10 @@
 | MultiRemove | [.payload.Object.IDs](#payload.Object.IDs) | [.payload.Empty](#payload.Empty) |  |
 | GetObject | [.payload.Object.ID](#payload.Object.ID) | [.payload.Object.Vector](#payload.Object.Vector) |  |
 | StreamGetObject | [.payload.Object.ID](#payload.Object.ID) stream | [.payload.Object.Vector](#payload.Object.Vector) stream |  |
-| CreateIndex | [.payload.Controll.CreateIndexRequest](#payload.Controll.CreateIndexRequest) | [.payload.Empty](#payload.Empty) |  |
+| CreateIndex | [.payload.Control.CreateIndexRequest](#payload.Control.CreateIndexRequest) | [.payload.Empty](#payload.Empty) |  |
 | SaveIndex | [.payload.Empty](#payload.Empty) | [.payload.Empty](#payload.Empty) |  |
-| CreateAndSaveIndex | [.payload.Controll.CreateIndexRequest](#payload.Controll.CreateIndexRequest) | [.payload.Empty](#payload.Empty) |  |
-| IndexInfo | [.payload.Empty](#payload.Empty) | [.payload.Info.Index](#payload.Info.Index) |  |
+| CreateAndSaveIndex | [.payload.Control.CreateIndexRequest](#payload.Control.CreateIndexRequest) | [.payload.Empty](#payload.Empty) |  |
+| IndexInfo | [.payload.Empty](#payload.Empty) | [.payload.Info.Index.Count](#payload.Info.Index.Count) |  |
 
  
 

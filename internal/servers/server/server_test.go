@@ -18,15 +18,15 @@ package server
 import (
 	"context"
 	"crypto/tls"
-	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	time "time"
+	"time"
 
-	errgroup "github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/tcp"
 
 	"google.golang.org/grpc"

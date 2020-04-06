@@ -25,12 +25,13 @@ import (
 )
 
 type GRPCClient struct {
-	Addrs               []string    `json:"addrs" yaml:"addrs"`
-	HealthCheckDuration string      `json:"health_check_duration" yaml:"health_check_duration"`
-	Backoff             *Backoff    `json:"backoff" yaml:"backoff"`
-	CallOption          *CallOption `json:"call_option" yaml:"call_option"`
-	DialOption          *DialOption `json:"dial_option" yaml:"dial_option"`
-	TLS                 *TLS        `json:"tls" yaml:"tls"`
+	Addrs               []string        `json:"addrs" yaml:"addrs"`
+	HealthCheckDuration string          `json:"health_check_duration" yaml:"health_check_duration"`
+	ConnectionPool      *ConnectionPool `json:"connection_pool" yaml:"connection_pool"`
+	Backoff             *Backoff        `json:"backoff" yaml:"backoff"`
+	CallOption          *CallOption     `json:"call_option" yaml:"call_option"`
+	DialOption          *DialOption     `json:"dial_option" yaml:"dial_option"`
+	TLS                 *TLS            `json:"tls" yaml:"tls"`
 }
 
 type CallOption struct {
@@ -50,8 +51,14 @@ type DialOption struct {
 	EnableBackoff               bool                 `json:"enable_backoff" yaml:"enable_backoff"`
 	Insecure                    bool                 `json:"insecure" yaml:"insecure"`
 	Timeout                     string               `json:"timeout" yaml:"timeout"`
-	Dialer                      *TCP                 `json:"dialer" yaml:"dialer"`
+	TCP                         *TCP                 `json:"tcp" yaml:"tcp"`
 	KeepAlive                   *GRPCClientKeepalive `json:"keep_alive" yaml:"keep_alive"`
+}
+
+type ConnectionPool struct {
+	EnableRebalance   bool   `json:"enable_rebalance" yaml:"enable_rebalance"`
+	RebalanceDuration string `json:"rebalance_duration" yaml:"rebalance_duration"`
+	Size              int    `json:"size" yaml:"size"`
 }
 
 type GRPCClientKeepalive struct {
@@ -69,9 +76,14 @@ func newGRPCClientConfig() *GRPCClient {
 }
 
 func (g *GRPCClient) Bind() *GRPCClient {
+	g.Addrs = GetActualValues(g.Addrs)
 	g.HealthCheckDuration = GetActualValue(g.HealthCheckDuration)
 
-	g.Addrs = GetActualValues(g.Addrs)
+	if g.ConnectionPool != nil {
+		g.ConnectionPool.RebalanceDuration = GetActualValue(g.ConnectionPool.RebalanceDuration)
+	} else {
+		g.ConnectionPool = new(ConnectionPool)
+	}
 
 	if g.Backoff != nil {
 		g.Backoff.Bind()
@@ -122,10 +134,18 @@ func (g *GRPCClient) Opts() []grpc.Option {
 	opts := make([]grpc.Option, 0, 18)
 	opts = append(opts,
 		grpc.WithHealthCheckDuration(g.HealthCheckDuration),
+		grpc.WithConnectionPoolSize(g.ConnectionPool.Size),
 	)
 	if g.Addrs != nil && len(g.Addrs) != 0 {
 		opts = append(opts,
 			grpc.WithAddrs(g.Addrs...),
+		)
+	}
+
+	if g.ConnectionPool.EnableRebalance {
+		opts = append(opts,
+			grpc.WithEnableConnectionPoolRebalance(g.ConnectionPool.EnableRebalance),
+			grpc.WithConnectionPoolRebalanceDuration(g.ConnectionPool.RebalanceDuration),
 		)
 	}
 	if g.Backoff != nil &&
@@ -153,18 +173,24 @@ func (g *GRPCClient) Opts() []grpc.Option {
 			grpc.WithInitialWindowSize(g.DialOption.InitialWindowSize),
 			grpc.WithInitialConnectionWindowSize(g.DialOption.InitialWindowSize),
 			grpc.WithMaxMsgSize(g.DialOption.MaxMsgSize),
-			grpc.WithMaxBackoffDelay(g.DialOption.MaxBackoffDelay),
 			grpc.WithInsecure(g.DialOption.Insecure),
+			grpc.WithMaxBackoffDelay(g.DialOption.MaxBackoffDelay),
 			grpc.WithDialTimeout(g.DialOption.Timeout),
 		)
 
-		if g.DialOption.Dialer != nil &&
-			len(g.DialOption.Dialer.Dialer.Timeout) != 0 {
-			opts = append(opts,
-				grpc.WithDialer(
-					tcp.NewDialer(g.DialOption.Dialer.Opts()...),
-				),
-			)
+		if g.DialOption.TCP != nil &&
+			len(g.DialOption.TCP.Dialer.Timeout) != 0 {
+			if g.DialOption.TCP.TLS != nil && g.DialOption.TCP.TLS.Enabled {
+				opts = append(opts,
+					grpc.WithInsecure(false),
+				)
+			}
+			der, err := tcp.NewDialer(g.DialOption.TCP.Opts()...)
+			if err == nil {
+				opts = append(opts,
+					grpc.WithDialer(der),
+				)
+			}
 		}
 
 		if g.DialOption.KeepAlive != nil {

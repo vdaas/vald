@@ -20,38 +20,36 @@ import (
 	"sync"
 	"sync/atomic"
 	"unsafe"
-
-	"google.golang.org/grpc"
 )
 
-type gRPCConns struct {
+type grpcConns struct {
 	mu     sync.Mutex
-	read   atomic.Value // readOnly
-	dirty  map[string]*entryGRPCConns
+	read   atomic.Value
+	dirty  map[string]*entryGrpcConns
 	misses int
 }
 
-type readOnlyGRPCConns struct {
-	m       map[string]*entryGRPCConns
+type readOnlyGrpcConns struct {
+	m       map[string]*entryGrpcConns
 	amended bool
 }
 
-var expungedGRPCConns = unsafe.Pointer(new(*grpc.ClientConn))
+var expungedGrpcConns = unsafe.Pointer(new(ClientConnPool))
 
-type entryGRPCConns struct {
-	p unsafe.Pointer // *interface{}
+type entryGrpcConns struct {
+	p unsafe.Pointer
 }
 
-func newEntryGRPCConns(i *grpc.ClientConn) *entryGRPCConns {
-	return &entryGRPCConns{p: unsafe.Pointer(&i)}
+func newEntryGrpcConns(i ClientConnPool) *entryGrpcConns {
+	return &entryGrpcConns{p: unsafe.Pointer(&i)}
 }
 
-func (m *gRPCConns) Load(key string) (value *grpc.ClientConn, ok bool) {
-	read, _ := m.read.Load().(readOnlyGRPCConns)
+func (m *grpcConns) Load(key string) (value ClientConnPool, ok bool) {
+	read, _ := m.read.Load().(readOnlyGrpcConns)
 	e, ok := read.m[key]
 	if !ok && read.amended {
 		m.mu.Lock()
-		read, _ = m.read.Load().(readOnlyGRPCConns)
+		read, _ = m.read.Load().(readOnlyGrpcConns)
 		e, ok = read.m[key]
 		if !ok && read.amended {
 			e, ok = m.dirty[key]
@@ -65,22 +63,22 @@ func (m *gRPCConns) Load(key string) (value *grpc.ClientConn, ok bool) {
 	return e.load()
 }
 
-func (e *entryGRPCConns) load() (value *grpc.ClientConn, ok bool) {
+func (e *entryGrpcConns) load() (value ClientConnPool, ok bool) {
 	p := atomic.LoadPointer(&e.p)
-	if p == nil || p == expungedGRPCConns {
+	if p == nil || p == expungedGrpcConns {
 		return value, false
 	}
-	return *(**grpc.ClientConn)(p), true
+	return *(*ClientConnPool)(p), true
 }
 
-func (m *gRPCConns) Store(key string, value *grpc.ClientConn) {
-	read, _ := m.read.Load().(readOnlyGRPCConns)
+func (m *grpcConns) Store(key string, value ClientConnPool) {
+	read, _ := m.read.Load().(readOnlyGrpcConns)
 	if e, ok := read.m[key]; ok && e.tryStore(&value) {
 		return
 	}
 
 	m.mu.Lock()
-	read, _ = m.read.Load().(readOnlyGRPCConns)
+	read, _ = m.read.Load().(readOnlyGrpcConns)
 	if e, ok := read.m[key]; ok {
 		if e.unexpungeLocked() {
 			m.dirty[key] = e
@@ -91,17 +89,17 @@ func (m *gRPCConns) Store(key string, value *grpc.ClientConn) {
 	} else {
 		if !read.amended {
 			m.dirtyLocked()
-			m.read.Store(readOnlyGRPCConns{m: read.m, amended: true})
+			m.read.Store(readOnlyGrpcConns{m: read.m, amended: true})
 		}
-		m.dirty[key] = newEntryGRPCConns(value)
+		m.dirty[key] = newEntryGrpcConns(value)
 	}
 	m.mu.Unlock()
 }
 
-func (e *entryGRPCConns) tryStore(i **grpc.ClientConn) bool {
+func (e *entryGrpcConns) tryStore(i *ClientConnPool) bool {
 	for {
 		p := atomic.LoadPointer(&e.p)
-		if p == expungedGRPCConns {
+		if p == expungedGrpcConns {
 			return false
 		}
 		if atomic.CompareAndSwapPointer(&e.p, p, unsafe.Pointer(i)) {
@@ -110,20 +108,20 @@ func (e *entryGRPCConns) tryStore(i **grpc.ClientConn) bool {
 	}
 }
 
-func (e *entryGRPCConns) unexpungeLocked() (wasExpunged bool) {
-	return atomic.CompareAndSwapPointer(&e.p, expungedGRPCConns, nil)
+func (e *entryGrpcConns) unexpungeLocked() (wasExpunged bool) {
+	return atomic.CompareAndSwapPointer(&e.p, expungedGrpcConns, nil)
 }
 
-func (e *entryGRPCConns) storeLocked(i **grpc.ClientConn) {
+func (e *entryGrpcConns) storeLocked(i *ClientConnPool) {
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
-func (m *gRPCConns) Delete(key string) {
-	read, _ := m.read.Load().(readOnlyGRPCConns)
+func (m *grpcConns) Delete(key string) {
+	read, _ := m.read.Load().(readOnlyGrpcConns)
 	e, ok := read.m[key]
 	if !ok && read.amended {
 		m.mu.Lock()
-		read, _ = m.read.Load().(readOnlyGRPCConns)
+		read, _ = m.read.Load().(readOnlyGrpcConns)
 		e, ok = read.m[key]
 		if !ok && read.amended {
 			delete(m.dirty, key)
@@ -135,10 +133,10 @@ func (m *gRPCConns) Delete(key string) {
 	}
 }
 
-func (e *entryGRPCConns) delete() (hadValue bool) {
+func (e *entryGrpcConns) delete() (hadValue bool) {
 	for {
 		p := atomic.LoadPointer(&e.p)
-		if p == nil || p == expungedGRPCConns {
+		if p == nil || p == expungedGrpcConns {
 			return false
 		}
 		if atomic.CompareAndSwapPointer(&e.p, p, nil) {
@@ -147,13 +145,13 @@ func (e *entryGRPCConns) delete() (hadValue bool) {
 	}
 }
 
-func (m *gRPCConns) Range(f func(key string, value *grpc.ClientConn) bool) {
-	read, _ := m.read.Load().(readOnlyGRPCConns)
+func (m *grpcConns) Range(f func(key string, value ClientConnPool) bool) {
+	read, _ := m.read.Load().(readOnlyGrpcConns)
 	if read.amended {
 		m.mu.Lock()
-		read, _ = m.read.Load().(readOnlyGRPCConns)
+		read, _ = m.read.Load().(readOnlyGrpcConns)
 		if read.amended {
-			read = readOnlyGRPCConns{m: m.dirty}
+			read = readOnlyGrpcConns{m: m.dirty}
 			m.read.Store(read)
 			m.dirty = nil
 			m.misses = 0
@@ -172,23 +170,23 @@ func (m *gRPCConns) Range(f func(key string, value *grpc.ClientConn) bool) {
 	}
 }
 
-func (m *gRPCConns) missLocked() {
+func (m *grpcConns) missLocked() {
 	m.misses++
 	if m.misses < len(m.dirty) {
 		return
 	}
-	m.read.Store(readOnlyGRPCConns{m: m.dirty})
+	m.read.Store(readOnlyGrpcConns{m: m.dirty})
 	m.dirty = nil
 	m.misses = 0
 }
 
-func (m *gRPCConns) dirtyLocked() {
+func (m *grpcConns) dirtyLocked() {
 	if m.dirty != nil {
 		return
 	}
 
-	read, _ := m.read.Load().(readOnlyGRPCConns)
-	m.dirty = make(map[string]*entryGRPCConns, len(read.m))
+	read, _ := m.read.Load().(readOnlyGrpcConns)
+	m.dirty = make(map[string]*entryGrpcConns, len(read.m))
 	for k, e := range read.m {
 		if !e.tryExpungeLocked() {
 			m.dirty[k] = e
@@ -196,13 +194,13 @@ func (m *gRPCConns) dirtyLocked() {
 	}
 }
 
-func (e *entryGRPCConns) tryExpungeLocked() (isExpunged bool) {
+func (e *entryGrpcConns) tryExpungeLocked() (isExpunged bool) {
 	p := atomic.LoadPointer(&e.p)
 	for p == nil {
-		if atomic.CompareAndSwapPointer(&e.p, nil, expungedGRPCConns) {
+		if atomic.CompareAndSwapPointer(&e.p, nil, expungedGrpcConns) {
 			return true
 		}
 		p = atomic.LoadPointer(&e.p)
 	}
-	return p == expungedGRPCConns
+	return p == expungedGrpcConns
 }

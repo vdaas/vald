@@ -18,83 +18,32 @@
 package service
 
 import (
-	"fmt"
-	"time"
-
+	"github.com/vdaas/vald/internal/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/timeutil"
 )
 
 type GWOption func(g *gateway) error
 
 var (
-	defaultGWOpts = []GWOption{}
+	defaultGWOpts = []GWOption{
+		WithErrGroup(errgroup.Get()),
+	}
 )
 
-func WithDiscovererClient(client grpc.Client) GWOption {
+func WithDiscoverer(c discoverer.Client) GWOption {
 	return func(g *gateway) error {
-		g.dscClient = client
-		return nil
-	}
-}
-
-func WithDiscovererAddr(addr string) GWOption {
-	return func(g *gateway) error {
-		g.dscAddr = addr
-		return nil
-	}
-}
-
-func WithDiscovererHostPort(host string, port int) GWOption {
-	return func(g *gateway) error {
-		g.dscAddr = fmt.Sprintf("%s:%d", host, port)
-		return nil
-	}
-}
-
-func WithDiscoverDuration(dur string) GWOption {
-	return func(g *gateway) error {
-		d, err := timeutil.Parse(dur)
-		if err != nil {
-			d = time.Second
+		if c != nil {
+			g.client = c
 		}
-		g.dscDur = d
-		return nil
-	}
-}
-
-func WithAgentOptions(opts ...grpc.Option) GWOption {
-	return func(g *gateway) error {
-		g.agentOpts = append(g.agentOpts, opts...)
-		return nil
-	}
-}
-
-func WithAgentName(name string) GWOption {
-	return func(g *gateway) error {
-		g.agentName = name
-		return nil
-	}
-}
-
-func WithAgentPort(port int) GWOption {
-	return func(g *gateway) error {
-		g.agentPort = port
-		return nil
-	}
-}
-
-func WithAgentServiceDNSARecord(a string) GWOption {
-	return func(g *gateway) error {
-		g.agentARecord = a
 		return nil
 	}
 }
 
 func WithErrGroup(eg errgroup.Group) GWOption {
 	return func(g *gateway) error {
-		g.eg = eg
+		if eg != nil {
+			g.eg = eg
+		}
 		return nil
 	}
 }

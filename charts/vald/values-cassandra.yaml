@@ -1,0 +1,91 @@
+#
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+backupManager:
+  image:
+    repository: vdaas/vald-manager-backup-cassandra
+  initContainers:
+    - type: wait-for-cassandra
+      name: wait-for-cassandra
+      image: cassandra:latest
+      cassandra:
+        hosts:
+          - cassandra-0.default.svc.cluster.local
+          - cassandra-1.default.svc.cluster.local
+          - cassandra-2.default.svc.cluster.local
+        options:
+          - "-uroot"
+          - "-p${CASSANDRA_PASSWORD}"
+      sleepDuration: 2
+      env:
+      - name: CASSANDRA_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: cassandra-secret
+            key: password
+  env:
+    - name: CASSANDRA_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: cassandra-secret
+          key: password
+  mysql:
+    enabled: false
+  cassandra:
+    enabled: true
+    config:
+      hosts:
+        - cassandra-0.cassandra.default.svc.cluster.local
+        - cassandra-1.cassandra.default.svc.cluster.local
+        - cassandra-2.cassandra.default.svc.cluster.local
+
+meta:
+  image:
+    repository: vdaas/vald-meta-cassandra
+  initContainers:
+    - type: wait-for-cassandra
+      name: wait-for-cassandra
+      image: cassandra:latest
+      cassandra:
+        hosts:
+          - cassandra-0.default.svc.cluster.local
+          - cassandra-1.default.svc.cluster.local
+          - cassandra-2.default.svc.cluster.local
+        options:
+          - "-uroot"
+          - "-p${CASSANDRA_PASSWORD}"
+      sleepDuration: 2
+      env:
+      - name: CASSANDRA_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: cassandra-secret
+            key: password
+  env:
+    - name: CASSANDRA_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: cassandra-secret
+          key: password
+  redis:
+    enabled: false
+  cassandra:
+    enabled: true
+    config:
+      hosts:
+        - cassandra-0.cassandra.default.svc.cluster.local
+        - cassandra-1.cassandra.default.svc.cluster.local
+        - cassandra-2.cassandra.default.svc.cluster.local

@@ -20,13 +20,13 @@ package server
 import (
 	"crypto/tls"
 	"fmt"
-	"net"
 	"net/http"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/timeutil"
 	"google.golang.org/grpc"
@@ -258,28 +258,28 @@ func WithDisableRestart() Option {
 
 func WithGRPCMaxReceiveMessageSize(size int) Option {
 	return func(s *server) {
-		if size > 0 {
+		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.MaxRecvMsgSize(size))
 		}
 	}
 }
 func WithGRPCMaxSendMessageSize(size int) Option {
 	return func(s *server) {
-		if size > 0 {
+		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.MaxSendMsgSize(size))
 		}
 	}
 }
 func WithGRPCInitialWindowSize(size int) Option {
 	return func(s *server) {
-		if size > 0 {
+		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.InitialWindowSize(int32(size)))
 		}
 	}
 }
 func WithGRPCInitialConnWindowSize(size int) Option {
 	return func(s *server) {
-		if size > 0 {
+		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.InitialConnWindowSize(int32(size)))
 		}
 	}
@@ -362,14 +362,14 @@ func WithGRPCKeepaliveTimeout(dur string) Option {
 }
 func WithGRPCWriteBufferSize(size int) Option {
 	return func(s *server) {
-		if size > 0 {
+		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.WriteBufferSize(size))
 		}
 	}
 }
 func WithGRPCReadBufferSize(size int) Option {
 	return func(s *server) {
-		if size > 0 {
+		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.ReadBufferSize(size))
 		}
 	}

@@ -23,30 +23,46 @@ import (
 	"runtime"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
 )
 
-func BidirectionalStream(stream grpc.ServerStream,
+type ClientStream = grpc.ClientStream
+
+// BidirectionalStream represents gRPC bidirectional stream server handler.
+func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 	concurrency int,
 	newData func() interface{},
 	f func(context.Context, interface{}) (interface{}, error)) (err error) {
-	ctx := stream.Context()
-	eg, ctx := errgroup.New(stream.Context())
+	eg, ctx := errgroup.New(ctx)
 	if concurrency > 0 {
 		eg.Limitation(concurrency)
 	}
+
 	for {
 		select {
 		case <-ctx.Done():
-			return eg.Wait()
+			err = eg.Wait()
+			if err != nil {
+				log.Error(err)
+				return err
+			}
+			return nil
 		default:
 			data := newData()
 			err = stream.RecvMsg(data)
 			if err != nil {
 				if err == io.EOF {
-					return eg.Wait()
+					err = eg.Wait()
+					if err != nil {
+						log.Error(err)
+						return err
+					}
+					return nil
 				}
+				log.Error(err)
 				return err
 			}
 			if data != nil {
@@ -69,4 +85,62 @@ func BidirectionalStream(stream grpc.ServerStream,
 			}
 		}
 	}
+}
+
+// BidirectionalStreamClient is gRPC client stream.
+func BidirectionalStreamClient(stream grpc.ClientStream,
+	dataProvider func() interface{},
+	newData func() interface{},
+	f func(interface{}, error)) (err error) {
+	ctx, cancel := context.WithCancel(stream.Context())
+	eg, ctx := errgroup.New(ctx)
+
+	eg.Go(safety.RecoverFunc(func() (err error) {
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+				res := newData()
+				err = stream.RecvMsg(res)
+				if err == io.EOF {
+					cancel()
+					return nil
+				}
+				f(res, err)
+			}
+		}
+	}))
+
+	defer func() {
+		if err != nil {
+			err = errors.Wrap(stream.CloseSend(), err.Error())
+		} else {
+			err = stream.CloseSend()
+		}
+	}()
+
+	return func() (err error) {
+		for {
+			select {
+			case <-ctx.Done():
+				return eg.Wait()
+			default:
+				data := dataProvider()
+				if data == nil {
+					err = stream.CloseSend()
+					cancel()
+					if err != nil {
+						return errors.Wrap(eg.Wait(), err.Error())
+					}
+					return eg.Wait()
+				}
+
+				err = stream.SendMsg(data)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}()
 }

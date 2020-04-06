@@ -19,26 +19,99 @@ package grpc
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/vdaas/vald/apis/grpc/discoverer"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc/proto"
+	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/singleflight"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
 )
 
-type server struct {
-	dsc service.Discoverer
+type DiscovererServer interface {
+	discoverer.DiscovererServer
+	Start(context.Context)
 }
 
-func New(opts ...Option) discoverer.DiscovererServer {
+type server struct {
+	dsc   service.Discoverer
+	group singleflight.Group
+}
+
+const (
+	podPrefix  = "pods"
+	nodePrefix = "nodes"
+	keyDelim   = "-"
+)
+
+func New(opts ...Option) (ds DiscovererServer, err error) {
 	s := new(server)
 
 	for _, opt := range append(defaultOpts, opts...) {
-		opt(s)
+		err = opt(s)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return s
+
+	s.group = singleflight.New(10)
+
+	return s, nil
 }
 
-func (s *server) Discover(ctx context.Context, req *payload.Discoverer_Request) (
-	res *payload.Info_Servers, err error) {
-	return s.dsc.GetServers(req.GetName(), req.GetNode()), nil
+func (s *server) Start(ctx context.Context) {
+}
+
+func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Pods, error) {
+	ctx, span := trace.StartSpan(ctx, "vald/discoverer-k8s.Pods")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	res, err, _ := s.group.Do(ctx, singleflightKey(podPrefix, req), func() (interface{}, error) {
+		return s.dsc.GetPods(req)
+	})
+	if err != nil {
+		log.Error(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
+		return nil, status.WrapWithNotFound(fmt.Sprintf("Pods API request %#v pods not found", req), err, info.Get())
+	}
+	return proto.Clone(res.(*payload.Info_Pods)).(*payload.Info_Pods), nil
+}
+
+func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
+	ctx, span := trace.StartSpan(ctx, "vald/discoverer-k8s.Nodes")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	res, err, _ := s.group.Do(ctx, singleflightKey(nodePrefix, req), func() (interface{}, error) {
+		return s.dsc.GetNodes(req)
+	})
+	if err != nil {
+		log.Error(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+		}
+		return nil, status.WrapWithNotFound(fmt.Sprintf("Nodes API request %#v nodes not found", req), err, info.Get())
+	}
+	return proto.Clone(res.(*payload.Info_Nodes)).(*payload.Info_Nodes), nil
+}
+
+func singleflightKey(pref string, req *payload.Discoverer_Request) string {
+	return strings.Join([]string{
+		pref,
+		req.GetNode(),
+		req.GetNamespace(),
+		req.GetName(),
+	}, keyDelim)
 }

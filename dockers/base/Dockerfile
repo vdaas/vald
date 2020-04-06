@@ -51,5 +51,4 @@ COPY go.mod .
 COPY go.sum .
 
 RUN go mod tidy \
-    && go mod download \
-    && go mod vendor
+    && go mod download

@@ -22,4 +22,3 @@ mysql_config:
   user: vald-user
   pass: _MYSQL_PASSWORD_
   name: vald
-

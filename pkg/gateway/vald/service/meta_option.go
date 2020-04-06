@@ -20,13 +20,19 @@ package service
 import (
 	"fmt"
 
+	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/timeutil"
 )
 
 type MetaOption func(m *meta) error
 
 var (
-	defaultMetaOpts = []MetaOption{}
+	defaultMetaOpts = []MetaOption{
+		WithMetaCacheEnabled(true),
+		WithMetaCacheExpireDuration("30m"),
+		WithMetaCacheExpiredCheckDuration("2m"),
+	}
 )
 
 func WithMetaAddr(addr string) MetaOption {
@@ -48,6 +54,44 @@ func WithMetaClient(client grpc.Client) MetaOption {
 		if client != nil {
 			m.client = client
 		}
+		return nil
+	}
+}
+
+func WithMetaCacheEnabled(flg bool) MetaOption {
+	return func(m *meta) error {
+		m.enableCache = flg
+		return nil
+	}
+}
+
+func WithMetaCache(c cache.Cache) MetaOption {
+	return func(m *meta) error {
+		if c != nil {
+			m.cache = c
+		}
+		return nil
+	}
+}
+
+func WithMetaCacheExpireDuration(dur string) MetaOption {
+	return func(m *meta) error {
+		_, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+		m.expireDuration = dur
+		return nil
+	}
+}
+
+func WithMetaCacheExpiredCheckDuration(dur string) MetaOption {
+	return func(m *meta) error {
+		_, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+		m.expireCheckDuration = dur
 		return nil
 	}
 }

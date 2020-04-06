@@ -40,7 +40,8 @@ type NGT struct {
 	// SearchEdgeSize represent the search edge size
 	SearchEdgeSize int `yaml:"search_edge_size" json:"search_edge_size"`
 
-	AutoIndexLimit string `yaml:"auto_index_limit" json:"auto_index_limit"`
+	// AutoIndexDurationLimit represents auto indexing duration limit
+	AutoIndexDurationLimit string `yaml:"auto_index_duration_limit" json:"auto_index_duration_limit"`
 
 	// AutoIndexCheckDuration represent checking loop duration about auto indexing execution
 	AutoIndexCheckDuration string `yaml:"auto_index_check_duration" json:"auto_index_check_duration"`

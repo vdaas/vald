@@ -25,7 +25,12 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-type Data struct {
+type Data interface {
+	ConfigFilePath() string
+	ShowVersion() bool
+}
+
+type data struct {
 	configFilePath string
 	showVersion    bool
 }
@@ -51,10 +56,10 @@ func New(opts ...Option) *parser {
 	return p
 }
 
-func (p *parser) Parse() (*Data, bool, error) {
+func (p *parser) Parse() (Data, bool, error) {
 	f := flag.NewFlagSet(filepath.Base(os.Args[0]), flag.ContinueOnError)
 
-	d := new(Data)
+	d := new(data)
 	for _, key := range p.filePath.keys {
 		f.StringVar(&d.configFilePath,
 			key,
@@ -76,16 +81,23 @@ func (p *parser) Parse() (*Data, bool, error) {
 		if err != flag.ErrHelp {
 			return nil, false, errors.ErrArgumentParseFailed(err)
 		}
-		return d, true, nil
+		return nil, true, nil
+	}
+
+	if _, err := os.Stat(d.configFilePath); !d.showVersion &&
+		(os.IsNotExist(err) ||
+			d.configFilePath == "") {
+		f.Usage()
+		return nil, true, err
 	}
 
 	return d, false, nil
 }
 
-func (d *Data) ConfigFilePath() string {
+func (d *data) ConfigFilePath() string {
 	return d.configFilePath
 }
 
-func (d *Data) ShowVersion() bool {
+func (d *data) ShowVersion() bool {
 	return d.showVersion
 }

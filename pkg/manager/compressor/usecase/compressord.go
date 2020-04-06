@@ -25,6 +25,8 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/metric"
+	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -37,11 +39,12 @@ import (
 )
 
 type run struct {
-	eg         errgroup.Group
-	cfg        *config.Data
-	backup     service.Backup
-	compressor service.Compressor
-	server     starter.Server
+	eg            errgroup.Group
+	cfg           *config.Data
+	backup        service.Backup
+	compressor    service.Compressor
+	server        starter.Server
+	observability observability.Observability
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
@@ -61,6 +64,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			grpc.New(
 				append(cfg.BackupManager.Client.Opts(),
 					grpc.WithErrGroup(eg),
+					grpc.WithDialOptions(
+						grpc.WithStatsHandler(metric.NewClientHandler()),
+					),
 				)...,
 			),
 		),
@@ -84,6 +90,34 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		handler.WithBackup(b),
 	)
 
+	grpcServerOptions := []server.Option{
+		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+			compressor.RegisterBackupServer(srv, g)
+		}),
+		server.WithPreStartFunc(func() error {
+			// TODO check unbackupped upstream
+			return nil
+		}),
+		server.WithPreStopFunction(func() error {
+			// TODO backup all index data here
+			return nil
+		}),
+	}
+
+	var obs observability.Observability
+	if cfg.Observability.Enabled {
+		obs, err = observability.NewWithConfig(cfg.Observability)
+		if err != nil {
+			return nil, err
+		}
+		grpcServerOptions = append(
+			grpcServerOptions,
+			server.WithGRPCOption(
+				grpc.StatsHandler(metric.NewServerHandler()),
+			),
+		)
+	}
+
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
 		starter.WithREST(func(sc *iconf.Server) []server.Option {
@@ -101,19 +135,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			}
 		}),
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
-			return []server.Option{
-				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-					compressor.RegisterBackupServer(srv, g)
-				}),
-				server.WithPreStartFunc(func() error {
-					// TODO check unbackupped upstream
-					return nil
-				}),
-				server.WithPreStopFunction(func() error {
-					// TODO backup all index data here
-					return nil
-				}),
-			}
+			return grpcServerOptions
 		}),
 		// TODO add GraphQL handler
 	)
@@ -123,23 +145,34 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
-		eg:         eg,
-		cfg:        cfg,
-		backup:     b,
-		compressor: c,
-		server:     srv,
+		eg:            eg,
+		cfg:           cfg,
+		backup:        b,
+		compressor:    c,
+		server:        srv,
+		observability: obs,
 	}, nil
 }
 
 func (r *run) PreStart(ctx context.Context) error {
 	log.Info("daemon pre-start")
-	return r.compressor.PreStart(ctx)
+	err := r.compressor.PreStart(ctx)
+	if err != nil {
+		return err
+	}
+	if r.observability != nil {
+		return r.observability.PreStart(ctx)
+	}
+	return nil
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 2)
-	var bech, cech, sech <-chan error
+	ech := make(chan error, 4)
+	var bech, cech, sech, oech <-chan error
 	var err error
+	if r.observability != nil {
+		oech = r.observability.Start(ctx)
+	}
 	if r.backup != nil {
 		bech, err = r.backup.Start(ctx)
 		if err != nil {
@@ -158,9 +191,10 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case err = <-sech:
+			case err = <-oech:
 			case err = <-bech:
 			case err = <-cech:
+			case err = <-sech:
 			}
 			if err != nil {
 				select {
@@ -179,6 +213,9 @@ func (r *run) PreStop(ctx context.Context) error {
 }
 
 func (r *run) Stop(ctx context.Context) error {
+	if r.observability != nil {
+		r.observability.Stop(ctx)
+	}
 	return r.server.Shutdown(ctx)
 }
 

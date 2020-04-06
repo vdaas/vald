@@ -21,6 +21,7 @@ import (
 	"context"
 	"os"
 	"runtime"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -50,7 +51,13 @@ type NGT interface {
 	SaveIndex() (err error)
 	Exists(string) (uint32, bool)
 	CreateAndSaveIndex(poolSize uint32) (err error)
-	ObjectCount() uint64
+	IsIndexing() bool
+	Len() uint64
+	NumberOfCreateIndexExecution() uint64
+	UUIDs(context.Context) (uuids []string)
+	UncommittedUUIDs() (uuids []string)
+	DeleteVCacheLen() uint64
+	InsertVCacheLen() uint64
 	Close()
 }
 
@@ -61,6 +68,7 @@ type ngt struct {
 	dur      time.Duration // auto indexing check duration
 	dps      uint32        // default pool size
 	ic       uint64        // insert count
+	nocie    uint64        // number of create index execution
 	eg       errgroup.Group
 	ivc      *vcaches // insertion vector cache
 	dvc      *vcaches // deletion vector cache
@@ -106,8 +114,8 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 		n.dur = d
 	}
 
-	if cfg.AutoIndexLimit != "" {
-		d, err := timeutil.Parse(cfg.AutoIndexLimit)
+	if cfg.AutoIndexDurationLimit != "" {
+		d, err := timeutil.Parse(cfg.AutoIndexDurationLimit)
 		if err != nil {
 			d = 0
 		}
@@ -167,6 +175,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			}
 		}
 	}))
+
 	return ech
 }
 
@@ -364,12 +373,12 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 	if ic == 0 {
 		return errors.ErrUncommittedIndexNotFound
 	}
-	t := time.Now().UnixNano()
 	n.indexing.Store(true)
-	defer n.indexing.Store(false)
 	atomic.StoreUint64(&n.ic, 0)
+	t := time.Now().UnixNano()
+	defer n.indexing.Store(false)
 
-	log.Infof("create index started, uncommitted indexes = %d", ic)
+	log.Infof("create index operation started, uncommitted indexes = %d", ic)
 	delList := make([]string, 0, ic)
 	n.dvc.Range(func(uuid string, dvc vcache) bool {
 		if dvc.date > t {
@@ -381,7 +390,8 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 		delList = append(delList, uuid)
 		return true
 	})
-	log.Info("create index delete kvs phase started", delList)
+	log.Info("create index delete kvs phase started")
+	log.Debug(delList)
 	doids := make([]uint, 0, ic)
 	for _, duuid := range delList {
 		n.dvc.Delete(duuid)
@@ -393,9 +403,12 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 			doids = append(doids, uint(id))
 		}
 	}
+	log.Info("create index delete kvs phase finished")
 
-	log.Info("create index delete index phase started", doids)
+	log.Info("create index delete index phase started")
+	log.Debug(doids)
 	brerr := n.core.BulkRemove(doids...)
+	log.Info("create index delete index phase finished")
 	if brerr != nil {
 		log.Error(brerr)
 		err = errors.Wrap(err, brerr.Error())
@@ -409,8 +422,10 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 		}
 		return true
 	})
-	log.Info("create index insert index phase started", vecs)
+	log.Info("create index insert index phase started")
+	log.Debug(vecs)
 	oids, errs := n.core.BulkInsert(vecs)
+	log.Info("create index insert index phase finished")
 	if errs != nil && len(errs) != 0 {
 		for _, bierr := range errs {
 			if bierr != nil {
@@ -419,7 +434,9 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 			}
 		}
 	}
-	log.Info("create index insert kvs phase started", uuids, oids)
+
+	log.Info("create index insert kvs phase started")
+	log.Debugf("uuids = %#v\t\toids = %#v", uuids, oids)
 	for i, uuid := range uuids {
 		n.ivc.Delete(uuid)
 		if len(oids) > i {
@@ -429,12 +446,19 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 			}
 		}
 	}
-	log.Info("create graph and tree phase started", poolSize)
+	log.Info("create index insert kvs phase finished")
+
+	log.Info("create graph and tree phase started")
+	log.Debugf("pool size = %d", poolSize)
 	cierr := n.core.CreateIndex(poolSize)
 	if cierr != nil {
 		log.Error(cierr)
 		err = errors.Wrap(err, cierr.Error())
 	}
+	log.Info("create graph and tree phase finished")
+
+	log.Info("create index operation finished")
+	atomic.AddUint64(&n.nocie, 1)
 	return err
 }
 
@@ -467,10 +491,10 @@ func (n *ngt) insertCache(uuid string) (*vcache, bool) {
 	if ok {
 		dv, ok := n.dvc.Load(uuid)
 		if !ok {
-			return &iv, ok
+			return &iv, true
 		}
 		if ok && dv.date <= iv.date {
-			return &iv, ok
+			return &iv, true
 		}
 		n.ivc.Delete(uuid)
 		atomic.AddUint64(&n.ic, ^uint64(0))
@@ -478,6 +502,43 @@ func (n *ngt) insertCache(uuid string) (*vcache, bool) {
 	return nil, false
 }
 
-func (n *ngt) ObjectCount() uint64 {
+func (n *ngt) IsIndexing() bool {
+	return n.indexing.Load().(bool)
+}
+
+func (n *ngt) UUIDs(ctx context.Context) (uuids []string) {
+	uuids = make([]string, 0, n.kvs.Len())
+	n.kvs.Range(ctx, func(uuid string, oid uint32) bool {
+		uuids = append(uuids, uuid)
+		return true
+	})
+	return uuids
+}
+
+func (n *ngt) UncommittedUUIDs() (uuids []string) {
+	var mu sync.Mutex
+	uuids = make([]string, 0, atomic.LoadUint64(&n.ic))
+	n.ivc.Range(func(uuid string, vc vcache) bool {
+		mu.Lock()
+		uuids = append(uuids, uuid)
+		mu.Unlock()
+		return true
+	})
+	return uuids
+}
+
+func (n *ngt) NumberOfCreateIndexExecution() uint64 {
+	return atomic.LoadUint64(&n.nocie)
+}
+
+func (n *ngt) Len() uint64 {
 	return n.kvs.Len()
+}
+
+func (n *ngt) InsertVCacheLen() uint64 {
+	return n.ivc.Len()
+}
+
+func (n *ngt) DeleteVCacheLen() uint64 {
+	return n.dvc.Len()
 }

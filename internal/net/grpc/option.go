@@ -20,11 +20,11 @@ package grpc
 import (
 	"context"
 	"crypto/tls"
-	"net"
 	"time"
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/timeutil"
 	"google.golang.org/grpc"
@@ -36,6 +36,9 @@ type Option func(*gRPCClient)
 
 var (
 	defaultOpts = []Option{
+		WithConnectionPoolSize(3),
+		WithEnableConnectionPoolRebalance(false),
+		WithConnectionPoolRebalanceDuration("1h"),
 		WithErrGroup(errgroup.Get()),
 		WithHealthCheckDuration("10s"),
 	}
@@ -61,6 +64,33 @@ func WithHealthCheckDuration(dur string) Option {
 			d = time.Second
 		}
 		g.hcDur = d
+	}
+}
+
+func WithConnectionPoolRebalanceDuration(dur string) Option {
+	return func(g *gRPCClient) {
+		if len(dur) == 0 {
+			return
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			d = time.Hour
+		}
+		g.prDur = d
+	}
+}
+
+func WithEnableConnectionPoolRebalance(flg bool) Option {
+	return func(g *gRPCClient) {
+		g.enablePoolRebalance = flg
+	}
+}
+
+func WithConnectionPoolSize(size int) Option {
+	return func(g *gRPCClient) {
+		if size >= 1 {
+			g.poolSize = uint64(size)
+		}
 	}
 }
 

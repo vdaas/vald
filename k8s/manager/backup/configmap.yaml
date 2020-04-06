@@ -24,15 +24,16 @@ data:
     version: v0.0.0
     time_zone: UTC
     logging:
-      logger: glg
+      format: raw
       level: debug
-      format: 
+      logger: glg
     server_config:
       servers:
         - name: grpc
           host: 0.0.0.0
           port: 8081
           grpc:
+            bidirectional_stream_concurrency: 20
             connection_timeout: ""
             header_table_size: 0
             initial_conn_window_size: 0
@@ -78,16 +79,51 @@ data:
           mode: ""
           probe_wait_time: 3s
       metrics_servers:
+        - name: pprof
+          host: 0.0.0.0
+          port: 6060
+          http:
+            handler_timeout: 5s
+            idle_timeout: 2s
+            read_header_timeout: 1s
+            read_timeout: 1s
+            shutdown_duration: 5s
+            write_timeout: 1s
+          mode: REST
+          probe_wait_time: 3s
       startup_strategy:
         - liveness
+        - pprof
         - grpc
         - readiness
       full_shutdown_duration: 600s
       tls:
-        enabled: false
-        cert: /path/to/cert
-        key: /path/to/key
         ca: /path/to/ca
+        cert: /path/to/cert
+        enabled: false
+        key: /path/to/key
+    observability:
+      enabled: false
+      collector:
+        duration: 5s
+        metrics:
+          enable_cgo: true
+          enable_goroutine: true
+          enable_memory: true
+          enable_version_info: true
+      trace:
+        enabled: false
+        sampling_rate: 1
+      prometheus:
+        enabled: false
+      jaeger:
+          enabled: false
+          collector_endpoint: ""
+          agent_endpoint: "jaeger-agent.default.svc.cluster.local:6831"
+          username: ""
+          password: ""
+          service_name: "vald-manager-backup"
+          buffer_max_count: 10
     mysql_config:
       conn_max_life_time: 30s
       db: mysql

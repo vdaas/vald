@@ -43,14 +43,11 @@ RUN GO_VERSION="$(cat GO_VERSION)" \
     && CPU_INFO_FLAGS="$(cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1)" \
     && GOOS="$(go env GOOS)" \
     && GOARCH="$(go env GOARCH)" \
-    && CGO_ENABLED=1 \
-    && CGO_CXXFLAGS="-g -Ofast -march=native" \
-    CGO_FFLAGS="-g -Ofast -march=native" \
-    CGO_LDFLAGS="-g -Ofast -march=native" \
-    GO111MODULE=on \
+    && CGO_ENABLED=0 \
+    && GO111MODULE=on \
     go build \
     --ldflags "-s -w -linkmode 'external' \
-    -extldflags '-static -fPIC -m64 -pthread -fopenmp -std=c++17 -lstdc++ -lm' \
+    -extldflags '-static' \
     -X 'github.com/${ORG}/${REPO}/internal/info.Version=${VALD_VERSION}' \
     -X 'github.com/${ORG}/${REPO}/internal/info.GitCommit=${GIT_COMMIT}' \
     -X 'github.com/${ORG}/${REPO}/internal/info.GoVersion=${GO_VERSION}' \
@@ -59,9 +56,9 @@ RUN GO_VERSION="$(cat GO_VERSION)" \
     -X 'github.com/${ORG}/${REPO}/internal/info.CGOEnabled=${CGO_ENABLED}' \
     -X 'github.com/${ORG}/${REPO}/internal/info.BuildCPUInfoFlags=${CPU_INFO_FLAGS}'" \
     -a \
-    -tags "cgo netgo" \
+    -tags netgo \
     -trimpath \
-    -installsuffix "cgo netgo" \
+    -installsuffix netgo \
     -o "${APP_NAME}" \
     "cmd/${PKG}/main.go" \
     && upx -9 -o "/usr/bin/${APP_NAME}" "${APP_NAME}"

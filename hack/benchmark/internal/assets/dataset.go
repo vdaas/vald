@@ -256,7 +256,7 @@ var (
 func identity(dim int) func(tb testing.TB) Dataset {
 	return func(tb testing.TB) Dataset {
 		tb.Helper()
-		ids := CreateSequentialIDs(dim)
+		ids := CreateSequentialIDs(dim * 1000)
 		train := make([][]float32, dim)
 		for i := range train {
 			train[i] = make([]float32, dim)
@@ -298,7 +298,10 @@ func Data(name string) func(testing.TB) Dataset {
 		i, _ := strconv.Atoi(name[9:])
 		return identity(i)
 	}
-	return data[name]
+	if d, ok := data[name]; ok {
+		return d
+	}
+	return nil
 }
 
 func (d *dataset) Train() [][]float32 {

@@ -50,81 +50,12 @@ func New(opts ...Option) http.Handler {
 				h.Index,
 			},
 			{
-				"Search",
-				[]string{
-					http.MethodPost,
-				},
-				"/search",
-				h.Search,
-			},
-			{
-				"Search By ID",
+				"IndexInfo",
 				[]string{
 					http.MethodGet,
 				},
-				"/search/{id}",
-				h.SearchByID,
-			},
-			{
-				"Insert",
-				[]string{
-					http.MethodPost,
-				},
-				"/insert",
-				h.Insert,
-			},
-			{
-				"Multiple Insert",
-				[]string{
-					http.MethodPost,
-				},
-				"/insert/multi",
-				h.MultiInsert,
-			},
-			{
-				"Update",
-				[]string{
-					http.MethodPost,
-					http.MethodPatch,
-					http.MethodPut,
-				},
-				"/update",
-				h.Update,
-			},
-			{
-				"Multiple Update",
-				[]string{
-					http.MethodPost,
-					http.MethodPatch,
-					http.MethodPut,
-				},
-				"/update/multi",
-				h.MultiUpdate,
-			},
-			{
-				"Remove",
-				[]string{
-					http.MethodDelete,
-				},
-				"/delete/{id}",
-				h.Remove,
-			},
-			{
-				"Multiple Remove",
-				[]string{
-					http.MethodDelete,
-					http.MethodPost,
-				},
-				"/delete/multi",
-				h.MultiRemove,
-			},
-			{
-				"GetObject",
-				[]string{
-					http.MethodGet,
-				},
-				"/object/{id}",
-				h.GetObject,
+				"/index",
+				h.IndexInfo,
 			},
 		}...))
 }

@@ -77,22 +77,41 @@ message Object {
   message Vectors { repeated Vector vectors = 1; }
 }
 
-message Controll {
+message Control {
   message CreateIndexRequest {
     uint32 pool_size = 1 [ (validate.rules).uint32.gte = 0 ];
+  }
+}
+
+message Replication {
+  message Recovery {
+    repeated string deleted_agents = 1;
+  }
+
+  message Rebalance {
+    repeated string high_usage_agents = 1;
+    repeated string low_usage_agents = 2;
+  }
+
+  message Agents {
+    repeated string agents = 1;
+    repeated string removed_agents = 2;
+    repeated string replicating_agent = 3;
   }
 }
 
 message Discoverer {
   message Request {
     string name = 1 [ (validate.rules).string.min_len = 1 ];
-    string node = 2;
+    string namespace = 2;
+    string node = 3;
   }
 }
 
 message Backup {
   message GetVector {
     message Request { string uuid = 1 [ (validate.rules).string.min_len = 1 ]; }
+    message Owner { string ip = 1 [ (validate.rules).string.min_len = 1 ]; }
   }
 
   message Locations {
@@ -142,20 +161,53 @@ message Backup {
 
 message Info {
   message Index {
-    uint32 count = 1;
-    uint32 uncommitted_index = 2;
-    repeated string uuids = 3;
-    repeated string uncommitted_uuid = 4;
+    message Count {
+      uint32 stored = 1;
+      uint32 uncommitted = 2;
+      bool indexing = 3;
+    }
+    message UUID {
+      message Committed {
+        string uuid = 1;
+      }
+      message Uncommitted {
+        string uuid = 1;
+      }
+    }
   }
-  message Server {
+
+  message Pod {
+    string app_name = 1;
+    string name = 2;
+    string namespace = 3;
+    string ip = 4 [ (validate.rules).string.ipv4 = true ];
+    CPU cpu = 5;
+    Memory memory = 6;
+    Node node = 7;
+  }
+  message Node {
     string name = 1;
-    string ip = 2 [ (validate.rules).string.ipv4 = true ];
-    Server server = 3;
-    double cpu = 4;
-    double mem = 5;
+    string internal_addr = 2;
+    string external_addr = 3;
+    CPU cpu = 4;
+    Memory memory = 5;
+    Pods Pods = 6;
   }
-  message Servers {
-    repeated Server Servers = 1 [ (validate.rules).repeated .min_items = 1 ];
+  message CPU {
+    double limit = 1;
+    double request = 2;
+    double usage = 3;
+  }
+  message Memory {
+    double limit = 1;
+    double request = 2;
+    double usage = 3;
+  }
+  message Pods {
+    repeated Pod pods = 1 [ (validate.rules).repeated .min_items = 1 ];
+  }
+  message Nodes {
+    repeated Node nodes = 1 [ (validate.rules).repeated .min_items = 1 ];
   }
   message IPs { repeated string ip = 1; }
 }

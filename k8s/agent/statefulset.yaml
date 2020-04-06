@@ -22,7 +22,8 @@ metadata:
     app: vald-agent-ngt
 spec:
   serviceName: vald-agent-ngt
-  replicas: 20
+  podManagementPolicy: Parallel
+  replicas: 5
   revisionHistoryLimit: 2
   selector:
     matchLabels:
@@ -36,12 +37,29 @@ spec:
       creationTimestamp: null
       labels:
         app: vald-agent-ngt
+      annotations:
+        profefe.com/enable: "true"
+        profefe.com/port: "6060"
+        profefe.com/service: vald-agent-ngt
+      # annotations:
+      #   checksum/configmap: 745108c647718ba5c10388c291ac10b005cfefafb1a7fc0b51ed15789842bc44
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - vald-agent-ngt
       containers:
         - name: vald-agent-ngt
           image: "vdaas/vald-agent-ngt:nightly"
           imagePullPolicy: Always
-          
           livenessProbe:
             failureThreshold: 2
             httpGet:
@@ -72,12 +90,15 @@ spec:
             - name: grpc
               protocol: TCP
               containerPort: 8081
+            - name: pprof
+              protocol: TCP
+              containerPort: 6060
           resources:
-            null
+            requests:
+              cpu: 100m
+              memory: 50Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-          env:
-            null
           volumeMounts:
             - name: vald-agent-ngt-config
               mountPath: /etc/server/
@@ -91,4 +112,5 @@ spec:
           configMap:
             defaultMode: 420
             name: vald-agent-ngt-config
+      priorityClassName: vald-agent-ngt-priority
 status:
