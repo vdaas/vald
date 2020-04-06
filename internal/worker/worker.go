@@ -76,9 +76,9 @@ func New(opts ...WorkerOption) (Worker, error) {
 }
 
 func (w *worker) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 1)
+	ech := make(chan error, 2)
 
-	var qech <-chan error
+	var wech, qech <-chan error
 	var err error
 
 	qech, err = w.queue.Start(ctx)
@@ -87,8 +87,7 @@ func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 		return nil, err
 	}
 
-	eg, ctx := errgroup.New(ctx)
-	eg.Limitation(w.limitation)
+	wech = w.startJobLoop(ctx)
 
 	w.running.Store(true)
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -97,11 +96,39 @@ func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				w.running.Store(false)
-				return errors.Wrap(eg.Wait(), err.Error())
+				return ctx.Err()
 			case err = <-qech:
-				if err != nil {
-					ech <- err
+			case err = <-wech:
+			}
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					w.running.Store(false)
+					return ctx.Err()
+				case ech <- err:
 				}
+			}
+		}
+	}))
+
+	return ech, nil
+}
+
+func (w *worker) startJobLoop(ctx context.Context) <-chan error {
+	ech := make(chan error, 1)
+
+	eg, ctx := errgroup.New(ctx)
+	eg.Limitation(w.limitation)
+
+	w.eg.Go(safety.RecoverFunc(func() (err error) {
+		for {
+			select {
+			case <-ctx.Done():
+				if err = ctx.Err(); err != nil {
+					return errors.Wrap(eg.Wait(), err.Error())
+				}
+				return eg.Wait()
+			default:
 			}
 
 			job, err := w.queue.Pop(ctx)
@@ -122,7 +149,7 @@ func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 		}
 	}))
 
-	return ech, nil
+	return ech
 }
 
 func (w *worker) Pause() {
