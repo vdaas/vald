@@ -35,11 +35,12 @@ type Queue interface {
 }
 
 type queue struct {
-	buffer int
-	eg     errgroup.Group
-	inCh   chan JobFunc
-	outCh  chan JobFunc
-	qLen   atomic.Value
+	buffer  int
+	eg      errgroup.Group
+	inCh    chan JobFunc
+	outCh   chan JobFunc
+	qLen    atomic.Value
+	running atomic.Value
 }
 
 func NewQueue(opts ...QueueOption) (Queue, error) {
@@ -51,6 +52,7 @@ func NewQueue(opts ...QueueOption) (Queue, error) {
 	}
 
 	q.qLen.Store(uint64(0))
+	q.running.Store(false)
 
 	q.inCh = make(chan JobFunc, q.buffer)
 	q.outCh = make(chan JobFunc)
@@ -76,11 +78,13 @@ func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 			q.qLen.Store(uint64(len(s)))
 		}
 
+		q.running.Store(true)
 		for {
 			if len(s) > 0 {
 				j := s[0]
 				select {
 				case <-ctx.Done():
+					q.pause()
 					return ctx.Err()
 				case q.outCh <- j:
 					outFn()
@@ -90,6 +94,7 @@ func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 			} else {
 				select {
 				case <-ctx.Done():
+					q.pause()
 					return ctx.Err()
 				case j := <-q.inCh:
 					inFn(j)
@@ -101,7 +106,19 @@ func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
+func (q *queue) pause() {
+	q.running.Store(false)
+}
+
+func (q *queue) isRunning() bool {
+	return q.running.Load().(bool)
+}
+
 func (q *queue) Push(ctx context.Context, job JobFunc) error {
+	if !q.isRunning() {
+		return errors.ErrQueueIsNotRunning()
+	}
+
 	if job == nil {
 		return errors.ErrJobFuncIsNil()
 	}
@@ -115,6 +132,10 @@ func (q *queue) Push(ctx context.Context, job JobFunc) error {
 }
 
 func (q *queue) Pop(ctx context.Context) (JobFunc, error) {
+	if !q.isRunning() {
+		return nil, errors.ErrQueueIsNotRunning()
+	}
+
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
