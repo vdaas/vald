@@ -27,6 +27,7 @@ type Option func(*option)
 
 var (
 	defaultOptions = []Option{
+		WithLevel(level.DEBUG.String()),
 		WithLogger(
 			glg.New(
 				glg.WithRetry(

@@ -29,7 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
-	"golang.org/x/sync/singleflight"
+	"github.com/vdaas/vald/internal/singleflight"
 	"google.golang.org/grpc"
 )
 
@@ -54,17 +54,18 @@ type clientConnPool struct {
 }
 
 type connPool struct {
-	ctx     context.Context
-	conn    *ClientConn // default connection
-	group   singleflight.Group
-	pool    sync.Pool
-	addr    string
-	host    string
-	port    string
-	size    uint64
-	length  uint64
-	dopts   []DialOption
-	closing atomic.Value
+	ctx        context.Context
+	conn       *ClientConn // default connection
+	group      singleflight.Group
+	pool       sync.Pool
+	addr       string
+	host       string
+	port       string
+	size       uint64
+	length     uint64
+	dopts      []DialOption
+	closing    atomic.Value
+	avgConnDur atomic.Value
 }
 
 func NewPool(ctx context.Context, addr string, size uint64, dopts ...DialOption) (ClientConnPool, error) {
@@ -87,10 +88,12 @@ func NewPool(ctx context.Context, addr string, size uint64, dopts ...DialOption)
 		}
 		port, ok = scanGRPCPort(ctx, host)
 		if !ok {
+			log.Error(err)
 			return nil, err
 		}
 		cp, err = newPool(ctx, host, port, size, dopts...)
 		if err != nil {
+			log.Error(err)
 			return nil, err
 		}
 	}
@@ -112,8 +115,13 @@ func scanGRPCPort(ctx context.Context, host string) (string, bool) {
 		return "", false
 	}
 	for _, port := range ports {
-		if isGRPCPort(ctx, host, port) {
-			return strconv.Itoa(int(port)), true
+		select {
+		case <-ctx.Done():
+			return "", false
+		default:
+			if isGRPCPort(ctx, host, port) {
+				return strconv.Itoa(int(port)), true
+			}
 		}
 	}
 	return "", false
@@ -155,6 +163,7 @@ func (c *clientConnPool) Reconnect(ctx context.Context, force bool) (ClientConnP
 	if !force && c.isIP {
 		return c, nil
 	}
+	log.Debugf("reconnection to %s:%s size: %d", c.host, c.port, c.size)
 	cp, err := newPool(ctx, c.host, c.port, c.size, c.dopts...)
 	if err != nil {
 		return nil, err
@@ -173,7 +182,9 @@ func newPool(ctx context.Context, host, port string, size uint64, dopts ...DialO
 		size:   size,
 		dopts:  dopts,
 		length: 0,
+		group:  singleflight.New(1),
 	}
+	cp.avgConnDur.Store(50 * time.Millisecond)
 	cp.closing.Store(false)
 	cp.pool = sync.Pool{
 		New: func() interface{} {
@@ -183,15 +194,18 @@ func newPool(ctx context.Context, host, port string, size uint64, dopts ...DialO
 			if cp.conn != nil && isHealthy(cp.conn) {
 				return cp.conn
 			}
-			ic, err, _ := cp.group.Do(cp.addr, func() (interface{}, error) {
+			ic, err, _ := cp.group.Do(ctx, cp.addr, func() (interface{}, error) {
 				log.Warn("establishing new connection to " + cp.addr)
+				start := time.Now()
 				conn, err := grpc.DialContext(ctx, cp.addr, cp.dopts...)
 				if err != nil {
 					log.Error(err)
 					return nil, nil
 				}
+				cp.avgConnDur.Store(time.Since(start))
 				if cp.conn != nil {
-					cp.conn.Close()
+					ocp := cp.conn
+					defer ocp.Close()
 				}
 				cp.conn = conn
 				return cp.conn, nil
@@ -243,6 +257,7 @@ func (c *connPool) connect(ctx context.Context) (cp *connPool, err error) {
 	}
 
 	if c.conn == nil || (c.conn != nil && !isHealthy(c.conn)) {
+		start := time.Now()
 		conn, err := grpc.DialContext(ctx, c.addr, c.dopts...)
 		if err != nil {
 			log.Debugf("failed to dial pool connection addr = %s\terror = %v", c.addr, err)
@@ -251,6 +266,7 @@ func (c *connPool) connect(ctx context.Context) (cp *connPool, err error) {
 			}
 			return c, err
 		}
+		c.avgConnDur.Store(time.Since(start))
 		c.conn = conn
 	}
 
@@ -263,16 +279,25 @@ func (c *connPool) connect(ctx context.Context) (cp *connPool, err error) {
 	}
 
 	if net.IsLocal(c.host) {
-		for atomic.LoadUint64(&c.length) > c.size {
-			conn, err := grpc.DialContext(ctx, c.host+":"+c.port, c.dopts...)
-			if err == nil {
-				c.put(conn)
-			} else {
-				log.Debugf("failed to dial pool connection ip = %s\tport = %s\terror = %v", c.host, c.port, err)
-				if conn != nil {
-					return c, errors.Wrap(conn.Close(), err.Error())
+		sctx, cancel := context.WithTimeout(ctx, c.avgConnDur.Load().(time.Duration))
+		defer cancel()
+		for atomic.LoadUint64(&c.length) < c.size {
+			select {
+			case <-sctx.Done():
+				return c, nil
+			default:
+				addr := c.host + ":" + c.port
+				log.Debugf("establishing local connection to %s", addr)
+				conn, err := grpc.DialContext(ctx, addr, c.dopts...)
+				if err == nil {
+					c.put(conn)
+				} else {
+					log.Debugf("failed to dial pool connection ip = %s\tport = %s\terror = %v", c.host, c.port, err)
+					if conn != nil {
+						return c, errors.Wrap(conn.Close(), err.Error())
+					}
+					return c, err
 				}
-				return c, err
 			}
 		}
 		return c, nil
@@ -280,16 +305,25 @@ func (c *connPool) connect(ctx context.Context) (cp *connPool, err error) {
 
 	ips, err := net.DefaultResolver.LookupIPAddr(ctx, c.host)
 	if err != nil {
-		for atomic.LoadUint64(&c.length) > c.size {
-			conn, err := grpc.DialContext(ctx, c.addr, c.dopts...)
-			if err == nil {
-				c.put(conn)
-			} else {
-				log.Debugf("failed to dial pool connection addr = %s\terror = %v", c.addr, err)
-				if conn != nil {
-					return c, errors.Wrap(conn.Close(), err.Error())
+		log.Error(err)
+		sctx, cancel := context.WithTimeout(ctx, c.avgConnDur.Load().(time.Duration))
+		defer cancel()
+		for atomic.LoadUint64(&c.length) < c.size {
+			select {
+			case <-sctx.Done():
+				return c, nil
+			default:
+				log.Debugf("establishing default host connection to %s", c.addr)
+				conn, err := grpc.DialContext(ctx, c.addr, c.dopts...)
+				if err == nil {
+					c.put(conn)
+				} else {
+					log.Debugf("failed to dial pool connection addr = %s\terror = %v", c.addr, err)
+					if conn != nil {
+						return c, errors.Wrap(conn.Close(), err.Error())
+					}
+					return c, err
 				}
-				return c, err
 			}
 		}
 		return c, nil
@@ -305,20 +339,27 @@ func (c *connPool) connect(ctx context.Context) (cp *connPool, err error) {
 		if atomic.LoadUint64(&c.length) > c.size {
 			return c, nil
 		}
-		conn, err := grpc.DialContext(ctx, ip.String()+":"+c.port, c.dopts...)
-		if err == nil {
-			c.put(conn)
-		} else {
-			log.Debugf("failed to dial pool connection ip = %s\tport = %s\terror = %v", ip.String, c.port, err)
-			if conn != nil {
-				return c, errors.Wrap(conn.Close(), err.Error())
+		select {
+		case <-ctx.Done():
+			return c, nil
+		default:
+			addr := ip.String() + ":" + c.port
+			log.Debugf("establishing balanced connection to %s", addr)
+			conn, err := grpc.DialContext(ctx, addr, c.dopts...)
+			if err != nil {
+				if conn != nil {
+					err = errors.Wrap(conn.Close(), err.Error())
+				}
+				log.Warn(err)
+			} else {
+				c.put(conn)
 			}
-			return c, err
 		}
 		if atomic.LoadUint64(&c.length) > c.size {
 			return c, nil
 		}
 	}
+
 	return c, nil
 }
 
