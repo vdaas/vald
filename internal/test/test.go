@@ -27,7 +27,7 @@ type Test interface {
 
 type test struct {
 	cases  []Caser
-	target func(context.Context, DataProvider) ([]interface{}, error)
+	target func(context.Context, DataProvider) []interface{}
 }
 
 func New(opts ...Option) Test {
@@ -49,10 +49,7 @@ func (test *test) Run(ctx context.Context, t *testing.T) {
 				c.SetField(fn(tt)...)
 			}
 
-			gots, err := test.target(ctx, c)
-			if err != nil {
-				tt.Error(err)
-			}
+			gots := test.target(ctx, c)
 
 			if fn := c.AssertFunc(); fn != nil {
 				if err := fn(gots, c.Wants()); err != nil {

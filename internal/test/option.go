@@ -33,7 +33,7 @@ func WithCase(cases ...Caser) Option {
 	}
 }
 
-func WithTarget(fn func(context.Context, DataProvider) ([]interface{}, error)) Option {
+func WithTarget(fn func(context.Context, DataProvider) []interface{}) Option {
 	return func(t *test) {
 		if fn != nil {
 			t.target = fn
