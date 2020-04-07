@@ -58,7 +58,7 @@ func initCore(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.C
 	return ngt, ngt, nil
 }
 
-func BenchmarkGONGT_Insert(b *testing.B) {
+func BenchmarkGoNGTSequential_Insert(b *testing.B) {
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -71,7 +71,7 @@ func BenchmarkGONGT_Insert(b *testing.B) {
 	}
 }
 
-func BenchmarkGONGT_BulkInsert(b *testing.B) {
+func BenchmarkGoNGTSequential_BulkInsert(b *testing.B) {
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -84,7 +84,7 @@ func BenchmarkGONGT_BulkInsert(b *testing.B) {
 	}
 }
 
-func BenchmarkGONGT_InsertCommit(b *testing.B) {
+func BenchmarkGoNGTSequential_InsertCommit(b *testing.B) {
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -98,7 +98,7 @@ func BenchmarkGONGT_InsertCommit(b *testing.B) {
 	}
 }
 
-func BenchmarkGONGT_Search(b *testing.B) {
+func BenchmarkGoNGTSequential_Search(b *testing.B) {
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -112,7 +112,7 @@ func BenchmarkGONGT_Search(b *testing.B) {
 	}
 }
 
-func BenchmarkGONGT_Remove(b *testing.B) {
+func BenchmarkGoNGTSequential_Remove(b *testing.B) {
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -125,7 +125,7 @@ func BenchmarkGONGT_Remove(b *testing.B) {
 	}
 }
 
-func BenchmarkGONGT_GetVector(b *testing.B) {
+func BenchmarkGoNGTSequential_GetVector(b *testing.B) {
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
