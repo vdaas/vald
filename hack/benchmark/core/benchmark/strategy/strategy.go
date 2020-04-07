@@ -40,6 +40,7 @@ type strategy struct {
 	mode       core.Mode
 	prop32     func(context.Context, *testing.B, core.Core32, assets.Dataset, []uint, *uint64) (interface{}, error)
 	prop64     func(context.Context, *testing.B, core.Core64, assets.Dataset, []uint, *uint64) (interface{}, error)
+	parallel   bool
 }
 
 func newStrategy(opts ...StrategyOption) benchmark.Strategy {
@@ -120,13 +121,27 @@ func (s *strategy) float32(ctx context.Context, b *testing.B, dataset assets.Dat
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		_, err := s.prop32(ctx, b, s.core32, dataset, ids, cnt)
-		if err != nil {
-			b.Error(err)
+
+	if s.parallel {
+		b.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				_, err := s.prop32(ctx, b, s.core32, dataset, ids, cnt)
+				if err != nil {
+					b.Error(err)
+				}
+				atomic.AddUint64(cnt, 1)
+			}
+		})
+	} else {
+		for i := 0; i < b.N; i++ {
+			_, err := s.prop32(ctx, b, s.core32, dataset, ids, cnt)
+			if err != nil {
+				b.Error(err)
+			}
+			atomic.AddUint64(cnt, 1)
 		}
-		atomic.AddUint64(cnt, 1)
 	}
+
 	b.StopTimer()
 }
 
@@ -137,12 +152,26 @@ func (s *strategy) float64(ctx context.Context, b *testing.B, dataset assets.Dat
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		_, err := s.prop64(ctx, b, s.core64, dataset, ids, cnt)
-		if err != nil {
-			b.Error(err)
+
+	if s.parallel {
+		b.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				_, err := s.prop64(ctx, b, s.core64, dataset, ids, cnt)
+				if err != nil {
+					b.Error(err)
+				}
+				atomic.AddUint64(cnt, 1)
+			}
+		})
+	} else {
+		for i := 0; i < b.N; i++ {
+			_, err := s.prop64(ctx, b, s.core64, dataset, ids, cnt)
+			if err != nil {
+				b.Error(err)
+			}
+			atomic.AddUint64(cnt, 1)
 		}
-		atomic.AddUint64(cnt, 1)
 	}
+
 	b.StopTimer()
 }

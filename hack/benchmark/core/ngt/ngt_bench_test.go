@@ -65,6 +65,20 @@ func BenchmarkNGTSequential_Insert(b *testing.B) {
 			benchmark.WithStrategy(
 				strategy.NewInsert(
 					strategy.WithCore32(initCore),
+					strategy.WithParallel(),
+				),
+			),
+		).Run(context.Background(), b)
+	}
+}
+
+func BenchmarkNGTParallel_Insert(b *testing.B) {
+	for _, target := range targets {
+		benchmark.New(b,
+			benchmark.WithName(target),
+			benchmark.WithStrategy(
+				strategy.NewInsert(
+					strategy.WithCore32(initCore),
 				),
 			),
 		).Run(context.Background(), b)
@@ -78,6 +92,20 @@ func BenchmarkNGTSequential_BulkInsert(b *testing.B) {
 			benchmark.WithStrategy(
 				strategy.NewBulkInsert(
 					strategy.WithCore32(initCore),
+				),
+			),
+		).Run(context.Background(), b)
+	}
+}
+
+func BenchmarkNGTParallel_BulkInsert(b *testing.B) {
+	for _, target := range targets {
+		benchmark.New(b,
+			benchmark.WithName(target),
+			benchmark.WithStrategy(
+				strategy.NewBulkInsert(
+					strategy.WithCore32(initCore),
+					strategy.WithParallel(),
 				),
 			),
 		).Run(context.Background(), b)
@@ -98,6 +126,21 @@ func BenchmarkNGTSequential_InsertCommit(b *testing.B) {
 	}
 }
 
+func BenchmarkNGTParallel_InsertCommit(b *testing.B) {
+	for _, target := range targets {
+		benchmark.New(b,
+			benchmark.WithName(target),
+			benchmark.WithStrategy(
+				strategy.NewInsertCommit(
+					10,
+					strategy.WithCore32(initCore),
+					strategy.WithParallel(),
+				),
+			),
+		).Run(context.Background(), b)
+	}
+}
+
 func BenchmarkNGTSequential_BulkInsertCommit(b *testing.B) {
 	for _, target := range targets {
 		benchmark.New(b,
@@ -106,6 +149,21 @@ func BenchmarkNGTSequential_BulkInsertCommit(b *testing.B) {
 				strategy.NewBulkInsertCommit(
 					10,
 					strategy.WithCore32(initCore),
+				),
+			),
+		).Run(context.Background(), b)
+	}
+}
+
+func BenchmarkNGTParallel_BulkInsertCommit(b *testing.B) {
+	for _, target := range targets {
+		benchmark.New(b,
+			benchmark.WithName(target),
+			benchmark.WithStrategy(
+				strategy.NewBulkInsertCommit(
+					10,
+					strategy.WithCore32(initCore),
+					strategy.WithParallel(),
 				),
 			),
 		).Run(context.Background(), b)
@@ -126,6 +184,21 @@ func BenchmarkNGTSequential_Search(b *testing.B) {
 	}
 }
 
+func BenchmarkNGTParallel_Search(b *testing.B) {
+	for _, target := range targets {
+		benchmark.New(b,
+			benchmark.WithName(target),
+			benchmark.WithStrategy(
+				strategy.NewSearch(
+					size, radius, epsilon,
+					strategy.WithCore32(initCore),
+					strategy.WithParallel(),
+				),
+			),
+		).Run(context.Background(), b)
+	}
+}
+
 func BenchmarkNGTSequential_Remove(b *testing.B) {
 	for _, target := range targets {
 		benchmark.New(b,
@@ -139,6 +212,20 @@ func BenchmarkNGTSequential_Remove(b *testing.B) {
 	}
 }
 
+func BenchmarkNGTParallel_Remove(b *testing.B) {
+	for _, target := range targets {
+		benchmark.New(b,
+			benchmark.WithName(target),
+			benchmark.WithStrategy(
+				strategy.NewRemove(
+					strategy.WithCore32(initCore),
+					strategy.WithParallel(),
+				),
+			),
+		).Run(context.Background(), b)
+	}
+}
+
 func BenchmarkNGTSequential_GetVector(b *testing.B) {
 	for _, target := range targets {
 		benchmark.New(b,
@@ -146,6 +233,20 @@ func BenchmarkNGTSequential_GetVector(b *testing.B) {
 			benchmark.WithStrategy(
 				strategy.NewGetVector(
 					strategy.WithCore32(initCore),
+				),
+			),
+		).Run(context.Background(), b)
+	}
+}
+
+func BenchmarkNGTParallel_GetVector(b *testing.B) {
+	for _, target := range targets {
+		benchmark.New(b,
+			benchmark.WithName(target),
+			benchmark.WithStrategy(
+				strategy.NewGetVector(
+					strategy.WithCore32(initCore),
+					strategy.WithParallel(),
 				),
 			),
 		).Run(context.Background(), b)

@@ -114,3 +114,10 @@ func WithCore64(
 		return nil
 	}
 }
+
+func WithParallel() StrategyOption {
+	return func(s *strategy) error {
+		s.parallel = true
+		return nil
+	}
+}
