@@ -15,10 +15,30 @@
 # limitations under the License.
 #
 apiVersion: vald.vdaas.org/v1alpha1
-kind: ValdRelease
+kind: ValdHelmOperatorRelease
 metadata:
-  name: vald-cluster
+  name: RELEASE-NAME
   namespace: default
-# the values of Helm chart for Vald can be placed under the `spec` field.
+# the values of Helm chart for vald-helm-operator can be placed under the `spec` field.
 spec:
-  {}
+  image:
+    pullPolicy: Always
+    repository: vdaas/vald-helm-operator
+    tag: v0.0.27
+  name: vald-helm-operator
+  nodeSelector: {}
+  operator:
+    release:
+      create: true
+  rbac:
+    create: true
+    name: vald-helm-operator
+  replicas: 1
+  resources: {}
+  serviceAccount:
+    create: true
+    name: vald-helm-operator
+  vald:
+    create: true
+    name: vald-cluster
+    spec: {}
