@@ -130,4 +130,5 @@ spec:
             defaultMode: 420
             name: vald-manager-index-config
           name: vald-manager-index-config
+      priorityClassName: vald-manager-index-priority
 status:

@@ -100,4 +100,5 @@ spec:
             defaultMode: 420
             name: vald-manager-compressor-config
           name: vald-manager-compressor-config
+      priorityClassName: vald-manager-compressor-priority
 status:

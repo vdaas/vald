@@ -129,4 +129,5 @@ spec:
           configMap:
             defaultMode: 420
             name: vald-meta-config
+      priorityClassName: vald-meta-priority
 status:

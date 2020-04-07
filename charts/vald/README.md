@@ -183,6 +183,8 @@ Configuration
 | backupManager.nodeSelector | object | `nil` | node selector |
 | backupManager.observability | object | `{"jaeger":{"service_name":"vald-manager-backup"}}` | observability config (overrides defaults.observability) |
 | backupManager.podAnnotations | list | `nil` | pod annotations |
+| backupManager.podPriority.enabled | bool | `true` | backup manager pod PriorityClass enabled |
+| backupManager.podPriority.value | int | `1000000` | backup manager pod PriorityClass value |
 | backupManager.progressDeadlineSeconds | int | `600` | progress deadline seconds |
 | backupManager.resources | object | `{"limits":{"cpu":"500m","memory":"150Mi"},"requests":{"cpu":"100m","memory":"50Mi"}}` | compute resources |
 | backupManager.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
@@ -219,6 +221,8 @@ Configuration
 | compressor.nodeSelector | object | `nil` | node selector |
 | compressor.observability | object | `{"jaeger":{"service_name":"vald-manager-compressor"}}` | observability config (overrides defaults.observability) |
 | compressor.podAnnotations | list | `nil` | pod annotations |
+| compressor.podPriority.enabled | bool | `true` | compressor pod PriorityClass enabled |
+| compressor.podPriority.value | int | `100000000` | compressor pod PriorityClass value |
 | compressor.progressDeadlineSeconds | int | `600` | progress deadline seconds |
 | compressor.resources | object | `{"limits":{"cpu":"800m","memory":"500Mi"},"requests":{"cpu":"300m","memory":"50Mi"}}` | compute resources |
 | compressor.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
@@ -422,6 +426,8 @@ Configuration
 | discoverer.nodeSelector | object | `nil` | node selector |
 | discoverer.observability | object | `{"jaeger":{"service_name":"vald-discoverer"}}` | observability config (overrides defaults.observability) |
 | discoverer.podAnnotations | list | `nil` | pod annotations |
+| discoverer.podPriority.enabled | bool | `true` | discoverer pod PriorityClass enabled |
+| discoverer.podPriority.value | int | `1000000` | discoverer pod PriorityClass value |
 | discoverer.progressDeadlineSeconds | int | `600` | progress deadline seconds |
 | discoverer.resources | object | `{"limits":{"cpu":"600m","memory":"200Mi"},"requests":{"cpu":"200m","memory":"65Mi"}}` | compute resources |
 | discoverer.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
@@ -471,6 +477,8 @@ Configuration
 | gateway.nodeSelector | object | `nil` | node selector |
 | gateway.observability | object | `{"jaeger":{"service_name":"vald-gateway"}}` | observability config (overrides defaults.observability) |
 | gateway.podAnnotations | list | `nil` | pod annotations |
+| gateway.podPriority.enabled | bool | `true` | gateway pod PriorityClass enabled |
+| gateway.podPriority.value | int | `1000000` | gateway pod PriorityClass value |
 | gateway.progressDeadlineSeconds | int | `600` | progress deadline seconds |
 | gateway.resources | object | `{"limits":{"cpu":"2000m","memory":"700Mi"},"requests":{"cpu":"200m","memory":"150Mi"}}` | compute resources |
 | gateway.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
@@ -508,6 +516,8 @@ Configuration
 | indexManager.nodeSelector | object | `nil` | node selector |
 | indexManager.observability | object | `{"jaeger":{"service_name":"vald-manager-index"}}` | observability config (overrides defaults.observability) |
 | indexManager.podAnnotations | list | `nil` | pod annotations |
+| indexManager.podPriority.enabled | bool | `true` | index manager pod PriorityClass enabled |
+| indexManager.podPriority.value | int | `1000000` | index manager pod PriorityClass value |
 | indexManager.progressDeadlineSeconds | int | `600` | progress deadline seconds |
 | indexManager.replicas | int | `1` | number of replicas |
 | indexManager.resources | object | `{"limits":{"cpu":"1000m","memory":"500Mi"},"requests":{"cpu":"200m","memory":"80Mi"}}` | compute resources |
@@ -632,6 +642,8 @@ Configuration
 | meta.nodeSelector | object | `nil` | node selector |
 | meta.observability | object | `{"jaeger":{"service_name":"vald-meta"}}` | observability config (overrides defaults.observability) |
 | meta.podAnnotations | list | `nil` | pod annotations |
+| meta.podPriority.enabled | bool | `true` | meta pod PriorityClass enabled |
+| meta.podPriority.value | int | `1000000` | meta pod PriorityClass value |
 | meta.progressDeadlineSeconds | int | `600` | progress deadline seconds |
 | meta.redis.config.addrs | list | `["redis.default.svc.cluster.local:6379"]` | redis hosts and ports |
 | meta.redis.config.db | int | `0` | database to be selected |
