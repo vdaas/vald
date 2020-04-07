@@ -421,6 +421,11 @@ gateway:
   revisionHistoryLimit: 2
   # gateway.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  podPriority:
+    # gateway.podPriority.enabled -- gateway pod PriorityClass enabled
+    enabled: true
+    # gateway.podPriority.value -- gateway pod PriorityClass value
+    value: 1000000
   # gateway.annotations -- (list) deployment annotations
   annotations: null
   # gateway.podAnnotations -- (list) pod annotations
@@ -689,6 +694,11 @@ discoverer:
   revisionHistoryLimit: 2
   # discoverer.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  podPriority:
+    # discoverer.podPriority.enabled -- discoverer pod PriorityClass enabled
+    enabled: true
+    # discoverer.podPriority.value -- discoverer pod PriorityClass value
+    value: 1000000
   # discoverer.annotations -- (list) deployment annotations
   annotations: null
   # discoverer.podAnnotations -- (list) pod annotations
@@ -795,6 +805,11 @@ compressor:
   revisionHistoryLimit: 2
   # compressor.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  podPriority:
+    # compressor.podPriority.enabled -- compressor pod PriorityClass enabled
+    enabled: true
+    # compressor.podPriority.value -- compressor pod PriorityClass value
+    value: 100000000
   # compressor.annotations -- (list) deployment annotations
   annotations: null
   # compressor.podAnnotations -- (list) pod annotations
@@ -897,6 +912,11 @@ backupManager:
   revisionHistoryLimit: 2
   # backupManager.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  podPriority:
+    # backupManager.podPriority.enabled -- backup manager pod PriorityClass enabled
+    enabled: true
+    # backupManager.podPriority.value -- backup manager pod PriorityClass value
+    value: 1000000
   # backupManager.annotations -- (list) deployment annotations
   annotations: null
   # backupManager.podAnnotations -- (list) pod annotations
@@ -1198,6 +1218,11 @@ indexManager:
   revisionHistoryLimit: 2
   # indexManager.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  podPriority:
+    # indexManager.podPriority.enabled -- index manager pod PriorityClass enabled
+    enabled: true
+    # indexManager.podPriority.value -- index manager pod PriorityClass value
+    value: 1000000
   # indexManager.annotations -- (list) deployment annotations
   annotations: null
   # indexManager.podAnnotations -- (list) pod annotations
@@ -1322,6 +1347,11 @@ meta:
   revisionHistoryLimit: 2
   # meta.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  podPriority:
+    # meta.podPriority.enabled -- meta pod PriorityClass enabled
+    enabled: true
+    # meta.podPriority.value -- meta pod PriorityClass value
+    value: 1000000
   # meta.annotations -- (list) deployment annotations
   annotations: null
   # meta.podAnnotations -- (list) pod annotations
