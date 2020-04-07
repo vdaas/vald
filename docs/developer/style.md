@@ -124,8 +124,8 @@ test.New(
                 host, port, err
             }
         }
-    )
-)
+    ),
+).Run(context.Background(), t)
 ```
 
 </td>
