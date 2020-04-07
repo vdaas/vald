@@ -25,7 +25,7 @@ Testing guideline has 2 important rules for the coding quality and readability
 Use table-driven tests with subtests to avoid duplicating code. 
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>Bad</th><th>Good</th><th>In Vald</th></tr></thead>
 <tbody>
 <tr>
 <td>
@@ -77,7 +77,7 @@ tests := []struct {
     },
     ## case 2
     {
-    	str: "192.0.2.0:8000",
+    	str: "192.0.2.0:http",
     	wantHost: "192.0.2.0",
     	wantPort: "http",
 	},
@@ -100,6 +100,37 @@ for _, tt := range tests {
 ```
 
 </td>
+<td>
+
+```go
+test.New(
+    test.WithCase(
+        caser.New(
+            WithName("case_1"),
+            WithArg("192.0.2.0:8000")
+            WithWant("192.0.2.0", "8000", nil),
+        ),
+
+        caser.New(
+            WithName("case_2"),
+            WithArg("192.0.2.0:http")
+            WithWant("192.0.2.0", "http", nil),
+        ),
+    ),
+    test.WithTarget(
+        func(ctx context.Context, d test.DataProvider) []interface{} {
+            host, port, err := net.SplitHostPort(d.Args()[0].(string))
+            return []interface{} {
+                host, port, err
+            }
+        }
+    )
+)
+```
+
+</td>
+
+
 </tr>
 </tbody>
 </table>
