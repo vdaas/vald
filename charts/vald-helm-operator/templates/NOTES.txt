@@ -13,3 +13,7 @@ EOF
 You can get statuses of ValdRelease resource like:
 
 kubectl get valdrelease
+
+Also you can get statuses of ValdHelmOperatorRelease resource like:
+
+kubectl get valdhelmoperatorrelease

@@ -40,6 +40,8 @@ GOCACHE := $(shell go env GOCACHE)
 
 TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION)
 
+OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION)
+
 DOCKFMT_VERSION      ?= v0.3.3
 KIND_VERSION         ?= v0.7.0
 HELM_VERSION         ?= v3.1.2

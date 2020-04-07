@@ -20,6 +20,11 @@ jobs:
           fetch-depth: 10
       - name: Push to master
         run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
+          BRANCH_NAME="documentation/pull_request_template/update_versions_$(TIMESTAMP)"
+          git checkout master
+          git checkout -b ${BRANCH_NAME}
+
           GO_VERSION=$(make version/go)
           NGT_VERSION=$(make version/ngt)
 
@@ -33,7 +38,16 @@ jobs:
           git commit --signoff -m ":robot: Automatically update PULL_REQUEST_TEMPLATE"
 
           git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push origin master
+          git push origin ${BRANCH_NAME}
+
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"title\": \"Update PULL_REQUEST_TEMPLATE\", \"head\": \"${BRANCH_NAME}\", \"base\": \"master\", \"body\": \"PULL_REQUEST_TEMPLATE is updated.\", \"maintainer_can_modify\": true}" \
+          $API_URL
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: https://api.github.com/repos/vdaas/vald/pulls

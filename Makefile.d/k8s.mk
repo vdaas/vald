@@ -63,6 +63,7 @@ k8s/manifest/helm-operator/update: \
 	mkdir -p k8s/operator
 	mv tmp-k8s/vald-helm-operator/templates k8s/operator/helm
 	rm -rf tmp-k8s
+	cp -r charts/vald-helm-operator/crds k8s/operator/helm/crds
 
 
 .PHONY: k8s/vald/deploy
