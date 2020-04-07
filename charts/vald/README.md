@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.26`
+Current chart version is `v0.0.27`
 
 Install
 ---
@@ -244,8 +244,9 @@ Configuration
 | defaults.grpc.client.call_option.max_retry_rpc_buffer_size | int | `0` | gRPC client call option max retry rpc buffer size |
 | defaults.grpc.client.call_option.max_send_msg_size | int | `0` | gRPC client call option max send message size |
 | defaults.grpc.client.call_option.wait_for_ready | bool | `true` | gRPC client call option wait for ready |
-| defaults.grpc.client.connection_pool | object | `{"enable_rebalance":true,"rebalance_duration":"30m","size":3}` | number of gRPC client connection pool |
 | defaults.grpc.client.connection_pool.enable_rebalance | bool | `true` | enables gRPC client connection pool rebalance |
+| defaults.grpc.client.connection_pool.rebalance_duration | string | `"30m"` | gRPC client connection pool rebalance duration |
+| defaults.grpc.client.connection_pool.size | int | `3` | gRPC client connection pool size |
 | defaults.grpc.client.dial_option.enable_backoff | bool | `false` | gRPC client dial option backoff enabled |
 | defaults.grpc.client.dial_option.initial_connection_window_size | int | `0` | gRPC client dial option initial connection window size |
 | defaults.grpc.client.dial_option.initial_window_size | int | `0` | gRPC client dial option initial window size |
@@ -273,7 +274,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.26"` | image tag |
+| defaults.image.tag | string | `"v0.0.27"` | image tag |
 | defaults.logging.format | string | `"raw"` | logging format |
 | defaults.logging.level | string | `"debug"` | logging level |
 | defaults.logging.logger | string | `"glg"` | logger name |
@@ -403,9 +404,6 @@ Configuration
 | discoverer.clusterRole.name | string | `"discoverer"` | name of clusterRole |
 | discoverer.clusterRoleBinding.enabled | bool | `true` | creates clusterRoleBinding resource |
 | discoverer.clusterRoleBinding.name | string | `"discoverer"` | name of clusterRoleBinding |
-| discoverer.discoverer.cache.enabled | bool | `true` | enables discovery cache for performance and reduce cpu usage |
-| discoverer.discoverer.cache.expire_duration | string | `"3s"` | discovery cache expire check duration |
-| discoverer.discoverer.cache.expired_cache_check_duration | string | `"1500ms"` |  |
 | discoverer.discoverer.discovery_duration | string | `"3s"` | duration to discovery |
 | discoverer.discoverer.name | string | `""` | name to discovery |
 | discoverer.discoverer.namespace | string | `"_MY_POD_NAMESPACE_"` | namespace to discovery |

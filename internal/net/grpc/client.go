@@ -149,8 +149,9 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 							cp, err := pool.Reconnect(ctx, false)
 							if err != nil {
 								log.Error(err)
+							} else {
+								g.conns.Store(addr, cp)
 							}
-							g.conns.Store(addr, cp)
 						}
 						return true
 					})
