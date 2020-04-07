@@ -1,0 +1,47 @@
+name: 'Run core ngt bench: bench-core-ngt'
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/core-ngt-bench.yml'
+      - 'internal/**'
+      - 'hack/benchmark/**'
+      - 'versions/GO_VERSION'
+      - 'versions/NGT_VERSION'
+  pull_request:
+    paths:
+      - '.github/workflows/core-ngt-bench.yml'
+      - 'internal/**'
+      - 'hack/benchmark/**'
+      - 'versions/GO_VERSION'
+      - 'versions/NGT_VERSION'
+
+jobs:
+  ngt-sequential:
+    name: ngt-sequential
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 10
+      - name: Run ngt-sequential
+        run: |
+          make bench/core/ngt/sequential
+
+  ngt-parallel:
+    name: ngt-parallel
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 10
+      - name: Run ngt-parallel
+        run: |
+          make bench/core/ngt/parallel
