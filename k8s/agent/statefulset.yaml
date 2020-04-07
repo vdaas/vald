@@ -42,7 +42,7 @@ spec:
         profefe.com/port: "6060"
         profefe.com/service: vald-agent-ngt
       # annotations:
-      #   checksum/configmap: 745108c647718ba5c10388c291ac10b005cfefafb1a7fc0b51ed15789842bc44
+      #   checksum/configmap: cf531945dfac70440f9466eb70091a891592afe3d82a1592dd9a433a133baa70
     spec:
       affinity:
         podAntiAffinity:
@@ -60,16 +60,6 @@ spec:
         - name: vald-agent-ngt
           image: "vdaas/vald-agent-ngt:nightly"
           imagePullPolicy: Always
-          livenessProbe:
-            failureThreshold: 2
-            httpGet:
-              path: /liveness
-              port: liveness
-              scheme: HTTP
-            initialDelaySeconds: 5
-            periodSeconds: 3
-            successThreshold: 1
-            timeoutSeconds: 2
           readinessProbe:
             failureThreshold: 2
             httpGet:
@@ -81,9 +71,6 @@ spec:
             successThreshold: 1
             timeoutSeconds: 2
           ports:
-            - name: liveness
-              protocol: TCP
-              containerPort: 3000
             - name: readiness
               protocol: TCP
               containerPort: 3001

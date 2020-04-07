@@ -86,7 +86,7 @@ Configuration
 | agent.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | agent.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | agent.rollingUpdate.partition | int | `0` | StatefulSet partition |
-| agent.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| agent.server_config | object | `{"healths":{"liveness":{"enabled":false},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | agent.service.annotations | list | `nil` | service annotations |
 | agent.service.labels | list | `nil` | service labels |
 | agent.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
@@ -224,7 +224,7 @@ Configuration
 | compressor.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
 | compressor.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | compressor.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
-| compressor.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| compressor.server_config | object | `{"healths":{"liveness":{"enabled":false},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | compressor.service.annotations | list | `nil` | service annotations |
 | compressor.service.labels | list | `nil` | service labels |
 | compressor.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
