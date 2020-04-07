@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-ARG OPERATOR_SDK_VERSION="v0.15.2"
+ARG OPERATOR_SDK_VERSION
 ARG VERSION="v1alpha1"
 ARG GROUP="vald.vdaas.org"
 ARG VALD_KIND="ValdRelease"
