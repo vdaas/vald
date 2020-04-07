@@ -30,7 +30,7 @@ Please also read the [Contribution guideline](../../CONTRIBUTING.md) before you 
 
 ## Code Formatting and Naming Convension
 Code formatting and naming conventions affect coding readability and maintainability. Every developer has a different coding style, luckily Golang provides tools to format source code and checking for the potential issue in the source code. We suggest using [gofmt](https://golang.org/cmd/gofmt/) to format the source code in Vald, and [golint](https://github.com/golang/lint). We suggest everyone install the plugin for your editor to automatically format the code once you edit the code.
-But having a tools to format source code doesn't mean you do not need to care the formatting of the code, for example:
+But having tools to format source code doesn't mean you do not need to care the formatting of the code, for example:
 ```golang
 yamlStr := "apiVersion: v1\n" +
    "kind: Service\n" +
@@ -60,7 +60,7 @@ spec:
 ```
 
 ### Project Layout
-The project layout includes the folder and the file structure in the project. Basically we follow the [prject-layout](https://github.com/golang-standards/project-layout) example in Vald.
+The project layout includes the folder and the file structure in the project. We follow the [prject-layout](https://github.com/golang-standards/project-layout) example in Vald.
 
 ### Packages
 The package defines the context of the objects in the package, for example, the corresponding methods and structs belong to the corresponding package. Unlike other languages like Java, in Golang we use the package name to declare which context of the object we are going to use. For example in [time](https://golang.org/pkg/time/) package, it defines all the objects about time like `time.Now()` method to get the current time.
@@ -70,9 +70,9 @@ Here is the naming conventions of the package:
 - No plurals.
 - Should be the same as the folder name.
 - Should keep as simple as it should, and should contain only one specific context in the package.
-- Should not be too general, for example `util` or `helper`, which will cause all the objects from different contexts to be store in one package. If you really want to name the package as `util`,  please define the more specific package  name more  `ioutil` or `httputil`.
+- Should not be too general, for example `util` or `helper`, which will cause all the objects from different contexts to be store in one package. If you want to name the package as `util`,  please define the more specific package name more  `ioutil` or `httputil`.
 
-All packages should contain `doc.go` file under the package to describe what is the package is. For example, under the folder name called `cache` should contains a file named `doc.go`, which contains the package documentation. Here is the example `doc.go` of the cache package.
+All packages should contain `doc.go` file under the package to describe what is the package is. For example, under the folder name called `cache`, should contains a file named `doc.go`, which contains the package documentation. Here is the example `doc.go` of the cache package.
 
 ```golang
 // Package cache provides implementation of cache
@@ -116,17 +116,17 @@ type HttpListener struct {
 #### Struct initialization
 There are many ways to initialize structs in Golang, base on the use case we can decide which way to initialize objects in Golang.
 In Vald we use [functional option pattern](https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis) to initialize complex structs. Please read [server.go](../../../internal/servers/servers.go) and [option.go](../../../internal/servers/option.go) for the reference implementation.
-The functional options should be separated as another file to improve the readability of the source code, and the method name should be start with `With` word to differentiate with other methods.
+The functional options should be separated as another file to improve the readability of the source code, and the method name should start with `With` word to differentiate with other methods.
 
-Also you can use `&T{}` to initialize the struct. Do not use `new(T)` method to initialize the struct.
+Also, you can use `&T{}` to initialize the struct. Do not use the `new(T)` method to initialize the struct.
 
 ### Variables and Constant
 The variable and the constant should be named as:
 - Use MixedCaps
-- Global variable and constant should not use short form unless it is a common terms.
-- Private variable and contant should use short form to improve readability.
+- Global variables and constants should not use short form unless it is a common terms.
+- Private variables and contants should use the short form to improve readability.
 
-The variable and the constant name may lead to misunderstanding or confusion, so if the variable and constant name is different to understand, please write some comment even if it is a private member.
+The variable and the constant name may lead to misunderstanding or confusion, so if the variable and constant name are different to understand, please write some comment even if it is a private member.
 If the multiple variables and the constants have the same grouping, please use the grouping name as the prefix of the variable and constant name.
 
 Here is some example of the declaration of variables and constants:
@@ -149,7 +149,7 @@ eg      errgroup.Group
 The method name should be named as:
 - Use MixedCaps.
 - Should not use short form unless it is a common term.
-- Should be understandable for everyone even if it is a private method.
+- It should be understandable for everyone even if it is a private method.
 
 #### Getter and Setter
 The Getter and Setter are almost the same as other languages, but the naming convention of the Getter method is different from other languages. Instead of `GetVar1()`, the getter of `Var1` should be the same as the variable name itself `Var1()`.
@@ -159,15 +159,15 @@ The Getter and Setter are almost the same as other languages, but the naming con
 ### Logging
 
 ## Program comments
-Program comments make more easier to understand the source code. Basically we suggest not to write many comments inside the source code unless the source code is very complicated and confusing; otherwise we should divide the source code into methods to keep the readability and usability of the source code.
+Program comments make easier to understand the source code. We suggest not to write many comments inside the source code unless the source code is very complicated and confusing; otherwise we should divide the source code into methods to keep the readability and usability of the source code.
 
 Everyone should write the comments to all the public objects on your source code, like public packages, interface, structs, methods, and even public constant and variable. The godoc will be generated base on the comment of source code.
 
 ## Documentation
-Documentation is generated based on the program comments. Please refer to [godoc](https://godoc.org/github.com/vdaas/vald) for the program documentation.
+Documentation is generated based on the program comments. Please refer to [Godoc](https://godoc.org/github.com/vdaas/vald) for the program documentation.
 
 ## Internal packages
-Vald implements its own internal package to extend the functionality of the standard library and third-party library. Please refer to [godoc](https://godoc.org/github.com/vdaas/vald/internal) for the internal package document.
+Vald implements its internal package to extend the functionality of the standard library and third-party library. Please refer to [godoc](https://godoc.org/github.com/vdaas/vald/internal) for the internal package document.
 
 ## Dependency management and Build
 We should use `go mod tidy` to manage the `go.mod` file in the project.
@@ -176,7 +176,7 @@ We should use `go mod tidy` to manage the `go.mod` file in the project.
 
 ## Test
 
-Testing guideline has 2 important rules for the coding quality and readability
+The testing guideline has 2 important rules for the coding quality and readability
 1. Use Table-Driven-Test
 2. Keep code coverage over 85%
    - test coverage != high testing quality, but low coverage means bad testing quality
@@ -267,10 +267,9 @@ for _, tt := range tests {
 </tbody>
 </table>
 
-Table-Driven-Test makes it easy to add new test case.
+Table-Driven-Test makes it easy to add a new test case.
 
-
-We define the test case table as `map[string]func(*testing.T)test`, which is referred as the test case name and the test case implementation `tt`. 
+We define the test case table as `map[string]func(*testing.T)test`, which is referred to the test case name and the test case implementation `tt`.
 ```go
 tests := map[string]func(t *testing.T) test {
     "test case name": func(tt *testing.T) test {
