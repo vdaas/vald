@@ -26,7 +26,7 @@ type Test interface {
 }
 
 type test struct {
-	cs     []Caser
+	cases  []Caser
 	target func(context.Context, DataProvider) ([]interface{}, error)
 }
 
@@ -40,7 +40,7 @@ func New(opts ...Option) Test {
 
 func (test *test) Run(ctx context.Context, t *testing.T) {
 	t.Helper()
-	for _, c := range test.cs {
+	for _, c := range test.cases {
 		t.Run(c.Name(), func(tt *testing.T) {
 			ctx, cancel := context.WithCancel(ctx)
 			defer cancel()

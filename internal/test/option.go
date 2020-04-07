@@ -25,10 +25,10 @@ var (
 	defaultOptions = []Option{}
 )
 
-func WithCase(cs ...Caser) Option {
+func WithCase(cases ...Caser) Option {
 	return func(t *test) {
-		if len(cs) != 0 {
-			t.cs = cs
+		if len(cases) != 0 {
+			t.cases = cases
 		}
 	}
 }
