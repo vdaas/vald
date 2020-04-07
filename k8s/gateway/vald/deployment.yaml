@@ -163,4 +163,5 @@ spec:
           configMap:
             defaultMode: 420
             name: vald-gateway-config
+      priorityClassName: vald-gateway-priority
 status:

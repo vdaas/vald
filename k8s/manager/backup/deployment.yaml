@@ -129,4 +129,5 @@ spec:
           configMap:
             defaultMode: 420
             name: vald-manager-backup-config
+      priorityClassName: vald-manager-backup-priority
 status:

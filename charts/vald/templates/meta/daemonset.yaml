@@ -89,5 +89,10 @@ spec:
       nodeSelector:
         {{- toYaml .Values.meta.nodeSelector | nindent 8 }}
       {{- end }}
+      {{- if .Values.meta.podPriority }}
+      {{- if .Values.meta.podPriority.enabled }}
+      priorityClassName: {{ .Values.meta.name }}-priority
+      {{- end }}
+      {{- end }}
 status:
 {{- end }}

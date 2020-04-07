@@ -43,6 +43,18 @@ spec:
         profefe.com/port: "6060"
         profefe.com/service: vald-discoverer
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - vald-discoverer
       containers:
         - name: vald-discoverer
           image: "vdaas/vald-discoverer-k8s:nightly"
@@ -109,4 +121,5 @@ spec:
           configMap:
             defaultMode: 420
             name: vald-discoverer-config
+      priorityClassName: vald-discoverer-priority
 status:

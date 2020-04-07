@@ -37,7 +37,7 @@ spec:
       labels:
         app: vald-manager-compressor
       annotations:
-        checksum/configmap: bf10853216e9ac8d29dec29272fe638c2f7725446341aaf7b11e4f579fe85ed0
+        checksum/configmap: 322053c198fab310b97b0242a61872368abb7ee4ac7137160439d7ecbdecffed
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-compressor
@@ -58,16 +58,6 @@ spec:
         - name: vald-manager-compressor
           image: "vdaas/vald-manager-compressor:nightly"
           imagePullPolicy: Always
-          livenessProbe:
-            failureThreshold: 2
-            httpGet:
-              path: /liveness
-              port: liveness
-              scheme: HTTP
-            initialDelaySeconds: 5
-            periodSeconds: 3
-            successThreshold: 1
-            timeoutSeconds: 2
           readinessProbe:
             failureThreshold: 2
             httpGet:
@@ -79,9 +69,6 @@ spec:
             successThreshold: 1
             timeoutSeconds: 2
           ports:
-            - name: liveness
-              protocol: TCP
-              containerPort: 3000
             - name: readiness
               protocol: TCP
               containerPort: 3001
@@ -113,4 +100,5 @@ spec:
             defaultMode: 420
             name: vald-manager-compressor-config
           name: vald-manager-compressor-config
+      priorityClassName: vald-manager-compressor-priority
 status:
