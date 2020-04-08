@@ -117,7 +117,7 @@ test.New(
             WithWant("192.0.2.0", "http", nil),
         ),
     ),
-    test.WithTarget(
+    test.WithDriverFunc(
         func(ctx context.Context, d test.DataProvider) []interface{} {
             host, port, err := net.SplitHostPort(d.Args()[0].(string))
             return []interface{} {
