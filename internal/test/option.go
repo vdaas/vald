@@ -27,16 +27,18 @@ var (
 
 func WithCase(cases ...Caser) Option {
 	return func(t *test) {
-		if len(cases) != 0 {
+		if len(cases) > 0 {
+			t.cases = append(t.cases, cases...)
+		} else {
 			t.cases = cases
 		}
 	}
 }
 
-func WithTarget(fn func(context.Context, DataProvider) []interface{}) Option {
+func WithDriverFunc(fn func(context.Context, DataProvider) []interface{}) Option {
 	return func(t *test) {
 		if fn != nil {
-			t.target = fn
+			t.driverFn = fn
 		}
 	}
 }

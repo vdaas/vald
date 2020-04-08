@@ -17,7 +17,6 @@ package test
 
 import (
 	"context"
-	"reflect"
 	"testing"
 )
 
@@ -26,8 +25,8 @@ type Test interface {
 }
 
 type test struct {
-	cases  []Caser
-	target func(context.Context, DataProvider) []interface{}
+	cases    []Caser
+	driverFn func(context.Context, DataProvider) []interface{}
 }
 
 func New(opts ...Option) Test {
@@ -49,22 +48,10 @@ func (test *test) Run(ctx context.Context, t *testing.T) {
 				c.SetField(fn(tt)...)
 			}
 
-			gots := test.target(ctx, c)
+			gots := test.driverFn(ctx, c)
 
-			if fn := c.AssertFunc(); fn != nil {
-				if err := fn(gots, c.Wants()); err != nil {
-					tt.Errorf("AssertFunc returns error: %v", err)
-				}
-			} else {
-				if len(c.Wants()) != len(gots) {
-					tt.Fatalf("wants and gots length are not equals. wants: %d, gots: %d", len(c.Wants()), len(gots))
-				}
-
-				for i, want := range c.Wants() {
-					if !reflect.DeepEqual(want, gots[i]) {
-						tt.Errorf("%d - not equals. want: %v, but got: %v", i, want, gots[i])
-					}
-				}
+			if err := c.AssertFunc()(gots, c.Wants()); err != nil {
+				tt.Errorf("assertion error: %v", err)
 			}
 		})
 	}

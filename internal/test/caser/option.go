@@ -15,12 +15,31 @@
 //
 package caser
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+
+	"github.com/vdaas/vald/internal/errors"
+)
 
 type Option func(*caser)
 
 var (
-	defaultOptions = []Option{}
+	defaultOptions = []Option{
+		WithAssertFunc(func(gots, wants []interface{}) error {
+			if len(wants) != len(gots) {
+				return errors.Errorf("wants and gots length are not equals. want: %d, but got: %v", len(wants), len(gots))
+			}
+
+			for i, want := range wants {
+				if !reflect.DeepEqual(want, gots[i]) {
+					return errors.Errorf("%d - not equals. want: %v, but got: %v", i, want, gots[i])
+				}
+			}
+
+			return nil
+		}),
+	}
 )
 
 func WithName(str string) Option {
