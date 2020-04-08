@@ -13,7 +13,7 @@
 
 ## Test
 
-Testing guideline has 2 important rules for the coding quality and readability
+Testing guideline has 3 important rules for the coding quality and readability
 1. Use Table-Driven-Test
 2. Keep code coverage over 85%
    - test coverage != high testing quality, but low coverage means bad testing quality
@@ -22,39 +22,36 @@ Testing guideline has 2 important rules for the coding quality and readability
 
 ### Table-Driven-Test
 
-Use table-driven tests with subtests to avoid duplicating code. 
+Table-Driven-Test makes it easy to add new test case. Also it can avoid duplicating code. 
+
+This table presents 3 test styles. We need to follow `Vald Style`.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th><th>In Vald</th></tr></thead>
+<thead><tr><th>Bad</th><th>Good</th><th>Vald Style</th></tr></thead>
 <tbody>
 <tr>
 <td>
-	
+
 ```go
 ## case 1
 host, port, err := net.SplitHostPort("192.0.2.0:8000")
 if err != nil {
     t.Errorf("error is not nil: %v", err)
 }
-
 if want, got := "192.0.2.0", host; want != got {
     t.Errorf("host is not equals. want: %s, but got: %s", want: %s, got)
 }
-
 if want, got := "8000", port; want != got {
     t.Errorf("port is not equals. want: %s, but got: %s", want: %s, got)
 }
-
 ## case2
 host, port, err = net.SplitHostPort("192.0.2.0:http")
 if err != nil {
     t.Errorf("error is not nil: %v", err)
 }
-
 if want, got := "192.0.2.0", host; want != got {
     t.Errorf("host is not equals. want: %s, but got: %s", want: %s, got)
 }
-
 if want, got := "http", port; want != got {
     t.Errorf("port is not equals. want: %s, but got: %s", want: %s, got)
 }
@@ -82,7 +79,6 @@ tests := []struct {
     	wantPort: "http",
 	},
 }
-
 for _, tt := range tests {
     t.Run(tt.str, func(tt *testing.T) {
         host, port, err := net.SplitHostPort(tt.str)
@@ -110,7 +106,6 @@ test.New(
             WithArg("192.0.2.0:8000")
             WithWant("192.0.2.0", "8000", nil),
         ),
-
         caser.New(
             WithName("case_2"),
             WithArg("192.0.2.0:http")
@@ -135,117 +130,137 @@ test.New(
 </tbody>
 </table>
 
-Table-Driven-Test makes it easy to add new test case.
+To create tests based on `Vald Style`, We provide the original test framework.
 
+Please refer to [this page](../../internal/test).
 
-We define the test case table as `map[string]func(*testing.T)test`, which is referred as the test case name and the test case implementation `tt`. 
+### The steps to create a Table-Driven-Test in Vald
+
+#### Basic Style
+
+This case can automatically check by the arguments of `WithWant` and the object returned by the function of arguments of `WithFunc`.
+
 ```go
-tests := map[string]func(t *testing.T) test {
-    "test case name": func(tt *testing.T) test {
-        return test {
-            args: args {
-                host: "host",
-                port: "port",
-            },
-            field: field {
-                timeout: 1 * time.Second,
-            },
+test.New(
+    test.WithCase(
+        caser.New(
+            WithName("case_1"),
+            WithArg("192.0.2.0:8000")
+            WithWant("192.0.2.0", "8000", nil), // want objects
+        ),
+    ),
+    test.WithDriverFunc(
+        func(ctx context.Context, d test.DataProvider) []interface{} {
+            host, port, err := net.SplitHostPort(d.Args()[0].(string))
+
+            // got objects
+            return []interface{} {
+                host, port, err
+            }
         }
-    }
-}
+    ),
+).Run(context.Background(), t)
 ```
 
-### The steps to create a Table-Driven-Test.
+#### Customize the Assertion
 
-1. `args` structure
+1. In-Out Assertion
 
-If there are two or more arguments to be passed to the method, create a `args` structure. If there is only one argument, do not create an `args` structure.
-```go
-type args struct {
-    host string
-    port string
-}
-```
-
-
-2. `field` structure
-
-If you create an object and test its methods, create a `field` struct if the object has two or more fields to initialize. If there is only one field, do not create `field` structure.
-
-```go
-type field struct {
-    host string
-    port string
-}
-```
-
-3. `test` structure
-
-`test` structure has `args` and `field` structure and `checkFunc` function. If you need one of `args` and `field` structure, create `field` and `args` structure.
-The `checkFunc` function is used to check the return value of the function being tested.
-
-```go
-type test struct {
-    args args
-    field field
-    checkFunc func(t *testing.T, err error)
-}
-```
-
-
-Example:
+This case can overwrite the default assert function to custom assert function.
 
 ```go
 
-type args struct {
-    addr string
-    txt string
+type Person struct {
+    name string
+    createdAt time.Duration
 }
 
-type field struct {
-    timeout time.Duration
-}
-
-type test struct {
-    args args
-    field field
-    checkFunc func(t *testing.T, err error)
-}
-
-tests := map[string]func(*testing.T) test {
-    "test name": func(tt *testing.T) test {
-        tt.Helper()
-
-        return test {
-            args: args {
-                host: "host",
-                port: "port",
-            },
-            field: field {
-                host: "host",
-                port: "port",
-            },
-            checkFunc func(tt *testing.T, err error) {
-                t.Helper()
-                if err != nil {
-                    tt.Errorf("error is not nil: %v", err)
+test.New(
+    test.WithCase(
+        caser.New(
+            WithName("case_1"),
+            WithArg("vald"),
+            WithWant(&Person {
+                name: "vald",
+            }, nil),
+            WithAssertFunc(func(gots, wants []interface{}) error {
+                if len(gots) != len(wants) {
+                    return errors.Errorf("length not equals. want: %d, but got: %v", len(wants), len(gots))
                 }
-            },
+
+                //  Because `createdAt` is difficult to compare, so check other fields.
+                if got, want := got[0].(*Person).name, want[0].(*Person).name; got != want {
+                    return errors.Errorf("person name is not equals. want: %s, but got: %s", want, got)
+                }
+
+                if got, want := got[1], want[1]; !reflect.DeepEquals(got, want) {
+                    return errors.Errorf("error is not equals. want: %v, but got: %v", want, got)
+                }
+
+                return nil
+            }),
+        ),
+    ),
+    test.WithDriverFunc(
+        func(ctx context.Context, d test.DataProvider) []interface{} {
+            p, err := Register(d.Args[0].(string))
+            
+            
+            return []interface {
+                p, err
+            }
         }
-    } 
-}
+    ),
+).Run(context.Background(), t)
+```
 
-for name, fn := range tests {
-    t.Run(name, func(tt *tesint.T) {
-        test := fn(tt)
+2. Field Assertion
 
-        c := client {
-            timeout: test.field.timeout,
+This case can validate the arguments of the mock object.
+
+```go
+test.New(
+    test.WithCase(
+        caser.New(
+            WithName("case_1"),
+            WithArg(100, "data"),
+            WithFieldFunc(fund(t *testing.T) []interface{} {
+                t.Helper()
+
+                mockR := &MockRepository {
+                    RegisterFunc: func(id int, data string) {
+
+                        // Validate argument.
+                        // If id is invalid, An error is output
+                        if id < 0 {
+                            t.Errorf("invalid id: %d", id)
+                        }
+
+                        if len(data) == "" {
+                            t.Error("data is empty")
+                        }
+                    }
+                }
+
+                return []interface{} {
+                    mockR,
+                }
+			}),
+            WithWant(nil),
+        ),
+    ),
+    test.WithDriverFunc(
+        func(ctx context.Context, d test.DataProvider) []interface{} {
+            c := &client {
+                repo: d.Field()[0].(*Repository),
+            }
+
+            err := c.Redister(d.Args[0].(int), d.Args[1].(string))
+
+            return []interface{} {
+                err,
+            }
         }
-
-        err := c.Send(test.args.addr, test.args.txt)
-        test.checkFunc(tt, err)
-    })
-}
-
+    ),
+).Run(context.Background(), t)
 ```
