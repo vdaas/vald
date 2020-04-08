@@ -13,7 +13,7 @@
 
 ## Test
 
-Testing guideline has 3 important rules for the coding quality and readability
+There are 3 important things for the coding quality and readability
 1. Use Table-Driven-Test
 2. Keep code coverage over 85%
    - test coverage != high testing quality, but low coverage means bad testing quality
@@ -22,7 +22,7 @@ Testing guideline has 3 important rules for the coding quality and readability
 
 ### Table-Driven-Test
 
-Table-Driven-Test makes it easy to add new test case. Also it can avoid duplicating code. 
+Table-Driven-Test makes it easier to add new test case. Also it can avoid duplicating code. 
 
 This table presents 3 test styles. We need to follow `Vald Style`.
 
@@ -130,9 +130,9 @@ test.New(
 </tbody>
 </table>
 
-To create tests based on `Vald Style`, We provide the original test framework.
+To create tests based on `Vald Style`, We implemented our testing framework.
 
-Please refer to [this page](../../internal/test).
+Please refer to the [test package](../../internal/test).
 
 ### The steps to create a Table-Driven-Test in Vald
 
