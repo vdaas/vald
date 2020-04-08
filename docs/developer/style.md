@@ -171,6 +171,8 @@ The Getter and Setter are almost the same as other languages, but the naming con
 
 ### Error handling
 
+We define all the errors in [internal/errors package](../../internal/errors). All the errors should be start with `Err` prefix.
+
 ### Logging
 
 We define our own logging interface in [internal/log package](../../internal/log). By default we use [glg](https://github.com/kpango/glg) to do the logging internally.
@@ -196,7 +198,9 @@ Documentation is generated based on the program comments. Please refer to [Godoc
 
 ## Internal packages
 
-Vald implements its internal package to extend the functionality of the standard library and third-party library. Please refer to [godoc](https://godoc.org/github.com/vdaas/vald/internal) for the internal package document.
+Vald implements its internal package to extend and customize the functionality of the standard library and third-party library.
+We should use the internal package instead of standard libray to implement Vald.
+Please refer to [godoc](https://godoc.org/github.com/vdaas/vald/internal) for the internal package document.
 
 ## Dependency management and Build
 
