@@ -45,7 +45,7 @@ type core struct {
 }
 
 func New(opts ...Option) (icore.Core64, error) {
-	c := new(core)
+	c := &core{}
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(c)
 	}

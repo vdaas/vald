@@ -36,7 +36,7 @@ type benchmark struct {
 }
 
 func New(b *testing.B, opts ...Option) Benchmark {
-	bm := new(benchmark)
+	bm := &benchmark{}
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(bm)
 	}
