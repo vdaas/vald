@@ -6,11 +6,11 @@ We appreciate your help!
 
 ## Before filing an issue
 
-If you are unsure whether you have found a bug, please consider asking in the [vald slack](https://vald-community.slack.com/messages/CN1RDC8NB) first. If the behavior you are seeing is confirmed as a bug or issue, it can easily be re-raised in the issue tracker.
+If you are unsure whether you have found a bug, please consider asking in the [Vald Slack](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA) first. If the behavior you are seeing is confirmed as a bug or issue, it can easily be re-raised in the issue tracker.
 
 ## Filing issues
 
-Sensitive security-related issues should be reported to [vald slack security](https://vald-community.slack.com/messages/CN1RDC8NB) .
+Sensitive security-related issues should be reported to the security channel in the [Vald Slack](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA) .
 
 Otherwise, when filing an issue, make sure to answer these five questions:
 
