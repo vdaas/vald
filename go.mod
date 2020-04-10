@@ -25,6 +25,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/cockroachdb/errors v1.2.4
 	github.com/cockroachdb/logtags v0.0.0-20190617123548-eb05cc24525f // indirect
+	github.com/cweill/gotests v1.5.3 // indirect
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
 	github.com/envoyproxy/protoc-gen-validate v0.3.0
 	github.com/getsentry/raven-go v0.2.0 // indirect
