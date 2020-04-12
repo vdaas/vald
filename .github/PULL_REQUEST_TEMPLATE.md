@@ -54,6 +54,6 @@
 - [ ] I have read the [CONTRIBUTING](https://github.com/vdaas/vald/blob/master/CONTRIBUTING.md) document.
 - [ ] I have checked open [Pull Requests](https://github.com/vdaas/vald/pulls) for the similar feature or fixes?
 - [ ] I have added tests and benchmarks to cover my changes.
-- [ ] I have ensure all new and existing tests passed.
+- [ ] I have ensured all new and existing tests passed.
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I have updated the documentation accordingly.
