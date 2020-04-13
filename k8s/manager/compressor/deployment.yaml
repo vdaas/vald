@@ -37,7 +37,7 @@ spec:
       labels:
         app: vald-manager-compressor
       annotations:
-        checksum/configmap: 322053c198fab310b97b0242a61872368abb7ee4ac7137160439d7ecbdecffed
+        checksum/configmap: eb12ab12a7b118d84999b7009136ad6b1eabf042c410461dddd5ca273eb219ae
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-compressor
@@ -87,6 +87,11 @@ spec:
               memory: 50Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          env:
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
           volumeMounts:
             - name: vald-manager-compressor-config
               mountPath: /etc/server/

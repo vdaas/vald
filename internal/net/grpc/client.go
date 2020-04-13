@@ -27,16 +27,16 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc/pool"
 	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/connectivity"
 )
 
 type Server = grpc.Server
 type ServerOption = grpc.ServerOption
-type ClientConn = grpc.ClientConn
 type CallOption = grpc.CallOption
-type DialOption = grpc.DialOption
+type DialOption = pool.DialOption
+type ClientConn = pool.ClientConn
 
 type Client interface {
 	StartConnectionMonitor(ctx context.Context) (<-chan error, error)
@@ -143,53 +143,40 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 				return ctx.Err()
 			case <-prTick.C:
 				if g.enablePoolRebalance {
-					g.conns.Range(func(addr string, pool ClientConnPool) bool {
-						if len(addr) != 0 && !pool.IsHealthy() {
-							err = g.Disconnect(addr)
+					g.conns.Range(func(addr string, p pool.Conn) bool {
+						if len(addr) != 0 && p != nil {
+							_, err := p.Reconnect(ctx, true)
 							if err != nil {
 								log.Error(err)
+								ech <- err
+								err = g.Disconnect(addr)
+								if err != nil {
+									log.Error(err)
+									ech <- err
+								}
 							}
-						} else {
-							cp, err := pool.Reconnect(ctx, false)
-							if err != nil {
-								log.Error(err)
-							} else {
-								g.conns.Store(addr, cp)
-							}
+							g.conns.Store(addr, p)
 						}
 						return true
 					})
 				}
 			case <-hcTick.C:
-				reconnList := make([]string, 0, int(atomic.LoadUint64(&g.clientCount)))
-				g.conns.Range(func(addr string, pool ClientConnPool) bool {
-					if len(addr) != 0 && !pool.IsHealthy() {
-						reconnList = append(reconnList, addr)
+				g.conns.Range(func(addr string, p pool.Conn) bool {
+					if len(addr) != 0 && !p.IsHealthy(ctx) {
+						_, err := p.Reconnect(ctx, false)
+						if err != nil {
+							log.Error(err)
+							ech <- err
+							err = g.Disconnect(addr)
+							if err != nil {
+								log.Error(err)
+								ech <- err
+							}
+						}
+						g.conns.Store(addr, p)
 					}
 					return true
 				})
-				for _, addr := range reconnList {
-					err = g.Disconnect(addr)
-					if err != nil {
-						log.Error(err)
-						ech <- err
-					}
-					if g.bo != nil {
-						_, err = g.bo.Do(ctx, func() (interface{}, error) {
-							return nil, g.Connect(ctx, addr, g.dopts...)
-						})
-					} else {
-						err = g.Connect(ctx, addr, g.dopts...)
-					}
-					if err != nil {
-						log.Error(err)
-						ech <- err
-						err = g.Disconnect(addr)
-						if err != nil {
-							log.Error(err)
-						}
-					}
-				}
 			}
 		}
 	}))
@@ -198,7 +185,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 
 func (g *gRPCClient) Range(ctx context.Context,
 	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
-	g.conns.Range(func(addr string, pool ClientConnPool) bool {
+	g.conns.Range(func(addr string, pool pool.Conn) bool {
 		select {
 		case <-ctx.Done():
 			return false
@@ -235,7 +222,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) error {
 	eg, egctx := errgroup.New(ctx)
 	eg.Limitation(concurrency)
-	g.conns.Range(func(addr string, pool ClientConnPool) bool {
+	g.conns.Range(func(addr string, pool pool.Conn) bool {
 		eg.Go(safety.RecoverFunc(func() (err error) {
 			select {
 			case <-egctx.Done():
@@ -406,37 +393,58 @@ func (g *gRPCClient) GetCallOption() []CallOption {
 }
 
 func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOption) (err error) {
-	pool, ok := g.conns.Load(addr)
-	if ok && pool != nil {
-		if pool.IsHealthy() {
+	conn, ok := g.conns.Load(addr)
+	if ok && conn != nil {
+		if conn.IsHealthy(ctx) {
 			return nil
 		}
 		log.Debugf("connecting unhealthy pool addr= %s", addr)
-		pool, err = pool.Connect(ctx)
+		conn, err = conn.Connect(ctx)
 		if err == nil {
-			g.conns.Store(addr, pool)
+			g.conns.Store(addr, conn)
 			return nil
 		}
 		log.Warnf("failed to reconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
 		g.conns.Delete(addr)
 		atomic.AddUint64(&g.clientCount, ^uint64(0))
-		err = pool.Disconnect()
+		err = conn.Disconnect()
 		if err != nil {
 			log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
 			g.conns.Delete(addr)
 		}
-	} else if pool == nil {
+	} else if conn == nil {
 		g.conns.Delete(addr)
+	} else {
+		err = conn.Disconnect()
+		if err != nil {
+			log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
+		}
+		// g.conns.Delete(addr)
 	}
 
 	log.Warnf("creating new connection pool for addr= %s", addr)
-	pool, err = NewPool(ctx, addr, g.poolSize, append(g.dopts, dopts...)...)
+	opts := []pool.Option{
+		pool.WithAddr(addr),
+		pool.WithSize(g.poolSize),
+		pool.WithDialOptions(g.dopts...),
+		pool.WithDialOptions(dopts...),
+	}
+	if g.bo != nil {
+		opts = append(opts, pool.WithBackoff(g.bo))
+	}
+	conn, err = pool.New(ctx, opts...)
+	if err != nil {
+		g.conns.Delete(addr)
+		return err
+	}
+	log.Warnf("connecting to new connection pool for addr= %s", addr)
+	conn, err = conn.Connect(ctx)
 	if err != nil {
 		g.conns.Delete(addr)
 		return err
 	}
 	atomic.AddUint64(&g.clientCount, 1)
-	g.conns.Store(addr, pool)
+	g.conns.Store(addr, conn)
 	return nil
 }
 
@@ -455,7 +463,7 @@ func (g *gRPCClient) Disconnect(addr string) error {
 
 func (g *gRPCClient) Close() error {
 	closeList := make([]string, 0, int(atomic.LoadUint64(&g.clientCount)))
-	g.conns.Range(func(addr string, pool ClientConnPool) bool {
+	g.conns.Range(func(addr string, pool pool.Conn) bool {
 		if pool != nil {
 			closeList = append(closeList, addr)
 		}
@@ -465,10 +473,4 @@ func (g *gRPCClient) Close() error {
 		g.Disconnect(addr)
 	}
 	return nil
-}
-
-func isHealthy(conn *ClientConn) bool {
-	return conn != nil &&
-		conn.GetState() != connectivity.Shutdown &&
-		conn.GetState() != connectivity.TransientFailure
 }

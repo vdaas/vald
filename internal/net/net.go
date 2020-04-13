@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -32,7 +33,7 @@ const (
 	localIPv4   = "127.0.0.1"
 	localIPv6   = "::1"
 	localHost   = "localhost"
-	defaultPort = "80"
+	defaultPort = 80
 )
 
 type Conn = net.Conn
@@ -55,9 +56,13 @@ func IsLocal(host string) bool {
 		host == localIPv6
 }
 
-func Parse(addr string) (host string, port string, isIP bool, err error) {
+func Parse(addr string) (host string, port uint16, isIP bool, err error) {
 	host, port, err = SplitHostPort(addr)
-	return host, port, IsIPv6(host) || IsIPv4(host), err
+	isIP = IsIPv6(host) || IsIPv4(host)
+	if err != nil {
+		return host, defaultPort, isIP, err
+	}
+	return host, port, isIP, err
 }
 
 func IsIPv6(addr string) bool {
@@ -68,17 +73,23 @@ func IsIPv4(addr string) bool {
 	return net.ParseIP(addr) != nil && strings.Count(addr, ":") < 2
 }
 
-func SplitHostPort(hostport string) (string, string, error) {
+func SplitHostPort(hostport string) (host string, port uint16, err error) {
 	switch {
 	case strings.HasPrefix(hostport, "::"):
 		hostport = localIPv6 + hostport
 	case strings.HasPrefix(hostport, ":"):
 		hostport = localIPv4 + hostport
 	}
-	host, port, err := net.SplitHostPort(hostport)
+	host, portStr, err := net.SplitHostPort(hostport)
 	if err != nil {
 		host = hostport
 		port = defaultPort
+	}
+	p, err := strconv.Atoi(portStr)
+	if err != nil {
+		port = defaultPort
+	} else {
+		port = uint16(p)
 	}
 	return host, port, err
 }
