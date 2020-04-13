@@ -66,7 +66,6 @@ func BenchmarkNGTSequential_Insert(b *testing.B) {
 			benchmark.WithStrategy(
 				strategy.NewInsert(
 					strategy.WithCore32(initCore),
-					strategy.WithParallel(),
 				),
 			),
 		).Run(ctx, b)
@@ -81,6 +80,7 @@ func BenchmarkNGTParallel_Insert(b *testing.B) {
 			benchmark.WithStrategy(
 				strategy.NewInsert(
 					strategy.WithCore32(initCore),
+					strategy.WithParallel(),
 				),
 			),
 		).Run(ctx, b)

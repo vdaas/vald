@@ -96,6 +96,12 @@ func (s *strategy) Run(ctx context.Context, b *testing.B, dataset assets.Dataset
 
 	defer s.closer.Close()
 	var cnt uint64
+
+	b.StopTimer()
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.StartTimer()
+
 	switch s.mode {
 	case core.Float32:
 		b.Run(s.propName, func(bb *testing.B) {
