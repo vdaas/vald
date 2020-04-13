@@ -2,28 +2,26 @@
 
 ## Table of Contents
 
-- [Go Style Guide in Vald](#go-style-guide-in-vald)
-  - [Table of Contents](#table-of-contents)
-  - [Introduction](#introduction)
-  - [Code Formatting and Naming Convension](#code-formatting-and-naming-convension)
-    - [Project Layout](#project-layout)
-    - [Packages](#packages)
-    - [Interfaces](#interfaces)
-    - [Structs](#structs)
-      - [Struct initialization](#struct-initialization)
-    - [Variables and Constant](#variables-and-constant)
-    - [Methods](#methods)
-      - [Getter and Setter](#getter-and-setter)
-    - [Error handling](#error-handling)
-    - [Logging](#logging)
-  - [Program comments](#program-comments)
-  - [Documentation](#documentation)
-  - [Internal packages](#internal-packages)
-  - [Dependency management and Build](#dependency-management-and-build)
-  - [Style](#style)
-  - [Test](#test)
-    - [Table-Driven-Test](#table-driven-test)
-    - [The steps to create a Table-Driven-Test.](#the-steps-to-create-a-table-driven-test)
+- [Introduction](#introduction)
+- [Code Formatting and Naming Convension](#code-formatting-and-naming-convension)
+  - [Project Layout](#project-layout)
+  - [Packages](#packages)
+  - [Interfaces](#interfaces)
+  - [Structs](#structs)
+    - [Struct initialization](#struct-initialization)
+  - [Variables and Constant](#variables-and-constant)
+  - [Methods](#methods)
+    - [Getter and Setter](#getter-and-setter)
+  - [Error handling](#error-handling)
+  - [Logging](#logging)
+- [Program comments](#program-comments)
+- [Documentation](#documentation)
+- [Internal packages](#internal-packages)
+- [Dependency management and Build](#dependency-management-and-build)
+- [Style](#style)
+- [Test](#test)
+  - [Table-Driven-Test](#table-driven-test)
+  - [The steps to create a Table-Driven-Test.](#the-steps-to-create-a-table-driven-test)
 
 ## Introduction
 This guideline includes the coding style for all Vald contributors and reviewers. Everyone should follow this guideline to keep the style consistent so everyone can understand and contribute to Vald easier once they learn this guideline. You should have the basic knowledge of how to write Golang before contributing to Vald. If you found any bug please create [a GitHub issue](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report.md&title=) and we will work on it.
@@ -63,7 +61,7 @@ spec:
 
 ### Project Layout
 
-The project layout includes the folder and the file structure in the project. We follow the [prject-layout](https://github.com/golang-standards/project-layout) example in Vald.
+The project layout includes the folder and the file structure in the project. We follow the [project-layout](https://github.com/golang-standards/project-layout) example in Vald.
 
 ### Packages
 
