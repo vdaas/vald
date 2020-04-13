@@ -496,6 +496,8 @@ gateway:
   nodeName: ""
   # gateway.nodeSelector -- node selector
   nodeSelector: {}
+  # gateway.tolerations -- tolerations
+  tolerations: []
   # gateway.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -631,6 +633,8 @@ agent:
   nodeName: ""
   # agent.nodeSelector -- node selector
   nodeSelector: {}
+  # agent.tolerations -- tolerations
+  tolerations: []
   # agent.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -741,6 +745,8 @@ discoverer:
   nodeName: ""
   # discoverer.nodeSelector -- node selector
   nodeSelector: {}
+  # discoverer.tolerations -- tolerations
+  tolerations: []
   # discoverer.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -862,6 +868,8 @@ compressor:
   nodeName: ""
   # compressor.nodeSelector -- node selector
   nodeSelector: {}
+  # compressor.tolerations -- tolerations
+  tolerations: []
   # compressor.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -1023,6 +1031,8 @@ backupManager:
   nodeName: ""
   # backupManager.nodeSelector -- node selector
   nodeSelector: {}
+  # backupManager.tolerations -- tolerations
+  tolerations: []
   # backupManager.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -1288,6 +1298,8 @@ indexManager:
   nodeName: ""
   # indexManager.nodeSelector -- node selector
   nodeSelector: {}
+  # indexManager.tolerations -- tolerations
+  tolerations: []
   # indexManager.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -1458,6 +1470,8 @@ meta:
   nodeName: ""
   # meta.nodeSelector -- node selector
   nodeSelector: {}
+  # meta.tolerations -- tolerations
+  tolerations: []
   # meta.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:

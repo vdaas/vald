@@ -95,6 +95,10 @@ spec:
       nodeSelector:
         {{- toYaml .Values.compressor.nodeSelector | nindent 8 }}
       {{- end }}
+      {{- if .Values.compressor.tolerations }}
+      tolerations:
+        {{- toYaml .Values.compressor.tolerations | nindent 8 }}
+      {{- end }}
       {{- if .Values.compressor.podPriority }}
       {{- if .Values.compressor.podPriority.enabled }}
       priorityClassName: {{ .Values.compressor.name }}-priority

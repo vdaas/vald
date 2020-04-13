@@ -95,6 +95,10 @@ spec:
       nodeSelector:
         {{- toYaml .Values.backupManager.nodeSelector | nindent 8 }}
       {{- end }}
+      {{- if .Values.backupManager.tolerations }}
+      tolerations:
+        {{- toYaml .Values.backupManager.tolerations | nindent 8 }}
+      {{- end }}
       {{- if .Values.backupManager.podPriority }}
       {{- if .Values.backupManager.podPriority.enabled }}
       priorityClassName: {{ .Values.backupManager.name }}-priority
