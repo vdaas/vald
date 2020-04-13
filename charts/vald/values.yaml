@@ -382,6 +382,10 @@ defaults:
     prometheus:
       # defaults.observability.prometheus.enabled -- Prometheus exporter enabled
       enabled: false
+      # defaults.observability.prometheus.endpoint -- Prometheus exporter endpoint
+      endpoint: /metrics
+      # defaults.observability.prometheus.namespace -- prefix of exported metrics name
+      namespace: vald
     jaeger:
       # defaults.observability.jaeger.enabled -- Jaeger exporter enabled
       enabled: false
@@ -844,8 +848,12 @@ compressor:
       target: manager-backup
       image: busybox
       sleepDuration: 2
-  # compressor.env -- (list) environment variables
-  env: null
+  # compressor.env -- environment variables
+  env:
+    - name: MY_POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
   # compressor.volumeMounts -- (list) volume mounts
   volumeMounts: null
   # compressor.volumes -- (list) volumes
@@ -888,8 +896,12 @@ compressor:
     compression_level: 3
     # compressor.compress.concurrent_limit -- concurrency limit
     concurrent_limit: 10
-    # compressor.compress.buffer -- size of buffer
-    buffer: 100
+  registerer:
+    # compressor.registerer.concurrent_limit -- concurrency limit of registerer worker
+    concurrent_limit: 10
+    compressor:
+      # compressor.registerer.compressor.client -- gRPC client for compressor (overrides defaults.grpc.client)
+      client: {}
 
 backupManager:
   # backupManager.version -- version of backup manager config

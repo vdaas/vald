@@ -38,4 +38,14 @@ data:
         {{- $backupClient := dict "Values" .Values.compressor.backup.client "default" .Values.defaults.grpc.client }}
         {{- include "vald.grpc.client" $backupClient | nindent 8 }}
     compressor:
-      {{- toYaml .Values.compressor.compress | nindent 6 }}
+      compress_algorithm: {{ .Values.compressor.compress.compress_algorithm | quote }}
+      compression_level: {{ .Values.compressor.compress.compression_level }}
+      concurrent_limit: {{ .Values.compressor.compress.concurrent_limit }}
+    registerer:
+      concurrent_limit: {{ .Values.compressor.registerer.concurrent_limit }}
+      compressor:
+        host: {{ .Values.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
+        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.compressor.server_config.servers.grpc.port }}
+        client:
+          {{- $compressorClient := dict "Values" .Values.compressor.registerer.compressor.client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $compressorClient | nindent 12 }}

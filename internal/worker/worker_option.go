@@ -14,31 +14,46 @@
 // limitations under the License.
 //
 
-// Package grpc provides grpc server logic
-package grpc
+// Package worker provides worker processes
+package worker
 
-import "github.com/vdaas/vald/pkg/manager/compressor/service"
-
-type Option func(*server)
-
-var (
-	defaultOpts = []Option{}
+import (
+	"github.com/vdaas/vald/internal/errgroup"
 )
 
-func WithCompressor(c service.Compressor) Option {
-	return func(s *server) {
-		s.compressor = c
+type WorkerOption func(w *worker) error
+
+var (
+	defaultWorkerOpts = []WorkerOption{
+		WithName("worker"),
+		WithLimitation(10),
+		WithErrGroup(errgroup.Get()),
+	}
+)
+
+func WithName(name string) WorkerOption {
+	return func(w *worker) error {
+		if name != "" {
+			w.name = name
+		}
+		return nil
 	}
 }
 
-func WithBackup(b service.Backup) Option {
-	return func(s *server) {
-		s.backup = b
+func WithLimitation(limit int) WorkerOption {
+	return func(w *worker) error {
+		if limit > 0 {
+			w.limitation = limit
+		}
+		return nil
 	}
 }
 
-func WithRegisterer(r service.Registerer) Option {
-	return func(s *server) {
-		s.registerer = r
+func WithErrGroup(eg errgroup.Group) WorkerOption {
+	return func(w *worker) error {
+		if eg != nil {
+			w.eg = eg
+		}
+		return nil
 	}
 }

@@ -39,6 +39,9 @@ type Data struct {
 
 	// Compressor represent compressor configuration
 	Compressor *config.Compressor `json:"compressor" yaml:"compressor"`
+
+	// Registerer represent registerer configuration
+	Registerer *config.CompressorRegisterer `json:"registerer" yaml:"registerer"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
@@ -66,6 +69,10 @@ func NewConfig(path string) (cfg *Data, err error) {
 
 	if cfg.Compressor != nil {
 		cfg.Compressor = cfg.Compressor.Bind()
+	}
+
+	if cfg.Registerer != nil {
+		cfg.Registerer = cfg.Registerer.Bind()
 	}
 
 	return cfg, nil

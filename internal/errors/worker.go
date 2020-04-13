@@ -18,29 +18,15 @@
 package errors
 
 var (
-	// internal compressor
-	ErrInvalidCompressionLevel = func(level int) error {
-		return Errorf("invalid compression level: %d", level)
+	ErrWorkerIsNotRunning = func(name string) error {
+		return Errorf("worker %s is not running", name)
 	}
 
-	// Compressor
-	ErrCompressorNameNotFound = func(name string) error {
-		return Errorf("compressor %s not found", name)
+	ErrQueueIsNotRunning = func() error {
+		return Errorf("queue is not running")
 	}
 
-	ErrCompressedDataNotFound = New("compressed data not found")
-
-	ErrDecompressedDataNotFound = New("decompressed data not found")
-
-	ErrCompressFailed = New("compress failed")
-
-	ErrDecompressFailed = New("decompress failed")
-
-	ErrCompressorRegistererIsNotRunning = func() error {
-		return Errorf("compressor registerers is not running")
-	}
-
-	ErrCompressorRegistererChannelIsFull = func() error {
-		return Errorf("compressor registerer channel is full")
+	ErrJobFuncIsNil = func() error {
+		return New("JobFunc is nil")
 	}
 )
