@@ -121,11 +121,30 @@ type HttpListener struct {
 
 #### Struct initialization
 
-There are many ways to initialize structs in Golang, base on the use case we can decide which way to initialize objects in Golang.
-In Vald we use [functional option pattern](https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis) to initialize complex structs. Please read [server.go](../../../internal/servers/servers.go) and [option.go](../../../internal/servers/option.go) for the reference implementation.
-The functional options should be separated as another file to improve the readability of the source code, and the method name should start with `With` word to differentiate with other methods.
+There are many ways to initialize structs in Golang, base on the use case we can decide which way to initialize structs in Golang.
 
-Also, you can use `&T{}` to initialize the struct. Do not use the `new(T)` method to initialize the struct.
+To initialize struct, it is suggested to use `new(T)` instead of `&T{}` unless you need to initialize with values. For example:
+
+```golang
+type T struct {
+    name string
+}
+
+// ok
+a := new(T)
+
+// not ok
+b := new(T)
+b.name = "Mary"
+
+// use this syntax instead of b
+c := &T{
+    name: "Mary",
+}
+```
+
+To initialize complex structs, we can use [functional option pattern](https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis). Please read [server.go](../../../internal/servers/servers.go) and [option.go](../../../internal/servers/option.go) for the reference implementation.
+The options implementation should be separated as another file called `option.go` to improve the readability of the source code, and the method name should start with `With` word to differentiate with other methods.
 
 ### Variables and Constant
 
