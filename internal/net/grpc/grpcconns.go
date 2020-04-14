@@ -14,12 +14,15 @@
 // limitations under the License.
 //
 
+// Package grpc provides generic functionality for grpc
 package grpc
 
 import (
 	"sync"
 	"sync/atomic"
 	"unsafe"
+
+	"github.com/vdaas/vald/internal/net/grpc/pool"
 )
 
 type grpcConns struct {
@@ -34,17 +37,17 @@ type readOnlyGrpcConns struct {
 	amended bool
 }
 
-var expungedGrpcConns = unsafe.Pointer(new(ClientConnPool))
+var expungedGrpcConns = unsafe.Pointer(new(pool.Conn))
 
 type entryGrpcConns struct {
 	p unsafe.Pointer
 }
 
-func newEntryGrpcConns(i ClientConnPool) *entryGrpcConns {
+func newEntryGrpcConns(i pool.Conn) *entryGrpcConns {
 	return &entryGrpcConns{p: unsafe.Pointer(&i)}
 }
 
-func (m *grpcConns) Load(key string) (value ClientConnPool, ok bool) {
+func (m *grpcConns) Load(key string) (value pool.Conn, ok bool) {
 	read, _ := m.read.Load().(readOnlyGrpcConns)
 	e, ok := read.m[key]
 	if !ok && read.amended {
@@ -63,15 +66,15 @@ func (m *grpcConns) Load(key string) (value ClientConnPool, ok bool) {
 	return e.load()
 }
 
-func (e *entryGrpcConns) load() (value ClientConnPool, ok bool) {
+func (e *entryGrpcConns) load() (value pool.Conn, ok bool) {
 	p := atomic.LoadPointer(&e.p)
 	if p == nil || p == expungedGrpcConns {
 		return value, false
 	}
-	return *(*ClientConnPool)(p), true
+	return *(*pool.Conn)(p), true
 }
 
-func (m *grpcConns) Store(key string, value ClientConnPool) {
+func (m *grpcConns) Store(key string, value pool.Conn) {
 	read, _ := m.read.Load().(readOnlyGrpcConns)
 	if e, ok := read.m[key]; ok && e.tryStore(&value) {
 		return
@@ -96,7 +99,7 @@ func (m *grpcConns) Store(key string, value ClientConnPool) {
 	m.mu.Unlock()
 }
 
-func (e *entryGrpcConns) tryStore(i *ClientConnPool) bool {
+func (e *entryGrpcConns) tryStore(i *pool.Conn) bool {
 	for {
 		p := atomic.LoadPointer(&e.p)
 		if p == expungedGrpcConns {
@@ -112,7 +115,7 @@ func (e *entryGrpcConns) unexpungeLocked() (wasExpunged bool) {
 	return atomic.CompareAndSwapPointer(&e.p, expungedGrpcConns, nil)
 }
 
-func (e *entryGrpcConns) storeLocked(i *ClientConnPool) {
+func (e *entryGrpcConns) storeLocked(i *pool.Conn) {
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
@@ -145,7 +148,7 @@ func (e *entryGrpcConns) delete() (hadValue bool) {
 	}
 }
 
-func (m *grpcConns) Range(f func(key string, value ClientConnPool) bool) {
+func (m *grpcConns) Range(f func(key string, value pool.Conn) bool) {
 	read, _ := m.read.Load().(readOnlyGrpcConns)
 	if read.amended {
 		m.mu.Lock()

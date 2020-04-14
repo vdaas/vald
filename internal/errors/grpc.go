@@ -25,6 +25,10 @@ var (
 		return Wrapf(err, "%s's gRPC connection close error", name)
 	}
 
+	ErrInvalidGRPCPort = func(addr, host string, port uint16) error {
+		return Errorf("invalid gRPC client connection port to addr: %s,\thost: %s\t port: %d", addr, host, port)
+	}
+
 	ErrInvalidGRPCClientConn = func(addr string) error {
 		return Errorf("invalid gRPC client connection to %s", addr)
 	}

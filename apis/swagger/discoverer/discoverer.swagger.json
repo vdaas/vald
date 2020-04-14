@@ -13,7 +13,7 @@
   "paths": {
     "/discover/nodes": {
       "post": {
-        "operationId": "Nodes",
+        "operationId": "Discoverer_Nodes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -45,7 +45,7 @@
     },
     "/discover/pods": {
       "post": {
-        "operationId": "Pods",
+        "operationId": "Discoverer_Pods",
         "responses": {
           "200": {
             "description": "A successful response.",

@@ -13,7 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package grpc
+
+// Package pool provides grpc client connection pool
+package pool
 
 import (
 	"context"
@@ -92,16 +94,19 @@ func do(b *testing.B, conn *ClientConn) {
 func Benchmark_ConnPool(b *testing.B) {
 	defer ListenAndServe(b, DefaultServerAddr)()
 
-	pool, err := NewPool(context.Background(), DefaultServerAddr, DefaultPoolSize, grpc.WithInsecure())
+	pool, err := New(context.Background(),
+		WithAddr(DefaultServerAddr),
+		WithSize(DefaultPoolSize),
+		WithDialOptions(grpc.WithInsecure()),
+	)
 	if err != nil {
 		b.Error(err)
 	}
 
 	for i := 0; i < b.N; i++ {
-		conn, shared := pool.Get()
-		do(b, conn)
-		if !shared {
-			pool.Put(conn)
+		conn, ok := pool.Get()
+		if ok {
+			do(b, conn)
 		}
 	}
 }
@@ -126,17 +131,20 @@ func Benchmark_StaticDial(b *testing.B) {
 func BenchmarkParallel_ConnPool(b *testing.B) {
 	defer ListenAndServe(b, DefaultServerAddr)()
 
-	pool, err := NewPool(context.Background(), DefaultServerAddr, DefaultPoolSize, grpc.WithInsecure())
+	pool, err := New(context.Background(),
+		WithAddr(DefaultServerAddr),
+		WithSize(DefaultPoolSize),
+		WithDialOptions(grpc.WithInsecure()),
+	)
 	if err != nil {
 		b.Error(err)
 	}
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			conn, shared := pool.Get()
-			do(b, conn)
-			if !shared {
-				pool.Put(conn)
+			conn, ok := pool.Get()
+			if ok {
+				do(b, conn)
 			}
 		}
 	})
