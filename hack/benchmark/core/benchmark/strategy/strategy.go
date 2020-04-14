@@ -97,23 +97,34 @@ func (s *strategy) Run(ctx context.Context, b *testing.B, dataset assets.Dataset
 	defer s.closer.Close()
 	var cnt uint64
 
-	b.StopTimer()
-	b.ReportAllocs()
-	b.ResetTimer()
-	b.StartTimer()
-
 	switch s.mode {
 	case core.Float32:
+		b.StopTimer()
+		b.ReportAllocs()
+		b.ResetTimer()
+		b.StartTimer()
+
 		b.Run(s.propName, func(bb *testing.B) {
 			s.float32(ctx, bb, dataset, ids, &cnt)
 		})
+
+		b.StopTimer()
 	case core.Float64:
+		b.StopTimer()
+		b.ReportAllocs()
+		b.ResetTimer()
+		b.StartTimer()
+
 		b.Run(s.propName, func(bb *testing.B) {
 			s.float64(ctx, bb, dataset, ids, &cnt)
 		})
+
+		b.StopTimer()
 	default:
 		b.Fatal(errors.ErrInvalidCoreMode)
 	}
+
+	b.StopTimer()
 }
 
 func (s *strategy) Close() {
