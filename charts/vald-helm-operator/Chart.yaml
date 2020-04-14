@@ -14,11 +14,11 @@
 # limitations under the License.
 #
 
-apiVersion: v1
-appVersion: "1.0"
-description: A Helm chart for vald-helm-operator
+apiVersion: v2
 name: vald-helm-operator
 version: v0.0.27
+description: A Helm chart for vald-helm-operator
+type: application
 keywords:
   - Vald
   - NGT

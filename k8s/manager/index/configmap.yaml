@@ -116,6 +116,8 @@ data:
         sampling_rate: 1
       prometheus:
         enabled: false
+        endpoint: /metrics
+        namespace: vald
       jaeger:
           enabled: false
           collector_endpoint: ""

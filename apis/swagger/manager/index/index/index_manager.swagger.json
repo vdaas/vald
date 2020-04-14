@@ -13,7 +13,7 @@
   "paths": {
     "/index/info": {
       "get": {
-        "operationId": "IndexInfo",
+        "operationId": "Index_IndexInfo",
         "responses": {
           "200": {
             "description": "A successful response.",

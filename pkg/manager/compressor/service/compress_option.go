@@ -19,32 +19,18 @@ package service
 
 import (
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/worker"
 )
 
 type CompressorOption func(c *compressor) error
 
 var (
 	defaultCompressorOpts = []CompressorOption{
-		WithLimitation(0),
-		WithBuffer(10),
+		WithCompressorWorker(),
 		WithCompressAlgorithm("gob"),
-		WithErrGroup(errgroup.Get()),
+		WithCompressorErrGroup(errgroup.Get()),
 	}
 )
-
-func WithLimitation(limit int) CompressorOption {
-	return func(c *compressor) error {
-		c.limitation = limit
-		return nil
-	}
-}
-
-func WithBuffer(b int) CompressorOption {
-	return func(c *compressor) error {
-		c.buffer = b
-		return nil
-	}
-}
 
 func WithCompressAlgorithm(name string) CompressorOption {
 	return func(c *compressor) error {
@@ -60,7 +46,14 @@ func WithCompressionLevel(level int) CompressorOption {
 	}
 }
 
-func WithErrGroup(eg errgroup.Group) CompressorOption {
+func WithCompressorWorker(opts ...worker.WorkerOption) CompressorOption {
+	return func(c *compressor) error {
+		c.workerOpts = opts
+		return nil
+	}
+}
+
+func WithCompressorErrGroup(eg errgroup.Group) CompressorOption {
 	return func(c *compressor) error {
 		if eg != nil {
 			c.eg = eg

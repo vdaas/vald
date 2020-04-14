@@ -13,7 +13,7 @@
   "paths": {
     "/exists/{id}": {
       "get": {
-        "operationId": "Exists",
+        "operationId": "Agent_Exists",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -43,7 +43,7 @@
     },
     "/index/create": {
       "get": {
-        "operationId": "CreateIndex",
+        "operationId": "Agent_CreateIndex",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -74,7 +74,7 @@
     },
     "/index/createandsave": {
       "get": {
-        "operationId": "CreateAndSaveIndex",
+        "operationId": "Agent_CreateAndSaveIndex",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -105,7 +105,7 @@
     },
     "/index/info": {
       "get": {
-        "operationId": "IndexInfo",
+        "operationId": "Agent_IndexInfo",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -127,7 +127,7 @@
     },
     "/index/save": {
       "get": {
-        "operationId": "SaveIndex",
+        "operationId": "Agent_SaveIndex",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -149,7 +149,7 @@
     },
     "/insert": {
       "post": {
-        "operationId": "Insert",
+        "operationId": "Agent_Insert",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -181,7 +181,7 @@
     },
     "/object/{id}": {
       "get": {
-        "operationId": "GetObject",
+        "operationId": "Agent_GetObject",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -211,7 +211,7 @@
     },
     "/remove/{id}": {
       "delete": {
-        "operationId": "Remove",
+        "operationId": "Agent_Remove",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -241,7 +241,7 @@
     },
     "/search": {
       "post": {
-        "operationId": "Search",
+        "operationId": "Agent_Search",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -273,7 +273,7 @@
     },
     "/search/id": {
       "post": {
-        "operationId": "SearchByID",
+        "operationId": "Agent_SearchByID",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -305,7 +305,7 @@
     },
     "/update": {
       "post": {
-        "operationId": "Update",
+        "operationId": "Agent_Update",
         "responses": {
           "200": {
             "description": "A successful response.",

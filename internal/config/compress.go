@@ -57,13 +57,36 @@ func CompressAlgorithm(ca string) compressAlgorithm {
 }
 
 type Compressor struct {
+	// CompressorAlgorithm represents compression algorithm type
 	CompressAlgorithm string `json:"compress_algorithm" yaml:"compress_algorithm"`
-	CompressionLevel  int    `json:"compression_level" yaml:"compression_level"`
-	ConcurrentLimit   int    `json:"concurrent_limit" yaml:"concurrent_limit"`
-	Buffer            int    `json:"buffer" yaml:"buffer"`
+
+	// CompressionLevel represents compression level
+	CompressionLevel int `json:"compression_level" yaml:"compression_level"`
+
+	// ConcurrentLimit represents limitation of compression worker concurrency
+	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
 }
 
 func (c *Compressor) Bind() *Compressor {
 	c.CompressAlgorithm = GetActualValue(c.CompressAlgorithm)
+
 	return c
+}
+
+type CompressorRegisterer struct {
+	// ConcurrentLimit represents limitation of worker
+	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
+
+	// Compressor represents gRPC client config of compressor client (for forwarding use)
+	Compressor *BackupManager `json:"compressor" yaml:"compressor"`
+}
+
+func (cr *CompressorRegisterer) Bind() *CompressorRegisterer {
+	if cr.Compressor != nil {
+		cr.Compressor = cr.Compressor.Bind()
+	} else {
+		cr.Compressor = new(BackupManager)
+	}
+
+	return cr
 }

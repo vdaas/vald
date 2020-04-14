@@ -74,7 +74,7 @@ Please refer to [Get Started](./docs/user/get-started.md).
 
 ```shell
 helm repo add vald https://vald.vdaas.org/charts
-helm install --generate-name vald/vald
+helm install vald-cluster vald/vald
 ```
 
 If you use the default values.yaml, the `nightly` images will be installed.
@@ -88,14 +88,7 @@ If you use the default values.yaml, the `nightly` images will be installed.
 
 ### Using Helm-operator
 
-```shell
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/serviceaccount.yaml
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/clusterrole.yaml
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/clusterrolebinding.yaml
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/operator.yaml
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/crd.yaml
-kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/master/k8s/operator/helm/valdrelease.yaml
-```
+[vald-helm-operator](https://github.com/vdaas/vald/blob/master/charts/vald-helm-operator)
 
 ## Example
 

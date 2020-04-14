@@ -10,11 +10,21 @@ on:
        - 'v*.*.*-*'
     paths:
       - 'dockers/operator/helm/Dockerfile'
-      - 'vald/**'
+      - 'charts/vald/Chart.yaml'
+      - 'charts/vald/values.yaml'
+      - 'charts/vald/templates/**'
+      - 'charts/vald-helm-operator/Chart.yaml'
+      - 'charts/vald-helm-operator/values.yaml'
+      - 'charts/vald-helm-operator/templates/**'
   pull_request:
     paths:
       - 'dockers/operator/helm/Dockerfile'
-      - 'vald/**'
+      - 'charts/vald/Chart.yaml'
+      - 'charts/vald/values.yaml'
+      - 'charts/vald/templates/**'
+      - 'charts/vald-helm-operator/Chart.yaml'
+      - 'charts/vald-helm-operator/values.yaml'
+      - 'charts/vald-helm-operator/templates/**'
 
 jobs:
   build:

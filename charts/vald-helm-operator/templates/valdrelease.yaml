@@ -20,5 +20,6 @@ metadata:
   name: {{ .Values.vald.name }}
   namespace: {{ .Release.Namespace }}
 # the values of Helm chart for Vald can be placed under the `spec` field.
-spec: {{ .Values.vald.spec }}
+spec:
+  {{- toYaml .Values.vald.spec | nindent 2 }}
 {{- end }}

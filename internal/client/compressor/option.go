@@ -27,14 +27,14 @@ var (
 	defaultOpts = []Option{}
 )
 
-func WithBackupAddr(addr string) Option {
+func WithAddr(addr string) Option {
 	return func(c *client) error {
 		c.addr = addr
 		return nil
 	}
 }
 
-func WithBackupClient(gc grpc.Client) Option {
+func WithClient(gc grpc.Client) Option {
 	return func(c *client) error {
 		if gc != nil {
 			c.client = gc

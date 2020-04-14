@@ -54,18 +54,6 @@ data:
           probe_wait_time: 3s
           restart: true
       health_check_servers:
-        - name: liveness
-          host: 0.0.0.0
-          port: 3000
-          http:
-            handler_timeout: ""
-            idle_timeout: ""
-            read_header_timeout: ""
-            read_timeout: ""
-            shutdown_duration: 5s
-            write_timeout: ""
-          mode: ""
-          probe_wait_time: 3s
         - name: readiness
           host: 0.0.0.0
           port: 3001
@@ -92,7 +80,6 @@ data:
           mode: REST
           probe_wait_time: 3s
       startup_strategy:
-        - liveness
         - pprof
         - grpc
         - readiness
@@ -116,6 +103,8 @@ data:
         sampling_rate: 1
       prometheus:
         enabled: false
+        endpoint: /metrics
+        namespace: vald
       jaeger:
           enabled: false
           collector_endpoint: ""

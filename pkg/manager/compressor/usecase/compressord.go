@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/manager/compressor"
+	cclient "github.com/vdaas/vald/internal/client/compressor"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -27,10 +28,12 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
+	compressormetrics "github.com/vdaas/vald/internal/observability/metrics/manager/compressor"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
+	"github.com/vdaas/vald/internal/worker"
 	"github.com/vdaas/vald/pkg/manager/compressor/config"
 	handler "github.com/vdaas/vald/pkg/manager/compressor/handler/grpc"
 	"github.com/vdaas/vald/pkg/manager/compressor/handler/rest"
@@ -43,6 +46,7 @@ type run struct {
 	cfg           *config.Data
 	backup        service.Backup
 	compressor    service.Compressor
+	registerer    service.Registerer
 	server        starter.Server
 	observability observability.Observability
 }
@@ -58,17 +62,24 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, errors.ErrInvalidBackupConfig
 	}
 
+	backupClientOptions := append(
+		cfg.BackupManager.Client.Opts(),
+		grpc.WithErrGroup(eg),
+	)
+
+	if cfg.Observability.Enabled {
+		backupClientOptions = append(
+			backupClientOptions,
+			grpc.WithDialOptions(
+				grpc.WithStatsHandler(metric.NewClientHandler()),
+			),
+		)
+	}
+
 	b, err = service.NewBackup(
 		service.WithBackupAddr(cfg.BackupManager.Client.Addrs[0]),
 		service.WithBackupClient(
-			grpc.New(
-				append(cfg.BackupManager.Client.Opts(),
-					grpc.WithErrGroup(eg),
-					grpc.WithDialOptions(
-						grpc.WithStatsHandler(metric.NewClientHandler()),
-					),
-				)...,
-			),
+			grpc.New(backupClientOptions...),
 		),
 	)
 	if err != nil {
@@ -78,16 +89,56 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	c, err := service.NewCompressor(
 		service.WithCompressAlgorithm(cfg.Compressor.CompressAlgorithm),
 		service.WithCompressionLevel(cfg.Compressor.CompressionLevel),
-		service.WithLimitation(cfg.Compressor.ConcurrentLimit),
-		service.WithBuffer(cfg.Compressor.Buffer),
-		service.WithErrGroup(eg),
+		service.WithCompressorWorker(
+			worker.WithName("compressor"),
+			worker.WithLimitation(cfg.Compressor.ConcurrentLimit),
+		),
+		service.WithCompressorErrGroup(eg),
 	)
 	if err != nil {
 		return nil, err
 	}
+
+	compressorClientOptions := append(
+		cfg.Registerer.Compressor.Client.Opts(),
+		grpc.WithErrGroup(eg),
+	)
+
+	if cfg.Observability.Enabled {
+		compressorClientOptions = append(
+			compressorClientOptions,
+			grpc.WithDialOptions(
+				grpc.WithStatsHandler(metric.NewClientHandler()),
+			),
+		)
+	}
+
+	cc, err := cclient.New(
+		cclient.WithAddr(cfg.Registerer.Compressor.Client.Addrs[0]),
+		cclient.WithClient(grpc.New(compressorClientOptions...)),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	rg, err := service.NewRegisterer(
+		service.WithRegistererWorker(
+			worker.WithName("registerer"),
+			worker.WithLimitation(cfg.Registerer.ConcurrentLimit),
+		),
+		service.WithRegistererErrGroup(eg),
+		service.WithRegistererBackup(b),
+		service.WithRegistererCompressor(c),
+		service.WithRegistererClient(cc),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	g := handler.New(
 		handler.WithCompressor(c),
 		handler.WithBackup(b),
+		handler.WithRegisterer(rg),
 	)
 
 	grpcServerOptions := []server.Option{
@@ -106,7 +157,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(cfg.Observability)
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			compressormetrics.New(c, rg),
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -149,6 +203,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		cfg:           cfg,
 		backup:        b,
 		compressor:    c,
+		registerer:    rg,
 		server:        srv,
 		observability: obs,
 	}, nil
@@ -156,23 +211,34 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 func (r *run) PreStart(ctx context.Context) error {
 	log.Info("daemon pre-start")
+
 	err := r.compressor.PreStart(ctx)
 	if err != nil {
 		return err
 	}
+
+	err = r.registerer.PreStart(ctx)
+	if err != nil {
+		return err
+	}
+
 	if r.observability != nil {
 		return r.observability.PreStart(ctx)
 	}
+
 	return nil
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 4)
-	var bech, cech, sech, oech <-chan error
+	ech := make(chan error, 5)
+
+	var bech, cech, rech, sech, oech <-chan error
 	var err error
+
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)
 	}
+
 	if r.backup != nil {
 		bech, err = r.backup.Start(ctx)
 		if err != nil {
@@ -180,10 +246,25 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			return nil, err
 		}
 	}
+
 	if r.compressor != nil {
-		cech = r.compressor.Start(ctx)
+		cech, err = r.compressor.Start(ctx)
+		if err != nil {
+			close(ech)
+			return nil, err
+		}
 	}
+
+	if r.registerer != nil {
+		rech, err = r.registerer.Start(ctx)
+		if err != nil {
+			close(ech)
+			return nil, err
+		}
+	}
+
 	sech = r.server.ListenAndServe(ctx)
+
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		log.Info("daemon start")
 		defer close(ech)
@@ -194,6 +275,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			case err = <-oech:
 			case err = <-bech:
 			case err = <-cech:
+			case err = <-rech:
 			case err = <-sech:
 			}
 			if err != nil {
@@ -209,6 +291,9 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (r *run) PreStop(ctx context.Context) error {
+	if r.registerer != nil {
+		return r.registerer.PreStop(ctx)
+	}
 	return nil
 }
 

@@ -54,18 +54,6 @@ data:
           probe_wait_time: 3s
           restart: true
       health_check_servers:
-        - name: liveness
-          host: 0.0.0.0
-          port: 3000
-          http:
-            handler_timeout: ""
-            idle_timeout: ""
-            read_header_timeout: ""
-            read_timeout: ""
-            shutdown_duration: 5s
-            write_timeout: ""
-          mode: ""
-          probe_wait_time: 3s
         - name: readiness
           host: 0.0.0.0
           port: 3001
@@ -92,7 +80,6 @@ data:
           mode: REST
           probe_wait_time: 3s
       startup_strategy:
-        - liveness
         - pprof
         - grpc
         - readiness
@@ -116,6 +103,8 @@ data:
         sampling_rate: 1
       prometheus:
         enabled: false
+        endpoint: /metrics
+        namespace: vald
       jaeger:
           enabled: false
           collector_endpoint: ""
@@ -181,7 +170,64 @@ data:
           enabled: false
           key: /path/to/key
     compressor:
-      buffer: 100
-      compress_algorithm: zstd
+      compress_algorithm: "zstd"
       compression_level: 3
       concurrent_limit: 10
+    registerer:
+      concurrent_limit: 10
+      compressor:
+        host: vald-manager-compressor.default.svc.cluster.local
+        port: 8081
+        client:
+            addrs: []
+            health_check_duration: "1s"
+            connection_pool:
+              enable_rebalance: true
+              rebalance_duration: 30m
+              size: 3
+            backoff:
+              backoff_factor: 1.1
+              backoff_time_limit: 5s
+              enable_error_log: true
+              initial_duration: 5ms
+              jitter_limit: 100ms
+              maximum_duration: 5s
+              retry_count: 100
+            call_option:
+              max_recv_msg_size: 0
+              max_retry_rpc_buffer_size: 0
+              max_send_msg_size: 0
+              wait_for_ready: true
+            dial_option:
+              enable_backoff: false
+              initial_connection_window_size: 0
+              initial_window_size: 0
+              insecure: true
+              keep_alive:
+                permit_without_stream: false
+                time: ""
+                timeout: ""
+              max_backoff_delay: ""
+              max_msg_size: 0
+              read_buffer_size: 0
+              tcp:
+                dialer:
+                  dual_stack_enabled: true
+                  keep_alive: ""
+                  timeout: ""
+                dns:
+                  cache_enabled: true
+                  cache_expiration: 1h
+                  refresh_duration: 30m
+                tls:
+                  ca: /path/to/ca
+                  cert: /path/to/cert
+                  enabled: false
+                  key: /path/to/key
+              timeout: ""
+              write_buffer_size: 0
+            tls:
+              ca: /path/to/ca
+              cert: /path/to/cert
+              enabled: false
+              key: /path/to/key

@@ -31,7 +31,7 @@ spec:
             - |
               mysql -h ${MYSQL_HOST} -u ${MYSQL_USER} -p${MYSQL_PASSWORD} < /initdb/{{ .Values.initializer.mysql.configmap.filename }}
           env:
-            {{- toYaml .Values.initializer.mysql.env | nindent 10 }}
+            {{- toYaml .Values.initializer.mysql.env | nindent 12 }}
           volumeMounts:
             - name: {{ .Values.initializer.mysql.configmap.name }}
               mountPath: /initdb/

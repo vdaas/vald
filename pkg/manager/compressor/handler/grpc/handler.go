@@ -35,6 +35,7 @@ type Server compressor.BackupServer
 type server struct {
 	backup     service.Backup
 	compressor service.Compressor
+	registerer service.Registerer
 }
 
 func New(opts ...Option) Server {
@@ -109,30 +110,15 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) 
 			span.End()
 		}
 	}()
-	uuid := meta.GetUuid()
-	vector, err := s.compressor.Compress(ctx, meta.GetVector())
+
+	err = s.registerer.Register(ctx, meta)
 	if err != nil {
-		log.Errorf("[Register]\tcompress returns unknown error\t%+v", err)
+		log.Errorf("[Register]\tregisterer returns error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s's could not compress", uuid), err, info.Get())
-	}
-
-	mvec := &payload.Backup_Compressed_MetaVector{
-		Uuid:   meta.GetUuid(),
-		Meta:   meta.GetMeta(),
-		Vector: vector,
-		Ips:    meta.GetIps(),
-	}
-
-	err = s.backup.Register(ctx, mvec)
-	if err != nil {
-		log.Errorf("[Register]\tbackup returns unknown error\t%+v", err)
-		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
-		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s's could not register %#v", uuid, mvec), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("Register API uuid %s could not processed", meta.GetUuid()), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
@@ -145,48 +131,14 @@ func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVe
 			span.End()
 		}
 	}()
-	mvs := metas.GetVectors()
-	vectors := make([][]float32, 0, len(mvs))
-	for _, mv := range mvs {
-		vectors = append(vectors, mv.GetVector())
-	}
 
-	compressedVecs, err := s.compressor.MultiCompress(ctx, vectors)
+	err = s.registerer.RegisterMulti(ctx, metas)
 	if err != nil {
-		log.Errorf("[RegisterMulti]\tinternal error\t%+v", err)
-		uuids := make([]string, 0, len(mvs))
-		for _, mv := range mvs {
-			uuids = append(uuids, mv.GetUuid())
-		}
+		log.Errorf("[RegisterMulti]\tregisterer returns error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("RegisterMulti API uuids %#v's could not compress", uuids), err, info.Get())
-	}
-
-	compressedMVs := make([]*payload.Backup_Compressed_MetaVector, 0, len(mvs))
-	for i, mv := range mvs {
-		compressedMVs = append(compressedMVs, &payload.Backup_Compressed_MetaVector{
-			Uuid:   mv.GetUuid(),
-			Meta:   mv.GetMeta(),
-			Vector: compressedVecs[i],
-			Ips:    mv.GetIps(),
-		})
-	}
-
-	err = s.backup.RegisterMultiple(ctx, &payload.Backup_Compressed_MetaVectors{
-		Vectors: compressedMVs,
-	})
-	if err != nil {
-		log.Errorf("[RegisterMulti]\tunknown error\t%+v", err)
-		uuids := make([]string, 0, len(mvs))
-		for _, mv := range mvs {
-			uuids = append(uuids, mv.GetUuid())
-		}
-		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
-		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("RegisterMulti API uuids %#v's could not register %#v", uuids, compressedMVs), err, info.Get())
+		return nil, status.WrapWithInternal("RegisterMulti API could not processed", err, info.Get())
 	}
 
 	return new(payload.Empty), nil

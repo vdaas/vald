@@ -20,4 +20,5 @@ metadata:
   name: vald-cluster
   namespace: default
 # the values of Helm chart for Vald can be placed under the `spec` field.
-spec: map[]
+spec:
+  {}

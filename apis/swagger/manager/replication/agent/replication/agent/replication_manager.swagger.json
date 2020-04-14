@@ -13,7 +13,7 @@
   "paths": {
     "/replication/agent/info": {
       "get": {
-        "operationId": "AgentInfo",
+        "operationId": "Replication_AgentInfo",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -35,7 +35,7 @@
     },
     "/replication/rebalance": {
       "post": {
-        "operationId": "Rebalance",
+        "operationId": "Replication_Rebalance",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -57,7 +57,7 @@
     },
     "/replication/recover": {
       "post": {
-        "operationId": "Recover",
+        "operationId": "Replication_Recover",
         "responses": {
           "200": {
             "description": "A successful response.",

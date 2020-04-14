@@ -37,7 +37,7 @@ spec:
       labels:
         app: vald-manager-backup
       annotations:
-        checksum/configmap: 238c21dc8795eaf29e1b9605584f4256d1afb625f1f8e6ffbc191b66cad3f3c6
+        checksum/configmap: 59dd8eeff76e7b792f6cd4162469617b3dd0a8921de664c7f5619134a39577bc
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-backup
@@ -64,6 +64,15 @@ spec:
                 secretKeyRef:
                   key: password
                   name: mysql-secret
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution: []
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution: []
       containers:
         - name: vald-manager-backup
           image: "vdaas/vald-manager-backup-mysql:nightly"
@@ -129,4 +138,5 @@ spec:
           configMap:
             defaultMode: 420
             name: vald-manager-backup-config
+      priorityClassName: vald-manager-backup-priority
 status:

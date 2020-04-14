@@ -31,8 +31,14 @@ func WithCompressor(c service.Compressor) Option {
 	}
 }
 
-func WithBackup(c service.Backup) Option {
+func WithBackup(b service.Backup) Option {
 	return func(s *server) {
-		s.backup = c
+		s.backup = b
+	}
+}
+
+func WithRegisterer(r service.Registerer) Option {
+	return func(s *server) {
+		s.registerer = r
 	}
 }

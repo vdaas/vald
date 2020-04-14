@@ -13,7 +13,7 @@
   "paths": {
     "/inverse/meta": {
       "delete": {
-        "operationId": "DeleteMetaInverse",
+        "operationId": "Meta_DeleteMetaInverse",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -41,7 +41,7 @@
         ]
       },
       "post": {
-        "operationId": "GetMetaInverse",
+        "operationId": "Meta_GetMetaInverse",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -63,7 +63,7 @@
     },
     "/inverse/metas": {
       "delete": {
-        "operationId": "DeleteMetasInverse",
+        "operationId": "Meta_DeleteMetasInverse",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -95,7 +95,7 @@
         ]
       },
       "post": {
-        "operationId": "GetMetasInverse",
+        "operationId": "Meta_GetMetasInverse",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -117,7 +117,7 @@
     },
     "/meta": {
       "delete": {
-        "operationId": "DeleteMeta",
+        "operationId": "Meta_DeleteMeta",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -145,7 +145,7 @@
         ]
       },
       "post": {
-        "operationId": "SetMeta",
+        "operationId": "Meta_SetMeta",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -167,7 +167,7 @@
     },
     "/metas": {
       "delete": {
-        "operationId": "DeleteMetas",
+        "operationId": "Meta_DeleteMetas",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -199,7 +199,7 @@
         ]
       },
       "post": {
-        "operationId": "SetMetas",
+        "operationId": "Meta_SetMetas",
         "responses": {
           "200": {
             "description": "A successful response.",
