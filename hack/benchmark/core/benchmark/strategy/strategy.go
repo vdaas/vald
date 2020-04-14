@@ -123,8 +123,6 @@ func (s *strategy) Run(ctx context.Context, b *testing.B, dataset assets.Dataset
 	default:
 		b.Fatal(errors.ErrInvalidCoreMode)
 	}
-
-	b.StopTimer()
 }
 
 func (s *strategy) Close() {
