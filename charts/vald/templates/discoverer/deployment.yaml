@@ -53,17 +53,7 @@ spec:
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
       affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                topologyKey: kubernetes.io/hostname
-                labelSelector:
-                  matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - {{ .Values.discoverer.name }}
+        {{- include "vald.affinity" .Values.discoverer.affinity | nindent 8 }}
       containers:
         - name: {{ .Values.discoverer.name }}
           image: "{{ .Values.discoverer.image.repository }}:{{ default .Values.defaults.image.tag .Values.discoverer.image.tag }}"
@@ -105,6 +95,10 @@ spec:
       {{- if .Values.discoverer.nodeSelector }}
       nodeSelector:
         {{- toYaml .Values.discoverer.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.discoverer.tolerations }}
+      tolerations:
+        {{- toYaml .Values.discoverer.tolerations | nindent 8 }}
       {{- end }}
       {{- if .Values.discoverer.podPriority }}
       {{- if .Values.discoverer.podPriority.enabled }}

@@ -57,17 +57,7 @@ spec:
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
       affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                topologyKey: kubernetes.io/hostname
-                labelSelector:
-                  matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - {{ .Values.agent.name }}
+        {{- include "vald.affinity" .Values.agent.affinity | nindent 8 }}
       containers:
         - name: {{ .Values.agent.name }}
           image: "{{ .Values.agent.image.repository }}:{{ default .Values.defaults.image.tag .Values.agent.image.tag }}"
@@ -107,6 +97,10 @@ spec:
       {{- if .Values.agent.nodeSelector }}
       nodeSelector:
         {{- toYaml .Values.agent.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.agent.tolerations }}
+      tolerations:
+        {{- toYaml .Values.agent.tolerations | nindent 8 }}
       {{- end }}
       {{- if .Values.agent.podPriority }}
       {{- if .Values.agent.podPriority.enabled }}

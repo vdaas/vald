@@ -55,6 +55,8 @@ spec:
         {{- $initContainers := dict "initContainers" .Values.meta.initContainers "Values" .Values "namespace" .Release.Namespace -}}
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
+      affinity:
+        {{- include "vald.affinity" .Values.meta.affinity | nindent 8 }}
       containers:
         - name: {{ .Values.meta.name }}
           image: "{{ .Values.meta.image.repository }}:{{ default .Values.defaults.image.tag .Values.meta.image.tag }}"
@@ -94,6 +96,10 @@ spec:
       {{- if .Values.meta.nodeSelector }}
       nodeSelector:
         {{- toYaml .Values.meta.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.meta.tolerations }}
+      tolerations:
+        {{- toYaml .Values.meta.tolerations | nindent 8 }}
       {{- end }}
       {{- if .Values.meta.podPriority }}
       {{- if .Values.meta.podPriority.enabled }}

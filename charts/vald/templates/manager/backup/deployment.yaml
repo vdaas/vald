@@ -55,6 +55,8 @@ spec:
         {{- $initContainers := dict "initContainers" .Values.backupManager.initContainers "Values" .Values "namespace" .Release.Namespace -}}
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
+      affinity:
+        {{- include "vald.affinity" .Values.backupManager.affinity | nindent 8 }}
       containers:
         - name: {{ .Values.backupManager.name }}
           image: "{{ .Values.backupManager.image.repository }}:{{ default .Values.defaults.image.tag .Values.backupManager.image.tag }}"
@@ -94,6 +96,10 @@ spec:
       {{- if .Values.backupManager.nodeSelector }}
       nodeSelector:
         {{- toYaml .Values.backupManager.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.backupManager.tolerations }}
+      tolerations:
+        {{- toYaml .Values.backupManager.tolerations | nindent 8 }}
       {{- end }}
       {{- if .Values.backupManager.podPriority }}
       {{- if .Values.backupManager.podPriority.enabled }}
