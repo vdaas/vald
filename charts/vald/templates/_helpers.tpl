@@ -696,3 +696,49 @@ initContainers
 {{- end }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Affinity rules
+*/}}
+{{- define "vald.affinity" -}}
+nodeAffinity:
+  {{- if .nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution }}
+  preferredDuringSchedulingIgnoredDuringExecution:
+    {{- toYaml .nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution | nindent 4 }}
+  {{- else }}
+  preferredDuringSchedulingIgnoredDuringExecution: []
+  {{- end }}
+  requiredDuringSchedulingIgnoredDuringExecution:
+    {{- if .nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms }}
+    nodeSelectorTerms:
+      {{- toYaml .nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms | nindent 6 }}
+    {{- else }}
+    nodeSelectorTerms: []
+    {{- end }}
+podAffinity:
+  {{- if .podAffinity.preferredDuringSchedulingIgnoredDuringExecution }}
+  preferredDuringSchedulingIgnoredDuringExecution:
+    {{- toYaml .podAffinity.preferredDuringSchedulingIgnoredDuringExecution | nindent 4 }}
+  {{- else }}
+  preferredDuringSchedulingIgnoredDuringExecution: []
+  {{- end }}
+  {{- if .podAffinity.requiredDuringSchedulingIgnoredDuringExecution }}
+  requiredDuringSchedulingIgnoredDuringExecution:
+    {{- toYaml .podAffinity.requiredDuringSchedulingIgnoredDuringExecution | nindent 4 }}
+  {{- else }}
+  requiredDuringSchedulingIgnoredDuringExecution: []
+  {{- end }}
+podAntiAffinity:
+  {{- if .podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution }}
+  preferredDuringSchedulingIgnoredDuringExecution:
+    {{- toYaml .podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | nindent 4 }}
+  {{- else }}
+  preferredDuringSchedulingIgnoredDuringExecution: []
+  {{- end }}
+  {{- if .podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution }}
+  requiredDuringSchedulingIgnoredDuringExecution:
+    {{- toYaml .podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | nindent 4 }}
+  {{- else }}
+  requiredDuringSchedulingIgnoredDuringExecution: []
+  {{- end }}
+{{- end -}}

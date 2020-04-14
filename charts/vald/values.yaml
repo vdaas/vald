@@ -498,6 +498,32 @@ gateway:
   nodeSelector: {}
   # gateway.tolerations -- tolerations
   tolerations: []
+  affinity:
+    nodeAffinity:
+      # gateway.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # gateway.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # gateway.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # gateway.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # gateway.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - vald-gateway
+      # gateway.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
   # gateway.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -635,6 +661,32 @@ agent:
   nodeSelector: {}
   # agent.tolerations -- tolerations
   tolerations: []
+  affinity:
+    nodeAffinity:
+      # agent.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # agent.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # agent.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # agent.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # agent.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - vald-agent-ngt
+      # agent.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
   # agent.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -747,6 +799,32 @@ discoverer:
   nodeSelector: {}
   # discoverer.tolerations -- tolerations
   tolerations: []
+  affinity:
+    nodeAffinity:
+      # discoverer.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # discoverer.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # discoverer.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # discoverer.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # discoverer.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - vald-discoverer
+      # discoverer.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
   # discoverer.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -870,6 +948,23 @@ compressor:
   nodeSelector: {}
   # compressor.tolerations -- tolerations
   tolerations: []
+  affinity:
+    nodeAffinity:
+      # compressor.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # compressor.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # compressor.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # compressor.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # compressor.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # compressor.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
   # compressor.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -1033,6 +1128,23 @@ backupManager:
   nodeSelector: {}
   # backupManager.tolerations -- tolerations
   tolerations: []
+  affinity:
+    nodeAffinity:
+      # backupManager.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # backupManager.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # backupManager.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # backupManager.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # backupManager.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # backupManager.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
   # backupManager.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -1300,6 +1412,23 @@ indexManager:
   nodeSelector: {}
   # indexManager.tolerations -- tolerations
   tolerations: []
+  affinity:
+    nodeAffinity:
+      # indexManager.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # indexManager.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # indexManager.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # indexManager.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # indexManager.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # indexManager.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
   # indexManager.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -1472,6 +1601,23 @@ meta:
   nodeSelector: {}
   # meta.tolerations -- tolerations
   tolerations: []
+  affinity:
+    nodeAffinity:
+      # meta.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # meta.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # meta.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # meta.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # meta.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # meta.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
   # meta.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
