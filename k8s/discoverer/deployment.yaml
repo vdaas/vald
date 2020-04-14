@@ -54,10 +54,10 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - vald-discoverer
+                  - key: app
+                    operator: In
+                    values:
+                    - vald-discoverer
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []

@@ -98,10 +98,10 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - vald-gateway
+                  - key: app
+                    operator: In
+                    values:
+                    - vald-gateway
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
