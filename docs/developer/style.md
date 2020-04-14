@@ -24,15 +24,19 @@
   - [The steps to create a Table-Driven-Test.](#the-steps-to-create-a-table-driven-test)
 
 ## Introduction
+
 This guideline includes the coding style for all Vald contributors and reviewers. Everyone should follow this guideline to keep the style consistent so everyone can understand and contribute to Vald easier once they learn this guideline. You should have the basic knowledge of how to write Golang before contributing to Vald. If you found any bug please create [a GitHub issue](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report.md&title=) and we will work on it.
 
 Please also read the [Contribution guideline](../../CONTRIBUTING.md) before you start contributing to Vald.
 
 ## Code Formatting and Naming Convension
+
 Code formatting and naming conventions affect coding readability and maintainability. Every developer has a different coding style, luckily Golang provides tools to format source code and checking for the potential issue in the source code. We suggest using [gofmt](https://golang.org/cmd/gofmt/) to format the source code in Vald, and [golint](https://github.com/golang/lint). We suggest everyone install the plugin for your editor to automatically format the code once you edit the code.
 But having tools to format source code doesn't mean you do not need to care the formatting of the code, for example:
-```golang
-yamlStr := "apiVersion: v1\n" +
+
+```go
+// bad
+badStr := "apiVersion: v1\n" +
    "kind: Service\n" +
    "metadata:\n" +
    "  name: grafana\n" +
@@ -42,11 +46,9 @@ yamlStr := "apiVersion: v1\n" +
    "      port: 3000\n" +
    "      targetPort: 3000\n" +
    "      protocol: TCP\n"
-```
 
-It is very hard to read and maintain, in this case, we should follow this style.
-```golang
-yamlStr1 := `apiVersion: v1
+// good
+goodStr := `apiVersion: v1
 kind: Service
 metadata:
   name: grafana
@@ -70,14 +72,42 @@ The package defines the context of the objects in the package, for example, the 
 Here is the naming conventions of the package:
 
 - All lower case.
+
+```go
+// bad
+package ioUtil
+
+// good
+package ioutil
+```
+
 - No plurals.
+
+```go
+// bad
+package bytes
+
+// good
+package byte
+
+```
+
 - Should be the same as the folder name.
 - Should keep as simple as it should, and should contain only one specific context in the package.
+
+```go
+// bad
+package encodebase64
+
+// good
+package base64
+```
+
 - Should not be too general, for example `util` or `helper`, which will cause all the objects from different contexts to be store in one package. If you want to name the package as `util`,  please define the more specific package name more  `ioutil` or `httputil`.
 
 All packages should contain `doc.go` file under the package to describe what is the package is. For example, under the folder name called `cache`, should contains a file named `doc.go`, which contains the package documentation. Here is the example `doc.go` of the cache package.
 
-```golang
+```go
 // Package cache provides implementation of cache
 package cache
 ````
@@ -90,11 +120,30 @@ Unlike other languages like Java, Golang supports implicit interface implementat
 The interface should be named as:
 
 - Use MixedCaps
-- Do not use short form unless it is a common terms.
 
-```golang
+```go
+// bad
+type Roundtripper interface {
+}
+
+// good
 type RoundTripper interface {
-    // interface definition
+}
+```
+
+- Use understandable common short form.
+
+```go
+// bad
+type ATSigner interface {
+}
+
+// good
+type AccessTokenSigner interface {
+}
+
+// good
+type HTTPServer interface {
 }
 ```
 
@@ -103,42 +152,41 @@ type RoundTripper interface {
 Structs in Golang is the object definition, we can attach any fields and methods to the struct. The naming convention is the same as the interface one.
 If the structs are implementing the interface, the structs name should be related to the interface, for example:
 
-```golang
+```go
 type Listener interface {
-   // Interface definition
+   // interface definition
 }
 
 // Listener instance for file
 type FileListener struct {
-
+   // implement listener interface
 }
 
 // Listener instance for HTTP
 type HttpListener struct {
-
+   // implement listener interface
 }
 ```
 
 #### Struct initialization
 
 There are many ways to initialize structs in Golang, base on the use case we can decide which way to initialize structs in Golang.
-
 To initialize struct, it is suggested to use `new(T)` instead of `&T{}` unless you need to initialize with values. For example:
 
-```golang
-type T struct {
+```go
+type Something struct {
     name string
 }
 
-// ok
-a := new(T)
+// good
+a := new(Something)
 
-// not ok
-b := new(T)
+// bad
+b := new(Something)
 b.name = "Mary"
 
 // use this syntax instead of b
-c := &T{
+c := &Something{
     name: "Mary",
 }
 ```
@@ -151,27 +199,41 @@ The options implementation should be separated as another file called `option.go
 The variable and the constant should be named as:
 
 - Use MixedCaps
-- Global variables and constants should not use short form unless it is a common terms.
-- Private variables and contants should use the short form to improve readability.
+
+```go
+// bad
+yamlprocessor := new(something)
+
+// good
+yamlProcessor := new(something)
+```
+
+- Use short form.
+
+```go
+// bad
+yamlString := "something"
+
+// good
+yamlStr := "something"
+
+// in some case it is acceptable and actually if is easier to read
+s := new(something)
+```
 
 The variable and the constant name may lead to misunderstanding or confusion, so if the variable and constant name are different to understand, please write some comment even if it is a private member.
+
+```go
+// somebody may not understand this variable, so write a simple comment to the variable definition
+sac := new(something) // signed access token
+```
+
 If the multiple variables and the constants have the same grouping, please use the grouping name as the prefix of the variable and constant name.
 
-Here is some example of the declaration of variables and constants:
-
-```
-/* Global variables */
+```go
 // Same group of variable (error), so add a prefix `Err` to each error variables
 ErrInvalidCacherType = New("invalid cacher type")
 // ErrXXXXXXX
-
-/* Private variables */
-// This variable needs comment in order to understand
-// sds represent the shut down strategy
-sds     []string
-
-// This variable name is common so no comment requires for this variable
-eg      errgroup.Group
 ```
 
 ### Methods
@@ -179,16 +241,49 @@ eg      errgroup.Group
 The method name should be named as:
 
 - Use MixedCaps.
-- Should not use short form unless it is a common term.
+
+```go
+// bad
+func (s *something) somemethod() {}
+
+// bad
+func (s *something) some_method() {}
+
+// good
+func (s *something) someMethod() {}
+```
+
+- Do not use short form unless the function name is too long..
+
+```go
+// bad
+func (s *something) genereateRandomNumber() int {}
+
+// good
+func (s *something) genRandNum() int {}
+```
+
 - It should be understandable for everyone even if it is a private method.
 
 #### Getter and Setter
 
 The Getter and Setter are almost the same as other languages, but the naming convention of the Getter method is different from other languages. Instead of `GetVar1()`, the getter of `Var1` should be the same as the variable name itself `Var1()`.
 
+```go
+// getter of the `signedTok`
+func (s *something) SignedTok() string{
+    return s.signedTok
+}
+
+// setter of the `signedTok`
+func (s *something) SignedTok(st string) {
+    s.signedTok = st
+}
+```
+
 ### Error handling
 
-We define all the errors in [internal/errors package](../../internal/errors). All the errors should be start with `Err` prefix.
+All errors should define in [internal/errors package](../../internal/errors). All errors should be start with `Err` prefix, and all errors should be handle if possible.
 
 ### Logging
 
@@ -211,7 +306,7 @@ Everyone should write the comments to all the public objects on your source code
 
 ## Documentation
 
-Documentation is generated based on the program comments. Please refer to [Godoc](https://godoc.org/github.com/vdaas/vald) for the program documentation.
+Documentation is generated from the program comments. Please refer to [Godoc](https://godoc.org/github.com/vdaas/vald) for the program documentation.
 
 ## Internal packages
 
@@ -292,10 +387,10 @@ tests := []struct {
     },
     ## case 2
     {
-    	str: "192.0.2.0:8000",
-    	wantHost: "192.0.2.0",
-    	wantPort: "http",
-	},
+        str: "192.0.2.0:8000",
+        wantHost: "192.0.2.0",
+        wantPort: "http",
+    },
 }
 
 for _, tt := range tests {
