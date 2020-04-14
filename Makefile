@@ -268,6 +268,11 @@ tensorflow/install: /usr/local/lib/libtensorflow.so
 	rm -f libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
 	ldconfig
 
+.PHONY: gentest
+## gentest
+gentest:
+	$(call gen-test)
+
 .PHONY: test
 ## run tests
 test:

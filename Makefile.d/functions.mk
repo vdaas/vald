@@ -89,3 +89,7 @@ define telepresence
 	    ## will be available after telepresence 0.105 released
 	    ## --deployment-type "$(SWAP_DEPLOYMENT_TYPE)"
 endef
+
+define gen-test
+	find . -type d | grep "./cmd\|./hack\|./internal\|./pkg" | grep -v "./cmd/cli\|./hack/benchmark/internal/client/ngtd\|./hack/benchmark/internal/starter/agent\|./hack/benchmark/internal/starter/external\|./hack/benchmark/internal/starter/gateway\|./hack/license\|./hack/swagger\|./hack/tools" | while read dir; do FILE=`find $${dir} -type f -maxdepth 1 -name "*_test.go" 2>/dev/null` && if [ -z "$${FILE}" ]; then gotests -all -w $${dir}; fi; done
+endef
