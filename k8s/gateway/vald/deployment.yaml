@@ -88,17 +88,23 @@ spec:
                 sleep 2;
               done
       affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution: []
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                topologyKey: kubernetes.io/hostname
+            - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - vald-gateway
+                  - key: app
+                    operator: In
+                    values:
+                    - vald-gateway
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+          requiredDuringSchedulingIgnoredDuringExecution: []
       containers:
         - name: vald-gateway
           image: "vdaas/vald-gateway:nightly"

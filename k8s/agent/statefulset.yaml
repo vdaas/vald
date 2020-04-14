@@ -45,17 +45,23 @@ spec:
       #   checksum/configmap: 1d3d39b80023f7dc1f09a715a31c13d2234a8cd2cfbba344d40c7b131117cdb5
     spec:
       affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution: []
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                topologyKey: kubernetes.io/hostname
+            - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - vald-agent-ngt
+                  - key: app
+                    operator: In
+                    values:
+                    - vald-agent-ngt
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+          requiredDuringSchedulingIgnoredDuringExecution: []
       containers:
         - name: vald-agent-ngt
           image: "vdaas/vald-agent-ngt:nightly"

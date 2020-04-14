@@ -54,6 +54,15 @@ spec:
                 echo "waiting for manager-backup to be ready..."
                 sleep 2;
               done
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution: []
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution: []
       containers:
         - name: vald-manager-compressor
           image: "vdaas/vald-manager-compressor:nightly"

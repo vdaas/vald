@@ -64,6 +64,15 @@ spec:
                 secretKeyRef:
                   key: password
                   name: redis-secret
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution: []
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution: []
       containers:
         - name: vald-meta
           image: "vdaas/vald-meta-redis:nightly"
