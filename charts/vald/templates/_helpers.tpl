@@ -708,13 +708,11 @@ nodeAffinity:
   {{- else }}
   preferredDuringSchedulingIgnoredDuringExecution: []
   {{- end }}
+  {{- if .nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms }}
   requiredDuringSchedulingIgnoredDuringExecution:
-    {{- if .nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms }}
     nodeSelectorTerms:
       {{- toYaml .nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms | nindent 6 }}
-    {{- else }}
-    nodeSelectorTerms: []
-    {{- end }}
+  {{- end }}
 podAffinity:
   {{- if .podAffinity.preferredDuringSchedulingIgnoredDuringExecution }}
   preferredDuringSchedulingIgnoredDuringExecution:
