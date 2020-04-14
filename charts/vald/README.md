@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.27`
+Current chart version is `v0.0.28`
 
 Install
 ---
@@ -48,15 +48,21 @@ Configuration
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| agent.annotations | list | `nil` | deployment annotations |
-| agent.env | list | `nil` | environment variables |
-| agent.externalTrafficPolicy | string | `nil` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
+| agent.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | node affinity preferred scheduling terms |
+| agent.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms | list | `[]` | node affinity required node selectors |
+| agent.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity preferred scheduling terms |
+| agent.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity required scheduling terms |
+| agent.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app","operator":"In","values":["vald-agent-ngt"]}]},"topologyKey":"kubernetes.io/hostname"},"weight":100}]` | pod anti-affinity preferred scheduling terms |
+| agent.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
+| agent.annotations | object | `{}` | deployment annotations |
+| agent.env | list | `[]` | environment variables |
+| agent.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | agent.hpa.enabled | bool | `false` | HPA enabled |
 | agent.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |
 | agent.image.pullPolicy | string | `"Always"` | image pull policy |
 | agent.image.repository | string | `"vdaas/vald-agent-ngt"` | image repository |
-| agent.image.tag | string | `nil` | image tag (overrides defaults.image.tag) |
-| agent.initContainers | list | `nil` | init containers |
+| agent.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
+| agent.initContainers | list | `[]` | init containers |
 | agent.kind | string | `"StatefulSet"` | deployment kind: Deployment, DaemonSet or StatefulSet |
 | agent.maxReplicas | int | `300` | maximum number of replicas |
 | agent.maxUnavailable | int | `1` | maximum number of unavailable replicas |
@@ -73,10 +79,10 @@ Configuration
 | agent.ngt.index_path | string | `nil` | path to index data |
 | agent.ngt.object_type | string | `"float"` | object type: float or uint8 |
 | agent.ngt.search_edge_size | int | `10` | search edge size |
-| agent.nodeName | string | `nil` | node name |
-| agent.nodeSelector | object | `nil` | node selector |
+| agent.nodeName | string | `""` | node name |
+| agent.nodeSelector | object | `{}` | node selector |
 | agent.observability | object | `{"jaeger":{"service_name":"vald-agent-ngt"}}` | observability config (overrides defaults.observability) |
-| agent.podAnnotations | list | `nil` | pod annotations |
+| agent.podAnnotations | object | `{}` | pod annotations |
 | agent.podManagementPolicy | string | `"OrderedReady"` | pod management policy: OrderedReady or Parallel |
 | agent.podPriority.enabled | bool | `true` | agent pod PriorityClass enabled |
 | agent.podPriority.value | int | `1000000000` | agent pod PriorityClass value |
@@ -87,14 +93,21 @@ Configuration
 | agent.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | agent.rollingUpdate.partition | int | `0` | StatefulSet partition |
 | agent.server_config | object | `{"healths":{"liveness":{"enabled":false},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
-| agent.service.annotations | list | `nil` | service annotations |
-| agent.service.labels | list | `nil` | service labels |
+| agent.service.annotations | object | `{}` | service annotations |
+| agent.service.labels | object | `{}` | service labels |
 | agent.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | agent.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| agent.tolerations | list | `[]` | tolerations |
 | agent.version | string | `"v0.0.0"` | version of agent config |
-| agent.volumeMounts | list | `nil` | volume mounts |
-| agent.volumes | list | `nil` | volumes |
-| backupManager.annotations | list | `nil` | deployment annotations |
+| agent.volumeMounts | list | `[]` | volume mounts |
+| agent.volumes | list | `[]` | volumes |
+| backupManager.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | node affinity preferred scheduling terms |
+| backupManager.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms | list | `[]` | node affinity required node selectors |
+| backupManager.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity preferred scheduling terms |
+| backupManager.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity required scheduling terms |
+| backupManager.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity preferred scheduling terms |
+| backupManager.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
+| backupManager.annotations | object | `{}` | deployment annotations |
 | backupManager.cassandra.config.connect_timeout | string | `"600ms"` | connect timeout |
 | backupManager.cassandra.config.consistency | string | `"quorum"` | consistency type |
 | backupManager.cassandra.config.cql_version | string | `"3.0.0"` | cassandra CQL version |
@@ -143,12 +156,12 @@ Configuration
 | backupManager.cassandra.config.write_coalesce_wait_time | string | `"200ms"` | write coalesce wait time |
 | backupManager.cassandra.enabled | bool | `false` | cassandra config enabled |
 | backupManager.env | list | `[{"name":"MYSQL_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"mysql-secret"}}}]` | (list) environment variables |
-| backupManager.externalTrafficPolicy | string | `nil` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
+| backupManager.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | backupManager.hpa.enabled | bool | `true` | HPA enabled |
 | backupManager.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |
 | backupManager.image.pullPolicy | string | `"Always"` | image pull policy |
 | backupManager.image.repository | string | `"vdaas/vald-manager-backup-mysql"` | image repository |
-| backupManager.image.tag | string | `nil` | image tag (overrides defaults.image.tag) |
+| backupManager.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
 | backupManager.initContainers | list | `[{"env":[{"name":"MYSQL_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"mysql-secret"}}}],"image":"mysql:latest","mysql":{"hosts":["mysql.default.svc.cluster.local"],"options":["-uroot","-p${MYSQL_PASSWORD}"]},"name":"wait-for-mysql","sleepDuration":2,"type":"wait-for-mysql"}]` | init containers |
 | backupManager.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
 | backupManager.maxReplicas | int | `15` | maximum number of replicas |
@@ -179,10 +192,10 @@ Configuration
 | backupManager.mysql.config.user | string | `"root"` |  |
 | backupManager.mysql.enabled | bool | `true` | mysql config enabled |
 | backupManager.name | string | `"vald-manager-backup"` | name of backup manager deployment |
-| backupManager.nodeName | string | `nil` | node name |
-| backupManager.nodeSelector | object | `nil` | node selector |
+| backupManager.nodeName | string | `""` | node name |
+| backupManager.nodeSelector | object | `{}` | node selector |
 | backupManager.observability | object | `{"jaeger":{"service_name":"vald-manager-backup"}}` | observability config (overrides defaults.observability) |
-| backupManager.podAnnotations | list | `nil` | pod annotations |
+| backupManager.podAnnotations | object | `{}` | pod annotations |
 | backupManager.podPriority.enabled | bool | `true` | backup manager pod PriorityClass enabled |
 | backupManager.podPriority.value | int | `1000000` | backup manager pod PriorityClass value |
 | backupManager.progressDeadlineSeconds | int | `600` | progress deadline seconds |
@@ -191,51 +204,60 @@ Configuration
 | backupManager.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | backupManager.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | backupManager.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
-| backupManager.service.annotations | list | `nil` | service annotations |
-| backupManager.service.labels | list | `nil` | service labels |
+| backupManager.service.annotations | object | `{}` | service annotations |
+| backupManager.service.labels | object | `{}` | service labels |
 | backupManager.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | backupManager.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| backupManager.tolerations | list | `[]` | tolerations |
 | backupManager.version | string | `"v0.0.0"` | version of backup manager config |
-| backupManager.volumeMounts | list | `nil` | volume mounts |
-| backupManager.volumes | list | `nil` | volumes |
-| compressor.annotations | list | `nil` | deployment annotations |
+| backupManager.volumeMounts | list | `[]` | volume mounts |
+| backupManager.volumes | list | `[]` | volumes |
+| compressor.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | node affinity preferred scheduling terms |
+| compressor.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms | list | `[]` | node affinity required node selectors |
+| compressor.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity preferred scheduling terms |
+| compressor.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity required scheduling terms |
+| compressor.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity preferred scheduling terms |
+| compressor.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
+| compressor.annotations | object | `{}` | deployment annotations |
 | compressor.backup.client | object | `{}` | grpc client for backup (overrides defaults.grpc.client) |
-| compressor.compress.buffer | int | `100` | size of buffer |
 | compressor.compress.compress_algorithm | string | `"zstd"` | compression algorithm: gob, gzip, lz4 or zstd |
 | compressor.compress.compression_level | int | `3` | compression level |
 | compressor.compress.concurrent_limit | int | `10` | concurrency limit |
-| compressor.env | list | `nil` | environment variables |
-| compressor.externalTrafficPolicy | string | `nil` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
+| compressor.env | list | `[{"name":"MY_POD_IP","valueFrom":{"fieldRef":{"fieldPath":"status.podIP"}}}]` | environment variables |
+| compressor.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | compressor.hpa.enabled | bool | `true` | HPA enabled |
 | compressor.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |
 | compressor.image.pullPolicy | string | `"Always"` | image pull policy |
 | compressor.image.repository | string | `"vdaas/vald-manager-compressor"` | image repository |
-| compressor.image.tag | string | `nil` | image tag (overrides defaults.image.tag) |
+| compressor.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
 | compressor.initContainers | list | `[{"image":"busybox","name":"wait-for-manager-backup","sleepDuration":2,"target":"manager-backup","type":"wait-for"}]` | init containers |
 | compressor.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
 | compressor.maxReplicas | int | `15` | maximum number of replicas |
 | compressor.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
 | compressor.minReplicas | int | `3` | minimum number of replicas |
 | compressor.name | string | `"vald-manager-compressor"` | name of compressor deployment |
-| compressor.nodeName | string | `nil` | node name |
-| compressor.nodeSelector | object | `nil` | node selector |
+| compressor.nodeName | string | `""` | node name |
+| compressor.nodeSelector | object | `{}` | node selector |
 | compressor.observability | object | `{"jaeger":{"service_name":"vald-manager-compressor"}}` | observability config (overrides defaults.observability) |
-| compressor.podAnnotations | list | `nil` | pod annotations |
+| compressor.podAnnotations | object | `{}` | pod annotations |
 | compressor.podPriority.enabled | bool | `true` | compressor pod PriorityClass enabled |
 | compressor.podPriority.value | int | `100000000` | compressor pod PriorityClass value |
 | compressor.progressDeadlineSeconds | int | `600` | progress deadline seconds |
+| compressor.registerer.compressor.client | object | `{}` | gRPC client for compressor (overrides defaults.grpc.client) |
+| compressor.registerer.concurrent_limit | int | `10` | concurrency limit of registerer worker |
 | compressor.resources | object | `{"limits":{"cpu":"800m","memory":"500Mi"},"requests":{"cpu":"300m","memory":"50Mi"}}` | compute resources |
 | compressor.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
 | compressor.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | compressor.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | compressor.server_config | object | `{"healths":{"liveness":{"enabled":false},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
-| compressor.service.annotations | list | `nil` | service annotations |
-| compressor.service.labels | list | `nil` | service labels |
+| compressor.service.annotations | object | `{}` | service annotations |
+| compressor.service.labels | object | `{}` | service labels |
 | compressor.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | compressor.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| compressor.tolerations | list | `[]` | tolerations |
 | compressor.version | string | `"v0.0.0"` | version of compressor config |
-| compressor.volumeMounts | list | `nil` | volume mounts |
-| compressor.volumes | list | `nil` | volumes |
+| compressor.volumeMounts | list | `[]` | volume mounts |
+| compressor.volumes | list | `[]` | volumes |
 | defaults.grpc.client.addrs | list | `[]` | gRPC client addresses |
 | defaults.grpc.client.backoff.backoff_factor | float | `1.1` | gRPC client backoff factor |
 | defaults.grpc.client.backoff.backoff_time_limit | string | `"5s"` | gRPC client backoff time limit |
@@ -278,7 +300,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.27"` | image tag |
+| defaults.image.tag | string | `"v0.0.28"` | image tag |
 | defaults.logging.format | string | `"raw"` | logging format |
 | defaults.logging.level | string | `"debug"` | logging level |
 | defaults.logging.logger | string | `"glg"` | logger name |
@@ -296,6 +318,8 @@ Configuration
 | defaults.observability.jaeger.service_name | string | `"vald"` | Jaeger service name |
 | defaults.observability.jaeger.username | string | `""` | Jaeger username |
 | defaults.observability.prometheus.enabled | bool | `false` | Prometheus exporter enabled |
+| defaults.observability.prometheus.endpoint | string | `"/metrics"` | Prometheus exporter endpoint |
+| defaults.observability.prometheus.namespace | string | `"vald"` | prefix of exported metrics name |
 | defaults.observability.trace.enabled | bool | `false` | trace enabled |
 | defaults.observability.trace.sampling_rate | float | `1` | trace sampling rate |
 | defaults.server_config.full_shutdown_duration | string | `"600s"` | server full shutdown duration |
@@ -403,7 +427,13 @@ Configuration
 | defaults.server_config.tls.enabled | bool | `false` | TLS enabled |
 | defaults.server_config.tls.key | string | `"/path/to/key"` | TLS key path |
 | defaults.time_zone | string | `"UTC"` | Time zone |
-| discoverer.annotations | list | `nil` | deployment annotations |
+| discoverer.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | node affinity preferred scheduling terms |
+| discoverer.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms | list | `[]` | node affinity required node selectors |
+| discoverer.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity preferred scheduling terms |
+| discoverer.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity required scheduling terms |
+| discoverer.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app","operator":"In","values":["vald-discoverer"]}]},"topologyKey":"kubernetes.io/hostname"},"weight":100}]` | pod anti-affinity preferred scheduling terms |
+| discoverer.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
+| discoverer.annotations | object | `{}` | deployment annotations |
 | discoverer.clusterRole.enabled | bool | `true` | creates clusterRole resource |
 | discoverer.clusterRole.name | string | `"discoverer"` | name of clusterRole |
 | discoverer.clusterRoleBinding.enabled | bool | `true` | creates clusterRoleBinding resource |
@@ -412,20 +442,20 @@ Configuration
 | discoverer.discoverer.name | string | `""` | name to discovery |
 | discoverer.discoverer.namespace | string | `"_MY_POD_NAMESPACE_"` | namespace to discovery |
 | discoverer.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
-| discoverer.externalTrafficPolicy | string | `nil` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
+| discoverer.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | discoverer.image.pullPolicy | string | `"Always"` | image pull policy |
 | discoverer.image.repository | string | `"vdaas/vald-discoverer-k8s"` | image repository |
-| discoverer.image.tag | string | `nil` | image tag (overrides defaults.image.tag) |
-| discoverer.initContainers | list | `nil` | init containers |
+| discoverer.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
+| discoverer.initContainers | list | `[]` | init containers |
 | discoverer.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
 | discoverer.maxReplicas | int | `2` | maximum number of replicas |
 | discoverer.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
 | discoverer.minReplicas | int | `1` | minimum number of replicas |
 | discoverer.name | string | `"vald-discoverer"` | name of discoverer deployment |
-| discoverer.nodeName | string | `nil` | node name |
-| discoverer.nodeSelector | object | `nil` | node selector |
+| discoverer.nodeName | string | `""` | node name |
+| discoverer.nodeSelector | object | `{}` | node selector |
 | discoverer.observability | object | `{"jaeger":{"service_name":"vald-discoverer"}}` | observability config (overrides defaults.observability) |
-| discoverer.podAnnotations | list | `nil` | pod annotations |
+| discoverer.podAnnotations | object | `{}` | pod annotations |
 | discoverer.podPriority.enabled | bool | `true` | discoverer pod PriorityClass enabled |
 | discoverer.podPriority.value | int | `1000000` | discoverer pod PriorityClass value |
 | discoverer.progressDeadlineSeconds | int | `600` | progress deadline seconds |
@@ -434,18 +464,25 @@ Configuration
 | discoverer.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | discoverer.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | discoverer.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
-| discoverer.service.annotations | list | `nil` | service annotations |
-| discoverer.service.labels | list | `nil` | service labels |
+| discoverer.service.annotations | object | `{}` | service annotations |
+| discoverer.service.labels | object | `{}` | service labels |
 | discoverer.serviceAccount.enabled | bool | `true` | creates service account |
 | discoverer.serviceAccount.name | string | `"vald"` | name of service account |
 | discoverer.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | discoverer.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| discoverer.tolerations | list | `[]` | tolerations |
 | discoverer.version | string | `"v0.0.0"` | version of discoverer config |
-| discoverer.volumeMounts | list | `nil` | volume mounts |
-| discoverer.volumes | list | `nil` | volumes |
-| gateway.annotations | list | `nil` | deployment annotations |
+| discoverer.volumeMounts | list | `[]` | volume mounts |
+| discoverer.volumes | list | `[]` | volumes |
+| gateway.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | node affinity preferred scheduling terms |
+| gateway.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms | list | `[]` | node affinity required node selectors |
+| gateway.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity preferred scheduling terms |
+| gateway.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity required scheduling terms |
+| gateway.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app","operator":"In","values":["vald-gateway"]}]},"topologyKey":"kubernetes.io/hostname"},"weight":100}]` | pod anti-affinity preferred scheduling terms |
+| gateway.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
+| gateway.annotations | object | `{}` | deployment annotations |
 | gateway.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
-| gateway.externalTrafficPolicy | string | `nil` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
+| gateway.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | gateway.filter.egress | list | `[""]` | egress filters |
 | gateway.filter.ingress | list | `[""]` | ingress filters |
 | gateway.gateway_config.agent_namespace | string | `"_MY_POD_NAMESPACE_"` | agent namespace |
@@ -463,7 +500,7 @@ Configuration
 | gateway.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |
 | gateway.image.pullPolicy | string | `"Always"` | image pull policy |
 | gateway.image.repository | string | `"vdaas/vald-gateway"` | image repository |
-| gateway.image.tag | string | `nil` | image tag (overrides defaults.image.tag) |
+| gateway.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
 | gateway.ingress.annotations | object | `{"nginx.ingress.kubernetes.io/grpc-backend":"true"}` | annotations for ingress |
 | gateway.ingress.host | string | `"vald.gateway.vdaas.org"` | ingress hostname |
 | gateway.ingress.servicePort | string | `"grpc"` | service port to be exposed by ingress |
@@ -473,10 +510,10 @@ Configuration
 | gateway.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
 | gateway.minReplicas | int | `3` | minimum number of replicas |
 | gateway.name | string | `"vald-gateway"` | name of gateway deployment |
-| gateway.nodeName | string | `nil` | node name |
-| gateway.nodeSelector | object | `nil` | node selector |
+| gateway.nodeName | string | `""` | node name |
+| gateway.nodeSelector | object | `{}` | node selector |
 | gateway.observability | object | `{"jaeger":{"service_name":"vald-gateway"}}` | observability config (overrides defaults.observability) |
-| gateway.podAnnotations | list | `nil` | pod annotations |
+| gateway.podAnnotations | object | `{}` | pod annotations |
 | gateway.podPriority.enabled | bool | `true` | gateway pod PriorityClass enabled |
 | gateway.podPriority.value | int | `1000000` | gateway pod PriorityClass value |
 | gateway.progressDeadlineSeconds | int | `600` | progress deadline seconds |
@@ -485,19 +522,26 @@ Configuration
 | gateway.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | gateway.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | gateway.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
-| gateway.service.annotations | list | `nil` | service annotations |
-| gateway.service.labels | list | `nil` | service labels |
+| gateway.service.annotations | object | `{}` | service annotations |
+| gateway.service.labels | object | `{}` | service labels |
 | gateway.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | gateway.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| gateway.tolerations | list | `[]` | tolerations |
 | gateway.version | string | `"v0.0.0"` | version of gateway config |
-| gateway.volumeMounts | list | `nil` | volume mounts |
-| gateway.volumes | list | `nil` | volumes |
-| indexManager.annotations | list | `nil` | deployment annotations |
+| gateway.volumeMounts | list | `[]` | volume mounts |
+| gateway.volumes | list | `[]` | volumes |
+| indexManager.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | node affinity preferred scheduling terms |
+| indexManager.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms | list | `[]` | node affinity required node selectors |
+| indexManager.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity preferred scheduling terms |
+| indexManager.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity required scheduling terms |
+| indexManager.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity preferred scheduling terms |
+| indexManager.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
+| indexManager.annotations | object | `{}` | deployment annotations |
 | indexManager.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | (list) environment variables |
-| indexManager.externalTrafficPolicy | string | `nil` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
+| indexManager.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | indexManager.image.pullPolicy | string | `"Always"` | image pull policy |
 | indexManager.image.repository | string | `"vdaas/vald-manager-index"` | image repository |
-| indexManager.image.tag | string | `nil` | image tag (overrides defaults.image.tag) |
+| indexManager.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
 | indexManager.indexer.agent_namespace | string | `"_MY_POD_NAMESPACE_"` | namespace of agent pods to manage |
 | indexManager.indexer.auto_index_check_duration | string | `"1m"` | check duration of automatic indexing |
 | indexManager.indexer.auto_index_duration_limit | string | `"30m"` | limit duration of automatic indexing |
@@ -512,10 +556,10 @@ Configuration
 | indexManager.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
 | indexManager.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
 | indexManager.name | string | `"vald-manager-index"` | name of index manager deployment |
-| indexManager.nodeName | string | `nil` | node name |
-| indexManager.nodeSelector | object | `nil` | node selector |
+| indexManager.nodeName | string | `""` | node name |
+| indexManager.nodeSelector | object | `{}` | node selector |
 | indexManager.observability | object | `{"jaeger":{"service_name":"vald-manager-index"}}` | observability config (overrides defaults.observability) |
-| indexManager.podAnnotations | list | `nil` | pod annotations |
+| indexManager.podAnnotations | object | `{}` | pod annotations |
 | indexManager.podPriority.enabled | bool | `true` | index manager pod PriorityClass enabled |
 | indexManager.podPriority.value | int | `1000000` | index manager pod PriorityClass value |
 | indexManager.progressDeadlineSeconds | int | `600` | progress deadline seconds |
@@ -525,13 +569,14 @@ Configuration
 | indexManager.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | indexManager.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | indexManager.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
-| indexManager.service.annotations | list | `nil` | service annotations |
-| indexManager.service.labels | list | `nil` | service labels |
+| indexManager.service.annotations | object | `{}` | service annotations |
+| indexManager.service.labels | object | `{}` | service labels |
 | indexManager.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | indexManager.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| indexManager.tolerations | list | `[]` | tolerations |
 | indexManager.version | string | `"v0.0.0"` | version of index manager config |
-| indexManager.volumeMounts | list | `nil` | volume mounts |
-| indexManager.volumes | list | `nil` | volumes |
+| indexManager.volumeMounts | list | `[]` | volume mounts |
+| indexManager.volumes | list | `[]` | volumes |
 | initializer.cassandra.configmap.backup.enabled | bool | `true` | backup table enabled |
 | initializer.cassandra.configmap.backup.name | string | `"meta_vector"` | name of backup table |
 | initializer.cassandra.configmap.enabled | bool | `false` | cassandra schema configmap will be created |
@@ -577,7 +622,13 @@ Configuration
 | initializer.redis.secret.data | object | `{"password":"cGFzc3dvcmQ="}` | redis secret data |
 | initializer.redis.secret.enabled | bool | `false` | redis secret will be created |
 | initializer.redis.secret.name | string | `"redis-secret"` | redis secret name |
-| meta.annotations | list | `nil` | deployment annotations |
+| meta.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | node affinity preferred scheduling terms |
+| meta.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms | list | `[]` | node affinity required node selectors |
+| meta.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity preferred scheduling terms |
+| meta.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity required scheduling terms |
+| meta.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity preferred scheduling terms |
+| meta.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
+| meta.annotations | object | `{}` | deployment annotations |
 | meta.cassandra.config.connect_timeout | string | `"600ms"` | connect timeout |
 | meta.cassandra.config.consistency | string | `"quorum"` | consistency type |
 | meta.cassandra.config.cql_version | string | `"3.0.0"` | cassandra CQL version |
@@ -626,22 +677,22 @@ Configuration
 | meta.cassandra.config.write_coalesce_wait_time | string | `"200ms"` | write coalesce wait time |
 | meta.cassandra.enabled | bool | `false` | cassandra config enabled |
 | meta.env | list | `[{"name":"REDIS_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"redis-secret"}}}]` | environment variables |
-| meta.externalTrafficPolicy | string | `nil` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
+| meta.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | meta.hpa.enabled | bool | `true` | HPA enabled |
 | meta.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |
 | meta.image.pullPolicy | string | `"Always"` | image pull policy |
 | meta.image.repository | string | `"vdaas/vald-meta-redis"` | image repository |
-| meta.image.tag | string | `nil` | image tag (overrides defaults.image.tag) |
+| meta.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
 | meta.initContainers | list | `[{"env":[{"name":"REDIS_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"redis-secret"}}}],"image":"redis:latest","name":"wait-for-redis","redis":{"hosts":["redis.default.svc.cluster.local"],"options":["-a ${REDIS_PASSWORD}"]},"sleepDuration":2,"type":"wait-for-redis"}]` | init containers |
 | meta.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
 | meta.maxReplicas | int | `10` | maximum number of replicas |
 | meta.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
 | meta.minReplicas | int | `2` | minimum number of replicas |
 | meta.name | string | `"vald-meta"` | name of meta deployment |
-| meta.nodeName | string | `nil` | node name |
-| meta.nodeSelector | object | `nil` | node selector |
+| meta.nodeName | string | `""` | node name |
+| meta.nodeSelector | object | `{}` | node selector |
 | meta.observability | object | `{"jaeger":{"service_name":"vald-meta"}}` | observability config (overrides defaults.observability) |
-| meta.podAnnotations | list | `nil` | pod annotations |
+| meta.podAnnotations | object | `{}` | pod annotations |
 | meta.podPriority.enabled | bool | `true` | meta pod PriorityClass enabled |
 | meta.podPriority.value | int | `1000000` | meta pod PriorityClass value |
 | meta.progressDeadlineSeconds | int | `600` | progress deadline seconds |
@@ -688,10 +739,11 @@ Configuration
 | meta.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | meta.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | meta.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
-| meta.service.annotations | list | `nil` | service annotations |
-| meta.service.labels | list | `nil` | service labels |
+| meta.service.annotations | object | `{}` | service annotations |
+| meta.service.labels | object | `{}` | service labels |
 | meta.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | meta.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| meta.tolerations | list | `[]` | tolerations |
 | meta.version | string | `"v0.0.0"` | version of meta config |
-| meta.volumeMounts | list | `nil` | volume mounts |
-| meta.volumes | list | `nil` | volumes |
+| meta.volumeMounts | list | `[]` | volume mounts |
+| meta.volumes | list | `[]` | volumes |
