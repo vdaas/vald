@@ -276,7 +276,7 @@ func (s *something) SignedTok() string{
 }
 
 // setter of the `signedTok`
-func (s *something) SignedTok(st string) {
+func (s *something) SetSignedTok(st string) {
     s.signedTok = st
 }
 ```
