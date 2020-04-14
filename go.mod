@@ -52,7 +52,7 @@ require (
 	go.uber.org/automaxprocs v1.3.0
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
-	golang.org/x/tools v0.0.0-20200413015812-1f08ef6002a8 // indirect
+	golang.org/x/tools v0.0.0-20200414032229-332987a829c3 // indirect
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/plot v0.7.0
 	google.golang.org/genproto v0.0.0-20200401122417-09ab7b7031d2
