@@ -26,7 +26,7 @@ defaults:
     format: raw
   image:
     # defaults.image.tag -- image tag
-    tag: v0.0.27
+    tag: v0.0.28
   server_config:
     servers:
       rest:
@@ -382,6 +382,10 @@ defaults:
     prometheus:
       # defaults.observability.prometheus.enabled -- Prometheus exporter enabled
       enabled: false
+      # defaults.observability.prometheus.endpoint -- Prometheus exporter endpoint
+      endpoint: /metrics
+      # defaults.observability.prometheus.namespace -- prefix of exported metrics name
+      namespace: vald
     jaeger:
       # defaults.observability.jaeger.enabled -- Jaeger exporter enabled
       enabled: false
@@ -407,8 +411,8 @@ gateway:
   kind: Deployment
   # gateway.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # gateway.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
-  externalTrafficPolicy: null
+  # gateway.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: ""
   # gateway.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # gateway.minReplicas -- minimum number of replicas
@@ -421,15 +425,20 @@ gateway:
   revisionHistoryLimit: 2
   # gateway.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
-  # gateway.annotations -- (list) deployment annotations
-  annotations: null
-  # gateway.podAnnotations -- (list) pod annotations
-  podAnnotations: null
+  podPriority:
+    # gateway.podPriority.enabled -- gateway pod PriorityClass enabled
+    enabled: true
+    # gateway.podPriority.value -- gateway pod PriorityClass value
+    value: 1000000
+  # gateway.annotations -- deployment annotations
+  annotations: {}
+  # gateway.podAnnotations -- pod annotations
+  podAnnotations: {}
   service:
-    # gateway.service.annotations -- (list) service annotations
-    annotations: null
-    # gateway.service.labels -- (list) service labels
-    labels: null
+    # gateway.service.annotations -- service annotations
+    annotations: {}
+    # gateway.service.labels -- service labels
+    labels: {}
   hpa:
     # gateway.hpa.enabled -- HPA enabled
     enabled: true
@@ -438,8 +447,8 @@ gateway:
   image:
     # gateway.image.repository -- image repository
     repository: vdaas/vald-gateway
-    # gateway.image.tag -- (string) image tag (overrides defaults.image.tag)
-    tag: null
+    # gateway.image.tag -- image tag (overrides defaults.image.tag)
+    tag: ""
     # gateway.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
@@ -479,14 +488,42 @@ gateway:
       valueFrom:
         fieldRef:
           fieldPath: metadata.namespace
-  # gateway.volumeMounts -- (list) volume mounts
-  volumeMounts: null
-  # gateway.volumes -- (list) volumes
-  volumes: null
-  # gateway.nodeName -- (string) node name
-  nodeName: null
-  # gateway.nodeSelector -- (object) node selector
-  nodeSelector: null
+  # gateway.volumeMounts -- volume mounts
+  volumeMounts: []
+  # gateway.volumes -- volumes
+  volumes: []
+  # gateway.nodeName -- node name
+  nodeName: ""
+  # gateway.nodeSelector -- node selector
+  nodeSelector: {}
+  # gateway.tolerations -- tolerations
+  tolerations: []
+  affinity:
+    nodeAffinity:
+      # gateway.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # gateway.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # gateway.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # gateway.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # gateway.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - vald-gateway
+      # gateway.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
   # gateway.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -561,8 +598,8 @@ agent:
   kind: StatefulSet
   # agent.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # agent.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
-  externalTrafficPolicy: null
+  # agent.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: ""
   # agent.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # agent.minReplicas -- minimum number of replicas
@@ -582,15 +619,15 @@ agent:
     enabled: true
     # agent.podPriority.value -- agent pod PriorityClass value
     value: 1000000000
-  # agent.annotations -- (list) deployment annotations
-  annotations: null
-  # agent.podAnnotations -- (list) pod annotations
-  podAnnotations: null
+  # agent.annotations -- deployment annotations
+  annotations: {}
+  # agent.podAnnotations -- pod annotations
+  podAnnotations: {}
   service:
-    # agent.service.annotations -- (list) service annotations
-    annotations: null
-    # agent.service.labels -- (list) service labels
-    labels: null
+    # agent.service.annotations -- service annotations
+    annotations: {}
+    # agent.service.labels -- service labels
+    labels: {}
   hpa:
     # agent.hpa.enabled -- HPA enabled
     enabled: false
@@ -599,8 +636,8 @@ agent:
   image:
     # agent.image.repository -- image repository
     repository: vdaas/vald-agent-ngt
-    # agent.image.tag -- (string) image tag (overrides defaults.image.tag)
-    tag: null
+    # agent.image.tag -- image tag (overrides defaults.image.tag)
+    tag: ""
     # agent.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
@@ -610,25 +647,54 @@ agent:
     maxUnavailable: 25%
     # agent.rollingUpdate.partition -- StatefulSet partition
     partition: 0
-  # agent.initContainers -- (list) init containers
-  initContainers: null
-  # agent.env -- (list) environment variables
-  env: null
-  # agent.volumeMounts -- (list) volume mounts
-  volumeMounts: null
-  # agent.volumes -- (list) volumes
-  volumes: null
-  # agent.nodeName -- (string) node name
-  nodeName: null
-  # agent.nodeSelector -- (object) node selector
-  nodeSelector: null
+  # agent.initContainers -- init containers
+  initContainers: []
+  # agent.env -- environment variables
+  env: []
+  # agent.volumeMounts -- volume mounts
+  volumeMounts: []
+  # agent.volumes -- volumes
+  volumes: []
+  # agent.nodeName -- node name
+  nodeName: ""
+  # agent.nodeSelector -- node selector
+  nodeSelector: {}
+  # agent.tolerations -- tolerations
+  tolerations: []
+  affinity:
+    nodeAffinity:
+      # agent.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # agent.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # agent.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # agent.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # agent.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - vald-agent-ngt
+      # agent.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
   # agent.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
       rest: {}
       grpc: {}
     healths:
-      liveness: {}
+      liveness:
+        enabled: false
       readiness: {}
     metrics:
       pprof: {}
@@ -675,8 +741,8 @@ discoverer:
   kind: Deployment
   # discoverer.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # discoverer.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
-  externalTrafficPolicy: null
+  # discoverer.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: ""
   # discoverer.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # discoverer.minReplicas -- minimum number of replicas
@@ -689,20 +755,25 @@ discoverer:
   revisionHistoryLimit: 2
   # discoverer.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
-  # discoverer.annotations -- (list) deployment annotations
-  annotations: null
-  # discoverer.podAnnotations -- (list) pod annotations
-  podAnnotations: null
+  podPriority:
+    # discoverer.podPriority.enabled -- discoverer pod PriorityClass enabled
+    enabled: true
+    # discoverer.podPriority.value -- discoverer pod PriorityClass value
+    value: 1000000
+  # discoverer.annotations -- deployment annotations
+  annotations: {}
+  # discoverer.podAnnotations -- pod annotations
+  podAnnotations: {}
   service:
-    # discoverer.service.annotations -- (list) service annotations
-    annotations: null
-    # discoverer.service.labels -- (list) service labels
-    labels: null
+    # discoverer.service.annotations -- service annotations
+    annotations: {}
+    # discoverer.service.labels -- service labels
+    labels: {}
   image:
     # discoverer.image.repository -- image repository
     repository: vdaas/vald-discoverer-k8s
-    # discoverer.image.tag -- (string) image tag (overrides defaults.image.tag)
-    tag: null
+    # discoverer.image.tag -- image tag (overrides defaults.image.tag)
+    tag: ""
     # discoverer.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
@@ -710,22 +781,50 @@ discoverer:
     maxSurge: 25%
     # discoverer.rollingUpdate.maxUnavailable -- max unavailable of rolling update
     maxUnavailable: 25%
-  # discoverer.initContainers -- (list) init containers
-  initContainers: null
+  # discoverer.initContainers -- init containers
+  initContainers: []
   # discoverer.env -- environment variables
   env:
     - name: MY_POD_NAMESPACE
       valueFrom:
         fieldRef:
           fieldPath: metadata.namespace
-  # discoverer.volumeMounts -- (list) volume mounts
-  volumeMounts: null
-  # discoverer.volumes -- (list) volumes
-  volumes: null
-  # discoverer.nodeName -- (string) node name
-  nodeName: null
-  # discoverer.nodeSelector -- (object) node selector
-  nodeSelector: null
+  # discoverer.volumeMounts -- volume mounts
+  volumeMounts: []
+  # discoverer.volumes -- volumes
+  volumes: []
+  # discoverer.nodeName -- node name
+  nodeName: ""
+  # discoverer.nodeSelector -- node selector
+  nodeSelector: {}
+  # discoverer.tolerations -- tolerations
+  tolerations: []
+  affinity:
+    nodeAffinity:
+      # discoverer.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # discoverer.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # discoverer.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # discoverer.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # discoverer.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - vald-discoverer
+      # discoverer.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
   # discoverer.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -781,8 +880,8 @@ compressor:
   kind: Deployment
   # compressor.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # compressor.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
-  externalTrafficPolicy: null
+  # compressor.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: ""
   # compressor.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # compressor.minReplicas -- minimum number of replicas
@@ -795,15 +894,20 @@ compressor:
   revisionHistoryLimit: 2
   # compressor.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
-  # compressor.annotations -- (list) deployment annotations
-  annotations: null
-  # compressor.podAnnotations -- (list) pod annotations
-  podAnnotations: null
+  podPriority:
+    # compressor.podPriority.enabled -- compressor pod PriorityClass enabled
+    enabled: true
+    # compressor.podPriority.value -- compressor pod PriorityClass value
+    value: 100000000
+  # compressor.annotations -- deployment annotations
+  annotations: {}
+  # compressor.podAnnotations -- pod annotations
+  podAnnotations: {}
   service:
-    # compressor.service.annotations -- (list) service annotations
-    annotations: null
-    # compressor.service.labels -- (list) service labels
-    labels: null
+    # compressor.service.annotations -- service annotations
+    annotations: {}
+    # compressor.service.labels -- service labels
+    labels: {}
   hpa:
     # compressor.hpa.enabled -- HPA enabled
     enabled: true
@@ -812,8 +916,8 @@ compressor:
   image:
     # compressor.image.repository -- image repository
     repository: vdaas/vald-manager-compressor
-    # compressor.image.tag -- (string) image tag (overrides defaults.image.tag)
-    tag: null
+    # compressor.image.tag -- image tag (overrides defaults.image.tag)
+    tag: ""
     # compressor.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
@@ -828,23 +932,47 @@ compressor:
       target: manager-backup
       image: busybox
       sleepDuration: 2
-  # compressor.env -- (list) environment variables
-  env: null
-  # compressor.volumeMounts -- (list) volume mounts
-  volumeMounts: null
-  # compressor.volumes -- (list) volumes
-  volumes: null
-  # compressor.nodeName -- (string) node name
-  nodeName: null
-  # compressor.nodeSelector -- (object) node selector
-  nodeSelector: null
+  # compressor.env -- environment variables
+  env:
+    - name: MY_POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
+  # compressor.volumeMounts -- volume mounts
+  volumeMounts: []
+  # compressor.volumes -- volumes
+  volumes: []
+  # compressor.nodeName -- node name
+  nodeName: ""
+  # compressor.nodeSelector -- node selector
+  nodeSelector: {}
+  # compressor.tolerations -- tolerations
+  tolerations: []
+  affinity:
+    nodeAffinity:
+      # compressor.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # compressor.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # compressor.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # compressor.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # compressor.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # compressor.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
   # compressor.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
       rest: {}
       grpc: {}
     healths:
-      liveness: {}
+      liveness:
+        enabled: false
       readiness: {}
     metrics:
       pprof: {}
@@ -871,8 +999,12 @@ compressor:
     compression_level: 3
     # compressor.compress.concurrent_limit -- concurrency limit
     concurrent_limit: 10
-    # compressor.compress.buffer -- size of buffer
-    buffer: 100
+  registerer:
+    # compressor.registerer.concurrent_limit -- concurrency limit of registerer worker
+    concurrent_limit: 10
+    compressor:
+      # compressor.registerer.compressor.client -- gRPC client for compressor (overrides defaults.grpc.client)
+      client: {}
 
 backupManager:
   # backupManager.version -- version of backup manager config
@@ -883,8 +1015,8 @@ backupManager:
   kind: Deployment
   # backupManager.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # backupManager.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
-  externalTrafficPolicy: null
+  # backupManager.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: ""
   # backupManager.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # backupManager.minReplicas -- minimum number of replicas
@@ -897,15 +1029,20 @@ backupManager:
   revisionHistoryLimit: 2
   # backupManager.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
-  # backupManager.annotations -- (list) deployment annotations
-  annotations: null
-  # backupManager.podAnnotations -- (list) pod annotations
-  podAnnotations: null
+  podPriority:
+    # backupManager.podPriority.enabled -- backup manager pod PriorityClass enabled
+    enabled: true
+    # backupManager.podPriority.value -- backup manager pod PriorityClass value
+    value: 1000000
+  # backupManager.annotations -- deployment annotations
+  annotations: {}
+  # backupManager.podAnnotations -- pod annotations
+  podAnnotations: {}
   service:
-    # backupManager.service.annotations -- (list) service annotations
-    annotations: null
-    # backupManager.service.labels -- (list) service labels
-    labels: null
+    # backupManager.service.annotations -- service annotations
+    annotations: {}
+    # backupManager.service.labels -- service labels
+    labels: {}
   hpa:
     # backupManager.hpa.enabled -- HPA enabled
     enabled: true
@@ -915,8 +1052,8 @@ backupManager:
     # backupManager.image.repository -- image repository
     repository: vdaas/vald-manager-backup-mysql
     # repository: vdaas/vald-manager-backup-cassandra
-    # backupManager.image.tag -- (string) image tag (overrides defaults.image.tag)
-    tag: null
+    # backupManager.image.tag -- image tag (overrides defaults.image.tag)
+    tag: ""
     # backupManager.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
@@ -981,14 +1118,33 @@ backupManager:
     #     secretKeyRef:
     #       name: cassandra-secret
     #       key: password
-  # backupManager.volumeMounts -- (list) volume mounts
-  volumeMounts: null
-  # backupManager.volumes -- (list) volumes
-  volumes: null
-  # backupManager.nodeName -- (string) node name
-  nodeName: null
-  # backupManager.nodeSelector -- (object) node selector
-  nodeSelector: null
+  # backupManager.volumeMounts -- volume mounts
+  volumeMounts: []
+  # backupManager.volumes -- volumes
+  volumes: []
+  # backupManager.nodeName -- node name
+  nodeName: ""
+  # backupManager.nodeSelector -- node selector
+  nodeSelector: {}
+  # backupManager.tolerations -- tolerations
+  tolerations: []
+  affinity:
+    nodeAffinity:
+      # backupManager.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # backupManager.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # backupManager.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # backupManager.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # backupManager.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # backupManager.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
   # backupManager.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -1186,8 +1342,8 @@ indexManager:
   kind: Deployment
   # indexManager.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # indexManager.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
-  externalTrafficPolicy: null
+  # indexManager.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: ""
   # indexManager.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # indexManager.replicas -- number of replicas
@@ -1198,20 +1354,25 @@ indexManager:
   revisionHistoryLimit: 2
   # indexManager.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
-  # indexManager.annotations -- (list) deployment annotations
-  annotations: null
-  # indexManager.podAnnotations -- (list) pod annotations
-  podAnnotations: null
+  podPriority:
+    # indexManager.podPriority.enabled -- index manager pod PriorityClass enabled
+    enabled: true
+    # indexManager.podPriority.value -- index manager pod PriorityClass value
+    value: 1000000
+  # indexManager.annotations -- deployment annotations
+  annotations: {}
+  # indexManager.podAnnotations -- pod annotations
+  podAnnotations: {}
   service:
-    # indexManager.service.annotations -- (list) service annotations
-    annotations: null
-    # indexManager.service.labels -- (list) service labels
-    labels: null
+    # indexManager.service.annotations -- service annotations
+    annotations: {}
+    # indexManager.service.labels -- service labels
+    labels: {}
   image:
     # indexManager.image.repository -- image repository
     repository: vdaas/vald-manager-index
-    # indexManager.image.tag -- (string) image tag (overrides defaults.image.tag)
-    tag: null
+    # indexManager.image.tag -- image tag (overrides defaults.image.tag)
+    tag: ""
     # indexManager.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
@@ -1241,14 +1402,33 @@ indexManager:
       valueFrom:
         fieldRef:
           fieldPath: metadata.namespace
-  # indexManager.volumeMounts -- (list) volume mounts
-  volumeMounts: null
-  # indexManager.volumes -- (list) volumes
-  volumes: null
-  # indexManager.nodeName -- (string) node name
-  nodeName: null
-  # indexManager.nodeSelector -- (object) node selector
-  nodeSelector: null
+  # indexManager.volumeMounts -- volume mounts
+  volumeMounts: []
+  # indexManager.volumes -- volumes
+  volumes: []
+  # indexManager.nodeName -- node name
+  nodeName: ""
+  # indexManager.nodeSelector -- node selector
+  nodeSelector: {}
+  # indexManager.tolerations -- tolerations
+  tolerations: []
+  affinity:
+    nodeAffinity:
+      # indexManager.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # indexManager.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # indexManager.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # indexManager.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # indexManager.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # indexManager.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
   # indexManager.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -1308,8 +1488,8 @@ meta:
   kind: Deployment
   # meta.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
-  # meta.externalTrafficPolicy -- (string) external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
-  externalTrafficPolicy: null
+  # meta.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: ""
   # meta.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # meta.minReplicas -- minimum number of replicas
@@ -1322,15 +1502,20 @@ meta:
   revisionHistoryLimit: 2
   # meta.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
-  # meta.annotations -- (list) deployment annotations
-  annotations: null
-  # meta.podAnnotations -- (list) pod annotations
-  podAnnotations: null
+  podPriority:
+    # meta.podPriority.enabled -- meta pod PriorityClass enabled
+    enabled: true
+    # meta.podPriority.value -- meta pod PriorityClass value
+    value: 1000000
+  # meta.annotations -- deployment annotations
+  annotations: {}
+  # meta.podAnnotations -- pod annotations
+  podAnnotations: {}
   service:
-    # meta.service.annotations -- (list) service annotations
-    annotations: null
-    # meta.service.labels -- (list) service labels
-    labels: null
+    # meta.service.annotations -- service annotations
+    annotations: {}
+    # meta.service.labels -- service labels
+    labels: {}
 
   hpa:
     # meta.hpa.enabled -- HPA enabled
@@ -1341,8 +1526,8 @@ meta:
     # meta.image.repository -- image repository
     repository: vdaas/vald-meta-redis
     # repository: vdaas/vald-meta-cassandra
-    # meta.image.tag -- (string) image tag (overrides defaults.image.tag)
-    tag: null
+    # meta.image.tag -- image tag (overrides defaults.image.tag)
+    tag: ""
     # meta.image.pullPolicy -- image pull policy
     pullPolicy: Always
   rollingUpdate:
@@ -1406,14 +1591,33 @@ meta:
     #     secretKeyRef:
     #       name: cassandra-secret
     #       key: password
-  # meta.volumeMounts -- (list) volume mounts
-  volumeMounts: null
-  # meta.volumes -- (list) volumes
-  volumes: null
-  # meta.nodeName -- (string) node name
-  nodeName: null
-  # meta.nodeSelector -- (object) node selector
-  nodeSelector: null
+  # meta.volumeMounts -- volume mounts
+  volumeMounts: []
+  # meta.volumes -- volumes
+  volumes: []
+  # meta.nodeName -- node name
+  nodeName: ""
+  # meta.nodeSelector -- node selector
+  nodeSelector: {}
+  # meta.tolerations -- tolerations
+  tolerations: []
+  affinity:
+    nodeAffinity:
+      # meta.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # meta.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # meta.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # meta.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # meta.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # meta.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
   # meta.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:

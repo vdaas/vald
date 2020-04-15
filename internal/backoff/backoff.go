@@ -78,26 +78,31 @@ func (b *backoff) Do(ctx context.Context, f func() (interface{}, error)) (res in
 	jdur := b.jittedInitialDuration
 
 	for cnt := 0; cnt < b.maxRetryCount; cnt++ {
-		res, err = f()
-		if err != nil {
-			if b.errLog {
-				log.Error(err)
-			}
-			timer.Reset(time.Duration(jdur))
-			select {
-			case <-limit.C:
-				return nil, errors.ErrBackoffTimeout(err)
-			case <-ctx.Done():
-				return nil, errors.Wrap(err, ctx.Err().Error())
-			case <-timer.C:
-				if dur >= b.durationLimit {
-					dur = b.maxDuration
-					jdur = b.maxDuration
-				} else {
-					dur *= b.backoffFactor
-					jdur = b.addJitter(dur)
+		select {
+		case <-ctx.Done():
+			return nil, errors.Wrap(err, ctx.Err().Error())
+		default:
+			res, err = f()
+			if err != nil {
+				if b.errLog {
+					log.Error(err)
 				}
-				continue
+				timer.Reset(time.Duration(jdur))
+				select {
+				case <-limit.C:
+					return nil, errors.ErrBackoffTimeout(err)
+				case <-ctx.Done():
+					return nil, errors.Wrap(ctx.Err(), err.Error())
+				case <-timer.C:
+					if dur >= b.durationLimit {
+						dur = b.maxDuration
+						jdur = b.maxDuration
+					} else {
+						dur *= b.backoffFactor
+						jdur = b.addJitter(dur)
+					}
+					continue
+				}
 			}
 		}
 		return res, nil

@@ -89,5 +89,14 @@ spec:
       nodeSelector:
         {{- toYaml .Values.indexManager.nodeSelector | nindent 8 }}
       {{- end }}
+      {{- if .Values.indexManager.tolerations }}
+      tolerations:
+        {{- toYaml .Values.indexManager.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.indexManager.podPriority }}
+      {{- if .Values.indexManager.podPriority.enabled }}
+      priorityClassName: {{ .Values.indexManager.name }}-priority
+      {{- end }}
+      {{- end }}
 status:
 {{- end }}

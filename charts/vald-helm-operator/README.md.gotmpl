@@ -14,8 +14,40 @@ Add Vald Helm repository
 
 Run the following command to install the chart,
 
-    $ helm install --generate-name vald/vald-helm-operator
+    $ helm install vald-helm-operator-release vald/vald-helm-operator
 
+Custom Resources
+---
+
+### ValdRelease
+
+This is a custom resource that represents values of the Vald Helm chart.
+
+Example:
+
+```yaml
+apiVersion: vald.vdaas.org/v1alpha1
+kind: ValdRelease
+metadata:
+  name: vald-cluster
+# the values of Helm chart for Vald can be placed under the `spec` field.
+spec: {}
+```
+
+### ValdHelmOperatorRelease
+
+This is a custom resource that represents values of the vald-helm-operator Helm chart.
+
+Example:
+
+```yaml
+apiVersion: vald.vdaas.org/v1alpha1
+kind: ValdHelmOperatorRelease
+metadata:
+  name: vald-helm-operator-release
+# the values of Helm chart for vald-helm-operator can be placed under the `spec` field.
+spec: {}
+```
 
 Configuration
 ---

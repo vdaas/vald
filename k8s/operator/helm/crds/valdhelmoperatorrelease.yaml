@@ -1,4 +1,3 @@
----
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -17,19 +16,16 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: valdreleases.vald.vdaas.org
+  name: valdhelmoperatorreleases.vald.vdaas.org
 spec:
   group: vald.vdaas.org
   names:
-    kind: ValdRelease
-    listKind: ValdReleaseList
-    plural: valdreleases
-    singular: valdrelease
+    kind: ValdHelmOperatorRelease
+    listKind: ValdHelmOperatorReleaseList
+    plural: valdhelmoperatorreleases
+    singular: valdhelmoperatorrelease
   scope: Namespaced
   additionalPrinterColumns:
-    - name: Ingress
-      type: string
-      JSONPath: .spec.gateway.ingress.host
     - name: Age
       type: date
       JSONPath: .metadata.creationTimestamp

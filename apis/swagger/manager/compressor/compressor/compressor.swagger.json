@@ -13,7 +13,7 @@
   "paths": {
     "/delete/multi": {
       "post": {
-        "operationId": "RemoveMulti",
+        "operationId": "Backup_RemoveMulti",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -45,7 +45,7 @@
     },
     "/delete/{uuid}": {
       "delete": {
-        "operationId": "Remove",
+        "operationId": "Backup_Remove",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -75,7 +75,7 @@
     },
     "/ip": {
       "post": {
-        "operationId": "RegisterIPs",
+        "operationId": "Backup_RegisterIPs",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -107,7 +107,7 @@
     },
     "/ip/delete": {
       "post": {
-        "operationId": "RemoveIPs",
+        "operationId": "Backup_RemoveIPs",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -139,7 +139,7 @@
     },
     "/locations/{uuid}": {
       "get": {
-        "operationId": "Locations",
+        "operationId": "Backup_Locations",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -169,7 +169,7 @@
     },
     "/register": {
       "post": {
-        "operationId": "Register",
+        "operationId": "Backup_Register",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -201,7 +201,7 @@
     },
     "/register/multi": {
       "post": {
-        "operationId": "RegisterMulti",
+        "operationId": "Backup_RegisterMulti",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -233,7 +233,7 @@
     },
     "/vector/{uuid}": {
       "get": {
-        "operationId": "GetVector",
+        "operationId": "Backup_GetVector",
         "responses": {
           "200": {
             "description": "A successful response.",

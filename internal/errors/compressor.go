@@ -35,4 +35,12 @@ var (
 	ErrCompressFailed = New("compress failed")
 
 	ErrDecompressFailed = New("decompress failed")
+
+	ErrCompressorRegistererIsNotRunning = func() error {
+		return Errorf("compressor registerers is not running")
+	}
+
+	ErrCompressorRegistererChannelIsFull = func() error {
+		return Errorf("compressor registerer channel is full")
+	}
 )

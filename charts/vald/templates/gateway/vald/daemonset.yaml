@@ -89,5 +89,14 @@ spec:
       nodeSelector:
         {{- toYaml .Values.gateway.nodeSelector | nindent 8 }}
       {{- end }}
+      {{- if .Values.gateway.tolerations }}
+      tolerations:
+        {{- toYaml .Values.gateway.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.gateway.podPriority }}
+      {{- if .Values.gateway.podPriority.enabled }}
+      priorityClassName: {{ .Values.gateway.name }}-priority
+      {{- end }}
+      {{- end }}
 status:
 {{- end }}

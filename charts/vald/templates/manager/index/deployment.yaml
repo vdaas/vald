@@ -52,6 +52,8 @@ spec:
         {{- $initContainers := dict "initContainers" .Values.indexManager.initContainers "Values" .Values "namespace" .Release.Namespace -}}
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
+      affinity:
+        {{- include "vald.affinity" .Values.indexManager.affinity | nindent 8 }}
       containers:
         - name: {{ .Values.indexManager.name }}
           image: "{{ .Values.indexManager.image.repository }}:{{ default .Values.defaults.image.tag .Values.indexManager.image.tag }}"
@@ -91,6 +93,15 @@ spec:
       {{- if .Values.indexManager.nodeSelector }}
       nodeSelector:
         {{- toYaml .Values.indexManager.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.indexManager.tolerations }}
+      tolerations:
+        {{- toYaml .Values.indexManager.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.indexManager.podPriority }}
+      {{- if .Values.indexManager.podPriority.enabled }}
+      priorityClassName: {{ .Values.indexManager.name }}-priority
+      {{- end }}
       {{- end }}
 status:
 {{- end }}

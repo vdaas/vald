@@ -6,12 +6,11 @@ We appreciate your help!
 
 ## Before filing an issue
 
-If you are unsure whether you have found a bug, please consider asking in the [vald slack](https://vald-community.slack.com/messages/CN1RDC8NB) first. If
-the behavior you are seeing is confirmed as a bug or issue, it can easily be re-raised in the issue tracker.
+If you are unsure whether you have found a bug, please consider asking in the [Vald Slack](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA) first. If the behavior you are seeing is confirmed as a bug or issue, it can easily be re-raised in the issue tracker.
 
 ## Filing issues
 
-Sensitive security-related issues should be reported to [vald slack security](https://vald-community.slack.com/messages/CN1RDC8NB) .
+Sensitive security-related issues should be reported to the security channel in the [Vald Slack](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA) .
 
 Otherwise, when filing an issue, make sure to answer these five questions:
 
@@ -20,6 +19,9 @@ Otherwise, when filing an issue, make sure to answer these five questions:
 3. What did you do?
 4. What did you expect to see?
 5. What did you see instead?
+
+Note:
+When you'd like to contribute with the new feature of some large update influencing the current Vald, we recommend getting the agreement through the authors' design review of your ISSUE.
 
 ## Before contributing code
 
@@ -57,8 +59,8 @@ Your pull request is much more likely to be accepted if:
 
 Name your branches with prefixes: `[type]/[area]/[description]`
 
-* `type` = feature, bugfix, refactoring, benchmark, ...
-* `area` (*) = gateway, meta, manager-backup, manager-replication, ...
+* `type` = feature, bug, refactoring, benchmark, security, documentation, dependencies, ci, ...
+* `area` (\*) = gateway, meta, manager-backup, manager-replication, ...
 * `description` = branch description. description must be hyphenated.
 
-(*) If you changed multiple areas, please list up each area with "-".
+(\*) If you changed multiple areas, please list up each area with "-".

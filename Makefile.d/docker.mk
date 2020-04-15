@@ -134,7 +134,10 @@ docker/name/operator/helm:
 .PHONY: docker/build/operator/helm
 ## build helm-operator image
 docker/build/operator/helm:
-	docker build -f dockers/operator/helm/Dockerfile -t $(REPO)/$(HELM_OPERATOR_IMAGE) .
+	docker build \
+	    -f dockers/operator/helm/Dockerfile \
+	    -t $(REPO)/$(HELM_OPERATOR_IMAGE) . \
+	    --build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION)
 
 .PHONY: dockfmt/install
 dockfmt/install: $(BINDIR)/dockfmt

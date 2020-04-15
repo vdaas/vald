@@ -42,34 +42,30 @@ spec:
         profefe.com/port: "6060"
         profefe.com/service: vald-agent-ngt
       # annotations:
-      #   checksum/configmap: 745108c647718ba5c10388c291ac10b005cfefafb1a7fc0b51ed15789842bc44
+      #   checksum/configmap: 1d3d39b80023f7dc1f09a715a31c13d2234a8cd2cfbba344d40c7b131117cdb5
     spec:
       affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution: []
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                topologyKey: kubernetes.io/hostname
+            - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - vald-agent-ngt
+                  - key: app
+                    operator: In
+                    values:
+                    - vald-agent-ngt
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+          requiredDuringSchedulingIgnoredDuringExecution: []
       containers:
         - name: vald-agent-ngt
           image: "vdaas/vald-agent-ngt:nightly"
           imagePullPolicy: Always
-          livenessProbe:
-            failureThreshold: 2
-            httpGet:
-              path: /liveness
-              port: liveness
-              scheme: HTTP
-            initialDelaySeconds: 5
-            periodSeconds: 3
-            successThreshold: 1
-            timeoutSeconds: 2
           readinessProbe:
             failureThreshold: 2
             httpGet:
@@ -81,9 +77,6 @@ spec:
             successThreshold: 1
             timeoutSeconds: 2
           ports:
-            - name: liveness
-              protocol: TCP
-              containerPort: 3000
             - name: readiness
               protocol: TCP
               containerPort: 3001
