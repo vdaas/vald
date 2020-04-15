@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package pool provides grpc client connection pool
 package pool
 
 import (

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package prometheus provides a prometheus exporter.
 package prometheus
 
 import "github.com/vdaas/vald/internal/log"

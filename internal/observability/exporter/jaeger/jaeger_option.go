@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package jaeger provides a jaeger exporter.
 package jaeger
 
 import (

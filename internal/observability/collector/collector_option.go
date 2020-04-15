@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package collector provides metrics collector
 package collector
 
 import (

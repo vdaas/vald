@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package pool provides grpc connection pool client
 package pool
 
 import "github.com/vdaas/vald/internal/backoff"

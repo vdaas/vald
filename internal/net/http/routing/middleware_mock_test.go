@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
 package routing
 
 import "github.com/vdaas/vald/internal/net/http/rest"

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package metric provides metrics functions for grpc
 package metric
 
 type ServerOption func(*ServerHandler)

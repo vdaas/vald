@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package pod provides kubernetes pod information and preriodically update
 package pod
 
 import "sigs.k8s.io/controller-runtime/pkg/manager"
