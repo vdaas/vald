@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package rest provides agent ngt REST client functions
 package rest
 
 import (

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package compress provides compressor interface
 package compress
 
 type Compressor interface {

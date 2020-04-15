@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package grpc provides vald gRPC client functions
 package grpc
 
 import (

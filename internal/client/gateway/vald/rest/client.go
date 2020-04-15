@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package rest provides vald REST client functions
 package rest
 
 import (

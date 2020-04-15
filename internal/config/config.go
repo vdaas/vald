@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// package config providers configuration type and load configuration logic
 package config
 
 import (

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package tensorflow provides implementation of Go API for extract data to vector
 package tensorflow
 
 type Option func(*tensorflow)

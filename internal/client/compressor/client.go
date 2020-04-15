@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package compressor represents compressor client
 package compressor
 
 import (

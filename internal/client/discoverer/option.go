@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package discoverer
 package discoverer
 
 import (

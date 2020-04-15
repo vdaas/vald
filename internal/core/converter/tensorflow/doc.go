@@ -14,15 +14,5 @@
 // limitations under the License.
 //
 
-package config
-
-type EgressFilter struct {
-	Client *GRPCClient `json:"client" yaml:"client"`
-}
-
-func (e *EgressFilter) Bind() *EgressFilter {
-	if e.Client != nil {
-		e.Client.Bind()
-	}
-	return e
-}
+// Package tensorflow provides implementation of Go API for extract data to vector
+package tensorflow
