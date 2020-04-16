@@ -124,10 +124,12 @@ The interface should be named as:
 ```go
 // bad
 type Roundtripper interface {
+  // interface definition
 }
 
 // good
 type RoundTripper interface {
+  // interface definition
 }
 ```
 
@@ -136,14 +138,17 @@ type RoundTripper interface {
 ```go
 // bad
 type ATSigner interface {
+  // interface definition
 }
 
 // good
 type AccessTokenSigner interface {
+  // interface definition
 }
 
 // good
 type HTTPServer interface {
+  // interface definition
 }
 ```
 
@@ -253,7 +258,7 @@ func (s *something) some_method() {}
 func (s *something) someMethod() {}
 ```
 
-- Do not use short form unless the function name is too long..
+- Do not use short form unless the function name is too long.
 
 ```go
 // bad
