@@ -17,7 +17,10 @@
 // Package pool provides grpc connection pool client
 package pool
 
-import "github.com/vdaas/vald/internal/backoff"
+import (
+	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/timeutil"
+)
 
 type Option func(*pool)
 
@@ -26,6 +29,7 @@ var (
 		WithSize(3),
 		WithStartPort(80),
 		WithEndPort(65535),
+		WithOldConnCloseDuration("1s"),
 	}
 )
 
@@ -101,5 +105,18 @@ func WithDialOptions(opts ...DialOption) Option {
 				p.dopts = opts
 			}
 		}
+	}
+}
+
+func WithOldConnCloseDuration(dur string) Option {
+	return func(p *pool) {
+		if len(dur) == 0 {
+			return
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return
+		}
+		p.roccd = d
 	}
 }

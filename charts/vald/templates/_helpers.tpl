@@ -451,6 +451,7 @@ connection_pool:
   enable_rebalance: {{ default .default.connection_pool.enable_rebalance .Values.connection_pool.enable_rebalance }}
   rebalance_duration: {{ default .default.connection_pool.rebalance_duration .Values.connection_pool.rebalance_duration | quote }}
   size: {{ default .default.connection_pool.size .Values.connection_pool.size }}
+  old_conn_close_duration: {{ default .default.connection_pool.old_conn_close_duration .Values.connection_pool.old_conn_close_duration }}
   {{- else }}
   {{- toYaml .default.connection_pool | nindent 2 }}
   {{- end }}

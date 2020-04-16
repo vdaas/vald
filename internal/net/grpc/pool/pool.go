@@ -64,6 +64,7 @@ type pool struct {
 	current       uint64
 	bo            backoff.Backoff
 	dopts         []DialOption
+	roccd         time.Duration // reconnection old connection closing duration
 	closing       atomic.Value
 	isIP          bool
 	reconnectHash string
@@ -126,23 +127,11 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 	if p.isIP {
 		return p.connect(ctx)
 	}
-	addrs, err := net.DefaultResolver.LookupIPAddr(ctx, p.host)
+	ips, err := p.lookupIPAddr(ctx)
 	if err != nil {
 		return p.connect(ctx)
 	}
-	ips := make([]string, 0, len(addrs))
-
-	for _, ip := range addrs {
-		ips = append(ips, ip.String())
-	}
-
-	sort.Strings(ips)
-
 	p.reconnectHash = strings.Join(ips, "-")
-
-	for uint64(len(ips)) < p.size {
-		ips = append(ips, ips...)
-	}
 
 	for i := range p.pool {
 		select {
@@ -150,10 +139,14 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 			return p, nil
 		default:
 			var (
-				c    = p.pool[i].Load()
-				conn *ClientConn
-				addr = fmt.Sprintf("%s:%d", ips[i], p.port)
+				conn   *ClientConn
+				addr   = fmt.Sprintf("%s:%d", ips[i%len(ips)], p.port)
+				pc, ok = p.load(i)
 			)
+			if ok && pc != nil && pc.addr == addr && isHealthy(pc.conn) {
+				// TODO maybe we should check neigbour pool slice if new addrs come.
+				continue
+			}
 			log.Debugf("establishing balanced connection to %s", addr)
 			conn, err := p.dial(ctx, addr)
 			if err != nil {
@@ -163,9 +156,15 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 				conn: conn,
 				addr: addr,
 			})
-			if c != nil {
-				pc, ok := c.(*poolConn)
-				if ok && pc != nil && pc.conn != nil {
+			if pc != nil {
+				log.Debugf("waiting for old connection to %s closing...", pc.addr)
+				t := time.NewTimer(p.roccd)
+				select {
+				case <-ctx.Done():
+					t.Stop()
+					return p, ctx.Err()
+				case <-t.C:
+					t.Stop()
 					err = pc.conn.Close()
 					if err != nil {
 						log.Debugf("failed to close pool connection addr = %s\terror = %v", pc.addr, err)
@@ -178,6 +177,13 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 	return p, nil
 }
 
+func (p *pool) load(idx int) (pc *poolConn, ok bool) {
+	if c := p.pool[idx].Load(); c != nil {
+		pc, ok = c.(*poolConn)
+	}
+	return
+}
+
 func (p *pool) connect(ctx context.Context) (c Conn, err error) {
 	p.reconnectHash = p.host
 	for i := range p.pool {
@@ -186,9 +192,13 @@ func (p *pool) connect(ctx context.Context) (c Conn, err error) {
 			return p, nil
 		default:
 			var (
-				c    = p.pool[i].Load()
-				conn *ClientConn
+				conn   *ClientConn
+				pc, ok = p.load(i)
 			)
+			if ok && pc != nil && isHealthy(pc.conn) {
+				continue
+			}
+			log.Debugf("establishing same connection to %s", p.addr)
 			conn, err := p.dial(ctx, p.addr)
 			if err != nil {
 				continue
@@ -197,9 +207,15 @@ func (p *pool) connect(ctx context.Context) (c Conn, err error) {
 				conn: conn,
 				addr: p.addr,
 			})
-			if c != nil {
-				pc, ok := c.(*poolConn)
-				if ok && pc != nil && pc.conn != nil {
+			if pc != nil {
+				log.Debugf("waiting for old connection to %s closing...", pc.addr)
+				t := time.NewTimer(p.roccd)
+				select {
+				case <-ctx.Done():
+					t.Stop()
+					return p, ctx.Err()
+				case <-t.C:
+					t.Stop()
 					err = pc.conn.Close()
 					if err != nil {
 						log.Debugf("failed to close pool connection addr = %s\terror = %v", pc.addr, err)
@@ -274,6 +290,10 @@ func (p *pool) IsHealthy(ctx context.Context) bool {
 				conn: conn,
 				addr: pc.addr,
 			})
+			err = pc.conn.Close()
+			if err != nil {
+				log.Warn(err)
+			}
 		}
 	}
 	return true
@@ -292,7 +312,7 @@ func (p *pool) Get() (*ClientConn, bool) {
 }
 
 func (p *pool) get(retry int) (*ClientConn, bool) {
-	if atomic.LoadUint64(&p.current) > math.MaxUint64-2 {
+	if atomic.LoadUint64(&p.current) >= math.MaxUint64-2 {
 		atomic.StoreUint64(&p.current, 0)
 	}
 	res := p.pool[atomic.AddUint64(&p.current, 1)%uint64(len(p.pool))].Load()
@@ -317,22 +337,58 @@ func (p *pool) Size() uint64 {
 	return p.size
 }
 
+func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
+	addrs, err := net.DefaultResolver.LookupIPAddr(ctx, p.host)
+	if err != nil {
+		return nil, err
+	}
+	ips = make([]string, 0, len(addrs))
+
+	const network = "tcp"
+	for _, ip := range addrs {
+		ipStr := ip.String()
+		if net.IsIPv6(ipStr) && !strings.Contains(ipStr, "[") {
+			ipStr = fmt.Sprintf("[%s]", ipStr)
+		}
+		var conn net.Conn
+		addr := fmt.Sprintf("%s:%d", ipStr, p.port)
+		if net.DefaultResolver.Dial != nil {
+			ctx, cancel := context.WithTimeout(ctx, time.Millisecond*10)
+			conn, err = net.DefaultResolver.Dial(ctx, network, addr)
+			cancel()
+		} else {
+			var d net.Dialer
+			conn, err = d.DialContext(ctx, network, addr)
+		}
+		if err != nil {
+			log.Warn(err)
+			continue
+		}
+		if conn != nil {
+			err = conn.Close()
+			if err != nil {
+				log.Warn(err)
+			}
+		}
+		ips = append(ips, ipStr)
+	}
+
+	sort.Strings(ips)
+
+	return ips, nil
+}
+
 func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
 	if len(p.reconnectHash) == 0 {
 		return p.Connect(ctx)
 	}
-	addrs, err := net.DefaultResolver.LookupIPAddr(ctx, p.host)
+	ips, err := p.lookupIPAddr(ctx)
 	if err != nil {
 		if !p.IsHealthy(ctx) {
 			return p.connect(ctx)
 		}
 		return p, nil
 	}
-	ips := make([]string, 0, len(addrs))
-	for _, ip := range addrs {
-		ips = append(ips, ip.String())
-	}
-	sort.Strings(ips)
 	if !p.IsHealthy(ctx) || p.reconnectHash != strings.Join(ips, "-") || force {
 		return p.Connect(ctx)
 	}

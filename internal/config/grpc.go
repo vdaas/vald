@@ -56,9 +56,10 @@ type DialOption struct {
 }
 
 type ConnectionPool struct {
-	EnableRebalance   bool   `json:"enable_rebalance" yaml:"enable_rebalance"`
-	RebalanceDuration string `json:"rebalance_duration" yaml:"rebalance_duration"`
-	Size              int    `json:"size" yaml:"size"`
+	EnableRebalance      bool   `json:"enable_rebalance" yaml:"enable_rebalance"`
+	RebalanceDuration    string `json:"rebalance_duration" yaml:"rebalance_duration"`
+	Size                 int    `json:"size" yaml:"size"`
+	OldConnCloseDuration string `json:"old_conn_close_duration" yaml:"old_conn_close_duration"`
 }
 
 type GRPCClientKeepalive struct {
@@ -81,6 +82,7 @@ func (g *GRPCClient) Bind() *GRPCClient {
 
 	if g.ConnectionPool != nil {
 		g.ConnectionPool.RebalanceDuration = GetActualValue(g.ConnectionPool.RebalanceDuration)
+		g.ConnectionPool.OldConnCloseDuration = GetActualValue(g.ConnectionPool.OldConnCloseDuration)
 	} else {
 		g.ConnectionPool = new(ConnectionPool)
 	}
@@ -135,6 +137,7 @@ func (g *GRPCClient) Opts() []grpc.Option {
 	opts = append(opts,
 		grpc.WithHealthCheckDuration(g.HealthCheckDuration),
 		grpc.WithConnectionPoolSize(g.ConnectionPool.Size),
+		grpc.WithOldConnCloseDuration(g.ConnectionPool.OldConnCloseDuration),
 	)
 	if g.Addrs != nil && len(g.Addrs) != 0 {
 		opts = append(opts,

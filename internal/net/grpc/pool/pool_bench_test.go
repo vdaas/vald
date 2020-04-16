@@ -31,8 +31,8 @@ import (
 )
 
 const (
-	DefaultServerAddr = ":5001"
-	DefaultPoolSize   = 100
+	DefaultServerAddr = "localhost:5001"
+	DefaultPoolSize   = 10
 )
 
 type server struct {
@@ -94,7 +94,9 @@ func do(b *testing.B, conn *ClientConn) {
 func Benchmark_ConnPool(b *testing.B) {
 	defer ListenAndServe(b, DefaultServerAddr)()
 
-	pool, err := New(context.Background(),
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	pool, err := New(ctx,
 		WithAddr(DefaultServerAddr),
 		WithSize(DefaultPoolSize),
 		WithDialOptions(grpc.WithInsecure()),
@@ -102,13 +104,22 @@ func Benchmark_ConnPool(b *testing.B) {
 	if err != nil {
 		b.Error(err)
 	}
+	pool, err = pool.Connect(ctx)
+	if err != nil {
+		b.Error(err)
+	}
 
+	b.StopTimer()
+	b.ResetTimer()
+	b.ReportAllocs()
+	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		conn, ok := pool.Get()
 		if ok {
 			do(b, conn)
 		}
 	}
+	b.StopTimer()
 }
 
 func Benchmark_StaticDial(b *testing.B) {
@@ -122,16 +133,25 @@ func Benchmark_StaticDial(b *testing.B) {
 	conns := new(sync.Map)
 	conns.Store(DefaultServerAddr, conn)
 
+	b.StopTimer()
+	b.ResetTimer()
+	b.ReportAllocs()
+	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		val, _ := conns.Load(DefaultServerAddr)
-		do(b, val.(*ClientConn))
+		val, ok := conns.Load(DefaultServerAddr)
+		if ok {
+			do(b, val.(*ClientConn))
+		}
 	}
+	b.StopTimer()
 }
 
 func BenchmarkParallel_ConnPool(b *testing.B) {
 	defer ListenAndServe(b, DefaultServerAddr)()
 
-	pool, err := New(context.Background(),
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	pool, err := New(ctx,
 		WithAddr(DefaultServerAddr),
 		WithSize(DefaultPoolSize),
 		WithDialOptions(grpc.WithInsecure()),
@@ -139,7 +159,15 @@ func BenchmarkParallel_ConnPool(b *testing.B) {
 	if err != nil {
 		b.Error(err)
 	}
+	pool, err = pool.Connect(ctx)
+	if err != nil {
+		b.Error(err)
+	}
 
+	b.StopTimer()
+	b.ResetTimer()
+	b.ReportAllocs()
+	b.StartTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			conn, ok := pool.Get()
@@ -148,6 +176,7 @@ func BenchmarkParallel_ConnPool(b *testing.B) {
 			}
 		}
 	})
+	b.StopTimer()
 }
 
 func BenchmarkParallel_StaticDial(b *testing.B) {
@@ -161,10 +190,17 @@ func BenchmarkParallel_StaticDial(b *testing.B) {
 	conns := new(sync.Map)
 	conns.Store(DefaultServerAddr, conn)
 
+	b.StopTimer()
+	b.ResetTimer()
+	b.ReportAllocs()
+	b.StartTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			val, _ := conns.Load(DefaultServerAddr)
-			do(b, val.(*ClientConn))
+			val, ok := conns.Load(DefaultServerAddr)
+			if ok {
+				do(b, val.(*ClientConn))
+			}
 		}
 	})
+	b.StopTimer()
 }

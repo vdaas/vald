@@ -85,6 +85,7 @@ type gRPCClient struct {
 	enablePoolRebalance bool
 	dopts               []DialOption
 	copts               []CallOption
+	roccd               string // reconnection old connection closing duration
 	eg                  errgroup.Group
 	bo                  backoff.Backoff
 }
