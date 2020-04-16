@@ -20,7 +20,7 @@
 - [Dependency management and Build](#dependency-management-and-build)
 - [Test](#test)
   - [Table-Driven-Test](#table-driven-test)
-  - [The steps to create a Table-Driven-Test.](#the-steps-to-create-a-table-driven-test)
+  - [The steps to create a Table-Driven-Test](#the-steps-to-create-a-table-driven-test)
 
 ## Introduction
 
@@ -436,42 +436,42 @@ tests := map[string]func(t *testing.T) test {
 }
 ```
 
-### The steps to create a Table-Driven-Test.
+### The steps to create a Table-Driven-Test
 
 1. `args` structure
 
-If there are two or more arguments to be passed to the method, create a `args` structure. If there is only one argument, do not create an `args` structure.
+    If there are two or more arguments to be passed to the method, create a `args` structure. If there is only one argument, do not create an `args` structure.
 
-```go
-type args struct {
-    host string
-    port string
-}
-```
+    ```go
+    type args struct {
+        host string
+        port string
+    }
+    ```
 
 1. `field` structure
 
-If you create an object and test its methods, create a `field` struct if the object has two or more fields to initialize. If there is only one field, do not create `field` structure.
+    If you create an object and test its methods, create a `field` struct if the object has two or more fields to initialize. If there is only one field, do not create `field` structure.
 
-```go
-type field struct {
-    host string
-    port string
-}
-```
+    ```go
+    type field struct {
+        host string
+        port string
+    }
+    ```
 
 1. `test` structure
 
-`test` structure has `args` and `field` structure and `checkFunc` function. If you need one of `args` and `field` structure, create `field` and `args` structure.
-The `checkFunc` function is used to check the return value of the function being tested.
+    `test` structure has `args` and `field` structure and `checkFunc` function. If you need one of `args` and `field` structure, create `field` and `args` structure.
+    The `checkFunc` function is used to check the return value of the function being tested.
 
-```go
-type test struct {
-    args args
-    field field
-    checkFunc func(t *testing.T, err error)
-}
-```
+    ```go
+    type test struct {
+        args args
+        field field
+        checkFunc func(t *testing.T, err error)
+    }
+    ```
 
 Example:
 
