@@ -289,6 +289,8 @@ func (s *something) SetSignedTok(st string) {
 
 All errors should define in [internal/errors package](../../internal/errors). All errors should be start with `Err` prefix, and all errors should be handle if possible.
 
+Please use [internal/errgroup](../../internal/errgroup) for synchronized error handling on multi-goroutine processing.
+
 ### Logging
 
 We define our own logging interface in [internal/log package](../../internal/log). By default we use [glg](https://github.com/kpango/glg) to do the logging internally.
