@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.28`
+Current chart version is `v0.0.29`
 
 Install
 ---
@@ -271,6 +271,7 @@ Configuration
 | defaults.grpc.client.call_option.max_send_msg_size | int | `0` | gRPC client call option max send message size |
 | defaults.grpc.client.call_option.wait_for_ready | bool | `true` | gRPC client call option wait for ready |
 | defaults.grpc.client.connection_pool.enable_rebalance | bool | `true` | enables gRPC client connection pool rebalance |
+| defaults.grpc.client.connection_pool.old_conn_close_duration | string | `"3s"` | makes delay before gRPC client connection closing during connection pool rebalance |
 | defaults.grpc.client.connection_pool.rebalance_duration | string | `"30m"` | gRPC client connection pool rebalance duration |
 | defaults.grpc.client.connection_pool.size | int | `3` | gRPC client connection pool size |
 | defaults.grpc.client.dial_option.enable_backoff | bool | `false` | gRPC client dial option backoff enabled |
@@ -300,7 +301,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.28"` | image tag |
+| defaults.image.tag | string | `"v0.0.29"` | image tag |
 | defaults.logging.format | string | `"raw"` | logging format |
 | defaults.logging.level | string | `"debug"` | logging level |
 | defaults.logging.logger | string | `"glg"` | logger name |
