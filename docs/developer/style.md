@@ -30,7 +30,7 @@ Please also read the [Contribution guideline](../../CONTRIBUTING.md) before you 
 
 ## Code Formatting and Naming Convension
 
-Code formatting and naming conventions affect coding readability and maintainability. Every developer has a different coding style, luckily Golang provides tools to format source code and checking for the potential issue in the source code. We suggest using [gofmt](https://golang.org/cmd/gofmt/) to format the source code in Vald, and [golint](https://github.com/golang/lint). We suggest everyone install the plugin for your editor to automatically format the code once you edit the code.
+Code formatting and naming conventions affect coding readability and maintainability. Every developer has a different coding style, luckily Golang provides tools to format source code and checking for the potential issue in the source code. We recommend using [goimports](https://github.com/golang/tools/tree/master/cmd/goimports) to format the source code in Vald, and [golangci-lint](https://github.com/golangci/golangci-lint) with `--enable-all` option. We suggest everyone install the plugin for your editor to format the code once you edit the code automatically.
 But having tools to format source code doesn't mean you do not need to care the formatting of the code, for example:
 
 ```go
@@ -99,7 +99,7 @@ package time
 package encodebase64
 
 // good
-package base64
+package base64 // inside the encoding/base64 folder
 ```
 
 - Should not be too general, for example `util` or `helper`, which will cause all the objects from different contexts to be store in one package. If you want to name the package as `util`,  please define the more specific package name more  `ioutil` or `httputil`.
