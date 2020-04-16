@@ -295,3 +295,12 @@ func WithTLSConfig(cfg *tls.Config) Option {
 		}
 	}
 }
+
+func WithOldConnCloseDuration(dur string) Option {
+	return func(g *gRPCClient) {
+		if len(dur) == 0 {
+			return
+		}
+		g.roccd = dur
+	}
+}

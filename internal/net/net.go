@@ -56,6 +56,10 @@ func IsLocal(host string) bool {
 		host == localIPv6
 }
 
+func Dial(network string, addr string) (conn Conn, err error) {
+	return net.Dial(network, addr)
+}
+
 func Parse(addr string) (host string, port uint16, isIP bool, err error) {
 	host, port, err = SplitHostPort(addr)
 	isIP = IsIPv6(host) || IsIPv4(host)

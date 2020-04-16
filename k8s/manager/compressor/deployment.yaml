@@ -37,7 +37,7 @@ spec:
       labels:
         app: vald-manager-compressor
       annotations:
-        checksum/configmap: eb12ab12a7b118d84999b7009136ad6b1eabf042c410461dddd5ca273eb219ae
+        checksum/configmap: 4307eb72f2182431e2581b22399efe435a890fcc45298528c909fa6a6d30f938
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-compressor

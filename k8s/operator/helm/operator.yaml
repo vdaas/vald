@@ -32,7 +32,7 @@ spec:
       serviceAccountName: vald-helm-operator
       containers:
         - name: vald-helm-operator
-          image: "vdaas/vald-helm-operator:v0.0.28"
+          image: "vdaas/vald-helm-operator:v0.0.29"
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
