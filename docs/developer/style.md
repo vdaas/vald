@@ -84,10 +84,10 @@ package ioutil
 
 ```go
 // bad
-package bytes
+package times
 
 // good
-package byte
+package time
 
 ```
 
@@ -167,7 +167,7 @@ type FileListener struct {
 }
 
 // Listener instance for HTTP
-type HttpListener struct {
+type HTTPListener struct {
    // implement listener interface
 }
 ```
