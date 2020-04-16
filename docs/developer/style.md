@@ -18,7 +18,6 @@
 - [Documentation](#documentation)
 - [Internal packages](#internal-packages)
 - [Dependency management and Build](#dependency-management-and-build)
-- [Style](#style)
 - [Test](#test)
   - [Table-Driven-Test](#table-driven-test)
   - [The steps to create a Table-Driven-Test.](#the-steps-to-create-a-table-driven-test)
@@ -323,17 +322,15 @@ Please refer to [godoc](https://godoc.org/github.com/vdaas/vald/internal) for th
 
 We should use `go mod tidy` to manage the `go.mod` file in the project.
 
-## Style
-
 ## Test
 
-The testing guideline has 2 important rules for the coding quality and readability
+The testing guideline has 3 important rules for the coding quality and readability:
 
 1. Use Table-Driven-Test
-2. Keep code coverage over 85%
+1. Keep code coverage over 85%
    - test coverage != high testing quality, but low coverage means bad testing quality
    - check with the following commands `go test -cover ./...`
-3. Test all use cases and error cases
+1. Test all use cases and error cases
 
 ### Table-Driven-Test
 
