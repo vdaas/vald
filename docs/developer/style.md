@@ -221,7 +221,7 @@ yamlString := "something"
 // good
 yamlStr := "something"
 
-// in some case it is acceptable and actually if is easier to read
+// in some case it is acceptable and actually if it is easier to read
 s := new(something)
 ```
 
