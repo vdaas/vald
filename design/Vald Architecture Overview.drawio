@@ -1,4 +1,4 @@
-<mxfile modified="2020-04-16T08:29:32.862Z" host="www.draw.io" agent="5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36" etag="BMeE2GKUgCOJaGQPJklt" version="12.9.8" type="github">
+<mxfile modified="2020-04-16T08:54:24.981Z" host="www.draw.io" agent="5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36" etag="RMcgVgRtPeAeI_-UUfzD" version="12.9.8" type="github">
   <diagram id="f106602c-feb2-e66a-4537-3a34d633f6aa" name="Page-1">
     <mxGraphModel dx="3080" dy="914" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="none" math="0" shadow="0">
       <root>
@@ -75,7 +75,7 @@
         <mxCell id="YN5pAbyHMoK7FyRYfOLS-73" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://github.com/kubernetes/community/raw/master/icons/png/resources/labeled/ing-128.png;" parent="1" vertex="1">
           <mxGeometry x="-1406.5" y="420.5" width="39" height="39" as="geometry" />
         </mxCell>
-        <mxCell id="YN5pAbyHMoK7FyRYfOLS-99" value="&lt;blockquote style=&quot;margin: 0 0 0 40px ; border: none ; padding: 0px&quot;&gt;&lt;blockquote style=&quot;margin: 0 0 0 40px ; border: none ; padding: 0px&quot;&gt;&lt;b&gt;&lt;font color=&quot;#999999&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/b&gt;&lt;/blockquote&gt;&lt;blockquote style=&quot;margin: 0 0 0 40px ; border: none ; padding: 0px&quot;&gt;&lt;b&gt;&lt;font color=&quot;#999999&quot;&gt;Vald Ingress&lt;/font&gt;&lt;/b&gt;&lt;/blockquote&gt;&lt;/blockquote&gt;" style="rounded=0;whiteSpace=wrap;html=1;shadow=1;glass=0;comic=0;strokeWidth=1;fontSize=16;fontColor=#000000;align=left;labelBackgroundColor=none;strokeColor=none;fillColor=#ffffff;verticalAlign=top;" parent="1" vertex="1">
+        <mxCell id="YN5pAbyHMoK7FyRYfOLS-99" value="&lt;blockquote style=&quot;margin: 0 0 0 40px ; border: none ; padding: 0px&quot;&gt;&lt;blockquote style=&quot;margin: 0 0 0 40px ; border: none ; padding: 0px&quot;&gt;&lt;b&gt;&lt;font color=&quot;#999999&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/b&gt;&lt;/blockquote&gt;&lt;blockquote style=&quot;margin: 0 0 0 40px ; border: none ; padding: 0px&quot;&gt;&lt;b&gt;&lt;font color=&quot;#999999&quot;&gt;Vald Gateway Ingress&lt;/font&gt;&lt;/b&gt;&lt;/blockquote&gt;&lt;/blockquote&gt;" style="rounded=0;whiteSpace=wrap;html=1;shadow=1;glass=0;comic=0;strokeWidth=1;fontSize=16;fontColor=#000000;align=left;labelBackgroundColor=none;strokeColor=none;fillColor=#ffffff;verticalAlign=top;" parent="1" vertex="1">
           <mxGeometry x="-1435.5" y="492.5" width="273" height="67" as="geometry" />
         </mxCell>
         <mxCell id="YN5pAbyHMoK7FyRYfOLS-101" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://github.com/kubernetes/community/raw/master/icons/png/resources/labeled/ing-128.png;" parent="1" vertex="1">
@@ -555,12 +555,12 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="YN5pAbyHMoK7FyRYfOLS-357" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jumpStyle=arc;orthogonalLoop=1;jettySize=auto;html=1;startSize=5;endArrow=openThin;endFill=0;endSize=5;strokeColor=#bdbdbd;strokeWidth=3;fontSize=30;fontColor=#999999;" parent="1" source="YN5pAbyHMoK7FyRYfOLS-285" edge="1">
+        <mxCell id="YN5pAbyHMoK7FyRYfOLS-357" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jumpStyle=arc;orthogonalLoop=1;jettySize=auto;html=1;startSize=5;endArrow=openThin;endFill=0;endSize=5;strokeColor=#bdbdbd;strokeWidth=3;fontSize=30;fontColor=#999999;exitX=0.25;exitY=0;exitDx=0;exitDy=0;" parent="1" source="YN5pAbyHMoK7FyRYfOLS-285" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="-839" y="1386.5" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="-839" y="1640.5" />
-              <mxPoint x="-839" y="1386.5" />
+              <mxPoint x="-620" y="1499" />
+              <mxPoint x="-839" y="1499" />
             </Array>
           </mxGeometry>
         </mxCell>
