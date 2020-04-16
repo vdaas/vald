@@ -24,7 +24,7 @@ spec:
   image:
     pullPolicy: Always
     repository: vdaas/vald-helm-operator
-    tag: v0.0.28
+    tag: v0.0.29
   name: vald-helm-operator
   nodeSelector: {}
   operator:

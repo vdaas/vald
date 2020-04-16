@@ -141,6 +141,7 @@ data:
           health_check_duration: "1s"
           connection_pool:
             enable_rebalance: true
+            old_conn_close_duration: 3s
             rebalance_duration: 30m
             size: 3
           backoff:
@@ -194,6 +195,7 @@ data:
           health_check_duration: "1s"
           connection_pool:
             enable_rebalance: true
+            old_conn_close_duration: 3s
             rebalance_duration: 30m
             size: 3
           backoff:

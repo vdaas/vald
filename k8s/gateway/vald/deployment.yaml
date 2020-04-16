@@ -37,7 +37,7 @@ spec:
       labels:
         app: vald-gateway
       annotations:
-        checksum/configmap: cb7e31dca959a6a9a27718f3f8c72c4c601a92a04244ed5f6cefbbc57c065fda
+        checksum/configmap: 1ea9b8fb5ff586edd598a20f8c79eb4a27fc1d888ac450786e463ba7031d051e
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-gateway
@@ -98,10 +98,10 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - vald-gateway
+                  - key: app
+                    operator: In
+                    values:
+                    - vald-gateway
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []

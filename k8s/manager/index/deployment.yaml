@@ -38,7 +38,7 @@ spec:
       labels:
         app: vald-manager-index
       annotations:
-        checksum/configmap: c9046463e75c2d5e1d05a66a1234879127c66cd6be9d7eb8d5a56cb29abbae11
+        checksum/configmap: 6118669303b5d06f1f3c1419e292cd74053fdedd97c8fdaa6a69c8c0700fc312
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-index
