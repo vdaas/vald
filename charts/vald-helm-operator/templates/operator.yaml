@@ -33,6 +33,13 @@ spec:
         - name: {{ .Values.name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - "--reconcile-period {{ .Values.reconcilePeriod }}"
+            - "--max-workers {{ .Values.maxWorkers }}"
+            - "--zap-encoder {{ .Values.logging.format }}"
+            - "--zap-level {{ .Values.logging.level }}"
+            - "--zap-stacktrace-level {{ .Values.logging.stacktraceLevel }}"
+            - "--zap-time-encoding {{ .Values.logging.timeEncoding }}"
           env:
             - name: WATCH_NAMESPACE
               valueFrom:
@@ -50,5 +57,13 @@ spec:
           {{- end }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
+        {{- toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
         {{- toYaml . | indent 8 }}
     {{- end }}

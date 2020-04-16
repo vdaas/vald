@@ -1,19 +1,35 @@
 Release {{ .Release.Name }} is created.
 
-Once the {{ .Values.name }} deployment in the {{ .Release.Name }} namespace is ready, you can create ValdRelease resource like:
+Once the {{ .Values.name }} deployment in the {{ .Release.Name }} namespace is ready, you can create ValdRelease and ValdHelmOperatorRelease resources.
+
+If you'd like to manage your release {{ .Release.Name }} by the operator, please create ValdHelmOperatorRelease resource like the following:
+
+kubectl apply -f - <<EOF
+apiVersion: vald.vdaas.org/v1alpha1
+kind: ValdHelmOperatorRelease
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+# the values of Helm chart for vald-helm-operator can be placed under the `spec` field.
+spec:
+  {{- toYaml .Values | nindent 2 }}
+EOF
+
+you can get statuses of ValdHelmOperatorRelease resource like:
+
+kubectl get valdhelmoperatorrelease
+
+If you'd like to create your Vald cluster, please create ValdRelease resource like:
 
 kubectl apply -f - <<EOF
 apiVersion: vald.vdaas.org/v1alpha1
 kind: ValdRelease
 metadata:
   name: vald-cluster
+# the values of Helm chart for Vald can be placed under the `spec` field.
 spec: {}
 EOF
 
 You can get statuses of ValdRelease resource like:
 
 kubectl get valdrelease
-
-Also you can get statuses of ValdHelmOperatorRelease resource like:
-
-kubectl get valdhelmoperatorrelease
