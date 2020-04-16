@@ -64,6 +64,7 @@ type pool struct {
 	current       uint64
 	bo            backoff.Backoff
 	dopts         []DialOption
+	roccd         time.Duration // reconnection old connection closing duration
 	closing       atomic.Value
 	isIP          bool
 	reconnectHash string
@@ -138,10 +139,14 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 			return p, nil
 		default:
 			var (
-				c    = p.pool[i].Load()
-				conn *ClientConn
-				addr = fmt.Sprintf("%s:%d", ips[i%len(ips)], p.port)
+				conn   *ClientConn
+				addr   = fmt.Sprintf("%s:%d", ips[i%len(ips)], p.port)
+				pc, ok = p.load(i)
 			)
+			if ok && pc != nil && pc.addr == addr && isHealthy(pc.conn) {
+				// TODO maybe we should check neigbour pool slice if new addrs come.
+				continue
+			}
 			log.Debugf("establishing balanced connection to %s", addr)
 			conn, err := p.dial(ctx, addr)
 			if err != nil {
@@ -151,9 +156,15 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 				conn: conn,
 				addr: addr,
 			})
-			if c != nil {
-				pc, ok := c.(*poolConn)
-				if ok && pc != nil && pc.conn != nil {
+			if pc != nil {
+				log.Debugf("waiting for old connection to %s closing...", pc.addr)
+				t := time.NewTimer(p.roccd)
+				select {
+				case <-ctx.Done():
+					t.Stop()
+					return p, ctx.Err()
+				case <-t.C:
+					t.Stop()
 					err = pc.conn.Close()
 					if err != nil {
 						log.Debugf("failed to close pool connection addr = %s\terror = %v", pc.addr, err)
@@ -166,6 +177,13 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 	return p, nil
 }
 
+func (p *pool) load(idx int) (pc *poolConn, ok bool) {
+	if c := p.pool[idx].Load(); c != nil {
+		pc, ok = c.(*poolConn)
+	}
+	return
+}
+
 func (p *pool) connect(ctx context.Context) (c Conn, err error) {
 	p.reconnectHash = p.host
 	for i := range p.pool {
@@ -174,9 +192,13 @@ func (p *pool) connect(ctx context.Context) (c Conn, err error) {
 			return p, nil
 		default:
 			var (
-				c    = p.pool[i].Load()
-				conn *ClientConn
+				conn   *ClientConn
+				pc, ok = p.load(i)
 			)
+			if ok && pc != nil && isHealthy(pc.conn) {
+				continue
+			}
+			log.Debugf("establishing same connection to %s", p.addr)
 			conn, err := p.dial(ctx, p.addr)
 			if err != nil {
 				continue
@@ -185,9 +207,15 @@ func (p *pool) connect(ctx context.Context) (c Conn, err error) {
 				conn: conn,
 				addr: p.addr,
 			})
-			if c != nil {
-				pc, ok := c.(*poolConn)
-				if ok && pc != nil && pc.conn != nil {
+			if pc != nil {
+				log.Debugf("waiting for old connection to %s closing...", pc.addr)
+				t := time.NewTimer(p.roccd)
+				select {
+				case <-ctx.Done():
+					t.Stop()
+					return p, ctx.Err()
+				case <-t.C:
+					t.Stop()
 					err = pc.conn.Close()
 					if err != nil {
 						log.Debugf("failed to close pool connection addr = %s\terror = %v", pc.addr, err)
@@ -262,6 +290,10 @@ func (p *pool) IsHealthy(ctx context.Context) bool {
 				conn: conn,
 				addr: pc.addr,
 			})
+			err = pc.conn.Close()
+			if err != nil {
+				log.Warn(err)
+			}
 		}
 	}
 	return true
@@ -325,7 +357,8 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 			conn, err = net.DefaultResolver.Dial(ctx, network, addr)
 			cancel()
 		} else {
-			conn, err = net.Dial(network, addr)
+			var d net.Dialer
+			conn, err = d.DialContext(ctx, network, addr)
 		}
 		if err != nil {
 			log.Warn(err)
