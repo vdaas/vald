@@ -63,22 +63,23 @@ func NewQueue(opts ...QueueOption) (Queue, error) {
 func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 1)
 
+	s := make([]JobFunc, 0, q.buffer)
+
+	inFn := func(j JobFunc) {
+		s = append(s, j)
+		q.qLen.Store(uint64(len(s)))
+	}
+	outFn := func() {
+		s = s[1:]
+		q.qLen.Store(uint64(len(s)))
+	}
+
+	q.running.Store(true)
+
 	q.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(q.inCh)
 		defer close(q.outCh)
 
-		s := make([]JobFunc, 0, q.buffer)
-
-		inFn := func(j JobFunc) {
-			s = append(s, j)
-			q.qLen.Store(uint64(len(s)))
-		}
-		outFn := func() {
-			s = s[1:]
-			q.qLen.Store(uint64(len(s)))
-		}
-
-		q.running.Store(true)
 		for {
 			if len(s) > 0 {
 				j := s[0]
