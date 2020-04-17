@@ -61,6 +61,9 @@ func NewQueue(opts ...QueueOption) (Queue, error) {
 }
 
 func (q *queue) Start(ctx context.Context) (<-chan error, error) {
+	if q.running.Load().(bool){
+		return nil, nil
+	}
 	ech := make(chan error, 1)
 
 	s := make([]JobFunc, 0, q.buffer)
