@@ -92,6 +92,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithCompressorWorker(
 			worker.WithName("compressor"),
 			worker.WithLimitation(cfg.Compressor.ConcurrentLimit),
+			worker.WithQueueOption(worker.WithQueueCheckDuration(
+				cfg.Compressor.QueueCheckDuration,
+			)),
 		),
 		service.WithCompressorErrGroup(eg),
 	)

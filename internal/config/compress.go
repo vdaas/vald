@@ -65,10 +65,14 @@ type Compressor struct {
 
 	// ConcurrentLimit represents limitation of compression worker concurrency
 	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
+
+	// QueueCheckDuration represents duration of queue daemon block
+	QueueCheckDuration string `json:"queue_check_duration" yaml:"queue_check_duration"`
 }
 
 func (c *Compressor) Bind() *Compressor {
 	c.CompressAlgorithm = GetActualValue(c.CompressAlgorithm)
+	c.QueueCheckDuration = GetActualValue(c.QueueCheckDuration)
 
 	return c
 }

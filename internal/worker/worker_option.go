@@ -57,3 +57,17 @@ func WithErrGroup(eg errgroup.Group) WorkerOption {
 		return nil
 	}
 }
+
+func WithQueueOption(opts ...QueueOption) WorkerOption {
+	return func(w *worker) error {
+		if opts == nil {
+			return nil
+		}
+		if w.qopts != nil {
+			w.qopts = append(w.qopts, opts...)
+		} else {
+			w.qopts = opts
+		}
+		return nil
+	}
+}
