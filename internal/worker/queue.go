@@ -74,8 +74,6 @@ func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 		q.qLen.Store(uint64(len(s)))
 	}
 
-	q.running.Store(true)
-
 	q.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(q.inCh)
 		defer close(q.outCh)
@@ -103,6 +101,8 @@ func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 			}
 		}
 	}))
+
+	q.running.Store(true)
 
 	return ech, nil
 }

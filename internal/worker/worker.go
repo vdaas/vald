@@ -137,17 +137,19 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 				continue
 			}
 
-			if job != nil {
-				eg.Go(safety.RecoverFunc(func() (err error) {
-					defer atomic.AddUint64(&w.completedCount, 1)
+			eg.Go(safety.RecoverFunc(func() (err error) {
+				defer atomic.AddUint64(&w.completedCount, 1)
+
+				if job != nil {
 					err = job(ctx)
 					if err != nil {
 						log.Debug(err)
 					}
 
-					return err
-				}))
-			}
+				}
+
+				return err
+			}))
 		}
 	}))
 
