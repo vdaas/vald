@@ -1324,7 +1324,7 @@ backupManager:
       # backupManager.cassandra.config.default_idempotence -- default idempotence enabled
       default_idempotence: false
       # backupManager.cassandra.config.write_coalesce_wait_time -- write coalesce wait time
-      write_coalesce_wait_time: 1ms
+      write_coalesce_wait_time: 200µs
       # backupManager.cassandra.config.meta_table -- table name of backup
       meta_table: meta_vector
       pool_config:
@@ -1826,7 +1826,7 @@ meta:
       # meta.cassandra.config.default_idempotence -- default idempotence enabled
       default_idempotence: false
       # meta.cassandra.config.write_coalesce_wait_time -- write coalesce wait time
-      write_coalesce_wait_time: 1ms
+      write_coalesce_wait_time: 200µs
       # meta.cassandra.config.meta_table -- table name of backup
       meta_table: meta_vector
       pool_config:
