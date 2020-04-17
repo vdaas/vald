@@ -21,6 +21,7 @@ import (
 	"context"
 	"reflect"
 	"sync/atomic"
+	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -37,6 +38,7 @@ type Queue interface {
 type queue struct {
 	buffer  int
 	eg      errgroup.Group
+	qcdur   time.Duration // queue check duration
 	inCh    chan JobFunc
 	outCh   chan JobFunc
 	qLen    atomic.Value
@@ -71,15 +73,16 @@ func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 		defer close(q.inCh)
 		defer q.running.Store(false)
 		s := make([]JobFunc, 0, q.buffer)
-		var head JobFunc
+		tick := time.NewTicker(q.qcdur)
+		defer tick.Stop()
 		for {
-			if head != nil && len(q.outCh) == 0 && cap(q.inCh) != len(q.inCh) {
+			if len(s) > 0 && len(q.outCh) == 0 && cap(q.inCh) != len(q.inCh) {
 				select {
 				case <-ctx.Done():
 					return ctx.Err()
-				case q.outCh <- head:
+				case q.outCh <- s[0]:
 					s = s[1:]
-					head = nil
+				case <-tick.C:
 				}
 			} else {
 				select {
@@ -87,7 +90,7 @@ func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 					return ctx.Err()
 				case in := <-q.inCh:
 					s = append(s, in)
-					head = s[0]
+				case <-tick.C:
 				}
 			}
 			q.qLen.Store(uint64(len(s)))
@@ -121,8 +124,16 @@ func (q *queue) Push(ctx context.Context, job JobFunc) error {
 }
 
 func (q *queue) Pop(ctx context.Context) (JobFunc, error) {
+	return q.pop(ctx, q.Len())
+}
+
+func (q *queue) pop(ctx context.Context, retry uint64) (JobFunc, error) {
 	if !q.isRunning() {
 		return nil, errors.ErrQueueIsNotRunning()
+	}
+
+	if retry == 0 {
+		return nil, errors.ErrJobFuncIsNil()
 	}
 
 	select {
@@ -132,8 +143,9 @@ func (q *queue) Pop(ctx context.Context) (JobFunc, error) {
 		if job != nil {
 			return job, nil
 		}
-		return nil, errors.ErrJobFuncIsNil()
 	}
+	retry--
+	return q.pop(ctx, retry)
 }
 
 func (q *queue) Len() uint64 {

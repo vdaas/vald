@@ -18,7 +18,10 @@
 package worker
 
 import (
+	"time"
+
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/timeutil"
 )
 
 type QueueOption func(q *queue) error
@@ -27,6 +30,7 @@ var (
 	defaultQueueOpts = []QueueOption{
 		WithQueueBuffer(10),
 		WithQueueErrGroup(errgroup.Get()),
+		WithQueueCheckDuration("5s"),
 	}
 )
 
@@ -44,6 +48,20 @@ func WithQueueErrGroup(eg errgroup.Group) QueueOption {
 		if eg != nil {
 			q.eg = eg
 		}
+		return nil
+	}
+}
+
+func WithQueueCheckDuration(dur string) QueueOption {
+	return func(q *queue) error {
+		if len(dur) == 0 {
+			return nil
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			d = time.Second * 5
+		}
+		q.qcdur = d
 		return nil
 	}
 }

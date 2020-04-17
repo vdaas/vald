@@ -49,6 +49,7 @@ type worker struct {
 	running        atomic.Value
 	eg             errgroup.Group
 	queue          Queue
+	qopts          []QueueOption
 	requestedCount uint64
 	completedCount uint64
 }
@@ -65,8 +66,10 @@ func New(opts ...WorkerOption) (Worker, error) {
 
 	var err error
 	w.queue, err = NewQueue(
-		WithQueueBuffer(w.limitation),
-		WithQueueErrGroup(w.eg),
+		append([]QueueOption{
+			WithQueueBuffer(w.limitation),
+			WithQueueErrGroup(w.eg),
+		}, w.qopts...)...,
 	)
 	if err != nil {
 		return nil, err
@@ -120,12 +123,13 @@ func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (w *worker) startJobLoop(ctx context.Context) <-chan error {
-	ech := make(chan error, 1)
+	ech := make(chan error, w.limitation)
 
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
 		eg, ctx := errgroup.New(ctx)
 		eg.Limitation(w.limitation)
-
+		limitation := make(chan struct{}, w.limitation)
+		defer close(limitation)
 		for {
 			select {
 			case <-ctx.Done():
@@ -133,7 +137,7 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 					return errors.Wrap(eg.Wait(), err.Error())
 				}
 				return eg.Wait()
-			default:
+			case limitation <- struct{}{}:
 			}
 
 			job, err := w.queue.Pop(ctx)
@@ -144,13 +148,16 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 
 			if job != nil {
 				eg.Go(safety.RecoverFunc(func() (err error) {
-					defer atomic.AddUint64(&w.completedCount, 1)
-
 					err = job(ctx)
 					if err != nil {
 						log.Debug(err)
+						ech <- err
 					}
-
+					atomic.AddUint64(&w.completedCount, 1)
+					select {
+					case <-limitation:
+					case <-ctx.Done():
+					}
 					return err
 				}))
 			}
