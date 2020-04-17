@@ -55,7 +55,7 @@ func NewQueue(opts ...QueueOption) (Queue, error) {
 	q.running.Store(false)
 
 	q.inCh = make(chan JobFunc, q.buffer)
-	q.outCh = make(chan JobFunc)
+	q.outCh = make(chan JobFunc, 1)
 
 	return q, nil
 }
@@ -66,42 +66,31 @@ func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 	}
 
 	ech := make(chan error, 1)
-
-	s := make([]JobFunc, 0, q.buffer)
-
-	inFn := func(j JobFunc) {
-		s = append(s, j)
-		q.qLen.Store(uint64(len(s)))
-	}
-	outFn := func() {
-		s = s[1:]
-		q.qLen.Store(uint64(len(s)))
-	}
-
 	q.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(q.outCh)
 		defer close(q.inCh)
 		defer q.running.Store(false)
-
+		s := make([]JobFunc, 0, q.buffer)
+		var head JobFunc
 		for {
-			if len(s) > 0 {
-				j := s[0]
+			if head != nil && len(q.outCh) == 0 && cap(q.inCh) != len(q.inCh) {
 				select {
 				case <-ctx.Done():
 					return ctx.Err()
-				case q.outCh <- j:
-					outFn()
-				case j := <-q.inCh:
-					inFn(j)
+				case q.outCh <- head:
+					s = s[1:]
+					head = nil
 				}
 			} else {
 				select {
 				case <-ctx.Done():
 					return ctx.Err()
-				case j := <-q.inCh:
-					inFn(j)
+				case in := <-q.inCh:
+					s = append(s, in)
+					head = s[0]
 				}
 			}
+			q.qLen.Store(uint64(len(s)))
 		}
 	}))
 
@@ -140,11 +129,10 @@ func (q *queue) Pop(ctx context.Context) (JobFunc, error) {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	case job := <-q.outCh:
-		if job == nil {
-			return nil, errors.ErrJobFuncIsNil()
+		if job != nil {
+			return job, nil
 		}
-
-		return job, nil
+		return nil, errors.ErrJobFuncIsNil()
 	}
 }
 
