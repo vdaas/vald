@@ -79,8 +79,8 @@ func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 	}
 
 	q.eg.Go(safety.RecoverFunc(func() (err error) {
-		defer close(q.inCh)
 		defer close(q.outCh)
+		defer close(q.inCh)
 		defer q.running.Store(false)
 
 		for {
@@ -115,12 +115,12 @@ func (q *queue) isRunning() bool {
 }
 
 func (q *queue) Push(ctx context.Context, job JobFunc) error {
-	if !q.isRunning() {
-		return errors.ErrQueueIsNotRunning()
-	}
-
 	if job == nil {
 		return errors.ErrJobFuncIsNil()
+	}
+
+	if !q.isRunning() {
+		return errors.ErrQueueIsNotRunning()
 	}
 
 	select {
@@ -141,7 +141,7 @@ func (q *queue) Pop(ctx context.Context) (JobFunc, error) {
 		return nil, ctx.Err()
 	case job := <-q.outCh:
 		if job == nil {
-			return job, errors.ErrJobFuncIsNil()
+			return nil, errors.ErrJobFuncIsNil()
 		}
 
 		return job, nil
