@@ -61,9 +61,10 @@ func NewQueue(opts ...QueueOption) (Queue, error) {
 }
 
 func (q *queue) Start(ctx context.Context) (<-chan error, error) {
-	if q.running.Load().(bool){
-		return nil, nil
+	if q.isRunning() {
+		return nil, errors.ErrQueueIsAlreadyRunning()
 	}
+
 	ech := make(chan error, 1)
 
 	s := make([]JobFunc, 0, q.buffer)
@@ -80,13 +81,13 @@ func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 	q.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(q.inCh)
 		defer close(q.outCh)
+		defer q.running.Store(false)
 
 		for {
 			if len(s) > 0 {
 				j := s[0]
 				select {
 				case <-ctx.Done():
-					q.pause()
 					return ctx.Err()
 				case q.outCh <- j:
 					outFn()
@@ -96,7 +97,6 @@ func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 			} else {
 				select {
 				case <-ctx.Done():
-					q.pause()
 					return ctx.Err()
 				case j := <-q.inCh:
 					inFn(j)
@@ -108,10 +108,6 @@ func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 	q.running.Store(true)
 
 	return ech, nil
-}
-
-func (q *queue) pause() {
-	q.running.Store(false)
 }
 
 func (q *queue) isRunning() bool {

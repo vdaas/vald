@@ -76,6 +76,10 @@ func New(opts ...WorkerOption) (Worker, error) {
 }
 
 func (w *worker) Start(ctx context.Context) (<-chan error, error) {
+	if w.IsRunning() {
+		return nil, errors.ErrWorkerIsAlreadyRunning(w.Name())
+	}
+
 	ech := make(chan error, 2)
 
 	var wech, qech <-chan error
@@ -89,13 +93,13 @@ func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 
 	wech = w.startJobLoop(ctx)
 
-	w.running.Store(true)
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
+		defer w.running.Store(false)
+
 		for {
 			select {
 			case <-ctx.Done():
-				w.running.Store(false)
 				return ctx.Err()
 			case err = <-qech:
 			case err = <-wech:
@@ -103,7 +107,6 @@ func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 			if err != nil {
 				select {
 				case <-ctx.Done():
-					w.running.Store(false)
 					return ctx.Err()
 				case ech <- err:
 				}
@@ -111,16 +114,18 @@ func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 		}
 	}))
 
+	w.running.Store(true)
+
 	return ech, nil
 }
 
 func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 	ech := make(chan error, 1)
 
-	eg, ctx := errgroup.New(ctx)
-	eg.Limitation(w.limitation)
-
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
+		eg, ctx := errgroup.New(ctx)
+		eg.Limitation(w.limitation)
+
 		for {
 			select {
 			case <-ctx.Done():
