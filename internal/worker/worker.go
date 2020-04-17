@@ -143,6 +143,10 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 			job, err := w.queue.Pop(ctx)
 			if err != nil {
 				ech <- err
+				select {
+				case <-limitation:
+				case <-ctx.Done():
+				}
 				continue
 			}
 
@@ -160,6 +164,11 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 					}
 					return err
 				}))
+			} else {
+				select {
+				case <-limitation:
+				case <-ctx.Done():
+				}
 			}
 		}
 	}))
