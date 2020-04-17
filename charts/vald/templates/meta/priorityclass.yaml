@@ -19,7 +19,6 @@ kind: PriorityClass
 metadata:
   name: {{ .Values.meta.name }}-priority
 value: {{ .Values.meta.podPriority.value }}
-preemptionPolicy: Never
 globalDefault: false
 description: "A priority class for Vald meta."
 {{- end }}
