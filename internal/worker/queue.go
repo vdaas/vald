@@ -132,10 +132,6 @@ func (q *queue) pop(ctx context.Context, retry uint64) (JobFunc, error) {
 		return nil, errors.ErrQueueIsNotRunning()
 	}
 
-	if retry == 0 {
-		return nil, errors.ErrJobFuncIsNil()
-	}
-
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -144,6 +140,11 @@ func (q *queue) pop(ctx context.Context, retry uint64) (JobFunc, error) {
 			return job, nil
 		}
 	}
+
+	if retry <= 0 {
+		return nil, errors.ErrJobFuncIsNil()
+	}
+
 	retry--
 	return q.pop(ctx, retry)
 }
