@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.29`
+Current chart version is `v0.0.31`
 
 Install
 ---
@@ -223,6 +223,7 @@ Configuration
 | compressor.compress.compress_algorithm | string | `"zstd"` | compression algorithm: gob, gzip, lz4 or zstd |
 | compressor.compress.compression_level | int | `3` | compression level |
 | compressor.compress.concurrent_limit | int | `10` | concurrency limit |
+| compressor.compress.queue_check_duration | string | `"5s"` |  |
 | compressor.env | list | `[{"name":"MY_POD_IP","valueFrom":{"fieldRef":{"fieldPath":"status.podIP"}}}]` | environment variables |
 | compressor.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | compressor.hpa.enabled | bool | `true` | HPA enabled |
@@ -301,7 +302,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.29"` | image tag |
+| defaults.image.tag | string | `"v0.0.31"` | image tag |
 | defaults.logging.format | string | `"raw"` | logging format |
 | defaults.logging.level | string | `"debug"` | logging level |
 | defaults.logging.logger | string | `"glg"` | logger name |
