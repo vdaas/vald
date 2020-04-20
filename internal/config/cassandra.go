@@ -165,16 +165,13 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 	}
 
 	if cfg.PoolConfig != nil {
-		opts = append(opts, cassandra.WithDC(cfg.PoolConfig.DataCenter))
-		if cfg.PoolConfig.DCAwareRouting {
-			opts = append(opts, cassandra.WithEnableDCAwareRouting())
-		}
-		if cfg.PoolConfig.NonLocalReplicasFallback {
-			opts = append(opts, cassandra.WithEnableNonLocalReplicasFallback())
-		}
-		if cfg.PoolConfig.ShuffleReplicas {
-			opts = append(opts, cassandra.WithEnableShuffleReplicas())
-		}
+		opts = append(
+			opts,
+			cassandra.WithDC(cfg.PoolConfig.DataCenter),
+			cassandra.WithDCAwareRouting(cfg.PoolConfig.DCAwareRouting),
+			cassandra.WithNonLocalReplicasFallback(cfg.PoolConfig.NonLocalReplicasFallback),
+			cassandra.WithShuffleReplicas(cfg.PoolConfig.ShuffleReplicas),
+		)
 	}
 
 	if cfg.TCP != nil {

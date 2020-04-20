@@ -31,9 +31,30 @@ type Option func(*client) error
 
 var (
 	defaultOpts = []Option{
-		WithDisableDCAwareRouting(),
-		WithDisableNonLocalReplicasFallback(),
-		WithDisableShuffleReplicas(),
+		WithCQLVersion("3.0.0"),
+		WithProtoVersion(0),
+		WithTimeout("600ms"),
+		WithConnectTimeout("600ms"),
+		WithPort(9042),
+		WithNumConns(2),
+		WithConsistency("quorum"),
+		WithMaxPreparedStmts(1000),
+		WithMaxRoutingKeyInfo(1000),
+		WithPageSize(5000),
+		WithEnableHostVerification(false),
+		WithDefaultTimestamp(true),
+		WithReconnectInterval("1m"),
+		WithMaxWaitSchemaAgreement("1m"),
+		WithIgnorePeerAddr(false),
+		WithDisableInitialHostLookup(false),
+		WithDisableNodeStatusEvents(false),
+		WithDisableTopologyEvents(false),
+		WithDisableSkipMetadata(false),
+		WithDefaultIdempotence(false),
+		WithWriteCoalesceWaitTime("200µs"),
+		WithDCAwareRouting(false),
+		WithNonLocalReplicasFallback(false),
+		WithShuffleReplicas(false),
 	}
 )
 
@@ -309,44 +330,23 @@ func WithDC(name string) Option {
 	}
 }
 
-func WithEnableDCAwareRouting() Option {
+func WithDCAwareRouting(dc_aware_routing bool) Option {
 	return func(c *client) error {
-		c.poolConfig.enableDCAwareRouting = true
+		c.poolConfig.enableDCAwareRouting = dc_aware_routing
 		return nil
 	}
 }
 
-func WithDisableDCAwareRouting() Option {
+func WithNonLocalReplicasFallback(non_local_replicas_fallback bool) Option {
 	return func(c *client) error {
-		c.poolConfig.enableDCAwareRouting = false
+		c.poolConfig.enableNonLocalReplicasFallback = non_local_replicas_fallback
 		return nil
 	}
 }
 
-func WithEnableNonLocalReplicasFallback() Option {
+func WithShuffleReplicas(shuffle_replicas bool) Option {
 	return func(c *client) error {
-		c.poolConfig.enableNonLocalReplicasFallback = true
-		return nil
-	}
-}
-
-func WithDisableNonLocalReplicasFallback() Option {
-	return func(c *client) error {
-		c.poolConfig.enableNonLocalReplicasFallback = false
-		return nil
-	}
-}
-
-func WithEnableShuffleReplicas() Option {
-	return func(c *client) error {
-		c.poolConfig.enableShuffleReplicas = true
-		return nil
-	}
-}
-
-func WithDisableShuffleReplicas() Option {
-	return func(c *client) error {
-		c.poolConfig.enableShuffleReplicas = false
+		c.poolConfig.enableShuffleReplicas = shuffle_replicas
 		return nil
 	}
 }
