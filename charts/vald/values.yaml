@@ -1246,7 +1246,7 @@ backupManager:
       # backupManager.cassandra.config.timeout -- timeout
       timeout: 600ms
       # backupManager.cassandra.config.connect_timeout -- connect timeout
-      connect_timeout: 600ms
+      connect_timeout: 3s
       # backupManager.cassandra.config.port -- cassandra port
       port: 9042
       # backupManager.cassandra.config.keyspace -- cassandra keyspace
@@ -1263,14 +1263,14 @@ backupManager:
         # backupManager.cassandra.config.retry_policy.num_retries -- number of retries
         num_retries: 3
         # backupManager.cassandra.config.retry_policy.min_duration -- minimum duration to retry
-        min_duration: 1s
+        min_duration: 10ms
         # backupManager.cassandra.config.retry_policy.max_duration -- maximum duration to retry
-        max_duration: 30s
+        max_duration: 1s
       reconnection_policy:
         # backupManager.cassandra.config.reconnection_policy.max_retries -- maximum number of retries to reconnect
         max_retries: 3
         # backupManager.cassandra.config.reconnection_policy.initial_interval -- initial interval to reconnect
-        initial_interval: 1m
+        initial_interval: 100ms
       # backupManager.cassandra.config.socket_keepalive -- socket keep alive time
       socket_keepalive: 0s
       # backupManager.cassandra.config.max_prepared_stmts -- maximum number of prepared statements
@@ -1308,7 +1308,7 @@ backupManager:
       # backupManager.cassandra.config.default_timestamp -- default timestamp enabled
       default_timestamp: true
       # backupManager.cassandra.config.reconnect_interval -- interval of reconnection
-      reconnect_interval: 1m
+      reconnect_interval: 100ms
       # backupManager.cassandra.config.max_wait_schema_agreement -- maximum duration to wait for schema agreement
       max_wait_schema_agreement: 1m
       # backupManager.cassandra.config.ignore_peer_addr -- ignore peer addresses
@@ -1324,7 +1324,7 @@ backupManager:
       # backupManager.cassandra.config.default_idempotence -- default idempotence enabled
       default_idempotence: false
       # backupManager.cassandra.config.write_coalesce_wait_time -- write coalesce wait time
-      write_coalesce_wait_time: 200ms
+      write_coalesce_wait_time: 200µs
       # backupManager.cassandra.config.meta_table -- table name of backup
       meta_table: meta_vector
       pool_config:
@@ -1748,7 +1748,7 @@ meta:
       # meta.cassandra.config.timeout -- timeout
       timeout: 600ms
       # meta.cassandra.config.connect_timeout -- connect timeout
-      connect_timeout: 600ms
+      connect_timeout: 3s
       # meta.cassandra.config.port -- cassandra port
       port: 9042
       # meta.cassandra.config.keyspace -- cassandra keyspace
@@ -1765,14 +1765,14 @@ meta:
         # meta.cassandra.config.retry_policy.num_retries -- number of retries
         num_retries: 3
         # meta.cassandra.config.retry_policy.min_duration -- minimum duration to retry
-        min_duration: 1s
+        min_duration: 10ms
         # meta.cassandra.config.retry_policy.max_duration -- maximum duration to retry
-        max_duration: 30s
+        max_duration: 1s
       reconnection_policy:
         # meta.cassandra.config.reconnection_policy.max_retries -- maximum number of retries to reconnect
         max_retries: 3
         # meta.cassandra.config.reconnection_policy.initial_interval -- initial interval to reconnect
-        initial_interval: 1m
+        initial_interval: 100ms
       # meta.cassandra.config.socket_keepalive -- socket keep alive time
       socket_keepalive: 0s
       # meta.cassandra.config.max_prepared_stmts -- maximum number of prepared statements
@@ -1810,7 +1810,7 @@ meta:
       # meta.cassandra.config.default_timestamp -- default timestamp enabled
       default_timestamp: true
       # meta.cassandra.config.reconnect_interval -- interval of reconnection
-      reconnect_interval: 1m
+      reconnect_interval: 100ms
       # meta.cassandra.config.max_wait_schema_agreement -- maximum duration to wait for schema agreement
       max_wait_schema_agreement: 1m
       # meta.cassandra.config.ignore_peer_addr -- ignore peer addresses
@@ -1826,7 +1826,7 @@ meta:
       # meta.cassandra.config.default_idempotence -- default idempotence enabled
       default_idempotence: false
       # meta.cassandra.config.write_coalesce_wait_time -- write coalesce wait time
-      write_coalesce_wait_time: 200ms
+      write_coalesce_wait_time: 200µs
       # meta.cassandra.config.meta_table -- table name of backup
       meta_table: meta_vector
       pool_config:
