@@ -89,14 +89,14 @@ bench/core/gongt: \
 ## run benchmark for gongt core sequential methods
 bench/core/gongt/sequential:
 	$(call bench-pprof,pprof/core/gongt,core,GoNGTSequential,sequential,\
-    		./hack/benchmark/core/ngt/gongt_bench_test.go \
+    		./hack/benchmark/core/gongt/gongt_bench_test.go \
     		-dataset=$(DATASET_ARGS))
 
 .PHONY: bench/core/gongt/parallel
 ## run benchmark for gongt core parallel methods
 bench/core/gongt/parallel:
 	$(call bench-pprof,pprof/core/gongt,core,GoNGTParallel,parallel,\
-    		./hack/benchmark/core/ngt/gongt_bench_test.go \
+    		./hack/benchmark/core/gongt/gongt_bench_test.go \
     		-dataset=$(DATASET_ARGS))
 
 .PHONY: bench/agent
