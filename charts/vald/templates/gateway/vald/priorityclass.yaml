@@ -19,7 +19,6 @@ kind: PriorityClass
 metadata:
   name: {{ .Values.gateway.name }}-priority
 value: {{ .Values.gateway.podPriority.value }}
-preemptionPolicy: Never
 globalDefault: false
 description: "A priority class for Vald gateway."
 {{- end }}

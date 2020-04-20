@@ -180,12 +180,12 @@ func (c *compressor) dispatchDecompress(ctx context.Context, bytess ...[]byte) (
 	mu := new(sync.Mutex)
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
-	c.eg.Go(safety.RecoverFunc(func() error {
+	c.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer wg.Done()
 
 		for iter, bytes := range bytess {
 			wg.Add(1)
-			err := c.worker.Dispatch(ctx, func(i int, b []byte) worker.JobFunc {
+			err = c.worker.Dispatch(ctx, func(i int, b []byte) worker.JobFunc {
 				return func(ctx context.Context) error {
 					defer wg.Done()
 

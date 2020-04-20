@@ -19,7 +19,6 @@ kind: PriorityClass
 metadata:
   name: {{ .Values.backupManager.name }}-priority
 value: {{ .Values.backupManager.podPriority.value }}
-preemptionPolicy: Never
 globalDefault: false
 description: "A priority class for Vald backupManager."
 {{- end }}

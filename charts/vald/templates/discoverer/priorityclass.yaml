@@ -19,7 +19,6 @@ kind: PriorityClass
 metadata:
   name: {{ .Values.discoverer.name }}-priority
 value: {{ .Values.discoverer.podPriority.value }}
-preemptionPolicy: Never
 globalDefault: false
 description: "A priority class for Vald discoverer."
 {{- end }}

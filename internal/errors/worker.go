@@ -22,8 +22,16 @@ var (
 		return Errorf("worker %s is not running", name)
 	}
 
+	ErrWorkerIsAlreadyRunning = func(name string) error {
+		return Errorf("worker %s is already running", name)
+	}
+
 	ErrQueueIsNotRunning = func() error {
-		return Errorf("queue is not running")
+		return New("queue is not running")
+	}
+
+	ErrQueueIsAlreadyRunning = func() error {
+		return New("queue is already running")
 	}
 
 	ErrJobFuncIsNil = func() error {

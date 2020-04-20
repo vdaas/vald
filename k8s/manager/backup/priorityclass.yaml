@@ -19,6 +19,5 @@ kind: PriorityClass
 metadata:
   name: vald-manager-backup-priority
 value: 1e+06
-preemptionPolicy: Never
 globalDefault: false
 description: "A priority class for Vald backupManager."

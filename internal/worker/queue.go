@@ -21,6 +21,7 @@ import (
 	"context"
 	"reflect"
 	"sync/atomic"
+	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -37,6 +38,7 @@ type Queue interface {
 type queue struct {
 	buffer  int
 	eg      errgroup.Group
+	qcdur   time.Duration // queue check duration
 	inCh    chan JobFunc
 	outCh   chan JobFunc
 	qLen    atomic.Value
@@ -55,59 +57,49 @@ func NewQueue(opts ...QueueOption) (Queue, error) {
 	q.running.Store(false)
 
 	q.inCh = make(chan JobFunc, q.buffer)
-	q.outCh = make(chan JobFunc)
+	q.outCh = make(chan JobFunc, 1)
 
 	return q, nil
 }
 
 func (q *queue) Start(ctx context.Context) (<-chan error, error) {
+	if q.isRunning() {
+		return nil, errors.ErrQueueIsAlreadyRunning()
+	}
+
 	ech := make(chan error, 1)
-
 	q.eg.Go(safety.RecoverFunc(func() (err error) {
-		defer close(q.inCh)
 		defer close(q.outCh)
-
+		defer close(q.inCh)
+		defer q.running.Store(false)
 		s := make([]JobFunc, 0, q.buffer)
-
-		inFn := func(j JobFunc) {
-			s = append(s, j)
-			q.qLen.Store(uint64(len(s)))
-		}
-		outFn := func() {
-			s = s[1:]
-			q.qLen.Store(uint64(len(s)))
-		}
-
-		q.running.Store(true)
+		tick := time.NewTicker(q.qcdur)
+		defer tick.Stop()
 		for {
-			if len(s) > 0 {
-				j := s[0]
+			if len(s) > 0 && len(q.outCh) == 0 && cap(q.inCh) != len(q.inCh) {
 				select {
 				case <-ctx.Done():
-					q.pause()
 					return ctx.Err()
-				case q.outCh <- j:
-					outFn()
-				case j := <-q.inCh:
-					inFn(j)
+				case q.outCh <- s[0]:
+					s = s[1:]
+				case <-tick.C:
 				}
 			} else {
 				select {
 				case <-ctx.Done():
-					q.pause()
 					return ctx.Err()
-				case j := <-q.inCh:
-					inFn(j)
+				case in := <-q.inCh:
+					s = append(s, in)
+				case <-tick.C:
 				}
 			}
+			q.qLen.Store(uint64(len(s)))
 		}
 	}))
 
-	return ech, nil
-}
+	q.running.Store(true)
 
-func (q *queue) pause() {
-	q.running.Store(false)
+	return ech, nil
 }
 
 func (q *queue) isRunning() bool {
@@ -115,12 +107,12 @@ func (q *queue) isRunning() bool {
 }
 
 func (q *queue) Push(ctx context.Context, job JobFunc) error {
-	if !q.isRunning() {
-		return errors.ErrQueueIsNotRunning()
-	}
-
 	if job == nil {
 		return errors.ErrJobFuncIsNil()
+	}
+
+	if !q.isRunning() {
+		return errors.ErrQueueIsNotRunning()
 	}
 
 	select {
@@ -132,20 +124,28 @@ func (q *queue) Push(ctx context.Context, job JobFunc) error {
 }
 
 func (q *queue) Pop(ctx context.Context) (JobFunc, error) {
+	return q.pop(ctx, q.Len())
+}
+
+func (q *queue) pop(ctx context.Context, retry uint64) (JobFunc, error) {
 	if !q.isRunning() {
 		return nil, errors.ErrQueueIsNotRunning()
+	}
+
+	if retry == 0 {
+		return nil, errors.ErrJobFuncIsNil()
 	}
 
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	case job := <-q.outCh:
-		if job == nil {
-			return job, errors.ErrJobFuncIsNil()
+		if job != nil {
+			return job, nil
 		}
-
-		return job, nil
 	}
+	retry--
+	return q.pop(ctx, retry)
 }
 
 func (q *queue) Len() uint64 {

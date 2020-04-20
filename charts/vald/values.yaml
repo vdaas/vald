@@ -26,7 +26,7 @@ defaults:
     format: raw
   image:
     # defaults.image.tag -- image tag
-    tag: v0.0.29
+    tag: v0.0.30
   server_config:
     servers:
       rest:
@@ -1001,6 +1001,8 @@ compressor:
     compression_level: 3
     # compressor.compress.concurrent_limit -- concurrency limit
     concurrent_limit: 10
+    # queue_check_duration represents duration of queue daemon block
+    queue_check_duration: 5s
   registerer:
     # compressor.registerer.concurrent_limit -- concurrency limit of registerer worker
     concurrent_limit: 10

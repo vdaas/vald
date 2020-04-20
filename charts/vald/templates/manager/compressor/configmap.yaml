@@ -41,6 +41,7 @@ data:
       compress_algorithm: {{ .Values.compressor.compress.compress_algorithm | quote }}
       compression_level: {{ .Values.compressor.compress.compression_level }}
       concurrent_limit: {{ .Values.compressor.compress.concurrent_limit }}
+      queue_check_duration: {{ .Values.compressor.compress.queue_check_duration }}
     registerer:
       concurrent_limit: {{ .Values.compressor.registerer.concurrent_limit }}
       compressor:
