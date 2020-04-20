@@ -93,13 +93,13 @@ func (c *compressorMetrics) View() []*metrics.View {
 			Name:        "compressor_compressor_requested_jobs_total",
 			Description: "the cumulative count of compressor compress worker requested job",
 			Measure:     &c.compressorTotalRequestedJob,
-			Aggregation: metrics.Count(),
+			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "compressor_compressor_completed_jobs_total",
 			Description: "the cumulative count of compressor compress worker completed job",
 			Measure:     &c.compressorTotalCompletedJob,
-			Aggregation: metrics.Count(),
+			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "compressor_registerer_buffer",
@@ -111,13 +111,13 @@ func (c *compressorMetrics) View() []*metrics.View {
 			Name:        "compressor_registerer_requested_jobs_total",
 			Description: "the cumulative count of compressor registerer worker requested job",
 			Measure:     &c.registererTotalRequestedJob,
-			Aggregation: metrics.Count(),
+			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "compressor_registerer_completed_jobs_total",
 			Description: "the cumulative count of compressor registerer worker completed job",
 			Measure:     &c.registererTotalCompletedJob,
-			Aggregation: metrics.Count(),
+			Aggregation: metrics.LastValue(),
 		},
 	}
 }
