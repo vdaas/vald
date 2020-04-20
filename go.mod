@@ -36,6 +36,7 @@ require (
 	github.com/google/gofuzz v1.1.0
 	github.com/gorilla/mux v1.7.1
 	github.com/hashicorp/go-version v1.2.0
+	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/json-iterator/go v1.1.9
 	github.com/klauspost/compress v1.10.4
 	github.com/kpango/fastime v1.0.16
@@ -44,17 +45,18 @@ require (
 	github.com/kpango/glg v1.5.1
 	github.com/lucasb-eyer/go-colorful v1.0.3
 	github.com/pierrec/lz4/v3 v3.3.1
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v2.1.0+incompatible
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20200415062333-c6f8509587da
 	go.opencensus.io v0.22.3
 	go.uber.org/automaxprocs v1.3.0
-	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
+	golang.org/x/sys v0.0.0-20200116001909-b77594299b42
 	golang.org/x/tools v0.0.0-20200420001825-978e26b7c37c // indirect
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/plot v0.7.0
-	google.golang.org/genproto v0.0.0-20200416231807-8751e049a2a0
+	google.golang.org/genproto v0.0.0-20200417142217-fb6d0575620b
 	google.golang.org/grpc v1.28.1
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.18.2

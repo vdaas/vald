@@ -1,6 +1,8 @@
 # CHANGELOG
 
----
+- v0.0.31
+    - bug fix: resolve busy-loop on compressor
+    - bug fix: fix counter metrics
 
 - v0.0.30
     - async compressor
