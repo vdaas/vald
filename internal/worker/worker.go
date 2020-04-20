@@ -152,12 +152,12 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 
 			if job != nil {
 				eg.Go(safety.RecoverFunc(func() (err error) {
+					defer atomic.AddUint64(&w.completedCount, 1)
 					err = job(ctx)
 					if err != nil {
 						log.Debug(err)
 						ech <- err
 					}
-					atomic.AddUint64(&w.completedCount, 1)
 					select {
 					case <-limitation:
 					case <-ctx.Done():

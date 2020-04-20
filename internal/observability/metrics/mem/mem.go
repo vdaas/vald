@@ -103,7 +103,7 @@ func (m *memory) View() []*metrics.View {
 			Name:        "alloc_bytes_total",
 			Description: "cumulative bytes allocated for heap objects",
 			Measure:     &m.totalAlloc,
-			Aggregation: metrics.Count(),
+			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "sys_bytes",
@@ -169,7 +169,7 @@ func (m *memory) View() []*metrics.View {
 			Name:        "pause_ms_total",
 			Description: "the cumulative milliseconds in GC",
 			Measure:     &m.pauseTotalMs,
-			Aggregation: metrics.Count(),
+			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "gc_count",
