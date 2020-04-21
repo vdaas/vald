@@ -6,7 +6,7 @@ html {
 
 .top {
   background-color: #0F7684;
-  background: url("./images/graphic.jpg");
+  background: url("./assets/img/static/graphic.jpg");
   background-repeat: no-repeat;
   background-position: left center;
   background-size: cover;
