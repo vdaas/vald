@@ -895,7 +895,7 @@ compressor:
   # compressor.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
   # compressor.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
-  terminationGracePeriodSeconds: 30
+  terminationGracePeriodSeconds: 120
   podPriority:
     # compressor.podPriority.enabled -- compressor pod PriorityClass enabled
     enabled: true
