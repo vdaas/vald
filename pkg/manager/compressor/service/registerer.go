@@ -34,7 +34,7 @@ import (
 type Registerer interface {
 	PreStart(ctx context.Context) error
 	Start(ctx context.Context) (<-chan error, error)
-	PreStop(ctx context.Context) error
+	PostStop(ctx context.Context) error
 	Register(ctx context.Context, meta *payload.Backup_MetaVector) error
 	RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) error
 	Len() uint64
@@ -75,8 +75,8 @@ func (r *registerer) Start(ctx context.Context) (<-chan error, error) {
 	return r.worker.Start(ctx)
 }
 
-func (r *registerer) PreStop(ctx context.Context) error {
-	log.Info("compressor registerer service prestop processing...")
+func (r *registerer) PostStop(ctx context.Context) error {
+	log.Info("compressor registerer service poststop processing...")
 
 	r.worker.Pause()
 
@@ -104,11 +104,11 @@ func (r *registerer) PreStop(ctx context.Context) error {
 
 	err = r.forwardMetas(ctx)
 	if err != nil {
-		log.Errorf("compressor registerer service prestop failed: %v", err)
+		log.Errorf("compressor registerer service poststop failed: %v", err)
 		return err
 	}
 
-	log.Info("compressor registerer service prestop completed")
+	log.Info("compressor registerer service poststop completed")
 
 	return nil
 }
