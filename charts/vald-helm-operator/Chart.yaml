@@ -23,7 +23,7 @@ keywords:
   - Vald
   - NGT
 home: https://vdaas.org
-icon: https://raw.githubusercontent.com/vdaas/vald/master/assets/image/icon_color.svg
+icon: https://raw.githubusercontent.com/vdaas/vald/master/assets/image/svg/icon_color.svg
 sources:
   - https://github.com/vdaas/vald
 maintainers:

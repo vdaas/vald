@@ -1,5 +1,5 @@
 <div align="center">
-<img src="./assets/image/logo.svg" width="50%">
+<img src="./assets/image/svg/logo.svg" width="50%">
 </div>
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache2-blue.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
@@ -99,7 +99,7 @@ Write example here
 ## Architecture Overview
 
 <div align="center">
-<img src="./assets/image/Vald Architecture Overview.svg" width="100%">
+<img src="./assets/image/svg/Vald Architecture Overview.svg" width="100%">
 </div>
 
 ## Development
