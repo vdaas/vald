@@ -28,7 +28,7 @@ func {{ .TestName }}(t *testing.T) {
         // err error
     }
     type test struct {
-		name string
+        name string
         {{- if .TestParameters }}
             args args
         {{- end }}
@@ -77,14 +77,13 @@ func {{ .TestName }}(t *testing.T) {
             {{- end }}
             {{- if $hasFields }}
             fields: fields {
-                {{- template "fill" .Receiver.Fields }} 
+                {{- template "fill" .Receiver.Fields }}
             },
             {{- end }}
             want: want {
                 obj: new(T),
             },
         },
-
         func() test {
             return test {
                 name: "test_case_2",
