@@ -67,6 +67,7 @@ func {{ .TestName }}(t *testing.T) {
     */
 
     tests := []test{
+        // TODO test cases
         {
             name: "test_case_1",
             {{- if .TestParameters }}
@@ -83,6 +84,25 @@ func {{ .TestName }}(t *testing.T) {
                 obj: new(T),
             },
         },
+
+        func() test {
+            return test {
+                name: "test_case_2",
+                {{- if .TestParameters }}
+                args: args {
+                    {{- template "fill" .TestParameters }}
+                },
+                {{- end }}
+                {{- if $hasFields }}
+                fields: fields {
+                    {{- template "fill" .Receiver.Fields }}
+                },
+                {{- end }}
+                want: want {
+                    obj: new(T),
+                },
+            }
+        }(),
     }
 
     for {{- if (or .Subtests (not .IsNaked)) }} _, tt := {{- end }} range tests {
