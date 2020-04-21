@@ -29,6 +29,7 @@ var (
 		WithSize(3),
 		WithStartPort(80),
 		WithEndPort(65535),
+		WithDialTimeout("1s"),
 		WithOldConnCloseDuration("1s"),
 	}
 )
@@ -105,6 +106,19 @@ func WithDialOptions(opts ...DialOption) Option {
 				p.dopts = opts
 			}
 		}
+	}
+}
+
+func WithDialTimeout(dur string) Option {
+	return func(p *pool) {
+		if len(dur) == 0 {
+			return
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return
+		}
+		p.dialTimeout = d
 	}
 }
 

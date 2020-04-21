@@ -7,13 +7,13 @@ replace (
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.1-0.20200311113236-681ffa848bae
 	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200410100145-b454769479c6
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
-	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.9.0
+	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.10.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.7.4
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200414173820-0848c9571904
-	k8s.io/api => k8s.io/api v0.17.4
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.4
-	k8s.io/apimachinery => k8s.io/apimachinery v0.17.4
-	k8s.io/client-go => k8s.io/client-go v0.17.4
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200420201142-3c4aac89819a
+	k8s.io/api => k8s.io/api v0.17.5
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.5
+	k8s.io/apimachinery => k8s.io/apimachinery v0.17.5
+	k8s.io/client-go => k8s.io/client-go v0.17.5
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.5.2
 )
 
@@ -51,10 +51,10 @@ require (
 	go.opencensus.io v0.22.3
 	go.uber.org/automaxprocs v1.3.0
 	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
-	golang.org/x/tools v0.0.0-20200420001825-978e26b7c37c // indirect
+	golang.org/x/tools v0.0.0-20200421042724-cfa8b22178d2 // indirect
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/plot v0.7.0
-	google.golang.org/genproto v0.0.0-20200416231807-8751e049a2a0
+	google.golang.org/genproto v0.0.0-20200420144010-e5e8543f8aeb
 	google.golang.org/grpc v1.28.1
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.18.2

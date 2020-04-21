@@ -204,6 +204,16 @@ func (c *client) connect(ctx context.Context, addr string) (err error) {
 	return
 }
 
+func (c *client) disconnect(ctx context.Context, addr string) (err error) {
+	if c.autoconn && c.client != nil {
+		err = c.client.Disconnect(addr)
+		if err == nil && c.onDisconnect != nil {
+			err = c.onDisconnect(ctx, c, addr)
+		}
+	}
+	return
+}
+
 func (c *client) dnsDiscovery(ctx context.Context, ech chan<- error) (addrs []string, err error) {
 	ips, err := net.DefaultResolver.LookupIPAddr(ctx, c.dns)
 	if err != nil {
@@ -285,12 +295,18 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 		connected = addrs
 		if len(connected) == 0 {
 			log.Warn("connected addr is zero")
+			cur = sync.Map{}
 			return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
 		}
 		if c.onDiscover != nil {
-			return nil, c.onDiscover(ctx, c, connected)
+			err = c.onDiscover(ctx, c, connected)
+			if err != nil {
+				cur = sync.Map{}
+				return nil, err
+			}
 		}
 		return nil, nil
+
 	}); err != nil {
 		log.Warn("failed to discover addrs from discoverer API, trying to discover from dns...\t" + err.Error())
 		connected, err = c.dnsDiscovery(ctx, ech)
@@ -305,7 +321,22 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 		}
 	}
 
+	oldAddrs := c.GetAddrs(ctx)
+
 	c.addrs.Store(connected)
+
+	for _, old := range oldAddrs {
+		_, ok := cur.Load(old)
+		if !ok {
+			c.eg.Go(safety.RecoverFunc(func() error {
+				err = c.disconnect(ctx, old)
+				if err != nil {
+					ech <- err
+				}
+				return nil
+			}))
+		}
+	}
 
 	if c.autoconn && c.client != nil {
 		if err = c.client.RangeConcurrent(ctx, len(connected)/3, func(ctx context.Context,
@@ -314,13 +345,9 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			copts ...grpc.CallOption) (err error) {
 			_, ok := cur.Load(addr)
 			if !ok {
-				err = c.client.Disconnect(addr)
+				err = c.disconnect(ctx, addr)
 				if err != nil {
 					ech <- err
-				} else {
-					if c.onDisconnect != nil {
-						err = c.onDisconnect(ctx, c, addr)
-					}
 				}
 				return err
 			}

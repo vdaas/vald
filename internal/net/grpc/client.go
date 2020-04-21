@@ -146,7 +146,8 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 				if g.enablePoolRebalance {
 					g.conns.Range(func(addr string, p pool.Conn) bool {
 						if len(addr) != 0 && p != nil {
-							_, err := p.Reconnect(ctx, true)
+							var err error
+							p, err = p.Reconnect(ctx, true)
 							if err != nil {
 								log.Error(err)
 								ech <- err
@@ -156,7 +157,11 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 									ech <- err
 								}
 							}
-							g.conns.Store(addr, p)
+							if err == nil {
+								g.conns.Store(addr, p)
+							} else {
+								g.conns.Delete(addr)
+							}
 						}
 						return true
 					})
@@ -164,7 +169,8 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 			case <-hcTick.C:
 				g.conns.Range(func(addr string, p pool.Conn) bool {
 					if len(addr) != 0 && !p.IsHealthy(ctx) {
-						_, err := p.Reconnect(ctx, false)
+						var err error
+						p, err = p.Reconnect(ctx, false)
 						if err != nil {
 							log.Error(err)
 							ech <- err
@@ -174,7 +180,11 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 								ech <- err
 							}
 						}
-						g.conns.Store(addr, p)
+						if err == nil {
+							g.conns.Store(addr, p)
+						} else {
+							g.conns.Delete(addr)
+						}
 					}
 					return true
 				})
@@ -186,7 +196,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 
 func (g *gRPCClient) Range(ctx context.Context,
 	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
-	g.conns.Range(func(addr string, pool pool.Conn) bool {
+	g.conns.Range(func(addr string, p pool.Conn) bool {
 		select {
 		case <-ctx.Done():
 			return false
@@ -194,7 +204,7 @@ func (g *gRPCClient) Range(ctx context.Context,
 			var err error
 			if g.bo != nil {
 				_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-					return nil, pool.Do(func(conn *ClientConn) (err error) {
+					return nil, p.Do(func(conn *ClientConn) (err error) {
 						if conn == nil {
 							return errors.ErrGRPCClientConnNotFound(addr)
 						}
@@ -202,7 +212,7 @@ func (g *gRPCClient) Range(ctx context.Context,
 					})
 				})
 			} else {
-				err = pool.Do(func(conn *ClientConn) (err error) {
+				err = p.Do(func(conn *ClientConn) (err error) {
 					if conn == nil {
 						return errors.ErrGRPCClientConnNotFound(addr)
 					}
@@ -210,6 +220,9 @@ func (g *gRPCClient) Range(ctx context.Context,
 				})
 			}
 			if err != nil {
+				if p.Len() <= 0 {
+					g.conns.Delete(addr)
+				}
 				rerr = errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
 			}
 		}
@@ -223,7 +236,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) error {
 	eg, egctx := errgroup.New(ctx)
 	eg.Limitation(concurrency)
-	g.conns.Range(func(addr string, pool pool.Conn) bool {
+	g.conns.Range(func(addr string, p pool.Conn) bool {
 		eg.Go(safety.RecoverFunc(func() (err error) {
 			select {
 			case <-egctx.Done():
@@ -231,7 +244,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 			default:
 				if g.bo != nil {
 					_, err = g.bo.Do(egctx, func() (r interface{}, err error) {
-						return nil, pool.Do(func(conn *ClientConn) (err error) {
+						return nil, p.Do(func(conn *ClientConn) (err error) {
 							if conn == nil {
 								return errors.ErrGRPCClientConnNotFound(addr)
 							}
@@ -239,7 +252,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 						})
 					})
 				} else {
-					err = pool.Do(func(conn *ClientConn) (err error) {
+					err = p.Do(func(conn *ClientConn) (err error) {
 						if conn == nil {
 							return errors.ErrGRPCClientConnNotFound(addr)
 						}
@@ -247,6 +260,9 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 					})
 				}
 				if err != nil {
+					if p.Len() <= 0 {
+						g.conns.Delete(addr)
+					}
 					return errors.ErrRPCCallFailed(addr, err)
 				}
 				return nil
@@ -270,11 +286,11 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 		case <-ctx.Done():
 			return nil
 		default:
-			pool, ok := g.conns.Load(addr)
+			p, ok := g.conns.Load(addr)
 			if ok {
 				if g.bo != nil {
 					_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-						return nil, pool.Do(func(conn *ClientConn) (err error) {
+						return nil, p.Do(func(conn *ClientConn) (err error) {
 							if conn == nil {
 								return errors.ErrGRPCClientConnNotFound(addr)
 							}
@@ -282,7 +298,7 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 						})
 					})
 				} else {
-					err = pool.Do(func(conn *ClientConn) (err error) {
+					err = p.Do(func(conn *ClientConn) (err error) {
 						if conn == nil {
 							return errors.ErrGRPCClientConnNotFound(addr)
 						}
@@ -290,6 +306,9 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 					})
 				}
 				if err != nil {
+					if p.Len() <= 0 {
+						g.conns.Delete(addr)
+					}
 					rerr = errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
 				}
 			} else {
@@ -312,7 +331,7 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 	eg.Limitation(concurrency)
 	for _, order := range orders {
 		addr := order
-		pool, ok := g.conns.Load(addr)
+		p, ok := g.conns.Load(addr)
 		if ok {
 			eg.Go(safety.RecoverFunc(func() (err error) {
 				select {
@@ -321,7 +340,7 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 				default:
 					if g.bo != nil {
 						_, err = g.bo.Do(egctx, func() (r interface{}, err error) {
-							return nil, pool.Do(func(conn *ClientConn) (err error) {
+							return nil, p.Do(func(conn *ClientConn) (err error) {
 								if conn == nil {
 									return errors.ErrGRPCClientConnNotFound(addr)
 								}
@@ -329,7 +348,7 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 							})
 						})
 					} else {
-						err = pool.Do(func(conn *ClientConn) (err error) {
+						err = p.Do(func(conn *ClientConn) (err error) {
 							if conn == nil {
 								return errors.ErrGRPCClientConnNotFound(addr)
 							}
@@ -337,6 +356,9 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 						})
 					}
 					if err != nil {
+						if p.Len() <= 0 {
+							g.conns.Delete(addr)
+						}
 						return errors.ErrRPCCallFailed(addr, err)
 					}
 					return nil
@@ -352,13 +374,13 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 func (g *gRPCClient) Do(ctx context.Context, addr string,
 	f func(ctx context.Context,
 		conn *ClientConn, copts ...CallOption) (interface{}, error)) (data interface{}, err error) {
-	pool, ok := g.conns.Load(addr)
+	p, ok := g.conns.Load(addr)
 	if !ok {
 		return nil, errors.ErrGRPCClientConnNotFound(addr)
 	}
 	if g.bo != nil {
 		data, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-			err = pool.Do(func(conn *ClientConn) (err error) {
+			err = p.Do(func(conn *ClientConn) (err error) {
 				if conn == nil {
 					return errors.ErrGRPCClientConnNotFound(addr)
 				}
@@ -371,7 +393,7 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 			return r, err
 		})
 	} else {
-		err = pool.Do(func(conn *ClientConn) (err error) {
+		err = p.Do(func(conn *ClientConn) (err error) {
 			if conn == nil {
 				return errors.ErrGRPCClientConnNotFound(addr)
 			}
@@ -380,6 +402,9 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 		})
 	}
 	if err != nil {
+		if p.Len() <= 0 {
+			g.conns.Delete(addr)
+		}
 		return nil, errors.ErrRPCCallFailed(addr, err)
 	}
 	return
@@ -450,14 +475,15 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 }
 
 func (g *gRPCClient) Disconnect(addr string) error {
-	pool, ok := g.conns.Load(addr)
+	p, ok := g.conns.Load(addr)
 	if !ok {
 		return errors.ErrGRPCClientConnNotFound(addr)
 	}
 	g.conns.Delete(addr)
 	atomic.AddUint64(&g.clientCount, ^uint64(0))
-	if pool != nil {
-		return pool.Disconnect()
+	if p != nil {
+		log.Debugf("disconnecting grpc client conn pool addr= %s", addr)
+		return p.Disconnect()
 	}
 	return nil
 }
