@@ -95,7 +95,7 @@ func {{ .TestName }}(t *testing.T) {
                 checkFunc: defaultCheckFunc,
             }
         }(),
-	}
+    }
 
     for {{- if (or .Subtests (not .IsNaked)) }} _, tt := {{- end }} range tests {
         {{- if .Subtests }}
