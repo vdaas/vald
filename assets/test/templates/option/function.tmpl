@@ -3,17 +3,16 @@
 
 {{ $hasFields := false }}
 
-
 func {{ .TestName }}(t *testing.T) {
     type T = interface{}
     {{- if .TestParameters }}
     type args struct {
-		{{- range .TestParameters }}
-				{{ .Name }} {{ .Type }}
-		{{- end}}
-	}
+        {{- range .TestParameters }}
+            {{ .Name }} {{ .Type }}
+        {{- end}}
+    }
     {{- end }}
-	{{- with .Receiver }}
+    {{- with .Receiver }}
         {{- if .IsStruct }}
             {{- if .Fields}}
                 type fields struct { {{ $hasFields = true }}
@@ -23,14 +22,14 @@ func {{ .TestName }}(t *testing.T) {
                 }
             {{- end }}
         {{- end }}
-	{{- end }}
+    {{- end }}
     type want struct {
         obj *T
         // Uncomment this line if the option returns an error, otherwise delete it
         // err error
     }
     type test struct {
-		name string
+        name string
         {{- if .TestParameters }}
             args args
         {{- end }}
@@ -73,21 +72,21 @@ func {{ .TestName }}(t *testing.T) {
             name: "test_case_1",
             {{- if .TestParameters }}
             args: args {
-                {{- template "fill" .TestParameters }} 
+                {{- template "fill" .TestParameters }}
             },
             {{- end }}
             {{- if $hasFields }}
             fields: fields {
-                {{- template "fill" .Receiver.Fields }} 
+                {{- template "fill" .Receiver.Fields }}
             },
             {{- end }}
             want: want {
                 obj: new(T),
             },
         },
-	}
+    }
 
-	for {{- if (or .Subtests (not .IsNaked)) }} _, tt := {{- end }} range tests {
+    for {{- if (or .Subtests (not .IsNaked)) }} _, tt := {{- end }} range tests {
         {{- if .Subtests }}
             t.Run(tt.name, func(t *testing.T) {
                 if tt.beforeFunc != nil {
@@ -115,7 +114,7 @@ func {{ .TestName }}(t *testing.T) {
                 if tt.checkFunc == nil {
                     tt.checkFunc = defaultCheckFunc
                 }
-                
+
                 got := {{ template "call" $f }}
                 obj := new(T)
                 got(obj)
@@ -124,8 +123,7 @@ func {{ .TestName }}(t *testing.T) {
                 }
                 */
             })
-		{{- end }}
-	}
+        {{- end }}
+    }
 }
-
 {{- end }}

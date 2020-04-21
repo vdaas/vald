@@ -9,9 +9,9 @@ func {{ .TestName }}(t *testing.T) {
 		{{- range .TestParameters }}
 				{{ .Name }} {{ .Type }}
 		{{- end}}
-	}
+    }
     {{- end }}
-	{{- with .Receiver }}
+    {{- with .Receiver }}
         {{- if .IsStruct }}
             {{- if .Fields}}
                 type fields struct { {{ $hasFields = true }}
@@ -21,7 +21,7 @@ func {{ .TestName }}(t *testing.T) {
                 }
             {{- end }}
         {{- end }}
-	{{- end }}
+    {{- end }}
     type want struct {
         {{- range .TestResults }}
             {{ Want . }} {{ .Type }}
@@ -31,7 +31,7 @@ func {{ .TestName }}(t *testing.T) {
         {{- end }}
     }
     type test struct {
-		name string
+        name string
         {{- if .TestParameters }}
             args args
         {{- end }}
@@ -39,7 +39,7 @@ func {{ .TestName }}(t *testing.T) {
             fields fields
         {{- end }}
         want want
-		checkFunc func(want,
+        checkFunc func(want,
                     {{- range .TestResults }} {{ .Type }}, {{- end }}
                     {{- if .ReturnsError }} error {{- end }} ) error
         beforeFunc func({{- if .TestParameters }} args {{- end}})
@@ -67,12 +67,12 @@ func {{ .TestName }}(t *testing.T) {
             name: "test_case_1",
             {{- if .TestParameters }}
             args: args {
-                {{- template "fill" .TestParameters }} 
+                {{- template "fill" .TestParameters }}
             },
             {{- end }}
             {{- if $hasFields }}
             fields: fields {
-                {{- template "fill" .Receiver.Fields }} 
+                {{- template "fill" .Receiver.Fields }}
             },
             {{- end }}
             want: want{},
@@ -84,12 +84,12 @@ func {{ .TestName }}(t *testing.T) {
                 name: "test_case_2",
                 {{- if .TestParameters }}
                 args: args {
-                    {{- template "fill" .TestParameters }} 
+                    {{- template "fill" .TestParameters }}
                 },
                 {{- end }}
                 {{- if $hasFields }}
                 fields: fields {
-                    {{- template "fill" .Receiver.Fields }} 
+                    {{- template "fill" .Receiver.Fields }}
                 },
                 {{- end }}
                 want: want{},
@@ -98,7 +98,7 @@ func {{ .TestName }}(t *testing.T) {
         }(),
 	}
 
-	for {{- if (or .Subtests (not .IsNaked)) }} _, tt := {{- end }} range tests {
+    for {{- if (or .Subtests (not .IsNaked)) }} _, tt := {{- end }} range tests {
         {{- if .Subtests }}
             t.Run(tt.name, func(t *testing.T) {
                 if tt.beforeFunc != nil {
@@ -140,8 +140,7 @@ func {{ .TestName }}(t *testing.T) {
                     }
                 {{- end }}
             })
-		{{- end }}
-	}
+        {{- end }}
+    }
 }
-
 {{- end }}
