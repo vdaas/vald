@@ -1,8 +1,6 @@
 {{define "function"}}
 {{- $f := . }}
 
-{{ $hasFields := false }}
-
 func {{ .TestName }}(t *testing.T) {
     type T = interface{}
     {{- if .TestParameters }}
@@ -12,6 +10,7 @@ func {{ .TestName }}(t *testing.T) {
         {{- end}}
     }
     {{- end }}
+    {{- $hasFields := false -}}
     {{- with .Receiver }}
         {{- if .IsStruct }}
             {{- if .Fields}}
