@@ -1,6 +1,6 @@
 {{define "fill" }}
         {{- range . }}
-                {{ .Name }}: {{ $typ := .Type.String -}}
+                {{ Param . }}: {{ $typ := .Type.String -}}
                 {{- if eq $typ "int8" -}} 0,
                 {{- else if eq $typ "uint8" -}} 0,
                 {{- else if eq $typ "uint16" -}} 0,
