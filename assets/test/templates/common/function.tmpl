@@ -62,6 +62,7 @@ func {{ .TestName }}(t *testing.T) {
     }
     tests := []test{
         // TODO test cases
+        /*
         {
             name: "test_case_1",
             {{- if .TestParameters }}
@@ -77,7 +78,10 @@ func {{ .TestName }}(t *testing.T) {
             want: want{},
             checkFunc: defaultCheckFunc,
         },
+        */
 
+        // TODO test cases
+        /*
         func() test {
             return test {
                 name: "test_case_2",
@@ -95,6 +99,7 @@ func {{ .TestName }}(t *testing.T) {
                 checkFunc: defaultCheckFunc,
             }
         }(),
+        */
     }
 
     for {{- if (or .Subtests (not .IsNaked)) }} _, tt := {{- end }} range tests {
