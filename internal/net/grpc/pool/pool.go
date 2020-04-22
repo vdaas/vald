@@ -64,6 +64,7 @@ type pool struct {
 	current       uint64
 	bo            backoff.Backoff
 	dopts         []DialOption
+	dialTimeout   time.Duration
 	roccd         time.Duration // reconnection old connection closing duration
 	closing       atomic.Value
 	isIP          bool
@@ -120,7 +121,7 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 		return p, nil
 	}
 
-	if p.pool == nil || cap(p.pool) == 0 || len(p.pool) == 0 {
+	if p.pool == nil || cap(p.pool) == 0 || p.Len() == 0 {
 		p.pool = make([]atomic.Value, p.size)
 	}
 
@@ -186,6 +187,7 @@ func (p *pool) load(idx int) (pc *poolConn, ok bool) {
 
 func (p *pool) connect(ctx context.Context) (c Conn, err error) {
 	p.reconnectHash = p.host
+	failCnt := uint64(0)
 	for i := range p.pool {
 		select {
 		case <-ctx.Done():
@@ -201,6 +203,10 @@ func (p *pool) connect(ctx context.Context) (c Conn, err error) {
 			log.Debugf("establishing same connection to %s", p.addr)
 			conn, err := p.dial(ctx, p.addr)
 			if err != nil {
+				failCnt++
+				if p.isIP && (p.Len() <= 2 || failCnt >= p.Len()/3) {
+					return nil, errors.ErrInvalidGRPCClientConn(p.addr)
+				}
 				continue
 			}
 			p.pool[i].Store(&poolConn{
@@ -244,15 +250,26 @@ func (p *pool) Disconnect() (err error) {
 func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err error) {
 	if p.bo != nil {
 		var res interface{}
+		retry := 0
 		res, err = p.bo.Do(ctx, func() (interface{}, error) {
-			conn, err := grpc.DialContext(ctx, addr, p.dopts...)
+			log.Debugf("dialing to %s with backoff, retry: %d", addr, retry)
+			ctx, cancel := context.WithTimeout(ctx, p.dialTimeout)
+			defer cancel()
+			conn, err := grpc.DialContext(ctx, addr, append(p.dopts, grpc.WithBlock())...)
 			if err != nil {
 				if conn != nil {
 					err = errors.Wrap(conn.Close(), err.Error())
+					log.Debug(err)
 				}
+				retry++
 				return nil, err
 			}
 			if !isHealthy(conn) {
+				if conn != nil {
+					err = errors.Wrap(conn.Close(), err.Error())
+					log.Debug(err)
+				}
+				retry++
 				return nil, errors.ErrGRPCClientConnNotFound(addr)
 			}
 			return conn, nil
@@ -263,7 +280,10 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 			return nil, errors.ErrGRPCClientConnNotFound(addr)
 		}
 	} else {
-		conn, err = grpc.DialContext(ctx, addr, p.dopts...)
+		log.Debugf("dialing to %s", addr)
+		ctx, cancel := context.WithTimeout(ctx, p.dialTimeout)
+		defer cancel()
+		conn, err = grpc.DialContext(ctx, addr, append(p.dopts, grpc.WithBlock())...)
 	}
 	if err != nil || !isHealthy(conn) {
 		log.Debugf("failed to dial pool connection addr = %s\terror = %v", addr, err)
@@ -282,8 +302,10 @@ func (p *pool) IsHealthy(ctx context.Context) bool {
 	for i, pool := range p.pool {
 		pc, ok := pool.Load().(*poolConn)
 		if ok && pc != nil && pc.conn != nil && !isHealthy(pc.conn) {
+			log.Debugf("connection for %s is unhealthy trying to dial for new connection", pc.addr)
 			conn, err := p.dial(ctx, pc.addr)
 			if err != nil {
+				log.Debugf("failed to try dial connection for %s", pc.addr)
 				return false
 			}
 			p.pool[i].Store(&poolConn{
@@ -292,7 +314,7 @@ func (p *pool) IsHealthy(ctx context.Context) bool {
 			})
 			err = pc.conn.Close()
 			if err != nil {
-				log.Warn(err)
+				log.Warnf("failed to close old connection for %s,\terr: %v", pc.addr, err)
 			}
 		}
 	}
@@ -308,24 +330,30 @@ func (p *pool) Do(f func(conn *ClientConn) error) error {
 }
 
 func (p *pool) Get() (*ClientConn, bool) {
-	return p.get(0)
+	return p.get(p.Len())
 }
 
-func (p *pool) get(retry int) (*ClientConn, bool) {
+func (p *pool) get(retry uint64) (*ClientConn, bool) {
+	if retry <= 0 || p.Len() <= 0 {
+		log.Warnf("failed to find grpc pool connection for %s", p.addr)
+		if p.isIP {
+			log.Debugf("failure connection is IP connection trying to disconnect grpc connection for %s", p.addr)
+			if err := p.Disconnect(); err != nil {
+				log.Debugf("failed to disconnect grpc IP connection for %s,\terr: %v", p.addr, err)
+			}
+		}
+		return nil, false
+	}
 	if atomic.LoadUint64(&p.current) >= math.MaxUint64-2 {
 		atomic.StoreUint64(&p.current, 0)
 	}
-	res := p.pool[atomic.AddUint64(&p.current, 1)%uint64(len(p.pool))].Load()
-	if res != nil {
-		pc, ok := res.(*poolConn)
-		if ok && isHealthy(pc.conn) {
+
+	if res := p.pool[atomic.AddUint64(&p.current, 1)%p.Len()].Load(); res != nil {
+		if pc, ok := res.(*poolConn); ok && pc != nil && isHealthy(pc.conn) {
 			return pc.conn, true
 		}
 	}
-	if retry > len(p.pool) {
-		return nil, false
-	}
-	retry++
+	retry--
 	return p.get(retry)
 }
 
@@ -338,8 +366,10 @@ func (p *pool) Size() uint64 {
 }
 
 func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
+	log.Debugf("resolving ip addr for %s", p.addr)
 	addrs, err := net.DefaultResolver.LookupIPAddr(ctx, p.host)
 	if err != nil {
+		log.Debugf("failed to resolve ip addr for %s \terr: %s", p.addr, err.Error())
 		return nil, err
 	}
 	ips = make([]string, 0, len(addrs))
@@ -361,7 +391,7 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 			conn, err = d.DialContext(ctx, network, addr)
 		}
 		if err != nil {
-			log.Warn(err)
+			log.Warnf("failed to initialize ping addr: %s,\terr: %s", addr, err.Error())
 			continue
 		}
 		if conn != nil {
@@ -379,12 +409,24 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 }
 
 func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
+	if p.isIP && len(p.reconnectHash) != 0 && !p.IsHealthy(ctx) {
+		return nil, errors.ErrInvalidGRPCClientConn(p.addr)
+	}
+
 	if len(p.reconnectHash) == 0 {
+		log.Debugf("connection history for %s not found starting connection phase", p.addr)
+		if p.isIP {
+			return p.connect(ctx)
+		}
 		return p.Connect(ctx)
 	}
+
 	ips, err := p.lookupIPAddr(ctx)
-	if err != nil {
+	if err != nil || p.isIP {
 		if !p.IsHealthy(ctx) {
+			if p.isIP {
+				return nil, errors.ErrInvalidGRPCClientConn(p.addr)
+			}
 			return p.connect(ctx)
 		}
 		return p, nil
