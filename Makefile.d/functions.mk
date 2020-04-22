@@ -90,17 +90,25 @@ define telepresence
 	    ## --deployment-type "$(SWAP_DEPLOYMENT_TYPE)"
 endef
 
-define gen-option-test
-	find . -type d | grep "./cmd\|./hack\|./internal\|./pkg" | \
-	    grep -v "./cmd/cli\|./hack/benchmark/internal/client/ngtd\|./hack/benchmark/internal/starter/agent\|./hack/benchmark/internal/starter/external\|./hack/benchmark/internal/starter/gateway\|./hack/license\|./hack/swagger\|./hack/tools" | \
-		while read DIR; \
-	        do TARGETFILE=`find $${DIR} -maxdepth 1 -name "option.go"`; \
-			    for FILE in $${TARGETFILE}; \
-				    do printf "$${FILE}\n"; \
-			    done \
-        done
-endef
-
-define gen-general-test
-
+define gen-test
+	find . -type d | \
+	grep "./cmd\|./hack\|./internal\|./pkg" | \
+	grep -v "./cmd/cli\| \
+			 ./hack/benchmark/internal/client/ngtd\| \
+			 ./hack/benchmark/internal/starter/agent\| \
+			 ./hack/benchmark/internal/starter/external\| \
+			 ./hack/benchmark/internal/starter/gateway\| \
+			 ./hack/license\| \
+			 ./hack/swagger\| \
+			 ./hack/tools"| \
+	while read dir; do \
+		files=`find $${dir} -type f -maxdepth 1 -name "*.go" -not -name '*_test.go' -not -name 'doc.go'`; \
+		for file in $${files}; do \
+			path='./assets/test/templates/common';     \
+			if [[ $${file} =~ .*options?\.go ]] ; then \
+				path='./assets/test/templates/option'; \
+			fi; \
+			gotests -template_dir $${path} -all $${file}; \
+		done; \
+	done
 endef
