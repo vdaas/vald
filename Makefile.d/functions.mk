@@ -108,7 +108,7 @@ define gen-test
 			if [[ $${file} =~ .*options?\.go ]] ; then \
 				path='./assets/test/templates/option'; \
 			fi; \
-			gotests -template_dir $${path} -all $${file}; \
+			gotests -w -template_dir $${path} -all $${file}; \
 		done; \
 	done
 endef
