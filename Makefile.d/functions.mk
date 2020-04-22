@@ -108,6 +108,7 @@ define gen-test
 			if [[ $${file} =~ .*options?\.go ]] ; then \
 				path='./assets/test/templates/option'; \
 			fi; \
+			echo start generate test code: $${file}
 			gotests -w -template_dir $${path} -all $${file}; \
 		done; \
 	done
