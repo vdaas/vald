@@ -5,7 +5,7 @@ func {{ .TestName }}(t *testing.T) {
     {{- if .TestParameters }}
     type args struct {
 		{{- range .TestParameters }}
-				{{ .Name }} {{ .Type }}
+				{{ Param . }} {{ .Type }}
 		{{- end}}
     }
     {{- end }}
@@ -114,7 +114,7 @@ func {{ .TestName }}(t *testing.T) {
                     {{- if .IsStruct }}
                         {{ Receiver . }} := {{- if .Type.IsStar }}&{{- end }}{{ .Type.Value }} {
                         {{- range .Fields }}
-                            {{ .Name }}: tt.fields.{{ Field . }},
+                            {{ Field . }}: tt.fields.{{ Field . }},
                         {{- end }}
                         }
                     {{- end }}

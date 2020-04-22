@@ -6,7 +6,7 @@ func {{ .TestName }}(t *testing.T) {
     {{- if .TestParameters }}
     type args struct {
         {{- range .TestParameters }}
-            {{ .Name }} {{ .Type }}
+            {{ Param . }} {{ .Type }}
         {{- end}}
     }
     {{- end }}
