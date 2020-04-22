@@ -391,7 +391,7 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 			conn, err = d.DialContext(ctx, network, addr)
 		}
 		if err != nil {
-			log.Warnf("failed to initila ping addr: %s,\terr: %s", addr, err.Error())
+			log.Warnf("failed to initialize ping addr: %s,\terr: %s", addr, err.Error())
 			continue
 		}
 		if conn != nil {
