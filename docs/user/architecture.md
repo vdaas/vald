@@ -4,7 +4,7 @@
 
 This document describe the high level architecture design of Vald and explain each component in Vald. We need to these components to support scalability, high performance and auto-healing in Vald.
 
-![Architecture Overview](../../design/Vald Future Architecture Overview.svg "Architecture overview")
+<img src="../../design/Vald Future Architecture Overview.svg" />
 
 Vald is based on [Kubernetes](https://kubernetes.io/) architecture. Before you read this document you must understand the basic concept of Kubernetes.
 

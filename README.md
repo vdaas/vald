@@ -103,6 +103,8 @@ Write example here
 <img src="./assets/image/svg/Vald Architecture Overview.svg" width="100%">
 </div>
 
+Please refer [here](./docs/user/architecture.md) for more details of the architecture overview in the future.
+
 ## Development
 
 Before your first commit to this repository, it is strongly recommended to run the commands below.
