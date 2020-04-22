@@ -20,6 +20,7 @@
                 {{- else if eq $typ "byte" -}} 0,
                 {{- else if eq $typ "rune" -}} 0,
                 {{- else if eq $typ "string" -}} "",
+                {{- else if eq $typ "bool" -}} false,
                 {{- else if .IsStruct -}} {{.Type.Value}}{},
                 {{- else -}} nil,
                 {{- end -}}
