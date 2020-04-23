@@ -26,31 +26,35 @@ type SessionOptions = tf.SessionOptions
 type Operation = tf.Operation
 
 type TF interface {
-	GetVector(feeds []Feed, fetches []Fetch, targets ...*Operation) (values [][][]float64, err error)
+	GetVector(inputs ...string) ([]float64, error)
+	GetValue(inputs ...string) (interface{}, error)
+	GetValues(inputs ...string) (values []interface{}, err error)
 	Close() error
 }
 
 type tensorflow struct {
 	exportDir     string
 	tags          []string
+	feeds         []OutputSpec
+	fetches       []OutputSpec
 	operations    []*Operation
 	sessionTarget string
 	sessionConfig []byte
 	options       *SessionOptions
 	graph         *tf.Graph
 	session       *tf.Session
+	ndim          uint8
 }
 
-type Feed struct {
-	InputBytes    []byte
-	OperationName string
-	OutputIndex   int
+type OutputSpec struct {
+	operationName string
+	outputIndex   int
 }
 
-type Fetch struct {
-	OperationName string
-	OutputIndex   int
-}
+const (
+	TwoDim uint8 = iota + 2
+	ThreeDim
+)
 
 func New(opts ...Option) (TF, error) {
 	t := new(tensorflow)
@@ -78,38 +82,87 @@ func (t *tensorflow) Close() error {
 	return t.session.Close()
 }
 
-func (t *tensorflow) GetVector(feeds []Feed, fetches []Fetch, targets ...*Operation) (values [][][]float64, err error) {
-	input := make(map[tf.Output]*tf.Tensor, len(feeds))
-	for _, feed := range feeds {
-		inputTensor, err := tf.NewTensor([]string{string(feed.InputBytes)})
+func (t *tensorflow) run(inputs ...string) ([]*tf.Tensor, error) {
+	if len(inputs) != len(t.feeds) {
+		return nil, errors.ErrInputLength(len(inputs), len(t.feeds))
+	}
+
+	feeds := make(map[tf.Output]*tf.Tensor, len(inputs))
+	for i, val := range inputs {
+		inputTensor, err := tf.NewTensor(val)
 		if err != nil {
 			return nil, err
 		}
-		input[t.graph.Operation(feed.OperationName).Output(feed.OutputIndex)] = inputTensor
+		feeds[t.graph.Operation(t.feeds[i].operationName).Output(t.feeds[i].outputIndex)] = inputTensor
 	}
 
-	output := make([]tf.Output, 0, len(fetches))
-	for _, fetch := range fetches {
-		output = append(output, t.graph.Operation(fetch.OperationName).Output(fetch.OutputIndex))
+	fetches := make([]tf.Output, 0, len(t.fetches))
+	for _, fetch := range t.fetches {
+		fetches = append(fetches, t.graph.Operation(fetch.operationName).Output(fetch.outputIndex))
 	}
 
-	if targets == nil {
-		targets = t.operations
-	}
+	return t.session.Run(feeds, fetches, t.operations)
+}
 
-	results, err := t.session.Run(input, output, targets)
+func (t *tensorflow) GetVector(inputs ...string) ([]float64, error) {
+	tensors, err := t.run(inputs...)
 	if err != nil {
 		return nil, err
 	}
+	if tensors == nil || tensors[0] == nil || tensors[0].Value() == nil {
+		return nil, errors.ErrNilTensorTF(tensors)
+	}
 
-	values = make([][][]float64, 0, len(results))
-	for _, result := range results {
-		value, ok := result.Value().([][]float64)
+	switch t.ndim {
+	case TwoDim:
+		value, ok := tensors[0].Value().([][]float64)
 		if ok {
-			values = append(values, value)
+			if value == nil {
+				return nil, errors.ErrNilTensorValueTF(value)
+			}
+			return value[0], nil
 		} else {
-			return nil, errors.ErrFailedToCastTF(result.Value())
+			return nil, errors.ErrFailedToCastTF(tensors[0].Value())
 		}
+	case ThreeDim:
+		value, ok := tensors[0].Value().([][][]float64)
+		if ok {
+			if value == nil || value[0] == nil {
+				return nil, errors.ErrNilTensorValueTF(value)
+			}
+			return value[0][0], nil
+		} else {
+			return nil, errors.ErrFailedToCastTF(tensors[0].Value())
+		}
+	default:
+		value, ok := tensors[0].Value().([]float64)
+		if ok {
+			return value, nil
+		} else {
+			return nil, errors.ErrFailedToCastTF(tensors[0].Value())
+		}
+	}
+}
+
+func (t *tensorflow) GetValue(inputs ...string) (interface{}, error) {
+	tensors, err := t.run(inputs...)
+	if err != nil {
+		return nil, err
+	}
+	if tensors == nil || tensors[0] == nil {
+		return nil, errors.ErrNilTensorTF(tensors)
+	}
+	return tensors[0].Value(), nil
+}
+
+func (t *tensorflow) GetValues(inputs ...string) (values []interface{}, err error) {
+	tensors, err := t.run(inputs...)
+	if err != nil {
+		return nil, err
+	}
+	values = make([]interface{}, 0, len(tensors))
+	for _, tensor := range tensors {
+		values = append(values, tensor.Value())
 	}
 	return values, nil
 }

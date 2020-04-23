@@ -21,4 +21,13 @@ var (
 	ErrFailedToCastTF = func(v interface{}) error {
 		return Errorf("failed to cast tensorflow result %+v", v)
 	}
+	ErrInputLength = func(i int, f int) error {
+		return Errorf("inputs length %d does not match feeds length %d", i, f)
+	}
+	ErrNilTensorTF = func(v interface{}) error {
+		return Errorf("nil tensorflow tensor %+v", v)
+	}
+	ErrNilTensorValueTF = func(v interface{}) error {
+		return Errorf("nil tensorflow tensor value %+v", v)
+	}
 )

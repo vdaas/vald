@@ -23,6 +23,7 @@ var (
 	defaultOpts = []Option{
 		WithOperations(),        // set to default
 		WithSessionOptions(nil), // set to default
+		WithNdim(0),             // set to default
 	}
 )
 
@@ -77,5 +78,43 @@ func WithTags(tags ...string) Option {
 				t.tags = tags
 			}
 		}
+	}
+}
+
+func WithFeed(operationName string, outputIndex int) Option {
+	return func(t *tensorflow) {
+		t.feeds = append(t.feeds, OutputSpec{operationName, outputIndex})
+	}
+}
+
+func WithFeeds(operationNames []string, outputIndexes []int) Option {
+	return func(t *tensorflow) {
+		if operationNames != nil && outputIndexes != nil && len(operationNames) == len(outputIndexes) {
+			for i := range operationNames {
+				t.feeds = append(t.feeds, OutputSpec{operationNames[i], outputIndexes[i]})
+			}
+		}
+	}
+}
+
+func WithFetch(operationName string, outputIndex int) Option {
+	return func(t *tensorflow) {
+		t.fetches = append(t.fetches, OutputSpec{operationName, outputIndex})
+	}
+}
+
+func WithFetches(operationNames []string, outputIndexes []int) Option {
+	return func(t *tensorflow) {
+		if operationNames != nil && outputIndexes != nil && len(operationNames) == len(outputIndexes) {
+			for i := range operationNames {
+				t.fetches = append(t.fetches, OutputSpec{operationNames[i], outputIndexes[i]})
+			}
+		}
+	}
+}
+
+func WithNdim(ndim uint8) Option {
+	return func(t *tensorflow) {
+		t.ndim = ndim
 	}
 }
