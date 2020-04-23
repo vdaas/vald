@@ -32,9 +32,13 @@ func {{ .TestName }}(t *testing.T) {
         {{- if .TestParameters }}
             args args
         {{- end }}
-        {{- if $hasFields }}
-            fields fields
-        {{- end }}
+        {{- with .Receiver}}
+            {{- if and .IsStruct .Fields}}
+                fields fields
+            {{- else}}
+                {{Receiver .}} {{.Type}}
+            {{- end}}
+        {{- end}}
         want want
         // Use the first line if the option returns an error. otherwise use the second line
         // checkFunc  func(want, *T, error) error
@@ -110,39 +114,39 @@ func {{ .TestName }}(t *testing.T) {
         */
     }
 
-    for {{- if (or .Subtests (not .IsNaked)) }} _, tt := {{- end }} range tests {
+    for {{- if (or .Subtests (not .IsNaked)) }} _, test := {{- end }} range tests {
         {{- if .Subtests }}
-            t.Run(tt.name, func(t *testing.T) {
-                if tt.beforeFunc != nil {
-                    tt.beforeFunc({{- if .TestParameters }} tt.args {{- end }})
+            t.Run(test.name, func(tt *testing.T) {
+                if test.beforeFunc != nil {
+                    test.beforeFunc({{- if .TestParameters }} test.args {{- end }})
                 }
-                if tt.afterFunc != nil {
-                    defer tt.afterFunc({{- if .TestParameters }} tt.args {{- end }})
+                if test.afterFunc != nil {
+                    defer test.afterFunc({{- if .TestParameters }} test.args {{- end }})
                 }
 
                 // Uncomment this block if the option returns an error, otherwise delete it
                 /*
-                if tt.checkFunc == nil {
-                    tt.checkFunc = defaultCheckFunc
+                if test.checkFunc == nil {
+                    test.checkFunc = defaultCheckFunc
                 }
 
                 got := {{ template "call" $f }}
                 obj := new(T)
-                if err := tt.checkFunc(tt.want, obj, got(obj)); err != nil {
-                    t.Errorf("error = %v", err)
+                if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+                    tt.Errorf("error = %v", err)
                 }
                 */
 
                 // Uncomment this block if the option returns an error, otherwise delete it
                 /*
-                if tt.checkFunc == nil {
-                    tt.checkFunc = defaultCheckFunc
+                if test.checkFunc == nil {
+                    test.checkFunc = defaultCheckFunc
                 }
                 got := {{ template "call" $f }}
                 obj := new(T)
                 got(obj)
-                if err := tt.checkFunc(tt.want, obj); err != nil {
-                    t.Errorf("error = %v", err)
+                if err := test.checkFunc(tt.want, obj); err != nil {
+                    tt.Errorf("error = %v", err)
                 }
                 */
             })
