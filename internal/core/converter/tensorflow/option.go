@@ -113,7 +113,7 @@ func WithFetches(operationNames []string, outputIndexes []int) Option {
 	}
 }
 
-func WithNdim(ndim int8) Option {
+func WithNdim(ndim uint8) Option {
 	return func(t *tensorflow) {
 		t.ndim = ndim
 	}

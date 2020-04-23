@@ -43,7 +43,7 @@ type tensorflow struct {
 	options       *SessionOptions
 	graph         *tf.Graph
 	session       *tf.Session
-	ndim          int8
+	ndim          uint8
 }
 
 type OutputSpec struct {
@@ -52,8 +52,8 @@ type OutputSpec struct {
 }
 
 const (
-	TWO_DIM   int8 = 2
-	THREE_DIM int8 = 3
+	TwoDim uint8 = iota + 2
+	ThreeDim
 )
 
 func New(opts ...Option) (TF, error) {
@@ -114,7 +114,7 @@ func (t *tensorflow) GetVector(inputs ...string) ([]float64, error) {
 	}
 
 	switch t.ndim {
-	case TWO_DIM:
+	case TwoDim:
 		value, ok := tensors[0].Value().([][]float64)
 		if ok {
 			if value == nil {
@@ -124,7 +124,7 @@ func (t *tensorflow) GetVector(inputs ...string) ([]float64, error) {
 		} else {
 			return nil, errors.ErrFailedToCastTF(tensors[0].Value())
 		}
-	case THREE_DIM:
+	case ThreeDim:
 		value, ok := tensors[0].Value().([][][]float64)
 		if ok {
 			if value == nil || value[0] == nil {
