@@ -1,1 +1,43 @@
-../common/fill.tmpl
+#
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{{define "fill" }}
+        {{- range . }}
+                {{ Param . }}: {{ $typ := .Type.String -}}
+                {{- if eq $typ "int8" -}} 0,
+                {{- else if eq $typ "uint8" -}} 0,
+                {{- else if eq $typ "uint16" -}} 0,
+                {{- else if eq $typ "uint32" -}} 0,
+                {{- else if eq $typ "uint64" -}} 0,
+                {{- else if eq $typ "uint" -}} 0,
+                {{- else if eq $typ "uintptr" -}} 0,
+                {{- else if eq $typ "int8" -}} 0,
+                {{- else if eq $typ "int16" -}} 0,
+                {{- else if eq $typ "int32" -}} 0,
+                {{- else if eq $typ "int64" -}} 0,
+                {{- else if eq $typ "int" -}} 0,
+                {{- else if eq $typ "float32" -}} 0,
+                {{- else if eq $typ "float64" -}} 0,
+                {{- else if eq $typ "complex64" -}} 0+0i,
+                {{- else if eq $typ "complex128" -}} 0+0i,
+                {{- else if eq $typ "byte" -}} 0,
+                {{- else if eq $typ "rune" -}} 0,
+                {{- else if eq $typ "string" -}} "",
+                {{- else if eq $typ "bool" -}} false,
+                {{- else if .IsStruct -}} {{.Type.Value}}{},
+                {{- else -}} nil,
+                {{- end -}}
+        {{ end -}}
+{{ end }}
