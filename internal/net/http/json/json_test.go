@@ -17,6 +17,7 @@ package json
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -602,6 +603,310 @@ func TestErrorHandler(t *testing.T) {
 			if err := tt.checkFunc(got); err != nil {
 				t.Error(err)
 			}
+		})
+	}
+}
+
+func TestUnmarshal(t *testing.T) {
+	type args struct {
+		data []byte
+		i    interface{}
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           data: nil,
+		           i: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           data: nil,
+		           i: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			err := Unmarshal(test.args.data, test.args.i)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func TestDecodeResponse(t *testing.T) {
+	type args struct {
+		res  *http.Response
+		data interface{}
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           res: nil,
+		           data: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           res: nil,
+		           data: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			err := DecodeResponse(test.args.res, test.args.data)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func TestEncodeRequest(t *testing.T) {
+	type args struct {
+		req          *http.Request
+		data         interface{}
+		contentTypes []string
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           req: nil,
+		           data: nil,
+		           contentTypes: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           req: nil,
+		           data: nil,
+		           contentTypes: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			err := EncodeRequest(test.args.req, test.args.data, test.args.contentTypes...)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func TestRequest(t *testing.T) {
+	type args struct {
+		ctx     context.Context
+		method  string
+		url     string
+		payloyd interface{}
+		data    interface{}
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           method: "",
+		           url: "",
+		           payloyd: nil,
+		           data: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           method: "",
+		           url: "",
+		           payloyd: nil,
+		           data: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			err := Request(test.args.ctx, test.args.method, test.args.url, test.args.payloyd, test.args.data)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
 		})
 	}
 }

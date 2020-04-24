@@ -348,3 +348,176 @@ func TestOutf(t *testing.T) {
 		})
 	}
 }
+
+func Test_retry_Out(t *testing.T) {
+	type args struct {
+		fn   func(vals ...interface{}) error
+		vals []interface{}
+	}
+	type fields struct {
+		warnFn  func(vals ...interface{})
+		errorFn func(vals ...interface{})
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           fn: nil,
+		           vals: nil,
+		       },
+		       fields: fields {
+		           warnFn: nil,
+		           errorFn: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           fn: nil,
+		           vals: nil,
+		           },
+		           fields: fields {
+		           warnFn: nil,
+		           errorFn: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			r := &retry{
+				warnFn:  test.fields.warnFn,
+				errorFn: test.fields.errorFn,
+			}
+
+			r.Out(test.args.fn, test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_retry_Outf(t *testing.T) {
+	type args struct {
+		fn     func(format string, vals ...interface{}) error
+		format string
+		vals   []interface{}
+	}
+	type fields struct {
+		warnFn  func(vals ...interface{})
+		errorFn func(vals ...interface{})
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           fn: nil,
+		           format: "",
+		           vals: nil,
+		       },
+		       fields: fields {
+		           warnFn: nil,
+		           errorFn: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           fn: nil,
+		           format: "",
+		           vals: nil,
+		           },
+		           fields: fields {
+		           warnFn: nil,
+		           errorFn: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			r := &retry{
+				warnFn:  test.fields.warnFn,
+				errorFn: test.fields.errorFn,
+			}
+
+			r.Outf(test.args.fn, test.args.format, test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}

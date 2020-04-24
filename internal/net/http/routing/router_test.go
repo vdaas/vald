@@ -19,10 +19,12 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/http/middleware"
 	"github.com/vdaas/vald/internal/net/http/rest"
 )
 
@@ -172,6 +174,102 @@ func TestRouting(t *testing.T) {
 			if err := tt.checkFunc(hdr); err != nil {
 				t.Error(err)
 			}
+		})
+	}
+}
+
+func Test_router_routing(t *testing.T) {
+	type args struct {
+		name string
+		path string
+		m    []string
+		h    rest.Func
+	}
+	type fields struct {
+		middlewares []middleware.Wrapper
+		routes      []Route
+	}
+	type want struct {
+		want http.Handler
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, http.Handler) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got http.Handler) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           name: "",
+		           path: "",
+		           m: nil,
+		           h: nil,
+		       },
+		       fields: fields {
+		           middlewares: nil,
+		           routes: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           name: "",
+		           path: "",
+		           m: nil,
+		           h: nil,
+		           },
+		           fields: fields {
+		           middlewares: nil,
+		           routes: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			rt := &router{
+				middlewares: test.fields.middlewares,
+				routes:      test.fields.routes,
+			}
+
+			got := rt.routing(test.args.name, test.args.path, test.args.m, test.args.h)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
 		})
 	}
 }

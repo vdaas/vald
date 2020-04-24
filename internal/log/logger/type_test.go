@@ -15,7 +15,12 @@
 //
 package logger
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+
+	"github.com/pkg/errors"
+)
 
 func TestString(t *testing.T) {
 	type test struct {
@@ -153,6 +158,67 @@ func TestAtot(t *testing.T) {
 			if got != tt.want {
 				t.Errorf("not equals. want: %v, but got: %v", tt.want, got)
 			}
+		})
+	}
+}
+
+func TestType_String(t *testing.T) {
+	type want struct {
+		want string
+	}
+	type test struct {
+		name       string
+		m          Type
+		want       want
+		checkFunc  func(want, string) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got string) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := test.m.String()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
 		})
 	}
 }

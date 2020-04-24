@@ -230,3 +230,185 @@ func TestRoundTrip(t *testing.T) {
 		})
 	}
 }
+
+func Test_ert_RoundTrip(t *testing.T) {
+	type args struct {
+		req *http.Request
+	}
+	type fields struct {
+		transport http.RoundTripper
+		bo        backoff.Backoff
+	}
+	type want struct {
+		wantRes *http.Response
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *http.Response, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *http.Response, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           req: nil,
+		       },
+		       fields: fields {
+		           transport: nil,
+		           bo: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           req: nil,
+		           },
+		           fields: fields {
+		           transport: nil,
+		           bo: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			e := &ert{
+				transport: test.fields.transport,
+				bo:        test.fields.bo,
+			}
+
+			gotRes, err := e.RoundTrip(test.args.req)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_ert_roundTrip(t *testing.T) {
+	type args struct {
+		req *http.Request
+	}
+	type fields struct {
+		transport http.RoundTripper
+		bo        backoff.Backoff
+	}
+	type want struct {
+		wantRes *http.Response
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *http.Response, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *http.Response, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           req: nil,
+		       },
+		       fields: fields {
+		           transport: nil,
+		           bo: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           req: nil,
+		           },
+		           fields: fields {
+		           transport: nil,
+		           bo: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			e := &ert{
+				transport: test.fields.transport,
+				bo:        test.fields.bo,
+			}
+
+			gotRes, err := e.roundTrip(test.args.req)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
