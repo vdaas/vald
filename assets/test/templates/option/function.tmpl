@@ -1,0 +1,156 @@
+{{define "function"}}
+{{- $f := . }}
+
+func {{ .TestName }}(t *testing.T) {
+    type T = interface{}
+    {{- if .TestParameters }}
+    type args struct {
+        {{- range .TestParameters }}
+            {{ Param . }} {{ .Type }}
+        {{- end}}
+    }
+    {{- end }}
+    {{- $hasFields := false -}}
+    {{- with .Receiver }}
+        {{- if .IsStruct }}
+            {{- if .Fields}}
+                type fields struct { {{ $hasFields = true }}
+                    {{- range .Fields }}
+                        {{ Field . }} {{ .Type }}
+                    {{- end }}
+                }
+            {{- end }}
+        {{- end }}
+    {{- end }}
+    type want struct {
+        obj *T
+        // Uncomment this line if the option returns an error, otherwise delete it
+        // err error
+    }
+    type test struct {
+        name string
+        {{- if .TestParameters }}
+            args args
+        {{- end }}
+        {{- with .Receiver}}
+            {{- if and .IsStruct .Fields}}
+                fields fields
+            {{- else}}
+                {{Receiver .}} {{.Type}}
+            {{- end}}
+        {{- end}}
+        want want
+        // Use the first line if the option returns an error. otherwise use the second line
+        // checkFunc  func(want, *T, error) error
+        // checkFunc  func(want, *T) error
+        beforeFunc func({{- if .TestParameters }} args {{- end}})
+        afterFunc func({{- if .TestParameters }} args {{- end}})
+    }
+
+    // Uncomment this block if the option returns an error, otherwise delete it
+    /*
+    defaultCheckFunc := func(w want, obj *T, err error) error {
+        if !errors.Is(err, w.err) {
+            return errors.Errorf("got error = %v, want %v", err, w.err)
+        }
+        if !reflect.DeepEqual(obj, w.obj) {
+            return errors.Errorf("got = %v, want %v", obj, w.obj)
+        }
+        return nil
+    }
+    */
+
+    // Uncomment this block if the option do not returns an error, otherwise delete it
+    /*
+    defaultCheckFunc := func(w want, obj *T) error {
+        if !reflect.DeepEqual(obj, w.obj) {
+            return fmt.Errorf("got = %v, want %v", obj, w.c)
+        }
+        return nil
+    }
+    */
+
+    tests := []test{
+        // TODO test cases
+        /*
+        {
+            name: "test_case_1",
+            {{- if .TestParameters }}
+            args: args {
+                {{- template "fill" .TestParameters }}
+            },
+            {{- end }}
+            {{- if $hasFields }}
+            fields: fields {
+                {{- template "fill" .Receiver.Fields }}
+            },
+            {{- end }}
+            want: want {
+                obj: new(T),
+            },
+        },
+        */
+
+        // TODO test cases
+        /*
+        func() test {
+            return test {
+                name: "test_case_2",
+                {{- if .TestParameters }}
+                args: args {
+                    {{- template "fill" .TestParameters }}
+                },
+                {{- end }}
+                {{- if $hasFields }}
+                fields: fields {
+                    {{- template "fill" .Receiver.Fields }}
+                },
+                {{- end }}
+                want: want {
+                    obj: new(T),
+                },
+            }
+        }(),
+        */
+    }
+
+    for {{- if (or .Subtests (not .IsNaked)) }} _, test := {{- end }} range tests {
+        {{- if .Subtests }}
+            t.Run(test.name, func(tt *testing.T) {
+                if test.beforeFunc != nil {
+                    test.beforeFunc({{- if .TestParameters }} test.args {{- end }})
+                }
+                if test.afterFunc != nil {
+                    defer test.afterFunc({{- if .TestParameters }} test.args {{- end }})
+                }
+
+                // Uncomment this block if the option returns an error, otherwise delete it
+                /*
+                if test.checkFunc == nil {
+                    test.checkFunc = defaultCheckFunc
+                }
+
+                got := {{ template "call" $f }}
+                obj := new(T)
+                if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+                    tt.Errorf("error = %v", err)
+                }
+                */
+
+                // Uncomment this block if the option returns an error, otherwise delete it
+                /*
+                if test.checkFunc == nil {
+                    test.checkFunc = defaultCheckFunc
+                }
+                got := {{ template "call" $f }}
+                obj := new(T)
+                got(obj)
+                if err := test.checkFunc(tt.want, obj); err != nil {
+                    tt.Errorf("error = %v", err)
+                }
+                */
+            })
+        {{- end }}
+    }
+}
+{{- end }}

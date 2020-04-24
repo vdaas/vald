@@ -1,0 +1,1 @@
+{{define "call"}}{{with .Receiver}}{{if not .IsStruct}}test.{{end}}{{Receiver .}}.{{end}}{{.Name}}({{range $i, $el := .Parameters}}{{if $i}}, {{end}}{{if not .IsWriter}}test.args.{{end}}{{Param .}}{{if .Type.IsVariadic}}...{{end}}{{end}}){{end}}

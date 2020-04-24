@@ -1,0 +1,154 @@
+{{define "function"}}
+{{- $f := . }}
+
+func {{ .TestName }}(t *testing.T) {
+    {{- if .TestParameters }}
+    type args struct {
+		{{- range .TestParameters }}
+				{{ Param . }} {{ .Type }}
+		{{- end}}
+    }
+    {{- end }}
+    {{- $hasFields := false -}}
+    {{- with .Receiver }}
+        {{- if .IsStruct }}
+            {{- if .Fields}}
+                type fields struct { {{ $hasFields = true }}
+                    {{- range .Fields }}
+                        {{ Field . }} {{ .Type }}
+                    {{- end }}
+                }
+            {{- end }}
+        {{- end }}
+    {{- end }}
+    type want struct {
+        {{- range .TestResults }}
+            {{ Want . }} {{ .Type }}
+        {{- end }}
+        {{- if .ReturnsError }}
+            err error
+        {{- end }}
+    }
+    type test struct {
+        name string
+        {{- if .TestParameters }}
+            args args
+        {{- end }}
+        {{- with .Receiver}}
+            {{- if and .IsStruct .Fields}}
+                fields fields
+            {{- else}}
+                {{Receiver .}} {{.Type}}
+            {{- end}}
+        {{- end}}
+        want want
+        checkFunc func(want,
+                    {{- range .TestResults }} {{ .Type }}, {{- end }}
+                    {{- if .ReturnsError }} error {{- end }} ) error
+        beforeFunc func({{- if .TestParameters }} args {{- end}})
+        afterFunc func({{- if .TestParameters }} args {{- end}})
+    }
+    defaultCheckFunc := func(w want,
+        {{- range .TestResults }} {{ Got . }} {{ .Type }}, {{- end }}
+        {{- if .ReturnsError }} err error {{- end }} ) error {
+
+        {{- if .ReturnsError }}
+            if !errors.Is(err, w.err) {
+                return errors.Errorf("got error = %v, want %v", err, w.err)
+            }
+        {{- end }}
+        {{- range .TestResults }} {{ $want := Want . }} {{ $got := Got . }}
+            if !reflect.DeepEqual({{ $got }}, w.{{ $want }}) {
+                return errors.Errorf("got = %v, want %v", {{ $got }}, w.{{ $want }})
+            }
+        {{- end }}
+        return nil
+    }
+    tests := []test{
+        // TODO test cases
+        /*
+        {
+            name: "test_case_1",
+            {{- if .TestParameters }}
+            args: args {
+                {{- template "fill" .TestParameters }}
+            },
+            {{- end }}
+            {{- if $hasFields }}
+            fields: fields {
+                {{- template "fill" .Receiver.Fields }}
+            },
+            {{- end }}
+            want: want{},
+            checkFunc: defaultCheckFunc,
+        },
+        */
+
+        // TODO test cases
+        /*
+        func() test {
+            return test {
+                name: "test_case_2",
+                {{- if .TestParameters }}
+                args: args {
+                    {{- template "fill" .TestParameters }}
+                },
+                {{- end }}
+                {{- if $hasFields }}
+                fields: fields {
+                    {{- template "fill" .Receiver.Fields }}
+                },
+                {{- end }}
+                want: want{},
+                checkFunc: defaultCheckFunc,
+            }
+        }(),
+        */
+    }
+
+    for {{- if (or .Subtests (not .IsNaked)) }} _, test := {{- end }} range tests {
+        {{- if .Subtests }}
+            t.Run(test.name, func(tt *testing.T) {
+                if test.beforeFunc != nil {
+                    test.beforeFunc({{- if .TestParameters }} test.args {{- end }})
+                }
+                if test.afterFunc != nil {
+                    defer test.afterFunc({{- if .TestParameters }} test.args {{- end }})
+                }
+                if test.checkFunc == nil {
+                    test.checkFunc = defaultCheckFunc
+                }
+
+                {{- with .Receiver }}
+                    {{- if .IsStruct }}
+                        {{ Receiver . }} := {{- if .Type.IsStar }}&{{- end }}{{ .Type.Value }} {
+                        {{- range .Fields }}
+                            {{ Field . }}: test.fields.{{ Field . }},
+                        {{- end }}
+                        }
+                    {{- end }}
+                {{- end }}
+
+                {{- range .Parameters }}
+                    {{- if .IsWriter }}
+                        {{ Param . }} := &bytes.Buffer{}
+                    {{- end }}
+                {{- end }}
+
+                {{ $len := len .Results }}
+                {{- if or (ge $len 1) (.OnlyReturnsOneValue) (.OnlyReturnsError) }}
+                    {{ template "results" $f }} := {{ template "call" $f }}
+                    if err := test.checkFunc(test.want, {{ template "results" $f }} ); err != nil {
+                        tt.Errorf("error = %v", err)
+                    }
+                {{ else }}
+                    {{ template "call" $f }}
+                    if err := test.checkFunc(test.want); err != nil {
+                        tt.Errorf("error = %v", err)
+                    }
+                {{- end }}
+            })
+        {{- end }}
+    }
+}
+{{- end }}
