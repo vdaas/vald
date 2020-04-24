@@ -52,7 +52,7 @@ require (
 	go.opencensus.io v0.22.3
 	go.uber.org/automaxprocs v1.3.0
 	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
-	golang.org/x/tools v0.0.0-20200421144719-26dd2a56eb2c // indirect
+	golang.org/x/tools v0.0.0-20200423205358-59e73619c742 // indirect
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/plot v0.7.0
 	google.golang.org/genproto v0.0.0-20200420144010-e5e8543f8aeb
