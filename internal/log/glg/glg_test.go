@@ -911,3 +911,1108 @@ func TestErrorf(t *testing.T) {
 		})
 	}
 }
+
+func Test_logger_setLevelMode(t *testing.T) {
+	type args struct {
+		lv level.Level
+	}
+	type fields struct {
+		format format.Format
+		level  level.Level
+		retry  retry.Retry
+		glg    *glg.Glg
+	}
+	type want struct {
+		want *logger
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *logger) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got *logger) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           lv: nil,
+		       },
+		       fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           lv: nil,
+		           },
+		           fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &logger{
+				format: test.fields.format,
+				level:  test.fields.level,
+				retry:  test.fields.retry,
+				glg:    test.fields.glg,
+			}
+
+			got := l.setLevelMode(test.args.lv)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_logger_setLogFormat(t *testing.T) {
+	type args struct {
+		fmt format.Format
+	}
+	type fields struct {
+		format format.Format
+		level  level.Level
+		retry  retry.Retry
+		glg    *glg.Glg
+	}
+	type want struct {
+		want *logger
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *logger) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got *logger) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           fmt: nil,
+		       },
+		       fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           fmt: nil,
+		           },
+		           fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &logger{
+				format: test.fields.format,
+				level:  test.fields.level,
+				retry:  test.fields.retry,
+				glg:    test.fields.glg,
+			}
+
+			got := l.setLogFormat(test.args.fmt)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_logger_Info(t *testing.T) {
+	type args struct {
+		vals []interface{}
+	}
+	type fields struct {
+		format format.Format
+		level  level.Level
+		retry  retry.Retry
+		glg    *glg.Glg
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           vals: nil,
+		       },
+		       fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           vals: nil,
+		           },
+		           fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &logger{
+				format: test.fields.format,
+				level:  test.fields.level,
+				retry:  test.fields.retry,
+				glg:    test.fields.glg,
+			}
+
+			l.Info(test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_logger_Infof(t *testing.T) {
+	type args struct {
+		format string
+		vals   []interface{}
+	}
+	type fields struct {
+		format format.Format
+		level  level.Level
+		retry  retry.Retry
+		glg    *glg.Glg
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           format: "",
+		           vals: nil,
+		       },
+		       fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           format: "",
+		           vals: nil,
+		           },
+		           fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &logger{
+				format: test.fields.format,
+				level:  test.fields.level,
+				retry:  test.fields.retry,
+				glg:    test.fields.glg,
+			}
+
+			l.Infof(test.args.format, test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_logger_Debug(t *testing.T) {
+	type args struct {
+		vals []interface{}
+	}
+	type fields struct {
+		format format.Format
+		level  level.Level
+		retry  retry.Retry
+		glg    *glg.Glg
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           vals: nil,
+		       },
+		       fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           vals: nil,
+		           },
+		           fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &logger{
+				format: test.fields.format,
+				level:  test.fields.level,
+				retry:  test.fields.retry,
+				glg:    test.fields.glg,
+			}
+
+			l.Debug(test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_logger_Debugf(t *testing.T) {
+	type args struct {
+		format string
+		vals   []interface{}
+	}
+	type fields struct {
+		format format.Format
+		level  level.Level
+		retry  retry.Retry
+		glg    *glg.Glg
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           format: "",
+		           vals: nil,
+		       },
+		       fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           format: "",
+		           vals: nil,
+		           },
+		           fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &logger{
+				format: test.fields.format,
+				level:  test.fields.level,
+				retry:  test.fields.retry,
+				glg:    test.fields.glg,
+			}
+
+			l.Debugf(test.args.format, test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_logger_Warn(t *testing.T) {
+	type args struct {
+		vals []interface{}
+	}
+	type fields struct {
+		format format.Format
+		level  level.Level
+		retry  retry.Retry
+		glg    *glg.Glg
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           vals: nil,
+		       },
+		       fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           vals: nil,
+		           },
+		           fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &logger{
+				format: test.fields.format,
+				level:  test.fields.level,
+				retry:  test.fields.retry,
+				glg:    test.fields.glg,
+			}
+
+			l.Warn(test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_logger_Warnf(t *testing.T) {
+	type args struct {
+		format string
+		vals   []interface{}
+	}
+	type fields struct {
+		format format.Format
+		level  level.Level
+		retry  retry.Retry
+		glg    *glg.Glg
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           format: "",
+		           vals: nil,
+		       },
+		       fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           format: "",
+		           vals: nil,
+		           },
+		           fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &logger{
+				format: test.fields.format,
+				level:  test.fields.level,
+				retry:  test.fields.retry,
+				glg:    test.fields.glg,
+			}
+
+			l.Warnf(test.args.format, test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_logger_Error(t *testing.T) {
+	type args struct {
+		vals []interface{}
+	}
+	type fields struct {
+		format format.Format
+		level  level.Level
+		retry  retry.Retry
+		glg    *glg.Glg
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           vals: nil,
+		       },
+		       fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           vals: nil,
+		           },
+		           fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &logger{
+				format: test.fields.format,
+				level:  test.fields.level,
+				retry:  test.fields.retry,
+				glg:    test.fields.glg,
+			}
+
+			l.Error(test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_logger_Errorf(t *testing.T) {
+	type args struct {
+		format string
+		vals   []interface{}
+	}
+	type fields struct {
+		format format.Format
+		level  level.Level
+		retry  retry.Retry
+		glg    *glg.Glg
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           format: "",
+		           vals: nil,
+		       },
+		       fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           format: "",
+		           vals: nil,
+		           },
+		           fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &logger{
+				format: test.fields.format,
+				level:  test.fields.level,
+				retry:  test.fields.retry,
+				glg:    test.fields.glg,
+			}
+
+			l.Errorf(test.args.format, test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_logger_Fatal(t *testing.T) {
+	type args struct {
+		vals []interface{}
+	}
+	type fields struct {
+		format format.Format
+		level  level.Level
+		retry  retry.Retry
+		glg    *glg.Glg
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           vals: nil,
+		       },
+		       fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           vals: nil,
+		           },
+		           fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &logger{
+				format: test.fields.format,
+				level:  test.fields.level,
+				retry:  test.fields.retry,
+				glg:    test.fields.glg,
+			}
+
+			l.Fatal(test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_logger_Fatalf(t *testing.T) {
+	type args struct {
+		format string
+		vals   []interface{}
+	}
+	type fields struct {
+		format format.Format
+		level  level.Level
+		retry  retry.Retry
+		glg    *glg.Glg
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           format: "",
+		           vals: nil,
+		       },
+		       fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           format: "",
+		           vals: nil,
+		           },
+		           fields: fields {
+		           format: nil,
+		           level: nil,
+		           retry: nil,
+		           glg: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &logger{
+				format: test.fields.format,
+				level:  test.fields.level,
+				retry:  test.fields.retry,
+				glg:    test.fields.glg,
+			}
+
+			l.Fatalf(test.args.format, test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}

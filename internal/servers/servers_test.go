@@ -356,3 +356,201 @@ func TestShutdown(t *testing.T) {
 		})
 	}
 }
+
+func Test_listener_ListenAndServe(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	type fields struct {
+		servers map[string]server.Server
+		eg      errgroup.Group
+		sus     []string
+		sds     []string
+		sddur   time.Duration
+	}
+	type want struct {
+		want <-chan error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, <-chan error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got <-chan error) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           servers: nil,
+		           eg: nil,
+		           sus: nil,
+		           sds: nil,
+		           sddur: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           servers: nil,
+		           eg: nil,
+		           sus: nil,
+		           sds: nil,
+		           sddur: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &listener{
+				servers: test.fields.servers,
+				eg:      test.fields.eg,
+				sus:     test.fields.sus,
+				sds:     test.fields.sds,
+				sddur:   test.fields.sddur,
+			}
+
+			got := l.ListenAndServe(test.args.ctx)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_listener_Shutdown(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	type fields struct {
+		servers map[string]server.Server
+		eg      errgroup.Group
+		sus     []string
+		sds     []string
+		sddur   time.Duration
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           servers: nil,
+		           eg: nil,
+		           sus: nil,
+		           sds: nil,
+		           sddur: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           servers: nil,
+		           eg: nil,
+		           sus: nil,
+		           sds: nil,
+		           sddur: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &listener{
+				servers: test.fields.servers,
+				eg:      test.fields.eg,
+				sus:     test.fields.sus,
+				sds:     test.fields.sds,
+				sddur:   test.fields.sddur,
+			}
+
+			err := l.Shutdown(test.args.ctx)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
