@@ -188,7 +188,8 @@ func Test_group_Do(t *testing.T) {
 				m:  test.fields.m,
 			}
 
-			gotV, gotShared, err := g.Do(test.args.ctx, test.args.key, test.args.fn)
+			// TODO: refactor singleflight.Do
+			gotV, err, gotShared := g.Do(test.args.ctx, test.args.key, test.args.fn)
 			if err := test.checkFunc(test.want, gotV, gotShared, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

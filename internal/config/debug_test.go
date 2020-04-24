@@ -94,8 +94,9 @@ func TestDebug_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			d := &Debug{
-				Profile: test.fields.Profile,
-				Log:     test.fields.Log,
+				// TODO: refactor debug.go
+				// Profile: test.fields.Profile,
+				// Log:     test.fields.Log,
 			}
 
 			got := d.Bind()
