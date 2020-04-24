@@ -22,8 +22,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/vdaas/vald/hack/benchmark/internal/starter"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/agent/ngt/config"
 )
 

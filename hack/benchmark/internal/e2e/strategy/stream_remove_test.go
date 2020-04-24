@@ -22,10 +22,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
 	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 func TestNewStreamRemove(t *testing.T) {
