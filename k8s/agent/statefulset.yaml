@@ -55,10 +55,10 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - vald-agent-ngt
+                  - key: app
+                    operator: In
+                    values:
+                    - vald-agent-ngt
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
