@@ -11,8 +11,6 @@ jobs:
   update-pr-template:
     name: Update PULL_REQUEST_TEMPLATE
     runs-on: ubuntu-latest
-    container:
-      image: vdaas/vald-ci-container:nightly
     steps:
       - name: Check out code.
         uses: actions/checkout@v1

@@ -8,7 +8,12 @@ on:
       - 'internal/**'
       - 'pkg/**'
       - 'cmd/**'
-      - 'versions/GO_VERSION'
+  pull_request:
+    paths:
+      - '.github/workflows/coverage.yml'
+      - 'internal/**'
+      - 'pkg/**'
+      - 'cmd/**'
 
 jobs:
   coverage:
