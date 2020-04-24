@@ -114,6 +114,7 @@ func dirwalk(dir string) []string {
 			".sum",
 			".svg",
 			".tpl",
+			".tmpl",
 			".txt",
 			".whitesource",
 			"LICENSE",
