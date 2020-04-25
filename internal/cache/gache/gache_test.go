@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/kpango/gache"
-	"github.com/pkg/errors"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 func TestNew(t *testing.T) {

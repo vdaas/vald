@@ -23,7 +23,7 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/pkg/errors"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 func Test_newEntryOu(t *testing.T) {

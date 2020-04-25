@@ -21,8 +21,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 func TestNewRemove(t *testing.T) {

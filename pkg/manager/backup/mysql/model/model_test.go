@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pkg/errors"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 func TestMetaVector_GetUUID(t *testing.T) {

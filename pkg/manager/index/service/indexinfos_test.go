@@ -23,8 +23,8 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/pkg/errors"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 func Test_newEntryIndexInfos(t *testing.T) {
