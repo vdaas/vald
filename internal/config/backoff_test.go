@@ -21,8 +21,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 func TestBackoff_Bind(t *testing.T) {

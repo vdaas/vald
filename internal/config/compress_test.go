@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pkg/errors"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 func Test_compressAlgorithm_String(t *testing.T) {

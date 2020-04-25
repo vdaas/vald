@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pkg/errors"
+	"github.com/vdaas/vald/internal/errors"
 	"go.opencensus.io/trace"
 )
 
