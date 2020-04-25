@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.31`
+Current chart version is `v0.0.33`
 
 Install
 ---
@@ -108,7 +108,7 @@ Configuration
 | backupManager.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity preferred scheduling terms |
 | backupManager.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
 | backupManager.annotations | object | `{}` | deployment annotations |
-| backupManager.cassandra.config.connect_timeout | string | `"600ms"` | connect timeout |
+| backupManager.cassandra.config.connect_timeout | string | `"3s"` | connect timeout |
 | backupManager.cassandra.config.consistency | string | `"quorum"` | consistency type |
 | backupManager.cassandra.config.cql_version | string | `"3.0.0"` | cassandra CQL version |
 | backupManager.cassandra.config.default_idempotence | bool | `false` | default idempotence enabled |
@@ -134,11 +134,11 @@ Configuration
 | backupManager.cassandra.config.pool_config.shuffle_replicas | bool | `false` | shuffle replica enabled |
 | backupManager.cassandra.config.port | int | `9042` | cassandra port |
 | backupManager.cassandra.config.proto_version | int | `0` | cassandra proto version |
-| backupManager.cassandra.config.reconnect_interval | string | `"1m"` | interval of reconnection |
-| backupManager.cassandra.config.reconnection_policy.initial_interval | string | `"1m"` | initial interval to reconnect |
+| backupManager.cassandra.config.reconnect_interval | string | `"100ms"` | interval of reconnection |
+| backupManager.cassandra.config.reconnection_policy.initial_interval | string | `"100ms"` | initial interval to reconnect |
 | backupManager.cassandra.config.reconnection_policy.max_retries | int | `3` | maximum number of retries to reconnect |
-| backupManager.cassandra.config.retry_policy.max_duration | string | `"30s"` | maximum duration to retry |
-| backupManager.cassandra.config.retry_policy.min_duration | string | `"1s"` | minimum duration to retry |
+| backupManager.cassandra.config.retry_policy.max_duration | string | `"1s"` | maximum duration to retry |
+| backupManager.cassandra.config.retry_policy.min_duration | string | `"10ms"` | minimum duration to retry |
 | backupManager.cassandra.config.retry_policy.num_retries | int | `3` | number of retries |
 | backupManager.cassandra.config.socket_keepalive | string | `"0s"` | socket keep alive time |
 | backupManager.cassandra.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
@@ -153,7 +153,7 @@ Configuration
 | backupManager.cassandra.config.tls.enabled | bool | `false` | TLS enabled |
 | backupManager.cassandra.config.tls.key | string | `"/path/to/key"` | path to TLS key |
 | backupManager.cassandra.config.username | string | `"root"` | cassandra username |
-| backupManager.cassandra.config.write_coalesce_wait_time | string | `"200ms"` | write coalesce wait time |
+| backupManager.cassandra.config.write_coalesce_wait_time | string | `"200µs"` | write coalesce wait time |
 | backupManager.cassandra.enabled | bool | `false` | cassandra config enabled |
 | backupManager.env | list | `[{"name":"MYSQL_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"mysql-secret"}}}]` | (list) environment variables |
 | backupManager.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
@@ -254,7 +254,7 @@ Configuration
 | compressor.service.annotations | object | `{}` | service annotations |
 | compressor.service.labels | object | `{}` | service labels |
 | compressor.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
-| compressor.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| compressor.terminationGracePeriodSeconds | int | `120` | duration in seconds pod needs to terminate gracefully |
 | compressor.tolerations | list | `[]` | tolerations |
 | compressor.version | string | `"v0.0.0"` | version of compressor config |
 | compressor.volumeMounts | list | `[]` | volume mounts |
@@ -302,7 +302,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.31"` | image tag |
+| defaults.image.tag | string | `"v0.0.33"` | image tag |
 | defaults.logging.format | string | `"raw"` | logging format |
 | defaults.logging.level | string | `"debug"` | logging level |
 | defaults.logging.logger | string | `"glg"` | logger name |
@@ -631,7 +631,7 @@ Configuration
 | meta.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity preferred scheduling terms |
 | meta.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
 | meta.annotations | object | `{}` | deployment annotations |
-| meta.cassandra.config.connect_timeout | string | `"600ms"` | connect timeout |
+| meta.cassandra.config.connect_timeout | string | `"3s"` | connect timeout |
 | meta.cassandra.config.consistency | string | `"quorum"` | consistency type |
 | meta.cassandra.config.cql_version | string | `"3.0.0"` | cassandra CQL version |
 | meta.cassandra.config.default_idempotence | bool | `false` | default idempotence enabled |
@@ -657,11 +657,11 @@ Configuration
 | meta.cassandra.config.pool_config.shuffle_replicas | bool | `false` | shuffle replica enabled |
 | meta.cassandra.config.port | int | `9042` | cassandra port |
 | meta.cassandra.config.proto_version | int | `0` | cassandra proto version |
-| meta.cassandra.config.reconnect_interval | string | `"1m"` | interval of reconnection |
-| meta.cassandra.config.reconnection_policy.initial_interval | string | `"1m"` | initial interval to reconnect |
+| meta.cassandra.config.reconnect_interval | string | `"100ms"` | interval of reconnection |
+| meta.cassandra.config.reconnection_policy.initial_interval | string | `"100ms"` | initial interval to reconnect |
 | meta.cassandra.config.reconnection_policy.max_retries | int | `3` | maximum number of retries to reconnect |
-| meta.cassandra.config.retry_policy.max_duration | string | `"30s"` | maximum duration to retry |
-| meta.cassandra.config.retry_policy.min_duration | string | `"1s"` | minimum duration to retry |
+| meta.cassandra.config.retry_policy.max_duration | string | `"1s"` | maximum duration to retry |
+| meta.cassandra.config.retry_policy.min_duration | string | `"10ms"` | minimum duration to retry |
 | meta.cassandra.config.retry_policy.num_retries | int | `3` | number of retries |
 | meta.cassandra.config.socket_keepalive | string | `"0s"` | socket keep alive time |
 | meta.cassandra.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
@@ -676,7 +676,7 @@ Configuration
 | meta.cassandra.config.tls.enabled | bool | `false` | TLS enabled |
 | meta.cassandra.config.tls.key | string | `"/path/to/key"` | path to TLS key |
 | meta.cassandra.config.username | string | `"root"` | cassandra username |
-| meta.cassandra.config.write_coalesce_wait_time | string | `"200ms"` | write coalesce wait time |
+| meta.cassandra.config.write_coalesce_wait_time | string | `"200µs"` | write coalesce wait time |
 | meta.cassandra.enabled | bool | `false` | cassandra config enabled |
 | meta.env | list | `[{"name":"REDIS_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"redis-secret"}}}]` | environment variables |
 | meta.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
