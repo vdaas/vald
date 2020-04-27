@@ -17,7 +17,7 @@
 # name -- name of the deployment
 name: vald-helm-operator
 # replicas -- number of replicas
-replicas: 1
+replicas: 2
 
 image:
   # image.repository -- image repository
@@ -26,14 +26,6 @@ image:
   tag: v0.0.33
   # image.pullPolicy -- image pull policy
   pullPolicy: Always
-
-vald:
-  # vald.create -- ValdRelease resource will be created
-  create: false
-  # vald.name -- name of ValdRelease resource
-  name: vald-cluster
-  # vald.spec -- spec field of ValdRelease resource = the values of Helm chart for Vald
-  spec: {}
 
 rbac:
   # rbac.create -- required roles and rolebindings will be created
@@ -53,7 +45,24 @@ resources: {}
 # nodeSelector -- node labels for pod assignment
 nodeSelector: {}
 
-operator:
-  release:
-    # operator.release.create -- ValdHelmOperatorRelease resource will be created
-    create: true
+# tolerations -- tolerations
+tolerations: []
+
+# affinity -- affinity
+affinity: {}
+
+# reconcilePeriod -- reconcile duration of operator
+reconcilePeriod: 1m
+
+# maxWorkers -- number of workers inside one operator pod
+maxWorkers: 1
+
+logging:
+  # logging.level -- logging level of operator (debug, info, or error)
+  level: info
+  # logging.stacktraceLevel -- minimum log level triggers stacktrace generation
+  stacktraceLevel: error
+  # logging.format -- logging format of operator (console or json)
+  format: console
+  # logging.timeEncoding -- logging time format of operator (epoch, millis, nano, or iso8601)
+  timeEncoding: iso8601
