@@ -20,7 +20,7 @@ metadata:
   name: vald-helm-operator
   namespace: default
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       name: vald-helm-operator
@@ -34,6 +34,13 @@ spec:
         - name: vald-helm-operator
           image: "vdaas/vald-helm-operator:v0.0.33"
           imagePullPolicy: Always
+          args:
+            - "--reconcile-period 1m"
+            - "--max-workers 1"
+            - "--zap-encoder console"
+            - "--zap-level info"
+            - "--zap-stacktrace-level error"
+            - "--zap-time-encoding iso8601"
           env:
             - name: WATCH_NAMESPACE
               valueFrom:

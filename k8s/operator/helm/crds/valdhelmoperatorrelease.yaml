@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: valdhelmoperatorreleases.vald.vdaas.org
@@ -24,18 +24,19 @@ spec:
     listKind: ValdHelmOperatorReleaseList
     plural: valdhelmoperatorreleases
     singular: valdhelmoperatorrelease
+    shortNames:
+      - vhor
+      - vhors
   scope: Namespaced
-  additionalPrinterColumns:
-    - name: Age
-      type: date
-      JSONPath: .metadata.creationTimestamp
-  subresources:
-    status: {}
-  validation:
-    openAPIV3Schema:
-      type: object
-      x-kubernetes-preserve-unknown-fields: true
   versions:
     - name: v1alpha1
       served: true
       storage: true
+      additionalPrinterColumns:
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
