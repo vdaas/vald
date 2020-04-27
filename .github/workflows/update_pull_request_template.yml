@@ -19,7 +19,7 @@ jobs:
       - name: Push to master
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
-          BRANCH_NAME="documentation/pull_request_template/update_versions_$(TIMESTAMP)"
+          BRANCH_NAME="documentation/pull_request_template/update_versions_${TIMESTAMP}"
           git checkout master
           git checkout -b ${BRANCH_NAME}
 
