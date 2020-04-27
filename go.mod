@@ -4,6 +4,7 @@ go 1.14
 
 replace (
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
+	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.3.0-java
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.1-0.20200311113236-681ffa848bae
 	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200410100145-b454769479c6
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
@@ -26,7 +27,7 @@ require (
 	github.com/cockroachdb/errors v1.2.4
 	github.com/cockroachdb/logtags v0.0.0-20190617123548-eb05cc24525f // indirect
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
-	github.com/envoyproxy/protoc-gen-validate v0.3.0
+	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/getsentry/raven-go v0.2.0 // indirect
 	github.com/go-redis/redis/v7 v7.2.0
 	github.com/go-sql-driver/mysql v1.5.0
