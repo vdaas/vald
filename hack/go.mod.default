@@ -3,6 +3,7 @@ module github.com/vdaas/vald
 go 1.14
 
 replace (
+	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.3.0-java
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql master
 	github.com/gocql/gocql => github.com/gocql/gocql master
