@@ -42,8 +42,9 @@ jobs:
         run: |
           make helm/docs/vald
           make helm/docs/vald-helm-operator
-      - name: Run license.go
+      - name: Run formatter and license.go
         run: |
+          make format/yaml
           make license
       - name: Push to master
         continue-on-error: true
