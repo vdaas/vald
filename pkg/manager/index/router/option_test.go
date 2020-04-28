@@ -21,6 +21,8 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/pkg/manager/index/handler/rest"
+
+	"go.uber.org/goleak"
 )
 
 func TestWithHandler(t *testing.T) {
@@ -99,6 +101,7 @@ func TestWithHandler(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -211,6 +214,7 @@ func TestWithTimeout(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

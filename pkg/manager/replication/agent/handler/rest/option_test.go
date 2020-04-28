@@ -21,6 +21,8 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/manager/backup"
+
+	"go.uber.org/goleak"
 )
 
 func TestWithBackup(t *testing.T) {
@@ -99,6 +101,7 @@ func TestWithBackup(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

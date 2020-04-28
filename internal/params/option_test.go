@@ -17,7 +17,11 @@
 // Package params provides implementation of Go API for argument parser
 package params
 
-import "testing"
+import (
+	"testing"
+
+	"go.uber.org/goleak"
+)
 
 func TestWithConfigFilePathKeys(t *testing.T) {
 	type T = interface{}
@@ -95,6 +99,7 @@ func TestWithConfigFilePathKeys(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -207,6 +212,7 @@ func TestWithConfigFilePathDefault(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -319,6 +325,7 @@ func TestWithConfigFileDescription(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -431,6 +438,7 @@ func TestWithVersionKeys(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -543,6 +551,7 @@ func TestWithVersionFlagDefault(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -655,6 +664,7 @@ func TestWithVersionDescription(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

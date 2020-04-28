@@ -10,7 +10,7 @@ replace (
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.10.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.7.4
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200423211502-4bdfaf469ed5
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200427165652-729f1e841bcc
 	k8s.io/api => k8s.io/api v0.18.2
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.2
 	k8s.io/apimachinery => k8s.io/apimachinery v0.18.2
@@ -51,8 +51,9 @@ require (
 	github.com/yahoojapan/ngtd v0.0.0-20200424071638-9872bbae3700
 	go.opencensus.io v0.22.3
 	go.uber.org/automaxprocs v1.3.0
+	go.uber.org/goleak v1.0.0
 	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
-	golang.org/x/tools v0.0.0-20200426102838-f3a5411a4c3b // indirect
+	golang.org/x/tools v0.0.0-20200428021058-7ae4988eb4d9 // indirect
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/netlib v0.0.0-20200317120129-c5a04cffd98a // indirect
 	gonum.org/v1/plot v0.7.0

@@ -23,6 +23,8 @@ import (
 	client "github.com/vdaas/vald/internal/client/compressor"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/worker"
+
+	"go.uber.org/goleak"
 )
 
 func TestWithRegistererWorker(t *testing.T) {
@@ -101,6 +103,7 @@ func TestWithRegistererWorker(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -213,6 +216,7 @@ func TestWithRegistererErrGroup(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -325,6 +329,7 @@ func TestWithRegistererBackup(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -437,6 +442,7 @@ func TestWithRegistererCompressor(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -549,6 +555,7 @@ func TestWithRegistererClient(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

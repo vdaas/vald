@@ -16,6 +16,7 @@
 package middleware
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -25,8 +26,11 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	errgroup "github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/http/rest"
+
+	"go.uber.org/goleak"
 )
 
 func TestNewTimeout(t *testing.T) {
@@ -262,6 +266,7 @@ func Test_timeout_Wrap(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

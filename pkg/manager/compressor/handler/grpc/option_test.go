@@ -21,6 +21,8 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/pkg/manager/compressor/service"
+
+	"go.uber.org/goleak"
 )
 
 func TestWithCompressor(t *testing.T) {
@@ -99,6 +101,7 @@ func TestWithCompressor(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -211,6 +214,7 @@ func TestWithBackup(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -323,6 +327,7 @@ func TestWithRegisterer(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

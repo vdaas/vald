@@ -23,6 +23,8 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"google.golang.org/grpc"
+
+	"go.uber.org/goleak"
 )
 
 func TestBidirectionalStream(t *testing.T) {
@@ -88,6 +90,7 @@ func TestBidirectionalStream(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -167,6 +170,7 @@ func TestBidirectionalStreamClient(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

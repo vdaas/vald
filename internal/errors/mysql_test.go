@@ -20,8 +20,6 @@ package errors
 import (
 	"reflect"
 	"testing"
-
-	"github.com/vdaas/vald/internal/errors"
 )
 
 func TestErrMySQLNotFoundIdentity_Error(t *testing.T) {
@@ -41,7 +39,7 @@ func TestErrMySQLNotFoundIdentity_Error(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
@@ -114,7 +112,7 @@ func TestIsErrMySQLNotFound(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
@@ -184,7 +182,7 @@ func TestErrMySQLInvalidArgumentIdentity_Error(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
@@ -257,7 +255,7 @@ func TestIsErrMySQLInvalidArgument(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}

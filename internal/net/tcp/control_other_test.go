@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/cockroachdb/errors"
+	"go.uber.org/goleak"
 )
 
 func TestControl(t *testing.T) {
@@ -83,6 +84,7 @@ func TestControl(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

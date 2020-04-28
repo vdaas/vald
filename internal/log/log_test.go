@@ -26,6 +26,8 @@ import (
 	"github.com/vdaas/vald/internal/log/level"
 	logger "github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/log/mock"
+
+	"go.uber.org/goleak"
 )
 
 func TestInit(t *testing.T) {
@@ -858,6 +860,7 @@ func Test_getLogger(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

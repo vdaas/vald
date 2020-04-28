@@ -26,6 +26,8 @@ import (
 	"github.com/vdaas/vald/apis/grpc/manager/index"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/pkg/manager/index/service"
+
+	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
@@ -79,6 +81,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -166,6 +169,7 @@ func Test_server_IndexInfo(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

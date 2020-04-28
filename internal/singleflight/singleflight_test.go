@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/cockroachdb/errors"
+	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
@@ -77,6 +78,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -174,6 +176,7 @@ func Test_group_Do(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -188,8 +191,7 @@ func Test_group_Do(t *testing.T) {
 				m:  test.fields.m,
 			}
 
-			// TODO: refactor singleflight.Do
-			gotV, err, gotShared := g.Do(test.args.ctx, test.args.key, test.args.fn)
+			gotV, gotShared, err := g.Do(test.args.ctx, test.args.key, test.args.fn)
 			if err := test.checkFunc(test.want, gotV, gotShared, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
