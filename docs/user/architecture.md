@@ -9,13 +9,10 @@
   - [Delete](#delete)
   - [Search](#search)
 - [Components](#components)
-  - [Vald Core Engine](#vald-core-engine)
-    - [Vald Agent](#vald-agent)
-    - [Vald Agent Scheduler](#vald-agent-scheduler)
-    - [Vald Index Manager](#vald-index-manager)
-  - [Vald Load Balancing](#vald-load-balancing)
-    - [Agent Discoverer](#agent-discoverer)
-    - [Vald LB Gateway](#vald-lb-gateway)
+  - [Vald Filter](#vald-filter)
+    - [Vald Ingress Filter](#vald-ingress-filter)
+    - [Vald Egress Filter](#vald-egress-filter)
+    - [Vald Filter Gateway](#vald-filter-gateway)
   - [Vald Metadata](#vald-metadata)
     - [Vald Meta](#vald-meta)
     - [Vald Meta Gateway](#vald-meta-gateway)
@@ -23,13 +20,16 @@
     - [Vald Backup Gateway](#vald-backup-gateway)
     - [Vald Compressor](#vald-compressor)
     - [Vald Backup Manager](#vald-backup-manager)
+  - [Vald Load Balancing](#vald-load-balancing)
+    - [Vald LB Gateway](#vald-lb-gateway)
+    - [Agent Discoverer](#agent-discoverer)
+  - [Vald Core Engine](#vald-core-engine)
+    - [Vald Agent](#vald-agent)
+    - [Vald Agent Scheduler](#vald-agent-scheduler)
+    - [Vald Index Manager](#vald-index-manager)
   - [Vald Replication Manager](#vald-replication-manager)
     - [Vald Replication Manager Agent](#vald-replication-manager-agent)
     - [Vald Replication Manager Controller](#vald-replication-manager-controller)
-  - [Vald Filter](#vald-filter)
-    - [Vald Ingress Filter](#vald-ingress-filter)
-    - [Vald Egress Filter](#vald-egress-filter)
-    - [Vald Filter Gateway](#vald-filter-gateway)
   - [Kubernetes Components](#kubernetes-components)
     - [Kube-API Server](#kube-api-server)
     - [Custom Resources](#custom-resources)
@@ -45,6 +45,8 @@ Vald is based on [Kubernetes](https://kubernetes.io/) architecture. Before you r
 ## Data Flow
 
 ### Insert
+
+( add flow diagram here )
 
 When user insert data into Vald:
 
@@ -76,34 +78,24 @@ When user insert data into Vald:
 
 ## Components
 
-### Vald Core Engine
+### Vald Filter
 
-Vald Agent is the core engine of Vald. In this section we will describe what is Vald Agent and the corresponding components to support Vald Agent.
+Vald Filter have 2 main functionality.
 
-#### Vald Agent
+1. Filter request query
+1. Filter response data
 
-Vald Agent is the core of the Vald. By default Vald use [NGT](https://github.com/yahoojapan/NGT) to provide API for users to insert/update/delete/search vectors.
+#### Vald Ingress Filter
 
-#### Vald Agent Scheduler
+Vald Ingress Filter filter the incoming request before processing it.
 
-Vald Agent Scheduler is the scheduler of the Vald Agent. It schedules Vald Agent base on the Node CPU and memory usage.
+#### Vald Egress Filter
 
-#### Vald Index Manager
+Vald Egress Filter filter the response before sending to the user. This component will reorder the response data from set of the Vald Agent base on the ranking and then response the number of data user want.
 
-Vald Index Manager manages the index of vector data in Vald Agent.
+#### Vald Filter Gateway
 
-### Vald Load Balancing
-
-Load balancing is very important concept in distributed computing, which means the distribute a set of task over set of resources aiming for making the overall processing more efficient.
-In Vald, we implement our own load balancing controller. Vald can load balance the request base on node resources.
-
-#### Agent Discoverer
-
-Agent Discoverer discovers Vald pods and the corresponding node resource usage. It talks to the Kube-API and get the corresponding node information.
-
-#### Vald LB Gateway
-
-Vald LB Gateway load balance the user request base on the node resources result from the agent discoverer.
+Vald Filter Gateway load balance the filter request.
 
 ### Vald Metadata
 
@@ -133,6 +125,35 @@ Vald Compressor compress the vector data and send to the Vald Backup Manager to 
 
 Vald Backup Manager process the backup request and store the vector data to the presistent layer.
 
+### Vald Load Balancing
+
+Load balancing is very important concept in distributed computing, which means the distribute a set of task over set of resources aiming for making the overall processing more efficient.
+In Vald, we implement our own load balancing controller. Vald can load balance the request base on node resources.
+
+#### Vald LB Gateway
+
+Vald LB Gateway load balance the user request base on the node resources result from the agent discoverer.
+
+#### Agent Discoverer
+
+Agent Discoverer discovers Vald pods and the corresponding node resource usage. It talks to the Kube-API and get the corresponding node information.
+
+### Vald Core Engine
+
+Vald Agent is the core engine of Vald. In this section we will describe what is Vald Agent and the corresponding components to support Vald Agent.
+
+#### Vald Agent
+
+Vald Agent is the core of the Vald. By default Vald use [NGT](https://github.com/yahoojapan/NGT) to provide API for users to insert/update/delete/search vectors.
+
+#### Vald Agent Scheduler
+
+Vald Agent Scheduler is the scheduler of the Vald Agent. It schedules Vald Agent base on the Node CPU and memory usage.
+
+#### Vald Index Manager
+
+Vald Index Manager manages the index of vector data in Vald Agent.
+
 ### Vald Replication Manager
 
 Vald replication manager manages the Vald Agent replicates. It auto-scale the Vald agent base on the resource usage on the node.
@@ -141,25 +162,6 @@ Vald replication manager manages the Vald Agent replicates. It auto-scale the Va
 
 #### Vald Replication Manager Controller
 
-### Vald Filter
-
-Vald Filter have 2 main functionality.
-
-1. Filter request query
-1. Filter response data
-
-#### Vald Ingress Filter
-
-Vald Ingress Filter filter the incoming request before processing it.
-
-#### Vald Egress Filter
-
-Vald Egress Filter filter the response before sending to the user. This component will reorder the response data from set of the Vald Agent base on the ranking and then response the number of data user want.
-
-#### Vald Filter Gateway
-
-Vald Filter Gateway load balance the filter request.
-
 ### Kubernetes Components
 
 Vald is base on Kubernetes platform. In this section we will explain the Kubernetes component used in Vald and why we need them.
@@ -167,3 +169,5 @@ Vald is base on Kubernetes platform. In this section we will explain the Kuberne
 #### Kube-API Server
 
 #### Custom Resources
+
+
