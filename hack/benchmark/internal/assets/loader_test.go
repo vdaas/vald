@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cockroachdb/errors"
+	"github.com/vdaas/vald/internal/errors"
 	"gonum.org/v1/hdf5"
 
 	"go.uber.org/goleak"

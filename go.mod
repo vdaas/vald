@@ -10,7 +10,7 @@ replace (
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.10.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.7.4
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200427165652-729f1e841bcc
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79
 	k8s.io/api => k8s.io/api v0.18.2
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.2
 	k8s.io/apimachinery => k8s.io/apimachinery v0.18.2
@@ -53,11 +53,11 @@ require (
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/goleak v1.0.0
 	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
-	golang.org/x/tools v0.0.0-20200428021058-7ae4988eb4d9 // indirect
+	golang.org/x/tools v0.0.0-20200429213335-127c98bd7927 // indirect
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/netlib v0.0.0-20200317120129-c5a04cffd98a // indirect
 	gonum.org/v1/plot v0.7.0
-	google.golang.org/genproto v0.0.0-20200424135956-bca184e23272
+	google.golang.org/genproto v0.0.0-20200429120912-1f37eeb960b2
 	google.golang.org/grpc v1.29.1
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.18.2

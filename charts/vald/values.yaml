@@ -1255,6 +1255,8 @@ backupManager:
       num_conns: 2
       # backupManager.cassandra.config.consistency -- consistency type
       consistency:  quorum
+      # backupManager.cassandra.config.searial_consistency -- read consistency type
+      searial_consistency:  local_serial
       # backupManager.cassandra.config.username -- cassandra username
       username: root
       # backupManager.cassandra.config.password -- cassandra password
@@ -1336,6 +1338,8 @@ backupManager:
         non_local_replicas_fallback: false
         # backupManager.cassandra.config.pool_config.shuffle_replicas -- shuffle replica enabled
         shuffle_replicas: false
+        # backupManager.cassandra.config.pool_config.token_aware_host_policy -- token aware host policy enabled
+        token_aware_host_policy: false
 
 indexManager:
   # indexManager.version -- version of index manager config

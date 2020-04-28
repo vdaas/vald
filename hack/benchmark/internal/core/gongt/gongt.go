@@ -22,7 +22,7 @@ import (
 	"os"
 
 	icore "github.com/vdaas/vald/hack/benchmark/internal/core"
-	"github.com/vdaas/vald/hack/benchmark/internal/errors"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/yahoojapan/gongt"
 )
 

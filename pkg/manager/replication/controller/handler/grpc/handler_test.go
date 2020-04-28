@@ -22,9 +22,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cockroachdb/errors"
 	"github.com/vdaas/vald/apis/grpc/manager/replication/controller"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/manager/replication/controller/service"
 
 	"go.uber.org/goleak"

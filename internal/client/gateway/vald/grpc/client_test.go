@@ -22,9 +22,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cockroachdb/errors"
 	"github.com/vdaas/vald/internal/client"
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
 	igrpc "github.com/vdaas/vald/internal/net/grpc"
 	"google.golang.org/grpc"
 

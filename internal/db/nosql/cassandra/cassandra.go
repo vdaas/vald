@@ -86,6 +86,12 @@ type client struct {
 		enableDCAwareRouting           bool
 		enableShuffleReplicas          bool
 		enableNonLocalReplicasFallback bool
+		enableTokenAwareHostPolicy     bool
+	}
+	hostFilter struct {
+		enable    bool
+		dcHost    string
+		whiteList []string
 	}
 	socketKeepalive          time.Duration
 	maxPreparedStmts         int
@@ -181,16 +187,31 @@ func New(opts ...Option) (Cassandra, error) {
 				case c.poolConfig.enableNonLocalReplicasFallback:
 					return gocql.TokenAwareHostPolicy(hsp, gocql.NonLocalReplicasFallback())
 				}
-				return gocql.TokenAwareHostPolicy(hsp)
+				if c.poolConfig.enableTokenAwareHostPolicy {
+					return gocql.TokenAwareHostPolicy(hsp)
+				}
+				return hsp
 			}(),
 		},
 		ReconnectInterval:      c.reconnectInterval,
 		MaxWaitSchemaAgreement: c.maxWaitSchemaAgreement,
-		HostFilter: func() gocql.HostFilter {
-			if c.poolConfig.enableDCAwareRouting && len(c.poolConfig.dataCenterName) != 0 {
-				return gocql.DataCentreHostFilter(c.poolConfig.dataCenterName)
+		HostFilter: func() (hf gocql.HostFilter) {
+			if c.hostFilter.enable {
+				if len(c.hostFilter.dcHost) != 0 {
+					hf = gocql.DataCentreHostFilter(c.poolConfig.dataCenterName)
+				}
+				if len(c.hostFilter.whiteList) != 0 {
+					if hf == nil {
+						hf = gocql.WhiteListHostFilter(c.hostFilter.whiteList...)
+					} else {
+						hf = gocql.HostFilterFunc(func(host *gocql.HostInfo) bool {
+							return hf.Accept(host) ||
+								gocql.WhiteListHostFilter(c.hostFilter.whiteList...).Accept(host)
+						})
+					}
+				}
 			}
-			return nil
+			return hf
 		}(),
 		// AddressTranslator
 		IgnorePeerAddr:           c.ignorePeerAddr,

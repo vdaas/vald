@@ -136,6 +136,12 @@ func Test_client_Open(t *testing.T) {
 			enableDCAwareRouting           bool
 			enableShuffleReplicas          bool
 			enableNonLocalReplicasFallback bool
+			enableTokenAwareHostPolicy     bool
+		}
+		hostFilter struct {
+			enable    bool
+			dcHost    string
+			whiteList []string
 		}
 		socketKeepalive          time.Duration
 		maxPreparedStmts         int
@@ -204,7 +210,8 @@ func Test_client_Open(t *testing.T) {
 		           authProvider: nil,
 		           retryPolicy: struct{numRetries int; minDuration time.Duration; maxDuration time.Duration}{},
 		           reconnectionPolicy: struct{initialInterval time.Duration; maxRetries int}{},
-		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool}{},
+		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool; enableTokenAwareHostPolicy bool}{},
+		           hostFilter: struct{enable bool; dcHost string; whiteList []string}{},
 		           socketKeepalive: nil,
 		           maxPreparedStmts: 0,
 		           maxRoutingKeyInfo: 0,
@@ -259,7 +266,8 @@ func Test_client_Open(t *testing.T) {
 		           authProvider: nil,
 		           retryPolicy: struct{numRetries int; minDuration time.Duration; maxDuration time.Duration}{},
 		           reconnectionPolicy: struct{initialInterval time.Duration; maxRetries int}{},
-		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool}{},
+		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool; enableTokenAwareHostPolicy bool}{},
+		           hostFilter: struct{enable bool; dcHost string; whiteList []string}{},
 		           socketKeepalive: nil,
 		           maxPreparedStmts: 0,
 		           maxRoutingKeyInfo: 0,
@@ -321,6 +329,7 @@ func Test_client_Open(t *testing.T) {
 				retryPolicy:              test.fields.retryPolicy,
 				reconnectionPolicy:       test.fields.reconnectionPolicy,
 				poolConfig:               test.fields.poolConfig,
+				hostFilter:               test.fields.hostFilter,
 				socketKeepalive:          test.fields.socketKeepalive,
 				maxPreparedStmts:         test.fields.maxPreparedStmts,
 				maxRoutingKeyInfo:        test.fields.maxRoutingKeyInfo,
@@ -388,6 +397,12 @@ func Test_client_Close(t *testing.T) {
 			enableDCAwareRouting           bool
 			enableShuffleReplicas          bool
 			enableNonLocalReplicasFallback bool
+			enableTokenAwareHostPolicy     bool
+		}
+		hostFilter struct {
+			enable    bool
+			dcHost    string
+			whiteList []string
 		}
 		socketKeepalive          time.Duration
 		maxPreparedStmts         int
@@ -456,7 +471,8 @@ func Test_client_Close(t *testing.T) {
 		           authProvider: nil,
 		           retryPolicy: struct{numRetries int; minDuration time.Duration; maxDuration time.Duration}{},
 		           reconnectionPolicy: struct{initialInterval time.Duration; maxRetries int}{},
-		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool}{},
+		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool; enableTokenAwareHostPolicy bool}{},
+		           hostFilter: struct{enable bool; dcHost string; whiteList []string}{},
 		           socketKeepalive: nil,
 		           maxPreparedStmts: 0,
 		           maxRoutingKeyInfo: 0,
@@ -511,7 +527,8 @@ func Test_client_Close(t *testing.T) {
 		           authProvider: nil,
 		           retryPolicy: struct{numRetries int; minDuration time.Duration; maxDuration time.Duration}{},
 		           reconnectionPolicy: struct{initialInterval time.Duration; maxRetries int}{},
-		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool}{},
+		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool; enableTokenAwareHostPolicy bool}{},
+		           hostFilter: struct{enable bool; dcHost string; whiteList []string}{},
 		           socketKeepalive: nil,
 		           maxPreparedStmts: 0,
 		           maxRoutingKeyInfo: 0,
@@ -573,6 +590,7 @@ func Test_client_Close(t *testing.T) {
 				retryPolicy:              test.fields.retryPolicy,
 				reconnectionPolicy:       test.fields.reconnectionPolicy,
 				poolConfig:               test.fields.poolConfig,
+				hostFilter:               test.fields.hostFilter,
 				socketKeepalive:          test.fields.socketKeepalive,
 				maxPreparedStmts:         test.fields.maxPreparedStmts,
 				maxRoutingKeyInfo:        test.fields.maxRoutingKeyInfo,
@@ -641,6 +659,12 @@ func Test_client_Query(t *testing.T) {
 			enableDCAwareRouting           bool
 			enableShuffleReplicas          bool
 			enableNonLocalReplicasFallback bool
+			enableTokenAwareHostPolicy     bool
+		}
+		hostFilter struct {
+			enable    bool
+			dcHost    string
+			whiteList []string
 		}
 		socketKeepalive          time.Duration
 		maxPreparedStmts         int
@@ -710,7 +734,8 @@ func Test_client_Query(t *testing.T) {
 		           authProvider: nil,
 		           retryPolicy: struct{numRetries int; minDuration time.Duration; maxDuration time.Duration}{},
 		           reconnectionPolicy: struct{initialInterval time.Duration; maxRetries int}{},
-		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool}{},
+		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool; enableTokenAwareHostPolicy bool}{},
+		           hostFilter: struct{enable bool; dcHost string; whiteList []string}{},
 		           socketKeepalive: nil,
 		           maxPreparedStmts: 0,
 		           maxRoutingKeyInfo: 0,
@@ -766,7 +791,8 @@ func Test_client_Query(t *testing.T) {
 		           authProvider: nil,
 		           retryPolicy: struct{numRetries int; minDuration time.Duration; maxDuration time.Duration}{},
 		           reconnectionPolicy: struct{initialInterval time.Duration; maxRetries int}{},
-		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool}{},
+		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool; enableTokenAwareHostPolicy bool}{},
+		           hostFilter: struct{enable bool; dcHost string; whiteList []string}{},
 		           socketKeepalive: nil,
 		           maxPreparedStmts: 0,
 		           maxRoutingKeyInfo: 0,
@@ -828,6 +854,7 @@ func Test_client_Query(t *testing.T) {
 				retryPolicy:              test.fields.retryPolicy,
 				reconnectionPolicy:       test.fields.reconnectionPolicy,
 				poolConfig:               test.fields.poolConfig,
+				hostFilter:               test.fields.hostFilter,
 				socketKeepalive:          test.fields.socketKeepalive,
 				maxPreparedStmts:         test.fields.maxPreparedStmts,
 				maxRoutingKeyInfo:        test.fields.maxRoutingKeyInfo,

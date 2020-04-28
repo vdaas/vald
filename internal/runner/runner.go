@@ -108,6 +108,7 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
+	location.Set(ccfg.TZ)
 	daemon, err := r.initializeDaemon(cfg)
 	if err != nil {
 		return err

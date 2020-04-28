@@ -22,8 +22,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cockroachdb/errors"
 	"github.com/vdaas/vald/apis/grpc/agent"
+	"github.com/vdaas/vald/internal/errors"
 
 	"go.uber.org/goleak"
 )

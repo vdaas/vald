@@ -21,7 +21,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/vdaas/vald/apis/grpc/errors"
+	gerrors "github.com/vdaas/vald/apis/grpc/errors"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"google.golang.org/grpc/codes"
@@ -59,7 +60,7 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 		}
 	}()
 
-	data := errors.Errors_RPC{
+	data := gerrors.Errors_RPC{
 		Type:   code.String(),
 		Msg:    msg,
 		Status: int64(code),
@@ -72,7 +73,7 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 		data.Details = make([]string, 0, len(details))
 		for _, detail := range details {
 			switch v := detail.(type) {
-			case *errors.Errors_RPC:
+			case *gerrors.Errors_RPC:
 				data.Roots = append(data.Roots, v)
 			case info.Detail:
 				log.Debug(v.String())
@@ -90,6 +91,8 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 
 	data.Instance, err = os.Hostname()
 	if err != nil {
+		err = errors.Wrap(err, data.Error)
+		data.Error = err.Error()
 		log.Debugf("error body: %#v, msg: %v", data, err)
 		log.Error(err)
 	}
@@ -167,9 +170,9 @@ func WrapWithUnauthenticated(msg string, err error, details ...interface{}) erro
 	return newStatus(codes.Unauthenticated, msg, err, details...).Err()
 }
 
-func FromError(err error) *errors.Errors_RPC {
+func FromError(err error) *gerrors.Errors_RPC {
 	for _, detail := range status.Convert(err).Details() {
-		if err, ok := detail.(*errors.Errors_RPC); ok {
+		if err, ok := detail.(*gerrors.Errors_RPC); ok {
 			return err
 		}
 	}

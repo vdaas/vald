@@ -24,15 +24,16 @@ import (
 )
 
 type Cassandra struct {
-	Hosts          []string `json:"hosts" yaml:"hosts"`
-	CQLVersion     string   `json:"cql_version" yaml:"cql_version"`
-	ProtoVersion   int      `json:"proto_version" yaml:"proto_version"`
-	Timeout        string   `json:"timeout" yaml:"timeout"`
-	ConnectTimeout string   `json:"connect_timeout" yaml:"connect_timeout"`
-	Port           int      `json:"port" yaml:"port"`
-	Keyspace       string   `json:"keyspace" yaml:"keyspace"`
-	NumConns       int      `json:"num_conns" yaml:"num_conns"`
-	Consistency    string   `json:"consistency" yaml:"consistency"`
+	Hosts             []string `json:"hosts" yaml:"hosts"`
+	CQLVersion        string   `json:"cql_version" yaml:"cql_version"`
+	ProtoVersion      int      `json:"proto_version" yaml:"proto_version"`
+	Timeout           string   `json:"timeout" yaml:"timeout"`
+	ConnectTimeout    string   `json:"connect_timeout" yaml:"connect_timeout"`
+	Port              int      `json:"port" yaml:"port"`
+	Keyspace          string   `json:"keyspace" yaml:"keyspace"`
+	NumConns          int      `json:"num_conns" yaml:"num_conns"`
+	Consistency       string   `json:"consistency" yaml:"consistency"`
+	SerialConsistency string   `json:"serial_consistency" yaml:"serial_consistency"`
 
 	Username string `json:"username" yaml:"username"`
 	Password string `json:"password" yaml:"password"`
@@ -73,6 +74,7 @@ type PoolConfig struct {
 	DCAwareRouting           bool   `json:"dc_aware_routing" yaml:"dc_aware_routing"`
 	NonLocalReplicasFallback bool   `json:"non_local_replicas_fallback" yaml:"non_local_replicas_fallback"`
 	ShuffleReplicas          bool   `json:"shuffle_replicas" yaml:"shuffle_replicas"`
+	TokenAwareHostPolicy     bool   `json:"token_aware_host_policy" yaml:"token_aware_host_policy"`
 }
 
 type RetryPolicy struct {
@@ -93,6 +95,7 @@ func (c *Cassandra) Bind() *Cassandra {
 	c.ConnectTimeout = GetActualValue(c.ConnectTimeout)
 	c.Keyspace = GetActualValue(c.Keyspace)
 	c.Consistency = GetActualValue(c.Consistency)
+	c.SerialConsistency = GetActualValue(c.SerialConsistency)
 	c.Username = GetActualValue(c.Username)
 	c.Password = GetActualValue(c.Password)
 
@@ -140,6 +143,7 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 		cassandra.WithKeyspace(cfg.Keyspace),
 		cassandra.WithNumConns(cfg.NumConns),
 		cassandra.WithConsistency(cfg.Consistency),
+		cassandra.WithSerialConsistency(cfg.SerialConsistency),
 		cassandra.WithUsername(cfg.Username),
 		cassandra.WithPassword(cfg.Password),
 		cassandra.WithRetryPolicyNumRetries(cfg.RetryPolicy.NumRetries),
@@ -171,6 +175,7 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 			cassandra.WithDCAwareRouting(cfg.PoolConfig.DCAwareRouting),
 			cassandra.WithNonLocalReplicasFallback(cfg.PoolConfig.NonLocalReplicasFallback),
 			cassandra.WithShuffleReplicas(cfg.PoolConfig.ShuffleReplicas),
+			cassandra.WithTokenAwareHostPolicy(cfg.PoolConfig.TokenAwareHostPolicy),
 		)
 	}
 

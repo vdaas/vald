@@ -74,7 +74,7 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 			span.End()
 		}
 	}()
-	res, err, _ := s.group.Do(ctx, singleflightKey(podPrefix, req), func() (interface{}, error) {
+	res, _, err := s.group.Do(ctx, singleflightKey(podPrefix, req), func() (interface{}, error) {
 		return s.dsc.GetPods(req)
 	})
 	if err != nil {
@@ -94,7 +94,7 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 			span.End()
 		}
 	}()
-	res, err, _ := s.group.Do(ctx, singleflightKey(nodePrefix, req), func() (interface{}, error) {
+	res, _, err := s.group.Do(ctx, singleflightKey(nodePrefix, req), func() (interface{}, error) {
 		return s.dsc.GetNodes(req)
 	})
 	if err != nil {

@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"contrib.go.opencensus.io/exporter/jaeger"
-	"github.com/cockroachdb/errors"
+	"github.com/vdaas/vald/internal/errors"
 
 	"go.uber.org/goleak"
 )
