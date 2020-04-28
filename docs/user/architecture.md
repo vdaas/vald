@@ -14,12 +14,12 @@
     - [Vald Egress Filter](#vald-egress-filter)
     - [Vald Filter Gateway](#vald-filter-gateway)
   - [Vald Metadata](#vald-metadata)
-    - [Vald Meta](#vald-meta)
     - [Vald Meta Gateway](#vald-meta-gateway)
+    - [Vald Meta](#vald-meta)
   - [Vald Backup](#vald-backup)
-    - [Vald Backup Gateway](#vald-backup-gateway)
     - [Vald Compressor](#vald-compressor)
     - [Vald Backup Manager](#vald-backup-manager)
+    - [Vald Backup Gateway](#vald-backup-gateway)
   - [Vald Load Balancing](#vald-load-balancing)
     - [Vald LB Gateway](#vald-lb-gateway)
     - [Agent Discoverer](#agent-discoverer)
@@ -88,6 +88,7 @@ Vald Filter have 2 main functionality.
 #### Vald Ingress Filter
 
 Vald Ingress Filter filter the incoming request before processing it.
+Ingress filter uses users request parameters(?)...?
 
 #### Vald Egress Filter
 
@@ -101,21 +102,34 @@ Vald Filter Gateway load balance the filter request.
 
 In Vald, metadata is the vector data and the corresponding addition data to represent the set of the searching criteria and the result.
 
-#### Vald Meta
+Vald Metadata includes the user inputed metadata(vector ID) and the vector, and the internal generated UUID.
 
-Vald Meta is the agent to process metadata of the vector data. It will insert the metadata to the presistent layer.
+object_Vector 
+- id: id_01
+- vec: 010101010
+
+1. id_01があるかチェック
+2. uuidを発行して、uuid: id_01をkvsに保存
+3. 以降、uuidのみ考えて
 
 #### Vald Meta Gateway
 
-Vald Meta Gateway load balance the metadata request to the Vald Meta Agent.
+The main respondasibility of the Vald Meta Gateway is to process the Vald metadata and forward the information to Vald Backup Gateway.
+
+It will perform the following action:
+
+1. Return error if the user has already input the same vector in Vald
+1. Genereate the corresponding UUID for internal use.
+1. Forward the metadata (vec_id and UUID) request to the Vald Meta Agent.
+1. Forward the vector information (vec_id, vector and UUID) to Vald Backup Gateway.
+
+#### Vald Meta
+
+Vald Meta is the agent to process the CRUD request of the metadata (vec_id and UUID). User can configure which data source to be use in Vald Meta (for example Redis or Cassandra).
 
 ### Vald Backup
 
 To support auto-healing and incresease the performance during disaster recovery, Vald implement the backup mechanism.
-
-#### Vald Backup Gateway
-
-Vald Backup Gateway load balance the backup request to the Vald Compressor to handle vector backup request.
 
 #### Vald Compressor
 
@@ -124,6 +138,10 @@ Vald Compressor compress the vector data and send to the Vald Backup Manager to 
 #### Vald Backup Manager
 
 Vald Backup Manager process the backup request and store the vector data to the presistent layer.
+
+#### Vald Backup Gateway
+
+Vald Backup Gateway load balance the backup request to the Vald Compressor to handle vector backup request.
 
 ### Vald Load Balancing
 
