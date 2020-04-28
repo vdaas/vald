@@ -29,6 +29,15 @@ type TF interface {
 	GetVector(inputs ...string) ([]float64, error)
 	GetValue(inputs ...string) (interface{}, error)
 	GetValues(inputs ...string) (values []interface{}, err error)
+	Closer
+}
+
+type session interface {
+	Run(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*Operation) ([]*tf.Tensor, error)
+	Closer
+}
+
+type Closer interface {
 	Close() error
 }
 
@@ -42,7 +51,7 @@ type tensorflow struct {
 	sessionConfig []byte
 	options       *SessionOptions
 	graph         *tf.Graph
-	session       *tf.Session
+	session       session
 	ndim          uint8
 }
 
@@ -55,6 +64,10 @@ const (
 	TwoDim uint8 = iota + 2
 	ThreeDim
 )
+
+var loadFunc = func(exportDir string, tags []string, options *SessionOptions) (*tf.SavedModel, error) {
+	return tf.LoadSavedModel(exportDir, tags, options)
+}
 
 func New(opts ...Option) (TF, error) {
 	t := new(tensorflow)
@@ -69,7 +82,7 @@ func New(opts ...Option) (TF, error) {
 		}
 	}
 
-	model, err := tf.LoadSavedModel(t.exportDir, t.tags, t.options)
+	model, err := loadFunc(t.exportDir, t.tags, t.options)
 	if err != nil {
 		return nil, err
 	}
