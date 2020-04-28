@@ -13,24 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-{{- if .Values.gateway.ingress.enabled }}
-apiVersion: networking.k8s.io/v1beta1
-# apiVersion: networking.k8s.io/v1
-kind: Ingress
+{{- if .Values.discoverer.hpa.enabled }}
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
 metadata:
-  annotations:
-    {{- toYaml .Values.gateway.ingress.annotations | nindent 4 }}
-  labels:
-    name: {{ .Values.gateway.name }}-ingress
-    app: {{ .Values.gateway.name }}-ingress
-  name: {{ .Values.gateway.name }}-ingress
+  name: {{ .Values.discoverer.name }}
 spec:
-  rules:
-    - host: {{ .Values.gateway.ingress.host }}
-      http:
-        paths:
-          - backend:
-              serviceName: {{ .Values.gateway.name }}
-              servicePort: {{ .Values.gateway.ingress.servicePort }}
+  maxReplicas: {{ .Values.discoverer.maxReplicas }}
+  minReplicas: {{ .Values.discoverer.minReplicas }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: {{ .Values.discoverer.kind }}
+    name: {{ .Values.discoverer.name }}
+  targetCPUUtilizationPercentage: {{ .Values.discoverer.hpa.targetCPUUtilizationPercentage }}
+status:
 {{- end }}

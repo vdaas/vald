@@ -14,18 +14,22 @@
 # limitations under the License.
 #
 
+# The values in defaults section will be used for common settings in each components if not specified in their sections.
 defaults:
   # defaults.time_zone -- Time zone
   time_zone: UTC
   logging:
     # defaults.logging.logger -- logger name
+    # currently logger must be `glg`.
     logger: glg
     # defaults.logging.level -- logging level
+    # logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
     level: debug
     # defaults.logging.format -- logging format
+    # logging format must be `raw` or `json`
     format: raw
   image:
-    # defaults.image.tag -- image tag
+    # defaults.image.tag -- docker image tag
     tag: v0.0.35
   server_config:
     servers:
@@ -362,24 +366,26 @@ defaults:
         # defaults.grpc.client.tls.ca -- gRPC client TLS ca path
         ca: /path/to/ca
   observability:
-    # defaults.observability.enabled -- observability enabled
+    # defaults.observability.enabled -- observability features enabled
     enabled: false
     collector:
-      # defaults.observability.collector.duration -- observability collector collect duration
+      # defaults.observability.collector.duration -- metrics collect duration
+      # if it is set as 5s, enabled metrics are collected every 5 seconds.
       duration: 5s
       metrics:
-        # defaults.observability.collector.metrics.enable_version_info -- observability collector version info enabled
+        # defaults.observability.collector.metrics.enable_version_info -- version info metrics enabled
         enable_version_info: true
-        # defaults.observability.collector.metrics.enable_memory -- observability collector memory metrics enabled
+        # defaults.observability.collector.metrics.enable_memory -- memory metrics enabled
         enable_memory: true
-        # defaults.observability.collector.metrics.enable_goroutine -- observability collector goroutine metrics enabled
+        # defaults.observability.collector.metrics.enable_goroutine -- goroutine metrics enabled
         enable_goroutine: true
-        # defaults.observability.collector.metrics.enable_cgo -- observability collector cgo metrics enabled
+        # defaults.observability.collector.metrics.enable_cgo -- CGO metrics enabled
         enable_cgo: true
     trace:
       # defaults.observability.trace.enabled -- trace enabled
       enabled: false
       # defaults.observability.trace.sampling_rate -- trace sampling rate
+      # must be between 0.0 to 1.0.
       sampling_rate: 1.0
     prometheus:
       # defaults.observability.prometheus.enabled -- Prometheus exporter enabled
@@ -549,6 +555,8 @@ gateway:
     ingress:
       - ""
   ingress:
+    # gateway.ingress.enabled -- gateway ingress enabled
+    enabled: true
     # gateway.ingress.annotations -- annotations for ingress
     annotations:
       nginx.ingress.kubernetes.io/grpc-backend: "true"
@@ -716,10 +724,11 @@ agent:
     jaeger:
       service_name: vald-agent-ngt
   # agent.resources -- compute resources
+  # recommended setting of memory requests = cluster memory * 0.4 / number of agent pods
   resources:
     requests:
       cpu: 300m
-      memory: 4Gi # = cluster memory * 0.4 / number of agent pods
+      memory: 4Gi
   ngt:
     # agent.ngt.index_path -- (string) path to index data
     index_path: null
@@ -729,13 +738,17 @@ agent:
     auto_index_check_duration: 30m
     # agent.ngt.auto_index_length -- number of cache to trigger automatic indexing
     auto_index_length: 100
-    # agent.ngt.dimension -- dimension
+    # agent.ngt.dimension -- vector dimension
     dimension: 4096
     # agent.ngt.bulk_insert_chunk_size -- bulk insert chunk size
     bulk_insert_chunk_size: 10
-    # agent.ngt.distance_type -- distance type: l1, l2, angle, hamming, cosine, normalizedangle or normalizedcosine
+    # agent.ngt.distance_type -- distance type
+    # it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `normalizedangle` or `normalizedcosine`
+    # for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
     distance_type: l2
-    # agent.ngt.object_type -- object type: float or uint8
+    # agent.ngt.object_type -- object type
+    # it should be `float` or `uint8`
+    # for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
     object_type: float
     # agent.ngt.creation_edge_size -- creation edge size
     creation_edge_size: 20
@@ -776,6 +789,11 @@ discoverer:
   annotations: {}
   # discoverer.podAnnotations -- pod annotations
   podAnnotations: {}
+  hpa:
+    # discoverer.hpa.enabled -- HPA enabled
+    enabled: false
+    # discoverer.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
+    targetCPUUtilizationPercentage: 80
   service:
     # discoverer.service.annotations -- service annotations
     annotations: {}

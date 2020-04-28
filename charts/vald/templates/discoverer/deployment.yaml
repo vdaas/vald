@@ -26,7 +26,10 @@ metadata:
   {{- end }}
 spec:
   progressDeadlineSeconds: {{ .Values.discoverer.progressDeadlineSeconds }}
+  {{- if .Values.discoverer.hpa.enabled -}}
+  {{- else }}
   replicas: {{ .Values.discoverer.minReplicas }}
+  {{- end }}
   revisionHistoryLimit: {{ .Values.discoverer.revisionHistoryLimit }}
   selector:
     matchLabels:
