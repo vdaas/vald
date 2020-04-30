@@ -32,29 +32,31 @@ type Option func(*client) error
 var (
 	defaultOpts = []Option{
 		WithCQLVersion("3.0.0"),
-		WithProtoVersion(0),
-		WithTimeout("600ms"),
 		WithConnectTimeout("600ms"),
-		WithPort(9042),
-		WithNumConns(2),
-		WithConsistency("quorum"),
-		WithMaxPreparedStmts(1000),
-		WithMaxRoutingKeyInfo(1000),
-		WithPageSize(5000),
-		WithEnableHostVerification(false),
+		WithConsistency(cQuorumKey),
+		WithDCAwareRouting(false),
+		WithDefaultIdempotence(false),
 		WithDefaultTimestamp(true),
-		WithReconnectInterval("1m"),
-		WithMaxWaitSchemaAgreement("1m"),
-		WithIgnorePeerAddr(false),
 		WithDisableInitialHostLookup(false),
 		WithDisableNodeStatusEvents(false),
-		WithDisableTopologyEvents(false),
 		WithDisableSkipMetadata(false),
-		WithDefaultIdempotence(false),
-		WithWriteCoalesceWaitTime("200µs"),
-		WithDCAwareRouting(false),
+		WithDisableTopologyEvents(false),
+		WithEnableHostVerification(false),
+		WithIgnorePeerAddr(false),
+		WithMaxPreparedStmts(1000),
+		WithMaxRoutingKeyInfo(1000),
+		WithMaxWaitSchemaAgreement("1m"),
 		WithNonLocalReplicasFallback(false),
+		WithNumConns(2),
+		WithPageSize(5000),
+		WithPort(9042),
+		WithProtoVersion(0),
+		WithReconnectInterval("1m"),
+		WithSerialConsistency(scLocalSerialKey),
 		WithShuffleReplicas(false),
+		WithTimeout("600ms"),
+		WithTokenAwareHostPolicy(true),
+		WithWriteCoalesceWaitTime("200µs"),
 	}
 )
 
@@ -144,17 +146,29 @@ func WithNumConns(numConns int) Option {
 	}
 }
 
-var consistenciesMap = map[string]gocql.Consistency{
-	"any":         gocql.Any,
-	"one":         gocql.One,
-	"two":         gocql.Two,
-	"three":       gocql.Three,
-	"quorum":      gocql.Quorum,
-	"all":         gocql.All,
-	"localquorum": gocql.LocalQuorum,
-	"eachquorum":  gocql.EachQuorum,
-	"localone":    gocql.LocalOne,
-}
+var (
+	cAnyKey         = "any"
+	cOneKey         = "one"
+	cTwoKey         = "two"
+	cThreeKey       = "three"
+	cAllKey         = "all"
+	cQuorumKey      = "quorum"
+	cLocalQuorumKey = "localquorum"
+	cEachQuorumKey  = "eachquorum"
+	cLocalOneKey    = "localone"
+
+	consistenciesMap = map[string]gocql.Consistency{
+		cAnyKey:         gocql.Any,
+		cOneKey:         gocql.One,
+		cTwoKey:         gocql.Two,
+		cThreeKey:       gocql.Three,
+		cQuorumKey:      gocql.Quorum,
+		cAllKey:         gocql.All,
+		cLocalQuorumKey: gocql.LocalQuorum,
+		cEachQuorumKey:  gocql.EachQuorum,
+		cLocalOneKey:    gocql.LocalOne,
+	}
+)
 
 func WithConsistency(consistency string) Option {
 	return func(c *client) error {
@@ -163,6 +177,29 @@ func WithConsistency(consistency string) Option {
 			return errors.ErrCassandraInvalidConsistencyType(consistency)
 		}
 		c.consistency = actual
+		return nil
+	}
+}
+
+var (
+	scLocalSerialKey       = "localserial"
+	scSerialKey            = "serial"
+	serialConsistenciesMap = map[string]gocql.SerialConsistency{
+		scLocalSerialKey: gocql.LocalSerial,
+		scSerialKey:      gocql.Serial,
+	}
+)
+
+func WithSerialConsistency(consistency string) Option {
+	return func(c *client) error {
+		if len(consistency) == 0 {
+			return nil
+		}
+		actual, ok := serialConsistenciesMap[strings.TrimSpace(strings.Trim(strings.Trim(strings.ToLower(consistency), "_"), "-"))]
+		if !ok {
+			return errors.ErrCassandraInvalidConsistencyType(consistency)
+		}
+		c.serialConsistency = actual
 		return nil
 	}
 }
@@ -274,13 +311,6 @@ func WithPageSize(pageSize int) Option {
 	}
 }
 
-func WithSerialConsistency(consistency gocql.SerialConsistency) Option {
-	return func(c *client) error {
-		c.serialConsistency = consistency
-		return nil
-	}
-}
-
 func WithTLS(tls *tls.Config) Option {
 	return func(c *client) error {
 		c.tls = tls
@@ -330,23 +360,30 @@ func WithDC(name string) Option {
 	}
 }
 
-func WithDCAwareRouting(dc_aware_routing bool) Option {
+func WithDCAwareRouting(dcAwareRouting bool) Option {
 	return func(c *client) error {
-		c.poolConfig.enableDCAwareRouting = dc_aware_routing
+		c.poolConfig.enableDCAwareRouting = dcAwareRouting
 		return nil
 	}
 }
 
-func WithNonLocalReplicasFallback(non_local_replicas_fallback bool) Option {
+func WithNonLocalReplicasFallback(nonLocalReplicasFallBack bool) Option {
 	return func(c *client) error {
-		c.poolConfig.enableNonLocalReplicasFallback = non_local_replicas_fallback
+		c.poolConfig.enableNonLocalReplicasFallback = nonLocalReplicasFallBack
 		return nil
 	}
 }
 
-func WithShuffleReplicas(shuffle_replicas bool) Option {
+func WithShuffleReplicas(shuffleReplicas bool) Option {
 	return func(c *client) error {
-		c.poolConfig.enableShuffleReplicas = shuffle_replicas
+		c.poolConfig.enableShuffleReplicas = shuffleReplicas
+		return nil
+	}
+}
+
+func WithTokenAwareHostPolicy(tokenAwareHostPolicy bool) Option {
+	return func(c *client) error {
+		c.poolConfig.enableTokenAwareHostPolicy = tokenAwareHostPolicy
 		return nil
 	}
 }
