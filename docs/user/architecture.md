@@ -141,32 +141,43 @@ Vald Backup Gateway will forward the backup request to the Vald LB Gateway. It w
 
 ### Vald Load Balancing
 
-Load balancing is one of the important concepts in distributed computing, which means it distribute a set of tasks over a set of resources aiming for making the overall processing more efficient.
-In Vald, we implement our own load balancing controller. Vald can load balance the request base on node resources.
+Load balancing is one of the important concepts in distributed computing, which means it distributes a set of tasks over a set of resources aiming for making the overall processing more efficient.
+Vald implements its own load balancing controller.
+Vald can load balance the request base on node resources.
 
 #### Vald LB Gateway
 
-Vald LB Gateway load balance the user request base on the node resources result from the agent discoverer.
+Vald LB Gateway loads balance the user request base on the node resources result from the [Agent Discoverer](#agent-discoverer).
 
 #### Agent Discoverer
 
-Agent Discoverer discovers Vald pods and the corresponding node resource usage. It talks to the Kube-API and get the corresponding node information.
+Agent Discoverer discovers active Vald pods and the corresponding nodes' resources usage via [kube-apiserver](https://github.com/kubernetes/kubernetes/tree/master/cmd/kube-apiserver).
 
 ### Vald Core Engine
 
-Vald Agent is the core engine of Vald. In this section we will describe what is Vald Agent and the corresponding components to support Vald Agent.
+In this section, we will describe what is Vald Agent and the corresponding components to support Vald Agent.
 
 #### Vald Agent
 
 Vald Agent is the core of the Vald. By default Vald use [NGT](https://github.com/yahoojapan/NGT) to provide API for users to insert/update/delete/search vectors.
 
+Each Vald Agent pod holds different vector dimension space, which is constructed by insert/update vectors for searching approximate vectors.
+
+(todo: diagram to explain different vector dimension space)
+
+When you request searching with your vector in Vald, each Vald Agent returns different _k_-nearest neighbors' vectors which are similar to the searching vector.
+
 #### Vald Agent Scheduler
 
 Vald Agent Scheduler is the scheduler of the Vald Agent. It schedules Vald Agent base on the Node CPU and memory usage.
 
+(????)
+
 #### Vald Index Manager
 
 Vald Index Manager manages the index of vector data in Vald Agent.
+
+(????)
 
 ### Vald Replication Manager
 
