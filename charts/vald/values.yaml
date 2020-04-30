@@ -1844,7 +1844,7 @@ meta:
         non_local_replicas_fallback: false
         # meta.cassandra.config.pool_config.shuffle_replicas -- shuffle replica enabled
         shuffle_replicas: false
-        # backupManager.cassandra.config.pool_config.token_aware_host_policy -- token aware host policy enabled
+        # meta.cassandra.config.pool_config.token_aware_host_policy -- token aware host policy enabled
         token_aware_host_policy: false
 
 initializer:
