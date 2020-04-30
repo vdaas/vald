@@ -46,7 +46,7 @@ Vald is based on [Kubernetes](https://kubernetes.io/) architecture. Before you r
 
 ### Insert
 
-( add flow diagram here )
+( add flow diagram here https://medium.com/@milvusio/mishards-distributed-vector-search-in-milvus-a14c239c9aad)
 
 When the user insert data into Vald:
 
@@ -80,19 +80,19 @@ When the user insert data into Vald:
 
 ### Vald Filter
 
-Vald Filter have 2 main functionality.
+Vald Filter has 2 main functionality.
 
 1. Filter request query
 1. Filter response data
 
 #### Vald Ingress Filter
 
-Vald Ingress Filter filter the incoming request before processing it.
+Vald Ingress Filter filters the incoming request before processing it.
 Ingress filter uses users request parameters(?)...?
 
 #### Vald Egress Filter
 
-Vald Egress Filter filter the response before sending to the user. This component will reorder the response data from the set of the Vald Agent base on the ranking and then response the number of data users want.
+Vald Egress Filter filters the response before sending to the user. This component will reorder the response data from the set of the Vald Agent base on the ranking and then response the number of data users want.
 
 #### Vald Filter Gateway
 
@@ -119,8 +119,6 @@ It will perform the following action:
 
 Vald Meta is the agent to process the CRUD request of the metadata (vec_id and UUID). Users can configure which data source to be used in Vald Meta (for example Redis or Cassandra).
 
-// (Vald Meta -> Vald Metadata Manager/ Vald metadata agent?)
-
 ### Vald Backup
 
 To support auto-healing functionality and increase performance during disaster recovery, Vald implements the backup mechanism.
@@ -129,15 +127,13 @@ To support auto-healing functionality and increase performance during disaster r
 
 Vald Compressor compresses all of the data (metadata and the vector data) and sends to the Vald Backup Manager to process the backup request.
 
-// (ask when IP is created)
-
 #### Vald Backup Manager
 
-Vald Backup Manager processes the CRD request of the backup request and handles the compressed metadata. Users can configure which data source to be used in Vald Meta (for example Redis or Cassandra).
+Vald Backup Manager processes the CRD request of the backup request and handles the compressed metadata. Users can configure which data source to be used in `Vald Meta` (for example Redis or Cassandra).
 
 #### Vald Backup Gateway
 
-Vald Backup Gateway will forward the backup request to the Vald LB Gateway. It will also forward to Vald Compressor asynchronously with metadata.
+Vald Backup Gateway will forward the backup request to the `Vald LB Gateway`. It will also forward to `Vald Compressor` asynchronously with metadata.
 
 ### Vald Load Balancing
 
@@ -147,7 +143,7 @@ Vald can load balance the request base on node resources.
 
 #### Vald LB Gateway
 
-Vald LB Gateway loads balance the user request base on the node resources result from the [Agent Discoverer](#agent-discoverer).
+Vald LB Gateway loads balance the user request base on the node resources results from the `Agent Discoverer`.
 
 #### Agent Discoverer
 
@@ -163,29 +159,34 @@ Vald Agent is the core of the Vald. By default Vald use [NGT](https://github.com
 
 Each Vald Agent pod holds different vector dimension space, which is constructed by insert/update vectors for searching approximate vectors.
 
-(todo: diagram to explain different vector dimension space)
+<!-- (todo: diagram to explain different vector dimension space) -->
 
 When you request searching with your vector in Vald, each Vald Agent returns different _k_-nearest neighbors' vectors which are similar to the searching vector.
 
 #### Vald Agent Scheduler
 
-Vald Agent Scheduler is the scheduler of the Vald Agent. It schedules Vald Agent base on the Node CPU and memory usage.
+Vald Agent Scheduler is the scheduler of the Vald Agent.
+It implements it's own custom scheduling logic to increase the scalability of the Vald Agent.
 
-(????)
+It schedules Vald Agent base on the Node CPU and memory usage, and the amount of the indexes.
 
 #### Vald Index Manager
 
-Vald Index Manager manages the index of vector data in Vald Agent.
+Vald Index Manager controls the timing of the indexing inserted vectors on the Vald Agent. The index is used to increase the performance of the search action.
 
-(????)
+It retrieves the active Vald Agent pods from the Vald Discoverer and triggers the indexing action on each Vald Agent.
 
 ### Vald Replication Manager
 
-Vald replication manager manages the Vald Agent replicates. It auto-scale the Vald agent base on the resource usage on the node.
+Vald Replication Manager manages the healthiness of the Vald Agent. When the pod is dead, Vald Replication Manager will auto recover the cache to keeps the reliability of the service.
 
 #### Vald Replication Manager Agent
 
+Vald Replication Manager Agent recovers the specific backup cache to the specific Vald Agent. It retrieves the target backup from the `Vald Compressor` and recovers it to the newly created `Vald Agent`.
+
 #### Vald Replication Manager Controller
+
+Vald Replication Manager Controller keeps track of the active Vald pods. When the Vald Agent is dead, it will trigger the Vald Replication Manager Agent to recover the backup cache to the auto-healed pods from the backup.
 
 ### Kubernetes Components
 
@@ -194,3 +195,6 @@ Vald is base on the Kubernetes platform. In this section we will explain the Kub
 #### Kube-API Server
 
 #### Custom Resources
+
+CRD
+deployのコントローラー、起動順番を管理する（gatewayのinitコンテナーがいらなくなる）
