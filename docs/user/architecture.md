@@ -36,7 +36,7 @@
 
 ## Overview
 
-This document describe the high level architecture design of Vald and explain each component in Vald. We need to these components to support scalability, high performance and auto-healing in Vald.
+This document describe the high-level architecture design of Vald and explain each component in Vald. We need to these components to support scalability, high performance and auto-healing in Vald.
 
 <img src="../../design/Vald Future Architecture Overview.svg" />
 
@@ -48,7 +48,7 @@ Vald is based on [Kubernetes](https://kubernetes.io/) architecture. Before you r
 
 ( add flow diagram here )
 
-When user insert data into Vald:
+When the user insert data into Vald:
 
 ```
 1. The request will go through the Vald Ingress
@@ -92,7 +92,7 @@ Ingress filter uses users request parameters(?)...?
 
 #### Vald Egress Filter
 
-Vald Egress Filter filter the response before sending to the user. This component will reorder the response data from set of the Vald Agent base on the ranking and then response the number of data user want.
+Vald Egress Filter filter the response before sending to the user. This component will reorder the response data from the set of the Vald Agent base on the ranking and then response the number of data users want.
 
 #### Vald Filter Gateway
 
@@ -141,7 +141,7 @@ Vald Backup Gateway will forward the backup request to the Vald LB Gateway. It w
 
 ### Vald Load Balancing
 
-Load balancing is one of the important concept in distributed computing, which means the distribute a set of task over set of resources aiming for making the overall processing more efficient.
+Load balancing is one of the important concepts in distributed computing, which means it distribute a set of tasks over a set of resources aiming for making the overall processing more efficient.
 In Vald, we implement our own load balancing controller. Vald can load balance the request base on node resources.
 
 #### Vald LB Gateway
@@ -178,10 +178,8 @@ Vald replication manager manages the Vald Agent replicates. It auto-scale the Va
 
 ### Kubernetes Components
 
-Vald is base on Kubernetes platform. In this section we will explain the Kubernetes component used in Vald and why we need them.
+Vald is base on the Kubernetes platform. In this section we will explain the Kubernetes component used in Vald and why we need them.
 
 #### Kube-API Server
 
 #### Custom Resources
-
-
