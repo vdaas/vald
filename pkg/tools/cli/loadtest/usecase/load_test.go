@@ -23,11 +23,8 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
-	"github.com/vdaas/vald/internal/servers/starter"
-	"github.com/vdaas/vald/pkg/manager/backup/cassandra/config"
-	"github.com/vdaas/vald/pkg/manager/backup/cassandra/service"
+	"github.com/vdaas/vald/pkg/agent/ngt/config"
 
 	"go.uber.org/goleak"
 )
@@ -112,11 +109,8 @@ func Test_run_PreStart(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		eg            errgroup.Group
-		cfg           *config.Data
-		cassandra     service.Cassandra
-		server        starter.Server
-		observability observability.Observability
+		eg  errgroup.Group
+		cfg *config.Data
 	}
 	type want struct {
 		err error
@@ -147,9 +141,6 @@ func Test_run_PreStart(t *testing.T) {
 		       fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
-		           server: nil,
-		           observability: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -167,9 +158,6 @@ func Test_run_PreStart(t *testing.T) {
 		           fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
-		           server: nil,
-		           observability: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -191,11 +179,8 @@ func Test_run_PreStart(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &run{
-				eg:            test.fields.eg,
-				cfg:           test.fields.cfg,
-				cassandra:     test.fields.cassandra,
-				server:        test.fields.server,
-				observability: test.fields.observability,
+				eg:  test.fields.eg,
+				cfg: test.fields.cfg,
 			}
 
 			err := r.PreStart(test.args.ctx)
@@ -212,11 +197,8 @@ func Test_run_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		eg            errgroup.Group
-		cfg           *config.Data
-		cassandra     service.Cassandra
-		server        starter.Server
-		observability observability.Observability
+		eg  errgroup.Group
+		cfg *config.Data
 	}
 	type want struct {
 		want <-chan error
@@ -251,9 +233,6 @@ func Test_run_Start(t *testing.T) {
 		       fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
-		           server: nil,
-		           observability: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -271,9 +250,6 @@ func Test_run_Start(t *testing.T) {
 		           fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
-		           server: nil,
-		           observability: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -295,11 +271,8 @@ func Test_run_Start(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &run{
-				eg:            test.fields.eg,
-				cfg:           test.fields.cfg,
-				cassandra:     test.fields.cassandra,
-				server:        test.fields.server,
-				observability: test.fields.observability,
+				eg:  test.fields.eg,
+				cfg: test.fields.cfg,
 			}
 
 			got, err := r.Start(test.args.ctx)
@@ -316,11 +289,8 @@ func Test_run_PreStop(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		eg            errgroup.Group
-		cfg           *config.Data
-		cassandra     service.Cassandra
-		server        starter.Server
-		observability observability.Observability
+		eg  errgroup.Group
+		cfg *config.Data
 	}
 	type want struct {
 		err error
@@ -351,9 +321,6 @@ func Test_run_PreStop(t *testing.T) {
 		       fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
-		           server: nil,
-		           observability: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -371,9 +338,6 @@ func Test_run_PreStop(t *testing.T) {
 		           fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
-		           server: nil,
-		           observability: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -395,11 +359,8 @@ func Test_run_PreStop(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &run{
-				eg:            test.fields.eg,
-				cfg:           test.fields.cfg,
-				cassandra:     test.fields.cassandra,
-				server:        test.fields.server,
-				observability: test.fields.observability,
+				eg:  test.fields.eg,
+				cfg: test.fields.cfg,
 			}
 
 			err := r.PreStop(test.args.ctx)
@@ -416,11 +377,8 @@ func Test_run_Stop(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		eg            errgroup.Group
-		cfg           *config.Data
-		cassandra     service.Cassandra
-		server        starter.Server
-		observability observability.Observability
+		eg  errgroup.Group
+		cfg *config.Data
 	}
 	type want struct {
 		err error
@@ -451,9 +409,6 @@ func Test_run_Stop(t *testing.T) {
 		       fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
-		           server: nil,
-		           observability: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -471,9 +426,6 @@ func Test_run_Stop(t *testing.T) {
 		           fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
-		           server: nil,
-		           observability: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -495,11 +447,8 @@ func Test_run_Stop(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &run{
-				eg:            test.fields.eg,
-				cfg:           test.fields.cfg,
-				cassandra:     test.fields.cassandra,
-				server:        test.fields.server,
-				observability: test.fields.observability,
+				eg:  test.fields.eg,
+				cfg: test.fields.cfg,
 			}
 
 			err := r.Stop(test.args.ctx)
@@ -516,11 +465,8 @@ func Test_run_PostStop(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		eg            errgroup.Group
-		cfg           *config.Data
-		cassandra     service.Cassandra
-		server        starter.Server
-		observability observability.Observability
+		eg  errgroup.Group
+		cfg *config.Data
 	}
 	type want struct {
 		err error
@@ -551,9 +497,6 @@ func Test_run_PostStop(t *testing.T) {
 		       fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
-		           server: nil,
-		           observability: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -571,9 +514,6 @@ func Test_run_PostStop(t *testing.T) {
 		           fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
-		           server: nil,
-		           observability: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -595,11 +535,8 @@ func Test_run_PostStop(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &run{
-				eg:            test.fields.eg,
-				cfg:           test.fields.cfg,
-				cassandra:     test.fields.cassandra,
-				server:        test.fields.server,
-				observability: test.fields.observability,
+				eg:  test.fields.eg,
+				cfg: test.fields.cfg,
 			}
 
 			err := r.PostStop(test.args.ctx)

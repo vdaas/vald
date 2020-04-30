@@ -17,7 +17,11 @@
 // Package main provides program main
 package main
 
-import "testing"
+import (
+	"testing"
+
+	"go.uber.org/goleak"
+)
 
 func Test_main(t *testing.T) {
 	type want struct {
@@ -56,6 +60,7 @@ func Test_main(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

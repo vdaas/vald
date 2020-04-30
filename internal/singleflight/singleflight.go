@@ -30,7 +30,7 @@ type call struct {
 }
 
 type Group interface {
-	Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, err error, shared bool)
+	Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error)
 }
 
 type group struct {
@@ -47,13 +47,13 @@ func New(size int) Group {
 	}
 }
 
-func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, err error, shared bool) {
+func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error) {
 	g.mu.RLock()
 	if c, ok := g.m[key]; ok {
 		g.mu.RUnlock()
 		c.dups++
 		c.wg.Wait()
-		return c.val, c.err, true
+		return c.val, true, c.err
 	}
 	g.mu.RUnlock()
 
@@ -71,5 +71,5 @@ func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, erro
 	delete(g.m, key)
 	g.mu.Unlock()
 
-	return c.val, c.err, c.dups > 0
+	return c.val, c.dups > 0, c.err
 }

@@ -17,7 +17,11 @@
 // Package trace provides trace function.
 package trace
 
-import "testing"
+import (
+	"testing"
+
+	"go.uber.org/goleak"
+)
 
 func TestWithSamplingRate(t *testing.T) {
 	type T = interface{}
@@ -95,6 +99,7 @@ func TestWithSamplingRate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

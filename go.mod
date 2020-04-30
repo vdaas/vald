@@ -53,11 +53,11 @@ require (
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/goleak v1.0.0
 	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
-	golang.org/x/tools v0.0.0-20200429213335-127c98bd7927 // indirect
+	golang.org/x/tools v0.0.0-20200501005904-d351ea090f9b // indirect
 	gonum.org/v1/hdf5 v0.0.0-20191105085658-fe04b73f3b53
 	gonum.org/v1/netlib v0.0.0-20200317120129-c5a04cffd98a // indirect
 	gonum.org/v1/plot v0.7.0
-	google.golang.org/genproto v0.0.0-20200429120912-1f37eeb960b2
+	google.golang.org/genproto v0.0.0-20200430143042-b979b6f78d84
 	google.golang.org/grpc v1.29.1
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.18.2

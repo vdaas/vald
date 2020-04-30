@@ -21,7 +21,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cockroachdb/errors"
+	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func TestNewConfig(t *testing.T) {
@@ -79,6 +80,7 @@ func TestNewConfig(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

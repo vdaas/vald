@@ -17,7 +17,11 @@
 // Package rest provides agent ngt REST client functions
 package rest
 
-import "testing"
+import (
+	"testing"
+
+	"go.uber.org/goleak"
+)
 
 func TestWithAddr(t *testing.T) {
 	type T = interface{}
@@ -95,6 +99,7 @@ func TestWithAddr(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

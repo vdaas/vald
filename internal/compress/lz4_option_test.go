@@ -17,7 +17,11 @@
 // Package compress provides compress functions
 package compress
 
-import "testing"
+import (
+	"testing"
+
+	"go.uber.org/goleak"
+)
 
 func TestWithLZ4Gob(t *testing.T) {
 	type T = interface{}
@@ -95,6 +99,7 @@ func TestWithLZ4Gob(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -207,6 +212,7 @@ func TestWithLZ4CompressionLevel(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

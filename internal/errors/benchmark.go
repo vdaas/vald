@@ -17,10 +17,6 @@
 // Package errors provides benchmark error
 package errors
 
-import (
-	"github.com/vdaas/vald/internal/errors"
-)
-
 var (
-	ErrInvalidCoreMode = errors.New("invalid core mode")
+	ErrInvalidCoreMode = New("invalid core mode")
 )
