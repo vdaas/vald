@@ -23,8 +23,6 @@ import (
 
 	"github.com/gocql/gocql"
 	"go.uber.org/goleak"
-
-	"go.uber.org/goleak"
 )
 
 func TestWithHosts(t *testing.T) {

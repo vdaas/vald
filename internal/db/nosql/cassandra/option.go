@@ -469,3 +469,36 @@ func WithWriteCoalesceWaitTime(writeCoalesceWaitTime string) Option {
 		return nil
 	}
 }
+
+func WithHostFilter(flg bool) Option {
+	return func(c *client) error {
+		c.hostFilter.enable = flg
+		return nil
+	}
+}
+
+func WithDCHostFilter(dc string) Option {
+	return func(c *client) error {
+		if len(dc) == 0 {
+			return nil
+		}
+		c.hostFilter.dcHost = dc
+		if !c.hostFilter.enable {
+			WithHostFilter(true)(c)
+		}
+		return nil
+	}
+}
+
+func WithWhiteListHostFilter(list []string) Option {
+	return func(c *client) error {
+		if len(list) <= 0 {
+			return nil
+		}
+		c.hostFilter.whiteList = list
+		if !c.hostFilter.enable {
+			WithHostFilter(true)(c)
+		}
+		return nil
+	}
+}

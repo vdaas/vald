@@ -41,6 +41,7 @@ type Cassandra struct {
 	PoolConfig         *PoolConfig         `json:"pool_config" yaml:"pool_config"`
 	RetryPolicy        *RetryPolicy        `json:"retry_policy" yaml:"retry_policy"`
 	ReconnectionPolicy *ReconnectionPolicy `json:"reconnection_policy" yaml:"reconnection_policy"`
+	HostFilter         *HostFilter         `json:"host_filter" yaml:"host_filter"`
 
 	SocketKeepalive          string `json:"socket_keepalive" yaml:"socket_keepalive"`
 	MaxPreparedStmts         int    `json:"max_prepared_stmts" yaml:"max_prepared_stmts"`
@@ -88,6 +89,12 @@ type ReconnectionPolicy struct {
 	InitialInterval string `json:"initial_interval" yaml:"initial_interval"`
 }
 
+type HostFilter struct {
+	Enabled    bool     `json:"enabled"`
+	DataCenter string   `json:"data_center" yaml:"data_center"`
+	WhiteList  []string `json:"white_list" yaml:"white_list"`
+}
+
 func (c *Cassandra) Bind() *Cassandra {
 	c.Hosts = GetActualValues(c.Hosts)
 	c.CQLVersion = GetActualValue(c.CQLVersion)
@@ -108,6 +115,10 @@ func (c *Cassandra) Bind() *Cassandra {
 	}
 	if c.PoolConfig != nil {
 		c.PoolConfig.DataCenter = GetActualValue(c.PoolConfig.DataCenter)
+	}
+	if c.HostFilter != nil {
+		c.HostFilter.DataCenter = GetActualValue(c.HostFilter.DataCenter)
+		c.HostFilter.WhiteList = GetActualValues(c.HostFilter.WhiteList)
 	}
 	c.SocketKeepalive = GetActualValue(c.SocketKeepalive)
 	if c.TLS != nil {
@@ -146,11 +157,6 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 		cassandra.WithSerialConsistency(cfg.SerialConsistency),
 		cassandra.WithUsername(cfg.Username),
 		cassandra.WithPassword(cfg.Password),
-		cassandra.WithRetryPolicyNumRetries(cfg.RetryPolicy.NumRetries),
-		cassandra.WithRetryPolicyMinDuration(cfg.RetryPolicy.MinDuration),
-		cassandra.WithRetryPolicyMaxDuration(cfg.RetryPolicy.MaxDuration),
-		cassandra.WithReconnectionPolicyMaxRetries(cfg.ReconnectionPolicy.MaxRetries),
-		cassandra.WithReconnectionPolicyInitialInterval(cfg.ReconnectionPolicy.InitialInterval),
 		cassandra.WithSocketKeepalive(cfg.SocketKeepalive),
 		cassandra.WithMaxPreparedStmts(cfg.MaxPreparedStmts),
 		cassandra.WithMaxRoutingKeyInfo(cfg.MaxRoutingKeyInfo),
@@ -167,7 +173,21 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 		cassandra.WithDefaultIdempotence(cfg.DefaultIdempotence),
 		cassandra.WithWriteCoalesceWaitTime(cfg.WriteCoalesceWaitTime),
 	}
-
+	if cfg.RetryPolicy != nil {
+		opts = append(
+			opts,
+			cassandra.WithRetryPolicyNumRetries(cfg.RetryPolicy.NumRetries),
+			cassandra.WithRetryPolicyMinDuration(cfg.RetryPolicy.MinDuration),
+			cassandra.WithRetryPolicyMaxDuration(cfg.RetryPolicy.MaxDuration),
+		)
+	}
+	if cfg.ReconnectionPolicy != nil {
+		opts = append(
+			opts,
+			cassandra.WithReconnectionPolicyMaxRetries(cfg.ReconnectionPolicy.MaxRetries),
+			cassandra.WithReconnectionPolicyInitialInterval(cfg.ReconnectionPolicy.InitialInterval),
+		)
+	}
 	if cfg.PoolConfig != nil {
 		opts = append(
 			opts,
@@ -176,6 +196,14 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 			cassandra.WithNonLocalReplicasFallback(cfg.PoolConfig.NonLocalReplicasFallback),
 			cassandra.WithShuffleReplicas(cfg.PoolConfig.ShuffleReplicas),
 			cassandra.WithTokenAwareHostPolicy(cfg.PoolConfig.TokenAwareHostPolicy),
+		)
+	}
+	if cfg.HostFilter != nil {
+		opts = append(
+			opts,
+			cassandra.WithHostFilter(cfg.HostFilter.Enabled),
+			cassandra.WithDCHostFilter(cfg.HostFilter.DataCenter),
+			cassandra.WithWhiteListHostFilter(cfg.HostFilter.WhiteList),
 		)
 	}
 
