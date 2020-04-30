@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.33`
+Current chart version is `v0.0.34`
 
 Install
 ---
@@ -118,6 +118,9 @@ Configuration
 | backupManager.cassandra.config.disable_skip_metadata | bool | `false` | skip metadata disabled |
 | backupManager.cassandra.config.disable_topology_events | bool | `false` | topology events disabled |
 | backupManager.cassandra.config.enable_host_verification | bool | `false` | host verification enabled |
+| backupManager.cassandra.config.host_filter.data_center | string | `""` | name of data center of filtering target |
+| backupManager.cassandra.config.host_filter.enabled | bool | `false` | enables host filtering |
+| backupManager.cassandra.config.host_filter.white_list | list | `[]` | list of white_list which allows each connection |
 | backupManager.cassandra.config.hosts | list | `["cassandra-0.cassandra.default.svc.cluster.local","cassandra-1.cassandra.default.svc.cluster.local","cassandra-2.cassandra.default.svc.cluster.local"]` | cassandra hosts |
 | backupManager.cassandra.config.ignore_peer_addr | bool | `false` | ignore peer addresses |
 | backupManager.cassandra.config.keyspace | string | `"vald"` | cassandra keyspace |
@@ -132,6 +135,7 @@ Configuration
 | backupManager.cassandra.config.pool_config.dc_aware_routing | bool | `false` | data center aware routine enabled |
 | backupManager.cassandra.config.pool_config.non_local_replicas_fallback | bool | `false` | non-local replica fallback enabled |
 | backupManager.cassandra.config.pool_config.shuffle_replicas | bool | `false` | shuffle replica enabled |
+| backupManager.cassandra.config.pool_config.token_aware_host_policy | bool | `false` | token aware host policy enabled |
 | backupManager.cassandra.config.port | int | `9042` | cassandra port |
 | backupManager.cassandra.config.proto_version | int | `0` | cassandra proto version |
 | backupManager.cassandra.config.reconnect_interval | string | `"100ms"` | interval of reconnection |
@@ -140,6 +144,7 @@ Configuration
 | backupManager.cassandra.config.retry_policy.max_duration | string | `"1s"` | maximum duration to retry |
 | backupManager.cassandra.config.retry_policy.min_duration | string | `"10ms"` | minimum duration to retry |
 | backupManager.cassandra.config.retry_policy.num_retries | int | `3` | number of retries |
+| backupManager.cassandra.config.serial_consistency | string | `"local_serial"` | read consistency type |
 | backupManager.cassandra.config.socket_keepalive | string | `"0s"` | socket keep alive time |
 | backupManager.cassandra.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
 | backupManager.cassandra.config.tcp.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
@@ -302,7 +307,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.33"` | image tag |
+| defaults.image.tag | string | `"v0.0.34"` | image tag |
 | defaults.logging.format | string | `"raw"` | logging format |
 | defaults.logging.level | string | `"debug"` | logging level |
 | defaults.logging.logger | string | `"glg"` | logger name |
@@ -641,6 +646,9 @@ Configuration
 | meta.cassandra.config.disable_skip_metadata | bool | `false` | skip metadata disabled |
 | meta.cassandra.config.disable_topology_events | bool | `false` | topology events disabled |
 | meta.cassandra.config.enable_host_verification | bool | `false` | host verification enabled |
+| meta.cassandra.config.host_filter.data_center | string | `""` | name of data center of filtering target |
+| meta.cassandra.config.host_filter.enabled | bool | `false` | enables host filtering |
+| meta.cassandra.config.host_filter.white_list | list | `[]` | list of white_list which allows each connection |
 | meta.cassandra.config.hosts | list | `["cassandra-0.cassandra.default.svc.cluster.local","cassandra-1.cassandra.default.svc.cluster.local","cassandra-2.cassandra.default.svc.cluster.local"]` | cassandra hosts |
 | meta.cassandra.config.ignore_peer_addr | bool | `false` | ignore peer addresses |
 | meta.cassandra.config.keyspace | string | `"vald"` | cassandra keyspace |
@@ -655,6 +663,7 @@ Configuration
 | meta.cassandra.config.pool_config.dc_aware_routing | bool | `false` | data center aware routine enabled |
 | meta.cassandra.config.pool_config.non_local_replicas_fallback | bool | `false` | non-local replica fallback enabled |
 | meta.cassandra.config.pool_config.shuffle_replicas | bool | `false` | shuffle replica enabled |
+| meta.cassandra.config.pool_config.token_aware_host_policy | bool | `false` | token aware host policy enabled |
 | meta.cassandra.config.port | int | `9042` | cassandra port |
 | meta.cassandra.config.proto_version | int | `0` | cassandra proto version |
 | meta.cassandra.config.reconnect_interval | string | `"100ms"` | interval of reconnection |
@@ -663,6 +672,7 @@ Configuration
 | meta.cassandra.config.retry_policy.max_duration | string | `"1s"` | maximum duration to retry |
 | meta.cassandra.config.retry_policy.min_duration | string | `"10ms"` | minimum duration to retry |
 | meta.cassandra.config.retry_policy.num_retries | int | `3` | number of retries |
+| meta.cassandra.config.serial_consistency | string | `"local_serial"` | read consistency type |
 | meta.cassandra.config.socket_keepalive | string | `"0s"` | socket keep alive time |
 | meta.cassandra.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
 | meta.cassandra.config.tcp.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |

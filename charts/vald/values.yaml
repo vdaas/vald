@@ -26,7 +26,7 @@ defaults:
     format: raw
   image:
     # defaults.image.tag -- image tag
-    tag: v0.0.33
+    tag: v0.0.34
   server_config:
     servers:
       rest:
