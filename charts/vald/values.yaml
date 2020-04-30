@@ -1761,7 +1761,7 @@ meta:
       num_conns: 2
       # meta.cassandra.config.consistency -- consistency type
       consistency:  quorum
-      # backupManager.cassandra.config.searial_consistency -- read consistency type
+      # meta.cassandra.config.serial_consistency -- read consistency type
       searial_consistency:  local_serial
       # meta.cassandra.config.username -- cassandra username
       username: root
