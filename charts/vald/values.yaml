@@ -1762,7 +1762,7 @@ meta:
       # meta.cassandra.config.consistency -- consistency type
       consistency:  quorum
       # meta.cassandra.config.serial_consistency -- read consistency type
-      searial_consistency:  local_serial
+      serial_consistency:  local_serial
       # meta.cassandra.config.username -- cassandra username
       username: root
       # meta.cassandra.config.password -- cassandra password
