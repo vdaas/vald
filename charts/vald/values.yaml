@@ -1761,6 +1761,8 @@ meta:
       num_conns: 2
       # meta.cassandra.config.consistency -- consistency type
       consistency:  quorum
+      # backupManager.cassandra.config.searial_consistency -- read consistency type
+      searial_consistency:  local_serial
       # meta.cassandra.config.username -- cassandra username
       username: root
       # meta.cassandra.config.password -- cassandra password
@@ -1842,6 +1844,8 @@ meta:
         non_local_replicas_fallback: false
         # meta.cassandra.config.pool_config.shuffle_replicas -- shuffle replica enabled
         shuffle_replicas: false
+        # backupManager.cassandra.config.pool_config.token_aware_host_policy -- token aware host policy enabled
+        token_aware_host_policy: false
 
 initializer:
   mysql:
