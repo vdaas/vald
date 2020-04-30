@@ -1341,11 +1341,11 @@ backupManager:
         # backupManager.cassandra.config.pool_config.token_aware_host_policy -- token aware host policy enabled
         token_aware_host_policy: false
       host_filter:
-        # meta.cassandra.config.host_filter.enabled -- enables host filtering
+        # backupManager.cassandra.config.host_filter.enabled -- enables host filtering
         enabled: false
-        # meta.cassandra.config.host_filter.data_center -- name of data center of filtering target
+        # backupManager.cassandra.config.host_filter.data_center -- name of data center of filtering target
         data_center: ""
-        # meta.cassandra.config.host_filter.white_list -- list of white_list which allows each connection
+        # backupManager.cassandra.config.host_filter.white_list -- list of white_list which allows each connection
         white_list: []
 
 indexManager:
