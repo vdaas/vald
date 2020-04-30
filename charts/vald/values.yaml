@@ -1256,7 +1256,7 @@ backupManager:
       # backupManager.cassandra.config.consistency -- consistency type
       consistency:  quorum
       # backupManager.cassandra.config.searial_consistency -- read consistency type
-      searial_consistency:  local_serial
+      serial_consistency:  local_serial
       # backupManager.cassandra.config.username -- cassandra username
       username: root
       # backupManager.cassandra.config.password -- cassandra password
