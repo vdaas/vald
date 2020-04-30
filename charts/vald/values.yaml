@@ -1255,6 +1255,8 @@ backupManager:
       num_conns: 2
       # backupManager.cassandra.config.consistency -- consistency type
       consistency:  quorum
+      # backupManager.cassandra.config.serial_consistency -- read consistency type
+      serial_consistency:  local_serial
       # backupManager.cassandra.config.username -- cassandra username
       username: root
       # backupManager.cassandra.config.password -- cassandra password
@@ -1336,6 +1338,15 @@ backupManager:
         non_local_replicas_fallback: false
         # backupManager.cassandra.config.pool_config.shuffle_replicas -- shuffle replica enabled
         shuffle_replicas: false
+        # backupManager.cassandra.config.pool_config.token_aware_host_policy -- token aware host policy enabled
+        token_aware_host_policy: false
+      host_filter:
+        # backupManager.cassandra.config.host_filter.enabled -- enables host filtering
+        enabled: false
+        # backupManager.cassandra.config.host_filter.data_center -- name of data center of filtering target
+        data_center: ""
+        # backupManager.cassandra.config.host_filter.white_list -- list of white_list which allows each connection
+        white_list: []
 
 indexManager:
   # indexManager.version -- version of index manager config
@@ -1757,6 +1768,8 @@ meta:
       num_conns: 2
       # meta.cassandra.config.consistency -- consistency type
       consistency:  quorum
+      # meta.cassandra.config.serial_consistency -- read consistency type
+      serial_consistency:  local_serial
       # meta.cassandra.config.username -- cassandra username
       username: root
       # meta.cassandra.config.password -- cassandra password
@@ -1838,6 +1851,17 @@ meta:
         non_local_replicas_fallback: false
         # meta.cassandra.config.pool_config.shuffle_replicas -- shuffle replica enabled
         shuffle_replicas: false
+        # meta.cassandra.config.pool_config.token_aware_host_policy -- token aware host policy enabled
+        token_aware_host_policy: false
+      host_filter:
+        # meta.cassandra.config.host_filter.enabled -- enables host filtering
+        enabled: false
+        # meta.cassandra.config.host_filter.data_center -- name of data center of filtering target
+        data_center: ""
+        # meta.cassandra.config.host_filter.white_list -- list of white_list which allows each connection
+        white_list: []
+
+
 
 initializer:
   mysql:

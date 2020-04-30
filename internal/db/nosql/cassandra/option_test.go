@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/gocql/gocql"
+	"go.uber.org/goleak"
 )
 
 func TestWithHosts(t *testing.T) {
@@ -100,6 +101,7 @@ func TestWithHosts(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -212,6 +214,7 @@ func TestWithDialer(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -324,6 +327,7 @@ func TestWithCQLVersion(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -436,6 +440,7 @@ func TestWithProtoVersion(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -548,6 +553,7 @@ func TestWithTimeout(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -660,6 +666,7 @@ func TestWithConnectTimeout(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -772,6 +779,7 @@ func TestWithPort(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -884,6 +892,7 @@ func TestWithKeyspace(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -996,6 +1005,7 @@ func TestWithNumConns(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1108,6 +1118,7 @@ func TestWithConsistency(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1220,6 +1231,7 @@ func TestWithCompressor(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1332,6 +1344,7 @@ func TestWithUsername(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1444,6 +1457,7 @@ func TestWithPassword(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1556,6 +1570,7 @@ func TestWithAuthProvider(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1668,6 +1683,7 @@ func TestWithRetryPolicyNumRetries(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1780,6 +1796,7 @@ func TestWithRetryPolicyMinDuration(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1892,6 +1909,7 @@ func TestWithRetryPolicyMaxDuration(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2004,6 +2022,7 @@ func TestWithReconnectionPolicyInitialInterval(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2116,6 +2135,7 @@ func TestWithReconnectionPolicyMaxRetries(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2228,6 +2248,7 @@ func TestWithSocketKeepalive(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2340,6 +2361,7 @@ func TestWithMaxPreparedStmts(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2452,6 +2474,7 @@ func TestWithMaxRoutingKeyInfo(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2564,6 +2587,7 @@ func TestWithPageSize(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2676,6 +2700,7 @@ func TestWithSerialConsistency(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2788,6 +2813,7 @@ func TestWithTLS(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2900,6 +2926,7 @@ func TestWithTLSCertPath(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -3012,6 +3039,7 @@ func TestWithTLSKeyPath(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -3124,6 +3152,7 @@ func TestWithTLSCAPath(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -3236,6 +3265,7 @@ func TestWithEnableHostVerification(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -3348,6 +3378,7 @@ func TestWithDefaultTimestamp(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -3460,6 +3491,7 @@ func TestWithDC(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -3572,6 +3604,7 @@ func TestWithDCAwareRouting(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -3684,6 +3717,7 @@ func TestWithNonLocalReplicasFallback(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -3796,6 +3830,7 @@ func TestWithShuffleReplicas(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -3908,6 +3943,7 @@ func TestWithMaxWaitSchemaAgreement(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -4020,6 +4056,7 @@ func TestWithReconnectInterval(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -4132,6 +4169,7 @@ func TestWithIgnorePeerAddr(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -4244,6 +4282,7 @@ func TestWithDisableInitialHostLookup(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -4356,6 +4395,7 @@ func TestWithDisableNodeStatusEvents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -4468,6 +4508,7 @@ func TestWithDisableTopologyEvents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -4580,6 +4621,7 @@ func TestWithDisableSchemaEvents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -4692,6 +4734,7 @@ func TestWithDisableSkipMetadata(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -4804,6 +4847,7 @@ func TestWithDefaultIdempotence(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -4916,6 +4960,7 @@ func TestWithWriteCoalesceWaitTime(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -4942,6 +4987,119 @@ func TestWithWriteCoalesceWaitTime(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 			   got := WithWriteCoalesceWaitTime(test.args.writeCoalesceWaitTime)
+			   obj := new(T)
+			   got(obj)
+			   if err := test.checkFunc(tt.want, obj); err != nil {
+			       tt.Errorf("error = %v", err)
+			   }
+			*/
+		})
+	}
+}
+
+func TestWithTokenAwareHostPolicy(t *testing.T) {
+	type T = interface{}
+	type args struct {
+		tokenAwareHostPolicy bool
+	}
+	type want struct {
+		obj *T
+		// Uncomment this line if the option returns an error, otherwise delete it
+		// err error
+	}
+	type test struct {
+		name string
+		args args
+		want want
+		// Use the first line if the option returns an error. otherwise use the second line
+		// checkFunc  func(want, *T, error) error
+		// checkFunc  func(want, *T) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	// Uncomment this block if the option returns an error, otherwise delete it
+	/*
+	   defaultCheckFunc := func(w want, obj *T, err error) error {
+	       if !errors.Is(err, w.err) {
+	           return errors.Errorf("got error = %v, want %v", err, w.err)
+	       }
+	       if !reflect.DeepEqual(obj, w.obj) {
+	           return errors.Errorf("got = %v, want %v", obj, w.obj)
+	       }
+	       return nil
+	   }
+	*/
+
+	// Uncomment this block if the option do not returns an error, otherwise delete it
+	/*
+	   defaultCheckFunc := func(w want, obj *T) error {
+	       if !reflect.DeepEqual(obj, w.obj) {
+	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	       }
+	       return nil
+	   }
+	*/
+
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           tokenAwareHostPolicy: false,
+		       },
+		       want: want {
+		           obj: new(T),
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           tokenAwareHostPolicy: false,
+		           },
+		           want: want {
+		               obj: new(T),
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			// Uncomment this block if the option returns an error, otherwise delete it
+			/*
+			   if test.checkFunc == nil {
+			       test.checkFunc = defaultCheckFunc
+			   }
+
+			   got := WithTokenAwareHostPolicy(test.args.tokenAwareHostPolicy)
+			   obj := new(T)
+			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			       tt.Errorf("error = %v", err)
+			   }
+			*/
+
+			// Uncomment this block if the option returns an error, otherwise delete it
+			/*
+			   if test.checkFunc == nil {
+			       test.checkFunc = defaultCheckFunc
+			   }
+			   got := WithTokenAwareHostPolicy(test.args.tokenAwareHostPolicy)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(tt.want, obj); err != nil {

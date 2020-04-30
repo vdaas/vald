@@ -21,8 +21,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cockroachdb/errors"
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
+	"github.com/vdaas/vald/internal/errors"
+
+	"go.uber.org/goleak"
 )
 
 func TestCassandra_Bind(t *testing.T) {
@@ -178,6 +180,7 @@ func TestCassandra_Bind(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -391,6 +394,7 @@ func TestCassandra_Opts(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
