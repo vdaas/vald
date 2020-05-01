@@ -22,8 +22,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cockroachdb/errors"
 	"github.com/vdaas/vald/apis/grpc/discoverer"
+	"github.com/vdaas/vald/internal/errors"
+
+	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
@@ -77,6 +79,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -164,6 +167,7 @@ func Test_handler_Index(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -254,6 +258,7 @@ func Test_handler_Pods(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -344,6 +349,7 @@ func Test_handler_Nodes(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

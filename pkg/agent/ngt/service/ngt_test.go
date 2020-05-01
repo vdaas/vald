@@ -30,6 +30,8 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/agent/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/ngt/service/kvs"
+
+	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
@@ -87,6 +89,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -203,6 +206,7 @@ func Test_ngt_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -347,6 +351,7 @@ func Test_ngt_Search(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -491,6 +496,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -625,6 +631,7 @@ func Test_ngt_Insert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -765,6 +772,7 @@ func Test_ngt_insert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -896,6 +904,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1030,6 +1039,7 @@ func Test_ngt_Update(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1161,6 +1171,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1292,6 +1303,7 @@ func Test_ngt_Delete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1426,6 +1438,7 @@ func Test_ngt_delete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1557,6 +1570,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1692,6 +1706,7 @@ func Test_ngt_GetObject(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1823,6 +1838,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1944,6 +1960,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -2075,6 +2092,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2192,6 +2210,7 @@ func Test_ngt_Close(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -2326,6 +2345,7 @@ func Test_ngt_Exists(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2461,6 +2481,7 @@ func Test_ngt_insertCache(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2582,6 +2603,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -2713,6 +2735,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2834,6 +2857,7 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -2955,6 +2979,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -3076,6 +3101,7 @@ func Test_ngt_Len(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -3197,6 +3223,7 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -3318,6 +3345,7 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

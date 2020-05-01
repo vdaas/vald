@@ -24,7 +24,9 @@ import (
 	"testing"
 
 	"contrib.go.opencensus.io/exporter/prometheus"
-	"github.com/cockroachdb/errors"
+	"github.com/vdaas/vald/internal/errors"
+
+	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
@@ -82,6 +84,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -165,6 +168,7 @@ func Test_exporter_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -248,6 +252,7 @@ func Test_exporter_Stop(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -324,6 +329,7 @@ func Test_exporter_Exporter(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -401,6 +407,7 @@ func Test_exporter_NewHTTPHandler(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -469,6 +476,7 @@ func TestExporter(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

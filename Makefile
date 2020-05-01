@@ -273,6 +273,13 @@ tensorflow/install: /usr/local/lib/libtensorflow.so
 gentest:
 	$(call gen-test)
 
+
+.PHONY: fixtest
+## fixtest
+fixtest:
+	$(call fix-test)
+
+
 .PHONY: test
 ## run tests
 test:

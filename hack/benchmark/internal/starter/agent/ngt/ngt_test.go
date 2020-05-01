@@ -25,6 +25,8 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/starter"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/agent/ngt/config"
+
+	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
@@ -78,6 +80,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -161,6 +164,7 @@ func Test_server_Run(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

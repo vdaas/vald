@@ -21,6 +21,8 @@ import (
 	"testing"
 
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+
+	"go.uber.org/goleak"
 )
 
 func TestWithControllerName(t *testing.T) {
@@ -99,6 +101,7 @@ func TestWithControllerName(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -211,6 +214,7 @@ func TestWithManager(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -323,6 +327,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -435,6 +440,7 @@ func TestWithOnReconcileFunc(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

@@ -17,7 +17,11 @@
 // Package prometheus provides a prometheus exporter.
 package prometheus
 
-import "testing"
+import (
+	"testing"
+
+	"go.uber.org/goleak"
+)
 
 func TestWithEndpoint(t *testing.T) {
 	type T = interface{}
@@ -95,6 +99,7 @@ func TestWithEndpoint(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -207,6 +212,7 @@ func TestWithNamespace(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -319,6 +325,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

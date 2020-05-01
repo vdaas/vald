@@ -15,7 +15,11 @@
 //
 package mock
 
-import "testing"
+import (
+	"testing"
+
+	"go.uber.org/goleak"
+)
 
 func TestRetry_Out(t *testing.T) {
 	type args struct {
@@ -80,6 +84,7 @@ func TestRetry_Out(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -168,6 +173,7 @@ func TestRetry_Outf(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

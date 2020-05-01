@@ -21,6 +21,8 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/pkg/meta/redis/service"
+
+	"go.uber.org/goleak"
 )
 
 func TestWithRedis(t *testing.T) {
@@ -99,6 +101,7 @@ func TestWithRedis(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

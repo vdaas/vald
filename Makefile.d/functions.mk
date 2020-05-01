@@ -95,6 +95,7 @@ define gen-test
 	find . -type d | \
 	grep "./cmd\|./hack\|./internal\|./pkg" | \
 	grep -v "./cmd/cli\| \
+			 ./internal/core/ngt\| \
 			 ./hack/benchmark/internal/client/ngtd\| \
 			 ./hack/benchmark/internal/starter/agent\| \
 			 ./hack/benchmark/internal/starter/external\| \
@@ -113,4 +114,13 @@ define gen-test
 			gotests -w -template_dir $${path} -all $${file}; \
 		done; \
 	done
+endef
+
+define fix-test
+	find $(ROOTDIR)/internal/k8s/* -name '*_test.go' | xargs sed -i -E "s%k8s.io/apimachinery/pkg/api/errors%github.com/vdaas/vald/internal/errors%g"
+	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%cockroachdb/errors%vdaas/vald/internal/errors%g"
+	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%pkg/errors%vdaas/vald/internal/errors%g"
+	find $(ROOTDIR)/internal/errors -name '*_test.go' | xargs sed -i -E "s%\"github.com/vdaas/vald/internal/errors\"%%g"
+	find $(ROOTDIR)/internal/errors -name '*_test.go' | xargs sed -i -E "s/errors\.//g"
+	go mod tidy
 endef

@@ -17,7 +17,11 @@
 // Package ngtd provides ngtd starter  functionality
 package ngtd
 
-import "testing"
+import (
+	"testing"
+
+	"go.uber.org/goleak"
+)
 
 func TestWithDimentaion(t *testing.T) {
 	type T = interface{}
@@ -95,6 +99,7 @@ func TestWithDimentaion(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -207,6 +212,7 @@ func TestWithServerType(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -319,6 +325,7 @@ func TestWithIndexDir(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -431,6 +438,7 @@ func TestWithPort(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

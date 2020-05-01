@@ -21,6 +21,8 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/pkg/agent/ngt/config"
+
+	"go.uber.org/goleak"
 )
 
 func TestWithConfig(t *testing.T) {
@@ -99,6 +101,7 @@ func TestWithConfig(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -211,6 +214,7 @@ func TestWithDimentaion(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -323,6 +327,7 @@ func TestWithDistanceType(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -435,6 +440,7 @@ func TestWithObjectType(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

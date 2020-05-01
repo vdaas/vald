@@ -21,6 +21,8 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/client"
+
+	"go.uber.org/goleak"
 )
 
 func TestWithCreateIndexPoolSize(t *testing.T) {
@@ -99,6 +101,7 @@ func TestWithCreateIndexPoolSize(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -211,6 +214,7 @@ func TestWithCreateIndexClient(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

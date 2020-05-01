@@ -26,6 +26,8 @@ import (
 	"github.com/vdaas/vald/internal/servers"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/tls"
+
+	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
@@ -544,6 +546,7 @@ func Test_srvs_setupAPIs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -651,6 +654,7 @@ func Test_srvs_setupHealthCheck(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -758,6 +762,7 @@ func Test_srvs_setupMetrics(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
