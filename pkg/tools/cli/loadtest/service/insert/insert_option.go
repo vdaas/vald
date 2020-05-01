@@ -13,27 +13,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package assets
+package insert
 
 import (
-	"testing"
-
-	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
+	"github.com/vdaas/vald/internal/client"
 )
 
-type Dataset = assets.Dataset
+type InsertOption func(*insert) error
 
-func Data(name string) func(testing.TB) Dataset {
-	return func(tb testing.TB) Dataset {
-		fn := assets.Data(name)
-		if fn == nil {
-			return nil
-		}
-		dataset, err := fn()
-		if err != nil {
-			tb.Error(err)
-			return nil
-		}
-		return dataset
+var (
+	defaultInsertOpts = []InsertOption{
+		WithParallelDegree(100),
+	}
+)
+
+func WithWriter(w client.Writer) InsertOption {
+	return func(i *insert) error {
+		i.w = w
+		return nil
+	}
+}
+
+func WithParallelDegree(p int) InsertOption {
+	return func(i *insert) error {
+		i.p = p
+		return nil
+	}
+}
+
+func WithDataset(n string) InsertOption {
+	return func(i *insert) error {
+		i.n = n
+		return nil
 	}
 }
