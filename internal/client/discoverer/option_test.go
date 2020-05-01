@@ -65,7 +65,7 @@ func TestWithOnDiscoverFunc(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -178,7 +178,7 @@ func TestWithOnConnectFunc(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -291,7 +291,7 @@ func TestWithOnDisconnectFunc(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -404,7 +404,7 @@ func TestWithDiscovererClient(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -517,7 +517,7 @@ func TestWithDiscovererAddr(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -631,7 +631,7 @@ func TestWithDiscovererHostPort(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -746,7 +746,7 @@ func TestWithDiscoverDuration(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -859,7 +859,7 @@ func TestWithOptions(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -972,7 +972,7 @@ func TestWithAutoConnect(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -1085,7 +1085,7 @@ func TestWithName(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -1198,7 +1198,7 @@ func TestWithNamespace(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -1311,7 +1311,7 @@ func TestWithPort(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -1424,7 +1424,7 @@ func TestWithServiceDNSARecord(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -1537,7 +1537,7 @@ func TestWithNodeName(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -1650,7 +1650,7 @@ func TestWithErrGroup(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }

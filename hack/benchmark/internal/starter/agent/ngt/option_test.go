@@ -63,7 +63,7 @@ func TestWithConfig(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -176,7 +176,7 @@ func TestWithDimentaion(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -289,7 +289,7 @@ func TestWithDistanceType(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -402,7 +402,7 @@ func TestWithObjectType(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }

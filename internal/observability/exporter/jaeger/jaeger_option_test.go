@@ -61,7 +61,7 @@ func TestWithCollectorEndpoint(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -174,7 +174,7 @@ func TestWithAgentEndpoint(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -287,7 +287,7 @@ func TestWithUsername(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -400,7 +400,7 @@ func TestWithPassword(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -513,7 +513,7 @@ func TestWithServiceName(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -626,7 +626,7 @@ func TestWithBufferMaxCount(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -739,7 +739,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return fmt.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
 	       }
 	       return nil
 	   }

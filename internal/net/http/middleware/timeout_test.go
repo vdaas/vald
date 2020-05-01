@@ -16,7 +16,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -97,15 +96,15 @@ func TestWrap(t *testing.T) {
 				},
 				checkFunc: func(code int, err error) error {
 					if err != nil {
-						return fmt.Errorf("err is not nil. err: %v", err)
+						return errors.Errorf("err is not nil. err: %v", err)
 					}
 
 					if code != http.StatusOK {
-						return fmt.Errorf("code is not equals. want: %v, got: %v", http.StatusOK, code)
+						return errors.Errorf("code is not equals. want: %v, got: %v", http.StatusOK, code)
 					}
 
 					if cnt != 1 {
-						return fmt.Errorf("called cnt is equals. want: %v, got: %v", 1, cnt)
+						return errors.Errorf("called cnt is equals. want: %v, got: %v", 1, cnt)
 					}
 
 					return nil
@@ -113,7 +112,7 @@ func TestWrap(t *testing.T) {
 			}
 		}(),
 		func() test {
-			wantErr := fmt.Errorf("faild")
+			wantErr := errors.Errorf("faild")
 
 			var cnt int
 			h := func(w http.ResponseWriter, req *http.Request) (code int, err error) {
@@ -134,15 +133,15 @@ func TestWrap(t *testing.T) {
 				},
 				checkFunc: func(code int, err error) error {
 					if !errors.Is(err, wantErr) {
-						return fmt.Errorf("err not equals. want: %v, got: %v", wantErr, err)
+						return errors.Errorf("err not equals. want: %v, got: %v", wantErr, err)
 					}
 
 					if code != http.StatusInternalServerError {
-						return fmt.Errorf("code is not equals. want: %v, got: %v", http.StatusInternalServerError, code)
+						return errors.Errorf("code is not equals. want: %v, got: %v", http.StatusInternalServerError, code)
 					}
 
 					if cnt != 1 {
-						return fmt.Errorf("called cnt is equals. want: %v, got: %v", 1, cnt)
+						return errors.Errorf("called cnt is equals. want: %v, got: %v", 1, cnt)
 					}
 
 					return nil
@@ -168,15 +167,15 @@ func TestWrap(t *testing.T) {
 				},
 				checkFunc: func(code int, err error) error {
 					if err == nil {
-						return fmt.Errorf("err is nil")
+						return errors.Errorf("err is nil")
 					}
 
 					if code != http.StatusRequestTimeout {
-						return fmt.Errorf("code is not equals. want: %v, got: %v", http.StatusRequestTimeout, code)
+						return errors.Errorf("code is not equals. want: %v, got: %v", http.StatusRequestTimeout, code)
 					}
 
 					if !strings.Contains(err.Error(), "handler timeout") {
-						return fmt.Errorf("err string no contains word of `handler timeout`")
+						return errors.Errorf("err string no contains word of `handler timeout`")
 					}
 
 					return nil
