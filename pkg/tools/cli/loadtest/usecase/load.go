@@ -18,27 +18,48 @@ package usecase
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
+	"github.com/vdaas/vald/internal/client/gateway/vald/grpc"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/runner"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
+	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
+	"github.com/vdaas/vald/pkg/tools/cli/loadtest/service"
+	"github.com/vdaas/vald/pkg/tools/cli/loadtest/service/insert"
+	"github.com/vdaas/vald/pkg/tools/cli/loadtest/service/search"
 )
 
 type run struct {
 	eg  errgroup.Group
 	cfg *config.Data
+	l   service.Load
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	return nil, nil
+	run := new(run)
+	run.cfg = cfg
+
+	ctx := context.Background()
+	c, err := grpc.New(ctx) // TODO setup vald grpc client
+	switch strings.ToLower(cfg.Method) {
+	case "insert":
+		run.l, err = insert.New(insert.WithDataset(cfg.Dataset), insert.WithWriter(c))
+	case "search":
+		run.l, err = search.New(search.WithDataset(cfg.Dataset), search.WithReader(c))
+	default:
+		return nil, fmt.Errorf("unsupported method")
+	}
+
+	return run, nil
 }
 
-func (r *run) PreStart(ctx context.Context) error {
-	return nil
+func (r *run) PreStart(ctx context.Context) (err error) {
+	return r.l.PreStart(ctx)
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	return nil, nil
+	return r.l.Start(ctx)
 }
 
 func (r *run) PreStop(ctx context.Context) error {

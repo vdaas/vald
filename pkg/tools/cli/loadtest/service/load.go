@@ -13,27 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package assets
+package service
 
 import (
-	"testing"
-
-	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
+	"context"
 )
 
-type Dataset = assets.Dataset
-
-func Data(name string) func(testing.TB) Dataset {
-	return func(tb testing.TB) Dataset {
-		fn := assets.Data(name)
-		if fn == nil {
-			return nil
-		}
-		dataset, err := fn()
-		if err != nil {
-			tb.Error(err)
-			return nil
-		}
-		return dataset
-	}
+type Load interface {
+	PreStart(context.Context) error
+	Start(context.Context) (<-chan error, error)
 }

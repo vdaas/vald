@@ -13,27 +13,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package assets
+package search
 
 import (
-	"testing"
-
-	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
+	"github.com/vdaas/vald/internal/client"
 )
 
-type Dataset = assets.Dataset
+type SearchOption func(*search) error
 
-func Data(name string) func(testing.TB) Dataset {
-	return func(tb testing.TB) Dataset {
-		fn := assets.Data(name)
-		if fn == nil {
-			return nil
-		}
-		dataset, err := fn()
-		if err != nil {
-			tb.Error(err)
-			return nil
-		}
-		return dataset
+var (
+	defaultSearchOpts = []SearchOption{
+		WithParallelDegree(100),
+	}
+)
+
+func WithReader(r client.Reader) SearchOption {
+	return func(s *search) error {
+		s.r = r
+		return nil
+	}
+}
+
+func WithParallelDegree(p int) SearchOption {
+	return func(s *search) error {
+		s.p = p
+		return nil
+	}
+}
+
+func WithDataset(n string) SearchOption {
+	return func(s *search) (err error) {
+		s.n = n
+		return nil
 	}
 }

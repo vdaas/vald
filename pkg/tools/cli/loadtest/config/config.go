@@ -27,6 +27,8 @@ type GlobalConfig = config.GlobalConfig
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`
+	Method              string `json:"method" yaml:"method"`
+	Dataset             string `json:"dataset" yaml:"dataset"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
