@@ -104,13 +104,18 @@ define gen-test
 			 ./hack/tools"| \
 	while read dir; do \
 		files=`find $${dir} -type f -maxdepth 1 -name "*.go" -not -name '*_test.go' -not -name 'doc.go'`; \
+		tmp=`mktemp`; \
+		if [[ $${#files} -gt 0 ]]; then \
+			go list $${dir}| xargs printf '{"dir": "%s"}' > $${tmp}; \
+		fi; \
 		for file in $${files}; do \
 			path='./assets/test/templates/common';     \
 			if [[ $${file} =~ .*options?\.go ]] ; then \
 				path='./assets/test/templates/option'; \
 			fi; \
 			echo start generate test code: $${file}; \
-			gotests -w -template_dir $${path} -all $${file}; \
+			gotests -w -template_dir $${path} -template_params_file $${tmp} -all $${file}; \
 		done; \
+		rm $${tmp}; \
 	done
 endef

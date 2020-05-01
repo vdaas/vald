@@ -1,0 +1,7 @@
+{{define "errors" }}
+{{- if eq (printf "%s" (index .TemplateParams "dir")) "github.com/vdaas/vald/internal/errors" -}}
+Errorf
+{{- else -}}
+errors.Errorf
+{{- end -}}
+{{end}}
