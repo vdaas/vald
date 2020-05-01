@@ -18,7 +18,6 @@ package transport
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -89,7 +88,7 @@ func TestRoundTrip(t *testing.T) {
 				},
 				checkFunc: func(res *http.Response, err error) error {
 					if err != nil {
-						return fmt.Errorf("error not nil. err: %v", err)
+						return errors.Errorf("error not nil. err: %v", err)
 					}
 
 					if !reflect.DeepEqual(res, wantRes) {

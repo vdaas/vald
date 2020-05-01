@@ -16,10 +16,10 @@
 package assets
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/kpango/fuid"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"gonum.org/v1/hdf5"
 )
@@ -103,7 +103,7 @@ func Load(path string) (train, test, distances [][]float32, neighbors [][]int, d
 	}
 	test = v2.([][]float32)
 	if dim != testDim {
-		return train, test, nil, nil, 0, fmt.Errorf("test has different dimension from train")
+		return train, test, nil, nil, 0, errors.Errorf("test has different dimension from train")
 	}
 	distancesDim, v3, err := loadDataset(f, "distances", loadFloat32)
 	if err != nil {
@@ -119,7 +119,7 @@ func Load(path string) (train, test, distances [][]float32, neighbors [][]int, d
 	}
 	neighbors = v4.([][]int)
 	if distancesDim != neighborsDim {
-		return train, test, distances, neighbors, dim, fmt.Errorf("neighbors has different dimension from distances")
+		return train, test, distances, neighbors, dim, errors.Errorf("neighbors has different dimension from distances")
 	}
 
 	return train, test, distances, neighbors, dim, nil

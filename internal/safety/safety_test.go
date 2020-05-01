@@ -16,7 +16,6 @@
 package safety
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -53,7 +52,7 @@ func TestRecoverFunc(t *testing.T) {
 		{
 			name: "returns error when system paniced caused by panic with error",
 			fn: func() error {
-				panic(fmt.Errorf("error"))
+				panic(errors.Errorf("error"))
 			},
 			want: errors.New("error"),
 		},

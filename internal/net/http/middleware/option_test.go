@@ -16,12 +16,12 @@
 package middleware
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 func TestWithErrorGroup(t *testing.T) {
@@ -40,7 +40,7 @@ func TestWithErrorGroup(t *testing.T) {
 				opt(got)
 
 				if got.dur != 10*time.Second {
-					return fmt.Errorf("invalid param was set")
+					return errors.Errorf("invalid param was set")
 				}
 				return nil
 			},
@@ -53,7 +53,7 @@ func TestWithErrorGroup(t *testing.T) {
 				opt(got)
 
 				if got.dur != 3*time.Second {
-					return fmt.Errorf("invalid param was set")
+					return errors.Errorf("invalid param was set")
 				}
 				return nil
 			},
@@ -89,7 +89,7 @@ func TestWithTimeout(t *testing.T) {
 					opt(got)
 
 					if !reflect.DeepEqual(got.eg, eg) {
-						return fmt.Errorf("invalid param was set")
+						return errors.Errorf("invalid param was set")
 					}
 					return nil
 				},
