@@ -31,7 +31,7 @@
     - [Vald Replication Manager Agent](#vald-replication-manager-agent)
     - [Vald Replication Manager Controller](#vald-replication-manager-controller)
   - [Kubernetes Components](#kubernetes-components)
-    - [Kube-API Server](#kube-api-server)
+    - [Kube-apiserver](#kube-apiserver)
     - [Custom Resources](#custom-resources)
 
 ## Overview
@@ -80,23 +80,29 @@ When the user insert data into Vald:
 
 ### Vald Filter
 
-Vald Filter has 2 main functionality.
+Vald Filter is an optional functionality in Vald.
+User can implement the custom filtering logic and integrate with Vald.
 
-1. Filter request query
-1. Filter response data
+Vald Filter provides the following functionalities.
+
+- Custom filter base on request query
+- Custom filter for the searching result
 
 #### Vald Ingress Filter
 
 Vald Ingress Filter filters the incoming request before processing it.
-Ingress filter uses users request parameters(?)...?
+
+Users can implement custom filtering logic such as changing the vectors or filtering based on user ID.
 
 #### Vald Egress Filter
 
-Vald Egress Filter filters the response before sending to the user. This component will reorder the response data from the set of the Vald Agent base on the ranking and then response the number of data users want.
+Vald Egress Filter filters the response before sending it to the user.
+
+This component can reorder the searching result from multiple Vald Agents based on the user-defined ranking.
 
 #### Vald Filter Gateway
 
-Vald Filter Gateway load balance the filter request.
+Vald Filter Gateway forward the request to Vald Ingress Filter before processing it and forward the request to the Vald Egress Filter before returning the searching result to the user.
 
 ### Vald Metadata
 
@@ -186,15 +192,18 @@ Vald Replication Manager Agent recovers the specific backup cache to the specifi
 
 #### Vald Replication Manager Controller
 
-Vald Replication Manager Controller keeps track of the active Vald pods. When the Vald Agent is dead, it will trigger the Vald Replication Manager Agent to recover the backup cache to the auto-healed pods from the backup.
+Vald Replication Manager Controller keeps track of the active Vald Agent pods. When the Vald Agent is dead, it will trigger the Vald Replication Manager Agent to recover the backup cache to the auto-healed pods from the backup.
 
 ### Kubernetes Components
 
 Vald is base on the Kubernetes platform. In this section we will explain the Kubernetes component used in Vald and why we need them.
 
-#### Kube-API Server
+#### Kube-apiserver
+
+Kube-apiserver is a component of Kubernetes. The main responsibility of Kube-apiserver in Vald is to provide node resource information for Vald agent scalability.
+
+For more information about Kube-apiserver, please refer to [the official document](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/).
 
 #### Custom Resources
 
-CRD
-deployのコントローラー、起動順番を管理する（gatewayのinitコンテナーがいらなくなる）
+Custom Resources in Vald is a [Custom Resouce Definition](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) implementation. It provides flexibility for users to control the Vald deployment such as pod startup sequence, etc.
