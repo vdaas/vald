@@ -92,9 +92,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithCompressorWorker(
 			worker.WithName("compressor"),
 			worker.WithLimitation(cfg.Compressor.ConcurrentLimit),
-			worker.WithQueueOption(worker.WithQueueCheckDuration(
-				cfg.Compressor.QueueCheckDuration,
-			)),
+			worker.WithQueueOption(
+				worker.WithQueueCheckDuration(
+					cfg.Compressor.QueueCheckDuration,
+				),
+			),
 		),
 		service.WithCompressorErrGroup(eg),
 	)
@@ -128,6 +130,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithRegistererWorker(
 			worker.WithName("registerer"),
 			worker.WithLimitation(cfg.Registerer.ConcurrentLimit),
+			worker.WithQueueOption(
+				worker.WithQueueCheckDuration(
+					cfg.Registerer.QueueCheckDuration,
+				),
+			),
 		),
 		service.WithRegistererErrGroup(eg),
 		service.WithRegistererBackup(b),

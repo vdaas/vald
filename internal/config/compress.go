@@ -81,11 +81,16 @@ type CompressorRegisterer struct {
 	// ConcurrentLimit represents limitation of worker
 	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
 
+	// QueueCheckDuration represents duration of queue daemon block
+	QueueCheckDuration string `json:"queue_check_duration" yaml:"queue_check_duration"`
+
 	// Compressor represents gRPC client config of compressor client (for forwarding use)
 	Compressor *BackupManager `json:"compressor" yaml:"compressor"`
 }
 
 func (cr *CompressorRegisterer) Bind() *CompressorRegisterer {
+	cr.QueueCheckDuration = GetActualValue(cr.QueueCheckDuration)
+
 	if cr.Compressor != nil {
 		cr.Compressor = cr.Compressor.Bind()
 	} else {

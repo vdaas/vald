@@ -424,6 +424,7 @@ gateway:
   # gateway.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # gateway.minReplicas -- minimum number of replicas
+  # if HPA is disabled, this number is used for replicas
   minReplicas: 3
   # gateway.maxReplicas -- maximum number of replicas
   maxReplicas: 9
@@ -613,6 +614,7 @@ agent:
   # agent.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # agent.minReplicas -- minimum number of replicas
+  # if HPA is disabled, this number is used for replicas
   minReplicas: 20
   # agent.maxReplicas -- maximum number of replicas
   maxReplicas: 300
@@ -771,6 +773,7 @@ discoverer:
   # discoverer.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # discoverer.minReplicas -- minimum number of replicas
+  # if HPA is disabled, this number is used for replicas
   minReplicas: 1
   # discoverer.maxReplicas -- maximum number of replicas
   maxReplicas: 2
@@ -915,6 +918,7 @@ compressor:
   # compressor.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # compressor.minReplicas -- minimum number of replicas
+  # if HPA is disabled, this number is used for replicas
   minReplicas: 3
   # compressor.maxReplicas -- maximum number of replicas
   maxReplicas: 15
@@ -1023,17 +1027,25 @@ compressor:
     # compressor.backup.client -- grpc client for backup (overrides defaults.grpc.client)
     client: {}
   compress:
-    # compressor.compress.compress_algorithm -- compression algorithm: gob, gzip, lz4 or zstd
+    # compressor.compress.compress_algorithm -- compression algorithm
+    # must be `gob`, `gzip`, `lz4` or `zstd`
     compress_algorithm: zstd
     # compressor.compress.compression_level -- compression level
+    # value range relies on which algorithm is used
+    # `gob`: level will be ignored.
+    # `gzip`: -1 (default compression), 0 (no compression), or 1 (best speed) to 9 (best compression).
+    # `lz4`: >= 0, higher is better.
+    # `zstd`: 1 (fastest) to 22 (best), however implementation relies on klauspost/compress.
     compression_level: 3
-    # compressor.compress.concurrent_limit -- concurrency limit
+    # compressor.compress.concurrent_limit -- concurrency limit for compress/decompress processes
     concurrent_limit: 10
-    # queue_check_duration represents duration of queue daemon block
-    queue_check_duration: 5s
+    # compressor.compress.queue_check_duration represents duration of queue daemon block
+    queue_check_duration: 200ms
   registerer:
-    # compressor.registerer.concurrent_limit -- concurrency limit of registerer worker
+    # compressor.registerer.concurrent_limit -- concurrency limit for registering vector processes
     concurrent_limit: 10
+    # compressor.registerer.queue_check_duration represents duration of queue daemon block
+    queue_check_duration: 200ms
     compressor:
       # compressor.registerer.compressor.client -- gRPC client for compressor (overrides defaults.grpc.client)
       client: {}
@@ -1052,6 +1064,7 @@ backupManager:
   # backupManager.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # backupManager.minReplicas -- minimum number of replicas
+  # if HPA is disabled, this number is used for replicas
   minReplicas: 3
   # backupManager.maxReplicas -- maximum number of replicas
   maxReplicas: 15
@@ -1536,6 +1549,7 @@ meta:
   # meta.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # meta.minReplicas -- minimum number of replicas
+  # if HPA is disabled, this number is used for replicas
   minReplicas: 2
   # meta.maxReplicas -- maximum number of replicas
   maxReplicas: 10
