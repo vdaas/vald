@@ -76,3 +76,12 @@ charts/vald-helm-operator/README.md: \
 	charts/vald-helm-operator/README.md.gotmpl \
 	charts/vald-helm-operator/values.yaml
 	helm-docs
+
+.PHONY: helm/schema/vald
+## generate json schema for Vald Helm Chart
+helm/schema/vald: charts/vald/values.schema.json
+
+charts/vald/values.schema.json: \
+	charts/vald/values.yaml \
+	hack/helm/schema/gen/main.go
+	go run hack/helm/schema/gen/main.go charts/vald/values.yaml > charts/vald/values.schema.json
