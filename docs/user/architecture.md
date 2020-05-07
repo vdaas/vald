@@ -36,38 +36,34 @@
 
 ## Overview
 
-This document describe the high-level architecture design of Vald and explain each component in Vald. We need to these components to support scalability, high performance and auto-healing in Vald.
+This document describes the high-level architecture design of Vald and explains each component in Vald. We need these components to support scalability, high performance and auto-healing in Vald.
 
 <img src="../../design/Vald Future Architecture Overview.svg" />
 
-Vald is based on [Kubernetes](https://kubernetes.io/) architecture. Before you read this document you must understand the basic concept of Kubernetes.
+Vald is based on [Kubernetes](https://kubernetes.io/) architecture. Before you read this document, you must understand the basic concept of Kubernetes.
 
 ## Data Flow
 
 ### Insert
 
-( add flow diagram here https://medium.com/@milvusio/mishards-distributed-vector-search-in-milvus-a14c239c9aad)
+<img src="./insert_search_flow.svg" />
 
-When the user insert data into Vald:
+When the user inserts data into Vald:
 
 ```
-1. The request will go through the Vald Ingress
-    1.1. The Vald Ingress will log the request
-
-2.1. Vald Ingress will forward the request to Vald Meta Gateway
-    2.1.1. Vald Meta Gateway will load balance the request
-
-3.1. Vald Meta Gateway will forward the request to the Vald Backup Gateway and Vald Meta
-    3.1.1. Vald Backup Gateway will load balance the request
-    3.1.2. Vald Meta will process the request and the vector metadata will be stored to the presistent layer
-
-4.1. Vald Backup Gateway will forward the request to the Vald LB Gateway and Vald Compressor
-    4.1.1 Vald LB Gateway will load balance the request
-    4.1.2 Vald Compressor will compress the vector data and send to Vald Backup manager to backup the compressed vector data
-
-5.1. Vald LB Gateway will forward the request to Agent Discoverer and Vald Agent
-    5.1.1 Agent Discoverer
-    5.1.2 Vald Agent will perform a vector search and return the result
+C1. Vald Ingress receives the request from the user. The request may include the vector and the vector ID.
+C2. Vald Ingress will forward the request to Vald Meta Gateway. After the Vald Meta Gateway receive the request, the UUID will be generated for internal use.
+C3. Vald Meta Gateway will forward the request with UUID to Vald Backup Gateway.
+C4. Vald Backup Gateway will forward the request to Vald LB Gateway.
+C5. Vald LB Gateway will decide which Vald Agent instance to process the request base on the node resource usage and forwards the request to the decided Vald Agent.
+C6. Vald Agent returns success and the corresponding Vald Agent IP address to Vald LB Gateway.
+C7. Vald LB Gateway return success and the IP address to Vald Backup Gateway.
+C8. Vald Backup Gateway returns success to Vald Meta Gateway.
+C9. Vald Meta Gateway will send the metadata including the UUID and the vector ID to the Vald Meta.
+C10. Vald Meta will store the metadata to the persistent layer.
+C11. Vald Backup Gateway will send all the data (vector, vector ID and UUID) the Vald Compressor.
+C12. Vald Compressor will compress the data received and send to the Vald Backup Manager.
+C13. Vald Backup Manager will store the compressed data to the persistent layer.
 ```
 
 ### Update
@@ -102,17 +98,17 @@ This component can reorder the searching result from multiple Vald Agents based 
 
 #### Vald Filter Gateway
 
-Vald Filter Gateway forward the request to Vald Ingress Filter before processing it and forward the request to the Vald Egress Filter before returning the searching result to the user.
+Vald Filter Gateway forwards the request to Vald Ingress Filter before processing it and forwards the request to the Vald Egress Filter before returning the searching result to the user.
 
 ### Vald Metadata
 
-In Vald, metadata is the vector data and the corresponding addition data to represent the set of the searching criteria and the result.
+In Vald, metadata is the vector data and the corresponding additional data to represent the set of the searching criteria and the result.
 
 Vald Metadata includes the user inputted metadata(vector ID) and the vector, and the internal generated UUID.
 
 #### Vald Meta Gateway
 
-The main responsibility of the Vald Meta Gateway is to process the Vald metadata and forward the information to Vald Backup Gateway.
+The main responsibility of the Vald Meta Gateway is to process the Vald metadata and forwards the information to Vald Backup Gateway.
 
 It will perform the following action:
 
@@ -135,11 +131,11 @@ Vald Compressor compresses all of the data (metadata and the vector data) and se
 
 #### Vald Backup Manager
 
-Vald Backup Manager processes the CRD request of the backup request and handles the compressed metadata. Users can configure which data source to be used in `Vald Meta` (for example Redis or Cassandra).
+Vald Backup Manager processes the CRD request of the backup request and handles the compressed metadata. Users can configure which data source to be used in Vald Meta (for example Redis or Cassandra).
 
 #### Vald Backup Gateway
 
-Vald Backup Gateway will forward the backup request to the `Vald LB Gateway`. It will also forward to `Vald Compressor` asynchronously with metadata.
+Vald Backup Gateway will forward the backup request to the Vald LB Gateway. It also forwards to Vald Compressor asynchronously with metadata.
 
 ### Vald Load Balancing
 
@@ -149,11 +145,11 @@ Vald can load balance the request base on node resources.
 
 #### Vald LB Gateway
 
-Vald LB Gateway loads balance the user request base on the node resources results from the `Agent Discoverer`.
+Vald LB Gateway loads balance the user request base on the node resources results from the Agent Discoverer.
 
 #### Agent Discoverer
 
-Agent Discoverer discovers active Vald pods and the corresponding nodes' resources usage via [kube-apiserver](https://github.com/kubernetes/kubernetes/tree/master/cmd/kube-apiserver).
+Agent Discoverer discovers active Vald pods and the corresponding node's resources usage via [kube-apiserver](https://github.com/kubernetes/kubernetes/tree/master/cmd/kube-apiserver).
 
 ### Vald Core Engine
 
@@ -188,7 +184,7 @@ Vald Replication Manager manages the healthiness of the Vald Agent. When the pod
 
 #### Vald Replication Manager Agent
 
-Vald Replication Manager Agent recovers the specific backup cache to the specific Vald Agent. It retrieves the target backup from the `Vald Compressor` and recovers it to the newly created `Vald Agent`.
+Vald Replication Manager Agent recovers the specific backup cache to the specific Vald Agent. It retrieves the target backup from the Vald Compressor and recovers it to the newly created Vald Agent.
 
 #### Vald Replication Manager Controller
 
