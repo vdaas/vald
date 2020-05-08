@@ -1,6 +1,6 @@
 # Configurations
 
-In this page, the best practices to set up values for Vald Helm Chart are described.
+This page introduces best practices to set up values for Vald Helm Chart.
 
 ## Vald Helm Chart Overview
 
@@ -8,7 +8,7 @@ Vald Helm Chart's `values.yaml` is composed of the following sections:
 
 - `defaults`
     - default configurations of common parts
-    - be overridden by the fields in each components' configurations
+    - be overridden by the fields in each section.
 - `gateway`
     - configurations of vald-gateway
 - `agent`
@@ -26,9 +26,9 @@ Vald Helm Chart's `values.yaml` is composed of the following sections:
 - `initializer`
     - configurations of MySQL, Cassandra and Redis initializer jobs
 
-In each section, users can configure the deployments and behaviors of each components.
+In each section, users can configure the deployments and behaviors of each component.
 
-The detailed descriptions of each values can be found in [README of Vald Helm Chart][vald-helm-chart].
+The detail descriptions of each value can be found in [README of Vald Helm Chart][vald-helm-chart].
 
 
 ## Notable values in Vald Helm Chart
@@ -38,7 +38,7 @@ The detailed descriptions of each values can be found in [README of Vald Helm Ch
 #### Specify image tag
 
 It is highly recommended to specify Vald version.
-You can specify image version by set `image.tag` field in each components (`[component].image.tag`) or `defaults` section.
+You can specify image version by set `image.tag` field in each component (`[component].image.tag`) or `defaults` section.
 
 ```yaml
 defaults:
@@ -57,7 +57,7 @@ agent:
 #### Specify appropriate logging level and format
 
 The default logging levels and formats are configured in `defaults.logging.level` and `defaults.logging.format`.
-You can also specify levels and formats in each component sections (`[component].logging`).
+You can also specify logging levels and formats in each component sections (`[component].logging`).
 
 ```yaml
 defaults:
@@ -77,7 +77,7 @@ gateway:
 
 #### Servers
 
-Each Vald components has several type of servers.
+Each Vald component has several types of servers.
 They can be configured by specifying the values in `defaults.server_config` and can be overwritten by specifying `[component].server_config`.
 
 Examples:
@@ -127,9 +127,9 @@ The swagger specs are placed in [apis/swagger][vald-swagger-specs].
 ##### Health check servers
 
 There are two types of health check servers are built-in, liveness and readiness.
-They are used as servers for K8s liveness and readiness probe.
+They are used as servers for [K8s liveness and readiness probe][k8s-liveness-readiness].
 
-By default, liveness servers are disabled for agent and compressor, because the liveness probes may cause to kill these components accidentally.
+By default, liveness servers are disabled for agent and compressor, because the liveness probes may accidentally kill these components.
 
 ```yaml
 agent:
@@ -141,23 +141,23 @@ agent:
 
 ##### Metrics servers
 
-Metrics servers are useful for debugging or monitoring Vald components.
+Metrics servers are useful for debugging and monitor Vald components.
 There are two types of metrics servers, pprof and prometheus.
 
 pprof server is a server that implemented using golang's net/http/pprof package.
-It exports profiling data that can be analyzed using [google's pprof][google-pprof] tool.
+You can use [google's pprof][google-pprof] to analyze the profiling data exported from it.
 
-prometheus server is just a [Prometheus][prometheus-io] exporter.
-To monitor Vald components by using prometheus server, it is needed to set `observability` section appropriately.
+Prometheus server is a [Prometheus][prometheus-io] exporter.
+It is required to set the `observability` section on each Vald component to enable the monitoring using Prometheus.
 
 #### Observability
 
 The observability features are useful for monitoring Vald components.
-They can be enabled by setting `true` at the `defaults.observability.enabled` field or override it in each components (`[component].observability.enabled`). And also, enable each features by setting `true` at the each `enabled` field.
+They can be enabled by setting the value `true` on the `defaults.observability.enabled` field or override it in each component (`[component].observability.enabled`). And also, enable each feature by setting the value `true` on its `enabled` field.
 
-If observability features are enabled, metrics are collected every time the specified time (`observability.collector.duration`) passes.
+If observability features are enabled, the metrics will be collected periodically. the duration can be set on `observability.collector.duration`.
 
-Further details are described in Observability section of [Vald operation guide][vald-operation-guide].
+Please refer to [Vald operation guide][vald-operation-guide] for more detail.
 
 
 ### Agents
@@ -187,7 +187,7 @@ The behavior of this feature can be configured with these parameters:
 
 #### Resource requests and limits, Pod priorities
 
-Because agent places index on memory, termination of agent pods mean loss of indices.
+Because agent places indices on memory, termination of agent pods mean loss of indices.
 It is important to set resource requests and limits appropriately not to terminate agent pods.
 
 It is highly recommended to request totally 40% of cluster memory for agent pods.
@@ -240,7 +240,7 @@ vald-cluster   gateway.vald.vdaas.org   9d
 
 #### Discoverer request duration
 
-`gateway.gateway_config.discoverer.duration` means a frequency to ask agent pod IPs to discoverer.
+`gateway.gateway_config.discoverer.duration` means a frequency to ask agent pod's IPs to the discoverer.
 If discoverer's CPU utilization is too high, try to make this value longer or reduce the number of gateway pods.
 
 
@@ -251,12 +251,12 @@ It can be enabled by `gateway.gateway_config.meta.enable_cache` and the behavior
 
 #### Resource requests and limits
 
-Gateway's resource requests and limits are depend on the request traffic and available resources.
+Gateway's resource requests and limits depend on the request traffic and available resources.
 If the request traffic varies largely, it is recommended to enable HPA for gateway and adjust the resource requests.
 
 #### Init containers
 
-Gateway should wait for discoverer, agent, meta and compressor to be ready, because gateway depends on these components.
+Gateway should wait for discoverer, agent, meta, and compressor to be ready because it depends on these components.
 For this purpose, "wait-for" type initContainers are provided in the Chart.
 
 ```yaml
@@ -269,7 +269,7 @@ For this purpose, "wait-for" type initContainers are provided in the Chart.
       ...
 ```
 
-wait-for type initContainers checks readiness port of target component is ok or not every "sleepDuration" seconds.
+"wait-for" type initContainers check readiness port of the target component is ok or not every "sleepDuration" seconds.
 Once it became ready, the initContainer returns zero and become "Completed" status.
 
 The definitions can be found in `_helpers.tpl` in Chart's templates directory.
@@ -279,15 +279,15 @@ The definitions can be found in `_helpers.tpl` in Chart's templates directory.
 
 #### Resource requests and limits
 
-Number of discoverer pods and resource limits are determined by the configurations of your gateways and index managers, because APIs of discoverers are called by gateways and index managers.
-Discoverer CPU loads are depends on API request traffic = (number of gateways x gateway's request duration) + (number of index managers x index manager's request duration).
+The number of discoverer pods and resource limits are determined by the configurations of your gateways and index managers, because APIs of discoverers are called by gateways and index managers.
+Discoverer CPU loads depend on API request traffic = (the number of gateways x gateway's request duration) + (the number of index managers x index manager's request duration).
 
 
 ### Index Manager
 
 #### Init containers
 
-Index managers depends on discoverer and agents.
+Index managers depend on discoverer and agents.
 It is recommended to use initContainers to wait for these components to be ready.
 
 
@@ -398,5 +398,6 @@ For further details, there are references of Helm values in GitHub Vald reposito
 [vald-swagger-specs]: https://github.com/vdaas/vald/tree/v0.0.33/apis/swagger
 [google-pprof]: https://github.com/google/pprof
 [prometheus-io]: https://prometheus.io/
+[k8s-liveness-readiness]: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 [yj-ngt]: https://github.com/yahoojapan/NGT
 [yj-ngt-wiki]: https://github.com/yahoojapan/NGT/wiki

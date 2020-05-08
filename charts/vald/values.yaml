@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-# The values in defaults section will be used for common settings in each components if not specified in their sections.
+# The values in the defaults section will be used for common settings in each component if not specified in its sections.
 defaults:
   # defaults.time_zone -- Time zone
   time_zone: UTC
@@ -424,9 +424,10 @@ gateway:
   # gateway.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # gateway.minReplicas -- minimum number of replicas
-  # if HPA is disabled, this number is used for replicas
+  # if HPA is disabled, the replicas will be set to this value
   minReplicas: 3
   # gateway.maxReplicas -- maximum number of replicas
+  # if HPA is disabled, this value will be ignored.
   maxReplicas: 9
   # gateway.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
@@ -614,9 +615,10 @@ agent:
   # agent.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # agent.minReplicas -- minimum number of replicas
-  # if HPA is disabled, this number is used for replicas
+  # if HPA is disabled, the replicas will be set to this value
   minReplicas: 20
   # agent.maxReplicas -- maximum number of replicas
+  # if HPA is disabled, this value will be ignored.
   maxReplicas: 300
   # agent.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 1
@@ -773,9 +775,10 @@ discoverer:
   # discoverer.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # discoverer.minReplicas -- minimum number of replicas
-  # if HPA is disabled, this number is used for replicas
+  # if HPA is disabled, the replicas will be set to this value
   minReplicas: 1
   # discoverer.maxReplicas -- maximum number of replicas
+  # if HPA is disabled, this value will be ignored.
   maxReplicas: 2
   # discoverer.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
@@ -918,9 +921,10 @@ compressor:
   # compressor.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # compressor.minReplicas -- minimum number of replicas
-  # if HPA is disabled, this number is used for replicas
+  # if HPA is disabled, the replicas will be set to this value
   minReplicas: 3
   # compressor.maxReplicas -- maximum number of replicas
+  # if HPA is disabled, this value will be ignored.
   maxReplicas: 15
   # compressor.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
@@ -1034,7 +1038,7 @@ compressor:
     # value range relies on which algorithm is used
     # `gob`: level will be ignored.
     # `gzip`: -1 (default compression), 0 (no compression), or 1 (best speed) to 9 (best compression).
-    # `lz4`: >= 0, higher is better.
+    # `lz4`: >= 0, higher is better compression.
     # `zstd`: 1 (fastest) to 22 (best), however implementation relies on klauspost/compress.
     compression_level: 3
     # compressor.compress.concurrent_limit -- concurrency limit for compress/decompress processes
@@ -1064,9 +1068,10 @@ backupManager:
   # backupManager.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # backupManager.minReplicas -- minimum number of replicas
-  # if HPA is disabled, this number is used for replicas
+  # if HPA is disabled, the replicas will be set to this value
   minReplicas: 3
   # backupManager.maxReplicas -- maximum number of replicas
+  # if HPA is disabled, this value will be ignored.
   maxReplicas: 15
   # backupManager.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
@@ -1549,9 +1554,10 @@ meta:
   # meta.progressDeadlineSeconds -- progress deadline seconds
   progressDeadlineSeconds: 600
   # meta.minReplicas -- minimum number of replicas
-  # if HPA is disabled, this number is used for replicas
+  # if HPA is disabled, the replicas will be set to this value
   minReplicas: 2
   # meta.maxReplicas -- maximum number of replicas
+  # if HPA is disabled, this value will be ignored.
   maxReplicas: 10
   # meta.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
