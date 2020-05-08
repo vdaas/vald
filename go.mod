@@ -46,7 +46,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.0.3
 	github.com/pierrec/lz4/v3 v3.3.2
 	github.com/scylladb/gocqlx v1.5.0
-	github.com/tensorflow/tensorflow v2.1.0+incompatible
+	github.com/tensorflow/tensorflow v2.2.0+incompatible
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20200424071638-9872bbae3700
 	go.opencensus.io v0.22.3
