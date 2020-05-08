@@ -34,13 +34,14 @@ const (
 	intType    = "integer"
 	boolType   = "boolean"
 
-	prefix = "# json-schema: "
+	prefix = "# @schema"
 )
 
 type VSchema struct {
-	Name    string `json:"name"`
-	Type    string `json:"type"`
-	Pattern string `json:"pattern,omitempty"`
+	Name     string   `json:"name"`
+	Type     string   `json:"type"`
+	Required []string `json:"required,omitempty"`
+	Pattern  string   `json:"pattern,omitempty"`
 }
 
 type Root struct {
@@ -143,7 +144,8 @@ func genNode(ls []VSchema) (*Schema, error) {
 	case objectType:
 		if len(ls) <= 1 {
 			return &Schema{
-				Type: objectType,
+				Type:     objectType,
+				Required: l.Required,
 			}, nil
 		}
 
@@ -159,6 +161,7 @@ func genNode(ls []VSchema) (*Schema, error) {
 		}
 		return &Schema{
 			Type:       objectType,
+			Required:   l.Required,
 			Properties: ps,
 		}, nil
 	case arrayType:

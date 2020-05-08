@@ -14,75 +14,75 @@
 # limitations under the License.
 #
 
-# json-schema: {"name": "defaults", "type": "object"}
+# @schema {"name": "defaults", "type": "object"}
 # The values in the defaults section will be used for common settings in each component if not specified in its sections.
 defaults:
-  # json-schema: {"name": "defaults.time_zone", "type": "string"}
+  # @schema {"name": "defaults.time_zone", "type": "string"}
   # defaults.time_zone -- Time zone
   time_zone: UTC
-  # json-schema: {"name": "defaults.logging", "type": "object"}
+  # @schema {"name": "defaults.logging", "type": "object"}
   logging:
-    # json-schema: {"name": "defaults.logging.logger", "type": "string", "pattern": "glg"}
+    # @schema {"name": "defaults.logging.logger", "type": "string", "pattern": "glg"}
     # defaults.logging.logger -- logger name.
     # currently logger must be `glg`.
     logger: glg
-    # json-schema: {"name": "defaults.logging.level", "type": "string", "pattern": "^(debug|info|warn|error|fatal)$"}
+    # @schema {"name": "defaults.logging.level", "type": "string", "pattern": "^(debug|info|warn|error|fatal)$"}
     # defaults.logging.level -- logging level.
     # logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
     level: debug
-    # json-schema: {"name": "defaults.logging.format", "type": "string", "pattern": "^(raw|json)$"}
+    # @schema {"name": "defaults.logging.format", "type": "string", "pattern": "^(raw|json)$"}
     # defaults.logging.format -- logging format.
     # logging format must be `raw` or `json`
     format: raw
-  # json-schema: {"name": "defaults.image", "type": "object"}
+  # @schema {"name": "defaults.image", "type": "object"}
   image:
-    # json-schema: {"name": "defaults.image.tag", "type": "string"}
+    # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
     tag: v0.0.37
-  # json-schema: {"name": "defaults.server_config", "type": "object"}
+  # @schema {"name": "defaults.server_config", "type": "object"}
   server_config:
-    # json-schema: {"name": "defaults.server_config.servers", "type": "object"}
+    # @schema {"name": "defaults.server_config.servers", "type": "object"}
     servers:
-      # json-schema: {"name": "defaults.server_config.servers.rest", "type": "object"}
+      # @schema {"name": "defaults.server_config.servers.rest", "type": "object"}
       rest:
-        # json-schema: {"name": "defaults.server_config.servers.rest.enabled", "type": "boolean"}
+        # @schema {"name": "defaults.server_config.servers.rest.enabled", "type": "boolean"}
         # defaults.server_config.servers.rest.enabled -- REST server enabled
         enabled: false
-        # json-schema: {"name": "defaults.server_config.servers.rest.host", "type": "string"}
+        # @schema {"name": "defaults.server_config.servers.rest.host", "type": "string"}
         # defaults.server_config.servers.rest.host -- REST server host
         host: 0.0.0.0
-        # json-schema: {"name": "defaults.server_config.servers.rest.port", "type": "integer"}
+        # @schema {"name": "defaults.server_config.servers.rest.port", "type": "integer"}
         # defaults.server_config.servers.rest.port -- REST server port
         port: 8080
-        # json-schema: {"name": "defaults.server_config.servers.rest.servicePort", "type": "integer"}
+        # @schema {"name": "defaults.server_config.servers.rest.servicePort", "type": "integer"}
         # defaults.server_config.servers.rest.servicePort -- REST server service port
         servicePort: 8080
-        # json-schema: {"name": "defaults.server_config.servers.rest.server", "type": "object"}
+        # @schema {"name": "defaults.server_config.servers.rest.server", "type": "object"}
         server:
-          # json-schema: {"name": "defaults.server_config.servers.rest.server.mode", "type": "string"}
+          # @schema {"name": "defaults.server_config.servers.rest.server.mode", "type": "string"}
           # defaults.server_config.servers.rest.server.mode -- REST server server mode
           mode: REST
-          # json-schema: {"name": "defaults.server_config.servers.rest.server.probe_wait_time", "type": "string"}
+          # @schema {"name": "defaults.server_config.servers.rest.server.probe_wait_time", "type": "string"}
           # defaults.server_config.servers.rest.server.probe_wait_time -- REST server probe wait time
           probe_wait_time: 3s
-          # json-schema: {"name": "defaults.server_config.servers.rest.server.http", "type": "object"}
+          # @schema {"name": "defaults.server_config.servers.rest.server.http", "type": "object"}
           http:
-            # json-schema: {"name": "defaults.server_config.servers.rest.server.shutdown_duration", "type": "string"}
+            # @schema {"name": "defaults.server_config.servers.rest.server.shutdown_duration", "type": "string"}
             # defaults.server_config.servers.rest.server.http.shutdown_duration -- REST server shutdown duration
             shutdown_duration: 5s
-            # json-schema: {"name": "defaults.server_config.servers.rest.server.handler_timeout", "type": "string"}
+            # @schema {"name": "defaults.server_config.servers.rest.server.handler_timeout", "type": "string"}
             # defaults.server_config.servers.rest.server.http.handler_timeout -- REST server handler timeout
             handler_timeout: 5s
-            # json-schema: {"name": "defaults.server_config.servers.rest.server.idle_timeout", "type": "string"}
+            # @schema {"name": "defaults.server_config.servers.rest.server.idle_timeout", "type": "string"}
             # defaults.server_config.servers.rest.server.http.idle_timeout -- REST server idle timeout
             idle_timeout: 2s
-            # json-schema: {"name": "defaults.server_config.servers.rest.server.read_header_timeout", "type": "string"}
+            # @schema {"name": "defaults.server_config.servers.rest.server.read_header_timeout", "type": "string"}
             # defaults.server_config.servers.rest.server.http.read_header_timeout -- REST server read header timeout
             read_header_timeout: 1s
-            # json-schema: {"name": "defaults.server_config.servers.rest.server.read_timeout", "type": "string"}
+            # @schema {"name": "defaults.server_config.servers.rest.server.read_timeout", "type": "string"}
             # defaults.server_config.servers.rest.server.http.read_timeout -- REST server read timeout
             read_timeout: 1s
-            # json-schema: {"name": "defaults.server_config.servers.rest.server.write_timeout", "type": "string"}
+            # @schema {"name": "defaults.server_config.servers.rest.server.write_timeout", "type": "string"}
             # defaults.server_config.servers.rest.server.http.write_timeout -- REST server write timeout
             write_timeout: 1s
       grpc:
@@ -435,7 +435,7 @@ defaults:
       # defaults.observability.jaeger.buffer_max_count -- Jaeger buffer max count
       buffer_max_count: 10
 
-# json-schema: {"name": "gateway", "type": "object"}
+# @schema {"name": "gateway", "type": "object"}
 gateway:
   # gateway.enabled -- gateway enabled
   enabled: true
