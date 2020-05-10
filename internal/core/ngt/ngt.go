@@ -435,14 +435,16 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 
 // SaveIndex stores NGT index to storage.
 func (n *ngt) SaveIndex() error {
-	n.mu.RLock()
-	ret := C.ngt_save_index(n.index, C.CString(n.idxPath), n.ebuf)
-	if ret == ErrorCode {
-		ne := n.ebuf
+	if !n.inMemory {
+		n.mu.Lock()
+		ret := C.ngt_save_index(n.index, C.CString(n.idxPath), n.ebuf)
+		if ret == ErrorCode {
+			ne := n.ebuf
+			n.mu.Unlock()
+			return n.newGoError(ne)
+		}
 		n.mu.Unlock()
-		return n.newGoError(ne)
 	}
-	n.mu.RUnlock()
 
 	return nil
 }

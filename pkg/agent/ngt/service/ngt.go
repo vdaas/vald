@@ -19,8 +19,10 @@ package service
 
 import (
 	"context"
+	"encoding/gob"
 	"os"
 	"runtime"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -29,6 +31,7 @@ import (
 	core "github.com/vdaas/vald/internal/core/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -48,9 +51,9 @@ type NGT interface {
 	DeleteMultiple(uuids ...string) (err error)
 	GetObject(uuid string) (vec []float32, err error)
 	CreateIndex(poolSize uint32) (err error)
-	SaveIndex() (err error)
+	SaveIndex(ctx context.Context) (err error)
 	Exists(string) (uint32, bool)
-	CreateAndSaveIndex(poolSize uint32) (err error)
+	CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err error)
 	IsIndexing() bool
 	Len() uint64
 	NumberOfCreateIndexExecution() uint64
@@ -58,7 +61,7 @@ type NGT interface {
 	UncommittedUUIDs() (uuids []string)
 	DeleteVCacheLen() uint64
 	InsertVCacheLen() uint64
-	Close()
+	Close(ctx context.Context) error
 }
 
 type ngt struct {
@@ -72,6 +75,7 @@ type ngt struct {
 	eg       errgroup.Group
 	ivc      *vcaches // insertion vector cache
 	dvc      *vcaches // deletion vector cache
+	path     string
 	kvs      kvs.BidiMap
 	core     core.NGT
 	dcd      bool // disable commit daemon
@@ -82,8 +86,13 @@ type vcache struct {
 	date   int64
 }
 
+const (
+	kvsFileName = "ngt-meta.kvsdb"
+)
+
 func New(cfg *config.NGT) (nn NGT, err error) {
 	n := new(ngt)
+	cfg.IndexPath = strings.TrimSuffix(cfg.IndexPath, "/")
 	opts := []core.Option{
 		core.WithInMemoryMode(cfg.EnableInMemoryMode),
 		core.WithIndexPath(cfg.IndexPath),
@@ -95,12 +104,37 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 		core.WithSearchEdgeSize(cfg.SearchEdgeSize),
 	}
 
+	if !cfg.EnableInMemoryMode && len(cfg.IndexPath) != 0 {
+		n.path = cfg.IndexPath
+	}
+
 	n.kvs = kvs.New()
 
 	if _, err = os.Stat(cfg.IndexPath); os.IsNotExist(err) {
 		n.core, err = core.New(opts...)
 	} else {
-		n.core, err = core.Load(opts...)
+		eg, _ := errgroup.New(context.Background())
+		eg.Go(safety.RecoverFunc(func() (err error) {
+			n.core, err = core.Load(opts...)
+			return err
+		}))
+		eg.Go(safety.RecoverFunc(func() (err error) {
+			if len(n.path) != 0 {
+				m := make(map[string]uint32)
+				gob.Register(map[string]uint32{})
+				f := file.Open(n.path+"/"+kvsFileName, os.O_RDONLY|os.O_SYNC, os.ModePerm)
+				defer f.Close()
+				err = gob.NewDecoder(f).Decode(&m)
+				if err != nil {
+					return err
+				}
+				for k, id := range m {
+					n.kvs.Set(k, id)
+				}
+			}
+			return nil
+		}))
+		err = eg.Wait()
 	}
 	if err != nil {
 		return nil, err
@@ -462,20 +496,37 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 	return err
 }
 
-func (n *ngt) SaveIndex() (err error) {
-	return n.core.SaveIndex()
+func (n *ngt) SaveIndex(ctx context.Context) (err error) {
+	eg, ctx := errgroup.New(ctx)
+	eg.Go(safety.RecoverFunc(func() error {
+		if len(n.path) != 0 {
+			m := make(map[string]uint32, n.kvs.Len())
+			var mu sync.Mutex
+			n.kvs.Range(ctx, func(key string, id uint32) bool {
+				mu.Lock()
+				m[key] = id
+				mu.Unlock()
+				return true
+			})
+			f := file.Open(n.path+"/"+kvsFileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+			defer f.Close()
+			gob.Register(map[string]uint32{})
+			return gob.NewEncoder(f).Encode(&m)
+		}
+		return nil
+	}))
+	eg.Go(safety.RecoverFunc(func() error {
+		return n.core.SaveIndex()
+	}))
+	return eg.Wait()
 }
 
-func (n *ngt) CreateAndSaveIndex(poolSize uint32) (err error) {
+func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err error) {
 	err = n.CreateIndex(poolSize)
 	if err != nil {
 		return err
 	}
-	return n.SaveIndex()
-}
-
-func (n *ngt) Close() {
-	n.core.Close()
+	return n.SaveIndex(ctx)
 }
 
 func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
@@ -541,4 +592,12 @@ func (n *ngt) InsertVCacheLen() uint64 {
 
 func (n *ngt) DeleteVCacheLen() uint64 {
 	return n.dvc.Len()
+}
+
+func (n *ngt) Close(ctx context.Context) (err error) {
+	if len(n.path) != 0 {
+		err = n.SaveIndex(ctx)
+	}
+	n.core.Close()
+	return
 }

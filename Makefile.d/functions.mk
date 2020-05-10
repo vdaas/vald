@@ -114,6 +114,7 @@ define gen-test
 			gotests -w -template_dir $${path} -all $${file}; \
 		done; \
 	done
+	rm $(ROOTDIR)/internal/core/ngt/*test.go
 endef
 
 define fix-test

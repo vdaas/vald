@@ -107,5 +107,19 @@ spec:
       priorityClassName: {{ .Values.agent.name }}-priority
       {{- end }}
       {{- end }}
+{{- if .Values.agent.volumeStore }}
+{{- if .Values.agent.volumeStore.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: {{ .Values.agent.name }}-pvc
+      spec:
+        accessModes:
+          - {{ .Values.agent.volumeStore.accessMode }}
+        storageClassName: {{ .Values.agent.volumeStore.storageClass }}
+        resources:
+          requests:
+            storage: {{ .Values.agent.volumeStore.size }}
+{{- end }}
+{{- end }}
 status:
 {{- end }}

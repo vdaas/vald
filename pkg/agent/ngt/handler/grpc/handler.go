@@ -375,7 +375,7 @@ func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.
 		}
 	}()
 	res = new(payload.Empty)
-	err = s.ngt.SaveIndex()
+	err = s.ngt.SaveIndex(ctx)
 	if err != nil {
 		log.Errorf("[SaveIndex]\tUnknown error\t%+v", err)
 		if span != nil {
@@ -394,7 +394,7 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 		}
 	}()
 	res = new(payload.Empty)
-	err = s.ngt.CreateAndSaveIndex(c.GetPoolSize())
+	err = s.ngt.CreateAndSaveIndex(ctx, c.GetPoolSize())
 	if err != nil {
 		log.Errorf("[CreateAndSaveIndex]\tUnknown error\t%+v", err)
 		if span != nil {
