@@ -51,7 +51,7 @@ Vald is based on [Kubernetes](https://kubernetes.io/) architecture. Before you r
 When the user inserts data into Vald:
 
 ```
-C1. Vald Ingress receives the request from the user. The request may include the vector and the vector ID.
+C1. Vald Ingress receives the request from the user. The request includes the vector and the vector ID.
 C2. Vald Ingress will forward the request to Vald Meta Gateway. After the Vald Meta Gateway receive the request, the UUID will be generated for internal use.
 C3. Vald Meta Gateway will forward the request with UUID to Vald Backup Gateway.
 C4. Vald Backup Gateway will forward the request to Vald LB Gateway.
@@ -71,6 +71,22 @@ C13. Vald Backup Manager will store the compressed data to the persistent layer.
 ### Delete
 
 ### Search
+
+S1. Vald Ingress receives the search request from the user. The request includes the vector or the vector ID.
+S2. Vald Ingress will forward the request to Vald Filter Gateway.
+S3. Vald Filter Gateway will forward the request to Vald Ingress Filter.
+S4. Vald Ingress Filter will perform the filtering and return the filtering result to the Vald Filter Gateway.
+S5. Vald Filter Gateway will forward the request to the Vald Meta Gateway.
+S6. Vald Meta Gateway will forward the request to the Vald Backup Gateway.
+S7. Vald Backup Gateway will forward the request to the Vald LB Gateway.
+S8. Vald LB Gateway will decide which Vald Agent instance to process the request base on the node resource usage and forwards the request to the decided Vald Agent.
+S9. Vald Agent returns the searching result to the Vald LB Gateway. The searching result includes the UUID.
+S10. Vald LB Gateway returns the searching result to Vald Backup Gateway.
+S11. Vald Backup Gateway returns the searching result to the Vald Meta Gateway.
+S12. Vald Meta Gateway will forward the searching result to the Vald Meta.
+S13. Vald Meta will perform a search for the Vector ID base on the UUID and return the Vector ID to the Vald Meta Gateway.
+S14. Vald Meta Gateway returns the searching result with the vector ID to the Vald Filter Gateway.
+S15. Vald Filter Gateway will forward the request to Vald Egress Gateway to filter the final result.
 
 ## Components
 
