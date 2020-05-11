@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
 package log
 
 import (
@@ -21,789 +22,91 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/glg"
 	"github.com/vdaas/vald/internal/log/level"
-	logger "github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/log/mock"
-
 	"go.uber.org/goleak"
 )
 
+var (
+	goleakIgnoreOptions = []goleak.Option{
+		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	}
+)
+
 func TestInit(t *testing.T) {
-	type test struct {
-		name      string
-		opts      []Option
-		checkFunc func(Logger) error
-	}
-
-	tests := []test{
-		func() test {
-			l := glg.New()
-			return test{
-				name: "set l object when option is not empty",
-				opts: []Option{
-					WithLogger(l),
-				},
-				checkFunc: func(got Logger) error {
-					if !reflect.DeepEqual(got, l) {
-						return errors.Errorf("not equals. want: %v, but got: %v", got, l)
-					}
-					return nil
-				},
-			}
-		}(),
-
-		func() test {
-			return test{
-				name: "set l object when option is empty",
-				opts: []Option{},
-				checkFunc: func(got Logger) error {
-					if got == nil {
-						return errors.New("l is nil")
-					}
-					return nil
-				},
-			}
-		}(),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				l = nil
-				once = sync.Once{}
-			}()
-
-			Init(tt.opts...)
-
-			if err := tt.checkFunc(l); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
-func TestGetLogger(t *testing.T) {
-	type test struct {
-		name string
-		o    *option
-		want Logger
-	}
-
-	tests := []test{
-		{
-			name: "returns glg object when l type is GLG",
-			o: &option{
-				logType: logger.GLG,
-				level:   level.DEBUG,
-				format:  format.JSON,
-			},
-			want: glg.New(
-				glg.WithLevel(level.DEBUG.String()),
-				glg.WithFormat(format.JSON.String()),
-			),
-		},
-
-		func() test {
-			l := glg.New()
-
-			return test{
-				name: "returns l when l type is Unknown",
-				o: &option{
-					logType: logger.Unknown,
-					logger:  l,
-				},
-				want: l,
-			}
-		}(),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := getLogger(tt.o)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("not equals. want: %v, but got: %v", tt.want, got)
-			}
-		})
-	}
-}
-
-func TestBold(t *testing.T) {
-	type test struct {
-		name string
-		str  string
-		want string
-	}
-
-	tests := []test{
-		{
-			name: "returns concat string with bash sequence",
-			str:  "Vald",
-			want: "\033[1mVald\033[22m",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := Bold(tt.str)
-			if tt.want != got {
-				t.Errorf("not equals. want: %v, got: %v", tt.want, got)
-			}
-		})
-	}
-}
-
-func TestDebug(t *testing.T) {
 	type args struct {
-		vals []interface{}
+		opts []Option
 	}
-
-	type global struct {
+	type want struct {
 		l Logger
 	}
-
 	type test struct {
-		name      string
-		args      args
-		global    global
-		checkFunc func() error
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, Logger) error
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
-
+	defaultCheckFunc := func(w want, got Logger) error {
+		if !reflect.DeepEqual(got, l) {
+			return errors.Errorf("got = %v, want %v", got, w.l)
+		}
+		return nil
+	}
 	tests := []test{
 		func() test {
-			var want []interface{}
-
-			l := &mock.Logger{
-				DebugFunc: func(vals ...interface{}) {
-					want = vals
-				},
-			}
-
-			vals := []interface{}{
-				"vald",
-			}
-
 			return test{
-				name: "output success",
+				name: "initialize success when option is nil",
+				want: want{
+					glg.New(
+						glg.WithLevel(level.DEBUG.String()),
+					),
+				},
+				beforeFunc: func(args) {
+					once = sync.Once{}
+				},
+			}
+		}(),
+
+		func() test {
+			return test{
+				name: "initialize success when option is not nil",
 				args: args{
-					vals: vals,
+					opts: []Option{
+						WithLevel(level.FATAL.String()),
+					},
 				},
-				global: global{
-					l: l,
+				want: want{
+					glg.New(
+						glg.WithLevel(level.FATAL.String()),
+					),
 				},
-				checkFunc: func() error {
-					if !reflect.DeepEqual(vals, want) {
-						return errors.Errorf("not equals. want: %v, got: %v", want, vals)
-					}
-					return nil
+				beforeFunc: func(args) {
+					once = sync.Once{}
 				},
 			}
 		}(),
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			l = tt.global.l
-
-			Debug(tt.args.vals...)
-			if err := tt.checkFunc(); err != nil {
-				t.Error(err)
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
 			}
-		})
-	}
-}
-
-func TestDebugf(t *testing.T) {
-	type args struct {
-		format string
-		vals   []interface{}
-	}
-
-	type global struct {
-		l Logger
-	}
-
-	type test struct {
-		name      string
-		args      args
-		global    global
-		checkFunc func() error
-	}
-
-	tests := []test{
-		func() test {
-			var (
-				wantFormat string
-				wantVals   []interface{}
-			)
-
-			l := &mock.Logger{
-				DebugfFunc: func(format string, vals ...interface{}) {
-					wantFormat = format
-					wantVals = vals
-				},
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
 			}
 
-			format := "%v"
-			vals := []interface{}{
-				"vald",
-			}
-
-			return test{
-				name: "output success",
-				args: args{
-					format: format,
-					vals:   vals,
-				},
-				global: global{
-					l: l,
-				},
-				checkFunc: func() error {
-					if !reflect.DeepEqual(format, wantFormat) {
-						return errors.Errorf("vals is not equals. want: %v, got: %v", wantFormat, format)
-					}
-
-					if !reflect.DeepEqual(vals, wantVals) {
-						return errors.Errorf("vals is not equals. want: %v, got: %v", wantVals, vals)
-					}
-					return nil
-				},
-			}
-		}(),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			l = tt.global.l
-
-			Debugf(tt.args.format, tt.args.vals...)
-			if err := tt.checkFunc(); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
-func TestInfo(t *testing.T) {
-	type args struct {
-		vals []interface{}
-	}
-
-	type global struct {
-		l Logger
-	}
-
-	type test struct {
-		name      string
-		args      args
-		global    global
-		checkFunc func() error
-	}
-
-	tests := []test{
-		func() test {
-			var want []interface{}
-
-			l := &mock.Logger{
-				InfoFunc: func(vals ...interface{}) {
-					want = vals
-				},
-			}
-
-			vals := []interface{}{
-				"vald",
-			}
-
-			return test{
-				name: "output success",
-				args: args{
-					vals: vals,
-				},
-				global: global{
-					l: l,
-				},
-				checkFunc: func() error {
-					if !reflect.DeepEqual(vals, want) {
-						return errors.Errorf("not equals. want: %v, got: %v", want, vals)
-					}
-					return nil
-				},
-			}
-		}(),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			l = tt.global.l
-
-			Info(tt.args.vals...)
-			if err := tt.checkFunc(); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
-func TestInfof(t *testing.T) {
-	type args struct {
-		format string
-		vals   []interface{}
-	}
-
-	type global struct {
-		l Logger
-	}
-
-	type test struct {
-		name      string
-		args      args
-		global    global
-		checkFunc func() error
-	}
-
-	tests := []test{
-		func() test {
-			var (
-				wantFormat string
-				wantVals   []interface{}
-			)
-
-			l := &mock.Logger{
-				InfofFunc: func(format string, vals ...interface{}) {
-					wantFormat = format
-					wantVals = vals
-				},
-			}
-
-			format := "%v"
-			vals := []interface{}{
-				"vald",
-			}
-
-			return test{
-				name: "output success",
-				args: args{
-					format: format,
-					vals:   vals,
-				},
-				global: global{
-					l: l,
-				},
-				checkFunc: func() error {
-					if !reflect.DeepEqual(format, wantFormat) {
-						return errors.Errorf("vals is not equals. want: %v, got: %v", wantFormat, format)
-					}
-
-					if !reflect.DeepEqual(vals, wantVals) {
-						return errors.Errorf("vals is not equals. want: %v, got: %v", wantVals, vals)
-					}
-					return nil
-				},
-			}
-		}(),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			l = tt.global.l
-
-			Infof(tt.args.format, tt.args.vals...)
-			if err := tt.checkFunc(); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
-func TestWarn(t *testing.T) {
-	type args struct {
-		vals []interface{}
-	}
-
-	type global struct {
-		l Logger
-	}
-
-	type test struct {
-		name      string
-		args      args
-		global    global
-		checkFunc func() error
-	}
-
-	tests := []test{
-		func() test {
-			var want []interface{}
-
-			l := &mock.Logger{
-				WarnFunc: func(vals ...interface{}) {
-					want = vals
-				},
-			}
-
-			vals := []interface{}{
-				"vald",
-			}
-
-			return test{
-				name: "output success",
-				args: args{
-					vals: vals,
-				},
-				global: global{
-					l: l,
-				},
-				checkFunc: func() error {
-					if !reflect.DeepEqual(vals, want) {
-						return errors.Errorf("not equals. want: %v, got: %v", want, vals)
-					}
-					return nil
-				},
-			}
-		}(),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			l = tt.global.l
-
-			Warn(tt.args.vals...)
-			if err := tt.checkFunc(); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
-func TestWarnf(t *testing.T) {
-	type args struct {
-		format string
-		vals   []interface{}
-	}
-
-	type global struct {
-		l Logger
-	}
-
-	type test struct {
-		name      string
-		args      args
-		global    global
-		checkFunc func() error
-	}
-
-	tests := []test{
-		func() test {
-			var (
-				wantFormat string
-				wantVals   []interface{}
-			)
-
-			l := &mock.Logger{
-				WarnfFunc: func(format string, vals ...interface{}) {
-					wantFormat = format
-					wantVals = vals
-				},
-			}
-
-			format := "%v"
-			vals := []interface{}{
-				"vald",
-			}
-
-			return test{
-				name: "output success",
-				args: args{
-					format: format,
-					vals:   vals,
-				},
-				global: global{
-					l: l,
-				},
-				checkFunc: func() error {
-					if !reflect.DeepEqual(format, wantFormat) {
-						return errors.Errorf("vals is not equals. want: %v, got: %v", wantFormat, format)
-					}
-
-					if !reflect.DeepEqual(vals, wantVals) {
-						return errors.Errorf("vals is not equals. want: %v, got: %v", wantVals, vals)
-					}
-					return nil
-				},
-			}
-		}(),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			l = tt.global.l
-
-			Warnf(tt.args.format, tt.args.vals...)
-			if err := tt.checkFunc(); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
-func TestError(t *testing.T) {
-	type args struct {
-		vals []interface{}
-	}
-
-	type global struct {
-		l Logger
-	}
-
-	type test struct {
-		name      string
-		args      args
-		global    global
-		checkFunc func() error
-	}
-
-	tests := []test{
-		func() test {
-			var want []interface{}
-
-			l := &mock.Logger{
-				ErrorFunc: func(vals ...interface{}) {
-					want = vals
-				},
-			}
-
-			vals := []interface{}{
-				"vald",
-			}
-
-			return test{
-				name: "output success",
-				args: args{
-					vals: vals,
-				},
-				global: global{
-					l: l,
-				},
-				checkFunc: func() error {
-					if !reflect.DeepEqual(vals, want) {
-						return errors.Errorf("not equals. want: %v, got: %v", want, vals)
-					}
-					return nil
-				},
-			}
-		}(),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			l = tt.global.l
-
-			Error(tt.args.vals...)
-			if err := tt.checkFunc(); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
-func TestErrorf(t *testing.T) {
-	type args struct {
-		format string
-		vals   []interface{}
-	}
-
-	type global struct {
-		l Logger
-	}
-
-	type test struct {
-		name      string
-		args      args
-		global    global
-		checkFunc func() error
-	}
-
-	tests := []test{
-		func() test {
-			var (
-				wantFormat string
-				wantVals   []interface{}
-			)
-
-			l := &mock.Logger{
-				ErrorfFunc: func(format string, vals ...interface{}) {
-					wantFormat = format
-					wantVals = vals
-				},
-			}
-
-			format := "fmt"
-			vals := []interface{}{
-				"vald",
-			}
-
-			return test{
-				name: "output success",
-				args: args{
-					format: format,
-					vals:   vals,
-				},
-				global: global{
-					l: l,
-				},
-				checkFunc: func() error {
-					if !reflect.DeepEqual(format, wantFormat) {
-						return errors.Errorf("vals is not equals. want: %v, got: %v", wantFormat, format)
-					}
-
-					if !reflect.DeepEqual(vals, wantVals) {
-						return errors.Errorf("vals is not equals. want: %v, got: %v", wantVals, vals)
-					}
-					return nil
-				},
-			}
-		}(),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			l = tt.global.l
-
-			Errorf(tt.args.format, tt.args.vals...)
-			if err := tt.checkFunc(); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
-func TestFatal(t *testing.T) {
-	type args struct {
-		vals []interface{}
-	}
-
-	type global struct {
-		l Logger
-	}
-
-	type test struct {
-		name      string
-		args      args
-		global    global
-		checkFunc func() error
-	}
-
-	tests := []test{
-		func() test {
-			var want []interface{}
-
-			l := &mock.Logger{
-				FatalFunc: func(vals ...interface{}) {
-					want = vals
-				},
-			}
-
-			vals := []interface{}{
-				"vald",
-			}
-
-			return test{
-				name: "output success",
-				args: args{
-					vals: vals,
-				},
-				global: global{
-					l: l,
-				},
-				checkFunc: func() error {
-					if !reflect.DeepEqual(vals, want) {
-						return errors.Errorf("not equals. want: %v, got: %v", want, vals)
-					}
-					return nil
-				},
-			}
-		}(),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			l = tt.global.l
-
-			Fatal(tt.args.vals...)
-			if err := tt.checkFunc(); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
-func TestFatalf(t *testing.T) {
-	type args struct {
-		format string
-		vals   []interface{}
-	}
-
-	type global struct {
-		l Logger
-	}
-
-	type test struct {
-		name      string
-		args      args
-		global    global
-		checkFunc func() error
-	}
-
-	tests := []test{
-		func() test {
-			var (
-				wantFormat string
-				wantVals   []interface{}
-			)
-
-			l := &mock.Logger{
-				FatalfFunc: func(format string, vals ...interface{}) {
-					wantFormat = format
-					wantVals = vals
-				},
-			}
-
-			format := "%v"
-			vals := []interface{}{
-				"vald",
-			}
-
-			return test{
-				name: "output success",
-				args: args{
-					format: format,
-					vals:   vals,
-				},
-				global: global{
-					l: l,
-				},
-				checkFunc: func() error {
-					if !reflect.DeepEqual(format, wantFormat) {
-						return errors.Errorf("vals is not equals. want: %v, got: %v", wantFormat, format)
-					}
-
-					if !reflect.DeepEqual(vals, wantVals) {
-						return errors.Errorf("vals is not equals. want: %v, got: %v", wantVals, vals)
-					}
-					return nil
-				},
-			}
-		}(),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			l = tt.global.l
-
-			Fatalf(tt.args.format, tt.args.vals...)
-			if err := tt.checkFunc(); err != nil {
-				t.Error(err)
+			Init(test.args.opts...)
+			if err := test.checkFunc(test.want, l); err != nil {
+				tt.Errorf("error = %v", err)
 			}
 		})
 	}
@@ -831,36 +134,36 @@ func Test_getLogger(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           o: option{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns glg object when *option.logType is GLG",
+			args: args{
+				o: &option{
+					logType: logger.GLG,
+				},
+			},
+			want: want{
+				want: glg.New(
+					glg.WithLevel(level.Unknown.String()),
+				),
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           o: option{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns glg object when *option is empty",
+			args: args{
+				o: new(option),
+			},
+			want: want{
+				want: glg.New(
+					glg.WithLevel(level.Unknown.String()),
+				),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -875,7 +178,820 @@ func Test_getLogger(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+		})
+	}
+}
 
+func TestBold(t *testing.T) {
+	type args struct {
+		str string
+	}
+	type want struct {
+		want string
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, string) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got string) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns concat string with bash sequence when str is `Vald`",
+			args: args{
+				str: "Vald",
+			},
+			want: want{
+				want: "\033[1mVald\033[22m",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := Bold(test.args.str)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestDebug(t *testing.T) {
+	type args struct {
+		vals []interface{}
+	}
+	type want struct {
+		vals []interface{}
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	tests := []test{
+		func() test {
+			var got []interface{}
+
+			ml := &mock.Logger{
+				DebugFunc: func(vals ...interface{}) {
+					got = vals
+				},
+			}
+
+			w := want{
+				vals: []interface{}{
+					"vald",
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					vals: w.vals,
+				},
+				want: w,
+				beforeFunc: func(args) {
+					l = ml
+				},
+				afterFunc: func(args) {
+					l = nil
+				},
+				checkFunc: func(w want) error {
+					if !reflect.DeepEqual(got, w.vals) {
+						return errors.Errorf("got = %v, want %v", got, w.vals)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			Debug(test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestDebugf(t *testing.T) {
+	type args struct {
+		format string
+		vals   []interface{}
+	}
+	type want struct {
+		format string
+		vals   []interface{}
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	tests := []test{
+		func() test {
+			var (
+				gotFormat string
+				gotVals   []interface{}
+			)
+
+			ml := &mock.Logger{
+				DebugfFunc: func(format string, vals ...interface{}) {
+					gotFormat, gotVals = format, vals
+				},
+			}
+
+			w := want{
+				format: "format",
+				vals: []interface{}{
+					"vald",
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					format: w.format,
+					vals:   w.vals,
+				},
+				want: w,
+				beforeFunc: func(args) {
+					l = ml
+				},
+				afterFunc: func(args) {
+					l = nil
+				},
+				checkFunc: func(w want) error {
+					if !reflect.DeepEqual(gotFormat, w.format) {
+						return errors.Errorf("format got = %v, want %v", gotFormat, w.format)
+					}
+					if !reflect.DeepEqual(gotVals, w.vals) {
+						return errors.Errorf("format got = %v, want %v", gotVals, w.vals)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			Debugf(test.args.format, test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestInfo(t *testing.T) {
+	type args struct {
+		vals []interface{}
+	}
+	type want struct {
+		vals []interface{}
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	tests := []test{
+		func() test {
+			var got []interface{}
+
+			ml := &mock.Logger{
+				InfoFunc: func(vals ...interface{}) {
+					got = vals
+				},
+			}
+
+			w := want{
+				vals: []interface{}{
+					"vald",
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					vals: w.vals,
+				},
+				want: w,
+				beforeFunc: func(args) {
+					l = ml
+				},
+				afterFunc: func(args) {
+					l = nil
+				},
+				checkFunc: func(want) error {
+					if !reflect.DeepEqual(got, w.vals) {
+						return errors.Errorf("got = %v, want %v", got, w.vals)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			Info(test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestInfof(t *testing.T) {
+	type args struct {
+		format string
+		vals   []interface{}
+	}
+	type want struct {
+		format string
+		vals   []interface{}
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	tests := []test{
+		func() test {
+			var (
+				gotFormat string
+				gotVals   []interface{}
+			)
+
+			ml := &mock.Logger{
+				InfofFunc: func(format string, vals ...interface{}) {
+					gotFormat, gotVals = format, vals
+				},
+			}
+
+			w := want{
+				format: "format",
+				vals: []interface{}{
+					"vald",
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					format: w.format,
+					vals:   w.vals,
+				},
+				want: w,
+				beforeFunc: func(args) {
+					l = ml
+				},
+				afterFunc: func(args) {
+					l = nil
+				},
+				checkFunc: func(w want) error {
+					if !reflect.DeepEqual(gotFormat, w.format) {
+						return errors.Errorf("format got = %v, want %v", gotFormat, w.format)
+					}
+					if !reflect.DeepEqual(gotVals, w.vals) {
+						return errors.Errorf("format got = %v, want %v", gotVals, w.vals)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			Infof(test.args.format, test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWarn(t *testing.T) {
+	type args struct {
+		vals []interface{}
+	}
+	type want struct {
+		vals []interface{}
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	tests := []test{
+		func() test {
+			var got []interface{}
+
+			ml := &mock.Logger{
+				WarnFunc: func(vals ...interface{}) {
+					got = vals
+				},
+			}
+
+			w := want{
+				vals: []interface{}{
+					"vald",
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					vals: w.vals,
+				},
+				want: w,
+				beforeFunc: func(args) {
+					l = ml
+				},
+				afterFunc: func(args) {
+					l = nil
+				},
+				checkFunc: func(want) error {
+					if !reflect.DeepEqual(got, w.vals) {
+						return errors.Errorf("got = %v, want %v", got, w.vals)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			Warn(test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWarnf(t *testing.T) {
+	type args struct {
+		format string
+		vals   []interface{}
+	}
+	type want struct {
+		format string
+		vals   []interface{}
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	tests := []test{
+		func() test {
+			var (
+				gotFormat string
+				gotVals   []interface{}
+			)
+
+			ml := &mock.Logger{
+				WarnfFunc: func(format string, vals ...interface{}) {
+					gotFormat, gotVals = format, vals
+				},
+			}
+
+			w := want{
+				format: "format",
+				vals: []interface{}{
+					"vald",
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					format: w.format,
+					vals:   w.vals,
+				},
+				want: w,
+				beforeFunc: func(args) {
+					l = ml
+				},
+				afterFunc: func(args) {
+					l = nil
+				},
+				checkFunc: func(w want) error {
+					if !reflect.DeepEqual(gotFormat, w.format) {
+						return errors.Errorf("format got = %v, want %v", gotFormat, w.format)
+					}
+					if !reflect.DeepEqual(gotVals, w.vals) {
+						return errors.Errorf("format got = %v, want %v", gotVals, w.vals)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			Warnf(test.args.format, test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestError(t *testing.T) {
+	type args struct {
+		vals []interface{}
+	}
+	type want struct {
+		vals []interface{}
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	tests := []test{
+		func() test {
+			var got []interface{}
+
+			ml := &mock.Logger{
+				ErrorFunc: func(vals ...interface{}) {
+					got = vals
+				},
+			}
+
+			w := want{
+				vals: []interface{}{
+					"vald",
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					vals: w.vals,
+				},
+				want: w,
+				beforeFunc: func(args) {
+					l = ml
+				},
+				afterFunc: func(args) {
+					l = nil
+				},
+				checkFunc: func(w want) error {
+					if !reflect.DeepEqual(got, w.vals) {
+						return errors.Errorf("got = %v, want %v", got, w.vals)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			Error(test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestErrorf(t *testing.T) {
+	type args struct {
+		format string
+		vals   []interface{}
+	}
+	type want struct {
+		format string
+		vals   []interface{}
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	tests := []test{
+		func() test {
+			var (
+				gotFormat string
+				gotVals   []interface{}
+			)
+
+			ml := &mock.Logger{
+				ErrorfFunc: func(format string, vals ...interface{}) {
+					gotFormat, gotVals = format, vals
+				},
+			}
+
+			w := want{
+				format: "format",
+				vals: []interface{}{
+					"vald",
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					format: w.format,
+					vals:   w.vals,
+				},
+				want: w,
+				beforeFunc: func(args) {
+					l = ml
+				},
+				afterFunc: func(args) {
+					l = nil
+				},
+				checkFunc: func(w want) error {
+					if !reflect.DeepEqual(gotFormat, w.format) {
+						return errors.Errorf("format got = %v, want %v", gotFormat, w.format)
+					}
+					if !reflect.DeepEqual(gotVals, w.vals) {
+						return errors.Errorf("format got = %v, want %v", gotVals, w.vals)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			Errorf(test.args.format, test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestFatal(t *testing.T) {
+	type args struct {
+		vals []interface{}
+	}
+	type want struct {
+		vals []interface{}
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	tests := []test{
+		func() test {
+			var got []interface{}
+
+			ml := &mock.Logger{
+				FatalFunc: func(vals ...interface{}) {
+					got = vals
+				},
+			}
+
+			w := want{
+				vals: []interface{}{
+					"vald",
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					vals: w.vals,
+				},
+				want: w,
+				beforeFunc: func(args) {
+					l = ml
+				},
+				afterFunc: func(args) {
+					l = nil
+				},
+				checkFunc: func(w want) error {
+					if !reflect.DeepEqual(got, w.vals) {
+						return errors.Errorf("got = %v, want %v", got, w.vals)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			Fatal(test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestFatalf(t *testing.T) {
+	type args struct {
+		format string
+		vals   []interface{}
+	}
+	type want struct {
+		format string
+		vals   []interface{}
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	tests := []test{
+		func() test {
+			var (
+				gotFormat string
+				gotVals   []interface{}
+			)
+
+			ml := &mock.Logger{
+				FatalfFunc: func(format string, vals ...interface{}) {
+					gotFormat, gotVals = format, vals
+				},
+			}
+
+			w := want{
+				format: "format",
+				vals: []interface{}{
+					"vald",
+				},
+			}
+
+			return test{
+				name: "output success",
+				args: args{
+					format: w.format,
+					vals:   w.vals,
+				},
+				want: w,
+				beforeFunc: func(args) {
+					l = ml
+				},
+				afterFunc: func(args) {
+					l = nil
+				},
+				checkFunc: func(w want) error {
+					if !reflect.DeepEqual(gotFormat, w.format) {
+						return errors.Errorf("format got = %v, want %v", gotFormat, w.format)
+					}
+					if !reflect.DeepEqual(gotVals, w.vals) {
+						return errors.Errorf("format got = %v, want %v", gotVals, w.vals)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			Fatalf(test.args.format, test.args.vals...)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }

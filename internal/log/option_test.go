@@ -22,208 +22,319 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/level"
-	logger "github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/log/mock"
+	"go.uber.org/goleak"
 )
 
 func TestWithLogger(t *testing.T) {
+	type T = option
+	type args struct {
+		logger Logger
+	}
+	type want struct {
+		obj *T
+	}
 	type test struct {
-		name      string
-		l         Logger
-		checkFunc func(Option) error
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T) error {
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
+		}
+		return nil
 	}
 
 	tests := []test{
 		func() test {
-			l := new(mock.Logger)
+			ml := new(mock.Logger)
 
 			return test{
 				name: "set success when l is not nil",
-				l:    l,
-				checkFunc: func(opt Option) error {
-					option := new(option)
-					opt(option)
-
-					if !reflect.DeepEqual(option.logger, l) {
-						return errors.New("invalid params was set")
-					}
-
-					return nil
+				args: args{
+					logger: ml,
+				},
+				want: want{
+					obj: &T{
+						logger: ml,
+					},
 				},
 			}
 		}(),
 
 		func() test {
-			l := new(mock.Logger)
-
 			return test{
-				name: "returns nothing when l is nil",
-				l:    nil,
-				checkFunc: func(opt Option) error {
-					option := &option{
-						logger: l,
-					}
-					opt(option)
-
-					if !reflect.DeepEqual(option.logger, l) {
-						return errors.New("invalid params was set")
-					}
-
-					return nil
+				name: "set nothing when l is nil",
+				want: want{
+					obj: new(T),
 				},
 			}
 		}(),
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			opt := WithLogger(tt.l)
-			if err := tt.checkFunc(opt); err != nil {
-				t.Error(err)
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			got := WithLogger(test.args.logger)
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
+				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
 
 func TestWithLoggerType(t *testing.T) {
+	type T = option
+	type args struct {
+		str string
+	}
+	type want struct {
+		obj *T
+	}
 	type test struct {
-		name      string
-		str       string
-		checkFunc func(Option) error
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T) error {
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
+		}
+		return nil
 	}
 
 	tests := []test{
 		{
-			name: "set success when str is not empty",
-			str:  logger.GLG.String(),
-			checkFunc: func(opt Option) error {
-				option := new(option)
-				opt(option)
-
-				if option.logType != logger.GLG {
-					return errors.New("invalid params was set")
-				}
-				return nil
+			name: "set success when str is `glg`",
+			args: args{
+				str: logger.GLG.String(),
+			},
+			want: want{
+				obj: &T{
+					logType: logger.GLG,
+				},
 			},
 		},
 
 		{
-			name: "returns nothing when str is empty",
-			checkFunc: func(opt Option) error {
-				option := &option{
-					logType: logger.ZAP,
-				}
-				opt(option)
+			name: "set nothing when str is empty",
+			want: want{
+				obj: new(T),
+			},
+		},
 
-				if option.logType != logger.ZAP {
-					return errors.New("invalid params was set")
-				}
-				return nil
+		{
+			name: "set nothing when str is invalid",
+			args: args{
+				str: "invalid",
+			},
+			want: want{
+				obj: new(T),
 			},
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			opt := WithLoggerType(tt.str)
-			if err := tt.checkFunc(opt); err != nil {
-				t.Error(err)
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			got := WithLoggerType(test.args.str)
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
+				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
 
 func TestWithLevel(t *testing.T) {
+	type T = option
+	type args struct {
+		str string
+	}
+	type want struct {
+		obj *T
+	}
 	type test struct {
-		name      string
-		str       string
-		checkFunc func(Option) error
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T) error {
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
+		}
+		return nil
 	}
 
 	tests := []test{
 		{
-			name: "set success when str is not empty",
-			str:  level.DEBUG.String(),
-			checkFunc: func(opt Option) error {
-				option := new(option)
-				opt(option)
-
-				if option.level != level.DEBUG {
-					return errors.New("invalid params was set")
-				}
-				return nil
+			name: "set success when str is `DEBUG`",
+			args: args{
+				str: level.DEBUG.String(),
+			},
+			want: want{
+				obj: &T{
+					level: level.DEBUG,
+				},
 			},
 		},
 
 		{
-			name: "returns nothing when str is empty",
-			checkFunc: func(opt Option) error {
-				option := &option{
-					level: level.ERROR,
-				}
-				opt(option)
+			name: "set nothing when str is empty",
+			want: want{
+				obj: new(T),
+			},
+		},
 
-				if option.level != level.ERROR {
-					return errors.New("invalid params was set")
-				}
-				return nil
+		{
+			name: "set nothing when str is invalid",
+			args: args{
+				str: "invalid",
+			},
+			want: want{
+				obj: new(T),
 			},
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			opt := WithLevel(tt.str)
-			if err := tt.checkFunc(opt); err != nil {
-				t.Error(err)
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			got := WithLevel(test.args.str)
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
+				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
 
 func TestWithFormat(t *testing.T) {
+	type T = option
+	type args struct {
+		str string
+	}
+	type want struct {
+		obj *T
+	}
 	type test struct {
-		name      string
-		str       string
-		checkFunc func(Option) error
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T) error {
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
+		}
+		return nil
 	}
 
 	tests := []test{
-		{
-			name: "set success when str is not empty",
-			str:  format.JSON.String(),
-			checkFunc: func(opt Option) error {
-				option := new(option)
-				opt(option)
+		func() test {
+			return test{
+				name: "set success when str is json",
+				args: args{
+					str: format.JSON.String(),
+				},
+				want: want{
+					obj: &T{
+						format: format.JSON,
+					},
+				},
+			}
+		}(),
 
-				if option.format != format.JSON {
-					return errors.New("invalid params was set")
-				}
-				return nil
-			},
-		},
+		func() test {
+			return test{
+				name: "set nothing when str is empty",
+				want: want{
+					obj: new(T),
+				},
+			}
+		}(),
 
-		{
-			name: "returns nothing when str is empty",
-			checkFunc: func(opt Option) error {
-				option := &option{
-					format: format.JSON,
-				}
-				opt(option)
-
-				if option.format != format.JSON {
-					return errors.New("invalid params was set")
-				}
-				return nil
-			},
-		},
+		func() test {
+			return test{
+				name: "set nothing when str is invalid",
+				args: args{
+					str: "invalid",
+				},
+				want: want{
+					obj: new(T),
+				},
+			}
+		}(),
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			opt := WithFormat(tt.str)
-			if err := tt.checkFunc(opt); err != nil {
-				t.Error(err)
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			got := WithFormat(test.args.str)
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
+				tt.Errorf("error = %v", err)
 			}
 		})
 	}
