@@ -23,110 +23,6 @@ import (
 	"go.uber.org/goleak"
 )
 
-func TestString(t *testing.T) {
-	type test struct {
-		name   string
-		format Format
-		want   string
-	}
-
-	tests := []test{
-		{
-			name:   "returns raw",
-			format: RAW,
-			want:   "raw",
-		},
-
-		{
-			name:   "returns json",
-			format: JSON,
-			want:   "json",
-		},
-
-		{
-			name:   "returns ltsv",
-			format: LTSV,
-			want:   "ltsv",
-		},
-
-		{
-			name:   "returns unknown",
-			format: Format(100),
-			want:   "unknown",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := tt.format.String()
-			if got != tt.want {
-				t.Errorf("not equals. want: %v, but got: %v", tt.want, got)
-			}
-		})
-	}
-}
-
-func TestAtof(t *testing.T) {
-	type test struct {
-		name string
-		str  string
-		want Format
-	}
-
-	tests := []test{
-		{
-			name: "returns RAW when str is raw",
-			str:  "raw",
-			want: RAW,
-		},
-
-		{
-			name: "returns RAW when str is RAw",
-			str:  "RAw",
-			want: RAW,
-		},
-
-		{
-			name: "returns JSON when str is json",
-			str:  "json",
-			want: JSON,
-		},
-
-		{
-			name: "returns JSON when str is JSOn",
-			str:  "JSOn",
-			want: JSON,
-		},
-
-		{
-			name: "returns LTSV when str is ltsv",
-			str:  "ltsv",
-			want: LTSV,
-		},
-
-		{
-			name: "returns LTSV when str is LTSv",
-			str:  "LTSv",
-			want: LTSV,
-		},
-
-		{
-			name: "returns Unknown when str is Vald",
-			str:  "Vald",
-			want: Unknown,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := Atof(tt.str)
-			if got != tt.want {
-				t.Errorf("not equals. want: %v, but got: %v", tt.want, got)
-			}
-		})
-	}
-}
-
 func TestFormat_String(t *testing.T) {
 	type want struct {
 		want string
@@ -146,30 +42,42 @@ func TestFormat_String(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns raw when f is RAW",
+			f:    RAW,
+			want: want{
+				want: "raw",
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns json when f is JSON",
+			f:    JSON,
+			want: want{
+				want: "json",
+			},
+		},
+
+		{
+			name: "returns ltsv when f is LTSV",
+			f:    LTSV,
+			want: want{
+				want: "ltsv",
+			},
+		},
+
+		{
+			name: "returns unknown when f is 100",
+			f:    Format(100),
+			want: want{
+				want: "unknown",
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -185,6 +93,103 @@ func TestFormat_String(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 
+		})
+	}
+}
+
+func TestAtof(t *testing.T) {
+	type want struct {
+		want Format
+	}
+	type test struct {
+		name       string
+		str        string
+		want       want
+		checkFunc  func(want, Format) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got Format) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+
+	tests := []test{
+		{
+			name: "returns RAW when str is `raw`",
+			str:  "raw",
+			want: want{
+				want: RAW,
+			},
+		},
+
+		{
+			name: "returns RAW when str is `RAw`",
+			str:  "RAw",
+			want: want{
+				want: RAW,
+			},
+		},
+
+		{
+			name: "returns JSON when str is `json`",
+			str:  "json",
+			want: want{
+				want: JSON,
+			},
+		},
+
+		{
+			name: "returns JSON when str is `JSOn`",
+			str:  "JSOn",
+			want: want{
+				want: JSON,
+			},
+		},
+
+		{
+			name: "returns LTSV when str is `ltsv`",
+			str:  "ltsv",
+			want: want{
+				want: LTSV,
+			},
+		},
+
+		{
+			name: "returns LTSV when str is `LTSv`",
+			str:  "LTSv",
+			want: want{
+				LTSV,
+			},
+		},
+
+		{
+			name: "returns Unknown when str is `Vald`",
+			str:  "Vald",
+			want: want{
+				want: Unknown,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			got := Atof(test.str)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }
