@@ -161,7 +161,7 @@ func TestAtof(t *testing.T) {
 			name: "returns LTSV when str is `LTSv`",
 			str:  "LTSv",
 			want: want{
-				LTSV,
+				want: LTSV,
 			},
 		},
 
