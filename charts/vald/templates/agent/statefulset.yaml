@@ -75,6 +75,14 @@ spec:
           volumeMounts:
             - name: {{ .Values.agent.name }}-config
               mountPath: /etc/server/
+            {{- if not .Values.agent.ngt.enable_in_memory_mode }}
+            {{- if .Values.agent.ngt.index_path }}
+            {{- if .Values.agent.persistentVolume.enabled }}
+            - name: {{ .Values.agent.name }}-pvc
+              mountPath: {{ .Values.agent.ngt.index_path }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
             {{- if .Values.agent.volumeMounts }}
             {{- toYaml .Values.agent.volumeMounts | nindent 12 }}
             {{- end }}
@@ -107,18 +115,20 @@ spec:
       priorityClassName: {{ .Values.agent.name }}-priority
       {{- end }}
       {{- end }}
-{{- if .Values.agent.volumeStore }}
-{{- if .Values.agent.volumeStore.enabled }}
+{{- if not .Values.agent.ngt.enable_in_memory_mode }}
+{{- if .Values.agent.ngt.index_path }}
+{{- if .Values.agent.persistentVolume.enabled }}
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.agent.name }}-pvc
       spec:
         accessModes:
-          - {{ .Values.agent.volumeStore.accessMode }}
-        storageClassName: {{ .Values.agent.volumeStore.storageClass }}
+          - {{ .Values.agent.persistentVolume.accessMode }}
+        storageClassName: {{ .Values.agent.persistentVolume.storageClass }}
         resources:
           requests:
-            storage: {{ .Values.agent.volumeStore.size }}
+            storage: {{ .Values.agent.persistentVolume.size }}
+{{- end }}
 {{- end }}
 {{- end }}
 status:
