@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
 package logger
 
 import (
@@ -22,146 +23,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
-
-func TestString(t *testing.T) {
-	type test struct {
-		name    string
-		logType Type
-		want    string
-	}
-
-	tests := []test{
-		{
-			name:    "returns glg",
-			logType: GLG,
-			want:    "glg",
-		},
-
-		{
-			name:    "returns zap",
-			logType: ZAP,
-			want:    "zap",
-		},
-
-		{
-			name:    "returns zerolog",
-			logType: ZEROLOG,
-			want:    "zerolog",
-		},
-
-		{
-			name:    "returns logrus",
-			logType: LOGRUS,
-			want:    "logrus",
-		},
-
-		{
-			name:    "returns klog",
-			logType: KLOG,
-			want:    "klog",
-		},
-
-		{
-			name:    "returns unknown",
-			logType: Type(100),
-			want:    "unknown",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := tt.logType.String()
-			if got != tt.want {
-				t.Errorf("not equals. want: %v, but got: %v", tt.want, got)
-			}
-		})
-	}
-}
-
-func TestAtot(t *testing.T) {
-	type test struct {
-		name string
-		str  string
-		want Type
-	}
-
-	tests := []test{
-		{
-			name: "returns GLG when str is glg",
-			str:  "glg",
-			want: GLG,
-		},
-
-		{
-			name: "returns GLG when str is GLg",
-			str:  "GLg",
-			want: GLG,
-		},
-
-		{
-			name: "returns ZAP when str is zap",
-			str:  "zap",
-			want: ZAP,
-		},
-
-		{
-			name: "returns ZAP when str is ZAp",
-			str:  "ZAp",
-			want: ZAP,
-		},
-
-		{
-			name: "returns ZEROLOG when str is zerolog",
-			str:  "zerolog",
-			want: ZEROLOG,
-		},
-
-		{
-			name: "returns ZEROLOG when str is ZEROLOg",
-			str:  "ZEROLOg",
-			want: ZEROLOG,
-		},
-
-		{
-			name: "returns LOGRUS when str is logrus",
-			str:  "logrus",
-			want: LOGRUS,
-		},
-
-		{
-			name: "returns LOGRUS when str is LOGRUs",
-			str:  "LOGRUs",
-			want: LOGRUS,
-		},
-
-		{
-			name: "returns KLOG when str is klog",
-			str:  "klog",
-			want: KLOG,
-		},
-
-		{
-			name: "returns KLOG when str is KLOg",
-			str:  "KLog",
-			want: KLOG,
-		},
-
-		{
-			name: "returns unknown when str is Vald",
-			str:  "Vald",
-			want: Unknown,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := Atot(tt.str)
-			if got != tt.want {
-				t.Errorf("not equals. want: %v, but got: %v", tt.want, got)
-			}
-		})
-	}
-}
 
 func TestType_String(t *testing.T) {
 	type want struct {
@@ -182,25 +43,53 @@ func TestType_String(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns glg when m is GLG",
+			m:    GLG,
+			want: want{
+				want: "glg",
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns zap when m is ZAP",
+			m:    ZAP,
+			want: want{
+				want: "zap",
+			},
+		},
+
+		{
+			name: "returns zerolog when m is ZEROLOG",
+			m:    ZEROLOG,
+			want: want{
+				want: "zerolog",
+			},
+		},
+
+		{
+			name: "returns logrus when m is LOGRUS",
+			m:    LOGRUS,
+			want: want{
+				want: "logrus",
+			},
+		},
+
+		{
+			name: "returns klog when m is KLOG",
+			m:    KLOG,
+			want: want{
+				want: "klog",
+			},
+		},
+
+		{
+			name: "returns unknown when m is unknown",
+			m:    Type(100),
+			want: want{
+				want: "unknown",
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -217,6 +106,161 @@ func TestType_String(t *testing.T) {
 			}
 
 			got := test.m.String()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func TestAtot(t *testing.T) {
+	type args struct {
+		str string
+	}
+	type want struct {
+		want Type
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, Type) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got Type) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns GLG when str is `glg`",
+			args: args{
+				str: "glg",
+			},
+			want: want{
+				want: GLG,
+			},
+		},
+
+		{
+			name: "returns GLG when str is `GLg`",
+			args: args{
+				str: "GLg",
+			},
+			want: want{
+				want: GLG,
+			},
+		},
+
+		{
+			name: "returns ZAP when str is `zap`",
+			args: args{
+				str: "zap",
+			},
+			want: want{
+				want: ZAP,
+			},
+		},
+
+		{
+			name: "returns ZAP when str is `ZAp`",
+			args: args{
+				str: "ZAp",
+			},
+			want: want{
+				want: ZAP,
+			},
+		},
+
+		{
+			name: "returns ZEROLOG when str is `zerolog`",
+			args: args{
+				str: "zerolog",
+			},
+			want: want{
+				want: ZEROLOG,
+			},
+		},
+
+		{
+			name: "returns ZEROLOG when str is `ZEROLOg`",
+			args: args{
+				str: "ZEROLOg",
+			},
+			want: want{
+				want: ZEROLOG,
+			},
+		},
+
+		{
+			name: "returns LOGRUS when str is `logrus`",
+			args: args{
+				str: "logrus",
+			},
+			want: want{
+				want: LOGRUS,
+			},
+		},
+
+		{
+			name: "returns LOGRUS when str is `LOGRUs`",
+			args: args{
+				str: "LOGRUs",
+			},
+			want: want{
+				want: LOGRUS,
+			},
+		},
+
+		{
+			name: "returns KLOG when str is `klog`",
+			args: args{
+				str: "klog",
+			},
+			want: want{
+				want: KLOG,
+			},
+		},
+
+		{
+			name: "returns KLOG when str is `KLOg`",
+			args: args{
+				str: "KLog",
+			},
+			want: want{
+				want: KLOG,
+			},
+		},
+
+		{
+			name: "returns unknown when str is `Vald`",
+			args: args{
+				str: "Vald",
+			},
+			want: want{
+				want: Unknown,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := Atot(test.args.str)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
