@@ -6,14 +6,11 @@ A bug is a demonstrable problem that is caused by code in the repository. Bug 
 A good bug report shouldn’t leave others needing to ask you constantly for more information. So could you please try to be as detailed as possible in your bug report?
 
 Things to check before reporting the bug:
-- Check your environment
-Bug may occur depending on versions (Go, Docker, Kubernetes, NGT ..etc).  So please match versions recommended by Vald project. 
+- Check your environment - Bug may occur depending on versions (Go, Docker, Kubernetes, NGT ..etc).  So please match versions recommended by Vald project. 
 
-- Identify the bug
-Developpers needs to reproduce the bug in developers environment. So please Identify the bug and clarify how it occurs. Then please clarify the expected behavior too. 
+- Identify the bug - Developpers needs to reproduce the bug in developers environment. So please Identify the bug and clarify how it occurs. Then please clarify the expected behavior too.
 
-- Use the Github issue search
-Bug has already been reported. So please check Github issue before reporting.
+- Use the Github issue search - Bug has already been reported. So please check Github issue before reporting.
 
 ## Proposal
 [WIP]
