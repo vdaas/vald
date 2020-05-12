@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if eq .Values.agent.kind "StatefulSet" }}
+{{- if and .Values.agent.enabled (eq .Values.agent.kind "StatefulSet") }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:

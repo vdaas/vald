@@ -411,6 +411,8 @@ defaults:
       buffer_max_count: 10
 
 gateway:
+  # gateway.enabled -- gateway enabled
+  enabled: true
   # gateway.version -- version of gateway config
   version: v0.0.0
   # gateway.name -- name of gateway deployment
@@ -602,6 +604,8 @@ gateway:
       client: {}
 
 agent:
+  # agent.enabled -- agent enabled
+  enabled: true
   # agent.version -- version of agent config
   version: v0.0.0
   # agent.name -- name of agent deployment
@@ -762,6 +766,8 @@ agent:
     enable_in_memory_mode: true
 
 discoverer:
+  # discoverer.enabled -- discoverer enabled
+  enabled: true
   # discoverer.version -- version of discoverer config
   version: v0.0.0
   # discoverer.name -- name of discoverer deployment
@@ -908,6 +914,8 @@ discoverer:
     name: vald
 
 compressor:
+  # compressor.enabled -- compressor enabled
+  enabled: true
   # compressor.version -- version of compressor config
   version: v0.0.0
   # compressor.name -- name of compressor deployment
@@ -1055,6 +1063,8 @@ compressor:
       client: {}
 
 backupManager:
+  # backupManager.enabled -- backup manager enabled
+  enabled: true
   # backupManager.version -- version of backup manager config
   version: v0.0.0
   # backupManager.name -- name of backup manager deployment
@@ -1395,6 +1405,8 @@ backupManager:
         white_list: []
 
 indexManager:
+  # indexManager.enabled -- index manager enabled
+  enabled: true
   # indexManager.version -- version of index manager config
   version: v0.0.0
   # indexManager.name -- name of index manager deployment
@@ -1541,6 +1553,8 @@ indexManager:
               keep_alive: 15m
 
 meta:
+  # meta.enabled -- meta enabled
+  enabled: true
   # meta.version -- version of meta config
   version: v0.0.0
   # meta.name -- name of meta deployment

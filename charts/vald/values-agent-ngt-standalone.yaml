@@ -13,12 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.discoverer.enabled .Values.discoverer.podPriority.enabled }}
-apiVersion: scheduling.k8s.io/v1
-kind: PriorityClass
-metadata:
-  name: {{ .Values.discoverer.name }}-priority
-value: {{ .Values.discoverer.podPriority.value }}
-globalDefault: false
-description: "A priority class for Vald discoverer."
-{{- end }}
+
+agent:
+  ngt:
+    auto_index_duration_limit: 30m
+    auto_index_check_duration: 1m
+    auto_index_length: 100
+    dimension: 4096
+    distance_type: l2
+    object_type: float
+    creation_edge_size: 20
+    search_edge_size: 10
+
+gateway:
+  enabled: false
+
+discoverer:
+  enabled: false
+
+compressor:
+  enabled: false
+
+backupManager:
+  enabled: false
+
+indexManager:
+  enabled: false
+
+meta:
+  enabled: false

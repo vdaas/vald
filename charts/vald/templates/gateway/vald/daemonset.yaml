@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if eq .Values.gateway.kind "DaemonSet" }}
+{{- if and .Values.gateway.enabled (eq .Values.gateway.kind "DaemonSet") }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
