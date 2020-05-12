@@ -14,7 +14,7 @@ Add Vald Helm repository
 
 Run the following command to install the chart,
 
-    $ helm install --generate-name vald/vald
+    $ helm install vald-cluster vald/vald
 
 
 Configuration
@@ -47,3 +47,20 @@ Configuration
 ### Parameters
 
 {{ template "chart.valuesTable" . }}
+
+
+Miscellaneous
+---
+
+### Standalone Vald agent NGT deployment
+
+Each component can be disabled by setting the value `false` to the `[component].enabled` field.
+This is useful for deploying only Vald agent NGT pods.
+
+There is an example yaml [values-agent-ngt-standalone.yaml][agent-ngt-standalone-yaml] to deploy standalone agent NGT.
+Please run the following command to install the chart with this values yaml,
+
+    $ helm repo add vald https://vald.vdaas.org/charts
+    $ helm install --values values-agent-ngt-standalone.yaml vald-agent-ngt vald/vald
+
+agent-ngt-standalone-yaml: ./values-agent-ngt-standalone.yaml
