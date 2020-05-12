@@ -57,7 +57,7 @@ jobs:
           kubectl cluster-info
       - name: install valdcli
         run: |
-          curl -OL "https://github.com/rinx/vald-client-clj/releases/download/${VALDCLI_VERSION}/valdcli-linux-static.zip"
+          curl -OL "https://github.com/vdaas/vald-client-clj/releases/download/${VALDCLI_VERSION}/valdcli-linux-static.zip"
           unzip valdcli-linux-static.zip
           chmod a+x valdcli
           sudo mv valdcli /usr/local/bin/valdcli
