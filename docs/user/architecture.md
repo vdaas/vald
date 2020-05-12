@@ -5,8 +5,6 @@
 - [Overview](#overview)
 - [Data Flow](#data-flow)
   - [Insert](#insert)
-  - [Update](#update)
-  - [Delete](#delete)
   - [Search](#search)
 - [Components](#components)
   - [Vald Filter](#vald-filter)
@@ -36,7 +34,7 @@
 
 ## Overview
 
-This document describes the high-level architecture design of Vald and explains each component in Vald. We need these components to support scalability, high performance and auto-healing in Vald.
+This document describes the high-level architecture design of Vald and explains each component in Vald. We need these components to support scalability, high performance, and auto-healing in Vald.
 
 <img src="../../design/Vald Future Architecture Overview.svg" />
 
@@ -44,12 +42,13 @@ Vald is based on [Kubernetes](https://kubernetes.io/) architecture. Before you r
 
 ## Data Flow
 
+In this section, we will explain the data flow in Vald which is the most important for users.
+
 ### Insert
 
 <img src="./insert_search_flow.svg" />
 
 When the user inserts data into Vald:
-
 ```
 C1. Vald Ingress receives the request from the user. The request includes the vector and the vector ID.
 C2. Vald Ingress will forward the request to Vald Meta Gateway. After the Vald Meta Gateway receive the request, the UUID will be generated for internal use.
@@ -66,12 +65,11 @@ C12. Vald Compressor will compress the data received and send to the Vald Backup
 C13. Vald Backup Manager will store the compressed data to the persistent layer.
 ```
 
-### Update
-
-### Delete
-
 ### Search
 
+When the user searches a vector from Vald:
+
+```
 S1. Vald Ingress receives the search request from the user. The request includes the vector or the vector ID.
 S2. Vald Ingress will forward the request to Vald Filter Gateway.
 S3. Vald Filter Gateway will forward the request to Vald Ingress Filter.
@@ -87,6 +85,11 @@ S12. Vald Meta Gateway will forward the searching result to the Vald Meta.
 S13. Vald Meta will perform a search for the Vector ID base on the UUID and return the Vector ID to the Vald Meta Gateway.
 S14. Vald Meta Gateway returns the searching result with the vector ID to the Vald Filter Gateway.
 S15. Vald Filter Gateway will forward the request to Vald Egress Gateway to filter the final result.
+```
+
+<!-- ### Update -->
+
+<!-- ### Delete -->
 
 ## Components
 
@@ -130,12 +133,12 @@ It will perform the following action:
 
 1. Return error if the user has already input the same vector in Vald
 1. Generate the corresponding UUID for internal use.
-1. Forward the metadata (vec_id and UUID) request to the Vald Meta Agent.
-1. Forward the vector information (vec_id, vector, and UUID) to Vald Backup Gateway.
+1. Forward the metadata (vector ID and UUID) request to the Vald Meta Agent.
+1. Forward the vector information (vector ID, vector, and UUID) to Vald Backup Gateway.
 
 #### Vald Meta
 
-Vald Meta is the agent to process the CRUD request of the metadata (vec_id and UUID). Users can configure which data source to be used in Vald Meta (for example Redis or Cassandra).
+Vald Meta is the agent to process the CRUD request of the metadata (vector ID and UUID). Users can configure which data source to be used in Vald Meta (for example Redis or Cassandra).
 
 ### Vald Backup
 
@@ -175,11 +178,13 @@ In this section, we will describe what is Vald Agent and the corresponding compo
 
 Vald Agent is the core of the Vald. By default Vald use [NGT](https://github.com/yahoojapan/NGT) to provide API for users to insert/update/delete/search vectors.
 
-Each Vald Agent pod holds different vector dimension space, which is constructed by insert/update vectors for searching approximate vectors.
-
-<!-- (todo: diagram to explain different vector dimension space) -->
+Each Vald Agent pod holds different high dimensional vector data space, which is constructed by insert/update vectors for searching approximate vectors.
 
 When you request searching with your vector in Vald, each Vald Agent returns different _k_-nearest neighbors' vectors which are similar to the searching vector.
+
+<img src="./vector_data_space_explain.svg" />
+
+The same vector will be inserted into multiple Vald Agents, so the vector data space constructed in each Vald Agent will be different, causing the searching results from each Vald Agent are different.
 
 #### Vald Agent Scheduler
 
