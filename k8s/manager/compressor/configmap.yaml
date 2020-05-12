@@ -174,9 +174,10 @@ data:
       compress_algorithm: "zstd"
       compression_level: 3
       concurrent_limit: 10
-      queue_check_duration: 5s
+      queue_check_duration: 200ms
     registerer:
       concurrent_limit: 10
+      queue_check_duration: 200ms
       compressor:
         host: vald-manager-compressor.default.svc.cluster.local
         port: 8081
