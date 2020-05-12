@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if eq .Values.backupManager.kind "Deployment" }}
+{{- if and .Values.backupManager.enabled (eq .Values.backupManager.kind "Deployment") }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

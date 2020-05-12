@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if eq .Values.indexManager.kind "Deployment" }}
+{{- if and .Values.indexManager.enabled (eq .Values.indexManager.kind "Deployment") }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if eq .Values.compressor.kind "Deployment" }}
+{{- if and .Values.compressor.enabled (eq .Values.compressor.kind "Deployment") }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

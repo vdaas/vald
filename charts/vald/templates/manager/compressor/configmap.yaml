@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{- if .Values.compressor.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -51,3 +52,4 @@ data:
         client:
           {{- $compressorClient := dict "Values" .Values.compressor.registerer.compressor.client "default" .Values.defaults.grpc.client }}
           {{- include "vald.grpc.client" $compressorClient | nindent 12 }}
+{{- end }}

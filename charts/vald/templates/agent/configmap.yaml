@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{- if .Values.agent.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -33,3 +34,4 @@ data:
       {{- include "vald.observability" $observability | nindent 6 }}
     ngt:
       {{- toYaml .Values.agent.ngt | nindent 6 }}
+{{- end }}

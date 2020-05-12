@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{- if .Values.indexManager.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -51,3 +52,4 @@ data:
       auto_index_duration_limit: {{ .Values.indexManager.indexer.auto_index_duration_limit }}
       auto_index_check_duration: {{ .Values.indexManager.indexer.auto_index_check_duration }}
       auto_index_length: {{ .Values.indexManager.indexer.auto_index_length }}
+{{- end }}

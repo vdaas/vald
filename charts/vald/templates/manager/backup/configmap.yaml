@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{- if .Values.backupManager.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -39,3 +40,4 @@ data:
     cassandra_config:
       {{- toYaml .Values.backupManager.cassandra.config | nindent 6 }}
     {{- end }}
+{{- end }}
