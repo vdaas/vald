@@ -9,6 +9,7 @@ replace (
 	github.com/gocql/gocql => github.com/gocql/gocql master
 	github.com/gogo/protobuf => github.com/gogo/protobuf master
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.10.0
+	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.0
 	github.com/gorilla/mux => github.com/gorilla/mux master
 	golang.org/x/crypto => golang.org/x/crypto master
 	k8s.io/api => k8s.io/api v0.18.2

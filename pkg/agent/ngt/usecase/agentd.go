@@ -174,5 +174,6 @@ func (r *run) Stop(ctx context.Context) error {
 }
 
 func (r *run) PostStop(ctx context.Context) error {
+	r.ngt.Close(ctx)
 	return nil
 }

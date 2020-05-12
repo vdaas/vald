@@ -616,6 +616,16 @@ agent:
   terminationGracePeriodSeconds: 30
   # agent.podManagementPolicy -- pod management policy: OrderedReady or Parallel
   podManagementPolicy: OrderedReady
+  persistentVolume:
+    # agent.persistentVolume.enabled -- enables PVC.
+    # It is required to enable if agent pod's file store functionality is enabled with non in-memory mode
+    enabled: false
+    # agent.persistentVolume.accessMode -- agent pod storage accessMode
+    accessMode: ReadWriteOnce
+    # agent.persistentVolume.storageClass -- storageClass name for agent pod volume
+    storageClass: vald-sc
+    # agent.persistentVolume.size -- size of agent pod volume
+    size: 100Gi
   podPriority:
     # agent.podPriority.enabled -- agent pod PriorityClass enabled
     enabled: true
