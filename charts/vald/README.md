@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.34`
+Current chart version is `v0.0.35`
 
 Install
 ---
@@ -82,6 +82,10 @@ Configuration
 | agent.nodeName | string | `""` | node name |
 | agent.nodeSelector | object | `{}` | node selector |
 | agent.observability | object | `{"jaeger":{"service_name":"vald-agent-ngt"}}` | observability config (overrides defaults.observability) |
+| agent.persistentVolume.accessMode | string | `"ReadWriteOnce"` | agent pod storage accessMode |
+| agent.persistentVolume.enabled | bool | `false` | enables PVC. |
+| agent.persistentVolume.size | string | `"100Gi"` | size of agent pod volume |
+| agent.persistentVolume.storageClass | string | `"vald-sc"` | storageClass name for agent pod volume |
 | agent.podAnnotations | object | `{}` | pod annotations |
 | agent.podManagementPolicy | string | `"OrderedReady"` | pod management policy: OrderedReady or Parallel |
 | agent.podPriority.enabled | bool | `true` | agent pod PriorityClass enabled |
@@ -307,7 +311,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.34"` | image tag |
+| defaults.image.tag | string | `"v0.0.35"` | image tag |
 | defaults.logging.format | string | `"raw"` | logging format |
 | defaults.logging.level | string | `"debug"` | logging level |
 | defaults.logging.logger | string | `"glg"` | logger name |
