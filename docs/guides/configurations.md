@@ -28,7 +28,7 @@ Vald Helm Chart's `values.yaml` is composed of the following sections:
 
 In each section, users can configure the deployments and behaviors of each component.
 
-The detail descriptions of each value can be found in [README of Vald Helm Chart][vald-helm-chart].
+The detailed descriptions of each value can be found in [README of Vald Helm Chart][vald-helm-chart].
 
 
 ## Notable values in Vald Helm Chart
@@ -46,7 +46,7 @@ defaults:
     tag: v0.0.33
 ```
 
-or you can use older image only for agent,
+or you can use the older image only for agent,
 
 ```yaml
 agent:
@@ -57,7 +57,7 @@ agent:
 #### Specify appropriate logging level and format
 
 The default logging levels and formats are configured in `defaults.logging.level` and `defaults.logging.format`.
-You can also specify logging levels and formats in each component sections (`[component].logging`).
+You can also specify logging levels and formats in each component section (`[component].logging`).
 
 ```yaml
 defaults:
@@ -142,7 +142,7 @@ agent:
 ##### Metrics servers
 
 Metrics servers are useful for debugging and monitor Vald components.
-There are two types of metrics servers, pprof and prometheus.
+There are two types of metrics servers, pprof and Prometheus.
 
 pprof server is a server that implemented using golang's net/http/pprof package.
 You can use [google's pprof][google-pprof] to analyze the profiling data exported from it.
@@ -190,7 +190,7 @@ The behavior of this feature can be configured with these parameters:
 Because agent places indices on memory, termination of agent pods mean loss of indices.
 It is important to set resource requests and limits appropriately not to terminate agent pods.
 
-It is highly recommended to request totally 40% of cluster memory for agent pods.
+It is highly recommended to request a totally 40% of cluster memory for agent pods.
 And also it is highly recommended not to set resource limits to agent pods.
 
 Pod priorities are also useful for saving agent pods from eviction.
@@ -246,7 +246,7 @@ If discoverer's CPU utilization is too high, try to make this value longer or re
 
 #### Meta cache
 
-Gateway has a cache functionality for meta data.
+Gateway has a cache functionality for metadata.
 It can be enabled by `gateway.gateway_config.meta.enable_cache` and the behaviors controlled by `gateway.gateway_config.meta.cache_expiration` and `gateway.gateway_config.meta.expired_cache_check_duration`.
 
 #### Resource requests and limits
@@ -279,7 +279,7 @@ The definitions can be found in `_helpers.tpl` in Chart's templates directory.
 
 #### Resource requests and limits
 
-The number of discoverer pods and resource limits are determined by the configurations of your gateways and index managers, because APIs of discoverers are called by gateways and index managers.
+The number of discoverer pods and resource limits are determined by the configurations of your gateways and index managers because APIs of discoverers are called by gateways and index managers.
 Discoverer CPU loads depend on API request traffic = (the number of gateways x gateway's request duration) + (the number of index managers x index manager's request duration).
 
 
