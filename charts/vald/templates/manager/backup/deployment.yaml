@@ -26,8 +26,7 @@ metadata:
   {{- end }}
 spec:
   progressDeadlineSeconds: {{ .Values.backupManager.progressDeadlineSeconds }}
-  {{- if .Values.backupManager.hpa.enabled -}}
-  {{- else }}
+  {{- if not .Values.backupManager.hpa.enabled }}
   replicas: {{ .Values.backupManager.minReplicas }}
   {{- end }}
   revisionHistoryLimit: {{ .Values.backupManager.revisionHistoryLimit }}

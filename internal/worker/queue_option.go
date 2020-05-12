@@ -28,7 +28,7 @@ var (
 	defaultQueueOpts = []QueueOption{
 		WithQueueBuffer(10),
 		WithQueueErrGroup(errgroup.Get()),
-		WithQueueCheckDuration("5s"),
+		WithQueueCheckDuration("200ms"),
 	}
 )
 

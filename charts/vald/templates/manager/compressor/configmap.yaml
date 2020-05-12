@@ -44,6 +44,7 @@ data:
       queue_check_duration: {{ .Values.compressor.compress.queue_check_duration }}
     registerer:
       concurrent_limit: {{ .Values.compressor.registerer.concurrent_limit }}
+      queue_check_duration: {{ .Values.compressor.registerer.queue_check_duration }}
       compressor:
         host: {{ .Values.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
         port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.compressor.server_config.servers.grpc.port }}

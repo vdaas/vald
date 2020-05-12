@@ -26,8 +26,7 @@ metadata:
   {{- end }}
 spec:
   progressDeadlineSeconds: {{ .Values.gateway.progressDeadlineSeconds }}
-  {{- if .Values.gateway.hpa.enabled -}}
-  {{- else }}
+  {{- if not .Values.gateway.hpa.enabled }}
   replicas: {{ .Values.gateway.minReplicas }}
   {{- end }}
   revisionHistoryLimit: {{ .Values.gateway.revisionHistoryLimit }}
