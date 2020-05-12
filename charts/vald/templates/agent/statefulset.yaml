@@ -27,8 +27,7 @@ metadata:
 spec:
   serviceName: {{ .Values.agent.name }}
   podManagementPolicy: {{ .Values.agent.podManagementPolicy }}
-  {{- if .Values.agent.hpa.enabled -}}
-  {{- else }}
+  {{- if not .Values.agent.hpa.enabled }}
   replicas: {{ .Values.agent.minReplicas }}
   {{- end }}
   revisionHistoryLimit: {{ .Values.agent.revisionHistoryLimit }}

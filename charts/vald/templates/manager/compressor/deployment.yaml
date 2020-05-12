@@ -26,8 +26,7 @@ metadata:
   {{- end }}
 spec:
   progressDeadlineSeconds: {{ .Values.compressor.progressDeadlineSeconds }}
-  {{- if .Values.compressor.hpa.enabled -}}
-  {{- else }}
+  {{- if not .Values.compressor.hpa.enabled }}
   replicas: {{ .Values.compressor.minReplicas }}
   {{- end }}
   revisionHistoryLimit: {{ .Values.compressor.revisionHistoryLimit }}
