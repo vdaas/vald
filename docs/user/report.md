@@ -13,17 +13,19 @@ Things to check before reporting the bug:
 - Use the Github issue search - Bug has already been reported. So please check Github issue before reporting.
 
 ## Proposal
-[WIP]
 
-The Vald project`s development process is design-driven. Significant change to the logic, or architecture must be first discussed, and sometimes formally documented before can be implemented.
+The Vald project`s development process is design-driven. Significant change to the library, or architecture must be first discussed, and sometimes formally documented before can be implemented.
+
+The proposal is the process for reviewing a proposal and reaching a decision about whether to accept or decline the proposal.
+
+After the proposal is accepted or declined, please start implementations.
 
 ## Feature Request
-[WIP]
 
-Feature requests are welcomed. Before opening a feature request, please take a moment to find out whether your idea fits with the scope and goals of the project. It’s up to you to make a strong case to convince the project maintainers the merits of the feature. Please provide as much detail and context as possible.
+Feature request is welcome. Before opening a issue, please make sure your idea fit the scope and goals of the project. It is up to you to make a strong claim to convince the project maintainers the benefits of the feature. Please provide as much detail as possible about the problem and solution associated with the feature request.
 
 ## Security
 
 The Vald team and community take security bugs in seriously. We appreciate your efforts to responsibly disclose your findings, and will make every effort to acknowledge your contributions.
 
-Report security bugs in third-party modules to the person or team maintaining the module.
+We Report security bugs in third-party modules to the person or team maintaining the module.
