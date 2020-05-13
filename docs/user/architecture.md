@@ -49,14 +49,14 @@ In this section, we will explain the data flow in Vald which is the most importa
 <img src="./insert_search_flow.svg" />
 
 When the user inserts data into Vald:
-```
-C1. Vald Ingress receives the request from the user. The request includes the vector and the vector ID.
+```bash
+C1. Vald Ingress receives the request from the user. The request includes the vector and the vector ID which is set by user.
 C2. Vald Ingress will forward the request to Vald Meta Gateway. After the Vald Meta Gateway receive the request, the UUID will be generated for internal use.
 C3. Vald Meta Gateway will forward the request with UUID to Vald Backup Gateway.
 C4. Vald Backup Gateway will forward the request to Vald LB Gateway.
-C5. Vald LB Gateway will decide which Vald Agent instance to process the request base on the node resource usage and forwards the request to the decided Vald Agent.
+C5. Vald LB Gateway will decide which Vald Agent instance to process the request based on the node resource usage and forward the request to the decided Vald Agent.
 C6. Vald Agent returns success and the corresponding Vald Agent IP address to Vald LB Gateway.
-C7. Vald LB Gateway return success and the IP address to Vald Backup Gateway.
+C7. Vald LB Gateway returns success and the IP address to Vald Backup Gateway.
 C8. Vald Backup Gateway returns success to Vald Meta Gateway.
 C9. Vald Meta Gateway will send the metadata including the UUID and the vector ID to the Vald Meta.
 C10. Vald Meta will store the metadata to the persistent layer.
@@ -100,7 +100,7 @@ User can implement the custom filtering logic and integrate with Vald.
 
 Vald Filter provides the following functionalities.
 
-- Custom filter base on request query
+- Custom filter based on request query
 - Custom filter for the searching result
 
 #### Vald Ingress Filter
@@ -117,11 +117,11 @@ This component can reorder the searching result from multiple Vald Agents based 
 
 #### Vald Filter Gateway
 
-Vald Filter Gateway forwards the request to Vald Ingress Filter before processing it and forwards the request to the Vald Egress Filter before returning the searching result to the user.
+Vald Filter Gateway forwards the request to Vald Ingress Filter before processing it and forwards the response to the Vald Egress Filter before returning the searching result to the user.
 
 ### Vald Metadata
 
-In Vald, metadata is the vector data and the corresponding additional data to represent the set of the searching criteria and the result.
+In Vald, metadata consists of the vector data and the corresponding additional data to represent the set of the searching criteria and the result.
 
 Vald Metadata includes the user inputted metadata(vector ID) and the vector, and the internal generated UUID.
 
