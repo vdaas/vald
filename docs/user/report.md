@@ -19,7 +19,7 @@ Then please clarify the expected behavior too.
 The bug has already been reported.
 So please check the Github issue before reporting.
 
-## Proposal
+## [Proposal](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
 
 The Vald project’s development process is design-driven. 
 The significant change to the library, or architecture must be first discussed, and sometimes formally documented before it can be implemented.
