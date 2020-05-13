@@ -46,7 +46,7 @@ In this section, we will explain the data flow in Vald which is the most importa
 
 ### Insert
 
-<img src="./insert_search_flow.svg" />
+<img src="../../assets/doc/insert_search_flow.svg" />
 
 When the user inserts data into Vald:
 ```bash
@@ -69,7 +69,7 @@ C13. Vald Backup Manager will store the compressed data to the persistent layer.
 
 When the user searches a vector from Vald:
 
-```
+```bash
 S1. Vald Ingress receives the search request from the user. The request includes the vector or the vector ID.
 S2. Vald Ingress will forward the request to Vald Filter Gateway.
 S3. Vald Filter Gateway will forward the request to Vald Ingress Filter.
@@ -182,7 +182,7 @@ Each Vald Agent pod holds different high dimensional vector data space, which is
 
 When you request searching with your vector in Vald, each Vald Agent returns different _k_-nearest neighbors' vectors which are similar to the searching vector.
 
-<img src="./vector_data_space_explain.svg" />
+<img src="../../assets/doc/vector_data_space_explain.svg" />
 
 The same vector will be inserted into multiple Vald Agents, so the vector data space constructed in each Vald Agent will be different, causing the searching results from each Vald Agent are different.
 
