@@ -39,9 +39,13 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	run := new(run)
 	run.cfg = cfg
+	run.eg = errgroup.Get()
 
 	ctx := context.Background()
-	c, err := grpc.New(ctx) // TODO setup vald grpc client
+	c, err := grpc.New(ctx, grpc.WithAddr(cfg.Address)) // TODO setup vald grpc client
+	if err != nil {
+		return nil, fmt.Errorf("grpc connection error")
+	}
 	switch strings.ToLower(cfg.Method) {
 	case "insert":
 		run.l, err = insert.New(insert.WithDataset(cfg.Dataset), insert.WithWriter(c))
@@ -55,11 +59,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 }
 
 func (r *run) PreStart(ctx context.Context) (err error) {
-	return r.l.PreStart(ctx)
+	return r.l.Prepare(ctx)
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	return r.l.Start(ctx)
+	return r.l.Do(ctx), nil
 }
 
 func (r *run) PreStop(ctx context.Context) error {

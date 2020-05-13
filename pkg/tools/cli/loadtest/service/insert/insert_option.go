@@ -23,7 +23,7 @@ type InsertOption func(*insert) error
 
 var (
 	defaultInsertOpts = []InsertOption{
-		WithParallelDegree(100),
+		WithConcurrency(100),
 	}
 )
 
@@ -34,9 +34,9 @@ func WithWriter(w client.Writer) InsertOption {
 	}
 }
 
-func WithParallelDegree(p int) InsertOption {
+func WithConcurrency(c int) InsertOption {
 	return func(i *insert) error {
-		i.p = p
+		i.c = c
 		return nil
 	}
 }

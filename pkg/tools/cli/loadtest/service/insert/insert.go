@@ -17,6 +17,8 @@ package insert
 
 import (
 	"context"
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/safety"
 	"reflect"
 	"sync"
 
@@ -27,8 +29,10 @@ import (
 )
 
 type insert struct {
+	eg errgroup.Group
+
 	w client.Writer
-	p int
+	c int
 	n string
 
 	req []*client.ObjectVector
@@ -41,10 +45,12 @@ func New(opts ...InsertOption) (i *insert, err error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
+
+	i.eg = errgroup.Get()
 	return i, nil
 }
 
-func (i *insert) PreStart(ctx context.Context) error {
+func (i *insert) Prepare(ctx context.Context) error {
 	dataset, err := assets.Data(i.n)()
 	if err != nil {
 		return err
@@ -61,18 +67,19 @@ func (i *insert) PreStart(ctx context.Context) error {
 	return nil
 }
 
-func (i *insert) Start(ctx context.Context) (<-chan error, error) {
+func (i *insert) Do(ctx context.Context) <-chan error {
 	errCh := make(chan error, len(i.req)*10)
-	go func() {
+	i.eg.Go(safety.RecoverFunc(func() error {
+		defer close(errCh)
 		wg := new(sync.WaitGroup)
-		limCh := make(chan struct{}, i.p)
+		sem := make(chan struct{}, i.c)
 		for _, req := range i.req {
 			wg.Add(1)
-			limCh <- struct{}{}
+			sem <- struct{}{}
 			go func(r *client.ObjectVector) {
 				defer wg.Done()
 				defer func() {
-					<-limCh
+					<-sem
 				}()
 				err := i.w.Insert(ctx, r)
 				if err != nil {
@@ -81,7 +88,7 @@ func (i *insert) Start(ctx context.Context) (<-chan error, error) {
 			}(req)
 		}
 		wg.Wait()
-		close(errCh)
-	}()
-	return errCh, nil
+		return nil
+	}))
+	return errCh
 }

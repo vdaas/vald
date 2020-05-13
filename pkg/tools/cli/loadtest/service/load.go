@@ -20,6 +20,6 @@ import (
 )
 
 type Load interface {
-	PreStart(context.Context) error
-	Start(context.Context) (<-chan error, error)
+	Prepare(context.Context) error
+	Do(context.Context) <-chan error
 }

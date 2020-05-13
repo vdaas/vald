@@ -17,6 +17,8 @@ package search
 
 import (
 	"context"
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/safety"
 	"reflect"
 	"sync"
 
@@ -26,8 +28,9 @@ import (
 )
 
 type search struct {
+	eg  errgroup.Group
 	r   client.Reader
-	p   int
+	c   int
 	n   string
 	req []*client.SearchRequest
 }
@@ -39,10 +42,11 @@ func New(opts ...SearchOption) (s *search, err error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
+	s.eg = errgroup.Get()
 	return s, nil
 }
 
-func (s *search) PreStart(ctx context.Context) error {
+func (s *search) Prepare(ctx context.Context) error {
 	dataset, err := assets.Data(s.n)()
 	if err != nil {
 		return err
@@ -58,18 +62,19 @@ func (s *search) PreStart(ctx context.Context) error {
 	return nil
 }
 
-func (s *search) Start(ctx context.Context) (<-chan error, error) {
+func (s *search) Do(ctx context.Context) <-chan error {
 	errCh := make(chan error, len(s.req)*10)
-	go func() {
+	s.eg.Go(safety.RecoverFunc(func() error {
+		defer close(errCh)
 		wg := new(sync.WaitGroup)
-		limCh := make(chan struct{}, s.p)
+		sem := make(chan struct{}, s.c)
 		for _, req := range s.req {
 			wg.Add(1)
-			limCh <- struct{}{}
+			sem <- struct{}{}
 			go func(r *client.SearchRequest) {
 				defer wg.Done()
 				defer func() {
-					<-limCh
+					<-sem
 				}()
 				_, err := s.r.Search(ctx, r)
 				if err != nil {
@@ -78,7 +83,7 @@ func (s *search) Start(ctx context.Context) (<-chan error, error) {
 			}(req)
 		}
 		wg.Wait()
-		close(errCh)
-	}()
-	return errCh, nil
+		return nil
+	}))
+	return errCh
 }

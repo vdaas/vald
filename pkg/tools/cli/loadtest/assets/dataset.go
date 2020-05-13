@@ -17,6 +17,7 @@ package assets
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -292,6 +293,31 @@ func identity(dim int) func() (Dataset, error) {
 	}
 }
 
+func random(dim, size int) func() (Dataset, error) {
+	return func() (Dataset, error) {
+		ids := CreateRandomIDs(size)
+		train := make([][]float32, size)
+		query := make([][]float32, size)
+		for i := range train {
+			train[i] = make([]float32, dim)
+			query[i] = make([]float32, dim)
+			for j := range train[i] {
+				train[i][j] = rand.Float32()
+				query[i][j] = rand.Float32()
+			}
+		}
+		return &dataset{
+			train: train,
+			query: query,
+			ids: ids,
+			name: fmt.Sprintf("random-%d-%d", dim, size),
+			dimension: dim,
+			distanceType: "l2",
+			objectType: "float",
+		}, nil
+	}
+}
+
 func datasetDir() (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -314,6 +340,12 @@ func Data(name string) func() (Dataset, error) {
 	if strings.HasPrefix(name, "identity-") {
 		i, _ := strconv.Atoi(name[9:])
 		return identity(i)
+	}
+	if strings.HasPrefix(name, "random-") {
+		l := strings.Split(name[9:], "-")
+		i, _ := strconv.Atoi(l[0])
+		j, _ := strconv.Atoi(l[1])
+		return random(i, j)
 	}
 	if d, ok := data[name]; ok {
 		return d

@@ -29,6 +29,8 @@ type Data struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`
 	Method              string `json:"method" yaml:"method"`
 	Dataset             string `json:"dataset" yaml:"dataset"`
+	Address             string `json:"address" yaml:"address"`
+	Concurrency         int    `json:"concurrency" yaml:"concurrency"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {

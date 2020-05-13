@@ -23,7 +23,7 @@ type SearchOption func(*search) error
 
 var (
 	defaultSearchOpts = []SearchOption{
-		WithParallelDegree(100),
+		WithConcurrency(100),
 	}
 )
 
@@ -34,9 +34,9 @@ func WithReader(r client.Reader) SearchOption {
 	}
 }
 
-func WithParallelDegree(p int) SearchOption {
+func WithConcurrency(c int) SearchOption {
 	return func(s *search) error {
-		s.p = p
+		s.c = c
 		return nil
 	}
 }
