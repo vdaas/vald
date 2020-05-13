@@ -34,7 +34,8 @@
 
 ## Overview
 
-This document describes the high-level architecture design of Vald and explains each component in Vald. We need these components to support scalability, high performance, and auto-healing in Vald.
+This document describes the high-level architecture design of Vald and explains each component in Vald.
+We need these components to support scalability, high performance, and auto-healing in Vald.
 
 <img src="../../design/Vald Future Architecture Overview.svg" />
 
@@ -127,7 +128,7 @@ Vald Metadata includes the user inputted metadata(vector ID) and the vector, and
 
 #### Vald Meta Gateway
 
-The main responsibility of the Vald Meta Gateway is to process the Vald metadata and forwards the information to Vald Backup Gateway.
+The main responsibility of the Vald Meta Gateway is to process the Vald metadata and to forward the information to Vald Backup Gateway.
 
 It will perform the following action:
 
@@ -138,7 +139,8 @@ It will perform the following action:
 
 #### Vald Meta
 
-Vald Meta is the agent to process the CRUD request of the metadata (vector ID and UUID). Users can configure which data source to be used in Vald Meta (for example Redis or Cassandra).
+Vald Meta is the agent to process the CRUD request of the metadata (vector ID and UUID).
+Users can configure which data source to be used in Vald Meta (for example Redis or Cassandra).
 
 ### Vald Backup
 
@@ -154,7 +156,8 @@ Vald Backup Manager processes the CRD request of the backup request and handles 
 
 #### Vald Backup Gateway
 
-Vald Backup Gateway will forward the backup request to the Vald LB Gateway. It also forwards to Vald Compressor asynchronously with metadata.
+Vald Backup Gateway will forward the backup request to the Vald LB Gateway.
+It also forwards to Vald Compressor asynchronously with metadata.
 
 ### Vald Load Balancing
 
@@ -176,7 +179,7 @@ In this section, we will describe what is Vald Agent and the corresponding compo
 
 #### Vald Agent
 
-Vald Agent is the core of the Vald. By default Vald use [NGT](https://github.com/yahoojapan/NGT) to provide API for users to insert/update/delete/search vectors.
+Vald Agent is the core of the Vald. By default Vald uses [NGT](https://github.com/yahoojapan/NGT) to provide API for users to insert/update/delete/search vectors.
 
 Each Vald Agent pod holds different high dimensional vector data space, which is constructed by insert/update vectors for searching approximate vectors.
 
@@ -184,7 +187,8 @@ When you request searching with your vector in Vald, each Vald Agent returns dif
 
 <img src="../../assets/doc/vector_data_space_explain.svg" />
 
-The same vector will be inserted into multiple Vald Agents, so the vector data space constructed in each Vald Agent will be different, causing the searching results from each Vald Agent are different.
+The same vector will be inserted into multiple Vald Agents, not all Vald Agents.
+It makes that the vector data space constructed in each Vald Agent will be different, causing the searching results from each Vald Agent are different.
 
 #### Vald Agent Scheduler
 
@@ -195,32 +199,39 @@ It schedules Vald Agent base on the Node CPU and memory usage, and the amount of
 
 #### Vald Index Manager
 
-Vald Index Manager controls the timing of the indexing inserted vectors on the Vald Agent. The index is used to increase the performance of the search action.
+Vald Index Manager controls the timing of the indexing inserted vectors on the Vald Agent.
+The index is used to increase the performance of the search action.
 
 It retrieves the active Vald Agent pods from the Vald Discoverer and triggers the indexing action on each Vald Agent.
 
 ### Vald Replication Manager
 
-Vald Replication Manager manages the healthiness of the Vald Agent. When the pod is dead, Vald Replication Manager will auto recover the cache to keeps the reliability of the service.
+Vald Replication Manager manages the healthiness of the Vald Agent. 
+When the pod is dead, Vald Replication Manager will recover the cache automatically to keeps the reliability of the service.
 
 #### Vald Replication Manager Agent
 
-Vald Replication Manager Agent recovers the specific backup cache to the specific Vald Agent. It retrieves the target backup from the Vald Compressor and recovers it to the newly created Vald Agent.
+Vald Replication Manager Agent recovers the specific backup cache to the specific Vald Agent.
+It retrieves the target backup from the Vald Compressor and recovers it to the newly created Vald Agent.
 
 #### Vald Replication Manager Controller
 
-Vald Replication Manager Controller keeps track of the active Vald Agent pods. When the Vald Agent is dead, it will trigger the Vald Replication Manager Agent to recover the backup cache to the auto-healed pods from the backup.
+Vald Replication Manager Controller keeps track of the active Vald Agent pods.
+When the Vald Agent is dead, it will trigger the Vald Replication Manager Agent to recover the backup cache to the auto-healed pods from the backup.
 
 ### Kubernetes Components
 
-Vald is base on the Kubernetes platform. In this section we will explain the Kubernetes component used in Vald and why we need them.
+Vald is base on the Kubernetes platform.
+In this section we will explain the Kubernetes component used in Vald and why we need them.
 
 #### Kube-apiserver
 
-Kube-apiserver is a component of Kubernetes. The main responsibility of Kube-apiserver in Vald is to provide node resource information for Vald agent scalability.
+Kube-apiserver is a component of Kubernetes.
+The main responsibility of Kube-apiserver in Vald is to provide node resource information for Vald agent scalability.
 
 For more information about Kube-apiserver, please refer to [the official document](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/).
 
 #### Custom Resources
 
-Custom Resources in Vald is a [Custom Resouce Definition](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) implementation. It provides flexibility for users to control the Vald deployment such as pod startup sequence, etc.
+Custom Resources in Vald is a [Custom Resouce Definition](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) implementation.
+It provides flexibility for users to control the Vald deployment such as pod startup sequence, etc.
