@@ -7,6 +7,7 @@
   - [Use cases](#use-cases)
 - [Why Vald?](#why-vald)
 - [How does Vald work?](#how-does-vald-work)
+- [Try Vald](#try-vald)
 
 ### What is Vald?
 
@@ -73,3 +74,7 @@ Also, Vald support auto-healing, to reduce running and maintenance cost. Vald im
 Vald implements its custom resource and custom controller to integrate with Kubernetes; you can take all the benefits from Kubernetes.
 
 Please refer to the [architecture overview](./architecture.md) for more details about the architecture and how each component in Vald works together.
+
+### Try Vald
+
+Please refer to [Get Started](./get-started.md) to try Vald :)
