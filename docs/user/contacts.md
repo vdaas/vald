@@ -1,5 +1,5 @@
-# Report
-## [Bug](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report.md&title=)
+# Contacts
+## [Bug Report](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report.md&title=)
 
 A bug is a demonstrable problem that is caused by code in the repository. Bug reports are helpful for developers who maintain the Vald project.
 
@@ -33,7 +33,7 @@ Before opening an issue, please make sure your idea fits the scope and goals of 
 It is up to you to make a strong claim to convince the project maintainers the benefits of the feature.
 Please provide as much detail as possible about the problem and solution associated with the feature request.
 
-## [Security](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fsecurity%2C+priority%2Fmedium%2C+team%2Fcore%2C+team%2Fsre&template=security_issue_report.md&title=)
+## [Security Issue Report](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fsecurity%2C+priority%2Fmedium%2C+team%2Fcore%2C+team%2Fsre&template=security_issue_report.md&title=)
 
 The Vald team and community take security bugs in seriously.
 We appreciate your efforts to responsibly disclose your findings, and will make every effort to acknowledge your contributions.
