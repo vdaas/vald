@@ -36,4 +36,4 @@ Please provide as much detail as possible about the problem and solution associa
 ## Security
 The Vald team and community take security bugs in seriously.
 We appreciate your efforts to responsibly disclose your findings, and will make every effort to acknowledge your contributions.
-We Report security bugs in third-party modules to the person or team maintaining the module.
+We will report security bugs in third-party modules to the person or team maintaining the module.
