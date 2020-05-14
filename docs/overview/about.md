@@ -3,7 +3,6 @@
 ## Table of Contents <!-- omit in toc -->
 
 - [What is Vald?](#what-is-vald)
-  - [What Vald can do?](#what-vald-can-do)
   - [Use cases](#use-cases)
 - [Why Vald?](#why-vald)
 - [How does Vald work?](#how-does-vald-work)
