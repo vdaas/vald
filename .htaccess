@@ -62,23 +62,24 @@
 </IfModule>
 
 # BEGIN Cache-Control Headers
+FileETag None
 <IfModule mod_headers.c>
   Header set Connection keep-alive
   Header unset ETag
   Header append Vary Accept env=_image_request
-  <FilesMatch "\\.(ico|jpe?g|png|svg|gif|swf|gz)$">
+  <FilesMatch "\.(ico|jpe?g|png|gif|svg|swf|pdf|ttf|woff|otf|eot|gz)$">
     Header set Cache-Control "max-age=2592000, public"
     Header append Cache-Control "s-maxage=2592000, public"
   </FilesMatch>
-  <FilesMatch "\\.(css)$">
+  <FilesMatch "\.(css)$">
     Header set Cache-Control "max-age=2592000, public"
     Header append Cache-Control "s-maxage=2592000, public"
   </FilesMatch>
-  <FilesMatch "\\.(js)$">
+  <FilesMatch "\.(js)$">
     Header set Cache-Control "max-age=2592000, private"
     Header append Cache-Control "s-maxage=2592000, private"
   </FilesMatch>
-  <FilesMatch "\\.(html|htm)$">
+  <FilesMatch "\.(html|htm)$">
     Header set Cache-Control "max-age=7200, public"
     Header append Cache-Control "s-maxage=7200, public"
   </FilesMatch>
@@ -87,9 +88,10 @@
     Header unset Cache-Control
   </FilesMatch>
 </IfModule>
-
 # END Cache-Control Headers
+
 <IfModule mod_deflate.c>
+  <IfModule mod_filter.c>
     SetOutputFilter DEFLATE
     BrowserMatch ^Mozilla/4\.0[678] no-gzip
     BrowserMatch ^Mozilla/4 gzip-only-text/html
@@ -113,6 +115,7 @@
     AddOutputFilterByType DEFLATE application/x-font-woff
     AddOutputFilterByType DEFLATE application/x-font-opentype
     AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
+  </IfModule>
 </IfModule>
 
 #Add Gzip
