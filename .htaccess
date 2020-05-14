@@ -43,8 +43,24 @@
   ExpiresByType application/xhtml+xml         "access plus 7200 seconds"
 </IfModule>
 
+<ifModule mod_rewrite.c>
+  RewriteEngine On 
+  RewriteCond %{HTTP_ACCEPT} image/webp
+  RewriteCond %{SCRIPT_FILENAME}.webp -f
+  RewriteRule .(jpe?g|png|gif)$ %{SCRIPT_FILENAME}.webp [L,T=image/webp,R] 
+</IfModule>
+ 
+<IfModule mod_mime.c>
+  AddType image/webp .webp
+</IfModule>
+
+<IfModule mod_setenvif.c>
+  SetEnvIf Request_URI "\.(jpe?g|png|gif)$" _image_request
+</IfModule>
+
 # BEGIN Cache-Control Headers
 <IfModule mod_headers.c>
+  Header append Vary Accept env=_image_request
   <FilesMatch "\\.(ico|jpe?g|png|gif|swf|gz)$">
     Header set Cache-Control "max-age=2592000, public"
   </FilesMatch>
