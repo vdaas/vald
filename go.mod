@@ -55,10 +55,8 @@ require (
 	go.opencensus.io v0.22.3
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/goleak v1.0.0
-	gocloud.dev v0.19.0
-	golang.org/x/mod v0.3.0 // indirect
-	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5
-	golang.org/x/tools v0.0.0-20200522201501-cb1345f3a375 // indirect
+	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
+	golang.org/x/tools v0.0.0-20200513201620-d5fe73897c97 // indirect
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/netlib v0.0.0-20200317120129-c5a04cffd98a // indirect
 	gonum.org/v1/plot v0.7.0
