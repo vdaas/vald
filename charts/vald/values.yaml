@@ -190,7 +190,7 @@ defaults:
           probe_wait_time: "3s"
           http:
             # defaults.server_config.healths.readiness.server.http.shutdown_duration -- readiness server shutdown duration
-            shutdown_duration: "5s"
+            shutdown_duration: "0s"
             # defaults.server_config.healths.readiness.server.http.handler_timeout -- readiness server handler timeout
             handler_timeout: ""
             # defaults.server_config.healths.readiness.server.http.idle_timeout -- readiness server idle timeout
@@ -935,7 +935,7 @@ compressor:
   # if HPA is disabled, this value will be ignored.
   maxReplicas: 15
   # compressor.maxUnavailable -- maximum number of unavailable replicas
-  maxUnavailable: 50%
+  maxUnavailable: 1
   # compressor.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
   # compressor.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
@@ -1018,8 +1018,9 @@ compressor:
       grpc: {}
     healths:
       liveness:
-        enabled: false
-      readiness: {}
+        server:
+          http:
+            shutdown_duration: 2m
     metrics:
       pprof: {}
       prometheus: {}
@@ -1312,7 +1313,7 @@ backupManager:
       # backupManager.cassandra.config.consistency -- consistency type
       consistency:  quorum
       # backupManager.cassandra.config.serial_consistency -- read consistency type
-      serial_consistency:  local_serial
+      serial_consistency:  localserial
       # backupManager.cassandra.config.username -- cassandra username
       username: root
       # backupManager.cassandra.config.password -- cassandra password
@@ -1831,7 +1832,7 @@ meta:
       # meta.cassandra.config.consistency -- consistency type
       consistency:  quorum
       # meta.cassandra.config.serial_consistency -- read consistency type
-      serial_consistency:  local_serial
+      serial_consistency:  localserial
       # meta.cassandra.config.username -- cassandra username
       username: root
       # meta.cassandra.config.password -- cassandra password
