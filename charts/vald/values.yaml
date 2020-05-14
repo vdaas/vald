@@ -1019,7 +1019,10 @@ compressor:
     healths:
       liveness:
         enabled: false
-      readiness: {}
+      readiness:
+        server:
+          http:
+            shutdown_duration: 1m
     metrics:
       pprof: {}
       prometheus: {}
@@ -1312,7 +1315,7 @@ backupManager:
       # backupManager.cassandra.config.consistency -- consistency type
       consistency:  quorum
       # backupManager.cassandra.config.serial_consistency -- read consistency type
-      serial_consistency:  local_serial
+      serial_consistency:  localserial
       # backupManager.cassandra.config.username -- cassandra username
       username: root
       # backupManager.cassandra.config.password -- cassandra password
@@ -1831,7 +1834,7 @@ meta:
       # meta.cassandra.config.consistency -- consistency type
       consistency:  quorum
       # meta.cassandra.config.serial_consistency -- read consistency type
-      serial_consistency:  local_serial
+      serial_consistency:  localserial
       # meta.cassandra.config.username -- cassandra username
       username: root
       # meta.cassandra.config.password -- cassandra password
