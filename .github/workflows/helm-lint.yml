@@ -1,0 +1,26 @@
+name: 'Run Helm lint'
+on:
+  pull_request:
+    paths:
+      - 'charts'
+
+jobs:
+  helm-lint:
+    name: helm lint
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: Helm version
+        run: |
+          helm version
+      - name: Run lint for charts/vald
+        run: |
+          helm lint charts/vald
+      - name: Run lint for charts/vald-helm-operator
+        run: |
+          helm lint charts/vald-helm-operator
