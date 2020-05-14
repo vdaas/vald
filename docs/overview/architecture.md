@@ -47,7 +47,7 @@ In this section, we will explain the data flow in Vald which is the most importa
 
 ### Insert
 
-<img src="../../assets/doc/insert_flow.svg" />
+<img src="../../assets/docs/insert_flow.svg" />
 
 When the user inserts data into Vald:
 
@@ -69,7 +69,7 @@ When the user inserts data into Vald:
 
 ### Search
 
-<img src="../../assets/doc/search_flow.svg" />
+<img src="../../assets/docs/search_flow.svg" />
 
 When the user searches a vector from Vald:
 
@@ -188,7 +188,7 @@ Each Vald Agent pod holds different high dimensional vector data space, which is
 
 When you request searching with your vector in Vald, each Vald Agent returns different _k_-nearest neighbors' vectors which are similar to the searching vector.
 
-<img src="../../assets/doc/vector_data_space_explain.svg" />
+<img src="../../assets/docs/vector_data_space_explain.svg" />
 
 The same vector will be inserted into multiple Vald Agents, not all Vald Agents.
 It makes that the vector data space constructed in each Vald Agent will be different, causing the searching results from each Vald Agent are different.
@@ -209,7 +209,7 @@ It retrieves the active Vald Agent pods from the Vald Discoverer and triggers th
 
 ### Vald Replication Manager
 
-Vald Replication Manager manages the healthiness of the Vald Agent. 
+Vald Replication Manager manages the healthiness of the Vald Agent.
 When the pod is dead, Vald Replication Manager will recover the cache automatically to keeps the reliability of the service.
 
 #### Vald Replication Manager Agent
