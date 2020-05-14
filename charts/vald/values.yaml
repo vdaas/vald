@@ -190,7 +190,7 @@ defaults:
           probe_wait_time: "3s"
           http:
             # defaults.server_config.healths.readiness.server.http.shutdown_duration -- readiness server shutdown duration
-            shutdown_duration: "5s"
+            shutdown_duration: "0s"
             # defaults.server_config.healths.readiness.server.http.handler_timeout -- readiness server handler timeout
             handler_timeout: ""
             # defaults.server_config.healths.readiness.server.http.idle_timeout -- readiness server idle timeout
@@ -935,7 +935,7 @@ compressor:
   # if HPA is disabled, this value will be ignored.
   maxReplicas: 15
   # compressor.maxUnavailable -- maximum number of unavailable replicas
-  maxUnavailable: 50%
+  maxUnavailable: 1
   # compressor.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
   # compressor.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
@@ -1018,11 +1018,9 @@ compressor:
       grpc: {}
     healths:
       liveness:
-        enabled: false
-      readiness:
         server:
           http:
-            shutdown_duration: 1m
+            shutdown_duration: 2m
     metrics:
       pprof: {}
       prometheus: {}
