@@ -1021,6 +1021,7 @@ compressor:
         server:
           http:
             shutdown_duration: 2m
+      readiness: {}
     metrics:
       pprof: {}
       prometheus: {}
