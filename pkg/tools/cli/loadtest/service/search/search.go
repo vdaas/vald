@@ -17,13 +17,13 @@ package search
 
 import (
 	"context"
-	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/safety"
 	"reflect"
 	"sync"
 
 	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 )
 

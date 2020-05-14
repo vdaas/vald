@@ -125,10 +125,22 @@ func Load(path string) (train, test, distances [][]float32, neighbors [][]int, d
 	return train, test, distances, neighbors, dim, nil
 }
 
-func CreateRandomIDs(n int) []string {
-	ids := make([]string, 0, n)
+func CreateRandomIDs(n int) (ids []string) {
+	ids = make([]string, 0, n)
 	for i := 0; i < n; i++ {
 		ids = append(ids, fuid.String())
+	}
+	return ids
+}
+
+func CreateRandomIDsWithLength(n, l int) (ids []string) {
+	ids = make([]string, 0, n)
+	for i := 0; i < n; i++ {
+		id := fuid.String()
+		for len(id) < l {
+			id = id + fuid.String()
+		}
+		ids = append(ids, id[:l])
 	}
 	return ids
 }
