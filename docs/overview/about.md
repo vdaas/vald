@@ -63,11 +63,13 @@ Vald supports similarity searching.
 
 ### Why Vald?
 
-Vald is based on Kubernetes and Cloud-Native architecture, which means Vald is highly scalable. You can easily scale Vald by changing Vald's configuration.
+Vald is based on Kubernetes and Cloud-Native architecture, which means Vald is highly scalable.
+You can easily scale Vald by changing Vald's configuration.
 
 Vald uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors by default, but users can switch to another vector searching engine in Vald to support the best performance for your use case.
 
-Also, Vald supports auto-healing, to reduce running and maintenance cost. Vald implements the backup mechanism to support diaster recovery. Whenever Vald Agent is down, the new Vald Agent instance will be created automatically and the data will be recovered automatically.
+Also, Vald supports auto-healing, to reduce running and maintenance costs. Vald implements the backup mechanism to support disaster recovery.
+Whenever one of the Vald Agent instances is down, the new Vald Agent instance will be created automatically and the data will be recovered automatically.
 
 ### How does Vald work?
 
