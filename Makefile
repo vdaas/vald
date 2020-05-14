@@ -99,6 +99,46 @@ PROTO_PATHS = \
 	$(GOPATH)/src/github.com/danielvladco/go-proto-gql \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 
+GO_SOURCES = $(shell find \
+		./cmd \
+		./hack \
+		./internal \
+		./pkg \
+		-not -path './cmd/cli/*' \
+		-not -path './internal/core/ngt/*' \
+		-not -path './hack/benchmark/internal/client/ngtd/*' \
+		-not -path './hack/benchmark/internal/starter/agent/*' \
+		-not -path './hack/benchmark/internal/starter/external/*' \
+		-not -path './hack/benchmark/internal/starter/gateway/*' \
+		-not -path './hack/license/*' \
+		-not -path './hack/swagger/*' \
+		-not -path './hack/tools/*' \
+		-type f \
+		-name '*.go' \
+		-not -regex '.*options?\.go' \
+		-not -name '*_test.go' \
+		-not -name 'doc.go')
+GO_OPTION_SOURCES = $(shell find \
+		./cmd \
+		./hack \
+		./internal \
+		./pkg \
+		-not -path './cmd/cli/*' \
+		-not -path './internal/core/ngt/*' \
+		-not -path './hack/benchmark/internal/client/ngtd/*' \
+		-not -path './hack/benchmark/internal/starter/agent/*' \
+		-not -path './hack/benchmark/internal/starter/external/*' \
+		-not -path './hack/benchmark/internal/starter/gateway/*' \
+		-not -path './hack/license/*' \
+		-not -path './hack/swagger/*' \
+		-not -path './hack/tools/*' \
+		-type f \
+		-regex '.*options?\.go' \
+		-not -name '*_test.go' \
+		-not -name 'doc.go')
+GO_TEST_SOURCES = $(GO_SOURCES:%.go=%_test.go)
+GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
+
 COMMA := ,
 SHELL = bash
 
@@ -268,18 +308,6 @@ tensorflow/install: /usr/local/lib/libtensorflow.so
 	rm -f libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
 	ldconfig
 
-.PHONY: gentest
-## gentest
-gentest:
-	$(call gen-test)
-
-
-.PHONY: fixtest
-## fixtest
-fixtest:
-	$(call fix-test)
-
-
 .PHONY: test
 ## run tests
 test:
@@ -318,3 +346,4 @@ include Makefile.d/k8s.mk
 include Makefile.d/kind.mk
 include Makefile.d/client.mk
 include Makefile.d/ml.mk
+include Makefile.d/test.mk

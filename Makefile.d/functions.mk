@@ -90,39 +90,3 @@ define telepresence
 	    ## https://github.com/telepresenceio/telepresence/commit/bb7473fbf19ed4f61796a5e32747e23de6ab03da
 	    ## --deployment-type "$(SWAP_DEPLOYMENT_TYPE)"
 endef
-
-define gen-test
-	find . -type d | \
-	grep "./cmd\|./hack\|./internal\|./pkg" | \
-	grep -v "./cmd/cli\| \
-			 ./internal/core/ngt\| \
-			 ./hack/benchmark/internal/client/ngtd\| \
-			 ./hack/benchmark/internal/starter/agent\| \
-			 ./hack/benchmark/internal/starter/external\| \
-			 ./hack/benchmark/internal/starter/gateway\| \
-			 ./hack/license\| \
-			 ./hack/swagger\| \
-			 ./hack/tools"| \
-	while read dir; do \
-		files=`find $${dir} -type f -maxdepth 1 -name "*.go" -not -name '*_test.go' -not -name 'doc.go'`; \
-		for file in $${files}; do \
-			path='./assets/test/templates/common';     \
-			if [[ $${file} =~ .*options?\.go ]] ; then \
-				path='./assets/test/templates/option'; \
-			fi; \
-			echo start generate test code: $${file}; \
-			gotests -w -template_dir $${path} -all $${file}; \
-		done; \
-	done
-	rm $(ROOTDIR)/internal/core/ngt/*test.go
-endef
-
-define fix-test
-	find $(ROOTDIR)/internal/k8s/* -name '*_test.go' | xargs sed -i -E "s%k8s.io/apimachinery/pkg/api/errors%github.com/vdaas/vald/internal/errors%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%cockroachdb/errors%vdaas/vald/internal/errors%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%pkg/errors%vdaas/vald/internal/errors%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%go-errors/errors%vdaas/vald/internal/errors%g"
-	find $(ROOTDIR)/internal/errors -name '*_test.go' | xargs sed -i -E "s%\"github.com/vdaas/vald/internal/errors\"%%g"
-	find $(ROOTDIR)/internal/errors -name '*_test.go' | xargs sed -i -E "s/errors\.//g"
-	go mod tidy
-endef
