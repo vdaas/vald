@@ -1,5 +1,5 @@
 <IfModule mod_expires.c>
-  ExpiresActive on
+  ExpiresActive On
 
 # Perhaps better to whitelist expires rules? Perhaps.
   ExpiresDefault                              "access plus 1 month"
@@ -17,18 +17,21 @@
   ExpiresByType image/png                     "access plus 1 month"
   ExpiresByType image/jpeg                    "access plus 1 month"
   ExpiresByType image/jpg                     "access plus 1 month"
+  ExpiresByType image/webp                    "access plus 1 month"
+  ExpiresByType image/svg+xml                 "access plus 1 month"
   ExpiresByType video/ogg                     "access plus 1 month"
   ExpiresByType audio/ogg                     "access plus 1 month"
   ExpiresByType video/mp4                     "access plus 1 month"
   ExpiresByType video/webm                    "access plus 1 month"
 
 # Webfonts
-  ExpiresByType application/x-font-ttf        "access plus 1 month"
-  ExpiresByType font/opentype                 "access plus 1 month"
-  ExpiresByType font/ttf                      "access plus 1 month"
-  ExpiresByType font/woff                     "access plus 1 month"
-  ExpiresByType application/x-font-woff       "access plus 1 month"
-  ExpiresByType image/svg+xml                 "access plus 1 month"
+  ExpiresByType font/opentype                 "access plus 1 year"
+  ExpiresByType font/ttf                      "access plus 1 year"
+  ExpiresByType font/woff                     "access plus 1 year"
+  ExpiresByType application/x-font-ttf        "access plus 1 year"
+  ExpiresByType application/x-font-woff       "access plus 1 year"
+  ExpiresByType application/x-font-opentype   "access plus 1 year"
+  ExpiresByType application/vnd.ms-fontobject "access plus 1 year"
   ExpiresByType application/vnd.ms-fontobject "access plus 1 month"
 
 # CSS and JavaScript
@@ -60,26 +63,57 @@
 
 # BEGIN Cache-Control Headers
 <IfModule mod_headers.c>
+  Header set Connection keep-alive
+  Header unset ETag
   Header append Vary Accept env=_image_request
   <FilesMatch "\\.(ico|jpe?g|png|gif|swf|gz)$">
     Header set Cache-Control "max-age=2592000, public"
+    Header append Cache-Control "s-maxage=2592000, public"
   </FilesMatch>
   <FilesMatch "\\.(css)$">
     Header set Cache-Control "max-age=2592000, public"
+    Header append Cache-Control "s-maxage=2592000, public"
   </FilesMatch>
   <FilesMatch "\\.(js)$">
     Header set Cache-Control "max-age=2592000, private"
+    Header append Cache-Control "s-maxage=2592000, private"
   </FilesMatch>
-<filesMatch "\\.(html|htm)$">
-Header set Cache-Control "max-age=7200, public"
-</filesMatch>
-# Disable caching for scripts and other dynamic files
-<FilesMatch "\.(pl|php|cgi|spl|scgi|fcgi)$">
-Header unset Cache-Control
-</FilesMatch>
+  <FilesMatch "\\.(html|htm)$">
+    Header set Cache-Control "max-age=7200, public"
+    Header append Cache-Control "s-maxage=7200, public"
+  </FilesMatch>
+   # Disable caching for scripts and other dynamic files
+  <FilesMatch "\.(pl|php|cgi|spl|scgi|fcgi)$">
+    Header unset Cache-Control
+  </FilesMatch>
 </IfModule>
 
 # END Cache-Control Headers
+<IfModule mod_deflate.c>
+    SetOutputFilter DEFLATE
+    BrowserMatch ^Mozilla/4\.0[678] no-gzip
+    BrowserMatch ^Mozilla/4 gzip-only-text/html
+    BrowserMatch \bMSIE\s(7|8) !no-gzip !gzip-only-text/html
+    SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|ico)$ no-gzip dont-vary
+    SetEnvIfNoCase Request_URI _\.utxt$ no-gzip
+    Header append Vary Accept-Encoding env=!dont-vary
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/js
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/atom_xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/x-httpd-php
+    AddOutputFilterByType DEFLATE application/x-font-ttf
+    AddOutputFilterByType DEFLATE application/x-font-woff
+    AddOutputFilterByType DEFLATE application/x-font-opentype
+    AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
+</IfModule>
 
 #Add Gzip
 <ifModule mod_gzip.c>
