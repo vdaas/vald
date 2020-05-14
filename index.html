@@ -1,11 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  
 <head>
   <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script type="text/javascript" async="" src="https://www.google-analytics.com/analytics.js"></script><script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-164223416-1"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-164223416-1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
@@ -26,220 +23,305 @@
   <meta property="og:title" content="Vald">
   <meta property="og:description" content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine">
   <meta property="og:url" content="https://github.com/vdaas/vald">
-  <meta property="og:image" content="https://github.com/vdaas/vald/assets/img/static/ogp_vald.png">
+  <meta property="og:image" content="">
   <meta property="og:site_name" content="">
   <meta property="og:locale" content="ja_JP">
   <meta property="fb:app_id" content="">
-  <link rel="shortcut icon" href="/favicon.ico">
+  <!-- Twitter Cards-->
+  <!-- <meta name="twitter:card" content="summary"> -->
+  <!-- <meta name="twitter:site" content="https://github.com/vdaas/vald"> -->
+  <link rel="shortcut icon" href="./favicon.ico">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="canonical" href="https://github.com/vdaas/vald">
 
   <link rel="stylesheet" type="text/css" href="common/style.css">
   <link rel="stylesheet" type="text/css" href="style.css">
-
-
+  <!-- <script type="text/javascript" src="common/common.js"></script> -->
   <!-- before IE8 -->
   <!--[if lt IE 9]>
   <script src="/js/html5shiv.js"></script>
   <![endif]-->
 </head>
 
-</head>
-
 <body>
   <header class="header">
   <div class="header__content">
     <nav class="header__nav cf">
-      <a href="https://vald.vdaas.org" class="header-nav__link" target="_blank"><img src="assets/img/static/vald_color_1.svg" alt="" class="header-nav__image"></a>
+
+      <a href="/" class="header-nav__link" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="レイヤー_1" width="80"  data-name="レイヤー 1" viewBox="0 0 400 300"><defs><style>.cls-1{fill:#ffffff}.cls-2{fill:url(#名称未設定グラデーション_77)}.cls-3{fill:url(#名称未設定グラデーション_77-2)}.cls-4{fill:url(#名称未設定グラデーション_77-3)}.cls-5{fill:url(#名称未設定グラデーション_77-4)}</style><linearGradient id="名称未設定グラデーション_77" x1="106.594" x2="172.744" y1="104.717" y2="104.717" data-name="名称未設定グラデーション 77" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#00bab1"/><stop offset="1" stop-color="#006076"/></linearGradient><linearGradient id="名称未設定グラデーション_77-2" x1="45.965" x2="119.682" y1="132.01" y2="132.01" xlink:href="#名称未設定グラデーション_77"/><linearGradient id="名称未設定グラデーション_77-3" x1="46.089" x2="160.973" y1="186.378" y2="186.378" xlink:href="#名称未設定グラデーション_77"/><linearGradient id="名称未設定グラデーション_77-4" x1="135.015" x2="196.624" y1="157.475" y2="157.475" xlink:href="#名称未設定グラデーション_77"/></defs><title>vald</title><g><g><path d="M231.048,174.037l-14.979-47.112h13.254l8.974,34.86h0.483l8.836-34.86h12.563l-14.772,47.112H231.048Z" class="cls-1"/><path d="M271.885,174.589c-7.213,0-12.183-4.176-12.183-11.183,0-6.73,4.659-11.01,13.254-11.01h8.525v-3.072c0-3-1.864-4.659-4.97-4.659-3.141,0-5,1.726-5.143,4.245h-10.32c0.207-6.005,3.9-12.287,15.6-12.287,8.836,0,15.738,3.728,15.738,12.84v24.574H282v-4.418h-0.483C280.272,172.173,277.3,174.589,271.885,174.589Zm9.6-12.563V158.4h-5.591c-3.417,0-5.281,1.657-5.281,4.142,0,2.9,2.485,4.349,5.074,4.349C278.822,166.892,281.48,164.959,281.48,162.026Z" class="cls-1"/><path d="M300.363,124.439h11.079v49.6H300.363v-49.6Z" class="cls-1"/><path d="M342.473,142.766h0.483V124.439h11.079v49.6h-11.01v-5.8h-0.449c-1.588,3.8-5.419,6.178-10.492,6.178-8.594,0-13.7-6.419-13.7-17.361v-2.968c0-10.838,5.212-17.326,13.7-17.326C337.123,136.761,340.954,139.177,342.473,142.766Zm-12.7,11.666v2.347c0,6.109,2.761,9.077,6.523,9.077,4,0,6.7-3.072,6.7-9.043v-2.381c0-5.833-2.727-9.077-6.73-9.077C332.533,145.355,329.772,148.358,329.772,154.432Z" class="cls-1"/></g><g><path d="M111.26,109.461l3.4,5.74,1.713,2.855,1.741,2.854c1.161,1.889,2.326,3.762,3.571,5.5a26.29,26.29,0,0,0,4.1,4.679,11.07,11.07,0,0,0,3.825,1.94,14.392,14.392,0,0,0,1.42.28,9.748,9.748,0,0,0,2.795.03,26.247,26.247,0,0,0,5.954-1.888c1.97-.842,3.925-1.843,5.907-2.864s3.939-2.052,5.9-3.1l5.88-3.157,11.756-6.35,3.517-1.91L151.072,76.005,136.1,102.3l-14.971-26.3-14.536,25.532Z" class="cls-2"/><path d="M45.965,186.614l3.694-2.246c3.811-2.316,7.655-4.575,11.484-6.86s7.684-4.521,11.523-6.787L84.2,163.963l11.513-6.781,5.74-3.4,2.856-1.713,2.854-1.741c1.889-1.161,3.762-2.326,5.5-3.571a26.284,26.284,0,0,0,4.678-4.1,12.032,12.032,0,0,0,2.217-4.861c0.06-.444.1-0.888,0.12-1.327a10.826,10.826,0,0,0-.022-1.122l-0.015-.257c-0.01-.1-0.031-0.22-0.046-0.328l-0.05-.335-0.013-.084,0-.02-0.031-.148a21.463,21.463,0,0,0-.631-2.435,39.752,39.752,0,0,0-1.939-4.8c-0.749-1.588-1.577-3.194-2.4-4.8s-1.655-3.2-2.493-4.8l-2.469-4.672-0.954-1.677c-1.1-1.942-2.172-3.9-3.249-5.851l-3.219-5.865-3.2-5.872-3.165-5.892c-1.795-3.368-3.6-6.729-5.385-10.1L56.871,136.281h13.92Z" class="cls-3"/><path d="M156.908,195.819l-3.409-5.754-3.371-5.777q-3.364-5.782-6.689-11.592l-0.806-1.441-2.865-4.766q-1.4-2.308-2.823-4.617c-0.944-1.534-1.89-3.071-2.863-4.534a39.466,39.466,0,0,0-3.107-4.144c-0.278-.32-0.567-0.626-0.857-0.93l-0.426-.423c-0.144-.143-0.325-0.3-0.486-0.456a10.309,10.309,0,0,0-1.86-1.329,14.214,14.214,0,0,0-2.242-.991,14.407,14.407,0,0,0-2.387-.3,10.758,10.758,0,0,0-1.123.022l-0.257.015c-0.1.01-.22,0.031-0.328,0.046l-0.335.05-0.084.012-0.017,0-0.151.031a21.452,21.452,0,0,0-2.435.631,39.727,39.727,0,0,0-4.8,1.939c-1.588.749-3.194,1.577-4.8,2.4s-3.2,1.654-4.8,2.492l-4.67,2.468-1.678.955c-1.942,1.1-3.9,2.172-5.851,3.248L85.523,166.3l-5.872,3.2-5.892,3.165c-3.935,2.1-7.857,4.215-11.8,6.288s-7.879,4.172-11.837,6.225l-4.027,2.1h35.2V223.15a0.845,0.845,0,0,0,.845.845h18.113a0.845,0.845,0,0,0,.845-0.845V187.285h10.138V223.15a0.845,0.845,0,0,0,.845.845h18.113a0.845,0.845,0,0,0,.845-0.845V187.285H141.17V223.15a0.845,0.845,0,0,0,.845.845h18.113a0.845,0.845,0,0,0,.845-0.845v-20.5Q158.94,199.234,156.908,195.819Z" class="cls-4"/><path d="M185.388,136.281l-11.381-19.99-3.468,2.023q-5.782,3.364-11.592,6.689l-1.441.807-4.766,2.865q-2.309,1.4-4.617,2.823c-1.533.944-3.071,1.89-4.534,2.863a39.457,39.457,0,0,0-4.144,3.107c-0.32.278-.626,0.567-0.93,0.857l-0.423.426c-0.143.144-.3,0.325-0.456,0.486a10.309,10.309,0,0,0-1.329,1.86,13.768,13.768,0,0,0-.618,1.288,15.289,15.289,0,0,0-.558,2.4,9.748,9.748,0,0,0-.03,2.795,26.248,26.248,0,0,0,1.888,5.954c0.842,1.97,1.843,3.925,2.864,5.906s2.052,3.939,3.1,5.9l3.157,5.88,6.35,11.756,6.38,11.748q1.062,1.97,2.133,3.936V187.285h35.651l-25.156-51h13.92Z" class="cls-5"/></g></g></svg></a>
       <a href="" class="header-nav__icon"><span class="header-nav__button"></span></a>
       <ul class="header__list">
         <li class="header__item">
-          <a href="#concept" class="header__link anchor">About</a>
+          <a href="/" class="header__link">About</a>
         </li>
         <li class="header__item">
-          <a href="https://github.com/vdaas/vald/blob/master/docs/user/get-started.md" class="header__link">Getstarted</a>
+          <a href="/" class="header__link">Getstarted</a>
         </li>
         <li class="header__item">
-          <a href="" class="header__link">Docs</a>
+          <a href="/" class="header__link">Docs</a>
         </li>
         <li class="header__item">
-          <a href="" class="header__link">Blog</a>
+          <a href="/" class="header__link">Blog</a>
         </li>
         <li class="header__item">
-          <a href="https://github.com/vdaas/valdt" class="header__link header__link--button">Github</a>
+          <a href="https://github.com/vdaas/vald" class="header__link header__link--button">Github</a>
         </li>
       </ul>
     </nav>
+
   </div>
 </header>
 
+    <div class="top">
+      <div class="container">
+        <div class="content">
+          <div class="title">
+            <p class="title__head">Vald<br/></p>
+            <p class="title__lead">Vald is high scalable distributed<br/>high-speed approximate
+ nearest neighbor<br/>search engine.</p>
+          </div>
+        </div>
+      </div>
 
-  <div class="top">
-    <div class="top__content">
-      <p class="top__title">Vald</p>
-      <p class="top__lead">Vald is high scalable distributed<br />high-speed approximate
-        nearest neighbor<br />search engine.</p>
     </div>
-  </div>
-
-  <div class="concept" id="concept">
-    <div class="concept__content">
-      <img src="assets/img/static/vald_color_1.svg" alt="" class="concept__keyimage">
-      <div class="concept__block cf">
-        <h2 class="concept__heading">What is Vald</h2>
-        <p class="concept__subheading">Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.</p>
-        <p class="concept__text">
-          Vald is designed and implemented based on the Cloud-Native architecture.
-          It uses the fastest ANN Algorithm NGT to search neighbors.
-          Vald has automatic vector indexing and index backup, and horizontal scaling which made for searching from billions of feature vector data.
-          Vald is easy to use, feature-rich and highly customizable as you needed.
-        </p>
+    <div class="concept">
+      <div class="concept__container">
+        <div class="concept__block cf">
+          <h2 class="concept__heading">What is Vald</h2>
+          <p class="concept__text">
+            Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.
+            Vald is designed and implemented based on the Cloud-Native architecture.
+            It uses the fastest ANN Algorithm NGT to search neighbors.
+            Vald has automatic vector indexing and index backup, and horizontal scaling which made for searching from billions of feature vector data.
+            Vald is easy to use, feature-rich and highly customizable as you needed.
+          </p>
+        </div>
+        <img src="assets/img/static/logo.jpg" alt="" class="concept__keyimage">
       </div>
     </div>
-  </div>
-
-  <div class="features">
-    <div class="features__content">
-      <h2 class="features__heading">Vald's Main Features</h2>
-      <ul class="features__list">
-        <li class="features__item">
-          <h3 class="features__index asynchronize">Asynchronize Auto Indexing</h3>
-          <p class="features__text">Usually the graph requires locking during indexing, which cause stop-the-world. But Vald uses distributed index graph so it continues to work during indexing.</p>
-        </li>
-        <li class="features__item">
-          <h3 class="features__index filtering">Customizable Ingress/Egress Filtering</h3>
-          <p class="features__text">Vald implements it's own highly customizable Ingress/Egress filter. Which can be configured to fit the gRPC interface.</p>
-        </li>
-        <li class="features__item">
-          <h3 class="features__index cloud-native">Cloud-native based vector searching engine</h3>
-          <p class="features__text">Horizontal scalable on memory and cpu for your demand.</p>
-        </li>
-        <li class="features__item">
-          <h3 class="features__index auto-indexing">Auto Indexing Backup</h3>
-          <p class="features__text">Vald has auto index backup feature using MySQL + Redis or Cassandra which enables disaster recovery.</p>
-        </li>
-        <li class="features__item">
-          <h3 class="features__index distributed">Distributed Indexing</h3>
-          <p class="features__text">Vald distribute vector index to multiple agent, each agent stores different index.</p>
-        </li>
-        <li class="features__item">
-          <h3 class="features__index replication">Index Replication</h3>
-          <p class="features__text">Vald stores each index in multiple agents which enables index replicas. Automatically rebalance the replica when some Vald agent goes down.</p>
-        </li>
-        <li class="features__item">
-          <h3 class="features__index easy">Easy to use</h3>
-          <p class="features__text">Vald can be easily installed in a few steps.</p>
-        </li>
-        <li class="features__item">
-          <h3 class="features__index customizable">Highly customizable</h3>
-          <p class="features__text">You can configure the number of vector dimension, the number of replica and etc.</p>
-        </li>
-        <li class="features__item">
-          <h3 class="features__index multi-language">Multi language supported</h3>
-          <p class="features__text">Golang, Java, Nodejs and python is supported.</p>
-        </li>
-      </ul>
-    </div>
-  </div>
 
 
-
-
-
-  <div class="about">
-    <div class="about__content">
-      <h2 class="about__title">Base Technologies</h2>
-      <ul class="about__list">
-        <li class="about__item"><a href="https://golang.org/" target="_blank"><img class="about__logo golang" src="assets/img/tech/golang.svg" alt="tech__golang"></a></li>
-        <li class="about__item"><a href="https://www.docker.com/" target="_blank"><img class="about__logo docker" src="assets/img/tech/docker.svg" alt="tech__docker"></a></li>
-        <li class="about__item"><a href="https://kubernetes.io/" target="_blank"><img class="about__logo k8s" src="assets/img/tech/k8s.svg" alt="tech__k8s"></a></li>
-        <li class="about__item"><a href="https://github.com/yahoojapan/NGT" target="_blank"><img class="about__logo ngt" src="assets/img/tech/ngt_color.svg" alt="tech__ngt"></a></li>
-      </ul>
-    </div>
-
-    <div class="about__content">
-      <h2 class="about__title">SDKs</h2>
-      <ul class="about__list">
-        <li class="about__item"><a href="https://github.com/vdaas/vald-client-go" target="_blank"><img class="about__logo golang" src="assets/img/tech/golang.svg" alt="logo__golang"></a></li>
-        <li class="about__item"><a href="https://github.com/vdaas/vald-client-java" target="_blank"><img class="about__logo java" src="assets/img/tech/java.svg" alt="logo__java"></a></li>
-        <li class="about__item"><a href="https://github.com/vdaas/vald-client-python" target="_blank"><img class="about__logo python" src="assets/img/tech/python.svg" alt="logo__python"></a></li>
-        <li class="about__item"><a href="https://github.com/vdaas/vald-client-node" target="_blank"><img class="about__logo nodejs" src="assets/img/tech/nodejs.svg" alt="logo__nodejs"></a></li>
-        <li class="about__item"><a href="https://github.com/vdaas/vald-client-clj" target="_blank"><img class="about__logo clojure" src="assets/img/tech/clojure.svg" alt="logo__clojure"></a></li>
-      </ul>
-    </div>
-    <div class="about__content">
-      <div class="about__block">
-        <h2 class="about__title">Vald Users</h2>
-        <ul class="about__list about__list--center">
-          <li class="about__item about__item--single"><a href="https://yahoo.co.jp/" target="_blank"><img class="about__logo yahoo" src="assets/img/community/yahoojapan.svg" alt="yahoojapan"></a></li>
-        </ul>
+    <div class="about">
+      <div class="about__container">
+        <div class="about__block">
+          <h2 class="about__title">Vald's Main Features</h2>
+          <div class="mdl-card-wrap cf">
+            <div href="" class="mdl-card">
+              <dl class="mdl-card__content mdl-card__content--col cf">
+                <dd class="mdl-card__image mdl-card__image--col"><img class="card-image" src="assets/img/static/vald_sampleicon.png" alt=""></dd>
+                <div class="mdl-card__box mdl-card__box--col cf">
+                  <dt class="mdl-card__info mdl-card__info--col">
+                    <p class="mdl-card__title mdl-card__title--col">Asynchronize Auto Indexing</p>
+                    <p class="mdl-card__caption mdl-card__caption--col">Usually the graph requires locking during indexing, which cause stop-the-world. But Vald uses distributed index graph so it continues to work during indexing.</p>
+                    </dt>
+                </div>
+              </dl>
+            </div>
+            <div href="" class="mdl-card">
+              <dl class="mdl-card__content mdl-card__content--col cf">
+                <dd class="mdl-card__image mdl-card__image--col"><img class="card-image" src="assets/img/static/vald_sampleicon.png" alt=""></dd>
+                <div class="mdl-card__box mdl-card__box--col cf">
+                  <dt class="mdl-card__info mdl-card__info--col">
+                    <p class="mdl-card__title mdl-card__title--col">Customizable Ingress/Egress Filtering</p>
+                    <p class="mdl-card__caption mdl-card__caption--col">Vald implements it's own highly customizable Ingress/Egress filter.
+                      Which can be configured to fit the gRPC interface.<br>
+                      <!-- - Ingress Filter: Ability to Vectorize through filter on request.<br> -->
+                      <!-- - Egress Filter: rerank or filter the searching result with your own algorithm. -->
+                    </p>
+                    </dt>
+                </div>
+              </dl>
+            </div>
+            <div href="" class="mdl-card">
+              <dl class="mdl-card__content mdl-card__content--col cf">
+                <dd class="mdl-card__image mdl-card__image--col"><img class="card-image" src="assets/img/static/vald_sampleicon.png" alt=""></dd>
+                <div class="mdl-card__box mdl-card__box--col cf">
+                  <dt class="mdl-card__info mdl-card__info--col">
+                    <p class="mdl-card__title mdl-card__title--col">Cloud-native based vector searching engine
+                    </p>
+                    <p class="mdl-card__caption mdl-card__caption--col">Horizontal scalable on memory and cpu for your demand.
+                    </p>
+                    </dt>
+                </div>
+              </dl>
+            </div>
+            <div href="" class="mdl-card">
+              <dl class="mdl-card__content mdl-card__content--col cf">
+                <dd class="mdl-card__image mdl-card__image--col"><img class="card-image" src="assets/img/static/vald_sampleicon.png" alt=""></dd>
+                <div class="mdl-card__box mdl-card__box--col cf">
+                  <dt class="mdl-card__info mdl-card__info--col">
+                    <p class="mdl-card__title mdl-card__title--col">Auto Indexing Backup</p>
+                    <p class="mdl-card__caption mdl-card__caption--col">Vald has auto index backup feature using MySQL + Redis or Cassandra which enables disaster recovery.</p>
+                    </dt>
+                </div>
+              </dl>
+            </div>
+            <div href="" class="mdl-card">
+              <dl class="mdl-card__content mdl-card__content--col cf">
+                <dd class="mdl-card__image mdl-card__image--col"><img class="card-image" src="assets/img/static/vald_sampleicon.png" alt=""></dd>
+                <div class="mdl-card__box mdl-card__box--col cf">
+                  <dt class="mdl-card__info mdl-card__info--col">
+                    <p class="mdl-card__title mdl-card__title--col">Distributed Indexing</p>
+                    <p class="mdl-card__caption mdl-card__caption--col">Vald distribute vector index to multiple agent, each agent stores different index.</p>
+                    </dt>
+                </div>
+              </dl>
+            </div>
+            <div href="" class="mdl-card">
+              <dl class="mdl-card__content mdl-card__content--col cf">
+                <dd class="mdl-card__image mdl-card__image--col"><img class="card-image" src="assets/img/static/vald_sampleicon.png" alt=""></dd>
+                <div class="mdl-card__box mdl-card__box--col cf">
+                  <dt class="mdl-card__info mdl-card__info--col">
+                    <p class="mdl-card__title mdl-card__title--col">Index Replication</p>
+                    <p class="mdl-card__caption mdl-card__caption--col">Vald stores each index in multiple agents which enables index replicas.
+                      Automatically rebalance the replica when some Vald agent goes down.
+                    </p>
+                    </dt>
+                </div>
+              </dl>
+            </div>
+            <div href="" class="mdl-card">
+              <dl class="mdl-card__content mdl-card__content--col cf">
+                <dd class="mdl-card__image mdl-card__image--col"><img class="card-image" src="assets/img/static/vald_sampleicon.png" alt=""></dd>
+                <div class="mdl-card__box mdl-card__box--col cf">
+                  <dt class="mdl-card__info mdl-card__info--col">
+                    <p class="mdl-card__title mdl-card__title--col">Easy to use</p>
+                    <p class="mdl-card__caption mdl-card__caption--col">Vald can be easily installed in a few steps.</p>
+                    </dt>
+                </div>
+              </dl>
+            </div>
+            <div href="" class="mdl-card">
+              <dl class="mdl-card__content mdl-card__content--col cf">
+                <dd class="mdl-card__image mdl-card__image--col"><img class="card-image" src="assets/img/static/vald_sampleicon.png" alt=""></dd>
+                <div class="mdl-card__box mdl-card__box--col cf">
+                  <dt class="mdl-card__info mdl-card__info--col">
+                    <p class="mdl-card__title mdl-card__title--col">Highly customizable</p>
+                    <p class="mdl-card__caption mdl-card__caption--col">You can configure the number of vector dimension, the number of replica and etc.</p>
+                    </dt>
+                </div>
+              </dl>
+            </div>
+            <div href="" class="mdl-card">
+              <dl class="mdl-card__content mdl-card__content--col cf">
+                <dd class="mdl-card__image mdl-card__image--col"><img class="card-image" src="assets/img/static/vald_sampleicon.png" alt=""></dd>
+                <div class="mdl-card__box mdl-card__box--col cf">
+                  <dt class="mdl-card__info mdl-card__info--col">
+                    <p class="mdl-card__title mdl-card__title--col">Multi language supported</p>
+                    <p class="mdl-card__caption mdl-card__caption--col">Golang, Java, Nodejs and python is supported.</p>
+                    </dt>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-
-  <div class="learn">
-    <div class="learn__content">
-      <h2 class="learn__title">Learn About Vald</h2>
-      <ul class="learn__cardlist">
-      <li class="mdl-card">
-        <a href="https://github.com/vdaas/vald/blob/master/README.md" class="mdl-link">
-          <dl class="mdl-card__content cf">
-            <dd class="mdl-card__image"><img class="card-image" src="assets/img/static/learn_img_01.png" alt=""></dd>
-            <dt class="mdl-card__title">Overview</dt>
-            <p class="mdl-card__caption">Overview & Architecture</p>
-          </dl>
-        </a>
-      </li>
-      <li class="mdl-card">
-        <a href="https://github.com/vdaas/vald/blob/master/docs/user/get-started.md" class="mdl-link">
-          <dl class="mdl-card__content cf">
-            <dd class="mdl-card__image"><img class="card-image" src="assets/img/static/learn_img_02.png" alt=""></dd>
-            <dt class="mdl-card__title">Installation</dt>
-            <p class="mdl-card__caption">Getting Stared with your kubernetes cluseter</p>
-          </dl>
-        </a>
-      </li>
-      <li class="mdl-card">
-        <a href="" class="mdl-link">
-          <dl class="mdl-card__content cf">
-            <dd class="mdl-card__image"><img class="card-image" src="assets/img/static/learn_img_03.png" alt=""></dd>
-            <dt class="mdl-card__title">Manual Guides</dt>
-            <p class="mdl-card__caption">Start Vald, Configuration & Operation, and Trouble Shooting</p>
-          </dl>
-        </a>
-      </li>
-      </ul>
+    <div class="about">
+      <div class="about__container">
+        <div class="about__block">
+          <h2 class="about__title">Base Technologies</h2>
+          <ul class="about__logo">
+            <li><a href="https://golang.org/" target="_blank"><img src="assets/img/tech/golang.svg" alt="tech__golang"></a></li>
+            <li><a href="https://www.docker.com/" target="_blank"><img src="assets/img/tech/docker.svg" alt="tech__docker"></a></li>
+            <li><a href="https://kubernetes.io/" target="_blank"><img src="assets/img/tech/k8s.svg" alt="tech__k8s"></a></li>
+            <li><a href="https://github.com/yahoojapan/NGT" target="_blank"><img src="assets/img/tech/ngt_color.svg" alt="tech__ngt"></a></li>
+          </ul>        
+        </div>
+      </div>
     </div>
-  </div>
 
+    <div class="about">
+      <div class="about__container">
+        <div class="about__block">
+          <h2 class="about__title">SDKs</h2>
+          <ul class="about__logo">
+            <li><a href="https://github.com/vdaas/vald-client-go" target="_blank"><img src="assets/img/tech/golang.svg" alt="logo__golang"></a></li>
+            <li><a href="https://github.com/vdaas/vald-client-java" target="_blank"><img src="assets/img/tech/java.svg" alt="logo__java"></a></li>
+            <li><a href="https://github.com/vdaas/vald-client-python" target="_blank"><img src="assets/img/tech/python-notext.svg" alt="logo__python"></a></li>
+            <li><a href="https://github.com/vdaas/vald-client-node" target="_blank"><img src="assets/img/tech/nodejs.svg" alt="logo__nodejs"></a></li>
+            <li><a href="https://github.com/vdaas/vald-client-clj" target="_blank"><img src="assets/img/tech/clojure.svg" alt="logo__clojure"></a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="about">
+      <div class="about__container">
+        <div class="about__block">
+          <h2 class="about__title">Vald Users</h2>
+          <ul class="about__logo">
+            <li><a href="https://yahoo.co.jp/" target="_blank"><img src="assets/img/community/yahoojapan.svg" alt="yahoojapan"></a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="about">
+      <div class="about__container">
+        <div class="about__block">
+          <h2 class="about__title">Learn About Vald</h2>
+          <div class="mdl-card-wrap cf">
+            <a href="https://github.com/vdaas/vald/blob/master/README.md" class="mdl-card">
+              <dl class="mdl-card__conetent cf">
+                <dd class="mdl-card__image"><img class="card-image" src="assets/img/static/graphic.jpg" alt=""></dd>
+                <div class="mdl-card__box cf">
+                  <dt class="mdl-card__info">
+                    <p class="mdl-card__title">Overview</p>
+                    <p class="mdl-card__caption">Overview & Architecture</p>
+                    </dt>
+                </div>
+              </dl>
+            </a>
+            <a href="https://github.com/vdaas/vald/blob/master/docs/user/get-started.md" class="mdl-card">
+              <dl class="mdl-card__conetent cf"class="mdl-card__content mdl-card__content--col cf">
+                <dd class="mdl-card__image"><img class="card-image" src="assets/img/static/graphic.jpg" alt=""></dd>
+                <div class="mdl-card__box cf">
+                  <dt class="mdl-card__info">
+                    <p class="mdl-card__title">Installation</p>
+                    <p class="mdl-card__caption">Getting Stared with your kubernetes cluseter</p>
+                    </dt>
+                </div>
+              </dl>
+            </a>
+            <a href="/" class="mdl-card">
+              <dl class="mdl-card__conetent cf">
+                <dd class="mdl-card__image"><img class="card-image" src="assets/img/static/graphic.jpg" alt=""></dd>
+                <div class="mdl-card__box cf">
+                  <dt class="mdl-card__info">
+                    <p class="mdl-card__title">Manual Guides</p>
+                    <p class="mdl-card__caption">Start Vald, Configuration & Operation, and Trouble Shooting</p>
+                    </dt>
+                </div>
+              </dl>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
   <footer class="footer">
-
-  <div class="footer__content cf">
-    <ul class="footer__list">
-      <li class="footer__item">
-        <a href="https://www.lodge.yahoo.co.jp/space" class="footer__link">About<br/></a>
-      </li>
-      <li class="footer__item">
-        <a href="/comms" class="footer__link">Getstarted<br/></a>
-      </li>
-      <li class="footer__item">
-        <a href="/event" class="footer__link">Docs<br/></a>
-      </li>
-      <li class="footer__item">
-        <a href="/collab" class="footer__link">Blog<br/></a>
-      </li>
-      <li class="footer__item">
-        <a href="#news" class="footer__link footer__link--button">Github<br/></a>
-      </li>
-    </ul>
-  </div>
-
-  <p class="footer__copylight">©2019-2020 Vdaas.org Vald team</p>
-</footer>
-
-  <!--<p class="mdl-totop"><img src="https://s.yimg.jp/images/lodge/pr/anniv/images/cmn_icon_totop.png" alt="ページトップへ" class="mdl-totop__image"></p>-->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <script type="text/javascript" src="common/script.js"></script>
+    <div class="footer__content cf">
+      <ul class="footer__list">
+        <li class="footer__item">
+          <a href="/" class="footer__link">About<br/></a>
+        </li>
+        <li class="footer__item">
+          <a href="/" class="footer__link">Getstarted<br/></a>
+        </li>
+        <li class="footer__item">
+          <a href="/" class="footer__link">Docs<br/></a>
+        </li>
+        <li class="footer__item">
+          <a href="/" class="footer__link">Blog<br/></a>
+        </li>
+        <li class="footer__item">
+          <a href="https://github.com/vdaas/vald" class="footer__link">github<br/></a>
+        </li>
+      </ul>
+    </div>
+    <p class="footer__copylight">©2019-2020 Vdaas.org Vald team</p>
+  </footer>
 </body>
 
 </html>
