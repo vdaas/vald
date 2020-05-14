@@ -49,8 +49,12 @@
 <ifModule mod_rewrite.c>
   RewriteEngine On 
   RewriteCond %{HTTP_ACCEPT} image/webp
-  RewriteCond %{SCRIPT_FILENAME}.webp -f
-  RewriteRule .(jpe?g|png|gif)$ %{SCRIPT_FILENAME}.webp [L,T=image/webp,R] 
+  # RewriteCond %{SCRIPT_FILENAME}.webp -f
+  # RewriteRule .(jpe?g|png|gif)$ %{SCRIPT_FILENAME}.webp [L,T=image/webp,R] 
+  RewriteCond %{REQUEST_FILENAME} (.*)\.(jpe?g|png)$
+  RewriteCond %{REQUEST_FILENAME}\.webp -f
+  RewriteCond %{QUERY_STRING} !type=original
+  RewriteRule (.+)\.(jpe?g|png)$ %{REQUEST_FILENAME}.webp [T=image/webp,E=accept:1,L]
 </IfModule>
  
 <IfModule mod_mime.c>
@@ -59,6 +63,7 @@
 
 <IfModule mod_setenvif.c>
   SetEnvIf Request_URI "\.(jpe?g|png|gif)$" _image_request
+  # SetEnvIf Request_URI "\.(jpe?g|png|gif)$" _image_request
 </IfModule>
 
 # BEGIN Cache-Control Headers
@@ -66,7 +71,8 @@ FileETag None
 <IfModule mod_headers.c>
   Header set Connection keep-alive
   Header unset ETag
-  Header append Vary Accept env=_image_request
+  # Header append Vary Accept env=_image_request
+  Header append Vary Accept env=REDIRECT_accept
   <FilesMatch "\.(ico|jpe?g|png|gif|svg|swf|pdf|ttf|woff|otf|eot|gz)$">
     Header set Cache-Control "max-age=2592000, public"
     Header append Cache-Control "s-maxage=2592000, public"
@@ -104,6 +110,10 @@ FileETag None
     AddOutputFilterByType DEFLATE text/xml
     AddOutputFilterByType DEFLATE text/css
     AddOutputFilterByType DEFLATE text/js
+    AddType image/svg+xml svg svgz
+    AddType application/vnd.ms-fontobject eot
+    AddType application/x-font-ttf ttf
+    AddType application/x-font-woff woff
     AddOutputFilterByType DEFLATE application/xml
     AddOutputFilterByType DEFLATE application/xhtml+xml
     AddOutputFilterByType DEFLATE application/rss+xml
