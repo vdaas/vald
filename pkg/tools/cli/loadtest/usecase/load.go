@@ -19,8 +19,6 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/vdaas/vald/internal/client/gateway/vald/grpc"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/runner"
@@ -31,39 +29,39 @@ import (
 )
 
 type run struct {
-	eg  errgroup.Group
-	cfg *config.Data
-	l   service.Load
+	eg     errgroup.Group
+	cfg    *config.Data
+	loader service.Load
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	run := new(run)
-	run.cfg = cfg
-	run.eg = errgroup.Get()
-
-	ctx := context.Background()
-	c, err := grpc.New(ctx, grpc.WithAddr(cfg.Address)) // TODO setup vald grpc client
-	if err != nil {
-		return nil, fmt.Errorf("grpc connection error")
-	}
-	switch strings.ToLower(cfg.Method) {
-	case "insert":
-		run.l, err = insert.New(insert.WithDataset(cfg.Dataset), insert.WithWriter(c))
-	case "search":
-		run.l, err = search.New(search.WithDataset(cfg.Dataset), search.WithReader(c))
-	default:
-		return nil, fmt.Errorf("unsupported method")
+	run := &run{
+		cfg: cfg,
+		eg:  errgroup.Get(),
 	}
 
 	return run, nil
 }
 
 func (r *run) PreStart(ctx context.Context) (err error) {
-	return r.l.Prepare(ctx)
+	c, err := grpc.New(ctx, grpc.WithAddr(r.cfg.Address)) // TODO setup vald grpc client
+	if err != nil {
+		return fmt.Errorf("grpc connection error")
+	}
+	switch Atoo(r.cfg.Method) {
+	case Search:
+		r.loader, err = insert.New(insert.WithDataset(r.cfg.Dataset), insert.WithWriter(c))
+	case Insert:
+		r.loader, err = search.New(search.WithDataset(r.cfg.Dataset), search.WithReader(c))
+	default:
+		return fmt.Errorf("unsupported method")
+	}
+
+	return r.loader.Prepare(ctx)
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	return r.l.Do(ctx), nil
+	return r.loader.Do(ctx), nil
 }
 
 func (r *run) PreStop(ctx context.Context) error {

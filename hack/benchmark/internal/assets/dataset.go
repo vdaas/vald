@@ -25,6 +25,7 @@ type Dataset = assets.Dataset
 
 func Data(name string) func(testing.TB) Dataset {
 	return func(tb testing.TB) Dataset {
+		tb.Helper()
 		fn := assets.Data(name)
 		if fn == nil {
 			return nil
