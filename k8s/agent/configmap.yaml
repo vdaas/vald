@@ -62,7 +62,7 @@ data:
             idle_timeout: ""
             read_header_timeout: ""
             read_timeout: ""
-            shutdown_duration: 5s
+            shutdown_duration: 0s
             write_timeout: ""
           mode: ""
           probe_wait_time: 3s

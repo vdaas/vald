@@ -37,7 +37,7 @@ spec:
       labels:
         app: vald-meta
       annotations:
-        checksum/configmap: 65229d5d3473a6fed7ec923208761abafc4ab054b1876cb5fe194b4120503f4e
+        checksum/configmap: 94a69d0ac5143840d88af94ad289810dc051a642f8378731e076a48e635c7a46
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-meta

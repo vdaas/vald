@@ -19,7 +19,7 @@ kind: PodDisruptionBudget
 metadata:
   name: vald-manager-compressor
 spec:
-  maxUnavailable: 50%
+  maxUnavailable: 1
   selector:
     matchLabels:
       app: vald-manager-compressor

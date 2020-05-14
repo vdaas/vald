@@ -38,7 +38,7 @@ spec:
       labels:
         app: vald-discoverer
       annotations:
-        checksum/configmap: bb5accd0f935de04159fce256a0815946c4e3919305737640166cfce5625525c
+        checksum/configmap: eb10f6df7636681a5cdad7e76da2dadc2821871b3d07ab5e343f055793d3d304
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-discoverer
