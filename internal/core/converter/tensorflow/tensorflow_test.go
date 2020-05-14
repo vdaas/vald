@@ -23,7 +23,6 @@ import (
 
 	tf "github.com/tensorflow/tensorflow/tensorflow/go"
 	"github.com/vdaas/vald/internal/errors"
-
 	"go.uber.org/goleak"
 )
 
@@ -303,7 +302,7 @@ func Test_tensorflow_run(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ([], nil): inputs=nil",
+			name: "return ([], nil): inputs == nil",
 			args: args{
 				inputs: nil,
 			},
@@ -331,7 +330,7 @@ func Test_tensorflow_run(t *testing.T) {
 			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "return ([], nil): inputs={\"test\"}",
+			name: "return ([], nil): inputs == {\"test\"}",
 			args: args{
 				inputs: []string{
 					"test",
@@ -611,7 +610,7 @@ func Test_tensorflow_GetVector(t *testing.T) {
 			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "failed to cast error: ndim=TwoDim",
+			name: "failed to cast error: ndim == TwoDim",
 			args: args{
 				inputs: nil,
 			},
@@ -643,7 +642,7 @@ func Test_tensorflow_GetVector(t *testing.T) {
 			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "failed to cast error: ndim=ThreeDim",
+			name: "failed to cast error: ndim == ThreeDim",
 			args: args{
 				inputs: nil,
 			},
@@ -675,7 +674,7 @@ func Test_tensorflow_GetVector(t *testing.T) {
 			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "failed to cast error: ndim=default",
+			name: "failed to cast error: ndim == default",
 			args: args{
 				inputs: nil,
 			},
