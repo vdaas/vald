@@ -2,7 +2,7 @@
   ExpiresActive On
 
 # Perhaps better to whitelist expires rules? Perhaps.
-  ExpiresDefault                              "access plus 1 month"
+  ExpiresDefault                              "access plus 0 month"
 
 # Data
   ExpiresByType text/xml                      "access plus 0 seconds"
@@ -10,40 +10,40 @@
   ExpiresByType application/json              "access plus 0 seconds"
 
 # Favicon (cannot be renamed)
-  ExpiresByType image/x-icon                  "access plus 1 week"
-  ExpiresByType image/vnd.microsoft.icon      "access plus 1 week"
+  ExpiresByType image/x-icon                  "access plus 0 week"
+  ExpiresByType image/vnd.microsoft.icon      "access plus 0 week"
 
 # Media: images, video, audio
-  ExpiresByType image/gif                     "access plus 1 month"
-  ExpiresByType image/png                     "access plus 1 month"
-  ExpiresByType image/jpeg                    "access plus 1 month"
-  ExpiresByType image/jpg                     "access plus 1 month"
-  ExpiresByType image/webp                    "access plus 1 month"
-  ExpiresByType image/svg+xml                 "access plus 1 month"
-  ExpiresByType video/ogg                     "access plus 1 month"
-  ExpiresByType audio/ogg                     "access plus 1 month"
-  ExpiresByType video/mp4                     "access plus 1 month"
-  ExpiresByType video/webm                    "access plus 1 month"
+  ExpiresByType image/gif                     "access plus 0 month"
+  ExpiresByType image/png                     "access plus 0 month"
+  ExpiresByType image/jpeg                    "access plus 0 month"
+  ExpiresByType image/jpg                     "access plus 0 month"
+  ExpiresByType image/webp                    "access plus 0 month"
+  ExpiresByType image/svg+xml                 "access plus 0 month"
+  ExpiresByType video/ogg                     "access plus 0 month"
+  ExpiresByType audio/ogg                     "access plus 0 month"
+  ExpiresByType video/mp4                     "access plus 0 month"
+  ExpiresByType video/webm                    "access plus 0 month"
 
 # Webfonts
-  ExpiresByType font/opentype                 "access plus 1 year"
-  ExpiresByType font/ttf                      "access plus 1 year"
-  ExpiresByType font/woff                     "access plus 1 year"
-  ExpiresByType application/x-font-ttf        "access plus 1 year"
-  ExpiresByType application/x-font-woff       "access plus 1 year"
-  ExpiresByType application/x-font-opentype   "access plus 1 year"
-  ExpiresByType application/vnd.ms-fontobject "access plus 1 year"
+  ExpiresByType font/opentype                 "access plus 0 year"
+  ExpiresByType font/ttf                      "access plus 0 year"
+  ExpiresByType font/woff                     "access plus 0 year"
+  ExpiresByType application/x-font-ttf        "access plus 0 year"
+  ExpiresByType application/x-font-woff       "access plus 0 year"
+  ExpiresByType application/x-font-opentype   "access plus 0 year"
+  ExpiresByType application/vnd.ms-fontobject "access plus 0 year"
 
 # CSS and JavaScript
-  ExpiresByType text/css                      "access plus 1 year"
-  ExpiresByType text/javascript               "access plus 1 year"
-  ExpiresByType application/javascript        "access plus 1 year"
-  ExpiresByType application/x-javascript      "access plus 1 year"
-  ExpiresByType application/x-shockwave-flash "access plus 2592000 seconds"
+  ExpiresByType text/css                      "access plus 0 year"
+  ExpiresByType text/javascript               "access plus 0 year"
+  ExpiresByType application/javascript        "access plus 0 year"
+  ExpiresByType application/x-javascript      "access plus 0 year"
+  ExpiresByType application/x-shockwave-flash "access plus 0 seconds"
 
 # HTML
-  ExpiresByType text/html                     "access plus 7200 seconds"
-  ExpiresByType application/xhtml+xml         "access plus 7200 seconds"
+  ExpiresByType text/html                     "access plus 0 seconds"
+  ExpiresByType application/xhtml+xml         "access plus 0 seconds"
 </IfModule>
 
 <ifModule mod_rewrite.c>
@@ -62,31 +62,31 @@
 </IfModule>
 
 # BEGIN Cache-Control Headers
-FileETag None
+# FileETag None
 <IfModule mod_headers.c>
   Header set Connection keep-alive
-  Header unset ETag
+  # Header unset ETag
   Header append Vary Accept env=_image_request
-  <FilesMatch "\.(ico|jpe?g|png|gif|svg|swf|pdf|ttf|woff|otf|eot|gz)$">
-    Header set Cache-Control "max-age=2592000, public"
-    Header append Cache-Control "s-maxage=2592000, public"
-  </FilesMatch>
-  <FilesMatch "\.(css)$">
-    Header set Cache-Control "max-age=2592000, public"
-    Header append Cache-Control "s-maxage=2592000, public"
-  </FilesMatch>
-  <FilesMatch "\.(js)$">
-    Header set Cache-Control "max-age=2592000, private"
-    Header append Cache-Control "s-maxage=2592000, private"
-  </FilesMatch>
-  <FilesMatch "\.(html|htm)$">
-    Header set Cache-Control "max-age=7200, public"
-    Header append Cache-Control "s-maxage=7200, public"
-  </FilesMatch>
-   # Disable caching for scripts and other dynamic files
-  <FilesMatch "\.(pl|php|cgi|spl|scgi|fcgi)$">
-    Header unset Cache-Control
-  </FilesMatch>
+  # <FilesMatch "\.(ico|jpe?g|png|gif|svg|swf|pdf|ttf|woff|otf|eot|gz)$">
+  #   Header set Cache-Control "max-age=2592000, public"
+  #   Header append Cache-Control "s-maxage=2592000, public"
+  # </FilesMatch>
+  # <FilesMatch "\.(css)$">
+  #   Header set Cache-Control "max-age=2592000, public"
+  #   Header append Cache-Control "s-maxage=2592000, public"
+  # </FilesMatch>
+  # <FilesMatch "\.(js)$">
+  #   Header set Cache-Control "max-age=2592000, private"
+  #   Header append Cache-Control "s-maxage=2592000, private"
+  # </FilesMatch>
+  # <FilesMatch "\.(html|htm)$">
+  #   Header set Cache-Control "max-age=7200, public"
+  #   Header append Cache-Control "s-maxage=7200, public"
+  # </FilesMatch>
+  #  # Disable caching for scripts and other dynamic files
+  # <FilesMatch "\.(pl|php|cgi|spl|scgi|fcgi)$">
+  #   Header unset Cache-Control
+  # </FilesMatch>
 </IfModule>
 # END Cache-Control Headers
 
