@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.35`
+Current chart version is `v0.0.36`
 
 Install
 ---
@@ -14,7 +14,7 @@ Add Vald Helm repository
 
 Run the following command to install the chart,
 
-    $ helm install --generate-name vald/vald
+    $ helm install vald-cluster vald/vald
 
 
 Configuration
@@ -55,6 +55,7 @@ Configuration
 | agent.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app","operator":"In","values":["vald-agent-ngt"]}]},"topologyKey":"kubernetes.io/hostname"},"weight":100}]` | pod anti-affinity preferred scheduling terms |
 | agent.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
 | agent.annotations | object | `{}` | deployment annotations |
+| agent.enabled | bool | `true` | agent enabled |
 | agent.env | list | `[]` | environment variables |
 | agent.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | agent.hpa.enabled | bool | `false` | HPA enabled |
@@ -73,11 +74,11 @@ Configuration
 | agent.ngt.auto_index_length | int | `100` | number of cache to trigger automatic indexing |
 | agent.ngt.bulk_insert_chunk_size | int | `10` | bulk insert chunk size |
 | agent.ngt.creation_edge_size | int | `20` | creation edge size |
-| agent.ngt.dimension | int | `4096` | dimension |
-| agent.ngt.distance_type | string | `"l2"` | distance type: l1, l2, angle, hamming, cosine, normalizedangle or normalizedcosine |
+| agent.ngt.dimension | int | `4096` | vector dimension |
+| agent.ngt.distance_type | string | `"l2"` | distance type |
 | agent.ngt.enable_in_memory_mode | bool | `true` | in-memory mode enabled |
 | agent.ngt.index_path | string | `nil` | path to index data |
-| agent.ngt.object_type | string | `"float"` | object type: float or uint8 |
+| agent.ngt.object_type | string | `"float"` | object type |
 | agent.ngt.search_edge_size | int | `10` | search edge size |
 | agent.nodeName | string | `""` | node name |
 | agent.nodeSelector | object | `{}` | node selector |
@@ -148,7 +149,7 @@ Configuration
 | backupManager.cassandra.config.retry_policy.max_duration | string | `"1s"` | maximum duration to retry |
 | backupManager.cassandra.config.retry_policy.min_duration | string | `"10ms"` | minimum duration to retry |
 | backupManager.cassandra.config.retry_policy.num_retries | int | `3` | number of retries |
-| backupManager.cassandra.config.serial_consistency | string | `"local_serial"` | read consistency type |
+| backupManager.cassandra.config.serial_consistency | string | `"localserial"` | read consistency type |
 | backupManager.cassandra.config.socket_keepalive | string | `"0s"` | socket keep alive time |
 | backupManager.cassandra.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
 | backupManager.cassandra.config.tcp.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
@@ -164,6 +165,7 @@ Configuration
 | backupManager.cassandra.config.username | string | `"root"` | cassandra username |
 | backupManager.cassandra.config.write_coalesce_wait_time | string | `"200µs"` | write coalesce wait time |
 | backupManager.cassandra.enabled | bool | `false` | cassandra config enabled |
+| backupManager.enabled | bool | `true` | backup manager enabled |
 | backupManager.env | list | `[{"name":"MYSQL_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"mysql-secret"}}}]` | (list) environment variables |
 | backupManager.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | backupManager.hpa.enabled | bool | `true` | HPA enabled |
@@ -229,10 +231,11 @@ Configuration
 | compressor.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
 | compressor.annotations | object | `{}` | deployment annotations |
 | compressor.backup.client | object | `{}` | grpc client for backup (overrides defaults.grpc.client) |
-| compressor.compress.compress_algorithm | string | `"zstd"` | compression algorithm: gob, gzip, lz4 or zstd |
+| compressor.compress.compress_algorithm | string | `"zstd"` | compression algorithm |
 | compressor.compress.compression_level | int | `3` | compression level |
-| compressor.compress.concurrent_limit | int | `10` | concurrency limit |
-| compressor.compress.queue_check_duration | string | `"5s"` |  |
+| compressor.compress.concurrent_limit | int | `10` | concurrency limit for compress/decompress processes |
+| compressor.compress.queue_check_duration | string | `"200ms"` |  |
+| compressor.enabled | bool | `true` | compressor enabled |
 | compressor.env | list | `[{"name":"MY_POD_IP","valueFrom":{"fieldRef":{"fieldPath":"status.podIP"}}}]` | environment variables |
 | compressor.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | compressor.hpa.enabled | bool | `true` | HPA enabled |
@@ -243,7 +246,7 @@ Configuration
 | compressor.initContainers | list | `[{"image":"busybox","name":"wait-for-manager-backup","sleepDuration":2,"target":"manager-backup","type":"wait-for"}]` | init containers |
 | compressor.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
 | compressor.maxReplicas | int | `15` | maximum number of replicas |
-| compressor.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
+| compressor.maxUnavailable | int | `1` | maximum number of unavailable replicas |
 | compressor.minReplicas | int | `3` | minimum number of replicas |
 | compressor.name | string | `"vald-manager-compressor"` | name of compressor deployment |
 | compressor.nodeName | string | `""` | node name |
@@ -254,12 +257,13 @@ Configuration
 | compressor.podPriority.value | int | `100000000` | compressor pod PriorityClass value |
 | compressor.progressDeadlineSeconds | int | `600` | progress deadline seconds |
 | compressor.registerer.compressor.client | object | `{}` | gRPC client for compressor (overrides defaults.grpc.client) |
-| compressor.registerer.concurrent_limit | int | `10` | concurrency limit of registerer worker |
+| compressor.registerer.concurrent_limit | int | `10` | concurrency limit for registering vector processes |
+| compressor.registerer.queue_check_duration | string | `"200ms"` |  |
 | compressor.resources | object | `{"limits":{"cpu":"800m","memory":"500Mi"},"requests":{"cpu":"300m","memory":"50Mi"}}` | compute resources |
 | compressor.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
 | compressor.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | compressor.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
-| compressor.server_config | object | `{"healths":{"liveness":{"enabled":false},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| compressor.server_config | object | `{"healths":{"liveness":{"server":{"http":{"shutdown_duration":"2m"}}},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | compressor.service.annotations | object | `{}` | service annotations |
 | compressor.service.labels | object | `{}` | service labels |
 | compressor.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
@@ -311,16 +315,16 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.35"` | image tag |
+| defaults.image.tag | string | `"v0.0.36"` | docker image tag |
 | defaults.logging.format | string | `"raw"` | logging format |
 | defaults.logging.level | string | `"debug"` | logging level |
 | defaults.logging.logger | string | `"glg"` | logger name |
-| defaults.observability.collector.duration | string | `"5s"` | observability collector collect duration |
-| defaults.observability.collector.metrics.enable_cgo | bool | `true` | observability collector cgo metrics enabled |
-| defaults.observability.collector.metrics.enable_goroutine | bool | `true` | observability collector goroutine metrics enabled |
-| defaults.observability.collector.metrics.enable_memory | bool | `true` | observability collector memory metrics enabled |
-| defaults.observability.collector.metrics.enable_version_info | bool | `true` | observability collector version info enabled |
-| defaults.observability.enabled | bool | `false` | observability enabled |
+| defaults.observability.collector.duration | string | `"5s"` | metrics collect duration |
+| defaults.observability.collector.metrics.enable_cgo | bool | `true` | CGO metrics enabled |
+| defaults.observability.collector.metrics.enable_goroutine | bool | `true` | goroutine metrics enabled |
+| defaults.observability.collector.metrics.enable_memory | bool | `true` | memory metrics enabled |
+| defaults.observability.collector.metrics.enable_version_info | bool | `true` | version info metrics enabled |
+| defaults.observability.enabled | bool | `false` | observability features enabled |
 | defaults.observability.jaeger.agent_endpoint | string | `"jaeger-agent.default.svc.cluster.local:6831"` | Jaeger agent endpoint |
 | defaults.observability.jaeger.buffer_max_count | int | `10` | Jaeger buffer max count |
 | defaults.observability.jaeger.collector_endpoint | string | `""` | Jaeger collector endpoint |
@@ -369,7 +373,7 @@ Configuration
 | defaults.server_config.healths.readiness.server.http.idle_timeout | string | `""` | readiness server idle timeout |
 | defaults.server_config.healths.readiness.server.http.read_header_timeout | string | `""` | readiness server read header timeout |
 | defaults.server_config.healths.readiness.server.http.read_timeout | string | `""` | readiness server read timeout |
-| defaults.server_config.healths.readiness.server.http.shutdown_duration | string | `"5s"` | readiness server shutdown duration |
+| defaults.server_config.healths.readiness.server.http.shutdown_duration | string | `"0s"` | readiness server shutdown duration |
 | defaults.server_config.healths.readiness.server.http.write_timeout | string | `""` | readiness server write timeout |
 | defaults.server_config.healths.readiness.server.mode | string | `""` | readiness server mode |
 | defaults.server_config.healths.readiness.server.probe_wait_time | string | `"3s"` | readiness server probe wait time |
@@ -452,8 +456,11 @@ Configuration
 | discoverer.discoverer.discovery_duration | string | `"3s"` | duration to discovery |
 | discoverer.discoverer.name | string | `""` | name to discovery |
 | discoverer.discoverer.namespace | string | `"_MY_POD_NAMESPACE_"` | namespace to discovery |
+| discoverer.enabled | bool | `true` | discoverer enabled |
 | discoverer.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
 | discoverer.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
+| discoverer.hpa.enabled | bool | `false` | HPA enabled |
+| discoverer.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |
 | discoverer.image.pullPolicy | string | `"Always"` | image pull policy |
 | discoverer.image.repository | string | `"vdaas/vald-discoverer-k8s"` | image repository |
 | discoverer.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
@@ -492,6 +499,7 @@ Configuration
 | gateway.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app","operator":"In","values":["vald-gateway"]}]},"topologyKey":"kubernetes.io/hostname"},"weight":100}]` | pod anti-affinity preferred scheduling terms |
 | gateway.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
 | gateway.annotations | object | `{}` | deployment annotations |
+| gateway.enabled | bool | `true` | gateway enabled |
 | gateway.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
 | gateway.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | gateway.filter.egress | list | `[""]` | egress filters |
@@ -513,6 +521,7 @@ Configuration
 | gateway.image.repository | string | `"vdaas/vald-gateway"` | image repository |
 | gateway.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
 | gateway.ingress.annotations | object | `{"nginx.ingress.kubernetes.io/grpc-backend":"true"}` | annotations for ingress |
+| gateway.ingress.enabled | bool | `true` | gateway ingress enabled |
 | gateway.ingress.host | string | `"vald.gateway.vdaas.org"` | ingress hostname |
 | gateway.ingress.servicePort | string | `"grpc"` | service port to be exposed by ingress |
 | gateway.initContainers | list | `[{"image":"busybox","name":"wait-for-manager-compressor","sleepDuration":2,"target":"compressor","type":"wait-for"},{"image":"busybox","name":"wait-for-meta","sleepDuration":2,"target":"meta","type":"wait-for"},{"image":"busybox","name":"wait-for-discoverer","sleepDuration":2,"target":"discoverer","type":"wait-for"},{"image":"busybox","name":"wait-for-agent","sleepDuration":2,"target":"agent","type":"wait-for"}]` | init containers |
@@ -548,6 +557,7 @@ Configuration
 | indexManager.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity preferred scheduling terms |
 | indexManager.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
 | indexManager.annotations | object | `{}` | deployment annotations |
+| indexManager.enabled | bool | `true` | index manager enabled |
 | indexManager.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | (list) environment variables |
 | indexManager.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | indexManager.image.pullPolicy | string | `"Always"` | image pull policy |
@@ -676,7 +686,7 @@ Configuration
 | meta.cassandra.config.retry_policy.max_duration | string | `"1s"` | maximum duration to retry |
 | meta.cassandra.config.retry_policy.min_duration | string | `"10ms"` | minimum duration to retry |
 | meta.cassandra.config.retry_policy.num_retries | int | `3` | number of retries |
-| meta.cassandra.config.serial_consistency | string | `"local_serial"` | read consistency type |
+| meta.cassandra.config.serial_consistency | string | `"localserial"` | read consistency type |
 | meta.cassandra.config.socket_keepalive | string | `"0s"` | socket keep alive time |
 | meta.cassandra.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
 | meta.cassandra.config.tcp.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
@@ -692,6 +702,7 @@ Configuration
 | meta.cassandra.config.username | string | `"root"` | cassandra username |
 | meta.cassandra.config.write_coalesce_wait_time | string | `"200µs"` | write coalesce wait time |
 | meta.cassandra.enabled | bool | `false` | cassandra config enabled |
+| meta.enabled | bool | `true` | meta enabled |
 | meta.env | list | `[{"name":"REDIS_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"redis-secret"}}}]` | environment variables |
 | meta.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | meta.hpa.enabled | bool | `true` | HPA enabled |
@@ -763,3 +774,23 @@ Configuration
 | meta.version | string | `"v0.0.0"` | version of meta config |
 | meta.volumeMounts | list | `[]` | volume mounts |
 | meta.volumes | list | `[]` | volumes |
+
+
+Miscellaneous
+---
+
+### Standalone Vald agent NGT deployment
+
+Each component can be disabled by setting the value `false` to the `[component].enabled` field.
+This is useful for deploying only Vald agent NGT pods.
+
+There is an example yaml [values-agent-ngt-standalone.yaml][agent-ngt-standalone-yaml] to deploy standalone agent NGT.
+Please run the following command to install the chart with this values yaml,
+
+    $ helm repo add vald https://vald.vdaas.org/charts
+    $ helm install --values values-agent-ngt-standalone.yaml vald-agent-ngt vald/vald
+
+If you'd like to access the agents from out of the Kubernetes cluster, it is recommended to create an [Ingress][k8s-ingress].
+
+agent-ngt-standalone-yaml: ./values-agent-ngt-standalone.yaml
+k8s-ingress: https://kubernetes.io/docs/concepts/services-networking/ingress/

@@ -23,7 +23,7 @@ image:
   # image.repository -- image repository
   repository: vdaas/vald-helm-operator
   # image.tag -- image tag
-  tag: v0.0.35
+  tag: v0.0.36
   # image.pullPolicy -- image pull policy
   pullPolicy: Always
 
