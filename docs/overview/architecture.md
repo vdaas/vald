@@ -1,5 +1,5 @@
 # Vald Architecture <!-- omit in toc -->
-
+This document describes the high-level architecture design of Vald and explains each component in Vald.
 ## Table of Contents <!-- omit in toc -->
 
 - [Overview](#overview)
@@ -34,12 +34,16 @@
 
 ## Overview
 
-This document describes the high-level architecture design of Vald and explains each component in Vald.
-We need these components to support scalability, high performance, and auto-healing in Vald.
+
+
+Vald is based on [Kubernetes](https://kubernetes.io/) architecture.
+Before you read this document, you must understand the basic concept of Kubernetes.
+
+The below image is Vald's architecture.
 
 <img src="../../design/Vald Future Architecture Overview.svg" />
 
-Vald is based on [Kubernetes](https://kubernetes.io/) architecture. Before you read this document, you must understand the basic concept of Kubernetes.
+We will explain this image in the following section.
 
 ## Data Flow
 
@@ -51,7 +55,6 @@ In this section, we will explain the data flow in Vald which is the most importa
 
 When the user inserts data into Vald:
 
-```bash
 1. Vald Ingress receives the request from the user. The request includes the vector and the vector ID which is set by user.
 2. Vald Ingress will forward the request to Vald Meta Gateway. After the Vald Meta Gateway receive the request, the UUID will be generated for internal use.
 3. Vald Meta Gateway will forward the request with UUID to Vald Backup Gateway.
@@ -65,7 +68,6 @@ When the user inserts data into Vald:
 11. Vald Backup Gateway will send all the data (vector, vector ID and UUID) the Vald Compressor.
 12. Vald Compressor will compress the data received and send to the Vald Backup Manager.
 13. Vald Backup Manager will store the compressed data to the persistent layer.
-```
 
 ### Search
 
@@ -73,7 +75,6 @@ When the user inserts data into Vald:
 
 When the user searches a vector from Vald:
 
-```bash
 1. Vald Ingress receives the search request from the user. The request includes the vector or the vector ID.
 2. Vald Ingress will forward the request to Vald Filter Gateway.
 3. Vald Filter Gateway will forward the request to Vald Ingress Filter.
@@ -89,7 +90,6 @@ When the user searches a vector from Vald:
 13. Vald Meta will perform a search for the Vector ID base on the UUID and return the Vector ID to the Vald Meta Gateway.
 14. Vald Meta Gateway returns the searching result with the vector ID to the Vald Filter Gateway.
 15. Vald Filter Gateway will forward the request to Vald Egress Gateway to filter the final result.
-```
 
 <!-- ### Update -->
 
