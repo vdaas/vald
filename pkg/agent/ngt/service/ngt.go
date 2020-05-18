@@ -193,7 +193,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 		return nil
 	}
 	ech := make(chan error, 2)
-	n.eg.Go(safety.RecoverFunc(func() error {
+	n.eg.Go(safety.RecoverFunc(func() (err error) {
 		if n.sdur == 0 {
 			n.sdur = n.dur + time.Second
 		}
@@ -207,7 +207,6 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 		defer tick.Stop()
 		defer sTick.Stop()
 		defer limit.Stop()
-		var err error
 		for {
 			err = nil
 			select {
@@ -215,8 +214,6 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				err = n.CreateAndSaveIndex(ctx, n.dps)
 				if err != nil {
 					ech <- err
-				}
-				if err != nil {
 					return errors.Wrap(ctx.Err(), err.Error())
 				}
 				return ctx.Err()

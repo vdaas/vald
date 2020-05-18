@@ -62,6 +62,7 @@ spec:
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
+      topologySpreadConstraints: []
       containers:
         - name: vald-agent-ngt
           image: "vdaas/vald-agent-ngt:nightly"

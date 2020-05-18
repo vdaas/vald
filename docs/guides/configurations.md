@@ -197,10 +197,10 @@ Pod priorities are also useful for saving agent pods from eviction.
 By default, very high priority is set to agent pods in the Chart.
 
 
-#### Pod anti-affinity
+#### Pod scheduling
 
 It is recommended to schedule agent pods on different nodes as much as possible.
-To achieve this, the following podAntiAffinity is set by default.
+To achieve this, the following [podAntiAffinity][k8s-affinity-antiaffinity] is set by default.
 
 ```yaml
 agent:
@@ -216,6 +216,22 @@ agent:
                   operator: In
                   values:
                     - vald-agent-ngt
+```
+
+It can be also achieved by using [pod topology spread constraints][k8s-topology-spread-constraints].
+
+```yaml
+agent:
+  topologySpreadConstraints:
+    - topologyKey: node
+      maxSkew: 1
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app: vald-agent-ngt
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution: [] # to disable default settings
 ```
 
 ### Gateway
@@ -399,5 +415,7 @@ For further details, there are references of Helm values in GitHub Vald reposito
 [google-pprof]: https://github.com/google/pprof
 [prometheus-io]: https://prometheus.io/
 [k8s-liveness-readiness]: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+[k8s-affinity-antiaffinity]: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+[k8s-topology-spread-constraints]: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
 [yj-ngt]: https://github.com/yahoojapan/NGT
 [yj-ngt-wiki]: https://github.com/yahoojapan/NGT/wiki

@@ -536,6 +536,8 @@ gateway:
                     - vald-gateway
       # gateway.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
       requiredDuringSchedulingIgnoredDuringExecution: []
+  # gateway.topologySpreadConstraints -- topology spread constraints of gateway pods
+  topologySpreadConstraints: []
   # gateway.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -715,6 +717,8 @@ agent:
                     - vald-agent-ngt
       # agent.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
       requiredDuringSchedulingIgnoredDuringExecution: []
+  # agent.topologySpreadConstraints -- topology spread constraints for agent pods
+  topologySpreadConstraints: []
   # agent.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -869,6 +873,8 @@ discoverer:
                     - vald-discoverer
       # discoverer.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
       requiredDuringSchedulingIgnoredDuringExecution: []
+  # discoverer.topologySpreadConstraints -- topology spread constraints of discoverer pods
+  topologySpreadConstraints: []
   # discoverer.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -1013,6 +1019,8 @@ compressor:
       preferredDuringSchedulingIgnoredDuringExecution: []
       # compressor.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
       requiredDuringSchedulingIgnoredDuringExecution: []
+  # compressor.topologySpreadConstraints -- topology spread constraints of compressor pods
+  topologySpreadConstraints: []
   # compressor.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -1209,6 +1217,8 @@ backupManager:
       preferredDuringSchedulingIgnoredDuringExecution: []
       # backupManager.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
       requiredDuringSchedulingIgnoredDuringExecution: []
+  # backupManager.topologySpreadConstraints -- topology spread constraints of backup manager pods
+  topologySpreadConstraints: []
   # backupManager.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -1506,6 +1516,8 @@ indexManager:
       preferredDuringSchedulingIgnoredDuringExecution: []
       # indexManager.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
       requiredDuringSchedulingIgnoredDuringExecution: []
+  # indexManager.topologySpreadConstraints -- topology spread constraints of index manager pods
+  topologySpreadConstraints: []
   # indexManager.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:
@@ -1699,6 +1711,8 @@ meta:
       preferredDuringSchedulingIgnoredDuringExecution: []
       # meta.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
       requiredDuringSchedulingIgnoredDuringExecution: []
+  # meta.topologySpreadConstraints -- topology spread constraints of meta pods
+  topologySpreadConstraints: []
   # meta.server_config -- server config (overrides defaults.server_config)
   server_config:
     servers:

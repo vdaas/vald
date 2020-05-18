@@ -63,6 +63,7 @@ spec:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution: []
           requiredDuringSchedulingIgnoredDuringExecution: []
+      topologySpreadConstraints: []
       containers:
         - name: vald-manager-compressor
           image: "vdaas/vald-manager-compressor:nightly"

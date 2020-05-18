@@ -34,7 +34,7 @@ agent:
     # The number of dimensions for feature vector of fashion-mnist dataset.
     dimension: 784
     # We use L2-Norm for distance_type.
-    distance_type: 12
+    distance_type: l2
     # the type of fashion-mnist's feature vectors.
     object_type: float
 

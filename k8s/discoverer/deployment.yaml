@@ -61,6 +61,7 @@ spec:
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
+      topologySpreadConstraints: []
       containers:
         - name: vald-discoverer
           image: "vdaas/vald-discoverer-k8s:nightly"
