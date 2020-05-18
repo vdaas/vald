@@ -75,7 +75,7 @@ func New(opts ...Option) (TF, error) {
 		opt(t)
 	}
 
-	if t.options == nil && (len(t.sessionTarget) != 0 || t.sessionConfig != nil) {
+	if t.options == nil && (t.sessionTarget == "" || t.sessionConfig != nil) {
 		t.options = &tf.SessionOptions{
 			Target: t.sessionTarget,
 			Config: t.sessionConfig,
