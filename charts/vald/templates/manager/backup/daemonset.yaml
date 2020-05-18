@@ -49,6 +49,10 @@ spec:
         {{- $initContainers := dict "initContainers" .Values.backupManager.initContainers "Values" .Values "namespace" .Release.Namespace -}}
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
+      affinity:
+        {{- include "vald.affinity" .Values.backupManager.affinity | nindent 8 }}
+      topologySpreadConstraints:
+        {{- toYaml .Values.backupManager.topologySpreadConstraints | nindent 8 }}
       containers:
         - name: {{ .Values.backupManager.name }}
           image: "{{ .Values.backupManager.image.repository }}:{{ default .Values.defaults.image.tag .Values.backupManager.image.tag }}"
