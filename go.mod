@@ -55,7 +55,7 @@ require (
 	go.uber.org/goleak v1.0.0
 	golang.org/x/mod v0.3.0 // indirect
 	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5
-	golang.org/x/tools v0.0.0-20200515010526-7d3b6ebf133d // indirect
+	golang.org/x/tools v0.0.0-20200515220128-d3bf790afa53 // indirect
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/netlib v0.0.0-20200317120129-c5a04cffd98a // indirect
 	gonum.org/v1/plot v0.7.0
