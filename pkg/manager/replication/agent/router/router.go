@@ -48,54 +48,31 @@ func New(opts ...Option) http.Handler {
 				middleware.WithTimeout(r.timeout),
 				middleware.WithErrorGroup(r.eg),
 			)),
-		routing.WithRoutes([]routing.Route{{
-			"GetVector",
-			[]string{
-				http.MethodGet,
-			},
-			"/vector/{uuid}",
-			h.GetVector,
-		},
+		routing.WithRoutes([]routing.Route{
 			{
-				"Locations",
+				"Recover",
+				[]string{
+					http.MethodPost,
+				},
+				"/recover",
+				h.Recover,
+			},
+			{
+				"Rebalance",
+				[]string{
+					http.MethodPost,
+				},
+				"/rebalance",
+				h.Rebalance,
+			},
+			{
+				"Agent Info",
 				[]string{
 					http.MethodGet,
 				},
-				"/locations/{uuid}",
-				h.Locations,
-			},
-			{
-				"Register",
-				[]string{
-					http.MethodPost,
-				},
-				"/register",
-				h.Register,
-			},
-			{
-				"Multiple Register",
-				[]string{
-					http.MethodPost,
-				},
-				"/register/multi",
-				h.RegisterMulti,
-			},
-			{
-				"Remove",
-				[]string{
-					http.MethodDelete,
-				},
-				"/delete/{uuid}",
-				h.Remove,
-			},
-			{
-				"Multiple Remoce",
-				[]string{
-					http.MethodDelete,
-					http.MethodPost,
-				},
-				"/delete/multi",
-				h.RemoveMulti,
+				"/info/agent",
+				h.AgentInfo,
 			},
 		}...))
+
 }

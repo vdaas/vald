@@ -32,8 +32,7 @@ import (
 type Server agent.ReplicationServer
 
 type server struct {
-	agent  service.Agent
-	backup service.Backup
+	rep service.Replicator
 }
 
 func New(opts ...Option) Server {

@@ -17,8 +17,16 @@
 // Package grpc provides grpc server logic
 package grpc
 
+import "github.com/vdaas/vald/pkg/manager/replication/agent/service"
+
 type Option func(*server)
 
 var (
 	defaultOpts = []Option{}
 )
+
+func WithReplicator(rep service.Replicator) Option {
+	return func(s *server) {
+		s.rep = rep
+	}
+}

@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/manager/backup"
+	"github.com/vdaas/vald/apis/grpc/manager/replication/agent"
 	"github.com/vdaas/vald/internal/errors"
 
 	"go.uber.org/goleak"
@@ -99,13 +99,13 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_handler_GetVector(t *testing.T) {
+func Test_handler_Recover(t *testing.T) {
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		backup backup.BackupServer
+		reps agent.ReplicationServer
 	}
 	type want struct {
 		want int
@@ -139,7 +139,7 @@ func Test_handler_GetVector(t *testing.T) {
 		           r: nil,
 		       },
 		       fields: fields {
-		           backup: nil,
+		           reps: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -156,7 +156,7 @@ func Test_handler_GetVector(t *testing.T) {
 		           r: nil,
 		           },
 		           fields: fields {
-		           backup: nil,
+		           reps: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -178,10 +178,10 @@ func Test_handler_GetVector(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			h := &handler{
-				backup: test.fields.backup,
+				reps: test.fields.reps,
 			}
 
-			got, err := h.GetVector(test.args.w, test.args.r)
+			got, err := h.Recover(test.args.w, test.args.r)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -190,13 +190,13 @@ func Test_handler_GetVector(t *testing.T) {
 	}
 }
 
-func Test_handler_Locations(t *testing.T) {
+func Test_handler_Rebalance(t *testing.T) {
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		backup backup.BackupServer
+		reps agent.ReplicationServer
 	}
 	type want struct {
 		want int
@@ -230,7 +230,7 @@ func Test_handler_Locations(t *testing.T) {
 		           r: nil,
 		       },
 		       fields: fields {
-		           backup: nil,
+		           reps: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -247,7 +247,7 @@ func Test_handler_Locations(t *testing.T) {
 		           r: nil,
 		           },
 		           fields: fields {
-		           backup: nil,
+		           reps: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -269,10 +269,10 @@ func Test_handler_Locations(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			h := &handler{
-				backup: test.fields.backup,
+				reps: test.fields.reps,
 			}
 
-			got, err := h.Locations(test.args.w, test.args.r)
+			got, err := h.Rebalance(test.args.w, test.args.r)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -281,13 +281,13 @@ func Test_handler_Locations(t *testing.T) {
 	}
 }
 
-func Test_handler_Register(t *testing.T) {
+func Test_handler_AgentInfo(t *testing.T) {
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		backup backup.BackupServer
+		reps agent.ReplicationServer
 	}
 	type want struct {
 		want int
@@ -321,7 +321,7 @@ func Test_handler_Register(t *testing.T) {
 		           r: nil,
 		       },
 		       fields: fields {
-		           backup: nil,
+		           reps: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -338,7 +338,7 @@ func Test_handler_Register(t *testing.T) {
 		           r: nil,
 		           },
 		           fields: fields {
-		           backup: nil,
+		           reps: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -360,465 +360,10 @@ func Test_handler_Register(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			h := &handler{
-				backup: test.fields.backup,
+				reps: test.fields.reps,
 			}
 
-			got, err := h.Register(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_handler_RegisterMulti(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
-	type fields struct {
-		backup backup.BackupServer
-	}
-	type want struct {
-		want int
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, int, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got int, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           w: nil,
-		           r: nil,
-		       },
-		       fields: fields {
-		           backup: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           w: nil,
-		           r: nil,
-		           },
-		           fields: fields {
-		           backup: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			h := &handler{
-				backup: test.fields.backup,
-			}
-
-			got, err := h.RegisterMulti(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_handler_Remove(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
-	type fields struct {
-		backup backup.BackupServer
-	}
-	type want struct {
-		want int
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, int, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got int, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           w: nil,
-		           r: nil,
-		       },
-		       fields: fields {
-		           backup: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           w: nil,
-		           r: nil,
-		           },
-		           fields: fields {
-		           backup: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			h := &handler{
-				backup: test.fields.backup,
-			}
-
-			got, err := h.Remove(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_handler_RemoveMulti(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
-	type fields struct {
-		backup backup.BackupServer
-	}
-	type want struct {
-		want int
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, int, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got int, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           w: nil,
-		           r: nil,
-		       },
-		       fields: fields {
-		           backup: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           w: nil,
-		           r: nil,
-		           },
-		           fields: fields {
-		           backup: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			h := &handler{
-				backup: test.fields.backup,
-			}
-
-			got, err := h.RemoveMulti(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_handler_RegisterIPs(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
-	type fields struct {
-		backup backup.BackupServer
-	}
-	type want struct {
-		want int
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, int, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got int, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           w: nil,
-		           r: nil,
-		       },
-		       fields: fields {
-		           backup: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           w: nil,
-		           r: nil,
-		           },
-		           fields: fields {
-		           backup: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			h := &handler{
-				backup: test.fields.backup,
-			}
-
-			got, err := h.RegisterIPs(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_handler_RemoveIPs(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
-	type fields struct {
-		backup backup.BackupServer
-	}
-	type want struct {
-		want int
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, int, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got int, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           w: nil,
-		           r: nil,
-		       },
-		       fields: fields {
-		           backup: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           w: nil,
-		           r: nil,
-		           },
-		           fields: fields {
-		           backup: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			h := &handler{
-				backup: test.fields.backup,
-			}
-
-			got, err := h.RemoveIPs(test.args.w, test.args.r)
+			got, err := h.AgentInfo(test.args.w, test.args.r)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
