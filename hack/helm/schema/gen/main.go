@@ -28,20 +28,50 @@ import (
 )
 
 const (
+	nullType   = "null"
+	boolType   = "boolean"
 	objectType = "object"
 	arrayType  = "array"
+	numberType = "number"
 	stringType = "string"
 	intType    = "integer"
-	boolType   = "boolean"
 
 	prefix = "# @schema"
 )
 
+type SchemaBase struct {
+	// for object type
+	Required          []string          `json:"required,omitempty"`
+	MaxProperties     uint64            `json:"maxProperties,omitempty"`
+	MinProperties     uint64            `json:"minProperties,omitempty"`
+	DependentRequired map[string]string `json:"dependentRequired,omitempty"`
+
+	// for string type
+	Enum      []string `json:"enum,omitempty"`
+	Pattern   string   `json:"pattern,omitempty"`
+	MaxLength uint64   `json:"maxLength,omitempty"`
+	MinLength uint64   `json:"minLength,omitempty"`
+
+	// for array type
+	Items       *Schema `json:"items,omitempty"`
+	MaxItems    uint64  `json:"maxItems,omitempty"`
+	MinItems    uint64  `json:"minItems,omitempty"`
+	UniqueItems bool    `json:"uniqueItems,omitempty"`
+	MaxContains uint64  `json:"maxContains,omitempty"`
+	MinContains uint64  `json:"minContains,omitempty"`
+
+	// for numeric types
+	MultipleOf       int64 `json:"multipleOf,omitempty"`
+	Maximum          int64 `json:"maximum,omitempty"`
+	ExclusiveMaximum int64 `json:"exclusiveMaximum,omitempty"`
+	Minimum          int64 `json:"minimum,omitempty"`
+	ExclusiveMinimum int64 `json:"exclusiveMinimum,omitempty"`
+}
+
 type VSchema struct {
-	Name     string   `json:"name"`
-	Type     string   `json:"type"`
-	Required []string `json:"required,omitempty"`
-	Pattern  string   `json:"pattern,omitempty"`
+	Name string `json:"name"`
+	Type string `json:"type"`
+	SchemaBase
 }
 
 type Root struct {
@@ -53,10 +83,9 @@ type Root struct {
 type Schema struct {
 	Type        string             `json:"type"`
 	Description string             `json:"description,omitempty"`
-	Pattern     string             `json:"pattern,omitempty"`
-	Items       *Schema            `json:"items,omitempty"`
-	Required    []string           `json:"required,omitempty"`
 	Properties  map[string]*Schema `json:"properties,omitempty"`
+
+	SchemaBase
 }
 
 func main() {
@@ -144,8 +173,8 @@ func genNode(ls []VSchema) (*Schema, error) {
 	case objectType:
 		if len(ls) <= 1 {
 			return &Schema{
-				Type:     objectType,
-				Required: l.Required,
+				Type:       objectType,
+				SchemaBase: l.SchemaBase,
 			}, nil
 		}
 
@@ -161,29 +190,13 @@ func genNode(ls []VSchema) (*Schema, error) {
 		}
 		return &Schema{
 			Type:       objectType,
-			Required:   l.Required,
 			Properties: ps,
-		}, nil
-	case arrayType:
-		return &Schema{
-			Type: arrayType,
-		}, nil
-	case stringType:
-		return &Schema{
-			Type:    stringType,
-			Pattern: l.Pattern,
-		}, nil
-	case intType:
-		return &Schema{
-			Type: intType,
-		}, nil
-	case boolType:
-		return &Schema{
-			Type: boolType,
+			SchemaBase: l.SchemaBase,
 		}, nil
 	default:
 		return &Schema{
-			Type: l.Type,
+			Type:       l.Type,
+			SchemaBase: l.SchemaBase,
 		}, nil
 	}
 }
