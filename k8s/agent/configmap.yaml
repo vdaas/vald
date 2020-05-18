@@ -117,6 +117,7 @@ data:
       auto_index_check_duration: 30m
       auto_index_duration_limit: 24h
       auto_index_length: 100
+      auto_save_index_duration: 35m
       bulk_insert_chunk_size: 10
       creation_edge_size: 20
       dimension: 4096
