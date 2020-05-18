@@ -180,8 +180,8 @@ update: \
 format: \
 	license \
 	update/goimports \
-	format/yaml \
-	format/docker
+	format/yaml
+	# format/docker
 
 .PHONY: update/goimports
 ## run goimports for all go files
