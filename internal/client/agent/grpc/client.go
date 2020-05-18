@@ -115,10 +115,7 @@ func (c *agentClient) StreamSearch(
 
 			return nil, streamSearch(st,
 				func() interface{} {
-					if d := dataProvider(); d != nil {
-						return d
-					}
-					return nil
+					return dataProvider()
 				}, f)
 		},
 	)
@@ -141,10 +138,7 @@ func (c *agentClient) StreamSearchByID(
 
 			return nil, streamSearch(st,
 				func() interface{} {
-					if d := dataProvider(); d != nil {
-						return d
-					}
-					return nil
+					return dataProvider()
 				}, f,
 			)
 		},
@@ -180,10 +174,7 @@ func (c *agentClient) StreamInsert(
 
 			return nil, stream(st,
 				func() interface{} {
-					if d := dataProvider(); d != nil {
-						return d
-					}
-					return nil
+					return dataProvider()
 				}, f,
 			)
 		},
@@ -231,10 +222,7 @@ func (c *agentClient) StreamUpdate(
 
 			return nil, stream(st,
 				func() interface{} {
-					if d := dataProvider(); d != nil {
-						return d
-					}
-					return nil
+					return dataProvider()
 				}, f,
 			)
 		},
@@ -280,10 +268,7 @@ func (c *agentClient) StreamRemove(
 
 			return nil, stream(st,
 				func() interface{} {
-					if d := dataProvider(); d != nil {
-						return d
-					}
-					return nil
+					return dataProvider()
 				}, f,
 			)
 		},
@@ -334,10 +319,7 @@ func (c *agentClient) StreamGetObject(
 
 			return nil, grpc.BidirectionalStreamClient(st,
 				func() interface{} {
-					if d := dataProvider(); d != nil {
-						return d
-					}
-					return nil
+					return dataProvider()
 				}, func() interface{} {
 					return new(client.ObjectVector)
 				}, func(res interface{}, err error) {
