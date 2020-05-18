@@ -800,5 +800,5 @@ Please run the following command to install the chart with this values yaml,
 
 If you'd like to access the agents from out of the Kubernetes cluster, it is recommended to create an [Ingress][k8s-ingress].
 
-agent-ngt-standalone-yaml: ./values-agent-ngt-standalone.yaml
-k8s-ingress: https://kubernetes.io/docs/concepts/services-networking/ingress/
+[agent-ngt-standalone-yaml]: ./values-agent-ngt-standalone.yaml
+[k8s-ingress]: https://kubernetes.io/docs/concepts/services-networking/ingress/
