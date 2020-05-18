@@ -22,7 +22,6 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/manager/backup"
 	"github.com/vdaas/vald/apis/grpc/manager/replication/agent"
-	"go.uber.org/goleak"
 
 	"go.uber.org/goleak"
 )
