@@ -152,6 +152,11 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 					log.Debug(addr, err)
 					return err
 				}
+				_, err = agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{}, copts...)
+				if err != nil {
+					log.Debug(addr, err)
+					return err
+				}
 			}
 			return nil
 		})

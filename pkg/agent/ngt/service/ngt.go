@@ -69,6 +69,7 @@ type ngt struct {
 	indexing atomic.Value
 	lim      time.Duration // auto indexing time limit
 	dur      time.Duration // auto indexing check duration
+	sdur     time.Duration // auto save index check duration
 	dps      uint32        // default pool size
 	ic       uint64        // insert count
 	nocie    uint64        // number of create index execution
@@ -79,6 +80,7 @@ type ngt struct {
 	kvs      kvs.BidiMap
 	core     core.NGT
 	dcd      bool // disable commit daemon
+	inMem    bool
 }
 
 type vcache struct {
@@ -92,9 +94,10 @@ const (
 
 func New(cfg *config.NGT) (nn NGT, err error) {
 	n := new(ngt)
+	n.inMem = cfg.EnableInMemoryMode
 	cfg.IndexPath = strings.TrimSuffix(cfg.IndexPath, "/")
 	opts := []core.Option{
-		core.WithInMemoryMode(cfg.EnableInMemoryMode),
+		core.WithInMemoryMode(n.inMem),
 		core.WithIndexPath(cfg.IndexPath),
 		core.WithDimension(cfg.Dimension),
 		core.WithDistanceTypeByString(cfg.DistanceType),
@@ -104,13 +107,13 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 		core.WithSearchEdgeSize(cfg.SearchEdgeSize),
 	}
 
-	if !cfg.EnableInMemoryMode && len(cfg.IndexPath) != 0 {
+	if !n.inMem && len(cfg.IndexPath) != 0 {
 		n.path = cfg.IndexPath
 	}
 
 	n.kvs = kvs.New()
 
-	if _, err = os.Stat(cfg.IndexPath); os.IsNotExist(err) {
+	if _, err = os.Stat(cfg.IndexPath); os.IsNotExist(err) || n.inMem {
 		n.core, err = core.New(opts...)
 	} else {
 		eg, _ := errgroup.New(context.Background())
@@ -119,7 +122,7 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 			return err
 		}))
 		eg.Go(safety.RecoverFunc(func() (err error) {
-			if len(n.path) != 0 {
+			if len(n.path) != 0 && !n.inMem {
 				m := make(map[string]uint32)
 				gob.Register(map[string]uint32{})
 				f := file.Open(n.path+"/"+kvsFileName, os.O_RDONLY|os.O_SYNC, os.ModePerm)
@@ -156,6 +159,14 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 		n.lim = d
 	}
 
+	if cfg.AutoIndexSaveDuration != "" {
+		d, err := timeutil.Parse(cfg.AutoIndexSaveDuration)
+		if err != nil {
+			d = 0
+		}
+		n.sdur = d
+	}
+
 	n.alen = cfg.AutoIndexLength
 
 	n.eg = errgroup.Get()
@@ -183,29 +194,45 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 	}
 	ech := make(chan error, 2)
 	n.eg.Go(safety.RecoverFunc(func() error {
+		if n.sdur == 0 {
+			n.sdur = n.dur + time.Second
+		}
+		if n.lim == 0 {
+			n.lim = n.dur * 2
+		}
 		defer close(ech)
 		tick := time.NewTicker(n.dur)
+		sTick := time.NewTicker(n.sdur)
 		limit := time.NewTicker(n.lim)
 		defer tick.Stop()
+		defer sTick.Stop()
 		defer limit.Stop()
+		var err error
 		for {
+			err = nil
 			select {
 			case <-ctx.Done():
+				err = n.CreateAndSaveIndex(ctx, n.dps)
+				if err != nil {
+					ech <- err
+				}
+				if err != nil {
+					return errors.Wrap(ctx.Err(), err.Error())
+				}
 				return ctx.Err()
 			case <-tick.C:
 				if int(atomic.LoadUint64(&n.ic)) >= n.alen {
-					err := n.CreateIndex(n.dps)
-					if err != nil && err != errors.ErrUncommittedIndexNotFound {
-						ech <- err
-						runtime.Gosched()
-					}
+					err = n.CreateIndex(n.dps)
 				}
 			case <-limit.C:
-				err := n.CreateIndex(n.dps)
-				if err != nil && err != errors.ErrUncommittedIndexNotFound {
-					ech <- err
-					runtime.Gosched()
-				}
+				err = n.CreateAndSaveIndex(ctx, n.dps)
+			case <-sTick.C:
+				err = n.SaveIndex(ctx)
+			}
+			if err != nil && err != errors.ErrUncommittedIndexNotFound {
+				ech <- err
+				runtime.Gosched()
+				err = nil
 			}
 		}
 	}))
@@ -497,28 +524,31 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 }
 
 func (n *ngt) SaveIndex(ctx context.Context) (err error) {
-	eg, ctx := errgroup.New(ctx)
-	eg.Go(safety.RecoverFunc(func() error {
-		if len(n.path) != 0 {
-			m := make(map[string]uint32, n.kvs.Len())
-			var mu sync.Mutex
-			n.kvs.Range(ctx, func(key string, id uint32) bool {
-				mu.Lock()
-				m[key] = id
-				mu.Unlock()
-				return true
-			})
-			f := file.Open(n.path+"/"+kvsFileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
-			defer f.Close()
-			gob.Register(map[string]uint32{})
-			return gob.NewEncoder(f).Encode(&m)
-		}
-		return nil
-	}))
-	eg.Go(safety.RecoverFunc(func() error {
-		return n.core.SaveIndex()
-	}))
-	return eg.Wait()
+	if len(n.path) != 0 && !n.inMem {
+		eg, ctx := errgroup.New(ctx)
+		eg.Go(safety.RecoverFunc(func() error {
+			if len(n.path) != 0 {
+				m := make(map[string]uint32, n.kvs.Len())
+				var mu sync.Mutex
+				n.kvs.Range(ctx, func(key string, id uint32) bool {
+					mu.Lock()
+					m[key] = id
+					mu.Unlock()
+					return true
+				})
+				f := file.Open(n.path+"/"+kvsFileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+				defer f.Close()
+				gob.Register(map[string]uint32{})
+				return gob.NewEncoder(f).Encode(&m)
+			}
+			return nil
+		}))
+		eg.Go(safety.RecoverFunc(func() error {
+			return n.core.SaveIndex()
+		}))
+		err = eg.Wait()
+	}
+	return
 }
 
 func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err error) {
