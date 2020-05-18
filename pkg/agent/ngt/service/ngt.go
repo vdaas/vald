@@ -159,8 +159,8 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 		n.lim = d
 	}
 
-	if cfg.AutoIndexSaveDuration != "" {
-		d, err := timeutil.Parse(cfg.AutoIndexSaveDuration)
+	if cfg.AutoSaveIndexDuration != "" {
+		d, err := timeutil.Parse(cfg.AutoSaveIndexDuration)
 		if err != nil {
 			d = 0
 		}

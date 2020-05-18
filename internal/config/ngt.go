@@ -46,8 +46,8 @@ type NGT struct {
 	// AutoIndexCheckDuration represent checking loop duration about auto indexing execution
 	AutoIndexCheckDuration string `yaml:"auto_index_check_duration" json:"auto_index_check_duration"`
 
-	// AutoIndexSaveDuration represent checking loop duration about auto save index execution
-	AutoIndexSaveDuration string `yaml:"auto_index_save_duration" json:"auto_index_save_duration"`
+	// AutoSaveIndexDuration represent checking loop duration about auto save index execution
+	AutoSaveIndexDuration string `yaml:"auto_save_index_duration" json:"auto_save_index_duration"`
 
 	// AutoIndexLength represent auto index length limit
 	AutoIndexLength int `yaml:"auto_index_length" json:"auto_index_length"`
@@ -62,6 +62,6 @@ func (n *NGT) Bind() *NGT {
 	n.ObjectType = GetActualValue(n.ObjectType)
 	n.AutoIndexCheckDuration = GetActualValue(n.AutoIndexCheckDuration)
 	n.AutoIndexDurationLimit = GetActualValue(n.AutoIndexDurationLimit)
-	n.AutoIndexSaveDuration = GetActualValue(n.AutoIndexSaveDuration)
+	n.AutoSaveIndexDuration = GetActualValue(n.AutoSaveIndexDuration)
 	return n
 }
