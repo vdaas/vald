@@ -56,6 +56,8 @@ spec:
       {{- end }}
       affinity:
         {{- include "vald.affinity" .Values.compressor.affinity | nindent 8 }}
+      topologySpreadConstraints:
+        {{- toYaml .Values.compressor.topologySpreadConstraints | nindent 8 }}
       containers:
         - name: {{ .Values.compressor.name }}
           image: "{{ .Values.compressor.image.repository }}:{{ default .Values.defaults.image.tag .Values.compressor.image.tag }}"

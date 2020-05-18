@@ -57,6 +57,8 @@ spec:
       {{- end }}
       affinity:
         {{- include "vald.affinity" .Values.agent.affinity | nindent 8 }}
+      topologySpreadConstraints:
+        {{- toYaml .Values.agent.topologySpreadConstraints | nindent 8 }}
       containers:
         - name: {{ .Values.agent.name }}
           image: "{{ .Values.agent.image.repository }}:{{ default .Values.defaults.image.tag .Values.agent.image.tag }}"
