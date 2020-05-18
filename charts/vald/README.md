@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.36`
+Current chart version is `v0.0.37`
 
 Install
 ---
@@ -72,6 +72,7 @@ Configuration
 | agent.ngt.auto_index_check_duration | string | `"30m"` | check duration of automatic indexing |
 | agent.ngt.auto_index_duration_limit | string | `"24h"` | limit duration of automatic indexing |
 | agent.ngt.auto_index_length | int | `100` | number of cache to trigger automatic indexing |
+| agent.ngt.auto_save_index_duration | string | `"35m"` | duration of automatic save index |
 | agent.ngt.bulk_insert_chunk_size | int | `10` | bulk insert chunk size |
 | agent.ngt.creation_edge_size | int | `20` | creation edge size |
 | agent.ngt.dimension | int | `4096` | vector dimension |
@@ -103,6 +104,7 @@ Configuration
 | agent.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | agent.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
 | agent.tolerations | list | `[]` | tolerations |
+| agent.topologySpreadConstraints | list | `[]` | topology spread constraints for agent pods |
 | agent.version | string | `"v0.0.0"` | version of agent config |
 | agent.volumeMounts | list | `[]` | volume mounts |
 | agent.volumes | list | `[]` | volumes |
@@ -220,6 +222,7 @@ Configuration
 | backupManager.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | backupManager.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
 | backupManager.tolerations | list | `[]` | tolerations |
+| backupManager.topologySpreadConstraints | list | `[]` | topology spread constraints of backup manager pods |
 | backupManager.version | string | `"v0.0.0"` | version of backup manager config |
 | backupManager.volumeMounts | list | `[]` | volume mounts |
 | backupManager.volumes | list | `[]` | volumes |
@@ -269,6 +272,7 @@ Configuration
 | compressor.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | compressor.terminationGracePeriodSeconds | int | `120` | duration in seconds pod needs to terminate gracefully |
 | compressor.tolerations | list | `[]` | tolerations |
+| compressor.topologySpreadConstraints | list | `[]` | topology spread constraints of compressor pods |
 | compressor.version | string | `"v0.0.0"` | version of compressor config |
 | compressor.volumeMounts | list | `[]` | volume mounts |
 | compressor.volumes | list | `[]` | volumes |
@@ -315,7 +319,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.36"` | docker image tag |
+| defaults.image.tag | string | `"v0.0.37"` | docker image tag |
 | defaults.logging.format | string | `"raw"` | logging format |
 | defaults.logging.level | string | `"debug"` | logging level |
 | defaults.logging.logger | string | `"glg"` | logger name |
@@ -489,6 +493,7 @@ Configuration
 | discoverer.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | discoverer.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
 | discoverer.tolerations | list | `[]` | tolerations |
+| discoverer.topologySpreadConstraints | list | `[]` | topology spread constraints of discoverer pods |
 | discoverer.version | string | `"v0.0.0"` | version of discoverer config |
 | discoverer.volumeMounts | list | `[]` | volume mounts |
 | discoverer.volumes | list | `[]` | volumes |
@@ -547,6 +552,7 @@ Configuration
 | gateway.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | gateway.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
 | gateway.tolerations | list | `[]` | tolerations |
+| gateway.topologySpreadConstraints | list | `[]` | topology spread constraints of gateway pods |
 | gateway.version | string | `"v0.0.0"` | version of gateway config |
 | gateway.volumeMounts | list | `[]` | volume mounts |
 | gateway.volumes | list | `[]` | volumes |
@@ -595,6 +601,7 @@ Configuration
 | indexManager.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | indexManager.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
 | indexManager.tolerations | list | `[]` | tolerations |
+| indexManager.topologySpreadConstraints | list | `[]` | topology spread constraints of index manager pods |
 | indexManager.version | string | `"v0.0.0"` | version of index manager config |
 | indexManager.volumeMounts | list | `[]` | volume mounts |
 | indexManager.volumes | list | `[]` | volumes |
@@ -771,6 +778,7 @@ Configuration
 | meta.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | meta.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
 | meta.tolerations | list | `[]` | tolerations |
+| meta.topologySpreadConstraints | list | `[]` | topology spread constraints of meta pods |
 | meta.version | string | `"v0.0.0"` | version of meta config |
 | meta.volumeMounts | list | `[]` | volume mounts |
 | meta.volumes | list | `[]` | volumes |

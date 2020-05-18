@@ -30,7 +30,7 @@ defaults:
     format: raw
   image:
     # defaults.image.tag -- docker image tag
-    tag: v0.0.36
+    tag: v0.0.37
   server_config:
     servers:
       rest:
