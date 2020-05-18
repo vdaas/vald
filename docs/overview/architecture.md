@@ -137,7 +137,7 @@ It will perform the following action:
 
 1. Return error if the user has already input the same vector in Vald
 1. Generate the corresponding UUID for internal use.
-1. Forward the metadata (vector ID and UUID) request to the Vald Meta Agent.
+1. Forward the vector ID and UUID request to the Vald Meta.
 1. Forward the vector information (vector ID, vector, and UUID) to Vald Backup Gateway.
 
 #### Vald Meta
@@ -151,11 +151,11 @@ To support auto-healing functionality and increase performance during disaster r
 
 #### Vald Compressor
 
-Vald Compressor compresses all of the data (metadata and the vector data) and sends to the Vald Backup Manager to process the backup request.
+Vald Compressor compresses the vector data and sends to the Vald Backup Manager to process the backup request.
 
 #### Vald Backup Manager
 
-Vald Backup Manager processes the CRD request of the backup request and handles the compressed metadata. Users can configure which data source to be used in Vald Meta (for example Redis or Cassandra).
+Vald Backup Manager processes the Create/Read/Delete request of the backup request and handles the compressed metadata. Users can configure which data source to be used in Vald Meta (for example Redis or Cassandra).
 
 #### Vald Backup Gateway
 
@@ -182,16 +182,13 @@ In this section, we will describe what is Vald Agent and the corresponding compo
 
 #### Vald Agent
 
-Vald Agent is the core of the Vald. By default Vald uses [NGT](https://github.com/yahoojapan/NGT) to provide API for users to insert/update/delete/search vectors.
+Vald Agent provides functionalities to perform approximate nearest neighbor search.
+Agent-NGT uses [yahoojapan/NGT](https://github.com/yahoojapan/NGT) as a core library.
 
-Each Vald Agent pod holds different high dimensional vector data space, which is constructed by insert/update vectors for searching approximate vectors.
+Each Vald Agent pod has its own vector data space because only several Vald Agents are selected to be inserted/updated in a single insert/update request.
 
-When you request searching with your vector in Vald, each Vald Agent returns different _k_-nearest neighbors' vectors which are similar to the searching vector.
-
+When searching a vector in Vald, each Vald Agent return different results of _k_-nearest neighbors depending on their index, and you'll get the merged result of them.
 <img src="../../assets/docs/vector_data_space_explain.svg" />
-
-The same vector will be inserted into multiple Vald Agents, not all Vald Agents.
-It makes that the vector data space constructed in each Vald Agent will be different, causing the searching results from each Vald Agent are different.
 
 #### Vald Agent Scheduler
 
