@@ -73,6 +73,7 @@ spec:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution: []
           requiredDuringSchedulingIgnoredDuringExecution: []
+      topologySpreadConstraints: []
       containers:
         - name: vald-meta
           image: "vdaas/vald-meta-redis:nightly"

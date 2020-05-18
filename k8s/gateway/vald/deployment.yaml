@@ -105,6 +105,7 @@ spec:
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
+      topologySpreadConstraints: []
       containers:
         - name: vald-gateway
           image: "vdaas/vald-gateway:nightly"
