@@ -16,6 +16,8 @@
 
 package service
 
-type Agent interface{}
+type Replicator interface{}
 
-type Backup interface{}
+func New() Replicator {
+	return nil
+}

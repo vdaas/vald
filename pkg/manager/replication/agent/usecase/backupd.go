@@ -19,7 +19,7 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/manager/backup"
+	"github.com/vdaas/vald/apis/grpc/manager/replication/agent"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
@@ -40,22 +40,21 @@ import (
 type run struct {
 	eg            errgroup.Group
 	cfg           *config.Data
-	cassandra     service.Cassandra
+	rep           service.Replicator
 	server        starter.Server
 	observability observability.Observability
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	c, err := service.New(cfg.Cassandra)
+	rep := service.New()
 	if err != nil {
 		return nil, err
 	}
-	g := handler.New(handler.WithCassandra(c))
+	g := handler.New(handler.WithReplicator(rep))
 	eg := errgroup.Get()
-
 	grpcServerOptions := []server.Option{
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-			backup.RegisterBackupServer(srv, g)
+			agent.RegisterReplicationServer(srv, g)
 		}),
 		server.WithPreStartFunc(func() error {
 			// TODO check unbackupped upstream
@@ -91,7 +90,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 						router.WithErrGroup(eg),
 						router.WithHandler(
 							rest.New(
-								rest.WithBackup(g),
+								rest.WithReplicator(g),
 							),
 						),
 					)),
@@ -110,7 +109,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	return &run{
 		eg:            eg,
 		cfg:           cfg,
-		cassandra:     c,
 		server:        srv,
 		observability: obs,
 	}, nil
@@ -118,10 +116,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 func (r *run) PreStart(ctx context.Context) error {
 	log.Info("daemon pre-start")
-	err := r.cassandra.Connect(ctx)
-	if err != nil {
-		return err
-	}
 	if r.observability != nil {
 		return r.observability.PreStart(ctx)
 	}
@@ -168,5 +162,5 @@ func (r *run) Stop(ctx context.Context) error {
 }
 
 func (r *run) PostStop(ctx context.Context) error {
-	return r.cassandra.Close(ctx)
+	return nil
 }

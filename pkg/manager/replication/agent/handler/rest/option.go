@@ -17,7 +17,7 @@
 // Package rest provides rest api logic
 package rest
 
-import "github.com/vdaas/vald/apis/grpc/manager/backup"
+import "github.com/vdaas/vald/apis/grpc/manager/replication/agent"
 
 type Option func(*handler)
 
@@ -25,8 +25,8 @@ var (
 	defaultOpts = []Option{}
 )
 
-func WithBackup(b backup.BackupServer) Option {
+func WithReplicator(reps agent.ReplicationServer) Option {
 	return func(h *handler) {
-		h.backup = b
+		h.reps = reps
 	}
 }

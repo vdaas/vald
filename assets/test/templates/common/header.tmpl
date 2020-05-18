@@ -4,8 +4,8 @@
 package {{.Package}}
 
 import (
+	"go.uber.org/goleak"
 {{range .Imports}}{{.Name}} {{.Path}}
 {{end}}
-	"go.uber.org/goleak"
 )
 {{end}}

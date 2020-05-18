@@ -22,7 +22,6 @@ import (
 	"testing"
 
 	"github.com/gocql/gocql"
-	"go.uber.org/goleak"
 
 	"go.uber.org/goleak"
 )

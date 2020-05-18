@@ -114,7 +114,7 @@ func Test_run_PreStart(t *testing.T) {
 	type fields struct {
 		eg            errgroup.Group
 		cfg           *config.Data
-		cassandra     service.Cassandra
+		rep           service.Replicator
 		server        starter.Server
 		observability observability.Observability
 	}
@@ -147,7 +147,7 @@ func Test_run_PreStart(t *testing.T) {
 		       fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
+		           rep: nil,
 		           server: nil,
 		           observability: nil,
 		       },
@@ -167,7 +167,7 @@ func Test_run_PreStart(t *testing.T) {
 		           fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
+		           rep: nil,
 		           server: nil,
 		           observability: nil,
 		           },
@@ -193,7 +193,7 @@ func Test_run_PreStart(t *testing.T) {
 			r := &run{
 				eg:            test.fields.eg,
 				cfg:           test.fields.cfg,
-				cassandra:     test.fields.cassandra,
+				rep:           test.fields.rep,
 				server:        test.fields.server,
 				observability: test.fields.observability,
 			}
@@ -214,7 +214,7 @@ func Test_run_Start(t *testing.T) {
 	type fields struct {
 		eg            errgroup.Group
 		cfg           *config.Data
-		cassandra     service.Cassandra
+		rep           service.Replicator
 		server        starter.Server
 		observability observability.Observability
 	}
@@ -251,7 +251,7 @@ func Test_run_Start(t *testing.T) {
 		       fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
+		           rep: nil,
 		           server: nil,
 		           observability: nil,
 		       },
@@ -271,7 +271,7 @@ func Test_run_Start(t *testing.T) {
 		           fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
+		           rep: nil,
 		           server: nil,
 		           observability: nil,
 		           },
@@ -297,7 +297,7 @@ func Test_run_Start(t *testing.T) {
 			r := &run{
 				eg:            test.fields.eg,
 				cfg:           test.fields.cfg,
-				cassandra:     test.fields.cassandra,
+				rep:           test.fields.rep,
 				server:        test.fields.server,
 				observability: test.fields.observability,
 			}
@@ -318,7 +318,7 @@ func Test_run_PreStop(t *testing.T) {
 	type fields struct {
 		eg            errgroup.Group
 		cfg           *config.Data
-		cassandra     service.Cassandra
+		rep           service.Replicator
 		server        starter.Server
 		observability observability.Observability
 	}
@@ -351,7 +351,7 @@ func Test_run_PreStop(t *testing.T) {
 		       fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
+		           rep: nil,
 		           server: nil,
 		           observability: nil,
 		       },
@@ -371,7 +371,7 @@ func Test_run_PreStop(t *testing.T) {
 		           fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
+		           rep: nil,
 		           server: nil,
 		           observability: nil,
 		           },
@@ -397,7 +397,7 @@ func Test_run_PreStop(t *testing.T) {
 			r := &run{
 				eg:            test.fields.eg,
 				cfg:           test.fields.cfg,
-				cassandra:     test.fields.cassandra,
+				rep:           test.fields.rep,
 				server:        test.fields.server,
 				observability: test.fields.observability,
 			}
@@ -418,7 +418,7 @@ func Test_run_Stop(t *testing.T) {
 	type fields struct {
 		eg            errgroup.Group
 		cfg           *config.Data
-		cassandra     service.Cassandra
+		rep           service.Replicator
 		server        starter.Server
 		observability observability.Observability
 	}
@@ -451,7 +451,7 @@ func Test_run_Stop(t *testing.T) {
 		       fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
+		           rep: nil,
 		           server: nil,
 		           observability: nil,
 		       },
@@ -471,7 +471,7 @@ func Test_run_Stop(t *testing.T) {
 		           fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
+		           rep: nil,
 		           server: nil,
 		           observability: nil,
 		           },
@@ -497,7 +497,7 @@ func Test_run_Stop(t *testing.T) {
 			r := &run{
 				eg:            test.fields.eg,
 				cfg:           test.fields.cfg,
-				cassandra:     test.fields.cassandra,
+				rep:           test.fields.rep,
 				server:        test.fields.server,
 				observability: test.fields.observability,
 			}
@@ -518,7 +518,7 @@ func Test_run_PostStop(t *testing.T) {
 	type fields struct {
 		eg            errgroup.Group
 		cfg           *config.Data
-		cassandra     service.Cassandra
+		rep           service.Replicator
 		server        starter.Server
 		observability observability.Observability
 	}
@@ -551,7 +551,7 @@ func Test_run_PostStop(t *testing.T) {
 		       fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
+		           rep: nil,
 		           server: nil,
 		           observability: nil,
 		       },
@@ -571,7 +571,7 @@ func Test_run_PostStop(t *testing.T) {
 		           fields: fields {
 		           eg: nil,
 		           cfg: nil,
-		           cassandra: nil,
+		           rep: nil,
 		           server: nil,
 		           observability: nil,
 		           },
@@ -597,7 +597,7 @@ func Test_run_PostStop(t *testing.T) {
 			r := &run{
 				eg:            test.fields.eg,
 				cfg:           test.fields.cfg,
-				cassandra:     test.fields.cassandra,
+				rep:           test.fields.rep,
 				server:        test.fields.server,
 				observability: test.fields.observability,
 			}
