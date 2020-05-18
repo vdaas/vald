@@ -22,10 +22,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/pkg/manager/replication/agent/service"
-
 	"go.uber.org/goleak"
 )
 
@@ -106,8 +105,7 @@ func Test_server_Recover(t *testing.T) {
 		req *payload.Replication_Recovery
 	}
 	type fields struct {
-		agent  service.Agent
-		backup service.Backup
+		rep service.Replicator
 	}
 	type want struct {
 		want *payload.Empty
@@ -141,8 +139,7 @@ func Test_server_Recover(t *testing.T) {
 		           req: nil,
 		       },
 		       fields: fields {
-		           agent: nil,
-		           backup: nil,
+		           rep: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -159,8 +156,7 @@ func Test_server_Recover(t *testing.T) {
 		           req: nil,
 		           },
 		           fields: fields {
-		           agent: nil,
-		           backup: nil,
+		           rep: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -182,8 +178,7 @@ func Test_server_Recover(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
-				agent:  test.fields.agent,
-				backup: test.fields.backup,
+				rep: test.fields.rep,
 			}
 
 			got, err := s.Recover(test.args.ctx, test.args.req)
@@ -201,8 +196,7 @@ func Test_server_Rebalance(t *testing.T) {
 		req *payload.Replication_Rebalance
 	}
 	type fields struct {
-		agent  service.Agent
-		backup service.Backup
+		rep service.Replicator
 	}
 	type want struct {
 		want *payload.Empty
@@ -236,8 +230,7 @@ func Test_server_Rebalance(t *testing.T) {
 		           req: nil,
 		       },
 		       fields: fields {
-		           agent: nil,
-		           backup: nil,
+		           rep: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -254,8 +247,7 @@ func Test_server_Rebalance(t *testing.T) {
 		           req: nil,
 		           },
 		           fields: fields {
-		           agent: nil,
-		           backup: nil,
+		           rep: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -277,8 +269,7 @@ func Test_server_Rebalance(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
-				agent:  test.fields.agent,
-				backup: test.fields.backup,
+				rep: test.fields.rep,
 			}
 
 			got, err := s.Rebalance(test.args.ctx, test.args.req)
@@ -296,8 +287,7 @@ func Test_server_AgentInfo(t *testing.T) {
 		req *payload.Empty
 	}
 	type fields struct {
-		agent  service.Agent
-		backup service.Backup
+		rep service.Replicator
 	}
 	type want struct {
 		want *payload.Replication_Agents
@@ -331,8 +321,7 @@ func Test_server_AgentInfo(t *testing.T) {
 		           req: nil,
 		       },
 		       fields: fields {
-		           agent: nil,
-		           backup: nil,
+		           rep: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -349,8 +338,7 @@ func Test_server_AgentInfo(t *testing.T) {
 		           req: nil,
 		           },
 		           fields: fields {
-		           agent: nil,
-		           backup: nil,
+		           rep: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -372,8 +360,7 @@ func Test_server_AgentInfo(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
-				agent:  test.fields.agent,
-				backup: test.fields.backup,
+				rep: test.fields.rep,
 			}
 
 			got, err := s.AgentInfo(test.args.ctx, test.args.req)
