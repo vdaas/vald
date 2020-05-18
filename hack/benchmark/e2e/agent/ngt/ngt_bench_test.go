@@ -25,8 +25,8 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
 	"github.com/vdaas/vald/hack/benchmark/internal/starter/agent/ngt"
-	"github.com/vdaas/vald/internal/client/agent/ngt/grpc"
-	"github.com/vdaas/vald/internal/client/agent/ngt/rest"
+	"github.com/vdaas/vald/internal/client/agent/grpc"
+	"github.com/vdaas/vald/internal/client/agent/rest"
 	"github.com/vdaas/vald/internal/log"
 )
 
