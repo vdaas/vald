@@ -197,7 +197,7 @@ Pod priorities are also useful for saving agent pods from eviction.
 By default, very high priority is set to agent pods in the Chart.
 
 
-#### Pod anti-affinity / topology spread constraints
+#### Pod scheduling
 
 It is recommended to schedule agent pods on different nodes as much as possible.
 To achieve this, the following [podAntiAffinity][k8s-affinity-antiaffinity] is set by default.
@@ -218,7 +218,7 @@ agent:
                     - vald-agent-ngt
 ```
 
-However, it can be also achieved by using [pod topology spread constraints][k8s-topology-spread-constraints].
+It can be also achieved by using [pod topology spread constraints][k8s-topology-spread-constraints].
 
 ```yaml
 agent:
@@ -229,6 +229,9 @@ agent:
       labelSelector:
         matchLabels:
           app: vald-agent-ngt
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution: [] # to disable default settings
 ```
 
 ### Gateway
