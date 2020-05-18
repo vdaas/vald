@@ -22,9 +22,9 @@
 <!--- Please change the versions below along with your environment -->
 
 - Golang Version: 1.14.3
-- Docker Version: 19.03.5
-- Kubernetes Version: 1.17.3
-- NGT Version: 1.11.4
+- Docker Version: 19.03.8
+- Kubernetes Version: 1.18.2
+- NGT Version: 1.11.5
 
 ### Types of changes:
 
