@@ -17,6 +17,8 @@ package insert
 
 import (
 	"context"
+	"fmt"
+	"github.com/vdaas/vald/internal/log"
 	"reflect"
 	"sync"
 
@@ -50,7 +52,11 @@ func New(opts ...InsertOption) (i *insert, err error) {
 }
 
 func (i *insert) Prepare(ctx context.Context) error {
-	dataset, err := assets.Data(i.n)()
+	fn := assets.Data(i.n)
+	if fn == nil {
+		return fmt.Errorf("dataset load funciton is nil: %s", i.n)
+	}
+	dataset, err := fn()
 	if err != nil {
 		return err
 	}

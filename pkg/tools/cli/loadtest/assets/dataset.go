@@ -17,6 +17,7 @@ package assets
 
 import (
 	"fmt"
+	"github.com/vdaas/vald/internal/log"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -325,18 +326,18 @@ func datasetDir() (string, error) {
 	}
 	root := func(cur string) string {
 		for {
-			parent := filepath.Dir(cur)
-			if strings.HasSuffix(parent, "vald/hack") {
-				return parent
+			if strings.HasSuffix(cur, "vald") {
+				return cur
 			} else {
-				cur = parent
+				cur = filepath.Dir(cur)
 			}
 		}
 	}(wd)
-	return filepath.Join(root, "benchmark/assets/dataset") + "/", nil
+	return filepath.Join(root, "hack/benchmark/assets/dataset") + "/", nil
 }
 
 func Data(name string) func() (Dataset, error) {
+	log.Debugf("start loading: %s", name)
 	if strings.HasPrefix(name, "identity-") {
 		i, _ := strconv.Atoi(name[9:])
 		return identity(i)
@@ -350,6 +351,7 @@ func Data(name string) func() (Dataset, error) {
 	if d, ok := data[name]; ok {
 		return d
 	}
+	log.Debugf("finish loading: %s")
 	return nil
 }
 

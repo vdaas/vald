@@ -5,7 +5,7 @@ import "strings"
 type Operation uint8
 
 const (
-	Unknown Operation = iota - 1
+	Unknown Operation = iota
 	Insert
 	Search
 )

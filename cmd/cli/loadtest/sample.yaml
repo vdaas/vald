@@ -23,5 +23,5 @@ logging:
   format: json
 method: insert
 dataset: fashion-mnist
-address: "0.0.0.0:8300"
+address: "0.0.0.0:8081"
 concurrency: 100

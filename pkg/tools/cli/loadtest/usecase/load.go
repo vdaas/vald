@@ -19,6 +19,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+
 	"github.com/vdaas/vald/internal/client/gateway/vald/grpc"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/runner"
@@ -49,9 +50,9 @@ func (r *run) PreStart(ctx context.Context) (err error) {
 		return fmt.Errorf("grpc connection error")
 	}
 	switch Atoo(r.cfg.Method) {
-	case Search:
-		r.loader, err = insert.New(insert.WithDataset(r.cfg.Dataset), insert.WithWriter(c))
 	case Insert:
+		r.loader, err = insert.New(insert.WithDataset(r.cfg.Dataset), insert.WithWriter(c))
+	case Search:
 		r.loader, err = search.New(search.WithDataset(r.cfg.Dataset), search.WithReader(c))
 	default:
 		return fmt.Errorf("unsupported method")
