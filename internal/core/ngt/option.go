@@ -94,7 +94,7 @@ func WithDistanceTypeByString(dt string) Option {
 		d = Angle
 	case "hamming":
 		d = Hamming
-	case "cosine":
+	case "cosine", "cos":
 		d = Cosine
 	case "normalizedangle":
 		d = NormalizedAngle

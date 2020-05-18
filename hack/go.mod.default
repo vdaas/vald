@@ -11,7 +11,7 @@ replace (
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql master
 	github.com/gocql/gocql => github.com/gocql/gocql master
 	github.com/gogo/protobuf => github.com/gogo/protobuf master
-	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.10.0
+	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.11.0
 	github.com/gorilla/mux => github.com/gorilla/mux master
 	github.com/gorilla/websocket => github.com/gorilla/websocket master
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.0

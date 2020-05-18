@@ -8,11 +8,11 @@ replace (
 	github.com/coreos/etcd => go.etcd.io/etcd v0.5.0-alpha.5.0.20200425165423-262c93980547
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200309214505-aa6a9891b09c+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.3.0-java
-	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.1-0.20200513234351-f378f59f6710
-	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200511135441-57b003a04490
+	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.1-0.20200517154853-096feaaf8e9f
+	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200515162754-0714040f3e35
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
-	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.10.0
-	github.com/gorilla/mux => github.com/gorilla/mux v1.7.4
+	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.11.0
+	github.com/gorilla/mux => github.com/gorilla/mux v1.7.5-0.20200517040254-948bec34b516
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.0+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
@@ -59,7 +59,7 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/netlib v0.0.0-20200317120129-c5a04cffd98a // indirect
 	gonum.org/v1/plot v0.7.0
-	google.golang.org/genproto v0.0.0-20200514193133-8feb7f20f2a2
+	google.golang.org/genproto v0.0.0-20200515170657-fc4c6c6a6587
 	google.golang.org/grpc v1.29.1
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.18.2

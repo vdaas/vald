@@ -145,9 +145,15 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 						return nil
 					}
 				}
-				_, err := agent.NewAgentClient(conn).CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+				ac := agent.NewAgentClient(conn)
+				_, err = ac.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
 					PoolSize: idx.creationPoolSize,
 				}, copts...)
+				if err != nil {
+					log.Debug(addr, err)
+					return err
+				}
+				_, err = ac.SaveIndex(ctx, &payload.Empty{}, copts...)
 				if err != nil {
 					log.Debug(addr, err)
 					return err

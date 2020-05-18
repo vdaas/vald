@@ -168,6 +168,9 @@ func gen(isLoad bool, opts ...Option) (NGT, error) {
 
 	if isLoad {
 		err = n.open()
+		if err != nil {
+			err = n.create()
+		}
 	} else {
 		err = n.create()
 	}
