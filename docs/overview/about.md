@@ -25,7 +25,7 @@ Vald is easy to use, feature-rich and highly customizable as you needed.
 <!--  copied -->
 
 - Asynchronize Auto Indexing
-    - Usually the graph requires locking during indexing, which cause stop-the-world. But Vald uses distributed index graph so it continues to work during indexing.
+    - Usually the graph requires locking during indexing, which causes stop-the-world. But Vald uses distributed index graphs so it continues to work during indexing.
 
 - Customizable Ingress/Egress Filtering
     - Vald implements it's own highly customizable Ingress/Egress filter.
@@ -34,13 +34,13 @@ Vald is easy to use, feature-rich and highly customizable as you needed.
         - Egress Filter: rerank or filter the searching result with your own algorithm.
 
 - Cloud-native based vector searching engine
-    - Horizontal scalable on memory and cpu for your demand.
+    - Horizontal scalable on memory and CPU for your demand.
 
 - Auto Indexing Backup
-    - Vald has auto index backup feature using MySQL + Redis or Cassandra which enables disaster recovery.
+    - Vald has an auto index backup feature using MySQL + Redis or Cassandra which enables disaster recovery.
 
 - Distributed Indexing
-    - Vald distribute vector index to multiple agent, each agent stores different index.
+    - Vald distribute vector index to multiple agents, each agent stores different index.
 
 - Index Replication
     - Vald stores each index in multiple agents which enables index replicas.
@@ -50,10 +50,10 @@ Vald is easy to use, feature-rich and highly customizable as you needed.
     - Vald can be easily installed in a few steps.
 
 - Highly customizable
-    - You can configure the number of vector dimension, the number of replica and etc.
+    - You can configure the number of vector dimensions, the number of replica and etc.
 
 - Multi language supported
-    - Golang, Java, Nodejs and python is supported.
+    - Golang, Java, Nodejs, and python are supported.
 
 #### Use cases
 
