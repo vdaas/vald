@@ -22,7 +22,7 @@ import "strings"
 type BlobStorageType uint8
 
 const (
-	S3 BlobStorageType = iota
+	S3 BlobStorageType = 1 + iota
 )
 
 func (bst BlobStorageType) String() string {
@@ -35,7 +35,7 @@ func (bst BlobStorageType) String() string {
 
 func AtoBST(bst string) BlobStorageType {
 	switch strings.ToLower(bst) {
-	case "s3":
+	case S3.String():
 		return S3
 	}
 	return 0

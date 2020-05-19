@@ -16,38 +16,38 @@
 
 package s3
 
-type Option func(s *s3session)
+type Option func(s *sess)
 
 var (
 	defaultOpts = []Option{}
 )
 
 func WithEndpoint(ep string) Option {
-	return func(s *s3session) {
+	return func(s *sess) {
 		s.endpoint = ep
 	}
 }
 
 func WithRegion(rg string) Option {
-	return func(s *s3session) {
+	return func(s *sess) {
 		s.region = rg
 	}
 }
 
 func WithAccessKey(ak string) Option {
-	return func(s *s3session) {
+	return func(s *sess) {
 		s.accessKey = ak
 	}
 }
 
 func WithSecretAccessKey(sak string) Option {
-	return func(s *s3session) {
+	return func(s *sess) {
 		s.secretAccessKey = sak
 	}
 }
 
 func WithToken(tk string) Option {
-	return func(s *s3session) {
+	return func(s *sess) {
 		s.token = tk
 	}
 }

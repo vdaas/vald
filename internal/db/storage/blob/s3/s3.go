@@ -23,9 +23,9 @@ import (
 	"gocloud.dev/blob/s3blob"
 )
 
-type s3URLOpener = s3blob.URLOpener
+type URLOpener = s3blob.URLOpener
 
-type s3session struct {
+type sess struct {
 	endpoint        string
 	region          string
 	accessKey       string
@@ -33,12 +33,12 @@ type s3session struct {
 	token           string
 }
 
-type S3Session interface {
-	URLOpener() *s3URLOpener
+type Session interface {
+	URLOpener() (*URLOpener, error)
 }
 
-func NewS3Session(opts ...Option) S3Session {
-	s := new(s3session)
+func NewSession(opts ...Option) Session {
+	s := new(sess)
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(s)
 	}
@@ -46,8 +46,8 @@ func NewS3Session(opts ...Option) S3Session {
 	return s
 }
 
-func (s *s3session) URLOpener() *s3URLOpener {
-	session := session.New(
+func (s *sess) URLOpener() (*URLOpener, error) {
+	session, err := session.NewSession(
 		aws.NewConfig().WithEndpoint(
 			s.endpoint,
 		).WithRegion(
@@ -61,10 +61,14 @@ func (s *s3session) URLOpener() *s3URLOpener {
 		),
 	)
 
-	return &s3URLOpener{
+	if err != nil {
+		return nil, err
+	}
+
+	return &URLOpener{
 		ConfigProvider: session,
 		Options: s3blob.Options{
 			UseLegacyList: false,
 		},
-	}
+	}, nil
 }

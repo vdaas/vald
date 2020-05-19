@@ -32,15 +32,18 @@ const (
 )
 
 func TestS3Write(t *testing.T) {
+	opener, err := s3.NewSession(
+		s3.WithEndpoint(endpoint),
+		s3.WithRegion(region),
+		s3.WithAccessKey(accessKey),
+		s3.WithSecretAccessKey(secretAccessKey),
+	).URLOpener()
+	if err != nil {
+		t.Fatalf("opener initialize failed: %s", err)
+	}
+
 	bucket, err := NewBucket(
-		WithBucketURLOpener(
-			s3.NewS3Session(
-				s3.WithEndpoint(endpoint),
-				s3.WithRegion(region),
-				s3.WithAccessKey(accessKey),
-				s3.WithSecretAccessKey(secretAccessKey),
-			).URLOpener(),
-		),
+		WithBucketURLOpener(opener),
 		WithBucketURL(bucketURL),
 	)
 	if err != nil {
@@ -79,15 +82,18 @@ func TestS3Write(t *testing.T) {
 }
 
 func TestS3Read(t *testing.T) {
+	opener, err := s3.NewSession(
+		s3.WithEndpoint(endpoint),
+		s3.WithRegion(region),
+		s3.WithAccessKey(accessKey),
+		s3.WithSecretAccessKey(secretAccessKey),
+	).URLOpener()
+	if err != nil {
+		t.Fatalf("opener initialize failed: %s", err)
+	}
+
 	bucket, err := NewBucket(
-		WithBucketURLOpener(
-			s3.NewS3Session(
-				s3.WithEndpoint(endpoint),
-				s3.WithRegion(region),
-				s3.WithAccessKey(accessKey),
-				s3.WithSecretAccessKey(secretAccessKey),
-			).URLOpener(),
-		),
+		WithBucketURLOpener(opener),
 		WithBucketURL(bucketURL),
 	)
 	if err != nil {
