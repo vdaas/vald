@@ -13,17 +13,20 @@ This document gives an overview of what is Vald and what you can do with Vald.
 
 ### What is Vald?
 
-<!-- copied -->
+<!-- copied from README.md-->
 Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.
+
 Vald is designed and implemented based on Cloud-Native architecture.
+
 It uses the fastest ANN Algorithm NGT to search neighbors.
+
 Vald has automatic vector indexing and index backup, and horizontal scaling which made for searching from billions of feature vector data.
+
 Vald is easy to use, feature-rich and highly customizable as you needed.
 
 #### What Vald can do?
 
-<!--  copied -->
-
+<!-- copied from README.md-->
 - Asynchronize Auto Indexing
     - Usually the graph requires locking during indexing, which causes stop-the-world. But Vald uses distributed index graphs so it continues to work during indexing.
 
