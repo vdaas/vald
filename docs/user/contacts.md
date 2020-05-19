@@ -1,5 +1,4 @@
-# Contacts
-
+# Contact Us
 
 If you are interested in Vald, or you have any question about Vald, please contact us.
 
