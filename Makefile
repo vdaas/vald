@@ -17,7 +17,7 @@
 REPO                           ?= vdaas
 NAME                            = vald
 GOPKG                           = github.com/$(REPO)/$(NAME)
-TAG                             = $(shell date -u +%Y%m%d-%H%M%S)
+TAG                             = $(eval TAG := $(shell date -u +%Y%m%d-%H%M%S))$(TAG)
 BASE_IMAGE                      = $(NAME)-base
 AGENT_IMAGE                     = $(NAME)-agent-ngt
 GATEWAY_IMAGE                   = $(NAME)-gateway
@@ -31,16 +31,16 @@ MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 
-NGT_VERSION := $(shell cat versions/NGT_VERSION)
+NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
 
-GO_VERSION := $(shell cat versions/GO_VERSION)
-GOPATH := $(shell go env GOPATH)
-GOCACHE := $(shell go env GOCACHE)
+GO_VERSION := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
+GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
+GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
 
-TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION)
+TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION))$(TENSORFLOW_C_VERSION)
 
-OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION)
+OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
 DOCKFMT_VERSION      ?= v0.3.3
 KIND_VERSION         ?= v0.7.0
@@ -55,12 +55,12 @@ SWAP_TAG             ?= latest
 
 BINDIR ?= /usr/local/bin
 
-UNAME := $(shell uname)
+UNAME := $(eval UNAME := $(shell uname))$(UNAME)
 
 MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
 
-ROOTDIR = $(shell git rev-parse --show-toplevel)
-PROTODIRS := $(shell find apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto")
+ROOTDIR = $(eval ROOTDIR := $(shell git rev-parse --show-toplevel))$(ROOTDIR)
+PROTODIRS := $(eval PROTODIRS := $(shell find apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto"))$(PROTODIRS)
 PBGODIRS = $(PROTODIRS:%=apis/grpc/%)
 SWAGGERDIRS = $(PROTODIRS:%=apis/swagger/%)
 GRAPHQLDIRS = $(PROTODIRS:%=apis/graphql/%)
@@ -72,14 +72,14 @@ BENCH_DATASET_HDF5_DIR_NAME = dataset
 BENCH_DATASET_MD5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_MD5_DIR_NAME)
 BENCH_DATASET_HDF5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR_NAME)
 
-PROTOS := $(shell find apis/proto -type f -regex ".*\.proto")
+PROTOS := $(eval PROTOS := $(shell find apis/proto -type f -regex ".*\.proto"))$(PROTOS)
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
 GRAPHQLS = $(PROTOS:apis/proto/%.proto=apis/graphql/%.pb.graphqls)
 GQLCODES = $(GRAPHQLS:apis/graphql/%.pb.graphqls=apis/graphql/%.generated.go)
 PBDOCS = $(PROTOS:apis/proto/%.proto=apis/docs/%.md)
 
-BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5")
+BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
 BENCH_DATASETS = $(BENCH_DATASET_MD5S:$(BENCH_DATASET_MD5_DIR)/%.md5=$(BENCH_DATASET_HDF5_DIR)/%.hdf5)
 
 DATASET_ARGS ?= identity-128
@@ -98,6 +98,46 @@ PROTO_PATHS = \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
 	$(GOPATH)/src/github.com/danielvladco/go-proto-gql \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
+
+GO_SOURCES = $(eval GO_SOURCES := $(shell find \
+		./cmd \
+		./hack \
+		./internal \
+		./pkg \
+		-not -path './cmd/cli/*' \
+		-not -path './internal/core/ngt/*' \
+		-not -path './hack/benchmark/internal/client/ngtd/*' \
+		-not -path './hack/benchmark/internal/starter/agent/*' \
+		-not -path './hack/benchmark/internal/starter/external/*' \
+		-not -path './hack/benchmark/internal/starter/gateway/*' \
+		-not -path './hack/license/*' \
+		-not -path './hack/swagger/*' \
+		-not -path './hack/tools/*' \
+		-type f \
+		-name '*.go' \
+		-not -regex '.*options?\.go' \
+		-not -name '*_test.go' \
+		-not -name 'doc.go'))$(GO_SOURCES)
+GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
+		./cmd \
+		./hack \
+		./internal \
+		./pkg \
+		-not -path './cmd/cli/*' \
+		-not -path './internal/core/ngt/*' \
+		-not -path './hack/benchmark/internal/client/ngtd/*' \
+		-not -path './hack/benchmark/internal/starter/agent/*' \
+		-not -path './hack/benchmark/internal/starter/external/*' \
+		-not -path './hack/benchmark/internal/starter/gateway/*' \
+		-not -path './hack/license/*' \
+		-not -path './hack/swagger/*' \
+		-not -path './hack/tools/*' \
+		-type f \
+		-regex '.*options?\.go' \
+		-not -name '*_test.go' \
+		-not -name 'doc.go'))$(GO_OPTION_SOURCES)
+GO_TEST_SOURCES = $(GO_SOURCES:%.go=%_test.go)
+GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
 
 COMMA := ,
 SHELL = bash
@@ -268,18 +308,6 @@ tensorflow/install: /usr/local/lib/libtensorflow.so
 	rm -f libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
 	ldconfig
 
-.PHONY: gentest
-## gentest
-gentest:
-	$(call gen-test)
-
-
-.PHONY: fixtest
-## fixtest
-fixtest:
-	$(call fix-test)
-
-
 .PHONY: test
 ## run tests
 test:
@@ -318,3 +346,4 @@ include Makefile.d/k8s.mk
 include Makefile.d/kind.mk
 include Makefile.d/client.mk
 include Makefile.d/ml.mk
+include Makefile.d/test.mk

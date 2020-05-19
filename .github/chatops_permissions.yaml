@@ -4,6 +4,7 @@ roles:
       - rebase
       - approve
       - add-contributors
+      - gen-test
       - label
       - format
   author:
@@ -11,28 +12,33 @@ roles:
       - rebase
       - approve
       - add-contributors
+      - gen-test
       - label
       - format
   sig-lead:
     policies:
       - rebase
       - approve
+      - gen-test
       - label
       - format
   sig-sre:
     policies:
       - rebase
       - add-contributors
+      - gen-test
       - label
       - format
   sig-set:
     policies:
       - rebase
+      - gen-test
       - label
       - format
   sig-core:
     policies:
       - rebase
+      - gen-test
       - label
       - format
   contributor:
