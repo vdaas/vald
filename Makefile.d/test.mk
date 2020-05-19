@@ -41,13 +41,15 @@ gotests/patch: \
 # force to rebuild all GO_TEST_SOURCES targets
 .PHONY: $(GO_TEST_SOURCES)
 $(GO_TEST_SOURCES): \
-	./assets/test/templates/common
+	./assets/test/templates/common \
+	$(GO_SOURCES)
 	@$(call green, $(patsubst %,"generating go test file: %",$@))
 	gotests -w -template_dir ./assets/test/templates/common -all $(patsubst %_test.go,%.go,$@)
 
 # force to rebuild all GO_OPTION_TEST_SOURCES targets
 .PHONY: $(GO_OPTION_TEST_SOURCES)
 $(GO_OPTION_TEST_SOURCES): \
-	./assets/test/templates/option
+	./assets/test/templates/option \
+	$(GO_OPTION_SOURCES)
 	@$(call green, $(patsubst %,"generating go test file: %",$@))
 	gotests -w -template_dir ./assets/test/templates/option -all $(patsubst %_test.go,%.go,$@)
