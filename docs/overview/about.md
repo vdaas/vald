@@ -1,5 +1,6 @@
 # About Vald <!-- omit in toc -->
 
+This document gives an overview of what is Vald and what you can do with Vald. 
 ## Table of Contents <!-- omit in toc -->
 
 - [What is Vald?](#what-is-vald)
