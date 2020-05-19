@@ -1,6 +1,7 @@
 # About Vald <!-- omit in toc -->
 
 This document gives an overview of what is Vald and what you can do with Vald. 
+
 ## Table of Contents <!-- omit in toc -->
 
 - [What is Vald?](#what-is-vald)
@@ -81,4 +82,4 @@ Please refer to the [architecture overview](./architecture.md) for more details 
 
 ### Try Vald
 
-Please refer to [Get Started](./get-started.md) to try Vald :)
+Please refer to [Get Started](../get-started/get-started.md) to try Vald :)
