@@ -51,3 +51,9 @@ func WithToken(tk string) Option {
 		s.token = tk
 	}
 }
+
+func WithUseLegacyList(flg bool) Option {
+	return func(s *sess) {
+		s.useLegacyList = flg
+	}
+}

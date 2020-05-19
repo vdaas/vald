@@ -58,6 +58,7 @@ type S3Config struct {
 	AccessKey       string `json:"access_key" yaml:"access_key"`
 	SecretAccessKey string `json:"secret_access_key" yaml:"secret_access_key"`
 	Token           string `json:"token" yaml:"token"`
+	UseLegacyList   bool   `json:"use_legacy_list" yaml:"use_legacy_list"`
 }
 
 func (b *Blob) Bind() *Blob {

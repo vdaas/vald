@@ -31,6 +31,7 @@ type sess struct {
 	accessKey       string
 	secretAccessKey string
 	token           string
+	useLegacyList   bool
 }
 
 type Session interface {
@@ -68,7 +69,7 @@ func (s *sess) URLOpener() (*URLOpener, error) {
 	return &URLOpener{
 		ConfigProvider: session,
 		Options: s3blob.Options{
-			UseLegacyList: false,
+			UseLegacyList: s.useLegacyList,
 		},
 	}, nil
 }
