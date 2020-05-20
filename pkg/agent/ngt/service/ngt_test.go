@@ -1791,6 +1791,7 @@ func Test_ngt_GetObject(t *testing.T) {
 
 func Test_ngt_CreateIndex(t *testing.T) {
 	type args struct {
+		ctx      context.Context
 		poolSize uint32
 	}
 	type fields struct {
@@ -1916,7 +1917,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				dcd:      test.fields.dcd,
 			}
 
-			err := n.CreateIndex(test.args.poolSize)
+			err := n.CreateIndex(test.args.ctx, test.args.poolSize)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
