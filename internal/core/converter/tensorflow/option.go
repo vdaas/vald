@@ -29,14 +29,22 @@ var (
 
 func WithSessionOptions(opts *SessionOptions) Option {
 	return func(t *tensorflow) {
-		t.options = opts
+		if opts != nil {
+			t.options = opts
+		}
 	}
 }
 
 func WithSessionTarget(tgt string) Option {
 	return func(t *tensorflow) {
 		if len(tgt) != 0 {
-			t.sessionTarget = tgt
+			if t.options == nil {
+				t.options = &SessionOptions{
+					Target: tgt,
+				}
+			} else {
+				t.options.Target = tgt
+			}
 		}
 	}
 }
@@ -44,7 +52,13 @@ func WithSessionTarget(tgt string) Option {
 func WithSessionConfig(cfg []byte) Option {
 	return func(t *tensorflow) {
 		if cfg != nil {
-			t.sessionConfig = cfg
+			if t.options == nil {
+				t.options = &SessionOptions{
+					Config: cfg,
+				}
+			} else {
+				t.options.Config = cfg
+			}
 		}
 	}
 }

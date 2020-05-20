@@ -83,8 +83,6 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &tensorflow{
-					sessionTarget: "test",
-					sessionConfig: []byte{},
 					options: &tf.SessionOptions{
 						Target: "test",
 						Config: []byte{},
@@ -151,8 +149,6 @@ func Test_tensorflow_Close(t *testing.T) {
 		feeds         []OutputSpec
 		fetches       []OutputSpec
 		operations    []*Operation
-		sessionTarget string
-		sessionConfig []byte
 		options       *SessionOptions
 		graph         *tf.Graph
 		session       session
@@ -184,8 +180,6 @@ func Test_tensorflow_Close(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session: &mockSession{
@@ -208,8 +202,6 @@ func Test_tensorflow_Close(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session: &mockSession{
@@ -244,8 +236,6 @@ func Test_tensorflow_Close(t *testing.T) {
 				feeds:         test.fields.feeds,
 				fetches:       test.fields.fetches,
 				operations:    test.fields.operations,
-				sessionTarget: test.fields.sessionTarget,
-				sessionConfig: test.fields.sessionConfig,
 				options:       test.fields.options,
 				graph:         test.fields.graph,
 				session:       test.fields.session,
@@ -271,8 +261,6 @@ func Test_tensorflow_run(t *testing.T) {
 		feeds         []OutputSpec
 		fetches       []OutputSpec
 		operations    []*Operation
-		sessionTarget string
-		sessionConfig []byte
 		options       *SessionOptions
 		graph         *tf.Graph
 		session       session
@@ -312,8 +300,6 @@ func Test_tensorflow_run(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session: &mockSession{
@@ -347,8 +333,6 @@ func Test_tensorflow_run(t *testing.T) {
 				},
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         tf.NewGraph(),
 				session: &mockSession{
@@ -377,8 +361,6 @@ func Test_tensorflow_run(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session:       nil,
@@ -400,8 +382,6 @@ func Test_tensorflow_run(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         tf.NewGraph(),
 				session: &mockSession{
@@ -436,8 +416,6 @@ func Test_tensorflow_run(t *testing.T) {
 				feeds:         test.fields.feeds,
 				fetches:       test.fields.fetches,
 				operations:    test.fields.operations,
-				sessionTarget: test.fields.sessionTarget,
-				sessionConfig: test.fields.sessionConfig,
 				options:       test.fields.options,
 				graph:         test.fields.graph,
 				session:       test.fields.session,
@@ -463,8 +441,6 @@ func Test_tensorflow_GetVector(t *testing.T) {
 		feeds         []OutputSpec
 		fetches       []OutputSpec
 		operations    []*Operation
-		sessionTarget string
-		sessionConfig []byte
 		options       *SessionOptions
 		graph         *tf.Graph
 		session       session
@@ -504,8 +480,6 @@ func Test_tensorflow_GetVector(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session: &mockSession{
@@ -536,8 +510,6 @@ func Test_tensorflow_GetVector(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session: &mockSession{
@@ -564,8 +536,6 @@ func Test_tensorflow_GetVector(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session: &mockSession{
@@ -592,8 +562,6 @@ func Test_tensorflow_GetVector(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session: &mockSession{
@@ -620,8 +588,6 @@ func Test_tensorflow_GetVector(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session: &mockSession{
@@ -652,8 +618,6 @@ func Test_tensorflow_GetVector(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session: &mockSession{
@@ -684,8 +648,6 @@ func Test_tensorflow_GetVector(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session: &mockSession{
@@ -725,8 +687,6 @@ func Test_tensorflow_GetVector(t *testing.T) {
 				feeds:         test.fields.feeds,
 				fetches:       test.fields.fetches,
 				operations:    test.fields.operations,
-				sessionTarget: test.fields.sessionTarget,
-				sessionConfig: test.fields.sessionConfig,
 				options:       test.fields.options,
 				graph:         test.fields.graph,
 				session:       test.fields.session,
@@ -752,8 +712,6 @@ func Test_tensorflow_GetValue(t *testing.T) {
 		feeds         []OutputSpec
 		fetches       []OutputSpec
 		operations    []*Operation
-		sessionTarget string
-		sessionConfig []byte
 		options       *SessionOptions
 		graph         *tf.Graph
 		session       session
@@ -793,8 +751,6 @@ func Test_tensorflow_GetValue(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session: &mockSession{
@@ -825,8 +781,6 @@ func Test_tensorflow_GetValue(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session: &mockSession{
@@ -853,8 +807,6 @@ func Test_tensorflow_GetValue(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session: &mockSession{
@@ -881,8 +833,6 @@ func Test_tensorflow_GetValue(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session: &mockSession{
@@ -918,8 +868,6 @@ func Test_tensorflow_GetValue(t *testing.T) {
 				feeds:         test.fields.feeds,
 				fetches:       test.fields.fetches,
 				operations:    test.fields.operations,
-				sessionTarget: test.fields.sessionTarget,
-				sessionConfig: test.fields.sessionConfig,
 				options:       test.fields.options,
 				graph:         test.fields.graph,
 				session:       test.fields.session,
@@ -945,8 +893,6 @@ func Test_tensorflow_GetValues(t *testing.T) {
 		feeds         []OutputSpec
 		fetches       []OutputSpec
 		operations    []*Operation
-		sessionTarget string
-		sessionConfig []byte
 		options       *SessionOptions
 		graph         *tf.Graph
 		session       session
@@ -986,8 +932,6 @@ func Test_tensorflow_GetValues(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session: &mockSession{
@@ -1018,8 +962,6 @@ func Test_tensorflow_GetValues(t *testing.T) {
 				feeds:         nil,
 				fetches:       nil,
 				operations:    nil,
-				sessionTarget: "",
-				sessionConfig: nil,
 				options:       nil,
 				graph:         nil,
 				session: &mockSession{
@@ -1055,8 +997,6 @@ func Test_tensorflow_GetValues(t *testing.T) {
 				feeds:         test.fields.feeds,
 				fetches:       test.fields.fetches,
 				operations:    test.fields.operations,
-				sessionTarget: test.fields.sessionTarget,
-				sessionConfig: test.fields.sessionConfig,
 				options:       test.fields.options,
 				graph:         test.fields.graph,
 				session:       test.fields.session,

@@ -136,7 +136,9 @@ func TestWithSessionTarget(t *testing.T) {
 			},
 			want: want{
 				obj: &T{
-					sessionTarget: "test",
+					options: &SessionOptions{
+						Target: "test",
+					},
 				},
 			},
 		},
@@ -206,7 +208,9 @@ func TestWithSessionConfig(t *testing.T) {
 			},
 			want: want{
 				obj: &T{
-					sessionConfig: []byte{0},
+					options: &SessionOptions{
+						Config: []byte{0},
+					},
 				},
 			},
 		},

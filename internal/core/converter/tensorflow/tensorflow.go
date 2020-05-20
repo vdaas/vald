@@ -47,8 +47,6 @@ type tensorflow struct {
 	feeds         []OutputSpec
 	fetches       []OutputSpec
 	operations    []*Operation
-	sessionTarget string
-	sessionConfig []byte
 	options       *SessionOptions
 	graph         *tf.Graph
 	session       session
@@ -73,13 +71,6 @@ func New(opts ...Option) (TF, error) {
 	t := new(tensorflow)
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(t)
-	}
-
-	if t.options == nil && (t.sessionTarget == "" || t.sessionConfig != nil) {
-		t.options = &tf.SessionOptions{
-			Target: t.sessionTarget,
-			Config: t.sessionConfig,
-		}
 	}
 
 	model, err := loadFunc(t.exportDir, t.tags, t.options)
