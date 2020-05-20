@@ -39,8 +39,8 @@ Vald is easy to use, feature-rich and highly customizable as you needed.
 - Cloud-native based vector searching engine
     - Horizontal scalable on memory and CPU for your demand.
 
-- Auto Indexing Backup
-    - Vald has an auto index backup feature using MySQL + Redis or Cassandra which enables disaster recovery.
+- Auto Backup for Index data
+    - Vald has a feature to store the backup of the index data using MySQL or Cassandra which enables disaster recovery.
 
 - Distributed Indexing
     - Vald distribute vector index to multiple agents, each agent stores different index.
@@ -56,7 +56,9 @@ Vald is easy to use, feature-rich and highly customizable as you needed.
     - You can configure the number of vector dimensions, the number of replica and etc.
 
 - Multi language supported
-    - Golang, Java, Nodejs, and python are supported.
+    - Golang, Java, Clojure, Node.js, and Python client library are supported.
+    - gRPC APIs can be triggered by any programming languages which support gRPC.
+    - REST API is also supported.
 
 #### Use cases
 
