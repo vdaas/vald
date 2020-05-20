@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/pkg/agent/ngt/model"
@@ -71,6 +72,7 @@ type ngt struct {
 	lim      time.Duration // auto indexing time limit
 	dur      time.Duration // auto indexing check duration
 	sdur     time.Duration // auto save index check duration
+	idelaymx time.Duration // maximum duration for initial delay
 	dps      uint32        // default pool size
 	ic       uint64        // insert count
 	nocie    uint64        // number of create index execution
@@ -168,6 +170,14 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 		n.sdur = d
 	}
 
+	if cfg.InitialDelayMaxDuration != "" {
+		d, err := timeutil.Parse(cfg.InitialDelayMaxDuration)
+		if err != nil {
+			d = 0
+		}
+		n.idelaymx = d
+	}
+
 	n.alen = cfg.AutoIndexLength
 
 	n.eg = errgroup.Get()
@@ -202,6 +212,9 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			n.lim = n.dur * 2
 		}
 		defer close(ech)
+
+		time.Sleep(time.Duration(rand.LimitedUint32(uint64(n.idelaymx))))
+
 		tick := time.NewTicker(n.dur)
 		sTick := time.NewTicker(n.sdur)
 		limit := time.NewTicker(n.lim)

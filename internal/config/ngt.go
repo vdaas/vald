@@ -52,6 +52,9 @@ type NGT struct {
 	// AutoIndexLength represent auto index length limit
 	AutoIndexLength int `yaml:"auto_index_length" json:"auto_index_length"`
 
+	// InitialDelayMaxDuration represent maximum duration for initial delay
+	InitialDelayMaxDuration string `yaml:"initial_delay_max_duration" json:"initial_delay_max_duration"`
+
 	// EnableInMemoryMode enables on memory ngt indexing mode
 	EnableInMemoryMode bool `yaml:"enable_in_memory_mode" json:"enable_in_memory_mode"`
 }
@@ -63,5 +66,6 @@ func (n *NGT) Bind() *NGT {
 	n.AutoIndexCheckDuration = GetActualValue(n.AutoIndexCheckDuration)
 	n.AutoIndexDurationLimit = GetActualValue(n.AutoIndexDurationLimit)
 	n.AutoSaveIndexDuration = GetActualValue(n.AutoSaveIndexDuration)
+	n.InitialDelayMaxDuration = GetActualValue(n.InitialDelayMaxDuration)
 	return n
 }
