@@ -39,6 +39,67 @@ Otherwise, when filing an issue, make sure to answer these five questions:
 Note:
 When you'd like to contribute with the new feature of some large update influencing the current Vald, we recommend getting the agreement through the authors' design review of your ISSUE.
 
+### Bug Report
+
+A bug is a demonstrable problem which produce incorrect result or to behave in unintended ways.
+Bug reports are helpful for developers who maintain the Vald project.
+
+A good bug report should not leave others needing to ask you for more information constantly.
+Please try to write as detail as possible in your bug report.
+
+Things to check before reporting a bug:
+- Check your environment
+
+Bug may occur depending on different version of Vald, Kubernetes and etc.
+
+- Identify the bug
+
+Developers need to reproduce the bug in the developers environment.
+So please identify the bug and clarify how it occurs.
+Please also clarify the expected behavior too.
+
+- Use the Github issue search
+
+The bug may be reported before.
+So please check the Github issue before reporting.
+
+Please submit [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report.md&title=)
+
+### Proposal
+
+The Vald is being developed based on the design-driven process.
+The significant change to the library or the architecture should be discussed first.
+
+We may need detailed documentation before your proposal is implemented.
+Your proposal will be reviewed and discussed and decide whether it is accepted or declined.
+
+Things to check before submitting your proposal:
+
+
+
+Please submit [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
+
+### Feature Request
+
+Feature request is welcome.
+
+Before opening an issue, please make sure your idea fits the project.
+You can strongly request the feature and convince the project maintainers to accept your feature request.
+
+Please provide the problem and solution associated with the feature request as detail as possible.
+
+Things to check before submitting a new feature:
+
+Please submit [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=))
+
+### Security Issue Report
+
+The Vald team and community take serious concern about security issues.
+
+We appreciate your efforts to disclose your findings.
+If the security issue is caused by third-part module, we will notify the person or team maintaining the module.
+
+Please submit [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fsecurity%2C+priority%2Fmedium%2C+team%2Fcore%2C+team%2Fsre&template=security_issue_report.md&title=)
 
 ## Contributing Code
 
