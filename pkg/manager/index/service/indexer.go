@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -126,6 +127,13 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-index/service/Indexer.execute")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
 	if idx.indexing.Load().(bool) {
 		return nil
 	}
@@ -168,6 +176,13 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 }
 
 func (idx *index) loadInfos(ctx context.Context) (err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-index/service/Indexer.loadInfos")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
 	var u, ucu uint32
 	var infoMap indexInfos
 	err = idx.client.GetClient().RangeConcurrent(ctx, len(idx.client.GetAddrs(ctx)),
