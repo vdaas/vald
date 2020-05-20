@@ -45,7 +45,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 }
 
 func (r *run) PreStart(ctx context.Context) (err error) {
-	c, err := grpc.New(ctx, grpc.WithAddr(r.cfg.Address)) // TODO setup vald grpc client
+	c, err := grpc.New(ctx, grpc.WithAddr(r.cfg.Address), grpc.WithGRPCClientConfig(r.cfg.Client))
 	if err != nil {
 		return fmt.Errorf("grpc connection error")
 	}

@@ -74,6 +74,7 @@ func (i *insert) Prepare(ctx context.Context) error {
 
 func (i *insert) Do(ctx context.Context) <-chan error {
 	errCh := make(chan error, len(i.req)*10)
+	log.Debugf("insert %d items", len(i.req))
 	i.eg.Go(safety.RecoverFunc(func() error {
 		defer close(errCh)
 		wg := new(sync.WaitGroup)

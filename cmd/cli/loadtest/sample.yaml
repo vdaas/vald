@@ -20,8 +20,57 @@ time_zone: JST
 logging:
   logger: glg
   level: debug
-  format: json
+#  format: json
 method: insert
 dataset: fashion-mnist
-address: "0.0.0.0:8081"
 concurrency: 100
+address: "gateway.vald.dssk-01.vald.k8s.bp.dssk01.caas.ssk.zcp.yahoo.co.jp:80"
+client:
+  addrs: []
+  health_check_duration: 1s
+  backoff:
+    backoff_factor: 0
+    backoff_time_limit: ""
+    enable_error_log: false
+    initial_duration: ""
+    jitter_limit: ""
+    maximum_duration: ""
+    retry_count: 0
+  call_option:
+    max_recv_msg_size: 0
+    max_retry_rpc_buffer_size: 0
+    max_send_msg_size: 0
+    wait_for_ready: true
+  dial_option:
+    enable_backoff: false
+    initial_connection_window_size: 0
+    initial_window_size: 0
+    insecure: true
+    keep_alive:
+      permit_without_stream: false
+      time: ""
+      timeout: ""
+    max_backoff_delay: ""
+    max_msg_size: 0
+    read_buffer_size: 0
+    tcp:
+      dialer:
+        dual_stack_enabled: true
+        keep_alive: ""
+        timeout: ""
+      dns:
+        cache_enabled: false
+        cache_expiration: ""
+        refresh_duration: ""
+      tls:
+        ca: /path/to/ca
+        cert: /path/to/cert
+        enabled: false
+        key: /path/to/key
+    timeout: ""
+    write_buffer_size: 0
+  tls:
+    ca: /path/to/ca
+    cert: /path/to/cert
+    enabled: false
+    key: /path/to/key
