@@ -19,20 +19,24 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/safety"
 
-	"github.com/vdaas/vald/internal/client/gateway/vald/grpc"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/service"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/service/insert"
-	"github.com/vdaas/vald/pkg/tools/cli/loadtest/service/search"
+	//"github.com/vdaas/vald/pkg/tools/cli/loadtest/service/search"
 )
 
 type run struct {
 	eg     errgroup.Group
 	cfg    *config.Data
 	loader service.Load
+	client grpc.Client
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
@@ -45,15 +49,17 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 }
 
 func (r *run) PreStart(ctx context.Context) (err error) {
-	c, err := grpc.New(ctx, grpc.WithAddr(r.cfg.Address), grpc.WithGRPCClientConfig(r.cfg.Client))
-	if err != nil {
-		return fmt.Errorf("grpc connection error")
-	}
+	//c, err := grpc.New(ctx, grpc.WithAddr(r.cfg.Address), grpc.WithGRPCClientConfig(r.cfg.Client))
+	r.client = grpc.New(
+		grpc.WithAddrs(append([]string{r.cfg.Addr}, r.cfg.Client.Addrs...)...),
+		grpc.WithInsecure(r.cfg.Client.DialOption.Insecure),
+		grpc.WithErrGroup(r.eg),
+	)
 	switch Atoo(r.cfg.Method) {
 	case Insert:
-		r.loader, err = insert.New(insert.WithDataset(r.cfg.Dataset), insert.WithWriter(c))
-	case Search:
-		r.loader, err = search.New(search.WithDataset(r.cfg.Dataset), search.WithReader(c))
+		r.loader, err = insert.New(insert.WithAddr(r.cfg.Addr), insert.WithDataset(r.cfg.Dataset), insert.WithClient(r.client))
+	//case Search:
+	//	r.loader, err = search.New(search.WithDataset(r.cfg.Dataset), search.WithReader(c))
 	default:
 		return fmt.Errorf("unsupported method")
 	}
@@ -62,7 +68,50 @@ func (r *run) PreStart(ctx context.Context) (err error) {
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	return r.loader.Do(ctx), nil
+	rech, err := r.client.StartConnectionMonitor(ctx)
+	if err != nil {
+		return nil, err
+	}
+	lech := r.loader.Do(ctx)
+	ech := make(chan error, 1000)
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(ech)
+		finalize := func() (err error) {
+			var errs error
+			if r.client != nil {
+				err = r.client.Close()
+				if err != nil {
+					errs = errors.Wrap(errs, err.Error())
+				}
+			}
+			err = ctx.Err()
+			if err != nil && err != context.Canceled {
+				errs = errors.Wrap(errs, err.Error())
+			}
+			return errs
+		}
+		for {
+			select {
+			case <-ctx.Done():
+				return finalize()
+			case err = <-rech:
+			case err = <-lech:
+				if err != nil {
+					ech <- err
+					err = nil
+				}
+			}
+			if err != nil {
+				log.Error(err)
+				select {
+				case <-ctx.Done():
+					return finalize()
+				case ech <- err:
+				}
+			}
+		}
+	}))
+	return ech, nil
 }
 
 func (r *run) PreStop(ctx context.Context) error {

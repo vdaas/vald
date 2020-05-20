@@ -16,34 +16,41 @@
 package insert
 
 import (
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/net/grpc"
 )
 
-type InsertOption func(*insert) error
+type Option func(*insert) error
 
 var (
-	defaultInsertOpts = []InsertOption{
+	defaultOpts = []Option{
 		WithConcurrency(100),
 	}
 )
 
-func WithWriter(w client.Writer) InsertOption {
+func WithAddr(a string) Option {
 	return func(i *insert) error {
-		i.w = w
+		i.addr = a
 		return nil
 	}
 }
 
-func WithConcurrency(c int) InsertOption {
+func WithClient(c grpc.Client) Option {
 	return func(i *insert) error {
-		i.c = c
+		i.client = c
 		return nil
 	}
 }
 
-func WithDataset(n string) InsertOption {
+func WithConcurrency(c int) Option {
 	return func(i *insert) error {
-		i.n = n
+		i.concurrency = c
+		return nil
+	}
+}
+
+func WithDataset(n string) Option {
+	return func(i *insert) error {
+		i.dataset = n
 		return nil
 	}
 }

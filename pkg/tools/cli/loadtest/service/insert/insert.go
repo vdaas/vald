@@ -18,30 +18,31 @@ package insert
 import (
 	"context"
 	"fmt"
-	"github.com/vdaas/vald/internal/log"
 	"reflect"
 	"sync"
 
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/apis/grpc/gateway/vald"
+	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 )
 
 type insert struct {
-	eg errgroup.Group
-
-	w client.Writer
-	c int
-	n string
-
-	req []*client.ObjectVector
+	eg          errgroup.Group
+	client      grpc.Client
+	addr        string
+	concurrency int
+	dataset     string
+	req         []*payload.Object_Vector
 }
 
-func New(opts ...InsertOption) (i *insert, err error) {
+func New(opts ...Option) (i *insert, err error) {
 	i = new(insert)
-	for _, opt := range append(defaultInsertOpts, opts...) {
+	for _, opt := range append(defaultOpts, opts...) {
 		if err = opt(i); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -52,9 +53,9 @@ func New(opts ...InsertOption) (i *insert, err error) {
 }
 
 func (i *insert) Prepare(ctx context.Context) error {
-	fn := assets.Data(i.n)
+	fn := assets.Data(i.dataset)
 	if fn == nil {
-		return fmt.Errorf("dataset load funciton is nil: %s", i.n)
+		return fmt.Errorf("dataset load funciton is nil: %s", i.dataset)
 	}
 	dataset, err := fn()
 	if err != nil {
@@ -62,9 +63,9 @@ func (i *insert) Prepare(ctx context.Context) error {
 	}
 	vectors := dataset.Train()
 	ids := dataset.IDs()
-	i.req = make([]*client.ObjectVector, len(vectors))
+	i.req = make([]*payload.Object_Vector, len(vectors))
 	for j, v := range vectors {
-		i.req[j] = &client.ObjectVector{
+		i.req[j] = &payload.Object_Vector{
 			Id:     ids[j],
 			Vector: v,
 		}
@@ -73,21 +74,24 @@ func (i *insert) Prepare(ctx context.Context) error {
 }
 
 func (i *insert) Do(ctx context.Context) <-chan error {
-	errCh := make(chan error, len(i.req)*10)
+	errCh := make(chan error, len(i.req))
 	log.Debugf("insert %d items", len(i.req))
 	i.eg.Go(safety.RecoverFunc(func() error {
 		defer close(errCh)
 		wg := new(sync.WaitGroup)
-		sem := make(chan struct{}, i.c)
+		sem := make(chan struct{}, i.concurrency)
 		for _, req := range i.req {
 			wg.Add(1)
 			sem <- struct{}{}
-			go func(r *client.ObjectVector) {
+			go func(r *payload.Object_Vector) {
 				defer wg.Done()
 				defer func() {
 					<-sem
 				}()
-				err := i.w.Insert(ctx, r)
+				_, err := i.client.Do(ctx, i.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+					_, err := vald.NewValdClient(conn).Insert(ctx, req, copts...)
+					return nil, err
+				})
 				if err != nil {
 					errCh <- err
 				}

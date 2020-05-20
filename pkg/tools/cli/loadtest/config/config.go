@@ -27,11 +27,11 @@ type GlobalConfig = config.GlobalConfig
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`
-	Client              *config.GRPCClient `json:"client" yaml:"client"`
-	Address             string `json:"address" yaml:"address"`
+	Addr                string `json:"addr" yaml:"addr"`
 	Method              string `json:"method" yaml:"method"`
 	Dataset             string `json:"dataset" yaml:"dataset"`
 	Concurrency         int    `json:"concurrency" yaml:"concurrency"`
+	Client              *config.GRPCClient `json:"client" yaml:"client"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
@@ -43,6 +43,9 @@ func NewConfig(path string) (cfg *Data, err error) {
 
 	if cfg != nil {
 		cfg.Bind()
+	}
+	if cfg.Client != nil {
+		cfg.Client.Bind()
 	}
 
 	return cfg, nil
