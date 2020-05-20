@@ -37,7 +37,7 @@ func WithSessionOptions(opts *SessionOptions) Option {
 
 func WithSessionTarget(tgt string) Option {
 	return func(t *tensorflow) {
-		if len(tgt) != 0 {
+		if tgt != "" {
 			if t.options == nil {
 				t.options = &SessionOptions{
 					Target: tgt,
@@ -77,7 +77,7 @@ func WithOperations(opes ...*Operation) Option {
 
 func WithExportPath(path string) Option {
 	return func(t *tensorflow) {
-		if len(path) != 0 {
+		if path != "" {
 			t.exportDir = path
 		}
 	}
