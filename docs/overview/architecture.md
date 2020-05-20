@@ -36,8 +36,9 @@ This document describes the high-level architecture design of Vald and explains 
 
 
 
-Vald is based on [Kubernetes](https://kubernetes.io/) architecture.
-Before you read this document, you must understand the basic concept of Kubernetes.
+Vald uses a cloud-native architecture focusing on [Kubernetes](https://kubernetes.io/).
+Some components in Vald use Kubernetes API to control the behavior of distributed vector indexes.
+Before reading this document, you need to have some understanding of the basic idea of cloud-native architecture and Kubernetes.
 
 The below image is Vald's architecture.
 
@@ -47,7 +48,8 @@ We will explain this image in the following section.
 
 ## Data Flow
 
-In this section, we will explain the data flow in Vald which is the most important for users.
+This section describes the data flow inside Vald and how Vald's vector indexes are stored.
+This is the most important part for the users to understand Vald.
 
 ### Insert
 
@@ -56,18 +58,18 @@ In this section, we will explain the data flow in Vald which is the most importa
 When the user inserts data into Vald:
 
 1. Vald Ingress receives the request from the user. The request includes the vector and the vector ID which is set by user.
-2. Vald Ingress will forward the request to Vald Meta Gateway. After the Vald Meta Gateway receive the request, the UUID will be generated for internal use.
+2. Vald Ingress will forward the request to Vald Meta Gateway. After the Vald Meta Gateway receives the request, the UUID will be generated for internal use and mapped it with vector ID from the user's request.
 3. Vald Meta Gateway will forward the request with UUID to Vald Backup Gateway.
 4. Vald Backup Gateway will forward the request to Vald LB Gateway.
-5. Vald LB Gateway will decide which Vald Agent instance to process the request based on the node resource usage and forward the request to the decided Vald Agent.
-6. Vald Agent returns success and the corresponding Vald Agent IP address to Vald LB Gateway.
-7. Vald LB Gateway returns success and the IP address to Vald Backup Gateway.
+5. Vald LB Gateway determines the number of Vald agent instances equal to the number of vector replicas to process the request based on the resource usage of the nodes and pods and transfers the request to the target Vald agent in parallel.
+6. Vald Agent stores the vectors and UUIDs in an on-memory vector queue and returns the success to the Vald LB gateway. A vector queue will be committed to an ANN graph index by a CreateIndex instruction executed by the index manager.
+7. Vald LB Gateway receives a success result from each Replica's Agent and responds to the Backup Gateway with the IP address of each successful Agent.
 8. Vald Backup Gateway returns success to Vald Meta Gateway.
-9. Vald Meta Gateway will send the metadata including the UUID and the vector ID to the Vald Meta.
-10. Vald Meta will store the metadata to the persistent layer.
-11. Vald Backup Gateway will send all the data (vector, vector ID and UUID) the Vald Compressor.
-12. Vald Compressor will compress the data received and send to the Vald Backup Manager.
-13. Vald Backup Manager will store the compressed data to the persistent layer.
+9. Vald Meta Gateway stores metadata such as UUIDs and vector IDs that were successfully inserted into the Agent in Vald Meta.
+10. Vald Meta will store the metadata to the persistent layer such as Redis, Cassandra, MySQL, etc...
+11. Vald Backup Gateway will send all inserted the data (vector, vector ID and UUID)  to the Vald Compressor.
+12. Vald Compressor compresses data asynchronously to reduce persistent storage usage and transfers the compressed data to Vald Backup Manager.
+13. Vald Backup Manager will store the compressed data to the persistent layer such as MySQL, Cassandra, etc...
 
 ### Search
 
