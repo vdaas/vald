@@ -19,7 +19,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"sync"
 
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
@@ -62,7 +61,7 @@ func (i *insert) Prepare(ctx context.Context) error {
 		return err
 	}
 	vectors := dataset.Train()
-	ids := dataset.IDs()
+	ids := assets.CreateRandomIDs(len(vectors))
 	i.req = make([]*payload.Object_Vector, len(vectors))
 	for j, v := range vectors {
 		i.req[j] = &payload.Object_Vector{
@@ -78,27 +77,22 @@ func (i *insert) Do(ctx context.Context) <-chan error {
 	log.Debugf("insert %d items", len(i.req))
 	i.eg.Go(safety.RecoverFunc(func() error {
 		defer close(errCh)
-		wg := new(sync.WaitGroup)
-		sem := make(chan struct{}, i.concurrency)
+		eg, egctx := errgroup.New(ctx)
+		eg.Limitation(i.concurrency)
 		for _, req := range i.req {
-			wg.Add(1)
-			sem <- struct{}{}
-			go func(r *payload.Object_Vector) {
-				defer wg.Done()
-				defer func() {
-					<-sem
-				}()
-				_, err := i.client.Do(ctx, i.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-					_, err := vald.NewValdClient(conn).Insert(ctx, req, copts...)
+			r := req
+			eg.Go(func() error {
+				_, err := i.client.Do(egctx, i.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+					_, err := vald.NewValdClient(conn).Insert(ctx, r, copts...)
 					return nil, err
 				})
 				if err != nil {
 					errCh <- err
 				}
-			}(req)
+				return nil
+			})
 		}
-		wg.Wait()
-		return nil
+		return eg.Wait()
 	}))
 	return errCh
 }

@@ -24,7 +24,8 @@ logging:
 method: insert
 dataset: fashion-mnist
 concurrency: 100
-addr: "gateway.vald.dssk-01.vald.k8s.bp.dssk01.caas.ssk.zcp.yahoo.co.jp:80"
+#addr: "gateway.vald.dssk-01.vald.k8s.bp.dssk01.caas.ssk.zcp.yahoo.co.jp:80"
+addr: "localhost:8081"
 client:
   addrs: []
   health_check_duration: 1s
