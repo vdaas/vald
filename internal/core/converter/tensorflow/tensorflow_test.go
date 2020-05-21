@@ -53,18 +53,12 @@ func TestNew(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return (t, nil): default options",
-			args: args{
-				opts: nil,
-			},
+			name: "returns (t, nil) when opts is nil",
 			want: want{
 				want: &tensorflow{
-					graph:   nil,
 					session: (&tf.SavedModel{}).Session,
 				},
-				err: nil,
 			},
-			checkFunc: defaultCheckFunc,
 			beforeFunc: func(args args) {
 				defaultOpts = []Option{}
 				loadFunc = func(s string, ss []string, o *SessionOptions) (*tf.SavedModel, error) {
@@ -73,7 +67,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{
-			name: "return (t, nil): args options",
+			name: "returns (t, nil) when args is not nil",
 			args: args{
 				opts: []Option{
 					WithSessionTarget("test"),
@@ -91,9 +85,7 @@ func TestNew(t *testing.T) {
 					session: (&tf.SavedModel{}).Session,
 					ndim:    1,
 				},
-				err: nil,
 			},
-			checkFunc: defaultCheckFunc,
 			beforeFunc: func(args args) {
 				defaultOpts = []Option{}
 				loadFunc = func(s string, ss []string, o *SessionOptions) (*tf.SavedModel, error) {
@@ -102,15 +94,10 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{
-			name: "return (nil, error)",
-			args: args{
-				nil,
-			},
+			name: "returns (nil, error) when loadFunc function returns error",
 			want: want{
-				want: nil,
-				err:  errors.New("load error"),
+				err: errors.New("load error"),
 			},
-			checkFunc: defaultCheckFunc,
 			beforeFunc: func(args args) {
 				defaultOpts = []Option{}
 				loadFunc = func(s string, ss []string, o *SessionOptions) (*tf.SavedModel, error) {
@@ -144,15 +131,7 @@ func TestNew(t *testing.T) {
 
 func Test_tensorflow_Close(t *testing.T) {
 	type fields struct {
-		exportDir     string
-		tags          []string
-		feeds         []OutputSpec
-		fetches       []OutputSpec
-		operations    []*Operation
-		options       *SessionOptions
-		graph         *tf.Graph
-		session       session
-		ndim          uint8
+		session session
 	}
 	type want struct {
 		err error
@@ -175,46 +154,25 @@ func Test_tensorflow_Close(t *testing.T) {
 		{
 			name: "return nil",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
 				session: &mockSession{
 					CloseFunc: func() error {
 						return nil
 					},
 				},
-				ndim: 0,
 			},
-			want: want{
-				err: nil,
-			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
 			name: "return error",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
 				session: &mockSession{
 					CloseFunc: func() error {
 						return errors.New("fail")
 					},
 				},
-				ndim: 0,
 			},
 			want: want{
 				err: errors.New("fail"),
 			},
-			checkFunc: defaultCheckFunc,
 		},
 	}
 
@@ -231,15 +189,7 @@ func Test_tensorflow_Close(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			t := &tensorflow{
-				exportDir:     test.fields.exportDir,
-				tags:          test.fields.tags,
-				feeds:         test.fields.feeds,
-				fetches:       test.fields.fetches,
-				operations:    test.fields.operations,
-				options:       test.fields.options,
-				graph:         test.fields.graph,
-				session:       test.fields.session,
-				ndim:          test.fields.ndim,
+				session: test.fields.session,
 			}
 
 			err := t.Close()
@@ -256,15 +206,9 @@ func Test_tensorflow_run(t *testing.T) {
 		inputs []string
 	}
 	type fields struct {
-		exportDir     string
-		tags          []string
-		feeds         []OutputSpec
-		fetches       []OutputSpec
-		operations    []*Operation
-		options       *SessionOptions
-		graph         *tf.Graph
-		session       session
-		ndim          uint8
+		feeds   []OutputSpec
+		graph   *tf.Graph
+		session session
 	}
 	type want struct {
 		want []*tf.Tensor
@@ -290,111 +234,67 @@ func Test_tensorflow_run(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ([], nil): inputs == nil",
-			args: args{
-				inputs: nil,
-			},
+			name: "returns ([], nil) when inputs is nil",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						return []*tf.Tensor{}, nil
 					},
 				},
-				ndim: 0,
 			},
 			want: want{
 				want: []*tf.Tensor{},
-				err:  nil,
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "return ([], nil): inputs == {\"test\"}",
+			name: "returns ([], nil) when inputs is []string{`test`}",
 			args: args{
 				inputs: []string{
 					"test",
 				},
 			},
 			fields: fields{
-				exportDir: "",
-				tags:      nil,
 				feeds: []OutputSpec{
 					OutputSpec{
 						operationName: "test",
 						outputIndex:   0,
 					},
 				},
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         tf.NewGraph(),
+				graph: tf.NewGraph(),
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						return []*tf.Tensor{}, nil
 					},
 				},
-				ndim: 0,
 			},
 			want: want{
 				want: []*tf.Tensor{},
-				err:  nil,
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "length error",
+			name: "returns (nil, error) when length of inputs and feeds field are different",
 			args: args{
 				inputs: []string{
 					"",
 				},
 			},
-			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
-				session:       nil,
-				ndim:          0,
-			},
 			want: want{
 				err: errors.ErrInputLength(1, 0),
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "session.Run() error",
-			args: args{
-				inputs: nil,
-			},
+			name: "returns (nil, error) when Run function returns (nil, error)",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         tf.NewGraph(),
+				graph: tf.NewGraph(),
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						return nil, errors.New("session.Run() error")
 					},
 				},
-				ndim: 0,
 			},
 			want: want{
 				err: errors.New("session.Run() error"),
 			},
-			checkFunc: defaultCheckFunc,
 		},
 	}
 
@@ -411,15 +311,9 @@ func Test_tensorflow_run(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			t := &tensorflow{
-				exportDir:     test.fields.exportDir,
-				tags:          test.fields.tags,
-				feeds:         test.fields.feeds,
-				fetches:       test.fields.fetches,
-				operations:    test.fields.operations,
-				options:       test.fields.options,
-				graph:         test.fields.graph,
-				session:       test.fields.session,
-				ndim:          test.fields.ndim,
+				feeds:   test.fields.feeds,
+				graph:   test.fields.graph,
+				session: test.fields.session,
 			}
 
 			got, err := t.run(test.args.inputs...)
@@ -436,15 +330,8 @@ func Test_tensorflow_GetVector(t *testing.T) {
 		inputs []string
 	}
 	type fields struct {
-		exportDir     string
-		tags          []string
-		feeds         []OutputSpec
-		fetches       []OutputSpec
-		operations    []*Operation
-		options       *SessionOptions
-		graph         *tf.Graph
-		session       session
-		ndim          uint8
+		session session
+		ndim    uint8
 	}
 	type want struct {
 		want []float64
@@ -470,126 +357,130 @@ func Test_tensorflow_GetVector(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return (vector, nil)",
-			args: args{
-				inputs: nil,
-			},
+			name: "returns (vector, nil) when run function returns (tensors, nil) and ndim is default",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
-						tensor, err := tf.NewTensor([]float64{1, 2, 3})
+						tensor, err := tf.NewTensor([]float64{
+							1,
+							2,
+							3,
+						})
 						if err != nil {
 							return nil, errors.New("NewTensor error")
 						}
 						return []*tf.Tensor{tensor}, nil
 					},
 				},
-				ndim: 0,
 			},
 			want: want{
-				want: []float64{1, 2, 3},
-				err:  nil,
+				want: []float64{
+					1,
+					2,
+					3,
+				},
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "run() error",
-			args: args{
-				inputs: nil,
-			},
+			name: "returns (vector, nil) when run function returns (tensors, nil) and ndim is 2",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
+				session: &mockSession{
+					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
+						tensor, err := tf.NewTensor([][]float64{
+							[]float64{
+								1,
+								2,
+								3,
+							},
+						})
+						if err != nil {
+							return nil, errors.New("NewTensor error")
+						}
+						return []*tf.Tensor{tensor}, nil
+					},
+				},
+				ndim: 2,
+			},
+			want: want{
+				want: []float64{
+					1,
+					2,
+					3,
+				},
+			},
+		},
+		{
+			name: "returns (vector, nil) when run function returns (tensors, nil) and ndim is 3",
+			fields: fields{
+				session: &mockSession{
+					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
+						tensor, err := tf.NewTensor([][][]float64{
+							[][]float64{
+								[]float64{
+									1,
+									2,
+									3,
+								},
+							},
+						})
+						if err != nil {
+							return nil, errors.New("NewTensor error")
+						}
+						return []*tf.Tensor{tensor}, nil
+					},
+				},
+				ndim: 3,
+			},
+			want: want{
+				want: []float64{
+					1,
+					2,
+					3,
+				},
+			},
+		},
+		{
+			name: "returns (nil, error) when run function returns (nil, error)",
+			fields: fields{
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						return nil, errors.New("session.Run() error")
 					},
 				},
-				ndim: 0,
 			},
 			want: want{
-				want: nil,
-				err:  errors.New("session.Run() error"),
+				err: errors.New("session.Run() error"),
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "nil tensor error: run() return nil",
-			args: args{
-				inputs: nil,
-			},
+			name: "returns (nil, error) when tensors returned by the run funcion is nil",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						return nil, nil
 					},
 				},
-				ndim: 0,
 			},
 			want: want{
-				want: nil,
-				err:  errors.ErrNilTensorTF([]*tf.Tensor{}),
+				err: errors.ErrNilTensorTF([]*tf.Tensor{}),
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "nil tensor error: run() return [nil]",
-			args: args{
-				inputs: nil,
-			},
+			name: "returns (nil, error) when element of tensors returned by the run funcion is nil",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						return []*tf.Tensor{nil}, nil
 					},
 				},
-				ndim: 0,
 			},
 			want: want{
-				want: nil,
-				err:  errors.ErrNilTensorTF([]*tf.Tensor{nil}),
+				err: errors.ErrNilTensorTF([]*tf.Tensor{nil}),
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "failed to cast error: ndim == TwoDim",
-			args: args{
-				inputs: nil,
-			},
+			name: "returns (nil, error) when ndim is `TwoDim` and returns error of `ErrFailedToCastTF`",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						tensor, err := tf.NewTensor("test")
@@ -602,24 +493,12 @@ func Test_tensorflow_GetVector(t *testing.T) {
 				ndim: 2,
 			},
 			want: want{
-				want: nil,
-				err:  errors.ErrFailedToCastTF("test"),
+				err: errors.ErrFailedToCastTF("test"),
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "failed to cast error: ndim == ThreeDim",
-			args: args{
-				inputs: nil,
-			},
+			name: "returns (nil, error) when ndim is `ThreeDim` and returns error of `ErrFailedToCastTF`",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						tensor, err := tf.NewTensor("test")
@@ -632,24 +511,12 @@ func Test_tensorflow_GetVector(t *testing.T) {
 				ndim: 3,
 			},
 			want: want{
-				want: nil,
-				err:  errors.ErrFailedToCastTF("test"),
+				err: errors.ErrFailedToCastTF("test"),
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "failed to cast error: ndim == default",
-			args: args{
-				inputs: nil,
-			},
+			name: "returns (nil, error) when ndim is `default` and returns error of `ErrFailedToCastTF`",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						tensor, err := tf.NewTensor("test")
@@ -659,13 +526,10 @@ func Test_tensorflow_GetVector(t *testing.T) {
 						return []*tf.Tensor{tensor}, nil
 					},
 				},
-				ndim: 0,
 			},
 			want: want{
-				want: nil,
-				err:  errors.ErrFailedToCastTF("test"),
+				err: errors.ErrFailedToCastTF("test"),
 			},
-			checkFunc: defaultCheckFunc,
 		},
 	}
 
@@ -682,15 +546,8 @@ func Test_tensorflow_GetVector(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			t := &tensorflow{
-				exportDir:     test.fields.exportDir,
-				tags:          test.fields.tags,
-				feeds:         test.fields.feeds,
-				fetches:       test.fields.fetches,
-				operations:    test.fields.operations,
-				options:       test.fields.options,
-				graph:         test.fields.graph,
-				session:       test.fields.session,
-				ndim:          test.fields.ndim,
+				session: test.fields.session,
+				ndim:    test.fields.ndim,
 			}
 
 			got, err := t.GetVector(test.args.inputs...)
@@ -707,15 +564,7 @@ func Test_tensorflow_GetValue(t *testing.T) {
 		inputs []string
 	}
 	type fields struct {
-		exportDir     string
-		tags          []string
-		feeds         []OutputSpec
-		fetches       []OutputSpec
-		operations    []*Operation
-		options       *SessionOptions
-		graph         *tf.Graph
-		session       session
-		ndim          uint8
+		session session
 	}
 	type want struct {
 		want interface{}
@@ -741,18 +590,8 @@ func Test_tensorflow_GetValue(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return (value, nil)",
-			args: args{
-				inputs: nil,
-			},
+			name: "returns (value, nil) when run function returns (tensors, nil)",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						tensor, err := tf.NewTensor("test")
@@ -762,91 +601,49 @@ func Test_tensorflow_GetValue(t *testing.T) {
 						return []*tf.Tensor{tensor}, nil
 					},
 				},
-				ndim: 0,
 			},
 			want: want{
 				want: "test",
-				err:  nil,
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "run() error",
-			args: args{
-				inputs: nil,
-			},
+			name: "returns (nil, error) when run function returns (nil, error)",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						return nil, errors.New("session.Run() error")
 					},
 				},
-				ndim: 0,
 			},
 			want: want{
-				want: nil,
-				err:  errors.New("session.Run() error"),
+				err: errors.New("session.Run() error"),
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "nil tensor error: run() return nil",
-			args: args{
-				inputs: nil,
-			},
+			name: "returns (nil, error) when tensors returned by the run funcion is nil",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						return nil, nil
 					},
 				},
-				ndim: 0,
 			},
 			want: want{
-				want: nil,
-				err:  errors.ErrNilTensorTF([]*tf.Tensor{}),
+				err: errors.ErrNilTensorTF([]*tf.Tensor{}),
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "nil tensor error: run() return [nil]",
-			args: args{
-				inputs: nil,
-			},
+			name: "returns (nil, error) when element of tensors returned by the run funcion is nil",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						return []*tf.Tensor{nil}, nil
 					},
 				},
-				ndim: 0,
 			},
 			want: want{
-				want: nil,
-				err:  errors.ErrNilTensorTF([]*tf.Tensor{nil}),
+				err: errors.ErrNilTensorTF([]*tf.Tensor{nil}),
 			},
-			checkFunc: defaultCheckFunc,
 		},
 	}
 
@@ -863,15 +660,7 @@ func Test_tensorflow_GetValue(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			t := &tensorflow{
-				exportDir:     test.fields.exportDir,
-				tags:          test.fields.tags,
-				feeds:         test.fields.feeds,
-				fetches:       test.fields.fetches,
-				operations:    test.fields.operations,
-				options:       test.fields.options,
-				graph:         test.fields.graph,
-				session:       test.fields.session,
-				ndim:          test.fields.ndim,
+				session: test.fields.session,
 			}
 
 			got, err := t.GetValue(test.args.inputs...)
@@ -888,15 +677,7 @@ func Test_tensorflow_GetValues(t *testing.T) {
 		inputs []string
 	}
 	type fields struct {
-		exportDir     string
-		tags          []string
-		feeds         []OutputSpec
-		fetches       []OutputSpec
-		operations    []*Operation
-		options       *SessionOptions
-		graph         *tf.Graph
-		session       session
-		ndim          uint8
+		session session
 	}
 	type want struct {
 		wantValues []interface{}
@@ -922,18 +703,8 @@ func Test_tensorflow_GetValues(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return (values, nil)",
-			args: args{
-				inputs: nil,
-			},
+			name: "return (values, nil) when run function returns (tensors, nil)",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						tensor, err := tf.NewTensor("test")
@@ -943,39 +714,26 @@ func Test_tensorflow_GetValues(t *testing.T) {
 						return []*tf.Tensor{tensor, tensor}, nil
 					},
 				},
-				ndim: 0,
 			},
 			want: want{
-				wantValues: []interface{}{"test", "test"},
-				err:        nil,
+				wantValues: []interface{}{
+					"test",
+					"test",
+				},
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
-			name: "run() error",
-			args: args{
-				inputs: nil,
-			},
+			name: "returns (nil, error) when run function returns (nil, error)",
 			fields: fields{
-				exportDir:     "",
-				tags:          nil,
-				feeds:         nil,
-				fetches:       nil,
-				operations:    nil,
-				options:       nil,
-				graph:         nil,
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						return nil, errors.New("session.Run() error")
 					},
 				},
-				ndim: 0,
 			},
 			want: want{
-				wantValues: nil,
-				err:        errors.New("session.Run() error"),
+				err: errors.New("session.Run() error"),
 			},
-			checkFunc: defaultCheckFunc,
 		},
 	}
 
@@ -992,15 +750,7 @@ func Test_tensorflow_GetValues(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			t := &tensorflow{
-				exportDir:     test.fields.exportDir,
-				tags:          test.fields.tags,
-				feeds:         test.fields.feeds,
-				fetches:       test.fields.fetches,
-				operations:    test.fields.operations,
-				options:       test.fields.options,
-				graph:         test.fields.graph,
-				session:       test.fields.session,
-				ndim:          test.fields.ndim,
+				session: test.fields.session,
 			}
 
 			gotValues, err := t.GetValues(test.args.inputs...)
