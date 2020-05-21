@@ -64,8 +64,6 @@ backupManager:
       cassandra:
         hosts:
           - scylla-0.scylla.default.svc.cluster.local
-          - scylla-1.scylla.default.svc.cluster.local
-          - scylla-2.scylla.default.svc.cluster.local
       sleepDuration: 2
   env: []
   resources:
@@ -79,8 +77,7 @@ backupManager:
     config:
       hosts:
         - scylla-0.scylla.default.svc.cluster.local
-        - scylla-1.scylla.default.svc.cluster.local
-        - scylla-2.scylla.default.svc.cluster.local
+      consistency: one
 
 meta:
   image:
@@ -92,8 +89,6 @@ meta:
       cassandra:
         hosts:
           - scylla-0.scylla.default.svc.cluster.local
-          - scylla-1.scylla.default.svc.cluster.local
-          - scylla-2.scylla.default.svc.cluster.local
       sleepDuration: 2
   env: []
   resources:
@@ -107,5 +102,4 @@ meta:
     config:
       hosts:
         - scylla-0.scylla.default.svc.cluster.local
-        - scylla-1.scylla.default.svc.cluster.local
-        - scylla-2.scylla.default.svc.cluster.local
+      consistency: one
