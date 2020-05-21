@@ -124,5 +124,6 @@ data:
       distance_type: l2
       enable_in_memory_mode: true
       index_path: null
+      initial_delay_max_duration: 3m
       object_type: float
       search_edge_size: 10
