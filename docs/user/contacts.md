@@ -10,6 +10,6 @@ We recommend to communicate on slack, but using E-mail is also welcome.
  
 Slack: [Vald Community](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA) 
 
-E-mail: vald@vdaas.org
+E-mail: [vald@vdaas.org](mailto:vald@vdaas.org)
 
 We are waiting for your contact.
