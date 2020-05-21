@@ -36,7 +36,8 @@ spec:
   {{- $servers := dict "Values" .Values.discoverer.server_config "default" .Values.defaults.server_config }}
   {{- include "vald.servicePorts" $servers | nindent 2 }}
   selector:
-    app: {{ .Values.discoverer.name }}
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    app.kubernetes.io/component: discoverer
   {{- if eq .Values.discoverer.serviceType "ClusterIP" }}
   clusterIP: None
   {{- end }}

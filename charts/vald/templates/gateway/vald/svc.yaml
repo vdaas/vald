@@ -36,7 +36,8 @@ spec:
   {{- $servers := dict "Values" .Values.gateway.server_config "default" .Values.defaults.server_config }}
   {{- include "vald.servicePorts" $servers | nindent 2 }}
   selector:
-    app: {{ .Values.gateway.name }}
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    app.kubernetes.io/component: gateway
   {{- if eq .Values.gateway.serviceType "ClusterIP" }}
   clusterIP: None
   {{- end }}
