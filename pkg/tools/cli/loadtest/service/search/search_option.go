@@ -16,34 +16,41 @@
 package search
 
 import (
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/net/grpc"
 )
 
-type SearchOption func(*search) error
+type Option func(*search) error
 
 var (
-	defaultSearchOpts = []SearchOption{
+	defaultOpts = []Option{
 		WithConcurrency(100),
 	}
 )
 
-func WithReader(r client.Reader) SearchOption {
+func WithAddr(a string) Option {
 	return func(s *search) error {
-		s.r = r
+		s.addr = a
 		return nil
 	}
 }
 
-func WithConcurrency(c int) SearchOption {
+func WithClient(c grpc.Client) Option {
 	return func(s *search) error {
-		s.c = c
+		s.client = c
 		return nil
 	}
 }
 
-func WithDataset(n string) SearchOption {
+func WithConcurrency(c int) Option {
+	return func(s *search) error {
+		s.concurrency = c
+		return nil
+	}
+}
+
+func WithDataset(n string) Option {
 	return func(s *search) (err error) {
-		s.n = n
+		s.dataset = n
 		return nil
 	}
 }
