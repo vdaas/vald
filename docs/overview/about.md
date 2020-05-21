@@ -27,7 +27,7 @@ Vald is easy to use, feature-rich and highly customizable as you needed.
 #### What Vald can do?
 
 <!-- copied from README.md-->
-- Asynchronize Auto Indexing
+- Asynchronous Auto Indexing
     - Usually the graph requires locking during indexing, which causes stop-the-world. But Vald uses distributed index graphs so it continues to work during indexing.
 
 - Customizable Ingress/Egress Filtering

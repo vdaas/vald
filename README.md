@@ -36,7 +36,7 @@ Go to [Get Started](./docs/user/get-started.md) page to try out Vald :)
 
 ### Main Features
 
-- Asynchronize Auto Indexing
+- Asynchronous Auto Indexing
     - Usually the graph requires locking during indexing, which causes stop-the-world. But Vald uses distributed index graphs so it continues to work during indexing.
 
 - Customizable Ingress/Egress Filtering
