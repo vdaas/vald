@@ -25,22 +25,42 @@ import (
 )
 
 type ngtMetrics struct {
-	ngt                   service.NGT
-	indexCount            metrics.Int64Measure
-	uncommittedIndexCount metrics.Int64Measure
-	insertVCacheCount     metrics.Int64Measure
-	deleteVCacheCount     metrics.Int64Measure
-	isIndexing            metrics.Int64Measure
+	ngt                       service.NGT
+	indexCount                metrics.Int64Measure
+	uncommittedIndexCount     metrics.Int64Measure
+	insertVCacheCount         metrics.Int64Measure
+	deleteVCacheCount         metrics.Int64Measure
+	completedCreateIndexTotal metrics.Int64Measure
+	isIndexing                metrics.Int64Measure
 }
 
 func New(n service.NGT) metrics.Metric {
 	return &ngtMetrics{
-		ngt:                   n,
-		indexCount:            *metrics.Int64(metrics.ValdOrg+"/ngt/index_count", "NGT index count", metrics.UnitDimensionless),
-		uncommittedIndexCount: *metrics.Int64(metrics.ValdOrg+"/ngt/uncommitted_index_count", "NGT uncommitted index count", metrics.UnitDimensionless),
-		insertVCacheCount:     *metrics.Int64(metrics.ValdOrg+"/ngt/insert_vcache_count", "NGT insert vcache count", metrics.UnitDimensionless),
-		deleteVCacheCount:     *metrics.Int64(metrics.ValdOrg+"/ngt/delete_vcache_count", "NGT delete vcache count", metrics.UnitDimensionless),
-		isIndexing:            *metrics.Int64(metrics.ValdOrg+"/ngt/is_indexing", "currently indexing or not", metrics.UnitDimensionless),
+		ngt: n,
+		indexCount: *metrics.Int64(
+			metrics.ValdOrg+"/ngt/index_count",
+			"NGT index count",
+			metrics.UnitDimensionless),
+		uncommittedIndexCount: *metrics.Int64(
+			metrics.ValdOrg+"/ngt/uncommitted_index_count",
+			"NGT uncommitted index count",
+			metrics.UnitDimensionless),
+		insertVCacheCount: *metrics.Int64(
+			metrics.ValdOrg+"/ngt/insert_vcache_count",
+			"NGT insert vcache count",
+			metrics.UnitDimensionless),
+		deleteVCacheCount: *metrics.Int64(
+			metrics.ValdOrg+"/ngt/delete_vcache_count",
+			"NGT delete vcache count",
+			metrics.UnitDimensionless),
+		completedCreateIndexTotal: *metrics.Int64(
+			metrics.ValdOrg+"/ngt/completed_create_index_total",
+			"the cumulative count of completed create index execution",
+			metrics.UnitDimensionless),
+		isIndexing: *metrics.Int64(
+			metrics.ValdOrg+"/ngt/is_indexing",
+			"currently indexing or not",
+			metrics.UnitDimensionless),
 	}
 }
 
@@ -55,6 +75,7 @@ func (n *ngtMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, er
 		n.uncommittedIndexCount.M(int64(n.ngt.InsertVCacheLen() + n.ngt.DeleteVCacheLen())),
 		n.insertVCacheCount.M(int64(n.ngt.InsertVCacheLen())),
 		n.deleteVCacheCount.M(int64(n.ngt.DeleteVCacheLen())),
+		n.completedCreateIndexTotal.M(int64(n.ngt.NumberOfCreateIndexExecution())),
 		n.isIndexing.M(isIndexing),
 	}, nil
 }
@@ -87,6 +108,12 @@ func (n *ngtMetrics) View() []*metrics.View {
 			Name:        "ngt_delete_vcache_count",
 			Description: "NGT delete vcache count",
 			Measure:     &n.deleteVCacheCount,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "ngt_completed_create_index_total",
+			Description: "the cumulative count of completed create index execution",
+			Measure:     &n.completedCreateIndexTotal,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{

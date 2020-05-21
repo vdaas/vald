@@ -752,6 +752,8 @@ agent:
     auto_index_length: 100
     # agent.ngt.auto_save_index_duration -- duration of automatic save index
     auto_save_index_duration: 35m
+    # agent.ngt.initial_delay_max_duration -- maximum duration for initial delay
+    initial_delay_max_duration: 3m
     # agent.ngt.dimension -- vector dimension
     dimension: 4096
     # agent.ngt.bulk_insert_chunk_size -- bulk insert chunk size

@@ -33,6 +33,8 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/pkg/agent/ngt/model"
@@ -50,7 +52,7 @@ type NGT interface {
 	Delete(uuid string) (err error)
 	DeleteMultiple(uuids ...string) (err error)
 	GetObject(uuid string) (vec []float32, err error)
-	CreateIndex(poolSize uint32) (err error)
+	CreateIndex(ctx context.Context, poolSize uint32) (err error)
 	SaveIndex(ctx context.Context) (err error)
 	Exists(string) (uint32, bool)
 	CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err error)
@@ -70,6 +72,7 @@ type ngt struct {
 	lim      time.Duration // auto indexing time limit
 	dur      time.Duration // auto indexing check duration
 	sdur     time.Duration // auto save index check duration
+	idelay   time.Duration // initial delay duration
 	dps      uint32        // default pool size
 	ic       uint64        // insert count
 	nocie    uint64        // number of create index execution
@@ -167,6 +170,16 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 		n.sdur = d
 	}
 
+	if cfg.InitialDelayMaxDuration != "" {
+		d, err := timeutil.Parse(cfg.InitialDelayMaxDuration)
+		if err != nil {
+			d = 0
+		}
+		n.idelay = time.Duration(
+			int64(rand.LimitedUint32(uint64(d/time.Second))),
+		) * time.Second
+	}
+
 	n.alen = cfg.AutoIndexLength
 
 	n.eg = errgroup.Get()
@@ -201,6 +214,16 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			n.lim = n.dur * 2
 		}
 		defer close(ech)
+
+		timer := time.NewTimer(n.idelay)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return ctx.Err()
+		case <-timer.C:
+		}
+		timer.Stop()
+
 		tick := time.NewTicker(n.dur)
 		sTick := time.NewTicker(n.sdur)
 		limit := time.NewTicker(n.lim)
@@ -219,7 +242,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				return ctx.Err()
 			case <-tick.C:
 				if int(atomic.LoadUint64(&n.ic)) >= n.alen {
-					err = n.CreateIndex(n.dps)
+					err = n.CreateIndex(ctx, n.dps)
 				}
 			case <-limit.C:
 				err = n.CreateAndSaveIndex(ctx, n.dps)
@@ -423,7 +446,14 @@ func (n *ngt) GetObject(uuid string) (vec []float32, err error) {
 	return vec, nil
 }
 
-func (n *ngt) CreateIndex(poolSize uint32) (err error) {
+func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt/service/NGT.CreateIndex")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
 	if n.indexing.Load().(bool) {
 		return nil
 	}
@@ -521,6 +551,13 @@ func (n *ngt) CreateIndex(poolSize uint32) (err error) {
 }
 
 func (n *ngt) SaveIndex(ctx context.Context) (err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt/service/NGT.SaveIndex")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
 	if len(n.path) != 0 && !n.inMem {
 		eg, ctx := errgroup.New(ctx)
 		eg.Go(safety.RecoverFunc(func() error {
@@ -549,7 +586,14 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 }
 
 func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err error) {
-	err = n.CreateIndex(poolSize)
+	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt/service/NGT.CreateAndSaveIndex")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	err = n.CreateIndex(ctx, poolSize)
 	if err != nil {
 		return err
 	}
