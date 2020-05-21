@@ -57,22 +57,22 @@ This is the most important part for the users to understand Vald.
 
 When the user inserts data into Vald:
 
-1. Vald Ingress receives the request from the user. The request includes the vector and the vector ID which is set by the user.
-2. Vald Ingress will forward the request to Vald Filter Gateway to pre-process the request data.
-3. Vald Filter Gateway will forward the request to the user-defined Vald Ingress Filter.　After the Vald Ingress Filter received the request, it will perform the pre-processing for the request data. For example, padding the vector to match the vector length in Vald.
+1. Vald Ingress receives the request from the user. The request includes the vector and the vector ID.
+2. Vald Ingress will forward the request to the Vald Filter Gateway to pre-process the request data.
+3. Vald Filter Gateway will forward the request to the user-defined Vald Ingress Filter. After the Vald Ingress Filter received the request, it will perform the pre-processing logic defined by the user, for example, padding the vector to match the vector length in Vald.
 4. After the request is processed by the user-defined Vald Ingress Filter, the result will return to the Vald Filter Gateway.
-5. Vald Filter Gateway will forward the processed data to the Vald Meta Gateway. After the Vald Meta Gateway receives the request, the UUID will be generated for internal use and the UUID will be mapped to the vector ID from the user's request. The reason of using UUID instead of vector ID is because the vector ID may be too long and it may slow down the processing in Vald.
-6. Vald Meta Gateway will forward the request with the UUID to Vald Backup Gateway.
-7. Vald Backup Gateway will forward the request to Vald LB Gateway. Vald LB Gateway will determine which Vald Agents to process the request based on the resource usage of the nodes and pods, and the number of vector replicas.
-8. Vald LB Gateway will forward the UUID and the vector data to the selected Vald Agents parallelly. Vald Agent will insert the vector and UUID in an on-memory vector queue. A vector queue will be committed to an ANN graph index by a CreateIndex instruction executed by the index manager.
+5. Vald Filter Gateway will forward the processed data to the Vald Meta Gateway. Vald Meta Gateway will generate the UUID for internal use and the UUID will be mapped to the vector ID from the user's request. The reason of using UUID instead of vector ID is because the vector ID may be too long and it may increase the memory usage in Vald Agent.
+6. Vald Meta Gateway will forward the request with the UUID to the Vald Backup Gateway, which will process the backup logic in 14-16 to prevent the data lost in Vald.
+7. Vald Backup Gateway will forward the request to Vald LB Gateway. Vald LB Gateway will determine which Vald Agent(s) to process the request based on the resource usage of the nodes and pods, and the number of vector replicas.
+8. Vald LB Gateway will forward the UUID and the vector data to the selected Vald Agents parallelly. Vald Agent will insert the vector and UUID in an on-memory vector queue. A vector queue will be committed to an ANN graph index by a `CreateIndex` instruction executed by the Vald Index Manager.
 9. If Vald Agent successfully inserts the request data, it will return success to the Vald LB Gateway.
-10. After Vald LB Gateway receives success from selected Vald Agents, it will respond the IP addresses of all selected Vald Agents to the Backup Gateway.
+10. After Vald LB Gateway receives success from the selected Vald Agents, it will respond the IP addresses of all selected Vald Agents to the Vald Backup Gateway.
 11. Vald Backup Gateway returns success to Vald Meta Gateway.
 12. Vald Meta Gateway will forward the UUID(s) and vector ID(s) to the Vald Meta.
-13. Vald Meta will store the UUID(s) and vector ID(s) that were successfully processed by the Vald Agent(s) to the persistent layer such as Redis, Cassandra, MySQL and etc...
-14. Vald Backup Gateway will asynchronously send all the inserted the data (vector(s), vector ID(s), UUID(s) and IP address(es)) to the Vald Compressor. Vald Compressor will compress the vector data asynchronously to reduce the size of the backup data.
-15. Vald Compressor will forward the compressed data to Vald Backup Manager.
-16. Vald Backup Manager will store the data to the persistent layer such as MySQL, Cassandra and etc, to prevent data lost if the Vald Agent is dead.
+13. Vald Meta will store the UUID(s) and vector ID(s) that were successfully processed by the Vald Agent(s) to the persistent layer such as Redis, Cassandra, MySQL, etc.
+14. Vald Backup Gateway will asynchronously send all the inserted the data (vector(s), vector ID(s), UUID(s) and IP address(es)) to the Vald Compressor. Vald Compressor will compress the vector data asynchronously to reduce the size of the vector data.
+15. Vald Compressor will forward the compressed data to the Vald Backup Manager.
+16. Vald Backup Manager will store the data to the persistent layer such as MySQL, Cassandra, etc., to prevent the data lost in Vald.
 17. Vald Meta Gateway will return success to the Vald Filter Gateway.
 18. Vald Filter Gateway will return success to the Vald Ingress.
 
