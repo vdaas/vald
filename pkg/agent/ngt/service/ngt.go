@@ -72,7 +72,7 @@ type ngt struct {
 	lim      time.Duration // auto indexing time limit
 	dur      time.Duration // auto indexing check duration
 	sdur     time.Duration // auto save index check duration
-	idelaymx time.Duration // maximum duration for initial delay
+	idelay   time.Duration // initial delay duration
 	dps      uint32        // default pool size
 	ic       uint64        // insert count
 	nocie    uint64        // number of create index execution
@@ -175,7 +175,9 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 		if err != nil {
 			d = 0
 		}
-		n.idelaymx = d
+		n.idelay = time.Duration(
+			int64(rand.LimitedUint32(uint64(d/time.Second))),
+		) * time.Second
 	}
 
 	n.alen = cfg.AutoIndexLength
@@ -213,7 +215,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 		}
 		defer close(ech)
 
-		time.Sleep(time.Duration(rand.LimitedUint32(uint64(n.idelaymx))))
+		time.Sleep(n.idelay)
 
 		tick := time.NewTicker(n.dur)
 		sTick := time.NewTicker(n.sdur)
