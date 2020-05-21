@@ -215,7 +215,14 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 		}
 		defer close(ech)
 
-		time.Sleep(n.idelay)
+		timer := time.NewTimer(n.idelay)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return ctx.Err()
+		case <-timer.C:
+		}
+		timer.Stop()
 
 		tick := time.NewTicker(n.dur)
 		sTick := time.NewTicker(n.sdur)
