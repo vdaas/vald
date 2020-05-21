@@ -20,6 +20,12 @@ metadata:
   name: {{ .Values.agent.name }}
   labels:
     app: {{ .Values.agent.name }}
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: agent
   {{- if .Values.agent.annotations }}
   annotations:
     {{- toYaml .Values.agent.annotations | nindent 4 }}
@@ -43,6 +49,9 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.agent.name }}
+        app.kubernetes.io/name: {{ include "vald.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: agent
       {{- if .Values.agent.podAnnotations }}
       annotations:
         {{- toYaml .Values.agent.podAnnotations | nindent 8 }}

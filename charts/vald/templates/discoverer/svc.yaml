@@ -22,10 +22,16 @@ metadata:
   annotations:
     {{- toYaml .Values.discoverer.service.annotations | nindent 4 }}
   {{- end }}
-  {{- if .Values.discoverer.service.labels }}
   labels:
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: discoverer
+    {{- if .Values.discoverer.service.labels }}
     {{- toYaml .Values.discoverer.service.labels | nindent 4 }}
-  {{- end }}
+    {{- end }}
 spec:
   {{- $servers := dict "Values" .Values.discoverer.server_config "default" .Values.defaults.server_config }}
   {{- include "vald.servicePorts" $servers | nindent 2 }}
