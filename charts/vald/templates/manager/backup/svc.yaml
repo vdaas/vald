@@ -22,15 +22,22 @@ metadata:
   annotations:
     {{- toYaml .Values.backupManager.service.annotations | nindent 4 }}
   {{- end }}
-  {{- if .Values.backupManager.service.labels }}
   labels:
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: manager-backup
+    {{- if .Values.backupManager.service.labels }}
     {{- toYaml .Values.backupManager.service.labels | nindent 4 }}
-  {{- end }}
+    {{- end }}
 spec:
   {{- $servers := dict "Values" .Values.backupManager.server_config "default" .Values.defaults.server_config }}
   {{- include "vald.servicePorts" $servers | nindent 2 }}
   selector:
-    app: {{ .Values.backupManager.name }}
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    app.kubernetes.io/component: manager-backup
   {{- if eq .Values.backupManager.serviceType "ClusterIP" }}
   clusterIP: None
   {{- end }}

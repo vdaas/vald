@@ -22,15 +22,22 @@ metadata:
   annotations:
     {{- toYaml .Values.gateway.service.annotations | nindent 4 }}
   {{- end }}
-  {{- if .Values.gateway.service.labels }}
   labels:
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: gateway
+    {{- if .Values.gateway.service.labels }}
     {{- toYaml .Values.gateway.service.labels | nindent 4 }}
-  {{- end }}
+    {{- end }}
 spec:
   {{- $servers := dict "Values" .Values.gateway.server_config "default" .Values.defaults.server_config }}
   {{- include "vald.servicePorts" $servers | nindent 2 }}
   selector:
-    app: {{ .Values.gateway.name }}
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    app.kubernetes.io/component: gateway
   {{- if eq .Values.gateway.serviceType "ClusterIP" }}
   clusterIP: None
   {{- end }}

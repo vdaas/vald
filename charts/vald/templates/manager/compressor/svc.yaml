@@ -22,15 +22,22 @@ metadata:
   annotations:
     {{- toYaml .Values.compressor.service.annotations | nindent 4 }}
   {{- end }}
-  {{- if .Values.compressor.service.labels }}
   labels:
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: manager-compressor
+    {{- if .Values.compressor.service.labels }}
     {{- toYaml .Values.compressor.service.labels | nindent 4 }}
-  {{- end }}
+    {{- end }}
 spec:
   {{- $servers := dict "Values" .Values.compressor.server_config "default" .Values.defaults.server_config }}
   {{- include "vald.servicePorts" $servers | nindent 2 }}
   selector:
-    app: {{ .Values.compressor.name }}
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    app.kubernetes.io/component: manager-compressor
   {{- if eq .Values.compressor.serviceType "ClusterIP" }}
   clusterIP: None
   {{- end }}

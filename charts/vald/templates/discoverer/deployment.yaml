@@ -20,6 +20,12 @@ metadata:
   name: {{ .Values.discoverer.name }}
   labels:
     app: {{ .Values.discoverer.name }}
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: discoverer
   {{- if .Values.discoverer.annotations }}
   annotations:
     {{- toYaml .Values.discoverer.annotations | nindent 4 }}
@@ -43,6 +49,9 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.discoverer.name }}
+        app.kubernetes.io/name: {{ include "vald.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: discoverer
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/discoverer/configmap.yaml") . | sha256sum }}
         {{- if .Values.discoverer.podAnnotations }}
