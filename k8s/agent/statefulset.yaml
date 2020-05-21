@@ -20,6 +20,12 @@ metadata:
   name: vald-agent-ngt
   labels:
     app: vald-agent-ngt
+    app.kubernetes.io/name: vald
+    helm.sh/chart: vald-v0.0.37
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: v0.0.37
+    app.kubernetes.io/component: agent
 spec:
   serviceName: vald-agent-ngt
   podManagementPolicy: Parallel
@@ -37,12 +43,15 @@ spec:
       creationTimestamp: null
       labels:
         app: vald-agent-ngt
+        app.kubernetes.io/name: vald
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/component: agent
       annotations:
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-agent-ngt
       # annotations:
-      #   checksum/configmap: a4b3b818f85b4001359d2204d4edff3d667e76bf1c076dcf8ccd94190cbf61e6
+      #   checksum/configmap: b505e1c625082fbbd5b2b2f6fa934b7dfcefe6ef0a3956aaef1422285a67f31b
     spec:
       affinity:
         nodeAffinity:

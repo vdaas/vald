@@ -18,6 +18,13 @@ apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
   name: vald-discoverer-priority
+  labels:
+    app.kubernetes.io/name: vald
+    helm.sh/chart: vald-v0.0.37
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: v0.0.37
+    app.kubernetes.io/component: discoverer
 value: 1e+06
 globalDefault: false
 description: "A priority class for Vald discoverer."

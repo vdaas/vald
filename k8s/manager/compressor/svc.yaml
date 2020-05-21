@@ -18,6 +18,13 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vald-manager-compressor
+  labels:
+    app.kubernetes.io/name: vald
+    helm.sh/chart: vald-v0.0.37
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: v0.0.37
+    app.kubernetes.io/component: manager-compressor
 spec:
   ports:
     - name: grpc
@@ -33,6 +40,7 @@ spec:
       targetPort: 6060
       protocol: TCP
   selector:
-    app: vald-manager-compressor
+    app.kubernetes.io/name: vald
+    app.kubernetes.io/component: manager-compressor
   clusterIP: None
   type: ClusterIP
