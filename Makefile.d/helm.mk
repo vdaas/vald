@@ -60,6 +60,8 @@ helm/repo/add:
 .PHONY: helm/docs/vald
 helm/docs/vald: charts/vald/README.md
 
+# force to rebuild
+.PHONY: charts/vald/README.md
 charts/vald/README.md: \
 	charts/vald/README.md.gotmpl \
 	charts/vald/values.yaml
@@ -68,6 +70,8 @@ charts/vald/README.md: \
 .PHONY: helm/docs/vald-helm-operator
 helm/docs/vald-helm-operator: charts/vald-helm-operator/README.md
 
+# force to rebuild
+.PHONY: charts/vald-helm-operator/README.md
 charts/vald-helm-operator/README.md: \
 	charts/vald-helm-operator/README.md.gotmpl \
 	charts/vald-helm-operator/values.yaml
