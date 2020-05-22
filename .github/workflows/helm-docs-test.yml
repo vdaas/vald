@@ -1,0 +1,20 @@
+name: Run helm-docs for test
+on:
+- pull_request
+
+jobs:
+  helm-docs-test:
+    name: Run helm-docs
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 0
+      - name: Run helm-docs
+        run: |
+          make helm/docs/vald
+
+          cat charts/vald/README.md
