@@ -37,6 +37,9 @@ jobs:
             exit 0
           fi
           echo "version updated: ${GITWERK_RESULT}"
+
+          git checkout master
+
           echo "${GITWERK_RESULT}" > versions/VALD_VERSION
 
           sed -i -e "s/^version: .*$/version: ${GITWERK_RESULT}/" charts/vald/Chart.yaml
@@ -46,8 +49,6 @@ jobs:
 
           make helm/docs/vald
           make helm/docs/vald-helm-operator
-
-          git checkout master
 
           git config --global user.name "vdaas-ci"
           git config --global user.email "ci@vdaas.org"
