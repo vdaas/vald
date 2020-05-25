@@ -21,7 +21,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/runner"
-	"github.com/vdaas/vald/pkg/agent/ngt/config"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
 )
 
 type run struct {

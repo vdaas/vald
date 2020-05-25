@@ -1,8 +1,14 @@
-area/agent:
-  - apis/proto/agent/**/*
-  - apis/grpc/agent/**/*
-  - cmd/agent/**/*
-  - pkg/agent/**/*
+area/agent/core:
+  - apis/proto/agent/core/**/*
+  - apis/grpc/agent/core/**/*
+  - cmd/agent/core/**/*
+  - pkg/agent/core/**/*
+
+area/agent/sidecar:
+  - apis/proto/agent/sidecar/**/*
+  - apis/grpc/agent/sidecar/**/*
+  - cmd/agent/sidecar/**/*
+  - pkg/agent/sidecar/**/*
 
 area/discoverer:
   - apis/proto/discoverer/**/*

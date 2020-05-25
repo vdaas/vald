@@ -44,7 +44,7 @@ docker/name/agent-ngt:
 .PHONY: docker/build/agent-ngt
 ## build agent-ngt image
 docker/build/agent-ngt: docker/build/base
-	docker build -f dockers/agent/ngt/Dockerfile -t $(REPO)/$(AGENT_IMAGE) .
+	docker build -f dockers/agent/core/ngt/Dockerfile -t $(REPO)/$(AGENT_IMAGE) .
 
 .PHONY: docker/name/discoverer-k8s
 docker/name/discoverer-k8s:
