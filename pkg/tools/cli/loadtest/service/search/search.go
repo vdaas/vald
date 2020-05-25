@@ -17,15 +17,20 @@ package search
 
 import (
 	"context"
-	"fmt"
+	"os"
+	"reflect"
+	"sync/atomic"
+	"syscall"
+	"time"
+
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
-	"reflect"
 )
 
 type search struct {
@@ -51,7 +56,7 @@ func New(opts ...Option) (s *search, err error) {
 func (s *search) Prepare(ctx context.Context) error {
 	fn := assets.Data(s.dataset)
 	if fn == nil {
-		return fmt.Errorf("dataset load function is nil: %s", s.dataset)
+		return errors.Errorf("dataset load function is nil: %s", s.dataset)
 	}
 	dataset, err := assets.Data(s.dataset)()
 	if err != nil {
@@ -69,24 +74,57 @@ func (s *search) Prepare(ctx context.Context) error {
 }
 
 func (s *search) Do(ctx context.Context) <-chan error {
-	errCh := make(chan error, len(s.req))
+	ech := make(chan error, len(s.req))
+
+	// TODO: related to #403.
+	p, err := os.FindProcess(os.Getpid())
+	if err != nil {
+		ech <- err
+		return ech
+	}
+
+	var progress int32 = 0
+	ticker := time.NewTicker(5 * time.Second)
 	s.eg.Go(safety.RecoverFunc(func() error {
-		defer close(errCh)
+		for progress != int32(len(s.req)) {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-ticker.C:
+				log.Debugf("insert %d items", progress)
+			}
+		}
+		return nil
+	}))
+	s.eg.Go(safety.RecoverFunc(func() error {
+		defer close(ech)
 		eg, egctx := errgroup.New(ctx)
 		eg.Limitation(s.concurrency)
 		for _, req := range s.req {
 			r := req
 			eg.Go(func() error {
-				_, err := s.client.Do(egctx, s.addr, func(Ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-					return vald.NewValdClient(conn).Search(ctx, r, copts...)
+				_, err := s.client.Do(egctx, s.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+					_, err := vald.NewValdClient(conn).Search(ctx, r, copts...)
+					atomic.AddInt32(&progress, 1)
+					if err != nil {
+						log.Warn(err)
+					}
+					return nil, err
 				})
 				if err != nil {
-					errCh <- err
+					ech <- err
 				}
 				return nil
 			})
 		}
-		return eg.Wait()
+		err := eg.Wait()
+		if err != nil {
+			log.Warn(err)
+			ech <- err
+			return p.Signal(syscall.SIGKILL) // TODO: #403
+		}
+		return p.Signal(syscall.SIGTERM) // TODO: #403
 	}))
-	return errCh
+	return ech
+
 }

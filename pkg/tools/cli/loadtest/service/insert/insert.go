@@ -17,7 +17,6 @@ package insert
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"reflect"
 	"sync/atomic"
@@ -58,7 +57,7 @@ func New(opts ...Option) (i *insert, err error) {
 func (i *insert) Prepare(ctx context.Context) error {
 	fn := assets.Data(i.dataset)
 	if fn == nil {
-		return fmt.Errorf("dataset load funciton is nil: %s", i.dataset)
+		return errors.Errorf("dataset load funciton is nil: %s", i.dataset)
 	}
 	dataset, err := fn()
 	if err != nil {

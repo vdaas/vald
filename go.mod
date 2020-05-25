@@ -9,7 +9,7 @@ replace (
 	github.com/coreos/etcd => go.etcd.io/etcd v0.5.0-alpha.5.0.20200425165423-262c93980547
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200309214505-aa6a9891b09c+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.3.0-java
-	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.1-0.20200525102840-8c3a2d9049b4
+	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.1-0.20200521132419-128a6737a202
 	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200519160334-799061058e31
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.11.0
@@ -32,7 +32,6 @@ require (
 	github.com/cockroachdb/errors v0.0.0-00010101000000-000000000000
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
-	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-redis/redis/v7 v7.3.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
