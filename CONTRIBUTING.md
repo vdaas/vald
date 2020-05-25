@@ -7,8 +7,7 @@ We appreciate your help!
 ## Table of Contents
 
 - [Contributing Issue](#Contributing-Issue)
-  - [Before filing an issue](#Before-filing-an-issue)
-  - [Filing issues](#Filing-issues)
+  - [Where to file an issue](#Where-to-file-an-issue)
   - [Bug Report](#Bug-Report)
   - [Proposal](#Proposal)
   - [Feature Request](#Feature-Request)
@@ -20,9 +19,10 @@ We appreciate your help!
 
 ## Contributing Issue
 
-### Before filing an issue
+### Where to file an issue
 
-If the behavior you are seeing is confirmed as a bug or issue, it can easily be re-raised in the issue tracker.
+We use [Github Issues](https://github.com/vdaas/vald/issues) to track issues within this repository.
+If you can determine the problem you are facing is a bug or issue, you can easily submit in the issues.
 
 ### Bug Report
 
