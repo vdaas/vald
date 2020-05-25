@@ -42,18 +42,18 @@ When filing an issue, make sure to answer these five questions:
 5. What did you see instead?
 
 
-Please submit [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report.md&title=)
+Please submit the bug report [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report.md&title=)
 
 ### Proposal
 
 The Vald is being developed based on the design-driven process.<br>
 The significant change to the library or the architecture should be discussed first.
 
-We may need detailed documentation before your proposal is implemented.<br>
+We may ask for the detailed documentation before your proposal is implemented.<br>
 Your proposal will be reviewed and discussed and decide whether it is accepted or declined.
 
 
-Please submit [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
+Please submit the proposal [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
 
 ### Feature Request
 
@@ -65,9 +65,9 @@ You can strongly request the feature and convince the project maintainers to acc
 Please provide the problem and solution associated with the feature request as detail as possible.
 
 
-NOTE: When you'd like to contribute with the new feature of some large update influencing the current Vald, we recommend getting the agreement through the authors' design review of your ISSUE.
+NOTE: If you'd like to contribute the new feature which may affect the current Vald architecture or design, you should discuss with Vald team first.
 
-Please submit [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
+Please submit the feature request [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
 
 ### Security Issue Report
 
@@ -76,9 +76,11 @@ The Vald team and community take serious concern about security issues.
 Sensitive security-related issues should be reported to the security channel in the [Vald Slack](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA).
 
 We appreciate your efforts to disclose your findings.<br>
-If the security issue is caused by a third-party module, we will notify who maintaining the module.
+If the security issue is caused by a third-party module, we will contact the module owner and ask for the fix.
 
-Please submit [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fsecurity%2C+priority%2Fmedium%2C+team%2Fcore%2C+team%2Fsre&template=security_issue_report.md&title=)
+We will consider to use another third-party module if the vulnerable module is not actively maintained anymore.
+
+Please submit the security issue report [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fsecurity%2C+priority%2Fmedium%2C+team%2Fcore%2C+team%2Fsre&template=security_issue_report.md&title=)
 
 ## Contributing Code
 
