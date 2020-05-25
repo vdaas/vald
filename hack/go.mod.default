@@ -3,6 +3,7 @@ module github.com/vdaas/vald
 go 1.14
 
 replace (
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.1.1
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/cockroachdb/errors => github.com/cockroachdb/errors master
 	github.com/coreos/etcd => go.etcd.io/etcd master

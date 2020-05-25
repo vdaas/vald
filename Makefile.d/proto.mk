@@ -83,7 +83,7 @@ $(GOPATH)/src/github.com/googleapis/googleapis:
 		$(GOPATH)/src/github.com/googleapis/googleapis
 
 $(GOPATH)/src/google.golang.org/genproto:
-	$(call go-get-no-mod, google.golang.org/genproto/...)
+	$(call go-get, google.golang.org/genproto/...)
 
 $(GOPATH)/bin/protoc-gen-go:
 	$(call go-get-no-mod, github.com/golang/protobuf/protoc-gen-go)
@@ -104,10 +104,10 @@ $(GOPATH)/bin/protoc-gen-gogoslick:
 	$(call go-get-no-mod, github.com/gogo/protobuf/protoc-gen-gogoslick)
 
 $(GOPATH)/bin/protoc-gen-grpc-gateway:
-	$(call go-get-no-mod, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway)
+	$(call go-get, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway)
 
 $(GOPATH)/bin/protoc-gen-swagger:
-	$(call go-get-no-mod, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger)
+	$(call go-get, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger)
 
 $(GOPATH)/bin/protoc-gen-gql:
 	$(call go-get-no-mod, github.com/danielvladco/go-proto-gql/protoc-gen-gql)
@@ -122,10 +122,10 @@ $(GOPATH)/bin/protoc-gen-validate:
 	$(call go-get-no-mod, github.com/envoyproxy/protoc-gen-validate)
 
 $(GOPATH)/bin/prototool:
-	$(call go-get-no-mod, github.com/uber/prototool/cmd/prototool)
+	$(call go-get, github.com/uber/prototool/cmd/prototool)
 
 $(GOPATH)/bin/protoc-gen-doc:
-	$(call go-get-no-mod, github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc)
+	$(call go-get, github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc)
 
 $(GOPATH)/bin/swagger:
 	$(call go-get-no-mod, github.com/go-swagger/go-swagger/cmd/swagger)
