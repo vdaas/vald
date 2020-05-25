@@ -517,7 +517,7 @@ func TestWithFeed(t *testing.T) {
 			want: want{
 				obj: &T{
 					feeds: []OutputSpec{
-						OutputSpec{
+						{
 							operationName: "test",
 							outputIndex:   0,
 						},
@@ -589,7 +589,7 @@ func TestWithFeeds(t *testing.T) {
 			want: want{
 				obj: &T{
 					feeds: []OutputSpec{
-						OutputSpec{
+						{
 							operationName: "test",
 							outputIndex:   0,
 						},
@@ -691,7 +691,7 @@ func TestWithFetch(t *testing.T) {
 			want: want{
 				obj: &T{
 					fetches: []OutputSpec{
-						OutputSpec{
+						{
 							operationName: "test",
 							outputIndex:   0,
 						},
@@ -763,7 +763,7 @@ func TestWithFetches(t *testing.T) {
 			want: want{
 				obj: &T{
 					fetches: []OutputSpec{
-						OutputSpec{
+						{
 							operationName: "test",
 							outputIndex:   0,
 						},

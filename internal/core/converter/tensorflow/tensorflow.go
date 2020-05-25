@@ -42,15 +42,15 @@ type Closer interface {
 }
 
 type tensorflow struct {
-	exportDir     string
-	tags          []string
-	feeds         []OutputSpec
-	fetches       []OutputSpec
-	operations    []*Operation
-	options       *SessionOptions
-	graph         *tf.Graph
-	session       session
-	ndim          uint8
+	exportDir  string
+	tags       []string
+	feeds      []OutputSpec
+	fetches    []OutputSpec
+	operations []*Operation
+	options    *SessionOptions
+	graph      *tf.Graph
+	session    session
+	ndim       uint8
 }
 
 type OutputSpec struct {

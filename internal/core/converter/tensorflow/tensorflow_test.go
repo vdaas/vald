@@ -255,7 +255,7 @@ func Test_tensorflow_run(t *testing.T) {
 			},
 			fields: fields{
 				feeds: []OutputSpec{
-					OutputSpec{
+					{
 						operationName: "test",
 						outputIndex:   0,
 					},
@@ -387,7 +387,7 @@ func Test_tensorflow_GetVector(t *testing.T) {
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						tensor, err := tf.NewTensor([][]float64{
-							[]float64{
+							{
 								1,
 								2,
 								3,
@@ -415,8 +415,8 @@ func Test_tensorflow_GetVector(t *testing.T) {
 				session: &mockSession{
 					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
 						tensor, err := tf.NewTensor([][][]float64{
-							[][]float64{
-								[]float64{
+							{
+								{
 									1,
 									2,
 									3,
