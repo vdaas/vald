@@ -20,7 +20,7 @@ time_zone: JST
 logging:
   logger: glg
   level: debug
-#  format: json
+  format: json
 method: insert
 dataset: fashion-mnist
 concurrency: 100

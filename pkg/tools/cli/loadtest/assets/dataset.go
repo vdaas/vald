@@ -339,14 +339,15 @@ func datasetDir() (string, error) {
 func Data(name string) func() (Dataset, error) {
 	log.Debugf("start loading: %s", name)
 	if strings.HasPrefix(name, "identity-") {
-		i, _ := strconv.Atoi(name[9:])
+		l := strings.Split(name, "-")
+		i, _ := strconv.Atoi(l[1])
 		return identity(i)
 	}
 	if strings.HasPrefix(name, "random-") {
-		l := strings.Split(name[9:], "-")
-		i, _ := strconv.Atoi(l[0])
-		j, _ := strconv.Atoi(l[1])
-		return random(i, j)
+		l := strings.Split(name, "-")
+		d, _ := strconv.Atoi(l[1])
+		s, _ := strconv.Atoi(l[2])
+		return random(d, s)
 	}
 	if d, ok := data[name]; ok {
 		return d

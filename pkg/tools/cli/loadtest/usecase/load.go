@@ -19,17 +19,17 @@ package usecase
 import (
 	"context"
 	"fmt"
+
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/safety"
-
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/runner"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/service"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/service/insert"
-	//"github.com/vdaas/vald/pkg/tools/cli/loadtest/service/search"
+	"github.com/vdaas/vald/pkg/tools/cli/loadtest/service/search"
 )
 
 type run struct {
@@ -49,7 +49,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 }
 
 func (r *run) PreStart(ctx context.Context) (err error) {
-	//c, err := grpc.New(ctx, grpc.WithAddr(r.cfg.Address), grpc.WithGRPCClientConfig(r.cfg.Client))
 	r.client = grpc.New(
 		grpc.WithAddrs(append([]string{r.cfg.Addr}, r.cfg.Client.Addrs...)...),
 		grpc.WithInsecure(r.cfg.Client.DialOption.Insecure),
@@ -58,8 +57,8 @@ func (r *run) PreStart(ctx context.Context) (err error) {
 	switch Atoo(r.cfg.Method) {
 	case Insert:
 		r.loader, err = insert.New(insert.WithAddr(r.cfg.Addr), insert.WithDataset(r.cfg.Dataset), insert.WithClient(r.client))
-	//case Search:
-	//	r.loader, err = search.New(search.WithDataset(r.cfg.Dataset), search.WithReader(c))
+	case Search:
+		r.loader, err = search.New(search.WithAddr(r.cfg.Addr), search.WithDataset(r.cfg.Dataset), search.WithClient(r.client))
 	default:
 		return fmt.Errorf("unsupported method")
 	}

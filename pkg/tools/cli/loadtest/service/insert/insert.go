@@ -18,7 +18,11 @@ package insert
 import (
 	"context"
 	"fmt"
+	"os"
 	"reflect"
+	"sync/atomic"
+	"syscall"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
@@ -61,7 +65,7 @@ func (i *insert) Prepare(ctx context.Context) error {
 		return err
 	}
 	vectors := dataset.Train()
-	ids := assets.CreateRandomIDs(len(vectors))
+	ids := dataset.IDs()
 	i.req = make([]*payload.Object_Vector, len(vectors))
 	for j, v := range vectors {
 		i.req[j] = &payload.Object_Vector{
@@ -73,10 +77,30 @@ func (i *insert) Prepare(ctx context.Context) error {
 }
 
 func (i *insert) Do(ctx context.Context) <-chan error {
-	errCh := make(chan error, len(i.req))
-	log.Debugf("insert %d items", len(i.req))
+	ech := make(chan error, len(i.req))
+
+	// TODO: related to #403.
+	p, err := os.FindProcess(os.Getpid())
+	if err != nil {
+		ech <- err
+		return ech
+	}
+
+	var progress int32 = 0
+	ticker := time.NewTicker(5 * time.Second)
 	i.eg.Go(safety.RecoverFunc(func() error {
-		defer close(errCh)
+		for progress != int32(len(i.req)) {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-ticker.C:
+				log.Debugf("insert %d items", progress)
+			}
+		}
+		return nil
+	}))
+	i.eg.Go(safety.RecoverFunc(func() error {
+		defer close(ech)
 		eg, egctx := errgroup.New(ctx)
 		eg.Limitation(i.concurrency)
 		for _, req := range i.req {
@@ -84,15 +108,25 @@ func (i *insert) Do(ctx context.Context) <-chan error {
 			eg.Go(func() error {
 				_, err := i.client.Do(egctx, i.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 					_, err := vald.NewValdClient(conn).Insert(ctx, r, copts...)
+					atomic.AddInt32(&progress, 1)
+					if err != nil {
+						log.Warn(err)
+					}
 					return nil, err
 				})
 				if err != nil {
-					errCh <- err
+					ech <- err
 				}
 				return nil
 			})
 		}
-		return eg.Wait()
+		err := eg.Wait()
+		if err != nil {
+			log.Warn(err)
+			ech <- err
+			return p.Signal(syscall.SIGKILL) // TODO: #403
+		}
+		return p.Signal(syscall.SIGTERM) // TODO: #403
 	}))
-	return errCh
+	return ech
 }
