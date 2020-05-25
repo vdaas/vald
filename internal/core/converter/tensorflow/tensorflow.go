@@ -22,9 +22,13 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
+// SessionOptions is a type alias for tensorflow.SessionOptions.
 type SessionOptions = tf.SessionOptions
+
+// Operation is a type alias for tensorflow.Operation.
 type Operation = tf.Operation
 
+// TF represents a tensorflow interface.
 type TF interface {
 	GetVector(inputs ...string) ([]float64, error)
 	GetValue(inputs ...string) (interface{}, error)
@@ -37,6 +41,7 @@ type session interface {
 	Closer
 }
 
+// Closer close a tensorflow.Session.
 type Closer interface {
 	Close() error
 }
@@ -53,20 +58,22 @@ type tensorflow struct {
 	ndim       uint8
 }
 
+// OutputSpec is the specification of an feed/fetch.
 type OutputSpec struct {
 	operationName string
 	outputIndex   int
 }
 
 const (
-	TwoDim uint8 = iota + 2
-	ThreeDim
+	twoDim uint8 = iota + 2
+	threeDim
 )
 
 var loadFunc = func(exportDir string, tags []string, options *SessionOptions) (*tf.SavedModel, error) {
 	return tf.LoadSavedModel(exportDir, tags, options)
 }
 
+// New load a tensorlfow model and returns a new tensorflow struct.
 func New(opts ...Option) (TF, error) {
 	t := new(tensorflow)
 
@@ -124,7 +131,7 @@ func (t *tensorflow) GetVector(inputs ...string) ([]float64, error) {
 	}
 
 	switch t.ndim {
-	case TwoDim:
+	case twoDim:
 		value, ok := tensors[0].Value().([][]float64)
 		if ok {
 			if value == nil {
@@ -135,7 +142,7 @@ func (t *tensorflow) GetVector(inputs ...string) ([]float64, error) {
 		}
 
 		return nil, errors.ErrFailedToCastTF(tensors[0].Value())
-	case ThreeDim:
+	case threeDim:
 		value, ok := tensors[0].Value().([][][]float64)
 		if ok {
 			if len(value) == 0 || value[0] == nil {

@@ -17,6 +17,7 @@
 // Package tensorflow provides implementation of Go API for extract data to vector
 package tensorflow
 
+// Option is tensorflow configure.
 type Option func(*tensorflow)
 
 var (
@@ -27,6 +28,7 @@ var (
 	}
 )
 
+// WithSessionOptions returns Option that sets options.
 func WithSessionOptions(opts *SessionOptions) Option {
 	return func(t *tensorflow) {
 		if opts != nil {
@@ -35,6 +37,7 @@ func WithSessionOptions(opts *SessionOptions) Option {
 	}
 }
 
+// WithSessionTarget returns Option that sets target.
 func WithSessionTarget(tgt string) Option {
 	return func(t *tensorflow) {
 		if tgt != "" {
@@ -49,6 +52,7 @@ func WithSessionTarget(tgt string) Option {
 	}
 }
 
+// WithSessionConfig returns Option that sets config.
 func WithSessionConfig(cfg []byte) Option {
 	return func(t *tensorflow) {
 		if cfg != nil {
@@ -63,6 +67,7 @@ func WithSessionConfig(cfg []byte) Option {
 	}
 }
 
+// WithOperations returns Option that sets operations.
 func WithOperations(opes ...*Operation) Option {
 	return func(t *tensorflow) {
 		if opes != nil {
@@ -75,6 +80,7 @@ func WithOperations(opes ...*Operation) Option {
 	}
 }
 
+// WithExportPath returns Option that sets exportDir.
 func WithExportPath(path string) Option {
 	return func(t *tensorflow) {
 		if path != "" {
@@ -83,6 +89,7 @@ func WithExportPath(path string) Option {
 	}
 }
 
+// WithTags returns Option that sets tags.
 func WithTags(tags ...string) Option {
 	return func(t *tensorflow) {
 		if tags != nil {
@@ -95,12 +102,14 @@ func WithTags(tags ...string) Option {
 	}
 }
 
+// WithFeed returns Option that sets feeds.
 func WithFeed(operationName string, outputIndex int) Option {
 	return func(t *tensorflow) {
 		t.feeds = append(t.feeds, OutputSpec{operationName, outputIndex})
 	}
 }
 
+// WithFeeds returns Option that sets feeds.
 func WithFeeds(operationNames []string, outputIndexes []int) Option {
 	return func(t *tensorflow) {
 		if operationNames != nil && outputIndexes != nil && len(operationNames) == len(outputIndexes) {
@@ -111,12 +120,14 @@ func WithFeeds(operationNames []string, outputIndexes []int) Option {
 	}
 }
 
+// WithFetch returns Option that sets fetches.
 func WithFetch(operationName string, outputIndex int) Option {
 	return func(t *tensorflow) {
 		t.fetches = append(t.fetches, OutputSpec{operationName, outputIndex})
 	}
 }
 
+// WithFetches returns Option that sets fetches.
 func WithFetches(operationNames []string, outputIndexes []int) Option {
 	return func(t *tensorflow) {
 		if operationNames != nil && outputIndexes != nil && len(operationNames) == len(outputIndexes) {
@@ -127,6 +138,7 @@ func WithFetches(operationNames []string, outputIndexes []int) Option {
 	}
 }
 
+// WithNdim returns Option that sets ndim.
 func WithNdim(ndim uint8) Option {
 	return func(t *tensorflow) {
 		t.ndim = ndim
