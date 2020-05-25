@@ -88,11 +88,11 @@ When the user searches a vector from Vald:
 4. After the request is processed by the user-defined Vald Ingress Filter, the result will return to the Vald Filter Gateway.
 5. Vald Filter Gateway will forward the request to the Vald Meta Gateway. Vald Meta Gateway is used to resolve the internal used UUID to the user inserted vector ID in step 10-11.
 6. Vald Meta Gateway will forward the request to the Vald LB Gateway. Vald LB Gateway will preform the post-processing of the result in step 9 after the Vald Agent(s) return in step 8.
-7. Vald LB Gateway will forward the request to all Vald Agents in parallel. Each Vald Agent will search the nearest vectors in an on memory cache.
+7. Vald LB Gateway will forward the request to all Vald Agents in parallel. Each Vald Agent will search the _k_ nearest neighbor vectors in an on memory cache.
 8. Vald Agent returns the searching result to the Vald LB Gateway. The searching result includes the UUID, the vector distance, and the vector. The number of the result will be the same as requested.
-9. After all Vald Agents return the searching result, Vald LB Gateway will aggregate all of the results and reorder the result by the vector distance, and return the reordered result to the Vald Meta Gateway.
+9. Vald LB Gateway will aggregate all searching results from all Vald Agents, rank the result by the vector distance, and return the ranked result to the Vald Meta Gateway.
 10. Vald Meta Gateway will forward the searching result to the Vald Meta to resolve the user-defined vector IDs from the internal used UUIDs.
-11. Vald Meta will perform a search for the Vector IDs base on the internal used UUIDs.
+11. Vald Meta will perform a search for the Vector IDs based on the internal used UUIDs.
 12. Vald Meta will return the Vector IDs to the Vald Meta Gateway.
 13. Vald Meta Gateway will combine the vectors and the vector IDs from the searching result and return to the Vald Filter Gateway.
 14. Vald Filter Gateway will forward the request to the user-defined Vald Egress Filter to filter the final result. For example exclude the specific type of the result from the vector ID.
