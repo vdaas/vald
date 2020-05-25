@@ -39,38 +39,44 @@ const (
 	prefix = "# @schema"
 )
 
+var (
+	aliases map[string]Schema
+)
+
 type SchemaBase struct {
 	// for object type
 	Required          []string          `json:"required,omitempty"`
-	MaxProperties     uint64            `json:"maxProperties,omitempty"`
-	MinProperties     uint64            `json:"minProperties,omitempty"`
+	MaxProperties     *uint64           `json:"maxProperties,omitempty"`
+	MinProperties     *uint64           `json:"minProperties,omitempty"`
 	DependentRequired map[string]string `json:"dependentRequired,omitempty"`
 
 	// for string type
 	Enum      []string `json:"enum,omitempty"`
 	Pattern   string   `json:"pattern,omitempty"`
-	MaxLength uint64   `json:"maxLength,omitempty"`
-	MinLength uint64   `json:"minLength,omitempty"`
+	MaxLength *uint64  `json:"maxLength,omitempty"`
+	MinLength *uint64  `json:"minLength,omitempty"`
 
 	// for array type
 	Items       *Schema `json:"items,omitempty"`
-	MaxItems    uint64  `json:"maxItems,omitempty"`
-	MinItems    uint64  `json:"minItems,omitempty"`
+	MaxItems    *uint64 `json:"maxItems,omitempty"`
+	MinItems    *uint64 `json:"minItems,omitempty"`
 	UniqueItems bool    `json:"uniqueItems,omitempty"`
-	MaxContains uint64  `json:"maxContains,omitempty"`
-	MinContains uint64  `json:"minContains,omitempty"`
+	MaxContains *uint64 `json:"maxContains,omitempty"`
+	MinContains *uint64 `json:"minContains,omitempty"`
 
 	// for numeric types
-	MultipleOf       int64 `json:"multipleOf,omitempty"`
-	Maximum          int64 `json:"maximum,omitempty"`
-	ExclusiveMaximum int64 `json:"exclusiveMaximum,omitempty"`
-	Minimum          int64 `json:"minimum,omitempty"`
-	ExclusiveMinimum int64 `json:"exclusiveMinimum,omitempty"`
+	MultipleOf       *int64 `json:"multipleOf,omitempty"`
+	Maximum          *int64 `json:"maximum,omitempty"`
+	ExclusiveMaximum bool   `json:"exclusiveMaximum,omitempty"`
+	Minimum          *int64 `json:"minimum,omitempty"`
+	ExclusiveMinimum bool   `json:"exclusiveMinimum,omitempty"`
 }
 
 type VSchema struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name   string `json:"name"`
+	Type   string `json:"type"`
+	Anchor string `json:"anchor"`
+	Alias  string `json:"alias"`
 	SchemaBase
 }
 
@@ -110,6 +116,8 @@ func genJSONSchema(path string) error {
 		}
 	}()
 
+	aliases = make(map[string]Schema)
+
 	ls := make([]VSchema, 0)
 	sc := bufio.NewScanner(f)
 	for sc.Scan() {
@@ -130,7 +138,6 @@ func genJSONSchema(path string) error {
 	}
 
 	json, err := json.Marshal(newRoot(schemas))
-	// json, err := json.Marshal(ls)
 	if err != nil {
 		return errors.Errorf("error: %s", err)
 	}
@@ -146,14 +153,18 @@ func objectProperties(ls []VSchema) (map[string]*Schema, error) {
 	}
 
 	groups := make(map[string][]VSchema)
+	gOrder := make([]string, 0, len(ls))
 	for _, l := range ls {
 		root := strings.Split(l.Name, ".")
+		if groups[root[0]] == nil {
+			gOrder = append(gOrder, root[0])
+		}
 		groups[root[0]] = append(groups[root[0]], l)
 	}
 
 	schemas := make(map[string]*Schema)
-	for k, v := range groups {
-		s, err := genNode(v)
+	for _, k := range gOrder {
+		s, err := genNode(groups[k])
 		if err != nil {
 			return nil, errors.Errorf("error: %s", err)
 		}
@@ -169,13 +180,25 @@ func genNode(ls []VSchema) (*Schema, error) {
 	}
 
 	l := ls[0]
+
+	if l.Alias != "" {
+		schema, ok := aliases[l.Alias]
+		if !ok {
+			return nil, errors.Errorf("unknown alias %s", l.Alias)
+		}
+		return &schema, nil
+	}
+
+	var schema Schema
+
 	switch l.Type {
 	case objectType:
 		if len(ls) <= 1 {
-			return &Schema{
+			schema = Schema{
 				Type:       objectType,
 				SchemaBase: l.SchemaBase,
-			}, nil
+			}
+			break
 		}
 
 		nls := make([]VSchema, 0, len(ls[1:]))
@@ -188,17 +211,23 @@ func genNode(ls []VSchema) (*Schema, error) {
 		if err != nil {
 			return nil, errors.Errorf("error: %s", err)
 		}
-		return &Schema{
+		schema = Schema{
 			Type:       objectType,
 			Properties: ps,
 			SchemaBase: l.SchemaBase,
-		}, nil
+		}
 	default:
-		return &Schema{
+		schema = Schema{
 			Type:       l.Type,
 			SchemaBase: l.SchemaBase,
-		}, nil
+		}
 	}
+
+	if l.Anchor != "" {
+		aliases[l.Anchor] = schema
+	}
+
+	return &schema, nil
 }
 
 func newRoot(schemas map[string]*Schema) *Root {
