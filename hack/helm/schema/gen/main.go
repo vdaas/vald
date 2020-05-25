@@ -28,13 +28,7 @@ import (
 )
 
 const (
-	nullType   = "null"
-	boolType   = "boolean"
 	objectType = "object"
-	arrayType  = "array"
-	numberType = "number"
-	stringType = "string"
-	intType    = "integer"
 
 	prefix = "# @schema"
 )
@@ -109,6 +103,7 @@ func genJSONSchema(path string) error {
 	if err != nil {
 		return errors.Errorf("cannot open %s", path)
 	}
+
 	defer func() {
 		err := f.Close()
 		if err != nil {
@@ -119,6 +114,7 @@ func genJSONSchema(path string) error {
 	aliases = make(map[string]Schema)
 
 	ls := make([]VSchema, 0)
+
 	sc := bufio.NewScanner(f)
 	for sc.Scan() {
 		tx := strings.TrimLeft(sc.Text(), " ")
@@ -148,7 +144,7 @@ func genJSONSchema(path string) error {
 }
 
 func objectProperties(ls []VSchema) (map[string]*Schema, error) {
-	if len(ls) <= 0 {
+	if len(ls) == 0 {
 		return nil, errors.New("empty list")
 	}
 
@@ -175,7 +171,7 @@ func objectProperties(ls []VSchema) (map[string]*Schema, error) {
 }
 
 func genNode(ls []VSchema) (*Schema, error) {
-	if len(ls) <= 0 {
+	if len(ls) == 0 {
 		return nil, errors.New("empty list")
 	}
 
