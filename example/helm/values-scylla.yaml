@@ -53,6 +53,13 @@ indexManager:
     requests:
       cpu: 100m
       memory: 30Mi
+  indexer:
+    # The limit duration of automatic indexing.
+    # This trigger the force indexing on each Vald Agent.
+    auto_index_duration_limit: 1m
+    # The check duration of automatic indexing.
+    # This trigger the indexing on each Vald Agnet if uncommitted index exceed limit.
+    auto_index_check_duration: 30s
 
 backupManager:
   image:

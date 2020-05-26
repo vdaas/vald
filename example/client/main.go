@@ -100,7 +100,7 @@ func main() {
 	Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
 	In this example, Vald gets 10 approximate vectors each search vector.
 	**/
-	glg.Info("Start searching %d times", testCount)
+	glg.Infof("Start searching %d times", testCount)
 	for i, vec := range test[:testCount] {
 		// Send searching vector and configuration object to the Vald server via gRPC.
 		res, err := client.Search(ctx, &payload.Search_Request{
