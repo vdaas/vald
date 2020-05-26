@@ -435,7 +435,7 @@ jobs:
           sudo make prettier/install
           # sudo make dockfmt/install
 
-          echo "Update license headers and format go codes/yaml/Dockerfile"
+          echo "Update license headers and format go codes/yaml"
 
           make update/goimports
           make format/yaml
@@ -448,8 +448,8 @@ jobs:
             git config --global user.name "vdaas-ci"
             git config --global user.email "ci@vdaas.org"
 
-            git add .
-            git commit --signoff -m ":robot: Update license headers and formatting go codes"
+            git add cmd example hack internal k8s pkg
+            git commit --signoff -m ":robot: Update license headers / Format go codes and yaml files"
 
             git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
