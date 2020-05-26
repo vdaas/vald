@@ -448,7 +448,8 @@ jobs:
             git config --global user.name "vdaas-ci"
             git config --global user.email "ci@vdaas.org"
 
-            git add cmd example hack internal k8s pkg
+            git add .
+            git reset go.mod go.sum
             git commit --signoff -m ":robot: Update license headers / Format go codes and yaml files"
 
             git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
