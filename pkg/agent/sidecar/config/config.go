@@ -35,7 +35,7 @@ type Data struct {
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
 	// Sidecar represent agent storage sync sidecar service configuration
-	Sidecar *config.Sidecar `json:"sidecar" yaml:"sidecar"`
+	AgentSidecar *config.AgentSidecar `json:"agent_sidecar" yaml:"agent_sidecar"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
@@ -57,8 +57,8 @@ func NewConfig(path string) (cfg *Data, err error) {
 		cfg.Observability = cfg.Observability.Bind()
 	}
 
-	if cfg.Sidecar != nil {
-		cfg.Sidecar = cfg.Sidecar.Bind()
+	if cfg.AgentSidecar != nil {
+		cfg.AgentSidecar = cfg.AgentSidecar.Bind()
 	}
 	return cfg, nil
 }

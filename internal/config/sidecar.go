@@ -17,7 +17,7 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-type Sidecar struct {
+type AgentSidecar struct {
 	// Name string `yaml:"name" json:"name"`
 
 	// WatchPaths represents watch path list for backup
@@ -30,7 +30,7 @@ type Sidecar struct {
 	AutoBackupDuration string `yaml:"auto_backup_duration" json:"auto_backup_duration"`
 }
 
-func (s *Sidecar) Bind() *Sidecar {
+func (s *AgentSidecar) Bind() *AgentSidecar {
 	s.WatchPaths = GetActualValues(s.WatchPaths)
 	s.AutoBackupDuration = GetActualValue(s.AutoBackupDuration)
 	s.AutoBackupDurationLimit = GetActualValue(s.AutoBackupDurationLimit)

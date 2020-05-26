@@ -51,20 +51,6 @@ func WithDirs(dirs ...string) Option {
 	}
 }
 
-func WithDir(dir string) Option {
-	return func(w *watch) error {
-		if len(dir) == 0 {
-			return nil
-		}
-		if w.dirs != nil {
-			w.dirs = append(w.dirs, dir)
-		} else {
-			w.dirs = []string{dir}
-		}
-		return nil
-	}
-}
-
 func WithOnChange(f func(ctx context.Context, name string) error) Option {
 	return func(w *watch) error {
 		if f != nil {

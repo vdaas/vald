@@ -62,9 +62,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	so, err = service.New(
 		service.WithErrGroup(eg),
-		service.WithBackupDuration(cfg.Sidecar.AutoBackupDuration),
-		service.WithBackupDurationLimit(cfg.Sidecar.AutoBackupDurationLimit),
-		service.WithDirs(cfg.Sidecar.WatchPaths...),
+		service.WithBackupDuration(cfg.AgentSidecar.AutoBackupDuration),
+		service.WithBackupDurationLimit(cfg.AgentSidecar.AutoBackupDurationLimit),
+		service.WithDirs(cfg.AgentSidecar.WatchPaths...),
 	)
 	if err != nil {
 		return nil, err

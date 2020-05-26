@@ -84,17 +84,3 @@ func WithDirs(dirs ...string) Option {
 		return nil
 	}
 }
-
-func WithDir(dir string) Option {
-	return func(o *observer) error {
-		if len(dir) == 0 {
-			return nil
-		}
-		if o.dirs != nil {
-			o.dirs = append(o.dirs, dir)
-		} else {
-			o.dirs = []string{dir}
-		}
-		return nil
-	}
-}

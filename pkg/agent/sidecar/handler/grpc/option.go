@@ -29,7 +29,7 @@ var (
 
 func WithStorageObserver(so service.StorageObserver) Option {
 	return func(s *server) {
-		if i != nil {
+		if so != nil {
 			s.so = so
 		}
 	}

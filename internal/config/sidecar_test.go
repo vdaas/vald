@@ -25,24 +25,24 @@ import (
 	"go.uber.org/goleak"
 )
 
-func TestSidecar_Bind(t *testing.T) {
+func TestAgentSidecar_Bind(t *testing.T) {
 	type fields struct {
 		WatchPaths              []string
 		AutoBackupDurationLimit string
 		AutoBackupDuration      string
 	}
 	type want struct {
-		want *Sidecar
+		want *AgentSidecar
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, *Sidecar) error
+		checkFunc  func(want, *AgentSidecar) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got *Sidecar) error {
+	defaultCheckFunc := func(w want, got *AgentSidecar) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
@@ -92,7 +92,7 @@ func TestSidecar_Bind(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			s := &Sidecar{
+			s := &AgentSidecar{
 				WatchPaths:              test.fields.WatchPaths,
 				AutoBackupDurationLimit: test.fields.AutoBackupDurationLimit,
 				AutoBackupDuration:      test.fields.AutoBackupDuration,
