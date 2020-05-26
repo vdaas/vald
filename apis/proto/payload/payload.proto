@@ -39,6 +39,11 @@ message Search {
     Config config = 2;
   }
 
+  message ObjectRequest {
+    bytes object = 1;
+    Config config = 2;
+  }
+
   message Config {
     uint32 num = 1 [ (validate.rules).uint32.gte = 1 ];
     float radius = 2;
@@ -75,6 +80,11 @@ message Object {
     repeated float vector = 2 [ (validate.rules).repeated .min_items = 2 ];
   }
   message Vectors { repeated Vector vectors = 1; }
+
+  message Blob {
+    string id = 1 [ (validate.rules).string.min_len = 1 ];
+    bytes object = 2;
+  }
 }
 
 message Control {

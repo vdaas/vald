@@ -65,11 +65,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			grpc.ChainStreamInterceptor(grpc.RecoverStreamInterceptor()),
 		),
 		server.WithPreStartFunc(func() error {
-			// TODO check unbackupped upstream
 			return nil
 		}),
 		server.WithPreStopFunction(func() error {
-			// TODO backup all index data here
 			return nil
 		}),
 	}

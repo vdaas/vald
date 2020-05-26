@@ -1,0 +1,72 @@
+//
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+syntax = "proto3";
+
+package filter;
+
+option go_package = "github.com/vdaas/vald/apis/grpc/gateway/filter";
+option java_multiple_files = true;
+option java_package = "org.vdaas.vald.gateway.filter";
+option java_outer_classname = "ValdFilterGateway";
+
+import "payload.proto";
+import "google/api/annotations.proto";
+import "pb/gql.proto";
+
+service Filter {
+  rpc SearchObject(payload.Search.ObjectRequest) returns (payload.Search.Response) {
+    option (google.api.http) = {
+      post : "/search/object"
+      body : "*"
+    };
+  }
+  rpc StreamSearch(stream payload.Search.ObjectRequest)
+      returns (stream payload.Search.Response) {}
+
+  rpc InsertObject(payload.Object.Blob) returns (payload.Empty) {
+    option (google.api.http) = {
+      post : "/insert/object"
+      body : "*"
+    };
+    option (gql.rpc_type) = MUTATION;
+  }
+  rpc StreamInsertObject(stream payload.Object.Blob)
+      returns (stream payload.Empty) {}
+  rpc MultiInsertObject(payload.Object.Blob) returns (payload.Empty) {}
+
+  rpc UpdateObject(payload.Object.Blob) returns (payload.Empty) {
+    option (google.api.http) = {
+      post : "/update/object"
+      body : "*"
+    };
+    option (gql.rpc_type) = MUTATION;
+  }
+  rpc StreamUpdateObject(stream payload.Object.Blob)
+      returns (stream payload.Empty) {}
+  rpc MultiUpdateObject(payload.Object.Blob) returns (payload.Empty) {}
+
+  rpc UpsertObject(payload.Object.Blob) returns (payload.Empty) {
+    option (google.api.http) = {
+      post : "/upsert/object"
+      body : "*"
+    };
+    option (gql.rpc_type) = MUTATION;
+  }
+  rpc StreamUpsertObject(stream payload.Object.Blob)
+      returns (stream payload.Empty) {}
+  rpc MultiUpsertObject(payload.Object.Blob) returns (payload.Empty) {}
+}

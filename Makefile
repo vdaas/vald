@@ -22,16 +22,21 @@ BASE_IMAGE                      = $(NAME)-base
 AGENT_IMAGE                     = $(NAME)-agent-ngt
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
 GATEWAY_IMAGE                   = $(NAME)-gateway
+BACKUP_GATEWAY_IMAGE            = $(NAME)-backup-gateway
+CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
-META_REDIS_IMAGE                = $(NAME)-meta-redis
-META_CASSANDRA_IMAGE            = $(NAME)-meta-cassandra
-MANAGER_BACKUP_MYSQL_IMAGE      = $(NAME)-manager-backup-mysql
+FILTER_GATEWAY_IMAGE            = $(NAME)-filter-gateway
+GATEWAY_IMAGE                   = $(NAME)-gateway
+HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
+LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
 MANAGER_BACKUP_CASSANDRA_IMAGE  = $(NAME)-manager-backup-cassandra
+MANAGER_BACKUP_MYSQL_IMAGE      = $(NAME)-manager-backup-mysql
 MANAGER_COMPRESSOR_IMAGE        = $(NAME)-manager-compressor
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
-CI_CONTAINER_IMAGE              = $(NAME)-ci-container
-HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 LOADTEST_IMAGE                  = $(NAME)-loadtest
+META_CASSANDRA_IMAGE            = $(NAME)-meta-cassandra
+META_GATEWAY_IMAGE              = $(NAME)-meta-gateway
+META_REDIS_IMAGE                = $(NAME)-meta-redis
 
 VERSION := $(eval VALD_VERSION := $(shell cat versions/VALD_VERSION))$(VALD_VERSION)
 

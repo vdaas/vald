@@ -372,6 +372,11 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 		log.Debugf("failed to resolve ip addr for %s \terr: %s", p.addr, err.Error())
 		return nil, err
 	}
+
+	if len(addrs) == 0 || addrs == nil {
+		return nil, errors.ErrGRPCLookupIPAddrNotFound(p.host)
+	}
+
 	ips = make([]string, 0, len(addrs))
 
 	const network = "tcp"
@@ -401,6 +406,10 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 			}
 		}
 		ips = append(ips, ipStr)
+	}
+
+	if len(ips) == 0 {
+		return nil, errors.ErrGRPCLookupIPAddrNotFound(p.host)
 	}
 
 	sort.Strings(ips)

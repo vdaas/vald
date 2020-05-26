@@ -109,6 +109,7 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 		core.WithBulkInsertChunkSize(cfg.BulkInsertChunkSize),
 		core.WithCreationEdgeSize(cfg.CreationEdgeSize),
 		core.WithSearchEdgeSize(cfg.SearchEdgeSize),
+		core.WithDefaultPoolSize(cfg.AutoCreateIndexPoolSize),
 	}
 
 	if !n.inMem && len(cfg.IndexPath) != 0 {

@@ -10,8 +10,100 @@
   "produces": [
     "application/json"
   ],
-  "paths": {},
+  "paths": {
+    "/object": {
+      "post": {
+        "operationId": "IngressFilter_GenVector",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ObjectVector"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ObjectBlob"
+            }
+          }
+        ],
+        "tags": [
+          "IngressFilter"
+        ]
+      }
+    },
+    "/vector": {
+      "post": {
+        "operationId": "IngressFilter_FilterVector",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ObjectVector"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ObjectVector"
+            }
+          }
+        ],
+        "tags": [
+          "IngressFilter"
+        ]
+      }
+    }
+  },
   "definitions": {
+    "ObjectBlob": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "ObjectVector": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -35,6 +127,31 @@
           "format": "int32"
         },
         "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "runtimeStreamError": {
+      "type": "object",
+      "properties": {
+        "grpcCode": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "httpCode": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "httpStatus": {
           "type": "string"
         },
         "details": {

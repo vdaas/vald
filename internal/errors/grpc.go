@@ -33,6 +33,10 @@ var (
 		return Errorf("invalid gRPC client connection to %s", addr)
 	}
 
+	ErrGRPCLookupIPAddrNotFound = func(host string) error {
+		return Errorf("vald internal gRPC client could not find ip addrs for %s", host)
+	}
+
 	ErrGRPCClientNotFound = New("vald internal gRPC client not found")
 
 	ErrGRPCClientConnNotFound = func(addr string) error {

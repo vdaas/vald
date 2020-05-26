@@ -74,6 +74,42 @@ docker/name/gateway-vald:
 docker/build/gateway-vald: docker/build/base
 	docker build -f dockers/gateway/vald/Dockerfile -t $(REPO)/$(GATEWAY_IMAGE) .
 
+.PHONY: docker/name/gateway-meta
+docker/name/gateway-meta:
+	@echo "$(REPO)/$(META_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-meta
+## build gateway-meta image
+docker/build/gateway-meta: docker/build/base
+	docker build -f dockers/gateway/vald/Dockerfile -t $(REPO)/$(META_GATEWAY_IMAGE) .
+
+.PHONY: docker/name/gateway-backup
+docker/name/gateway-backup:
+	@echo "$(REPO)/$(BACKUP_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-backup
+## build gateway-backup image
+docker/build/gateway-backup: docker/build/base
+	docker build -f dockers/gateway/vald/Dockerfile -t $(REPO)/$(BACKUP_GATEWAY_IMAGE) .
+
+.PHONY: docker/name/gateway-filter
+docker/name/gateway-filter:
+	@echo "$(REPO)/$(FILTER_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-filter
+## build gateway-filter image
+docker/build/gateway-filter: docker/build/base
+	docker build -f dockers/gateway/vald/Dockerfile -t $(REPO)/$(FILTER_GATEWAY_IMAGE) .
+
+.PHONY: docker/name/gateway-lb
+docker/name/gateway-lb:
+	@echo "$(REPO)/$(LB_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-lb
+## build gateway-lb image
+docker/build/gateway-lb: docker/build/base
+	docker build -f dockers/gateway/vald/Dockerfile -t $(REPO)/$(LB_GATEWAY_IMAGE) .
+
 .PHONY: docker/name/meta-redis
 docker/name/meta-redis:
 	@echo "$(REPO)/$(META_REDIS_IMAGE)"

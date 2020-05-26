@@ -87,6 +87,9 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			span.End()
 		}
 	}()
+	if len(req.Vector) < 2 {
+		return nil, errors.ErrInvalidDimensionSize(len(req.Vector), 0)
+	}
 	return s.search(ctx, req.GetConfig(),
 		func(ctx context.Context, ac agent.AgentClient, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return ac.Search(ctx, req, copts...)
@@ -126,6 +129,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			span.End()
 		}
 	}()
+
 	maxDist := uint32(math.MaxUint32)
 	num := int(cfg.GetNum())
 	res = new(payload.Search_Response)
@@ -290,6 +294,9 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 			span.End()
 		}
 	}()
+	if len(vec.Vector) < 2 {
+		return nil, errors.ErrInvalidDimensionSize(len(vec.Vector), 0)
+	}
 	meta := vec.GetId()
 	exists, err := s.metadata.Exists(ctx, meta)
 	if err != nil {

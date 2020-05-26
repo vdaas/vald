@@ -27,4 +27,23 @@ import "payload.proto";
 import "google/api/annotations.proto";
 import "pb/gql.proto";
 
-service IngressFilter {}
+service IngressFilter {
+  rpc GenVector(payload.Object.Blob) returns (payload.Object.Vector) {
+    option (google.api.http) = {
+      post : "/object"
+      body : "*"
+    };
+  }
+  rpc StreamGenVector(stream payload.Object.Blob)
+      returns (stream payload.Object.Vector) {}
+
+  rpc FilterVector(payload.Object.Vector) returns (payload.Object.Vector) {
+    option (google.api.http) = {
+      post : "/vector"
+      body : "*"
+    };
+    option (gql.rpc_type) = MUTATION;
+  }
+  rpc StreamFilterVector(stream payload.Object.Vector)
+      returns (stream payload.Object.Vector) {}
+}
