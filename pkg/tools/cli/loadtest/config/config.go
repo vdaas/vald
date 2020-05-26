@@ -19,6 +19,7 @@ package config
 
 import (
 	"github.com/vdaas/vald/internal/config"
+	"time"
 )
 
 type GlobalConfig = config.GlobalConfig
@@ -30,7 +31,8 @@ type Data struct {
 	Addr                string `json:"addr" yaml:"addr"`
 	Method              string `json:"method" yaml:"method"`
 	Dataset             string `json:"dataset" yaml:"dataset"`
-	Concurrency         int    `json:"concurrency" yaml:"concurrency"`
+	Concurrency         int `json:"concurrency" yaml:"concurrency"`
+	ProgressDuration    time.Duration `json:"progress_duration" yaml:"progress_duration"`
 	Client              *config.GRPCClient `json:"client" yaml:"client"`
 }
 

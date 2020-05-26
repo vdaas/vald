@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package insert
+package service
 
 import (
 	"context"
@@ -24,7 +24,6 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
-	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -33,50 +32,49 @@ import (
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 )
 
-type insert struct {
-	eg          errgroup.Group
-	client      grpc.Client
-	addr        string
-	concurrency int
-	dataset     string
-	req         []*payload.Object_Vector
+type Loader interface {
+	Prepare(context.Context) error
+	Do(context.Context) <-chan error
 }
 
-func New(opts ...Option) (i *insert, err error) {
-	i = new(insert)
+type loader struct {
+	eg           errgroup.Group
+	client       grpc.Client
+	addr         string
+	concurrency  int
+	dataset      string
+	requests     []interface{}
+	progressDuration time.Duration
+	requestsFunc func(assets.Dataset) ([]interface{}, error)
+	loaderFunc   func(context.Context, vald.ValdClient, interface{}, ...grpc.CallOption) error
+}
+
+func newLoader(opts... Option) (l *loader, err error) {
+	l = new(loader)
 	for _, opt := range append(defaultOpts, opts...) {
-		if err = opt(i); err != nil {
+		if err = opt(l); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
 
-	i.eg = errgroup.Get()
-	return i, nil
+	return l, nil
 }
 
-func (i *insert) Prepare(ctx context.Context) error {
-	fn := assets.Data(i.dataset)
+func (l *loader) Prepare(context.Context) (err error) {
+	fn := assets.Data(l.dataset)
 	if fn == nil {
-		return errors.Errorf("dataset load funciton is nil: %s", i.dataset)
+		return errors.Errorf("dataset load function is nil: %s", l.dataset)
 	}
 	dataset, err := fn()
 	if err != nil {
 		return err
 	}
-	vectors := dataset.Train()
-	ids := dataset.IDs()
-	i.req = make([]*payload.Object_Vector, len(vectors))
-	for j, v := range vectors {
-		i.req[j] = &payload.Object_Vector{
-			Id:     ids[j],
-			Vector: v,
-		}
-	}
-	return nil
+	l.requests, err = l.requestsFunc(dataset)
+	return err
 }
 
-func (i *insert) Do(ctx context.Context) <-chan error {
-	ech := make(chan error, len(i.req))
+func (l *loader) Do(ctx context.Context) <-chan error {
+	ech := make(chan error, len(l.requests))
 
 	// TODO: related to #403.
 	p, err := os.FindProcess(os.Getpid())
@@ -85,29 +83,33 @@ func (i *insert) Do(ctx context.Context) <-chan error {
 		return ech
 	}
 
-	var progress int32 = 0
-	ticker := time.NewTicker(5 * time.Second)
-	i.eg.Go(safety.RecoverFunc(func() error {
-		for progress != int32(len(i.req)) {
+	var pg int32 = 0
+	progress := func() {
+		log.Debugf("progress %d items", pg)
+	}
+	ticker := time.NewTicker(l.progressDuration)
+	l.eg.Go(safety.RecoverFunc(func() error {
+		for pg != int32(len(l.requests)) {
 			select {
 			case <-ctx.Done():
+				progress()
 				return nil
 			case <-ticker.C:
-				log.Debugf("insert %d items", progress)
+				progress()
 			}
 		}
 		return nil
 	}))
-	i.eg.Go(safety.RecoverFunc(func() error {
+	l.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
 		eg, egctx := errgroup.New(ctx)
-		eg.Limitation(i.concurrency)
-		for _, req := range i.req {
+		eg.Limitation(l.concurrency)
+		for _, req := range l.requests {
 			r := req
 			eg.Go(func() error {
-				_, err := i.client.Do(egctx, i.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-					_, err := vald.NewValdClient(conn).Insert(ctx, r, copts...)
-					atomic.AddInt32(&progress, 1)
+				_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+					err := l.loaderFunc(ctx, vald.NewValdClient(conn), r, copts...)
+					atomic.AddInt32(&pg, 1)
 					if err != nil {
 						log.Warn(err)
 					}
@@ -120,6 +122,7 @@ func (i *insert) Do(ctx context.Context) <-chan error {
 			})
 		}
 		err := eg.Wait()
+		time.Sleep(5 * time.Second) // prevent too early shutdown
 		if err != nil {
 			log.Warn(err)
 			ech <- err

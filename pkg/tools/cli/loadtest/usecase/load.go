@@ -28,14 +28,12 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/service"
-	"github.com/vdaas/vald/pkg/tools/cli/loadtest/service/insert"
-	"github.com/vdaas/vald/pkg/tools/cli/loadtest/service/search"
 )
 
 type run struct {
 	eg     errgroup.Group
 	cfg    *config.Data
-	loader service.Load
+	loader service.Loader
 	client grpc.Client
 }
 
@@ -54,11 +52,17 @@ func (r *run) PreStart(ctx context.Context) (err error) {
 		grpc.WithInsecure(r.cfg.Client.DialOption.Insecure),
 		grpc.WithErrGroup(r.eg),
 	)
+
+	opts := []service.Option{
+		service.WithAddr(r.cfg.Addr),
+		service.WithDataset(r.cfg.Dataset),
+		service.WithClient(r.client),
+	}
 	switch Atoo(r.cfg.Method) {
 	case Insert:
-		r.loader, err = insert.New(insert.WithAddr(r.cfg.Addr), insert.WithDataset(r.cfg.Dataset), insert.WithClient(r.client))
+		r.loader, err = service.NewInsert(opts...)
 	case Search:
-		r.loader, err = search.New(search.WithAddr(r.cfg.Addr), search.WithDataset(r.cfg.Dataset), search.WithClient(r.client))
+		r.loader, err = service.NewSearch(opts...)
 	default:
 		return fmt.Errorf("unsupported method")
 	}
