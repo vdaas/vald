@@ -19,6 +19,7 @@ package watch
 import (
 	"context"
 	"reflect"
+	"sync"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -29,15 +30,16 @@ import (
 
 type Watcher interface {
 	Start(ctx context.Context) (<-chan error, error)
-	Add(dir string) error
-	Remove(dir string) error
+	Add(dirs ...string) error
+	Remove(dirs ...string) error
 	Stop(ctx context.Context) error
 }
 
 type watch struct {
 	w        *fsnotify.Watcher
 	eg       errgroup.Group
-	dirs     []string
+	dirs     map[string]struct{}
+	mu       sync.RWMutex
 	onChange func(ctx context.Context, name string) error
 	onCreate func(ctx context.Context, name string) error
 	onRename func(ctx context.Context, name string) error
@@ -66,6 +68,18 @@ func (w *watch) init() (*watch, error) {
 	if err != nil {
 		return nil, err
 	}
+	w.mu.RLock()
+	dirs := w.dirs
+	w.mu.RUnlock()
+	for dir := range dirs {
+		err = watcher.Add(dir)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	w.mu.Lock()
+	defer w.mu.Unlock()
 	if w.w != nil {
 		err = w.w.Close()
 		if err != nil {
@@ -74,12 +88,6 @@ func (w *watch) init() (*watch, error) {
 	}
 	w.w = watcher
 
-	for _, dir := range w.dirs {
-		err = w.w.Add(dir)
-		if err != nil {
-			return nil, err
-		}
-	}
 	return w, nil
 }
 
@@ -132,6 +140,7 @@ func (w *watch) Start(ctx context.Context) (<-chan error, error) {
 						err = w.onChmod(ctx, event.Name)
 					}
 				}
+			case err, ok = <-w.w.Errors:
 			}
 			if !ok {
 				w, err = w.init()
@@ -140,47 +149,52 @@ func (w *watch) Start(ctx context.Context) (<-chan error, error) {
 				handleErr(ctx, err)
 			}
 		}
-		return nil
-	}))
-	w.eg.Go(safety.RecoverFunc(func() (err error) {
-		for {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case err, ok := <-w.w.Errors:
-				if !ok {
-					w, err = w.init()
-				} else {
-					err = w.onError(ctx, err)
-				}
-				if err != nil {
-					log.Error(err)
-					select {
-					case <-ctx.Done():
-					case ech <- err:
-					}
-				}
-			}
-		}
-		return nil
 	}))
 	return ech, nil
 }
-func (w *watch) Add(dir string) error {
-	if w.w != nil {
-		return w.w.Add(dir)
+
+func (w *watch) Add(dirs ...string) (err error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	for _, dir := range dirs {
+		w.dirs[dir] = struct{}{}
+		if w.w != nil {
+			err = w.w.Add(dir)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
 
-func (w *watch) Remove(dir string) error {
-	if w.w != nil {
-		return w.w.Remove(dir)
+func (w *watch) Remove(dirs ...string) (err error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	for _, dir := range dirs {
+		delete(w.dirs, dir)
+		if w.w != nil {
+			err = w.w.Remove(dir)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
 
-func (w *watch) Stop(ctx context.Context) error {
+func (w *watch) Stop(ctx context.Context) (err error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	for dir := range w.dirs {
+		delete(w.dirs, dir)
+		if w.w != nil {
+			err = w.w.Remove(dir)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	if w.w != nil {
 		return w.w.Close()
 	}

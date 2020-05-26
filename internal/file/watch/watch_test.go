@@ -19,6 +19,7 @@ package watch
 import (
 	"context"
 	"reflect"
+	"sync"
 	"testing"
 
 	"github.com/fsnotify/fsnotify"
@@ -106,7 +107,8 @@ func Test_watch_init(t *testing.T) {
 	type fields struct {
 		w        *fsnotify.Watcher
 		eg       errgroup.Group
-		dirs     []string
+		dirs     map[string]struct{}
+		mu       sync.RWMutex
 		onChange func(ctx context.Context, name string) error
 		onCreate func(ctx context.Context, name string) error
 		onRename func(ctx context.Context, name string) error
@@ -145,6 +147,7 @@ func Test_watch_init(t *testing.T) {
 		           w: nil,
 		           eg: nil,
 		           dirs: nil,
+		           mu: sync.RWMutex{},
 		           onChange: nil,
 		           onCreate: nil,
 		           onRename: nil,
@@ -167,6 +170,7 @@ func Test_watch_init(t *testing.T) {
 		           w: nil,
 		           eg: nil,
 		           dirs: nil,
+		           mu: sync.RWMutex{},
 		           onChange: nil,
 		           onCreate: nil,
 		           onRename: nil,
@@ -198,6 +202,7 @@ func Test_watch_init(t *testing.T) {
 				w:        test.fields.w,
 				eg:       test.fields.eg,
 				dirs:     test.fields.dirs,
+				mu:       test.fields.mu,
 				onChange: test.fields.onChange,
 				onCreate: test.fields.onCreate,
 				onRename: test.fields.onRename,
@@ -223,7 +228,8 @@ func Test_watch_Start(t *testing.T) {
 	type fields struct {
 		w        *fsnotify.Watcher
 		eg       errgroup.Group
-		dirs     []string
+		dirs     map[string]struct{}
+		mu       sync.RWMutex
 		onChange func(ctx context.Context, name string) error
 		onCreate func(ctx context.Context, name string) error
 		onRename func(ctx context.Context, name string) error
@@ -266,6 +272,7 @@ func Test_watch_Start(t *testing.T) {
 		           w: nil,
 		           eg: nil,
 		           dirs: nil,
+		           mu: sync.RWMutex{},
 		           onChange: nil,
 		           onCreate: nil,
 		           onRename: nil,
@@ -291,6 +298,7 @@ func Test_watch_Start(t *testing.T) {
 		           w: nil,
 		           eg: nil,
 		           dirs: nil,
+		           mu: sync.RWMutex{},
 		           onChange: nil,
 		           onCreate: nil,
 		           onRename: nil,
@@ -322,6 +330,7 @@ func Test_watch_Start(t *testing.T) {
 				w:        test.fields.w,
 				eg:       test.fields.eg,
 				dirs:     test.fields.dirs,
+				mu:       test.fields.mu,
 				onChange: test.fields.onChange,
 				onCreate: test.fields.onCreate,
 				onRename: test.fields.onRename,
@@ -342,12 +351,13 @@ func Test_watch_Start(t *testing.T) {
 
 func Test_watch_Add(t *testing.T) {
 	type args struct {
-		dir string
+		dirs []string
 	}
 	type fields struct {
 		w        *fsnotify.Watcher
 		eg       errgroup.Group
-		dirs     []string
+		dirs     map[string]struct{}
+		mu       sync.RWMutex
 		onChange func(ctx context.Context, name string) error
 		onCreate func(ctx context.Context, name string) error
 		onRename func(ctx context.Context, name string) error
@@ -380,12 +390,13 @@ func Test_watch_Add(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           dir: "",
+		           dirs: nil,
 		       },
 		       fields: fields {
 		           w: nil,
 		           eg: nil,
 		           dirs: nil,
+		           mu: sync.RWMutex{},
 		           onChange: nil,
 		           onCreate: nil,
 		           onRename: nil,
@@ -405,12 +416,13 @@ func Test_watch_Add(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           dir: "",
+		           dirs: nil,
 		           },
 		           fields: fields {
 		           w: nil,
 		           eg: nil,
 		           dirs: nil,
+		           mu: sync.RWMutex{},
 		           onChange: nil,
 		           onCreate: nil,
 		           onRename: nil,
@@ -442,6 +454,7 @@ func Test_watch_Add(t *testing.T) {
 				w:        test.fields.w,
 				eg:       test.fields.eg,
 				dirs:     test.fields.dirs,
+				mu:       test.fields.mu,
 				onChange: test.fields.onChange,
 				onCreate: test.fields.onCreate,
 				onRename: test.fields.onRename,
@@ -451,7 +464,7 @@ func Test_watch_Add(t *testing.T) {
 				onError:  test.fields.onError,
 			}
 
-			err := w.Add(test.args.dir)
+			err := w.Add(test.args.dirs...)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -462,12 +475,13 @@ func Test_watch_Add(t *testing.T) {
 
 func Test_watch_Remove(t *testing.T) {
 	type args struct {
-		dir string
+		dirs []string
 	}
 	type fields struct {
 		w        *fsnotify.Watcher
 		eg       errgroup.Group
-		dirs     []string
+		dirs     map[string]struct{}
+		mu       sync.RWMutex
 		onChange func(ctx context.Context, name string) error
 		onCreate func(ctx context.Context, name string) error
 		onRename func(ctx context.Context, name string) error
@@ -500,12 +514,13 @@ func Test_watch_Remove(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           dir: "",
+		           dirs: nil,
 		       },
 		       fields: fields {
 		           w: nil,
 		           eg: nil,
 		           dirs: nil,
+		           mu: sync.RWMutex{},
 		           onChange: nil,
 		           onCreate: nil,
 		           onRename: nil,
@@ -525,12 +540,13 @@ func Test_watch_Remove(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           dir: "",
+		           dirs: nil,
 		           },
 		           fields: fields {
 		           w: nil,
 		           eg: nil,
 		           dirs: nil,
+		           mu: sync.RWMutex{},
 		           onChange: nil,
 		           onCreate: nil,
 		           onRename: nil,
@@ -562,6 +578,7 @@ func Test_watch_Remove(t *testing.T) {
 				w:        test.fields.w,
 				eg:       test.fields.eg,
 				dirs:     test.fields.dirs,
+				mu:       test.fields.mu,
 				onChange: test.fields.onChange,
 				onCreate: test.fields.onCreate,
 				onRename: test.fields.onRename,
@@ -571,7 +588,7 @@ func Test_watch_Remove(t *testing.T) {
 				onError:  test.fields.onError,
 			}
 
-			err := w.Remove(test.args.dir)
+			err := w.Remove(test.args.dirs...)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -587,7 +604,8 @@ func Test_watch_Stop(t *testing.T) {
 	type fields struct {
 		w        *fsnotify.Watcher
 		eg       errgroup.Group
-		dirs     []string
+		dirs     map[string]struct{}
+		mu       sync.RWMutex
 		onChange func(ctx context.Context, name string) error
 		onCreate func(ctx context.Context, name string) error
 		onRename func(ctx context.Context, name string) error
@@ -626,6 +644,7 @@ func Test_watch_Stop(t *testing.T) {
 		           w: nil,
 		           eg: nil,
 		           dirs: nil,
+		           mu: sync.RWMutex{},
 		           onChange: nil,
 		           onCreate: nil,
 		           onRename: nil,
@@ -651,6 +670,7 @@ func Test_watch_Stop(t *testing.T) {
 		           w: nil,
 		           eg: nil,
 		           dirs: nil,
+		           mu: sync.RWMutex{},
 		           onChange: nil,
 		           onCreate: nil,
 		           onRename: nil,
@@ -682,6 +702,7 @@ func Test_watch_Stop(t *testing.T) {
 				w:        test.fields.w,
 				eg:       test.fields.eg,
 				dirs:     test.fields.dirs,
+				mu:       test.fields.mu,
 				onChange: test.fields.onChange,
 				onCreate: test.fields.onCreate,
 				onRename: test.fields.onRename,
