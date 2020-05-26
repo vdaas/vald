@@ -110,24 +110,24 @@ bench/agent: \
 ## run benchmark for agent gRPC stream
 bench/agent/stream: \
 	ngt/install
-	$(call bench-pprof,pprof/agent/ngt,agent,gRPC_Stream,stream,\
-		./hack/benchmark/e2e/agent/ngt/ngt_bench_test.go \
+	$(call bench-pprof,pprof/agent/core/ngt,agent,gRPC_Stream,stream,\
+		./hack/benchmark/e2e/agent/core/ngt/ngt_bench_test.go \
 		 -dataset=$(DATASET_ARGS))
 
 .PHONY: bench/agent/sequential/grpc
 ## run benchmark for agent gRPC sequential
 bench/agent/sequential/grpc: \
 	ngt/install
-	$(call bench-pprof,pprof/agent/ngt,agent,gRPC_Sequential,sequential-grpc,\
-		./hack/benchmark/e2e/agent/ngt/ngt_bench_test.go \
+	$(call bench-pprof,pprof/agent/core/ngt,agent,gRPC_Sequential,sequential-grpc,\
+		./hack/benchmark/e2e/agent/core/ngt/ngt_bench_test.go \
 		 -dataset=$(DATASET_ARGS))
 
 .PHONY: bench/agent/sequential/rest
 ## run benchmark for agent REST
 bench/agent/sequential/rest: \
 	ngt/install
-	$(call bench-pprof,pprof/agent/ngt,agent,REST_Sequential,sequential-rest,\
-		./hack/benchmark/e2e/agent/ngt/ngt_bench_test.go \
+	$(call bench-pprof,pprof/agent/core/ngt,agent,REST_Sequential,sequential-rest,\
+		./hack/benchmark/e2e/agent/core/ngt/ngt_bench_test.go \
 		 -dataset=$(DATASET_ARGS))
 
 .PHONY: bench/ngtd
@@ -186,15 +186,15 @@ profile: \
 
 .PHONY: profile/agent/stream
 profile/agent/stream:
-	$(call profile-web,pprof/agent/ngt,agent,stream,":6061",":6062",":6063")
+	$(call profile-web,pprof/agent/core/ngt,agent,stream,":6061",":6062",":6063")
 
 .PHONY: profile/agent/sequential/grpc
 profile/agent/sequential/grpc:
-	$(call profile-web,pprof/agent/ngt,agent,sequential-grpc,":6061",":6062",":6063")
+	$(call profile-web,pprof/agent/core/ngt,agent,sequential-grpc,":6061",":6062",":6063")
 
 .PHONY: profile/agent/sequential/rest
 profile/agent/sequential/rest:
-	$(call profile-web,pprof/agent/ngt,agent,sequential-rest,":6061",":6062",":6063")
+	$(call profile-web,pprof/agent/core/ngt,agent,sequential-rest,":6061",":6062",":6063")
 
 .PHONY: profile/ngtd/stream
 profile/ngtd/stream:
@@ -216,14 +216,14 @@ metrics: \
 .PHONY: metrics/agent
 ## calculate agent metrics
 metrics/agent: \
-	metrics/agent/ngt
+	metrics/agent/core/ngt
 
-.PHONY: metrics/agent/ngt
-## calculate agent/ngt metrics
-metrics/agent/ngt: $(ROOTDIR)/metrics.gob
+.PHONY: metrics/agent/core/ngt
+## calculate agent/core/ngt metrics
+metrics/agent/core/ngt: $(ROOTDIR)/metrics.gob
 
 $(ROOTDIR)/metrics.gob:
-	go test -v --timeout=1h ./hack/benchmark/e2e/agent/ngt/... -output=$(ROOTDIR)/metrics.gob
+	go test -v --timeout=1h ./hack/benchmark/e2e/agent/core/ngt/... -output=$(ROOTDIR)/metrics.gob
 
 .PHONY: metrics/chart
 ## create metrics chart
