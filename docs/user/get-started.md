@@ -1,16 +1,17 @@
 # Get Started
 
-This article will show you how to deploy and run Vald on your k8s cluster.
-This article uses Scylla DB as the backend data store for metadata-management and backup-manager.
-Fashion-mnist is used as an example of a dataset.
+[WIP]
 
 1. [Requirements](#requirements)
 2. [Deploy and Run Vald on k8s cluster](#deploy-and-run-vald-on-k8s-cluster)
     1. [Deploy](#deploy)
     2. [Run](#run)
-3. [Advanced](#advanced)
-    1. [Customize Vald](#customize-vald)
-    2. [Another way to deploy Vald](#another-way-to-deploy-vald)
+3. [Deploy and Run only Vald Agent on k8s cluster](#deploy-and-run-only-vald-agent-on-k8s-cluster)
+    1. [Deploy](#deploy)
+    2. [Run](#run)
+4. [Deploy and Run only Vald Agent on Docker](#deploy-and-run-only-vald-agent-on-docker)
+    1. [Deploy](#deploy)
+    2. [Run](#run)
 
 ## Requirements
 
@@ -46,8 +47,8 @@ brew install hdf5
 
 ### Deploy
 
-This section shows how to deploy Vald with Scylla using Helm.
-Scylla is used as a datastore for index-metadata and backup-manager.
+This chapter will show you how to deploy using Helm and run Vald on your k8s cluster.
+This chapter uses Scylla DB as the backend data store for index-metadata and backup-manager.
 If you want to learn about Scylla, please refer to [the official website](https://www.scylladb.com/).
 
 1. Confirm which cluster to deploy
@@ -287,17 +288,71 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
     go run main.go
     ```
 
-## Advanced
+## Deploy and Run only Vald Agent on k8s cluster
 
-### Customize Vald
+### Deploy
 
-Vald is highly customizable.
-For example you can configure the number of vector dimension, the number of replica and etc.
-You can customize Vald by creating/editing [`values.yaml`](../../charts/vald/values.yaml).<br>
-If you'd like to configure your Vald's parameters, please refer to [Vald's helm charts document](../../charts/vald/README.md)
+This section will show you how to deploy a standalone agent using Helm and run it on your k8s cluster. 
 
-### Another way to deploy Vald
+1. Confirm which cluster to deploy
 
-In the `Get Started` section, you learnt how to deploy Vald with Scylla DB using Helm.
-Vald can be deployed by Helm or `kind` command. (Compressor datastore is required, for example mysql + redis or casandora ).
-We will publish the document about the setup procedure and configuration in the future.
+    ```bash
+    kubectl cluster-info
+    ```
+
+2. Deploy Vald using helm
+    
+    ```bash
+    helm repo add vald https://vald.vdaas.org/charts
+    helm install --values values-agent-ngt-standalone.yaml vald-agent-ngt vald/vald
+    ```
+
+3. Verify
+
+    ```bash
+    kubectl get pods
+    ```
+
+    <details><summary>Example output</summary><br>
+    If the deployment is successful, Vald Agent components should be running.
+
+    ```bash
+    ```
+    </details>
+
+### Run
+
+1. Port Forward
+
+    ```bash
+    WIP
+    kubectl port-forward deployment/vald-agent-ngt 8081:8081
+    ```
+
+2. Download dataset
+
+    In this tutorial. we use [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) as a dataset for indexing and search query.
+
+    ```bash
+    # move to working directory
+    cd example/client
+    
+    # download fashion-mnist testing dataset
+    wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
+    ```
+
+3. Running example
+
+WIP
+
+## Deploy and Run only Vald Agent on Docker
+
+This section will show you how to deploy a standalone agent using Helm and run it on your Docker. 
+
+### Deploy
+
+WIP
+
+### Run
+
+WIP
