@@ -14,24 +14,32 @@
 // limitations under the License.
 //
 
-package blob
+package reader
 
-type Option func(b *bucket) error
+import "github.com/aws/aws-sdk-go/service/s3"
+
+type Option func(r *reader)
 
 var (
 	defaultOpts = []Option{}
 )
 
-func WithBucketURLOpener(bo BucketURLOpener) Option {
-	return func(b *bucket) error {
-		b.opener = bo
-		return nil
+func WithService(s *s3.S3) Option {
+	return func(r *reader) {
+		if s != nil {
+			r.service = s
+		}
 	}
 }
 
-func WithBucketURL(url string) Option {
-	return func(b *bucket) error {
-		b.url = url
-		return nil
+func WithBucket(bucket string) Option {
+	return func(r *reader) {
+		r.bucket = bucket
+	}
+}
+
+func WithKey(key string) Option {
+	return func(r *reader) {
+		r.key = key
 	}
 }

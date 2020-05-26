@@ -14,16 +14,40 @@
 // limitations under the License.
 //
 
-package blob
+package writer
 
-import (
-	"context"
-	"io"
+import "github.com/aws/aws-sdk-go/service/s3"
+
+type Option func(w *writer)
+
+var (
+	defaultOpts = []Option{
+		WithMaxPartSize(5 * 1024 * 1024),
+	}
 )
 
-type Bucket interface {
-	Open(ctx context.Context) error
-	Close() error
-	Reader(ctx context.Context, key string) (io.ReadCloser, error)
-	Writer(ctx context.Context, key string) (io.WriteCloser, error)
+func WithService(s *s3.S3) Option {
+	return func(w *writer) {
+		if s != nil {
+			w.service = s
+		}
+	}
+}
+
+func WithBucket(bucket string) Option {
+	return func(w *writer) {
+		w.bucket = bucket
+	}
+}
+
+func WithKey(key string) Option {
+	return func(w *writer) {
+		w.key = key
+	}
+}
+
+func WithMaxPartSize(max int) Option {
+	return func(w *writer) {
+		w.maxPartSize = int64(max)
+	}
 }

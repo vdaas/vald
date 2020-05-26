@@ -17,178 +17,113 @@
 package s3
 
 import (
-	"reflect"
+	"context"
 	"testing"
 
-	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 )
 
-func TestNewSession(t *testing.T) {
-	type args struct {
-		opts []Option
+const (
+	endpoint        = ""
+	region          = ""
+	accessKey       = ""
+	secretAccessKey = ""
+	bucketName      = ""
+)
+
+func TestS3Write(t *testing.T) {
+	sess, err := session.New(
+		session.WithEndpoint(endpoint),
+		session.WithRegion(region),
+		session.WithAccessKey(accessKey),
+		session.WithSecretAccessKey(secretAccessKey),
+	).Session()
+	if err != nil {
+		t.Fatalf("failed to create session: %s", err)
 	}
-	type want struct {
-		want Session
+
+	bucket := New(
+		WithSession(sess),
+		WithBucket(bucketName),
+	)
+
+	ctx := context.Background()
+
+	err = bucket.Open(ctx)
+	if err != nil {
+		t.Fatalf("bucket open failed: %s", err)
 	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, Session) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got Session) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+
+	defer func() {
+		err = bucket.Close()
+		if err != nil {
+			t.Fatalf("bucket close failed: %s", err)
 		}
-		return nil
+	}()
+
+	w, err := bucket.Writer(ctx, "writer-test.txt")
+	if err != nil {
+		t.Fatalf("fetch writer failed: %s", err)
 	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+	defer func() {
+		err = w.Close()
+		if err != nil {
+			t.Fatalf("writer close failed: %s", err)
+		}
+	}()
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got := NewSession(test.args.opts...)
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
+	_, err = w.Write([]byte("Hello from blob world!"))
+	if err != nil {
+		t.Fatalf("write failed: %s", err)
 	}
 }
 
-func Test_sess_URLOpener(t *testing.T) {
-	type fields struct {
-		endpoint        string
-		region          string
-		accessKey       string
-		secretAccessKey string
-		token           string
-		useLegacyList   bool
+func TestS3Read(t *testing.T) {
+	sess, err := session.New(
+		session.WithEndpoint(endpoint),
+		session.WithRegion(region),
+		session.WithAccessKey(accessKey),
+		session.WithSecretAccessKey(secretAccessKey),
+	).Session()
+	if err != nil {
+		t.Fatalf("failed to create session: %s", err)
 	}
-	type want struct {
-		want *URLOpener
-		err  error
+
+	bucket := New(
+		WithSession(sess),
+		WithBucket(bucketName),
+	)
+
+	ctx := context.Background()
+
+	err = bucket.Open(ctx)
+	if err != nil {
+		t.Fatalf("bucket open failed: %s", err)
 	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, *URLOpener, error) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got *URLOpener, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+
+	defer func() {
+		err = bucket.Close()
+		if err != nil {
+			t.Fatalf("bucket close failed: %s", err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+	}()
+
+	r, err := bucket.Reader(ctx, "writer-test.txt")
+	if err != nil {
+		t.Fatalf("fetch reader failed: %s", err)
+	}
+	defer func() {
+		err = r.Close()
+		if err != nil {
+			t.Fatalf("reader close failed: %s", err)
 		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           endpoint: "",
-		           region: "",
-		           accessKey: "",
-		           secretAccessKey: "",
-		           token: "",
-		           useLegacyList: false,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+	}()
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           endpoint: "",
-		           region: "",
-		           accessKey: "",
-		           secretAccessKey: "",
-		           token: "",
-		           useLegacyList: false,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+	rbuf := make([]byte, 16)
+	_, err = r.Read(rbuf)
+	if err != nil {
+		t.Fatalf("read failed: %s", err)
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &sess{
-				endpoint:        test.fields.endpoint,
-				region:          test.fields.region,
-				accessKey:       test.fields.accessKey,
-				secretAccessKey: test.fields.secretAccessKey,
-				token:           test.fields.token,
-				useLegacyList:   test.fields.useLegacyList,
-			}
-
-			got, err := s.URLOpener()
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
+	t.Logf("read: %s", string(rbuf))
 }

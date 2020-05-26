@@ -18,8 +18,6 @@
 package config
 
 type AgentSidecar struct {
-	// Name string `yaml:"name" json:"name"`
-
 	// WatchPaths represents watch path list for backup
 	WatchPaths []string `yaml:"watch_paths" json:"watch_paths"`
 
@@ -28,11 +26,25 @@ type AgentSidecar struct {
 
 	// AutoBackupDuration represent checking loop duration for auto backup execution
 	AutoBackupDuration string `yaml:"auto_backup_duration" json:"auto_backup_duration"`
+
+	// Filename represent backup filename
+	Filename string `yaml:"filename" json:"filename"`
+
+	// BlobStorage represent blob storage configurations
+	BlobStorage *Blob `yaml:"blob_storage" json:"blob_storage"`
 }
 
 func (s *AgentSidecar) Bind() *AgentSidecar {
 	s.WatchPaths = GetActualValues(s.WatchPaths)
 	s.AutoBackupDuration = GetActualValue(s.AutoBackupDuration)
 	s.AutoBackupDurationLimit = GetActualValue(s.AutoBackupDurationLimit)
+	s.Filename = GetActualValue(s.Filename)
+
+	if s.BlobStorage != nil {
+		s.BlobStorage = s.BlobStorage.Bind()
+	} else {
+		s.BlobStorage = new(Blob)
+	}
+
 	return s
 }

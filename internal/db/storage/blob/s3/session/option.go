@@ -14,16 +14,40 @@
 // limitations under the License.
 //
 
-package blob
+package session
 
-import (
-	"context"
-	"io"
+type Option func(s *sess)
+
+var (
+	defaultOpts = []Option{}
 )
 
-type Bucket interface {
-	Open(ctx context.Context) error
-	Close() error
-	Reader(ctx context.Context, key string) (io.ReadCloser, error)
-	Writer(ctx context.Context, key string) (io.WriteCloser, error)
+func WithEndpoint(ep string) Option {
+	return func(s *sess) {
+		s.endpoint = ep
+	}
+}
+
+func WithRegion(rg string) Option {
+	return func(s *sess) {
+		s.region = rg
+	}
+}
+
+func WithAccessKey(ak string) Option {
+	return func(s *sess) {
+		s.accessKey = ak
+	}
+}
+
+func WithSecretAccessKey(sak string) Option {
+	return func(s *sess) {
+		s.secretAccessKey = sak
+	}
+}
+
+func WithToken(tk string) Option {
+	return func(s *sess) {
+		s.token = tk
+	}
 }

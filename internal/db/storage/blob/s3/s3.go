@@ -17,59 +17,57 @@
 package s3
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
+	"context"
+	"io"
+
 	"github.com/aws/aws-sdk-go/aws/session"
-	"gocloud.dev/blob/s3blob"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/vdaas/vald/internal/db/storage/blob"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/reader"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/writer"
 )
 
-type URLOpener = s3blob.URLOpener
-
-type sess struct {
-	endpoint        string
-	region          string
-	accessKey       string
-	secretAccessKey string
-	token           string
-	useLegacyList   bool
+type s3client struct {
+	session *session.Session
+	service *s3.S3
+	bucket  string
 }
 
-type Session interface {
-	URLOpener() (*URLOpener, error)
-}
-
-func NewSession(opts ...Option) Session {
-	s := new(sess)
+func New(opts ...Option) blob.Bucket {
+	s := new(s3client)
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(s)
 	}
 
+	s.service = s3.New(s.session)
+
 	return s
 }
 
-func (s *sess) URLOpener() (*URLOpener, error) {
-	session, err := session.NewSession(
-		aws.NewConfig().WithEndpoint(
-			s.endpoint,
-		).WithRegion(
-			s.region,
-		).WithCredentials(
-			credentials.NewStaticCredentials(
-				s.accessKey,
-				s.secretAccessKey,
-				s.token,
-			),
-		),
+func (s *s3client) Open(ctx context.Context) (err error) {
+	return nil
+}
+
+func (s *s3client) Close() error {
+	return nil
+}
+
+func (s *s3client) Reader(ctx context.Context, key string) (io.ReadCloser, error) {
+	r := reader.New(
+		reader.WithService(s.service),
+		reader.WithBucket(s.bucket),
+		reader.WithKey(key),
 	)
 
-	if err != nil {
-		return nil, err
-	}
+	return r, r.Open(ctx)
+}
 
-	return &URLOpener{
-		ConfigProvider: session,
-		Options: s3blob.Options{
-			UseLegacyList: s.useLegacyList,
-		},
-	}, nil
+func (s *s3client) Writer(ctx context.Context, key string) (io.WriteCloser, error) {
+	w := writer.New(
+		writer.WithService(s.service),
+		writer.WithBucket(s.bucket),
+		writer.WithKey(key),
+	)
+
+	return w, w.Open(ctx)
 }

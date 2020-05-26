@@ -16,44 +16,24 @@
 
 package s3
 
-type Option func(s *sess)
+import "github.com/aws/aws-sdk-go/aws/session"
+
+type Option func(s *s3client)
 
 var (
 	defaultOpts = []Option{}
 )
 
-func WithEndpoint(ep string) Option {
-	return func(s *sess) {
-		s.endpoint = ep
+func WithSession(sess *session.Session) Option {
+	return func(s *s3client) {
+		if sess != nil {
+			s.session = sess
+		}
 	}
 }
 
-func WithRegion(rg string) Option {
-	return func(s *sess) {
-		s.region = rg
-	}
-}
-
-func WithAccessKey(ak string) Option {
-	return func(s *sess) {
-		s.accessKey = ak
-	}
-}
-
-func WithSecretAccessKey(sak string) Option {
-	return func(s *sess) {
-		s.secretAccessKey = sak
-	}
-}
-
-func WithToken(tk string) Option {
-	return func(s *sess) {
-		s.token = tk
-	}
-}
-
-func WithUseLegacyList(flg bool) Option {
-	return func(s *sess) {
-		s.useLegacyList = flg
+func WithBucket(bucket string) Option {
+	return func(s *s3client) {
+		s.bucket = bucket
 	}
 }

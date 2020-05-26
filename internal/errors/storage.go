@@ -14,16 +14,12 @@
 // limitations under the License.
 //
 
-package blob
+// Package errors provides error types and function
+package errors
 
-import (
-	"context"
-	"io"
+var (
+	ErrInvalidStorageType = New("invalid storage type")
+
+	ErrStorageReaderNotOpened = New("reader not opened")
+	ErrStorageWriterNotOpened = New("writer not opened")
 )
-
-type Bucket interface {
-	Open(ctx context.Context) error
-	Close() error
-	Reader(ctx context.Context, key string) (io.ReadCloser, error)
-	Writer(ctx context.Context, key string) (io.WriteCloser, error)
-}
