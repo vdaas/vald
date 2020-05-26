@@ -90,6 +90,7 @@ func dirwalk(dir string) []string {
 		switch filepath.Ext(file.Name()) {
 		case
 			".ai",
+			".all-contributorsrc",
 			".cfg",
 			".crt",
 			".default",
