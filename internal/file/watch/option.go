@@ -42,10 +42,8 @@ func WithDirs(dirs ...string) Option {
 		if len(dirs) == 0 {
 			return nil
 		}
-		if w.dirs != nil {
-			w.dirs = append(w.dirs, dirs...)
-		} else {
-			w.dirs = dirs
+		for _, dir := range dirs {
+			w.dirs[dir] = struct{}{}
 		}
 		return nil
 	}
