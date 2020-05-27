@@ -38,18 +38,18 @@ type Loader interface {
 }
 
 type loader struct {
-	eg           errgroup.Group
-	client       grpc.Client
-	addr         string
-	concurrency  int
-	dataset      string
-	requests     []interface{}
+	eg               errgroup.Group
+	client           grpc.Client
+	addr             string
+	concurrency      int
+	dataset          string
+	requests         []interface{}
 	progressDuration time.Duration
-	requestsFunc func(assets.Dataset) ([]interface{}, error)
-	loaderFunc   func(context.Context, vald.ValdClient, interface{}, ...grpc.CallOption) error
+	requestsFunc     func(assets.Dataset) ([]interface{}, error)
+	loaderFunc       func(context.Context, vald.ValdClient, interface{}, ...grpc.CallOption) error
 }
 
-func newLoader(opts... Option) (l *loader, err error) {
+func newLoader(opts ...Option) (l *loader, err error) {
 	l = new(loader)
 	for _, opt := range append(defaultOpts, opts...) {
 		if err = opt(l); err != nil {
@@ -86,7 +86,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 	var pgCnt int32 = 0
 	var start time.Time
 	progress := func() {
-		log.Infof("progress %d items, %f[qps]", pgCnt, float64(pgCnt) / time.Now().Sub(start).Seconds())
+		log.Infof("progress %d items, %f[qps]", pgCnt, float64(pgCnt)/time.Now().Sub(start).Seconds())
 	}
 	ticker := time.NewTicker(l.progressDuration)
 	l.eg.Go(safety.RecoverFunc(func() error {
@@ -130,7 +130,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 			ech <- err
 			return p.Signal(syscall.SIGKILL) // TODO: #403
 		}
-		log.Infof("Error ratio: %.2f%%", float64(errCnt) / float64(pgCnt) * 100)
+		log.Infof("Error ratio: %.2f%%", float64(errCnt)/float64(pgCnt)*100)
 		return p.Signal(syscall.SIGTERM) // TODO: #403
 	}))
 	return ech

@@ -17,13 +17,14 @@ package assets
 
 import (
 	"fmt"
-	"github.com/vdaas/vald/internal/log"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/vdaas/vald/internal/log"
 )
 
 type Dataset interface {
@@ -308,13 +309,13 @@ func random(dim, size int) func() (Dataset, error) {
 			}
 		}
 		return &dataset{
-			train: train,
-			query: query,
-			ids: ids,
-			name: fmt.Sprintf("random-%d-%d", dim, size),
-			dimension: dim,
+			train:        train,
+			query:        query,
+			ids:          ids,
+			name:         fmt.Sprintf("random-%d-%d", dim, size),
+			dimension:    dim,
 			distanceType: "l2",
-			objectType: "float",
+			objectType:   "float",
 		}, nil
 	}
 }
