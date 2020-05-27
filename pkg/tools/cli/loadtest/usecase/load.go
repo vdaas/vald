@@ -76,7 +76,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		return nil, err
 	}
 	lech := r.loader.Do(ctx)
-	ech := make(chan error, 1000)
+	ech := make(chan error, 1000) // TODO: fix magic number
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 		finalize := func() (err error) {
@@ -99,10 +99,6 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 				return finalize()
 			case err = <-rech:
 			case err = <-lech:
-				if err != nil {
-					ech <- err
-					err = nil
-				}
 			}
 			if err != nil {
 				log.Error(err)

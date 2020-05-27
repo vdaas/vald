@@ -83,13 +83,14 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 		return ech
 	}
 
-	var pg int32 = 0
+	var pgCnt int32 = 0
+	var start time.Time
 	progress := func() {
-		log.Debugf("progress %d items", pg)
+		log.Infof("progress %d items, %f[qps]", pgCnt, float64(pgCnt) / time.Now().Sub(start).Seconds())
 	}
 	ticker := time.NewTicker(l.progressDuration)
 	l.eg.Go(safety.RecoverFunc(func() error {
-		for pg != int32(len(l.requests)) {
+		for pgCnt != int32(len(l.requests)) {
 			select {
 			case <-ctx.Done():
 				progress()
@@ -100,6 +101,8 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 		}
 		return nil
 	}))
+	start = time.Now()
+	var errCnt int32 = 0
 	l.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
 		eg, egctx := errgroup.New(ctx)
@@ -109,9 +112,10 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 			eg.Go(func() error {
 				_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 					err := l.loaderFunc(ctx, vald.NewValdClient(conn), r, copts...)
-					atomic.AddInt32(&pg, 1)
+					atomic.AddInt32(&pgCnt, 1)
 					if err != nil {
 						log.Warn(err)
+						atomic.AddInt32(&errCnt, 1)
 					}
 					return nil, err
 				})
@@ -121,13 +125,12 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 				return nil
 			})
 		}
-		err := eg.Wait()
-		time.Sleep(5 * time.Second) // prevent too early shutdown
-		if err != nil {
+		if err := eg.Wait(); err != nil {
 			log.Warn(err)
 			ech <- err
 			return p.Signal(syscall.SIGKILL) // TODO: #403
 		}
+		log.Infof("Error ratio: %.2f%%", float64(errCnt) / float64(pgCnt) * 100)
 		return p.Signal(syscall.SIGTERM) // TODO: #403
 	}))
 	return ech
