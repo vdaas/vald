@@ -489,7 +489,10 @@ func (g *gRPCClient) Disconnect(addr string) error {
 }
 
 func (g *gRPCClient) Close() error {
-	closeList := make([]string, 0, int(atomic.LoadUint64(&g.clientCount)))
+	var closeList []string
+	if cc := int(atomic.LoadUint64(&g.clientCount)); cc > 0 {
+		closeList = make([]string, 0, cc)
+	}
 	g.conns.Range(func(addr string, pool pool.Conn) bool {
 		if pool != nil {
 			closeList = append(closeList, addr)
