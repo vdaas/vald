@@ -7,27 +7,25 @@ We appreciate your help!
 ## Table of Contents
 
 - [Contributing Issue](#Contributing-Issue)
-  - [Where to file an issue](#Where-to-file-an-issue)
   - [Bug Report](#Bug-Report)
   - [Proposal](#Proposal)
   - [Feature Request](#Feature-Request)
   - [Security Issue Report](#Security-Issue-Report)
 - [Contributing Code](#Contributing-Code)
   - [Before contributing code](#Before-contributing-code)
-  - [Contributing code](#Contributing-code)
+  - [How to contributing code](#How-to-contributing-code)
   - [Branch naming convention](#Branch-naming-convention)
 
 ## Contributing Issue
 
-### Where to file an issue
-
 We use [Github Issues](https://github.com/vdaas/vald/issues) to track issues within this repository.
 If you can determine the problem you are facing is a bug or issue, you can easily submit in the issues.
+
+If you are unsure whether you have found a bug or security-related issues, please consider asking in the [Vald Slack](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA) first. <br>
 
 ### Bug Report
 
 A bug is a demonstrable problem which produce incorrect result or to behave in unintended ways.<br>
-If you are unsure whether you have found a bug, please consider asking in the [Vald Slack](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA) first. <br>
 
 Bug reports are helpful for developers who maintain the Vald project.<br>
 A good bug report should not leave others needing to ask you for more information constantly.<br>
@@ -95,7 +93,7 @@ Follow these steps to make a contribution to any of our open source repositories
         git config --global user.email "your_email@example.com"
 
 
-### Contributing code
+### How to contributing code
 
 1. Fork the repository ( https://github.com/vdaas/vald/fork )
 2. Create your feature branch (git checkout -b [`[type]/[area]/[description]`](#Branch-naming-convention))
