@@ -23,6 +23,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 )
@@ -33,7 +34,9 @@ type writer struct {
 	key     string
 
 	maxPartSize int64
+	multipart   bool
 
+	ctx  context.Context
 	resp *s3.CreateMultipartUploadOutput
 
 	completedParts []*s3.CompletedPart
@@ -54,28 +57,56 @@ func New(opts ...Option) Writer {
 }
 
 func (w *writer) Open(ctx context.Context) (err error) {
-	input := &s3.CreateMultipartUploadInput{
-		Bucket: aws.String(w.bucket),
-		Key:    aws.String(w.key),
-	}
-
-	w.completedParts = make([]*s3.CompletedPart, 0)
-	w.resp, err = w.service.CreateMultipartUploadWithContext(ctx, input)
+	w.ctx = ctx
 
 	return err
 }
 
 func (w *writer) Close() error {
-	if w.resp != nil {
-		return w.complete()
+	if w.multipart && w.resp != nil {
+		return w.completeMultipartUpload()
 	}
 
 	return nil
 }
 
 func (w *writer) Write(p []byte) (n int, err error) {
-	if w.resp == nil {
+	if w.ctx == nil {
 		return 0, errors.ErrStorageWriterNotOpened
+	}
+
+	if w.multipart {
+		return w.multipartUpload(p)
+	}
+
+	return w.upload(p)
+}
+
+func (w *writer) upload(p []byte) (n int, err error) {
+	uploader := s3manager.NewUploaderWithClient(w.service)
+	input := &s3manager.UploadInput{
+		Bucket: aws.String(w.bucket),
+		Key:    aws.String(w.key),
+		Body:   bytes.NewReader(p),
+	}
+
+	_, err = uploader.UploadWithContext(w.ctx, input)
+	if err != nil {
+		return 0, err
+	}
+
+	return len(p), nil
+}
+
+func (w *writer) multipartUpload(p []byte) (n int, err error) {
+	if w.resp == nil {
+		input := &s3.CreateMultipartUploadInput{
+			Bucket: aws.String(w.bucket),
+			Key:    aws.String(w.key),
+		}
+
+		w.completedParts = make([]*s3.CompletedPart, 0)
+		w.resp, err = w.service.CreateMultipartUploadWithContext(w.ctx, input)
 	}
 
 	// TODO: do concurrently
@@ -84,15 +115,27 @@ func (w *writer) Write(p []byte) (n int, err error) {
 	remaining := size
 	pn := int64(1)
 	for cur = 0; remaining != 0; cur += pl {
+		select {
+		case <-w.ctx.Done():
+			return int(size - remaining), errors.Wrap(
+				w.abortMultipartUpload(),
+				w.ctx.Err().Error(),
+			)
+		default:
+		}
+
 		if remaining < w.maxPartSize {
 			pl = remaining
 		} else {
 			pl = w.maxPartSize
 		}
 
-		cp, err := w.upload(p[cur:cur+pl], pn)
+		cp, err := w.uploadPart(p[cur:cur+pl], pn)
 		if err != nil {
-			return int(size - remaining), errors.Wrap(w.abort(), err.Error())
+			return int(size - remaining), errors.Wrap(
+				w.abortMultipartUpload(),
+				err.Error(),
+			)
 		}
 
 		remaining -= pl
@@ -103,7 +146,7 @@ func (w *writer) Write(p []byte) (n int, err error) {
 	return int(size), nil
 }
 
-func (w *writer) upload(p []byte, n int64) (*s3.CompletedPart, error) {
+func (w *writer) uploadPart(p []byte, n int64) (*s3.CompletedPart, error) {
 	pn := aws.Int64(n)
 	input := &s3.UploadPartInput{
 		Body:          bytes.NewReader(p),
@@ -115,7 +158,7 @@ func (w *writer) upload(p []byte, n int64) (*s3.CompletedPart, error) {
 	}
 
 	// TODO: backoff
-	res, err := w.service.UploadPart(input)
+	res, err := w.service.UploadPartWithContext(w.ctx, input)
 	if err != nil {
 		return nil, err
 	}
@@ -126,21 +169,24 @@ func (w *writer) upload(p []byte, n int64) (*s3.CompletedPart, error) {
 	}, nil
 }
 
-func (w *writer) abort() error {
+func (w *writer) abortMultipartUpload() error {
 	input := &s3.AbortMultipartUploadInput{
 		Bucket:   w.resp.Bucket,
 		Key:      w.resp.Key,
 		UploadId: w.resp.UploadId,
 	}
 
+	// AbortMultipartUploadWithContext could be used here,
+	// however abort should be called even when the context cancelled.
+	// this is why abort called without contexts.
 	res, err := w.service.AbortMultipartUpload(input)
 
-	log.Debugf("s3 upload aborted: %s", res.String())
+	log.Debugf("s3 multipart upload aborted: %s", res.String())
 
 	return err
 }
 
-func (w *writer) complete() error {
+func (w *writer) completeMultipartUpload() error {
 	input := &s3.CompleteMultipartUploadInput{
 		Bucket:   w.resp.Bucket,
 		Key:      w.resp.Key,
@@ -150,12 +196,12 @@ func (w *writer) complete() error {
 		},
 	}
 
-	res, err := w.service.CompleteMultipartUpload(input)
+	res, err := w.service.CompleteMultipartUploadWithContext(w.ctx, input)
 	if err != nil {
 		return err
 	}
 
-	log.Debugf("s3 upload completed: %s", res.String())
+	log.Debugf("s3 multipart upload completed: %s", res.String())
 
 	return nil
 }

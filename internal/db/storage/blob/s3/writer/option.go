@@ -23,6 +23,7 @@ type Option func(w *writer)
 var (
 	defaultOpts = []Option{
 		WithMaxPartSize(5 * 1024 * 1024),
+		WithMultipart(false),
 	}
 )
 
@@ -49,5 +50,11 @@ func WithKey(key string) Option {
 func WithMaxPartSize(max int) Option {
 	return func(w *writer) {
 		w.maxPartSize = int64(max)
+	}
+}
+
+func WithMultipart(enabled bool) Option {
+	return func(w *writer) {
+		w.multipart = enabled
 	}
 }
