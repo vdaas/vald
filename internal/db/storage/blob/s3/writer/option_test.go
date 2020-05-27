@@ -14,20 +14,19 @@
 // limitations under the License.
 //
 
-// Package service
-package service
+package writer
 
 import (
 	"testing"
 
-	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"go.uber.org/goleak"
 )
 
-func TestWithBackupDuration(t *testing.T) {
+func TestWithService(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		dur string
+		s *s3.S3
 	}
 	type want struct {
 		obj *T
@@ -74,7 +73,7 @@ func TestWithBackupDuration(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           dur: "",
+		           s: nil,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -88,7 +87,7 @@ func TestWithBackupDuration(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           dur: "",
+		           s: nil,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -114,7 +113,7 @@ func TestWithBackupDuration(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithBackupDuration(test.args.dur)
+			   got := WithService(test.args.s)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -126,7 +125,7 @@ func TestWithBackupDuration(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithBackupDuration(test.args.dur)
+			   got := WithService(test.args.s)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(tt.want, obj); err != nil {
@@ -137,10 +136,10 @@ func TestWithBackupDuration(t *testing.T) {
 	}
 }
 
-func TestWithBackupDurationLimit(t *testing.T) {
+func TestWithBucket(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		dur string
+		bucket string
 	}
 	type want struct {
 		obj *T
@@ -187,7 +186,7 @@ func TestWithBackupDurationLimit(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           dur: "",
+		           bucket: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -201,7 +200,7 @@ func TestWithBackupDurationLimit(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           dur: "",
+		           bucket: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -227,7 +226,7 @@ func TestWithBackupDurationLimit(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithBackupDurationLimit(test.args.dur)
+			   got := WithBucket(test.args.bucket)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -239,7 +238,7 @@ func TestWithBackupDurationLimit(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithBackupDurationLimit(test.args.dur)
+			   got := WithBucket(test.args.bucket)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(tt.want, obj); err != nil {
@@ -250,10 +249,10 @@ func TestWithBackupDurationLimit(t *testing.T) {
 	}
 }
 
-func TestWithErrGroup(t *testing.T) {
+func TestWithKey(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		eg errgroup.Group
+		key string
 	}
 	type want struct {
 		obj *T
@@ -300,7 +299,7 @@ func TestWithErrGroup(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           eg: nil,
+		           key: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -314,7 +313,7 @@ func TestWithErrGroup(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           eg: nil,
+		           key: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -340,7 +339,7 @@ func TestWithErrGroup(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithErrGroup(test.args.eg)
+			   got := WithKey(test.args.key)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -352,7 +351,7 @@ func TestWithErrGroup(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithErrGroup(test.args.eg)
+			   got := WithKey(test.args.key)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(tt.want, obj); err != nil {
@@ -363,10 +362,10 @@ func TestWithErrGroup(t *testing.T) {
 	}
 }
 
-func TestWithDirs(t *testing.T) {
+func TestWithMaxPartSize(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		dirs []string
+		max int
 	}
 	type want struct {
 		obj *T
@@ -413,7 +412,7 @@ func TestWithDirs(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           dirs: nil,
+		           max: 0,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -427,7 +426,7 @@ func TestWithDirs(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           dirs: nil,
+		           max: 0,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -453,7 +452,7 @@ func TestWithDirs(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithDirs(test.args.dirs...)
+			   got := WithMaxPartSize(test.args.max)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -465,7 +464,7 @@ func TestWithDirs(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithDirs(test.args.dirs...)
+			   got := WithMaxPartSize(test.args.max)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(tt.want, obj); err != nil {
@@ -476,10 +475,10 @@ func TestWithDirs(t *testing.T) {
 	}
 }
 
-func TestWithBlobStorage(t *testing.T) {
+func TestWithMultipart(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		storage BlobStorage
+		enabled bool
 	}
 	type want struct {
 		obj *T
@@ -526,7 +525,7 @@ func TestWithBlobStorage(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           storage: nil,
+		           enabled: false,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -540,7 +539,7 @@ func TestWithBlobStorage(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           storage: nil,
+		           enabled: false,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -566,7 +565,7 @@ func TestWithBlobStorage(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithBlobStorage(test.args.storage)
+			   got := WithMultipart(test.args.enabled)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -578,7 +577,7 @@ func TestWithBlobStorage(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithBlobStorage(test.args.storage)
+			   got := WithMultipart(test.args.enabled)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(tt.want, obj); err != nil {

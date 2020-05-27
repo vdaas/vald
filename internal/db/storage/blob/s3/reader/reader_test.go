@@ -14,18 +14,15 @@
 // limitations under the License.
 //
 
-// Package service
-package service
+package reader
 
 import (
 	"context"
 	"reflect"
 	"testing"
-	"time"
 
-	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/file/watch"
 	"go.uber.org/goleak"
 )
 
@@ -34,104 +31,17 @@ func TestNew(t *testing.T) {
 		opts []Option
 	}
 	type want struct {
-		wantSo StorageObserver
-		err    error
+		want Reader
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, StorageObserver, error) error
+		checkFunc  func(want, Reader) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotSo StorageObserver, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(gotSo, w.wantSo) {
-			return errors.Errorf("got = %v, want %v", gotSo, w.wantSo)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			gotSo, err := New(test.args.opts...)
-			if err := test.checkFunc(test.want, gotSo, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_observer_Start(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
-	type fields struct {
-		w                    watch.Watcher
-		dirs                 []string
-		eg                   errgroup.Group
-		checkDuration        time.Duration
-		longestCheckDuration time.Duration
-	}
-	type want struct {
-		want <-chan error
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, <-chan error, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got <-chan error, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
+	defaultCheckFunc := func(w want, got Reader) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
@@ -143,14 +53,7 @@ func Test_observer_Start(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           w: nil,
-		           dirs: nil,
-		           eg: nil,
-		           checkDuration: nil,
-		           longestCheckDuration: nil,
+		           opts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -163,14 +66,7 @@ func Test_observer_Start(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           w: nil,
-		           dirs: nil,
-		           eg: nil,
-		           checkDuration: nil,
-		           longestCheckDuration: nil,
+		           opts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -191,16 +87,9 @@ func Test_observer_Start(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			o := &observer{
-				w:                    test.fields.w,
-				dirs:                 test.fields.dirs,
-				eg:                   test.fields.eg,
-				checkDuration:        test.fields.checkDuration,
-				longestCheckDuration: test.fields.longestCheckDuration,
-			}
 
-			got, err := o.Start(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			got := New(test.args.opts...)
+			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -208,16 +97,15 @@ func Test_observer_Start(t *testing.T) {
 	}
 }
 
-func Test_observer_backup(t *testing.T) {
+func Test_reader_Open(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
-		w                    watch.Watcher
-		dirs                 []string
-		eg                   errgroup.Group
-		checkDuration        time.Duration
-		longestCheckDuration time.Duration
+		service *s3.S3
+		bucket  string
+		key     string
+		resp    *s3.GetObjectOutput
 	}
 	type want struct {
 		err error
@@ -246,11 +134,10 @@ func Test_observer_backup(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
-		           w: nil,
-		           dirs: nil,
-		           eg: nil,
-		           checkDuration: nil,
-		           longestCheckDuration: nil,
+		           service: nil,
+		           bucket: "",
+		           key: "",
+		           resp: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -266,11 +153,10 @@ func Test_observer_backup(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
-		           w: nil,
-		           dirs: nil,
-		           eg: nil,
-		           checkDuration: nil,
-		           longestCheckDuration: nil,
+		           service: nil,
+		           bucket: "",
+		           key: "",
+		           resp: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -291,15 +177,14 @@ func Test_observer_backup(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			o := &observer{
-				w:                    test.fields.w,
-				dirs:                 test.fields.dirs,
-				eg:                   test.fields.eg,
-				checkDuration:        test.fields.checkDuration,
-				longestCheckDuration: test.fields.longestCheckDuration,
+			r := &reader{
+				service: test.fields.service,
+				bucket:  test.fields.bucket,
+				key:     test.fields.key,
+				resp:    test.fields.resp,
 			}
 
-			err := o.backup(test.args.ctx)
+			err := r.Open(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -308,37 +193,121 @@ func Test_observer_backup(t *testing.T) {
 	}
 }
 
-func Test_observer_startTicker(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
+func Test_reader_Close(t *testing.T) {
 	type fields struct {
-		w                    watch.Watcher
-		dirs                 []string
-		eg                   errgroup.Group
-		checkDuration        time.Duration
-		longestCheckDuration time.Duration
-		storage              BlobStorage
+		service *s3.S3
+		bucket  string
+		key     string
+		resp    *s3.GetObjectOutput
 	}
 	type want struct {
-		want <-chan error
-		err  error
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           service: nil,
+		           bucket: "",
+		           key: "",
+		           resp: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           service: nil,
+		           bucket: "",
+		           key: "",
+		           resp: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			r := &reader{
+				service: test.fields.service,
+				bucket:  test.fields.bucket,
+				key:     test.fields.key,
+				resp:    test.fields.resp,
+			}
+
+			err := r.Close()
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_reader_Read(t *testing.T) {
+	type args struct {
+		p []byte
+	}
+	type fields struct {
+		service *s3.S3
+		bucket  string
+		key     string
+		resp    *s3.GetObjectOutput
+	}
+	type want struct {
+		wantN int
+		err   error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, <-chan error, error) error
+		checkFunc  func(want, int, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got <-chan error, err error) error {
+	defaultCheckFunc := func(w want, gotN int, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+		if !reflect.DeepEqual(gotN, w.wantN) {
+			return errors.Errorf("got = %v, want %v", gotN, w.wantN)
 		}
 		return nil
 	}
@@ -348,15 +317,13 @@ func Test_observer_startTicker(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           ctx: nil,
+		           p: nil,
 		       },
 		       fields: fields {
-		           w: nil,
-		           dirs: nil,
-		           eg: nil,
-		           checkDuration: nil,
-		           longestCheckDuration: nil,
-		           storage: nil,
+		           service: nil,
+		           bucket: "",
+		           key: "",
+		           resp: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -369,15 +336,13 @@ func Test_observer_startTicker(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           ctx: nil,
+		           p: nil,
 		           },
 		           fields: fields {
-		           w: nil,
-		           dirs: nil,
-		           eg: nil,
-		           checkDuration: nil,
-		           longestCheckDuration: nil,
-		           storage: nil,
+		           service: nil,
+		           bucket: "",
+		           key: "",
+		           resp: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -398,17 +363,15 @@ func Test_observer_startTicker(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			o := &observer{
-				w:                    test.fields.w,
-				dirs:                 test.fields.dirs,
-				eg:                   test.fields.eg,
-				checkDuration:        test.fields.checkDuration,
-				longestCheckDuration: test.fields.longestCheckDuration,
-				storage:              test.fields.storage,
+			r := &reader{
+				service: test.fields.service,
+				bucket:  test.fields.bucket,
+				key:     test.fields.key,
+				resp:    test.fields.resp,
 			}
 
-			got, err := o.startTicker(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			gotN, err := r.Read(test.args.p)
+			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 

@@ -18,9 +18,16 @@ package s3
 
 import (
 	"context"
+	"io"
+	"reflect"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
+	"go.uber.org/goleak"
 )
 
 const (
@@ -126,4 +133,463 @@ func TestS3Read(t *testing.T) {
 	}
 
 	t.Logf("read: %s", string(rbuf))
+}
+
+func TestNew(t *testing.T) {
+	type args struct {
+		opts []Option
+	}
+	type want struct {
+		want blob.Bucket
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, blob.Bucket) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got blob.Bucket) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           opts: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           opts: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := New(test.args.opts...)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_s3client_Open(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	type fields struct {
+		session         *session.Session
+		service         *s3.S3
+		bucket          string
+		multipartUpload bool
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           session: nil,
+		           service: nil,
+		           bucket: "",
+		           multipartUpload: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           session: nil,
+		           service: nil,
+		           bucket: "",
+		           multipartUpload: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &s3client{
+				session:         test.fields.session,
+				service:         test.fields.service,
+				bucket:          test.fields.bucket,
+				multipartUpload: test.fields.multipartUpload,
+			}
+
+			err := s.Open(test.args.ctx)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_s3client_Close(t *testing.T) {
+	type fields struct {
+		session         *session.Session
+		service         *s3.S3
+		bucket          string
+		multipartUpload bool
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           session: nil,
+		           service: nil,
+		           bucket: "",
+		           multipartUpload: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           session: nil,
+		           service: nil,
+		           bucket: "",
+		           multipartUpload: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &s3client{
+				session:         test.fields.session,
+				service:         test.fields.service,
+				bucket:          test.fields.bucket,
+				multipartUpload: test.fields.multipartUpload,
+			}
+
+			err := s.Close()
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_s3client_Reader(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		key string
+	}
+	type fields struct {
+		session         *session.Session
+		service         *s3.S3
+		bucket          string
+		multipartUpload bool
+	}
+	type want struct {
+		want io.ReadCloser
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, io.ReadCloser, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got io.ReadCloser, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           key: "",
+		       },
+		       fields: fields {
+		           session: nil,
+		           service: nil,
+		           bucket: "",
+		           multipartUpload: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           key: "",
+		           },
+		           fields: fields {
+		           session: nil,
+		           service: nil,
+		           bucket: "",
+		           multipartUpload: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &s3client{
+				session:         test.fields.session,
+				service:         test.fields.service,
+				bucket:          test.fields.bucket,
+				multipartUpload: test.fields.multipartUpload,
+			}
+
+			got, err := s.Reader(test.args.ctx, test.args.key)
+			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_s3client_Writer(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		key string
+	}
+	type fields struct {
+		session         *session.Session
+		service         *s3.S3
+		bucket          string
+		multipartUpload bool
+	}
+	type want struct {
+		want io.WriteCloser
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, io.WriteCloser, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got io.WriteCloser, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           key: "",
+		       },
+		       fields: fields {
+		           session: nil,
+		           service: nil,
+		           bucket: "",
+		           multipartUpload: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           key: "",
+		           },
+		           fields: fields {
+		           session: nil,
+		           service: nil,
+		           bucket: "",
+		           multipartUpload: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &s3client{
+				session:         test.fields.session,
+				service:         test.fields.service,
+				bucket:          test.fields.bucket,
+				multipartUpload: test.fields.multipartUpload,
+			}
+
+			got, err := s.Writer(test.args.ctx, test.args.key)
+			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
 }
