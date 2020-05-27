@@ -534,10 +534,10 @@ func (n *ngt) Close() {
 		// ebuf                C.NGTError
 		// index               C.NGTIndex
 		// ospace              C.NGTObjectSpace
-		C.free(unsafe.Pointer(&n.dimension))
-		C.free(unsafe.Pointer(&n.prop))
-		C.free(unsafe.Pointer(&n.ebuf))
+		// C.free(unsafe.Pointer(&n.dimension))
+		// C.free(unsafe.Pointer(&n.prop))
+		// C.free(unsafe.Pointer(&n.ebuf))
 		// C.free(unsafe.Pointer(&n.index))
-		C.free(unsafe.Pointer(&n.ospace))
+		// C.free(unsafe.Pointer(&n.ospace))
 	}
 }
