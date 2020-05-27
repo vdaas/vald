@@ -19,6 +19,7 @@ package compress
 
 import (
 	"bytes"
+	"io"
 	"reflect"
 
 	"github.com/klauspost/compress/zstd"
@@ -85,4 +86,12 @@ func (z *zstdCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	}
 
 	return vec, nil
+}
+
+func (z *zstdCompressor) Reader(src io.Reader) (io.Reader, error) {
+	return zstd.NewReader(src)
+}
+
+func (z *zstdCompressor) Writer(dst io.Writer) (io.WriteCloser, error) {
+	return zstd.NewWriter(dst, z.eoptions...)
 }

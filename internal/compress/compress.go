@@ -17,7 +17,11 @@
 // Package compress provides compressor interface
 package compress
 
+import "io"
+
 type Compressor interface {
 	CompressVector(vector []float32) (bytes []byte, err error)
 	DecompressVector(bytes []byte) (vector []float32, err error)
+	Reader(src io.Reader) (io.Reader, error)
+	Writer(dst io.Writer) (io.WriteCloser, error)
 }

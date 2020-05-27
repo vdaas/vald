@@ -86,3 +86,11 @@ func (l *lz4Compressor) DecompressVector(bs []byte) ([]float32, error) {
 
 	return vec, nil
 }
+
+func (l *lz4Compressor) Reader(src io.Reader) (io.Reader, error) {
+	return lz4.NewReader(src), nil
+}
+
+func (l *lz4Compressor) Writer(dst io.Writer) (io.WriteCloser, error) {
+	return lz4.NewWriter(dst), nil
+}

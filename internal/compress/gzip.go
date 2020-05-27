@@ -86,3 +86,11 @@ func (g *gzipCompressor) DecompressVector(bs []byte) ([]float32, error) {
 
 	return vec, nil
 }
+
+func (g *gzipCompressor) Reader(src io.Reader) (io.Reader, error) {
+	return gzip.NewReader(src)
+}
+
+func (g *gzipCompressor) Writer(dst io.Writer) (io.WriteCloser, error) {
+	return gzip.NewWriterLevel(dst, g.compressionLevel)
+}

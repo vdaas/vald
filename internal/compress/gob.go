@@ -20,6 +20,7 @@ package compress
 import (
 	"bytes"
 	"encoding/gob"
+	"io"
 	"reflect"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -57,4 +58,50 @@ func (g *gobCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	}
 
 	return vector, nil
+}
+
+func (g *gobCompressor) Reader(src io.Reader) (io.Reader, error) {
+	return &gobReader{
+		src:     src,
+		decoder: gob.NewDecoder(src),
+	}, nil
+}
+
+func (g *gobCompressor) Writer(dst io.Writer) (io.WriteCloser, error) {
+	return &gobWriter{
+		dst:     dst,
+		encoder: gob.NewEncoder(dst),
+	}, nil
+}
+
+type gobReader struct {
+	src     io.Reader
+	decoder *gob.Decoder
+}
+
+func (gr *gobReader) Read(p []byte) (n int, err error) {
+	err = gr.decoder.Decode(&p)
+	if err != nil {
+		return 0, err
+	}
+
+	return len(p), nil
+}
+
+type gobWriter struct {
+	dst     io.Writer
+	encoder *gob.Encoder
+}
+
+func (gw *gobWriter) Write(p []byte) (n int, err error) {
+	err = gw.encoder.Encode(&p)
+	if err != nil {
+		return 0, err
+	}
+
+	return len(p), nil
+}
+
+func (gw *gobWriter) Close() error {
+	return nil
 }
