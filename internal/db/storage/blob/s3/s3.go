@@ -31,6 +31,8 @@ type s3client struct {
 	session *session.Session
 	service *s3.S3
 	bucket  string
+
+	multipartUpload bool
 }
 
 func New(opts ...Option) blob.Bucket {
@@ -67,6 +69,7 @@ func (s *s3client) Writer(ctx context.Context, key string) (io.WriteCloser, erro
 		writer.WithService(s.service),
 		writer.WithBucket(s.bucket),
 		writer.WithKey(key),
+		writer.WithMultipart(s.multipartUpload),
 	)
 
 	return w, w.Open(ctx)

@@ -49,6 +49,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var (
 		so service.StorageObserver
+		bs service.BlobStorage
 	)
 
 	var obs observability.Observability
@@ -60,15 +61,35 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		// TODO observe something
 		_ = obs
 	}
+	bs, err = service.NewBlobStorage(
+		service.WithBlobStorageType(cfg.AgentSidecar.BlobStorage.StorageType),
+		service.WithBlobStorageBucketName(cfg.AgentSidecar.BlobStorage.Bucket),
+		service.WithBlobStorageFilename(cfg.AgentSidecar.Filename),
+		service.WithBlobStorageFilenameSuffix(cfg.AgentSidecar.FilenameSuffix),
+		service.WithBlobStorageEndpoint(cfg.AgentSidecar.BlobStorage.S3.Endpoint),
+		service.WithBlobStorageRegion(cfg.AgentSidecar.BlobStorage.S3.Region),
+		service.WithBlobStorageAccessKey(cfg.AgentSidecar.BlobStorage.S3.AccessKey),
+		service.WithBlobStorageSecretAccessKey(cfg.AgentSidecar.BlobStorage.S3.SecretAccessKey),
+		service.WithBlobStorageToken(cfg.AgentSidecar.BlobStorage.S3.Token),
+		service.WithBlobStorageMultipartUpload(cfg.AgentSidecar.BlobStorage.S3.MultipartUpload),
+		service.WithBlobStorageCompressAlgorithm(cfg.AgentSidecar.Compress.CompressAlgorithm),
+		service.WithBlobStorageCompressionLevel(cfg.AgentSidecar.Compress.CompressionLevel),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	so, err = service.New(
 		service.WithErrGroup(eg),
 		service.WithBackupDuration(cfg.AgentSidecar.AutoBackupDuration),
 		service.WithBackupDurationLimit(cfg.AgentSidecar.AutoBackupDurationLimit),
 		service.WithDirs(cfg.AgentSidecar.WatchPaths...),
+		service.WithBlobStorage(bs),
 	)
 	if err != nil {
 		return nil, err
 	}
+
 	g := handler.New(handler.WithStorageObserver(so))
 
 	grpcServerOptions := []server.Option{

@@ -30,8 +30,14 @@ type AgentSidecar struct {
 	// Filename represent backup filename
 	Filename string `yaml:"filename" json:"filename"`
 
+	// FilenameSuffix represent suffix of backup filename
+	FilenameSuffix string `yaml:"filename_suffix" json:"filename_suffix"`
+
 	// BlobStorage represent blob storage configurations
 	BlobStorage *Blob `yaml:"blob_storage" json:"blob_storage"`
+
+	// Compress represent compression configurations
+	Compress *CompressCore `yaml:"compress" json:"compress"`
 }
 
 func (s *AgentSidecar) Bind() *AgentSidecar {
@@ -39,11 +45,18 @@ func (s *AgentSidecar) Bind() *AgentSidecar {
 	s.AutoBackupDuration = GetActualValue(s.AutoBackupDuration)
 	s.AutoBackupDurationLimit = GetActualValue(s.AutoBackupDurationLimit)
 	s.Filename = GetActualValue(s.Filename)
+	s.FilenameSuffix = GetActualValue(s.FilenameSuffix)
 
 	if s.BlobStorage != nil {
 		s.BlobStorage = s.BlobStorage.Bind()
 	} else {
 		s.BlobStorage = new(Blob)
+	}
+
+	if s.Compress != nil {
+		s.Compress = s.Compress.Bind()
+	} else {
+		s.Compress = new(CompressCore)
 	}
 
 	return s

@@ -19,8 +19,10 @@ package service
 
 import (
 	"context"
+	"io"
 	"reflect"
 
+	"github.com/vdaas/vald/internal/compress"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3"
@@ -30,19 +32,28 @@ import (
 
 type BlobStorage interface {
 	Start(ctx context.Context) (<-chan error, error)
+	Reader(ctx context.Context) (io.Reader, error)
+	Writer(ctx context.Context) (io.WriteCloser, error)
 }
 
 type bs struct {
-	storageType config.BlobStorageType
+	storageType string
 	bucketName  string
+	filename    string
+	suffix      string
 
 	endpoint        string
 	region          string
 	accessKey       string
 	secretAccessKey string
 	token           string
+	multipartUpload bool
 
-	bucket blob.Bucket
+	compressAlgorithm string
+	compressionLevel  int
+
+	bucket     blob.Bucket
+	compressor compress.Compressor
 }
 
 func NewBlobStorage(opts ...BlobStorageOption) (BlobStorage, error) {
@@ -53,11 +64,44 @@ func NewBlobStorage(opts ...BlobStorageOption) (BlobStorage, error) {
 		}
 	}
 
+	err := b.initCompressor()
+	if err != nil {
+		return nil, err
+	}
+
 	return b, nil
 }
 
+func (b *bs) initCompressor() (err error) {
+	// Without compress
+	if b.compressAlgorithm == "" {
+		return nil
+	}
+
+	switch config.CompressAlgorithm(b.compressAlgorithm) {
+	case config.GOB:
+		b.compressor, err = compress.NewGob()
+	case config.GZIP:
+		b.compressor, err = compress.NewGzip(
+			compress.WithGzipCompressionLevel(b.compressionLevel),
+		)
+	case config.LZ4:
+		b.compressor, err = compress.NewLZ4(
+			compress.WithLZ4CompressionLevel(b.compressionLevel),
+		)
+	case config.ZSTD:
+		b.compressor, err = compress.NewZstd(
+			compress.WithZstdCompressionLevel(b.compressionLevel),
+		)
+	default:
+		return errors.ErrCompressorNameNotFound(b.compressAlgorithm)
+	}
+
+	return err
+}
+
 func (b *bs) initBucket() (err error) {
-	switch b.storageType {
+	switch config.AtoBST(b.storageType) {
 	case config.S3:
 		s, err := session.New(
 			session.WithEndpoint(b.endpoint),
@@ -73,8 +117,8 @@ func (b *bs) initBucket() (err error) {
 		b.bucket = s3.New(
 			s3.WithSession(s),
 			s3.WithBucket(b.bucketName),
+			s3.WithMultipartUpload(b.multipartUpload),
 		)
-
 	default:
 		return errors.ErrInvalidStorageType
 	}
@@ -83,5 +127,44 @@ func (b *bs) initBucket() (err error) {
 }
 
 func (b *bs) Start(ctx context.Context) (<-chan error, error) {
-	return nil, nil
+	ech := make(chan error, 1)
+
+	err := b.initBucket()
+	if err != nil {
+		return nil, err
+	}
+
+	return ech, nil
+}
+
+func (b *bs) Reader(ctx context.Context) (r io.Reader, err error) {
+	r, err = b.bucket.Reader(ctx, b.filename+b.suffix)
+	if err != nil {
+		return nil, err
+	}
+
+	if b.compressor != nil {
+		r, err = b.compressor.Reader(r)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return r, nil
+}
+
+func (b *bs) Writer(ctx context.Context) (w io.WriteCloser, err error) {
+	w, err = b.bucket.Writer(ctx, b.filename+b.suffix)
+	if err != nil {
+		return nil, err
+	}
+
+	if b.compressor != nil {
+		w, err = b.compressor.Writer(w)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return w, nil
 }

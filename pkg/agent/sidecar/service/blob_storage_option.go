@@ -17,17 +17,19 @@
 // Package service
 package service
 
-import "github.com/vdaas/vald/internal/config"
-
 type BlobStorageOption func(b *bs) error
 
 var (
-	defaultBlobStorageOpts = []BlobStorageOption{}
+	defaultBlobStorageOpts = []BlobStorageOption{
+		WithBlobStorageCompressAlgorithm("gzip"),
+		WithBlobStorageCompressionLevel(-1),
+		WithBlobStorageFilenameSuffix(".tar.gz"),
+	}
 )
 
 func WithBlobStorageType(bst string) BlobStorageOption {
 	return func(b *bs) error {
-		b.storageType = config.AtoBST(bst)
+		b.storageType = bst
 		return nil
 	}
 }
@@ -35,6 +37,20 @@ func WithBlobStorageType(bst string) BlobStorageOption {
 func WithBlobStorageBucketName(bn string) BlobStorageOption {
 	return func(b *bs) error {
 		b.bucketName = bn
+		return nil
+	}
+}
+
+func WithBlobStorageFilename(fn string) BlobStorageOption {
+	return func(b *bs) error {
+		b.filename = fn
+		return nil
+	}
+}
+
+func WithBlobStorageFilenameSuffix(sf string) BlobStorageOption {
+	return func(b *bs) error {
+		b.suffix = sf
 		return nil
 	}
 }
@@ -70,6 +86,27 @@ func WithBlobStorageSecretAccessKey(sak string) BlobStorageOption {
 func WithBlobStorageToken(tk string) BlobStorageOption {
 	return func(b *bs) error {
 		b.token = tk
+		return nil
+	}
+}
+
+func WithBlobStorageMultipartUpload(enabled bool) BlobStorageOption {
+	return func(b *bs) error {
+		b.multipartUpload = enabled
+		return nil
+	}
+}
+
+func WithBlobStorageCompressAlgorithm(al string) BlobStorageOption {
+	return func(b *bs) error {
+		b.compressAlgorithm = al
+		return nil
+	}
+}
+
+func WithBlobStorageCompressionLevel(level int) BlobStorageOption {
+	return func(b *bs) error {
+		b.compressionLevel = level
 		return nil
 	}
 }

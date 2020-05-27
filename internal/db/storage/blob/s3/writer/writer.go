@@ -90,10 +90,12 @@ func (w *writer) upload(p []byte) (n int, err error) {
 		Body:   bytes.NewReader(p),
 	}
 
-	_, err = uploader.UploadWithContext(w.ctx, input)
+	res, err := uploader.UploadWithContext(w.ctx, input)
 	if err != nil {
 		return 0, err
 	}
+
+	log.Debugf("s3 upload completed: %s", res.Location)
 
 	return len(p), nil
 }

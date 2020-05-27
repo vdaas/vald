@@ -18,7 +18,11 @@
 package service
 
 import (
+	"archive/tar"
 	"context"
+	"io"
+	"os"
+	"path/filepath"
 	"reflect"
 	"time"
 
@@ -40,6 +44,8 @@ type observer struct {
 	eg                   errgroup.Group
 	checkDuration        time.Duration
 	longestCheckDuration time.Duration
+
+	storage BlobStorage
 }
 
 func New(opts ...Option) (so StorageObserver, err error) {
@@ -79,10 +85,52 @@ func New(opts ...Option) (so StorageObserver, err error) {
 }
 
 func (o *observer) Start(ctx context.Context) (<-chan error, error) {
+	ech := make(chan error, 2)
+
+	var tech, bech <-chan error
+	var err error
+
+	tech, err = o.startTicker(ctx)
+	if err != nil {
+		close(ech)
+		return nil, err
+	}
+
+	bech, err = o.storage.Start(ctx)
+	if err != nil {
+		close(ech)
+		return nil, err
+	}
+
+	o.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(ech)
+
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case err = <-tech:
+			case err = <-bech:
+			}
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case ech <- err:
+				}
+			}
+		}
+	}))
+
+	return ech, nil
+}
+
+func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 	wech, err := o.w.Start(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	ech := make(chan error, 100)
 	o.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
@@ -127,17 +175,66 @@ func (o *observer) Start(ctx context.Context) (<-chan error, error) {
 			}
 		}
 	}))
+
 	return ech, nil
 }
 
-func (o *observer) backup(ctx context.Context) (err error) {
+func (o *observer) backup(ctx context.Context) error {
 	ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/StorageObserver.backup")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	// TODO implement backup logic here
+
+	sw, err := o.storage.Writer(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if e := sw.Close(); e != nil {
+			log.Error(e)
+		}
+	}()
+
+	tw := tar.NewWriter(sw)
+	defer func() {
+		if e := tw.Close(); e != nil {
+			log.Error(e)
+		}
+	}()
+
+	for _, dir := range o.dirs {
+		err = filepath.Walk(dir, func(file string, fi os.FileInfo, err error) error {
+			header, err := tar.FileInfoHeader(fi, file)
+			if err != nil {
+				return err
+			}
+
+			header.Name = filepath.ToSlash(file)
+
+			err = tw.WriteHeader(header)
+			if err != nil {
+				return err
+			}
+
+			if !fi.IsDir() {
+				data, err := os.Open(file)
+				if err != nil {
+					return err
+				}
+				_, err = io.Copy(tw, data)
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

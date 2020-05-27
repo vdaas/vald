@@ -21,7 +21,9 @@ import "github.com/aws/aws-sdk-go/aws/session"
 type Option func(s *s3client)
 
 var (
-	defaultOpts = []Option{}
+	defaultOpts = []Option{
+		WithMultipartUpload(false),
+	}
 )
 
 func WithSession(sess *session.Session) Option {
@@ -35,5 +37,11 @@ func WithSession(sess *session.Session) Option {
 func WithBucket(bucket string) Option {
 	return func(s *s3client) {
 		s.bucket = bucket
+	}
+}
+
+func WithMultipartUpload(enabled bool) Option {
+	return func(s *s3client) {
+		s.multipartUpload = enabled
 	}
 }

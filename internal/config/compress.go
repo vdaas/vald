@@ -56,12 +56,22 @@ func CompressAlgorithm(ca string) compressAlgorithm {
 	return 0
 }
 
-type Compressor struct {
+type CompressCore struct {
 	// CompressorAlgorithm represents compression algorithm type
 	CompressAlgorithm string `json:"compress_algorithm" yaml:"compress_algorithm"`
 
 	// CompressionLevel represents compression level
 	CompressionLevel int `json:"compression_level" yaml:"compression_level"`
+}
+
+func (c *CompressCore) Bind() *CompressCore {
+	c.CompressAlgorithm = GetActualValue(c.CompressAlgorithm)
+
+	return c
+}
+
+type Compressor struct {
+	CompressCore `json:",inline" yaml:",inline"`
 
 	// ConcurrentLimit represents limitation of compression worker concurrency
 	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
@@ -71,7 +81,8 @@ type Compressor struct {
 }
 
 func (c *Compressor) Bind() *Compressor {
-	c.CompressAlgorithm = GetActualValue(c.CompressAlgorithm)
+	c.CompressCore = *c.CompressCore.Bind()
+
 	c.QueueCheckDuration = GetActualValue(c.QueueCheckDuration)
 
 	return c

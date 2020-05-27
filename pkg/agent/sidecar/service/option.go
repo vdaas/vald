@@ -84,3 +84,12 @@ func WithDirs(dirs ...string) Option {
 		return nil
 	}
 }
+
+func WithBlobStorage(storage BlobStorage) Option {
+	return func(o *observer) error {
+		if storage != nil {
+			o.storage = storage
+		}
+		return nil
+	}
+}
