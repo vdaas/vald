@@ -77,6 +77,5 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /etc/passwd /etc/passwd
 # Copy our static executable
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
-COPY --from=builder /tmp/config.yaml /etc/server/config.yaml
 
 ENTRYPOINT ["/go/bin/sidecar"]

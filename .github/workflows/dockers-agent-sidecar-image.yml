@@ -1,4 +1,4 @@
-name: 'Build docker image: agent-ngt'
+name: 'Build docker image: agent-sidecar'
 on:
   push:
     branches:
@@ -13,24 +13,22 @@ on:
       - '!internal/db/**'
       - '!internal/k8s/**'
       - 'apis/grpc/**'
-      - 'pkg/agent/core/ngt/**'
-      - 'cmd/agent/core/ngt/**'
+      - 'pkg/agent/sidecar/**'
+      - 'cmd/agent/sidecar/**'
       - 'dockers/base/Dockerfile'
-      - 'dockers/agent/core/ngt/Dockerfile'
+      - 'dockers/agent/sidecar/Dockerfile'
       - 'versions/GO_VERSION'
-      - 'versions/NGT_VERSION'
   pull_request:
     paths:
       - 'internal/**'
       - '!internal/db/**'
       - '!internal/k8s/**'
       - 'apis/grpc/**'
-      - 'pkg/agent/core/ngt/**'
-      - 'cmd/agent/core/ngt/**'
+      - 'pkg/agent/sidecar/**'
+      - 'cmd/agent/sidecar/**'
       - 'dockers/base/Dockerfile'
-      - 'dockers/agent/core/ngt/Dockerfile'
+      - 'dockers/agent/sidecar/Dockerfile'
       - 'versions/GO_VERSION'
-      - 'versions/NGT_VERSION'
 
 jobs:
   build:
@@ -41,7 +39,7 @@ jobs:
         fetch-depth: 10
     - name: Build the Docker image
       run: |
-        make docker/build/agent-ngt
+        make docker/build/agent-sidecar
     - name: login to DockerHub
       run: |
         echo ${DOCKERHUB_PASS} | docker login --username ${DOCKERHUB_USER} --password-stdin
@@ -51,20 +49,20 @@ jobs:
     - name: push to DockerHub (master)
       if: github.ref == 'refs/heads/master'
       run: |
-        imagename=`make docker/name/agent-ngt`
+        imagename=`make docker/name/agent-sidecar`
         docker tag ${imagename} ${imagename}:nightly
         docker push ${imagename}:nightly
     - name: push to DockerHub (pull request)
       if: github.event_name == 'pull_request'
       run: |
-        imagename=`make docker/name/agent-ngt`
+        imagename=`make docker/name/agent-sidecar`
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
         docker tag ${imagename} ${imagename}:pr-${pr_num}
         docker push ${imagename}:pr-${pr_num}
     - name: push to DockerHub (tags)
       if: startsWith( github.ref, 'refs/tags/')
       run: |
-        imagename=`make docker/name/agent-ngt`
+        imagename=`make docker/name/agent-sidecar`
         docker push ${imagename}:latest
         tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
         docker tag ${imagename} ${imagename}:${tag_name}
@@ -82,7 +80,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: 8398a7/action-slack@v2
         with:
-          author_name: agent-ngt image build
+          author_name: agent-sidecar image build
           status: ${{ env.WORKFLOW_CONCLUSION }}
           only_mention_fail: channel
         env:
