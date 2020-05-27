@@ -11,9 +11,9 @@ We appreciate your help!
   - [Proposal](#Proposal)
   - [Feature Request](#Feature-Request)
   - [Security Issue Report](#Security-Issue-Report)
-- [Contributing Code](#Contributing-Code)
-  - [Before contributing code](#Before-contributing-code)
-  - [How to contributing code](#How-to-contributing-code)
+- [Contributing Source Code](#Contributing-Source-Code)
+  - [Before contributing source code](#Before-contributing-source-code)
+  - [How to contributing source code](#How-to-contributing-source-code)
   - [Branch naming convention](#Branch-naming-convention)
 
 ## Contributing Issue
@@ -80,9 +80,9 @@ We will consider to use another third-party module if the vulnerable module is n
 
 Please submit the security issue report [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fsecurity%2C+priority%2Fmedium%2C+team%2Fcore%2C+team%2Fsre&template=security_issue_report.md&title=)
 
-## Contributing Code
+## Contributing Source Code
 
-### Before contributing code
+### Before contributing source code
 
 Follow these steps to make a contribution to any of our open source repositories:
 
@@ -93,7 +93,7 @@ Follow these steps to make a contribution to any of our open source repositories
         git config --global user.email "your_email@example.com"
 
 
-### How to contributing code
+### How to contributing source code
 
 1. Fork the repository ( https://github.com/vdaas/vald/fork )
 2. Create your feature branch (git checkout -b [`[type]/[area]/[description]`](#Branch-naming-convention))
