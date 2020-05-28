@@ -19,19 +19,25 @@
 <!--[![codecov](https://img.shields.io/codecov/c/github/vdaas/vald.svg?style=flat-square&logo=codecov)](https://codecov.io/gh/vdaas/vald) -->
 
 ## What is Vald?
-Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.<br>
-Vald is designed and implemented based on the Cloud-Native architecture. <br>
-It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors.<br>
-Vald has automatic vector indexing and index backup, and horizontal scaling which made for searching from billions of feature vector data.<br>
-Vald is easy to use, feature-rich and highly customizable as you needed.<br>
+
+Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.
+
+Vald is designed and implemented based on Cloud-Native architecture.
+
+It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors.
+
+Vald has automatic vector indexing and index backup, and horizontal scaling which made for searching from billions of feature vector data.
+
+Vald is easy to use, feature-rich and highly customizable as you needed.
+
 Go to [Get Started](./docs/user/get-started.md) page to try out Vald :)
 
 (If you are interested in ANN benchmarks, please refer to [the official website](http://ann-benchmarks.com/).)<br>
 
 ### Main Features
 
-- Asynchronize Auto Indexing
-    - Usually the graph requires locking during indexing, which cause stop-the-world. But Vald uses distributed index graph so it continues to work during indexing.
+- Asynchronous Auto Indexing
+    - Usually the graph requires locking during indexing, which causes stop-the-world. But Vald uses distributed index graphs so it continues to work during indexing.
 
 - Customizable Ingress/Egress Filtering
     - Vald implements it's own highly customizable Ingress/Egress filter.
@@ -40,13 +46,13 @@ Go to [Get Started](./docs/user/get-started.md) page to try out Vald :)
         - Egress Filter: rerank or filter the searching result with your own algorithm.
 
 - Cloud-native based vector searching engine
-    - Horizontal scalable on memory and cpu for your demand.
+    - Horizontal scalable on memory and CPU for your demand.
 
-- Auto Indexing Backup
-    - Vald has auto index backup feature using MySQL + Redis or Cassandra which enables disaster recovery.
+- Auto Backup for Index data
+    - Vald has a feature to store the backup of the index data using MySQL or Cassandra which enables disaster recovery.
 
 - Distributed Indexing
-    - Vald distribute vector index to multiple agent, each agent stores different index.
+    - Vald distribute vector index to multiple agents, each agent stores different index.
 
 - Index Replication
     - Vald stores each index in multiple agents which enables index replicas.
@@ -56,10 +62,12 @@ Go to [Get Started](./docs/user/get-started.md) page to try out Vald :)
     - Vald can be easily installed in a few steps.
 
 - Highly customizable
-    - You can configure the number of vector dimension, the number of replica and etc.
+    - You can configure the number of vector dimensions, the number of replica and etc.
 
 - Multi language supported
-    - Golang, Java, Nodejs and python is supported.
+    - Golang, Java, Clojure, Node.js, and Python client library are supported.
+    - gRPC APIs can be triggered by any programming languages which support gRPC.
+    - REST API is also supported.```
 
 ## Requirement
 
