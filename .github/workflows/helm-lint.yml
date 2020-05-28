@@ -2,7 +2,7 @@ name: 'Run Helm lint'
 on:
   pull_request:
     paths:
-      - 'charts'
+      - 'charts/**'
 
 jobs:
   helm-lint:
@@ -18,9 +18,15 @@ jobs:
       - name: Helm version
         run: |
           helm version
+      - name: Generate schema for charts/vald
+        run: |
+          make helm/schema/vald
       - name: Run lint for charts/vald
         run: |
           helm lint charts/vald
+      - name: Generate schema for charts/vald-helm-operator
+        run: |
+          make helm/schema/vald-helm-operator
       - name: Run lint for charts/vald-helm-operator
         run: |
           helm lint charts/vald-helm-operator

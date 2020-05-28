@@ -23,7 +23,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/vdaas/vald/apis/grpc/agent"
+	agent "github.com/vdaas/vald/apis/grpc/agent/core"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"

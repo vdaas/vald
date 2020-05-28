@@ -20,7 +20,7 @@ package grpc
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/agent"
+	agent "github.com/vdaas/vald/apis/grpc/agent/core"
 	"github.com/vdaas/vald/internal/client"
 	"github.com/vdaas/vald/internal/net/grpc"
 )

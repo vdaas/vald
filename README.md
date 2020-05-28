@@ -111,6 +111,8 @@ Write example here
 <img src="./assets/image/svg/Vald Architecture Overview.svg" width="100%">
 </div>
 
+Please refer [here](./docs/overview/architecture.md) for more details of the architecture overview in the future.
+
 ## Development
 
 Before your first commit to this repository, it is strongly recommended to run the commands below.
@@ -133,6 +135,7 @@ Please read the [contribution guide](https://github.com/vdaas/vald/blob/master/C
 
 - [hlts2](https://github.com/hlts2)
 - [vankichi](https://github.com/vankichi)
+- [kevindiu](https://github.com/kevindiu)
 
 ## LICENSE
 

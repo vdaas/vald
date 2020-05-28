@@ -51,7 +51,7 @@ spec:
         profefe.com/port: "6060"
         profefe.com/service: vald-agent-ngt
       # annotations:
-      #   checksum/configmap: b505e1c625082fbbd5b2b2f6fa934b7dfcefe6ef0a3956aaef1422285a67f31b
+      #   checksum/configmap: d62feea39f02ad4ae36174e20bb277501cdc8bc45b2827accad869e14feeeb05
     spec:
       affinity:
         nodeAffinity:
