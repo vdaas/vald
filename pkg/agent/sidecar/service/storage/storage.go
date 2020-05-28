@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-// Package service
-package service
+// Package storage provides blob storage service
+package storage
 
 import (
 	"context"
@@ -31,7 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-type BlobStorage interface {
+type Storage interface {
 	Start(ctx context.Context) (<-chan error, error)
 	Reader(ctx context.Context) (io.Reader, error)
 	Writer(ctx context.Context) (io.WriteCloser, error)
@@ -58,9 +58,9 @@ type bs struct {
 	compressor compress.Compressor
 }
 
-func NewBlobStorage(opts ...BlobStorageOption) (BlobStorage, error) {
+func New(opts ...Option) (Storage, error) {
 	b := new(bs)
-	for _, opt := range append(defaultBlobStorageOpts, opts...) {
+	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(b); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

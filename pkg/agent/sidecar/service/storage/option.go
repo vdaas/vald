@@ -14,107 +14,107 @@
 // limitations under the License.
 //
 
-// Package service
-package service
+// Package storage provides blob storage service
+package storage
 
 import "github.com/vdaas/vald/internal/errgroup"
 
-type BlobStorageOption func(b *bs) error
+type Option func(b *bs) error
 
 var (
-	defaultBlobStorageOpts = []BlobStorageOption{
-		WithBlobStorageErrGroup(errgroup.Get()),
-		WithBlobStorageCompressAlgorithm("gzip"),
-		WithBlobStorageCompressionLevel(-1),
-		WithBlobStorageFilenameSuffix(".tar.gz"),
+	defaultOpts = []Option{
+		WithErrGroup(errgroup.Get()),
+		WithCompressAlgorithm("gzip"),
+		WithCompressionLevel(-1),
+		WithFilenameSuffix(".tar.gz"),
 	}
 )
 
-func WithBlobStorageErrGroup(eg errgroup.Group) BlobStorageOption {
+func WithErrGroup(eg errgroup.Group) Option {
 	return func(b *bs) error {
 		b.eg = eg
 		return nil
 	}
 }
 
-func WithBlobStorageType(bst string) BlobStorageOption {
+func WithType(bst string) Option {
 	return func(b *bs) error {
 		b.storageType = bst
 		return nil
 	}
 }
 
-func WithBlobStorageBucketName(bn string) BlobStorageOption {
+func WithBucketName(bn string) Option {
 	return func(b *bs) error {
 		b.bucketName = bn
 		return nil
 	}
 }
 
-func WithBlobStorageFilename(fn string) BlobStorageOption {
+func WithFilename(fn string) Option {
 	return func(b *bs) error {
 		b.filename = fn
 		return nil
 	}
 }
 
-func WithBlobStorageFilenameSuffix(sf string) BlobStorageOption {
+func WithFilenameSuffix(sf string) Option {
 	return func(b *bs) error {
 		b.suffix = sf
 		return nil
 	}
 }
 
-func WithBlobStorageEndpoint(ep string) BlobStorageOption {
+func WithEndpoint(ep string) Option {
 	return func(b *bs) error {
 		b.endpoint = ep
 		return nil
 	}
 }
 
-func WithBlobStorageRegion(rg string) BlobStorageOption {
+func WithRegion(rg string) Option {
 	return func(b *bs) error {
 		b.region = rg
 		return nil
 	}
 }
 
-func WithBlobStorageAccessKey(ak string) BlobStorageOption {
+func WithAccessKey(ak string) Option {
 	return func(b *bs) error {
 		b.accessKey = ak
 		return nil
 	}
 }
 
-func WithBlobStorageSecretAccessKey(sak string) BlobStorageOption {
+func WithSecretAccessKey(sak string) Option {
 	return func(b *bs) error {
 		b.secretAccessKey = sak
 		return nil
 	}
 }
 
-func WithBlobStorageToken(tk string) BlobStorageOption {
+func WithToken(tk string) Option {
 	return func(b *bs) error {
 		b.token = tk
 		return nil
 	}
 }
 
-func WithBlobStorageMultipartUpload(enabled bool) BlobStorageOption {
+func WithMultipartUpload(enabled bool) Option {
 	return func(b *bs) error {
 		b.multipartUpload = enabled
 		return nil
 	}
 }
 
-func WithBlobStorageCompressAlgorithm(al string) BlobStorageOption {
+func WithCompressAlgorithm(al string) Option {
 	return func(b *bs) error {
 		b.compressAlgorithm = al
 		return nil
 	}
 }
 
-func WithBlobStorageCompressionLevel(level int) BlobStorageOption {
+func WithCompressionLevel(level int) Option {
 	return func(b *bs) error {
 		b.compressionLevel = level
 		return nil

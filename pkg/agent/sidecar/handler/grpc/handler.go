@@ -19,11 +19,11 @@ package grpc
 
 import (
 	"github.com/vdaas/vald/apis/grpc/agent/sidecar"
-	"github.com/vdaas/vald/pkg/agent/sidecar/service"
+	"github.com/vdaas/vald/pkg/agent/sidecar/service/observer"
 )
 
 type server struct {
-	so service.StorageObserver
+	so observer.StorageObserver
 }
 
 func New(opts ...Option) sidecar.SidecarServer {

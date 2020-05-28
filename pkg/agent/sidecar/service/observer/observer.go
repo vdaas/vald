@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-// Package service
-package service
+// Package observer provides storage observer
+package observer
 
 import (
 	"archive/tar"
@@ -32,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
 )
 
 type StorageObserver interface {
@@ -45,7 +46,7 @@ type observer struct {
 	checkDuration        time.Duration
 	longestCheckDuration time.Duration
 
-	storage BlobStorage
+	storage storage.Storage
 }
 
 func New(opts ...Option) (so StorageObserver, err error) {
@@ -58,24 +59,8 @@ func New(opts ...Option) (so StorageObserver, err error) {
 	o.w, err = watch.New(
 		watch.WithDirs(o.dir),
 		watch.WithErrGroup(o.eg),
-		watch.WithOnWrite(func(ctx context.Context, name string) error {
-			ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/StorageObserver.watcher.OnWrite")
-			defer func() {
-				if span != nil {
-					span.End()
-				}
-			}()
-			return o.backup(ctx)
-		}),
-		watch.WithOnCreate(func(ctx context.Context, name string) error {
-			ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/StorageObserver.watcher.OnCreate")
-			defer func() {
-				if span != nil {
-					span.End()
-				}
-			}()
-			return o.backup(ctx)
-		}),
+		watch.WithOnWrite(o.onWrite),
+		watch.WithOnCreate(o.onCreate),
 	)
 	if err != nil {
 		return nil, err
@@ -179,8 +164,29 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
+func (o *observer) onWrite(ctx context.Context, name string) error {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/observer/StorageObserver.onWrite")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return o.backup(ctx)
+}
+
+func (o *observer) onCreate(ctx context.Context, name string) error {
+	ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/observer/StorageObserver.onCreate")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	return o.backup(ctx)
+}
+
 func (o *observer) backup(ctx context.Context) error {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/StorageObserver.backup")
+	ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/observer/StorageObserver.backup")
 	defer func() {
 		if span != nil {
 			span.End()

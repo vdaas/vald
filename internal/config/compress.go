@@ -22,7 +22,7 @@ import "strings"
 type compressAlgorithm uint8
 
 const (
-	GOB compressAlgorithm = iota
+	GOB compressAlgorithm = 1 + iota
 	GZIP
 	LZ4
 	ZSTD

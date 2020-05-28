@@ -18,6 +18,9 @@
 package config
 
 type AgentSidecar struct {
+	// Mode represents sidecar mode
+	Mode string `yaml:"mode" json:"mode"`
+
 	// WatchDir represents watch target directory for backup
 	WatchDir string `yaml:"watch_dir" json:"watch_dir"`
 
@@ -41,6 +44,7 @@ type AgentSidecar struct {
 }
 
 func (s *AgentSidecar) Bind() *AgentSidecar {
+	s.Mode = GetActualValue(s.Mode)
 	s.WatchDir = GetActualValue(s.WatchDir)
 	s.AutoBackupDuration = GetActualValue(s.AutoBackupDuration)
 	s.AutoBackupDurationLimit = GetActualValue(s.AutoBackupDurationLimit)

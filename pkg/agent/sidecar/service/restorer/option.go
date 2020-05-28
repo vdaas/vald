@@ -14,79 +14,47 @@
 // limitations under the License.
 //
 
-// Package service
-package service
+// Package restorer provides restorer service
+package restorer
 
 import (
-	"time"
-
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/timeutil"
+	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
 )
 
-type Option func(o *observer) error
+type Option func(r *restorer) error
 
 var (
 	defaultOpts = []Option{
 		WithErrGroup(errgroup.Get()),
-		WithBackupDuration("5m"),
-		WithBackupDurationLimit("1h"),
 	}
 )
 
-func WithBackupDuration(dur string) Option {
-	return func(o *observer) error {
-		if dur == "" {
-			return nil
-		}
-		d, err := timeutil.Parse(dur)
-		if err != nil {
-			d = time.Minute * 5
-		}
-		o.checkDuration = d
-		return nil
-	}
-}
-
-func WithBackupDurationLimit(dur string) Option {
-	return func(o *observer) error {
-		if dur == "" {
-			return nil
-		}
-		d, err := timeutil.Parse(dur)
-		if err != nil {
-			d = time.Hour
-		}
-		o.longestCheckDuration = d
-		return nil
-	}
-}
-
 func WithErrGroup(eg errgroup.Group) Option {
-	return func(o *observer) error {
+	return func(r *restorer) error {
 		if eg != nil {
-			o.eg = eg
+			r.eg = eg
 		}
 		return nil
 	}
 }
 
 func WithDir(dir string) Option {
-	return func(o *observer) error {
+	return func(r *restorer) error {
 		if dir == "" {
 			return nil
 		}
 
-		o.dir = dir
+		r.dir = dir
 
 		return nil
 	}
 }
 
-func WithBlobStorage(storage BlobStorage) Option {
-	return func(o *observer) error {
+func WithBlobStorage(storage storage.Storage) Option {
+	return func(r *restorer) error {
 		if storage != nil {
-			o.storage = storage
+			r.storage = storage
 		}
 		return nil
 	}

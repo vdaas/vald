@@ -18,8 +18,37 @@
 package config
 
 import (
+	"strings"
+
 	"github.com/vdaas/vald/internal/config"
 )
+
+type sidecarMode uint8
+
+const (
+	SIDECAR sidecarMode = 1 + iota
+	INITCONTAINER
+)
+
+func (sm sidecarMode) String() string {
+	switch sm {
+	case SIDECAR:
+		return "sidecar"
+	case INITCONTAINER:
+		return "initcontainer"
+	}
+	return "unknown"
+}
+
+func SidecarMode(sm string) sidecarMode {
+	switch strings.ToLower(sm) {
+	case "sidecar":
+		return SIDECAR
+	case "initcontainer":
+		return INITCONTAINER
+	}
+	return 0
+}
 
 type GlobalConfig = config.GlobalConfig
 
