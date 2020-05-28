@@ -40,7 +40,7 @@ type StorageObserver interface {
 
 type observer struct {
 	w                    watch.Watcher
-	dirs                 []string
+	dir                  string
 	eg                   errgroup.Group
 	checkDuration        time.Duration
 	longestCheckDuration time.Duration
@@ -56,7 +56,7 @@ func New(opts ...Option) (so StorageObserver, err error) {
 		}
 	}
 	o.w, err = watch.New(
-		watch.WithDirs(o.dirs...),
+		watch.WithDirs(o.dir),
 		watch.WithErrGroup(o.eg),
 		watch.WithOnWrite(func(ctx context.Context, name string) error {
 			ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/StorageObserver.watcher.OnWrite")
@@ -204,36 +204,34 @@ func (o *observer) backup(ctx context.Context) error {
 		}
 	}()
 
-	for _, dir := range o.dirs {
-		err = filepath.Walk(dir, func(file string, fi os.FileInfo, err error) error {
-			header, err := tar.FileInfoHeader(fi, file)
-			if err != nil {
-				return err
-			}
-
-			header.Name = filepath.ToSlash(file)
-
-			err = tw.WriteHeader(header)
-			if err != nil {
-				return err
-			}
-
-			if !fi.IsDir() {
-				data, err := os.Open(file)
-				if err != nil {
-					return err
-				}
-				_, err = io.Copy(tw, data)
-				if err != nil {
-					return err
-				}
-			}
-
-			return nil
-		})
+	err = filepath.Walk(o.dir, func(file string, fi os.FileInfo, err error) error {
+		header, err := tar.FileInfoHeader(fi, file)
 		if err != nil {
 			return err
 		}
+
+		header.Name = filepath.ToSlash(file)
+
+		err = tw.WriteHeader(header)
+		if err != nil {
+			return err
+		}
+
+		if !fi.IsDir() {
+			data, err := os.Open(file)
+			if err != nil {
+				return err
+			}
+			_, err = io.Copy(tw, data)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
 	}
 
 	return nil

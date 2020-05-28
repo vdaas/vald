@@ -71,16 +71,14 @@ func WithErrGroup(eg errgroup.Group) Option {
 	}
 }
 
-func WithDirs(dirs ...string) Option {
+func WithDir(dir string) Option {
 	return func(o *observer) error {
-		if len(dirs) == 0 {
+		if dir == "" {
 			return nil
 		}
-		if o.dirs != nil {
-			o.dirs = append(o.dirs, dirs...)
-		} else {
-			o.dirs = dirs
-		}
+
+		o.dir = dir
+
 		return nil
 	}
 }

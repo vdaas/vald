@@ -83,7 +83,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithErrGroup(eg),
 		service.WithBackupDuration(cfg.AgentSidecar.AutoBackupDuration),
 		service.WithBackupDurationLimit(cfg.AgentSidecar.AutoBackupDurationLimit),
-		service.WithDirs(cfg.AgentSidecar.WatchPaths...),
+		service.WithDir(cfg.AgentSidecar.WatchDir),
 		service.WithBlobStorage(bs),
 	)
 	if err != nil {

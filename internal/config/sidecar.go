@@ -18,8 +18,8 @@
 package config
 
 type AgentSidecar struct {
-	// WatchPaths represents watch path list for backup
-	WatchPaths []string `yaml:"watch_paths" json:"watch_paths"`
+	// WatchDir represents watch target directory for backup
+	WatchDir string `yaml:"watch_dir" json:"watch_dir"`
 
 	// AutoBackupDurationLimit represents auto backup duration limit
 	AutoBackupDurationLimit string `yaml:"auto_backup_duration_limit" json:"auto_backup_duration_limit"`
@@ -41,7 +41,7 @@ type AgentSidecar struct {
 }
 
 func (s *AgentSidecar) Bind() *AgentSidecar {
-	s.WatchPaths = GetActualValues(s.WatchPaths)
+	s.WatchDir = GetActualValue(s.WatchDir)
 	s.AutoBackupDuration = GetActualValue(s.AutoBackupDuration)
 	s.AutoBackupDurationLimit = GetActualValue(s.AutoBackupDurationLimit)
 	s.Filename = GetActualValue(s.Filename)
