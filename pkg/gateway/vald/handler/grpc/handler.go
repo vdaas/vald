@@ -27,7 +27,7 @@ import (
 	"time"
 
 	"github.com/kpango/fuid"
-	"github.com/vdaas/vald/apis/grpc/agent"
+	agent "github.com/vdaas/vald/apis/grpc/agent/core"
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errgroup"

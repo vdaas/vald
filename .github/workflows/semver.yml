@@ -50,6 +50,9 @@ jobs:
           make helm/docs/vald
           make helm/docs/vald-helm-operator
 
+          make helm/schema/vald
+          make helm/schema/vald-helm-operator
+
           git config --global user.name "vdaas-ci"
           git config --global user.email "ci@vdaas.org"
 
@@ -57,9 +60,11 @@ jobs:
             versions/VALD_VERSION \
             charts/vald/Chart.yaml \
             charts/vald/values.yaml \
+            charts/vald/values.schema.json \
             charts/vald/README.md \
             charts/vald-helm-operator/Chart.yaml \
             charts/vald-helm-operator/values.yaml \
+            charts/vald-helm-operator/values.schema.json \
             charts/vald-helm-operator/README.md
           git commit --signoff -m ":bookmark: :robot: Release ${GITWERK_RESULT}"
 
