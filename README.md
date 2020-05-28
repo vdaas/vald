@@ -127,6 +127,7 @@ Please read the [contribution guide](https://github.com/vdaas/vald/blob/master/C
 
 - [hlts2](https://github.com/hlts2)
 - [vankichi](https://github.com/vankichi)
+- [kevindiu](https://github.com/kevindiu)
 
 ## LICENSE
 
