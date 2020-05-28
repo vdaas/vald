@@ -67,6 +67,7 @@ func Test_compressAlgorithm_String(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -137,6 +138,7 @@ func TestCompressAlgorithm(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -148,168 +150,6 @@ func TestCompressAlgorithm(t *testing.T) {
 			}
 
 			got := CompressAlgorithm(test.args.ca)
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func TestCompressor_Bind(t *testing.T) {
-	type fields struct {
-		CompressAlgorithm  string
-		CompressionLevel   int
-		ConcurrentLimit    int
-		QueueCheckDuration string
-	}
-	type want struct {
-		want *Compressor
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, *Compressor) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got *Compressor) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           CompressAlgorithm: "",
-		           CompressionLevel: 0,
-		           ConcurrentLimit: 0,
-		           QueueCheckDuration: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           CompressAlgorithm: "",
-		           CompressionLevel: 0,
-		           ConcurrentLimit: 0,
-		           QueueCheckDuration: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			c := &Compressor{
-				CompressAlgorithm:  test.fields.CompressAlgorithm,
-				CompressionLevel:   test.fields.CompressionLevel,
-				ConcurrentLimit:    test.fields.ConcurrentLimit,
-				QueueCheckDuration: test.fields.QueueCheckDuration,
-			}
-
-			got := c.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func TestCompressorRegisterer_Bind(t *testing.T) {
-	type fields struct {
-		ConcurrentLimit int
-		Compressor      *BackupManager
-	}
-	type want struct {
-		want *CompressorRegisterer
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, *CompressorRegisterer) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got *CompressorRegisterer) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ConcurrentLimit: 0,
-		           Compressor: BackupManager{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ConcurrentLimit: 0,
-		           Compressor: BackupManager{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			cr := &CompressorRegisterer{
-				ConcurrentLimit: test.fields.ConcurrentLimit,
-				Compressor:      test.fields.Compressor,
-			}
-
-			got := cr.Bind()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -388,6 +228,170 @@ func TestCompressCore_Bind(t *testing.T) {
 			}
 
 			got := c.Bind()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func TestCompressor_Bind(t *testing.T) {
+	type fields struct {
+		CompressCore       CompressCore
+		ConcurrentLimit    int
+		QueueCheckDuration string
+	}
+	type want struct {
+		want *Compressor
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, *Compressor) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got *Compressor) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           CompressCore: CompressCore{},
+		           ConcurrentLimit: 0,
+		           QueueCheckDuration: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           CompressCore: CompressCore{},
+		           ConcurrentLimit: 0,
+		           QueueCheckDuration: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &Compressor{
+				CompressCore:       test.fields.CompressCore,
+				ConcurrentLimit:    test.fields.ConcurrentLimit,
+				QueueCheckDuration: test.fields.QueueCheckDuration,
+			}
+
+			got := c.Bind()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func TestCompressorRegisterer_Bind(t *testing.T) {
+	type fields struct {
+		ConcurrentLimit    int
+		QueueCheckDuration string
+		Compressor         *BackupManager
+	}
+	type want struct {
+		want *CompressorRegisterer
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, *CompressorRegisterer) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got *CompressorRegisterer) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           ConcurrentLimit: 0,
+		           QueueCheckDuration: "",
+		           Compressor: BackupManager{},
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           ConcurrentLimit: 0,
+		           QueueCheckDuration: "",
+		           Compressor: BackupManager{},
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			cr := &CompressorRegisterer{
+				ConcurrentLimit:    test.fields.ConcurrentLimit,
+				QueueCheckDuration: test.fields.QueueCheckDuration,
+				Compressor:         test.fields.Compressor,
+			}
+
+			got := cr.Bind()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
