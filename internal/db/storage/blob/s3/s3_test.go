@@ -25,7 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/vdaas/vald/internal/db/storage/blob"
-	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
+	isession "github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
@@ -40,11 +40,11 @@ const (
 )
 
 func TestS3Write(t *testing.T) {
-	sess, err := session.New(
-		session.WithEndpoint(endpoint),
-		session.WithRegion(region),
-		session.WithAccessKey(accessKey),
-		session.WithSecretAccessKey(secretAccessKey),
+	sess, err := isession.New(
+		isession.WithEndpoint(endpoint),
+		isession.WithRegion(region),
+		isession.WithAccessKey(accessKey),
+		isession.WithSecretAccessKey(secretAccessKey),
 	).Session()
 	if err != nil {
 		t.Fatalf("failed to create session: %s", err)
@@ -87,11 +87,11 @@ func TestS3Write(t *testing.T) {
 }
 
 func TestS3Read(t *testing.T) {
-	sess, err := session.New(
-		session.WithEndpoint(endpoint),
-		session.WithRegion(region),
-		session.WithAccessKey(accessKey),
-		session.WithSecretAccessKey(secretAccessKey),
+	sess, err := isession.New(
+		isession.WithEndpoint(endpoint),
+		isession.WithRegion(region),
+		isession.WithAccessKey(accessKey),
+		isession.WithSecretAccessKey(secretAccessKey),
 	).Session()
 	if err != nil {
 		t.Fatalf("failed to create session: %s", err)

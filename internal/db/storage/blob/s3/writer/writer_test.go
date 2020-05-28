@@ -18,10 +18,12 @@ package writer
 
 import (
 	"context"
+	"io"
 	"reflect"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
@@ -102,11 +104,13 @@ func Test_writer_Open(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
+		eg             errgroup.Group
 		service        *s3.S3
 		bucket         string
 		key            string
 		maxPartSize    int64
 		multipart      bool
+		pw             io.WriteCloser
 		ctx            context.Context
 		resp           *s3.CreateMultipartUploadOutput
 		completedParts []*s3.CompletedPart
@@ -138,11 +142,13 @@ func Test_writer_Open(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
 		           maxPartSize: 0,
 		           multipart: false,
+		           pw: nil,
 		           ctx: nil,
 		           resp: nil,
 		           completedParts: nil,
@@ -161,11 +167,13 @@ func Test_writer_Open(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
 		           maxPartSize: 0,
 		           multipart: false,
+		           pw: nil,
 		           ctx: nil,
 		           resp: nil,
 		           completedParts: nil,
@@ -190,11 +198,13 @@ func Test_writer_Open(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			w := &writer{
+				eg:             test.fields.eg,
 				service:        test.fields.service,
 				bucket:         test.fields.bucket,
 				key:            test.fields.key,
 				maxPartSize:    test.fields.maxPartSize,
 				multipart:      test.fields.multipart,
+				pw:             test.fields.pw,
 				ctx:            test.fields.ctx,
 				resp:           test.fields.resp,
 				completedParts: test.fields.completedParts,
@@ -211,11 +221,13 @@ func Test_writer_Open(t *testing.T) {
 
 func Test_writer_Close(t *testing.T) {
 	type fields struct {
+		eg             errgroup.Group
 		service        *s3.S3
 		bucket         string
 		key            string
 		maxPartSize    int64
 		multipart      bool
+		pw             io.WriteCloser
 		ctx            context.Context
 		resp           *s3.CreateMultipartUploadOutput
 		completedParts []*s3.CompletedPart
@@ -243,11 +255,13 @@ func Test_writer_Close(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
 		           maxPartSize: 0,
 		           multipart: false,
+		           pw: nil,
 		           ctx: nil,
 		           resp: nil,
 		           completedParts: nil,
@@ -263,11 +277,13 @@ func Test_writer_Close(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
 		           maxPartSize: 0,
 		           multipart: false,
+		           pw: nil,
 		           ctx: nil,
 		           resp: nil,
 		           completedParts: nil,
@@ -292,11 +308,13 @@ func Test_writer_Close(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			w := &writer{
+				eg:             test.fields.eg,
 				service:        test.fields.service,
 				bucket:         test.fields.bucket,
 				key:            test.fields.key,
 				maxPartSize:    test.fields.maxPartSize,
 				multipart:      test.fields.multipart,
+				pw:             test.fields.pw,
 				ctx:            test.fields.ctx,
 				resp:           test.fields.resp,
 				completedParts: test.fields.completedParts,
@@ -316,11 +334,13 @@ func Test_writer_Write(t *testing.T) {
 		p []byte
 	}
 	type fields struct {
+		eg             errgroup.Group
 		service        *s3.S3
 		bucket         string
 		key            string
 		maxPartSize    int64
 		multipart      bool
+		pw             io.WriteCloser
 		ctx            context.Context
 		resp           *s3.CreateMultipartUploadOutput
 		completedParts []*s3.CompletedPart
@@ -356,11 +376,13 @@ func Test_writer_Write(t *testing.T) {
 		           p: nil,
 		       },
 		       fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
 		           maxPartSize: 0,
 		           multipart: false,
+		           pw: nil,
 		           ctx: nil,
 		           resp: nil,
 		           completedParts: nil,
@@ -379,11 +401,13 @@ func Test_writer_Write(t *testing.T) {
 		           p: nil,
 		           },
 		           fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
 		           maxPartSize: 0,
 		           multipart: false,
+		           pw: nil,
 		           ctx: nil,
 		           resp: nil,
 		           completedParts: nil,
@@ -408,11 +432,13 @@ func Test_writer_Write(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			w := &writer{
+				eg:             test.fields.eg,
 				service:        test.fields.service,
 				bucket:         test.fields.bucket,
 				key:            test.fields.key,
 				maxPartSize:    test.fields.maxPartSize,
 				multipart:      test.fields.multipart,
+				pw:             test.fields.pw,
 				ctx:            test.fields.ctx,
 				resp:           test.fields.resp,
 				completedParts: test.fields.completedParts,
@@ -429,37 +455,35 @@ func Test_writer_Write(t *testing.T) {
 
 func Test_writer_upload(t *testing.T) {
 	type args struct {
-		p []byte
+		body io.Reader
 	}
 	type fields struct {
+		eg             errgroup.Group
 		service        *s3.S3
 		bucket         string
 		key            string
 		maxPartSize    int64
 		multipart      bool
+		pw             io.WriteCloser
 		ctx            context.Context
 		resp           *s3.CreateMultipartUploadOutput
 		completedParts []*s3.CompletedPart
 	}
 	type want struct {
-		wantN int
-		err   error
+		err error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, int, error) error
+		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotN int, err error) error {
+	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(gotN, w.wantN) {
-			return errors.Errorf("got = %v, want %v", gotN, w.wantN)
 		}
 		return nil
 	}
@@ -469,14 +493,16 @@ func Test_writer_upload(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           p: nil,
+		           body: nil,
 		       },
 		       fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
 		           maxPartSize: 0,
 		           multipart: false,
+		           pw: nil,
 		           ctx: nil,
 		           resp: nil,
 		           completedParts: nil,
@@ -492,14 +518,16 @@ func Test_writer_upload(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           p: nil,
+		           body: nil,
 		           },
 		           fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
 		           maxPartSize: 0,
 		           multipart: false,
+		           pw: nil,
 		           ctx: nil,
 		           resp: nil,
 		           completedParts: nil,
@@ -524,18 +552,20 @@ func Test_writer_upload(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			w := &writer{
+				eg:             test.fields.eg,
 				service:        test.fields.service,
 				bucket:         test.fields.bucket,
 				key:            test.fields.key,
 				maxPartSize:    test.fields.maxPartSize,
 				multipart:      test.fields.multipart,
+				pw:             test.fields.pw,
 				ctx:            test.fields.ctx,
 				resp:           test.fields.resp,
 				completedParts: test.fields.completedParts,
 			}
 
-			gotN, err := w.upload(test.args.p)
-			if err := test.checkFunc(test.want, gotN, err); err != nil {
+			err := w.upload(test.args.body)
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -548,11 +578,13 @@ func Test_writer_multipartUpload(t *testing.T) {
 		p []byte
 	}
 	type fields struct {
+		eg             errgroup.Group
 		service        *s3.S3
 		bucket         string
 		key            string
 		maxPartSize    int64
 		multipart      bool
+		pw             io.WriteCloser
 		ctx            context.Context
 		resp           *s3.CreateMultipartUploadOutput
 		completedParts []*s3.CompletedPart
@@ -588,11 +620,13 @@ func Test_writer_multipartUpload(t *testing.T) {
 		           p: nil,
 		       },
 		       fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
 		           maxPartSize: 0,
 		           multipart: false,
+		           pw: nil,
 		           ctx: nil,
 		           resp: nil,
 		           completedParts: nil,
@@ -611,11 +645,13 @@ func Test_writer_multipartUpload(t *testing.T) {
 		           p: nil,
 		           },
 		           fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
 		           maxPartSize: 0,
 		           multipart: false,
+		           pw: nil,
 		           ctx: nil,
 		           resp: nil,
 		           completedParts: nil,
@@ -640,11 +676,13 @@ func Test_writer_multipartUpload(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			w := &writer{
+				eg:             test.fields.eg,
 				service:        test.fields.service,
 				bucket:         test.fields.bucket,
 				key:            test.fields.key,
 				maxPartSize:    test.fields.maxPartSize,
 				multipart:      test.fields.multipart,
+				pw:             test.fields.pw,
 				ctx:            test.fields.ctx,
 				resp:           test.fields.resp,
 				completedParts: test.fields.completedParts,
@@ -665,11 +703,13 @@ func Test_writer_uploadPart(t *testing.T) {
 		n int64
 	}
 	type fields struct {
+		eg             errgroup.Group
 		service        *s3.S3
 		bucket         string
 		key            string
 		maxPartSize    int64
 		multipart      bool
+		pw             io.WriteCloser
 		ctx            context.Context
 		resp           *s3.CreateMultipartUploadOutput
 		completedParts []*s3.CompletedPart
@@ -706,11 +746,13 @@ func Test_writer_uploadPart(t *testing.T) {
 		           n: 0,
 		       },
 		       fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
 		           maxPartSize: 0,
 		           multipart: false,
+		           pw: nil,
 		           ctx: nil,
 		           resp: nil,
 		           completedParts: nil,
@@ -730,11 +772,13 @@ func Test_writer_uploadPart(t *testing.T) {
 		           n: 0,
 		           },
 		           fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
 		           maxPartSize: 0,
 		           multipart: false,
+		           pw: nil,
 		           ctx: nil,
 		           resp: nil,
 		           completedParts: nil,
@@ -759,11 +803,13 @@ func Test_writer_uploadPart(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			w := &writer{
+				eg:             test.fields.eg,
 				service:        test.fields.service,
 				bucket:         test.fields.bucket,
 				key:            test.fields.key,
 				maxPartSize:    test.fields.maxPartSize,
 				multipart:      test.fields.multipart,
+				pw:             test.fields.pw,
 				ctx:            test.fields.ctx,
 				resp:           test.fields.resp,
 				completedParts: test.fields.completedParts,
@@ -780,11 +826,13 @@ func Test_writer_uploadPart(t *testing.T) {
 
 func Test_writer_abortMultipartUpload(t *testing.T) {
 	type fields struct {
+		eg             errgroup.Group
 		service        *s3.S3
 		bucket         string
 		key            string
 		maxPartSize    int64
 		multipart      bool
+		pw             io.WriteCloser
 		ctx            context.Context
 		resp           *s3.CreateMultipartUploadOutput
 		completedParts []*s3.CompletedPart
@@ -812,11 +860,13 @@ func Test_writer_abortMultipartUpload(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
 		           maxPartSize: 0,
 		           multipart: false,
+		           pw: nil,
 		           ctx: nil,
 		           resp: nil,
 		           completedParts: nil,
@@ -832,11 +882,13 @@ func Test_writer_abortMultipartUpload(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
 		           maxPartSize: 0,
 		           multipart: false,
+		           pw: nil,
 		           ctx: nil,
 		           resp: nil,
 		           completedParts: nil,
@@ -861,11 +913,13 @@ func Test_writer_abortMultipartUpload(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			w := &writer{
+				eg:             test.fields.eg,
 				service:        test.fields.service,
 				bucket:         test.fields.bucket,
 				key:            test.fields.key,
 				maxPartSize:    test.fields.maxPartSize,
 				multipart:      test.fields.multipart,
+				pw:             test.fields.pw,
 				ctx:            test.fields.ctx,
 				resp:           test.fields.resp,
 				completedParts: test.fields.completedParts,
@@ -882,11 +936,13 @@ func Test_writer_abortMultipartUpload(t *testing.T) {
 
 func Test_writer_completeMultipartUpload(t *testing.T) {
 	type fields struct {
+		eg             errgroup.Group
 		service        *s3.S3
 		bucket         string
 		key            string
 		maxPartSize    int64
 		multipart      bool
+		pw             io.WriteCloser
 		ctx            context.Context
 		resp           *s3.CreateMultipartUploadOutput
 		completedParts []*s3.CompletedPart
@@ -914,11 +970,13 @@ func Test_writer_completeMultipartUpload(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
 		           maxPartSize: 0,
 		           multipart: false,
+		           pw: nil,
 		           ctx: nil,
 		           resp: nil,
 		           completedParts: nil,
@@ -934,11 +992,13 @@ func Test_writer_completeMultipartUpload(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
 		           maxPartSize: 0,
 		           multipart: false,
+		           pw: nil,
 		           ctx: nil,
 		           resp: nil,
 		           completedParts: nil,
@@ -963,11 +1023,13 @@ func Test_writer_completeMultipartUpload(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			w := &writer{
+				eg:             test.fields.eg,
 				service:        test.fields.service,
 				bucket:         test.fields.bucket,
 				key:            test.fields.key,
 				maxPartSize:    test.fields.maxPartSize,
 				multipart:      test.fields.multipart,
+				pw:             test.fields.pw,
 				ctx:            test.fields.ctx,
 				resp:           test.fields.resp,
 				completedParts: test.fields.completedParts,
