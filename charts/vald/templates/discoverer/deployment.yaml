@@ -65,8 +65,10 @@ spec:
       {{- end }}
       affinity:
         {{- include "vald.affinity" .Values.discoverer.affinity | nindent 8 }}
+      {{- if .Values.discoverer.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- toYaml .Values.discoverer.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Values.discoverer.name }}
           image: "{{ .Values.discoverer.image.repository }}:{{ default .Values.defaults.image.tag .Values.discoverer.image.tag }}"

@@ -54,15 +54,42 @@ spec:
       # annotations:
       #   checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
     spec:
-      {{- if .Values.agent.initContainers }}
+      {{- if or .Values.agent.initContainers (and .Values.agent.sidecar.enabled .Values.agent.sidecar.initContainerEnabled) }}
       initContainers:
+        {{- if .Values.agent.initContainers }}
         {{- $initContainers := dict "initContainers" .Values.agent.initContainers "Values" .Values "namespace" .Release.Namespace -}}
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
+        {{- end }}
+        {{- if and .Values.agent.sidecar.enabled .Values.agent.sidecar.initContainerEnabled }}
+        - name: {{ .Values.agent.sidecar.name }}
+          image: "{{ .Values.agent.sidecar.image.repository }}:{{ default .Values.defaults.image.tag .Values.agent.sidecar.image.tag }}"
+          imagePullPolicy: {{ .Values.agent.sidecar.image.pullPolicy }}
+          {{- $servers := dict "Values" .Values.agent.sidecar.server_config "default" .Values.defaults.server_config -}}
+          {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
+          resources:
+            {{- toYaml .Values.agent.sidecar.resources | nindent 12 }}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          env:
+            - name: VALD_AGENT_SIDECAR_MODE
+              value: "initcontainer"
+            {{- if .Values.agent.sidecar.env }}
+            {{- toYaml .Values.agent.sidecar.env | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - name: {{ .Values.agent.sidecar.name }}-config
+              mountPath: /etc/server/
+            {{- if .Values.agent.sidecar.volumeMounts }}
+            {{- toYaml .Values.agent.sidecar.volumeMounts | nindent 12 }}
+            {{- end }}
+        {{- end }}
       {{- end }}
       affinity:
         {{- include "vald.affinity" .Values.agent.affinity | nindent 8 }}
+      {{- if .Values.agent.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- toYaml .Values.agent.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Values.agent.name }}
           image: "{{ .Values.agent.image.repository }}:{{ default .Values.defaults.image.tag .Values.agent.image.tag }}"
@@ -83,6 +110,29 @@ spec:
             {{- if .Values.agent.volumeMounts }}
             {{- toYaml .Values.agent.volumeMounts | nindent 12 }}
             {{- end }}
+        {{- if .Values.agent.sidecar.enabled }}
+        - name: {{ .Values.agent.sidecar.name }}
+          image: "{{ .Values.agent.sidecar.image.repository }}:{{ default .Values.defaults.image.tag .Values.agent.sidecar.image.tag }}"
+          imagePullPolicy: {{ .Values.agent.sidecar.image.pullPolicy }}
+          {{- $servers := dict "Values" .Values.agent.sidecar.server_config "default" .Values.defaults.server_config -}}
+          {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
+          resources:
+            {{- toYaml .Values.agent.sidecar.resources | nindent 12 }}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          env:
+            - name: VALD_AGENT_SIDECAR_MODE
+              value: "sidecar"
+            {{- if .Values.agent.sidecar.env }}
+            {{- toYaml .Values.agent.sidecar.env | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - name: {{ .Values.agent.sidecar.name }}-config
+              mountPath: /etc/server/
+            {{- if .Values.agent.sidecar.volumeMounts }}
+            {{- toYaml .Values.agent.sidecar.volumeMounts | nindent 12 }}
+            {{- end }}
+        {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -93,6 +143,12 @@ spec:
           configMap:
             defaultMode: 420
             name: {{ .Values.agent.name }}-config
+        {{- if .Values.agent.sidecar.enabled }}
+        - name: {{ .Values.agent.sidecar.name }}-config
+          configMap:
+            defaultMode: 420
+            name: {{ .Values.agent.sidecar.name }}-config
+        {{- end }}
         {{- if .Values.agent.volumes }}
         {{- toYaml .Values.agent.volumes | nindent 8 }}
         {{- end }}

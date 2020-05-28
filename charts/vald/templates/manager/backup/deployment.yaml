@@ -65,8 +65,10 @@ spec:
       {{- end }}
       affinity:
         {{- include "vald.affinity" .Values.backupManager.affinity | nindent 8 }}
+      {{- if .Values.backupManager.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- toYaml .Values.backupManager.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Values.backupManager.name }}
           image: "{{ .Values.backupManager.image.repository }}:{{ default .Values.defaults.image.tag .Values.backupManager.image.tag }}"
