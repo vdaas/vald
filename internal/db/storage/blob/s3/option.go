@@ -16,15 +16,27 @@
 
 package s3
 
-import "github.com/aws/aws-sdk-go/aws/session"
+import (
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/vdaas/vald/internal/errgroup"
+)
 
 type Option func(s *s3client)
 
 var (
 	defaultOpts = []Option{
+		WithErrGroup(errgroup.Get()),
 		WithMultipartUpload(false),
 	}
 )
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(s *s3client) {
+		if eg != nil {
+			s.eg = eg
+		}
+	}
+}
 
 func WithSession(sess *session.Session) Option {
 	return func(s *s3client) {

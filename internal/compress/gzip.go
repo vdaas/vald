@@ -91,6 +91,32 @@ func (g *gzipCompressor) Reader(src io.Reader) (io.Reader, error) {
 	return gzip.NewReader(src)
 }
 
-func (g *gzipCompressor) Writer(dst io.Writer) (io.WriteCloser, error) {
-	return gzip.NewWriterLevel(dst, g.compressionLevel)
+func (g *gzipCompressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
+	w, err := gzip.NewWriterLevel(dst, g.compressionLevel)
+	if err != nil {
+		return nil, err
+	}
+
+	return &gzipWriter{
+		dst: dst,
+		w:   w,
+	}, nil
+}
+
+type gzipWriter struct {
+	dst io.WriteCloser
+	w   io.WriteCloser
+}
+
+func (g *gzipWriter) Write(p []byte) (n int, err error) {
+	return g.w.Write(p)
+}
+
+func (g *gzipWriter) Close() (err error) {
+	err = g.w.Close()
+	if err != nil {
+		return errors.Wrap(g.dst.Close(), err.Error())
+	}
+
+	return g.dst.Close()
 }

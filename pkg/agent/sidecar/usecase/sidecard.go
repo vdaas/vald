@@ -62,6 +62,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		_ = obs
 	}
 	bs, err = service.NewBlobStorage(
+		service.WithBlobStorageErrGroup(eg),
 		service.WithBlobStorageType(cfg.AgentSidecar.BlobStorage.StorageType),
 		service.WithBlobStorageBucketName(cfg.AgentSidecar.BlobStorage.Bucket),
 		service.WithBlobStorageFilename(cfg.AgentSidecar.Filename),

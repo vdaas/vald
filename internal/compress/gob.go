@@ -67,7 +67,7 @@ func (g *gobCompressor) Reader(src io.Reader) (io.Reader, error) {
 	}, nil
 }
 
-func (g *gobCompressor) Writer(dst io.Writer) (io.WriteCloser, error) {
+func (g *gobCompressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
 	return &gobWriter{
 		dst:     dst,
 		encoder: gob.NewEncoder(dst),
@@ -89,7 +89,7 @@ func (gr *gobReader) Read(p []byte) (n int, err error) {
 }
 
 type gobWriter struct {
-	dst     io.Writer
+	dst     io.WriteCloser
 	encoder *gob.Encoder
 }
 
@@ -103,5 +103,5 @@ func (gw *gobWriter) Write(p []byte) (n int, err error) {
 }
 
 func (gw *gobWriter) Close() error {
-	return nil
+	return gw.dst.Close()
 }

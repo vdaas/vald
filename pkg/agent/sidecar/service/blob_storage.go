@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 )
 
@@ -37,6 +38,7 @@ type BlobStorage interface {
 }
 
 type bs struct {
+	eg          errgroup.Group
 	storageType string
 	bucketName  string
 	filename    string
@@ -115,6 +117,7 @@ func (b *bs) initBucket() (err error) {
 		}
 
 		b.bucket = s3.New(
+			s3.WithErrGroup(b.eg),
 			s3.WithSession(s),
 			s3.WithBucket(b.bucketName),
 			s3.WithMultipartUpload(b.multipartUpload),

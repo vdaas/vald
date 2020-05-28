@@ -25,9 +25,11 @@ import (
 	"github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/reader"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/writer"
+	"github.com/vdaas/vald/internal/errgroup"
 )
 
 type s3client struct {
+	eg      errgroup.Group
 	session *session.Session
 	service *s3.S3
 	bucket  string
@@ -66,6 +68,7 @@ func (s *s3client) Reader(ctx context.Context, key string) (io.ReadCloser, error
 
 func (s *s3client) Writer(ctx context.Context, key string) (io.WriteCloser, error) {
 	w := writer.New(
+		writer.WithErrGroup(s.eg),
 		writer.WithService(s.service),
 		writer.WithBucket(s.bucket),
 		writer.WithKey(key),

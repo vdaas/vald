@@ -187,6 +187,66 @@ func (o *observer) backup(ctx context.Context) error {
 		}
 	}()
 
+	pr, pw := io.Pipe()
+	defer pr.Close()
+
+	o.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer pw.Close()
+
+		tw := tar.NewWriter(pw)
+		defer func() {
+			if e := tw.Close(); e != nil {
+				log.Error(e)
+			}
+		}()
+
+		err = filepath.Walk(o.dir, func(file string, fi os.FileInfo, err error) error {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+			}
+
+			header, err := tar.FileInfoHeader(fi, file)
+			if err != nil {
+				return err
+			}
+
+			rel, err := filepath.Rel(o.dir, file)
+			if err != nil {
+				return err
+			}
+
+			header.Name = filepath.ToSlash(rel)
+
+			err = tw.WriteHeader(header)
+			if err != nil {
+				return err
+			}
+
+			log.Debug("writing: ", file)
+
+			if !fi.IsDir() {
+				data, err := os.Open(file)
+				if err != nil {
+					return err
+				}
+
+				_, err = io.Copy(tw, data)
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}))
+
 	sw, err := o.storage.Writer(ctx)
 	if err != nil {
 		return err
@@ -197,39 +257,7 @@ func (o *observer) backup(ctx context.Context) error {
 		}
 	}()
 
-	tw := tar.NewWriter(sw)
-	defer func() {
-		if e := tw.Close(); e != nil {
-			log.Error(e)
-		}
-	}()
-
-	err = filepath.Walk(o.dir, func(file string, fi os.FileInfo, err error) error {
-		header, err := tar.FileInfoHeader(fi, file)
-		if err != nil {
-			return err
-		}
-
-		header.Name = filepath.ToSlash(file)
-
-		err = tw.WriteHeader(header)
-		if err != nil {
-			return err
-		}
-
-		if !fi.IsDir() {
-			data, err := os.Open(file)
-			if err != nil {
-				return err
-			}
-			_, err = io.Copy(tw, data)
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
-	})
+	_, err = io.Copy(sw, pr)
 	if err != nil {
 		return err
 	}

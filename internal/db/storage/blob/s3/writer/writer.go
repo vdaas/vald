@@ -24,11 +24,14 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/safety"
 )
 
 type writer struct {
+	eg      errgroup.Group
 	service *s3.S3
 	bucket  string
 	key     string
@@ -36,6 +39,10 @@ type writer struct {
 	maxPartSize int64
 	multipart   bool
 
+	// for single uploads
+	pw io.WriteCloser
+
+	// for multipart uploads
 	ctx  context.Context
 	resp *s3.CreateMultipartUploadOutput
 
@@ -59,10 +66,26 @@ func New(opts ...Option) Writer {
 func (w *writer) Open(ctx context.Context) (err error) {
 	w.ctx = ctx
 
+	if !w.multipart {
+		var pr io.ReadCloser
+
+		pr, w.pw = io.Pipe()
+
+		w.eg.Go(safety.RecoverFunc(func() (err error) {
+			defer pr.Close()
+
+			return w.upload(pr)
+		}))
+	}
+
 	return err
 }
 
 func (w *writer) Close() error {
+	if !w.multipart && w.pw != nil {
+		return w.pw.Close()
+	}
+
 	if w.multipart && w.resp != nil {
 		return w.completeMultipartUpload()
 	}
@@ -79,25 +102,29 @@ func (w *writer) Write(p []byte) (n int, err error) {
 		return w.multipartUpload(p)
 	}
 
-	return w.upload(p)
+	if w.pw == nil {
+		return 0, errors.ErrStorageWriterNotOpened
+	}
+
+	return w.pw.Write(p)
 }
 
-func (w *writer) upload(p []byte) (n int, err error) {
+func (w *writer) upload(body io.Reader) (err error) {
 	uploader := s3manager.NewUploaderWithClient(w.service)
 	input := &s3manager.UploadInput{
 		Bucket: aws.String(w.bucket),
 		Key:    aws.String(w.key),
-		Body:   bytes.NewReader(p),
+		Body:   body,
 	}
 
 	res, err := uploader.UploadWithContext(w.ctx, input)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	log.Debugf("s3 upload completed: %s", res.Location)
 
-	return len(p), nil
+	return nil
 }
 
 func (w *writer) multipartUpload(p []byte) (n int, err error) {

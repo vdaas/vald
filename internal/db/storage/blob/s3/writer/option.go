@@ -16,16 +16,28 @@
 
 package writer
 
-import "github.com/aws/aws-sdk-go/service/s3"
+import (
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/vdaas/vald/internal/errgroup"
+)
 
 type Option func(w *writer)
 
 var (
 	defaultOpts = []Option{
+		WithErrGroup(errgroup.Get()),
 		WithMaxPartSize(5 * 1024 * 1024),
 		WithMultipart(false),
 	}
 )
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(w *writer) {
+		if eg != nil {
+			w.eg = eg
+		}
+	}
+}
 
 func WithService(s *s3.S3) Option {
 	return func(w *writer) {

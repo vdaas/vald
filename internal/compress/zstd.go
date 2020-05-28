@@ -92,6 +92,32 @@ func (z *zstdCompressor) Reader(src io.Reader) (io.Reader, error) {
 	return zstd.NewReader(src)
 }
 
-func (z *zstdCompressor) Writer(dst io.Writer) (io.WriteCloser, error) {
-	return zstd.NewWriter(dst, z.eoptions...)
+func (z *zstdCompressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
+	w, err := zstd.NewWriter(dst, z.eoptions...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &zstdWriter{
+		dst: dst,
+		w:   w,
+	}, nil
+}
+
+type zstdWriter struct {
+	dst io.WriteCloser
+	w   io.WriteCloser
+}
+
+func (z *zstdWriter) Write(p []byte) (n int, err error) {
+	return z.w.Write(p)
+}
+
+func (z *zstdWriter) Close() (err error) {
+	err = z.w.Close()
+	if err != nil {
+		return errors.Wrap(z.dst.Close(), err.Error())
+	}
+
+	return z.dst.Close()
 }

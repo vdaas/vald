@@ -17,15 +17,25 @@
 // Package service
 package service
 
+import "github.com/vdaas/vald/internal/errgroup"
+
 type BlobStorageOption func(b *bs) error
 
 var (
 	defaultBlobStorageOpts = []BlobStorageOption{
+		WithBlobStorageErrGroup(errgroup.Get()),
 		WithBlobStorageCompressAlgorithm("gzip"),
 		WithBlobStorageCompressionLevel(-1),
 		WithBlobStorageFilenameSuffix(".tar.gz"),
 	}
 )
+
+func WithBlobStorageErrGroup(eg errgroup.Group) BlobStorageOption {
+	return func(b *bs) error {
+		b.eg = eg
+		return nil
+	}
+}
 
 func WithBlobStorageType(bst string) BlobStorageOption {
 	return func(b *bs) error {

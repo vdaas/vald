@@ -91,6 +91,27 @@ func (l *lz4Compressor) Reader(src io.Reader) (io.Reader, error) {
 	return lz4.NewReader(src), nil
 }
 
-func (l *lz4Compressor) Writer(dst io.Writer) (io.WriteCloser, error) {
-	return lz4.NewWriter(dst), nil
+func (l *lz4Compressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
+	return &lz4Writer{
+		dst: dst,
+		w:   lz4.NewWriter(dst),
+	}, nil
+}
+
+type lz4Writer struct {
+	dst io.WriteCloser
+	w   io.WriteCloser
+}
+
+func (l *lz4Writer) Write(p []byte) (n int, err error) {
+	return l.w.Write(p)
+}
+
+func (l *lz4Writer) Close() (err error) {
+	err = l.w.Close()
+	if err != nil {
+		return errors.Wrap(l.dst.Close(), err.Error())
+	}
+
+	return l.dst.Close()
 }
