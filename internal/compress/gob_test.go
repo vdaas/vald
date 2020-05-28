@@ -18,7 +18,6 @@
 package compress
 
 import (
-	"bytes"
 	"encoding/gob"
 	"io"
 	"reflect"
@@ -374,28 +373,28 @@ func Test_gobCompressor_Reader(t *testing.T) {
 }
 
 func Test_gobCompressor_Writer(t *testing.T) {
+	type args struct {
+		dst io.WriteCloser
+	}
 	type want struct {
-		want    io.WriteCloser
-		wantDst string
-		err     error
+		want io.WriteCloser
+		err  error
 	}
 	type test struct {
 		name       string
+		args       args
 		g          *gobCompressor
 		want       want
-		checkFunc  func(want, io.WriteCloser, string, error) error
-		beforeFunc func()
-		afterFunc  func()
+		checkFunc  func(want, io.WriteCloser, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got io.WriteCloser, gotDst string, err error) error {
+	defaultCheckFunc := func(w want, got io.WriteCloser, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		if !reflect.DeepEqual(gotDst, w.wantDst) {
-			return errors.Errorf("got = %v, want %v", gotDst, w.wantDst)
 		}
 		return nil
 	}
@@ -404,6 +403,9 @@ func Test_gobCompressor_Writer(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
+		       args: args {
+		           dst: nil,
+		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
 		   },
@@ -414,6 +416,9 @@ func Test_gobCompressor_Writer(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
+		           args: args {
+		           dst: nil,
+		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
 		       }
@@ -425,18 +430,17 @@ func Test_gobCompressor_Writer(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
 			g := &gobCompressor{}
-			dst := &bytes.Buffer{}
 
-			got, err := g.Writer(dst)
+			got, err := g.Writer(test.args.dst)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -542,7 +546,7 @@ func Test_gobWriter_Write(t *testing.T) {
 		p []byte
 	}
 	type fields struct {
-		dst     io.Writer
+		dst     io.WriteCloser
 		encoder *gob.Encoder
 	}
 	type want struct {
@@ -631,7 +635,7 @@ func Test_gobWriter_Write(t *testing.T) {
 
 func Test_gobWriter_Close(t *testing.T) {
 	type fields struct {
-		dst     io.Writer
+		dst     io.WriteCloser
 		encoder *gob.Encoder
 	}
 	type want struct {

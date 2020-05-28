@@ -18,7 +18,6 @@
 package compress
 
 import (
-	"bytes"
 	"io"
 	"reflect"
 	"testing"
@@ -418,32 +417,32 @@ func Test_lz4Compressor_Reader(t *testing.T) {
 }
 
 func Test_lz4Compressor_Writer(t *testing.T) {
+	type args struct {
+		dst io.WriteCloser
+	}
 	type fields struct {
 		gobc             Compressor
 		compressionLevel int
 	}
 	type want struct {
-		want    io.WriteCloser
-		wantDst string
-		err     error
+		want io.WriteCloser
+		err  error
 	}
 	type test struct {
 		name       string
+		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, io.WriteCloser, string, error) error
-		beforeFunc func()
-		afterFunc  func()
+		checkFunc  func(want, io.WriteCloser, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got io.WriteCloser, gotDst string, err error) error {
+	defaultCheckFunc := func(w want, got io.WriteCloser, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		if !reflect.DeepEqual(gotDst, w.wantDst) {
-			return errors.Errorf("got = %v, want %v", gotDst, w.wantDst)
 		}
 		return nil
 	}
@@ -452,6 +451,9 @@ func Test_lz4Compressor_Writer(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
+		       args: args {
+		           dst: nil,
+		       },
 		       fields: fields {
 		           gobc: nil,
 		           compressionLevel: 0,
@@ -466,9 +468,182 @@ func Test_lz4Compressor_Writer(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
+		           args: args {
+		           dst: nil,
+		           },
 		           fields: fields {
 		           gobc: nil,
 		           compressionLevel: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &lz4Compressor{
+				gobc:             test.fields.gobc,
+				compressionLevel: test.fields.compressionLevel,
+			}
+
+			got, err := l.Writer(test.args.dst)
+			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_lz4Writer_Write(t *testing.T) {
+	type args struct {
+		p []byte
+	}
+	type fields struct {
+		dst io.WriteCloser
+		w   io.WriteCloser
+	}
+	type want struct {
+		wantN int
+		err   error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, int, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotN int, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if !reflect.DeepEqual(gotN, w.wantN) {
+			return errors.Errorf("got = %v, want %v", gotN, w.wantN)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           p: nil,
+		       },
+		       fields: fields {
+		           dst: nil,
+		           w: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           p: nil,
+		           },
+		           fields: fields {
+		           dst: nil,
+		           w: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &lz4Writer{
+				dst: test.fields.dst,
+				w:   test.fields.w,
+			}
+
+			gotN, err := l.Write(test.args.p)
+			if err := test.checkFunc(test.want, gotN, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_lz4Writer_Close(t *testing.T) {
+	type fields struct {
+		dst io.WriteCloser
+		w   io.WriteCloser
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           dst: nil,
+		           w: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           dst: nil,
+		           w: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -489,14 +664,13 @@ func Test_lz4Compressor_Writer(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			l := &lz4Compressor{
-				gobc:             test.fields.gobc,
-				compressionLevel: test.fields.compressionLevel,
+			l := &lz4Writer{
+				dst: test.fields.dst,
+				w:   test.fields.w,
 			}
-			dst := &bytes.Buffer{}
 
-			got, err := l.Writer(dst)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			err := l.Close()
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
