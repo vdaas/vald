@@ -59,7 +59,7 @@ indexManager:
     auto_index_duration_limit: 1m
     # The check duration of automatic indexing.
     # This trigger the indexing on each Vald Agnet if uncommitted index exceed limit.
-    auto_index_check_duration: 30s
+    auto_index_check_duration: 10s
 
 backupManager:
   image:
