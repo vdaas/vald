@@ -137,6 +137,10 @@ Please read the [contribution guide](https://github.com/vdaas/vald/blob/master/C
 - [vankichi](https://github.com/vankichi)
 - [kevindiu](https://github.com/kevindiu)
 
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
 ## LICENSE
 
 vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas/vald/blob/master/LICENSE) file.
