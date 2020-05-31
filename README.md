@@ -132,12 +132,7 @@ Please read the [contribution guide](https://github.com/vdaas/vald/blob/master/C
 - [rinx](https://github.com/rinx)
 
 ## Contributor
-
-- [hlts2](https://github.com/hlts2)
-- [vankichi](https://github.com/vankichi)
-- [kevindiu](https://github.com/kevindiu)
-
-
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
@@ -152,7 +147,6 @@ Please read the [contribution guide](https://github.com/vdaas/vald/blob/master/C
     <td align="center"><a href="https://twitter.com/hiroto_hlts2"><img src="https://avatars0.githubusercontent.com/u/25459661?v=4" width="100px;" alt=""/><br /><sub><b>Hiroto Funakoshi</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=hlts2" title="Documentation">📖</a> <a href="#example-hlts2" title="Examples">💡</a> <a href="#maintenance-hlts2" title="Maintenance">🚧</a> <a href="https://github.com/vdaas/vald/pulls?q=is%3Apr+reviewed-by%3Ahlts2" title="Reviewed Pull Requests">👀</a> <a href="#tool-hlts2" title="Tools">🔧</a> <a href="https://github.com/vdaas/vald/commits?author=hlts2" title="Tests">⚠️</a> <a href="#tutorial-hlts2" title="Tutorials">✅</a></td>
   </tr>
 </table>
-
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
@@ -229,16 +223,3 @@ vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas
 </table>
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fvdaas%2Fvald.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fvdaas%2Fvald?ref=badge_large)
-
-## Contributors ✨
-
-Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
-
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<!-- markdownlint-enable -->
-<!-- prettier-ignore-end -->
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
