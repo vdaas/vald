@@ -1,0 +1,41 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "kpango",
+      "name": "Yusuke Kato",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/9798091?v=4",
+      "profile": "http://kpango.com",
+      "contributions": [
+        "code",
+        "design",
+        "doc",
+        "example",
+        "fundingFinding",
+        "ideas",
+        "infra",
+        "maintenance",
+        "platform",
+        "plugin",
+        "projectManagement",
+        "question",
+        "review",
+        "security",
+        "tool",
+        "test",
+        "tutorial",
+        "talk"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "vald",
+  "projectOwner": "vdaas",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
