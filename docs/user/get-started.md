@@ -263,7 +263,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
         ```go
         glg.Infof("Start search %d times", testCount)
         for i, vec := range test[:testCount] {
-            res, err := client.Seach(ctx, &payload.Search_Request){
+            res, err := client.Search(ctx, &payload.Search_Request){
                 Vector: vec,
                 Config: &payload.Search_Config{
                     Num: 10,
