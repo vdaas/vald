@@ -65,6 +65,21 @@
         "tool",
         "test"
       ]
+    },
+    {
+      "login": "vankichi",
+      "name": "Kiichiro YUKAWA",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/13959763?v=4",
+      "profile": "https://github.com/vankichi",
+      "contributions": [
+        "doc",
+        "example",
+        "maintenance",
+        "review",
+        "tool",
+        "test",
+        "tutorial"
+      ]
     }
   ],
   "contributorsPerLine": 7,
