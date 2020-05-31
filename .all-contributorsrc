@@ -90,6 +90,18 @@
         "code",
         "ideas"
       ]
+    },
+    {
+      "login": "kevindiu",
+      "name": "Kevin Diu",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/1985382?v=4",
+      "profile": "https://github.com/kevindiu",
+      "contributions": [
+        "doc",
+        "example",
+        "test",
+        "tutorial"
+      ]
     }
   ],
   "contributorsPerLine": 7,
