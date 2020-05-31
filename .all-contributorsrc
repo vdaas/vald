@@ -102,6 +102,21 @@
         "test",
         "tutorial"
       ]
+    },
+    {
+      "login": "hlts2",
+      "name": "Hiroto Funakoshi",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/25459661?v=4",
+      "profile": "https://twitter.com/hiroto_hlts2",
+      "contributions": [
+        "doc",
+        "example",
+        "maintenance",
+        "review",
+        "tool",
+        "test",
+        "tutorial"
+      ]
     }
   ],
   "contributorsPerLine": 7,
