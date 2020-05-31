@@ -80,6 +80,16 @@
         "test",
         "tutorial"
       ]
+    },
+    {
+      "login": "atelier",
+      "name": "Atelier Ace",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/940703?v=4",
+      "profile": "http://atelierace.com",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
