@@ -80,6 +80,16 @@
         "test",
         "tutorial"
       ]
+    },
+    {
+      "login": "datelier",
+      "name": "datelier",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/57349093?v=4",
+      "profile": "https://github.com/datelier",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
