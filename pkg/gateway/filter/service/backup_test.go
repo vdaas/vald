@@ -24,7 +24,6 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-
 	"go.uber.org/goleak"
 )
 
@@ -205,7 +204,7 @@ func Test_backup_GetObject(t *testing.T) {
 		client grpc.Client
 	}
 	type want struct {
-		wantVec *payload.Backup_MetaVector
+		wantVec *payload.Object_Locations
 		err     error
 	}
 	type test struct {
@@ -213,11 +212,11 @@ func Test_backup_GetObject(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Backup_MetaVector, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotVec *payload.Backup_MetaVector, err error) error {
+	defaultCheckFunc := func(w want, gotVec *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -388,7 +387,7 @@ func Test_backup_GetLocation(t *testing.T) {
 func Test_backup_Register(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		vec *payload.Backup_MetaVector
+		vec *payload.Object_Locations
 	}
 	type fields struct {
 		addr   string
@@ -479,7 +478,7 @@ func Test_backup_Register(t *testing.T) {
 func Test_backup_RegisterMultiple(t *testing.T) {
 	type args struct {
 		ctx  context.Context
-		vecs *payload.Backup_MetaVectors
+		vecs *payload.Object_Locationss
 	}
 	type fields struct {
 		addr   string

@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/net/grpc"
-
 	"go.uber.org/goleak"
 )
 

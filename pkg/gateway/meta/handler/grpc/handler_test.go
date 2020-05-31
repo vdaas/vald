@@ -23,14 +23,13 @@ import (
 	"testing"
 	"time"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	client "github.com/vdaas/vald/internal/client/gateway/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/gateway/meta/service"
-
 	"go.uber.org/goleak"
 )
 
@@ -112,11 +111,10 @@ func Test_server_Exists(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
@@ -153,11 +151,10 @@ func Test_server_Exists(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -177,11 +174,10 @@ func Test_server_Exists(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -206,11 +202,10 @@ func Test_server_Exists(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -231,11 +226,10 @@ func Test_server_Search(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
@@ -272,11 +266,10 @@ func Test_server_Search(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -296,11 +289,10 @@ func Test_server_Search(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -325,11 +317,10 @@ func Test_server_Search(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -350,11 +341,10 @@ func Test_server_SearchByID(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
@@ -391,11 +381,10 @@ func Test_server_SearchByID(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -415,11 +404,10 @@ func Test_server_SearchByID(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -444,11 +432,10 @@ func Test_server_SearchByID(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -465,16 +452,14 @@ func Test_server_SearchByID(t *testing.T) {
 func Test_server_search(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		cfg *payload.Search_Config
-		f   func(ctx context.Context, ac agent.AgentClient, copts ...grpc.CallOption) (*payload.Search_Response, error)
+		f   func(ctx context.Context, vc vald.ValdClient, copts ...grpc.CallOption) (*payload.Search_Response, error)
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
@@ -507,16 +492,14 @@ func Test_server_search(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           cfg: nil,
 		           f: nil,
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -532,16 +515,14 @@ func Test_server_search(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           cfg: nil,
 		           f: nil,
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -566,16 +547,15 @@ func Test_server_search(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.search(test.args.ctx, test.args.cfg, test.args.f)
+			gotRes, err := s.search(test.args.ctx, test.args.f)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -590,11 +570,10 @@ func Test_server_StreamSearch(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
@@ -626,11 +605,10 @@ func Test_server_StreamSearch(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -649,11 +627,10 @@ func Test_server_StreamSearch(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -678,11 +655,10 @@ func Test_server_StreamSearch(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -702,11 +678,10 @@ func Test_server_StreamSearchByID(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
@@ -738,11 +713,10 @@ func Test_server_StreamSearchByID(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -761,11 +735,10 @@ func Test_server_StreamSearchByID(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -790,11 +763,10 @@ func Test_server_StreamSearchByID(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -815,16 +787,15 @@ func Test_server_Insert(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		wantCe *payload.Empty
+		wantCe *payload.Object_Locations
 		err    error
 	}
 	type test struct {
@@ -832,11 +803,11 @@ func Test_server_Insert(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotCe *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, gotCe *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -856,11 +827,10 @@ func Test_server_Insert(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -880,11 +850,10 @@ func Test_server_Insert(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -909,11 +878,10 @@ func Test_server_Insert(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -933,11 +901,10 @@ func Test_server_StreamInsert(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
@@ -969,11 +936,10 @@ func Test_server_StreamInsert(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -992,11 +958,10 @@ func Test_server_StreamInsert(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1021,11 +986,10 @@ func Test_server_StreamInsert(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1046,16 +1010,15 @@ func Test_server_MultiInsert(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Empty
+		wantRes *payload.Object_Locations
 		err     error
 	}
 	type test struct {
@@ -1063,11 +1026,11 @@ func Test_server_MultiInsert(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -1087,11 +1050,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1111,11 +1073,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1140,11 +1101,10 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1165,16 +1125,15 @@ func Test_server_Update(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Empty
+		wantRes *payload.Object_Locations
 		err     error
 	}
 	type test struct {
@@ -1182,11 +1141,11 @@ func Test_server_Update(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -1206,11 +1165,10 @@ func Test_server_Update(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1230,11 +1188,10 @@ func Test_server_Update(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1259,11 +1216,10 @@ func Test_server_Update(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1283,11 +1239,10 @@ func Test_server_StreamUpdate(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
@@ -1319,11 +1274,10 @@ func Test_server_StreamUpdate(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1342,11 +1296,10 @@ func Test_server_StreamUpdate(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1371,11 +1324,10 @@ func Test_server_StreamUpdate(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1396,16 +1348,15 @@ func Test_server_MultiUpdate(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Empty
+		wantRes *payload.Object_Locations
 		err     error
 	}
 	type test struct {
@@ -1413,11 +1364,11 @@ func Test_server_MultiUpdate(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -1437,11 +1388,10 @@ func Test_server_MultiUpdate(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1461,11 +1411,10 @@ func Test_server_MultiUpdate(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1490,11 +1439,10 @@ func Test_server_MultiUpdate(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1515,16 +1463,15 @@ func Test_server_Upsert(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		want *payload.Empty
+		want *payload.Object_Locations
 		err  error
 	}
 	type test struct {
@@ -1532,11 +1479,11 @@ func Test_server_Upsert(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, got *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -1556,11 +1503,10 @@ func Test_server_Upsert(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1580,11 +1526,10 @@ func Test_server_Upsert(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1609,11 +1554,10 @@ func Test_server_Upsert(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1633,11 +1577,10 @@ func Test_server_StreamUpsert(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
@@ -1669,11 +1612,10 @@ func Test_server_StreamUpsert(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1692,11 +1634,10 @@ func Test_server_StreamUpsert(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1721,11 +1662,10 @@ func Test_server_StreamUpsert(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1746,16 +1686,15 @@ func Test_server_MultiUpsert(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		want *payload.Empty
+		want *payload.Object_Locations
 		err  error
 	}
 	type test struct {
@@ -1763,11 +1702,11 @@ func Test_server_MultiUpsert(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, got *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -1787,11 +1726,10 @@ func Test_server_MultiUpsert(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1811,11 +1749,10 @@ func Test_server_MultiUpsert(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1840,11 +1777,10 @@ func Test_server_MultiUpsert(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1865,33 +1801,32 @@ func Test_server_Remove(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		want *payload.Empty
-		err  error
+		wantRes *payload.Object_Locations
+		err     error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -1906,11 +1841,10 @@ func Test_server_Remove(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1930,11 +1864,10 @@ func Test_server_Remove(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1959,17 +1892,16 @@ func Test_server_Remove(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			got, err := s.Remove(test.args.ctx, test.args.id)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			gotRes, err := s.Remove(test.args.ctx, test.args.id)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -1983,11 +1915,10 @@ func Test_server_StreamRemove(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
@@ -2019,11 +1950,10 @@ func Test_server_StreamRemove(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -2042,11 +1972,10 @@ func Test_server_StreamRemove(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -2071,11 +2000,10 @@ func Test_server_StreamRemove(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -2096,16 +2024,15 @@ func Test_server_MultiRemove(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Empty
+		wantRes *payload.Object_Locations
 		err     error
 	}
 	type test struct {
@@ -2113,11 +2040,11 @@ func Test_server_MultiRemove(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -2137,11 +2064,10 @@ func Test_server_MultiRemove(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -2161,11 +2087,10 @@ func Test_server_MultiRemove(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -2190,11 +2115,10 @@ func Test_server_MultiRemove(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -2215,16 +2139,15 @@ func Test_server_GetObject(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		wantVec *payload.Backup_MetaVector
+		wantVec *payload.Object_Locations
 		err     error
 	}
 	type test struct {
@@ -2232,11 +2155,11 @@ func Test_server_GetObject(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Backup_MetaVector, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotVec *payload.Backup_MetaVector, err error) error {
+	defaultCheckFunc := func(w want, gotVec *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -2256,11 +2179,10 @@ func Test_server_GetObject(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -2280,11 +2202,10 @@ func Test_server_GetObject(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -2309,11 +2230,10 @@ func Test_server_GetObject(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -2333,11 +2253,10 @@ func Test_server_StreamGetObject(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		gateway           service.Gateway
 		metadata          service.Meta
-		backup            service.Backup
+		gateway           client.Client
+		copts             []grpc.CallOption
 		timeout           time.Duration
-		filter            service.Filter
 		replica           int
 		streamConcurrency int
 	}
@@ -2369,11 +2288,10 @@ func Test_server_StreamGetObject(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -2392,11 +2310,10 @@ func Test_server_StreamGetObject(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
+		           gateway: nil,
+		           copts: nil,
 		           timeout: nil,
-		           filter: nil,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -2421,11 +2338,10 @@ func Test_server_StreamGetObject(t *testing.T) {
 			}
 			s := &server{
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
 				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
 				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}

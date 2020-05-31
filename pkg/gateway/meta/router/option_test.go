@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/pkg/gateway/meta/handler/rest"
-
 	"go.uber.org/goleak"
 )
 

@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/singleflight"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
-
 	"go.uber.org/goleak"
 )
 

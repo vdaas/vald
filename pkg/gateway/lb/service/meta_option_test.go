@@ -22,7 +22,6 @@ import (
 
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/net/grpc"
-
 	"go.uber.org/goleak"
 )
 

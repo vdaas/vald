@@ -316,9 +316,6 @@
         "uuid": {
           "type": "string"
         },
-        "meta": {
-          "type": "string"
-        },
         "vector": {
           "type": "array",
           "items": {

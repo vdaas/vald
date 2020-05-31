@@ -287,7 +287,7 @@ func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error
 		})
 }
 
-func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *payload.Empty, err error) {
+func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.Insert")
 	defer func() {
 		if span != nil {
@@ -350,7 +350,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 		return nil, status.WrapWithInternal(fmt.Sprintf("Insert API failed to Execute DoMulti error = %s", err.Error()), err, info.Get())
 	}
 	if s.backup != nil {
-		vecs := &payload.Backup_MetaVector{
+		vecs := &payload.Object_Location{
 			Uuid: uuid,
 			Meta: meta,
 			Ips:  targets,
@@ -369,7 +369,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 		}
 	}
 	log.Debugf("Insert API insert succeeded to %v", targets)
-	return new(payload.Empty), nil
+	return new(payload.Object_Location), nil
 }
 
 func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
@@ -386,7 +386,7 @@ func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
 		})
 }
 
-func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
+func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.MultiInsert")
 	defer func() {
 		if span != nil {
@@ -451,11 +451,11 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	}
 
 	if s.backup != nil {
-		mvecs := new(payload.Backup_MetaVectors)
-		mvecs.Vectors = make([]*payload.Backup_MetaVector, 0, len(vecs.GetVectors()))
+		mvecs := new(payload.Object_Locations)
+		mvecs.Vectors = make([]*payload.Object_Location, 0, len(vecs.GetVectors()))
 		for _, vec := range vecs.GetVectors() {
 			uuid := vec.GetId()
-			mvecs.Vectors = append(mvecs.Vectors, &payload.Backup_MetaVector{
+			mvecs.Vectors = append(mvecs.Vectors, &payload.Object_Location{
 				Uuid:   uuid,
 				Meta:   metaMap[uuid],
 				Vector: vec.GetVector(),
@@ -470,10 +470,10 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 			return nil, status.WrapWithInternal(fmt.Sprintf("MultiInsert API failed RegisterMultiple %#v", mvecs), err, info.Get())
 		}
 	}
-	return new(payload.Empty), nil
+	return new(payload.Object_Locations), nil
 }
 
-func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Empty, err error) {
+func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.Update")
 	defer func() {
 		if span != nil {
@@ -517,7 +517,7 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Update API failed request %#v", vec), err, info.Get())
 	}
-	mvec := &payload.Backup_MetaVector{
+	mvec := &payload.Object_Location{
 		Uuid:   uuid,
 		Meta:   meta,
 		Vector: vec.GetVector(),
@@ -531,7 +531,7 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 		return nil, status.WrapWithInternal(fmt.Sprintf("Update API failed backup %#v", vec), err, info.Get())
 	}
 
-	return new(payload.Empty), nil
+	return new(payload.Object_Location), nil
 }
 
 func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
@@ -548,7 +548,7 @@ func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
 		})
 }
 
-func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Empty, err error) {
+func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.MultiUpdate")
 	defer func() {
 		if span != nil {
@@ -575,10 +575,10 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed Insert request %#v", vecs), err, info.Get())
 	}
-	return new(payload.Empty), nil
+	return new(payload.Object_Locations), nil
 }
 
-func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*payload.Empty, error) {
+func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*payload.Object_Location, error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.Upsert")
 	defer func() {
 		if span != nil {
@@ -607,7 +607,7 @@ func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*paylo
 		}
 	}
 
-	return new(payload.Empty), errs
+	return new(payload.Object_Location), errs
 }
 
 func (s *server) StreamUpsert(stream vald.Vald_StreamUpsertServer) error {
@@ -624,7 +624,7 @@ func (s *server) StreamUpsert(stream vald.Vald_StreamUpsertServer) error {
 		})
 }
 
-func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) (*payload.Empty, error) {
+func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) (*payload.Object_Locations, error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.MultiUpsert")
 	defer func() {
 		if span != nil {
@@ -681,10 +681,10 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		return nil, status.WrapWithInternal("MultiUpsert API failed", errs, info.Get())
 	}
 
-	return new(payload.Empty), errs
+	return new(payload.Object_Locations), errs
 }
 
-func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Empty, error) {
+func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Object_Location, error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.Remove")
 	defer func() {
 		if span != nil {
@@ -742,7 +742,7 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Em
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API failed to Remove backup uuid = %s", uuid), err, info.Get())
 	}
-	return new(payload.Empty), nil
+	return new(payload.Object_Location), nil
 }
 
 func (s *server) StreamRemove(stream vald.Vald_StreamRemoveServer) error {
@@ -759,7 +759,7 @@ func (s *server) StreamRemove(stream vald.Vald_StreamRemoveServer) error {
 		})
 }
 
-func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res *payload.Empty, err error) {
+func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.MultiRemove")
 	defer func() {
 		if span != nil {
@@ -815,10 +815,10 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res 
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiRemove API failed to Remove backup uuids %v ", uuids), err, info.Get())
 	}
-	return new(payload.Empty), nil
+	return new(payload.Object_Location), nil
 }
 
-func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *payload.Backup_MetaVector, err error) {
+func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.GetObject")
 	defer func() {
 		if span != nil {

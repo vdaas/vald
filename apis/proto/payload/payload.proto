@@ -85,6 +85,16 @@ message Object {
     string id = 1 [ (validate.rules).string.min_len = 1 ];
     bytes object = 2;
   }
+
+  message Location {
+    string name = 1;
+    string uuid = 2;
+    repeated string ips = 3;
+  }
+
+  message Locations {
+    repeated Location locations = 1;
+  }
 }
 
 message Control {
@@ -151,7 +161,6 @@ message Backup {
 
   message MetaVector {
     string uuid = 1;
-    string meta = 2;
     repeated float vector = 3 [ (validate.rules).repeated .min_items = 2 ];
     repeated string ips = 4;
   }
@@ -160,7 +169,6 @@ message Backup {
   message Compressed {
     message MetaVector {
       string uuid = 1;
-      string meta = 2;
       bytes vector = 3;
       repeated string ips = 4;
     }

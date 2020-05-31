@@ -28,7 +28,6 @@ import (
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/pkg/gateway/meta/config"
 	"github.com/vdaas/vald/pkg/gateway/meta/service"
-
 	"go.uber.org/goleak"
 )
 
@@ -116,10 +115,7 @@ func Test_run_PreStart(t *testing.T) {
 		cfg           *config.Data
 		server        starter.Server
 		observability observability.Observability
-		filter        service.Filter
-		gateway       service.Gateway
 		metadata      service.Meta
-		backup        service.Backup
 	}
 	type want struct {
 		err error
@@ -152,10 +148,7 @@ func Test_run_PreStart(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -175,10 +168,7 @@ func Test_run_PreStart(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -204,10 +194,7 @@ func Test_run_PreStart(t *testing.T) {
 				cfg:           test.fields.cfg,
 				server:        test.fields.server,
 				observability: test.fields.observability,
-				filter:        test.fields.filter,
-				gateway:       test.fields.gateway,
 				metadata:      test.fields.metadata,
-				backup:        test.fields.backup,
 			}
 
 			err := r.PreStart(test.args.ctx)
@@ -228,10 +215,7 @@ func Test_run_Start(t *testing.T) {
 		cfg           *config.Data
 		server        starter.Server
 		observability observability.Observability
-		filter        service.Filter
-		gateway       service.Gateway
 		metadata      service.Meta
-		backup        service.Backup
 	}
 	type want struct {
 		want <-chan error
@@ -268,10 +252,7 @@ func Test_run_Start(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -291,10 +272,7 @@ func Test_run_Start(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -320,10 +298,7 @@ func Test_run_Start(t *testing.T) {
 				cfg:           test.fields.cfg,
 				server:        test.fields.server,
 				observability: test.fields.observability,
-				filter:        test.fields.filter,
-				gateway:       test.fields.gateway,
 				metadata:      test.fields.metadata,
-				backup:        test.fields.backup,
 			}
 
 			got, err := r.Start(test.args.ctx)
@@ -344,10 +319,7 @@ func Test_run_PreStop(t *testing.T) {
 		cfg           *config.Data
 		server        starter.Server
 		observability observability.Observability
-		filter        service.Filter
-		gateway       service.Gateway
 		metadata      service.Meta
-		backup        service.Backup
 	}
 	type want struct {
 		err error
@@ -380,10 +352,7 @@ func Test_run_PreStop(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -403,10 +372,7 @@ func Test_run_PreStop(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -432,10 +398,7 @@ func Test_run_PreStop(t *testing.T) {
 				cfg:           test.fields.cfg,
 				server:        test.fields.server,
 				observability: test.fields.observability,
-				filter:        test.fields.filter,
-				gateway:       test.fields.gateway,
 				metadata:      test.fields.metadata,
-				backup:        test.fields.backup,
 			}
 
 			err := r.PreStop(test.args.ctx)
@@ -456,10 +419,7 @@ func Test_run_Stop(t *testing.T) {
 		cfg           *config.Data
 		server        starter.Server
 		observability observability.Observability
-		filter        service.Filter
-		gateway       service.Gateway
 		metadata      service.Meta
-		backup        service.Backup
 	}
 	type want struct {
 		err error
@@ -492,10 +452,7 @@ func Test_run_Stop(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -515,10 +472,7 @@ func Test_run_Stop(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -544,10 +498,7 @@ func Test_run_Stop(t *testing.T) {
 				cfg:           test.fields.cfg,
 				server:        test.fields.server,
 				observability: test.fields.observability,
-				filter:        test.fields.filter,
-				gateway:       test.fields.gateway,
 				metadata:      test.fields.metadata,
-				backup:        test.fields.backup,
 			}
 
 			err := r.Stop(test.args.ctx)
@@ -568,10 +519,7 @@ func Test_run_PostStop(t *testing.T) {
 		cfg           *config.Data
 		server        starter.Server
 		observability observability.Observability
-		filter        service.Filter
-		gateway       service.Gateway
 		metadata      service.Meta
-		backup        service.Backup
 	}
 	type want struct {
 		err error
@@ -604,10 +552,7 @@ func Test_run_PostStop(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -627,10 +572,7 @@ func Test_run_PostStop(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
 		           metadata: nil,
-		           backup: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -656,10 +598,7 @@ func Test_run_PostStop(t *testing.T) {
 				cfg:           test.fields.cfg,
 				server:        test.fields.server,
 				observability: test.fields.observability,
-				filter:        test.fields.filter,
-				gateway:       test.fields.gateway,
 				metadata:      test.fields.metadata,
-				backup:        test.fields.backup,
 			}
 
 			err := r.PostStop(test.args.ctx)

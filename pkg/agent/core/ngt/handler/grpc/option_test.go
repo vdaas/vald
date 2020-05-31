@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
-
 	"go.uber.org/goleak"
 )
 

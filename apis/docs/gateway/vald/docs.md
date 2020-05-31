@@ -35,20 +35,20 @@
 | SearchByID | [.payload.Search.IDRequest](#payload.Search.IDRequest) | [.payload.Search.Response](#payload.Search.Response) |  |
 | StreamSearch | [.payload.Search.Request](#payload.Search.Request) stream | [.payload.Search.Response](#payload.Search.Response) stream |  |
 | StreamSearchByID | [.payload.Search.IDRequest](#payload.Search.IDRequest) stream | [.payload.Search.Response](#payload.Search.Response) stream |  |
-| Insert | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Empty](#payload.Empty) |  |
-| StreamInsert | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Empty](#payload.Empty) stream |  |
-| MultiInsert | [.payload.Object.Vectors](#payload.Object.Vectors) | [.payload.Empty](#payload.Empty) |  |
-| Update | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Empty](#payload.Empty) |  |
-| StreamUpdate | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Empty](#payload.Empty) stream |  |
-| MultiUpdate | [.payload.Object.Vectors](#payload.Object.Vectors) | [.payload.Empty](#payload.Empty) |  |
-| Upsert | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Empty](#payload.Empty) |  |
-| StreamUpsert | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Empty](#payload.Empty) stream |  |
-| MultiUpsert | [.payload.Object.Vectors](#payload.Object.Vectors) | [.payload.Empty](#payload.Empty) |  |
-| Remove | [.payload.Object.ID](#payload.Object.ID) | [.payload.Empty](#payload.Empty) |  |
-| StreamRemove | [.payload.Object.ID](#payload.Object.ID) stream | [.payload.Empty](#payload.Empty) stream |  |
-| MultiRemove | [.payload.Object.IDs](#payload.Object.IDs) | [.payload.Empty](#payload.Empty) |  |
-| GetObject | [.payload.Object.ID](#payload.Object.ID) | [.payload.Backup.MetaVector](#payload.Backup.MetaVector) |  |
-| StreamGetObject | [.payload.Object.ID](#payload.Object.ID) stream | [.payload.Backup.MetaVector](#payload.Backup.MetaVector) stream |  |
+| Insert | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Object.Location](#payload.Object.Location) |  |
+| StreamInsert | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
+| MultiInsert | [.payload.Object.Vectors](#payload.Object.Vectors) | [.payload.Object.Locations](#payload.Object.Locations) |  |
+| Update | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Object.Location](#payload.Object.Location) |  |
+| StreamUpdate | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
+| MultiUpdate | [.payload.Object.Vectors](#payload.Object.Vectors) | [.payload.Object.Locations](#payload.Object.Locations) |  |
+| Upsert | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Object.Location](#payload.Object.Location) |  |
+| StreamUpsert | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
+| MultiUpsert | [.payload.Object.Vectors](#payload.Object.Vectors) | [.payload.Object.Locations](#payload.Object.Locations) |  |
+| Remove | [.payload.Object.ID](#payload.Object.ID) | [.payload.Object.Location](#payload.Object.Location) |  |
+| StreamRemove | [.payload.Object.ID](#payload.Object.ID) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
+| MultiRemove | [.payload.Object.IDs](#payload.Object.IDs) | [.payload.Object.Locations](#payload.Object.Locations) |  |
+| GetObject | [.payload.Object.ID](#payload.Object.ID) | [.payload.Object.Vector](#payload.Object.Vector) |  |
+| StreamGetObject | [.payload.Object.ID](#payload.Object.ID) stream | [.payload.Object.Vector](#payload.Object.Vector) stream |  |
 
  
 

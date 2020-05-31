@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/pkg/manager/replication/controller/service"
-
 	"go.uber.org/goleak"
 )
 

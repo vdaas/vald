@@ -22,7 +22,6 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/worker"
-
 	"go.uber.org/goleak"
 )
 

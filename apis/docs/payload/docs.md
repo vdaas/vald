@@ -53,6 +53,8 @@
     - [Object.Distance](#payload.Object.Distance)
     - [Object.ID](#payload.Object.ID)
     - [Object.IDs](#payload.Object.IDs)
+    - [Object.Location](#payload.Object.Location)
+    - [Object.Locations](#payload.Object.Locations)
     - [Object.Vector](#payload.Object.Vector)
     - [Object.Vectors](#payload.Object.Vectors)
     - [Replication](#payload.Replication)
@@ -106,7 +108,6 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | uuid | [string](#string) |  |  |
-| meta | [string](#string) |  |  |
 | vector | [bytes](#bytes) |  |  |
 | ips | [string](#string) | repeated |  |
 
@@ -265,7 +266,6 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | uuid | [string](#string) |  |  |
-| meta | [string](#string) |  |  |
 | vector | [float](#float) | repeated |  |
 | ips | [string](#string) | repeated |  |
 
@@ -755,6 +755,38 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | ids | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Object.Location"></a>
+
+### Object.Location
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | [string](#string) |  |  |
+| uuid | [string](#string) |  |  |
+| ips | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Object.Locations"></a>
+
+### Object.Locations
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| locations | [Object.Location](#payload.Object.Location) | repeated |  |
 
 
 

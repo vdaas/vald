@@ -28,7 +28,6 @@ import (
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/pkg/gateway/backup/config"
 	"github.com/vdaas/vald/pkg/gateway/backup/service"
-
 	"go.uber.org/goleak"
 )
 
@@ -116,9 +115,6 @@ func Test_run_PreStart(t *testing.T) {
 		cfg           *config.Data
 		server        starter.Server
 		observability observability.Observability
-		filter        service.Filter
-		gateway       service.Gateway
-		metadata      service.Meta
 		backup        service.Backup
 	}
 	type want struct {
@@ -152,9 +148,6 @@ func Test_run_PreStart(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
-		           metadata: nil,
 		           backup: nil,
 		       },
 		       want: want{},
@@ -175,9 +168,6 @@ func Test_run_PreStart(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
-		           metadata: nil,
 		           backup: nil,
 		           },
 		           want: want{},
@@ -204,9 +194,6 @@ func Test_run_PreStart(t *testing.T) {
 				cfg:           test.fields.cfg,
 				server:        test.fields.server,
 				observability: test.fields.observability,
-				filter:        test.fields.filter,
-				gateway:       test.fields.gateway,
-				metadata:      test.fields.metadata,
 				backup:        test.fields.backup,
 			}
 
@@ -228,9 +215,6 @@ func Test_run_Start(t *testing.T) {
 		cfg           *config.Data
 		server        starter.Server
 		observability observability.Observability
-		filter        service.Filter
-		gateway       service.Gateway
-		metadata      service.Meta
 		backup        service.Backup
 	}
 	type want struct {
@@ -268,9 +252,6 @@ func Test_run_Start(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
-		           metadata: nil,
 		           backup: nil,
 		       },
 		       want: want{},
@@ -291,9 +272,6 @@ func Test_run_Start(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
-		           metadata: nil,
 		           backup: nil,
 		           },
 		           want: want{},
@@ -320,9 +298,6 @@ func Test_run_Start(t *testing.T) {
 				cfg:           test.fields.cfg,
 				server:        test.fields.server,
 				observability: test.fields.observability,
-				filter:        test.fields.filter,
-				gateway:       test.fields.gateway,
-				metadata:      test.fields.metadata,
 				backup:        test.fields.backup,
 			}
 
@@ -344,9 +319,6 @@ func Test_run_PreStop(t *testing.T) {
 		cfg           *config.Data
 		server        starter.Server
 		observability observability.Observability
-		filter        service.Filter
-		gateway       service.Gateway
-		metadata      service.Meta
 		backup        service.Backup
 	}
 	type want struct {
@@ -380,9 +352,6 @@ func Test_run_PreStop(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
-		           metadata: nil,
 		           backup: nil,
 		       },
 		       want: want{},
@@ -403,9 +372,6 @@ func Test_run_PreStop(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
-		           metadata: nil,
 		           backup: nil,
 		           },
 		           want: want{},
@@ -432,9 +398,6 @@ func Test_run_PreStop(t *testing.T) {
 				cfg:           test.fields.cfg,
 				server:        test.fields.server,
 				observability: test.fields.observability,
-				filter:        test.fields.filter,
-				gateway:       test.fields.gateway,
-				metadata:      test.fields.metadata,
 				backup:        test.fields.backup,
 			}
 
@@ -456,9 +419,6 @@ func Test_run_Stop(t *testing.T) {
 		cfg           *config.Data
 		server        starter.Server
 		observability observability.Observability
-		filter        service.Filter
-		gateway       service.Gateway
-		metadata      service.Meta
 		backup        service.Backup
 	}
 	type want struct {
@@ -492,9 +452,6 @@ func Test_run_Stop(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
-		           metadata: nil,
 		           backup: nil,
 		       },
 		       want: want{},
@@ -515,9 +472,6 @@ func Test_run_Stop(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
-		           metadata: nil,
 		           backup: nil,
 		           },
 		           want: want{},
@@ -544,9 +498,6 @@ func Test_run_Stop(t *testing.T) {
 				cfg:           test.fields.cfg,
 				server:        test.fields.server,
 				observability: test.fields.observability,
-				filter:        test.fields.filter,
-				gateway:       test.fields.gateway,
-				metadata:      test.fields.metadata,
 				backup:        test.fields.backup,
 			}
 
@@ -568,9 +519,6 @@ func Test_run_PostStop(t *testing.T) {
 		cfg           *config.Data
 		server        starter.Server
 		observability observability.Observability
-		filter        service.Filter
-		gateway       service.Gateway
-		metadata      service.Meta
 		backup        service.Backup
 	}
 	type want struct {
@@ -604,9 +552,6 @@ func Test_run_PostStop(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
-		           metadata: nil,
 		           backup: nil,
 		       },
 		       want: want{},
@@ -627,9 +572,6 @@ func Test_run_PostStop(t *testing.T) {
 		           cfg: nil,
 		           server: nil,
 		           observability: nil,
-		           filter: nil,
-		           gateway: nil,
-		           metadata: nil,
 		           backup: nil,
 		           },
 		           want: want{},
@@ -656,9 +598,6 @@ func Test_run_PostStop(t *testing.T) {
 				cfg:           test.fields.cfg,
 				server:        test.fields.server,
 				observability: test.fields.observability,
-				filter:        test.fields.filter,
-				gateway:       test.fields.gateway,
-				metadata:      test.fields.metadata,
 				backup:        test.fields.backup,
 			}
 
