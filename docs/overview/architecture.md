@@ -241,5 +241,5 @@ For more information about Kube-apiserver, please refer to [the official documen
 
 #### Custom Resources
 
-Custom Resources in Vald is a [Custom Resouce Definition](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) implementation.
+Custom Resources in Vald is a [Custom Resource Definition](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) implementation.
 It provides flexibility for users to control the Vald deployment such as pod startup sequence, etc.
