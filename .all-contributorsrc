@@ -30,6 +30,28 @@
         "tutorial",
         "talk"
       ]
+    },
+    {
+      "login": "rinx",
+      "name": "Rintaro Okamura",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1588935?v=4",
+      "profile": "https://github.com/rinx",
+      "contributions": [
+        "code",
+        "doc",
+        "example",
+        "ideas",
+        "infra",
+        "maintenance",
+        "platform",
+        "plugin",
+        "question",
+        "review",
+        "tool",
+        "test",
+        "tutorial",
+        "talk"
+      ]
     }
   ],
   "contributorsPerLine": 7,
