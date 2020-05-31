@@ -114,8 +114,8 @@ func dirwalk(dir string) []string {
 			".ssv",
 			".sum",
 			".svg",
-			".tpl",
 			".tmpl",
+			".tpl",
 			".txt",
 			".whitesource",
 			"LICENSE",
@@ -123,17 +123,17 @@ func dirwalk(dir string) []string {
 		default:
 			switch file.Name() {
 			case
-				"GO_VERSION",
-				"NGT_VERSION",
-				"VALD_VERSION",
-				"TENSORFLOW_C_VERSION",
 				"AUTHORS",
 				"CONTRIBUTORS",
+				"GO_VERSION",
+				"NGT_VERSION",
 				"Pipefile",
+				"TENSORFLOW_C_VERSION",
+				"VALD_VERSION",
 				"grp",
-				"src",
 				"obj",
 				"prf",
+				"src",
 				"tre":
 			default:
 				path, err := filepath.Abs(filepath.Join(dir, file.Name()))
