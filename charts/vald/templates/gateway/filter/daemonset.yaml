@@ -60,8 +60,10 @@ spec:
       {{- end }}
       affinity:
         {{- include "vald.affinity" .Values.gateway.affinity | nindent 8 }}
+      {{- if .Values.gateway.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- toYaml .Values.gateway.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Values.gateway.name }}
           image: "{{ .Values.gateway.image.repository }}:{{ default .Values.defaults.image.tag .Values.gateway.image.tag }}"
