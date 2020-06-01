@@ -26,7 +26,7 @@ type Option func(w *writer)
 var (
 	defaultOpts = []Option{
 		WithErrGroup(errgroup.Get()),
-		WithMaxPartSize(5 * 1024 * 1024 * 1024),
+		WithMaxPartSize(64 * 1024 * 1024),
 		WithMultipart(false),
 	}
 )
