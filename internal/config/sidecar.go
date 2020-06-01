@@ -24,9 +24,6 @@ type AgentSidecar struct {
 	// WatchDir represents watch target directory for backup
 	WatchDir string `yaml:"watch_dir" json:"watch_dir"`
 
-	// AutoBackupDurationLimit represents auto backup duration limit
-	AutoBackupDurationLimit string `yaml:"auto_backup_duration_limit" json:"auto_backup_duration_limit"`
-
 	// AutoBackupDuration represent checking loop duration for auto backup execution
 	AutoBackupDuration string `yaml:"auto_backup_duration" json:"auto_backup_duration"`
 
@@ -47,7 +44,6 @@ func (s *AgentSidecar) Bind() *AgentSidecar {
 	s.Mode = GetActualValue(s.Mode)
 	s.WatchDir = GetActualValue(s.WatchDir)
 	s.AutoBackupDuration = GetActualValue(s.AutoBackupDuration)
-	s.AutoBackupDurationLimit = GetActualValue(s.AutoBackupDurationLimit)
 	s.Filename = GetActualValue(s.Filename)
 	s.FilenameSuffix = GetActualValue(s.FilenameSuffix)
 

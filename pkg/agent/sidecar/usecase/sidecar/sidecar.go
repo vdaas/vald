@@ -87,7 +87,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	so, err = observer.New(
 		observer.WithErrGroup(eg),
 		observer.WithBackupDuration(cfg.AgentSidecar.AutoBackupDuration),
-		observer.WithBackupDurationLimit(cfg.AgentSidecar.AutoBackupDurationLimit),
 		observer.WithDir(cfg.AgentSidecar.WatchDir),
 		observer.WithBlobStorage(bs),
 	)

@@ -40,11 +40,10 @@ type StorageObserver interface {
 }
 
 type observer struct {
-	w                    watch.Watcher
-	dir                  string
-	eg                   errgroup.Group
-	checkDuration        time.Duration
-	longestCheckDuration time.Duration
+	w             watch.Watcher
+	dir           string
+	eg            errgroup.Group
+	checkDuration time.Duration
 
 	storage storage.Storage
 
@@ -134,9 +133,6 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 		ct := time.NewTicker(o.checkDuration)
 		defer ct.Stop()
 
-		lct := time.NewTicker(o.longestCheckDuration)
-		defer lct.Stop()
-
 		finalize := func() (err error) {
 			err = ctx.Err()
 			if err != nil && err != context.Canceled {
@@ -150,13 +146,6 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return finalize()
 			case <-ct.C:
-				err = o.requestBackup(ctx)
-				if err != nil {
-					ech <- err
-					log.Error(err)
-					err = nil
-				}
-			case <-lct.C:
 				err = o.requestBackup(ctx)
 				if err != nil {
 					ech <- err

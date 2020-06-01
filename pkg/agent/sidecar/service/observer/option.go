@@ -30,8 +30,7 @@ type Option func(o *observer) error
 var (
 	defaultOpts = []Option{
 		WithErrGroup(errgroup.Get()),
-		WithBackupDuration("5m"),
-		WithBackupDurationLimit("1h"),
+		WithBackupDuration("10m"),
 	}
 )
 
@@ -45,20 +44,6 @@ func WithBackupDuration(dur string) Option {
 			d = time.Minute * 5
 		}
 		o.checkDuration = d
-		return nil
-	}
-}
-
-func WithBackupDurationLimit(dur string) Option {
-	return func(o *observer) error {
-		if dur == "" {
-			return nil
-		}
-		d, err := timeutil.Parse(dur)
-		if err != nil {
-			d = time.Hour
-		}
-		o.longestCheckDuration = d
 		return nil
 	}
 }

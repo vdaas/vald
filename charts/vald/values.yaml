@@ -1214,9 +1214,6 @@ agent:
         memory: 100Mi
     # @schema {"name": "agent.sidecar.config", "type": "object"}
     config:
-      # @schema {"name": "agent.sidecar.config.auto_backup_duration_limit", "type": "string"}
-      # agent.sidecar.config.auto_backup_duration_limit -- auto backup duration limit
-      auto_backup_duration_limit: 1h
       # @schema {"name": "agent.sidecar.config.auto_backup_duration", "type": "string"}
       # agent.sidecar.config.auto_backup_duration -- auto backup duration
       auto_backup_duration: 10m
