@@ -67,7 +67,7 @@ The main responsibility of the Vald Meta Gateway is to process the Vald metadata
 
 It will perform the following action:
 
-1. Return error if the user has already input the same vector in Vald
+1. Return error if the user has already input the same Vector ID in Vald
 1. Generate the corresponding UUID for internal use.
 1. Forward the vector ID and UUID request to the Vald Meta.
 1. Forward the vector information (vector ID, vector, and UUID) to Vald Backup Gateway.
