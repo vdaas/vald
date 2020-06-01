@@ -21,7 +21,8 @@ We appreciate your help!
 We use [Github Issues](https://github.com/vdaas/vald/issues) to track issues within this repository.
 If you can determine the problem you are facing is a bug or issue, you can easily submit in the issues.
 
-If you are unsure whether you have found a bug or security-related issues, please consider asking in the [Vald Slack](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA) first. <br>
+If you are unsure whether you have found a bug or security-related issues, please consider asking in the [Vald Slack](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA) first. 
+If the behavior you are seeing is confirmed as a bug or issue, it can easily be re-raised in the issue tracker.
 
 ### Bug Report
 
@@ -58,7 +59,7 @@ Please submit the proposal [here](https://github.com/vdaas/vald/issues/new?assig
 Feature request is welcome.
 
 Before opening an issue, please make sure your idea fits the project.<br>
-You can strongly request the feature and convince the project maintainers to accept your feature request.
+You can request the feature and convince the project maintainers to accept your feature request.
 
 Please provide the problem and solution associated with the feature request as detail as possible.
 
@@ -103,7 +104,7 @@ Follow these steps to make a contribution to any of our open source repositories
 6. Create new Pull Request
 
 
-We favor pull requests with very small, single commits with a single purpose.
+Each pull request and commit should be small enough to contain only one purpose. 
 
 Your pull request is much more likely to be accepted if:
 
