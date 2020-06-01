@@ -121,7 +121,12 @@ func (w *writer) Write(p []byte) (n int, err error) {
 }
 
 func (w *writer) upload(body io.Reader) (err error) {
-	uploader := s3manager.NewUploaderWithClient(w.service)
+	uploader := s3manager.NewUploaderWithClient(
+		w.service,
+		func(u *s3manager.Uploader) {
+			u.PartSize = w.maxPartSize
+		},
+	)
 	input := &s3manager.UploadInput{
 		Bucket: aws.String(w.bucket),
 		Key:    aws.String(w.key),
