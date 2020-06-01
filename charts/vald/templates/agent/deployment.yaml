@@ -134,8 +134,8 @@ spec:
           volumeMounts:
             - name: {{ .Values.agent.sidecar.name }}-config
               mountPath: /etc/server/
-            {{- if .Values.agent.sidecar.volumeMounts }}
-            {{- toYaml .Values.agent.sidecar.volumeMounts | nindent 12 }}
+            {{- if .Values.agent.volumeMounts }}
+            {{- toYaml .Values.agent.volumeMounts | nindent 12 }}
             {{- end }}
         {{- end }}
       dnsPolicy: ClusterFirst

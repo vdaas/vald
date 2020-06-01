@@ -312,6 +312,13 @@ func (o *observer) backup(ctx context.Context) error {
 					return err
 				}
 
+				defer func() {
+					e := data.Close()
+					if e != nil {
+						log.Errorf("failed to close %s: %s", file, e)
+					}
+				}()
+
 				_, err = io.Copy(tw, data)
 				if err != nil {
 					return err
