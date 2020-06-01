@@ -241,30 +241,42 @@ func (o *observer) backup(ctx context.Context) error {
 		}
 	}()
 
+	pr, pw := io.Pipe()
+	defer func() {
+		e := pr.Close()
+		if e != nil {
+			log.Errorf("error on closing pipe reader: %s", e)
+		}
+	}()
+
 	sw, err := o.storage.Writer(ctx)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if e := sw.Close(); e != nil {
-			log.Error(e)
+		e := sw.Close()
+		if e != nil {
+			log.Errorf("error on closing blob-storage writer: %s", e)
 		}
 	}()
-
-	pr, pw := io.Pipe()
-	defer pr.Close()
 
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
 
 	o.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer wg.Done()
-		defer pw.Close()
+		defer func() {
+			e := pw.Close()
+			if e != nil {
+				log.Errorf("error on closing pipe writer: %s", e)
+			}
+		}()
 
 		tw := tar.NewWriter(pw)
 		defer func() {
-			if e := tw.Close(); e != nil {
-				log.Error(e)
+			e := tw.Close()
+			if e != nil {
+				log.Errorf("error on closing tar writer: %s", e)
 			}
 		}()
 
