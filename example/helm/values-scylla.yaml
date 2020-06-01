@@ -38,9 +38,9 @@ agent:
     # The type of fashion-mnist's feature vectors.
     object_type: float
     # Check duration of automatic indexing.
-    auto_index_duration_limit: 0s
+    auto_index_duration_limit: 1m
     # The limit duration of automatic indexing.
-    auto_index_duration_limit: 0s
+    auto_index_duration_limit: 20s
 
 discoverer:
   resources:
@@ -64,7 +64,7 @@ indexManager:
     auto_index_duration_limit: 1m
     # The check duration of automatic indexing.
     # This trigger the indexing on each Vald Agnet if uncommitted index exceed limit.
-    auto_index_check_duration: 30s
+    auto_index_check_duration: 40s
 
 backupManager:
   image:
