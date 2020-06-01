@@ -47,6 +47,8 @@ type observer struct {
 	longestCheckDuration time.Duration
 
 	storage storage.Storage
+
+	ch chan struct{}
 }
 
 func New(opts ...Option) (so StorageObserver, err error) {
@@ -56,6 +58,7 @@ func New(opts ...Option) (so StorageObserver, err error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
+
 	o.w, err = watch.New(
 		watch.WithDirs(o.dir),
 		watch.WithErrGroup(o.eg),
@@ -70,10 +73,15 @@ func New(opts ...Option) (so StorageObserver, err error) {
 }
 
 func (o *observer) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 2)
+	ech := make(chan error, 100)
 
-	var tech, bech <-chan error
+	var wech, tech, sech, bech <-chan error
 	var err error
+
+	wech, err = o.w.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	tech, err = o.startTicker(ctx)
 	if err != nil {
@@ -81,7 +89,13 @@ func (o *observer) Start(ctx context.Context) (<-chan error, error) {
 		return nil, err
 	}
 
-	bech, err = o.storage.Start(ctx)
+	sech, err = o.storage.Start(ctx)
+	if err != nil {
+		close(ech)
+		return nil, err
+	}
+
+	bech, err = o.startBackupLoop(ctx)
 	if err != nil {
 		close(ech)
 		return nil, err
@@ -94,7 +108,9 @@ func (o *observer) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
+			case err = <-wech:
 			case err = <-tech:
+			case err = <-sech:
 			case err = <-bech:
 			}
 			if err != nil {
@@ -111,18 +127,16 @@ func (o *observer) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
-	wech, err := o.w.Start(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	ech := make(chan error, 100)
 	o.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
+
 		ct := time.NewTicker(o.checkDuration)
 		defer ct.Stop()
+
 		lct := time.NewTicker(o.longestCheckDuration)
 		defer lct.Stop()
+
 		finalize := func() (err error) {
 			err = ctx.Err()
 			if err != nil && err != context.Canceled {
@@ -130,25 +144,25 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 			}
 			return nil
 		}
+
 		for {
 			select {
 			case <-ctx.Done():
 				return finalize()
 			case <-ct.C:
-				err = o.backup(ctx)
+				err = o.requestBackup(ctx)
 				if err != nil {
 					ech <- err
 					log.Error(err)
 					err = nil
 				}
 			case <-lct.C:
-				err = o.backup(ctx)
+				err = o.requestBackup(ctx)
 				if err != nil {
 					ech <- err
 					log.Error(err)
 					err = nil
 				}
-			case err = <-wech:
 			}
 			if err != nil {
 				log.Error(err)
@@ -164,6 +178,39 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
+func (o *observer) startBackupLoop(ctx context.Context) (<-chan error, error) {
+	o.ch = make(chan struct{}, 1)
+
+	ech := make(chan error, 100)
+	o.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(ech)
+
+		finalize := func() (err error) {
+			err = ctx.Err()
+			if err != nil && err != context.Canceled {
+				return err
+			}
+			return nil
+		}
+
+		for {
+			select {
+			case <-ctx.Done():
+				return finalize()
+			case <-o.ch:
+				err = o.backup(ctx)
+				if err != nil {
+					ech <- err
+					log.Error(err)
+					err = nil
+				}
+			}
+		}
+	}))
+
+	return ech, nil
+}
+
 func (o *observer) onWrite(ctx context.Context, name string) error {
 	ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/observer/StorageObserver.onWrite")
 	defer func() {
@@ -171,7 +218,8 @@ func (o *observer) onWrite(ctx context.Context, name string) error {
 			span.End()
 		}
 	}()
-	return o.backup(ctx)
+
+	return o.requestBackup(ctx)
 }
 
 func (o *observer) onCreate(ctx context.Context, name string) error {
@@ -182,7 +230,17 @@ func (o *observer) onCreate(ctx context.Context, name string) error {
 		}
 	}()
 
-	return o.backup(ctx)
+	return o.requestBackup(ctx)
+}
+
+func (o *observer) requestBackup(ctx context.Context) error {
+	select {
+	case o.ch <- struct{}{}:
+	default:
+		log.Debug("cannot request backup: channel is full")
+	}
+
+	return nil
 }
 
 func (o *observer) backup(ctx context.Context) error {
