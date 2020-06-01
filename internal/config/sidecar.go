@@ -27,6 +27,9 @@ type AgentSidecar struct {
 	// AutoBackupDuration represent checking loop duration for auto backup execution
 	AutoBackupDuration string `yaml:"auto_backup_duration" json:"auto_backup_duration"`
 
+	// PostStopTimeout represent timeout duration for file changing during post stop
+	PostStopTimeout string `yaml:"post_stop_timeout" json:"post_stop_timeout"`
+
 	// Filename represent backup filename
 	Filename string `yaml:"filename" json:"filename"`
 
@@ -44,6 +47,7 @@ func (s *AgentSidecar) Bind() *AgentSidecar {
 	s.Mode = GetActualValue(s.Mode)
 	s.WatchDir = GetActualValue(s.WatchDir)
 	s.AutoBackupDuration = GetActualValue(s.AutoBackupDuration)
+	s.PostStopTimeout = GetActualValue(s.PostStopTimeout)
 	s.Filename = GetActualValue(s.Filename)
 	s.FilenameSuffix = GetActualValue(s.FilenameSuffix)
 

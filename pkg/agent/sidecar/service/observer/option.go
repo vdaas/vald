@@ -18,8 +18,6 @@
 package observer
 
 import (
-	"time"
-
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
@@ -31,6 +29,7 @@ var (
 	defaultOpts = []Option{
 		WithErrGroup(errgroup.Get()),
 		WithBackupDuration("10m"),
+		WithPostStopTimeout("10s"),
 	}
 )
 
@@ -41,9 +40,23 @@ func WithBackupDuration(dur string) Option {
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			d = time.Minute * 5
+			return nil
 		}
 		o.checkDuration = d
+		return nil
+	}
+}
+
+func WithPostStopTimeout(dur string) Option {
+	return func(o *observer) error {
+		if dur == "" {
+			return nil
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return nil
+		}
+		o.postStopTimeout = d
 		return nil
 	}
 }

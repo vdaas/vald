@@ -130,6 +130,7 @@ func (w *writer) upload(body io.Reader) (err error) {
 
 	res, err := uploader.UploadWithContext(w.ctx, input)
 	if err != nil {
+		log.Error("upload failed with error: ", err)
 		return err
 	}
 

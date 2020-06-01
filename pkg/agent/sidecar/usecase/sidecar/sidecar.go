@@ -204,5 +204,9 @@ func (r *run) Stop(ctx context.Context) error {
 }
 
 func (r *run) PostStop(ctx context.Context) error {
+	if r.so != nil {
+		return r.so.PostStop(ctx)
+	}
+
 	return nil
 }

@@ -1234,6 +1234,9 @@ agent:
       # @schema {"name": "agent.sidecar.config.auto_backup_duration", "type": "string"}
       # agent.sidecar.config.auto_backup_duration -- auto backup duration
       auto_backup_duration: 10m
+      # @schema {"name": "agent.sidecar.config.post_stop_timeout", "type": "string"}
+      # agent.sidecar.config.post_stop_timeout -- timeout duration for file changing during post stop
+      post_stop_timeout: 10s
       # @schema {"name": "agent.sidecar.config.filename", "type": "string"}
       # agent.sidecar.config.filename -- backup filename
       filename: _MY_POD_NAME_

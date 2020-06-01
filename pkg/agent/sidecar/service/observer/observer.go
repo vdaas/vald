@@ -38,6 +38,7 @@ import (
 
 type StorageObserver interface {
 	Start(ctx context.Context) (<-chan error, error)
+	PostStop(ctx context.Context) error
 }
 
 type observer struct {
@@ -45,6 +46,8 @@ type observer struct {
 	dir           string
 	eg            errgroup.Group
 	checkDuration time.Duration
+
+	postStopTimeout time.Duration
 
 	storage storage.Storage
 
@@ -124,6 +127,52 @@ func (o *observer) Start(ctx context.Context) (<-chan error, error) {
 	}))
 
 	return ech, nil
+}
+
+func (o *observer) PostStop(ctx context.Context) (err error) {
+	finalize := func() (err error) {
+		err = ctx.Err()
+		if err != nil && err != context.Canceled {
+			return err
+		}
+		return nil
+	}
+
+	ticker := time.NewTicker(o.postStopTimeout / 5)
+	defer ticker.Stop()
+
+	t := time.Now()
+
+	f := func(ctx context.Context, name string) error {
+		t = time.Now()
+		return nil
+	}
+
+	o.w, err = watch.New(
+		watch.WithDirs(o.dir),
+		watch.WithErrGroup(o.eg),
+		watch.WithOnWrite(f),
+		watch.WithOnCreate(f),
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = o.w.Start(ctx)
+	if err != nil {
+		return err
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return finalize()
+		case <-ticker.C:
+			if time.Since(t) > o.postStopTimeout {
+				return o.backup(ctx)
+			}
+		}
+	}
 }
 
 func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
@@ -307,19 +356,26 @@ func (o *observer) backup(ctx context.Context) error {
 			log.Debug("writing: ", file)
 
 			if !fi.IsDir() {
-				data, err := os.Open(file)
-				if err != nil {
-					return err
-				}
-
-				defer func() {
-					e := data.Close()
-					if e != nil {
-						log.Errorf("failed to close %s: %s", file, e)
+				err = func() error {
+					data, err := os.Open(file)
+					if err != nil {
+						return err
 					}
-				}()
 
-				_, err = io.Copy(tw, data)
+					defer func() {
+						e := data.Close()
+						if e != nil {
+							log.Errorf("failed to close %s: %s", file, e)
+						}
+					}()
+
+					_, err = io.Copy(tw, data)
+					if err != nil {
+						return err
+					}
+
+					return nil
+				}()
 				if err != nil {
 					return err
 				}
