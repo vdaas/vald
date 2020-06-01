@@ -61,7 +61,7 @@ spec:
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
         {{- end }}
         {{- if and .Values.agent.sidecar.enabled .Values.agent.sidecar.initContainerEnabled }}
-        - name: {{ .Values.agent.sidecar.name }}
+        - name: {{ .Values.agent.sidecar.name }}-init
           image: "{{ .Values.agent.sidecar.image.repository }}:{{ default .Values.defaults.image.tag .Values.agent.sidecar.image.tag }}"
           imagePullPolicy: {{ .Values.agent.sidecar.image.pullPolicy }}
           {{- $servers := dict "Values" .Values.agent.sidecar.server_config "default" .Values.defaults.server_config -}}
