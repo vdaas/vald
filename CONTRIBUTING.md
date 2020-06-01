@@ -48,8 +48,8 @@ Please submit the bug report [here](https://github.com/vdaas/vald/issues/new?ass
 The Vald is being developed based on the design-driven process.<br>
 The significant change to the library or the architecture should be discussed first.
 
-We may ask for the detailed documentation before your proposal is implemented.<br>
-Your proposal will be reviewed and discussed and decide whether it is accepted or declined.
+We may ask for the detailed documentation before your proposal is accepted.<br>
+Your proposal will be reviewed, discussed and decide whether it is accepted or declined.
 
 
 Please submit the proposal [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
