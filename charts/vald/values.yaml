@@ -1173,9 +1173,6 @@ agent:
           secretKeyRef:
             name: aws-secret
             key: secret-access-key
-    # @schema {"name": "agent.sidecar.volumeMounts", "alias": "volumeMounts"}
-    # agent.sidecar.volumeMounts -- volume mounts
-    volumeMounts: []
     # @schema {"name": "agent.sidecar.server_config", "alias": "server_config"}
     # agent.sidecar.server_config -- server config (overrides defaults.server_config)
     server_config:
