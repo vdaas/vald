@@ -240,6 +240,16 @@ func (o *observer) backup(ctx context.Context) error {
 		}
 	}()
 
+	sw, err := o.storage.Writer(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if e := sw.Close(); e != nil {
+			log.Error(e)
+		}
+	}()
+
 	pr, pw := io.Pipe()
 	defer pr.Close()
 
@@ -299,16 +309,6 @@ func (o *observer) backup(ctx context.Context) error {
 
 		return nil
 	}))
-
-	sw, err := o.storage.Writer(ctx)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if e := sw.Close(); e != nil {
-			log.Error(e)
-		}
-	}()
 
 	_, err = io.Copy(sw, pr)
 	if err != nil {
