@@ -111,7 +111,7 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 
 		err = r.restore(ctx)
 		if err != nil {
-			return p.Signal(syscall.SIGKILL) // TODO: #403
+			log.Errorf("restoring failed: %s", err)
 		}
 
 		return p.Signal(syscall.SIGTERM) // TODO: #403
