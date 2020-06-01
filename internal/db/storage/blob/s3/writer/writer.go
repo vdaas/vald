@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -41,6 +42,7 @@ type writer struct {
 
 	// for single uploads
 	pw io.WriteCloser
+	wg *sync.WaitGroup
 
 	// for multipart uploads
 	ctx  context.Context
@@ -66,12 +68,17 @@ func New(opts ...Option) Writer {
 func (w *writer) Open(ctx context.Context) (err error) {
 	w.ctx = ctx
 
+	w.wg = new(sync.WaitGroup)
+
 	if !w.multipart {
 		var pr io.ReadCloser
 
 		pr, w.pw = io.Pipe()
 
+		w.wg.Add(1)
+
 		w.eg.Go(safety.RecoverFunc(func() (err error) {
+			defer w.wg.Done()
 			defer pr.Close()
 
 			return w.upload(pr)
@@ -88,6 +95,10 @@ func (w *writer) Close() error {
 
 	if w.multipart && w.resp != nil {
 		return w.completeMultipartUpload()
+	}
+
+	if w.wg != nil {
+		w.wg.Wait()
 	}
 
 	return nil
