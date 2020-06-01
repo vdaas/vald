@@ -24,6 +24,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
@@ -253,7 +254,11 @@ func (o *observer) backup(ctx context.Context) error {
 	pr, pw := io.Pipe()
 	defer pr.Close()
 
+	wg := new(sync.WaitGroup)
+	wg.Add(1)
+
 	o.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer wg.Done()
 		defer pw.Close()
 
 		tw := tar.NewWriter(pw)
@@ -314,6 +319,8 @@ func (o *observer) backup(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	wg.Wait()
 
 	return nil
 }
