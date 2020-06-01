@@ -114,8 +114,6 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 
 	c.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
-		fch := make(chan struct{}, 1)
-		defer close(fch)
 		dt := time.NewTicker(c.dscDur)
 		defer dt.Stop()
 		finalize := func() (err error) {
@@ -142,21 +140,8 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 				return finalize()
 			case err = <-dech:
 			case err = <-aech:
-			case <-fch:
-				err = c.discover(ctx, ech)
-				if err != nil {
-					ech <- err
-					err = nil
-				}
 			case <-dt.C:
 				err = c.discover(ctx, ech)
-				if err != nil {
-					ech <- err
-					log.Error(err)
-					err = nil
-					time.Sleep(c.dscDur / 5)
-					fch <- struct{}{}
-				}
 			}
 			if err != nil {
 				log.Error(err)
@@ -165,6 +150,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 					return finalize()
 				case ech <- err:
 				}
+				err = nil
 			}
 		}
 	}))
