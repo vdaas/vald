@@ -18,7 +18,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -64,7 +63,7 @@ func (r *run) PreStart(ctx context.Context) (err error) {
 	case Search:
 		r.loader, err = service.NewSearch(opts...)
 	default:
-		return fmt.Errorf("unsupported method")
+		return errors.Errorf("unsupported method")
 	}
 
 	return r.loader.Prepare(ctx)
