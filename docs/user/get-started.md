@@ -301,7 +301,7 @@ If you want to learn about NGT, please refer to [NGT](https://github.com/yahooja
 
 2. Deploy Vald Agent using helm
 
-    There is the [values.yaml](../../example/helm/values-standalone-agent-ngt.yaml) to deploy standalone Agent NGT.
+    There is the [values.yaml](../../example/helm/values-standalone-agent-ngt.yaml) to deploy standalone Vald Agent. 
     Each component can be disabled by setting the value `false` to the `[component].enabled` field. This is useful for deploying standalone Vald Agent NGT pods.
     
     ```bash
@@ -323,7 +323,7 @@ If you want to learn about NGT, please refer to [NGT](https://github.com/yahooja
     vald-agent-ngt-0   1/1     Running   0          20m
     vald-agent-ngt-1   1/1     Running   0          20m
     vald-agent-ngt-2   1/1     Running   0          20m
-    vald-agent-ngt-3   0/1     Pending   0          20m
+    vald-agent-ngt-3   1/1     Running   0          20m
     ```
     </details>
 
@@ -332,7 +332,7 @@ If you want to learn about NGT, please refer to [NGT](https://github.com/yahooja
 1. Port Forward
 
     ```bash
-    kubectl port-forward deployment/vald-agent-ngt 8081:8081
+    kubectl port-forward service/vald-agent-ngt 8081:8081
     ```
 
 2. Download dataset
@@ -341,7 +341,7 @@ If you want to learn about NGT, please refer to [NGT](https://github.com/yahooja
 
     ```bash
     # move to working directory
-    cd example/client
+    cd example/client/agent
     
     # download fashion-mnist testing dataset
     wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
@@ -349,4 +349,151 @@ If you want to learn about NGT, please refer to [NGT](https://github.com/yahooja
 
 3. Running example
 
-WIP
+3. Running example
+
+    Vald provides multiple langurages client library such as golang, Java, Node.js, Python and so on.<br>
+    In this example, the fashion-mnist dataset will insert into the vald cluster and perform a search using [vald-client-go](https://github.com/vdaas/vald-client-go).
+
+    We use [`example/client/agent/main.go`](../../example/client/agent/main.go) to run the example.
+    This will execute 4 steps.
+    1. init
+    - Import packages
+        <details><summary>example code</summary><br>
+
+        ```go
+        package main
+
+        import (
+            "context"
+            "encoding/json"
+            "flag"
+            "time"
+
+            "github.com/kpango/fuid"
+            "github.com/kpango/glg"
+            "github.com/vdaas/vald-client-go/agent"
+            "github.com/vdaas/vald-client-go/payload"
+
+            "gonum.org/v1/hdf5"
+            "google.golang.org/grpc"
+        )
+        ```
+        </details>
+    - Set variables
+        - The constant number of training datasets and test datasets.
+            <details><summary>example code</summary><br>
+
+            ```go
+            const (
+                insertCount = 400
+                testCount = 20
+            )
+            ```
+            </details>
+
+        - The variables for configuration.
+            <details><summary>example code</summary><br>
+
+            ```go
+            const (
+                datasetPath         string
+                grpcServerAddr      string
+                indexingWaitSeconds uint
+            )
+            ```
+            </details>
+    - Recognition parameters.
+        <details><summary>example code</summary><br>
+
+        ```go
+        func init() {
+            flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
+            flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "set gRPC server address")
+            flag.UintVar(&indexingWaitSeconds, "wait", 60, "set indexing wait seconds")
+            flag.Parse()
+        }
+        ```
+        </details>
+    2. load
+    - Loading from fashion-mnist dataset and set id for each vector that is loaded. This step will return the training dataset, test dataset, and ids list of ids when loading is completed with success.
+        <details><summary>example code</summary><br>
+
+        ```go
+        ids, train, test, err := load(datasetPath)
+        if err != nil {
+            glg.Fatal(err)
+        }
+        ```
+        </details>
+    3. Create the gRPC connection and Vald client with gRPC connection.
+        <details><summary>example code</summary><br>
+
+        ```go
+        ctx := context.Background()
+
+        conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
+        if err != nil {
+            glg.Fatal(err)
+        }
+
+        client := agent.NewAgentClient(conn)
+        ```
+        </details>
+    4. Insert and Index
+    - Insert and Indexing 400 training datasets to the Vald agent.
+        <details><summary>example code</summary><br>
+
+        ```go
+        for i := range ids [:insertCount] {
+            if i%10 == 0 {
+                glg.Infof("Inserted %d", i)
+            }
+            _, err := client.Insert(ctx, &payload.Object_Vector{
+                Id: ids[i],
+                Vector: train[i],
+            })
+            if err != nil {
+                glg.Fatal(err)
+            }
+        }
+        ```
+        </details>
+    - Wait until indexing finish.
+        <details><summary>example code</summary><br>
+
+        ```go
+        glg.Info("Wait for indexing to finish")
+        time.Sleep(time.Duration(indexingWaitSeconds) * time.Second)
+        ```
+        </details>
+    5. Search
+    - Search 10 neighbor vectors for each 20 test datasets and return list of neighbor vector.
+    - When getting approximate vectors, the Vald client sends search config and vector to the server via gRPC.
+        <details><summary>example code</summary><br>
+
+        ```go
+        glg.Infof("Start search %d times", testCount)
+        for i, vec := range test[:testCount] {
+            res, err := client.Search(ctx, &payload.Search_Request){
+                Vector: vec,
+                Config: &payload.Search_Config{
+                    Num: 10,
+                    Radius: -1,
+                    Epsilon: 0.01,
+                }
+            }
+            if err != nil {
+                glg.Fatal(err)
+            }
+
+            b, _ := json.MarshalIndent(res.GetResults(), "", " ")
+            glg.Infof("%d - Results : %s\n\n", i+1, string(b))
+            time.Sleep(1 * time.Second)
+        }
+        ```
+        </details>
+
+    ```bash
+    # run example
+    go run main.go
+    ```

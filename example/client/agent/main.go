@@ -65,7 +65,7 @@ func main() {
 
 	ctx := context.Background()
 
-	// Create a Vald client for connecting to the Vald cluster.
+	// Create a Vald Agent client for connecting to the Vald cluster.
 	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
 	if err != nil {
 		glg.Fatal(err)
@@ -74,13 +74,13 @@ func main() {
 	// Creates Vald Agent client for gRPC.
 	client := agent.NewAgentClient(conn)
 
-	glg.Infof("Start Inserting %d training vector to Vald", insertCount)
+	glg.Infof("Start Inserting %d training vector to Vald Agent", insertCount)
 	// Insert 400 example vectors into Vald cluster
 	for i := range ids[:insertCount] {
 		if i%10 == 0 {
 			glg.Infof("Inserted: %d", i)
 		}
-		// Calls `Insert` function of Vald client.
+		// Calls `Insert` function of Vald Agent client.
 		// Sends set of vector and id to server via gRPC.
 		_, err := client.Insert(ctx, &payload.Object_Vector{
 			Id:     ids[i],
@@ -98,11 +98,11 @@ func main() {
 
 	/**
 	Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
-	In this example, Vald gets 10 approximate vectors each search vector.
+	In this example, Vald Agent gets 10 approximate vectors each search vector.
 	**/
 	glg.Info("Start searching %d times", testCount)
 	for i, vec := range test[:testCount] {
-		// Send searching vector and configuration object to the Vald server via gRPC.
+		// Send searching vector and configuration object to the Vald Agent server via gRPC.
 		res, err := client.Search(ctx, &payload.Search_Request{
 			Vector: vec,
 			// Conditions for hitting the search.
