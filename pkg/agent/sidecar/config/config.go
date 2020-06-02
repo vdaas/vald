@@ -23,15 +23,15 @@ import (
 	"github.com/vdaas/vald/internal/config"
 )
 
-type sidecarMode uint8
+type Mode uint8
 
 const (
-	SIDECAR sidecarMode = 1 + iota
+	SIDECAR Mode = 1 + iota
 	INITCONTAINER
 )
 
-func (sm sidecarMode) String() string {
-	switch sm {
+func (m Mode) String() string {
+	switch m {
 	case SIDECAR:
 		return "sidecar"
 	case INITCONTAINER:
@@ -40,8 +40,8 @@ func (sm sidecarMode) String() string {
 	return "unknown"
 }
 
-func SidecarMode(sm string) sidecarMode {
-	switch strings.ToLower(sm) {
+func SidecarMode(m string) Mode {
+	switch strings.ToLower(m) {
 	case "sidecar":
 		return SIDECAR
 	case "initcontainer":

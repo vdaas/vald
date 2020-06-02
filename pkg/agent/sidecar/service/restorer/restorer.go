@@ -187,7 +187,10 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 				return err
 			}
 
-			f.Close()
+			err = f.Close()
+			if err != nil {
+				return err
+			}
 		}
 	}
 
