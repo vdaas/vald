@@ -2,18 +2,15 @@
 <img src="./assets/image/svg/logo.svg" width="50%">
 </div>
 
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache2-blue.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
-[![CLA](https://cla-assistant.io/readme/badge/vdaas/vald?&style=flat-square)](https://cla-assistant.io/vdaas/vald)
+[![License: Apache 2.0](https://img.shields.io/github/license/vdaas/vald.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
 [![release](https://img.shields.io/github/release/vdaas/vald.svg?style=flat-square)](https://github.com/vdaas/vald/releases/latest)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://pkg.go.dev/github.com/vdaas/vald)
 [![Codacy Badge](https://img.shields.io/codacy/grade/a6e544eee7bc49e08a000bb10ba3deed?style=flat-square)](https://www.codacy.com/app/i.can.feel.gravity/vald?utm_source=github.com&utm_medium=referral&utm_content=vdaas/vald&utm_campaign=Badge_Grade)
 [![Go Report Card](https://goreportcard.com/badge/github.com/vdaas/vald?style=flat-square)](https://goreportcard.com/report/github.com/vdaas/vald)
-[![GolangCI](https://golangci.com/badges/github.com/vdaas/vald.svg?style=flat-square)](https://golangci.com/r/github.com/vdaas/vald)
-[![Go Walker](https://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/vdaas/vald)
-[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/vdaas/vald)
 [![DepShield Badge](https://depshield.sonatype.org/badges/vdaas/vald/depshield.svg?style=flat-square)](https://depshield.github.io)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fvdaas%2Fvald.svg?type=small&style=flat-square)](https://app.fossa.com/projects/git%2Bgithub.com%2Fvdaas%2Fvald?ref=badge_small)
 [![DeepSource](https://static.deepsource.io/deepsource-badge-light-mini.svg)](https://deepsource.io/gh/vdaas/vald/?ref=repository-badge)
-[![Contributors](https://img.shields.io/github/contributors/vdaas/vald?style=flat-square)](https://github.com/vdaas/vald/graphs/contributors)
+[![CLA](https://cla-assistant.io/readme/badge/vdaas/vald?&style=flat-square)](https://cla-assistant.io/vdaas/vald)
 [![Slack](https://img.shields.io/badge/slack-join-brightgreen?logo=slack&style=flat-square)](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA)
 [![Twitter](https://img.shields.io/badge/twitter-follow-blue?logo=twitter&style=flat-square)](https://twitter.com/vdaas_vald)
 <!--[![codecov](https://img.shields.io/codecov/c/github/vdaas/vald.svg?style=flat-square&logo=codecov)](https://codecov.io/gh/vdaas/vald) -->
@@ -193,30 +190,28 @@ make init
 
 Please read the [contribution guide](https://github.com/vdaas/vald/blob/master/CONTRIBUTING.md)
 
-## Author
+## Contributors
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-- [kpango](https://github.com/kpango)
-- [kmrmt](https://github.com/kmrmt)
-- [rinx](https://github.com/rinx)
-
-## Contributor
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="http://kpango.com"><img src="https://avatars1.githubusercontent.com/u/9798091?v=4" width="100px;" alt=""/><br /><sub><b>Yusuke Kato</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=kpango" title="Code">💻</a> <a href="#design-kpango" title="Design">🎨</a> <a href="https://github.com/vdaas/vald/commits?author=kpango" title="Documentation">📖</a> <a href="#example-kpango" title="Examples">💡</a> <a href="#fundingFinding-kpango" title="Funding Finding">🔍</a> <a href="#ideas-kpango" title="Ideas, Planning, & Feedback">🤔</a> <a href="#infra-kpango" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#maintenance-kpango" title="Maintenance">🚧</a> <a href="#platform-kpango" title="Packaging/porting to new platform">📦</a> <a href="#plugin-kpango" title="Plugin/utility libraries">🔌</a> <a href="#projectManagement-kpango" title="Project Management">📆</a> <a href="#question-kpango" title="Answering Questions">💬</a> <a href="https://github.com/vdaas/vald/pulls?q=is%3Apr+reviewed-by%3Akpango" title="Reviewed Pull Requests">👀</a> <a href="#security-kpango" title="Security">🛡️</a> <a href="#tool-kpango" title="Tools">🔧</a> <a href="https://github.com/vdaas/vald/commits?author=kpango" title="Tests">⚠️</a> <a href="#tutorial-kpango" title="Tutorials">✅</a> <a href="#talk-kpango" title="Talks">📢</a></td>
-    <td align="center"><a href="https://github.com/rinx"><img src="https://avatars3.githubusercontent.com/u/1588935?v=4" width="100px;" alt=""/><br /><sub><b>Rintaro Okamura</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=rinx" title="Code">💻</a> <a href="https://github.com/vdaas/vald/commits?author=rinx" title="Documentation">📖</a> <a href="#example-rinx" title="Examples">💡</a> <a href="#ideas-rinx" title="Ideas, Planning, & Feedback">🤔</a> <a href="#infra-rinx" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#maintenance-rinx" title="Maintenance">🚧</a> <a href="#platform-rinx" title="Packaging/porting to new platform">📦</a> <a href="#plugin-rinx" title="Plugin/utility libraries">🔌</a> <a href="#question-rinx" title="Answering Questions">💬</a> <a href="https://github.com/vdaas/vald/pulls?q=is%3Apr+reviewed-by%3Arinx" title="Reviewed Pull Requests">👀</a> <a href="#tool-rinx" title="Tools">🔧</a> <a href="https://github.com/vdaas/vald/commits?author=rinx" title="Tests">⚠️</a> <a href="#tutorial-rinx" title="Tutorials">✅</a> <a href="#talk-rinx" title="Talks">📢</a></td>
-    <td align="center"><a href="https://morimoto.dev/"><img src="https://avatars2.githubusercontent.com/u/413873?v=4" width="100px;" alt=""/><br /><sub><b>Kosuke Morimoto</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=kmrmt" title="Code">💻</a> <a href="#example-kmrmt" title="Examples">💡</a> <a href="https://github.com/vdaas/vald/pulls?q=is%3Apr+reviewed-by%3Akmrmt" title="Reviewed Pull Requests">👀</a> <a href="#tool-kmrmt" title="Tools">🔧</a> <a href="https://github.com/vdaas/vald/commits?author=kmrmt" title="Tests">⚠️</a></td>
-    <td align="center"><a href="https://github.com/vankichi"><img src="https://avatars3.githubusercontent.com/u/13959763?v=4" width="100px;" alt=""/><br /><sub><b>Kiichiro YUKAWA</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=vankichi" title="Documentation">📖</a> <a href="#example-vankichi" title="Examples">💡</a> <a href="#maintenance-vankichi" title="Maintenance">🚧</a> <a href="https://github.com/vdaas/vald/pulls?q=is%3Apr+reviewed-by%3Avankichi" title="Reviewed Pull Requests">👀</a> <a href="#tool-vankichi" title="Tools">🔧</a> <a href="https://github.com/vdaas/vald/commits?author=vankichi" title="Tests">⚠️</a> <a href="#tutorial-vankichi" title="Tutorials">✅</a></td>
+    <td align="center"><a href="http://kpango.com"><img src="https://avatars1.githubusercontent.com/u/9798091?v=4" width="100px;" alt=""/><br /><sub><b>Yusuke Kato</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=kpango" title="Code">💻</a> <a href="#ideas-kpango" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-kpango" title="Maintenance">🚧</a> <a href="#projectManagement-kpango" title="Project Management">📆</a></td>
+    <td align="center"><a href="https://github.com/rinx"><img src="https://avatars3.githubusercontent.com/u/1588935?v=4" width="100px;" alt=""/><br /><sub><b>Rintaro Okamura</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=rinx" title="Code">💻</a> <a href="https://github.com/vdaas/vald/commits?author=rinx" title="Documentation">📖</a> <a href="#maintenance-rinx" title="Maintenance">🚧</a> <a href="#platform-rinx" title="Packaging/porting to new platform">📦</a></td>
+    <td align="center"><a href="https://morimoto.dev/"><img src="https://avatars2.githubusercontent.com/u/413873?v=4" width="100px;" alt=""/><br /><sub><b>Kosuke Morimoto</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=kmrmt" title="Code">💻</a> <a href="#example-kmrmt" title="Examples">💡</a> <a href="#tool-kmrmt" title="Tools">🔧</a> <a href="https://github.com/vdaas/vald/commits?author=kmrmt" title="Tests">⚠️</a></td>
+    <td align="center"><a href="https://github.com/vankichi"><img src="https://avatars3.githubusercontent.com/u/13959763?v=4" width="100px;" alt=""/><br /><sub><b>Kiichiro YUKAWA</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=vankichi" title="Documentation">📖</a> <a href="#maintenance-vankichi" title="Maintenance">🚧</a> <a href="https://github.com/vdaas/vald/commits?author=vankichi" title="Tests">⚠️</a> <a href="#tutorial-vankichi" title="Tutorials">✅</a></td>
     <td align="center"><a href="https://github.com/datelier"><img src="https://avatars3.githubusercontent.com/u/57349093?v=4" width="100px;" alt=""/><br /><sub><b>datelier</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=datelier" title="Code">💻</a> <a href="#ideas-datelier" title="Ideas, Planning, & Feedback">🤔</a></td>
     <td align="center"><a href="https://github.com/kevindiu"><img src="https://avatars1.githubusercontent.com/u/1985382?v=4" width="100px;" alt=""/><br /><sub><b>Kevin Diu</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=kevindiu" title="Documentation">📖</a> <a href="#example-kevindiu" title="Examples">💡</a> <a href="https://github.com/vdaas/vald/commits?author=kevindiu" title="Tests">⚠️</a> <a href="#tutorial-kevindiu" title="Tutorials">✅</a></td>
-    <td align="center"><a href="https://twitter.com/hiroto_hlts2"><img src="https://avatars0.githubusercontent.com/u/25459661?v=4" width="100px;" alt=""/><br /><sub><b>Hiroto Funakoshi</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=hlts2" title="Documentation">📖</a> <a href="#example-hlts2" title="Examples">💡</a> <a href="#maintenance-hlts2" title="Maintenance">🚧</a> <a href="https://github.com/vdaas/vald/pulls?q=is%3Apr+reviewed-by%3Ahlts2" title="Reviewed Pull Requests">👀</a> <a href="#tool-hlts2" title="Tools">🔧</a> <a href="https://github.com/vdaas/vald/commits?author=hlts2" title="Tests">⚠️</a> <a href="#tutorial-hlts2" title="Tutorials">✅</a></td>
+    <td align="center"><a href="https://twitter.com/hiroto_hlts2"><img src="https://avatars0.githubusercontent.com/u/25459661?v=4" width="100px;" alt=""/><br /><sub><b>Hiroto Funakoshi</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=hlts2" title="Documentation">📖</a> <a href="#tool-hlts2" title="Tools">🔧</a> <a href="https://github.com/vdaas/vald/commits?author=hlts2" title="Tests">⚠️</a> <a href="#tutorial-hlts2" title="Tutorials">✅</a></td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/taisuou"><img src="https://avatars0.githubusercontent.com/u/21119375?v=4" width="100px;" alt=""/><br /><sub><b>taisho</b></sub></a><br /><a href="#design-taisuou" title="Design">🎨</a> <a href="https://github.com/vdaas/vald/commits?author=taisuou" title="Documentation">📖</a> <a href="#example-taisuou" title="Examples">💡</a></td>
-    <td align="center"><a href="https://github.com/pgrimaud"><img src="https://avatars1.githubusercontent.com/u/1866496?v=4" width="100px;" alt=""/><br /><sub><b>Pierre Grimaud</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=pgrimaud" title="Documentation">📖</a> <a href="#example-pgrimaud" title="Examples">💡</a></td>
+    <td align="center"><a href="https://github.com/pgrimaud"><img src="https://avatars1.githubusercontent.com/u/1866496?v=4" width="100px;" alt=""/><br /><sub><b>Pierre Grimaud</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=pgrimaud" title="Documentation">📖</a></td>
   </tr>
 </table>
 

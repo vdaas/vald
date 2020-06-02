@@ -13,22 +13,8 @@
       "contributions": [
         "code",
         "design",
-        "doc",
-        "example",
-        "fundingFinding",
-        "ideas",
-        "infra",
         "maintenance",
-        "platform",
-        "plugin",
-        "projectManagement",
-        "question",
-        "review",
-        "security",
-        "tool",
-        "test",
-        "tutorial",
-        "talk"
+        "projectManagement"
       ]
     },
     {
@@ -39,18 +25,8 @@
       "contributions": [
         "code",
         "doc",
-        "example",
-        "ideas",
-        "infra",
         "maintenance",
-        "platform",
-        "plugin",
-        "question",
-        "review",
-        "tool",
-        "test",
-        "tutorial",
-        "talk"
+        "platform"
       ]
     },
     {
@@ -61,7 +37,6 @@
       "contributions": [
         "code",
         "example",
-        "review",
         "tool",
         "test"
       ]
@@ -73,10 +48,7 @@
       "profile": "https://github.com/vankichi",
       "contributions": [
         "doc",
-        "example",
         "maintenance",
-        "review",
-        "tool",
         "test",
         "tutorial"
       ]
@@ -110,9 +82,6 @@
       "profile": "https://twitter.com/hiroto_hlts2",
       "contributions": [
         "doc",
-        "example",
-        "maintenance",
-        "review",
         "tool",
         "test",
         "tutorial"
@@ -135,12 +104,13 @@
       "avatar_url": "https://avatars1.githubusercontent.com/u/1866496?v=4",
       "profile": "https://github.com/pgrimaud",
       "contributions": [
-        "doc",
-        "example"
+        "doc"
       ]
     }
   ],
   "contributorsPerLine": 7,
+  "contributorsSortAlphabetically": false,
+  "badgeTemplate": "[![All Contributors](https://img.shields.io/badge/all_contributors-<%= contributors.length %>-orange.svg?style=flat-square)](#contributors)",
   "projectName": "vald",
   "projectOwner": "vdaas",
   "repoType": "github",

@@ -128,117 +128,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
-  add-contributors:
-    name: Add contributors
-    needs:
-      - rebase
-    runs-on: ubuntu-latest
-    steps:
-      - name: check PR Comments
-        id: check_comments_add_contributors
-        uses: machine-learning-apps/actions-chatops@master
-        with:
-          TRIGGER_PHRASE: "/add-contributors"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq
-        if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true'
-        run: |
-          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
-          sudo chmod a+x /usr/local/bin/yq
-      - name: check permissions
-        if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true'
-        id: check_permissions
-        run: |
-          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
-          if [ "$roles" = "" ]; then
-            roles=`yq r chatops_permissions.yaml "default-roles.*"`
-          fi
-          for role in `echo $roles`
-          do
-              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
-                echo "[OK] add-contributor requested by ${USERNAME}"
-                echo "::set-output name=EXECUTABLE::true"
-                break
-              fi
-          done
-        env:
-          USERNAME: ${{ steps.check_comments_add_contributors.outputs.COMMENTER_USERNAME }}
-          REQUIRED_POLICY: add-contributors
-      - name: check executable
-        if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        run: |
-          curl --include --verbose --fail \
-          -H "Accept: application/json" \
-          -H "Content-Type:application/json" \
-          -H "Authorization: token ${GITHUB_TOKEN}" \
-          --request POST \
-          --data "{\"body\": \"**[ADD CONTRIBUTORS]** Add contributor ${PR_AUTHOR} to CONTRIBUTORS triggered by ${USERNAME}.\"}" \
-          $API_URL
-        env:
-          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          USERNAME: ${{ steps.check_comments_add_contributors.outputs.COMMENTER_USERNAME }}
-          PR_AUTHOR: ${{ github.event.issue.user.login }}
-          API_URL: ${{ github.event.issue.comments_url }}
-      - uses: actions/checkout@v1
-        if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        with:
-          fetch-depth: 10
-      - name: Add contributor and push
-        if: steps.check_comments_add_contributors.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        run: |
-          curl -s ${PR_INFO_URL} > /tmp/pr_info.json
-          PR_RESP=`cat /tmp/pr_info.json`
-          HEAD_BRANCH=$(cat /tmp/pr_info.json | jq -r .head.ref)
-          if [[ -z "$HEAD_BRANCH" ]]; then
-            echo "Cannot get head branch information for PR #${PR_NUM}!"
-            echo "API response: $PR_RESP"
-            exit 1
-          fi
-          echo "Head branch for PR #${PR_NUM} is ${HEAD_BRANCH}"
-
-          git checkout ${HEAD_BRANCH}
-
-          if grep "^${PR_AUTHOR}$" CONTRIBUTORS > /dev/null 2>&1 ; then
-            echo "${PR_AUTHOR} already exists in CONTRIBUTORS"
-          else
-            echo "Add ${PR_AUTHOR} to CONTRIBUTORS"
-
-            echo "${PR_AUTHOR}" >> CONTRIBUTORS
-            make readme/update/contributors
-
-            git config --global user.name "vdaas-ci"
-            git config --global user.email "ci@vdaas.org"
-
-            git add CONTRIBUTORS README.md
-            git commit --signoff -m ":robot: Automatically add contributor"
-
-            git pull --rebase
-
-            git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-
-            git push origin ${HEAD_BRANCH}
-          fi
-        env:
-          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
-          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
-          PR_AUTHOR: ${{ github.event.issue.user.login }}
-          PR_NUM: ${{ github.event.issue.number }}
-      - name: failure comment
-        if: failure()
-        run: |
-          curl --include --verbose --fail \
-          -H "Accept: application/json" \
-          -H "Content-Type:application/json" \
-          -H "Authorization: token ${GITHUB_TOKEN}" \
-          --request POST \
-          --data "{\"body\": \"**[ADD CONTRIBUTORS]** Failed to add contributors.\"}" \
-          $API_URL
-        env:
-          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: ${{ github.event.issue.comments_url }}
   gentest:
     name: Add tests
     needs:
@@ -348,7 +237,6 @@ jobs:
     name: Add license and run goimports
     needs:
       - rebase
-      - add-contributors
       - gentest
     runs-on: ubuntu-latest
     steps:
@@ -478,7 +366,6 @@ jobs:
     name: Approve
     needs:
       - rebase
-      - add-contributors
       - format
     runs-on: ubuntu-latest
     steps:
