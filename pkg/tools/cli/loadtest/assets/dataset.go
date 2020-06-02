@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
+// Dataset is representation of train and test dataset.
 type Dataset interface {
 	Train() [][]float32
 	TrainAsFloat64() [][]float64
@@ -337,6 +338,7 @@ func datasetDir() (string, error) {
 	return filepath.Join(root, "hack/benchmark/assets/dataset") + "/", nil
 }
 
+// Data loads specified dataset and returns it.
 func Data(name string) func() (Dataset, error) {
 	log.Debugf("start loading: %s", name)
 	if strings.HasPrefix(name, "identity-") {
@@ -357,10 +359,12 @@ func Data(name string) func() (Dataset, error) {
 	return nil
 }
 
+// Train returns vectors for train
 func (d *dataset) Train() [][]float32 {
 	return d.train
 }
 
+// TrainAsFloat64 returns casted float64 vectors for train
 func (d *dataset) TrainAsFloat64() [][]float64 {
 	d.trainOnce.Do(func() {
 		d.trainAsFloat64 = float32To64(d.train)
@@ -368,10 +372,12 @@ func (d *dataset) TrainAsFloat64() [][]float64 {
 	return d.trainAsFloat64
 }
 
+// Query returns vectors for test
 func (d *dataset) Query() [][]float32 {
 	return d.query
 }
 
+// QueryAsFloat64 returns casted float64 vectors for test
 func (d *dataset) QueryAsFloat64() [][]float64 {
 	d.queryOnce.Do(func() {
 		d.queryAsFloat64 = float32To64(d.query)
@@ -379,10 +385,12 @@ func (d *dataset) QueryAsFloat64() [][]float64 {
 	return d.queryAsFloat64
 }
 
+// Distances returns distances between queries and answers
 func (d *dataset) Distances() [][]float32 {
 	return d.distances
 }
 
+// Distances returns casted float64 distances between queries and answers
 func (d *dataset) DistancesAsFloat64() [][]float64 {
 	d.distancesOnce.Do(func() {
 		d.distancesAsFloat64 = float32To64(d.distances)
@@ -390,26 +398,32 @@ func (d *dataset) DistancesAsFloat64() [][]float64 {
 	return d.distancesAsFloat64
 }
 
+// Neighbors returns nearest vectors from queries
 func (d *dataset) Neighbors() [][]int {
 	return d.neighbors
 }
 
+// IDs returns ids of train vectors
 func (d *dataset) IDs() []string {
 	return d.ids
 }
 
+// Name returns dataset name
 func (d *dataset) Name() string {
 	return d.name
 }
 
+// Dimension returns vector dimension
 func (d *dataset) Dimension() int {
 	return d.dimension
 }
 
+// DistanceType returns dataset distance type like l2, cosine or jaccard
 func (d *dataset) DistanceType() string {
 	return d.distanceType
 }
 
+// ObjectType returns dataset vector type like float or int
 func (d *dataset) ObjectType() string {
 	return d.objectType
 }
