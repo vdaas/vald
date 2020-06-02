@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 )
 
+// NewInsert returns insert load tester.
 func NewInsert(opts ...Option) (Loader, error) {
 	l, err := newLoader(opts...)
 	if err != nil {

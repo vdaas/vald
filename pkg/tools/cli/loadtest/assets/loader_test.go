@@ -502,7 +502,7 @@ func TestCreateSequentialIDs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := CreateSequentialIDs(test.args.n)
+			got := CreateSerialIDs(test.args.n)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -692,7 +692,7 @@ func TestLoadDataWithSequentialIDs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			gotIds, gotTrain, gotTest, gotDistances, gotNeighbors, gotDim, err := LoadDataWithSequentialIDs(test.args.path)
+			gotIds, gotTrain, gotTest, gotDistances, gotNeighbors, gotDim, err := LoadDataWithSerialIDs(test.args.path)
 			if err := test.checkFunc(test.want, gotIds, gotTrain, gotTest, gotDistances, gotNeighbors, gotDim, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

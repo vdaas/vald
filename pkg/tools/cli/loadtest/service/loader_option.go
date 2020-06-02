@@ -23,6 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 )
 
+// Options is load test configuration.
 type Option func(*loader) error
 
 var (
@@ -33,6 +34,7 @@ var (
 	}
 )
 
+// WithAddr sets load test server address.
 func WithAddr(a string) Option {
 	return func(l *loader) error {
 		l.addr = a
@@ -40,6 +42,7 @@ func WithAddr(a string) Option {
 	}
 }
 
+// WithClient sets grpc Client.
 func WithClient(c grpc.Client) Option {
 	return func(l *loader) error {
 		if c != nil {
@@ -50,6 +53,7 @@ func WithClient(c grpc.Client) Option {
 	}
 }
 
+// WithConcurrency sets load test concurrency.
 func WithConcurrency(c int) Option {
 	return func(l *loader) error {
 		if c > 0 {
@@ -59,6 +63,7 @@ func WithConcurrency(c int) Option {
 	}
 }
 
+// WithDataset sets dataset name.
 func WithDataset(n string) Option {
 	return func(l *loader) error {
 		l.dataset = n
@@ -66,6 +71,7 @@ func WithDataset(n string) Option {
 	}
 }
 
+// WithErrGroup sets user specified error group.
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(l *loader) error {
 		if eg != nil {
@@ -75,6 +81,7 @@ func WithErrGroup(eg errgroup.Group) Option {
 	}
 }
 
+// WithProgressDuration sets duration of progress show.
 func WithProgressDuration(pd time.Duration) Option {
 	return func(l *loader) error {
 		l.progressDuration = pd

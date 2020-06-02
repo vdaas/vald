@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 )
 
+// NewSearch returns search load tester.
 func NewSearch(opts ...Option) (Loader, error) {
 	l, err := newLoader(opts...)
 	if err != nil {

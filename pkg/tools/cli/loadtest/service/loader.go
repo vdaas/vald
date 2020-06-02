@@ -32,6 +32,7 @@ import (
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 )
 
+// Loader is representation of load test
 type Loader interface {
 	Prepare(context.Context) error
 	Do(context.Context) <-chan error
@@ -60,6 +61,7 @@ func newLoader(opts ...Option) (l *loader, err error) {
 	return l, nil
 }
 
+// Prepare generate request data.
 func (l *loader) Prepare(context.Context) (err error) {
 	fn := assets.Data(l.dataset)
 	if fn == nil {
@@ -73,6 +75,7 @@ func (l *loader) Prepare(context.Context) (err error) {
 	return err
 }
 
+// Do operates load test.
 func (l *loader) Do(ctx context.Context) <-chan error {
 	ech := make(chan error, len(l.requests))
 

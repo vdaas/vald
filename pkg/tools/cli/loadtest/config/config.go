@@ -37,6 +37,7 @@ type Data struct {
 	Client              *config.GRPCClient `json:"client" yaml:"client"`
 }
 
+// NewConfig returns loaded configuration from file.
 func NewConfig(path string) (cfg *Data, err error) {
 	err = config.Read(path, &cfg)
 

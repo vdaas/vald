@@ -36,6 +36,7 @@ type run struct {
 	client grpc.Client
 }
 
+// New returns Runner instance.
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	run := &run{
 		cfg: cfg,
@@ -45,6 +46,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	return run, nil
 }
 
+// PreStart initializes load tester and returns error if occurred.
 func (r *run) PreStart(ctx context.Context) (err error) {
 	r.client = grpc.New(
 		grpc.WithAddrs(append([]string{r.cfg.Addr}, r.cfg.Client.Addrs...)...),
@@ -69,6 +71,7 @@ func (r *run) PreStart(ctx context.Context) (err error) {
 	return r.loader.Prepare(ctx)
 }
 
+// Start runs load test and returns error if occurred.
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	rech, err := r.client.StartConnectionMonitor(ctx)
 	if err != nil {
@@ -112,14 +115,17 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
+// PreStop does nothing.
 func (r *run) PreStop(ctx context.Context) error {
 	return nil
 }
 
+// Stop does nothing.
 func (r *run) Stop(ctx context.Context) error {
 	return nil
 }
 
+// PostStop does nothing.
 func (r *run) PostStop(ctx context.Context) error {
 	return nil
 }

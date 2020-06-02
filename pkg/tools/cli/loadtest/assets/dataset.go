@@ -68,7 +68,7 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(dir + "fashion-mnist-784-euclidean.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "fashion-mnist-784-euclidean.hdf5")
 			if err != nil {
 				return nil, err
 			}
@@ -89,7 +89,7 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(dir + "mnist-784-euclidean.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "mnist-784-euclidean.hdf5")
 			if err != nil {
 				return nil, err
 			}
@@ -110,7 +110,7 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(dir + "glove-25-angular.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "glove-25-angular.hdf5")
 			if err != nil {
 				return nil, err
 			}
@@ -131,7 +131,7 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(dir + "glove-50-angular.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "glove-50-angular.hdf5")
 			if err != nil {
 				return nil, err
 			}
@@ -152,7 +152,7 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(dir + "glove-100-angular.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "glove-100-angular.hdf5")
 			if err != nil {
 				return nil, err
 			}
@@ -173,7 +173,7 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(dir + "glove-200-angular.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "glove-200-angular.hdf5")
 			if err != nil {
 				return nil, err
 			}
@@ -194,7 +194,7 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(dir + "nytimes-256-angular.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "nytimes-256-angular.hdf5")
 			if err != nil {
 				return nil, err
 			}
@@ -215,7 +215,7 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(dir + "sift-128-euclidean.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "sift-128-euclidean.hdf5")
 			if err != nil {
 				return nil, err
 			}
@@ -236,7 +236,7 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(dir + "gist-960-euclidean.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "gist-960-euclidean.hdf5")
 			if err != nil {
 				return nil, err
 			}
@@ -257,7 +257,7 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSequentialIDs(dir + "/kosarak-jaccard.hdf5")
+			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "/kosarak-jaccard.hdf5")
 			if err != nil {
 				return nil, err
 			}
@@ -278,7 +278,7 @@ var (
 
 func identity(dim int) func() (Dataset, error) {
 	return func() (Dataset, error) {
-		ids := CreateSequentialIDs(dim * 1000)
+		ids := CreateSerialIDs(dim * 1000)
 		train := make([][]float32, dim)
 		for i := range train {
 			train[i] = make([]float32, dim)
@@ -359,12 +359,12 @@ func Data(name string) func() (Dataset, error) {
 	return nil
 }
 
-// Train returns vectors for train
+// Train returns vectors for train.
 func (d *dataset) Train() [][]float32 {
 	return d.train
 }
 
-// TrainAsFloat64 returns casted float64 vectors for train
+// TrainAsFloat64 returns casted float64 vectors for train.
 func (d *dataset) TrainAsFloat64() [][]float64 {
 	d.trainOnce.Do(func() {
 		d.trainAsFloat64 = float32To64(d.train)
@@ -372,12 +372,12 @@ func (d *dataset) TrainAsFloat64() [][]float64 {
 	return d.trainAsFloat64
 }
 
-// Query returns vectors for test
+// Query returns vectors for test.
 func (d *dataset) Query() [][]float32 {
 	return d.query
 }
 
-// QueryAsFloat64 returns casted float64 vectors for test
+// QueryAsFloat64 returns casted float64 vectors for test.
 func (d *dataset) QueryAsFloat64() [][]float64 {
 	d.queryOnce.Do(func() {
 		d.queryAsFloat64 = float32To64(d.query)
@@ -385,12 +385,12 @@ func (d *dataset) QueryAsFloat64() [][]float64 {
 	return d.queryAsFloat64
 }
 
-// Distances returns distances between queries and answers
+// Distances returns distances between queries and answers.
 func (d *dataset) Distances() [][]float32 {
 	return d.distances
 }
 
-// Distances returns casted float64 distances between queries and answers
+// Distances returns casted float64 distances between queries and answers.
 func (d *dataset) DistancesAsFloat64() [][]float64 {
 	d.distancesOnce.Do(func() {
 		d.distancesAsFloat64 = float32To64(d.distances)
@@ -398,32 +398,32 @@ func (d *dataset) DistancesAsFloat64() [][]float64 {
 	return d.distancesAsFloat64
 }
 
-// Neighbors returns nearest vectors from queries
+// Neighbors returns nearest vectors from queries.
 func (d *dataset) Neighbors() [][]int {
 	return d.neighbors
 }
 
-// IDs returns ids of train vectors
+// IDs returns ids of train vectors.
 func (d *dataset) IDs() []string {
 	return d.ids
 }
 
-// Name returns dataset name
+// Name returns dataset name.
 func (d *dataset) Name() string {
 	return d.name
 }
 
-// Dimension returns vector dimension
+// Dimension returns vector dimension.
 func (d *dataset) Dimension() int {
 	return d.dimension
 }
 
-// DistanceType returns dataset distance type like l2, cosine or jaccard
+// DistanceType returns dataset distance type like l2, cosine, jaccard or etc.
 func (d *dataset) DistanceType() string {
 	return d.distanceType
 }
 
-// ObjectType returns dataset vector type like float or int
+// ObjectType returns dataset vector type like float or int.
 func (d *dataset) ObjectType() string {
 	return d.objectType
 }

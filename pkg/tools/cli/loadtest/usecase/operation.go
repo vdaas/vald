@@ -17,6 +17,7 @@ package usecase
 
 import "strings"
 
+// Operation is type of implemented load test.
 type Operation uint8
 
 const (
@@ -25,6 +26,7 @@ const (
 	Search
 )
 
+// Atoo convert string to Operation.
 func Atoo(s string) Operation {
 	switch strings.ToLower(s) {
 	case "insert":
@@ -36,6 +38,7 @@ func Atoo(s string) Operation {
 	}
 }
 
+// String convert Operation to string.
 func (o Operation) String() string {
 	switch o {
 	case Insert:
