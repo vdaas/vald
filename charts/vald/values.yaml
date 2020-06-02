@@ -1268,9 +1268,9 @@ agent:
           # @schema {"name": "agent.sidecar.config.blob_storage.s3.token", "type": "string"}
           # agent.sidecar.config.blob_storage.s3.token -- s3 token
           token: ""
-          # @schema {"name": "agent.sidecar.config.blob_storage.s3.multipart_upload", "type": "boolean"}
-          # agent.sidecar.config.blob_storage.s3.multipart_upload -- s3 multipart upload enabled
-          multipart_upload: true
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.max_part_size_mb", "type": "integer"}
+          # agent.sidecar.config.blob_storage.s3.max_part_size_mb -- s3 multipart upload max part size
+          max_part_size_mb: 64
       # @schema {"name": "agent.sidecar.config.compress", "type": "object"}
       compress:
         # @schema {"name": "agent.sidecar.config.compress.compress_algorithm", "type": "string", "enum": ["gob", "gzip", "lz4", "zstd"]}

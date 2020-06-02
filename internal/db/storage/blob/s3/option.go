@@ -26,7 +26,6 @@ type Option func(s *s3client)
 var (
 	defaultOpts = []Option{
 		WithErrGroup(errgroup.Get()),
-		WithMultipartUpload(false),
 	}
 )
 
@@ -52,8 +51,8 @@ func WithBucket(bucket string) Option {
 	}
 }
 
-func WithMultipartUpload(enabled bool) Option {
+func WithMaxPartSize(size int64) Option {
 	return func(s *s3client) {
-		s.multipartUpload = enabled
+		s.maxPartSize = size
 	}
 }

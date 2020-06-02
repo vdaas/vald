@@ -76,7 +76,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		storage.WithAccessKey(cfg.AgentSidecar.BlobStorage.S3.AccessKey),
 		storage.WithSecretAccessKey(cfg.AgentSidecar.BlobStorage.S3.SecretAccessKey),
 		storage.WithToken(cfg.AgentSidecar.BlobStorage.S3.Token),
-		storage.WithMultipartUpload(cfg.AgentSidecar.BlobStorage.S3.MultipartUpload),
+		storage.WithMaxPartSizeMB(cfg.AgentSidecar.BlobStorage.S3.MaxPartSizeMB),
 		storage.WithCompressAlgorithm(cfg.AgentSidecar.Compress.CompressAlgorithm),
 		storage.WithCompressionLevel(cfg.AgentSidecar.Compress.CompressionLevel),
 	)

@@ -49,7 +49,7 @@ type bs struct {
 	accessKey       string
 	secretAccessKey string
 	token           string
-	multipartUpload bool
+	maxPartSize     int64
 
 	compressAlgorithm string
 	compressionLevel  int
@@ -120,7 +120,7 @@ func (b *bs) initBucket() (err error) {
 			s3.WithErrGroup(b.eg),
 			s3.WithSession(s),
 			s3.WithBucket(b.bucketName),
-			s3.WithMultipartUpload(b.multipartUpload),
+			s3.WithMaxPartSize(b.maxPartSize),
 		)
 	default:
 		return errors.ErrInvalidStorageType

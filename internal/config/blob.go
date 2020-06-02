@@ -58,7 +58,7 @@ type S3Config struct {
 	AccessKey       string `json:"access_key" yaml:"access_key"`
 	SecretAccessKey string `json:"secret_access_key" yaml:"secret_access_key"`
 	Token           string `json:"token" yaml:"token"`
-	MultipartUpload bool   `json:"multipart_upload" yaml:"multipart_upload"`
+	MaxPartSizeMB   int    `json:"max_part_size_mb" yaml:"max_part_size_mb"`
 }
 
 func (b *Blob) Bind() *Blob {

@@ -100,9 +100,23 @@ func WithToken(tk string) Option {
 	}
 }
 
-func WithMultipartUpload(enabled bool) Option {
+func WithMaxPartSizeKB(kb int) Option {
 	return func(b *bs) error {
-		b.multipartUpload = enabled
+		b.maxPartSize = int64(kb) * 1024
+		return nil
+	}
+}
+
+func WithMaxPartSizeMB(mb int) Option {
+	return func(b *bs) error {
+		b.maxPartSize = int64(mb) * 1024 * 1024
+		return nil
+	}
+}
+
+func WithMaxPartSizeGB(gb int) Option {
+	return func(b *bs) error {
+		b.maxPartSize = int64(gb) * 1024 * 1024 * 1024
 		return nil
 	}
 }

@@ -34,7 +34,7 @@ type s3client struct {
 	service *s3.S3
 	bucket  string
 
-	multipartUpload bool
+	maxPartSize int64
 }
 
 func New(opts ...Option) blob.Bucket {
@@ -72,7 +72,7 @@ func (s *s3client) Writer(ctx context.Context, key string) (io.WriteCloser, erro
 		writer.WithService(s.service),
 		writer.WithBucket(s.bucket),
 		writer.WithKey(key),
-		writer.WithMultipart(s.multipartUpload),
+		writer.WithMaxPartSize(s.maxPartSize),
 	)
 
 	return w, w.Open(ctx)

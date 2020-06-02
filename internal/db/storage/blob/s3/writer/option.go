@@ -27,7 +27,6 @@ var (
 	defaultOpts = []Option{
 		WithErrGroup(errgroup.Get()),
 		WithMaxPartSize(64 * 1024 * 1024),
-		WithMultipart(false),
 	}
 )
 
@@ -59,14 +58,8 @@ func WithKey(key string) Option {
 	}
 }
 
-func WithMaxPartSize(max int) Option {
+func WithMaxPartSize(max int64) Option {
 	return func(w *writer) {
-		w.maxPartSize = int64(max)
-	}
-}
-
-func WithMultipart(enabled bool) Option {
-	return func(w *writer) {
-		w.multipart = enabled
+		w.maxPartSize = max
 	}
 }
