@@ -945,7 +945,7 @@ agent:
   revisionHistoryLimit: 2
   # @schema {"name": "agent.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
   # agent.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
-  terminationGracePeriodSeconds: 30
+  terminationGracePeriodSeconds: 120
   # @schema {"name": "agent.podManagementPolicy", "type": "string", "enum": ["OrderedReady", "Parallel"]}
   # agent.podManagementPolicy -- pod management policy: OrderedReady or Parallel
   podManagementPolicy: OrderedReady
