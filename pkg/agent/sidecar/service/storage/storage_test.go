@@ -117,7 +117,7 @@ func Test_bs_initCompressor(t *testing.T) {
 		accessKey         string
 		secretAccessKey   string
 		token             string
-		multipartUpload   bool
+		maxPartSize       int64
 		compressAlgorithm string
 		compressionLevel  int
 		bucket            blob.Bucket
@@ -156,7 +156,7 @@ func Test_bs_initCompressor(t *testing.T) {
 		           accessKey: "",
 		           secretAccessKey: "",
 		           token: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -183,7 +183,7 @@ func Test_bs_initCompressor(t *testing.T) {
 		           accessKey: "",
 		           secretAccessKey: "",
 		           token: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -219,7 +219,7 @@ func Test_bs_initCompressor(t *testing.T) {
 				accessKey:         test.fields.accessKey,
 				secretAccessKey:   test.fields.secretAccessKey,
 				token:             test.fields.token,
-				multipartUpload:   test.fields.multipartUpload,
+				maxPartSize:       test.fields.maxPartSize,
 				compressAlgorithm: test.fields.compressAlgorithm,
 				compressionLevel:  test.fields.compressionLevel,
 				bucket:            test.fields.bucket,
@@ -247,7 +247,7 @@ func Test_bs_initBucket(t *testing.T) {
 		accessKey         string
 		secretAccessKey   string
 		token             string
-		multipartUpload   bool
+		maxPartSize       int64
 		compressAlgorithm string
 		compressionLevel  int
 		bucket            blob.Bucket
@@ -286,7 +286,7 @@ func Test_bs_initBucket(t *testing.T) {
 		           accessKey: "",
 		           secretAccessKey: "",
 		           token: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -313,7 +313,7 @@ func Test_bs_initBucket(t *testing.T) {
 		           accessKey: "",
 		           secretAccessKey: "",
 		           token: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -349,7 +349,7 @@ func Test_bs_initBucket(t *testing.T) {
 				accessKey:         test.fields.accessKey,
 				secretAccessKey:   test.fields.secretAccessKey,
 				token:             test.fields.token,
-				multipartUpload:   test.fields.multipartUpload,
+				maxPartSize:       test.fields.maxPartSize,
 				compressAlgorithm: test.fields.compressAlgorithm,
 				compressionLevel:  test.fields.compressionLevel,
 				bucket:            test.fields.bucket,
@@ -380,7 +380,7 @@ func Test_bs_Start(t *testing.T) {
 		accessKey         string
 		secretAccessKey   string
 		token             string
-		multipartUpload   bool
+		maxPartSize       int64
 		compressAlgorithm string
 		compressionLevel  int
 		bucket            blob.Bucket
@@ -427,7 +427,7 @@ func Test_bs_Start(t *testing.T) {
 		           accessKey: "",
 		           secretAccessKey: "",
 		           token: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -457,7 +457,7 @@ func Test_bs_Start(t *testing.T) {
 		           accessKey: "",
 		           secretAccessKey: "",
 		           token: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -493,7 +493,7 @@ func Test_bs_Start(t *testing.T) {
 				accessKey:         test.fields.accessKey,
 				secretAccessKey:   test.fields.secretAccessKey,
 				token:             test.fields.token,
-				multipartUpload:   test.fields.multipartUpload,
+				maxPartSize:       test.fields.maxPartSize,
 				compressAlgorithm: test.fields.compressAlgorithm,
 				compressionLevel:  test.fields.compressionLevel,
 				bucket:            test.fields.bucket,
@@ -524,7 +524,7 @@ func Test_bs_Reader(t *testing.T) {
 		accessKey         string
 		secretAccessKey   string
 		token             string
-		multipartUpload   bool
+		maxPartSize       int64
 		compressAlgorithm string
 		compressionLevel  int
 		bucket            blob.Bucket
@@ -571,7 +571,7 @@ func Test_bs_Reader(t *testing.T) {
 		           accessKey: "",
 		           secretAccessKey: "",
 		           token: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -601,7 +601,7 @@ func Test_bs_Reader(t *testing.T) {
 		           accessKey: "",
 		           secretAccessKey: "",
 		           token: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -637,7 +637,7 @@ func Test_bs_Reader(t *testing.T) {
 				accessKey:         test.fields.accessKey,
 				secretAccessKey:   test.fields.secretAccessKey,
 				token:             test.fields.token,
-				multipartUpload:   test.fields.multipartUpload,
+				maxPartSize:       test.fields.maxPartSize,
 				compressAlgorithm: test.fields.compressAlgorithm,
 				compressionLevel:  test.fields.compressionLevel,
 				bucket:            test.fields.bucket,
@@ -668,7 +668,7 @@ func Test_bs_Writer(t *testing.T) {
 		accessKey         string
 		secretAccessKey   string
 		token             string
-		multipartUpload   bool
+		maxPartSize       int64
 		compressAlgorithm string
 		compressionLevel  int
 		bucket            blob.Bucket
@@ -715,7 +715,7 @@ func Test_bs_Writer(t *testing.T) {
 		           accessKey: "",
 		           secretAccessKey: "",
 		           token: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -745,7 +745,7 @@ func Test_bs_Writer(t *testing.T) {
 		           accessKey: "",
 		           secretAccessKey: "",
 		           token: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -781,7 +781,7 @@ func Test_bs_Writer(t *testing.T) {
 				accessKey:         test.fields.accessKey,
 				secretAccessKey:   test.fields.secretAccessKey,
 				token:             test.fields.token,
-				multipartUpload:   test.fields.multipartUpload,
+				maxPartSize:       test.fields.maxPartSize,
 				compressAlgorithm: test.fields.compressAlgorithm,
 				compressionLevel:  test.fields.compressionLevel,
 				bucket:            test.fields.bucket,

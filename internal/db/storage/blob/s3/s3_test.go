@@ -24,117 +24,11 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/vdaas/vald/internal/db/storage/blob"
-	isession "github.com/vdaas/vald/internal/db/storage/blob/s3/session"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/db/storage/blob"
+	"github.com/vdaas/vald/internal/errgroup"
 	"go.uber.org/goleak"
 )
-
-const (
-	endpoint        = ""
-	region          = ""
-	accessKey       = ""
-	secretAccessKey = ""
-	bucketName      = ""
-)
-
-func TestS3Write(t *testing.T) {
-	sess, err := isession.New(
-		isession.WithEndpoint(endpoint),
-		isession.WithRegion(region),
-		isession.WithAccessKey(accessKey),
-		isession.WithSecretAccessKey(secretAccessKey),
-	).Session()
-	if err != nil {
-		t.Fatalf("failed to create session: %s", err)
-	}
-
-	bucket := New(
-		WithSession(sess),
-		WithBucket(bucketName),
-	)
-
-	ctx := context.Background()
-
-	err = bucket.Open(ctx)
-	if err != nil {
-		t.Fatalf("bucket open failed: %s", err)
-	}
-
-	defer func() {
-		err = bucket.Close()
-		if err != nil {
-			t.Fatalf("bucket close failed: %s", err)
-		}
-	}()
-
-	w, err := bucket.Writer(ctx, "writer-test.txt")
-	if err != nil {
-		t.Fatalf("fetch writer failed: %s", err)
-	}
-	defer func() {
-		err = w.Close()
-		if err != nil {
-			t.Fatalf("writer close failed: %s", err)
-		}
-	}()
-
-	_, err = w.Write([]byte("Hello from blob world!"))
-	if err != nil {
-		t.Fatalf("write failed: %s", err)
-	}
-}
-
-func TestS3Read(t *testing.T) {
-	sess, err := isession.New(
-		isession.WithEndpoint(endpoint),
-		isession.WithRegion(region),
-		isession.WithAccessKey(accessKey),
-		isession.WithSecretAccessKey(secretAccessKey),
-	).Session()
-	if err != nil {
-		t.Fatalf("failed to create session: %s", err)
-	}
-
-	bucket := New(
-		WithSession(sess),
-		WithBucket(bucketName),
-	)
-
-	ctx := context.Background()
-
-	err = bucket.Open(ctx)
-	if err != nil {
-		t.Fatalf("bucket open failed: %s", err)
-	}
-
-	defer func() {
-		err = bucket.Close()
-		if err != nil {
-			t.Fatalf("bucket close failed: %s", err)
-		}
-	}()
-
-	r, err := bucket.Reader(ctx, "writer-test.txt")
-	if err != nil {
-		t.Fatalf("fetch reader failed: %s", err)
-	}
-	defer func() {
-		err = r.Close()
-		if err != nil {
-			t.Fatalf("reader close failed: %s", err)
-		}
-	}()
-
-	rbuf := make([]byte, 16)
-	_, err = r.Read(rbuf)
-	if err != nil {
-		t.Fatalf("read failed: %s", err)
-	}
-
-	t.Logf("read: %s", string(rbuf))
-}
 
 func TestNew(t *testing.T) {
 	type args struct {
@@ -212,11 +106,11 @@ func Test_s3client_Open(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		eg              errgroup.Group
-		session         *session.Session
-		service         *s3.S3
-		bucket          string
-		multipartUpload bool
+		eg          errgroup.Group
+		session     *session.Session
+		service     *s3.S3
+		bucket      string
+		maxPartSize int64
 	}
 	type want struct {
 		err error
@@ -249,7 +143,7 @@ func Test_s3client_Open(t *testing.T) {
 		           session: nil,
 		           service: nil,
 		           bucket: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -269,7 +163,7 @@ func Test_s3client_Open(t *testing.T) {
 		           session: nil,
 		           service: nil,
 		           bucket: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -291,11 +185,11 @@ func Test_s3client_Open(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &s3client{
-				eg:              test.fields.eg,
-				session:         test.fields.session,
-				service:         test.fields.service,
-				bucket:          test.fields.bucket,
-				multipartUpload: test.fields.multipartUpload,
+				eg:          test.fields.eg,
+				session:     test.fields.session,
+				service:     test.fields.service,
+				bucket:      test.fields.bucket,
+				maxPartSize: test.fields.maxPartSize,
 			}
 
 			err := s.Open(test.args.ctx)
@@ -309,11 +203,11 @@ func Test_s3client_Open(t *testing.T) {
 
 func Test_s3client_Close(t *testing.T) {
 	type fields struct {
-		eg              errgroup.Group
-		session         *session.Session
-		service         *s3.S3
-		bucket          string
-		multipartUpload bool
+		eg          errgroup.Group
+		session     *session.Session
+		service     *s3.S3
+		bucket      string
+		maxPartSize int64
 	}
 	type want struct {
 		err error
@@ -342,7 +236,7 @@ func Test_s3client_Close(t *testing.T) {
 		           session: nil,
 		           service: nil,
 		           bucket: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -359,7 +253,7 @@ func Test_s3client_Close(t *testing.T) {
 		           session: nil,
 		           service: nil,
 		           bucket: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -381,11 +275,11 @@ func Test_s3client_Close(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &s3client{
-				eg:              test.fields.eg,
-				session:         test.fields.session,
-				service:         test.fields.service,
-				bucket:          test.fields.bucket,
-				multipartUpload: test.fields.multipartUpload,
+				eg:          test.fields.eg,
+				session:     test.fields.session,
+				service:     test.fields.service,
+				bucket:      test.fields.bucket,
+				maxPartSize: test.fields.maxPartSize,
 			}
 
 			err := s.Close()
@@ -403,11 +297,11 @@ func Test_s3client_Reader(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		eg              errgroup.Group
-		session         *session.Session
-		service         *s3.S3
-		bucket          string
-		multipartUpload bool
+		eg          errgroup.Group
+		session     *session.Session
+		service     *s3.S3
+		bucket      string
+		maxPartSize int64
 	}
 	type want struct {
 		want io.ReadCloser
@@ -445,7 +339,7 @@ func Test_s3client_Reader(t *testing.T) {
 		           session: nil,
 		           service: nil,
 		           bucket: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -466,7 +360,7 @@ func Test_s3client_Reader(t *testing.T) {
 		           session: nil,
 		           service: nil,
 		           bucket: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -488,11 +382,11 @@ func Test_s3client_Reader(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &s3client{
-				eg:              test.fields.eg,
-				session:         test.fields.session,
-				service:         test.fields.service,
-				bucket:          test.fields.bucket,
-				multipartUpload: test.fields.multipartUpload,
+				eg:          test.fields.eg,
+				session:     test.fields.session,
+				service:     test.fields.service,
+				bucket:      test.fields.bucket,
+				maxPartSize: test.fields.maxPartSize,
 			}
 
 			got, err := s.Reader(test.args.ctx, test.args.key)
@@ -510,11 +404,11 @@ func Test_s3client_Writer(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		eg              errgroup.Group
-		session         *session.Session
-		service         *s3.S3
-		bucket          string
-		multipartUpload bool
+		eg          errgroup.Group
+		session     *session.Session
+		service     *s3.S3
+		bucket      string
+		maxPartSize int64
 	}
 	type want struct {
 		want io.WriteCloser
@@ -552,7 +446,7 @@ func Test_s3client_Writer(t *testing.T) {
 		           session: nil,
 		           service: nil,
 		           bucket: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -573,7 +467,7 @@ func Test_s3client_Writer(t *testing.T) {
 		           session: nil,
 		           service: nil,
 		           bucket: "",
-		           multipartUpload: false,
+		           maxPartSize: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -595,11 +489,11 @@ func Test_s3client_Writer(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &s3client{
-				eg:              test.fields.eg,
-				session:         test.fields.session,
-				service:         test.fields.service,
-				bucket:          test.fields.bucket,
-				multipartUpload: test.fields.multipartUpload,
+				eg:          test.fields.eg,
+				session:     test.fields.session,
+				service:     test.fields.service,
+				bucket:      test.fields.bucket,
+				maxPartSize: test.fields.maxPartSize,
 			}
 
 			got, err := s.Writer(test.args.ctx, test.args.key)

@@ -247,7 +247,7 @@ func TestS3Config_Bind(t *testing.T) {
 		AccessKey       string
 		SecretAccessKey string
 		Token           string
-		MultipartUpload bool
+		MaxPartSizeMB   int
 	}
 	type want struct {
 		want *S3Config
@@ -277,7 +277,7 @@ func TestS3Config_Bind(t *testing.T) {
 		           AccessKey: "",
 		           SecretAccessKey: "",
 		           Token: "",
-		           MultipartUpload: false,
+		           MaxPartSizeMB: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -295,7 +295,7 @@ func TestS3Config_Bind(t *testing.T) {
 		           AccessKey: "",
 		           SecretAccessKey: "",
 		           Token: "",
-		           MultipartUpload: false,
+		           MaxPartSizeMB: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -322,7 +322,7 @@ func TestS3Config_Bind(t *testing.T) {
 				AccessKey:       test.fields.AccessKey,
 				SecretAccessKey: test.fields.SecretAccessKey,
 				Token:           test.fields.Token,
-				MultipartUpload: test.fields.MultipartUpload,
+				MaxPartSizeMB:   test.fields.MaxPartSizeMB,
 			}
 
 			got := s.Bind()

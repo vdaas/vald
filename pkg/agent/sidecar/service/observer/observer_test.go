@@ -850,3 +850,111 @@ func Test_observer_backup(t *testing.T) {
 		})
 	}
 }
+
+func Test_observer_PostStop(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	type fields struct {
+		w               watch.Watcher
+		dir             string
+		eg              errgroup.Group
+		checkDuration   time.Duration
+		postStopTimeout time.Duration
+		storage         storage.Storage
+		ch              chan struct{}
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           w: nil,
+		           dir: "",
+		           eg: nil,
+		           checkDuration: nil,
+		           postStopTimeout: nil,
+		           storage: nil,
+		           ch: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           w: nil,
+		           dir: "",
+		           eg: nil,
+		           checkDuration: nil,
+		           postStopTimeout: nil,
+		           storage: nil,
+		           ch: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			o := &observer{
+				w:               test.fields.w,
+				dir:             test.fields.dir,
+				eg:              test.fields.eg,
+				checkDuration:   test.fields.checkDuration,
+				postStopTimeout: test.fields.postStopTimeout,
+				storage:         test.fields.storage,
+				ch:              test.fields.ch,
+			}
+
+			err := o.PostStop(test.args.ctx)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
