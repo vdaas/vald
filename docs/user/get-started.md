@@ -6,12 +6,9 @@
 2. [Deploy and Run Vald on k8s cluster](#deploy-and-run-vald-on-k8s-cluster)
     1. [Deploy](#deploy)
     2. [Run using example code](#Run-using-example-code)
-3. [Deploy and Run only Vald Agent on k8s cluster](#deploy-and-run-only-vald-agent-on-k8s-cluster)
+3. [Deploy and Run standalone Vald Agent on k8s cluster](#deploy-and-run-standalone-vald-agent-on-k8s-cluster)
     1. [Deploy](#deploy-1)
     2. [Run using example code](#Run-using-example-code-1)
-4. [Deploy and Run only Vald Agent on Docker](#deploy-and-run-only-vald-agent-on-docker)
-    1. [Deploy](#deploy-2)
-    2. [Run using example code](#Run-using-example-code-2)
 
 ## Requirements
 
@@ -288,7 +285,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
     go run main.go
     ```
 
-## Deploy and Run only Vald Agent on k8s cluster
+## Deploy and Run standalone Vald Agent on k8s cluster
 
 ### Deploy
 
@@ -304,12 +301,12 @@ If you want to learn about NGT, please refer to [NGT](https://github.com/yahooja
 
 2. Deploy Vald Agent using helm
 
-    There is an example yaml [values-agent-ngt-standalone.yaml](https://github.com/vdaas/vald/blob/master/charts/vald/values-agent-ngt-standalone.yaml) to deploy standalone Agent NGT.
-    Each component can be disabled by setting the value `false` to the `[component].enabled` field. This is useful for deploying only Vald Agent NGT pods.
+    There is the [values.yaml](../../example/helm/values-standalone-agent-ngt.yaml) to deploy standalone Agent NGT.
+    Each component can be disabled by setting the value `false` to the `[component].enabled` field. This is useful for deploying standalone Vald Agent NGT pods.
     
     ```bash
     helm repo add vald https://vald.vdaas.org/charts
-    helm install --values values-agent-ngt-standalone.yaml vald-agent-ngt vald/vald
+    helm install --values example/helm/values-agent-ngt-standalone.yaml vald-agent-ngt vald/vald
     ```
 
 3. Verify
@@ -351,19 +348,5 @@ If you want to learn about NGT, please refer to [NGT](https://github.com/yahooja
     ```
 
 3. Running example
-
-WIP
-
-## Deploy and Run only Vald Agent on Docker
-
-This chapter will show you how to deploy a standalone Vald Agent using Helm and run it on your Docker. <br>
-This chapter uses Agent NGT to perform vector insertion operations and search and index operations ...etc.<br>
-If you want to learn about NGT, please refer to [NGT](https://github.com/yahoojapan/NGT).
-
-### Deploy
-
-WIP
-
-### Run using example code
 
 WIP
