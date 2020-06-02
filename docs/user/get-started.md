@@ -1,6 +1,10 @@
 # Get Started
 
-[WIP]
+Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.<br>
+Vald is designed and implemented based on Cloud-Native architecture.
+
+This article will show you how to deploy and run the Vald components on your k8s cluster. 
+Fashion-mnist is used as an example of a dataset.
 
 1. [Requirements](#requirements)
 2. [Deploy and Run Vald on k8s cluster](#deploy-and-run-vald-on-k8s-cluster)
