@@ -109,38 +109,35 @@ func (t *tensorflow) GetVector(inputs ...string) ([]float64, error) {
 	if err != nil {
 		return nil, err
 	}
-	if tensors == nil || tensors[0] == nil || tensors[0].Value() == nil {
+	if len(tensors) == 0 || tensors[0].Value() == nil {
 		return nil, errors.ErrNilTensorTF(tensors)
 	}
 
 	switch t.ndim {
 	case TwoDim:
 		value, ok := tensors[0].Value().([][]float64)
-		if ok {
-			if value == nil {
-				return nil, errors.ErrNilTensorValueTF(value)
-			}
-			return value[0], nil
-		} else {
+		if !ok {
 			return nil, errors.ErrFailedToCastTF(tensors[0].Value())
 		}
+		if value == nil {
+			return nil, errors.ErrNilTensorValueTF(value)
+		}
+		return value[0], nil
 	case ThreeDim:
 		value, ok := tensors[0].Value().([][][]float64)
-		if ok {
-			if value == nil || value[0] == nil {
-				return nil, errors.ErrNilTensorValueTF(value)
-			}
-			return value[0][0], nil
-		} else {
+		if !ok {
 			return nil, errors.ErrFailedToCastTF(tensors[0].Value())
 		}
+		if len(value) == 0 || value[0] == nil {
+			return nil, errors.ErrNilTensorValueTF(value)
+		}
+		return value[0][0], nil
 	default:
 		value, ok := tensors[0].Value().([]float64)
-		if ok {
-			return value, nil
-		} else {
+		if !ok {
 			return nil, errors.ErrFailedToCastTF(tensors[0].Value())
 		}
+		return value, nil
 	}
 }
 
@@ -149,7 +146,7 @@ func (t *tensorflow) GetValue(inputs ...string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if tensors == nil || tensors[0] == nil {
+	if len(tensors) == 0 || tensors[0] == nil {
 		return nil, errors.ErrNilTensorTF(tensors)
 	}
 	return tensors[0].Value(), nil
