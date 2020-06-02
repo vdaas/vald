@@ -109,7 +109,7 @@ func (t *tensorflow) GetVector(inputs ...string) ([]float64, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(tensors) == 0 || tensors[0].Value() == nil {
+	if len(tensors) == 0 || tensors[0] == nil || tensors[0].Value() == nil {
 		return nil, errors.ErrNilTensorTF(tensors)
 	}
 
@@ -128,7 +128,7 @@ func (t *tensorflow) GetVector(inputs ...string) ([]float64, error) {
 		if !ok {
 			return nil, errors.ErrFailedToCastTF(tensors[0].Value())
 		}
-		if len(value) == 0 || value[0] == nil {
+		if len(value) == 0 || len(value[0]) == 0 {
 			return nil, errors.ErrNilTensorValueTF(value)
 		}
 		return value[0][0], nil
