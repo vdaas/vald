@@ -511,7 +511,7 @@ If you want to learn about NGT, please refer to [NGT](https://github.com/yahooja
 
 4. Cleanup
     
-    Remove the Vald pods by executing.
+    Remove the Vald Agent pods by executing.
 
     ```bash
     helm uninstall vald-agent-ngt
