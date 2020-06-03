@@ -17,9 +17,7 @@
 // Package grpc provides grpc server logic
 package grpc
 
-import (
-	"github.com/vdaas/vald/pkg/agent/sidecar/service"
-)
+import "github.com/vdaas/vald/pkg/agent/sidecar/service/observer"
 
 type Option func(*server)
 
@@ -27,7 +25,7 @@ var (
 	defaultOpts = []Option{}
 )
 
-func WithStorageObserver(so service.StorageObserver) Option {
+func WithStorageObserver(so observer.StorageObserver) Option {
 	return func(s *server) {
 		if so != nil {
 			s.so = so

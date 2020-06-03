@@ -18,21 +18,50 @@
 package config
 
 type AgentSidecar struct {
-	// Name string `yaml:"name" json:"name"`
+	// Mode represents sidecar mode
+	Mode string `yaml:"mode" json:"mode"`
 
-	// WatchPaths represents watch path list for backup
-	WatchPaths []string `yaml:"watch_paths" json:"watch_paths"`
-
-	// AutoBackupDurationLimit represents auto backup duration limit
-	AutoBackupDurationLimit string `yaml:"auto_backup_duration_limit" json:"auto_backup_duration_limit"`
+	// WatchDir represents watch target directory for backup
+	WatchDir string `yaml:"watch_dir" json:"watch_dir"`
 
 	// AutoBackupDuration represent checking loop duration for auto backup execution
 	AutoBackupDuration string `yaml:"auto_backup_duration" json:"auto_backup_duration"`
+
+	// PostStopTimeout represent timeout duration for file changing during post stop
+	PostStopTimeout string `yaml:"post_stop_timeout" json:"post_stop_timeout"`
+
+	// Filename represent backup filename
+	Filename string `yaml:"filename" json:"filename"`
+
+	// FilenameSuffix represent suffix of backup filename
+	FilenameSuffix string `yaml:"filename_suffix" json:"filename_suffix"`
+
+	// BlobStorage represent blob storage configurations
+	BlobStorage *Blob `yaml:"blob_storage" json:"blob_storage"`
+
+	// Compress represent compression configurations
+	Compress *CompressCore `yaml:"compress" json:"compress"`
 }
 
 func (s *AgentSidecar) Bind() *AgentSidecar {
-	s.WatchPaths = GetActualValues(s.WatchPaths)
+	s.Mode = GetActualValue(s.Mode)
+	s.WatchDir = GetActualValue(s.WatchDir)
 	s.AutoBackupDuration = GetActualValue(s.AutoBackupDuration)
-	s.AutoBackupDurationLimit = GetActualValue(s.AutoBackupDurationLimit)
+	s.PostStopTimeout = GetActualValue(s.PostStopTimeout)
+	s.Filename = GetActualValue(s.Filename)
+	s.FilenameSuffix = GetActualValue(s.FilenameSuffix)
+
+	if s.BlobStorage != nil {
+		s.BlobStorage = s.BlobStorage.Bind()
+	} else {
+		s.BlobStorage = new(Blob)
+	}
+
+	if s.Compress != nil {
+		s.Compress = s.Compress.Bind()
+	} else {
+		s.Compress = new(CompressCore)
+	}
+
 	return s
 }

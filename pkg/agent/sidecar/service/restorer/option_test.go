@@ -14,18 +14,21 @@
 // limitations under the License.
 //
 
-package blob
+// Package restorer provides restorer service
+package restorer
 
 import (
 	"testing"
 
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
 	"go.uber.org/goleak"
 )
 
-func TestWithBucketURLOpener(t *testing.T) {
+func TestWithErrGroup(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		bo BucketURLOpener
+		eg errgroup.Group
 	}
 	type want struct {
 		obj *T
@@ -72,7 +75,7 @@ func TestWithBucketURLOpener(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           bo: nil,
+		           eg: nil,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -86,7 +89,7 @@ func TestWithBucketURLOpener(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           bo: nil,
+		           eg: nil,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -112,7 +115,7 @@ func TestWithBucketURLOpener(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithBucketURLOpener(test.args.bo)
+			   got := WithErrGroup(test.args.eg)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -124,7 +127,7 @@ func TestWithBucketURLOpener(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithBucketURLOpener(test.args.bo)
+			   got := WithErrGroup(test.args.eg)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(tt.want, obj); err != nil {
@@ -135,10 +138,10 @@ func TestWithBucketURLOpener(t *testing.T) {
 	}
 }
 
-func TestWithBucketURL(t *testing.T) {
+func TestWithDir(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		url string
+		dir string
 	}
 	type want struct {
 		obj *T
@@ -185,7 +188,7 @@ func TestWithBucketURL(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           url: "",
+		           dir: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -199,7 +202,7 @@ func TestWithBucketURL(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           url: "",
+		           dir: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -225,7 +228,7 @@ func TestWithBucketURL(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithBucketURL(test.args.url)
+			   got := WithDir(test.args.dir)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -237,7 +240,120 @@ func TestWithBucketURL(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithBucketURL(test.args.url)
+			   got := WithDir(test.args.dir)
+			   obj := new(T)
+			   got(obj)
+			   if err := test.checkFunc(tt.want, obj); err != nil {
+			       tt.Errorf("error = %v", err)
+			   }
+			*/
+		})
+	}
+}
+
+func TestWithBlobStorage(t *testing.T) {
+	type T = interface{}
+	type args struct {
+		storage storage.Storage
+	}
+	type want struct {
+		obj *T
+		// Uncomment this line if the option returns an error, otherwise delete it
+		// err error
+	}
+	type test struct {
+		name string
+		args args
+		want want
+		// Use the first line if the option returns an error. otherwise use the second line
+		// checkFunc  func(want, *T, error) error
+		// checkFunc  func(want, *T) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	// Uncomment this block if the option returns an error, otherwise delete it
+	/*
+	   defaultCheckFunc := func(w want, obj *T, err error) error {
+	       if !errors.Is(err, w.err) {
+	           return errors.Errorf("got error = %v, want %v", err, w.err)
+	       }
+	       if !reflect.DeepEqual(obj, w.obj) {
+	           return errors.Errorf("got = %v, want %v", obj, w.obj)
+	       }
+	       return nil
+	   }
+	*/
+
+	// Uncomment this block if the option do not returns an error, otherwise delete it
+	/*
+	   defaultCheckFunc := func(w want, obj *T) error {
+	       if !reflect.DeepEqual(obj, w.obj) {
+	           return errors.Errorf("got = %v, want %v", obj, w.c)
+	       }
+	       return nil
+	   }
+	*/
+
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           storage: nil,
+		       },
+		       want: want {
+		           obj: new(T),
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           storage: nil,
+		           },
+		           want: want {
+		               obj: new(T),
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			// Uncomment this block if the option returns an error, otherwise delete it
+			/*
+			   if test.checkFunc == nil {
+			       test.checkFunc = defaultCheckFunc
+			   }
+
+			   got := WithBlobStorage(test.args.storage)
+			   obj := new(T)
+			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			       tt.Errorf("error = %v", err)
+			   }
+			*/
+
+			// Uncomment this block if the option returns an error, otherwise delete it
+			/*
+			   if test.checkFunc == nil {
+			       test.checkFunc = defaultCheckFunc
+			   }
+			   got := WithBlobStorage(test.args.storage)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(tt.want, obj); err != nil {

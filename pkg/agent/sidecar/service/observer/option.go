@@ -14,14 +14,13 @@
 // limitations under the License.
 //
 
-// Package service
-package service
+// Package observer provides storage observer
+package observer
 
 import (
-	"time"
-
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
+	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
 )
 
 type Option func(o *observer) error
@@ -29,8 +28,8 @@ type Option func(o *observer) error
 var (
 	defaultOpts = []Option{
 		WithErrGroup(errgroup.Get()),
-		WithBackupDuration("5m"),
-		WithBackupDurationLimit("1h"),
+		WithBackupDuration("10m"),
+		WithPostStopTimeout("10s"),
 	}
 )
 
@@ -41,23 +40,23 @@ func WithBackupDuration(dur string) Option {
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			d = time.Minute * 5
+			return nil
 		}
 		o.checkDuration = d
 		return nil
 	}
 }
 
-func WithBackupDurationLimit(dur string) Option {
+func WithPostStopTimeout(dur string) Option {
 	return func(o *observer) error {
 		if dur == "" {
 			return nil
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			d = time.Hour
+			return nil
 		}
-		o.longestCheckDuration = d
+		o.postStopTimeout = d
 		return nil
 	}
 }
@@ -71,15 +70,22 @@ func WithErrGroup(eg errgroup.Group) Option {
 	}
 }
 
-func WithDirs(dirs ...string) Option {
+func WithDir(dir string) Option {
 	return func(o *observer) error {
-		if len(dirs) == 0 {
+		if dir == "" {
 			return nil
 		}
-		if o.dirs != nil {
-			o.dirs = append(o.dirs, dirs...)
-		} else {
-			o.dirs = dirs
+
+		o.dir = dir
+
+		return nil
+	}
+}
+
+func WithBlobStorage(storage storage.Storage) Option {
+	return func(o *observer) error {
+		if storage != nil {
+			o.storage = storage
 		}
 		return nil
 	}

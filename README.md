@@ -127,10 +127,15 @@ make init
     <th>Docker build status</th>
   </tr>
   <tr>
-    <td>agent</td>
+    <td rowspan=2>agent</td>
     <td>NGT</td>
     <td><a href="https://hub.docker.com/r/vdaas/vald-agent-ngt">vdaas/vald-agent-ngt</a></td>
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20agent-ngt/badge.svg"></td>
+  </tr>
+  <tr>
+    <td>sidecar</td>
+    <td><a href="https://hub.docker.com/r/vdaas/vald-agent-sidecar">vdaas/vald-agent-sidecar</a></td>
+    <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20agent-sidecar/badge.svg"></td>
   </tr>
   <tr>
     <td>discoverer</td>

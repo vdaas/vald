@@ -945,7 +945,7 @@ agent:
   revisionHistoryLimit: 2
   # @schema {"name": "agent.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
   # agent.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
-  terminationGracePeriodSeconds: 30
+  terminationGracePeriodSeconds: 120
   # @schema {"name": "agent.podManagementPolicy", "type": "string", "enum": ["OrderedReady", "Parallel"]}
   # agent.podManagementPolicy -- pod management policy: OrderedReady or Parallel
   podManagementPolicy: OrderedReady
@@ -1128,6 +1128,163 @@ agent:
     # @schema {"name": "agent.ngt.enable_in_memory_mode", "type": "boolean"}
     # agent.ngt.enable_in_memory_mode -- in-memory mode enabled
     enable_in_memory_mode: true
+  # @schema {"name": "agent.sidecar", "type": "object"}
+  sidecar:
+    # @schema {"name": "agent.sidecar.enabled", "type": "boolean"}
+    # agent.sidecar.enabled -- sidecar enabled
+    enabled: false
+    # @schema {"name": "agent.sidecar.initContainerEnabled", "type": "boolean"}
+    # agent.sidecar.initContainerEnabled -- sidecar on initContainer mode enabled.
+    initContainerEnabled: false
+    # @schema {"name": "agent.sidecar.version", "alias": "version"}
+    # agent.sidecar.version -- version of agent sidecar config
+    version: v0.0.0
+    # @schema {"name": "agent.sidecar.time_zone", "type": "string"}
+    # agent.sidecar.time_zone -- Time zone
+    time_zone: ""
+    # @schema {"name": "agent.sidecar.logging", "alias": "logging"}
+    # agent.sidecar.logging -- logging config (overrides defaults.logging)
+    logging: {}
+    # @schema {"name": "agent.sidecar.name", "type": "string"}
+    # agent.sidecar.name -- name of agent sidecar
+    name: vald-agent-sidecar
+    # @schema {"name": "agent.sidecar.image", "alias": "image"}
+    image:
+      # agent.sidecar.image.repository -- image repository
+      repository: vdaas/vald-agent-sidecar
+      # agent.sidecar.image.tag -- image tag (overrides defaults.image.tag)
+      tag: ""
+      # agent.sidecar.image.pullPolicy -- image pull policy
+      pullPolicy: Always
+    # @schema {"name": "agent.sidecar.service", "type": "object"}
+    service:
+      # @schema {"name": "agent.sidecar.service.enabled", "type": "boolean"}
+      # agent.sidecar.service.enabled -- agent sidecar service enabled
+      enabled: false
+      # @schema {"name": "agent.sidecar.service.annotations", "type": "object"}
+      # agent.sidecar.service.annotations -- agent sidecar service annotations
+      annotations: {}
+      # @schema {"name": "agent.sidecar.service.labels", "type": "object"}
+      # agent.sidecar.service.labels -- agent sidecar service labels
+      labels: {}
+      # @schema {"name": "agent.sidecar.service.type", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
+      # agent.sidecar.service.type -- service type: ClusterIP, LoadBalancer or NodePort
+      serviceType: ClusterIP
+      # @schema {"name": "agent.sidecar.service.externalTrafficPolicy", "type": "string"}
+      # agent.sidecar.service.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+      externalTrafficPolicy: ""
+    # @schema {"name": "agent.sidecar.env", "alias": "env"}
+    # agent.sidecar.env -- environment variables
+    env:
+      - name: MY_POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: AWS_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws-secret
+            key: access-key
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws-secret
+            key: secret-access-key
+    # @schema {"name": "agent.sidecar.server_config", "alias": "server_config"}
+    # agent.sidecar.server_config -- server config (overrides defaults.server_config)
+    server_config:
+      servers:
+        rest:
+          enabled: false
+          port: 18080
+          servicePort: 18080
+        grpc:
+          enabled: false
+          port: 18081
+          servicePort: 18081
+      healths:
+        liveness:
+          enabled: false
+          port: 13000
+          servicePort: 13000
+        readiness:
+          enabled: false
+          port: 13001
+          servicePort: 13001
+      metrics:
+        pprof:
+          port: 16060
+          servicePort: 16060
+        prometheus:
+          port: 16061
+          servicePort: 16061
+    # @schema {"name": "agent.sidecar.observability", "alias": "observability"}
+    # agent.sidecar.observability -- observability config (overrides defaults.observability)
+    observability:
+      jaeger:
+        service_name: vald-agent-sidecar
+    # @schema {"name": "agent.sidecar.resources", "alias": "resources"}
+    # agent.sidecar.resources -- compute resources.
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    # @schema {"name": "agent.sidecar.config", "type": "object"}
+    config:
+      # @schema {"name": "agent.sidecar.config.auto_backup_duration", "type": "string"}
+      # agent.sidecar.config.auto_backup_duration -- auto backup duration
+      auto_backup_duration: 10m
+      # @schema {"name": "agent.sidecar.config.post_stop_timeout", "type": "string"}
+      # agent.sidecar.config.post_stop_timeout -- timeout duration for file changing during post stop
+      post_stop_timeout: 10s
+      # @schema {"name": "agent.sidecar.config.filename", "type": "string"}
+      # agent.sidecar.config.filename -- backup filename
+      filename: _MY_POD_NAME_
+      # @schema {"name": "agent.sidecar.config.filename_suffix", "type": "string"}
+      # agent.sidecar.config.filename_suffix -- suffix for backup filename
+      filename_suffix: ".tar.gz"
+      # @schema {"name": "agent.sidecar.config.blob_storage", "type": "object"}
+      blob_storage:
+        # @schema {"name": "agent.sidecar.config.blob_storage.storage_type", "type": "string", "enum": ["s3"]}
+        # agent.sidecar.config.blob_storage.storage_type -- storage type
+        storage_type: "s3"
+        # @schema {"name": "agent.sidecar.config.blob_storage.bucket", "type": "string"}
+        # agent.sidecar.config.blob_storage.bucket -- bucket name
+        bucket: ""
+        # @schema {"name": "agent.sidecar.config.blob_storage.s3", "type": "object"}
+        s3:
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.endpoint", "type": "string"}
+          # agent.sidecar.config.blob_storage.s3.endpoint -- s3 endpoint
+          endpoint: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.region", "type": "string"}
+          # agent.sidecar.config.blob_storage.s3.region -- s3 region
+          region: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.access_key", "type": "string"}
+          # agent.sidecar.config.blob_storage.s3.access_key -- s3 access key
+          access_key: _AWS_ACCESS_KEY_
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.secret_access_key", "type": "string"}
+          # agent.sidecar.config.blob_storage.s3.secret_access_key -- s3 secret access key
+          secret_access_key: _AWS_SECRET_ACCESS_KEY_
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.token", "type": "string"}
+          # agent.sidecar.config.blob_storage.s3.token -- s3 token
+          token: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.max_part_size_mb", "type": "integer", "minimum": 0}
+          # agent.sidecar.config.blob_storage.s3.max_part_size_mb -- s3 multipart upload max part size
+          max_part_size_mb: 64
+      # @schema {"name": "agent.sidecar.config.compress", "type": "object"}
+      compress:
+        # @schema {"name": "agent.sidecar.config.compress.compress_algorithm", "type": "string", "enum": ["gob", "gzip", "lz4", "zstd"]}
+        # agent.sidecar.config.compress.compress_algorithm -- compression algorithm.
+        # must be `gob`, `gzip`, `lz4` or `zstd`
+        compress_algorithm: "gzip"
+        # @schema {"name": "agent.sidecar.config.compress.compression_level", "type": "integer"}
+        # agent.sidecar.config.compress.compression_level -- compression level.
+        # value range relies on which algorithm is used.
+        # `gob`: level will be ignored.
+        # `gzip`: -1 (default compression), 0 (no compression), or 1 (best speed) to 9 (best compression).
+        # `lz4`: >= 0, higher is better compression.
+        # `zstd`: 1 (fastest) to 22 (best), however implementation relies on klauspost/compress.
+        compression_level: -1
 
 # @schema {"name": "discoverer", "type": "object"}
 discoverer:
