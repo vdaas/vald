@@ -101,7 +101,7 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_s3client_Open(t *testing.T) {
+func Test_client_Open(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
@@ -184,7 +184,7 @@ func Test_s3client_Open(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			s := &s3client{
+			c := &client{
 				eg:          test.fields.eg,
 				session:     test.fields.session,
 				service:     test.fields.service,
@@ -192,7 +192,7 @@ func Test_s3client_Open(t *testing.T) {
 				maxPartSize: test.fields.maxPartSize,
 			}
 
-			err := s.Open(test.args.ctx)
+			err := c.Open(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -201,7 +201,7 @@ func Test_s3client_Open(t *testing.T) {
 	}
 }
 
-func Test_s3client_Close(t *testing.T) {
+func Test_client_Close(t *testing.T) {
 	type fields struct {
 		eg          errgroup.Group
 		session     *session.Session
@@ -274,7 +274,7 @@ func Test_s3client_Close(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			s := &s3client{
+			c := &client{
 				eg:          test.fields.eg,
 				session:     test.fields.session,
 				service:     test.fields.service,
@@ -282,7 +282,7 @@ func Test_s3client_Close(t *testing.T) {
 				maxPartSize: test.fields.maxPartSize,
 			}
 
-			err := s.Close()
+			err := c.Close()
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -291,7 +291,7 @@ func Test_s3client_Close(t *testing.T) {
 	}
 }
 
-func Test_s3client_Reader(t *testing.T) {
+func Test_client_Reader(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		key string
@@ -381,7 +381,7 @@ func Test_s3client_Reader(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			s := &s3client{
+			c := &client{
 				eg:          test.fields.eg,
 				session:     test.fields.session,
 				service:     test.fields.service,
@@ -389,7 +389,7 @@ func Test_s3client_Reader(t *testing.T) {
 				maxPartSize: test.fields.maxPartSize,
 			}
 
-			got, err := s.Reader(test.args.ctx, test.args.key)
+			got, err := c.Reader(test.args.ctx, test.args.key)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -398,7 +398,7 @@ func Test_s3client_Reader(t *testing.T) {
 	}
 }
 
-func Test_s3client_Writer(t *testing.T) {
+func Test_client_Writer(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		key string
@@ -488,7 +488,7 @@ func Test_s3client_Writer(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			s := &s3client{
+			c := &client{
 				eg:          test.fields.eg,
 				session:     test.fields.session,
 				service:     test.fields.service,
@@ -496,7 +496,7 @@ func Test_s3client_Writer(t *testing.T) {
 				maxPartSize: test.fields.maxPartSize,
 			}
 
-			got, err := s.Writer(test.args.ctx, test.args.key)
+			got, err := c.Writer(test.args.ctx, test.args.key)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
