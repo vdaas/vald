@@ -84,7 +84,6 @@ spec:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution: []
           requiredDuringSchedulingIgnoredDuringExecution: []
-      topologySpreadConstraints: []
       containers:
         - name: vald-manager-index
           image: "vdaas/vald-manager-index:nightly"

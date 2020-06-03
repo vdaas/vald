@@ -82,7 +82,6 @@ spec:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution: []
           requiredDuringSchedulingIgnoredDuringExecution: []
-      topologySpreadConstraints: []
       containers:
         - name: vald-manager-backup
           image: "vdaas/vald-manager-backup-mysql:nightly"
