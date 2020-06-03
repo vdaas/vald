@@ -34,7 +34,11 @@ jobs:
           helm version
       - name: Update k8s-dir
         run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
+          BRANCH_NAME="documentation/k8s-manifests/update_k8s_manifests_${TIMESTAMP}"
           git checkout master
+          git checkout -b ${BRANCH_NAME}
+
           make k8s/manifest/update
           make k8s/manifest/helm-operator/update
       - name: Run formatter and license.go
@@ -51,10 +55,19 @@ jobs:
           git commit --signoff -m ":robot: Automatically update k8s manifests"
 
           git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push origin master
+          git push origin ${BRANCH_NAME}
+
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"title\": \"Update K8s manifests\", \"head\": \"${BRANCH_NAME}\", \"base\": \"master\", \"body\": \"K8s manifests are updated.\", \"maintainer_can_modify\": true}" \
+          $API_URL
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: https://api.github.com/repos/vdaas/vald/pulls
   update-helm-chart:
     name: Update Helm chart
     runs-on: ubuntu-latest
