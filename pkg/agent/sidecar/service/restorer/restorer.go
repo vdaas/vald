@@ -167,7 +167,7 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 		case tar.TypeDir:
 			_, err = os.Stat(target)
 			if err != nil {
-				err = os.MkdirAll(target, 0755)
+				err = os.MkdirAll(target, 0700)
 				if err != nil {
 					return err
 				}
