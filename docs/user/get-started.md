@@ -311,7 +311,7 @@ If you want to learn about NGT, please refer to [NGT](https://github.com/yahooja
     
     ```bash
     helm repo add vald https://vald.vdaas.org/charts
-    helm install --values example/helm/values-agent-ngt-standalone.yaml vald-agent-ngt vald/vald
+    helm install --values example/helm/values-standalone-agent-ngt.yaml vald-agent-ngt vald/vald
     ```
 
 3. Verify
