@@ -18,6 +18,8 @@
 package tensorflow
 
 import (
+	"io"
+
 	tf "github.com/tensorflow/tensorflow/tensorflow/go"
 	"github.com/vdaas/vald/internal/errors"
 )
@@ -27,6 +29,9 @@ type SessionOptions = tf.SessionOptions
 
 // Operation is a type alias for tensorflow.Operation.
 type Operation = tf.Operation
+
+// Closer is a type alias io.Closer
+type Closer = io.Closer
 
 // TF represents a tensorflow interface.
 type TF interface {
@@ -39,11 +44,6 @@ type TF interface {
 type session interface {
 	Run(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*Operation) ([]*tf.Tensor, error)
 	Closer
-}
-
-// Closer close a tensorflow.Session.
-type Closer interface {
-	Close() error
 }
 
 type tensorflow struct {
