@@ -69,9 +69,7 @@ const (
 	threeDim
 )
 
-var loadFunc = func(exportDir string, tags []string, options *SessionOptions) (*tf.SavedModel, error) {
-	return tf.LoadSavedModel(exportDir, tags, options)
-}
+var loadFunc = tf.LoadSavedModel
 
 // New load a tensorlfow model and returns a new tensorflow struct.
 func New(opts ...Option) (TF, error) {
