@@ -3,20 +3,21 @@
 Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.<br>
 Vald is designed and implemented based on Cloud-Native architecture.
 
-This article will show you how to deploy and run the Vald components on your k8s cluster. 
+This article will show you how to deploy and run the Vald components on your kubernetes cluster. 
 Fashion-mnist is used as an example of a dataset.
 
-1. [Requirements](#requirements)
-2. [Deploy and Run Vald on k8s cluster](#deploy-and-run-vald-on-k8s-cluster)
-    1. [Deploy](#deploy)
-    2. [Run using example code](#Run-using-example-code)
-3. [Deploy and Run standalone Vald Agent on k8s cluster](#deploy-and-run-standalone-vald-agent-on-k8s-cluster)
-    1. [Deploy](#deploy-1)
-    2. [Run using example code](#Run-using-example-code-1)
+- [Get Started](#get-started)
+  - [Requirements](#requirements)
+  - [Deploy and Run Vald on kubernetes](#deploy-and-run-vald-on-kubernetes)
+    - [Deploy](#deploy)
+    - [Run using example code](#run-using-example-code)
+  - [Deploy and Run standalone Vald Agent on kubernetes](#deploy-and-run-standalone-vald-agent-on-kubernetes)
+    - [Deploy](#deploy-1)
+    - [Run using example code](#run-using-example-code-1)
 
 ## Requirements
 
-- k8s:  v1.17 ~
+- kubernetes:  v1.17 ~
 - go:   v1.14 ~
 - helm: v3 ~
 - libhdf5 (_only required for this tutorial._)
@@ -44,11 +45,11 @@ brew install hdf5
 ```
 </details>
 
-## Deploy and Run Vald on K8s cluster
+## Deploy and Run Vald on kubernetes
 
 ### Deploy
 
-This chapter will show you how to deploy using Helm and run Vald on your k8s cluster.<br>
+This chapter will show you how to deploy using Helm and run Vald on your kubernetes cluster.<br>
 This chapter uses Scylla DB as a backend data store for indexing and data backup.<br>
 If you want to learn about Scylla, please refer to [the official website](https://www.scylladb.com/).
 
@@ -58,7 +59,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
     kubectl cluster-info
     ```
 
-2. Prepare Scylla DB and k8s metrics-server
+2. Prepare Scylla DB and kubernetes metrics-server
 
     Deploy Scylla as a backup database.
 
@@ -67,7 +68,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
     kubectl apply -f k8s/external/scylla
     ```
 
-    Apply k8s metrics-server
+    Apply kubernetes metrics-server
 
     ```bash
     kubectl apply -f k8s/metrics/metrics-server
@@ -143,7 +144,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
 3. Running example
 
     Vald provides multiple langurages client library such as golang, Java, Node.js, Python and so on.<br>
-    In this example, the fashion-mnist dataset will insert into the vald cluster and perform a search using [vald-client-go](https://github.com/vdaas/vald-client-go).
+    In this example, the fashion-mnist dataset will insert into the Vald and perform a search using [vald-client-go](https://github.com/vdaas/vald-client-go).
 
     We use [`example/client/main.go`](../../example/client/main.go) to run the example.
     This will execute 4 steps.
@@ -289,11 +290,11 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
     go run main.go
     ```
 
-## Deploy and Run standalone Vald Agent on k8s cluster
+## Deploy and Run standalone Vald Agent on kubernetes
 
 ### Deploy
 
-This chapter will show you how to deploy a standalone Vald Agent using Helm and run it on your k8s cluster. <br>
+This chapter will show you how to deploy a standalone Vald Agent using Helm and run it on your kubernetes cluster. <br>
 This chapter uses Agent NGT to perform vector insertion operation, indexing and searching operations.<br>
 If you want to learn about NGT, please refer to [NGT](https://github.com/yahoojapan/NGT).
 
@@ -354,7 +355,7 @@ If you want to learn about NGT, please refer to [NGT](https://github.com/yahooja
 3. Running example
 
     Vald provides multiple languages client library such as golang, Java, Node.js, Python and so on.<br>
-    In this example, the fashion-mnist dataset will insert into the Vald cluster and search using [vald-client-go](https://github.com/vdaas/vald-client-go).
+    In this example, the fashion-mnist dataset will insert into the Vald and search using [vald-client-go](https://github.com/vdaas/vald-client-go).
 
     We use [`example/client/agent/main.go`](../../example/client/agent/main.go) to run the example.
     This will execute 4 steps.
