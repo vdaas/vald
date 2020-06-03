@@ -24,14 +24,14 @@ Fashion-mnist is used as an example of a dataset.
 
 Helm and hdf5 is required for this tutorial. If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install) and [hdf5](https://www.hdfgroup.org/).
 
-<details><summary>[Optional] Install helm</summary><br>
+<details><summary>Install helm</summary><br>
 
 ```bash
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 ```
 </details>
 
-<details><summary>[Optional] Install hdf5</summary><br>
+<details><summary>Install hdf5</summary><br>
 
 ```bash
 # yum
