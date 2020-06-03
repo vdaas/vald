@@ -49,7 +49,7 @@ brew install hdf5
 ### Deploy
 
 This chapter will show you how to deploy using Helm and run Vald on your k8s cluster.<br>
-This chapter uses Scylla DB as the backend data store for index-metadata and backup-manager.<br>
+This chapter uses Scylla DB as a backend data store for indexing and data backup.<br>
 If you want to learn about Scylla, please refer to [the official website](https://www.scylladb.com/).
 
 1. Confirm which cluster to deploy
@@ -294,7 +294,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
 ### Deploy
 
 This chapter will show you how to deploy a standalone Vald Agent using Helm and run it on your k8s cluster. <br>
-This chapter uses Agent NGT to perform vector insertion operations and search and index operations ...etc.<br>
+This chapter uses Agent NGT to perform vector insertion operation, indexing and searching operations.<br>
 If you want to learn about NGT, please refer to [NGT](https://github.com/yahoojapan/NGT).
 
 1. Confirm which cluster to deploy
@@ -353,8 +353,8 @@ If you want to learn about NGT, please refer to [NGT](https://github.com/yahooja
 
 3. Running example
 
-    Vald provides multiple langurages client library such as golang, Java, Node.js, Python and so on.<br>
-    In this example, the fashion-mnist dataset will insert into the vald cluster and perform a search using [vald-client-go](https://github.com/vdaas/vald-client-go).
+    Vald provides multiple languages client library such as golang, Java, Node.js, Python and so on.<br>
+    In this example, the fashion-mnist dataset will insert into the Vald cluster and search using [vald-client-go](https://github.com/vdaas/vald-client-go).
 
     We use [`example/client/agent/main.go`](../../example/client/agent/main.go) to run the example.
     This will execute 4 steps.
