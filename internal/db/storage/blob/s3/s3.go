@@ -28,7 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 )
 
-type s3client struct {
+type client struct {
 	eg      errgroup.Group
 	session *session.Session
 	service *s3.S3
@@ -38,41 +38,41 @@ type s3client struct {
 }
 
 func New(opts ...Option) blob.Bucket {
-	s := new(s3client)
+	c := new(client)
 	for _, opt := range append(defaultOpts, opts...) {
-		opt(s)
+		opt(c)
 	}
 
-	s.service = s3.New(s.session)
+	c.service = s3.New(c.session)
 
-	return s
+	return c
 }
 
-func (s *s3client) Open(ctx context.Context) (err error) {
+func (c *client) Open(ctx context.Context) (err error) {
 	return nil
 }
 
-func (s *s3client) Close() error {
+func (c *client) Close() error {
 	return nil
 }
 
-func (s *s3client) Reader(ctx context.Context, key string) (io.ReadCloser, error) {
+func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) {
 	r := reader.New(
-		reader.WithService(s.service),
-		reader.WithBucket(s.bucket),
+		reader.WithService(c.service),
+		reader.WithBucket(c.bucket),
 		reader.WithKey(key),
 	)
 
 	return r, r.Open(ctx)
 }
 
-func (s *s3client) Writer(ctx context.Context, key string) (io.WriteCloser, error) {
+func (c *client) Writer(ctx context.Context, key string) (io.WriteCloser, error) {
 	w := writer.New(
-		writer.WithErrGroup(s.eg),
-		writer.WithService(s.service),
-		writer.WithBucket(s.bucket),
+		writer.WithErrGroup(c.eg),
+		writer.WithService(c.service),
+		writer.WithBucket(c.bucket),
 		writer.WithKey(key),
-		writer.WithMaxPartSize(s.maxPartSize),
+		writer.WithMaxPartSize(c.maxPartSize),
 	)
 
 	return w, w.Open(ctx)

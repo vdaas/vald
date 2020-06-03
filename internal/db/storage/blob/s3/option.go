@@ -18,10 +18,11 @@ package s3
 
 import (
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/vdaas/vald/internal/errgroup"
 )
 
-type Option func(s *s3client)
+type Option func(c *client)
 
 var (
 	defaultOpts = []Option{
@@ -30,29 +31,31 @@ var (
 )
 
 func WithErrGroup(eg errgroup.Group) Option {
-	return func(s *s3client) {
+	return func(c *client) {
 		if eg != nil {
-			s.eg = eg
+			c.eg = eg
 		}
 	}
 }
 
 func WithSession(sess *session.Session) Option {
-	return func(s *s3client) {
+	return func(c *client) {
 		if sess != nil {
-			s.session = sess
+			c.session = sess
 		}
 	}
 }
 
 func WithBucket(bucket string) Option {
-	return func(s *s3client) {
-		s.bucket = bucket
+	return func(c *client) {
+		c.bucket = bucket
 	}
 }
 
 func WithMaxPartSize(size int64) Option {
-	return func(s *s3client) {
-		s.maxPartSize = size
+	return func(c *client) {
+		if size >= s3manager.MinUploadPartSize {
+			c.maxPartSize = size
+		}
 	}
 }
