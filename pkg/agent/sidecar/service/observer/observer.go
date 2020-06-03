@@ -329,11 +329,15 @@ func (o *observer) backup(ctx context.Context) error {
 			}
 		}()
 
-		err = filepath.Walk(o.dir, func(file string, fi os.FileInfo, err error) error {
+		return filepath.Walk(o.dir, func(file string, fi os.FileInfo, err error) error {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
 			default:
+			}
+
+			if err != nil {
+				return err
 			}
 
 			header, err := tar.FileInfoHeader(fi, file)
@@ -355,39 +359,27 @@ func (o *observer) backup(ctx context.Context) error {
 
 			log.Debug("writing: ", file)
 
-			if !fi.IsDir() {
-				err = func() error {
-					data, err := os.Open(file)
-					if err != nil {
-						return err
-					}
+			if fi.IsDir() {
+				return nil
+			}
 
-					defer func() {
-						e := data.Close()
-						if e != nil {
-							log.Errorf("failed to close %s: %s", file, e)
-						}
-					}()
-
-					_, err = io.Copy(tw, data)
-					if err != nil {
-						return err
-					}
-
-					return nil
-				}()
+			return func() error {
+				data, err := os.Open(file)
 				if err != nil {
 					return err
 				}
-			}
 
-			return nil
+				defer func() {
+					e := data.Close()
+					if e != nil {
+						log.Errorf("failed to close %s: %s", file, e)
+					}
+				}()
+
+				_, err = io.Copy(tw, data)
+				return err
+			}()
 		})
-		if err != nil {
-			return err
-		}
-
-		return nil
 	}))
 
 	_, err = io.Copy(sw, pr)
