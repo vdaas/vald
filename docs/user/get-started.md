@@ -290,6 +290,14 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
     go run main.go
     ```
 
+4. Cleanup
+    
+    Remove the Vald pods by executing.
+
+    ```bash
+    helm uninstall vald-agent-ngt
+    ````
+
 ## Deploy and Run standalone Vald Agent on kubernetes
 
 ### Deploy
@@ -500,3 +508,11 @@ If you want to learn about NGT, please refer to [NGT](https://github.com/yahooja
     # run example
     go run main.go
     ```
+
+4. Cleanup
+    
+    Remove the Vald pods by executing.
+
+    ```bash
+    helm uninstall vald-agent-ngt
+    ````
