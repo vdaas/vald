@@ -58,6 +58,8 @@ func (r *run) PreStart(ctx context.Context) (err error) {
 		service.WithAddr(r.cfg.Addr),
 		service.WithDataset(r.cfg.Dataset),
 		service.WithClient(r.client),
+		service.WithConcurrency(r.cfg.Concurrency),
+		service.WithProgressDuration(r.cfg.ProgressDuration),
 	}
 	switch Atoo(r.cfg.Method) {
 	case Insert:

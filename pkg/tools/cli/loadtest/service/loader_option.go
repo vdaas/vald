@@ -84,7 +84,7 @@ func WithErrGroup(eg errgroup.Group) Option {
 func WithProgressDuration(pd string) Option {
 	return func(l *loader) error {
 		if pd == "" {
-			return errors.New("progress duration string is empty")
+			return nil
 		}
 		d, err := timeutil.Parse(pd)
 		if err != nil {
