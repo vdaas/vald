@@ -93,8 +93,9 @@ func main() {
 	glg.Info("Finish Inserting dataset. \n\n")
 
 	// Vald Agent starts indexing automatically after insert. It needs to wait until the indexing is completed before a search action is performed.
-	glg.Info("Wait for indexing to finish")
-	time.Sleep(time.Duration(indexingWaitSeconds) * time.Second)
+	wt := time.Duration(indexingWaitSeconds) * time.Second
+	glg.Infof("Wait %s for indexing to finish", wt)
+	time.Sleep(wt)
 
 	/**
 	Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.

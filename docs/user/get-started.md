@@ -146,7 +146,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
     Vald provides multiple langurages client library such as golang, Java, Node.js, Python and so on.<br>
     In this example, the fashion-mnist dataset will insert into the Vald and perform a search using [vald-client-go](https://github.com/vdaas/vald-client-go).
 
-    We use [`example/client/main.go`](../../example/client/main.go) to run the example.
+    We use [`example/client/main.go`](https://github.com/vdaas/vald/blob/master/example/client/main.go) to run the example.
     This will execute 4 steps.
     1. init
     - Import packages
@@ -254,8 +254,9 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
         <details><summary>example code</summary><br>
 
         ```go
-        glg.Info("Wait for indexing to finish")
-        time.Sleep(time.Duration(indexingWaitSeconds) * time.Second)
+        wt := time.Duration(indexingWaitSeconds) * time.Second
+        glg.Infof("Wait %s for indexing to finish", wt)
+        time.Sleep(wt)
         ```
         </details>
     5. Search
@@ -314,7 +315,7 @@ If you want to learn about NGT, please refer to [NGT](https://github.com/yahooja
 
 2. Deploy Vald Agent using helm
 
-    There is the [values.yaml](../../example/helm/values-standalone-agent-ngt.yaml) to deploy standalone Vald Agent. 
+    There is the [values.yaml](https://github.com/vdaas/vald/blob/master/example/helm/values-standalone-agent-ngt.yaml) to deploy standalone Vald Agent. 
     Each component can be disabled by setting the value `false` to the `[component].enabled` field. This is useful for deploying standalone Vald Agent NGT pods.
     
     ```bash
@@ -365,7 +366,7 @@ If you want to learn about NGT, please refer to [NGT](https://github.com/yahooja
     Vald provides multiple languages client library such as golang, Java, Node.js, Python and so on.<br>
     In this example, the fashion-mnist dataset will insert into the Vald and search using [vald-client-go](https://github.com/vdaas/vald-client-go).
 
-    We use [`example/client/agent/main.go`](../../example/client/agent/main.go) to run the example.
+    We use [`example/client/agent/main.go`](https://github.com/vdaas/vald/blob/master/example/client/agent/main.go) to run the example.
     This will execute 4 steps.
     1. init
     - Import packages
@@ -473,8 +474,9 @@ If you want to learn about NGT, please refer to [NGT](https://github.com/yahooja
         <details><summary>example code</summary><br>
 
         ```go
-        glg.Info("Wait for indexing to finish")
-        time.Sleep(time.Duration(indexingWaitSeconds) * time.Second)
+        wt := time.Duration(indexingWaitSeconds) * time.Second
+        glg.Infof("Wait %s for indexing to finish", wt)
+        time.Sleep(wt)
         ```
         </details>
     5. Search
