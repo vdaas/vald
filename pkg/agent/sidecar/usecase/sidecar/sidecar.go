@@ -100,6 +100,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
 			sidecar.RegisterSidecarServer(srv, g)
 		}),
+		server.WithGRPCOption(
+			grpc.ChainUnaryInterceptor(grpc.RecoverInterceptor()),
+			grpc.ChainStreamInterceptor(grpc.RecoverStreamInterceptor()),
+		),
 		server.WithPreStopFunction(func() error {
 			// TODO notify another gateway and scheduler
 			return nil

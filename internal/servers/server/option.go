@@ -230,9 +230,16 @@ func WithGRPCServer(srv *grpc.Server) Option {
 
 func WithGRPCOption(opts ...grpc.ServerOption) Option {
 	return func(s *server) {
-		if opts != nil {
-			s.grpc.opts = opts
+		if opts == nil {
+			return
 		}
+
+		if s.grpc.opts == nil {
+			s.grpc.opts = opts
+			return
+		}
+
+		s.grpc.opts = append(s.grpc.opts, opts...)
 	}
 }
 

@@ -24,9 +24,9 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
 
