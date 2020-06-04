@@ -42,7 +42,7 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 		eg.Limitation(concurrency)
 	}
 
-	mu := &sync.Mutex{}
+	var mu sync.Mutex
 
 	errMap := sync.Map{}
 
