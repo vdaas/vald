@@ -66,7 +66,7 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 				return err
 			}
 			if data != nil {
-				eg.Go(safety.RecoverFunc(func() (err error) {
+				eg.Go(safety.RecoverWithoutPanicFunc(func() (err error) {
 					var res interface{}
 					res, err = f(ctx, data)
 					if err != nil {
