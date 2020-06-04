@@ -21,6 +21,7 @@ import (
 	"context"
 	"io"
 	"runtime"
+	"sync"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -41,6 +42,10 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 		eg.Limitation(concurrency)
 	}
 
+	mu := &sync.Mutex{}
+
+	errMap := sync.Map{}
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -60,7 +65,12 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 						log.Error(err)
 						return err
 					}
-					return nil
+					var errs error
+					errMap.Range(func(_, err interface{}) bool {
+						errs = errors.Wrap(errs, err.(error).Error())
+						return true
+					})
+					return errs
 				}
 				log.Error(err)
 				return err
@@ -71,10 +81,13 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 					res, err = f(ctx, data)
 					if err != nil {
 						runtime.Gosched()
-						return err
+						errMap.Store(err.Error(), err)
+						return nil
 					}
 					if res != nil {
+						mu.Lock()
 						err = stream.SendMsg(res)
+						mu.Unlock()
 						if err != nil {
 							runtime.Gosched()
 							return err
