@@ -18,63 +18,75 @@
 package tensorflow
 
 import (
+	"io"
+
 	tf "github.com/tensorflow/tensorflow/tensorflow/go"
 	"github.com/vdaas/vald/internal/errors"
 )
 
+// SessionOptions is a type alias for tensorflow.SessionOptions.
 type SessionOptions = tf.SessionOptions
+
+// Operation is a type alias for tensorflow.Operation.
 type Operation = tf.Operation
 
+// Closer is a type alias io.Closer
+type Closer = io.Closer
+
+// TF represents a tensorflow interface.
 type TF interface {
 	GetVector(inputs ...string) ([]float64, error)
 	GetValue(inputs ...string) (interface{}, error)
 	GetValues(inputs ...string) (values []interface{}, err error)
-	Close() error
+	Closer
+}
+
+type session interface {
+	Run(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*Operation) ([]*tf.Tensor, error)
+	Closer
 }
 
 type tensorflow struct {
-	exportDir     string
-	tags          []string
-	feeds         []OutputSpec
-	fetches       []OutputSpec
-	operations    []*Operation
-	sessionTarget string
-	sessionConfig []byte
-	options       *SessionOptions
-	graph         *tf.Graph
-	session       *tf.Session
-	ndim          uint8
+	exportDir  string
+	tags       []string
+	feeds      []OutputSpec
+	fetches    []OutputSpec
+	operations []*Operation
+	options    *SessionOptions
+	graph      *tf.Graph
+	session    session
+	ndim       uint8
 }
 
+// OutputSpec is the specification of an feed/fetch.
 type OutputSpec struct {
 	operationName string
 	outputIndex   int
 }
 
 const (
-	TwoDim uint8 = iota + 2
-	ThreeDim
+	twoDim uint8 = iota + 2
+	threeDim
 )
 
+var loadFunc = tf.LoadSavedModel
+
+// New load a tensorlfow model and returns a new tensorflow struct.
 func New(opts ...Option) (TF, error) {
 	t := new(tensorflow)
+
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(t)
 	}
 
-	if t.options == nil && (len(t.sessionTarget) != 0 || t.sessionConfig != nil) {
-		t.options = &tf.SessionOptions{
-			Target: t.sessionTarget,
-			Config: t.sessionConfig,
-		}
-	}
-
-	model, err := tf.LoadSavedModel(t.exportDir, t.tags, t.options)
+	model, err := loadFunc(t.exportDir, t.tags, t.options)
 	if err != nil {
 		return nil, err
 	}
+
 	t.graph = model.Graph
 	t.session = model.Session
+
 	return t, nil
 }
 
@@ -88,11 +100,13 @@ func (t *tensorflow) run(inputs ...string) ([]*tf.Tensor, error) {
 	}
 
 	feeds := make(map[tf.Output]*tf.Tensor, len(inputs))
+
 	for i, val := range inputs {
 		inputTensor, err := tf.NewTensor(val)
 		if err != nil {
 			return nil, err
 		}
+
 		feeds[t.graph.Operation(t.feeds[i].operationName).Output(t.feeds[i].outputIndex)] = inputTensor
 	}
 
@@ -109,38 +123,41 @@ func (t *tensorflow) GetVector(inputs ...string) ([]float64, error) {
 	if err != nil {
 		return nil, err
 	}
-	if tensors == nil || tensors[0] == nil || tensors[0].Value() == nil {
+
+	if len(tensors) == 0 || tensors[0] == nil || tensors[0].Value() == nil {
 		return nil, errors.ErrNilTensorTF(tensors)
 	}
 
 	switch t.ndim {
-	case TwoDim:
+	case twoDim:
 		value, ok := tensors[0].Value().([][]float64)
 		if ok {
 			if value == nil {
 				return nil, errors.ErrNilTensorValueTF(value)
 			}
+
 			return value[0], nil
-		} else {
-			return nil, errors.ErrFailedToCastTF(tensors[0].Value())
 		}
-	case ThreeDim:
+
+		return nil, errors.ErrFailedToCastTF(tensors[0].Value())
+	case threeDim:
 		value, ok := tensors[0].Value().([][][]float64)
 		if ok {
-			if value == nil || value[0] == nil {
+			if len(value) == 0 || value[0] == nil {
 				return nil, errors.ErrNilTensorValueTF(value)
 			}
+
 			return value[0][0], nil
-		} else {
-			return nil, errors.ErrFailedToCastTF(tensors[0].Value())
 		}
+
+		return nil, errors.ErrFailedToCastTF(tensors[0].Value())
 	default:
 		value, ok := tensors[0].Value().([]float64)
 		if ok {
 			return value, nil
-		} else {
-			return nil, errors.ErrFailedToCastTF(tensors[0].Value())
 		}
+
+		return nil, errors.ErrFailedToCastTF(tensors[0].Value())
 	}
 }
 
@@ -149,9 +166,11 @@ func (t *tensorflow) GetValue(inputs ...string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if tensors == nil || tensors[0] == nil {
+
+	if len(tensors) == 0 || tensors[0] == nil {
 		return nil, errors.ErrNilTensorTF(tensors)
 	}
+
 	return tensors[0].Value(), nil
 }
 
@@ -160,9 +179,11 @@ func (t *tensorflow) GetValues(inputs ...string) (values []interface{}, err erro
 	if err != nil {
 		return nil, err
 	}
+
 	values = make([]interface{}, 0, len(tensors))
 	for _, tensor := range tensors {
 		values = append(values, tensor.Value())
 	}
+
 	return values, nil
 }
