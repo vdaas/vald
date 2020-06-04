@@ -16,21 +16,20 @@
 package service
 
 import (
-	"time"
-
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/timeutil"
 )
 
-// Options is load test configuration.
+// Option is load test configuration.
 type Option func(*loader) error
 
 var (
 	defaultOpts = []Option{
 		WithConcurrency(100),
 		WithErrGroup(errgroup.Get()),
-		WithProgressDuration(5 * time.Second),
+		WithProgressDuration("5s"),
 	}
 )
 
@@ -49,7 +48,7 @@ func WithClient(c grpc.Client) Option {
 			l.client = c
 			return nil
 		}
-		return errors.Errorf("client must not be nil")
+		return errors.New("client must not be nil")
 	}
 }
 
@@ -82,9 +81,16 @@ func WithErrGroup(eg errgroup.Group) Option {
 }
 
 // WithProgressDuration sets duration of progress show.
-func WithProgressDuration(pd time.Duration) Option {
+func WithProgressDuration(pd string) Option {
 	return func(l *loader) error {
-		l.progressDuration = pd
+		if pd == "" {
+			return errors.New("progress duration string is empty")
+		}
+		d, err := timeutil.Parse(pd)
+		if err != nil {
+			return err
+		}
+		l.progressDuration = d
 		return nil
 	}
 }

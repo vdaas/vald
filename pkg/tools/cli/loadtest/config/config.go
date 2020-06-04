@@ -18,14 +18,13 @@
 package config
 
 import (
-	"time"
-
 	"github.com/vdaas/vald/internal/config"
 )
 
+// GlobalConfig is type alias of config.GlobalConfig.
 type GlobalConfig = config.GlobalConfig
 
-// Config represent a application setting data content (config.yaml).
+// Data represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`
@@ -33,7 +32,7 @@ type Data struct {
 	Method              string             `json:"method" yaml:"method"`
 	Dataset             string             `json:"dataset" yaml:"dataset"`
 	Concurrency         int                `json:"concurrency" yaml:"concurrency"`
-	ProgressDuration    time.Duration      `json:"progress_duration" yaml:"progress_duration"`
+	ProgressDuration    string             `json:"progress_duration" yaml:"progress_duration"`
 	Client              *config.GRPCClient `json:"client" yaml:"client"`
 }
 
@@ -51,6 +50,11 @@ func NewConfig(path string) (cfg *Data, err error) {
 	if cfg.Client != nil {
 		cfg.Client.Bind()
 	}
+
+	cfg.Addr = config.GetActualValue(cfg.Addr)
+	cfg.Method = config.GetActualValue(cfg.Method)
+	cfg.Dataset = config.GetActualValue(cfg.Dataset)
+	cfg.ProgressDuration = config.GetActualValue(cfg.ProgressDuration)
 
 	return cfg, nil
 }

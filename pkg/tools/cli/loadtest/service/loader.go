@@ -72,7 +72,15 @@ func (l *loader) Prepare(context.Context) (err error) {
 		return err
 	}
 	l.requests, err = l.requestsFunc(dataset)
-	return err
+	if err != nil {
+		return err
+	}
+
+	if len(l.requests) == 0 {
+		return errors.New("prepare data is empty")
+	}
+
+	return nil
 }
 
 // Do operates load test.
@@ -82,7 +90,11 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 	// TODO: related to #403.
 	p, err := os.FindProcess(os.Getpid())
 	if err != nil {
-		ech <- err
+		select {
+		case <-ctx.Done():
+			ech <- errors.Wrap(err, ctx.Err().Error())
+		case ech <- err:
+		}
 		return ech
 	}
 
@@ -91,15 +103,20 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 	progress := func() {
 		log.Infof("progress %d items, %f[qps]", pgCnt, float64(pgCnt)/time.Now().Sub(start).Seconds())
 	}
-	ticker := time.NewTicker(l.progressDuration)
 	l.eg.Go(safety.RecoverFunc(func() error {
+		ticker := time.NewTicker(l.progressDuration)
+		defer ticker.Stop()
 		for pgCnt != int32(len(l.requests)) {
-			select {
-			case <-ctx.Done():
-				progress()
-				return nil
-			case <-ticker.C:
-				progress()
+			if err := func() error {
+				defer progress()
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case <-ticker.C:
+					return nil
+				}
+			}(); err != nil {
+				return err
 			}
 		}
 		return nil
@@ -112,25 +129,34 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 		eg.Limitation(l.concurrency)
 		for _, req := range l.requests {
 			r := req
-			eg.Go(func() error {
-				_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-					err := l.loaderFunc(ctx, vald.NewValdClient(conn), r, copts...)
-					atomic.AddInt32(&pgCnt, 1)
+			eg.Go(safety.RecoverFunc(
+				func() error {
+					_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+						err := l.loaderFunc(ctx, vald.NewValdClient(conn), r, copts...)
+						atomic.AddInt32(&pgCnt, 1)
+						if err != nil {
+							log.Warn(err)
+							atomic.AddInt32(&errCnt, 1)
+						}
+						return nil, err
+					})
 					if err != nil {
-						log.Warn(err)
-						atomic.AddInt32(&errCnt, 1)
+						select {
+						case <-ctx.Done():
+							ech <- errors.Wrap(err, ctx.Err().Error())
+						case ech <- err:
+						}
 					}
-					return nil, err
-				})
-				if err != nil {
-					ech <- err
-				}
-				return nil
-			})
+					return nil
+				}))
 		}
 		if err := eg.Wait(); err != nil {
 			log.Warn(err)
-			ech <- err
+			select {
+			case <-ctx.Done():
+				ech <- errors.Wrap(err, ctx.Err().Error())
+			case ech <- err:
+			}
 			return p.Signal(syscall.SIGKILL) // TODO: #403
 		}
 		log.Infof("Error ratio: %.2f%%", float64(errCnt)/float64(pgCnt)*100)

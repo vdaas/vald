@@ -65,7 +65,7 @@ func (r *run) PreStart(ctx context.Context) (err error) {
 	case Search:
 		r.loader, err = service.NewSearch(opts...)
 	default:
-		return errors.Errorf("unsupported method")
+		return errors.New("unsupported method")
 	}
 
 	return r.loader.Prepare(ctx)
