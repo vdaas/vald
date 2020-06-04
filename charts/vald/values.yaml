@@ -1169,7 +1169,7 @@ agent:
       labels: {}
       # @schema {"name": "agent.sidecar.service.type", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
       # agent.sidecar.service.type -- service type: ClusterIP, LoadBalancer or NodePort
-      serviceType: ClusterIP
+      type: ClusterIP
       # @schema {"name": "agent.sidecar.service.externalTrafficPolicy", "type": "string"}
       # agent.sidecar.service.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
       externalTrafficPolicy: ""
