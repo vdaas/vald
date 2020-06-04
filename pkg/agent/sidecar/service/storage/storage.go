@@ -1,0 +1,173 @@
+//
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+// Package storage provides blob storage service
+package storage
+
+import (
+	"context"
+	"io"
+	"reflect"
+
+	"github.com/vdaas/vald/internal/compress"
+	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/db/storage/blob"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
+)
+
+type Storage interface {
+	Start(ctx context.Context) (<-chan error, error)
+	Reader(ctx context.Context) (io.Reader, error)
+	Writer(ctx context.Context) (io.WriteCloser, error)
+}
+
+type bs struct {
+	eg          errgroup.Group
+	storageType string
+	bucketName  string
+	filename    string
+	suffix      string
+
+	endpoint        string
+	region          string
+	accessKey       string
+	secretAccessKey string
+	token           string
+	maxPartSize     int64
+
+	compressAlgorithm string
+	compressionLevel  int
+
+	bucket     blob.Bucket
+	compressor compress.Compressor
+}
+
+func New(opts ...Option) (Storage, error) {
+	b := new(bs)
+	for _, opt := range append(defaultOpts, opts...) {
+		if err := opt(b); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
+	}
+
+	err := b.initCompressor()
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+func (b *bs) initCompressor() (err error) {
+	// Without compress
+	if b.compressAlgorithm == "" {
+		return nil
+	}
+
+	switch config.CompressAlgorithm(b.compressAlgorithm) {
+	case config.GOB:
+		b.compressor, err = compress.NewGob()
+	case config.GZIP:
+		b.compressor, err = compress.NewGzip(
+			compress.WithGzipCompressionLevel(b.compressionLevel),
+		)
+	case config.LZ4:
+		b.compressor, err = compress.NewLZ4(
+			compress.WithLZ4CompressionLevel(b.compressionLevel),
+		)
+	case config.ZSTD:
+		b.compressor, err = compress.NewZstd(
+			compress.WithZstdCompressionLevel(b.compressionLevel),
+		)
+	default:
+		return errors.ErrCompressorNameNotFound(b.compressAlgorithm)
+	}
+
+	return err
+}
+
+func (b *bs) initBucket() (err error) {
+	switch config.AtoBST(b.storageType) {
+	case config.S3:
+		s, err := session.New(
+			session.WithEndpoint(b.endpoint),
+			session.WithRegion(b.region),
+			session.WithAccessKey(b.accessKey),
+			session.WithSecretAccessKey(b.secretAccessKey),
+			session.WithToken(b.token),
+		).Session()
+		if err != nil {
+			return err
+		}
+
+		b.bucket = s3.New(
+			s3.WithErrGroup(b.eg),
+			s3.WithSession(s),
+			s3.WithBucket(b.bucketName),
+			s3.WithMaxPartSize(b.maxPartSize),
+		)
+	default:
+		return errors.ErrInvalidStorageType
+	}
+
+	return nil
+}
+
+func (b *bs) Start(ctx context.Context) (<-chan error, error) {
+	ech := make(chan error, 1)
+
+	err := b.initBucket()
+	if err != nil {
+		return nil, err
+	}
+
+	return ech, nil
+}
+
+func (b *bs) Reader(ctx context.Context) (r io.Reader, err error) {
+	r, err = b.bucket.Reader(ctx, b.filename+b.suffix)
+	if err != nil {
+		return nil, err
+	}
+
+	if b.compressor != nil {
+		r, err = b.compressor.Reader(r)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return r, nil
+}
+
+func (b *bs) Writer(ctx context.Context) (w io.WriteCloser, err error) {
+	w, err = b.bucket.Writer(ctx, b.filename+b.suffix)
+	if err != nil {
+		return nil, err
+	}
+
+	if b.compressor != nil {
+		w, err = b.compressor.Writer(w)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return w, nil
+}

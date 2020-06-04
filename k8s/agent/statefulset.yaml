@@ -71,7 +71,6 @@ spec:
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
-      topologySpreadConstraints: []
       containers:
         - name: vald-agent-ngt
           image: "vdaas/vald-agent-ngt:nightly"
@@ -109,7 +108,7 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: 120
       volumes:
         - name: vald-agent-ngt-config
           configMap:

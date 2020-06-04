@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.37`
+Current chart version is `v0.0.38`
 
 Install
 ---
@@ -65,9 +65,10 @@ Configuration
 | agent.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
 | agent.initContainers | list | `[]` | init containers |
 | agent.kind | string | `"StatefulSet"` | deployment kind: Deployment, DaemonSet or StatefulSet |
-| agent.maxReplicas | int | `300` | maximum number of replicas |
-| agent.maxUnavailable | int | `1` | maximum number of unavailable replicas |
-| agent.minReplicas | int | `20` | minimum number of replicas |
+| agent.logging | object | `{}` | logging config (overrides defaults.logging) |
+| agent.maxReplicas | int | `300` | maximum number of replicas. if HPA is disabled, this value will be ignored. |
+| agent.maxUnavailable | string | `"1"` | maximum number of unavailable replicas |
+| agent.minReplicas | int | `20` | minimum number of replicas. if HPA is disabled, the replicas will be set to this value |
 | agent.name | string | `"vald-agent-ngt"` | name of agent deployment |
 | agent.ngt.auto_index_check_duration | string | `"30m"` | check duration of automatic indexing |
 | agent.ngt.auto_index_duration_limit | string | `"24h"` | limit duration of automatic indexing |
@@ -76,16 +77,17 @@ Configuration
 | agent.ngt.bulk_insert_chunk_size | int | `10` | bulk insert chunk size |
 | agent.ngt.creation_edge_size | int | `20` | creation edge size |
 | agent.ngt.dimension | int | `4096` | vector dimension |
-| agent.ngt.distance_type | string | `"l2"` | distance type |
+| agent.ngt.distance_type | string | `"l2"` | distance type. it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `normalizedangle` or `normalizedcosine`. for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference |
 | agent.ngt.enable_in_memory_mode | bool | `true` | in-memory mode enabled |
-| agent.ngt.index_path | string | `nil` | path to index data |
-| agent.ngt.object_type | string | `"float"` | object type |
+| agent.ngt.index_path | string | `""` | path to index data |
+| agent.ngt.initial_delay_max_duration | string | `"3m"` | maximum duration for initial delay |
+| agent.ngt.object_type | string | `"float"` | object type. it should be `float` or `uint8`. for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference |
 | agent.ngt.search_edge_size | int | `10` | search edge size |
 | agent.nodeName | string | `""` | node name |
 | agent.nodeSelector | object | `{}` | node selector |
 | agent.observability | object | `{"jaeger":{"service_name":"vald-agent-ngt"}}` | observability config (overrides defaults.observability) |
 | agent.persistentVolume.accessMode | string | `"ReadWriteOnce"` | agent pod storage accessMode |
-| agent.persistentVolume.enabled | bool | `false` | enables PVC. |
+| agent.persistentVolume.enabled | bool | `false` | enables PVC. It is required to enable if agent pod's file store functionality is enabled with non in-memory mode |
 | agent.persistentVolume.size | string | `"100Gi"` | size of agent pod volume |
 | agent.persistentVolume.storageClass | string | `"vald-sc"` | storageClass name for agent pod volume |
 | agent.podAnnotations | object | `{}` | pod annotations |
@@ -93,7 +95,7 @@ Configuration
 | agent.podPriority.enabled | bool | `true` | agent pod PriorityClass enabled |
 | agent.podPriority.value | int | `1000000000` | agent pod PriorityClass value |
 | agent.progressDeadlineSeconds | int | `600` | progress deadline seconds |
-| agent.resources | object | `{"requests":{"cpu":"300m","memory":"4Gi"}}` | compute resources |
+| agent.resources | object | `{"requests":{"cpu":"300m","memory":"4Gi"}}` | compute resources. recommended setting of memory requests = cluster memory * 0.4 / number of agent pods |
 | agent.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
 | agent.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | agent.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
@@ -102,7 +104,40 @@ Configuration
 | agent.service.annotations | object | `{}` | service annotations |
 | agent.service.labels | object | `{}` | service labels |
 | agent.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
-| agent.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| agent.sidecar.config.auto_backup_duration | string | `"10m"` | auto backup duration |
+| agent.sidecar.config.blob_storage.bucket | string | `""` | bucket name |
+| agent.sidecar.config.blob_storage.s3.access_key | string | `"_AWS_ACCESS_KEY_"` | s3 access key |
+| agent.sidecar.config.blob_storage.s3.endpoint | string | `""` | s3 endpoint |
+| agent.sidecar.config.blob_storage.s3.max_part_size_mb | int | `64` | s3 multipart upload max part size |
+| agent.sidecar.config.blob_storage.s3.region | string | `""` | s3 region |
+| agent.sidecar.config.blob_storage.s3.secret_access_key | string | `"_AWS_SECRET_ACCESS_KEY_"` | s3 secret access key |
+| agent.sidecar.config.blob_storage.s3.token | string | `""` | s3 token |
+| agent.sidecar.config.blob_storage.storage_type | string | `"s3"` | storage type |
+| agent.sidecar.config.compress.compress_algorithm | string | `"gzip"` | compression algorithm. must be `gob`, `gzip`, `lz4` or `zstd` |
+| agent.sidecar.config.compress.compression_level | int | `-1` | compression level. value range relies on which algorithm is used. `gob`: level will be ignored. `gzip`: -1 (default compression), 0 (no compression), or 1 (best speed) to 9 (best compression). `lz4`: >= 0, higher is better compression. `zstd`: 1 (fastest) to 22 (best), however implementation relies on klauspost/compress. |
+| agent.sidecar.config.filename | string | `"_MY_POD_NAME_"` | backup filename |
+| agent.sidecar.config.filename_suffix | string | `".tar.gz"` | suffix for backup filename |
+| agent.sidecar.config.post_stop_timeout | string | `"10s"` | timeout duration for file changing during post stop |
+| agent.sidecar.enabled | bool | `false` | sidecar enabled |
+| agent.sidecar.env | list | `[{"name":"MY_POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"AWS_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"access-key","name":"aws-secret"}}},{"name":"AWS_SECRET_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"secret-access-key","name":"aws-secret"}}}]` | environment variables |
+| agent.sidecar.image.pullPolicy | string | `"Always"` | image pull policy |
+| agent.sidecar.image.repository | string | `"vdaas/vald-agent-sidecar"` | image repository |
+| agent.sidecar.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
+| agent.sidecar.initContainerEnabled | bool | `false` | sidecar on initContainer mode enabled. |
+| agent.sidecar.logging | object | `{}` | logging config (overrides defaults.logging) |
+| agent.sidecar.name | string | `"vald-agent-sidecar"` | name of agent sidecar |
+| agent.sidecar.observability | object | `{"jaeger":{"service_name":"vald-agent-sidecar"}}` | observability config (overrides defaults.observability) |
+| agent.sidecar.resources | object | `{"requests":{"cpu":"100m","memory":"100Mi"}}` | compute resources. |
+| agent.sidecar.server_config | object | `{"healths":{"liveness":{"enabled":false,"port":13000,"servicePort":13000},"readiness":{"enabled":false,"port":13001,"servicePort":13001}},"metrics":{"pprof":{"port":16060,"servicePort":16060},"prometheus":{"port":16061,"servicePort":16061}},"servers":{"grpc":{"enabled":false,"port":18081,"servicePort":18081},"rest":{"enabled":false,"port":18080,"servicePort":18080}}}` | server config (overrides defaults.server_config) |
+| agent.sidecar.service.annotations | object | `{}` | agent sidecar service annotations |
+| agent.sidecar.service.enabled | bool | `false` | agent sidecar service enabled |
+| agent.sidecar.service.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
+| agent.sidecar.service.labels | object | `{}` | agent sidecar service labels |
+| agent.sidecar.service.serviceType | string | `"ClusterIP"` |  |
+| agent.sidecar.time_zone | string | `""` | Time zone |
+| agent.sidecar.version | string | `"v0.0.0"` | version of agent sidecar config |
+| agent.terminationGracePeriodSeconds | int | `120` | duration in seconds pod needs to terminate gracefully |
+| agent.time_zone | string | `""` | Time zone |
 | agent.tolerations | list | `[]` | tolerations |
 | agent.topologySpreadConstraints | list | `[]` | topology spread constraints for agent pods |
 | agent.version | string | `"v0.0.0"` | version of agent config |
@@ -168,7 +203,7 @@ Configuration
 | backupManager.cassandra.config.write_coalesce_wait_time | string | `"200µs"` | write coalesce wait time |
 | backupManager.cassandra.enabled | bool | `false` | cassandra config enabled |
 | backupManager.enabled | bool | `true` | backup manager enabled |
-| backupManager.env | list | `[{"name":"MYSQL_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"mysql-secret"}}}]` | (list) environment variables |
+| backupManager.env | list | `[{"name":"MYSQL_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"mysql-secret"}}}]` | environment variables |
 | backupManager.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | backupManager.hpa.enabled | bool | `true` | HPA enabled |
 | backupManager.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |
@@ -177,17 +212,18 @@ Configuration
 | backupManager.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
 | backupManager.initContainers | list | `[{"env":[{"name":"MYSQL_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"mysql-secret"}}}],"image":"mysql:latest","mysql":{"hosts":["mysql.default.svc.cluster.local"],"options":["-uroot","-p${MYSQL_PASSWORD}"]},"name":"wait-for-mysql","sleepDuration":2,"type":"wait-for-mysql"}]` | init containers |
 | backupManager.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
-| backupManager.maxReplicas | int | `15` | maximum number of replicas |
+| backupManager.logging | object | `{}` | logging config (overrides defaults.logging) |
+| backupManager.maxReplicas | int | `15` | maximum number of replicas. if HPA is disabled, this value will be ignored. |
 | backupManager.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
-| backupManager.minReplicas | int | `3` | minimum number of replicas |
+| backupManager.minReplicas | int | `3` | minimum number of replicas. if HPA is disabled, the replicas will be set to this value |
 | backupManager.mysql.config.conn_max_life_time | string | `"30s"` | connection maximum life time |
-| backupManager.mysql.config.db | string | `"mysql"` | mysql db name |
-| backupManager.mysql.config.host | string | `"mysql.default.svc.cluster.local"` |  |
+| backupManager.mysql.config.db | string | `"mysql"` | mysql db: mysql, postgres or sqlite3 |
+| backupManager.mysql.config.host | string | `"mysql.default.svc.cluster.local"` | mysql hostname |
 | backupManager.mysql.config.max_idle_conns | int | `100` | maximum number of idle connections |
 | backupManager.mysql.config.max_open_conns | int | `100` | maximum number of open connections |
-| backupManager.mysql.config.name | string | `"vald"` |  |
-| backupManager.mysql.config.pass | string | `"_MYSQL_PASSWORD_"` |  |
-| backupManager.mysql.config.port | int | `3306` |  |
+| backupManager.mysql.config.name | string | `"vald"` | mysql db name |
+| backupManager.mysql.config.pass | string | `"_MYSQL_PASSWORD_"` | mysql password |
+| backupManager.mysql.config.port | int | `3306` | mysql port |
 | backupManager.mysql.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
 | backupManager.mysql.config.tcp.dialer.keep_alive | string | `"5m"` | TCP dialer keep alive |
 | backupManager.mysql.config.tcp.dialer.timeout | string | `"5s"` | TCP dialer timeout |
@@ -202,7 +238,7 @@ Configuration
 | backupManager.mysql.config.tls.cert | string | `"/path/to/cert"` | path to TLS cert |
 | backupManager.mysql.config.tls.enabled | bool | `false` | TLS enabled |
 | backupManager.mysql.config.tls.key | string | `"/path/to/key"` | path to TLS key |
-| backupManager.mysql.config.user | string | `"root"` |  |
+| backupManager.mysql.config.user | string | `"root"` | mysql username |
 | backupManager.mysql.enabled | bool | `true` | mysql config enabled |
 | backupManager.name | string | `"vald-manager-backup"` | name of backup manager deployment |
 | backupManager.nodeName | string | `""` | node name |
@@ -221,6 +257,7 @@ Configuration
 | backupManager.service.labels | object | `{}` | service labels |
 | backupManager.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | backupManager.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| backupManager.time_zone | string | `""` | Time zone |
 | backupManager.tolerations | list | `[]` | tolerations |
 | backupManager.topologySpreadConstraints | list | `[]` | topology spread constraints of backup manager pods |
 | backupManager.version | string | `"v0.0.0"` | version of backup manager config |
@@ -234,8 +271,8 @@ Configuration
 | compressor.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
 | compressor.annotations | object | `{}` | deployment annotations |
 | compressor.backup.client | object | `{}` | grpc client for backup (overrides defaults.grpc.client) |
-| compressor.compress.compress_algorithm | string | `"zstd"` | compression algorithm |
-| compressor.compress.compression_level | int | `3` | compression level |
+| compressor.compress.compress_algorithm | string | `"zstd"` | compression algorithm. must be `gob`, `gzip`, `lz4` or `zstd` |
+| compressor.compress.compression_level | int | `3` | compression level. value range relies on which algorithm is used. `gob`: level will be ignored. `gzip`: -1 (default compression), 0 (no compression), or 1 (best speed) to 9 (best compression). `lz4`: >= 0, higher is better compression. `zstd`: 1 (fastest) to 22 (best), however implementation relies on klauspost/compress. |
 | compressor.compress.concurrent_limit | int | `10` | concurrency limit for compress/decompress processes |
 | compressor.compress.queue_check_duration | string | `"200ms"` |  |
 | compressor.enabled | bool | `true` | compressor enabled |
@@ -248,9 +285,10 @@ Configuration
 | compressor.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
 | compressor.initContainers | list | `[{"image":"busybox","name":"wait-for-manager-backup","sleepDuration":2,"target":"manager-backup","type":"wait-for"}]` | init containers |
 | compressor.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
-| compressor.maxReplicas | int | `15` | maximum number of replicas |
-| compressor.maxUnavailable | int | `1` | maximum number of unavailable replicas |
-| compressor.minReplicas | int | `3` | minimum number of replicas |
+| compressor.logging | object | `{}` | logging config (overrides defaults.logging) |
+| compressor.maxReplicas | int | `15` | maximum number of replicas. if HPA is disabled, this value will be ignored. |
+| compressor.maxUnavailable | string | `"1"` | maximum number of unavailable replicas |
+| compressor.minReplicas | int | `3` | minimum number of replicas. if HPA is disabled, the replicas will be set to this value |
 | compressor.name | string | `"vald-manager-compressor"` | name of compressor deployment |
 | compressor.nodeName | string | `""` | node name |
 | compressor.nodeSelector | object | `{}` | node selector |
@@ -271,6 +309,7 @@ Configuration
 | compressor.service.labels | object | `{}` | service labels |
 | compressor.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | compressor.terminationGracePeriodSeconds | int | `120` | duration in seconds pod needs to terminate gracefully |
+| compressor.time_zone | string | `""` | Time zone |
 | compressor.tolerations | list | `[]` | tolerations |
 | compressor.topologySpreadConstraints | list | `[]` | topology spread constraints of compressor pods |
 | compressor.version | string | `"v0.0.0"` | version of compressor config |
@@ -319,11 +358,11 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.37"` | docker image tag |
-| defaults.logging.format | string | `"raw"` | logging format |
-| defaults.logging.level | string | `"debug"` | logging level |
-| defaults.logging.logger | string | `"glg"` | logger name |
-| defaults.observability.collector.duration | string | `"5s"` | metrics collect duration |
+| defaults.image.tag | string | `"v0.0.38"` | docker image tag |
+| defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
+| defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
+| defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg`. |
+| defaults.observability.collector.duration | string | `"5s"` | metrics collect duration. if it is set as 5s, enabled metrics are collected every 5 seconds. |
 | defaults.observability.collector.metrics.enable_cgo | bool | `true` | CGO metrics enabled |
 | defaults.observability.collector.metrics.enable_goroutine | bool | `true` | goroutine metrics enabled |
 | defaults.observability.collector.metrics.enable_memory | bool | `true` | memory metrics enabled |
@@ -340,7 +379,7 @@ Configuration
 | defaults.observability.prometheus.endpoint | string | `"/metrics"` | Prometheus exporter endpoint |
 | defaults.observability.prometheus.namespace | string | `"vald"` | prefix of exported metrics name |
 | defaults.observability.trace.enabled | bool | `false` | trace enabled |
-| defaults.observability.trace.sampling_rate | float | `1` | trace sampling rate |
+| defaults.observability.trace.sampling_rate | float | `1` | trace sampling rate. must be between 0.0 to 1.0. |
 | defaults.server_config.full_shutdown_duration | string | `"600s"` | server full shutdown duration |
 | defaults.server_config.healths.liveness.enabled | bool | `true` | liveness server enabled |
 | defaults.server_config.healths.liveness.host | string | `"0.0.0.0"` | liveness server host |
@@ -470,9 +509,10 @@ Configuration
 | discoverer.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
 | discoverer.initContainers | list | `[]` | init containers |
 | discoverer.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
-| discoverer.maxReplicas | int | `2` | maximum number of replicas |
+| discoverer.logging | object | `{}` | logging config (overrides defaults.logging) |
+| discoverer.maxReplicas | int | `2` | maximum number of replicas. if HPA is disabled, this value will be ignored. |
 | discoverer.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
-| discoverer.minReplicas | int | `1` | minimum number of replicas |
+| discoverer.minReplicas | int | `1` | minimum number of replicas. if HPA is disabled, the replicas will be set to this value |
 | discoverer.name | string | `"vald-discoverer"` | name of discoverer deployment |
 | discoverer.nodeName | string | `""` | node name |
 | discoverer.nodeSelector | object | `{}` | node selector |
@@ -492,6 +532,7 @@ Configuration
 | discoverer.serviceAccount.name | string | `"vald"` | name of service account |
 | discoverer.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | discoverer.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| discoverer.time_zone | string | `""` | Time zone |
 | discoverer.tolerations | list | `[]` | tolerations |
 | discoverer.topologySpreadConstraints | list | `[]` | topology spread constraints of discoverer pods |
 | discoverer.version | string | `"v0.0.0"` | version of discoverer config |
@@ -531,9 +572,10 @@ Configuration
 | gateway.ingress.servicePort | string | `"grpc"` | service port to be exposed by ingress |
 | gateway.initContainers | list | `[{"image":"busybox","name":"wait-for-manager-compressor","sleepDuration":2,"target":"compressor","type":"wait-for"},{"image":"busybox","name":"wait-for-meta","sleepDuration":2,"target":"meta","type":"wait-for"},{"image":"busybox","name":"wait-for-discoverer","sleepDuration":2,"target":"discoverer","type":"wait-for"},{"image":"busybox","name":"wait-for-agent","sleepDuration":2,"target":"agent","type":"wait-for"}]` | init containers |
 | gateway.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
-| gateway.maxReplicas | int | `9` | maximum number of replicas |
+| gateway.logging | object | `{}` | logging config (overrides defaults.logging) |
+| gateway.maxReplicas | int | `9` | maximum number of replicas. if HPA is disabled, this value will be ignored. |
 | gateway.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
-| gateway.minReplicas | int | `3` | minimum number of replicas |
+| gateway.minReplicas | int | `3` | minimum number of replicas. if HPA is disabled, the replicas will be set to this value |
 | gateway.name | string | `"vald-gateway"` | name of gateway deployment |
 | gateway.nodeName | string | `""` | node name |
 | gateway.nodeSelector | object | `{}` | node selector |
@@ -551,6 +593,7 @@ Configuration
 | gateway.service.labels | object | `{}` | service labels |
 | gateway.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | gateway.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| gateway.time_zone | string | `""` | Time zone |
 | gateway.tolerations | list | `[]` | tolerations |
 | gateway.topologySpreadConstraints | list | `[]` | topology spread constraints of gateway pods |
 | gateway.version | string | `"v0.0.0"` | version of gateway config |
@@ -564,7 +607,7 @@ Configuration
 | indexManager.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
 | indexManager.annotations | object | `{}` | deployment annotations |
 | indexManager.enabled | bool | `true` | index manager enabled |
-| indexManager.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | (list) environment variables |
+| indexManager.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
 | indexManager.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | indexManager.image.pullPolicy | string | `"Always"` | image pull policy |
 | indexManager.image.repository | string | `"vdaas/vald-manager-index"` | image repository |
@@ -581,6 +624,7 @@ Configuration
 | indexManager.indexer.node_name | string | `""` | node name |
 | indexManager.initContainers | list | `[{"image":"busybox","name":"wait-for-agent","sleepDuration":2,"target":"agent","type":"wait-for"},{"image":"busybox","name":"wait-for-discoverer","sleepDuration":2,"target":"discoverer","type":"wait-for"}]` | init containers |
 | indexManager.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
+| indexManager.logging | object | `{}` | logging config (overrides defaults.logging) |
 | indexManager.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
 | indexManager.name | string | `"vald-manager-index"` | name of index manager deployment |
 | indexManager.nodeName | string | `""` | node name |
@@ -600,6 +644,7 @@ Configuration
 | indexManager.service.labels | object | `{}` | service labels |
 | indexManager.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | indexManager.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| indexManager.time_zone | string | `""` | Time zone |
 | indexManager.tolerations | list | `[]` | tolerations |
 | indexManager.topologySpreadConstraints | list | `[]` | topology spread constraints of index manager pods |
 | indexManager.version | string | `"v0.0.0"` | version of index manager config |
@@ -719,9 +764,10 @@ Configuration
 | meta.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
 | meta.initContainers | list | `[{"env":[{"name":"REDIS_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"redis-secret"}}}],"image":"redis:latest","name":"wait-for-redis","redis":{"hosts":["redis.default.svc.cluster.local"],"options":["-a ${REDIS_PASSWORD}"]},"sleepDuration":2,"type":"wait-for-redis"}]` | init containers |
 | meta.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
-| meta.maxReplicas | int | `10` | maximum number of replicas |
+| meta.logging | object | `{}` | logging config (overrides defaults.logging) |
+| meta.maxReplicas | int | `10` | maximum number of replicas. if HPA is disabled, this value will be ignored. |
 | meta.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
-| meta.minReplicas | int | `2` | minimum number of replicas |
+| meta.minReplicas | int | `2` | minimum number of replicas. if HPA is disabled, the replicas will be set to this value. |
 | meta.name | string | `"vald-meta"` | name of meta deployment |
 | meta.nodeName | string | `""` | node name |
 | meta.nodeSelector | object | `{}` | node selector |
@@ -777,6 +823,7 @@ Configuration
 | meta.service.labels | object | `{}` | service labels |
 | meta.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
 | meta.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
+| meta.time_zone | string | `""` | Time zone |
 | meta.tolerations | list | `[]` | tolerations |
 | meta.topologySpreadConstraints | list | `[]` | topology spread constraints of meta pods |
 | meta.version | string | `"v0.0.0"` | version of meta config |

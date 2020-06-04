@@ -14,151 +14,37 @@
 // limitations under the License.
 //
 
-package blob
+package writer
 
 import (
 	"context"
 	"io"
 	"reflect"
+	"sync"
 	"testing"
 
-	"github.com/vdaas/vald/internal/db/storage/blob/s3"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
-	"gocloud.dev/blob"
 )
 
-const (
-	endpoint        = ""
-	region          = ""
-	accessKey       = ""
-	secretAccessKey = ""
-	bucketURL       = ""
-)
-
-func TestS3Write(t *testing.T) {
-	opener, err := s3.NewSession(
-		s3.WithEndpoint(endpoint),
-		s3.WithRegion(region),
-		s3.WithAccessKey(accessKey),
-		s3.WithSecretAccessKey(secretAccessKey),
-	).URLOpener()
-	if err != nil {
-		t.Fatalf("opener initialize failed: %s", err)
-	}
-
-	bucket, err := NewBucket(
-		WithBucketURLOpener(opener),
-		WithBucketURL(bucketURL),
-	)
-	if err != nil {
-		t.Fatalf("bucket initialize failed: %s", err)
-	}
-
-	ctx := context.Background()
-
-	err = bucket.Open(ctx)
-	if err != nil {
-		t.Fatalf("bucket open failed: %s", err)
-	}
-
-	defer func() {
-		err = bucket.Close()
-		if err != nil {
-			t.Fatalf("bucket close failed: %s", err)
-		}
-	}()
-
-	w, err := bucket.Writer(ctx, "writer-test.txt")
-	if err != nil {
-		t.Fatalf("fetch writer failed: %s", err)
-	}
-	defer func() {
-		err = w.Close()
-		if err != nil {
-			t.Fatalf("writer close failed: %s", err)
-		}
-	}()
-
-	_, err = w.Write([]byte("Hello from blob world!"))
-	if err != nil {
-		t.Fatalf("write failed: %s", err)
-	}
-}
-
-func TestS3Read(t *testing.T) {
-	opener, err := s3.NewSession(
-		s3.WithEndpoint(endpoint),
-		s3.WithRegion(region),
-		s3.WithAccessKey(accessKey),
-		s3.WithSecretAccessKey(secretAccessKey),
-	).URLOpener()
-	if err != nil {
-		t.Fatalf("opener initialize failed: %s", err)
-	}
-
-	bucket, err := NewBucket(
-		WithBucketURLOpener(opener),
-		WithBucketURL(bucketURL),
-	)
-	if err != nil {
-		t.Fatalf("bucket initialize failed: %s", err)
-	}
-
-	ctx := context.Background()
-
-	err = bucket.Open(ctx)
-	if err != nil {
-		t.Fatalf("bucket open failed: %s", err)
-	}
-
-	defer func() {
-		err = bucket.Close()
-		if err != nil {
-			t.Fatalf("bucket close failed: %s", err)
-		}
-	}()
-
-	r, err := bucket.Reader(ctx, "writer-test.txt")
-	if err != nil {
-		t.Fatalf("fetch reader failed: %s", err)
-	}
-	defer func() {
-		err = r.Close()
-		if err != nil {
-			t.Fatalf("reader close failed: %s", err)
-		}
-	}()
-
-	rbuf := make([]byte, 16)
-	_, err = r.Read(rbuf)
-	if err != nil {
-		t.Fatalf("read failed: %s", err)
-	}
-
-	t.Logf("read: %s", string(rbuf))
-}
-
-func TestNewBucket(t *testing.T) {
+func TestNew(t *testing.T) {
 	type args struct {
 		opts []Option
 	}
 	type want struct {
-		want Bucket
-		err  error
+		want Writer
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Bucket, error) error
+		checkFunc  func(want, Writer) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Bucket, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
+	defaultCheckFunc := func(w want, got Writer) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
@@ -205,8 +91,8 @@ func TestNewBucket(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got, err := NewBucket(test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			got := New(test.args.opts...)
+			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -214,14 +100,19 @@ func TestNewBucket(t *testing.T) {
 	}
 }
 
-func Test_bucket_Open(t *testing.T) {
+func Test_writer_Open(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
-		opener BucketURLOpener
-		url    string
-		bucket *blob.Bucket
+		eg          errgroup.Group
+		service     *s3.S3
+		bucket      string
+		key         string
+		maxPartSize int64
+		pw          io.WriteCloser
+		wg          *sync.WaitGroup
+		ctx         context.Context
 	}
 	type want struct {
 		err error
@@ -250,9 +141,14 @@ func Test_bucket_Open(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
-		           opener: nil,
-		           url: "",
-		           bucket: nil,
+		           eg: nil,
+		           service: nil,
+		           bucket: "",
+		           key: "",
+		           maxPartSize: 0,
+		           pw: nil,
+		           wg: sync.WaitGroup{},
+		           ctx: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -268,9 +164,14 @@ func Test_bucket_Open(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
-		           opener: nil,
-		           url: "",
-		           bucket: nil,
+		           eg: nil,
+		           service: nil,
+		           bucket: "",
+		           key: "",
+		           maxPartSize: 0,
+		           pw: nil,
+		           wg: sync.WaitGroup{},
+		           ctx: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -291,13 +192,18 @@ func Test_bucket_Open(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			b := &bucket{
-				opener: test.fields.opener,
-				url:    test.fields.url,
-				bucket: test.fields.bucket,
+			w := &writer{
+				eg:          test.fields.eg,
+				service:     test.fields.service,
+				bucket:      test.fields.bucket,
+				key:         test.fields.key,
+				maxPartSize: test.fields.maxPartSize,
+				pw:          test.fields.pw,
+				wg:          test.fields.wg,
+				ctx:         test.fields.ctx,
 			}
 
-			err := b.Open(test.args.ctx)
+			err := w.Open(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -306,11 +212,16 @@ func Test_bucket_Open(t *testing.T) {
 	}
 }
 
-func Test_bucket_Close(t *testing.T) {
+func Test_writer_Close(t *testing.T) {
 	type fields struct {
-		opener BucketURLOpener
-		url    string
-		bucket *blob.Bucket
+		eg          errgroup.Group
+		service     *s3.S3
+		bucket      string
+		key         string
+		maxPartSize int64
+		pw          io.WriteCloser
+		wg          *sync.WaitGroup
+		ctx         context.Context
 	}
 	type want struct {
 		err error
@@ -335,9 +246,14 @@ func Test_bucket_Close(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           opener: nil,
-		           url: "",
-		           bucket: nil,
+		           eg: nil,
+		           service: nil,
+		           bucket: "",
+		           key: "",
+		           maxPartSize: 0,
+		           pw: nil,
+		           wg: sync.WaitGroup{},
+		           ctx: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -350,9 +266,14 @@ func Test_bucket_Close(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           opener: nil,
-		           url: "",
-		           bucket: nil,
+		           eg: nil,
+		           service: nil,
+		           bucket: "",
+		           key: "",
+		           maxPartSize: 0,
+		           pw: nil,
+		           wg: sync.WaitGroup{},
+		           ctx: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -373,13 +294,18 @@ func Test_bucket_Close(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			b := &bucket{
-				opener: test.fields.opener,
-				url:    test.fields.url,
-				bucket: test.fields.bucket,
+			w := &writer{
+				eg:          test.fields.eg,
+				service:     test.fields.service,
+				bucket:      test.fields.bucket,
+				key:         test.fields.key,
+				maxPartSize: test.fields.maxPartSize,
+				pw:          test.fields.pw,
+				wg:          test.fields.wg,
+				ctx:         test.fields.ctx,
 			}
 
-			err := b.Close()
+			err := w.Close()
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -388,35 +314,39 @@ func Test_bucket_Close(t *testing.T) {
 	}
 }
 
-func Test_bucket_Reader(t *testing.T) {
+func Test_writer_Write(t *testing.T) {
 	type args struct {
-		ctx context.Context
-		key string
+		p []byte
 	}
 	type fields struct {
-		opener BucketURLOpener
-		url    string
-		bucket *blob.Bucket
+		eg          errgroup.Group
+		service     *s3.S3
+		bucket      string
+		key         string
+		maxPartSize int64
+		pw          io.WriteCloser
+		wg          *sync.WaitGroup
+		ctx         context.Context
 	}
 	type want struct {
-		want io.ReadCloser
-		err  error
+		wantN int
+		err   error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, io.ReadCloser, error) error
+		checkFunc  func(want, int, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got io.ReadCloser, err error) error {
+	defaultCheckFunc := func(w want, gotN int, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+		if !reflect.DeepEqual(gotN, w.wantN) {
+			return errors.Errorf("got = %v, want %v", gotN, w.wantN)
 		}
 		return nil
 	}
@@ -426,13 +356,17 @@ func Test_bucket_Reader(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           ctx: nil,
-		           key: "",
+		           p: nil,
 		       },
 		       fields: fields {
-		           opener: nil,
-		           url: "",
-		           bucket: nil,
+		           eg: nil,
+		           service: nil,
+		           bucket: "",
+		           key: "",
+		           maxPartSize: 0,
+		           pw: nil,
+		           wg: sync.WaitGroup{},
+		           ctx: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -445,13 +379,17 @@ func Test_bucket_Reader(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           ctx: nil,
-		           key: "",
+		           p: nil,
 		           },
 		           fields: fields {
-		           opener: nil,
-		           url: "",
-		           bucket: nil,
+		           eg: nil,
+		           service: nil,
+		           bucket: "",
+		           key: "",
+		           maxPartSize: 0,
+		           pw: nil,
+		           wg: sync.WaitGroup{},
+		           ctx: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -472,14 +410,19 @@ func Test_bucket_Reader(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			b := &bucket{
-				opener: test.fields.opener,
-				url:    test.fields.url,
-				bucket: test.fields.bucket,
+			w := &writer{
+				eg:          test.fields.eg,
+				service:     test.fields.service,
+				bucket:      test.fields.bucket,
+				key:         test.fields.key,
+				maxPartSize: test.fields.maxPartSize,
+				pw:          test.fields.pw,
+				wg:          test.fields.wg,
+				ctx:         test.fields.ctx,
 			}
 
-			got, err := b.Reader(test.args.ctx, test.args.key)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			gotN, err := w.Write(test.args.p)
+			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -487,35 +430,35 @@ func Test_bucket_Reader(t *testing.T) {
 	}
 }
 
-func Test_bucket_Writer(t *testing.T) {
+func Test_writer_upload(t *testing.T) {
 	type args struct {
-		ctx context.Context
-		key string
+		body io.Reader
 	}
 	type fields struct {
-		opener BucketURLOpener
-		url    string
-		bucket *blob.Bucket
+		eg          errgroup.Group
+		service     *s3.S3
+		bucket      string
+		key         string
+		maxPartSize int64
+		pw          io.WriteCloser
+		wg          *sync.WaitGroup
+		ctx         context.Context
 	}
 	type want struct {
-		want io.WriteCloser
-		err  error
+		err error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, io.WriteCloser, error) error
+		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got io.WriteCloser, err error) error {
+	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
@@ -525,13 +468,17 @@ func Test_bucket_Writer(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           ctx: nil,
-		           key: "",
+		           body: nil,
 		       },
 		       fields: fields {
-		           opener: nil,
-		           url: "",
-		           bucket: nil,
+		           eg: nil,
+		           service: nil,
+		           bucket: "",
+		           key: "",
+		           maxPartSize: 0,
+		           pw: nil,
+		           wg: sync.WaitGroup{},
+		           ctx: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -544,13 +491,17 @@ func Test_bucket_Writer(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           ctx: nil,
-		           key: "",
+		           body: nil,
 		           },
 		           fields: fields {
-		           opener: nil,
-		           url: "",
-		           bucket: nil,
+		           eg: nil,
+		           service: nil,
+		           bucket: "",
+		           key: "",
+		           maxPartSize: 0,
+		           pw: nil,
+		           wg: sync.WaitGroup{},
+		           ctx: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -571,14 +522,19 @@ func Test_bucket_Writer(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			b := &bucket{
-				opener: test.fields.opener,
-				url:    test.fields.url,
-				bucket: test.fields.bucket,
+			w := &writer{
+				eg:          test.fields.eg,
+				service:     test.fields.service,
+				bucket:      test.fields.bucket,
+				key:         test.fields.key,
+				maxPartSize: test.fields.maxPartSize,
+				pw:          test.fields.pw,
+				wg:          test.fields.wg,
+				ctx:         test.fields.ctx,
 			}
 
-			got, err := b.Writer(test.args.ctx, test.args.key)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			err := w.upload(test.args.body)
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 

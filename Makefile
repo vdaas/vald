@@ -20,6 +20,7 @@ GOPKG                           = github.com/$(REPO)/$(NAME)
 TAG                             = $(eval TAG := $(shell date -u +%Y%m%d-%H%M%S))$(TAG)
 BASE_IMAGE                      = $(NAME)-base
 AGENT_IMAGE                     = $(NAME)-agent-ngt
+AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
 GATEWAY_IMAGE                   = $(NAME)-gateway
 DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
 META_REDIS_IMAGE                = $(NAME)-meta-redis

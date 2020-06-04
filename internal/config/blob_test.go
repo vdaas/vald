@@ -161,7 +161,7 @@ func TestAtoBST(t *testing.T) {
 func TestBlob_Bind(t *testing.T) {
 	type fields struct {
 		StorageType string
-		BucketURL   string
+		Bucket      string
 		S3          *S3Config
 	}
 	type want struct {
@@ -188,7 +188,7 @@ func TestBlob_Bind(t *testing.T) {
 		       name: "test_case_1",
 		       fields: fields {
 		           StorageType: "",
-		           BucketURL: "",
+		           Bucket: "",
 		           S3: S3Config{},
 		       },
 		       want: want{},
@@ -203,7 +203,7 @@ func TestBlob_Bind(t *testing.T) {
 		           name: "test_case_2",
 		           fields: fields {
 		           StorageType: "",
-		           BucketURL: "",
+		           Bucket: "",
 		           S3: S3Config{},
 		           },
 		           want: want{},
@@ -227,7 +227,7 @@ func TestBlob_Bind(t *testing.T) {
 			}
 			b := &Blob{
 				StorageType: test.fields.StorageType,
-				BucketURL:   test.fields.BucketURL,
+				Bucket:      test.fields.Bucket,
 				S3:          test.fields.S3,
 			}
 
@@ -247,7 +247,7 @@ func TestS3Config_Bind(t *testing.T) {
 		AccessKey       string
 		SecretAccessKey string
 		Token           string
-		UseLegacyList   bool
+		MaxPartSizeMB   int
 	}
 	type want struct {
 		want *S3Config
@@ -277,7 +277,7 @@ func TestS3Config_Bind(t *testing.T) {
 		           AccessKey: "",
 		           SecretAccessKey: "",
 		           Token: "",
-		           UseLegacyList: false,
+		           MaxPartSizeMB: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -295,7 +295,7 @@ func TestS3Config_Bind(t *testing.T) {
 		           AccessKey: "",
 		           SecretAccessKey: "",
 		           Token: "",
-		           UseLegacyList: false,
+		           MaxPartSizeMB: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -322,7 +322,7 @@ func TestS3Config_Bind(t *testing.T) {
 				AccessKey:       test.fields.AccessKey,
 				SecretAccessKey: test.fields.SecretAccessKey,
 				Token:           test.fields.Token,
-				UseLegacyList:   test.fields.UseLegacyList,
+				MaxPartSizeMB:   test.fields.MaxPartSizeMB,
 			}
 
 			got := s.Bind()

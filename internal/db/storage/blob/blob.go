@@ -19,60 +19,11 @@ package blob
 import (
 	"context"
 	"io"
-	"net/url"
-	"reflect"
-
-	"github.com/vdaas/vald/internal/errors"
-
-	"gocloud.dev/blob"
 )
-
-type BucketURLOpener = blob.BucketURLOpener
-
-type bucket struct {
-	opener BucketURLOpener
-	url    string
-	bucket *blob.Bucket
-}
 
 type Bucket interface {
 	Open(ctx context.Context) error
 	Close() error
 	Reader(ctx context.Context, key string) (io.ReadCloser, error)
 	Writer(ctx context.Context, key string) (io.WriteCloser, error)
-}
-
-func NewBucket(opts ...Option) (Bucket, error) {
-	b := new(bucket)
-	for _, opt := range append(defaultOpts, opts...) {
-		if err := opt(b); err != nil {
-			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-		}
-	}
-
-	return b, nil
-}
-
-func (b *bucket) Open(ctx context.Context) (err error) {
-	url, err := url.Parse(b.url)
-	if err != nil {
-		return err
-	}
-	b.bucket, err = b.opener.OpenBucketURL(ctx, url)
-	return err
-}
-
-func (b *bucket) Close() error {
-	if b.bucket != nil {
-		return b.bucket.Close()
-	}
-	return nil
-}
-
-func (b *bucket) Reader(ctx context.Context, key string) (io.ReadCloser, error) {
-	return b.bucket.NewReader(ctx, key, nil)
-}
-
-func (b *bucket) Writer(ctx context.Context, key string) (io.WriteCloser, error) {
-	return b.bucket.NewWriter(ctx, key, nil)
 }

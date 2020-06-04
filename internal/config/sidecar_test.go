@@ -27,9 +27,13 @@ import (
 
 func TestAgentSidecar_Bind(t *testing.T) {
 	type fields struct {
-		WatchPaths              []string
-		AutoBackupDurationLimit string
-		AutoBackupDuration      string
+		Mode               string
+		WatchDir           string
+		AutoBackupDuration string
+		Filename           string
+		FilenameSuffix     string
+		BlobStorage        *Blob
+		Compress           *CompressCore
 	}
 	type want struct {
 		want *AgentSidecar
@@ -54,9 +58,13 @@ func TestAgentSidecar_Bind(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           WatchPaths: nil,
-		           AutoBackupDurationLimit: "",
+		           Mode: "",
+		           WatchDir: "",
 		           AutoBackupDuration: "",
+		           Filename: "",
+		           FilenameSuffix: "",
+		           BlobStorage: Blob{},
+		           Compress: CompressCore{},
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -69,9 +77,13 @@ func TestAgentSidecar_Bind(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           WatchPaths: nil,
-		           AutoBackupDurationLimit: "",
+		           Mode: "",
+		           WatchDir: "",
 		           AutoBackupDuration: "",
+		           Filename: "",
+		           FilenameSuffix: "",
+		           BlobStorage: Blob{},
+		           Compress: CompressCore{},
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -93,9 +105,13 @@ func TestAgentSidecar_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &AgentSidecar{
-				WatchPaths:              test.fields.WatchPaths,
-				AutoBackupDurationLimit: test.fields.AutoBackupDurationLimit,
-				AutoBackupDuration:      test.fields.AutoBackupDuration,
+				Mode:               test.fields.Mode,
+				WatchDir:           test.fields.WatchDir,
+				AutoBackupDuration: test.fields.AutoBackupDuration,
+				Filename:           test.fields.Filename,
+				FilenameSuffix:     test.fields.FilenameSuffix,
+				BlobStorage:        test.fields.BlobStorage,
+				Compress:           test.fields.Compress,
 			}
 
 			got := s.Bind()

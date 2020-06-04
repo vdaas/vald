@@ -20,14 +20,14 @@ package grpc
 import (
 	"testing"
 
-	"github.com/vdaas/vald/pkg/agent/sidecar/service"
+	"github.com/vdaas/vald/pkg/agent/sidecar/service/observer"
 	"go.uber.org/goleak"
 )
 
 func TestWithStorageObserver(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		so service.StorageObserver
+		so observer.StorageObserver
 	}
 	type want struct {
 		obj *T

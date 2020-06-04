@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func Test_compressAlgorithm_String(t *testing.T) {
@@ -66,6 +67,7 @@ func Test_compressAlgorithm_String(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -136,6 +138,7 @@ func TestCompressAlgorithm(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -155,10 +158,87 @@ func TestCompressAlgorithm(t *testing.T) {
 	}
 }
 
+func TestCompressCore_Bind(t *testing.T) {
+	type fields struct {
+		CompressAlgorithm string
+		CompressionLevel  int
+	}
+	type want struct {
+		want *CompressCore
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, *CompressCore) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got *CompressCore) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           CompressAlgorithm: "",
+		           CompressionLevel: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           CompressAlgorithm: "",
+		           CompressionLevel: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &CompressCore{
+				CompressAlgorithm: test.fields.CompressAlgorithm,
+				CompressionLevel:  test.fields.CompressionLevel,
+			}
+
+			got := c.Bind()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
 func TestCompressor_Bind(t *testing.T) {
 	type fields struct {
-		CompressAlgorithm  string
-		CompressionLevel   int
+		CompressCore       CompressCore
 		ConcurrentLimit    int
 		QueueCheckDuration string
 	}
@@ -185,8 +265,7 @@ func TestCompressor_Bind(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           CompressAlgorithm: "",
-		           CompressionLevel: 0,
+		           CompressCore: CompressCore{},
 		           ConcurrentLimit: 0,
 		           QueueCheckDuration: "",
 		       },
@@ -201,8 +280,7 @@ func TestCompressor_Bind(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           CompressAlgorithm: "",
-		           CompressionLevel: 0,
+		           CompressCore: CompressCore{},
 		           ConcurrentLimit: 0,
 		           QueueCheckDuration: "",
 		           },
@@ -215,6 +293,7 @@ func TestCompressor_Bind(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -225,8 +304,7 @@ func TestCompressor_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &Compressor{
-				CompressAlgorithm:  test.fields.CompressAlgorithm,
-				CompressionLevel:   test.fields.CompressionLevel,
+				CompressCore:       test.fields.CompressCore,
 				ConcurrentLimit:    test.fields.ConcurrentLimit,
 				QueueCheckDuration: test.fields.QueueCheckDuration,
 			}
@@ -242,8 +320,9 @@ func TestCompressor_Bind(t *testing.T) {
 
 func TestCompressorRegisterer_Bind(t *testing.T) {
 	type fields struct {
-		ConcurrentLimit int
-		Compressor      *BackupManager
+		ConcurrentLimit    int
+		QueueCheckDuration string
+		Compressor         *BackupManager
 	}
 	type want struct {
 		want *CompressorRegisterer
@@ -269,6 +348,7 @@ func TestCompressorRegisterer_Bind(t *testing.T) {
 		       name: "test_case_1",
 		       fields: fields {
 		           ConcurrentLimit: 0,
+		           QueueCheckDuration: "",
 		           Compressor: BackupManager{},
 		       },
 		       want: want{},
@@ -283,6 +363,7 @@ func TestCompressorRegisterer_Bind(t *testing.T) {
 		           name: "test_case_2",
 		           fields: fields {
 		           ConcurrentLimit: 0,
+		           QueueCheckDuration: "",
 		           Compressor: BackupManager{},
 		           },
 		           want: want{},
@@ -294,6 +375,7 @@ func TestCompressorRegisterer_Bind(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -304,8 +386,9 @@ func TestCompressorRegisterer_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			cr := &CompressorRegisterer{
-				ConcurrentLimit: test.fields.ConcurrentLimit,
-				Compressor:      test.fields.Compressor,
+				ConcurrentLimit:    test.fields.ConcurrentLimit,
+				QueueCheckDuration: test.fields.QueueCheckDuration,
+				Compressor:         test.fields.Compressor,
 			}
 
 			got := cr.Bind()

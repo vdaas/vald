@@ -18,6 +18,7 @@
 docker/build: \
 	docker/build/base \
 	docker/build/agent-ngt \
+	docker/build/agent-sidecar \
 	docker/build/discoverer-k8s \
 	docker/build/gateway-vald \
 	docker/build/meta-redis \
@@ -45,6 +46,15 @@ docker/name/agent-ngt:
 ## build agent-ngt image
 docker/build/agent-ngt: docker/build/base
 	docker build -f dockers/agent/core/ngt/Dockerfile -t $(REPO)/$(AGENT_IMAGE) .
+
+.PHONY: docker/name/agent-sidecar
+docker/name/agent-sidecar:
+	@echo "$(REPO)/$(AGENT_SIDECAR_IMAGE)"
+
+.PHONY: docker/build/agent-sidecar
+## build agent-sidecar image
+docker/build/agent-sidecar: docker/build/base
+	docker build -f dockers/agent/sidecar/Dockerfile -t $(REPO)/$(AGENT_SIDECAR_IMAGE) .
 
 .PHONY: docker/name/discoverer-k8s
 docker/name/discoverer-k8s:

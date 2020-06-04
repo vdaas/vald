@@ -528,16 +528,5 @@ func (n *ngt) Close() {
 		C.ngt_close_index(n.index)
 		C.ngt_destroy_error_object(n.ebuf)
 		n.index = nil
-		// dimension           C.int32_t
-		// objectType          objectType
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		C.free(unsafe.Pointer(&n.dimension))
-		C.free(unsafe.Pointer(&n.prop))
-		C.free(unsafe.Pointer(&n.ebuf))
-		// C.free(unsafe.Pointer(&n.index))
-		C.free(unsafe.Pointer(&n.ospace))
 	}
 }

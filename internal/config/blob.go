@@ -45,8 +45,8 @@ type Blob struct {
 	// StorageType represents blob storaget type
 	StorageType string `json:"storage_type" yaml:"storage_type"`
 
-	// BucketURL represents bucket URL
-	BucketURL string `json:"bucket_url" yaml:"bucket_url"`
+	// Bucket represents bucket name
+	Bucket string `json:"bucket" yaml:"bucket"`
 
 	// S3 represents S3 config
 	S3 *S3Config `json:"s3" yaml:"s3"`
@@ -58,12 +58,12 @@ type S3Config struct {
 	AccessKey       string `json:"access_key" yaml:"access_key"`
 	SecretAccessKey string `json:"secret_access_key" yaml:"secret_access_key"`
 	Token           string `json:"token" yaml:"token"`
-	UseLegacyList   bool   `json:"use_legacy_list" yaml:"use_legacy_list"`
+	MaxPartSizeMB   int    `json:"max_part_size_mb" yaml:"max_part_size_mb"`
 }
 
 func (b *Blob) Bind() *Blob {
 	b.StorageType = GetActualValue(b.StorageType)
-	b.BucketURL = GetActualValue(b.BucketURL)
+	b.Bucket = GetActualValue(b.Bucket)
 
 	if b.S3 != nil {
 		b.S3 = b.S3.Bind()
