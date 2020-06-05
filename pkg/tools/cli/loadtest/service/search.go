@@ -24,25 +24,19 @@ import (
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 )
 
-// NewSearch returns search load tester.
-func NewSearch(opts ...Option) (Loader, error) {
-	l, err := newLoader(opts...)
-	if err != nil {
-		return nil, err
-	}
-	l.requestsFunc = func(dataset assets.Dataset) ([]interface{}, error) {
-		vectors := dataset.Query()
-		requests := make([]interface{}, len(vectors))
-		for j, v := range vectors {
-			requests[j] = &payload.Search_Request{
-				Vector: v,
+func newSearch() (requestFunc, loaderFunc) {
+	return func(dataset assets.Dataset) ([]interface{}, error) {
+			vectors := dataset.Query()
+			requests := make([]interface{}, len(vectors))
+			for j, v := range vectors {
+				requests[j] = &payload.Search_Request{
+					Vector: v,
+				}
 			}
+			return requests, nil
+		},
+		func(ctx context.Context, c vald.ValdClient, i interface{}, copts ...grpc.CallOption) error {
+			_, err := c.Search(ctx, i.(*payload.Search_Request), copts...)
+			return err
 		}
-		return requests, nil
-	}
-	l.loaderFunc = func(ctx context.Context, c vald.ValdClient, i interface{}, copts ...grpc.CallOption) error {
-		_, err := c.Search(ctx, i.(*payload.Search_Request), copts...)
-		return err
-	}
-	return l, nil
 }

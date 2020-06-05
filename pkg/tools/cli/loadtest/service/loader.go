@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
+	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 )
 
 // Loader is representation of load test
@@ -37,6 +38,11 @@ type Loader interface {
 	Prepare(context.Context) error
 	Do(context.Context) <-chan error
 }
+
+type (
+	requestFunc func(assets.Dataset) ([]interface{}, error)
+	loaderFunc  func(context.Context, vald.ValdClient, interface{}, ...grpc.CallOption) error
+)
 
 type loader struct {
 	eg               errgroup.Group
@@ -46,16 +52,27 @@ type loader struct {
 	dataset          string
 	requests         []interface{}
 	progressDuration time.Duration
-	requestsFunc     func(assets.Dataset) ([]interface{}, error)
-	loaderFunc       func(context.Context, vald.ValdClient, interface{}, ...grpc.CallOption) error
+	requestsFunc     requestFunc
+	loaderFunc       loaderFunc
+	operation        config.Operation
 }
 
-func newLoader(opts ...Option) (l *loader, err error) {
-	l = new(loader)
+// NewLoader returns Loader implementation.
+func NewLoader(opts ...Option) (Loader, error) {
+	l := new(loader)
 	for _, opt := range append(defaultOpts, opts...) {
-		if err = opt(l); err != nil {
+		if err := opt(l); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
+	}
+
+	switch l.operation {
+	case config.Insert:
+		l.requestsFunc, l.loaderFunc = newInsert()
+	case config.Search:
+		l.requestsFunc, l.loaderFunc = newSearch()
+	default:
+		return nil, errors.Errorf("undefined method: %v", l.operation)
 	}
 
 	return l, nil

@@ -18,11 +18,47 @@
 package config
 
 import (
+	"strings"
+
 	"github.com/vdaas/vald/internal/config"
 )
 
 // GlobalConfig is type alias of config.GlobalConfig.
 type GlobalConfig = config.GlobalConfig
+
+// Operation is type of implemented load test.
+type Operation uint8
+
+// Operation method.
+const (
+	Unknown Operation = iota
+	Insert
+	Search
+)
+
+// OperationMethod convert string to Operation.
+func OperationMethod(s string) Operation {
+	switch strings.ToLower(s) {
+	case "insert":
+		return Insert
+	case "search":
+		return Search
+	default:
+		return Unknown
+	}
+}
+
+// String convert Operation to string.
+func (o Operation) String() string {
+	switch o {
+	case Insert:
+		return "insert"
+	case Search:
+		return "search"
+	default:
+		return "unknown operation"
+	}
+}
 
 // Data represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.

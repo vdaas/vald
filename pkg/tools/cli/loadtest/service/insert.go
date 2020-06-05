@@ -24,27 +24,21 @@ import (
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 )
 
-// NewInsert returns insert load tester.
-func NewInsert(opts ...Option) (Loader, error) {
-	l, err := newLoader(opts...)
-	if err != nil {
-		return nil, err
-	}
-	l.requestsFunc = func(dataset assets.Dataset) ([]interface{}, error) {
-		vectors := dataset.Train()
-		ids := dataset.IDs()
-		requests := make([]interface{}, len(vectors))
-		for j, v := range vectors {
-			requests[j] = &payload.Object_Vector{
-				Id:     ids[j],
-				Vector: v,
+func newInsert() (requestFunc, loaderFunc) {
+	return func(dataset assets.Dataset) ([]interface{}, error) {
+			vectors := dataset.Train()
+			ids := dataset.IDs()
+			requests := make([]interface{}, len(vectors))
+			for j, v := range vectors {
+				requests[j] = &payload.Object_Vector{
+					Id:     ids[j],
+					Vector: v,
+				}
 			}
+			return requests, nil
+		},
+		func(ctx context.Context, c vald.ValdClient, i interface{}, copts ...grpc.CallOption) error {
+			_, err := c.Insert(ctx, i.(*payload.Object_Vector), copts...)
+			return err
 		}
-		return requests, nil
-	}
-	l.loaderFunc = func(ctx context.Context, c vald.ValdClient, i interface{}, copts ...grpc.CallOption) error {
-		_, err := c.Insert(ctx, i.(*payload.Object_Vector), copts...)
-		return err
-	}
-	return l, nil
 }

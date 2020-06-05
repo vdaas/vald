@@ -20,6 +20,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/timeutil"
+	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 )
 
 // Option is load test configuration.
@@ -91,6 +92,14 @@ func WithProgressDuration(pd string) Option {
 			return err
 		}
 		l.progressDuration = d
+		return nil
+	}
+}
+
+// WithOperation sets operation of load test.
+func WithOperation(op string) Option {
+	return func(l *loader) error {
+		l.operation = config.OperationMethod(op)
 		return nil
 	}
 }

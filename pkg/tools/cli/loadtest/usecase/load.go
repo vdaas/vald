@@ -61,13 +61,10 @@ func (r *run) PreStart(ctx context.Context) (err error) {
 		service.WithConcurrency(r.cfg.Concurrency),
 		service.WithProgressDuration(r.cfg.ProgressDuration),
 	}
-	switch Atoo(r.cfg.Method) {
-	case Insert:
-		r.loader, err = service.NewInsert(opts...)
-	case Search:
-		r.loader, err = service.NewSearch(opts...)
-	default:
-		return errors.New("unsupported method")
+
+	r.loader, err = service.NewLoader(opts...)
+	if err != nil {
+		return err
 	}
 
 	return r.loader.Prepare(ctx)
