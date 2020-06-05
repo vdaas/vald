@@ -13,28 +13,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package assets
+package service
 
 import (
-	"testing"
+	"context"
 
+	"github.com/vdaas/vald/apis/grpc/gateway/vald"
+	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 )
 
-type Dataset = assets.Dataset
-
-func Data(name string) func(testing.TB) Dataset {
-	return func(tb testing.TB) Dataset {
-		tb.Helper()
-		fn := assets.Data(name)
-		if fn == nil {
-			return nil
+func newInsert() (requestFunc, loaderFunc) {
+	return func(dataset assets.Dataset) ([]interface{}, error) {
+			vectors := dataset.Train()
+			ids := dataset.IDs()
+			requests := make([]interface{}, len(vectors))
+			for j, v := range vectors {
+				requests[j] = &payload.Object_Vector{
+					Id:     ids[j],
+					Vector: v,
+				}
+			}
+			return requests, nil
+		},
+		func(ctx context.Context, c vald.ValdClient, i interface{}, copts ...grpc.CallOption) error {
+			_, err := c.Insert(ctx, i.(*payload.Object_Vector), copts...)
+			return err
 		}
-		dataset, err := fn()
-		if err != nil {
-			tb.Error(err)
-			return nil
-		}
-		return dataset
-	}
 }

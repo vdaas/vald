@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package assets
+package service
 
 import (
 	"reflect"
@@ -23,24 +23,24 @@ import (
 	"go.uber.org/goleak"
 )
 
-func TestData(t *testing.T) {
-	type args struct {
-		name string
-	}
+func Test_newSearch(t *testing.T) {
 	type want struct {
-		want func(testing.TB) Dataset
+		want  requestFunc
+		want1 loaderFunc
 	}
 	type test struct {
 		name       string
-		args       args
 		want       want
-		checkFunc  func(want, func(testing.TB) Dataset) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		checkFunc  func(want, requestFunc, loaderFunc) error
+		beforeFunc func()
+		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got func(testing.TB) Dataset) error {
+	defaultCheckFunc := func(w want, got requestFunc, got1 loaderFunc) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		if !reflect.DeepEqual(got1, w.want1) {
+			return errors.Errorf("got = %v, want %v", got1, w.want1)
 		}
 		return nil
 	}
@@ -49,9 +49,6 @@ func TestData(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       args: args {
-		           name: "",
-		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
 		   },
@@ -62,9 +59,6 @@ func TestData(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           args: args {
-		           name: "",
-		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
 		       }
@@ -76,17 +70,17 @@ func TestData(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := Data(test.args.name)
-			if err := test.checkFunc(test.want, got); err != nil {
+			got, got1 := newSearch()
+			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 

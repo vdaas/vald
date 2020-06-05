@@ -13,7 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package assets
+
+// Package grpc provides generic functionality for grpc
+package grpc
 
 import (
 	"reflect"
@@ -23,22 +25,18 @@ import (
 	"go.uber.org/goleak"
 )
 
-func TestData(t *testing.T) {
-	type args struct {
-		name string
-	}
+func TestRecoverInterceptor(t *testing.T) {
 	type want struct {
-		want func(testing.TB) Dataset
+		want UnaryServerInterceptor
 	}
 	type test struct {
 		name       string
-		args       args
 		want       want
-		checkFunc  func(want, func(testing.TB) Dataset) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		checkFunc  func(want, UnaryServerInterceptor) error
+		beforeFunc func()
+		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got func(testing.TB) Dataset) error {
+	defaultCheckFunc := func(w want, got UnaryServerInterceptor) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
@@ -49,9 +47,6 @@ func TestData(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       args: args {
-		           name: "",
-		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
 		   },
@@ -62,9 +57,6 @@ func TestData(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           args: args {
-		           name: "",
-		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
 		       }
@@ -76,16 +68,77 @@ func TestData(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := Data(test.args.name)
+			got := RecoverInterceptor()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func TestRecoverStreamInterceptor(t *testing.T) {
+	type want struct {
+		want StreamServerInterceptor
+	}
+	type test struct {
+		name       string
+		want       want
+		checkFunc  func(want, StreamServerInterceptor) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got StreamServerInterceptor) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := RecoverStreamInterceptor()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

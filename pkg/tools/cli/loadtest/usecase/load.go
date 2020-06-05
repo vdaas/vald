@@ -20,35 +20,111 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/runner"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
+	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
+	"github.com/vdaas/vald/pkg/tools/cli/loadtest/service"
 )
 
 type run struct {
-	eg  errgroup.Group
-	cfg *config.Data
+	eg     errgroup.Group
+	cfg    *config.Data
+	loader service.Loader
+	client grpc.Client
 }
 
+// New returns Runner instance.
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	return nil, nil
+	run := &run{
+		cfg: cfg,
+		eg:  errgroup.Get(),
+	}
+
+	return run, nil
 }
 
-func (r *run) PreStart(ctx context.Context) error {
-	return nil
+// PreStart initializes load tester and returns error if occurred.
+func (r *run) PreStart(ctx context.Context) (err error) {
+	r.client = grpc.New(
+		grpc.WithAddrs(append([]string{r.cfg.Addr}, r.cfg.Client.Addrs...)...),
+		grpc.WithInsecure(r.cfg.Client.DialOption.Insecure),
+		grpc.WithErrGroup(r.eg),
+	)
+
+	opts := []service.Option{
+		service.WithAddr(r.cfg.Addr),
+		service.WithDataset(r.cfg.Dataset),
+		service.WithClient(r.client),
+		service.WithConcurrency(r.cfg.Concurrency),
+		service.WithProgressDuration(r.cfg.ProgressDuration),
+	}
+
+	r.loader, err = service.NewLoader(opts...)
+	if err != nil {
+		return err
+	}
+
+	return r.loader.Prepare(ctx)
 }
 
+// Start runs load test and returns error if occurred.
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	return nil, nil
+	rech, err := r.client.StartConnectionMonitor(ctx)
+	if err != nil {
+		return nil, err
+	}
+	lech := r.loader.Do(ctx)
+	ech := make(chan error, 1000) // TODO: fix magic number
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(ech)
+		finalize := func() (err error) {
+			var errs error
+			if r.client != nil {
+				err = r.client.Close()
+				if err != nil {
+					errs = errors.Wrap(errs, err.Error())
+				}
+			}
+			err = ctx.Err()
+			if err != nil && err != context.Canceled {
+				errs = errors.Wrap(errs, err.Error())
+			}
+			return errs
+		}
+		for {
+			select {
+			case <-ctx.Done():
+				return finalize()
+			case err = <-rech:
+			case err = <-lech:
+			}
+			if err != nil {
+				log.Error(err)
+				select {
+				case <-ctx.Done():
+					return finalize()
+				case ech <- err:
+				}
+			}
+		}
+	}))
+	return ech, nil
 }
 
+// PreStop does nothing.
 func (r *run) PreStop(ctx context.Context) error {
 	return nil
 }
 
+// Stop does nothing.
 func (r *run) Stop(ctx context.Context) error {
 	return nil
 }
 
+// PostStop does nothing.
 func (r *run) PostStop(ctx context.Context) error {
 	return nil
 }

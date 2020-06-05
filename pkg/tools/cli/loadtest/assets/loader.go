@@ -80,6 +80,7 @@ func loadDataset(file *hdf5.File, name string, f loaderFunc) (dim int, vec inter
 	return dim, vec, err
 }
 
+// Load returns loaded vectors and so on from approximate nearest neighbor benchmark dataset.
 func Load(path string) (train, test, distances [][]float32, neighbors [][]int, dim int, err error) {
 	f, err := hdf5.OpenFile(path, hdf5.F_ACC_RDONLY)
 	if err != nil {
@@ -125,15 +126,30 @@ func Load(path string) (train, test, distances [][]float32, neighbors [][]int, d
 	return train, test, distances, neighbors, dim, nil
 }
 
-func CreateRandomIDs(n int) []string {
-	ids := make([]string, 0, n)
+// CreateRandomIDs generates random string IDs.
+func CreateRandomIDs(n int) (ids []string) {
+	ids = make([]string, 0, n)
 	for i := 0; i < n; i++ {
 		ids = append(ids, fuid.String())
 	}
 	return ids
 }
 
-func CreateSequentialIDs(n int) []string {
+// CreateRandomIDsWithLength generates random string IDs that have specified length.
+func CreateRandomIDsWithLength(n, l int) (ids []string) {
+	ids = make([]string, 0, n)
+	for i := 0; i < n; i++ {
+		id := fuid.String()
+		for len(id) < l {
+			id = id + fuid.String()
+		}
+		ids = append(ids, id[:l])
+	}
+	return ids
+}
+
+// CreateSerialIDs generates serial number IDs.
+func CreateSerialIDs(n int) []string {
 	ids := make([]string, 0, n)
 	for i := 0; i < n; i++ {
 		ids = append(ids, strconv.Itoa(i))
@@ -141,18 +157,34 @@ func CreateSequentialIDs(n int) []string {
 	return ids
 }
 
-func LoadDataWithRandomIDs(path string) (ids []string, train, test, distances [][]float32, neighbors [][]int, dim int, err error) {
-	train, test, distances, neighbors, dim, err = Load(path)
+// LoadDataWithRandomIDs returns approximate nearest neighbor benchmark dataset with random IDs.
+func LoadDataWithRandomIDs(path string) (Dataset, error) {
+	train, test, distances, neighbors, dim, err := Load(path)
 	if err != nil {
-		return nil, train, test, distances, neighbors, dim, err
+		return nil, err
 	}
-	return CreateRandomIDs(len(train)), train, test, distances, neighbors, dim, nil
+	return &dataset{
+		train:     train,
+		query:     test,
+		distances: distances,
+		neighbors: neighbors,
+		ids:       CreateRandomIDs(len(train)),
+		dimension: dim,
+	}, nil
 }
 
-func LoadDataWithSequentialIDs(path string) (ids []string, train, test, distances [][]float32, neighbors [][]int, dim int, err error) {
-	train, test, distances, neighbors, dim, err = Load(path)
+// LoadDataWithSerialIDs returns approximate nearest neighbor benchmark dataset with serial IDs.
+func LoadDataWithSerialIDs(path string) (Dataset, error) {
+	train, test, distances, neighbors, dim, err := Load(path)
 	if err != nil {
-		return nil, train, test, distances, neighbors, dim, err
+		return nil, err
 	}
-	return CreateSequentialIDs(len(train)), train, test, distances, neighbors, dim, nil
+	return &dataset{
+		train:     train,
+		query:     test,
+		distances: distances,
+		neighbors: neighbors,
+		ids:       CreateSerialIDs(len(train)),
+		dimension: dim,
+	}, nil
 }
