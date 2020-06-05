@@ -68,18 +68,18 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "fashion-mnist-784-euclidean.hdf5")
+			d, err := LoadDataWithSerialIDs(dir + "fashion-mnist-784-euclidean.hdf5")
 			if err != nil {
 				return nil, err
 			}
 			return &dataset{
-				train:        train,
-				query:        query,
-				distances:    distances,
-				neighbors:    neighbors,
-				ids:          ids,
+				train:        d.Train(),
+				query:        d.Query(),
+				distances:    d.Distances(),
+				neighbors:    d.Neighbors(),
+				ids:          d.IDs(),
 				name:         "fashion-mnist",
-				dimension:    dim,
+				dimension:    d.Dimension(),
 				distanceType: "l2",
 				objectType:   "float",
 			}, nil
@@ -89,18 +89,18 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "mnist-784-euclidean.hdf5")
+			d, err := LoadDataWithSerialIDs(dir + "mnist-784-euclidean.hdf5")
 			if err != nil {
 				return nil, err
 			}
 			return &dataset{
-				train:        train,
-				query:        query,
-				distances:    distances,
-				neighbors:    neighbors,
-				ids:          ids,
+				train:        d.Train(),
+				query:        d.Query(),
+				distances:    d.Distances(),
+				neighbors:    d.Neighbors(),
+				ids:          d.IDs(),
 				name:         "mnist",
-				dimension:    dim,
+				dimension:    d.Dimension(),
 				distanceType: "l2",
 				objectType:   "float",
 			}, err
@@ -110,18 +110,18 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "glove-25-angular.hdf5")
+			d, err := LoadDataWithSerialIDs(dir + "glove-25-angular.hdf5")
 			if err != nil {
 				return nil, err
 			}
 			return &dataset{
-				train:        train,
-				query:        query,
-				distances:    distances,
-				neighbors:    neighbors,
-				ids:          ids,
+				train:        d.Train(),
+				query:        d.Query(),
+				distances:    d.Distances(),
+				neighbors:    d.Neighbors(),
+				ids:          d.IDs(),
 				name:         "glove-25",
-				dimension:    dim,
+				dimension:    d.Dimension(),
 				distanceType: "cosine",
 				objectType:   "float",
 			}, nil
@@ -131,18 +131,18 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "glove-50-angular.hdf5")
+			d, err := LoadDataWithSerialIDs(dir + "glove-50-angular.hdf5")
 			if err != nil {
 				return nil, err
 			}
 			return &dataset{
-				train:        train,
-				query:        query,
-				distances:    distances,
-				neighbors:    neighbors,
-				ids:          ids,
+				train:        d.Train(),
+				query:        d.Query(),
+				distances:    d.Distances(),
+				neighbors:    d.Neighbors(),
+				ids:          d.IDs(),
 				name:         "glove-50",
-				dimension:    dim,
+				dimension:    d.Dimension(),
 				distanceType: "cosine",
 				objectType:   "float",
 			}, nil
@@ -152,18 +152,18 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "glove-100-angular.hdf5")
+			d, err := LoadDataWithSerialIDs(dir + "glove-100-angular.hdf5")
 			if err != nil {
 				return nil, err
 			}
 			return &dataset{
-				train:        train,
-				query:        query,
-				distances:    distances,
-				neighbors:    neighbors,
-				ids:          ids,
+				train:        d.Train(),
+				query:        d.Query(),
+				distances:    d.Distances(),
+				neighbors:    d.Neighbors(),
+				ids:          d.IDs(),
 				name:         "glove-100",
-				dimension:    dim,
+				dimension:    d.Dimension(),
 				distanceType: "cosine",
 				objectType:   "float",
 			}, nil
@@ -173,18 +173,18 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "glove-200-angular.hdf5")
+			d, err := LoadDataWithSerialIDs(dir + "glove-200-angular.hdf5")
 			if err != nil {
 				return nil, err
 			}
 			return &dataset{
-				train:        train,
-				query:        query,
-				distances:    distances,
-				neighbors:    neighbors,
-				ids:          ids,
+				train:        d.Train(),
+				query:        d.Query(),
+				distances:    d.Distances(),
+				neighbors:    d.Neighbors(),
+				ids:          d.IDs(),
 				name:         "glove-200",
-				dimension:    dim,
+				dimension:    d.Dimension(),
 				distanceType: "cosine",
 				objectType:   "float",
 			}, nil
@@ -194,18 +194,18 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "nytimes-256-angular.hdf5")
+			d, err := LoadDataWithSerialIDs(dir + "nytimes-256-angular.hdf5")
 			if err != nil {
 				return nil, err
 			}
 			return &dataset{
-				train:        train,
-				query:        query,
-				distances:    distances,
-				neighbors:    neighbors,
-				ids:          ids,
+				train:        d.Train(),
+				query:        d.Query(),
+				distances:    d.Distances(),
+				neighbors:    d.Neighbors(),
+				ids:          d.IDs(),
 				name:         "nytimes",
-				dimension:    dim,
+				dimension:    d.Dimension(),
 				distanceType: "cosine",
 				objectType:   "float",
 			}, nil
@@ -215,18 +215,18 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "sift-128-euclidean.hdf5")
+			d, err := LoadDataWithSerialIDs(dir + "sift-128-euclidean.hdf5")
 			if err != nil {
 				return nil, err
 			}
 			return &dataset{
-				train:        train,
-				query:        query,
-				distances:    distances,
-				neighbors:    neighbors,
-				ids:          ids,
+				train:        d.Train(),
+				query:        d.Query(),
+				distances:    d.Distances(),
+				neighbors:    d.Neighbors(),
+				ids:          d.IDs(),
 				name:         "sift",
-				dimension:    dim,
+				dimension:    d.Dimension(),
 				distanceType: "l2",
 				objectType:   "float",
 			}, nil
@@ -236,18 +236,18 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "gist-960-euclidean.hdf5")
+			d, err := LoadDataWithSerialIDs(dir + "gist-960-euclidean.hdf5")
 			if err != nil {
 				return nil, err
 			}
 			return &dataset{
-				train:        train,
-				query:        query,
-				distances:    distances,
-				neighbors:    neighbors,
-				ids:          ids,
+				train:        d.Train(),
+				query:        d.Query(),
+				distances:    d.Distances(),
+				neighbors:    d.Neighbors(),
+				ids:          d.IDs(),
 				name:         "gist",
-				dimension:    dim,
+				dimension:    d.Dimension(),
 				distanceType: "l2",
 				objectType:   "float",
 			}, nil
@@ -257,18 +257,18 @@ var (
 			if err != nil {
 				return nil, err
 			}
-			ids, train, query, distances, neighbors, dim, err := LoadDataWithSerialIDs(dir + "/kosarak-jaccard.hdf5")
+			d, err := LoadDataWithSerialIDs(dir + "/kosarak-jaccard.hdf5")
 			if err != nil {
 				return nil, err
 			}
 			return &dataset{
-				train:        train,
-				query:        query,
-				distances:    distances,
-				neighbors:    neighbors,
-				ids:          ids,
+				train:        d.Train(),
+				query:        d.Query(),
+				distances:    d.Distances(),
+				neighbors:    d.Neighbors(),
+				ids:          d.IDs(),
 				name:         "kosarak",
-				dimension:    dim,
+				dimension:    d.Dimension(),
 				distanceType: "jaccard",
 				objectType:   "float",
 			}, nil

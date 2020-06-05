@@ -158,19 +158,33 @@ func CreateSerialIDs(n int) []string {
 }
 
 // LoadDataWithRandomIDs returns approximate nearest neighbor benchmark dataset with random IDs.
-func LoadDataWithRandomIDs(path string) (ids []string, train, test, distances [][]float32, neighbors [][]int, dim int, err error) {
-	train, test, distances, neighbors, dim, err = Load(path)
+func LoadDataWithRandomIDs(path string) (Dataset, error) {
+	train, test, distances, neighbors, dim, err := Load(path)
 	if err != nil {
-		return nil, train, test, distances, neighbors, dim, err
+		return nil, err
 	}
-	return CreateRandomIDs(len(train)), train, test, distances, neighbors, dim, nil
+	return &dataset{
+		train:     train,
+		query:     test,
+		distances: distances,
+		neighbors: neighbors,
+		ids:       CreateRandomIDs(len(train)),
+		dimension: dim,
+	}, nil
 }
 
 // LoadDataWithSerialIDs returns approximate nearest neighbor benchmark dataset with serial IDs.
-func LoadDataWithSerialIDs(path string) (ids []string, train, test, distances [][]float32, neighbors [][]int, dim int, err error) {
-	train, test, distances, neighbors, dim, err = Load(path)
+func LoadDataWithSerialIDs(path string) (Dataset, error) {
+	train, test, distances, neighbors, dim, err := Load(path)
 	if err != nil {
-		return nil, train, test, distances, neighbors, dim, err
+		return nil, err
 	}
-	return CreateSerialIDs(len(train)), train, test, distances, neighbors, dim, nil
+	return &dataset{
+		train:     train,
+		query:     test,
+		distances: distances,
+		neighbors: neighbors,
+		ids:       CreateSerialIDs(len(train)),
+		dimension: dim,
+	}, nil
 }
