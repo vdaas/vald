@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-// Package setting stores all server application settings
-package config
+// Package grpc provides generic functionality for grpc
+package grpc
 
 import (
 	"reflect"
@@ -25,90 +25,18 @@ import (
 	"go.uber.org/goleak"
 )
 
-func TestOperationMethod(t *testing.T) {
-	type args struct {
-		s string
-	}
+func TestRecoverInterceptor(t *testing.T) {
 	type want struct {
-		want Operation
+		want UnaryServerInterceptor
 	}
 	type test struct {
 		name       string
-		args       args
 		want       want
-		checkFunc  func(want, Operation) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got Operation) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           s: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           s: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got := OperationMethod(test.args.s)
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func TestOperation_String(t *testing.T) {
-	type want struct {
-		want string
-	}
-	type test struct {
-		name       string
-		o          Operation
-		want       want
-		checkFunc  func(want, string) error
+		checkFunc  func(want, UnaryServerInterceptor) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got string) error {
+	defaultCheckFunc := func(w want, got UnaryServerInterceptor) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
@@ -149,7 +77,7 @@ func TestOperation_String(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := test.o.String()
+			got := RecoverInterceptor()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -158,28 +86,20 @@ func TestOperation_String(t *testing.T) {
 	}
 }
 
-func TestNewConfig(t *testing.T) {
-	type args struct {
-		path string
-	}
+func TestRecoverStreamInterceptor(t *testing.T) {
 	type want struct {
-		wantCfg *Data
-		err     error
+		want StreamServerInterceptor
 	}
 	type test struct {
 		name       string
-		args       args
 		want       want
-		checkFunc  func(want, *Data, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		checkFunc  func(want, StreamServerInterceptor) error
+		beforeFunc func()
+		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, gotCfg *Data, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(gotCfg, w.wantCfg) {
-			return errors.Errorf("got = %v, want %v", gotCfg, w.wantCfg)
+	defaultCheckFunc := func(w want, got StreamServerInterceptor) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
@@ -188,9 +108,6 @@ func TestNewConfig(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       args: args {
-		           path: "",
-		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
 		   },
@@ -201,9 +118,6 @@ func TestNewConfig(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           args: args {
-		           path: "",
-		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
 		       }
@@ -215,17 +129,17 @@ func TestNewConfig(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			gotCfg, err := NewConfig(test.args.path)
-			if err := test.checkFunc(test.want, gotCfg, err); err != nil {
+			got := RecoverStreamInterceptor()
+			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 

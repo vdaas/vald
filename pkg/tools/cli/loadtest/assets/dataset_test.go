@@ -29,17 +29,17 @@ func Test_identity(t *testing.T) {
 		dim int
 	}
 	type want struct {
-		want func(tb testing.TB) Dataset
+		want func() (Dataset, error)
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, func(tb testing.TB) Dataset) error
+		checkFunc  func(want, func() (Dataset, error)) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got func(tb testing.TB) Dataset) error {
+	defaultCheckFunc := func(w want, got func() (Dataset, error)) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
@@ -95,22 +95,23 @@ func Test_identity(t *testing.T) {
 	}
 }
 
-func Test_datasetDir(t *testing.T) {
+func Test_random(t *testing.T) {
 	type args struct {
-		tb testing.TB
+		dim  int
+		size int
 	}
 	type want struct {
-		want string
+		want func() (Dataset, error)
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, string) error
+		checkFunc  func(want, func() (Dataset, error)) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got string) error {
+	defaultCheckFunc := func(w want, got func() (Dataset, error)) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
@@ -122,7 +123,8 @@ func Test_datasetDir(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           tb: nil,
+		           dim: 0,
+		           size: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -135,7 +137,8 @@ func Test_datasetDir(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           tb: nil,
+		           dim: 0,
+		           size: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -157,8 +160,73 @@ func Test_datasetDir(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := datasetDir(test.args.tb)
+			got := random(test.args.dim, test.args.size)
 			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_datasetDir(t *testing.T) {
+	type want struct {
+		want string
+		err  error
+	}
+	type test struct {
+		name       string
+		want       want
+		checkFunc  func(want, string, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got string, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got, err := datasetDir()
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -171,17 +239,17 @@ func TestData(t *testing.T) {
 		name string
 	}
 	type want struct {
-		want func(testing.TB) Dataset
+		want func() (Dataset, error)
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, func(testing.TB) Dataset) error
+		checkFunc  func(want, func() (Dataset, error)) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got func(testing.TB) Dataset) error {
+	defaultCheckFunc := func(w want, got func() (Dataset, error)) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
@@ -280,13 +348,13 @@ func Test_dataset_Train(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -307,13 +375,13 @@ func Test_dataset_Train(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -410,13 +478,13 @@ func Test_dataset_TrainAsFloat64(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -437,13 +505,13 @@ func Test_dataset_TrainAsFloat64(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -540,13 +608,13 @@ func Test_dataset_Query(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -567,13 +635,13 @@ func Test_dataset_Query(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -670,13 +738,13 @@ func Test_dataset_QueryAsFloat64(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -697,13 +765,13 @@ func Test_dataset_QueryAsFloat64(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -800,13 +868,13 @@ func Test_dataset_Distances(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -827,13 +895,13 @@ func Test_dataset_Distances(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -930,13 +998,13 @@ func Test_dataset_DistancesAsFloat64(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -957,13 +1025,13 @@ func Test_dataset_DistancesAsFloat64(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1060,13 +1128,13 @@ func Test_dataset_Neighbors(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1087,13 +1155,13 @@ func Test_dataset_Neighbors(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1190,13 +1258,13 @@ func Test_dataset_IDs(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1217,13 +1285,13 @@ func Test_dataset_IDs(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1320,13 +1388,13 @@ func Test_dataset_Name(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1347,13 +1415,13 @@ func Test_dataset_Name(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1450,13 +1518,13 @@ func Test_dataset_Dimension(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1477,13 +1545,13 @@ func Test_dataset_Dimension(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1580,13 +1648,13 @@ func Test_dataset_DistanceType(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1607,13 +1675,13 @@ func Test_dataset_DistanceType(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1710,13 +1778,13 @@ func Test_dataset_ObjectType(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1737,13 +1805,13 @@ func Test_dataset_ObjectType(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: sync.Once{},
+		           trainOnce: nil,
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: sync.Once{},
+		           queryOnce: nil,
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: sync.Once{},
+		           distancesOnce: nil,
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
