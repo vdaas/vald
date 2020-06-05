@@ -18,10 +18,8 @@
 package grpc
 
 import (
-	"time"
-
+	"github.com/vdaas/vald/internal/client/gateway/vald"
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/pkg/gateway/meta/service"
 )
 
@@ -30,13 +28,11 @@ type Option func(*server)
 var (
 	defaultOpts = []Option{
 		WithErrGroup(errgroup.Get()),
-		WithReplicationCount(3),
 		WithStreamConcurrency(20),
-		WithTimeout("5s"),
 	}
 )
 
-func WithGateway(g service.Gateway) Option {
+func WithClient(g vald.Client) Option {
 	return func(s *server) {
 		if g != nil {
 			s.gateway = g
@@ -52,44 +48,10 @@ func WithMeta(m service.Meta) Option {
 	}
 }
 
-func WithBackup(b service.Backup) Option {
-	return func(s *server) {
-		if b != nil {
-			s.backup = b
-		}
-	}
-}
-
-func WithFilters(filter service.Filter) Option {
-	return func(s *server) {
-		if filter != nil {
-			s.filter = filter
-		}
-	}
-}
-
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(s *server) {
 		if eg != nil {
 			s.eg = eg
-		}
-	}
-}
-
-func WithTimeout(dur string) Option {
-	return func(s *server) {
-		d, err := timeutil.Parse(dur)
-		if err != nil {
-			d = time.Second * 10
-		}
-		s.timeout = d
-	}
-}
-
-func WithReplicationCount(rep int) Option {
-	return func(s *server) {
-		if rep > 1 {
-			s.replica = rep
 		}
 	}
 }

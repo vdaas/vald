@@ -20,7 +20,6 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
@@ -42,8 +41,6 @@ type server struct {
 	metadata          service.Meta
 	gateway           client.Client
 	copts             []grpc.CallOption
-	timeout           time.Duration
-	replica           int
 	streamConcurrency int
 }
 
@@ -168,7 +165,7 @@ func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error
 		})
 }
 
-func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *payload.Object_Locations, err error) {
+func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-meta.Insert")
 	defer func() {
 		if span != nil {
@@ -211,7 +208,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Insert API meta %s & uuid %s couldn't store", meta, uuid), err, info.Get())
 	}
-	return new(payload.Object_Locations), nil
+	return new(payload.Object_Location), nil
 }
 
 func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
@@ -284,7 +281,7 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	return res, nil
 }
 
-func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Object_Locations, err error) {
+func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-meta.Update")
 	defer func() {
 		if span != nil {
@@ -308,7 +305,7 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 		return nil, status.WrapWithInternal(fmt.Sprintf("Update API failed request %#v", vec), err, info.Get())
 	}
 
-	return new(payload.Object_Locations), nil
+	return new(payload.Object_Location), nil
 }
 
 func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
@@ -355,7 +352,7 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 	return new(payload.Object_Locations), nil
 }
 
-func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*payload.Object_Locations, error) {
+func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*payload.Object_Location, error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-meta.Upsert")
 	defer func() {
 		if span != nil {
@@ -384,7 +381,7 @@ func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*paylo
 		}
 	}
 
-	return new(payload.Object_Locations), errs
+	return new(payload.Object_Location), errs
 }
 
 func (s *server) StreamUpsert(stream vald.Vald_StreamUpsertServer) error {
@@ -461,7 +458,7 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	return new(payload.Object_Locations), errs
 }
 
-func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (res *payload.Object_Locations, err error) {
+func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-meta.Remove")
 	defer func() {
 		if span != nil {
@@ -541,7 +538,7 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res 
 	return res, nil
 }
 
-func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *payload.Object_Locations, err error) {
+func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-meta.GetObject")
 	defer func() {
 		if span != nil {
