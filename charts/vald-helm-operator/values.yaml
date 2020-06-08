@@ -52,7 +52,7 @@ serviceAccount:
   name: vald-helm-operator
 
 # @schema {"name": "resources", "type": "object"}
-# resources -- k8s resources of pod
+# resources -- kubernetes resources of pod
 resources: {}
 
 # @schema {"name": "nodeSelector", "type": "object"}
