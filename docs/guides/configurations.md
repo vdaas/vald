@@ -127,7 +127,7 @@ The swagger specs are placed in [apis/swagger][vald-swagger-specs].
 ##### Health check servers
 
 There are two types of health check servers are built-in, liveness and readiness.
-They are used as servers for [K8s liveness and readiness probe][k8s-liveness-readiness].
+They are used as servers for [Kubernetes liveness and readiness probe][kubernetes-liveness-readiness].
 
 By default, liveness servers are disabled for agent and compressor, because the liveness probes may accidentally kill these components.
 
@@ -144,7 +144,7 @@ agent:
 Metrics servers are useful for debugging and monitor Vald components.
 There are two types of metrics servers, pprof and Prometheus.
 
-pprof server is a server that implemented using golang's net/http/pprof package.
+pprof server is a server that implemented using Go's net/http/pprof package.
 You can use [google's pprof][google-pprof] to analyze the profiling data exported from it.
 
 Prometheus server is a [Prometheus][prometheus-io] exporter.
@@ -200,7 +200,7 @@ By default, very high priority is set to agent pods in the Chart.
 #### Pod scheduling
 
 It is recommended to schedule agent pods on different nodes as much as possible.
-To achieve this, the following [podAntiAffinity][k8s-affinity-antiaffinity] is set by default.
+To achieve this, the following [podAntiAffinity][kubernetes-affinity-antiaffinity] is set by default.
 
 ```yaml
 agent:
@@ -218,7 +218,7 @@ agent:
                     - vald-agent-ngt
 ```
 
-It can be also achieved by using [pod topology spread constraints][k8s-topology-spread-constraints].
+It can be also achieved by using [pod topology spread constraints][kubernetes-topology-spread-constraints].
 
 ```yaml
 agent:
@@ -414,8 +414,8 @@ For further details, there are references of Helm values in GitHub Vald reposito
 [vald-swagger-specs]: https://github.com/vdaas/vald/tree/v0.0.33/apis/swagger
 [google-pprof]: https://github.com/google/pprof
 [prometheus-io]: https://prometheus.io/
-[k8s-liveness-readiness]: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-[k8s-affinity-antiaffinity]: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
-[k8s-topology-spread-constraints]: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
+[kubernetes-liveness-readiness]: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+[kubernetes-affinity-antiaffinity]: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+[kubernetes-topology-spread-constraints]: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
 [yj-ngt]: https://github.com/yahoojapan/NGT
 [yj-ngt-wiki]: https://github.com/yahoojapan/NGT/wiki

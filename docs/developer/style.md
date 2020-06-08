@@ -2,35 +2,36 @@
 
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [Code Formatting and Naming Convension](#code-formatting-and-naming-convension)
-  - [Project Layout](#project-layout)
-  - [Packages](#packages)
-  - [Interfaces](#interfaces)
-  - [Structs](#structs)
-    - [Struct initialization](#struct-initialization)
-  - [Variables and Constant](#variables-and-constant)
-  - [Methods](#methods)
-    - [Getter and Setter](#getter-and-setter)
-  - [Error handling](#error-handling)
-  - [Logging](#logging)
-- [Program comments](#program-comments)
-- [Documentation](#documentation)
-- [Internal packages](#internal-packages)
-- [Dependency management and Build](#dependency-management-and-build)
-- [Test](#test)
-  - [Table-Driven-Test](#table-driven-test)
-  - [The steps to create a Table-Driven-Test](#the-steps-to-create-a-table-driven-test)
+- [Go Style Guide in Vald](#go-style-guide-in-vald)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [Code Formatting and Naming Convension](#code-formatting-and-naming-convension)
+    - [Project Layout](#project-layout)
+    - [Packages](#packages)
+    - [Structs](#structs)
+      - [Struct initialization](#struct-initialization)
+    - [Variables and Constant](#variables-and-constant)
+    - [Methods](#methods)
+      - [Getter and Setter](#getter-and-setter)
+    - [Error handling](#error-handling)
+    - [Logging](#logging)
+  - [Program comments](#program-comments)
+  - [Documentation](#documentation)
+  - [Internal packages](#internal-packages)
+  - [Dependency management and Build](#dependency-management-and-build)
+  - [Test](#test)
+    - [Table-Driven-Test](#table-driven-test)
+    - [The steps to create a Table-Driven-Test](#the-steps-to-create-a-table-driven-test)
 
 ## Introduction
 
-This guideline includes the coding style for all Vald contributors and reviewers. Everyone should follow this guideline to keep the style consistent so everyone can understand and contribute to Vald easier once they learn this guideline. You should have the basic knowledge of how to write Golang before contributing to Vald. If you found any bug please create [a GitHub issue](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report.md&title=) and we will work on it.
+This guideline includes the coding style for all Vald contributors and reviewers. Everyone should follow this guideline to keep the style consistent so everyone can understand and contribute to Vald easier once they learn this guideline. You should have the basic knowledge of how to write Go language before contributing to Vald. If you found any bug please create [a GitHub issue](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report.md&title=) and we will work on it.
 
 Please also read the [Contribution guideline](../../CONTRIBUTING.md) before you start contributing to Vald.
 
 ## Code Formatting and Naming Convension
 
-Code formatting and naming conventions affect coding readability and maintainability. Every developer has a different coding style, luckily Golang provides tools to format source code and checking for the potential issue in the source code. We recommend using [goimports](https://github.com/golang/tools/tree/master/cmd/goimports) to format the source code in Vald, and [golangci-lint](https://github.com/golangci/golangci-lint) with `--enable-all` option. We suggest everyone install the plugin for your editor to format the code once you edit the code automatically, and  we suggest using `make update/goimports` command if you want to format the source code manually.
+Code formatting and naming conventions affect coding readability and maintainability. Every developer has a different coding style, luckily Go language provides tools to format source code and checking for the potential issue in the source code. We recommend using [goimports](https://github.com/golang/tools/tree/master/cmd/goimports) to format the source code in Vald, and [golangci-lint](https://github.com/golangci/golangci-lint) with `--enable-all` option. We suggest everyone install the plugin for your editor to format the code once you edit the code automatically, and  we suggest using `make update/goimports` command if you want to format the source code manually.
 
 But having tools to format source code doesn't mean you do not need to care the formatting of the code, for example:
 
@@ -67,7 +68,7 @@ The project layout includes the folder and the file structure in the project. We
 
 ### Packages
 
-The package defines the context of the objects in the package, for example, the corresponding methods and structs belong to the corresponding package. Unlike other languages like Java, in Golang we use the package name to declare which context of the object we are going to use. For example in [time](https://golang.org/pkg/time/) package, it defines all the objects about time like `time.Now()` method to get the current time.
+The package defines the context of the objects in the package, for example, the corresponding methods and structs belong to the corresponding package. Unlike other languages like Java, in Go we use the package name to declare which context of the object we are going to use. For example in [time](https://golang.org/pkg/time/) package, it defines all the objects about time like `time.Now()` method to get the current time.
 
 Here is the naming conventions of the package:
 
@@ -115,7 +116,7 @@ package cache
 ### Interfaces
 
 Interface defines the program interface for usability and future extendability.
-Unlike other languages like Java, Golang supports implicit interface implementation. The type implements do not need to specify the interface name; to "implements" the interface the structs only need to defined the methods the same as the interface, so please be careful to define the method name inside the interface.
+Unlike other languages like Java, Go supports implicit interface implementation. The type implements do not need to specify the interface name; to "implements" the interface the structs only need to defined the methods the same as the interface, so please be careful to define the method name inside the interface.
 
 The interface should be named as:
 
@@ -154,7 +155,7 @@ type HTTPServer interface {
 
 ### Structs
 
-Structs in Golang is the object definition, we can attach any fields and methods to the struct. The naming convention is the same as the interface one.
+Structs in Go is the object definition, we can attach any fields and methods to the struct. The naming convention is the same as the interface one.
 If the structs are implementing the interface, the structs name should be related to the interface, for example:
 
 ```go
@@ -175,7 +176,7 @@ type HTTPListener struct {
 
 #### Struct initialization
 
-There are many ways to initialize structs in Golang, base on the use case we can decide which way to initialize structs in Golang.
+There are many ways to initialize structs in Go, base on the use case we can decide which way to initialize structs in Go.
 To initialize struct, it is suggested to use `new(T)` instead of `&T{}` unless you need to initialize with values. For example:
 
 ```go
