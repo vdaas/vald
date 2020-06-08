@@ -1,5 +1,43 @@
 # CHANGELOG
 
+## v0.0.39
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.39`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.39`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.39`
+gateway | `docker pull vdaas/vald-gateway:v0.0.39`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.39`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.39`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.39`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.39`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.39`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.39`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.39`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.39)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.39/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.39/charts/vald-helm-operator/README.md)
+
+### Changes
+- [patch] fix doc file path ([#444](https://github.com/vdaas/vald/pull/444))
+- Add changelog command (ChatOps) ([#447](https://github.com/vdaas/vald/pull/447))
+- Fix inconsistent wording ([#442](https://github.com/vdaas/vald/pull/442))
+- [ImgBot] Optimize images ([#443](https://github.com/vdaas/vald/pull/443))
+- [Document] Apply design template to flow diagram ([#441](https://github.com/vdaas/vald/pull/441))
+- Document to deploy standalone agent ([#407](https://github.com/vdaas/vald/pull/407))
+- implement load tester prototype ([#363](https://github.com/vdaas/vald/pull/363))
+- 🐛  Add gRPC interceptor to recover panic in handlers ([#440](https://github.com/vdaas/vald/pull/440))
+- tensorflow test ([#378](https://github.com/vdaas/vald/pull/378))
+- :bento: update architecture overview svg to add agent sidecar ([#437](https://github.com/vdaas/vald/pull/437))
+- Example program: Add indexing interval description & fix logging message ([#405](https://github.com/vdaas/vald/pull/405))
+- :pencil2: Fix typo ([#436](https://github.com/vdaas/vald/pull/436))
+
+
 ## v0.0.38
 
 ### Docker images
