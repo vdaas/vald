@@ -1,4 +1,4 @@
-name: 'Update PULL_REQUEST_TEMPLATE'
+name: 'Update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE'
 on:
   push:
     branches:
@@ -8,8 +8,8 @@ on:
       - 'versions/NGT_VERSION'
 
 jobs:
-  update-pr-template:
-    name: Update PULL_REQUEST_TEMPLATE
+  update-pr-issue-template:
+    name: Update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE
     runs-on: ubuntu-latest
     steps:
       - name: Check out code.
@@ -19,21 +19,26 @@ jobs:
       - name: Push to master
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
-          BRANCH_NAME="documentation/pull_request_template/update_versions_${TIMESTAMP}"
+          BRANCH_NAME="documentation/pull_request_and_issue_template/update_versions_${TIMESTAMP}"
           git checkout master
           git checkout -b ${BRANCH_NAME}
 
           GO_VERSION=$(make version/go)
           NGT_VERSION=$(make version/ngt)
 
-          sed -i -e "s/^- Golang Version: .*$/- Golang Version: ${GO_VERSION}/" .github/PULL_REQUEST_TEMPLATE.md
+          sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/ISSUE_TEMPLATE/bug_report.md
+          sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/ISSUE_TEMPLATE/security_issue_report.md
+          sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/PULL_REQUEST_TEMPLATE.md
+
+          sed -i -e "s/^- NGT Version: .*$/- NGT Version: ${NGT_VERSION}/" .github/ISSUE_TEMPLATE/bug_report.md
+          sed -i -e "s/^- NGT Version: .*$/- NGT Version: ${NGT_VERSION}/" .github/ISSUE_TEMPLATE/security_issue_report.md
           sed -i -e "s/^- NGT Version: .*$/- NGT Version: ${NGT_VERSION}/" .github/PULL_REQUEST_TEMPLATE.md
 
           git config --global user.name "vdaas-ci"
           git config --global user.email "ci@vdaas.org"
 
-          git add .github/PULL_REQUEST_TEMPLATE.md
-          git commit --signoff -m ":robot: Automatically update PULL_REQUEST_TEMPLATE"
+          git add .github/PULL_REQUEST_TEMPLATE.md .github/ISSUE_TEMPLATE/bug_report.md .github/ISSUE_TEMPLATE/security_issue_report.md
+          git commit --signoff -m ":robot: Automatically update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE"
 
           git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push origin ${BRANCH_NAME}
@@ -43,7 +48,7 @@ jobs:
           -H "Content-Type:application/json" \
           -H "Authorization: token ${GITHUB_TOKEN}" \
           --request POST \
-          --data "{\"title\": \"Update PULL_REQUEST_TEMPLATE\", \"head\": \"${BRANCH_NAME}\", \"base\": \"master\", \"body\": \"PULL_REQUEST_TEMPLATE is updated.\", \"maintainer_can_modify\": true}" \
+          --data "{\"title\": \"Update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE\", \"head\": \"${BRANCH_NAME}\", \"base\": \"master\", \"body\": \"PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE are updated.\", \"maintainer_can_modify\": true}" \
           $API_URL
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}

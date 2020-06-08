@@ -69,7 +69,7 @@ Configuration
 | rbac.name | string | `"vald-helm-operator"` | name of roles and rolebindings |
 | reconcilePeriod | string | `"1m"` | reconcile duration of operator |
 | replicas | int | `2` | number of replicas |
-| resources | object | `{}` | k8s resources of pod |
+| resources | object | `{}` | kubernetes resources of pod |
 | serviceAccount.create | bool | `true` | service account will be created |
 | serviceAccount.name | string | `"vald-helm-operator"` | name of service account |
 | tolerations | list | `[]` | tolerations |

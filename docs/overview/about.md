@@ -56,7 +56,7 @@ Vald is easy to use, feature-rich and highly customizable as you needed.
     - You can configure the number of vector dimensions, the number of replica and etc.
 
 - Multi language supported
-    - Golang, Java, Clojure, Node.js, and Python client library are supported.
+    - Go, Java, Clojure, Node.js, and Python client library are supported.
     - gRPC APIs can be triggered by any programming languages which support gRPC.
     - REST API is also supported.
 
