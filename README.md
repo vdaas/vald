@@ -27,7 +27,7 @@ Vald has automatic vector indexing and index backup, and horizontal scaling whic
 
 Vald is easy to use, feature-rich and highly customizable as you needed.
 
-Go to [Get Started](./docs/user/get-started.md) page to try out Vald :)
+Go to [Get Started](./docs/tutorial/get-started.md) page to try out Vald :)
 
 (If you are interested in ANN benchmarks, please refer to [the official website](http://ann-benchmarks.com/).)<br>
 
@@ -72,7 +72,7 @@ kubernetes 1.17~
 
 ## Get Started
 
-Please refer to [Get Started](./docs/user/get-started.md).
+Please refer to [Get Started](./docs/tutorial/get-started.md).
 
 ## Installation
 
