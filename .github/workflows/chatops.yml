@@ -101,7 +101,7 @@ jobs:
         if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
           git checkout master
-          BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..master | grep "#[[:digit:]]\+"`
+          BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..master | grep "#[[:digit:]]\+" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%"`
           CURRENT="#{PR_TITLE} (#${PR_NUM})"
           curl --include --verbose --fail \
           -H "Accept: application/json" \
