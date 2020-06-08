@@ -26,9 +26,9 @@ jobs:
           GO_VERSION=$(make version/go)
           NGT_VERSION=$(make version/ngt)
 
-          sed -i -e "s/^- Golang Version: .*$/- Golang Version: ${GO_VERSION}/" .github/ISSUE_TEMPLATE/bug_report.md
-          sed -i -e "s/^- Golang Version: .*$/- Golang Version: ${GO_VERSION}/" .github/ISSUE_TEMPLATE/security_issue_report.md
-          sed -i -e "s/^- Golang Version: .*$/- Golang Version: ${GO_VERSION}/" .github/PULL_REQUEST_TEMPLATE.md
+          sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/ISSUE_TEMPLATE/bug_report.md
+          sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/ISSUE_TEMPLATE/security_issue_report.md
+          sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/PULL_REQUEST_TEMPLATE.md
 
           sed -i -e "s/^- NGT Version: .*$/- NGT Version: ${NGT_VERSION}/" .github/ISSUE_TEMPLATE/bug_report.md
           sed -i -e "s/^- NGT Version: .*$/- NGT Version: ${NGT_VERSION}/" .github/ISSUE_TEMPLATE/security_issue_report.md
