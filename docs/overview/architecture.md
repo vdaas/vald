@@ -22,7 +22,7 @@ Here are the concepts of Vald.
 
 - Observability & Real-time monitoring
 
-  Vald support pprof and Prometheus to monitor and trace the log in every Vald components.
+  Vald supports pprof and Prometheus to monitor and trace the log in every Vald components.
 
 - Distributed
 
