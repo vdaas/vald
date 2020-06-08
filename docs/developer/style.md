@@ -30,7 +30,7 @@ Please also read the [Contribution guideline](../../CONTRIBUTING.md) before you 
 
 ## Code Formatting and Naming Convension
 
-Code formatting and naming conventions affect coding readability and maintainability. Every developer has a different coding style, luckily Go language provides tools to format source code and checking for the potential issue in the source code. We recommend using [goimports](https://github.com/golang/tools/tree/master/cmd/goimports) to format the source code in Vald, and [golangci-lint](https://github.com/golangci/golangci-lint) with `--enable-all` option. We suggest everyone install the plugin for your editor to format the code once you edit the code automatically, and  we suggest using `make update/goimports` command if you want to format the source code manually.
+Code formatting and naming conventions affect coding readability and maintainability. Every developer has a different coding style, luckily Go provides tools to format source code and checking for the potential issue in the source code. We recommend using [goimports](https://github.com/golang/tools/tree/master/cmd/goimports) to format the source code in Vald, and [golangci-lint](https://github.com/golangci/golangci-lint) with `--enable-all` option. We suggest everyone install the plugin for your editor to format the code once you edit the code automatically, and  we suggest using `make update/goimports` command if you want to format the source code manually.
 
 But having tools to format source code doesn't mean you do not need to care the formatting of the code, for example:
 
