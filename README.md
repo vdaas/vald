@@ -189,6 +189,12 @@ make init
     <td><a href="https://hub.docker.com/r/vdaas/vald-helm-operator">vdaas/vald-helm-operator</a></td>
     <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20helm-operator/badge.svg"></td>
   </tr>
+  <tr>
+    <td>loadtester</td>
+    <td></td>
+    <td><a href="https://hub.docker.com/r/vdaas/vald-loadtest">vdaas/vald-loadtest</a></td>
+    <td><img src="https://github.com/vdaas/vald/workflows/Build%20docker%20image:%20loadtest/badge.svg"></td>
+  </tr>
 </table>
 
 ## Contribution

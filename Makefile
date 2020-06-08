@@ -31,6 +31,7 @@ MANAGER_COMPRESSOR_IMAGE        = $(NAME)-manager-compressor
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
+LOADTEST_IMAGE                  = $(NAME)-loadtest
 
 VERSION := $(eval VALD_VERSION := $(shell cat versions/VALD_VERSION))$(VALD_VERSION)
 
