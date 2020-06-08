@@ -32,6 +32,8 @@ MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 
+VERSION := $(eval VALD_VERSION := $(shell cat versions/VALD_VERSION))$(VALD_VERSION)
+
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
 
@@ -47,7 +49,7 @@ DOCKFMT_VERSION      ?= v0.3.3
 KIND_VERSION         ?= v0.8.1
 HELM_VERSION         ?= v3.2.1
 HELM_DOCS_VERSION    ?= 0.13.0
-VALDCLI_VERSION      ?= v0.0.37
+VALDCLI_VERSION      ?= v0.0.38
 TELEPRESENCE_VERSION ?= 0.105
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
@@ -91,6 +93,8 @@ PORT      ?= 80
 NUMBER    ?= 10
 DIMENSION ?= 6
 NUMPANES  ?= 4
+
+BODY = ""
 
 PROTO_PATHS = \
 	$(PROTODIRS:%=./apis/proto/%) \
@@ -262,6 +266,11 @@ goimports/install:
 prettier/install:
 	npm install -g prettier
 
+.PHONY: version/vald
+## print vald version
+version/vald:
+	@echo $(VALD_VERSION)
+
 .PHONY: version/go
 ## print go version
 version/go:
@@ -325,6 +334,23 @@ lint:
 coverage:
 	go test -v -race -covermode=atomic -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out -o coverage.html
+
+.PHONY: changelog/update
+## update changelog
+changelog/update:
+	echo "# CHANGELOG" > /tmp/CHANGELOG.md
+	echo "" >> /tmp/CHANGELOG.md
+	$(MAKE) -s changelog/next/print >> /tmp/CHANGELOG.md
+	echo "" >> /tmp/CHANGELOG.md
+	tail -n +2 CHANGELOG.md >> /tmp/CHANGELOG.md
+	mv -f /tmp/CHANGELOG.md CHANGELOG.md
+
+.PHONY: changelog/next/print
+## print next changelog entry
+changelog/next/print:
+	@cat hack/CHANGELOG.template.md | \
+	    sed -e 's/{{ version }}/$(VALD_VERSION)/g'
+	@echo "$$BODY"
 
 include Makefile.d/bench.mk
 include Makefile.d/docker.mk

@@ -7,6 +7,7 @@ roles:
       - gen-test
       - label
       - format
+      - changelog
   author:
     policies:
       - rebase
@@ -15,6 +16,7 @@ roles:
       - gen-test
       - label
       - format
+      - changelog
   sig-lead:
     policies:
       - rebase
@@ -22,6 +24,7 @@ roles:
       - gen-test
       - label
       - format
+      - changelog
   sig-sre:
     policies:
       - rebase
