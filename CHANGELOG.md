@@ -1,7 +1,5 @@
 # CHANGELOG
 
-<!-- NEW ENTRY -->
-
 ## v0.0.38
 
 ### Docker images
@@ -47,6 +45,7 @@ Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.38`
 - Add gen-test command for chatops (#379)
 - Add internal/db/storage/blob (#388)
 
+
 ## v0.0.37
 
 ### Docker images
@@ -73,6 +72,7 @@ Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.37`
 - add agent auto save indexing feature (#385)
 - :bug: fix ngt `distance_type` (#384)
 - Add topology spread constraints (#383)
+
 
 ## v0.0.36
 
