@@ -24,26 +24,26 @@ Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.38`
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.38/charts/vald-helm-operator/README.md)
 
 ### Changes
-- send PR when K8s manifests are updated (#435)
-- Implementation of agent-sidecar storage backup logic (#409)
-- Fix structure of grpc java package (#431)
-- Remove AUTHORS/CONTRIBUTORS file (#428)
-- Contribute document (#390)
-- Separate the component section from architecture doc (#430)
-- fix: delete fch channel because fch causes channel blocking (#429)
-- Update Operator SDK version (#412)
-- Documentation: About vald (#374)
-- Vald architecture document (#366)
-- Add JSON schema for Vald Helm Chart (#365)
-- Revise ChatOps not to add go.mod & go.sum when /format runs (#406)
-- add agent sidecar flame for implementation (#404)
-- Upgrade Operator SDK version / Remove useless GO111MODULE=off (#402)
-- Upgrade tools version (#399)
-- Add app.kubernetes.io/xxx labels to all resources (#397)
-- Vald contacts document (#373)
-- add trace spans and metrics for agent-ngt and index-manager (#389)
-- Add gen-test command for chatops (#379)
-- Add internal/db/storage/blob (#388)
+- send PR when K8s manifests are updated ([#435](https://github.com/vdaas/vald/pull/435))
+- Implementation of agent-sidecar storage backup logic ([#409](https://github.com/vdaas/vald/pull/409))
+- Fix structure of grpc java package ([#431](https://github.com/vdaas/vald/pull/431))
+- Remove AUTHORS/CONTRIBUTORS file ([#428](https://github.com/vdaas/vald/pull/428))
+- Contribute document ([#390](https://github.com/vdaas/vald/pull/390))
+- Separate the component section from architecture doc ([#430](https://github.com/vdaas/vald/pull/430))
+- fix: delete fch channel because fch causes channel blocking ([#429](https://github.com/vdaas/vald/pull/429))
+- Update Operator SDK version ([#412](https://github.com/vdaas/vald/pull/412))
+- Documentation: About vald ([#374](https://github.com/vdaas/vald/pull/374))
+- Vald architecture document ([#366](https://github.com/vdaas/vald/pull/366))
+- Add JSON schema for Vald Helm Chart ([#365](https://github.com/vdaas/vald/pull/365))
+- Revise ChatOps not to add go.mod & go.sum when /format runs ([#406](https://github.com/vdaas/vald/pull/406))
+- add agent sidecar flame for implementation ([#404](https://github.com/vdaas/vald/pull/404))
+- Upgrade Operator SDK version / Remove useless GO111MODULE=off ([#402](https://github.com/vdaas/vald/pull/402))
+- Upgrade tools version ([#399](https://github.com/vdaas/vald/pull/399))
+- Add app.kubernetes.io/xxx labels to all resources ([#397](https://github.com/vdaas/vald/pull/397))
+- Vald contacts document ([#373](https://github.com/vdaas/vald/pull/373))
+- add trace spans and metrics for agent-ngt and index-manager ([#389](https://github.com/vdaas/vald/pull/389))
+- Add gen-test command for chatops ([#379](https://github.com/vdaas/vald/pull/379))
+- Add internal/db/storage/blob ([#388](https://github.com/vdaas/vald/pull/388))
 
 
 ## v0.0.37
@@ -69,9 +69,9 @@ Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.37`
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.37/charts/vald-helm-operator/README.md)
 
 ### Changes
-- add agent auto save indexing feature (#385)
-- :bug: fix ngt `distance_type` (#384)
-- Add topology spread constraints (#383)
+- add agent auto save indexing feature ([#385](https://github.com/vdaas/vald/pull/385))
+- :bug: fix ngt `distance_type` ([#384](https://github.com/vdaas/vald/pull/384))
+- Add topology spread constraints ([#383](https://github.com/vdaas/vald/pull/383))
 
 
 ## v0.0.36
@@ -97,15 +97,15 @@ Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.36`
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.36/charts/vald-helm-operator/README.md)
 
 ### Changes
-- update dependencies version (#381)
-- Fix missing value on compressor health servers (#377)
-- Fix compressor readiness shutdown_duration / Fix cassandra … (#376)
-- Bump gopkg.in/yaml.v2 from 2.2.8 to 2.3.0 (#375)
-- Fix`internal/log/format` to match the test template (#369)
-- Fix `internal/log/logger` to match the test template (#371)
-- Fix failing tests of `internal/log` and modified to match the test template  (#368)
-- Add enabled flag to each component in Helm chart (#372)
-- Add configurations.md (#356)
+- update dependencies version ([#381](https://github.com/vdaas/vald/pull/381))
+- Fix missing value on compressor health servers ([#377](https://github.com/vdaas/vald/pull/377))
+- Fix compressor readiness shutdown_duration / Fix cassandra … ([#376](https://github.com/vdaas/vald/pull/376))
+- Bump gopkg.in/yaml.v2 from 2.2.8 to 2.3.0 ([#375](https://github.com/vdaas/vald/pull/375))
+- Fix`internal/log/format` to match the test template ([#369](https://github.com/vdaas/vald/pull/369))
+- Fix `internal/log/logger` to match the test template ([#371](https://github.com/vdaas/vald/pull/371))
+- Fix failing tests of `internal/log` and modified to match the test template  ([#368](https://github.com/vdaas/vald/pull/368))
+- Add enabled flag to each component in Helm chart ([#372](https://github.com/vdaas/vald/pull/372))
+- Add configurations.md ([#356](https://github.com/vdaas/vald/pull/356))
 
 
 ## v0.0.35
@@ -131,11 +131,11 @@ Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.35`
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.35/charts/vald-helm-operator/README.md)
 
 ### Changes
-- add storage backup option to agent (#367)
-- Add client-node dispatcher (#370)
-- Bump github.com/tensorflow/tensorflow (#364)
-- change fmt.Errorf to errors.Errorf (#361)
-- add goleak (#359)
+- add storage backup option to agent ([#367](https://github.com/vdaas/vald/pull/367))
+- Add client-node dispatcher ([#370](https://github.com/vdaas/vald/pull/370))
+- Bump github.com/tensorflow/tensorflow ([#364](https://github.com/vdaas/vald/pull/364))
+- change fmt.Errorf to errors.Errorf ([#361](https://github.com/vdaas/vald/pull/361))
+- add goleak ([#359](https://github.com/vdaas/vald/pull/359))
 
 
 ## v0.0.34
@@ -161,12 +161,12 @@ Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.34`
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.34/charts/vald-helm-operator/README.md)
 
 ### Changes
-- feature/internal/cassandra/add option (#358)
-- update helm docs when version is published (#355)
-- upgrade tools (#354)
-- bugfix protoc-gen-validate resolve failure (#353)
-- Fix conflicts between formatter and helm template (#350)
-- Add more options and remove valdhelmoperatorrelease, valdrelease from vald-helm-operator chart (#334)
+- feature/internal/cassandra/add option ([#358](https://github.com/vdaas/vald/pull/358))
+- update helm docs when version is published ([#355](https://github.com/vdaas/vald/pull/355))
+- upgrade tools ([#354](https://github.com/vdaas/vald/pull/354))
+- bugfix protoc-gen-validate resolve failure ([#353](https://github.com/vdaas/vald/pull/353))
+- Fix conflicts between formatter and helm template ([#350](https://github.com/vdaas/vald/pull/350))
+- Add more options and remove valdhelmoperatorrelease, valdrelease from vald-helm-operator chart ([#334](https://github.com/vdaas/vald/pull/334))
 
 
 ## v0.0.33
@@ -192,11 +192,11 @@ Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.33`
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.33/charts/vald-helm-operator/README.md)
 
 ### Changes
-- update k8s dependencies (#349)
-- create missing test files by the our original test template (#348)
-- create test template for using gotests (#327)
-- Revise coverage CI settings (#347)
-- fix tensorflow.go, option.go (#261)
+- update k8s dependencies ([#349](https://github.com/vdaas/vald/pull/349))
+- create missing test files by the our original test template ([#348](https://github.com/vdaas/vald/pull/348))
+- create test template for using gotests ([#327](https://github.com/vdaas/vald/pull/327))
+- Revise coverage CI settings ([#347](https://github.com/vdaas/vald/pull/347))
+- fix tensorflow.go, option.go ([#261](https://github.com/vdaas/vald/pull/261))
 
 
 ## v0.0.32
@@ -222,9 +222,9 @@ Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.32`
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.32/charts/vald-helm-operator/README.md)
 
 ### Changes
-- bugfix ip discoverer disconnection too slow (#344)
-- Compressor: backup vectors in queue using PostStop function (#345)
-- Revise backup/meta Cassandra default values (#336)
+- bugfix ip discoverer disconnection too slow ([#344](https://github.com/vdaas/vald/pull/344))
+- Compressor: backup vectors in queue using PostStop function ([#345](https://github.com/vdaas/vald/pull/345))
+- Revise backup/meta Cassandra default values ([#336](https://github.com/vdaas/vald/pull/336))
 
 
 ## v0.0.31
@@ -250,7 +250,7 @@ Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.31`
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.31/charts/vald-helm-operator/README.md)
 
 ### Changes
-- Resolve busy-loop on worker (#339)
+- Resolve busy-loop on worker ([#339](https://github.com/vdaas/vald/pull/339))
 
 
 ## v0.0.30
