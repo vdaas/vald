@@ -57,6 +57,64 @@ jobs:
           ISSUE_URL: ${{ github.event.issue.labels_url }}
           USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
           TRAILING_LINE: ${{ steps.check_comments_label.outputs.TRAILING_LINE }}
+  changelog:
+    name: Add draft comment for a new CHANGELOG entry
+    runs-on: ubuntu-latest
+    steps:
+      - name: check PR Comments
+        id: check_comments_changelog
+        uses: machine-learning-apps/actions-chatops@master
+        with:
+          TRIGGER_PHRASE: "/changelog"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: install yq
+        if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
+          sudo chmod a+x /usr/local/bin/yq
+      - name: check permissions
+        if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true'
+        id: check_permissions
+        run: |
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          if [ "$roles" = "" ]; then
+            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+          fi
+          for role in `echo $roles`
+          do
+              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+                echo "[OK] changelog requested by ${USERNAME}"
+                echo "::set-output name=EXECUTABLE::true"
+                break
+              fi
+          done
+        env:
+          USERNAME: ${{ steps.check_comments_changelog.outputs.COMMENTER_USERNAME }}
+          REQUIRED_POLICY: changelog
+      - uses: actions/checkout@v1
+        if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        with:
+          fetch-depth: 0
+      - name: comment to PR
+        if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          git checkout master
+          BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..master | grep "#[[:digit:]]\+"`
+          CURRENT="#{PR_TITLE} (#${PR_NUM})"
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[CHANGELOG]** Please edit the following lines.\\n${BODY}\\n${CURRENT}\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: ${{ github.event.issue.comments_url }}
+          PR_TITLE: ${{ github.event.issue.title }}
+          PR_NUM: ${{ github.event.issue.number }}
   rebase:
     name: Rebase
     runs-on: ubuntu-latest
