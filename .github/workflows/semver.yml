@@ -65,12 +65,12 @@ jobs:
 
           BODY=""
           if [ ! -z "${PR_NUM}" ]; then
-            PR_COMMENTS=`curl https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${PR_NUM}/comments`
-            BODY=`echo $PR_COMMENTS | jq 'last(.[] | select(.user.login == "vdaas-ci") | select(.body | test("^\\\\*\\\\*\\\\[CHANGELOG")) | .body)' -r | tail -n +2`
+            PR_COMMENTS=`curl https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${PR_NUM}/comments?per_page=10000`
+            BODY=`echo -E $PR_COMMENTS | jq 'last(.[] | select(.user.login == "vdaas-ci") | select(.body | test("^\\\\*\\\\*\\\\[CHANGELOG")) | .body)' -r | tail -n +2`
           fi
 
           if [ -z "$BODY"]; then
-            BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..master | grep "#[[:digit:]]\+" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%"`
+            BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..master | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%"`
           fi
 
           CHANGELOG=`make changelog/next/print BODY="$BODY"`
