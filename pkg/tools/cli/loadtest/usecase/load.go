@@ -31,7 +31,6 @@ import (
 
 type run struct {
 	eg     errgroup.Group
-	cfg    *config.Data
 	loader service.Loader
 	client grpc.Client
 }
@@ -39,8 +38,26 @@ type run struct {
 // New returns Runner instance.
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	run := &run{
-		cfg: cfg,
-		eg:  errgroup.Get(),
+		eg: errgroup.Get(),
+	}
+
+	clientOpts := append(
+		cfg.Client.Opts(),
+		grpc.WithAddrs(cfg.Addr),
+		grpc.WithErrGroup(run.eg),
+	)
+	run.client = grpc.New(clientOpts...)
+
+	run.loader, err = service.NewLoader(
+		service.WithOperation(cfg.Method),
+		service.WithAddr(cfg.Addr),
+		service.WithDataset(cfg.Dataset),
+		service.WithClient(run.client),
+		service.WithConcurrency(cfg.Concurrency),
+		service.WithProgressDuration(cfg.ProgressDuration),
+	)
+	if err != nil {
+		return nil, err
 	}
 
 	return run, nil
@@ -48,25 +65,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 // PreStart initializes load tester and returns error if occurred.
 func (r *run) PreStart(ctx context.Context) (err error) {
-	r.client = grpc.New(
-		grpc.WithAddrs(append([]string{r.cfg.Addr}, r.cfg.Client.Addrs...)...),
-		grpc.WithInsecure(r.cfg.Client.DialOption.Insecure),
-		grpc.WithErrGroup(r.eg),
-	)
-
-	opts := []service.Option{
-		service.WithAddr(r.cfg.Addr),
-		service.WithDataset(r.cfg.Dataset),
-		service.WithClient(r.client),
-		service.WithConcurrency(r.cfg.Concurrency),
-		service.WithProgressDuration(r.cfg.ProgressDuration),
-	}
-
-	r.loader, err = service.NewLoader(opts...)
-	if err != nil {
-		return err
-	}
-
 	return r.loader.Prepare(ctx)
 }
 
