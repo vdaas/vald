@@ -26,9 +26,10 @@ spec:
   backoffLimit: 5
   template:
     metadata:
-      app: vald-loadtest
-      app.kubernetes.io/name: vald
-      app.kubernetes.io/component: loadtest
+      labels:
+        app: vald-loadtest
+        app.kubernetes.io/name: vald
+        app.kubernetes.io/component: loadtest
     spec:
       containers:
         - name: vald-loadtest
