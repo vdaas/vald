@@ -86,6 +86,8 @@ COPY --from=builder /usr/lib/x86_64-linux-gnu/libsz*  /usr/lib/x86_64-linux-gnu/
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 # Copy permissions
 COPY --from=builder /etc/passwd /etc/passwd
+# workaround: https://github.com/moby/moby/issues/37965
+RUN true
 # Copy our static executable
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 
