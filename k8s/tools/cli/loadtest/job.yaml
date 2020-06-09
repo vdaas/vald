@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
         - name: vald-loadtest
-          image: "vdaas/vald-meta-redis:nightly"
+          image: "vdaas/vald-loadtest:nightly"
           imagePullPolicy: Always
           resources:
             limits:
