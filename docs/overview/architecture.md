@@ -22,23 +22,23 @@ Here are the concepts of Vald.
 
 - Observability & Real-time monitoring
 
-  Vald supports pprof and Prometheus to monitor and trace the log in every Vald components.
+  All Vald components support Cloud-Native based observability features such as Prometheus and Jaeger exporter.
 
-- Distributed
+- Distributed vector spaces
 
-  All the data and index are distributed to Vald Agents in the Vald cluster so whenever you search a vector, all Vald agents can process parallelly and merge the result by Vald LB Gateway.
+  All the vector data and indexes are distributed to Vald Agents in the Vald cluster. Whenever you search a vector in Vald cluster, all Vald agents can process parallelly and merge the result by Vald LB Gateway.
 
 - Kubernetes based
 
-  Vald can integrate with kubernetes which enables the following features.
+  Vald can integrate with Kubernetes which enables the following features.
 
   - Orchestrated
 
-    Kubernetes supports container orchestration. All components in Vald can be managed by kubernetes automatically.
+    Kubernetes supports container orchestration. All components in Vald can be managed by Kubernetes automatically.
 
   - Horizontal scalable
 
-    All Vald components are designed and implemented to be scalable. You can add any node in kubernetes cluster at any time to scale your kuberentes cluster, or changing the number of replicas to scale Vald.
+    All Vald components are designed and implemented to be scalable. You can add any node in Kubernetes cluster at any time to scale your Kuberentes cluster, or changing the number of replicas to scale Vald.
 
   - Auto-healing
 
@@ -50,7 +50,7 @@ Here are the concepts of Vald.
 
   - Easy to manage
 
-    We implement helm chart deployment to easily deploy Vald on your kubernetes cluster and we implemented custom resources to manage and operate with Vald.
+    Vald can be deployed easily on your Kubernetes cluster by using Helm charts. The custom resources and custom controllers are useful to manage your Vald cluster.
   
 ## Data Flow
 
