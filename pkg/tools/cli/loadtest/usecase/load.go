@@ -55,6 +55,7 @@ func (r *run) PreStart(ctx context.Context) (err error) {
 	)
 
 	opts := []service.Option{
+		service.WithOperation(r.cfg.Method),
 		service.WithAddr(r.cfg.Addr),
 		service.WithDataset(r.cfg.Dataset),
 		service.WithClient(r.client),
