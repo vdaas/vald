@@ -1,5 +1,42 @@
 # CHANGELOG
 
+## v0.0.40
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.40`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.40`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.40`
+gateway | `docker pull vdaas/vald-gateway:v0.0.40`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.40`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.40`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.40`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.40`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.40`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.40`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.40`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.40)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.40/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.40/charts/vald-helm-operator/README.md)
+
+### Changes
+- Documentation: add concept section to the architecture document ([#438](https://github.com/vdaas/vald/pull/438))
+- feat: level pacakge test ([#455](https://github.com/vdaas/vald/pull/455))
+- [ImgBot] Optimize images ([#457](https://github.com/vdaas/vald/pull/457))
+- fix document and added png images ([#456](https://github.com/vdaas/vald/pull/456))
+- Fix test template bug ([#452](https://github.com/vdaas/vald/pull/452))
+- Add WithOperation func to loadtest usecase ([#454](https://github.com/vdaas/vald/pull/454))
+- :bug: Fix k8s manifests for loadtest jobs ([#453](https://github.com/vdaas/vald/pull/453))
+- bugfix change final stage of loadtest ([#451](https://github.com/vdaas/vald/pull/451))
+- :bug: Fix bug on /changelog command ([#450](https://github.com/vdaas/vald/pull/450))
+- add loadtest job and container ([#449](https://github.com/vdaas/vald/pull/449))
+- 🐛 Fix bug on changelog command ([#448](https://github.com/vdaas/vald/pull/448))
+
+
 ## v0.0.39
 
 ### Docker images
