@@ -58,6 +58,15 @@ area/meta:
   - cmd/meta/**/*
   - pkg/meta/**/*
 
+area/tools/cli/loadtest:
+  - apis/proto/agent/core/**/*
+  - apis/grpc/agent/core/**/*
+  - apis/proto/vald/**/*
+  - apis/grpc/vald/**/*
+  - cmd/tools/cli/loadtest/**/*
+  - pkg/tools/cli/loadtest/**/*
+
+
 area/internal:
   - internal/**/*
 

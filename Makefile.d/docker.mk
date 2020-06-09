@@ -149,6 +149,15 @@ docker/build/operator/helm:
 	    -t $(REPO)/$(HELM_OPERATOR_IMAGE) . \
 	    --build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION)
 
+.PHONY: docker/name/loadtest
+docker/name/loadtest:
+	@echo "$(REPO)/$(LOADTEST_IMAGE)"
+
+.PHONY: docker/build/loadtest
+## build loadtest image
+docker/build/loadtest: docker/build/base
+	docker build -f dockers/tools/cli/loadtest/Dockerfile -t $(REPO)/$(LOADTEST_IMAGE) .
+
 .PHONY: dockfmt/install
 dockfmt/install: $(BINDIR)/dockfmt
 
