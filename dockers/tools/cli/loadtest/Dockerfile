@@ -73,12 +73,17 @@ RUN GO_VERSION="$(cat GO_VERSION)" \
     && upx -9 -o "/usr/bin/${APP_NAME}" "${APP_NAME}"
 
 # Start From Scratch For Running Environment
-FROM scratch
+FROM ubuntu:devel
 # Start From Alpine For Debug Environment
 # FROM alpine:latest
 
 ENV APP_NAME loadtest
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libhdf5-dev \
+    && ldconfig \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 # Copy certificates for SSL/TLS
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 # Copy permissions
