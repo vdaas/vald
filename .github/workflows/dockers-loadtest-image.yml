@@ -80,7 +80,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: 8398a7/action-slack@v2
         with:
-          author_name: vald-gateway image build
+          author_name: vald-loadtest image build
           status: ${{ env.WORKFLOW_CONCLUSION }}
           only_mention_fail: channel
         env:
