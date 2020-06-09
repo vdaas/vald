@@ -43,7 +43,7 @@ You can specify image version by set `image.tag` field in each component (`[comp
 ```yaml
 defaults:
   image:
-    tag: v0.0.33
+    tag: master
 ```
 
 or you can use the older image only for agent,
@@ -405,13 +405,13 @@ For further details, there are references of Helm values in GitHub Vald reposito
 - [README of Vald-Helm-Operator Chart][vald-helm-operator-chart]
 
 
-[vald-helm-chart]: https://github.com/vdaas/vald/tree/v0.0.33/charts/vald
-[vald-helm-operator-chart]: https://github.com/vdaas/vald/tree/v0.0.33/charts/vald-helm-operator
+[vald-helm-chart]: https://github.com/vdaas/vald/tree/master/charts/vald
+[vald-helm-operator-chart]: https://github.com/vdaas/vald/tree/master/charts/vald-helm-operator
 
 [vald-operation-guide]: ./operations.md
 
-[vald-apis-docs]: https://github.com/vdaas/vald/tree/v0.0.33/apis/docs
-[vald-swagger-specs]: https://github.com/vdaas/vald/tree/v0.0.33/apis/swagger
+[vald-apis-docs]: https://github.com/vdaas/vald/tree/master/apis/docs
+[vald-swagger-specs]: https://github.com/vdaas/vald/tree/master/apis/swagger
 [google-pprof]: https://github.com/google/pprof
 [prometheus-io]: https://prometheus.io/
 [kubernetes-liveness-readiness]: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/

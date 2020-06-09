@@ -2,16 +2,7 @@
 
 This document gives an overview of what is Vald and what you can do with Vald. 
 
-## Table of Contents <!-- omit in toc -->
-
-- [What is Vald?](#what-is-vald)
-  - [What Vald can do?](#what-vald-can-do)
-  - [Use cases](#use-cases)
-- [Why Vald?](#why-vald)
-- [How does Vald work?](#how-does-vald-work)
-- [Try Vald](#try-vald)
-
-### What is Vald?
+## What is Vald?
 
 <!-- copied from README.md-->
 Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.
@@ -24,7 +15,7 @@ Vald has automatic vector indexing and index backup, and horizontal scaling whic
 
 Vald is easy to use, feature-rich and highly customizable as you needed.
 
-#### What Vald can do?
+### What Vald can do?
 
 <!-- copied from README.md-->
 - Asynchronous Auto Indexing
@@ -60,7 +51,7 @@ Vald is easy to use, feature-rich and highly customizable as you needed.
     - gRPC APIs can be triggered by any programming languages which support gRPC.
     - REST API is also supported.
 
-#### Use cases
+### Use cases
 
 Vald supports similarity searching.
 
@@ -68,7 +59,7 @@ Vald supports similarity searching.
 - Speech recognition
 - Everything you can vectorize :)
 
-### Why Vald?
+## Why Vald?
 
 Vald is based on Kubernetes and Cloud-Native architecture, which means Vald is highly scalable.
 You can easily scale Vald by changing Vald's configuration.
@@ -78,13 +69,13 @@ Vald uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to 
 Also, Vald supports auto-healing, to reduce running and maintenance costs. Vald implements the backup mechanism to support disaster recovery.
 Whenever one of the Vald Agent instances is down, the new Vald Agent instance will be created automatically and the data will be recovered automatically.
 
-### How does Vald work?
+## How does Vald work?
 
 Vald implements its custom resource and custom controller to integrate with Kubernetes.
 You can take all the benefits from Kubernetes.
 
-Please refer to the [architecture overview](./architecture.md) for more details about the architecture and how each component in Vald works together.
+Please refer to the [architecture overview](../overview/architecture.md) for more details about the architecture and how each component in Vald works together.
 
-### Try Vald
+## Try Vald
 
-Please refer to [Get Started](../get-started/get-started.md) to try Vald :)
+Please refer to [Get Started](../tutorial/get-started.md) to try Vald :)

@@ -6,15 +6,6 @@ Vald is designed and implemented based on Cloud-Native architecture.
 This article will show you how to deploy and run the Vald components on your kubernetes cluster. 
 Fashion-mnist is used as an example of a dataset.
 
-- [Get Started](#get-started)
-  - [Requirements](#requirements)
-  - [Deploy and Run Vald on kubernetes](#deploy-and-run-vald-on-kubernetes)
-    - [Deploy](#deploy)
-    - [Run using example code](#run-using-example-code)
-  - [Deploy and Run standalone Vald Agent on kubernetes](#deploy-and-run-standalone-vald-agent-on-kubernetes)
-    - [Deploy](#deploy-1)
-    - [Run using example code](#run-using-example-code-1)
-
 ## Requirements
 
 - kubernetes:  v1.17 ~
