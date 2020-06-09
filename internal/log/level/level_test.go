@@ -23,153 +23,178 @@ import (
 	"go.uber.org/goleak"
 )
 
-func TestString(t *testing.T) {
-	type test struct {
-		name  string
-		level Level
-		want  string
-	}
-
-	tests := []test{
-		{
-			name:  "returns DEBUG",
-			level: DEBUG,
-			want:  "DEBUG",
-		},
-
-		{
-			name:  "returns INFO",
-			level: INFO,
-			want:  "INFO",
-		},
-
-		{
-			name:  "returns WARN",
-			level: WARN,
-			want:  "WARN",
-		},
-
-		{
-			name:  "returns ERROR",
-			level: ERROR,
-			want:  "ERROR",
-		},
-
-		{
-			name:  "returns FATAL",
-			level: FATAL,
-			want:  "FATAL",
-		},
-
-		{
-			name:  "returns Unknown",
-			level: Level(100),
-			want:  "Unknown",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := tt.level.String()
-			if got != tt.want {
-				t.Errorf("not equals. want: %v, but got: %v", tt.want, got)
-			}
-		})
-	}
-}
-
 func TestAtol(t *testing.T) {
-	type test struct {
-		name string
-		str  string
+	type want struct {
 		want Level
 	}
+	type test struct {
+		name       string
+		str        string
+		checkFunc  func(want, Level) error
+		beforeFunc func()
+		afterFunc  func()
+		want       want
+	}
+
+	defaultCheckFunc := func(w want, got Level) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
 
 	tests := []test{
 		{
-			name: "returns DEBUG when str is debug",
+			name: "returns DEBUG when str is `debug`",
 			str:  "debug",
-			want: DEBUG,
+			want: want{
+				want: DEBUG,
+			},
 		},
 
 		{
-			name: "returns DEBUG when str is deb",
+			name: "returns DEBUG when str is `deb`",
 			str:  "deb",
-			want: DEBUG,
+			want: want{
+				want: DEBUG,
+			},
 		},
 
 		{
-			name: "returns DEBUG when str is DEBUg",
+			name: "returns DEBUG when str is `DEBUg`",
 			str:  "DEBUg",
-			want: DEBUG,
+			want: want{
+				want: DEBUG,
+			},
 		},
 
 		{
-			name: "returns INFO when str is info",
+			name: "returns INFO when str is `info`",
 			str:  "info",
-			want: INFO,
+			want: want{
+				want: INFO,
+			},
 		},
 
 		{
-			name: "returns INFO when str is INFo",
+			name: "returns INFO when str is `INFo`",
 			str:  "INFo",
-			want: INFO,
+			want: want{
+				want: INFO,
+			},
 		},
 
 		{
-			name: "returns WARN when str is warn",
+			name: "returns INFO when str is `INFos`",
+			str:  "INFos",
+			want: want{
+				want: INFO,
+			},
+		},
+
+		{
+			name: "returns WARN when str is `warn`",
 			str:  "warn",
-			want: WARN,
+			want: want{
+				want: WARN,
+			},
 		},
 
 		{
-			name: "returns WARN when str is WARn",
+			name: "returns WARN when str is `WARn`",
 			str:  "WARn",
-			want: WARN,
+			want: want{
+				want: WARN,
+			},
 		},
 
 		{
-			name: "returns ERROR when str is error",
+			name: "returns WARN when str is `WARns`",
+			str:  "WARns",
+			want: want{
+				want: WARN,
+			},
+		},
+
+		{
+			name: "returns ERROR when str is `error`",
 			str:  "error",
-			want: ERROR,
+			want: want{
+				want: ERROR,
+			},
 		},
 
 		{
-			name: "returns ERROR when str is err",
+			name: "returns ERROR when str is `err`",
 			str:  "err",
-			want: ERROR,
+			want: want{
+				want: ERROR,
+			},
 		},
 
 		{
-			name: "returns ERROR when str is ERROr",
+			name: "returns ERROR when str is `ERROr`",
 			str:  "ERROr",
-			want: ERROR,
+			want: want{
+				want: ERROR,
+			},
 		},
 
 		{
-			name: "returns FATAL when str is fatal",
+			name: "returns FATAL when str is `fatal`",
 			str:  "fatal",
-			want: FATAL,
+			want: want{
+				want: FATAL,
+			},
 		},
 
 		{
-			name: "returns FATAL when str is FATAl",
+			name: "returns FATAL when str is `FATAl`",
 			str:  "FATAl",
-			want: FATAL,
+			want: want{
+				want: FATAL,
+			},
 		},
 
 		{
-			name: "returns Unknown when str is vald",
+			name: "returns FATAL when str is `FATAls`",
+			str:  "FATAls",
+			want: want{
+				want: FATAL,
+			},
+		},
+
+		{
+			name: "returns Unknown when str is `vald`",
 			str:  "vald",
-			want: Unknown,
+			want: want{
+				want: Unknown,
+			},
+		},
+		{
+			name: "returns Unknown when str is `va`",
+			str:  "va",
+			want: want{
+				want: Unknown,
+			},
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := Atol(tt.str)
-			if got != tt.want {
-				t.Errorf("not equals. want: %v, but got: %v", tt.want, got)
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			got := Atol(test.str)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
 			}
 		})
 	}
@@ -194,30 +219,58 @@ func TestLevel_String(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns `DEBUG` when l is DEBUG",
+			l:    DEBUG,
+			want: want{
+				want: "DEBUG",
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns `INFO` when l is INFO",
+			l:    INFO,
+			want: want{
+				want: "INFO",
+			},
+		},
+
+		{
+			name: "returns `WARN` when l is WARN",
+			l:    WARN,
+			want: want{
+				want: "WARN",
+			},
+		},
+
+		{
+			name: "returns `ERROR` when l is ERROR",
+			l:    ERROR,
+			want: want{
+				want: "ERROR",
+			},
+		},
+
+		{
+			name: "returns `FATAL` when l is FATAL",
+			l:    FATAL,
+			want: want{
+				want: "FATAL",
+			},
+		},
+
+		{
+			name: "returns `Unknown` when l is 100",
+			l:    Level(100),
+			want: want{
+				want: "Unknown",
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -232,7 +285,6 @@ func TestLevel_String(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
