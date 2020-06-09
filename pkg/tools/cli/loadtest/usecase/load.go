@@ -41,11 +41,12 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		eg: errgroup.Get(),
 	}
 
-	run.client = grpc.New(
-		grpc.WithAddrs(append([]string{cfg.Addr}, cfg.Client.Addrs...)...),
-		grpc.WithInsecure(cfg.Client.DialOption.Insecure),
+	clientOpts := append(
+		cfg.Client.Opts(),
+		grpc.WithAddrs(cfg.Addr),
 		grpc.WithErrGroup(run.eg),
 	)
+	run.client = grpc.New(clientOpts...)
 
 	run.loader, err = service.NewLoader(
 		service.WithOperation(cfg.Method),
