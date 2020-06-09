@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: batch/v1
+apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: vald-loadtest
@@ -30,9 +30,10 @@ spec:
       backoffLimit: 10
       template:
         metadata:
-          app: vald-loadtest
-          app.kubernetes.io/name: vald
-          app.kubernetes.io/component: loadtest
+          labels:
+            app: vald-loadtest
+            app.kubernetes.io/name: vald
+            app.kubernetes.io/component: loadtest
         spec:
           containers:
             - name: vald-loadtest
