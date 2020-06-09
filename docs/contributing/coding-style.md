@@ -1,32 +1,10 @@
 # Go Style Guide in Vald
 
-## Table of Contents
-
-- [Introduction](#introduction)
-- [Code Formatting and Naming Convension](#code-formatting-and-naming-convension)
-  - [Project Layout](#project-layout)
-  - [Packages](#packages)
-  - [Interfaces](#interfaces)
-  - [Structs](#structs)
-    - [Struct initialization](#struct-initialization)
-  - [Variables and Constant](#variables-and-constant)
-  - [Methods](#methods)
-    - [Getter and Setter](#getter-and-setter)
-  - [Error handling](#error-handling)
-  - [Logging](#logging)
-- [Program comments](#program-comments)
-- [Documentation](#documentation)
-- [Internal packages](#internal-packages)
-- [Dependency management and Build](#dependency-management-and-build)
-- [Test](#test)
-  - [Table-Driven-Test](#table-driven-test)
-  - [The steps to create a Table-Driven-Test](#the-steps-to-create-a-table-driven-test)
-
 ## Introduction
 
 This guideline includes the coding style for all Vald contributors and reviewers. Everyone should follow this guideline to keep the style consistent so everyone can understand and contribute to Vald easier once they learn this guideline. You should have the basic knowledge of how to write Go before contributing to Vald. If you found any bug please create [a GitHub issue](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report.md&title=) and we will work on it.
 
-Please also read the [Contribution guideline](../../CONTRIBUTING.md) before you start contributing to Vald.
+Please also read the [Contribution guideline](../contributing/contributing-guide.md) before you start contributing to Vald.
 
 ## Code Formatting and Naming Convension
 

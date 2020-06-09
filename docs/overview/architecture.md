@@ -2,13 +2,6 @@
 
 This document describes the high-level architecture design of Vald and explains each component in Vald.
 
-## Table of Contents <!-- omit in toc -->
-
-- [Overview](#overview)
-- [Data Flow](#data-flow)
-  - [Insert](#insert)
-  - [Search](#search)
-
 ## Overview
 
 Vald uses a cloud-native architecture focusing on [Kubernetes](https://kubernetes.io/).
@@ -17,7 +10,7 @@ Before reading this document, you need to have some understanding of the basic i
 
 The below image is Vald's architecture.
 
-<img src="../../design/Vald Future Architecture Overview.svg" />
+<img src="../../design/vald_architecture_overview.png" />
 
 We will explain this image in the following section.
 
@@ -28,7 +21,7 @@ This is the most important part for the users to understand Vald.
 
 ### Insert
 
-<img src="../../assets/docs/insert_flow.svg" />
+<img src="../../assets/docs/insert_flow.png" />
 
 When the user inserts data into Vald:
 
@@ -53,7 +46,7 @@ When the user inserts data into Vald:
 
 ### Search
 
-<img src="../../assets/docs/search_flow.svg" />
+<img src="../../assets/docs/search_flow.png" />
 
 When the user searches a vector from Vald:
 
