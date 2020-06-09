@@ -55,8 +55,7 @@ RUN GO_VERSION="$(cat GO_VERSION)" \
     CGO_LDFLAGS="-g -Ofast -march=native" \
     GO111MODULE=on \
     go build \
-    --ldflags "-s -w -linkmode 'external' \
-    -extldflags '-fPIC -m64 -pthread -fopenmp -std=c++17 -lstdc++ -lm' \
+    --ldflags "-s -w \
     -X 'github.com/${ORG}/${REPO}/internal/info.Version=${VALD_VERSION}' \
     -X 'github.com/${ORG}/${REPO}/internal/info.GitCommit=${GIT_COMMIT}' \
     -X 'github.com/${ORG}/${REPO}/internal/info.GoVersion=${GO_VERSION}' \
@@ -79,11 +78,10 @@ FROM ubuntu:devel
 
 ENV APP_NAME loadtest
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libhdf5-dev \
-    && ldconfig \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libaec*  /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libhdf5*  /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libsz*  /usr/lib/x86_64-linux-gnu/
+
 # Copy certificates for SSL/TLS
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 # Copy permissions
