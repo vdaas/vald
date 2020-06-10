@@ -58,6 +58,7 @@ type S3Config struct {
 	AccessKey       string `json:"access_key" yaml:"access_key"`
 	SecretAccessKey string `json:"secret_access_key" yaml:"secret_access_key"`
 	Token           string `json:"token" yaml:"token"`
+	EnableSSL       bool   `json:"enable_ssl" yaml:"enable_ssl"`
 	MaxPartSizeMB   int    `json:"max_part_size_mb" yaml:"max_part_size_mb"`
 }
 

@@ -17,7 +17,11 @@
 // Package storage provides blob storage service
 package storage
 
-import "github.com/vdaas/vald/internal/errgroup"
+import (
+	"github.com/vdaas/vald/internal/db/storage/blob/s3"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
+	"github.com/vdaas/vald/internal/errgroup"
+)
 
 type Option func(b *bs) error
 
@@ -65,58 +69,28 @@ func WithFilenameSuffix(sf string) Option {
 	}
 }
 
-func WithEndpoint(ep string) Option {
+func WithS3Opts(opts ...s3.Option) Option {
 	return func(b *bs) error {
-		b.endpoint = ep
+		if b.s3Opts == nil {
+			b.s3Opts = opts
+			return nil
+		}
+
+		b.s3Opts = append(b.s3Opts, opts...)
+
 		return nil
 	}
 }
 
-func WithRegion(rg string) Option {
+func WithS3SessionOpts(opts ...session.Option) Option {
 	return func(b *bs) error {
-		b.region = rg
-		return nil
-	}
-}
+		if b.s3SessionOpts == nil {
+			b.s3SessionOpts = opts
+			return nil
+		}
 
-func WithAccessKey(ak string) Option {
-	return func(b *bs) error {
-		b.accessKey = ak
-		return nil
-	}
-}
+		b.s3SessionOpts = append(b.s3SessionOpts, opts...)
 
-func WithSecretAccessKey(sak string) Option {
-	return func(b *bs) error {
-		b.secretAccessKey = sak
-		return nil
-	}
-}
-
-func WithToken(tk string) Option {
-	return func(b *bs) error {
-		b.token = tk
-		return nil
-	}
-}
-
-func WithMaxPartSizeKB(kb int) Option {
-	return func(b *bs) error {
-		b.maxPartSize = int64(kb) * 1024
-		return nil
-	}
-}
-
-func WithMaxPartSizeMB(mb int) Option {
-	return func(b *bs) error {
-		b.maxPartSize = int64(mb) * 1024 * 1024
-		return nil
-	}
-}
-
-func WithMaxPartSizeGB(gb int) Option {
-	return func(b *bs) error {
-		b.maxPartSize = int64(gb) * 1024 * 1024 * 1024
 		return nil
 	}
 }

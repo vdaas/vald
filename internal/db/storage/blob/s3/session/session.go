@@ -28,6 +28,7 @@ type sess struct {
 	accessKey       string
 	secretAccessKey string
 	token           string
+	enableSSL       bool
 }
 
 type Session interface {
@@ -67,6 +68,8 @@ func (s *sess) Session() (*session.Session, error) {
 
 		cfg = cfg.WithCredentials(creds)
 	}
+
+	cfg = cfg.WithDisableSSL(!s.enableSSL)
 
 	return session.NewSession(cfg)
 }

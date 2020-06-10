@@ -19,7 +19,9 @@ package session
 type Option func(s *sess)
 
 var (
-	defaultOpts = []Option{}
+	defaultOpts = []Option{
+		WithEnableSSL(true),
+	}
 )
 
 func WithEndpoint(ep string) Option {
@@ -49,5 +51,11 @@ func WithSecretAccessKey(sak string) Option {
 func WithToken(tk string) Option {
 	return func(s *sess) {
 		s.token = tk
+	}
+}
+
+func WithEnableSSL(enable bool) Option {
+	return func(s *sess) {
+		s.enableSSL = enable
 	}
 }

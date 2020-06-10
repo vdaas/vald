@@ -59,3 +59,15 @@ func WithMaxPartSize(size int64) Option {
 		}
 	}
 }
+
+func WithMaxPartSizeKB(kb int) Option {
+	return WithMaxPartSize(int64(kb) * 1024)
+}
+
+func WithMaxPartSizeMB(mb int) Option {
+	return WithMaxPartSize(int64(mb) * 1024 * 1024)
+}
+
+func WithMaxPartSizeGB(gb int) Option {
+	return WithMaxPartSize(int64(gb) * 1024 * 1024 * 1024)
+}

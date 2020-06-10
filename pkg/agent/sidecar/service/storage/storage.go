@@ -44,12 +44,8 @@ type bs struct {
 	filename    string
 	suffix      string
 
-	endpoint        string
-	region          string
-	accessKey       string
-	secretAccessKey string
-	token           string
-	maxPartSize     int64
+	s3Opts        []s3.Option
+	s3SessionOpts []session.Option
 
 	compressAlgorithm string
 	compressionLevel  int
@@ -105,22 +101,18 @@ func (b *bs) initCompressor() (err error) {
 func (b *bs) initBucket() (err error) {
 	switch config.AtoBST(b.storageType) {
 	case config.S3:
-		s, err := session.New(
-			session.WithEndpoint(b.endpoint),
-			session.WithRegion(b.region),
-			session.WithAccessKey(b.accessKey),
-			session.WithSecretAccessKey(b.secretAccessKey),
-			session.WithToken(b.token),
-		).Session()
+		s, err := session.New(b.s3SessionOpts...).Session()
 		if err != nil {
 			return err
 		}
 
 		b.bucket = s3.New(
-			s3.WithErrGroup(b.eg),
-			s3.WithSession(s),
-			s3.WithBucket(b.bucketName),
-			s3.WithMaxPartSize(b.maxPartSize),
+			append(
+				b.s3Opts,
+				s3.WithErrGroup(b.eg),
+				s3.WithSession(s),
+				s3.WithBucket(b.bucketName),
+			)...,
 		)
 	default:
 		return errors.ErrInvalidStorageType

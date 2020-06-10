@@ -21,6 +21,8 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/agent/sidecar"
 	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -71,12 +73,17 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		storage.WithBucketName(cfg.AgentSidecar.BlobStorage.Bucket),
 		storage.WithFilename(cfg.AgentSidecar.Filename),
 		storage.WithFilenameSuffix(cfg.AgentSidecar.FilenameSuffix),
-		storage.WithEndpoint(cfg.AgentSidecar.BlobStorage.S3.Endpoint),
-		storage.WithRegion(cfg.AgentSidecar.BlobStorage.S3.Region),
-		storage.WithAccessKey(cfg.AgentSidecar.BlobStorage.S3.AccessKey),
-		storage.WithSecretAccessKey(cfg.AgentSidecar.BlobStorage.S3.SecretAccessKey),
-		storage.WithToken(cfg.AgentSidecar.BlobStorage.S3.Token),
-		storage.WithMaxPartSizeMB(cfg.AgentSidecar.BlobStorage.S3.MaxPartSizeMB),
+		storage.WithS3SessionOpts(
+			session.WithEndpoint(cfg.AgentSidecar.BlobStorage.S3.Endpoint),
+			session.WithRegion(cfg.AgentSidecar.BlobStorage.S3.Region),
+			session.WithAccessKey(cfg.AgentSidecar.BlobStorage.S3.AccessKey),
+			session.WithSecretAccessKey(cfg.AgentSidecar.BlobStorage.S3.SecretAccessKey),
+			session.WithToken(cfg.AgentSidecar.BlobStorage.S3.Token),
+			session.WithEnableSSL(cfg.AgentSidecar.BlobStorage.S3.EnableSSL),
+		),
+		storage.WithS3Opts(
+			s3.WithMaxPartSizeMB(cfg.AgentSidecar.BlobStorage.S3.MaxPartSizeMB),
+		),
 		storage.WithCompressAlgorithm(cfg.AgentSidecar.Compress.CompressAlgorithm),
 		storage.WithCompressionLevel(cfg.AgentSidecar.Compress.CompressionLevel),
 	)

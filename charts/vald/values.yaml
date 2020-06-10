@@ -1268,6 +1268,9 @@ agent:
           # @schema {"name": "agent.sidecar.config.blob_storage.s3.token", "type": "string"}
           # agent.sidecar.config.blob_storage.s3.token -- s3 token
           token: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.enable_ssl", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.enable_ssl -- enable ssl for s3 session
+          enable_ssl: true
           # @schema {"name": "agent.sidecar.config.blob_storage.s3.max_part_size_mb", "type": "integer", "minimum": 0}
           # agent.sidecar.config.blob_storage.s3.max_part_size_mb -- s3 multipart upload max part size
           max_part_size_mb: 64
