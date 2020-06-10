@@ -82,7 +82,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			session.WithEnableSSL(cfg.AgentSidecar.BlobStorage.S3.EnableSSL),
 		),
 		storage.WithS3Opts(
-			s3.WithMaxPartSizeMB(cfg.AgentSidecar.BlobStorage.S3.MaxPartSizeMB),
+			s3.WithMaxPartSize(cfg.AgentSidecar.BlobStorage.S3.MaxPartSize),
 		),
 		storage.WithCompressAlgorithm(cfg.AgentSidecar.Compress.CompressAlgorithm),
 		storage.WithCompressionLevel(cfg.AgentSidecar.Compress.CompressionLevel),

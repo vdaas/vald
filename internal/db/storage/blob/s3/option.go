@@ -20,9 +20,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/unit"
 )
 
-type Option func(c *client)
+type Option func(c *client) error
 
 var (
 	defaultOpts = []Option{
@@ -31,43 +32,41 @@ var (
 )
 
 func WithErrGroup(eg errgroup.Group) Option {
-	return func(c *client) {
+	return func(c *client) error {
 		if eg != nil {
 			c.eg = eg
 		}
+		return nil
 	}
 }
 
 func WithSession(sess *session.Session) Option {
-	return func(c *client) {
+	return func(c *client) error {
 		if sess != nil {
 			c.session = sess
 		}
+		return nil
 	}
 }
 
 func WithBucket(bucket string) Option {
-	return func(c *client) {
+	return func(c *client) error {
 		c.bucket = bucket
+		return nil
 	}
 }
 
-func WithMaxPartSize(size int64) Option {
-	return func(c *client) {
-		if size >= s3manager.MinUploadPartSize {
-			c.maxPartSize = size
+func WithMaxPartSize(size string) Option {
+	return func(c *client) error {
+		b, err := unit.ParseBytes(size)
+		if err != nil {
+			return err
 		}
+
+		if int64(b) >= s3manager.MinUploadPartSize {
+			c.maxPartSize = int64(b)
+		}
+
+		return nil
 	}
-}
-
-func WithMaxPartSizeKB(kb int) Option {
-	return WithMaxPartSize(int64(kb) * 1024)
-}
-
-func WithMaxPartSizeMB(mb int) Option {
-	return WithMaxPartSize(int64(mb) * 1024 * 1024)
-}
-
-func WithMaxPartSizeGB(gb int) Option {
-	return WithMaxPartSize(int64(gb) * 1024 * 1024 * 1024)
 }

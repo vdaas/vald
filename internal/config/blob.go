@@ -59,7 +59,7 @@ type S3Config struct {
 	SecretAccessKey string `json:"secret_access_key" yaml:"secret_access_key"`
 	Token           string `json:"token" yaml:"token"`
 	EnableSSL       bool   `json:"enable_ssl" yaml:"enable_ssl"`
-	MaxPartSizeMB   int    `json:"max_part_size_mb" yaml:"max_part_size_mb"`
+	MaxPartSize     string `json:"max_part_size" yaml:"max_part_size"`
 }
 
 func (b *Blob) Bind() *Blob {
@@ -81,6 +81,7 @@ func (s *S3Config) Bind() *S3Config {
 	s.AccessKey = GetActualValue(s.AccessKey)
 	s.SecretAccessKey = GetActualValue(s.SecretAccessKey)
 	s.Token = GetActualValue(s.Token)
+	s.MaxPartSize = GetActualValue(s.MaxPartSize)
 
 	return s
 }

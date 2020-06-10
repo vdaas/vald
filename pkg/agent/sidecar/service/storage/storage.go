@@ -106,7 +106,7 @@ func (b *bs) initBucket() (err error) {
 			return err
 		}
 
-		b.bucket = s3.New(
+		b.bucket, err = s3.New(
 			append(
 				b.s3Opts,
 				s3.WithErrGroup(b.eg),
@@ -114,6 +114,9 @@ func (b *bs) initBucket() (err error) {
 				s3.WithBucket(b.bucketName),
 			)...,
 		)
+		if err != nil {
+			return err
+		}
 	default:
 		return errors.ErrInvalidStorageType
 	}

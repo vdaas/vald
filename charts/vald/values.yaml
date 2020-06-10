@@ -1271,9 +1271,9 @@ agent:
           # @schema {"name": "agent.sidecar.config.blob_storage.s3.enable_ssl", "type": "boolean"}
           # agent.sidecar.config.blob_storage.s3.enable_ssl -- enable ssl for s3 session
           enable_ssl: true
-          # @schema {"name": "agent.sidecar.config.blob_storage.s3.max_part_size_mb", "type": "integer", "minimum": 0}
-          # agent.sidecar.config.blob_storage.s3.max_part_size_mb -- s3 multipart upload max part size
-          max_part_size_mb: 64
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.max_part_size", "type": "string", "pattern": "^[0-9]+(kb|mb|gb)$"}
+          # agent.sidecar.config.blob_storage.s3.max_part_size -- s3 multipart upload max part size
+          max_part_size: 64mb
       # @schema {"name": "agent.sidecar.config.compress", "type": "object"}
       compress:
         # @schema {"name": "agent.sidecar.config.compress.compress_algorithm", "type": "string", "enum": ["gob", "gzip", "lz4", "zstd"]}
