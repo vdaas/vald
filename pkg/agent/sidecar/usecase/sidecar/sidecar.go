@@ -21,6 +21,8 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/agent/sidecar"
 	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -71,12 +73,27 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		storage.WithBucketName(cfg.AgentSidecar.BlobStorage.Bucket),
 		storage.WithFilename(cfg.AgentSidecar.Filename),
 		storage.WithFilenameSuffix(cfg.AgentSidecar.FilenameSuffix),
-		storage.WithEndpoint(cfg.AgentSidecar.BlobStorage.S3.Endpoint),
-		storage.WithRegion(cfg.AgentSidecar.BlobStorage.S3.Region),
-		storage.WithAccessKey(cfg.AgentSidecar.BlobStorage.S3.AccessKey),
-		storage.WithSecretAccessKey(cfg.AgentSidecar.BlobStorage.S3.SecretAccessKey),
-		storage.WithToken(cfg.AgentSidecar.BlobStorage.S3.Token),
-		storage.WithMaxPartSizeMB(cfg.AgentSidecar.BlobStorage.S3.MaxPartSizeMB),
+		storage.WithS3SessionOpts(
+			session.WithEndpoint(cfg.AgentSidecar.BlobStorage.S3.Endpoint),
+			session.WithRegion(cfg.AgentSidecar.BlobStorage.S3.Region),
+			session.WithAccessKey(cfg.AgentSidecar.BlobStorage.S3.AccessKey),
+			session.WithSecretAccessKey(cfg.AgentSidecar.BlobStorage.S3.SecretAccessKey),
+			session.WithToken(cfg.AgentSidecar.BlobStorage.S3.Token),
+			session.WithMaxRetries(cfg.AgentSidecar.BlobStorage.S3.MaxRetries),
+			session.WithForcePathStyle(cfg.AgentSidecar.BlobStorage.S3.ForcePathStyle),
+			session.WithUseAccelerate(cfg.AgentSidecar.BlobStorage.S3.UseAccelerate),
+			session.WithUseARNRegion(cfg.AgentSidecar.BlobStorage.S3.UseARNRegion),
+			session.WithUseDualStack(cfg.AgentSidecar.BlobStorage.S3.UseDualStack),
+			session.WithEnableSSL(cfg.AgentSidecar.BlobStorage.S3.EnableSSL),
+			session.WithEnableParamValidation(cfg.AgentSidecar.BlobStorage.S3.EnableParamValidation),
+			session.WithEnable100Continue(cfg.AgentSidecar.BlobStorage.S3.Enable100Continue),
+			session.WithEnableContentMD5Validation(cfg.AgentSidecar.BlobStorage.S3.EnableContentMD5Validation),
+			session.WithEnableEndpointDiscovery(cfg.AgentSidecar.BlobStorage.S3.EnableEndpointDiscovery),
+			session.WithEnableEndpointHostPrefix(cfg.AgentSidecar.BlobStorage.S3.EnableEndpointHostPrefix),
+		),
+		storage.WithS3Opts(
+			s3.WithMaxPartSize(cfg.AgentSidecar.BlobStorage.S3.MaxPartSize),
+		),
 		storage.WithCompressAlgorithm(cfg.AgentSidecar.Compress.CompressAlgorithm),
 		storage.WithCompressionLevel(cfg.AgentSidecar.Compress.CompressionLevel),
 	)

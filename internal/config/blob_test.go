@@ -67,7 +67,7 @@ func TestBlobStorageType_String(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -138,7 +138,7 @@ func TestAtoBST(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -215,7 +215,7 @@ func TestBlob_Bind(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -242,12 +242,23 @@ func TestBlob_Bind(t *testing.T) {
 
 func TestS3Config_Bind(t *testing.T) {
 	type fields struct {
-		Endpoint        string
-		Region          string
-		AccessKey       string
-		SecretAccessKey string
-		Token           string
-		MaxPartSizeMB   int
+		Endpoint                   string
+		Region                     string
+		AccessKey                  string
+		SecretAccessKey            string
+		Token                      string
+		MaxRetries                 int
+		ForcePathStyle             bool
+		UseAccelerate              bool
+		UseARNRegion               bool
+		UseDualStack               bool
+		EnableSSL                  bool
+		EnableParamValidation      bool
+		Enable100Continue          bool
+		EnableContentMD5Validation bool
+		EnableEndpointDiscovery    bool
+		EnableEndpointHostPrefix   bool
+		MaxPartSize                string
 	}
 	type want struct {
 		want *S3Config
@@ -277,7 +288,18 @@ func TestS3Config_Bind(t *testing.T) {
 		           AccessKey: "",
 		           SecretAccessKey: "",
 		           Token: "",
-		           MaxPartSizeMB: 0,
+		           MaxRetries: 0,
+		           ForcePathStyle: false,
+		           UseAccelerate: false,
+		           UseARNRegion: false,
+		           UseDualStack: false,
+		           EnableSSL: false,
+		           EnableParamValidation: false,
+		           Enable100Continue: false,
+		           EnableContentMD5Validation: false,
+		           EnableEndpointDiscovery: false,
+		           EnableEndpointHostPrefix: false,
+		           MaxPartSize: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -295,7 +317,18 @@ func TestS3Config_Bind(t *testing.T) {
 		           AccessKey: "",
 		           SecretAccessKey: "",
 		           Token: "",
-		           MaxPartSizeMB: 0,
+		           MaxRetries: 0,
+		           ForcePathStyle: false,
+		           UseAccelerate: false,
+		           UseARNRegion: false,
+		           UseDualStack: false,
+		           EnableSSL: false,
+		           EnableParamValidation: false,
+		           Enable100Continue: false,
+		           EnableContentMD5Validation: false,
+		           EnableEndpointDiscovery: false,
+		           EnableEndpointHostPrefix: false,
+		           MaxPartSize: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -306,7 +339,7 @@ func TestS3Config_Bind(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -317,12 +350,23 @@ func TestS3Config_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &S3Config{
-				Endpoint:        test.fields.Endpoint,
-				Region:          test.fields.Region,
-				AccessKey:       test.fields.AccessKey,
-				SecretAccessKey: test.fields.SecretAccessKey,
-				Token:           test.fields.Token,
-				MaxPartSizeMB:   test.fields.MaxPartSizeMB,
+				Endpoint:                   test.fields.Endpoint,
+				Region:                     test.fields.Region,
+				AccessKey:                  test.fields.AccessKey,
+				SecretAccessKey:            test.fields.SecretAccessKey,
+				Token:                      test.fields.Token,
+				MaxRetries:                 test.fields.MaxRetries,
+				ForcePathStyle:             test.fields.ForcePathStyle,
+				UseAccelerate:              test.fields.UseAccelerate,
+				UseARNRegion:               test.fields.UseARNRegion,
+				UseDualStack:               test.fields.UseDualStack,
+				EnableSSL:                  test.fields.EnableSSL,
+				EnableParamValidation:      test.fields.EnableParamValidation,
+				Enable100Continue:          test.fields.Enable100Continue,
+				EnableContentMD5Validation: test.fields.EnableContentMD5Validation,
+				EnableEndpointDiscovery:    test.fields.EnableEndpointDiscovery,
+				EnableEndpointHostPrefix:   test.fields.EnableEndpointHostPrefix,
+				MaxPartSize:                test.fields.MaxPartSize,
 			}
 
 			got := s.Bind()

@@ -25,6 +25,7 @@ import (
 )
 
 func TestWithErrGroup(t *testing.T) {
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		eg errgroup.Group
@@ -62,7 +63,7 @@ func TestWithErrGroup(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -100,7 +101,7 @@ func TestWithErrGroup(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -121,7 +122,7 @@ func TestWithErrGroup(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -129,7 +130,7 @@ func TestWithErrGroup(t *testing.T) {
 			   got := WithErrGroup(test.args.eg)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -138,6 +139,7 @@ func TestWithErrGroup(t *testing.T) {
 }
 
 func TestWithSession(t *testing.T) {
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		sess *session.Session
@@ -175,7 +177,7 @@ func TestWithSession(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -213,7 +215,7 @@ func TestWithSession(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -234,7 +236,7 @@ func TestWithSession(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -242,7 +244,7 @@ func TestWithSession(t *testing.T) {
 			   got := WithSession(test.args.sess)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -251,6 +253,7 @@ func TestWithSession(t *testing.T) {
 }
 
 func TestWithBucket(t *testing.T) {
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		bucket string
@@ -288,7 +291,7 @@ func TestWithBucket(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -326,7 +329,7 @@ func TestWithBucket(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -347,7 +350,7 @@ func TestWithBucket(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -355,7 +358,7 @@ func TestWithBucket(t *testing.T) {
 			   got := WithBucket(test.args.bucket)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -364,9 +367,10 @@ func TestWithBucket(t *testing.T) {
 }
 
 func TestWithMaxPartSize(t *testing.T) {
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		size int64
+		size string
 	}
 	type want struct {
 		obj *T
@@ -401,7 +405,7 @@ func TestWithMaxPartSize(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -413,7 +417,7 @@ func TestWithMaxPartSize(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           size: 0,
+		           size: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -427,7 +431,7 @@ func TestWithMaxPartSize(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           size: 0,
+		           size: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -439,7 +443,7 @@ func TestWithMaxPartSize(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -460,7 +464,7 @@ func TestWithMaxPartSize(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -468,7 +472,7 @@ func TestWithMaxPartSize(t *testing.T) {
 			   got := WithMaxPartSize(test.args.size)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

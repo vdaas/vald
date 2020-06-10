@@ -76,7 +76,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -98,11 +98,22 @@ func TestNew(t *testing.T) {
 
 func Test_sess_Session(t *testing.T) {
 	type fields struct {
-		endpoint        string
-		region          string
-		accessKey       string
-		secretAccessKey string
-		token           string
+		endpoint                   string
+		region                     string
+		accessKey                  string
+		secretAccessKey            string
+		token                      string
+		maxRetries                 int
+		forcePathStyle             bool
+		useAccelerate              bool
+		useARNRegion               bool
+		useDualStack               bool
+		enableSSL                  bool
+		enableParamValidation      bool
+		enable100Continue          bool
+		enableContentMD5Validation bool
+		enableEndpointDiscovery    bool
+		enableEndpointHostPrefix   bool
 	}
 	type want struct {
 		want *session.Session
@@ -136,6 +147,17 @@ func Test_sess_Session(t *testing.T) {
 		           accessKey: "",
 		           secretAccessKey: "",
 		           token: "",
+		           maxRetries: 0,
+		           forcePathStyle: false,
+		           useAccelerate: false,
+		           useARNRegion: false,
+		           useDualStack: false,
+		           enableSSL: false,
+		           enableParamValidation: false,
+		           enable100Continue: false,
+		           enableContentMD5Validation: false,
+		           enableEndpointDiscovery: false,
+		           enableEndpointHostPrefix: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -153,6 +175,17 @@ func Test_sess_Session(t *testing.T) {
 		           accessKey: "",
 		           secretAccessKey: "",
 		           token: "",
+		           maxRetries: 0,
+		           forcePathStyle: false,
+		           useAccelerate: false,
+		           useARNRegion: false,
+		           useDualStack: false,
+		           enableSSL: false,
+		           enableParamValidation: false,
+		           enable100Continue: false,
+		           enableContentMD5Validation: false,
+		           enableEndpointDiscovery: false,
+		           enableEndpointHostPrefix: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -163,7 +196,7 @@ func Test_sess_Session(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -174,11 +207,22 @@ func Test_sess_Session(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &sess{
-				endpoint:        test.fields.endpoint,
-				region:          test.fields.region,
-				accessKey:       test.fields.accessKey,
-				secretAccessKey: test.fields.secretAccessKey,
-				token:           test.fields.token,
+				endpoint:                   test.fields.endpoint,
+				region:                     test.fields.region,
+				accessKey:                  test.fields.accessKey,
+				secretAccessKey:            test.fields.secretAccessKey,
+				token:                      test.fields.token,
+				maxRetries:                 test.fields.maxRetries,
+				forcePathStyle:             test.fields.forcePathStyle,
+				useAccelerate:              test.fields.useAccelerate,
+				useARNRegion:               test.fields.useARNRegion,
+				useDualStack:               test.fields.useDualStack,
+				enableSSL:                  test.fields.enableSSL,
+				enableParamValidation:      test.fields.enableParamValidation,
+				enable100Continue:          test.fields.enable100Continue,
+				enableContentMD5Validation: test.fields.enableContentMD5Validation,
+				enableEndpointDiscovery:    test.fields.enableEndpointDiscovery,
+				enableEndpointHostPrefix:   test.fields.enableEndpointHostPrefix,
 			}
 
 			got, err := s.Session()

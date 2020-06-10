@@ -19,6 +19,7 @@ package s3
 import (
 	"context"
 	"io"
+	"reflect"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -26,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/reader"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/writer"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 type client struct {
@@ -37,15 +39,17 @@ type client struct {
 	maxPartSize int64
 }
 
-func New(opts ...Option) blob.Bucket {
+func New(opts ...Option) (blob.Bucket, error) {
 	c := new(client)
 	for _, opt := range append(defaultOpts, opts...) {
-		opt(c)
+		if err := opt(c); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
 	}
 
 	c.service = s3.New(c.session)
 
-	return c
+	return c, nil
 }
 
 func (c *client) Open(ctx context.Context) (err error) {

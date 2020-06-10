@@ -25,6 +25,7 @@ replace (
 )
 
 require (
+	code.cloudfoundry.org/bytefmt v0.0.0-20190710193110-1eb035ffe2b6
 	contrib.go.opencensus.io/exporter/jaeger v0.2.0
 	contrib.go.opencensus.io/exporter/prometheus v0.1.0
 	github.com/aws/aws-sdk-go v1.31.4
@@ -59,7 +60,7 @@ require (
 	gocloud.dev v0.19.0
 	golang.org/x/mod v0.3.0 // indirect
 	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5
-	golang.org/x/tools v0.0.0-20200522201501-cb1345f3a375 // indirect
+	golang.org/x/tools v0.0.0-20200610052024-8d7dbee4c8ae // indirect
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/netlib v0.0.0-20200317120129-c5a04cffd98a // indirect
 	gonum.org/v1/plot v0.7.0
