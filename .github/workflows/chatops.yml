@@ -389,6 +389,8 @@ jobs:
           # make format/docker
           make license
 
+          git reset go.mod go.sum
+
           if git diff --quiet --exit-code; then
             echo "Nothing updated"
           else
@@ -396,7 +398,6 @@ jobs:
             git config --global user.email "ci@vdaas.org"
 
             git add .
-            git reset go.mod go.sum
             git commit --signoff -m ":robot: Update license headers / Format go codes and yaml files"
 
             git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
