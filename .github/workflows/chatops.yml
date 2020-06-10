@@ -389,7 +389,7 @@ jobs:
           # make format/docker
           make license
 
-          git reset go.mod go.sum
+          git checkout go.mod go.sum
 
           if git diff --quiet --exit-code; then
             echo "Nothing updated"
