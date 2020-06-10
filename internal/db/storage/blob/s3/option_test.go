@@ -366,7 +366,7 @@ func TestWithBucket(t *testing.T) {
 func TestWithMaxPartSize(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		size int64
+		size string
 	}
 	type want struct {
 		obj *T
@@ -413,7 +413,7 @@ func TestWithMaxPartSize(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           size: 0,
+		           size: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -427,7 +427,7 @@ func TestWithMaxPartSize(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           size: 0,
+		           size: "",
 		           },
 		           want: want {
 		               obj: new(T),

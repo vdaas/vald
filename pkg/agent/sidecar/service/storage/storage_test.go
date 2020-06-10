@@ -25,6 +25,8 @@ import (
 
 	"github.com/vdaas/vald/internal/compress"
 	"github.com/vdaas/vald/internal/db/storage/blob"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
@@ -112,12 +114,8 @@ func Test_bs_initCompressor(t *testing.T) {
 		bucketName        string
 		filename          string
 		suffix            string
-		endpoint          string
-		region            string
-		accessKey         string
-		secretAccessKey   string
-		token             string
-		maxPartSize       int64
+		s3Opts            []s3.Option
+		s3SessionOpts     []session.Option
 		compressAlgorithm string
 		compressionLevel  int
 		bucket            blob.Bucket
@@ -151,12 +149,8 @@ func Test_bs_initCompressor(t *testing.T) {
 		           bucketName: "",
 		           filename: "",
 		           suffix: "",
-		           endpoint: "",
-		           region: "",
-		           accessKey: "",
-		           secretAccessKey: "",
-		           token: "",
-		           maxPartSize: 0,
+		           s3Opts: nil,
+		           s3SessionOpts: nil,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -178,12 +172,8 @@ func Test_bs_initCompressor(t *testing.T) {
 		           bucketName: "",
 		           filename: "",
 		           suffix: "",
-		           endpoint: "",
-		           region: "",
-		           accessKey: "",
-		           secretAccessKey: "",
-		           token: "",
-		           maxPartSize: 0,
+		           s3Opts: nil,
+		           s3SessionOpts: nil,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -214,12 +204,8 @@ func Test_bs_initCompressor(t *testing.T) {
 				bucketName:        test.fields.bucketName,
 				filename:          test.fields.filename,
 				suffix:            test.fields.suffix,
-				endpoint:          test.fields.endpoint,
-				region:            test.fields.region,
-				accessKey:         test.fields.accessKey,
-				secretAccessKey:   test.fields.secretAccessKey,
-				token:             test.fields.token,
-				maxPartSize:       test.fields.maxPartSize,
+				s3Opts:            test.fields.s3Opts,
+				s3SessionOpts:     test.fields.s3SessionOpts,
 				compressAlgorithm: test.fields.compressAlgorithm,
 				compressionLevel:  test.fields.compressionLevel,
 				bucket:            test.fields.bucket,
@@ -242,12 +228,8 @@ func Test_bs_initBucket(t *testing.T) {
 		bucketName        string
 		filename          string
 		suffix            string
-		endpoint          string
-		region            string
-		accessKey         string
-		secretAccessKey   string
-		token             string
-		maxPartSize       int64
+		s3Opts            []s3.Option
+		s3SessionOpts     []session.Option
 		compressAlgorithm string
 		compressionLevel  int
 		bucket            blob.Bucket
@@ -281,12 +263,8 @@ func Test_bs_initBucket(t *testing.T) {
 		           bucketName: "",
 		           filename: "",
 		           suffix: "",
-		           endpoint: "",
-		           region: "",
-		           accessKey: "",
-		           secretAccessKey: "",
-		           token: "",
-		           maxPartSize: 0,
+		           s3Opts: nil,
+		           s3SessionOpts: nil,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -308,12 +286,8 @@ func Test_bs_initBucket(t *testing.T) {
 		           bucketName: "",
 		           filename: "",
 		           suffix: "",
-		           endpoint: "",
-		           region: "",
-		           accessKey: "",
-		           secretAccessKey: "",
-		           token: "",
-		           maxPartSize: 0,
+		           s3Opts: nil,
+		           s3SessionOpts: nil,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -344,12 +318,8 @@ func Test_bs_initBucket(t *testing.T) {
 				bucketName:        test.fields.bucketName,
 				filename:          test.fields.filename,
 				suffix:            test.fields.suffix,
-				endpoint:          test.fields.endpoint,
-				region:            test.fields.region,
-				accessKey:         test.fields.accessKey,
-				secretAccessKey:   test.fields.secretAccessKey,
-				token:             test.fields.token,
-				maxPartSize:       test.fields.maxPartSize,
+				s3Opts:            test.fields.s3Opts,
+				s3SessionOpts:     test.fields.s3SessionOpts,
 				compressAlgorithm: test.fields.compressAlgorithm,
 				compressionLevel:  test.fields.compressionLevel,
 				bucket:            test.fields.bucket,
@@ -375,12 +345,8 @@ func Test_bs_Start(t *testing.T) {
 		bucketName        string
 		filename          string
 		suffix            string
-		endpoint          string
-		region            string
-		accessKey         string
-		secretAccessKey   string
-		token             string
-		maxPartSize       int64
+		s3Opts            []s3.Option
+		s3SessionOpts     []session.Option
 		compressAlgorithm string
 		compressionLevel  int
 		bucket            blob.Bucket
@@ -422,12 +388,8 @@ func Test_bs_Start(t *testing.T) {
 		           bucketName: "",
 		           filename: "",
 		           suffix: "",
-		           endpoint: "",
-		           region: "",
-		           accessKey: "",
-		           secretAccessKey: "",
-		           token: "",
-		           maxPartSize: 0,
+		           s3Opts: nil,
+		           s3SessionOpts: nil,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -452,12 +414,8 @@ func Test_bs_Start(t *testing.T) {
 		           bucketName: "",
 		           filename: "",
 		           suffix: "",
-		           endpoint: "",
-		           region: "",
-		           accessKey: "",
-		           secretAccessKey: "",
-		           token: "",
-		           maxPartSize: 0,
+		           s3Opts: nil,
+		           s3SessionOpts: nil,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -488,12 +446,8 @@ func Test_bs_Start(t *testing.T) {
 				bucketName:        test.fields.bucketName,
 				filename:          test.fields.filename,
 				suffix:            test.fields.suffix,
-				endpoint:          test.fields.endpoint,
-				region:            test.fields.region,
-				accessKey:         test.fields.accessKey,
-				secretAccessKey:   test.fields.secretAccessKey,
-				token:             test.fields.token,
-				maxPartSize:       test.fields.maxPartSize,
+				s3Opts:            test.fields.s3Opts,
+				s3SessionOpts:     test.fields.s3SessionOpts,
 				compressAlgorithm: test.fields.compressAlgorithm,
 				compressionLevel:  test.fields.compressionLevel,
 				bucket:            test.fields.bucket,
@@ -519,12 +473,8 @@ func Test_bs_Reader(t *testing.T) {
 		bucketName        string
 		filename          string
 		suffix            string
-		endpoint          string
-		region            string
-		accessKey         string
-		secretAccessKey   string
-		token             string
-		maxPartSize       int64
+		s3Opts            []s3.Option
+		s3SessionOpts     []session.Option
 		compressAlgorithm string
 		compressionLevel  int
 		bucket            blob.Bucket
@@ -566,12 +516,8 @@ func Test_bs_Reader(t *testing.T) {
 		           bucketName: "",
 		           filename: "",
 		           suffix: "",
-		           endpoint: "",
-		           region: "",
-		           accessKey: "",
-		           secretAccessKey: "",
-		           token: "",
-		           maxPartSize: 0,
+		           s3Opts: nil,
+		           s3SessionOpts: nil,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -596,12 +542,8 @@ func Test_bs_Reader(t *testing.T) {
 		           bucketName: "",
 		           filename: "",
 		           suffix: "",
-		           endpoint: "",
-		           region: "",
-		           accessKey: "",
-		           secretAccessKey: "",
-		           token: "",
-		           maxPartSize: 0,
+		           s3Opts: nil,
+		           s3SessionOpts: nil,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -632,12 +574,8 @@ func Test_bs_Reader(t *testing.T) {
 				bucketName:        test.fields.bucketName,
 				filename:          test.fields.filename,
 				suffix:            test.fields.suffix,
-				endpoint:          test.fields.endpoint,
-				region:            test.fields.region,
-				accessKey:         test.fields.accessKey,
-				secretAccessKey:   test.fields.secretAccessKey,
-				token:             test.fields.token,
-				maxPartSize:       test.fields.maxPartSize,
+				s3Opts:            test.fields.s3Opts,
+				s3SessionOpts:     test.fields.s3SessionOpts,
 				compressAlgorithm: test.fields.compressAlgorithm,
 				compressionLevel:  test.fields.compressionLevel,
 				bucket:            test.fields.bucket,
@@ -663,12 +601,8 @@ func Test_bs_Writer(t *testing.T) {
 		bucketName        string
 		filename          string
 		suffix            string
-		endpoint          string
-		region            string
-		accessKey         string
-		secretAccessKey   string
-		token             string
-		maxPartSize       int64
+		s3Opts            []s3.Option
+		s3SessionOpts     []session.Option
 		compressAlgorithm string
 		compressionLevel  int
 		bucket            blob.Bucket
@@ -710,12 +644,8 @@ func Test_bs_Writer(t *testing.T) {
 		           bucketName: "",
 		           filename: "",
 		           suffix: "",
-		           endpoint: "",
-		           region: "",
-		           accessKey: "",
-		           secretAccessKey: "",
-		           token: "",
-		           maxPartSize: 0,
+		           s3Opts: nil,
+		           s3SessionOpts: nil,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -740,12 +670,8 @@ func Test_bs_Writer(t *testing.T) {
 		           bucketName: "",
 		           filename: "",
 		           suffix: "",
-		           endpoint: "",
-		           region: "",
-		           accessKey: "",
-		           secretAccessKey: "",
-		           token: "",
-		           maxPartSize: 0,
+		           s3Opts: nil,
+		           s3SessionOpts: nil,
 		           compressAlgorithm: "",
 		           compressionLevel: 0,
 		           bucket: nil,
@@ -776,12 +702,8 @@ func Test_bs_Writer(t *testing.T) {
 				bucketName:        test.fields.bucketName,
 				filename:          test.fields.filename,
 				suffix:            test.fields.suffix,
-				endpoint:          test.fields.endpoint,
-				region:            test.fields.region,
-				accessKey:         test.fields.accessKey,
-				secretAccessKey:   test.fields.secretAccessKey,
-				token:             test.fields.token,
-				maxPartSize:       test.fields.maxPartSize,
+				s3Opts:            test.fields.s3Opts,
+				s3SessionOpts:     test.fields.s3SessionOpts,
 				compressAlgorithm: test.fields.compressAlgorithm,
 				compressionLevel:  test.fields.compressionLevel,
 				bucket:            test.fields.bucket,
