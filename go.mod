@@ -25,6 +25,7 @@ replace (
 )
 
 require (
+	code.cloudfoundry.org/bytefmt v0.0.0-20190710193110-1eb035ffe2b6
 	contrib.go.opencensus.io/exporter/jaeger v0.2.0
 	contrib.go.opencensus.io/exporter/prometheus v0.1.0
 	github.com/aws/aws-sdk-go v1.31.4

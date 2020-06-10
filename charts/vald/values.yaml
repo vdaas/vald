@@ -1268,9 +1268,39 @@ agent:
           # @schema {"name": "agent.sidecar.config.blob_storage.s3.token", "type": "string"}
           # agent.sidecar.config.blob_storage.s3.token -- s3 token
           token: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.max_retries", "type": "integer"}
+          # agent.sidecar.config.blob_storage.s3.max_retries -- maximum number of retries of s3 client
+          max_retries: 3
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.force_path_style", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.force_path_style -- use path-style addressing
+          force_path_style: false
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.use_accelerate", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.use_accelerate -- enable s3 accelerate feature
+          use_accelerate: false
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.use_arn_region", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.use_arn_region -- s3 service client to use the region specified in the ARN
+          use_arn_region: false
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.use_dual_stack", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.use_dual_stack -- use dual stack
+          use_dual_stack: false
           # @schema {"name": "agent.sidecar.config.blob_storage.s3.enable_ssl", "type": "boolean"}
           # agent.sidecar.config.blob_storage.s3.enable_ssl -- enable ssl for s3 session
           enable_ssl: true
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.enable_param_validation", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.enable_param_validation -- enables semantic parameter validation
+          enable_param_validation: true
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.enable_100_continue", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.enable_100_continue -- enable AWS SDK adding the 'Expect: 100-Continue' header to PUT requests over 2MB of content.
+          enable_100_continue: true
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.enable_content_md5_validation", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.enable_content_md5_validation -- enable the S3 client to add MD5 checksum to upload API calls.
+          enable_content_md5_validation: true
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.enable_endpoint_discovery", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.enable_endpoint_discovery -- enable endpoint discovery
+          enable_endpoint_discovery: false
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.enable_endpoint_host_prefix", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.enable_endpoint_host_prefix -- enable prefixing request endpoint hosts with modeled information
+          enable_endpoint_host_prefix: true
           # @schema {"name": "agent.sidecar.config.blob_storage.s3.max_part_size", "type": "string", "pattern": "^[0-9]+(kb|mb|gb)$"}
           # agent.sidecar.config.blob_storage.s3.max_part_size -- s3 multipart upload max part size
           max_part_size: 64mb

@@ -58,8 +58,20 @@ type S3Config struct {
 	AccessKey       string `json:"access_key" yaml:"access_key"`
 	SecretAccessKey string `json:"secret_access_key" yaml:"secret_access_key"`
 	Token           string `json:"token" yaml:"token"`
-	EnableSSL       bool   `json:"enable_ssl" yaml:"enable_ssl"`
-	MaxPartSize     string `json:"max_part_size" yaml:"max_part_size"`
+
+	MaxRetries                 int  `json:"max_retries" yaml:"max_retries"`
+	ForcePathStyle             bool `json:"force_path_style" yaml:"force_path_style"`
+	UseAccelerate              bool `json:"use_accelerate" yaml:"use_accelerate"`
+	UseARNRegion               bool `json:"use_arn_region" yaml:"use_arn_region"`
+	UseDualStack               bool `json:"use_dual_stack" yaml:"use_dual_stack"`
+	EnableSSL                  bool `json:"enable_ssl" yaml:"enable_ssl"`
+	EnableParamValidation      bool `json:"enable_param_validation" yaml:"enable_param_validation"`
+	Enable100Continue          bool `json:"enable_100_continue" yaml:"enable_100_continue"`
+	EnableContentMD5Validation bool `json:"enable_content_md5_validation" yaml:"enable_content_md5_validation"`
+	EnableEndpointDiscovery    bool `json:"enable_endpoint_discovery" yaml:"enable_endpoint_discovery"`
+	EnableEndpointHostPrefix   bool `json:"enable_endpoint_host_prefix" yaml:"enable_endpoint_host_prefix"`
+
+	MaxPartSize string `json:"max_part_size" yaml:"max_part_size"`
 }
 
 func (b *Blob) Bind() *Blob {

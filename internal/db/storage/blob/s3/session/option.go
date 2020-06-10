@@ -20,7 +20,17 @@ type Option func(s *sess)
 
 var (
 	defaultOpts = []Option{
+		WithMaxRetries(-1),
+		WithForcePathStyle(false),
+		WithUseAccelerate(false),
+		WithUseARNRegion(false),
+		WithUseDualStack(false),
 		WithEnableSSL(true),
+		WithEnableParamValidation(true),
+		WithEnable100Continue(true),
+		WithEnableContentMD5Validation(true),
+		WithEnableEndpointDiscovery(false),
+		WithEnableEndpointHostPrefix(true),
 	}
 )
 
@@ -54,8 +64,68 @@ func WithToken(tk string) Option {
 	}
 }
 
-func WithEnableSSL(enable bool) Option {
+func WithMaxRetries(r int) Option {
 	return func(s *sess) {
-		s.enableSSL = enable
+		s.maxRetries = r
+	}
+}
+
+func WithForcePathStyle(enabled bool) Option {
+	return func(s *sess) {
+		s.forcePathStyle = enabled
+	}
+}
+
+func WithUseAccelerate(enabled bool) Option {
+	return func(s *sess) {
+		s.useAccelerate = enabled
+	}
+}
+
+func WithUseARNRegion(enabled bool) Option {
+	return func(s *sess) {
+		s.useARNRegion = enabled
+	}
+}
+
+func WithUseDualStack(enabled bool) Option {
+	return func(s *sess) {
+		s.useDualStack = enabled
+	}
+}
+
+func WithEnableSSL(enabled bool) Option {
+	return func(s *sess) {
+		s.enableSSL = enabled
+	}
+}
+
+func WithEnableParamValidation(enabled bool) Option {
+	return func(s *sess) {
+		s.enableParamValidation = enabled
+	}
+}
+
+func WithEnable100Continue(enabled bool) Option {
+	return func(s *sess) {
+		s.enable100Continue = enabled
+	}
+}
+
+func WithEnableContentMD5Validation(enabled bool) Option {
+	return func(s *sess) {
+		s.enableContentMD5Validation = enabled
+	}
+}
+
+func WithEnableEndpointDiscovery(enabled bool) Option {
+	return func(s *sess) {
+		s.enableEndpointDiscovery = enabled
+	}
+}
+
+func WithEnableEndpointHostPrefix(enabled bool) Option {
+	return func(s *sess) {
+		s.enableEndpointHostPrefix = enabled
 	}
 }

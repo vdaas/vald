@@ -28,7 +28,18 @@ type sess struct {
 	accessKey       string
 	secretAccessKey string
 	token           string
-	enableSSL       bool
+
+	maxRetries                 int
+	forcePathStyle             bool
+	useAccelerate              bool
+	useARNRegion               bool
+	useDualStack               bool
+	enableSSL                  bool
+	enableParamValidation      bool
+	enable100Continue          bool
+	enableContentMD5Validation bool
+	enableEndpointDiscovery    bool
+	enableEndpointHostPrefix   bool
 }
 
 type Session interface {
@@ -69,7 +80,35 @@ func (s *sess) Session() (*session.Session, error) {
 		cfg = cfg.WithCredentials(creds)
 	}
 
-	cfg = cfg.WithDisableSSL(!s.enableSSL)
+	if s.maxRetries != -1 {
+		cfg = cfg.WithMaxRetries(s.maxRetries)
+	}
+
+	cfg = cfg.WithS3ForcePathStyle(s.forcePathStyle).
+		WithS3UseAccelerate(s.useAccelerate).
+		WithS3UseARNRegion(s.useARNRegion).
+		WithUseDualStack(s.useDualStack).
+		WithEndpointDiscovery(s.enableEndpointDiscovery)
+
+	if !s.enableSSL {
+		cfg = cfg.WithDisableSSL(true)
+	}
+
+	if !s.enableParamValidation {
+		cfg = cfg.WithDisableParamValidation(true)
+	}
+
+	if !s.enable100Continue {
+		cfg = cfg.WithS3Disable100Continue(true)
+	}
+
+	if !s.enableContentMD5Validation {
+		cfg = cfg.WithS3DisableContentMD5Validation(true)
+	}
+
+	if !s.enableEndpointHostPrefix {
+		cfg = cfg.WithDisableEndpointHostPrefix(true)
+	}
 
 	return session.NewSession(cfg)
 }
