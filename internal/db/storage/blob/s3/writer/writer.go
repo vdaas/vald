@@ -118,7 +118,7 @@ func (w *writer) upload(body io.Reader) (err error) {
 		return err
 	}
 
-	log.Debugf("s3 upload completed: %s", res.Location)
+	log.Infof("s3 upload completed: %s", res.Location)
 
 	return nil
 }
