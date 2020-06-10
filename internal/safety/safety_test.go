@@ -51,10 +51,16 @@ func TestRecoverFunc(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got func() error) error {
+		gotErr := got()
+
+		// if wantPanic is not nil then the panic should be recovered and this line should not be executed
+		if w.wantPanic != nil {
+			return errors.Errorf("wantPanic is not nil, but got return error: %v", gotErr)
+		}
+
 		if (w.want == nil && got != nil) || (w.want != nil && got == nil) {
 			return errors.Errorf("got = %v, want %v", got, w)
 		}
-		gotErr := got()
 		wantErr := w.want()
 		if !errors.Is(gotErr, wantErr) {
 			return errors.Errorf("got error= %v, want error= %v", gotErr, wantErr)
@@ -133,7 +139,6 @@ func TestRecoverFunc(t *testing.T) {
 				}
 				if want := w.wantPanic(); !errors.Is(want, panicErr) {
 					tt.Errorf("want: %v, got: %v", want, panicErr)
-					return
 				}
 			}(test.want, tt)
 
@@ -148,12 +153,8 @@ func TestRecoverFunc(t *testing.T) {
 			}
 
 			got := RecoverFunc(test.args.fn)
-			if test.want.wantPanic == nil {
-				if err := test.checkFunc(test.want, got); err != nil {
-					tt.Errorf("error = %v", err)
-				}
-			} else {
-				got()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
 			}
 		})
 	}
