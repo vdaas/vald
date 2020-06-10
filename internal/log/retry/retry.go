@@ -50,35 +50,31 @@ func (r *retry) Out(
 	fn func(vals ...interface{}) error,
 	vals ...interface{},
 ) {
-	if fn == nil {
-		return
+	if fn != nil {
+		r.Outf(func(format string, vals ...interface{}) error {
+			return fn(vals...)
+		}, "", vals...)
 	}
-
-	r.Outf(func(format string, vals ...interface{}) error {
-		return fn(vals...)
-	}, "", vals...)
 }
 
 func (r *retry) Outf(
 	fn func(format string, vals ...interface{}) error,
 	format string, vals ...interface{},
 ) {
-	if fn == nil {
-		return
-	}
+	if fn != nil {
+		if err := fn(format, vals...); err != nil {
+			rv := reflect.ValueOf(fn)
 
-	if err := fn(format, vals...); err != nil {
-		rv := reflect.ValueOf(fn)
-
-		r.warnFn(errors.ErrLoggingRetry(err, rv))
-
-		err = fn(format, vals...)
-		if err != nil {
-			r.errorFn(errors.ErrLoggingFailed(err, rv))
+			r.warnFn(errors.ErrLoggingRetry(err, rv))
 
 			err = fn(format, vals...)
 			if err != nil {
-				panic(err)
+				r.errorFn(errors.ErrLoggingFailed(err, rv))
+
+				err = fn(format, vals...)
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 	}
