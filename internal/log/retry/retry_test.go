@@ -149,13 +149,6 @@ func Test_retry_Out(t *testing.T) {
 			}
 		}(),
 
-		{
-			name: "returns nothing when fn is nil",
-			checkFunc: func() error {
-				return nil
-			},
-		},
-
 		func() test {
 			err := errors.New("error")
 			fn := func(vals ...interface{}) error {
@@ -302,13 +295,6 @@ func Test_retry_Outf(t *testing.T) {
 				},
 			}
 		}(),
-
-		{
-			name: "returns nothing when fn is nil",
-			checkFunc: func() error {
-				return nil
-			},
-		},
 
 		func() test {
 			err := errors.New("error")
