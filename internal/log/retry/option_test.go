@@ -16,120 +16,152 @@
 package retry
 
 import (
-	"errors"
 	"reflect"
 	"testing"
+
+	"github.com/vdaas/vald/internal/errors"
+
+	"go.uber.org/goleak"
 )
 
 func TestWithError(t *testing.T) {
+	type T = retry
+	type args struct {
+		fn func(vals ...interface{})
+	}
+	type want struct {
+		obj *T
+	}
 	type test struct {
-		name      string
-		fn        func(vals ...interface{})
-		checkFunc func(Option) error
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T) error {
+		if reflect.ValueOf(w.obj.errorFn).Pointer() != reflect.ValueOf(obj.errorFn).Pointer() {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
+		}
+		return nil
 	}
 
 	tests := []test{
 		func() test {
 			fn := func(vals ...interface{}) {}
-
 			return test{
 				name: "set success when fn is not nil",
-				fn:   fn,
-				checkFunc: func(opt Option) error {
-					got := new(retry)
-					opt(got)
-
-					if reflect.ValueOf(fn).Pointer() != reflect.ValueOf(got.errorFn).Pointer() {
-						return errors.New("invalid params was set")
-					}
-					return nil
+				args: args{
+					fn: fn,
 				},
-			}
-		}(),
-
-		func() test {
-			fn := func(vals ...interface{}) {}
-
-			return test{
-				name: "returns nothing when fn is nil",
-				fn:   nil,
-				checkFunc: func(opt Option) error {
-					got := &retry{
+				want: want{
+					obj: &T{
 						errorFn: fn,
-					}
-					opt(got)
-
-					if reflect.ValueOf(fn).Pointer() != reflect.ValueOf(got.errorFn).Pointer() {
-						return errors.New("invalid params was set")
-					}
-					return nil
+					},
 				},
 			}
 		}(),
+
+		{
+			name: "set nothing when fn is nil",
+			want: want{
+				obj: new(T),
+			},
+		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			opt := WithError(tt.fn)
-			if err := tt.checkFunc(opt); err != nil {
-				t.Error(err)
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithError(test.args.fn)
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
+				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
 
 func TestWithWarn(t *testing.T) {
+	type T = retry
+	type args struct {
+		fn func(vals ...interface{})
+	}
+	type want struct {
+		obj *T
+	}
 	type test struct {
-		name      string
-		fn        func(vals ...interface{})
-		checkFunc func(Option) error
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T) error {
+		if reflect.ValueOf(w.obj.warnFn).Pointer() != reflect.ValueOf(obj.warnFn).Pointer() {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
+		}
+		return nil
 	}
 
 	tests := []test{
 		func() test {
 			fn := func(vals ...interface{}) {}
-
 			return test{
 				name: "set success when fn is not nil",
-				fn:   fn,
-				checkFunc: func(opt Option) error {
-					got := new(retry)
-					opt(got)
-
-					if reflect.ValueOf(fn).Pointer() != reflect.ValueOf(got.warnFn).Pointer() {
-						return errors.New("invalid params was set")
-					}
-					return nil
+				args: args{
+					fn: fn,
 				},
-			}
-		}(),
-
-		func() test {
-			fn := func(vals ...interface{}) {}
-
-			return test{
-				name: "returns nothing when fn is nil",
-				fn:   nil,
-				checkFunc: func(opt Option) error {
-					got := &retry{
+				want: want{
+					obj: &T{
 						warnFn: fn,
-					}
-					opt(got)
-
-					if reflect.ValueOf(fn).Pointer() != reflect.ValueOf(got.warnFn).Pointer() {
-						return errors.New("invalid params was set")
-					}
-					return nil
+					},
 				},
 			}
 		}(),
+
+		{
+			name: "set nothing when fn is nil",
+			want: want{
+				obj: new(T),
+			},
+		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			opt := WithWarn(tt.fn)
-			if err := tt.checkFunc(opt); err != nil {
-				t.Error(err)
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			got := WithWarn(test.args.fn)
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
+				tt.Errorf("error = %v", err)
 			}
 		})
 	}
