@@ -11,6 +11,7 @@ on:
     paths:
       - 'internal/**'
       - '!internal/db/**'
+      - 'internal/db/storage/blob'
       - '!internal/k8s/**'
       - 'apis/grpc/**'
       - 'pkg/agent/sidecar/**'
@@ -22,6 +23,7 @@ on:
     paths:
       - 'internal/**'
       - '!internal/db/**'
+      - 'internal/db/storage/blob'
       - '!internal/k8s/**'
       - 'apis/grpc/**'
       - 'pkg/agent/sidecar/**'
