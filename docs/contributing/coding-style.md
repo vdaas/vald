@@ -518,7 +518,7 @@ We implement our own [gotests](https://github.com/cweill/gotests) template to ge
 make gotests/install
 ```
 
-If you want to generate test code, please use the following command.
+If you use the following command to generate the missing test code.
 
 ```bash
 make make gotests/gen
@@ -530,61 +530,66 @@ The test code generated follows the table-driven test format. You can implement 
 We do not suggest to modify the generated code other than the `tests` variable, but in some cases, you may need to modify the generated code to meet your requirement, for example:
 
 1. init() function
-  init() function is executed automatically before the test is started. You may need to initialize some singleton before your test cases are executed.
-  For example, Vald uses [glg](https://github.com/kpango/glg) library for logging by default, if the logger is not initialized before the test, the nil pointer error may be thrown during the test is running.
-  You may need to implement `init()` function like:
 
-  ```golang
-  func init() {
-	log.Init()
-  }
-  ```
+init() function is executed automatically before the test is started. You may need to initialize some singleton before your test cases are executed.
+For example, Vald uses [glg](https://github.com/kpango/glg) library for logging by default, if the logger is not initialized before the test, the nil pointer error may be thrown during the test is running.
+You may need to implement `init()` function like:
 
-  and place it on the header of the test file.
+```golang
+func init() {
+    log.Init()
+}
+```
 
-1. goleak option
-  By default, the generated test code will use [goleak](https://github.com/uber-go/goleak) library to test if there is any Goroutine leak. Sometimes you may want to skip the detection, for example, Vald uses [fastime](https://github.com/kpango/fastime) library but the internal Goroutine is not closed due to the needs of the library. To skip the goleak detection we need need to create the following variable to store the ignore function.
+and place it on the header of the test file.
 
-  ```golang
-  var (
-	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-	goleakIgnoreOptions = []goleak.Option{
-		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-	}
-  )
-  ```
+2. goleak option
 
-  And modify the generated test code.
+By default, the generated test code will use [goleak](https://github.com/uber-go/goleak) library to test if there is any Goroutine leak. Sometimes you may want to skip the detection, for example, Vald uses [fastime](https://github.com/kpango/fastime) library but the internal Goroutine is not closed due to the needs of the library. To skip the goleak detection we need need to create the following variable to store the ignore function.
 
-  ```golang
-    // before
-    for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+```golang
+var (
+    // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+    goleakIgnoreOptions = []goleak.Option{
+        goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+    }
+)
+```
 
-    // after
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-  ```
+And modify the generated test code.
 
-1. Defer function
-  By default the template provides `beforeFunc()` and `afterFunc()` to initialize and finalize the test case, but in some case, it may not support your use case. For example `recover()` function only works in `defer()` function, if you need to use `recover()` function to handle the panic in your test code, you may need to implement your custom `defer()` function and change the generated test code. For example:
+```golang
+// before
+for _, test := range tests {
+    t.Run(test.name, func(tt *testing.T) {
+        defer goleak.VerifyNone(tt)
 
-  ```golang
-    for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+// after
+for _, test := range tests {
+    t.Run(test.name, func(tt *testing.T) {
+        // modify the following line
+        defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+```
 
-			defer func(w want, tt *testing.T) {
-                // implement your defer func logic
-                if err:= recover(); err != nil {
-                    // check the panic
-                }
-			}(test.want, tt)
+3. Defer function
 
-            if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-            // generated test code
-  ```
+By default the template provides `beforeFunc()` and `afterFunc()` to initialize and finalize the test case, but in some case, it may not support your use case. For example `recover()` function only works in `defer()` function, if you need to use `recover()` function to handle the panic in your test code, you may need to implement your custom `defer()` function and change the generated test code. For example:
+
+```golang
+for _, test := range tests {
+  t.Run(test.name, func(tt *testing.T) {
+    defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+
+    // insert your defer function here
+    defer func(w want, tt *testing.T) {
+        // implement your defer func logic
+        if err:= recover(); err != nil {
+            // check the panic
+        }
+    }(test.want, tt)
+
+    if test.beforeFunc != nil {
+        test.beforeFunc(test.args)
+    }
+    // generated test code
+```
