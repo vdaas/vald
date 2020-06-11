@@ -227,7 +227,7 @@ func TestDo(t *testing.T) {
 
 					return nil
 				},
-				want: errors.Wrap(errors.New("error (2)"), context.Canceled.Error()),
+				want: errors.Wrap(context.Canceled, errors.New("error (2)").Error()),
 			}
 		}(),
 
