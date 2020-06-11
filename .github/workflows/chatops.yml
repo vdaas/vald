@@ -102,14 +102,14 @@ jobs:
         run: |
           git checkout master
           PREVIOUS_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
-          BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..master | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%"`
+          BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..master | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%" | sed ':a;N;$!ba;s/\n/\\\\n/g'`
           CURRENT="- ${PR_TITLE} ([#${PR_NUM}](https://github.com/vdaas/vald/pull/${PR_NUM}))"
           curl --include --verbose --fail \
           -H "Accept: application/json" \
           -H "Content-Type:application/json" \
           -H "Authorization: token ${GITHUB_TOKEN}" \
           --request POST \
-          --data "{\"body\": \"**[CHANGELOG]** Please edit the following lines.\\n${BODY}\\n${CURRENT}\"}" \
+          --data "{\"body\": \"**[CHANGELOG]** Please edit the following lines.\\n${CURRENT}\\n${BODY}\"}" \
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
