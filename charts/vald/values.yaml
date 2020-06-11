@@ -431,7 +431,7 @@ defaults:
         # @schema {"name": "defaults.grpc.client.connection_pool.old_conn_close_duration", "type": "string"}
         # defaults.grpc.client.connection_pool.old_conn_close_duration -- makes delay before gRPC client connection closing during connection pool rebalance
         old_conn_close_duration: "3s"
-      # @schema {"name": "defaults.grpc.client.backoff", "type": "object"}
+      # @schema {"name": "defaults.grpc.client.backoff", "type": "object", "anchor": "backoff"}
       backoff:
         # @schema {"name": "defaults.grpc.client.backoff.initial_duration", "type": "string"}
         # defaults.grpc.client.backoff.initial_duration -- gRPC client backoff initial duration
@@ -1318,6 +1318,22 @@ agent:
         # `lz4`: >= 0, higher is better compression.
         # `zstd`: 1 (fastest) to 22 (best), however implementation relies on klauspost/compress.
         compression_level: -1
+      # @schema {"name": "agent.sidecar.config.restore_backoff", "alias": "backoff"}
+      restore_backoff:
+        # agent.sidecar.config.restore_backoff.initial_duration -- restore backoff initial duration
+        initial_duration: 1s
+        # agent.sidecar.config.restore_backoff.backoff_time_limit -- restore backoff time limit
+        backoff_time_limit: 1m
+        # agent.sidecar.config.restore_backoff.maximum_duration -- restore backoff maximum duration
+        maximum_duration: 30s
+        # agent.sidecar.config.restore_backoff.jitter_limit -- restore backoff jitter limit
+        jitter_limit: 10s
+        # agent.sidecar.config.restore_backoff.backoff_factor -- restore backoff factor
+        backoff_factor: 1.2
+        # agent.sidecar.config.restore_backoff.retry_count -- restore backoff retry count
+        retry_count: 100
+        # agent.sidecar.config.restore_backoff.enable_error_log -- restore backoff log enabled
+        enable_error_log: true
 
 # @schema {"name": "discoverer", "type": "object"}
 discoverer:

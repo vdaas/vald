@@ -22,6 +22,7 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -66,6 +67,15 @@ func (r *reader) Open(ctx context.Context) (err error) {
 
 	resp, err := r.service.GetObjectWithContext(ctx, input)
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case s3.ErrCodeNoSuchBucket:
+				return errors.NewErrBlobNoSuchBucket(err, r.bucket)
+			case s3.ErrCodeNoSuchKey:
+				return errors.NewErrBlobNoSuchKey(err, r.key)
+			}
+		}
+
 		return err
 	}
 

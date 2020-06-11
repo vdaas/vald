@@ -26,6 +26,7 @@ import (
 	"reflect"
 	"syscall"
 
+	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -43,6 +44,8 @@ type restorer struct {
 	eg  errgroup.Group
 
 	storage storage.Storage
+
+	backoffOpts []backoff.Option
 }
 
 func New(opts ...Option) (Restorer, error) {
@@ -109,10 +112,24 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 
-		err = r.restore(ctx)
-		if err != nil {
-			log.Errorf("restoring failed: %s", err)
-		}
+		b := backoff.New(r.backoffOpts...)
+		defer b.Close()
+
+		_, err = b.Do(ctx, func() (interface{}, error) {
+			err := r.restore(ctx)
+			if err != nil {
+				log.Errorf("restoring failed: %s", err)
+
+				if errors.IsErrBlobNoSuchBucket(err) ||
+					errors.IsErrBlobNoSuchKey(err) {
+					return nil, nil
+				}
+
+				return nil, err
+			}
+
+			return nil, nil
+		})
 
 		return p.Signal(syscall.SIGTERM) // TODO: #403
 	}))

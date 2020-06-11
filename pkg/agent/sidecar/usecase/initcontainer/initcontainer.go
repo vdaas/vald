@@ -105,6 +105,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		restorer.WithErrGroup(eg),
 		restorer.WithDir(cfg.AgentSidecar.WatchDir),
 		restorer.WithBlobStorage(bs),
+		restorer.WithBackoffOpts(cfg.AgentSidecar.RestoreBackoff.Opts()...),
 	)
 	if err != nil {
 		return nil, err

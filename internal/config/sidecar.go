@@ -41,6 +41,9 @@ type AgentSidecar struct {
 
 	// Compress represent compression configurations
 	Compress *CompressCore `yaml:"compress" json:"compress"`
+
+	// RestoreBackoff repsresent backoff configurations for restoring process
+	RestoreBackoff *Backoff `yaml:"restore_backoff" json:"restore_backoff"`
 }
 
 func (s *AgentSidecar) Bind() *AgentSidecar {
@@ -61,6 +64,12 @@ func (s *AgentSidecar) Bind() *AgentSidecar {
 		s.Compress = s.Compress.Bind()
 	} else {
 		s.Compress = new(CompressCore)
+	}
+
+	if s.RestoreBackoff != nil {
+		s.RestoreBackoff = s.RestoreBackoff.Bind()
+	} else {
+		s.RestoreBackoff = new(Backoff)
 	}
 
 	return s
