@@ -59,8 +59,6 @@ func (r *reader) Open(ctx context.Context) (err error) {
 		Key:    aws.String(r.key),
 	}
 
-	r.wg = new(sync.WaitGroup)
-
 	var pw io.WriteCloser
 
 	r.pr, pw = io.Pipe()
@@ -79,6 +77,7 @@ func (r *reader) Open(ctx context.Context) (err error) {
 		return err
 	}
 
+	r.wg = new(sync.WaitGroup)
 	r.wg.Add(1)
 
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
