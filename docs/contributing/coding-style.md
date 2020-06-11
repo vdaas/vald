@@ -512,7 +512,7 @@ for name, fn := range tests {
 
 ### Generate test code
 
-We implement our own [gotests](https://github.com/cweill/gotests) template to generate test code. If you want to install `gotest` tools please execute the following command under the project root directory.
+We implement our own [gotests](https://github.com/cweill/gotests) template to generate test code. If you want to install `gotest` tools. Please execute the following command under the project root directory.
 
 ```bash
 make gotests/install
@@ -545,7 +545,7 @@ and place it on the header of the test file.
 
 2. goleak option
 
-By default, the generated test code will use [goleak](https://github.com/uber-go/goleak) library to test if there is any Goroutine leak. Sometimes you may want to skip the detection, for example, Vald uses [fastime](https://github.com/kpango/fastime) library but the internal Goroutine is not closed due to the needs of the library. To skip the goleak detection we need need to create the following variable to store the ignore function.
+By default, the generated test code will use [goleak](https://github.com/uber-go/goleak) library to test if there is any Goroutine leak. Sometimes you may want to skip the detection, for example, Vald uses [fastime](https://github.com/kpango/fastime) library but the internal Goroutine is not closed due to the needs of the library. To skip the goleak detection we need to create the following variable to store the ignore function.
 
 ```golang
 var (
