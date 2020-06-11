@@ -19,18 +19,23 @@ package reader
 import (
 	"context"
 	"io"
+	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/safety"
 )
 
 type reader struct {
+	eg      errgroup.Group
 	service *s3.S3
 	bucket  string
 	key     string
 
-	resp *s3.GetObjectOutput
+	pr io.ReadCloser
+	wg *sync.WaitGroup
 }
 
 type Reader interface {
@@ -53,23 +58,47 @@ func (r *reader) Open(ctx context.Context) (err error) {
 		Key:    aws.String(r.key),
 	}
 
-	r.resp, err = r.service.GetObjectWithContext(ctx, input)
+	r.wg = new(sync.WaitGroup)
 
-	return err
+	var pw io.WriteCloser
+
+	r.pr, pw = io.Pipe()
+
+	resp, err := r.service.GetObjectWithContext(ctx, input)
+	if err != nil {
+		return err
+	}
+
+	r.wg.Add(1)
+
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer r.wg.Done()
+		defer resp.Body.Close()
+		defer pw.Close()
+
+		_, err = io.Copy(pw, resp.Body)
+		return err
+	}))
+
+	return nil
 }
 
 func (r *reader) Close() error {
-	if r.resp != nil {
-		return r.resp.Body.Close()
+	if r.pr != nil {
+		return r.pr.Close()
+	}
+
+	if r.wg != nil {
+		r.wg.Wait()
 	}
 
 	return nil
 }
 
 func (r *reader) Read(p []byte) (n int, err error) {
-	if r.resp == nil {
+	if r.pr == nil {
 		return 0, errors.ErrStorageReaderNotOpened
 	}
 
-	return r.resp.Body.Read(p)
+	return r.pr.Read(p)
 }
