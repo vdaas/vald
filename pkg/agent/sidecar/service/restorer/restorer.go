@@ -130,6 +130,9 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 
 			return nil, nil
 		})
+		if err != nil {
+			return p.Signal(syscall.SIGKILL) // TODO: #403
+		}
 
 		return p.Signal(syscall.SIGTERM) // TODO: #403
 	}))
