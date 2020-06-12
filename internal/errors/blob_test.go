@@ -21,7 +21,6 @@ import (
 	"reflect"
 	"testing"
 
-	
 	"go.uber.org/goleak"
 )
 
