@@ -174,7 +174,7 @@ c := &Something{
 }
 ```
 
-To initialize complex structs, we can use [functional option pattern](https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis). Please read [server.go](../../../internal/servers/servers.go) and [option.go](../../../internal/servers/option.go) for the reference implementation.
+To initialize complex structs, we can use [functional option pattern](https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis). Please read [server.go](https://github.com/vdaas/vald/blob/master/internal/servers/servers.go) and [option.go](https://github.com/vdaas/vald/blob/master/internal/servers/option.go) for the reference implementation.
 The options implementation should be separated as another file called `option.go` to improve the readability of the source code, and the method name should start with `With` word to differentiate with other methods.
 
 ### Variables and Constant
@@ -266,13 +266,13 @@ func (s *something) SetSignedTok(st string) {
 
 ### Error handling
 
-All errors should define in [internal/errors package](../../internal/errors). All errors should be start with `Err` prefix, and all errors should be handle if possible.
+All errors should define in [internal/errors package](https://github.com/vdaas/vald/blob/master/internal/errors). All errors should be start with `Err` prefix, and all errors should be handle if possible.
 
-Please use [internal/errgroup](../../internal/errgroup) for synchronized error handling on multi-goroutine processing.
+Please use [internal/errgroup](https://github.com/vdaas/vald/blob/master/internal/errgroup) for synchronized error handling on multi-goroutine processing.
 
 ### Logging
 
-We define our own logging interface in [internal/log package](../../internal/log). By default we use [glg](https://github.com/kpango/glg) to do the logging internally.
+We define our own logging interface in [internal/log package](https://github.com/vdaas/vald/blob/master/internal/log). By default we use [glg](https://github.com/kpango/glg) to do the logging internally.
 We defined the following logging levels.
 
 | Log level | Description                                                                                                                                                                                                                                    | Example situation                                                                                                                                  | Example message                                                                                                                                                                                                        |
@@ -291,13 +291,13 @@ Everyone should write the comments to all the public objects on your source code
 
 ## Documentation
 
-Documentation is generated from the program comments. Please refer to [Godoc](https://godoc.org/github.com/vdaas/vald) for the program documentation.
+Documentation is generated from the program comments. Please refer to [Godoc](https://pkg.go.dev/github.com/vdaas/vald) for the program documentation.
 
 ## Internal packages
 
 Vald implements its internal package to extend and customize the functionality of the standard library and third-party library.
 We should use the internal package instead of standard libray to implement Vald.
-Please refer to [godoc](https://godoc.org/github.com/vdaas/vald/internal) for the internal package document.
+Please refer to [godoc](https://pkg.go.dev/github.com/vdaas/vald/internal) for the internal package document.
 
 ## Dependency management and Build
 
