@@ -62,6 +62,7 @@ func (c *client) Close() error {
 
 func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) {
 	r := reader.New(
+		reader.WithErrGroup(c.eg),
 		reader.WithService(c.service),
 		reader.WithBucket(c.bucket),
 		reader.WithKey(key),

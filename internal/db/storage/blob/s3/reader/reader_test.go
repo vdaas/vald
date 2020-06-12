@@ -18,10 +18,13 @@ package reader
 
 import (
 	"context"
+	"io"
 	"reflect"
+	"sync"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
@@ -77,7 +80,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -102,10 +105,12 @@ func Test_reader_Open(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
+		eg      errgroup.Group
 		service *s3.S3
 		bucket  string
 		key     string
-		resp    *s3.GetObjectOutput
+		pr      io.ReadCloser
+		wg      *sync.WaitGroup
 	}
 	type want struct {
 		err error
@@ -134,10 +139,12 @@ func Test_reader_Open(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
-		           resp: nil,
+		           pr: nil,
+		           wg: sync.WaitGroup{},
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -153,10 +160,12 @@ func Test_reader_Open(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
-		           resp: nil,
+		           pr: nil,
+		           wg: sync.WaitGroup{},
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -167,7 +176,7 @@ func Test_reader_Open(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -178,10 +187,12 @@ func Test_reader_Open(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &reader{
+				eg:      test.fields.eg,
 				service: test.fields.service,
 				bucket:  test.fields.bucket,
 				key:     test.fields.key,
-				resp:    test.fields.resp,
+				pr:      test.fields.pr,
+				wg:      test.fields.wg,
 			}
 
 			err := r.Open(test.args.ctx)
@@ -195,10 +206,12 @@ func Test_reader_Open(t *testing.T) {
 
 func Test_reader_Close(t *testing.T) {
 	type fields struct {
+		eg      errgroup.Group
 		service *s3.S3
 		bucket  string
 		key     string
-		resp    *s3.GetObjectOutput
+		pr      io.ReadCloser
+		wg      *sync.WaitGroup
 	}
 	type want struct {
 		err error
@@ -223,10 +236,12 @@ func Test_reader_Close(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
-		           resp: nil,
+		           pr: nil,
+		           wg: sync.WaitGroup{},
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -239,10 +254,12 @@ func Test_reader_Close(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
-		           resp: nil,
+		           pr: nil,
+		           wg: sync.WaitGroup{},
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -253,7 +270,7 @@ func Test_reader_Close(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -264,10 +281,12 @@ func Test_reader_Close(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &reader{
+				eg:      test.fields.eg,
 				service: test.fields.service,
 				bucket:  test.fields.bucket,
 				key:     test.fields.key,
-				resp:    test.fields.resp,
+				pr:      test.fields.pr,
+				wg:      test.fields.wg,
 			}
 
 			err := r.Close()
@@ -284,10 +303,12 @@ func Test_reader_Read(t *testing.T) {
 		p []byte
 	}
 	type fields struct {
+		eg      errgroup.Group
 		service *s3.S3
 		bucket  string
 		key     string
-		resp    *s3.GetObjectOutput
+		pr      io.ReadCloser
+		wg      *sync.WaitGroup
 	}
 	type want struct {
 		wantN int
@@ -320,10 +341,12 @@ func Test_reader_Read(t *testing.T) {
 		           p: nil,
 		       },
 		       fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
-		           resp: nil,
+		           pr: nil,
+		           wg: sync.WaitGroup{},
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -339,10 +362,12 @@ func Test_reader_Read(t *testing.T) {
 		           p: nil,
 		           },
 		           fields: fields {
+		           eg: nil,
 		           service: nil,
 		           bucket: "",
 		           key: "",
-		           resp: nil,
+		           pr: nil,
+		           wg: sync.WaitGroup{},
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -353,7 +378,7 @@ func Test_reader_Read(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -364,10 +389,12 @@ func Test_reader_Read(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &reader{
+				eg:      test.fields.eg,
 				service: test.fields.service,
 				bucket:  test.fields.bucket,
 				key:     test.fields.key,
-				resp:    test.fields.resp,
+				pr:      test.fields.pr,
+				wg:      test.fields.wg,
 			}
 
 			gotN, err := r.Read(test.args.p)

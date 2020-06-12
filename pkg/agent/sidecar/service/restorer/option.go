@@ -18,6 +18,7 @@
 package restorer
 
 import (
+	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
 )
@@ -56,6 +57,18 @@ func WithBlobStorage(storage storage.Storage) Option {
 		if storage != nil {
 			r.storage = storage
 		}
+		return nil
+	}
+}
+
+func WithBackoffOpts(opts ...backoff.Option) Option {
+	return func(r *restorer) error {
+		if r.backoffOpts == nil {
+			r.backoffOpts = opts
+		}
+
+		r.backoffOpts = append(r.backoffOpts, opts...)
+
 		return nil
 	}
 }

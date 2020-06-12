@@ -17,6 +17,8 @@
 package session
 
 import (
+	"net/http"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -40,6 +42,8 @@ type sess struct {
 	enableContentMD5Validation bool
 	enableEndpointDiscovery    bool
 	enableEndpointHostPrefix   bool
+
+	client *http.Client
 }
 
 type Session interface {
@@ -108,6 +112,10 @@ func (s *sess) Session() (*session.Session, error) {
 
 	if !s.enableEndpointHostPrefix {
 		cfg = cfg.WithDisableEndpointHostPrefix(true)
+	}
+
+	if s.client != nil {
+		cfg = cfg.WithHTTPClient(s.client)
 	}
 
 	return session.NewSession(cfg)

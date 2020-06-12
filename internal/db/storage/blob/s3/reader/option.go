@@ -16,13 +16,26 @@
 
 package reader
 
-import "github.com/aws/aws-sdk-go/service/s3"
+import (
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/vdaas/vald/internal/errgroup"
+)
 
 type Option func(r *reader)
 
 var (
-	defaultOpts = []Option{}
+	defaultOpts = []Option{
+		WithErrGroup(errgroup.Get()),
+	}
 )
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(r *reader) {
+		if eg != nil {
+			r.eg = eg
+		}
+	}
+}
 
 func WithService(s *s3.S3) Option {
 	return func(r *reader) {

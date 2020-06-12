@@ -14,321 +14,108 @@
 // limitations under the License.
 //
 
-// Package restorer provides restorer service
-package restorer
+// Package errors provides error types and function
+package errors
 
 import (
-	"context"
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/internal/backoff"
-	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
 	"go.uber.org/goleak"
 )
 
-func TestNew(t *testing.T) {
-	type args struct {
-		opts []Option
-	}
-	type want struct {
-		want Restorer
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, Restorer, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got Restorer, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got, err := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_restorer_Start(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
+func TestErrBlobNoSuchBucket_Error(t *testing.T) {
 	type fields struct {
-		dir         string
-		eg          errgroup.Group
-		storage     storage.Storage
-		backoffOpts []backoff.Option
-	}
-	type want struct {
-		want <-chan error
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, <-chan error, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got <-chan error, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           dir: "",
-		           eg: nil,
-		           storage: nil,
-		           backoffOpts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           dir: "",
-		           eg: nil,
-		           storage: nil,
-		           backoffOpts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			r := &restorer{
-				dir:         test.fields.dir,
-				eg:          test.fields.eg,
-				storage:     test.fields.storage,
-				backoffOpts: test.fields.backoffOpts,
-			}
-
-			got, err := r.Start(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_restorer_startRestore(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
-	type fields struct {
-		dir         string
-		eg          errgroup.Group
-		storage     storage.Storage
-		backoffOpts []backoff.Option
-	}
-	type want struct {
-		want <-chan error
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, <-chan error, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got <-chan error, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           dir: "",
-		           eg: nil,
-		           storage: nil,
-		           backoffOpts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           dir: "",
-		           eg: nil,
-		           storage: nil,
-		           backoffOpts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			r := &restorer{
-				dir:         test.fields.dir,
-				eg:          test.fields.eg,
-				storage:     test.fields.storage,
-				backoffOpts: test.fields.backoffOpts,
-			}
-
-			got, err := r.startRestore(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_restorer_restore(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
-	type fields struct {
-		dir         string
-		eg          errgroup.Group
-		storage     storage.Storage
-		backoffOpts []backoff.Option
-	}
-	type want struct {
 		err error
 	}
+	type want struct {
+		want string
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, string) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got string) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           err: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           err: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			e := &ErrBlobNoSuchBucket{
+				err: test.fields.err,
+			}
+
+			got := e.Error()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func TestIsErrBlobNoSuchBucket(t *testing.T) {
+	type args struct {
+		err error
+	}
+	type want struct {
+		want bool
+	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, bool) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+	defaultCheckFunc := func(w want, got bool) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
@@ -338,13 +125,7 @@ func Test_restorer_restore(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           dir: "",
-		           eg: nil,
-		           storage: nil,
-		           backoffOpts: nil,
+		           err: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -357,13 +138,7 @@ func Test_restorer_restore(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           dir: "",
-		           eg: nil,
-		           storage: nil,
-		           backoffOpts: nil,
+		           err: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -384,15 +159,154 @@ func Test_restorer_restore(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			r := &restorer{
-				dir:         test.fields.dir,
-				eg:          test.fields.eg,
-				storage:     test.fields.storage,
-				backoffOpts: test.fields.backoffOpts,
+
+			got := IsErrBlobNoSuchBucket(test.args.err)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
 			}
 
-			err := r.restore(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+		})
+	}
+}
+
+func TestErrBlobNoSuchKey_Error(t *testing.T) {
+	type fields struct {
+		err error
+	}
+	type want struct {
+		want string
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, string) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got string) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           err: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           err: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			e := &ErrBlobNoSuchKey{
+				err: test.fields.err,
+			}
+
+			got := e.Error()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func TestIsErrBlobNoSuchKey(t *testing.T) {
+	type args struct {
+		err error
+	}
+	type want struct {
+		want bool
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got bool) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           err: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           err: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := IsErrBlobNoSuchKey(test.args.err)
+			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
