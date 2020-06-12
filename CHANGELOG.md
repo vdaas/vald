@@ -1,5 +1,42 @@
 # CHANGELOG
 
+## v0.0.41
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.41`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.41`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.41`
+gateway | `docker pull vdaas/vald-gateway:v0.0.41`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.41`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.41`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.41`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.41`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.41`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.41`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.41`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.41)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.41/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.41/charts/vald-helm-operator/README.md)
+
+### Changes
+- Refactor agent-sidecar: fix S3 reader & add backoff logic ([#467](https://github.com/vdaas/vald/pull/467))
+- :bug: :pencil: fix link ([#471](https://github.com/vdaas/vald/pull/471))
+- Fix /changelog command format ([#470](https://github.com/vdaas/vald/pull/470))
+- fix: failing test ([#469](https://github.com/vdaas/vald/pull/469))
+- fix: failing test ([#468](https://github.com/vdaas/vald/pull/468))
+- ✨ Add options for AWS client ([#460](https://github.com/vdaas/vald/pull/460))
+- Fix /format command ([#466](https://github.com/vdaas/vald/pull/466))
+- Fix /format command ([#465](https://github.com/vdaas/vald/pull/465))
+- Fix `internal/log/retry` pacakge ([#458](https://github.com/vdaas/vald/pull/458))
+- [ImgBot] Optimize images ([#461](https://github.com/vdaas/vald/pull/461))
+- :art: trim white margin at data flow images ([#459](https://github.com/vdaas/vald/pull/459))
+
+
 ## v0.0.40
 
 ### Docker images

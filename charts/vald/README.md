@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.40`
+Current chart version is `v0.0.41`
 
 Install
 ---
@@ -107,17 +107,63 @@ Configuration
 | agent.sidecar.config.auto_backup_duration | string | `"10m"` | auto backup duration |
 | agent.sidecar.config.blob_storage.bucket | string | `""` | bucket name |
 | agent.sidecar.config.blob_storage.s3.access_key | string | `"_AWS_ACCESS_KEY_"` | s3 access key |
+| agent.sidecar.config.blob_storage.s3.enable_100_continue | bool | `true` | enable AWS SDK adding the 'Expect: 100-Continue' header to PUT requests over 2MB of content. |
+| agent.sidecar.config.blob_storage.s3.enable_content_md5_validation | bool | `true` | enable the S3 client to add MD5 checksum to upload API calls. |
+| agent.sidecar.config.blob_storage.s3.enable_endpoint_discovery | bool | `false` | enable endpoint discovery |
+| agent.sidecar.config.blob_storage.s3.enable_endpoint_host_prefix | bool | `true` | enable prefixing request endpoint hosts with modeled information |
+| agent.sidecar.config.blob_storage.s3.enable_param_validation | bool | `true` | enables semantic parameter validation |
+| agent.sidecar.config.blob_storage.s3.enable_ssl | bool | `true` | enable ssl for s3 session |
 | agent.sidecar.config.blob_storage.s3.endpoint | string | `""` | s3 endpoint |
-| agent.sidecar.config.blob_storage.s3.max_part_size_mb | int | `64` | s3 multipart upload max part size |
+| agent.sidecar.config.blob_storage.s3.force_path_style | bool | `false` | use path-style addressing |
+| agent.sidecar.config.blob_storage.s3.max_part_size | string | `"64mb"` | s3 multipart upload max part size |
+| agent.sidecar.config.blob_storage.s3.max_retries | int | `3` | maximum number of retries of s3 client |
 | agent.sidecar.config.blob_storage.s3.region | string | `""` | s3 region |
 | agent.sidecar.config.blob_storage.s3.secret_access_key | string | `"_AWS_SECRET_ACCESS_KEY_"` | s3 secret access key |
 | agent.sidecar.config.blob_storage.s3.token | string | `""` | s3 token |
+| agent.sidecar.config.blob_storage.s3.use_accelerate | bool | `false` | enable s3 accelerate feature |
+| agent.sidecar.config.blob_storage.s3.use_arn_region | bool | `false` | s3 service client to use the region specified in the ARN |
+| agent.sidecar.config.blob_storage.s3.use_dual_stack | bool | `false` | use dual stack |
 | agent.sidecar.config.blob_storage.storage_type | string | `"s3"` | storage type |
+| agent.sidecar.config.client.tcp.dialer.dual_stack_enabled | bool | `false` | HTTP client TCP dialer dual stack enabled |
+| agent.sidecar.config.client.tcp.dialer.keep_alive | string | `"5m"` | HTTP client TCP dialer keep alive |
+| agent.sidecar.config.client.tcp.dialer.timeout | string | `"5s"` | HTTP client TCP dialer connect timeout |
+| agent.sidecar.config.client.tcp.dns.cache_enabled | bool | `true` | HTTP client TCP DNS cache enabled |
+| agent.sidecar.config.client.tcp.dns.cache_expiration | string | `"24h"` |  |
+| agent.sidecar.config.client.tcp.dns.refresh_duration | string | `"1h"` | HTTP client TCP DNS cache expiration |
+| agent.sidecar.config.client.tcp.tls.ca | string | `"/path/to/ca"` | HTTP client TCP TLS ca path |
+| agent.sidecar.config.client.tcp.tls.cert | string | `"/path/to/cert"` | HTTP client TCP TLS cert path |
+| agent.sidecar.config.client.tcp.tls.enabled | bool | `false` | HTTP client TCP TLS enabled |
+| agent.sidecar.config.client.tcp.tls.key | string | `"/path/to/key"` | HTTP client TCP TLS key path |
+| agent.sidecar.config.client.transport.backoff.backoff_factor | float | `1.1` | backoff backoff factor |
+| agent.sidecar.config.client.transport.backoff.backoff_time_limit | string | `"5s"` | backoff time limit |
+| agent.sidecar.config.client.transport.backoff.enable_error_log | bool | `true` | backoff error log enabled |
+| agent.sidecar.config.client.transport.backoff.initial_duration | string | `"5ms"` | backoff initial duration |
+| agent.sidecar.config.client.transport.backoff.jitter_limit | string | `"100ms"` | backoff jitter limit |
+| agent.sidecar.config.client.transport.backoff.maximum_duration | string | `"5s"` | backoff maximum duration |
+| agent.sidecar.config.client.transport.backoff.retry_count | int | `100` | backoff retry count |
+| agent.sidecar.config.client.transport.round_tripper.expect_continue_timeout | string | `"5s"` | expect continue timeout |
+| agent.sidecar.config.client.transport.round_tripper.force_attempt_http_2 | bool | `true` | force attempt HTTP2 |
+| agent.sidecar.config.client.transport.round_tripper.idle_conn_timeout | string | `"90s"` | timeout for idle connections |
+| agent.sidecar.config.client.transport.round_tripper.max_conns_per_host | int | `10` | maximum count of connections per host |
+| agent.sidecar.config.client.transport.round_tripper.max_idle_conns | int | `100` | maximum count of idle connections |
+| agent.sidecar.config.client.transport.round_tripper.max_idle_conns_per_host | int | `10` | maximum count of idle connections per host |
+| agent.sidecar.config.client.transport.round_tripper.max_response_header_size | int | `0` | maximum response header size |
+| agent.sidecar.config.client.transport.round_tripper.read_buffer_size | int | `0` | read buffer size |
+| agent.sidecar.config.client.transport.round_tripper.response_header_timeout | string | `"5s"` | timeout for response header |
+| agent.sidecar.config.client.transport.round_tripper.tls_handshake_timeout | string | `"5s"` | TLS handshake timeout |
+| agent.sidecar.config.client.transport.round_tripper.write_buffer_size | int | `0` | write buffer size |
 | agent.sidecar.config.compress.compress_algorithm | string | `"gzip"` | compression algorithm. must be `gob`, `gzip`, `lz4` or `zstd` |
 | agent.sidecar.config.compress.compression_level | int | `-1` | compression level. value range relies on which algorithm is used. `gob`: level will be ignored. `gzip`: -1 (default compression), 0 (no compression), or 1 (best speed) to 9 (best compression). `lz4`: >= 0, higher is better compression. `zstd`: 1 (fastest) to 22 (best), however implementation relies on klauspost/compress. |
 | agent.sidecar.config.filename | string | `"_MY_POD_NAME_"` | backup filename |
 | agent.sidecar.config.filename_suffix | string | `".tar.gz"` | suffix for backup filename |
 | agent.sidecar.config.post_stop_timeout | string | `"10s"` | timeout duration for file changing during post stop |
+| agent.sidecar.config.restore_backoff.backoff_factor | float | `1.2` | restore backoff factor |
+| agent.sidecar.config.restore_backoff.backoff_time_limit | string | `"30m"` | restore backoff time limit |
+| agent.sidecar.config.restore_backoff.enable_error_log | bool | `true` | restore backoff log enabled |
+| agent.sidecar.config.restore_backoff.initial_duration | string | `"1s"` | restore backoff initial duration |
+| agent.sidecar.config.restore_backoff.jitter_limit | string | `"10s"` | restore backoff jitter limit |
+| agent.sidecar.config.restore_backoff.maximum_duration | string | `"1m"` | restore backoff maximum duration |
+| agent.sidecar.config.restore_backoff.retry_count | int | `100` | restore backoff retry count |
 | agent.sidecar.enabled | bool | `false` | sidecar enabled |
 | agent.sidecar.env | list | `[{"name":"MY_POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"AWS_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"access-key","name":"aws-secret"}}},{"name":"AWS_SECRET_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"secret-access-key","name":"aws-secret"}}}]` | environment variables |
 | agent.sidecar.image.pullPolicy | string | `"Always"` | image pull policy |
@@ -358,7 +404,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.40"` | docker image tag |
+| defaults.image.tag | string | `"v0.0.41"` | docker image tag |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
 | defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg`. |
