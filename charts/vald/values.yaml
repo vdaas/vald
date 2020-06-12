@@ -1403,9 +1403,9 @@ agent:
         # agent.sidecar.config.restore_backoff.initial_duration -- restore backoff initial duration
         initial_duration: 1s
         # agent.sidecar.config.restore_backoff.backoff_time_limit -- restore backoff time limit
-        backoff_time_limit: 1m
+        backoff_time_limit: 30m
         # agent.sidecar.config.restore_backoff.maximum_duration -- restore backoff maximum duration
-        maximum_duration: 30s
+        maximum_duration: 1m
         # agent.sidecar.config.restore_backoff.jitter_limit -- restore backoff jitter limit
         jitter_limit: 10s
         # agent.sidecar.config.restore_backoff.backoff_factor -- restore backoff factor
