@@ -14,20 +14,24 @@
 // limitations under the License.
 //
 
-package session
+package client
 
 import (
+	"context"
+	"net"
 	"net/http"
+	"net/url"
 	"testing"
 
+	"github.com/vdaas/vald/internal/backoff"
 	"go.uber.org/goleak"
 )
 
-func TestWithEndpoint(t *testing.T) {
+func TestWithProxy(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		ep string
+		px func(*http.Request) (*url.URL, error)
 	}
 	type want struct {
 		obj *T
@@ -74,7 +78,7 @@ func TestWithEndpoint(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           ep: "",
+		           px: nil,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -88,7 +92,7 @@ func TestWithEndpoint(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           ep: "",
+		           px: nil,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -114,7 +118,7 @@ func TestWithEndpoint(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithEndpoint(test.args.ep)
+			   got := WithProxy(test.args.px)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -126,7 +130,7 @@ func TestWithEndpoint(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithEndpoint(test.args.ep)
+			   got := WithProxy(test.args.px)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -137,11 +141,11 @@ func TestWithEndpoint(t *testing.T) {
 	}
 }
 
-func TestWithRegion(t *testing.T) {
+func TestWithDialContext(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		rg string
+		dx func(ctx context.Context, network, addr string) (net.Conn, error)
 	}
 	type want struct {
 		obj *T
@@ -188,7 +192,7 @@ func TestWithRegion(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           rg: "",
+		           dx: nil,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -202,7 +206,7 @@ func TestWithRegion(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           rg: "",
+		           dx: nil,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -228,7 +232,7 @@ func TestWithRegion(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithRegion(test.args.rg)
+			   got := WithDialContext(test.args.dx)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -240,7 +244,7 @@ func TestWithRegion(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithRegion(test.args.rg)
+			   got := WithDialContext(test.args.dx)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -251,11 +255,11 @@ func TestWithRegion(t *testing.T) {
 	}
 }
 
-func TestWithAccessKey(t *testing.T) {
+func TestWithTLSHandshakeTimeout(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		ak string
+		dur string
 	}
 	type want struct {
 		obj *T
@@ -302,7 +306,7 @@ func TestWithAccessKey(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           ak: "",
+		           dur: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -316,7 +320,7 @@ func TestWithAccessKey(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           ak: "",
+		           dur: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -342,7 +346,7 @@ func TestWithAccessKey(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithAccessKey(test.args.ak)
+			   got := WithTLSHandshakeTimeout(test.args.dur)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -354,7 +358,7 @@ func TestWithAccessKey(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithAccessKey(test.args.ak)
+			   got := WithTLSHandshakeTimeout(test.args.dur)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -365,11 +369,11 @@ func TestWithAccessKey(t *testing.T) {
 	}
 }
 
-func TestWithSecretAccessKey(t *testing.T) {
+func TestWithEnableKeepAlives(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		sak string
+		enable bool
 	}
 	type want struct {
 		obj *T
@@ -416,7 +420,7 @@ func TestWithSecretAccessKey(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           sak: "",
+		           enable: false,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -430,7 +434,7 @@ func TestWithSecretAccessKey(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           sak: "",
+		           enable: false,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -456,7 +460,7 @@ func TestWithSecretAccessKey(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithSecretAccessKey(test.args.sak)
+			   got := WithEnableKeepAlives(test.args.enable)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -468,7 +472,7 @@ func TestWithSecretAccessKey(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithSecretAccessKey(test.args.sak)
+			   got := WithEnableKeepAlives(test.args.enable)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -479,11 +483,11 @@ func TestWithSecretAccessKey(t *testing.T) {
 	}
 }
 
-func TestWithToken(t *testing.T) {
+func TestWithEnableCompression(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		tk string
+		enable bool
 	}
 	type want struct {
 		obj *T
@@ -530,7 +534,7 @@ func TestWithToken(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           tk: "",
+		           enable: false,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -544,7 +548,7 @@ func TestWithToken(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           tk: "",
+		           enable: false,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -570,7 +574,7 @@ func TestWithToken(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithToken(test.args.tk)
+			   got := WithEnableCompression(test.args.enable)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -582,7 +586,7 @@ func TestWithToken(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithToken(test.args.tk)
+			   got := WithEnableCompression(test.args.enable)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -593,11 +597,11 @@ func TestWithToken(t *testing.T) {
 	}
 }
 
-func TestWithMaxRetries(t *testing.T) {
+func TestWithMaxIdleConns(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		r int
+		cn int
 	}
 	type want struct {
 		obj *T
@@ -644,7 +648,7 @@ func TestWithMaxRetries(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           r: 0,
+		           cn: 0,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -658,7 +662,7 @@ func TestWithMaxRetries(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           r: 0,
+		           cn: 0,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -684,7 +688,7 @@ func TestWithMaxRetries(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithMaxRetries(test.args.r)
+			   got := WithMaxIdleConns(test.args.cn)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -696,7 +700,7 @@ func TestWithMaxRetries(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithMaxRetries(test.args.r)
+			   got := WithMaxIdleConns(test.args.cn)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -707,11 +711,11 @@ func TestWithMaxRetries(t *testing.T) {
 	}
 }
 
-func TestWithForcePathStyle(t *testing.T) {
+func TestWithMaxIdleConnsPerHost(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		enabled bool
+		cn int
 	}
 	type want struct {
 		obj *T
@@ -758,7 +762,7 @@ func TestWithForcePathStyle(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           enabled: false,
+		           cn: 0,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -772,7 +776,7 @@ func TestWithForcePathStyle(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           enabled: false,
+		           cn: 0,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -798,7 +802,7 @@ func TestWithForcePathStyle(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithForcePathStyle(test.args.enabled)
+			   got := WithMaxIdleConnsPerHost(test.args.cn)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -810,7 +814,7 @@ func TestWithForcePathStyle(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithForcePathStyle(test.args.enabled)
+			   got := WithMaxIdleConnsPerHost(test.args.cn)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -821,11 +825,11 @@ func TestWithForcePathStyle(t *testing.T) {
 	}
 }
 
-func TestWithUseAccelerate(t *testing.T) {
+func TestWithMaxConnsPerHost(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		enabled bool
+		cn int
 	}
 	type want struct {
 		obj *T
@@ -872,7 +876,7 @@ func TestWithUseAccelerate(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           enabled: false,
+		           cn: 0,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -886,7 +890,7 @@ func TestWithUseAccelerate(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           enabled: false,
+		           cn: 0,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -912,7 +916,7 @@ func TestWithUseAccelerate(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithUseAccelerate(test.args.enabled)
+			   got := WithMaxConnsPerHost(test.args.cn)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -924,7 +928,7 @@ func TestWithUseAccelerate(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithUseAccelerate(test.args.enabled)
+			   got := WithMaxConnsPerHost(test.args.cn)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -935,11 +939,11 @@ func TestWithUseAccelerate(t *testing.T) {
 	}
 }
 
-func TestWithUseARNRegion(t *testing.T) {
+func TestWithIdleConnTimeout(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		enabled bool
+		dur string
 	}
 	type want struct {
 		obj *T
@@ -986,7 +990,7 @@ func TestWithUseARNRegion(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           enabled: false,
+		           dur: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -1000,7 +1004,7 @@ func TestWithUseARNRegion(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           enabled: false,
+		           dur: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -1026,7 +1030,7 @@ func TestWithUseARNRegion(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithUseARNRegion(test.args.enabled)
+			   got := WithIdleConnTimeout(test.args.dur)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -1038,7 +1042,7 @@ func TestWithUseARNRegion(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithUseARNRegion(test.args.enabled)
+			   got := WithIdleConnTimeout(test.args.dur)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -1049,11 +1053,11 @@ func TestWithUseARNRegion(t *testing.T) {
 	}
 }
 
-func TestWithUseDualStack(t *testing.T) {
+func TestWithResponseHeaderTimeout(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		enabled bool
+		dur string
 	}
 	type want struct {
 		obj *T
@@ -1100,7 +1104,7 @@ func TestWithUseDualStack(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           enabled: false,
+		           dur: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -1114,7 +1118,7 @@ func TestWithUseDualStack(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           enabled: false,
+		           dur: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -1140,7 +1144,7 @@ func TestWithUseDualStack(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithUseDualStack(test.args.enabled)
+			   got := WithResponseHeaderTimeout(test.args.dur)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -1152,7 +1156,7 @@ func TestWithUseDualStack(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithUseDualStack(test.args.enabled)
+			   got := WithResponseHeaderTimeout(test.args.dur)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -1163,11 +1167,11 @@ func TestWithUseDualStack(t *testing.T) {
 	}
 }
 
-func TestWithEnableSSL(t *testing.T) {
+func TestWithExpectContinueTimeout(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		enabled bool
+		dur string
 	}
 	type want struct {
 		obj *T
@@ -1214,7 +1218,7 @@ func TestWithEnableSSL(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           enabled: false,
+		           dur: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -1228,7 +1232,7 @@ func TestWithEnableSSL(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           enabled: false,
+		           dur: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -1254,7 +1258,7 @@ func TestWithEnableSSL(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithEnableSSL(test.args.enabled)
+			   got := WithExpectContinueTimeout(test.args.dur)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -1266,7 +1270,7 @@ func TestWithEnableSSL(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithEnableSSL(test.args.enabled)
+			   got := WithExpectContinueTimeout(test.args.dur)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -1277,11 +1281,11 @@ func TestWithEnableSSL(t *testing.T) {
 	}
 }
 
-func TestWithEnableParamValidation(t *testing.T) {
+func TestWithProxyConnectHeader(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		enabled bool
+		header http.Header
 	}
 	type want struct {
 		obj *T
@@ -1328,7 +1332,7 @@ func TestWithEnableParamValidation(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           enabled: false,
+		           header: nil,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -1342,7 +1346,7 @@ func TestWithEnableParamValidation(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           enabled: false,
+		           header: nil,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -1368,7 +1372,7 @@ func TestWithEnableParamValidation(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithEnableParamValidation(test.args.enabled)
+			   got := WithProxyConnectHeader(test.args.header)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -1380,7 +1384,7 @@ func TestWithEnableParamValidation(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithEnableParamValidation(test.args.enabled)
+			   got := WithProxyConnectHeader(test.args.header)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -1391,11 +1395,11 @@ func TestWithEnableParamValidation(t *testing.T) {
 	}
 }
 
-func TestWithEnable100Continue(t *testing.T) {
+func TestWithMaxResponseHeaderBytes(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		enabled bool
+		bs int64
 	}
 	type want struct {
 		obj *T
@@ -1442,7 +1446,7 @@ func TestWithEnable100Continue(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           enabled: false,
+		           bs: 0,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -1456,7 +1460,7 @@ func TestWithEnable100Continue(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           enabled: false,
+		           bs: 0,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -1482,7 +1486,7 @@ func TestWithEnable100Continue(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithEnable100Continue(test.args.enabled)
+			   got := WithMaxResponseHeaderBytes(test.args.bs)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -1494,7 +1498,7 @@ func TestWithEnable100Continue(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithEnable100Continue(test.args.enabled)
+			   got := WithMaxResponseHeaderBytes(test.args.bs)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -1505,11 +1509,11 @@ func TestWithEnable100Continue(t *testing.T) {
 	}
 }
 
-func TestWithEnableContentMD5Validation(t *testing.T) {
+func TestWithWriteBufferSize(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		enabled bool
+		bs int64
 	}
 	type want struct {
 		obj *T
@@ -1556,7 +1560,7 @@ func TestWithEnableContentMD5Validation(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           enabled: false,
+		           bs: 0,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -1570,7 +1574,7 @@ func TestWithEnableContentMD5Validation(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           enabled: false,
+		           bs: 0,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -1596,7 +1600,7 @@ func TestWithEnableContentMD5Validation(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithEnableContentMD5Validation(test.args.enabled)
+			   got := WithWriteBufferSize(test.args.bs)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -1608,7 +1612,7 @@ func TestWithEnableContentMD5Validation(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithEnableContentMD5Validation(test.args.enabled)
+			   got := WithWriteBufferSize(test.args.bs)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -1619,11 +1623,11 @@ func TestWithEnableContentMD5Validation(t *testing.T) {
 	}
 }
 
-func TestWithEnableEndpointDiscovery(t *testing.T) {
+func TestWithReadBufferSize(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		enabled bool
+		bs int64
 	}
 	type want struct {
 		obj *T
@@ -1670,7 +1674,7 @@ func TestWithEnableEndpointDiscovery(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           enabled: false,
+		           bs: 0,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -1684,7 +1688,7 @@ func TestWithEnableEndpointDiscovery(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           enabled: false,
+		           bs: 0,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -1710,7 +1714,7 @@ func TestWithEnableEndpointDiscovery(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithEnableEndpointDiscovery(test.args.enabled)
+			   got := WithReadBufferSize(test.args.bs)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -1722,7 +1726,7 @@ func TestWithEnableEndpointDiscovery(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithEnableEndpointDiscovery(test.args.enabled)
+			   got := WithReadBufferSize(test.args.bs)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -1733,11 +1737,11 @@ func TestWithEnableEndpointDiscovery(t *testing.T) {
 	}
 }
 
-func TestWithEnableEndpointHostPrefix(t *testing.T) {
+func TestWithForceAttemptHTTP2(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		enabled bool
+		force bool
 	}
 	type want struct {
 		obj *T
@@ -1784,7 +1788,7 @@ func TestWithEnableEndpointHostPrefix(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           enabled: false,
+		           force: false,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -1798,7 +1802,7 @@ func TestWithEnableEndpointHostPrefix(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           enabled: false,
+		           force: false,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -1824,7 +1828,7 @@ func TestWithEnableEndpointHostPrefix(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithEnableEndpointHostPrefix(test.args.enabled)
+			   got := WithForceAttemptHTTP2(test.args.force)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -1836,7 +1840,7 @@ func TestWithEnableEndpointHostPrefix(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithEnableEndpointHostPrefix(test.args.enabled)
+			   got := WithForceAttemptHTTP2(test.args.force)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -1847,11 +1851,11 @@ func TestWithEnableEndpointHostPrefix(t *testing.T) {
 	}
 }
 
-func TestWithHTTPClient(t *testing.T) {
+func TestWithBackoffOpts(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		client *http.Client
+		opts []backoff.Option
 	}
 	type want struct {
 		obj *T
@@ -1898,7 +1902,7 @@ func TestWithHTTPClient(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           client: nil,
+		           opts: nil,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -1912,7 +1916,7 @@ func TestWithHTTPClient(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           client: nil,
+		           opts: nil,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -1938,7 +1942,7 @@ func TestWithHTTPClient(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithHTTPClient(test.args.client)
+			   got := WithBackoffOpts(test.args.opts...)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -1950,7 +1954,7 @@ func TestWithHTTPClient(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithHTTPClient(test.args.client)
+			   got := WithBackoffOpts(test.args.opts...)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
