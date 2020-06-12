@@ -356,7 +356,7 @@ To initialize struct, it is suggested to use <code>new(T)</code> instead of <cod
 </span><span style="color:#75715e"></span><span style="color:#a6e22e">c</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Something</span>{
     <span style="color:#a6e22e">name</span>: <span style="color:#e6db74">&#34;Mary&#34;</span>,
 }
-</code></pre></div><p>To initialize complex structs, we can use <a href="https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis">functional option pattern</a>. Please read <a href="https://github.com/vdaas/vald/blob/master/docs/internal/servers/servers.go">server.go</a> and <a href="https://github.com/vdaas/vald/blob/master/docs/internal/servers/option.go">option.go</a> for the reference implementation.
+</code></pre></div><p>To initialize complex structs, we can use <a href="https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis">functional option pattern</a>. Please read <a href="https://github.com/vdaas/vald/blob/master/internal/servers/servers.go">server.go</a> and <a href="https://github.com/vdaas/vald/blob/master/internal/servers/option.go">option.go</a> for the reference implementation.
 The options implementation should be separated as another file called <code>option.go</code> to improve the readability of the source code, and the method name should start with <code>With</code> word to differentiate with other methods.</p>
 <h3 id="variables-and-constant">Variables and Constant</h3>
 <p>The variable and the constant should be named as:</p>
@@ -422,10 +422,10 @@ The options implementation should be separated as another file called <code>opti
     <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">signedTok</span> = <span style="color:#a6e22e">st</span>
 }
 </code></pre></div><h3 id="error-handling">Error handling</h3>
-<p>All errors should define in <a href="https://github.com/vdaas/vald/blob/master/docs/internal/errors">internal/errors package</a>. All errors should be start with <code>Err</code> prefix, and all errors should be handle if possible.</p>
-<p>Please use <a href="https://github.com/vdaas/vald/blob/master/docs/internal/errgroup">internal/errgroup</a> for synchronized error handling on multi-goroutine processing.</p>
+<p>All errors should define in <a href="https://github.com/vdaas/vald/blob/master/internal/errors">internal/errors package</a>. All errors should be start with <code>Err</code> prefix, and all errors should be handle if possible.</p>
+<p>Please use <a href="https://github.com/vdaas/vald/blob/master/internal/errgroup">internal/errgroup</a> for synchronized error handling on multi-goroutine processing.</p>
 <h3 id="logging">Logging</h3>
-<p>We define our own logging interface in <a href="https://github.com/vdaas/vald/blob/master/docs/internal/log">internal/log package</a>. By default we use <a href="https://github.com/kpango/glg">glg</a> to do the logging internally.
+<p>We define our own logging interface in <a href="https://github.com/vdaas/vald/blob/master/internal/log">internal/log package</a>. By default we use <a href="https://github.com/kpango/glg">glg</a> to do the logging internally.
 We defined the following logging levels.</p>
 <table>
 <thead>
