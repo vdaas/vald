@@ -16,6 +16,8 @@
 
 package session
 
+import "net/http"
+
 type Option func(s *sess)
 
 var (
@@ -127,5 +129,13 @@ func WithEnableEndpointDiscovery(enabled bool) Option {
 func WithEnableEndpointHostPrefix(enabled bool) Option {
 	return func(s *sess) {
 		s.enableEndpointHostPrefix = enabled
+	}
+}
+
+func WithHTTPClient(client *http.Client) Option {
+	return func(s *sess) {
+		if client != nil {
+			s.client = client
+		}
 	}
 }

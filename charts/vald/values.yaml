@@ -1318,6 +1318,86 @@ agent:
         # `lz4`: >= 0, higher is better compression.
         # `zstd`: 1 (fastest) to 22 (best), however implementation relies on klauspost/compress.
         compression_level: -1
+      # @schema {"name": "agent.sidecar.config.client", "type": "object"}
+      client:
+        # @schema {"name": "agent.sidecar.config.client.tcp", "alias": "tcp"}
+        tcp:
+          dns:
+            # agent.sidecar.config.client.tcp.dns.cache_enabled -- HTTP client TCP DNS cache enabled
+            cache_enabled: true
+            # agent.sidecar.config.client.tcp.dns.refresh_duration -- HTTP client TCP DNS cache refresh duration
+            refresh_duration: 1h
+            # agent.sidecar.config.client.tcp.dns.refresh_duration -- HTTP client TCP DNS cache expiration
+            cache_expiration: 24h
+          dialer:
+            # agent.sidecar.config.client.tcp.dialer.timeout -- HTTP client TCP dialer connect timeout
+            timeout: 5s
+            # agent.sidecar.config.client.tcp.dialer.keep_alive -- HTTP client TCP dialer keep alive
+            keep_alive: 5m
+            # agent.sidecar.config.client.tcp.dialer.dual_stack_enabled -- HTTP client TCP dialer dual stack enabled
+            dual_stack_enabled: false
+          tls:
+            # agent.sidecar.config.client.tcp.tls.enabled -- HTTP client TCP TLS enabled
+            enabled: false
+            # agent.sidecar.config.client.tcp.tls.cert -- HTTP client TCP TLS cert path
+            cert: /path/to/cert
+            # agent.sidecar.config.client.tcp.tls.key -- HTTP client TCP TLS key path
+            key: /path/to/key
+            # agent.sidecar.config.client.tcp.tls.ca -- HTTP client TCP TLS ca path
+            ca: /path/to/ca
+        # @schema {"name": "agent.sidecar.config.client.transport", "type": "object"}
+        transport:
+          # @schema {"name": "agent.sidecar.config.client.transport.round_tripper", "type": "object"}
+          round_tripper:
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.tls_handshake_timeout", "type": "string"}
+            # agent.sidecar.config.client.transport.round_tripper.tls_handshake_timeout -- TLS handshake timeout
+            tls_handshake_timeout: 5s
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.max_idle_conns", "type": "integer"}
+            # agent.sidecar.config.client.transport.round_tripper.max_idle_conns -- maximum count of idle connections
+            max_idle_conns: 100
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.max_idle_conns_per_host", "type": "integer"}
+            # agent.sidecar.config.client.transport.round_tripper.max_idle_conns_per_host -- maximum count of idle connections per host
+            max_idle_conns_per_host: 10
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.max_conns_per_host", "type": "integer"}
+            # agent.sidecar.config.client.transport.round_tripper.max_conns_per_host -- maximum count of connections per host
+            max_conns_per_host: 10
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.idle_conn_timeout", "type": "string"}
+            # agent.sidecar.config.client.transport.round_tripper.idle_conn_timeout -- timeout for idle connections
+            idle_conn_timeout: 90s
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.response_header_timeout", "type": "string"}
+            # agent.sidecar.config.client.transport.round_tripper.response_header_timeout -- timeout for response header
+            response_header_timeout: 5s
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.expect_continue_timeout", "type": "string"}
+            # agent.sidecar.config.client.transport.round_tripper.expect_continue_timeout -- expect continue timeout
+            expect_continue_timeout: 5s
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.max_response_header_size", "type": "integer"}
+            # agent.sidecar.config.client.transport.round_tripper.max_response_header_size -- maximum response header size
+            max_response_header_size: 0
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.write_buffer_size", "type": "integer"}
+            # agent.sidecar.config.client.transport.round_tripper.write_buffer_size -- write buffer size
+            write_buffer_size: 0
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.read_buffer_size", "type": "integer"}
+            # agent.sidecar.config.client.transport.round_tripper.read_buffer_size -- read buffer size
+            read_buffer_size: 0
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.force_attempt_http_2", "type": "boolean"}
+            # agent.sidecar.config.client.transport.round_tripper.force_attempt_http_2 -- force attempt HTTP2
+            force_attempt_http_2: true
+          # @schema {"name": "agent.sidecar.config.client.transport.backoff", "alias": "backoff"}
+          backoff:
+            # agent.sidecar.config.client.transport.backoff.initial_duration -- backoff initial duration
+            initial_duration: 5ms
+            # agent.sidecar.config.client.transport.backoff.backoff_time_limit -- backoff time limit
+            backoff_time_limit: 5s
+            # agent.sidecar.config.client.transport.backoff.maximum_duration -- backoff maximum duration
+            maximum_duration: 5s
+            # agent.sidecar.config.client.transport.backoff.jitter_limit -- backoff jitter limit
+            jitter_limit: 100ms
+            # agent.sidecar.config.client.transport.backoff.backoff_factor -- backoff backoff factor
+            backoff_factor: 1.1
+            # agent.sidecar.config.client.transport.backoff.retry_count -- backoff retry count
+            retry_count: 100
+            # agent.sidecar.config.client.transport.backoff.enable_error_log -- backoff error log enabled
+            enable_error_log: true
       # @schema {"name": "agent.sidecar.config.restore_backoff", "alias": "backoff"}
       restore_backoff:
         # agent.sidecar.config.restore_backoff.initial_duration -- restore backoff initial duration

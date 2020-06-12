@@ -48,9 +48,14 @@ func (r *RoundTripper) Bind() *RoundTripper {
 func (t *Transport) Bind() *Transport {
 	if t.RoundTripper != nil {
 		t.RoundTripper = t.RoundTripper.Bind()
+	} else {
+		t.RoundTripper = new(RoundTripper)
 	}
+
 	if t.Backoff != nil {
 		t.Backoff = t.Backoff.Bind()
+	} else {
+		t.Backoff = new(Backoff)
 	}
 
 	return t
