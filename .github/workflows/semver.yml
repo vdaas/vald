@@ -69,7 +69,7 @@ jobs:
             BODY=`echo -E $PR_COMMENTS | jq 'last(.[] | select(.user.login == "vdaas-ci") | select(.body | test("^\\\\*\\\\*\\\\[CHANGELOG")) | .body)' -r | tail -n +2`
           fi
 
-          if [ -z "$BODY"]; then
+          if [ -z "$BODY" ]; then
             BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..master | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%"`
           fi
 
