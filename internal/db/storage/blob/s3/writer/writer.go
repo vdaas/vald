@@ -40,8 +40,6 @@ type writer struct {
 
 	pw io.WriteCloser
 	wg *sync.WaitGroup
-
-	ctx context.Context
 }
 
 type Writer interface {
@@ -59,8 +57,6 @@ func New(opts ...Option) Writer {
 }
 
 func (w *writer) Open(ctx context.Context) (err error) {
-	w.ctx = ctx
-
 	w.wg = new(sync.WaitGroup)
 
 	var pr io.ReadCloser
@@ -73,7 +69,7 @@ func (w *writer) Open(ctx context.Context) (err error) {
 		defer w.wg.Done()
 		defer pr.Close()
 
-		return w.upload(pr)
+		return w.upload(ctx, pr)
 	}))
 
 	return err
@@ -92,14 +88,14 @@ func (w *writer) Close() error {
 }
 
 func (w *writer) Write(p []byte) (n int, err error) {
-	if w.ctx == nil || w.pw == nil {
+	if w.pw == nil {
 		return 0, errors.ErrStorageWriterNotOpened
 	}
 
 	return w.pw.Write(p)
 }
 
-func (w *writer) upload(body io.Reader) (err error) {
+func (w *writer) upload(ctx context.Context, body io.Reader) (err error) {
 	uploader := s3manager.NewUploaderWithClient(
 		w.service,
 		func(u *s3manager.Uploader) {
@@ -112,7 +108,7 @@ func (w *writer) upload(body io.Reader) (err error) {
 		Body:   body,
 	}
 
-	res, err := uploader.UploadWithContext(w.ctx, input)
+	res, err := uploader.UploadWithContext(ctx, input)
 	if err != nil {
 		log.Error("upload failed with error: ", err)
 		return err
