@@ -80,7 +80,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -112,7 +112,6 @@ func Test_writer_Open(t *testing.T) {
 		maxPartSize int64
 		pw          io.WriteCloser
 		wg          *sync.WaitGroup
-		ctx         context.Context
 	}
 	type want struct {
 		err error
@@ -148,7 +147,6 @@ func Test_writer_Open(t *testing.T) {
 		           maxPartSize: 0,
 		           pw: nil,
 		           wg: sync.WaitGroup{},
-		           ctx: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -171,7 +169,6 @@ func Test_writer_Open(t *testing.T) {
 		           maxPartSize: 0,
 		           pw: nil,
 		           wg: sync.WaitGroup{},
-		           ctx: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -182,7 +179,7 @@ func Test_writer_Open(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -200,7 +197,6 @@ func Test_writer_Open(t *testing.T) {
 				maxPartSize: test.fields.maxPartSize,
 				pw:          test.fields.pw,
 				wg:          test.fields.wg,
-				ctx:         test.fields.ctx,
 			}
 
 			err := w.Open(test.args.ctx)
@@ -221,7 +217,6 @@ func Test_writer_Close(t *testing.T) {
 		maxPartSize int64
 		pw          io.WriteCloser
 		wg          *sync.WaitGroup
-		ctx         context.Context
 	}
 	type want struct {
 		err error
@@ -253,7 +248,6 @@ func Test_writer_Close(t *testing.T) {
 		           maxPartSize: 0,
 		           pw: nil,
 		           wg: sync.WaitGroup{},
-		           ctx: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -273,7 +267,6 @@ func Test_writer_Close(t *testing.T) {
 		           maxPartSize: 0,
 		           pw: nil,
 		           wg: sync.WaitGroup{},
-		           ctx: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -284,7 +277,7 @@ func Test_writer_Close(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -302,7 +295,6 @@ func Test_writer_Close(t *testing.T) {
 				maxPartSize: test.fields.maxPartSize,
 				pw:          test.fields.pw,
 				wg:          test.fields.wg,
-				ctx:         test.fields.ctx,
 			}
 
 			err := w.Close()
@@ -326,7 +318,6 @@ func Test_writer_Write(t *testing.T) {
 		maxPartSize int64
 		pw          io.WriteCloser
 		wg          *sync.WaitGroup
-		ctx         context.Context
 	}
 	type want struct {
 		wantN int
@@ -366,7 +357,6 @@ func Test_writer_Write(t *testing.T) {
 		           maxPartSize: 0,
 		           pw: nil,
 		           wg: sync.WaitGroup{},
-		           ctx: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -389,7 +379,6 @@ func Test_writer_Write(t *testing.T) {
 		           maxPartSize: 0,
 		           pw: nil,
 		           wg: sync.WaitGroup{},
-		           ctx: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -400,7 +389,7 @@ func Test_writer_Write(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -418,7 +407,6 @@ func Test_writer_Write(t *testing.T) {
 				maxPartSize: test.fields.maxPartSize,
 				pw:          test.fields.pw,
 				wg:          test.fields.wg,
-				ctx:         test.fields.ctx,
 			}
 
 			gotN, err := w.Write(test.args.p)
@@ -432,6 +420,7 @@ func Test_writer_Write(t *testing.T) {
 
 func Test_writer_upload(t *testing.T) {
 	type args struct {
+		ctx  context.Context
 		body io.Reader
 	}
 	type fields struct {
@@ -442,7 +431,6 @@ func Test_writer_upload(t *testing.T) {
 		maxPartSize int64
 		pw          io.WriteCloser
 		wg          *sync.WaitGroup
-		ctx         context.Context
 	}
 	type want struct {
 		err error
@@ -468,6 +456,7 @@ func Test_writer_upload(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           body: nil,
 		       },
 		       fields: fields {
@@ -478,7 +467,6 @@ func Test_writer_upload(t *testing.T) {
 		           maxPartSize: 0,
 		           pw: nil,
 		           wg: sync.WaitGroup{},
-		           ctx: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -491,6 +479,7 @@ func Test_writer_upload(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           body: nil,
 		           },
 		           fields: fields {
@@ -501,7 +490,6 @@ func Test_writer_upload(t *testing.T) {
 		           maxPartSize: 0,
 		           pw: nil,
 		           wg: sync.WaitGroup{},
-		           ctx: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -512,7 +500,7 @@ func Test_writer_upload(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -530,10 +518,9 @@ func Test_writer_upload(t *testing.T) {
 				maxPartSize: test.fields.maxPartSize,
 				pw:          test.fields.pw,
 				wg:          test.fields.wg,
-				ctx:         test.fields.ctx,
 			}
 
-			err := w.upload(test.args.body)
+			err := w.upload(test.args.ctx, test.args.body)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
