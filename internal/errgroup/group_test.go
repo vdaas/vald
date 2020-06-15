@@ -46,7 +46,8 @@ func TestNew(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got Group, got1 context.Context) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if got, want := got.(*group), w.want.(*group); !reflect.DeepEqual(got.emap, want.emap) &&
+			!reflect.DeepEqual(got.enableLimitation, want.enableLimitation) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		if !reflect.DeepEqual(got1, w.want1) {
@@ -55,36 +56,34 @@ func TestNew(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			ctx := context.Background()
+			egctx, cancel := context.WithCancel(ctx)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			var enableLimitation atomic.Value
+			enableLimitation.Store(false)
+
+			return test{
+				name: "returns (g, ctx)",
+				args: args{
+					ctx: ctx,
+				},
+				want: want{
+					want: &group{
+						egctx:            egctx,
+						enableLimitation: enableLimitation,
+						emap:             make(map[string]struct{}),
+						cancel:           cancel,
+					},
+					want1: egctx,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -99,7 +98,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -123,39 +121,39 @@ func TestInit(t *testing.T) {
 		if !reflect.DeepEqual(gotEgctx, w.wantEgctx) {
 			return errors.Errorf("got = %v, want %v", gotEgctx, w.wantEgctx)
 		}
+		if instance == nil {
+			return errors.New("instance is nil")
+		}
 		return nil
 	}
+	defaultBeforeFunc := func(args) {
+		instance, once = nil, sync.Once{}
+	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			ctx := context.Background()
+			egctx, cancel := context.WithCancel(ctx)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "returns egctx when called `once.Do` function",
+				args: args{
+					ctx: ctx,
+				},
+				beforeFunc: defaultBeforeFunc,
+				afterFunc: func(a args) {
+					cancel()
+					defaultBeforeFunc(a)
+				},
+				want: want{
+					wantEgctx: egctx,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -170,7 +168,6 @@ func TestInit(t *testing.T) {
 			if err := test.checkFunc(test.want, gotEgctx); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -187,36 +184,53 @@ func TestGet(t *testing.T) {
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got Group) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if got, want := got.(*group), w.want.(*group); !reflect.DeepEqual(got.egctx, want.egctx) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+	defaultBeforeFunc := func() {
+		instance, once = nil, sync.Once{}
+	}
+	defaultAfterFunc := func() {
+		defaultBeforeFunc()
+	}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+	tests := []test{
+		func() test {
+			ctx := context.Background()
+			egctx, cancel := context.WithCancel(ctx)
+			return test{
+				name:       "returns instance when instance is nil",
+				beforeFunc: defaultBeforeFunc,
+				afterFunc:  defaultAfterFunc,
+				want: want{
+					want: &group{
+						egctx:  egctx,
+						cancel: cancel,
+					},
+				},
+			}
+		}(),
+
+		func() test {
+			g := &group{
+				egctx: context.Background(),
+			}
+			return test{
+				name:       "returns instance when instance is not nil",
+				beforeFunc: func() { instance = g },
+				afterFunc:  defaultAfterFunc,
+				want: want{
+					want: g,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -231,7 +245,6 @@ func TestGet(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -307,86 +320,78 @@ func Test_group_Limitation(t *testing.T) {
 		limit int
 	}
 	type fields struct {
-		egctx            context.Context
-		cancel           func()
-		wg               sync.WaitGroup
 		limitation       chan struct{}
 		enableLimitation atomic.Value
-		cancelOnce       sync.Once
-		mu               sync.RWMutex
-		emap             map[string]struct{}
-		errs             []error
-		err              error
 	}
 	type want struct {
+		want Group
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want) error
+		checkFunc  func(want, Group) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(w want, g Group) error {
+		got, want := g.(*group), w.want.(*group)
+		if !reflect.DeepEqual(got.enableLimitation, want.enableLimitation) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		if got.limitation != nil && want.limitation != nil {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           limit: 0,
-		       },
-		       fields: fields {
-		           egctx: nil,
-		           cancel: nil,
-		           wg: sync.WaitGroup{},
-		           limitation: nil,
-		           enableLimitation: nil,
-		           cancelOnce: sync.Once{},
-		           mu: sync.RWMutex{},
-		           emap: nil,
-		           errs: nil,
-		           err: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			el := atomic.Value{}
+			el.Store(false)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           limit: 0,
-		           },
-		           fields: fields {
-		           egctx: nil,
-		           cancel: nil,
-		           wg: sync.WaitGroup{},
-		           limitation: nil,
-		           enableLimitation: nil,
-		           cancelOnce: sync.Once{},
-		           mu: sync.RWMutex{},
-		           emap: nil,
-		           errs: nil,
-		           err: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "set disable when limit is 0",
+				args: args{
+					limit: -1,
+				},
+				fields: fields{
+					limitation:       make(chan struct{}),
+					enableLimitation: atomic.Value{},
+				},
+				want: want{
+					want: &group{
+						enableLimitation: el,
+					},
+				},
+			}
+		}(),
+
+		func() test {
+			el := atomic.Value{}
+			el.Store(true)
+
+			return test{
+				name: "set enable when limit is 1",
+				args: args{
+					limit: 1,
+				},
+				fields: fields{
+					limitation:       make(chan struct{}),
+					enableLimitation: atomic.Value{},
+				},
+				want: want{
+					want: &group{
+						enableLimitation: el,
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -397,20 +402,12 @@ func Test_group_Limitation(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			g := &group{
-				egctx:            test.fields.egctx,
-				cancel:           test.fields.cancel,
-				wg:               test.fields.wg,
 				limitation:       test.fields.limitation,
 				enableLimitation: test.fields.enableLimitation,
-				cancelOnce:       test.fields.cancelOnce,
-				mu:               test.fields.mu,
-				emap:             test.fields.emap,
-				errs:             test.fields.errs,
-				err:              test.fields.err,
 			}
 
 			g.Limitation(test.args.limit)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(test.want, g); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -501,7 +498,7 @@ func Test_group_Go(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -606,7 +603,7 @@ func Test_group_doCancel(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -617,16 +614,8 @@ func Test_group_doCancel(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			g := &group{
-				egctx:            test.fields.egctx,
-				cancel:           test.fields.cancel,
-				wg:               test.fields.wg,
-				limitation:       test.fields.limitation,
-				enableLimitation: test.fields.enableLimitation,
-				cancelOnce:       test.fields.cancelOnce,
-				mu:               test.fields.mu,
-				emap:             test.fields.emap,
-				errs:             test.fields.errs,
-				err:              test.fields.err,
+				cancel:     test.fields.cancel,
+				cancelOnce: test.fields.cancelOnce,
 			}
 
 			g.doCancel()
