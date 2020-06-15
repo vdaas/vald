@@ -526,8 +526,10 @@ make make gotests/gen
 ```
 
 After the command above executed, the file `*target*_test.go` will be generated for each Go source file.
-The test code generated follows the table-driven test format. 
+The test code generated follows the table-driven test format.
 You can implement your test code under the `tests` variable generated following the table-driven test format.
+
+### Customize test case
 
 We do not suggest to modify the generated code other than the `tests` variable, but in some cases, you may need to modify the generated code to meet your requirement, for example:
 
