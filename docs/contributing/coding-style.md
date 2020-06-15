@@ -546,7 +546,7 @@ func init() {
 
 And place it on the header of the test file.
 
-2. goleak option
+1. goleak option
 
 By default, the generated test code will use [goleak](https://github.com/uber-go/goleak) library to test if there is any Goroutine leak.
 Sometimes you may want to skip the detection, for example, Vald uses [fastime](https://github.com/kpango/fastime) library but the internal Goroutine is not closed due to the needs of the library. 
@@ -576,7 +576,7 @@ for _, test := range tests {
         defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 ```
 
-3. Defer function
+1. Defer function
 
 By default the template provides `beforeFunc()` and `afterFunc()` to initialize and finalize the test case, but in some case, it may not support your use case.
 For example `recover()` function only works in `defer()` function, if you need to use `recover()` function to handle the panic in your test code, you may need to implement your custom `defer()` function and change the generated test code.
