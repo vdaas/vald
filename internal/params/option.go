@@ -30,36 +30,42 @@ var (
 	}
 )
 
+// WithConfigFilePathKeys returns Option that sets filePath.keys.
 func WithConfigFilePathKeys(keys ...string) Option {
 	return func(p *parser) {
 		p.filePath.keys = append(p.filePath.keys, keys...)
 	}
 }
 
+// WithConfigFilePathDefault returns Option that sets filePath.defaultPath.
 func WithConfigFilePathDefault(path string) Option {
 	return func(p *parser) {
 		p.filePath.defaultPath = path
 	}
 }
 
+// WithConfigFileDescription returns Option that sets filePath.description.
 func WithConfigFileDescription(desc string) Option {
 	return func(p *parser) {
 		p.filePath.description = desc
 	}
 }
 
+// WithVersionKeys returns Option that sets version.keys.
 func WithVersionKeys(keys ...string) Option {
 	return func(p *parser) {
 		p.version.keys = append(p.version.keys, keys...)
 	}
 }
 
+// WithVersionFlagDefault returns Option that sets version.defaultFlag.
 func WithVersionFlagDefault(flag bool) Option {
 	return func(p *parser) {
 		p.version.defaultFlag = flag
 	}
 }
 
+// WithVersionDescription returns Option that sets version.description.
 func WithVersionDescription(desc string) Option {
 	return func(p *parser) {
 		p.version.description = desc

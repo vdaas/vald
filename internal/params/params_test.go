@@ -200,7 +200,7 @@ func Test_parser_Parse(t *testing.T) {
 					keys: []string{
 						"path", "p",
 					},
-					defaultPath: "./test_datas/config.yml",
+					defaultPath: "./params.go",
 					description: "sets file path",
 				},
 				version: struct {
@@ -217,13 +217,13 @@ func Test_parser_Parse(t *testing.T) {
 			},
 			beforeFunc: func() {
 				os.Args = []string{
-					"test", "--path=./test_datas/config.yml", "--version=false",
+					"test", "--path=./params.go", "--version=false",
 				}
 			},
 			afterFunc: func() { os.Args = nil },
 			want: want{
 				want: &data{
-					configFilePath: "./test_datas/config.yml",
+					configFilePath: "./params.go",
 					showVersion:    false,
 				},
 			},
