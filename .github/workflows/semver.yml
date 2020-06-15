@@ -113,7 +113,10 @@ jobs:
         with:
           tag_name: ${{ steps.semver.outputs.VERSION }}
           release_name: Release ${{ steps.semver.outputs.VERSION }}
+          body: |
+            See [CHANGELOG.md](https://github.com/vdaas/vald/blob/${{ steps.semver.outputs.VERSION }}/CHANGELOG.md) for details.
           draft: false
           prerelease: false
-          body: |
-            See [CHANGELOG.md](https://github.com/vdaas/vald/blob/master/CHANGELOG.md) for details.
+      - name: Add the version to goproxy
+        run: |
+          curl "https://proxy.golang.org/github.com/vdaas/vald/@v/${{ steps.semver.outputs.VERSION }}.info"
