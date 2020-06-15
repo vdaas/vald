@@ -59,6 +59,7 @@ func New(opts ...Option) *parser {
 }
 
 // Parse parses command-line argument and returns parsed data.
+// If parse fails, returns an error but when there is help option, returns nil and true.
 func (p *parser) Parse() (Data, bool, error) {
 	f := flag.NewFlagSet(filepath.Base(os.Args[0]), flag.ContinueOnError)
 

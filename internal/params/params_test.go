@@ -190,7 +190,7 @@ func Test_parser_Parse(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns (d, false, nil) when parse succeeds",
+			name: "returns (d, false, nil) when parse succeed",
 			fields: fields{
 				filePath: struct {
 					keys        []string
@@ -286,8 +286,6 @@ func Test_parser_Parse(t *testing.T) {
 			},
 		},
 	}
-
-	type h = syscall.Errno
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
