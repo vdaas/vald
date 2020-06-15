@@ -1,3 +1,8 @@
+// initial sidebar
+window.onload = () => {
+  initSidebar();
+}
+
 (function() {
 
 // hamburger menu
@@ -86,3 +91,44 @@ for (let i = 0; i < links.length; i++) {
   });
 }
 })();
+
+// initialize sidebar style
+const initSidebar = () => {
+  const sidebar = document.getElementById('list-body');
+  if (sidebar) {
+    for (let child of sidebar.children) {
+      let isOpen = false;
+      let category = document.getElementById(child.id);
+      const contents = category.getElementsByTagName('li');
+      for (const link of category.getElementsByTagName('li')) {
+        if (link.className === 'view') isOpen = !isOpen;
+      }
+      if (isOpen) {
+        category.className = "withchild open"
+      }
+    }
+  }
+}
+
+// toggle all by click
+const toggleAll = () => {
+  let sidebar = document.getElementById('list-body');
+  if (sidebar) {
+    if (sidebar.style.display.length > 0) {
+      sidebar.style.display = '';
+    } else if (sidebar.style.length === 0) {
+      sidebar.style.display = 'none';
+    }
+  }
+}
+
+// toggle each category by click
+const toggleSidebar = (id) => {
+  let elem = document.getElementById(id);
+  const className = elem.className;
+  if (className.includes('open')) {
+    elem.className = className.split(' ')[0];
+  } else {
+    elem.className += ' open';
+  }
+}
