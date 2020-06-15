@@ -44,30 +44,6 @@ func WithGateway(g service.Gateway) Option {
 	}
 }
 
-func WithMeta(m service.Meta) Option {
-	return func(s *server) {
-		if m != nil {
-			s.metadata = m
-		}
-	}
-}
-
-func WithBackup(b service.Backup) Option {
-	return func(s *server) {
-		if b != nil {
-			s.backup = b
-		}
-	}
-}
-
-func WithFilters(filter service.Filter) Option {
-	return func(s *server) {
-		if filter != nil {
-			s.filter = filter
-		}
-	}
-}
-
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(s *server) {
 		if eg != nil {

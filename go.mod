@@ -10,13 +10,13 @@ replace (
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200531234253-77e06fda0c94+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.3.0-java
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.1-0.20200531100419-12508c83901b
-	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200615160627-420e3b873d91
+	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200624222514-34081eda590e
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.11.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.7.5-0.20200517040254-948bec34b516
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.0+incompatible
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	k8s.io/api => k8s.io/api v0.18.4
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.4
 	k8s.io/apimachinery => k8s.io/apimachinery v0.18.4
@@ -25,16 +25,16 @@ replace (
 )
 
 require (
-	cloud.google.com/go v0.58.0
+	cloud.google.com/go v0.56.0
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	contrib.go.opencensus.io/exporter/jaeger v0.2.0
 	contrib.go.opencensus.io/exporter/prometheus v0.2.0
-	contrib.go.opencensus.io/exporter/stackdriver v0.13.1
-	github.com/aws/aws-sdk-go v1.32.4
+	contrib.go.opencensus.io/exporter/stackdriver v0.13.2
+	github.com/aws/aws-sdk-go v1.33.0
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/cockroachdb/errors v0.0.0-00010101000000-000000000000
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
-	github.com/envoyproxy/protoc-gen-validate v0.1.0
+	github.com/envoyproxy/protoc-gen-validate v0.4.0
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-redis/redis/v7 v7.4.0
 	github.com/go-sql-driver/mysql v1.5.0
@@ -43,10 +43,13 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/google/go-cmp v0.5.0
 	github.com/google/gofuzz v1.1.0
+	github.com/google/pprof v0.0.0-20200630070148-6609db78bf68 // indirect
 	github.com/gorilla/mux v1.7.1
 	github.com/hashicorp/go-version v1.2.1
+	github.com/hashicorp/golang-lru v0.5.4 // indirect
+	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/json-iterator/go v1.1.10
-	github.com/klauspost/compress v1.10.9
+	github.com/klauspost/compress v1.10.10
 	github.com/kpango/fastime v1.0.16
 	github.com/kpango/fuid v0.0.0-20190507064958-80435564606b
 	github.com/kpango/gache v1.2.1
@@ -60,19 +63,22 @@ require (
 	go.opencensus.io v0.22.4
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/goleak v1.0.0
-	golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2
-	golang.org/x/sys v0.0.0-20200523222454-059865788121
-	golang.org/x/tools v0.0.0-20200618031402-d15173dcc7e4 // indirect
+	golang.org/x/mod v0.3.0 // indirect
+	golang.org/x/net v0.0.0-20200625001655-4c5254603344
+	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae
+	golang.org/x/text v0.3.3 // indirect
+	golang.org/x/tools v0.0.0-20200701221012-f01a4bec33ec // indirect
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/netlib v0.0.0-20200603212716-16abd5ac5bc7 // indirect
 	gonum.org/v1/plot v0.7.0
-	google.golang.org/api v0.27.0
-	google.golang.org/genproto v0.0.0-20200618031413-b414f8b61790
-	google.golang.org/grpc v1.29.1
+	google.golang.org/api v0.28.0
+	google.golang.org/genproto v0.0.0-20200702021140-07506425bd67
+	google.golang.org/grpc v1.30.0
+	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0
-	k8s.io/api v0.18.4
-	k8s.io/apimachinery v0.18.4
-	k8s.io/client-go v0.18.4
-	k8s.io/metrics v0.18.4
+	k8s.io/api v0.18.5
+	k8s.io/apimachinery v0.18.5
+	k8s.io/client-go v0.18.5
+	k8s.io/metrics v0.18.5
 	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
 )

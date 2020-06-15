@@ -561,6 +561,7 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *pay
 		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("GetObject API meta %s uuid %s Object not found", meta, uuid), err, info.Get())
 	}
+	vec.Id = meta
 	return vec, nil
 }
 

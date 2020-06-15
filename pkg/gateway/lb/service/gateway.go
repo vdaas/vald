@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"sync/atomic"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
+	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/internal/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -34,11 +34,11 @@ type Gateway interface {
 	Start(ctx context.Context) (<-chan error, error)
 	GetAgentCount(ctx context.Context) int
 	Do(ctx context.Context,
-		f func(ctx context.Context, tgt string, ac agent.AgentClient, copts ...grpc.CallOption) error) error
+		f func(ctx context.Context, tgt string, ac vald.ValdClient, copts ...grpc.CallOption) error) error
 	DoMulti(ctx context.Context, num int,
-		f func(ctx context.Context, tgt string, ac agent.AgentClient, copts ...grpc.CallOption) error) error
+		f func(ctx context.Context, tgt string, ac vald.ValdClient, copts ...grpc.CallOption) error) error
 	BroadCast(ctx context.Context,
-		f func(ctx context.Context, tgt string, ac agent.AgentClient, copts ...grpc.CallOption) error) error
+		f func(ctx context.Context, tgt string, ac vald.ValdClient, copts ...grpc.CallOption) error) error
 }
 
 type gateway struct {
@@ -61,14 +61,14 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (g *gateway) BroadCast(ctx context.Context,
-	f func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error) (err error) {
+	f func(ctx context.Context, target string, ac vald.ValdClient, copts ...grpc.CallOption) error) (err error) {
 	return g.client.GetClient().RangeConcurrent(ctx, -1, func(ctx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 		select {
 		case <-ctx.Done():
 			return nil
 		default:
-			err = f(ctx, addr, agent.NewAgentClient(conn), copts...)
+			err = f(ctx, addr, vald.NewValdClient(conn), copts...)
 			if err != nil {
 				log.Debug(addr, err)
 				return err
@@ -79,17 +79,17 @@ func (g *gateway) BroadCast(ctx context.Context,
 }
 
 func (g *gateway) Do(ctx context.Context,
-	f func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error) (err error) {
+	f func(ctx context.Context, target string, ac vald.ValdClient, copts ...grpc.CallOption) error) (err error) {
 	addr := g.client.GetAddrs(ctx)[0]
 	_, err = g.client.GetClient().Do(ctx, addr, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-		return nil, f(ctx, addr, agent.NewAgentClient(conn), copts...)
+		return nil, f(ctx, addr, vald.NewValdClient(conn), copts...)
 	})
 	return err
 }
 
 func (g *gateway) DoMulti(ctx context.Context, num int,
-	f func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error) (err error) {
+	f func(ctx context.Context, target string, ac vald.ValdClient, copts ...grpc.CallOption) error) (err error) {
 	var cur uint32 = 0
 	limit := uint32(num)
 	addrs := g.client.GetAddrs(ctx)
@@ -99,7 +99,7 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (err error) {
 		if atomic.LoadUint32(&cur) < limit {
-			err = f(ictx, addr, agent.NewAgentClient(conn), copts...)
+			err = f(ictx, addr, vald.NewValdClient(conn), copts...)
 			if err != nil {
 				log.Debug(addr, err)
 				return err
