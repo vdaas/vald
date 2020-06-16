@@ -71,9 +71,9 @@ func TestNew(t *testing.T) {
 				want: want{
 					want: &group{
 						egctx:            egctx,
+						cancel:           cancel,
 						enableLimitation: enableLimitation,
 						emap:             make(map[string]struct{}),
-						cancel:           cancel,
 					},
 					want1: egctx,
 				},
@@ -135,17 +135,17 @@ func TestInit(t *testing.T) {
 			egctx, cancel := context.WithCancel(ctx)
 
 			return test{
-				name: "returns egctx when called `once.Do` function",
+				name: "returns egctx when once.Do is called",
 				args: args{
 					ctx: ctx,
+				},
+				want: want{
+					wantEgctx: egctx,
 				},
 				beforeFunc: defaultBeforeFunc,
 				afterFunc: func(a args) {
 					cancel()
 					defaultBeforeFunc(a)
-				},
-				want: want{
-					wantEgctx: egctx,
 				},
 			}
 		}(),
@@ -201,15 +201,15 @@ func TestGet(t *testing.T) {
 			ctx := context.Background()
 			egctx, cancel := context.WithCancel(ctx)
 			return test{
-				name:       "returns instance when instance is nil",
-				beforeFunc: defaultBeforeFunc,
-				afterFunc:  defaultAfterFunc,
+				name: "returns instance when instance is nil",
 				want: want{
 					want: &group{
 						egctx:  egctx,
 						cancel: cancel,
 					},
 				},
+				beforeFunc: defaultBeforeFunc,
+				afterFunc:  defaultAfterFunc,
 			}
 		}(),
 
@@ -218,12 +218,14 @@ func TestGet(t *testing.T) {
 				egctx: context.Background(),
 			}
 			return test{
-				name:       "returns instance when instance is not nil",
-				beforeFunc: func() { instance = g },
-				afterFunc:  defaultAfterFunc,
+				name: "returns instance when instance is not nil",
 				want: want{
 					want: g,
 				},
+				beforeFunc: func() {
+					instance = g
+				},
+				afterFunc: defaultAfterFunc,
 			}
 		}(),
 	}
@@ -253,45 +255,33 @@ func TestGo(t *testing.T) {
 	type args struct {
 		f func() error
 	}
-	type want struct {
+	type generator struct {
+		do func() *group
 	}
 	type test struct {
 		name       string
 		args       args
-		want       want
-		checkFunc  func(want) error
+		generator  generator
+		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           f: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           f: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			return test{
+				name: "instance.Go is called when instance is not nil",
+				args: args{},
+				generator: generator{
+					do: func() *group {
+						return new(group)
+					},
+				},
+				checkFunc: defaultCheckFunc,
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -308,7 +298,7 @@ func TestGo(t *testing.T) {
 			}
 
 			Go(test.args.f)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -347,7 +337,7 @@ func Test_group_Limitation(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			el := atomic.Value{}
+			var el atomic.Value
 			el.Store(false)
 
 			return test{
@@ -368,7 +358,7 @@ func Test_group_Limitation(t *testing.T) {
 		}(),
 
 		func() test {
-			el := atomic.Value{}
+			var el atomic.Value
 			el.Store(true)
 
 			return test{
@@ -418,82 +408,152 @@ func Test_group_Go(t *testing.T) {
 	type args struct {
 		f func() error
 	}
-	type fields struct {
-		egctx            context.Context
-		cancel           func()
-		wg               sync.WaitGroup
-		limitation       chan struct{}
-		enableLimitation atomic.Value
-		cancelOnce       sync.Once
-		mu               sync.RWMutex
-		emap             map[string]struct{}
-		errs             []error
-		err              error
-	}
-	type want struct {
+	type generator struct {
+		do func() *group
 	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want) error
+		generator  generator
+		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           f: nil,
-		       },
-		       fields: fields {
-		           egctx: nil,
-		           cancel: nil,
-		           wg: sync.WaitGroup{},
-		           limitation: nil,
-		           enableLimitation: nil,
-		           cancelOnce: sync.Once{},
-		           mu: sync.RWMutex{},
-		           emap: nil,
-		           errs: nil,
-		           err: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			var calledCnt int32
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           f: nil,
-		           },
-		           fields: fields {
-		           egctx: nil,
-		           cancel: nil,
-		           wg: sync.WaitGroup{},
-		           limitation: nil,
-		           enableLimitation: nil,
-		           cancelOnce: sync.Once{},
-		           mu: sync.RWMutex{},
-		           emap: nil,
-		           errs: nil,
-		           err: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			var enableLimitation atomic.Value
+			enableLimitation.Store(true)
+
+			egctx, cancel := context.WithCancel(context.Background())
+			cancel()
+
+			g := &group{
+				egctx:            egctx,
+				limitation:       make(chan struct{}),
+				enableLimitation: enableLimitation,
+			}
+
+			return test{
+				name: "f is not called when reached limit and cancel g.egctx",
+				args: args{
+					f: func() error {
+						atomic.AddInt32(&calledCnt, 1)
+						return nil
+					},
+				},
+				generator: generator{
+					do: func() *group {
+						return g
+					},
+				},
+				checkFunc: func() error {
+					if err := g.Wait(); err != nil {
+						return err
+					}
+
+					if got, want := int(atomic.LoadInt32(&calledCnt)), 0; got != want {
+						return errors.Errorf("calledCnt = %v, want: %v", got, want)
+					}
+					return nil
+				},
+			}
+		}(),
+
+		func() test {
+			var calledCnt int32
+
+			var enableLimitation atomic.Value
+			enableLimitation.Store(true)
+
+			egctx, cancel := context.WithCancel(context.Background())
+
+			g := &group{
+				egctx:            egctx,
+				cancel:           cancel,
+				limitation:       make(chan struct{}, 1),
+				enableLimitation: enableLimitation,
+			}
+
+			return test{
+				name: "f is called and f returns nil",
+				args: args{
+					f: func() error {
+						atomic.AddInt32(&calledCnt, 1)
+						return nil
+					},
+				},
+				generator: generator{
+					do: func() *group {
+						return g
+					},
+				},
+				checkFunc: func() error {
+					if err := g.Wait(); err != nil {
+						return err
+					}
+
+					if got, want := int(atomic.LoadInt32(&calledCnt)), 1; got != want {
+						return errors.Errorf("calledCnt = %v, want: %v", got, want)
+					}
+					return nil
+				},
+			}
+		}(),
+
+		func() test {
+			var calledCnt int32
+
+			var enableLimitation atomic.Value
+			enableLimitation.Store(true)
+
+			var cancelCalledCnt int32
+			egctx, cancel := context.WithCancel(context.Background())
+
+			g := &group{
+				egctx: egctx,
+				cancel: func() {
+					cancel()
+					atomic.AddInt32(&cancelCalledCnt, 1)
+				},
+				emap:             make(map[string]struct{}),
+				limitation:       make(chan struct{}, 1),
+				enableLimitation: enableLimitation,
+			}
+
+			return test{
+				name: "f is called and f returns error",
+				args: args{
+					f: func() error {
+						atomic.AddInt32(&calledCnt, 1)
+						return errors.New("err1")
+					},
+				},
+				generator: generator{
+					do: func() *group {
+						return g
+					},
+				},
+				checkFunc: func() error {
+					if err := g.Wait(); err == nil {
+						return errors.New("Wait returns nil")
+					}
+
+					if got, want := int(atomic.LoadInt32(&calledCnt)), 1; got != want {
+						return errors.Errorf("calledCnt = %v, want: %v", got, want)
+					}
+
+					if got, want := int(atomic.LoadInt32(&cancelCalledCnt)), 1; got != want {
+						return errors.Errorf("cancel called = %v, want: %v", got, want)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -508,21 +568,10 @@ func Test_group_Go(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			g := &group{
-				egctx:            test.fields.egctx,
-				cancel:           test.fields.cancel,
-				wg:               test.fields.wg,
-				limitation:       test.fields.limitation,
-				enableLimitation: test.fields.enableLimitation,
-				cancelOnce:       test.fields.cancelOnce,
-				mu:               test.fields.mu,
-				emap:             test.fields.emap,
-				errs:             test.fields.errs,
-				err:              test.fields.err,
-			}
+			g := test.generator.do()
 
 			g.Go(test.args.f)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -530,75 +579,42 @@ func Test_group_Go(t *testing.T) {
 }
 
 func Test_group_doCancel(t *testing.T) {
-	type fields struct {
-		egctx            context.Context
-		cancel           func()
-		wg               sync.WaitGroup
-		limitation       chan struct{}
-		enableLimitation atomic.Value
-		cancelOnce       sync.Once
-		mu               sync.RWMutex
-		emap             map[string]struct{}
-		errs             []error
-		err              error
-	}
-	type want struct {
+	type generator struct {
+		do func() *group
 	}
 	type test struct {
 		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want) error
+		generator  generator
+		checkFunc  func() error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           egctx: nil,
-		           cancel: nil,
-		           wg: sync.WaitGroup{},
-		           limitation: nil,
-		           enableLimitation: nil,
-		           cancelOnce: sync.Once{},
-		           mu: sync.RWMutex{},
-		           emap: nil,
-		           errs: nil,
-		           err: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			var called bool
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           egctx: nil,
-		           cancel: nil,
-		           wg: sync.WaitGroup{},
-		           limitation: nil,
-		           enableLimitation: nil,
-		           cancelOnce: sync.Once{},
-		           mu: sync.RWMutex{},
-		           emap: nil,
-		           errs: nil,
-		           err: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "g.cancel is called when g.cancel is not nil",
+				generator: generator{
+					do: func() *group {
+						return &group{
+							cancel: func() {
+								called = true
+							},
+						}
+					},
+				},
+				checkFunc: func() error {
+					if !called {
+						return errors.Errorf("got called = %v, want: %v", called, true)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -613,13 +629,11 @@ func Test_group_doCancel(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			g := &group{
-				cancel:     test.fields.cancel,
-				cancelOnce: test.fields.cancelOnce,
-			}
+
+			g := test.generator.do()
 
 			g.doCancel()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -627,11 +641,15 @@ func Test_group_doCancel(t *testing.T) {
 }
 
 func TestWait(t *testing.T) {
+	type generator struct {
+		do func() *group
+	}
 	type want struct {
 		err error
 	}
 	type test struct {
 		name       string
+		generator  generator
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
@@ -644,25 +662,17 @@ func TestWait(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns nil when Wait returns nil",
+			afterFunc: func() {
+				instance = nil
+			},
+			generator: generator{
+				do: func() *group {
+					return new(group)
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -677,35 +687,27 @@ func TestWait(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+
+			instance = test.generator.do()
 
 			err := Wait()
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_group_Wait(t *testing.T) {
-	type fields struct {
-		egctx            context.Context
-		cancel           func()
-		wg               sync.WaitGroup
-		limitation       chan struct{}
-		enableLimitation atomic.Value
-		cancelOnce       sync.Once
-		mu               sync.RWMutex
-		emap             map[string]struct{}
-		errs             []error
-		err              error
+	type generator struct {
+		do func() *group
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
 		name       string
-		fields     fields
+		generator  generator
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
@@ -718,49 +720,34 @@ func Test_group_Wait(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           egctx: nil,
-		           cancel: nil,
-		           wg: sync.WaitGroup{},
-		           limitation: nil,
-		           enableLimitation: nil,
-		           cancelOnce: sync.Once{},
-		           mu: sync.RWMutex{},
-		           emap: nil,
-		           errs: nil,
-		           err: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns nil when g.errs is nil",
+			generator: generator{
+				do: func() *group {
+					return &group{
+						limitation: make(chan struct{}),
+					}
+				},
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           egctx: nil,
-		           cancel: nil,
-		           wg: sync.WaitGroup{},
-		           limitation: nil,
-		           enableLimitation: nil,
-		           cancelOnce: sync.Once{},
-		           mu: sync.RWMutex{},
-		           emap: nil,
-		           errs: nil,
-		           err: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns error when g.errs is not nil",
+			generator: generator{
+				do: func() *group {
+					return &group{
+						limitation: make(chan struct{}),
+						errs: []error{
+							errors.New("err1"),
+							errors.New("err2"),
+						},
+					}
+				},
+			},
+			want: want{
+				err: errors.Wrap(errors.New("err1"), errors.New("err2").Error()),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -775,24 +762,13 @@ func Test_group_Wait(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			g := &group{
-				egctx:            test.fields.egctx,
-				cancel:           test.fields.cancel,
-				wg:               test.fields.wg,
-				limitation:       test.fields.limitation,
-				enableLimitation: test.fields.enableLimitation,
-				cancelOnce:       test.fields.cancelOnce,
-				mu:               test.fields.mu,
-				emap:             test.fields.emap,
-				errs:             test.fields.errs,
-				err:              test.fields.err,
-			}
+
+			g := test.generator.do()
 
 			err := g.Wait()
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
