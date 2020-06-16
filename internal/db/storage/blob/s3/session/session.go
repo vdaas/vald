@@ -60,14 +60,10 @@ func New(opts ...Option) Session {
 }
 
 func (s *sess) Session() (*session.Session, error) {
-	cfg := aws.NewConfig()
+	cfg := aws.NewConfig().WithRegion(s.region)
 
 	if s.endpoint != "" {
 		cfg = cfg.WithEndpoint(s.endpoint)
-	}
-
-	if s.region != "" {
-		cfg = cfg.WithRegion(s.region)
 	}
 
 	if s.accessKey != "" && s.secretAccessKey != "" {
