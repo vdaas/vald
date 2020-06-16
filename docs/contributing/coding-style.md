@@ -629,3 +629,27 @@ We do not suggest to modify the generated code other than the `tests` variable, 
         }
         // generated test code
     ```
+
+1. Unused Variables
+
+    Unused variable may increase the complexity of the source code, it may confuse the developer hence introduce a new bug.
+    So please delete the unused variable.
+    
+    Generally the unused variable should be reported during compilation, but in some case the compiler may not report an error. This is an example of the unused variable declaration that does not cause an compilation error.<br>
+    
+    ```go
+    type server struct {
+        addr string
+        port int
+    }
+    
+    srv := &server {
+        addr: "192.168.33.10:1234",
+        // port <- unused variables
+    }
+    
+    if err := srv.Run(); err != nil {
+        log.Fatal(err)
+    }
+    
+    ```
