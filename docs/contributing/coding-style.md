@@ -643,7 +643,7 @@ We do not suggest to modify the generated code other than the `tests` variable, 
     }
     func (s *server) Addr() string {
         return s.addr
-     }
+    }
     ```
 
     And the generated test code is:
