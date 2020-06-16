@@ -665,6 +665,6 @@ We do not suggest to modify the generated code other than the `tests` variable, 
             addr string
             // port int   <-- this line should be deleted
 	}
-	type want struct {
+    type want struct {
         // generated test code
     ```
