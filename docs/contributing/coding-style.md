@@ -632,10 +632,10 @@ We do not suggest to modify the generated code other than the `tests` variable, 
 
 1. Unused Variables
 
-    Unused variable may increase the complexity of the source code, it may confuse the developer hence introduce a new bug.
+    An unused variable may increase the complexity of the source code, it may confuse the developer hence introduce a new bug.
     So please delete the unused variable.
     
-    Generally the unused variable should be reported during compilation, but in some case the compiler may not report an error. This is an example of the unused variable declaration that does not cause an compilation error.<br>
+    Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error. This is an example of the unused variable declaration that does not cause a compilation error.<br />
     
     ```go
     type server struct {
