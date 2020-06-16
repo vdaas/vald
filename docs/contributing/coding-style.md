@@ -652,7 +652,7 @@ We do not suggest to modify the generated code other than the `tests` variable, 
         type fields struct {
             addr string
             port int
-	}
+    }
     type want struct {
         // generated test code
     ```
