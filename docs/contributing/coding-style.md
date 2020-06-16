@@ -264,6 +264,32 @@ func (s *something) SetSignedTok(st string) {
 }
 ```
 
+### Unused Variables
+
+It is an error to declare a variable without using it.
+while a variable that is initialized but not used is at least a wasted computation and perhaps indicative of a larger bug.
+So please delete unused variables.
+
+The following is an example of an unused variables that does not cause an error.<br>
+Please delete any variables that you don't need, as they can create bugs.
+
+```go
+type server struct {
+    addr string
+    port int
+}
+
+srv := &server {
+    addr: "192.168.33.10:1234",
+    // port <- unused variables
+}
+
+if err := srv.Run(); err != nil {
+    log.Fatal(err)
+}
+
+```
+
 ### Error handling
 
 All errors should define in [internal/errors package](https://github.com/vdaas/vald/blob/master/internal/errors). All errors should be start with `Err` prefix, and all errors should be handle if possible.
