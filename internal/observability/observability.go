@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/collector"
 	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
 	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
+	"github.com/vdaas/vald/internal/observability/exporter/stackdriver"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/observability/metrics/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -39,11 +40,12 @@ type Observability interface {
 }
 
 type observability struct {
-	eg         errgroup.Group
-	collector  collector.Collector
-	tracer     trace.Tracer
-	prometheus prometheus.Prometheus
-	jaeger     jaeger.Jaeger
+	eg          errgroup.Group
+	collector   collector.Collector
+	tracer      trace.Tracer
+	prometheus  prometheus.Prometheus
+	jaeger      jaeger.Jaeger
+	stackdriver stackdriver.Stackdriver
 }
 
 func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observability, error) {
@@ -94,6 +96,26 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 		}
 
 		opts = append(opts, WithJaeger(jae))
+	}
+
+	if cfg.Stackdriver.Enabled {
+		sd, err := stackdriver.New(
+			stackdriver.WithProjectID(cfg.Stackdriver.ProjectID),
+			stackdriver.WithLocation(cfg.Stackdriver.Location),
+			stackdriver.WithBundleDelayThreshold(cfg.Stackdriver.BundleDelayThreshold),
+			stackdriver.WithBundleCountThreshold(cfg.Stackdriver.BundleCountThreshold),
+			stackdriver.WithTraceSpansBufferMaxBytes(cfg.Stackdriver.TraceSpansBufferMaxBytes),
+			stackdriver.WithMetricPrefix(cfg.Stackdriver.MetricPrefix),
+			stackdriver.WithSkipCMD(cfg.Stackdriver.SkipCMD),
+			stackdriver.WithTimeout(cfg.Stackdriver.Timeout),
+			stackdriver.WithReportingInterval(cfg.Stackdriver.ReportingInterval),
+			stackdriver.WithNumberOfWorkers(cfg.Stackdriver.NumberOfWorkers),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, WithStackdriver(sd))
 	}
 
 	return New(opts...)
@@ -147,9 +169,17 @@ func (o *observability) PreStart(ctx context.Context) (err error) {
 		}
 	}
 
+	if o.stackdriver != nil {
+		err = o.stackdriver.Start(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
 	if o.tracer != nil {
 		o.tracer.Start(ctx)
 	}
+
 	return nil
 }
 
@@ -180,10 +210,16 @@ func (o *observability) Start(ctx context.Context) <-chan error {
 
 func (o *observability) Stop(ctx context.Context) {
 	o.collector.Stop(ctx)
+
 	if o.prometheus != nil {
 		o.prometheus.Stop(ctx)
 	}
+
 	if o.jaeger != nil {
 		o.jaeger.Stop(ctx)
+	}
+
+	if o.stackdriver != nil {
+		o.stackdriver.Stop(ctx)
 	}
 }

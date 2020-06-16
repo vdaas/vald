@@ -620,6 +620,41 @@ defaults:
       # @schema {"name": "defaults.observability.jaeger.buffer_max_count", "type": "integer"}
       # defaults.observability.jaeger.buffer_max_count -- Jaeger buffer max count
       buffer_max_count: 10
+    # @schema {"name": "defaults.observability.stackdriver", "type": "object"}
+    stackdriver:
+      # @schema {"name": "defaults.observability.stackdriver.enabled", "type": "boolean"}
+      # defaults.observability.stackdriver.enabled -- Stackdriver exporter enabled
+      enabled: false
+      # @schema {"name": "defaults.observability.stackdriver.project_id", "type": "string"}
+      # defaults.observability.stackdriver.project_id -- project id for uploading the stats data
+      project_id: ""
+      # @schema {"name": "defaults.observability.stackdriver.location", "type": "string"}
+      # defaults.observability.stackdriver.location -- identifier of the GCP or AWS cloud region/zone the data is stored.
+      location: ""
+      # @schema {"name": "defaults.observability.stackdriver.bundle_delay_threshold", "type": "string"}
+      # defaults.observability.stackdriver.bundle_delay_threshold -- the max amount of time the exporter can wait before uploading data.
+      bundle_delay_threshold: "0"
+      # @schema {"name": "defaults.observability.stackdriver.bundle_count_threshold", "type": "integer"}
+      # defaults.observability.stackdriver.bundle_count_threshold -- how many view data events or trace spans can be buffered.
+      bundle_count_threshold: 0
+      # @schema {"name": "defaults.observability.stackdriver.trace_spans_buffer_max_bytes", "type": "integer"}
+      # defaults.observability.stackdriver.trace_spans_buffer_max_bytes -- maximum size of spans that will be buffered.
+      trace_spans_buffer_max_bytes: 0
+      # @schema {"name": "defaults.observability.stackdriver.metric_prefix", "type": "string"}
+      # defaults.observability.stackdriver.metric_prefix -- the prefix of a Stackdriver metric names.
+      metric_prefix: "vald.vdaas.org"
+      # @schema {"name": "defaults.observability.stackdriver.skip_cmd", "type": "boolean"}
+      # defaults.observability.stackdriver.skip_cmd -- skip all the CreateMetricDescriptor calls
+      skip_cmd: false
+      # @schema {"name": "defaults.observability.stackdriver.timeout", "type": "string"}
+      # defaults.observability.stackdriver.timeout -- timeout for all API calls
+      timeout: "5s"
+      # @schema {"name": "defaults.observability.stackdriver.reporting_interval", "type": "string"}
+      # defaults.observability.stackdriver.reporting_interval -- interval between reporting metrics
+      reporting_interval: "1m"
+      # @schema {"name": "defaults.observability.stackdriver.number_of_workers", "type": "integer"}
+      # defaults.observability.stackdriver.number_of_workers -- number of workers
+      number_of_workers: 1
 
 # @schema {"name": "gateway", "type": "object"}
 gateway:

@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/collector"
 	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
 	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
+	"github.com/vdaas/vald/internal/observability/exporter/stackdriver"
 	"github.com/vdaas/vald/internal/observability/trace"
 )
 
@@ -68,10 +69,20 @@ func WithPrometheus(p prometheus.Prometheus) Option {
 		return nil
 	}
 }
+
 func WithJaeger(j jaeger.Jaeger) Option {
 	return func(o *observability) error {
 		if j != nil {
 			o.jaeger = j
+		}
+		return nil
+	}
+}
+
+func WithStackdriver(sd stackdriver.Stackdriver) Option {
+	return func(o *observability) error {
+		if sd != nil {
+			o.stackdriver = sd
 		}
 		return nil
 	}

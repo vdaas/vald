@@ -18,11 +18,12 @@
 package config
 
 type Observability struct {
-	Enabled    bool        `json:"enabled" yaml:"enabled"`
-	Collector  *Collector  `json:"collector" yaml:"collector"`
-	Trace      *Trace      `json:"trace" yaml:"trace"`
-	Prometheus *Prometheus `json:"prometheus" yaml:"prometheus"`
-	Jaeger     *Jaeger     `json:"jaeger" yaml:"jaeger"`
+	Enabled     bool         `json:"enabled" yaml:"enabled"`
+	Collector   *Collector   `json:"collector" yaml:"collector"`
+	Trace       *Trace       `json:"trace" yaml:"trace"`
+	Prometheus  *Prometheus  `json:"prometheus" yaml:"prometheus"`
+	Jaeger      *Jaeger      `json:"jaeger" yaml:"jaeger"`
+	Stackdriver *Stackdriver `json:"stackdriver" yaml:"stackdriver"`
 }
 
 type Collector struct {
@@ -62,6 +63,24 @@ type Jaeger struct {
 	BufferMaxCount int `json:"buffer_max_count" yaml:"buffer_max_count"`
 }
 
+type Stackdriver struct {
+	Enabled bool `json:"enabled" yaml:"enabled"`
+
+	ProjectID string `json:"project_id" yaml:"project_id"`
+	Location  string `json:"location" yaml:"location"`
+
+	BundleDelayThreshold     string `json:"bundle_delay_threshold" yaml:"bundle_delay_threshold"`
+	BundleCountThreshold     int    `json:"bundle_count_threshold" yaml:"bundle_count_threshold"`
+	TraceSpansBufferMaxBytes int    `json:"trace_spans_buffer_max_bytes" yaml:"trace_spans_buffer_max_bytes"`
+
+	MetricPrefix string `json:"metric_prefix" yaml:"metric_prefix"`
+
+	SkipCMD           bool   `json:"skip_cmd" yaml:"skip_cmd"`
+	Timeout           string `json:"timeout" yaml:"timeout"`
+	ReportingInterval string `json:"reporting_interval" yaml:"reporting_interval"`
+	NumberOfWorkers   int    `json:"number_of_workers" yaml:"number_of_workers"`
+}
+
 func (o *Observability) Bind() *Observability {
 	if o.Collector != nil {
 		o.Collector.Duration = GetActualValue(o.Collector.Duration)
@@ -88,6 +107,17 @@ func (o *Observability) Bind() *Observability {
 		o.Jaeger.ServiceName = GetActualValue(o.Jaeger.ServiceName)
 	} else {
 		o.Jaeger = new(Jaeger)
+	}
+
+	if o.Stackdriver != nil {
+		o.Stackdriver.ProjectID = GetActualValue(o.Stackdriver.ProjectID)
+		o.Stackdriver.Location = GetActualValue(o.Stackdriver.Location)
+		o.Stackdriver.BundleDelayThreshold = GetActualValue(o.Stackdriver.BundleDelayThreshold)
+		o.Stackdriver.MetricPrefix = GetActualValue(o.Stackdriver.MetricPrefix)
+		o.Stackdriver.Timeout = GetActualValue(o.Stackdriver.Timeout)
+		o.Stackdriver.ReportingInterval = GetActualValue(o.Stackdriver.ReportingInterval)
+	} else {
+		o.Stackdriver = new(Stackdriver)
 	}
 
 	return o
