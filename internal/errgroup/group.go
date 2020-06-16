@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
+// Group provides synchronization, error propagation, and Context cancelation for groups of goroutines.
 type Group interface {
 	Go(func() error)
 	Limitation(int)
@@ -52,6 +53,7 @@ var (
 	once     sync.Once
 )
 
+// New returns Group implementation and context.
 func New(ctx context.Context) (Group, context.Context) {
 	egctx, cancel := context.WithCancel(ctx)
 	g := &group{
@@ -63,6 +65,7 @@ func New(ctx context.Context) (Group, context.Context) {
 	return g, egctx
 }
 
+// Init initializes global group object once.
 func Init(ctx context.Context) (egctx context.Context) {
 	egctx = ctx
 	once.Do(func() {
@@ -71,6 +74,7 @@ func Init(ctx context.Context) (egctx context.Context) {
 	return
 }
 
+// Get returns Group implementation. If global instance is nil, this function initializes and returns initialized instance.
 func Get() Group {
 	if instance == nil {
 		Init(context.Background())
@@ -78,10 +82,12 @@ func Get() Group {
 	return instance
 }
 
+// Go calls the given function in a new goroutine.
 func Go(f func() error) {
 	instance.Go(f)
 }
 
+// Limitation sets to control the maximum number of goroutines in a Go function.
 func (g *group) Limitation(limit int) {
 	if limit > 0 {
 		if g.limitation != nil {
@@ -94,6 +100,7 @@ func (g *group) Limitation(limit int) {
 	}
 }
 
+// Go calls the given function in a new goroutine.
 func (g *group) Go(f func() error) {
 	if f != nil {
 		g.wg.Add(1)
@@ -145,10 +152,12 @@ func (g *group) doCancel() {
 	})
 }
 
+// Wait blocks until all function calls from the Go method have returned, then returns error of all goroutines.
 func Wait() error {
 	return instance.Wait()
 }
 
+// Wait blocks until all function calls from the Go method have returned, then returns error of all goroutines.
 func (g *group) Wait() error {
 	g.wg.Wait()
 	g.doCancel()

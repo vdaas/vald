@@ -255,13 +255,9 @@ func TestGo(t *testing.T) {
 	type args struct {
 		f func() error
 	}
-	type generator struct {
-		do func() *group
-	}
 	type test struct {
 		name       string
 		args       args
-		generator  generator
 		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(args)
@@ -271,15 +267,37 @@ func TestGo(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
+			var calledCnt int32
+
+			var enableLimitation atomic.Value
+			enableLimitation.Store(false)
+
+			g := &group{
+				enableLimitation: enableLimitation,
+			}
+
 			return test{
 				name: "instance.Go is called when instance is not nil",
-				args: args{},
-				generator: generator{
-					do: func() *group {
-						return new(group)
+				args: args{
+					f: func() error {
+						atomic.AddInt32(&calledCnt, 1)
+						return nil
 					},
 				},
-				checkFunc: defaultCheckFunc,
+				beforeFunc: func(args) {
+					instance = g
+				},
+				checkFunc: func() error {
+					if err := g.Wait(); err != nil {
+						return err
+					}
+
+					if got, want := int(atomic.LoadInt32(&calledCnt)), 1; got != want {
+						return errors.Errorf("calledCnt = %v, want: %v", got, want)
+					}
+					return nil
+
+				},
 			}
 		}(),
 	}
