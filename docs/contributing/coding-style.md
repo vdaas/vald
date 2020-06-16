@@ -555,6 +555,30 @@ After the command above executed, the file `*target*_test.go` will be generated 
 The test code generated follows the table-driven test format.
 You can implement your test code under the `tests` variable generated following the table-driven test format.
 
+### Unused Variables
+
+An unused variable may increase the complexity of the source code, it may confuse the developer hence introduce a new bug.
+So please delete the unused variable.
+
+Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error. This is an example of the unused variable declaration that does not cause a compilation error.<br />
+
+```go
+type server struct {
+    addr string
+    port int
+}
+
+srv := &server {
+    addr: "192.168.33.10:1234",
+    // port <- unused variables
+}
+
+if err := srv.Run(); err != nil {
+    log.Fatal(err)
+}
+
+```
+
 ### Customize test case
 
 We do not suggest to modify the generated code other than the `tests` variable, but in some cases, you may need to modify the generated code to meet your requirement, for example:
@@ -628,28 +652,4 @@ We do not suggest to modify the generated code other than the `tests` variable, 
             test.beforeFunc(test.args)
         }
         // generated test code
-    ```
-
-1. Unused Variables
-
-    An unused variable may increase the complexity of the source code, it may confuse the developer hence introduce a new bug.
-    So please delete the unused variable.
-    
-    Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error. This is an example of the unused variable declaration that does not cause a compilation error.<br />
-    
-    ```go
-    type server struct {
-        addr string
-        port int
-    }
-    
-    srv := &server {
-        addr: "192.168.33.10:1234",
-        // port <- unused variables
-    }
-    
-    if err := srv.Run(); err != nil {
-        log.Fatal(err)
-    }
-    
     ```
