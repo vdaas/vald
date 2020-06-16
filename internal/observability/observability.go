@@ -106,6 +106,8 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 	if cfg.Stackdriver.Exporter.MonitoringEnabled || cfg.Stackdriver.Exporter.TracingEnabled {
 		sdex, err := stackdriver.New(
 			stackdriver.WithProjectID(cfg.Stackdriver.ProjectID),
+			stackdriver.WithMonitoring(cfg.Stackdriver.Exporter.MonitoringEnabled),
+			stackdriver.WithTracing(cfg.Stackdriver.Exporter.TracingEnabled),
 			stackdriver.WithLocation(cfg.Stackdriver.Exporter.Location),
 			stackdriver.WithBundleDelayThreshold(cfg.Stackdriver.Exporter.BundleDelayThreshold),
 			stackdriver.WithBundleCountThreshold(cfg.Stackdriver.Exporter.BundleCountThreshold),

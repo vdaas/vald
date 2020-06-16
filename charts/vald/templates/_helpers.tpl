@@ -549,10 +549,10 @@ collector:
   duration: {{ default .default.collector.duration .Values.collector.duration }}
   metrics:
     {{- if .Values.collector.metrics }}
-      enable_version_info: {{ default .default.collector.metrics.enable_version_info .Values.collector.metrics.enable_version_info }}
-      enable_memory: {{ default .default.collector.metrics.enable_memory .Values.collector.metrics.enable_memory }}
-      enable_goroutine: {{ default .default.collector.metrics.enable_goroutine .Values.collector.metrics.enable_goroutine }}
-      enable_cgo: {{ default .default.collector.metrics.enable_cgo .Values.collector.metrics.enable_cgo }}
+    enable_version_info: {{ default .default.collector.metrics.enable_version_info .Values.collector.metrics.enable_version_info }}
+    enable_memory: {{ default .default.collector.metrics.enable_memory .Values.collector.metrics.enable_memory }}
+    enable_goroutine: {{ default .default.collector.metrics.enable_goroutine .Values.collector.metrics.enable_goroutine }}
+    enable_cgo: {{ default .default.collector.metrics.enable_cgo .Values.collector.metrics.enable_cgo }}
     {{- else }}
     {{- toYaml .default.collector.metrics | nindent 4 }}
     {{- end }}
@@ -568,21 +568,61 @@ trace:
   {{- end }}
 prometheus:
   {{- if .Values.prometheus }}
-    enabled: {{ default .default.prometheus.enabled .Values.prometheus.enabled }}
+  enabled: {{ default .default.prometheus.enabled .Values.prometheus.enabled }}
   {{- else }}
   {{- toYaml .default.prometheus | nindent 2 }}
   {{- end }}
 jaeger:
   {{- if .Values.jaeger }}
-    enabled: {{ default .default.jaeger.enabled .Values.jaeger.enabled }}
-    collector_endpoint: {{ default .default.jaeger.collector_endpoint .Values.jaeger.collector_endpoint | quote }}
-    agent_endpoint: {{ default .default.jaeger.agent_endpoint .Values.jaeger.agent_endpoint | quote }}
-    username: {{ default .default.jaeger.username .Values.jaeger.username | quote }}
-    password: {{ default .default.jaeger.password .Values.jaeger.password | quote }}
-    service_name: {{ default .default.jaeger.service_name .Values.jaeger.service_name | quote }}
-    buffer_max_count: {{ default .default.jaeger.buffer_max_count .Values.jaeger.buffer_max_count }}
+  enabled: {{ default .default.jaeger.enabled .Values.jaeger.enabled }}
+  collector_endpoint: {{ default .default.jaeger.collector_endpoint .Values.jaeger.collector_endpoint | quote }}
+  agent_endpoint: {{ default .default.jaeger.agent_endpoint .Values.jaeger.agent_endpoint | quote }}
+  username: {{ default .default.jaeger.username .Values.jaeger.username | quote }}
+  password: {{ default .default.jaeger.password .Values.jaeger.password | quote }}
+  service_name: {{ default .default.jaeger.service_name .Values.jaeger.service_name | quote }}
+  buffer_max_count: {{ default .default.jaeger.buffer_max_count .Values.jaeger.buffer_max_count }}
   {{- else }}
   {{- toYaml .default.jaeger | nindent 2 }}
+  {{- end }}
+stackdriver:
+  {{- if .Values.stackdriver }}
+  project_id: {{ default .default.stackdriver.project_id .Values.stackdriver.project_id | quote }}
+  exporter:
+    {{- if .Values.stackdriver.exporter }}
+    monitoring_enabled: {{ default .default.stackdriver.exporter.monitoring_enabled .Values.stackdriver.exporter.monitoring_enabled }}
+    tracing_enabled: {{ default .default.stackdriver.exporter.tracing_enabled .Values.stackdriver.exporter.tracing_enabled }}
+    location: {{ default .default.stackdriver.exporter.location .Values.stackdriver.exporter.location | quote }}
+    bundle_delay_threshold: {{ default .default.stackdriver.exporter.bundle_delay_threshold .Values.stackdriver.exporter.bundle_delay_threshold | quote }}
+    bundle_count_threshold: {{ default .default.stackdriver.exporter.bundle_count_threshold .Values.stackdriver.exporter.bundle_count_threshold }}
+    trace_spans_buffer_max_bytes: {{ default .default.stackdriver.exporter.trace_spans_buffer_max_bytes .Values.stackdriver.exporter.trace_spans_buffer_max_bytes }}
+    metric_prefix: {{ default .default.stackdriver.exporter.metric_prefix .Values.stackdriver.exporter.metric_prefix | quote }}
+    skip_cmd: {{ default .default.stackdriver.exporter.skip_cmd .Values.stackdriver.exporter.skip_cmd }}
+    timeout: {{ default .default.stackdriver.exporter.timeout .Values.stackdriver.exporter.timeout | quote }}
+    reporting_interval: {{ default .default.stackdriver.exporter.reporting_interval .Values.stackdriver.exporter.reporting_interval | quote }}
+    number_of_workers: {{ default .default.stackdriver.exporter.number_of_workers .Values.stackdriver.exporter.number_of_workers }}
+    {{- else }}
+    {{- toYaml .default.stackdriver.exporter | nindent 4 }}
+    {{- end }}
+  profiler:
+    {{- if .Values.stackdriver.profiler }}
+    enabled: {{ default .default.stackdriver.profiler.enabled .Values.stackdriver.profiler.enabled }}
+    service: {{ default .default.stackdriver.profiler.service .Values.stackdriver.profiler.service | quote }}
+    service_version: {{ default .default.stackdriver.profiler.service_version .Values.stackdriver.profiler.service_version | quote }}
+    debug_logging: {{ default .default.stackdriver.profiler.debug_logging .Values.stackdriver.profiler.debug_logging }}
+    mutex_profiling: {{ default .default.stackdriver.profiler.mutex_profiling .Values.stackdriver.profiler.mutex_profiling }}
+    cpu_profiling: {{ default .default.stackdriver.profiler.cpu_profiling .Values.stackdriver.profiler.cpu_profiling }}
+    alloc_profiling: {{ default .default.stackdriver.profiler.alloc_profiling .Values.stackdriver.profiler.alloc_profiling }}
+    heap_profiling: {{ default .default.stackdriver.profiler.heap_profiling .Values.stackdriver.profiler.heap_profiling }}
+    goroutine_profiling: {{ default .default.stackdriver.profiler.goroutine_profiling .Values.stackdriver.profiler.goroutine_profiling }}
+    alloc_force_gc: {{ default .default.stackdriver.profiler.alloc_force_gc .Values.stackdriver.profiler.alloc_force_gc }}
+    api_addr: {{ default .default.stackdriver.profiler.api_addr .Values.stackdriver.profiler.api_addr | quote }}
+    instance: {{ default .default.stackdriver.profiler.instance .Values.stackdriver.profiler.instance | quote }}
+    zone: {{ default .default.stackdriver.profiler.zone .Values.stackdriver.profiler.zone | quote }}
+    {{- else }}
+    {{- toYaml .default.stackdriver.profiler | nindent 4 }}
+    {{- end }}
+  {{- else }}
+  {{- toYaml .default.stackdriver | nindent 2 }}
   {{- end }}
 {{- end -}}
 

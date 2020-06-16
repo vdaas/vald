@@ -17,7 +17,10 @@
 // Package stackdriver provides a stackdriver exporter.
 package stackdriver
 
-import "google.golang.org/api/option"
+import (
+	"github.com/vdaas/vald/internal/info"
+	"google.golang.org/api/option"
+)
 
 type Option func(p *prof) error
 
@@ -27,6 +30,7 @@ var (
 		WithAllocProfiling(true),
 		WithHeapProfiling(true),
 		WithGoroutineProfiling(true),
+		WithServiceVersion(info.Version),
 	}
 )
 

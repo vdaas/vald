@@ -40,6 +40,7 @@ type exporter struct {
 
 func New(opts ...Option) (s Stackdriver, err error) {
 	e := new(exporter)
+	e.Options = new(stackdriver.Options)
 
 	for _, opt := range append(defaultOpts, opts...) {
 		err = opt(e)

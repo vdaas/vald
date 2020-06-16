@@ -35,6 +35,7 @@ type prof struct {
 
 func New(opts ...Option) (s Stackdriver, err error) {
 	p := new(prof)
+	p.Config = new(profiler.Config)
 
 	for _, opt := range append(defaultOpts, opts...) {
 		err = opt(p)

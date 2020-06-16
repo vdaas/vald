@@ -139,6 +139,8 @@ func (o *Observability) Bind() *Observability {
 		o.Stackdriver = o.Stackdriver.Bind()
 	} else {
 		o.Stackdriver = new(Stackdriver)
+		o.Stackdriver.Exporter = new(StackdriverExporter)
+		o.Stackdriver.Profiler = new(StackdriverProfiler)
 	}
 
 	return o
