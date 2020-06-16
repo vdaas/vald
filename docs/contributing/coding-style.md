@@ -630,7 +630,9 @@ We do not suggest to modify the generated code other than the `tests` variable, 
 
 1. Unused fields
 
-    By default, the template provides `fields` structure to initialize object of the test target. But in some cases, not all `fields` are needed. So please delete unnecessary fields.
+    By default, the template provides `fields` structure to initialize object of the test target. 
+    
+    But in some cases, not all `fields` are needed, so please delete the unnecessary fields.
 
     If the test case needs only `addr` of `fields`, please delete other fields.
 
