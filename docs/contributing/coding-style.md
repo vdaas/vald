@@ -668,12 +668,3 @@ We do not suggest to modify the generated code other than the `tests` variable, 
 	type want struct {
         // generated test code
     ```
-
-
-    ```go
-    type fields struct {
-        addr    string
-        // port    int   <- please delete this fields
-    }
-    ```
-    
