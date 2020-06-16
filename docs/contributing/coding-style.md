@@ -652,9 +652,9 @@ We do not suggest to modify the generated code other than the `tests` variable, 
         type fields struct {
             addr string
             port int
-    }
-    type want struct {
-    // generated test code
+        }
+        type want struct {
+            // generated test code
     ```
 
     Since the `port` variable is not used in this test case, you can delete the `port` definition in the test case.
@@ -664,7 +664,7 @@ We do not suggest to modify the generated code other than the `tests` variable, 
         type fields struct {
             addr string
             // port int   <-- this line should be deleted
-	}
-    type want struct {
-    // generated test code
+        }
+        type want struct {
+            // generated test code
     ```
