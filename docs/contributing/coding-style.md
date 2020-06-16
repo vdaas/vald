@@ -266,12 +266,10 @@ func (s *something) SetSignedTok(st string) {
 
 ### Unused Variables
 
-It is an error to declare a variable without using it.
-while a variable that is initialized but not used is at least a wasted computation and perhaps indicative of a larger bug.
-So please delete unused variables.
+An unused variable may increase the complexity of the source code, it may confuse the developer hence introduce a new bug.
+So please delete the unused variable.
 
-The following is an example of an unused variables that does not cause an error.<br>
-Please delete any variables that you don't need, as they can create bugs.
+Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error. This is an example of the unused variable declaration that does not cause a compilation error.<br />
 
 ```go
 type server struct {
@@ -555,30 +553,6 @@ After the command above executed, the file `*target*_test.go` will be generated 
 The test code generated follows the table-driven test format.
 You can implement your test code under the `tests` variable generated following the table-driven test format.
 
-### Unused Variables
-
-An unused variable may increase the complexity of the source code, it may confuse the developer hence introduce a new bug.
-So please delete the unused variable.
-
-Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error. This is an example of the unused variable declaration that does not cause a compilation error.<br />
-
-```go
-type server struct {
-    addr string
-    port int
-}
-
-srv := &server {
-    addr: "192.168.33.10:1234",
-    // port <- unused variables
-}
-
-if err := srv.Run(); err != nil {
-    log.Fatal(err)
-}
-
-```
-
 ### Customize test case
 
 We do not suggest to modify the generated code other than the `tests` variable, but in some cases, you may need to modify the generated code to meet your requirement, for example:
@@ -653,3 +627,17 @@ We do not suggest to modify the generated code other than the `tests` variable, 
         }
         // generated test code
     ```
+
+1. Unused fields
+
+    By default, the template provides `fields` structure to initialize object of the test target. But in some cases, not all `fields` are needed. So please delete unnecessary fields.
+
+    If the test case needs only `addr` of `fields`, please delete other fields.
+
+    ```go
+    type fields struct {
+        addr    string
+        // port    int   <- please delete this fields
+    }
+    ```
+    
