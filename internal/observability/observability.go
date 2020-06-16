@@ -24,11 +24,13 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/collector"
+	"github.com/vdaas/vald/internal/observability/exporter"
 	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
 	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
 	"github.com/vdaas/vald/internal/observability/exporter/stackdriver"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/observability/metrics/grpc"
+	"github.com/vdaas/vald/internal/observability/profiler"
 	pstackdriver "github.com/vdaas/vald/internal/observability/profiler/stackdriver"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -41,17 +43,18 @@ type Observability interface {
 }
 
 type observability struct {
-	eg         errgroup.Group
-	collector  collector.Collector
-	tracer     trace.Tracer
-	prometheus prometheus.Prometheus
-	jaeger     jaeger.Jaeger
-	sdExporter stackdriver.Stackdriver
-	sdProfiler pstackdriver.Stackdriver
+	eg        errgroup.Group
+	collector collector.Collector
+	tracer    trace.Tracer
+
+	exporters []exporter.Exporter
+	profilers []profiler.Profiler
 }
 
 func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observability, error) {
 	opts := make([]Option, 0)
+	exps := make([]exporter.Exporter, 0)
+	profs := make([]profiler.Profiler, 0)
 
 	col, err := collector.New(
 		collector.WithDuration(cfg.Collector.Duration),
@@ -81,7 +84,7 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 			return nil, err
 		}
 
-		opts = append(opts, WithPrometheus(prom))
+		exps = append(exps, prom)
 	}
 
 	if cfg.Jaeger.Enabled {
@@ -97,7 +100,7 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 			return nil, err
 		}
 
-		opts = append(opts, WithJaeger(jae))
+		exps = append(exps, jae)
 	}
 
 	if cfg.Stackdriver.Exporter.MonitoringEnabled || cfg.Stackdriver.Exporter.TracingEnabled {
@@ -117,7 +120,7 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 			return nil, err
 		}
 
-		opts = append(opts, WithStackdriverExporter(sdex))
+		exps = append(exps, sdex)
 	}
 
 	if cfg.Stackdriver.Profiler.Enabled {
@@ -140,8 +143,14 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 			return nil, err
 		}
 
-		opts = append(opts, WithStackdriverProfiler(sdp))
+		profs = append(profs, sdp)
 	}
+
+	opts = append(
+		opts,
+		WithExporters(exps...),
+		WithProfilers(profs...),
+	)
 
 	return New(opts...)
 }
@@ -180,29 +189,15 @@ func (o *observability) PreStart(ctx context.Context) (err error) {
 		return err
 	}
 
-	if o.prometheus != nil {
-		err = o.prometheus.Start(ctx)
+	for _, ex := range o.exporters {
+		err = ex.Start(ctx)
 		if err != nil {
 			return err
 		}
 	}
 
-	if o.jaeger != nil {
-		err = o.jaeger.Start(ctx)
-		if err != nil {
-			return err
-		}
-	}
-
-	if o.sdExporter != nil {
-		err = o.sdExporter.Start(ctx)
-		if err != nil {
-			return err
-		}
-	}
-
-	if o.sdProfiler != nil {
-		err = o.sdProfiler.Start(ctx)
+	for _, prof := range o.profilers {
+		err = prof.Start(ctx)
 		if err != nil {
 			return err
 		}
@@ -243,19 +238,7 @@ func (o *observability) Start(ctx context.Context) <-chan error {
 func (o *observability) Stop(ctx context.Context) {
 	o.collector.Stop(ctx)
 
-	if o.prometheus != nil {
-		o.prometheus.Stop(ctx)
-	}
-
-	if o.jaeger != nil {
-		o.jaeger.Stop(ctx)
-	}
-
-	if o.sdExporter != nil {
-		o.sdExporter.Stop(ctx)
-	}
-
-	if o.sdProfiler != nil {
-		o.sdProfiler.Stop(ctx)
+	for _, ex := range o.exporters {
+		ex.Stop(ctx)
 	}
 }

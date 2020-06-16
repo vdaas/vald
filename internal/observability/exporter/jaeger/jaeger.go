@@ -29,7 +29,6 @@ type jaegerOptions = jaeger.Options
 type Jaeger interface {
 	Start(ctx context.Context) error
 	Stop(ctx context.Context)
-	Exporter() *jaeger.Exporter
 }
 
 type exporter struct {
@@ -67,8 +66,4 @@ func (e *exporter) Stop(ctx context.Context) {
 	if e.exporter != nil {
 		e.exporter.Flush()
 	}
-}
-
-func (e *exporter) Exporter() *jaeger.Exporter {
-	return e.exporter
 }

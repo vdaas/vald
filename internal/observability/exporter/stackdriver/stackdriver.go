@@ -27,7 +27,6 @@ import (
 type Stackdriver interface {
 	Start(ctx context.Context) error
 	Stop(ctx context.Context)
-	Exporter() *stackdriver.Exporter
 }
 
 type exporter struct {
@@ -82,8 +81,4 @@ func (e *exporter) Stop(ctx context.Context) {
 
 		e.exporter.Flush()
 	}
-}
-
-func (e *exporter) Exporter() *stackdriver.Exporter {
-	return e.exporter
 }

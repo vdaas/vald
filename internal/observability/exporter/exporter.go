@@ -14,38 +14,14 @@
 // limitations under the License.
 //
 
-// Package stackdriver provides a stackdriver exporter.
-package stackdriver
+// Package exporter provides exporters.
+package exporter
 
 import (
 	"context"
-
-	"cloud.google.com/go/profiler"
-	"google.golang.org/api/option"
 )
 
-type Stackdriver interface {
+type Exporter interface {
 	Start(ctx context.Context) error
-}
-
-type prof struct {
-	*profiler.Config
-	clientOpts []option.ClientOption
-}
-
-func New(opts ...Option) (s Stackdriver, err error) {
-	p := new(prof)
-
-	for _, opt := range append(defaultOpts, opts...) {
-		err = opt(p)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return p, nil
-}
-
-func (p *prof) Start(ctx context.Context) (err error) {
-	return profiler.Start(*p.Config, p.clientOpts...)
+	Stop(ctx context.Context)
 }

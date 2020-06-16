@@ -38,7 +38,6 @@ type prometheusOptions struct {
 type Prometheus interface {
 	Start(ctx context.Context) error
 	Stop(ctx context.Context)
-	Exporter() *prometheus.Exporter
 	NewHTTPHandler() http.Handler
 }
 
@@ -80,10 +79,6 @@ func (e *exporter) Start(ctx context.Context) error {
 }
 
 func (e *exporter) Stop(ctx context.Context) {
-}
-
-func (e *exporter) Exporter() *prometheus.Exporter {
-	return e.exporter
 }
 
 func (e *exporter) NewHTTPHandler() http.Handler {
