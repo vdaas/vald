@@ -14,42 +14,41 @@
 // limitations under the License.
 //
 
-// Package prometheus provides a prometheus exporter.
-package prometheus
+// Package stackdriver provides a stackdriver exporter.
+package stackdriver
 
 import (
 	"context"
-	"net/http"
 	"reflect"
 	"testing"
 
-	"contrib.go.opencensus.io/exporter/prometheus"
+	"contrib.go.opencensus.io/exporter/stackdriver"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
 	type args struct {
-		opts []PrometheusOption
+		opts []Option
 	}
 	type want struct {
-		want Prometheus
-		err  error
+		wantS Stackdriver
+		err   error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Prometheus, error) error
+		checkFunc  func(want, Stackdriver, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Prometheus, err error) error {
+	defaultCheckFunc := func(w want, gotS Stackdriver, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+		if !reflect.DeepEqual(gotS, w.wantS) {
+			return errors.Errorf("got = %v, want %v", gotS, w.wantS)
 		}
 		return nil
 	}
@@ -83,7 +82,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -94,8 +93,8 @@ func TestNew(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got, err := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			gotS, err := New(test.args.opts...)
+			if err := test.checkFunc(test.want, gotS, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -108,8 +107,10 @@ func Test_exporter_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		exporter *prometheus.Exporter
-		options  prometheusOptions
+		exporter          *stackdriver.Exporter
+		monitoringEnabled bool
+		tracingEnabled    bool
+		Options           *stackdriver.Options
 	}
 	type want struct {
 		err error
@@ -139,7 +140,9 @@ func Test_exporter_Start(t *testing.T) {
 		       },
 		       fields: fields {
 		           exporter: nil,
-		           options: prometheusOptions{},
+		           monitoringEnabled: false,
+		           tracingEnabled: false,
+		           Options: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -156,7 +159,9 @@ func Test_exporter_Start(t *testing.T) {
 		           },
 		           fields: fields {
 		           exporter: nil,
-		           options: prometheusOptions{},
+		           monitoringEnabled: false,
+		           tracingEnabled: false,
+		           Options: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -167,7 +172,7 @@ func Test_exporter_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -178,8 +183,10 @@ func Test_exporter_Start(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			e := &exporter{
-				exporter: test.fields.exporter,
-				options:  test.fields.options,
+				exporter:          test.fields.exporter,
+				monitoringEnabled: test.fields.monitoringEnabled,
+				tracingEnabled:    test.fields.tracingEnabled,
+				Options:           test.fields.Options,
 			}
 
 			err := e.Start(test.args.ctx)
@@ -196,8 +203,10 @@ func Test_exporter_Stop(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		exporter *prometheus.Exporter
-		options  prometheusOptions
+		exporter          *stackdriver.Exporter
+		monitoringEnabled bool
+		tracingEnabled    bool
+		Options           *stackdriver.Options
 	}
 	type want struct {
 	}
@@ -223,7 +232,9 @@ func Test_exporter_Stop(t *testing.T) {
 		       },
 		       fields: fields {
 		           exporter: nil,
-		           options: prometheusOptions{},
+		           monitoringEnabled: false,
+		           tracingEnabled: false,
+		           Options: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -240,7 +251,9 @@ func Test_exporter_Stop(t *testing.T) {
 		           },
 		           fields: fields {
 		           exporter: nil,
-		           options: prometheusOptions{},
+		           monitoringEnabled: false,
+		           tracingEnabled: false,
+		           Options: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -251,7 +264,7 @@ func Test_exporter_Stop(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -262,157 +275,16 @@ func Test_exporter_Stop(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			e := &exporter{
-				exporter: test.fields.exporter,
-				options:  test.fields.options,
+				exporter:          test.fields.exporter,
+				monitoringEnabled: test.fields.monitoringEnabled,
+				tracingEnabled:    test.fields.tracingEnabled,
+				Options:           test.fields.Options,
 			}
 
 			e.Stop(test.args.ctx)
 			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-		})
-	}
-}
-
-func Test_exporter_NewHTTPHandler(t *testing.T) {
-	type fields struct {
-		exporter *prometheus.Exporter
-		options  prometheusOptions
-	}
-	type want struct {
-		want http.Handler
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, http.Handler) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got http.Handler) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           exporter: nil,
-		           options: prometheusOptions{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           exporter: nil,
-		           options: prometheusOptions{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			e := &exporter{
-				exporter: test.fields.exporter,
-				options:  test.fields.options,
-			}
-
-			got := e.NewHTTPHandler()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func TestExporter(t *testing.T) {
-	type want struct {
-		want Prometheus
-		err  error
-	}
-	type test struct {
-		name       string
-		want       want
-		checkFunc  func(want, Prometheus, error) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got Prometheus, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got, err := Exporter()
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
 		})
 	}
 }
