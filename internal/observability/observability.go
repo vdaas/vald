@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/exporter/stackdriver"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/observability/metrics/grpc"
+	pstackdriver "github.com/vdaas/vald/internal/observability/profiler/stackdriver"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 )
@@ -40,12 +41,13 @@ type Observability interface {
 }
 
 type observability struct {
-	eg          errgroup.Group
-	collector   collector.Collector
-	tracer      trace.Tracer
-	prometheus  prometheus.Prometheus
-	jaeger      jaeger.Jaeger
-	stackdriver stackdriver.Stackdriver
+	eg         errgroup.Group
+	collector  collector.Collector
+	tracer     trace.Tracer
+	prometheus prometheus.Prometheus
+	jaeger     jaeger.Jaeger
+	sdExporter stackdriver.Stackdriver
+	sdProfiler pstackdriver.Stackdriver
 }
 
 func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observability, error) {
@@ -98,24 +100,47 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 		opts = append(opts, WithJaeger(jae))
 	}
 
-	if cfg.Stackdriver.Enabled {
-		sd, err := stackdriver.New(
+	if cfg.Stackdriver.Exporter.MonitoringEnabled || cfg.Stackdriver.Exporter.TracingEnabled {
+		sdex, err := stackdriver.New(
 			stackdriver.WithProjectID(cfg.Stackdriver.ProjectID),
-			stackdriver.WithLocation(cfg.Stackdriver.Location),
-			stackdriver.WithBundleDelayThreshold(cfg.Stackdriver.BundleDelayThreshold),
-			stackdriver.WithBundleCountThreshold(cfg.Stackdriver.BundleCountThreshold),
-			stackdriver.WithTraceSpansBufferMaxBytes(cfg.Stackdriver.TraceSpansBufferMaxBytes),
-			stackdriver.WithMetricPrefix(cfg.Stackdriver.MetricPrefix),
-			stackdriver.WithSkipCMD(cfg.Stackdriver.SkipCMD),
-			stackdriver.WithTimeout(cfg.Stackdriver.Timeout),
-			stackdriver.WithReportingInterval(cfg.Stackdriver.ReportingInterval),
-			stackdriver.WithNumberOfWorkers(cfg.Stackdriver.NumberOfWorkers),
+			stackdriver.WithLocation(cfg.Stackdriver.Exporter.Location),
+			stackdriver.WithBundleDelayThreshold(cfg.Stackdriver.Exporter.BundleDelayThreshold),
+			stackdriver.WithBundleCountThreshold(cfg.Stackdriver.Exporter.BundleCountThreshold),
+			stackdriver.WithTraceSpansBufferMaxBytes(cfg.Stackdriver.Exporter.TraceSpansBufferMaxBytes),
+			stackdriver.WithMetricPrefix(cfg.Stackdriver.Exporter.MetricPrefix),
+			stackdriver.WithSkipCMD(cfg.Stackdriver.Exporter.SkipCMD),
+			stackdriver.WithTimeout(cfg.Stackdriver.Exporter.Timeout),
+			stackdriver.WithReportingInterval(cfg.Stackdriver.Exporter.ReportingInterval),
+			stackdriver.WithNumberOfWorkers(cfg.Stackdriver.Exporter.NumberOfWorkers),
 		)
 		if err != nil {
 			return nil, err
 		}
 
-		opts = append(opts, WithStackdriver(sd))
+		opts = append(opts, WithStackdriverExporter(sdex))
+	}
+
+	if cfg.Stackdriver.Profiler.Enabled {
+		sdp, err := pstackdriver.New(
+			pstackdriver.WithProjectID(cfg.Stackdriver.ProjectID),
+			pstackdriver.WithService(cfg.Stackdriver.Profiler.Service),
+			pstackdriver.WithServiceVersion(cfg.Stackdriver.Profiler.ServiceVersion),
+			pstackdriver.WithDebugLogging(cfg.Stackdriver.Profiler.DebugLogging),
+			pstackdriver.WithMutexProfiling(cfg.Stackdriver.Profiler.MutexProfiling),
+			pstackdriver.WithCPUProfiling(cfg.Stackdriver.Profiler.CPUProfiling),
+			pstackdriver.WithAllocProfiling(cfg.Stackdriver.Profiler.AllocProfiling),
+			pstackdriver.WithHeapProfiling(cfg.Stackdriver.Profiler.HeapProfiling),
+			pstackdriver.WithGoroutineProfiling(cfg.Stackdriver.Profiler.GoroutineProfiling),
+			pstackdriver.WithAllocForceGC(cfg.Stackdriver.Profiler.AllocForceGC),
+			pstackdriver.WithAPIAddr(cfg.Stackdriver.Profiler.APIAddr),
+			pstackdriver.WithInstance(cfg.Stackdriver.Profiler.Instance),
+			pstackdriver.WithZone(cfg.Stackdriver.Profiler.Zone),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, WithStackdriverProfiler(sdp))
 	}
 
 	return New(opts...)
@@ -169,8 +194,15 @@ func (o *observability) PreStart(ctx context.Context) (err error) {
 		}
 	}
 
-	if o.stackdriver != nil {
-		err = o.stackdriver.Start(ctx)
+	if o.sdExporter != nil {
+		err = o.sdExporter.Start(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
+	if o.sdProfiler != nil {
+		err = o.sdProfiler.Start(ctx)
 		if err != nil {
 			return err
 		}
@@ -219,7 +251,11 @@ func (o *observability) Stop(ctx context.Context) {
 		o.jaeger.Stop(ctx)
 	}
 
-	if o.stackdriver != nil {
-		o.stackdriver.Stop(ctx)
+	if o.sdExporter != nil {
+		o.sdExporter.Stop(ctx)
+	}
+
+	if o.sdProfiler != nil {
+		o.sdProfiler.Stop(ctx)
 	}
 }

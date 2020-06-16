@@ -43,6 +43,22 @@ var (
 	}
 )
 
+func WithMonitoring(enabled bool) Option {
+	return func(e *exporter) error {
+		e.monitoringEnabled = enabled
+
+		return nil
+	}
+}
+
+func WithTracing(enabled bool) Option {
+	return func(e *exporter) error {
+		e.tracingEnabled = enabled
+
+		return nil
+	}
+}
+
 func WithProjectID(pid string) Option {
 	return func(e *exporter) error {
 		if pid != "" {
@@ -77,6 +93,7 @@ func WithMonitoringClientOptions(copts ...option.ClientOption) Option {
 	return func(e *exporter) error {
 		if e.MonitoringClientOptions == nil {
 			e.MonitoringClientOptions = copts
+			return nil
 		}
 
 		e.MonitoringClientOptions = append(e.MonitoringClientOptions, copts...)
@@ -89,6 +106,7 @@ func WithTraceClientOptions(copts ...option.ClientOption) Option {
 	return func(e *exporter) error {
 		if e.TraceClientOptions == nil {
 			e.TraceClientOptions = copts
+			return nil
 		}
 
 		e.TraceClientOptions = append(e.TraceClientOptions, copts...)

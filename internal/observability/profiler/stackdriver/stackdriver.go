@@ -20,70 +20,37 @@ package stackdriver
 import (
 	"context"
 
-	"contrib.go.opencensus.io/exporter/stackdriver"
-	"go.opencensus.io/trace"
+	"cloud.google.com/go/profiler"
+	"google.golang.org/api/option"
 )
 
 type Stackdriver interface {
 	Start(ctx context.Context) error
 	Stop(ctx context.Context)
-	Exporter() *stackdriver.Exporter
 }
 
-type exporter struct {
-	exporter *stackdriver.Exporter
-
-	monitoringEnabled bool
-	tracingEnabled    bool
-
-	*stackdriver.Options
+type prof struct {
+	*profiler.Config
+	clientOpts []option.ClientOption
 }
 
 func New(opts ...Option) (s Stackdriver, err error) {
-	e := new(exporter)
+	p := new(prof)
 
 	for _, opt := range append(defaultOpts, opts...) {
-		err = opt(e)
+		err = opt(p)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return e, nil
+	return p, nil
 }
 
-func (e *exporter) Start(ctx context.Context) (err error) {
-	e.Options.Context = ctx
-
-	e.exporter, err = stackdriver.NewExporter(*e.Options)
-	if err != nil {
-		return err
-	}
-
-	if e.monitoringEnabled {
-		err = e.exporter.StartMetricsExporter()
-		if err != nil {
-			return err
-		}
-	}
-
-	if e.tracingEnabled {
-		trace.RegisterExporter(e.exporter)
-	}
-
-	return nil
+func (p *prof) Start(ctx context.Context) (err error) {
+	return profiler.Start(*p.Config, p.clientOpts...)
 }
 
-func (e *exporter) Stop(ctx context.Context) {
-	if e.exporter != nil {
-		if e.monitoringEnabled {
-			e.exporter.StopMetricsExporter()
-		}
-
-		e.exporter.Flush()
-	}
-}
-
-func (e *exporter) Exporter() *stackdriver.Exporter {
-	return e.exporter
+func (p *prof) Stop(ctx context.Context) {
+	return
 }

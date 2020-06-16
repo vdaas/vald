@@ -622,39 +622,87 @@ defaults:
       buffer_max_count: 10
     # @schema {"name": "defaults.observability.stackdriver", "type": "object"}
     stackdriver:
-      # @schema {"name": "defaults.observability.stackdriver.enabled", "type": "boolean"}
-      # defaults.observability.stackdriver.enabled -- Stackdriver exporter enabled
-      enabled: false
       # @schema {"name": "defaults.observability.stackdriver.project_id", "type": "string"}
       # defaults.observability.stackdriver.project_id -- project id for uploading the stats data
       project_id: ""
-      # @schema {"name": "defaults.observability.stackdriver.location", "type": "string"}
-      # defaults.observability.stackdriver.location -- identifier of the GCP or AWS cloud region/zone the data is stored.
-      location: ""
-      # @schema {"name": "defaults.observability.stackdriver.bundle_delay_threshold", "type": "string"}
-      # defaults.observability.stackdriver.bundle_delay_threshold -- the max amount of time the exporter can wait before uploading data.
-      bundle_delay_threshold: "0"
-      # @schema {"name": "defaults.observability.stackdriver.bundle_count_threshold", "type": "integer"}
-      # defaults.observability.stackdriver.bundle_count_threshold -- how many view data events or trace spans can be buffered.
-      bundle_count_threshold: 0
-      # @schema {"name": "defaults.observability.stackdriver.trace_spans_buffer_max_bytes", "type": "integer"}
-      # defaults.observability.stackdriver.trace_spans_buffer_max_bytes -- maximum size of spans that will be buffered.
-      trace_spans_buffer_max_bytes: 0
-      # @schema {"name": "defaults.observability.stackdriver.metric_prefix", "type": "string"}
-      # defaults.observability.stackdriver.metric_prefix -- the prefix of a Stackdriver metric names.
-      metric_prefix: "vald.vdaas.org"
-      # @schema {"name": "defaults.observability.stackdriver.skip_cmd", "type": "boolean"}
-      # defaults.observability.stackdriver.skip_cmd -- skip all the CreateMetricDescriptor calls
-      skip_cmd: false
-      # @schema {"name": "defaults.observability.stackdriver.timeout", "type": "string"}
-      # defaults.observability.stackdriver.timeout -- timeout for all API calls
-      timeout: "5s"
-      # @schema {"name": "defaults.observability.stackdriver.reporting_interval", "type": "string"}
-      # defaults.observability.stackdriver.reporting_interval -- interval between reporting metrics
-      reporting_interval: "1m"
-      # @schema {"name": "defaults.observability.stackdriver.number_of_workers", "type": "integer"}
-      # defaults.observability.stackdriver.number_of_workers -- number of workers
-      number_of_workers: 1
+      # @schema {"name": "defaults.observability.stackdriver.exporter", "type": "object"}
+      exporter:
+        # @schema {"name": "defaults.observability.stackdriver.exporter.monitoring_enabled", "type": "boolean"}
+        # defaults.observability.stackdriver.exporter.monitoring_enabled -- stackdriver monitoring enabled
+        monitoring_enabled: false
+        # @schema {"name": "defaults.observability.stackdriver.exporter.tracing_enabled", "type": "boolean"}
+        # defaults.observability.stackdriver.exporter.tracing_enabled -- stackdriver tracing enabled
+        tracing_enabled: false
+        # @schema {"name": "defaults.observability.stackdriver.exporter.location", "type": "string"}
+        # defaults.observability.stackdriver.exporter.location -- identifier of the GCP or AWS cloud region/zone the data is stored.
+        location: ""
+        # @schema {"name": "defaults.observability.stackdriver.exporter.bundle_delay_threshold", "type": "string"}
+        # defaults.observability.stackdriver.exporter.bundle_delay_threshold -- the max amount of time the exporter can wait before uploading data.
+        bundle_delay_threshold: "0"
+        # @schema {"name": "defaults.observability.stackdriver.exporter.bundle_count_threshold", "type": "integer"}
+        # defaults.observability.stackdriver.exporter.bundle_count_threshold -- how many view data events or trace spans can be buffered.
+        bundle_count_threshold: 0
+        # @schema {"name": "defaults.observability.stackdriver.exporter.trace_spans_buffer_max_bytes", "type": "integer"}
+        # defaults.observability.stackdriver.exporter.trace_spans_buffer_max_bytes -- maximum size of spans that will be buffered.
+        trace_spans_buffer_max_bytes: 0
+        # @schema {"name": "defaults.observability.stackdriver.exporter.metric_prefix", "type": "string"}
+        # defaults.observability.stackdriver.exporter.metric_prefix -- the prefix of a stackdriver metric names.
+        metric_prefix: "vald.vdaas.org"
+        # @schema {"name": "defaults.observability.stackdriver.exporter.skip_cmd", "type": "boolean"}
+        # defaults.observability.stackdriver.exporter.skip_cmd -- skip all the CreateMetricDescriptor calls
+        skip_cmd: false
+        # @schema {"name": "defaults.observability.stackdriver.exporter.timeout", "type": "string"}
+        # defaults.observability.stackdriver.exporter.timeout -- timeout for all API calls
+        timeout: "5s"
+        # @schema {"name": "defaults.observability.stackdriver.exporter.reporting_interval", "type": "string"}
+        # defaults.observability.stackdriver.exporter.reporting_interval -- interval between reporting metrics
+        reporting_interval: "1m"
+        # @schema {"name": "defaults.observability.stackdriver.exporter.number_of_workers", "type": "integer"}
+        # defaults.observability.stackdriver.exporter.number_of_workers -- number of workers
+        number_of_workers: 1
+      # @schema {"name": "defaults.observability.stackdriver.profiler", "type": "object"}
+      profiler:
+        # @schema {"name": "defaults.observability.stackdriver.profiler.enabled", "type": "boolean"}
+        # defaults.observability.stackdriver.profiler.enabled -- stackdriver profiler enabled.
+        enabled: false
+        # @schema {"name": "defaults.observability.stackdriver.profiler.service", "type": "string"}
+        # defaults.observability.stackdriver.profiler.service -- the name of the service.
+        service: ""
+        # @schema {"name": "defaults.observability.stackdriver.profiler.service_version", "type": "string"}
+        # defaults.observability.stackdriver.profiler.service_version -- the version of the service.
+        service_version: ""
+        # @schema {"name": "defaults.observability.stackdriver.profiler.debug_logging", "type": "boolean"}
+        # defaults.observability.stackdriver.profiler.debug_logging -- enables detailed logging from profiler.
+        debug_logging: false
+        # @schema {"name": "defaults.observability.stackdriver.profiler.mutex_profiling", "type": "boolean"}
+        # defaults.observability.stackdriver.profiler.mutex_profiling -- enables mutex profiling.
+        mutex_profiling: true
+        # @schema {"name": "defaults.observability.stackdriver.profiler.cpu_profiling", "type": "boolean"}
+        # defaults.observability.stackdriver.profiler.cpu_profiling -- enables CPU profiling.
+        cpu_profiling: true
+        # @schema {"name": "defaults.observability.stackdriver.profiler.alloc_profiling", "type": "boolean"}
+        # defaults.observability.stackdriver.profiler.alloc_profiling -- enables allocation profiling.
+        alloc_profiling: true
+        # @schema {"name": "defaults.observability.stackdriver.profiler.heap_profiling", "type": "boolean"}
+        # defaults.observability.stackdriver.profiler.heap_profiling -- enables heap profiling.
+        heap_profiling: true
+        # @schema {"name": "defaults.observability.stackdriver.profiler.goroutine_profiling", "type": "boolean"}
+        # defaults.observability.stackdriver.profiler.goroutine_profiling -- enables goroutine profiling.
+        goroutine_profiling: true
+        # @schema {"name": "defaults.observability.stackdriver.profiler.alloc_force_gc", "type": "boolean"}
+        # defaults.observability.stackdriver.profiler.alloc_force_gc -- forces GC before the collection of each heap profile.
+        alloc_force_gc: false
+        # @schema {"name": "defaults.observability.stackdriver.profiler.api_addr", "type": "string"}
+        # defaults.observability.stackdriver.profiler.api_addr -- HTTP endpoint to use to connect to the profiler agent API.
+        api_addr: ""
+        # @schema {"name": "defaults.observability.stackdriver.profiler.instance", "type": "string"}
+        # defaults.observability.stackdriver.profiler.instance -- the name of Compute Engine instance.
+        # This is normally determined from the Compute Engine metadata server and doesn't need to be initialized.
+        instance: ""
+        # @schema {"name": "defaults.observability.stackdriver.profiler.zone", "type": "string"}
+        # defaults.observability.stackdriver.profiler.zone -- the zone of Compute Engine instance.
+        # This is normally determined from the Compute Engine metadata server and doesn't need to be initialized.
+        zone: ""
 
 # @schema {"name": "gateway", "type": "object"}
 gateway:
@@ -857,6 +905,9 @@ gateway:
   observability:
     jaeger:
       service_name: vald-gateway
+    stackdriver:
+      profiler:
+        service: vald-gateway
   # @schema {"name": "gateway.filter", "type": "object"}
   filter:
     # @schema {"name": "gateway.filter.egress", "type": "array", "items": {"type": "string"}}
@@ -1111,6 +1162,9 @@ agent:
   observability:
     jaeger:
       service_name: vald-agent-ngt
+    stackdriver:
+      profiler:
+        service: vald-agent-ngt
   # @schema {"name": "agent.resources", "alias": "resources"}
   # agent.resources -- compute resources.
   # recommended setting of memory requests = cluster memory * 0.4 / number of agent pods
@@ -1258,6 +1312,9 @@ agent:
     observability:
       jaeger:
         service_name: vald-agent-sidecar
+      stackdriver:
+        profiler:
+          service: vald-agent-sidecar
     # @schema {"name": "agent.sidecar.resources", "alias": "resources"}
     # agent.sidecar.resources -- compute resources.
     resources:
@@ -1606,6 +1663,9 @@ discoverer:
   observability:
     jaeger:
       service_name: vald-discoverer
+    stackdriver:
+      profiler:
+        service: vald-discoverer
   # @schema {"name": "discoverer.resources", "alias": "resources"}
   # discoverer.resources -- compute resources
   resources:
@@ -1806,6 +1866,9 @@ compressor:
   observability:
     jaeger:
       service_name: vald-manager-compressor
+    stackdriver:
+      profiler:
+        service: vald-manager-compressor
   # @schema {"name": "compressor.resources", "alias": "resources"}
   # compressor.resources -- compute resources
   resources:
@@ -2051,6 +2114,9 @@ backupManager:
   observability:
     jaeger:
       service_name: vald-manager-backup
+    stackdriver:
+      profiler:
+        service: vald-manager-backup
   # @schema {"name": "backupManager.resources", "alias": "resources"}
   # backupManager.resources -- compute resources
   resources:
@@ -2450,6 +2516,9 @@ indexManager:
   observability:
     jaeger:
       service_name: vald-manager-index
+    stackdriver:
+      profiler:
+        service: vald-manager-index
   # @schema {"name": "indexManager.resources", "alias": "resources"}
   # indexManager.resources -- compute resources
   resources:
@@ -2694,6 +2763,9 @@ meta:
   observability:
     jaeger:
       service_name: vald-meta
+    stackdriver:
+      profiler:
+        service: vald-meta
   # @schema {"name": "meta.resources", "alias": "resources"}
   # meta.resources -- compute resources
   resources:

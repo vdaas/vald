@@ -64,11 +64,17 @@ type Jaeger struct {
 }
 
 type Stackdriver struct {
-	Enabled bool `json:"enabled" yaml:"enabled"`
-
 	ProjectID string `json:"project_id" yaml:"project_id"`
-	Location  string `json:"location" yaml:"location"`
 
+	Exporter *StackdriverExporter `json:"exporter" yaml:"exporter"`
+	Profiler *StackdriverProfiler `json:"profiler" yaml:"profiler"`
+}
+
+type StackdriverExporter struct {
+	MonitoringEnabled bool `json:"monitoring_enabled" yaml:"monitoring_enabled"`
+	TracingEnabled    bool `json:"tracing_enabled" yaml:"tracing_enabled"`
+
+	Location                 string `json:"location" yaml:"location"`
 	BundleDelayThreshold     string `json:"bundle_delay_threshold" yaml:"bundle_delay_threshold"`
 	BundleCountThreshold     int    `json:"bundle_count_threshold" yaml:"bundle_count_threshold"`
 	TraceSpansBufferMaxBytes int    `json:"trace_spans_buffer_max_bytes" yaml:"trace_spans_buffer_max_bytes"`
@@ -79,6 +85,26 @@ type Stackdriver struct {
 	Timeout           string `json:"timeout" yaml:"timeout"`
 	ReportingInterval string `json:"reporting_interval" yaml:"reporting_interval"`
 	NumberOfWorkers   int    `json:"number_of_workers" yaml:"number_of_workers"`
+}
+
+type StackdriverProfiler struct {
+	Enabled        bool   `json:"enabled" yaml:"enabled"`
+	Service        string `json:"service" yaml:"service"`
+	ServiceVersion string `json:"service_version" yaml:"service_version"`
+	DebugLogging   bool   `json:"debug_logging" yaml:"debug_logging"`
+
+	MutexProfiling     bool `json:"mutex_profiling" yaml:"mutex_profiling"`
+	CPUProfiling       bool `json:"cpu_profiling" yaml:"cpu_profiling"`
+	AllocProfiling     bool `json:"alloc_profiling" yaml:"alloc_profiling"`
+	HeapProfiling      bool `json:"heap_profiling" yaml:"heap_profiling"`
+	GoroutineProfiling bool `json:"goroutine_profiling" yaml:"goroutine_profiling"`
+
+	AllocForceGC bool `json:"alloc_force_gc" yaml:"alloc_force_gc"`
+
+	APIAddr string `json:"api_addr" yaml:"api_addr"`
+
+	Instance string `json:"instance" yaml:"instance"`
+	Zone     string `json:"zone" yaml:"zone"`
 }
 
 func (o *Observability) Bind() *Observability {
@@ -110,15 +136,36 @@ func (o *Observability) Bind() *Observability {
 	}
 
 	if o.Stackdriver != nil {
-		o.Stackdriver.ProjectID = GetActualValue(o.Stackdriver.ProjectID)
-		o.Stackdriver.Location = GetActualValue(o.Stackdriver.Location)
-		o.Stackdriver.BundleDelayThreshold = GetActualValue(o.Stackdriver.BundleDelayThreshold)
-		o.Stackdriver.MetricPrefix = GetActualValue(o.Stackdriver.MetricPrefix)
-		o.Stackdriver.Timeout = GetActualValue(o.Stackdriver.Timeout)
-		o.Stackdriver.ReportingInterval = GetActualValue(o.Stackdriver.ReportingInterval)
+		o.Stackdriver = o.Stackdriver.Bind()
 	} else {
 		o.Stackdriver = new(Stackdriver)
 	}
 
 	return o
+}
+
+func (sd *Stackdriver) Bind() *Stackdriver {
+	sd.ProjectID = GetActualValue(sd.ProjectID)
+
+	if sd.Exporter != nil {
+		sd.Exporter.Location = GetActualValue(sd.Exporter.Location)
+		sd.Exporter.BundleDelayThreshold = GetActualValue(sd.Exporter.BundleDelayThreshold)
+		sd.Exporter.MetricPrefix = GetActualValue(sd.Exporter.MetricPrefix)
+		sd.Exporter.Timeout = GetActualValue(sd.Exporter.Timeout)
+		sd.Exporter.ReportingInterval = GetActualValue(sd.Exporter.ReportingInterval)
+	} else {
+		sd.Exporter = new(StackdriverExporter)
+	}
+
+	if sd.Profiler != nil {
+		sd.Profiler.Service = GetActualValue(sd.Profiler.Service)
+		sd.Profiler.ServiceVersion = GetActualValue(sd.Profiler.ServiceVersion)
+		sd.Profiler.APIAddr = GetActualValue(sd.Profiler.APIAddr)
+		sd.Profiler.Instance = GetActualValue(sd.Profiler.Instance)
+		sd.Profiler.Zone = GetActualValue(sd.Profiler.Zone)
+	} else {
+		sd.Profiler = new(StackdriverProfiler)
+	}
+
+	return sd
 }
