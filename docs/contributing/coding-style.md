@@ -634,7 +634,41 @@ We do not suggest to modify the generated code other than the `tests` variable, 
     
     But in some cases, not all `fields` are needed, so please delete the unnecessary fields.
 
-    If the test case needs only `addr` of `fields`, please delete other fields.
+    For example, the following struct and the corresponding function:
+    
+    ```golang
+    type server struct {
+        addr string
+        port int
+    }
+    func (s *server) Addr() string {
+        return s.addr
+     }
+    ```
+
+    And the generated test code is:
+    ```golang
+    func Test_server_Addr(t *testing.T) {
+        type fields struct {
+            addr string
+            port int
+	}
+	type want struct {
+        // generated test code
+    ```
+
+    Since the `port` variable is not used in this test case, you can delete the `port` definition in the test case.
+
+    ```golang
+    func Test_server_Addr(t *testing.T) {
+        type fields struct {
+            addr string
+            // port int   <-- this line should be deleted
+	}
+	type want struct {
+        // generated test code
+    ```
+
 
     ```go
     type fields struct {
