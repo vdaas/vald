@@ -281,7 +281,7 @@ type server struct {
     port int
 }
 
-// The port number is included in `addr`, so the `port` field of `server` is not used.
+// The `port` field of `server` is not used.
 srv := &server {
     addr: "192.168.33.10:1234",
 }
