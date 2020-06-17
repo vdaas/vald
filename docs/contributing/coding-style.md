@@ -658,7 +658,6 @@ We do not suggest to modify the generated code other than the `tests` variable, 
     ```
 
     Since the `port` variable is not used in this test case, you can delete the `port` definition in the test case.
-
     ```golang
     func Test_server_Addr(t *testing.T) {
         type fields struct {
