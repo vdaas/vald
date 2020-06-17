@@ -272,14 +272,17 @@ So please delete the unused variable.
 Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error. This is an example of the unused variable declaration that does not cause a compilation error.
 
 ```golang
+// In this case, this example are not using `port` field, but dose not cause a compilation error.
+// So please delete `port` field of `server`.
+
 type server struct {
     addr string
     port int
 }
 
+// The port number is included in `addr`, so the `port` field of `server` is not used.
 srv := &server {
     addr: "192.168.33.10:1234",
-    // port <- unused variables
 }
 
 if err := srv.Run(); err != nil {
