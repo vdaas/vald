@@ -271,7 +271,7 @@ So please delete the unused variable.
 
 Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error. This is an example of the unused variable declaration that does not cause a compilation error.<br />
 
-```go
+```golang
 type server struct {
     addr string
     port int
