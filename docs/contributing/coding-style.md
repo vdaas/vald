@@ -269,7 +269,8 @@ func (s *something) SetSignedTok(st string) {
 An unused variable may increase the complexity of the source code, it may confuse the developer hence introduce a new bug.
 So please delete the unused variable.
 
-Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error. This is an example of the unused variable declaration that does not cause a compilation error.
+Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error. 
+This is an example of the unused variable declaration that does not cause a compilation error.
 
 ```golang
 // In this case, this example are not using `port` field, but dose not cause a compilation error.
