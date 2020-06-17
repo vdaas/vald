@@ -200,6 +200,7 @@ func TestGet(t *testing.T) {
 		func() test {
 			ctx := context.Background()
 			egctx, cancel := context.WithCancel(ctx)
+
 			return test{
 				name: "returns instance when instance is nil",
 				want: want{
@@ -269,12 +270,8 @@ func TestGo(t *testing.T) {
 		func() test {
 			var calledCnt int32
 
-			var enableLimitation atomic.Value
-			enableLimitation.Store(false)
-
-			g := &group{
-				enableLimitation: enableLimitation,
-			}
+			g := new(group)
+			g.enableLimitation.Store(false)
 
 			return test{
 				name: "instance.Go is called when instance is not nil",
@@ -354,47 +351,45 @@ func Test_group_Limitation(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			var el atomic.Value
-			el.Store(false)
+		{
+			name: "set disable when limit is 0",
+			args: args{
+				limit: 0,
+			},
+			fields: fields{
+				limitation:       make(chan struct{}),
+				enableLimitation: atomic.Value{},
+			},
+			want: want{
+				want: &group{
+					enableLimitation: func() atomic.Value {
+						var el atomic.Value
+						el.Store(false)
+						return el
+					}(),
+				},
+			},
+		},
 
-			return test{
-				name: "set disable when limit is 0",
-				args: args{
-					limit: -1,
+		{
+			name: "set enable when limit is 1",
+			args: args{
+				limit: 1,
+			},
+			fields: fields{
+				limitation:       make(chan struct{}),
+				enableLimitation: atomic.Value{},
+			},
+			want: want{
+				want: &group{
+					enableLimitation: func() atomic.Value {
+						var el atomic.Value
+						el.Store(true)
+						return el
+					}(),
 				},
-				fields: fields{
-					limitation:       make(chan struct{}),
-					enableLimitation: atomic.Value{},
-				},
-				want: want{
-					want: &group{
-						enableLimitation: el,
-					},
-				},
-			}
-		}(),
-
-		func() test {
-			var el atomic.Value
-			el.Store(true)
-
-			return test{
-				name: "set enable when limit is 1",
-				args: args{
-					limit: 1,
-				},
-				fields: fields{
-					limitation:       make(chan struct{}),
-					enableLimitation: atomic.Value{},
-				},
-				want: want{
-					want: &group{
-						enableLimitation: el,
-					},
-				},
-			}
-		}(),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -444,17 +439,14 @@ func Test_group_Go(t *testing.T) {
 		func() test {
 			var calledCnt int32
 
-			var enableLimitation atomic.Value
-			enableLimitation.Store(true)
-
 			egctx, cancel := context.WithCancel(context.Background())
 			cancel()
 
 			g := &group{
-				egctx:            egctx,
-				limitation:       make(chan struct{}),
-				enableLimitation: enableLimitation,
+				egctx:      egctx,
+				limitation: make(chan struct{}),
 			}
+			g.enableLimitation.Store(true)
 
 			return test{
 				name: "f is not called when reached limit and cancel g.egctx",
@@ -485,17 +477,14 @@ func Test_group_Go(t *testing.T) {
 		func() test {
 			var calledCnt int32
 
-			var enableLimitation atomic.Value
-			enableLimitation.Store(true)
-
 			egctx, cancel := context.WithCancel(context.Background())
 
 			g := &group{
-				egctx:            egctx,
-				cancel:           cancel,
-				limitation:       make(chan struct{}, 1),
-				enableLimitation: enableLimitation,
+				egctx:      egctx,
+				cancel:     cancel,
+				limitation: make(chan struct{}, 1),
 			}
+			g.enableLimitation.Store(true)
 
 			return test{
 				name: "f is called and f returns nil",
@@ -524,12 +513,11 @@ func Test_group_Go(t *testing.T) {
 		}(),
 
 		func() test {
-			var calledCnt int32
+			var (
+				calledCnt       int32
+				cancelCalledCnt int32
+			)
 
-			var enableLimitation atomic.Value
-			enableLimitation.Store(true)
-
-			var cancelCalledCnt int32
 			egctx, cancel := context.WithCancel(context.Background())
 
 			g := &group{
@@ -538,10 +526,10 @@ func Test_group_Go(t *testing.T) {
 					cancel()
 					atomic.AddInt32(&cancelCalledCnt, 1)
 				},
-				emap:             make(map[string]struct{}),
-				limitation:       make(chan struct{}, 1),
-				enableLimitation: enableLimitation,
+				emap:       make(map[string]struct{}),
+				limitation: make(chan struct{}, 1),
 			}
+			g.enableLimitation.Store(true)
 
 			return test{
 				name: "f is called and f returns error",
