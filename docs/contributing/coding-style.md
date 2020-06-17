@@ -278,7 +278,7 @@ This is an example of the unused variable declaration that does not cause a comp
 
 type server struct {
     addr string
-    port int
+    port int  // you have to delete this field.
 }
 
 // The `port` field of `server` is not used.
