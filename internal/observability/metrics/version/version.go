@@ -51,7 +51,7 @@ func New(labels ...string) (metrics.Metric, error) {
 func labelKVs(labels ...string) (map[metrics.Key]string, error) {
 	labelMap := make(map[string]struct{}, len(labels))
 	for _, label := range labels {
-		labelMap[label] = struct{}{}
+		labelMap[reps.Replace(label)] = struct{}{}
 	}
 
 	d := info.Get()
