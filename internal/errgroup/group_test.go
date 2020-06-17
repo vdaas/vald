@@ -259,19 +259,16 @@ func TestGo(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		checkFunc  func() error
+		checkFunc  func(Group) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func() error {
+	defaultCheckFunc := func(Group) error {
 		return nil
 	}
 	tests := []test{
 		func() test {
 			var calledCnt int32
-
-			g := new(group)
-			g.enableLimitation.Store(false)
 
 			return test{
 				name: "instance.Go is called when instance is not nil",
@@ -282,10 +279,12 @@ func TestGo(t *testing.T) {
 					},
 				},
 				beforeFunc: func(args) {
+					g := new(group)
+					g.enableLimitation.Store(false)
 					instance = g
 				},
-				checkFunc: func() error {
-					if err := g.Wait(); err != nil {
+				checkFunc: func(got Group) error {
+					if err := got.Wait(); err != nil {
 						return err
 					}
 
@@ -313,7 +312,7 @@ func TestGo(t *testing.T) {
 			}
 
 			Go(test.args.f)
-			if err := test.checkFunc(); err != nil {
+			if err := test.checkFunc(instance); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -357,8 +356,7 @@ func Test_group_Limitation(t *testing.T) {
 				limit: 0,
 			},
 			fields: fields{
-				limitation:       make(chan struct{}),
-				enableLimitation: atomic.Value{},
+				limitation: make(chan struct{}),
 			},
 			want: want{
 				want: &group{
@@ -377,8 +375,7 @@ func Test_group_Limitation(t *testing.T) {
 				limit: 1,
 			},
 			fields: fields{
-				limitation:       make(chan struct{}),
-				enableLimitation: atomic.Value{},
+				limitation: make(chan struct{}),
 			},
 			want: want{
 				want: &group{
@@ -421,19 +418,33 @@ func Test_group_Go(t *testing.T) {
 	type args struct {
 		f func() error
 	}
-	type generator struct {
-		do func() *group
+	type fields struct {
+		egctx            context.Context
+		cancel           func()
+		limitation       chan struct{}
+		enableLimitation atomic.Value
+		emap             map[string]struct{}
 	}
 	type test struct {
 		name       string
 		args       args
-		generator  generator
-		checkFunc  func() error
+		fields     fields
+		createFunc func(*fields) Group
+		checkFunc  func(Group) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func() error {
+	defaultCheckFunc := func(g Group) error {
 		return nil
+	}
+	defaultCreateFunc := func(fields *fields) Group {
+		return &group{
+			egctx:            fields.egctx,
+			cancel:           fields.cancel,
+			limitation:       fields.limitation,
+			enableLimitation: fields.enableLimitation,
+			emap:             fields.emap,
+		}
 	}
 	tests := []test{
 		func() test {
@@ -441,12 +452,6 @@ func Test_group_Go(t *testing.T) {
 
 			egctx, cancel := context.WithCancel(context.Background())
 			cancel()
-
-			g := &group{
-				egctx:      egctx,
-				limitation: make(chan struct{}),
-			}
-			g.enableLimitation.Store(true)
 
 			return test{
 				name: "f is not called when reached limit and cancel g.egctx",
@@ -456,13 +461,17 @@ func Test_group_Go(t *testing.T) {
 						return nil
 					},
 				},
-				generator: generator{
-					do: func() *group {
-						return g
-					},
+				fields: fields{
+					egctx:      egctx,
+					limitation: make(chan struct{}),
 				},
-				checkFunc: func() error {
-					if err := g.Wait(); err != nil {
+				createFunc: func(fields *fields) Group {
+					g := defaultCreateFunc(fields)
+					g.(*group).enableLimitation.Store(true)
+					return g
+				},
+				checkFunc: func(got Group) error {
+					if err := got.Wait(); err != nil {
 						return err
 					}
 
@@ -479,13 +488,6 @@ func Test_group_Go(t *testing.T) {
 
 			egctx, cancel := context.WithCancel(context.Background())
 
-			g := &group{
-				egctx:      egctx,
-				cancel:     cancel,
-				limitation: make(chan struct{}, 1),
-			}
-			g.enableLimitation.Store(true)
-
 			return test{
 				name: "f is called and f returns nil",
 				args: args{
@@ -494,13 +496,18 @@ func Test_group_Go(t *testing.T) {
 						return nil
 					},
 				},
-				generator: generator{
-					do: func() *group {
-						return g
-					},
+				fields: fields{
+					egctx:      egctx,
+					cancel:     cancel,
+					limitation: make(chan struct{}, 1),
 				},
-				checkFunc: func() error {
-					if err := g.Wait(); err != nil {
+				createFunc: func(fields *fields) Group {
+					g := defaultCreateFunc(fields)
+					g.(*group).enableLimitation.Store(true)
+					return g
+				},
+				checkFunc: func(got Group) error {
+					if err := got.Wait(); err != nil {
 						return err
 					}
 
@@ -520,17 +527,6 @@ func Test_group_Go(t *testing.T) {
 
 			egctx, cancel := context.WithCancel(context.Background())
 
-			g := &group{
-				egctx: egctx,
-				cancel: func() {
-					cancel()
-					atomic.AddInt32(&cancelCalledCnt, 1)
-				},
-				emap:       make(map[string]struct{}),
-				limitation: make(chan struct{}, 1),
-			}
-			g.enableLimitation.Store(true)
-
 			return test{
 				name: "f is called and f returns error",
 				args: args{
@@ -539,13 +535,22 @@ func Test_group_Go(t *testing.T) {
 						return errors.New("err1")
 					},
 				},
-				generator: generator{
-					do: func() *group {
-						return g
+				fields: fields{
+					egctx: egctx,
+					cancel: func() {
+						cancel()
+						atomic.AddInt32(&cancelCalledCnt, 1)
 					},
+					emap:       make(map[string]struct{}),
+					limitation: make(chan struct{}, 1),
 				},
-				checkFunc: func() error {
-					if err := g.Wait(); err == nil {
+				createFunc: func(fields *fields) Group {
+					g := defaultCreateFunc(fields)
+					g.(*group).enableLimitation.Store(true)
+					return g
+				},
+				checkFunc: func(got Group) error {
+					if err := got.Wait(); err == nil {
 						return errors.New("Wait returns nil")
 					}
 
@@ -574,10 +579,13 @@ func Test_group_Go(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			g := test.generator.do()
+			if test.createFunc == nil {
+				test.createFunc = defaultCreateFunc
+			}
+			g := test.createFunc(&test.fields)
 
 			g.Go(test.args.f)
-			if err := test.checkFunc(); err != nil {
+			if err := test.checkFunc(g); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -588,9 +596,13 @@ func Test_group_doCancel(t *testing.T) {
 	type generator struct {
 		do func() *group
 	}
+	type fields struct {
+		cancel func()
+	}
 	type test struct {
 		name       string
-		generator  generator
+		fields     fields
+		createFunc func(*fields) *group
 		checkFunc  func() error
 		beforeFunc func()
 		afterFunc  func()
@@ -604,14 +616,16 @@ func Test_group_doCancel(t *testing.T) {
 
 			return test{
 				name: "g.cancel is called when g.cancel is not nil",
-				generator: generator{
-					do: func() *group {
-						return &group{
-							cancel: func() {
-								called = true
-							},
-						}
+				fields: fields{
+					cancel: func() {
+						called = true
 					},
+				},
+				createFunc: func(fields *fields) *group {
+					g := &group{
+						cancel: fields.cancel,
+					}
+					return g
 				},
 				checkFunc: func() error {
 					if !called {
@@ -636,7 +650,7 @@ func Test_group_doCancel(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			g := test.generator.do()
+			g := test.createFunc(&test.fields)
 
 			g.doCancel()
 			if err := test.checkFunc(); err != nil {
@@ -647,16 +661,13 @@ func Test_group_doCancel(t *testing.T) {
 }
 
 func TestWait(t *testing.T) {
-	type generator struct {
-		do func() *group
-	}
 	type want struct {
 		err error
 	}
 	type test struct {
 		name       string
-		generator  generator
 		want       want
+		createFunc func() Group
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
@@ -673,10 +684,8 @@ func TestWait(t *testing.T) {
 			afterFunc: func() {
 				instance = nil
 			},
-			generator: generator{
-				do: func() *group {
-					return new(group)
-				},
+			createFunc: func() Group {
+				return new(group)
 			},
 		},
 	}
@@ -694,7 +703,7 @@ func TestWait(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			instance = test.generator.do()
+			instance = test.createFunc()
 
 			err := Wait()
 			if err := test.checkFunc(test.want, err); err != nil {
@@ -705,16 +714,18 @@ func TestWait(t *testing.T) {
 }
 
 func Test_group_Wait(t *testing.T) {
-	type generator struct {
-		do func() *group
+	type fields struct {
+		limitation chan struct{}
+		errs       []error
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
 		name       string
-		generator  generator
+		fields     fields
 		want       want
+		createFunc func(*fields) Group
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
@@ -725,29 +736,27 @@ func Test_group_Wait(t *testing.T) {
 		}
 		return nil
 	}
+	defaultCreateFunc := func(fields *fields) Group {
+		return &group{
+			limitation: fields.limitation,
+			errs:       fields.errs,
+		}
+	}
 	tests := []test{
 		{
 			name: "returns nil when g.errs is nil",
-			generator: generator{
-				do: func() *group {
-					return &group{
-						limitation: make(chan struct{}),
-					}
-				},
+			fields: fields{
+				limitation: make(chan struct{}),
 			},
 		},
 
 		{
 			name: "returns error when g.errs is not nil",
-			generator: generator{
-				do: func() *group {
-					return &group{
-						limitation: make(chan struct{}),
-						errs: []error{
-							errors.New("err1"),
-							errors.New("err2"),
-						},
-					}
+			fields: fields{
+				limitation: make(chan struct{}),
+				errs: []error{
+					errors.New("err1"),
+					errors.New("err2"),
 				},
 			},
 			want: want{
@@ -768,8 +777,11 @@ func Test_group_Wait(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			if test.createFunc == nil {
+				test.createFunc = defaultCreateFunc
+			}
 
-			g := test.generator.do()
+			g := test.createFunc(&test.fields)
 
 			err := g.Wait()
 			if err := test.checkFunc(test.want, err); err != nil {
