@@ -631,7 +631,6 @@ We do not suggest to modify the generated code other than the `tests` variable, 
 
     By default, the template provides `fields` structure to initialize object of the test target. 
     But in some cases, not all `fields` are needed, so please delete the unnecessary fields.
-
     For example, the following struct and the corresponding function:
     
     ```golang
