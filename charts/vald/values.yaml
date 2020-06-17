@@ -568,6 +568,17 @@ defaults:
         # @schema {"name": "defaults.observability.collector.metrics.enable_version_info", "type": "boolean"}
         # defaults.observability.collector.metrics.enable_version_info -- version info metrics enabled
         enable_version_info: true
+        # @schema {"name": "defaults.observability.collector.metrics.version_info_labels", "type": "array", "items": {"type": "string", "enum": ["vald_version", "server_name", "git_commit", "build_time", "go_version", "go_os", "go_arch", "cgo_enabled", "ngt_version", "build_cpu_info_flags"]}}
+        # defaults.observability.collector.metrics.version_info_labels -- enabled label names of version info
+        version_info_labels:
+          - "vald_version"
+          - "server_name"
+          - "git_commit"
+          - "build_time"
+          - "go_version"
+          - "go_os"
+          - "go_arch"
+          - "ngt_version"
         # @schema {"name": "defaults.observability.collector.metrics.enable_memory", "type": "boolean"}
         # defaults.observability.collector.metrics.enable_memory -- memory metrics enabled
         enable_memory: true

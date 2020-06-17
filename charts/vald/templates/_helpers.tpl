@@ -558,6 +558,15 @@ collector:
   metrics:
     {{- if .Values.collector.metrics }}
     enable_version_info: {{ default .default.collector.metrics.enable_version_info .Values.collector.metrics.enable_version_info }}
+    {{- if .Values.collector.metrics.version_info_labels }}
+    version_info_labels:
+      {{- toYaml .Values.collector.metrics.version_info_labels | nindent 6 }}
+    {{- else if .default.collector.metrics.version_info_labels }}
+    version_info_labels:
+      {{- toYaml .default.collector.metrics.version_info_labels | nindent 6 }}
+    {{- else }}
+    version_info_labels: []
+    {{- end }}
     enable_memory: {{ default .default.collector.metrics.enable_memory .Values.collector.metrics.enable_memory }}
     enable_goroutine: {{ default .default.collector.metrics.enable_goroutine .Values.collector.metrics.enable_goroutine }}
     enable_cgo: {{ default .default.collector.metrics.enable_cgo .Values.collector.metrics.enable_cgo }}

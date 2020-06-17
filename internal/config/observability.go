@@ -37,10 +37,11 @@ type Trace struct {
 }
 
 type Metrics struct {
-	EnableVersionInfo bool `json:"enable_version_info" yaml:"enable_version_info"`
-	EnableMemory      bool `json:"enable_memory" yaml:"enable_memory"`
-	EnableGoroutine   bool `json:"enable_goroutine" yaml:"enable_goroutine"`
-	EnableCGO         bool `json:"enable_cgo" yaml:"enable_cgo"`
+	EnableVersionInfo bool     `json:"enable_version_info" yaml:"enable_version_info"`
+	VersionInfoLabels []string `json:"version_info_labels" yaml:"version_info_labels"`
+	EnableMemory      bool     `json:"enable_memory" yaml:"enable_memory"`
+	EnableGoroutine   bool     `json:"enable_goroutine" yaml:"enable_goroutine"`
+	EnableCGO         bool     `json:"enable_cgo" yaml:"enable_cgo"`
 }
 
 type Prometheus struct {
@@ -125,9 +126,10 @@ type StackdriverProfiler struct {
 
 func (o *Observability) Bind() *Observability {
 	if o.Collector != nil {
-		o.Collector.Duration = GetActualValue(o.Collector.Duration)
+		o.Collector = o.Collector.Bind()
 	} else {
 		o.Collector = new(Collector)
+		o.Collector.Metrics = new(Metrics)
 	}
 
 	if o.Trace == nil {
@@ -161,6 +163,18 @@ func (o *Observability) Bind() *Observability {
 	}
 
 	return o
+}
+
+func (c *Collector) Bind() *Collector {
+	c.Duration = GetActualValue(c.Duration)
+
+	if c.Metrics != nil {
+		c.Metrics.VersionInfoLabels = GetActualValues(c.Metrics.VersionInfoLabels)
+	} else {
+		c.Metrics = new(Metrics)
+	}
+
+	return c
 }
 
 func (sd *Stackdriver) Bind() *Stackdriver {
