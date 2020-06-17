@@ -621,7 +621,6 @@ stackdriver:
     {{- else }}
     scopes: []
     {{- end }}
-    service_account_file: {{ default .default.stackdriver.client.service_account_file .Values.stackdriver.client.service_account_file | quote }}
     user_agent: {{ default .default.stackdriver.client.user_agent .Values.stackdriver.client.user_agent | quote }}
     telemetry_enabled: {{ default .default.stackdriver.client.telemetry_enabled .Values.stackdriver.client.telemetry_enabled }}
     authentication_enabled: {{ default .default.stackdriver.client.authentication_enabled .Values.stackdriver.client.authentication_enabled }}

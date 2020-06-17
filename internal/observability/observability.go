@@ -113,7 +113,6 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 		google.WithQuotaProject(cfg.Stackdriver.Client.QuotaProject),
 		google.WithRequestReason(cfg.Stackdriver.Client.RequestReason),
 		google.WithScopes(cfg.Stackdriver.Client.Scopes...),
-		google.WithServiceAccountFile(cfg.Stackdriver.Client.ServiceAccountFile),
 		google.WithUserAgent(cfg.Stackdriver.Client.UserAgent),
 		google.WithTelemetry(cfg.Stackdriver.Client.TelemetryEnabled),
 		google.WithAuthentication(cfg.Stackdriver.Client.AuthenticationEnabled),

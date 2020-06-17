@@ -23,25 +23,76 @@ import (
 
 type Option = option.ClientOption
 
-var (
-	WithAPIKey             = option.WithAPIKey
-	WithAudiences          = option.WithAudiences
-	WithCredentialsFile    = option.WithCredentialsFile
-	WithEndpoint           = option.WithEndpoint
-	WithQuotaProject       = option.WithQuotaProject
-	WithRequestReason      = option.WithRequestReason
-	WithScopes             = option.WithScopes
-	WithServiceAccountFile = option.WithServiceAccountFile
-	WithUserAgent          = option.WithUserAgent
+// WithClientCertSource(s ClientCertSource) ClientOption
+// WithCredentials(creds *google.Credentials) ClientOption
+// WithGRPCConn(conn *grpc.ClientConn) ClientOption
+// WithGRPCConnectionPool(size int) ClientOption
+// WithGRPCDialOption(opt grpc.DialOption) ClientOption
+// WithHTTPClient(client *http.Client) ClientOption
+// WithTokenSource(s oauth2.TokenSource) ClientOption
 
-	// WithClientCertSource(s ClientCertSource) ClientOption
-	// WithCredentials(creds *google.Credentials) ClientOption
-	// WithGRPCConn(conn *grpc.ClientConn) ClientOption
-	// WithGRPCConnectionPool(size int) ClientOption
-	// WithGRPCDialOption(opt grpc.DialOption) ClientOption
-	// WithHTTPClient(client *http.Client) ClientOption
-	// WithTokenSource(s oauth2.TokenSource) ClientOption
-)
+func WithAPIKey(apiKey string) Option {
+	if apiKey == "" {
+		return nil
+	}
+	return option.WithAPIKey(apiKey)
+}
+
+func WithAudiences(audiences ...string) Option {
+	if len(audiences) == 0 {
+		return nil
+	}
+
+	return option.WithAudiences(audiences...)
+}
+
+func WithCredentialsFile(path string) Option {
+	if path == "" {
+		return nil
+	}
+
+	return option.WithCredentialsFile(path)
+}
+
+func WithEndpoint(endpoint string) Option {
+	if endpoint == "" {
+		return nil
+	}
+
+	return option.WithEndpoint(endpoint)
+}
+
+func WithQuotaProject(qp string) Option {
+	if qp == "" {
+		return nil
+	}
+
+	return option.WithQuotaProject(qp)
+}
+
+func WithRequestReason(rr string) Option {
+	if rr == "" {
+		return nil
+	}
+
+	return option.WithRequestReason(rr)
+}
+
+func WithScopes(scopes ...string) Option {
+	if len(scopes) == 0 {
+		return nil
+	}
+
+	return option.WithScopes(scopes...)
+}
+
+func WithUserAgent(ua string) Option {
+	if ua == "" {
+		return nil
+	}
+
+	return option.WithUserAgent(ua)
+}
 
 func WithCredentialsJSON(json string) Option {
 	if json != "" {

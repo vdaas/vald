@@ -81,7 +81,6 @@ type StackdriverClient struct {
 	QuotaProject          string   `json:"quota_project" yaml:"quota_project"`
 	RequestReason         string   `json:"request_reason" yaml:"request_reason"`
 	Scopes                []string `json:"scopes" yaml:"scopes"`
-	ServiceAccountFile    string   `json:"service_account_file" yaml:"service_account_file"`
 	UserAgent             string   `json:"user_agent" yaml:"user_agent"`
 	TelemetryEnabled      bool     `json:"telemetry_enabled" yaml:"telemetry_enabled"`
 	AuthenticationEnabled bool     `json:"authentication_enabled" yaml:"authentication_enabled"`
@@ -176,7 +175,6 @@ func (sd *Stackdriver) Bind() *Stackdriver {
 		sd.Client.QuotaProject = GetActualValue(sd.Client.QuotaProject)
 		sd.Client.RequestReason = GetActualValue(sd.Client.RequestReason)
 		sd.Client.Scopes = GetActualValues(sd.Client.Scopes)
-		sd.Client.ServiceAccountFile = GetActualValue(sd.Client.ServiceAccountFile)
 		sd.Client.UserAgent = GetActualValue(sd.Client.UserAgent)
 	} else {
 		sd.Client = new(StackdriverClient)

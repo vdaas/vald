@@ -651,9 +651,6 @@ defaults:
         # @schema {"name": "defaults.observability.stackdriver.client.scopes", "type": "array", "items": {"type": "string"}}
         # defaults.observability.stackdriver.client.scopes -- overrides the default OAuth2 scopes to be used for a service.
         scopes: []
-        # @schema {"name": "defaults.observability.stackdriver.client.service_account_file", "type": "string"}
-        # defaults.observability.stackdriver.client.service_account_file -- a Google service account credentials file to authenticate.
-        service_account_file: ""
         # @schema {"name": "defaults.observability.stackdriver.client.user_agent", "type": "string"}
         # defaults.observability.stackdriver.client.user_agent -- sets the User-Agent.
         user_agent: ""
