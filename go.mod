@@ -54,7 +54,7 @@ require (
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20200424071638-9872bbae3700
-	go.opencensus.io v0.22.3
+	go.opencensus.io v0.22.4
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/goleak v1.0.0
 	gocloud.dev v0.19.0
