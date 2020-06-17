@@ -285,7 +285,6 @@ srv := &server {
 if err := srv.Run(); err != nil {
     log.Fatal(err)
 }
-
 ```
 
 ### Error handling
