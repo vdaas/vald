@@ -23,6 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/observability/client/google"
 	"github.com/vdaas/vald/internal/observability/collector"
 	"github.com/vdaas/vald/internal/observability/exporter"
 	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
@@ -103,6 +104,21 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 		exps = append(exps, jae)
 	}
 
+	sdClientOpts := []google.Option{
+		google.WithAPIKey(cfg.Stackdriver.Client.APIKey),
+		google.WithAudiences(cfg.Stackdriver.Client.Audiences...),
+		google.WithCredentialsFile(cfg.Stackdriver.Client.CredentialsFile),
+		google.WithCredentialsJSON(cfg.Stackdriver.Client.CredentialsJSON),
+		google.WithEndpoint(cfg.Stackdriver.Client.Endpoint),
+		google.WithQuotaProject(cfg.Stackdriver.Client.QuotaProject),
+		google.WithRequestReason(cfg.Stackdriver.Client.RequestReason),
+		google.WithScopes(cfg.Stackdriver.Client.Scopes...),
+		google.WithServiceAccountFile(cfg.Stackdriver.Client.ServiceAccountFile),
+		google.WithUserAgent(cfg.Stackdriver.Client.UserAgent),
+		google.WithTelemetry(cfg.Stackdriver.Client.TelemetryEnabled),
+		google.WithAuthentication(cfg.Stackdriver.Client.AuthenticationEnabled),
+	}
+
 	if cfg.Stackdriver.Exporter.MonitoringEnabled || cfg.Stackdriver.Exporter.TracingEnabled {
 		sdex, err := stackdriver.New(
 			stackdriver.WithProjectID(cfg.Stackdriver.ProjectID),
@@ -117,6 +133,8 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 			stackdriver.WithTimeout(cfg.Stackdriver.Exporter.Timeout),
 			stackdriver.WithReportingInterval(cfg.Stackdriver.Exporter.ReportingInterval),
 			stackdriver.WithNumberOfWorkers(cfg.Stackdriver.Exporter.NumberOfWorkers),
+			stackdriver.WithMonitoringClientOptions(sdClientOpts...),
+			stackdriver.WithTraceClientOptions(sdClientOpts...),
 		)
 		if err != nil {
 			return nil, err
@@ -140,6 +158,7 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 			pstackdriver.WithAPIAddr(cfg.Stackdriver.Profiler.APIAddr),
 			pstackdriver.WithInstance(cfg.Stackdriver.Profiler.Instance),
 			pstackdriver.WithZone(cfg.Stackdriver.Profiler.Zone),
+			pstackdriver.WithClientOptions(sdClientOpts...),
 		)
 		if err != nil {
 			return nil, err

@@ -444,7 +444,15 @@ tls:
 gRPC client configuration
 */}}
 {{- define "vald.grpc.client" -}}
-addrs: {{ default .default.addrs .Values.addrs }}
+{{- if .Values.addrs }}
+addrs:
+  {{- toYaml .Values.addrs | nindent 2 }}
+{{- else if .default.addrs }}
+addrs:
+  {{- toYaml .default.addrs | nindent 2 }}
+{{- else }}
+addrs: []
+{{- end }}
 health_check_duration: {{ default .default.health_check_duration .Values.health_check_duration | quote }}
 connection_pool:
   {{- if .Values.connection_pool }}
@@ -587,6 +595,39 @@ jaeger:
 stackdriver:
   {{- if .Values.stackdriver }}
   project_id: {{ default .default.stackdriver.project_id .Values.stackdriver.project_id | quote }}
+  client:
+    {{- if .Values.stackdriver.client }}
+    api_key: {{ default .default.stackdriver.client.api_key .Values.stackdriver.client.api_key | quote }}
+    {{- if .Values.stackdriver.client.audiences }}
+    audiences:
+      {{- toYaml .Values.stackdriver.client.audiences | nindent 6 }}
+    {{- else if .default.stackdriver.client.audiences }}
+    audiences:
+      {{- toYaml .default.stackdriver.client.audiences | nindent 6 }}
+    {{- else }}
+    audiences: []
+    {{- end }}
+    credentials_file: {{ default .default.stackdriver.client.credentials_file .Values.stackdriver.client.credentials_file | quote }}
+    credentials_json: {{ default .default.stackdriver.client.credentials_json .Values.stackdriver.client.credentials_json | quote }}
+    endpoint: {{ default .default.stackdriver.client.endpoint .Values.stackdriver.client.endpoint | quote }}
+    quota_project: {{ default .default.stackdriver.client.quota_project .Values.stackdriver.client.quota_project | quote }}
+    request_reason: {{ default .default.stackdriver.client.request_reason .Values.stackdriver.client.request_reason | quote }}
+    {{- if .Values.stackdriver.client.scopes }}
+    scopes:
+      {{- toYaml .Values.stackdriver.client.scopes | nindent 6 }}
+    {{- else if .default.stackdriver.client.scopes }}
+    scopes:
+      {{- toYaml .default.stackdriver.client.scopes | nindent 6 }}
+    {{- else }}
+    scopes: []
+    {{- end }}
+    service_account_file: {{ default .default.stackdriver.client.service_account_file .Values.stackdriver.client.service_account_file | quote }}
+    user_agent: {{ default .default.stackdriver.client.user_agent .Values.stackdriver.client.user_agent | quote }}
+    telemetry_enabled: {{ default .default.stackdriver.client.telemetry_enabled .Values.stackdriver.client.telemetry_enabled }}
+    authentication_enabled: {{ default .default.stackdriver.client.authentication_enabled .Values.stackdriver.client.authentication_enabled }}
+    {{- else }}
+    {{- toYaml .default.stackdriver.client | nindent 4 }}
+    {{- end }}
   exporter:
     {{- if .Values.stackdriver.exporter }}
     monitoring_enabled: {{ default .default.stackdriver.exporter.monitoring_enabled .Values.stackdriver.exporter.monitoring_enabled }}

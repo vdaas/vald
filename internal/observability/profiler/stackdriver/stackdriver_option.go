@@ -19,7 +19,7 @@ package stackdriver
 
 import (
 	"github.com/vdaas/vald/internal/info"
-	"google.golang.org/api/option"
+	"github.com/vdaas/vald/internal/observability/client/google"
 )
 
 type Option func(p *prof) error
@@ -150,8 +150,15 @@ func WithZone(zone string) Option {
 	}
 }
 
-func WithClientOptions(opts ...option.ClientOption) Option {
+func WithClientOptions(copts ...google.Option) Option {
 	return func(p *prof) error {
+		opts := make([]google.Option, 0, len(copts))
+		for _, opt := range copts {
+			if opt != nil {
+				opts = append(opts, opt)
+			}
+		}
+
 		if p.clientOpts == nil {
 			p.clientOpts = opts
 			return nil

@@ -21,7 +21,7 @@ import (
 	"context"
 
 	"cloud.google.com/go/profiler"
-	"google.golang.org/api/option"
+	"github.com/vdaas/vald/internal/observability/client/google"
 )
 
 type Stackdriver interface {
@@ -30,7 +30,7 @@ type Stackdriver interface {
 
 type prof struct {
 	*profiler.Config
-	clientOpts []option.ClientOption
+	clientOpts []google.Option
 }
 
 func New(opts ...Option) (s Stackdriver, err error) {

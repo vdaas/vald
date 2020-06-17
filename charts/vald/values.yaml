@@ -625,6 +625,44 @@ defaults:
       # @schema {"name": "defaults.observability.stackdriver.project_id", "type": "string"}
       # defaults.observability.stackdriver.project_id -- project id for uploading the stats data
       project_id: ""
+      # @schema {"name": "defaults.observability.stackdriver.client", "type": "object"}
+      client:
+        # @schema {"name": "defaults.observability.stackdriver.client.api_key", "type": "string"}
+        # defaults.observability.stackdriver.client.api_key -- API key to be used as the basis for authentication.
+        api_key: ""
+        # @schema {"name": "defaults.observability.stackdriver.client.audiences", "type": "array", "items": {"type": "string"}}
+        # defaults.observability.stackdriver.client.audiences -- to be used as the audience field ("aud") for the JWT token authentication.
+        audiences: []
+        # @schema {"name": "defaults.observability.stackdriver.client.credentials_file", "type": "string"}
+        # defaults.observability.stackdriver.client.credentials_file -- service account or refresh token JSON credentials file.
+        credentials_file: ""
+        # @schema {"name": "defaults.observability.stackdriver.client.credentials_json", "type": "string"}
+        # defaults.observability.stackdriver.client.credentials_json -- service account or refresh token JSON credentials.
+        credentials_json: ""
+        # @schema {"name": "defaults.observability.stackdriver.client.endpoint", "type": "string"}
+        # defaults.observability.stackdriver.client.endpoint -- overrides the default endpoint to be used for a service.
+        endpoint: ""
+        # @schema {"name": "defaults.observability.stackdriver.client.quota_project", "type": "string"}
+        # defaults.observability.stackdriver.client.quota_project -- the project used for quota and billing purposes.
+        quota_project: ""
+        # @schema {"name": "defaults.observability.stackdriver.client.request_reason", "type": "string"}
+        # defaults.observability.stackdriver.client.request_reason -- a reason for making the request, which is intended to be recorded in audit logging.
+        request_reason: ""
+        # @schema {"name": "defaults.observability.stackdriver.client.scopes", "type": "array", "items": {"type": "string"}}
+        # defaults.observability.stackdriver.client.scopes -- overrides the default OAuth2 scopes to be used for a service.
+        scopes: []
+        # @schema {"name": "defaults.observability.stackdriver.client.service_account_file", "type": "string"}
+        # defaults.observability.stackdriver.client.service_account_file -- a Google service account credentials file to authenticate.
+        service_account_file: ""
+        # @schema {"name": "defaults.observability.stackdriver.client.user_agent", "type": "string"}
+        # defaults.observability.stackdriver.client.user_agent -- sets the User-Agent.
+        user_agent: ""
+        # @schema {"name": "defaults.observability.stackdriver.client.telemetry_enabled", "type": "boolean"}
+        # defaults.observability.stackdriver.client.telemetry_enabled -- enables default telemetry settings on gRPC and HTTP clients.
+        telemetry_enabled: true
+        # @schema {"name": "defaults.observability.stackdriver.client.authentication_enabled", "type": "boolean"}
+        # defaults.observability.stackdriver.client.authentication_enabled -- enables authentication.
+        authentication_enabled: true
       # @schema {"name": "defaults.observability.stackdriver.exporter", "type": "object"}
       exporter:
         # @schema {"name": "defaults.observability.stackdriver.exporter.monitoring_enabled", "type": "boolean"}

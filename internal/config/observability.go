@@ -66,8 +66,25 @@ type Jaeger struct {
 type Stackdriver struct {
 	ProjectID string `json:"project_id" yaml:"project_id"`
 
+	Client *StackdriverClient `json:"client" yaml:"client"`
+
 	Exporter *StackdriverExporter `json:"exporter" yaml:"exporter"`
 	Profiler *StackdriverProfiler `json:"profiler" yaml:"profiler"`
+}
+
+type StackdriverClient struct {
+	APIKey                string   `json:"api_key" yaml:"api_key"`
+	Audiences             []string `json:"audiences" yaml:"audiences"`
+	CredentialsFile       string   `json:"credentials_file" yaml:"credentials_file"`
+	CredentialsJSON       string   `json:"credentials_json" yaml:"credentials_json"`
+	Endpoint              string   `json:"endpoint" yaml:"endpoint"`
+	QuotaProject          string   `json:"quota_project" yaml:"quota_project"`
+	RequestReason         string   `json:"request_reason" yaml:"request_reason"`
+	Scopes                []string `json:"scopes" yaml:"scopes"`
+	ServiceAccountFile    string   `json:"service_account_file" yaml:"service_account_file"`
+	UserAgent             string   `json:"user_agent" yaml:"user_agent"`
+	TelemetryEnabled      bool     `json:"telemetry_enabled" yaml:"telemetry_enabled"`
+	AuthenticationEnabled bool     `json:"authentication_enabled" yaml:"authentication_enabled"`
 }
 
 type StackdriverExporter struct {
@@ -139,6 +156,7 @@ func (o *Observability) Bind() *Observability {
 		o.Stackdriver = o.Stackdriver.Bind()
 	} else {
 		o.Stackdriver = new(Stackdriver)
+		o.Stackdriver.Client = new(StackdriverClient)
 		o.Stackdriver.Exporter = new(StackdriverExporter)
 		o.Stackdriver.Profiler = new(StackdriverProfiler)
 	}
@@ -148,6 +166,21 @@ func (o *Observability) Bind() *Observability {
 
 func (sd *Stackdriver) Bind() *Stackdriver {
 	sd.ProjectID = GetActualValue(sd.ProjectID)
+
+	if sd.Client != nil {
+		sd.Client.APIKey = GetActualValue(sd.Client.APIKey)
+		sd.Client.Audiences = GetActualValues(sd.Client.Audiences)
+		sd.Client.CredentialsFile = GetActualValue(sd.Client.CredentialsFile)
+		sd.Client.CredentialsJSON = GetActualValue(sd.Client.CredentialsJSON)
+		sd.Client.Endpoint = GetActualValue(sd.Client.Endpoint)
+		sd.Client.QuotaProject = GetActualValue(sd.Client.QuotaProject)
+		sd.Client.RequestReason = GetActualValue(sd.Client.RequestReason)
+		sd.Client.Scopes = GetActualValues(sd.Client.Scopes)
+		sd.Client.ServiceAccountFile = GetActualValue(sd.Client.ServiceAccountFile)
+		sd.Client.UserAgent = GetActualValue(sd.Client.UserAgent)
+	} else {
+		sd.Client = new(StackdriverClient)
+	}
 
 	if sd.Exporter != nil {
 		sd.Exporter.Location = GetActualValue(sd.Exporter.Location)

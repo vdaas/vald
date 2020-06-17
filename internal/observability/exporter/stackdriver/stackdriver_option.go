@@ -21,9 +21,9 @@ import (
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"contrib.go.opencensus.io/exporter/stackdriver/monitoredresource"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/observability/client/google"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/timeutil"
-	"google.golang.org/api/option"
 )
 
 type Option func(e *exporter) error
@@ -89,27 +89,41 @@ func WithOnErrorFunc(f func(error)) Option {
 	}
 }
 
-func WithMonitoringClientOptions(copts ...option.ClientOption) Option {
+func WithMonitoringClientOptions(copts ...google.Option) Option {
 	return func(e *exporter) error {
+		opts := make([]google.Option, 0, len(copts))
+		for _, opt := range copts {
+			if opt != nil {
+				opts = append(opts, opt)
+			}
+		}
+
 		if e.MonitoringClientOptions == nil {
-			e.MonitoringClientOptions = copts
+			e.MonitoringClientOptions = opts
 			return nil
 		}
 
-		e.MonitoringClientOptions = append(e.MonitoringClientOptions, copts...)
+		e.MonitoringClientOptions = append(e.MonitoringClientOptions, opts...)
 
 		return nil
 	}
 }
 
-func WithTraceClientOptions(copts ...option.ClientOption) Option {
+func WithTraceClientOptions(copts ...google.Option) Option {
 	return func(e *exporter) error {
+		opts := make([]google.Option, 0, len(copts))
+		for _, opt := range copts {
+			if opt != nil {
+				opts = append(opts, opt)
+			}
+		}
+
 		if e.TraceClientOptions == nil {
-			e.TraceClientOptions = copts
+			e.TraceClientOptions = opts
 			return nil
 		}
 
-		e.TraceClientOptions = append(e.TraceClientOptions, copts...)
+		e.TraceClientOptions = append(e.TraceClientOptions, opts...)
 
 		return nil
 	}
