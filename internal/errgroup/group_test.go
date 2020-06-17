@@ -594,9 +594,6 @@ func Test_group_Go(t *testing.T) {
 }
 
 func Test_group_doCancel(t *testing.T) {
-	type generator struct {
-		do func() *group
-	}
 	type fields struct {
 		cancel func()
 	}
