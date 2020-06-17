@@ -142,7 +142,6 @@ func TestInit(t *testing.T) {
 				want: want{
 					wantEgctx: egctx,
 				},
-				beforeFunc: defaultBeforeFunc,
 				afterFunc: func(a args) {
 					cancel()
 					defaultBeforeFunc(a)
@@ -154,9 +153,11 @@ func TestInit(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+			if test.beforeFunc == nil {
+				test.beforeFunc = defaultBeforeFunc
 			}
+			test.beforeFunc(test.args)
+
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
@@ -209,8 +210,6 @@ func TestGet(t *testing.T) {
 						cancel: cancel,
 					},
 				},
-				beforeFunc: defaultBeforeFunc,
-				afterFunc:  defaultAfterFunc,
 			}
 		}(),
 
@@ -226,7 +225,6 @@ func TestGet(t *testing.T) {
 				beforeFunc: func() {
 					instance = g
 				},
-				afterFunc: defaultAfterFunc,
 			}
 		}(),
 	}
@@ -234,12 +232,16 @@ func TestGet(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
+			if test.beforeFunc == nil {
+				test.beforeFunc = defaultBeforeFunc
 			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
+			test.beforeFunc()
+
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
 			}
+			defer test.afterFunc()
+
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
@@ -292,7 +294,6 @@ func TestGo(t *testing.T) {
 						return errors.Errorf("calledCnt = %v, want: %v", got, want)
 					}
 					return nil
-
 				},
 			}
 		}(),
