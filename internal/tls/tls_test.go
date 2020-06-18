@@ -20,6 +20,7 @@ package tls
 import (
 	"crypto/tls"
 	"crypto/x509"
+	stderrs "errors"
 	"fmt"
 	"io/ioutil"
 	"reflect"
@@ -157,16 +158,7 @@ func TestNew(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.New("tls: failed to find any PEM data in certificate input"),
-			},
-			checkFunc: func(w want, got *Config, err error) error {
-				if w.err.Error() != err.Error() {
-					return errors.Errorf("got error = %v, want %v", err, w.err)
-				}
-				if !reflect.DeepEqual(got, w.want) {
-					return errors.Errorf("got = %v, want %v", got, w.want)
-				}
-				return nil
+				err: stderrs.New("tls: failed to find any PEM data in certificate input"),
 			},
 		},
 		{
