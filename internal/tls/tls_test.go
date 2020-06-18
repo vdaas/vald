@@ -67,23 +67,20 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: func() *Config {
-					var err error
-					c := &credentials{
-						cfg: new(tls.Config),
-					}
+					cfg := new(tls.Config)
 
-					c.cfg.Certificates = make([]tls.Certificate, 1)
-					c.cfg.Certificates[0], _ = tls.LoadX509KeyPair("./testdata/dummyServer.crt", "./testdata/dummyServer.key")
+					cfg.Certificates = make([]tls.Certificate, 1)
+					cfg.Certificates[0], _ = tls.LoadX509KeyPair("./testdata/dummyServer.crt", "./testdata/dummyServer.key")
 
 					pool := x509.NewCertPool()
 					b, _ := ioutil.ReadFile("./testdata/dummyCa.pem")
 					pool.AppendCertsFromPEM(b)
 
-					c.cfg.ClientCAs = pool
-					c.cfg.ClientAuth = tls.RequireAndVerifyClientCert
+					cfg.ClientCAs = pool
+					cfg.ClientAuth = tls.RequireAndVerifyClientCert
 
-					c.cfg.BuildNameToCertificate()
-					return c.cfg
+					cfg.BuildNameToCertificate()
+					return cfg
 				}(),
 			},
 			checkFunc: func(w want, c *tls.Config, err error) error {
