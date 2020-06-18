@@ -111,7 +111,6 @@ func New(opts ...Option) (*Config, error) {
 		c.cfg.ClientAuth = tls.RequireAndVerifyClientCert
 	}
 
-	// c.cfg.BuildNameToCertificate()
 	return c.cfg, nil
 }
 
@@ -139,7 +138,6 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 		if err != nil {
 			return nil, err
 		}
-		//		c.cfg.BuildNameToCertificate()
 	}
 
 	return c.cfg, nil
