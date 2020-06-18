@@ -102,7 +102,10 @@ func TestNew(t *testing.T) {
 				if len(c.Certificates) != 1 && len(c.Certificates) != len(w.want.Certificates) {
 					return errors.New("Certificates length is wrong")
 				}
-				if got, want := string(w.want.Certificates[0].Certificate[0]), string(c.Certificates[0].Certificate[0]); want != got {
+
+				want := string(w.want.Certificates[0].Certificate[0])
+				got := string(c.Certificates[0].Certificate[0])
+				if want != got {
 					return errors.Errorf("Certificates[0] want: %v, but got: %v", want, got)
 				}
 
