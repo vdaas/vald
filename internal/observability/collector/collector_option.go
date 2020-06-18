@@ -73,12 +73,12 @@ func WithMetrics(metrics ...metrics.Metric) CollectorOption {
 	}
 }
 
-func WithVersionInfo(enabled bool) CollectorOption {
+func WithVersionInfo(enabled bool, labels ...string) CollectorOption {
 	return func(c *collector) error {
 		if !enabled {
 			return nil
 		}
-		versionInfo, err := version.New()
+		versionInfo, err := version.New(labels...)
 		if err != nil {
 			return err
 		}

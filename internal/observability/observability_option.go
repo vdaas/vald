@@ -20,8 +20,8 @@ package observability
 import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/observability/collector"
-	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
-	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
+	"github.com/vdaas/vald/internal/observability/exporter"
+	"github.com/vdaas/vald/internal/observability/profiler"
 	"github.com/vdaas/vald/internal/observability/trace"
 )
 
@@ -60,19 +60,28 @@ func WithTracer(t trace.Tracer) Option {
 	}
 }
 
-func WithPrometheus(p prometheus.Prometheus) Option {
+func WithExporters(exps ...exporter.Exporter) Option {
 	return func(o *observability) error {
-		if p != nil {
-			o.prometheus = p
+		if o.exporters == nil {
+			o.exporters = exps
+			return nil
 		}
+
+		o.exporters = append(o.exporters, exps...)
+
 		return nil
 	}
 }
-func WithJaeger(j jaeger.Jaeger) Option {
+
+func WithProfilers(profs ...profiler.Profiler) Option {
 	return func(o *observability) error {
-		if j != nil {
-			o.jaeger = j
+		if o.profilers == nil {
+			o.profilers = profs
+			return nil
 		}
+
+		o.profilers = append(o.profilers, profs...)
+
 		return nil
 	}
 }

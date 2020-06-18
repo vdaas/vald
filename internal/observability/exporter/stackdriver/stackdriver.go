@@ -14,56 +14,72 @@
 // limitations under the License.
 //
 
-// Package jaeger provides a jaeger exporter.
-package jaeger
+// Package stackdriver provides a stackdriver exporter.
+package stackdriver
 
 import (
 	"context"
 
-	"contrib.go.opencensus.io/exporter/jaeger"
+	"contrib.go.opencensus.io/exporter/stackdriver"
 	"github.com/vdaas/vald/internal/observability/exporter"
 	"go.opencensus.io/trace"
 )
 
-type jaegerOptions = jaeger.Options
-
-type Jaeger interface {
+type Stackdriver interface {
 	exporter.Exporter
 }
 
 type exp struct {
-	exporter *jaeger.Exporter
-	options  jaegerOptions
+	exporter *stackdriver.Exporter
+
+	monitoringEnabled bool
+	tracingEnabled    bool
+
+	*stackdriver.Options
 }
 
-func New(opts ...JaegerOption) (j Jaeger, err error) {
-	jo := new(jaegerOptions)
+func New(opts ...Option) (s Stackdriver, err error) {
+	e := new(exp)
+	e.Options = new(stackdriver.Options)
 
-	for _, opt := range append(jaegerDefaultOpts, opts...) {
-		err = opt(jo)
+	for _, opt := range append(defaultOpts, opts...) {
+		err = opt(e)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return &exp{
-		options: *jo,
-	}, nil
+	return e, nil
 }
 
 func (e *exp) Start(ctx context.Context) (err error) {
-	e.exporter, err = jaeger.NewExporter(e.options)
+	e.Options.Context = ctx
+
+	e.exporter, err = stackdriver.NewExporter(*e.Options)
 	if err != nil {
 		return err
 	}
 
-	trace.RegisterExporter(e.exporter)
+	if e.monitoringEnabled {
+		err = e.exporter.StartMetricsExporter()
+		if err != nil {
+			return err
+		}
+	}
+
+	if e.tracingEnabled {
+		trace.RegisterExporter(e.exporter)
+	}
 
 	return nil
 }
 
 func (e *exp) Stop(ctx context.Context) {
 	if e.exporter != nil {
+		if e.monitoringEnabled {
+			e.exporter.StopMetricsExporter()
+		}
+
 		e.exporter.Flush()
 	}
 }
