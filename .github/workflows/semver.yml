@@ -107,7 +107,7 @@ jobs:
       - name: Create release
         if: steps.semver.outputs.RELEASE == 'true'
         id: create_release
-        uses: actions/create-release@v1.0.0
+        uses: actions/create-release@v1.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         with:
