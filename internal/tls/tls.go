@@ -139,7 +139,7 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 		if err != nil {
 			return nil, err
 		}
-		c.cfg.BuildNameToCertificate()
+		//		c.cfg.BuildNameToCertificate()
 	}
 
 	return c.cfg, nil
