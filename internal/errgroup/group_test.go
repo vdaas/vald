@@ -63,9 +63,6 @@ func TestNew(t *testing.T) {
 			ctx := context.Background()
 			egctx, cancel := context.WithCancel(ctx)
 
-			var enableLimitation atomic.Value
-			enableLimitation.Store(false)
-
 			return test{
 				name: "returns (g, ctx)",
 				args: args{
@@ -73,10 +70,13 @@ func TestNew(t *testing.T) {
 				},
 				want: want{
 					want: &group{
-						egctx:            egctx,
-						cancel:           cancel,
-						enableLimitation: enableLimitation,
-						emap:             make(map[string]struct{}),
+						egctx:  egctx,
+						cancel: cancel,
+						enableLimitation: func() (el atomic.Value) {
+							el.Store(false)
+							return
+						}(),
+						emap: make(map[string]struct{}),
 					},
 					want1: egctx,
 				},
