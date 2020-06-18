@@ -92,7 +92,6 @@ func TestNew(t *testing.T) {
 					c.cfg.BuildNameToCertificate()
 					return c.cfg
 				}(),
-				err: nil,
 			},
 			checkFunc: func(w want, c *tls.Config, err error) error {
 				if !errors.Is(err, w.err) {
@@ -157,13 +156,15 @@ func TestNew(t *testing.T) {
 					WithKey("./testdata/dummyServer.key"),
 				},
 			},
-			checkFunc: func(w want, c *Config, err error) error {
-				wantErr := "tls: failed to find any PEM data in certificate input"
-				if err.Error() != wantErr {
-					return fmt.Errorf("got error = %v, wantErr %v", err, w.err)
+			want: want{
+				err: errors.New("tls: failed to find any PEM data in certificate input"),
+			},
+			checkFunc: func(w want, got *Config, err error) error {
+				if w.err.Error() != err.Error() {
+					return errors.Errorf("got error = %v, want %v", err, w.err)
 				}
-				if !reflect.DeepEqual(c, w.want) {
-					return fmt.Errorf("got = %v, want %v", c, w.want)
+				if !reflect.DeepEqual(got, w.want) {
+					return errors.Errorf("got = %v, want %v", got, w.want)
 				}
 				return nil
 			},
@@ -233,9 +234,6 @@ func TestNewClientConfig(t *testing.T) {
 	tests := []test{
 		{
 			name: "returns cfg and nil when option is empty",
-			want: want{
-				err: nil,
-			},
 			checkFunc: func(w want, c *Config, err error) error {
 				if !errors.Is(err, w.err) {
 					return fmt.Errorf("got error = %v, wantErr %v", err, w.err)
@@ -253,9 +251,6 @@ func TestNewClientConfig(t *testing.T) {
 					WithCert("./testdata/dummyServer.crt"),
 					WithKey("./testdata/dummyServer.key"),
 				},
-			},
-			want: want{
-				err: nil,
 			},
 			checkFunc: func(w want, c *Config, err error) error {
 				if !errors.Is(err, w.err) {
@@ -362,7 +357,6 @@ func TestNewX509CertPool(t *testing.T) {
 					pool.AppendCertsFromPEM(b)
 					return pool
 				}(),
-				err: nil,
 			},
 			checkFunc: func(w want, cp *x509.CertPool, err error) error {
 				if err != nil {
@@ -447,7 +441,6 @@ func TestNewX509CertPool(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
