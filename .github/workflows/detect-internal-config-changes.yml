@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'internal/config/**'
+      - '!internal/config/**/*_test.go'
 
 jobs:
   warning:

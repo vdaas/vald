@@ -10,6 +10,7 @@ on:
        - 'v*.*.*-*'
     paths:
       - 'internal/**'
+      - '!internal/**/*_test.go'
       - '!internal/db/**'
       - 'internal/db/nosql/cassandra/**'
       - '!internal/k8s/**'
@@ -22,6 +23,7 @@ on:
   pull_request:
     paths:
       - 'internal/**'
+      - '!internal/**/*_test.go'
       - '!internal/db/**'
       - 'internal/db/nosql/cassandra/**'
       - '!internal/k8s/**'

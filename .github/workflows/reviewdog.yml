@@ -1,5 +1,8 @@
 name: reviewdog
-on: [pull_request]
+on:
+  pull_request:
+    paths:
+      - '**.go'
 
 jobs:
   golangci-lint:
