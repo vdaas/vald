@@ -20,9 +20,11 @@ package errgroup
 import (
 	"context"
 	"reflect"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 
@@ -47,7 +49,8 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Group, got1 context.Context) error {
 		if got, want := got.(*group), w.want.(*group); !reflect.DeepEqual(got.emap, want.emap) &&
-			!reflect.DeepEqual(got.enableLimitation, want.enableLimitation) {
+			!reflect.DeepEqual(got.enableLimitation, want.enableLimitation) &&
+			got.cancel != nil {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		if !reflect.DeepEqual(got1, w.want1) {
@@ -322,6 +325,7 @@ func TestGo(t *testing.T) {
 
 func Test_group_Limitation(t *testing.T) {
 	type args struct {
+		ctx   context.Context
 		limit int
 	}
 	type fields struct {
@@ -354,6 +358,7 @@ func Test_group_Limitation(t *testing.T) {
 		{
 			name: "set disable when limit is 0",
 			args: args{
+				ctx:   context.Background(),
 				limit: 0,
 			},
 			fields: fields{
@@ -373,6 +378,7 @@ func Test_group_Limitation(t *testing.T) {
 		{
 			name: "set enable when limit is 1",
 			args: args{
+				ctx:   context.Background(),
 				limit: 1,
 			},
 			fields: fields{
@@ -402,12 +408,12 @@ func Test_group_Limitation(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			g := &group{
-				limitation:       test.fields.limitation,
-				enableLimitation: test.fields.enableLimitation,
-			}
+			gi, _ := New(test.args.ctx)
+			g := gi.(*group)
+			g.limitation = test.fields.limitation
+			g.enableLimitation = test.fields.enableLimitation
 
-			g.Limitation(test.args.limit)
+			gi.Limitation(test.args.limit)
 			if err := test.checkFunc(test.want, g); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -417,7 +423,8 @@ func Test_group_Limitation(t *testing.T) {
 
 func Test_group_Go(t *testing.T) {
 	type args struct {
-		f func() error
+		ctx context.Context
+		f   func() error
 	}
 	type fields struct {
 		egctx            context.Context
@@ -430,33 +437,26 @@ func Test_group_Go(t *testing.T) {
 		name       string
 		args       args
 		fields     fields
-		createFunc func(*fields) Group
 		checkFunc  func(Group) error
-		beforeFunc func(args)
+		beforeFunc func(args, Group)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(g Group) error {
 		return nil
 	}
-	defaultCreateFunc := func(fields *fields) Group {
-		return &group{
-			egctx:            fields.egctx,
-			cancel:           fields.cancel,
-			limitation:       fields.limitation,
-			enableLimitation: fields.enableLimitation,
-			emap:             fields.emap,
-		}
-	}
 	tests := []test{
 		func() test {
 			var calledCnt int32
 
-			egctx, cancel := context.WithCancel(context.Background())
-			cancel()
+			ctx := context.Background()
+			egctx, cancel := context.WithCancel(ctx)
+
+			limit := 3
 
 			return test{
 				name: "f is not called when reached limit and cancel g.egctx",
 				args: args{
+					ctx: ctx,
 					f: func() error {
 						atomic.AddInt32(&calledCnt, 1)
 						return nil
@@ -464,14 +464,24 @@ func Test_group_Go(t *testing.T) {
 				},
 				fields: fields{
 					egctx:      egctx,
-					limitation: make(chan struct{}),
+					limitation: make(chan struct{}, limit),
+					enableLimitation: func() (el atomic.Value) {
+						el.Store(true)
+						return
+					}(),
 				},
-				createFunc: func(fields *fields) Group {
-					g := defaultCreateFunc(fields)
-					g.(*group).enableLimitation.Store(true)
-					return g
+				beforeFunc: func(_ args, g Group) {
+					for i := 0; i < limit; i++ {
+						g.Go(func() error {
+							time.Sleep(3 * time.Second)
+							return nil
+						})
+					}
+					time.Sleep(time.Second)
 				},
 				checkFunc: func(got Group) error {
+					cancel()
+
 					if err := got.Wait(); err != nil {
 						return err
 					}
@@ -487,80 +497,49 @@ func Test_group_Go(t *testing.T) {
 		func() test {
 			var calledCnt int32
 
-			egctx, cancel := context.WithCancel(context.Background())
+			ctx := context.Background()
+			egctx, cancel := context.WithCancel(ctx)
 
 			return test{
-				name: "f is called and f returns nil",
+				name: "f is called but f returns error and revious process also returns error",
 				args: args{
+					ctx: ctx,
 					f: func() error {
 						atomic.AddInt32(&calledCnt, 1)
-						return nil
+						return errors.New("err")
 					},
 				},
 				fields: fields{
-					egctx:      egctx,
-					cancel:     cancel,
-					limitation: make(chan struct{}, 1),
+					egctx:  egctx,
+					cancel: cancel,
+					enableLimitation: func() (el atomic.Value) {
+						el.Store(false)
+						return
+					}(),
+					emap: make(map[string]struct{}),
 				},
-				createFunc: func(fields *fields) Group {
-					g := defaultCreateFunc(fields)
-					g.(*group).enableLimitation.Store(true)
-					return g
-				},
-				checkFunc: func(got Group) error {
-					if err := got.Wait(); err != nil {
-						return err
-					}
-
-					if got, want := int(atomic.LoadInt32(&calledCnt)), 1; got != want {
-						return errors.Errorf("calledCnt = %v, want: %v", got, want)
-					}
-					return nil
-				},
-			}
-		}(),
-
-		func() test {
-			var (
-				calledCnt       int32
-				cancelCalledCnt int32
-			)
-
-			egctx, cancel := context.WithCancel(context.Background())
-
-			return test{
-				name: "f is called and f returns error",
-				args: args{
-					f: func() error {
-						atomic.AddInt32(&calledCnt, 1)
-						return errors.New("err1")
-					},
-				},
-				fields: fields{
-					egctx: egctx,
-					cancel: func() {
-						cancel()
-						atomic.AddInt32(&cancelCalledCnt, 1)
-					},
-					emap:       make(map[string]struct{}),
-					limitation: make(chan struct{}, 1),
-				},
-				createFunc: func(fields *fields) Group {
-					g := defaultCreateFunc(fields)
-					g.(*group).enableLimitation.Store(true)
-					return g
+				beforeFunc: func(a args, g Group) {
+					g.Go(func() error {
+						return errors.New("err-1")
+					})
 				},
 				checkFunc: func(got Group) error {
 					if err := got.Wait(); err == nil {
-						return errors.New("Wait returns nil")
+						return errors.New("err is nil")
+					}
+
+					keys := []string{
+						"err", "err-1",
+					}
+
+					for _, k := range keys {
+						if _, ok := got.(*group).emap[k]; !ok {
+							return errors.Errorf("emap key: %s not exist", k)
+						}
 					}
 
 					if got, want := int(atomic.LoadInt32(&calledCnt)), 1; got != want {
 						return errors.Errorf("calledCnt = %v, want: %v", got, want)
-					}
-
-					if got, want := int(atomic.LoadInt32(&cancelCalledCnt)), 1; got != want {
-						return errors.Errorf("cancel called = %v, want: %v", got, want)
 					}
 					return nil
 				},
@@ -571,21 +550,26 @@ func Test_group_Go(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			if test.createFunc == nil {
-				test.createFunc = defaultCreateFunc
-			}
-			g := test.createFunc(&test.fields)
+			gi, _ := New(test.args.ctx)
 
-			g.Go(test.args.f)
+			g := gi.(*group)
+			g.egctx = test.fields.egctx
+			g.cancel = test.fields.cancel
+			g.limitation = test.fields.limitation
+			g.enableLimitation = test.fields.enableLimitation
+			g.emap = test.fields.emap
+
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args, g)
+			}
+
+			gi.Go(test.args.f)
 			if err := test.checkFunc(g); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -594,13 +578,16 @@ func Test_group_Go(t *testing.T) {
 }
 
 func Test_group_doCancel(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
 	type fields struct {
 		cancel func()
 	}
 	type test struct {
 		name       string
+		args       args
 		fields     fields
-		createFunc func(*fields) *group
 		checkFunc  func() error
 		beforeFunc func()
 		afterFunc  func()
@@ -614,16 +601,13 @@ func Test_group_doCancel(t *testing.T) {
 
 			return test{
 				name: "g.cancel is called when g.cancel is not nil",
+				args: args{
+					ctx: context.Background(),
+				},
 				fields: fields{
 					cancel: func() {
 						called = true
 					},
-				},
-				createFunc: func(fields *fields) *group {
-					g := &group{
-						cancel: fields.cancel,
-					}
-					return g
 				},
 				checkFunc: func() error {
 					if !called {
@@ -647,8 +631,10 @@ func Test_group_doCancel(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			gi, _ := New(test.args.ctx)
 
-			g := test.createFunc(&test.fields)
+			g := gi.(*group)
+			g.cancel = test.fields.cancel
 
 			g.doCancel()
 			if err := test.checkFunc(); err != nil {
@@ -658,14 +644,13 @@ func Test_group_doCancel(t *testing.T) {
 	}
 }
 
-func TestWait(t *testing.T) {
+func aTestWait(t *testing.T) {
 	type want struct {
 		err error
 	}
 	type test struct {
 		name       string
 		want       want
-		createFunc func() Group
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
@@ -679,11 +664,11 @@ func TestWait(t *testing.T) {
 	tests := []test{
 		{
 			name: "returns nil when Wait returns nil",
+			beforeFunc: func() {
+				instance, _ = New(context.Background())
+			},
 			afterFunc: func() {
 				instance = nil
-			},
-			createFunc: func() Group {
-				return new(group)
 			},
 		},
 	}
@@ -701,8 +686,6 @@ func TestWait(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			instance = test.createFunc()
-
 			err := Wait()
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
@@ -712,6 +695,9 @@ func TestWait(t *testing.T) {
 }
 
 func Test_group_Wait(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
 	type fields struct {
 		limitation chan struct{}
 		errs       []error
@@ -721,11 +707,11 @@ func Test_group_Wait(t *testing.T) {
 	}
 	type test struct {
 		name       string
+		args       args
 		fields     fields
 		want       want
-		createFunc func(*fields) Group
 		checkFunc  func(want, error) error
-		beforeFunc func()
+		beforeFunc func(Group)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, err error) error {
@@ -734,22 +720,42 @@ func Test_group_Wait(t *testing.T) {
 		}
 		return nil
 	}
-	defaultCreateFunc := func(fields *fields) Group {
-		return &group{
-			limitation: fields.limitation,
-			errs:       fields.errs,
-		}
-	}
 	tests := []test{
-		{
-			name: "returns nil when g.errs is nil",
-			fields: fields{
-				limitation: make(chan struct{}),
-			},
-		},
+		func() test {
+			var num int32
+			return test{
+				name: "returns nil after all goroutne returns",
+				args: args{
+					ctx: context.Background(),
+				},
+				fields: fields{
+					limitation: make(chan struct{}),
+				},
+				beforeFunc: func(g Group) {
+					g.Go(func() error {
+						atomic.StoreInt32(&num, int32(runtime.NumGoroutine()))
+						time.Sleep(time.Second)
+						return nil
+					})
+				},
+				checkFunc: func(w want, err error) error {
+					if err := defaultCheckFunc(w, err); err != nil {
+						return err
+					}
+
+					if got, want := int(atomic.LoadInt32(&num)), runtime.NumGoroutine(); got <= want {
+						return errors.New("all goroutine not returns")
+					}
+					return nil
+				},
+			}
+		}(),
 
 		{
 			name: "returns error when g.errs is not nil",
+			args: args{
+				ctx: context.Background(),
+			},
 			fields: fields{
 				limitation: make(chan struct{}),
 				errs: []error{
@@ -765,23 +771,24 @@ func Test_group_Wait(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
+			defer goleak.VerifyNone(tt)
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			if test.createFunc == nil {
-				test.createFunc = defaultCreateFunc
+			gi, _ := New(test.args.ctx)
+
+			g := gi.(*group)
+			g.limitation = test.fields.limitation
+			g.errs = test.fields.errs
+
+			if test.beforeFunc != nil {
+				test.beforeFunc(gi)
 			}
 
-			g := test.createFunc(&test.fields)
-
-			err := g.Wait()
+			err := gi.Wait()
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
