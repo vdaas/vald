@@ -51,3 +51,6 @@ func New(opts ...Option) (s Stackdriver, err error) {
 func (p *prof) Start(ctx context.Context) (err error) {
 	return profiler.Start(*p.Config, p.clientOpts...)
 }
+
+func (p *prof) Stop(ctx context.Context) {
+}

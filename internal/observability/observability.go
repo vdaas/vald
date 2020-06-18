@@ -212,16 +212,25 @@ func (o *observability) PreStart(ctx context.Context) (err error) {
 		return err
 	}
 
-	for _, ex := range o.exporters {
+	for i, ex := range o.exporters {
 		err = ex.Start(ctx)
 		if err != nil {
+			for _, ex = range o.exporters[:i] {
+				ex.Stop(ctx)
+			}
 			return err
 		}
 	}
 
-	for _, prof := range o.profilers {
+	for i, prof := range o.profilers {
 		err = prof.Start(ctx)
 		if err != nil {
+			for _, ex := range o.exporters {
+				ex.Stop(ctx)
+			}
+			for _, prof = range o.profilers[:i] {
+				prof.Stop(ctx)
+			}
 			return err
 		}
 	}
@@ -263,5 +272,9 @@ func (o *observability) Stop(ctx context.Context) {
 
 	for _, ex := range o.exporters {
 		ex.Stop(ctx)
+	}
+
+	for _, prof := range o.profilers {
+		prof.Stop(ctx)
 	}
 }
