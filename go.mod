@@ -67,7 +67,7 @@ require (
 	google.golang.org/genproto v0.0.0-20200521103424-e9a78aa275b7
 	google.golang.org/grpc v1.29.1
 	gopkg.in/yaml.v2 v2.3.0
-	k8s.io/api v0.18.3
+	k8s.io/api v0.18.4
 	k8s.io/apimachinery v0.18.3
 	k8s.io/client-go v0.18.3
 	k8s.io/metrics v0.18.3
