@@ -644,7 +644,7 @@ func Test_group_doCancel(t *testing.T) {
 	}
 }
 
-func aTestWait(t *testing.T) {
+func TestWait(t *testing.T) {
 	type want struct {
 		err error
 	}
