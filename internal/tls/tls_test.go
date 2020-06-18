@@ -73,10 +73,7 @@ func TestNew(t *testing.T) {
 					}
 
 					c.cfg.Certificates = make([]tls.Certificate, 1)
-					c.cfg.Certificates[0], err = tls.LoadX509KeyPair("./testdata/dummyServer.crt", "./testdata/dummyServer.key")
-					if err != nil {
-						panic(err)
-					}
+					c.cfg.Certificates[0], _ = tls.LoadX509KeyPair("./testdata/dummyServer.crt", "./testdata/dummyServer.key")
 
 					pool := x509.NewCertPool()
 					b, _ := ioutil.ReadFile("./testdata/dummyCa.pem")
