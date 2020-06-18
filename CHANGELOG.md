@@ -1,5 +1,38 @@
 # CHANGELOG
 
+## v0.0.42
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.42`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.42`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.42`
+gateway | `docker pull vdaas/vald-gateway:v0.0.42`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.42`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.42`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.42`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.42`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.42`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.42`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.42`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.42)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.42/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.42/charts/vald-helm-operator/README.md)
+
+### Changes
+- ✨ Add Stackdriver Monitoring, Tracing and Profiler support ([#479](https://github.com/vdaas/vald/pull/479))
+- :green_heart: Add CodeQL workflow instead of LGTM.com ([#486](https://github.com/vdaas/vald/pull/486))
+- Add `internal/params` pacakge test ([#474](https://github.com/vdaas/vald/pull/474))
+- :sparkles: aws region can be specified with empty string ([#477](https://github.com/vdaas/vald/pull/477))
+- Fix failed test case of internal/safety package ([#464](https://github.com/vdaas/vald/pull/464))
+- send a request to GoProxy after a new version is published ([#475](https://github.com/vdaas/vald/pull/475))
+- internal/db/storage/blob/s3: remove ctx from struct ([#473](https://github.com/vdaas/vald/pull/473))
+
+
 ## v0.0.41
 
 ### Docker images
