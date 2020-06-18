@@ -79,13 +79,8 @@ func TestNew(t *testing.T) {
 					}
 
 					pool := x509.NewCertPool()
-					b, err := ioutil.ReadFile("./testdata/dummyCa.pem")
-					if err != nil {
-						panic(err)
-					}
-					if !pool.AppendCertsFromPEM(b) {
-						panic("faild to add cert")
-					}
+					b, _ := ioutil.ReadFile("./testdata/dummyCa.pem")
+					pool.AppendCertsFromPEM(b)
 
 					c.cfg.ClientCAs = pool
 					c.cfg.ClientAuth = tls.RequireAndVerifyClientCert
