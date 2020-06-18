@@ -10,6 +10,7 @@ on:
        - 'v*.*.*-*'
     paths:
       - 'internal/**'
+      - '!internal/**/*_test.go'
       - '!internal/db/**'
       - 'apis/grpc/**'
       - 'pkg/discoverer/k8s/**'
@@ -20,6 +21,7 @@ on:
   pull_request:
     paths:
       - 'internal/**'
+      - '!internal/**/*_test.go'
       - '!internal/db/**'
       - 'apis/grpc/**'
       - 'pkg/discoverer/k8s/**'
