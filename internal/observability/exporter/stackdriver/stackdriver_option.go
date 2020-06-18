@@ -26,7 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
-type Option func(e *exporter) error
+type Option func(e *exp) error
 
 var (
 	defaultOpts = []Option{
@@ -44,7 +44,7 @@ var (
 )
 
 func WithMonitoring(enabled bool) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		e.monitoringEnabled = enabled
 
 		return nil
@@ -52,7 +52,7 @@ func WithMonitoring(enabled bool) Option {
 }
 
 func WithTracing(enabled bool) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		e.tracingEnabled = enabled
 
 		return nil
@@ -60,7 +60,7 @@ func WithTracing(enabled bool) Option {
 }
 
 func WithProjectID(pid string) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		if pid != "" {
 			e.ProjectID = pid
 		}
@@ -70,7 +70,7 @@ func WithProjectID(pid string) Option {
 }
 
 func WithLocation(loc string) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		if loc != "" {
 			e.Location = loc
 		}
@@ -80,7 +80,7 @@ func WithLocation(loc string) Option {
 }
 
 func WithOnErrorFunc(f func(error)) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		if f != nil {
 			e.OnError = f
 		}
@@ -90,7 +90,7 @@ func WithOnErrorFunc(f func(error)) Option {
 }
 
 func WithMonitoringClientOptions(copts ...google.Option) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		opts := make([]google.Option, 0, len(copts))
 		for _, opt := range copts {
 			if opt != nil {
@@ -110,7 +110,7 @@ func WithMonitoringClientOptions(copts ...google.Option) Option {
 }
 
 func WithTraceClientOptions(copts ...google.Option) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		opts := make([]google.Option, 0, len(copts))
 		for _, opt := range copts {
 			if opt != nil {
@@ -130,7 +130,7 @@ func WithTraceClientOptions(copts ...google.Option) Option {
 }
 
 func WithBundleDelayThreshold(dur string) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		if dur == "" {
 			return nil
 		}
@@ -147,7 +147,7 @@ func WithBundleDelayThreshold(dur string) Option {
 }
 
 func WithBundleCountThreshold(cnt int) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		e.BundleCountThreshold = cnt
 
 		return nil
@@ -155,7 +155,7 @@ func WithBundleCountThreshold(cnt int) Option {
 }
 
 func WithTraceSpansBufferMaxBytes(bs int) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		e.TraceSpansBufferMaxBytes = bs
 
 		return nil
@@ -163,7 +163,7 @@ func WithTraceSpansBufferMaxBytes(bs int) Option {
 }
 
 func WithMonitoredResource(mr monitoredresource.Interface) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		if mr != nil {
 			e.MonitoredResource = mr
 		}
@@ -173,7 +173,7 @@ func WithMonitoredResource(mr monitoredresource.Interface) Option {
 }
 
 func WithMetricPrefix(prefix string) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		if prefix != "" {
 			e.MetricPrefix = prefix
 		}
@@ -183,7 +183,7 @@ func WithMetricPrefix(prefix string) Option {
 }
 
 func WithGetMetricDisplayName(f func(view *metrics.View) string) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		if f != nil {
 			e.GetMetricDisplayName = f
 		}
@@ -193,7 +193,7 @@ func WithGetMetricDisplayName(f func(view *metrics.View) string) Option {
 }
 
 func WithGetMetricPrefix(f func(name string) string) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		if f != nil {
 			e.GetMetricPrefix = f
 		}
@@ -203,7 +203,7 @@ func WithGetMetricPrefix(f func(name string) string) Option {
 }
 
 func WithDefaultMonitoringLabels(lbs *stackdriver.Labels) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		if lbs != nil {
 			e.DefaultMonitoringLabels = lbs
 		}
@@ -212,7 +212,7 @@ func WithDefaultMonitoringLabels(lbs *stackdriver.Labels) Option {
 }
 
 func WithSkipCMD(skip bool) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		e.SkipCMD = skip
 
 		return nil
@@ -220,7 +220,7 @@ func WithSkipCMD(skip bool) Option {
 }
 
 func WithTimeout(dur string) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		if dur == "" {
 			return nil
 		}
@@ -237,7 +237,7 @@ func WithTimeout(dur string) Option {
 }
 
 func WithReportingInterval(dur string) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		if dur == "" {
 			return nil
 		}
@@ -254,7 +254,7 @@ func WithReportingInterval(dur string) Option {
 }
 
 func WithNumberOfWorkers(n int) Option {
-	return func(e *exporter) error {
+	return func(e *exp) error {
 		e.NumberOfWorkers = n
 
 		return nil

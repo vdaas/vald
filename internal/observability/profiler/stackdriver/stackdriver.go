@@ -22,10 +22,11 @@ import (
 
 	"cloud.google.com/go/profiler"
 	"github.com/vdaas/vald/internal/observability/client/google"
+	vprof "github.com/vdaas/vald/internal/observability/profiler"
 )
 
 type Stackdriver interface {
-	Start(ctx context.Context) error
+	vprof.Profiler
 }
 
 type prof struct {

@@ -21,15 +21,15 @@ import (
 	"context"
 
 	"contrib.go.opencensus.io/exporter/stackdriver"
+	"github.com/vdaas/vald/internal/observability/exporter"
 	"go.opencensus.io/trace"
 )
 
 type Stackdriver interface {
-	Start(ctx context.Context) error
-	Stop(ctx context.Context)
+	exporter.Exporter
 }
 
-type exporter struct {
+type exp struct {
 	exporter *stackdriver.Exporter
 
 	monitoringEnabled bool
@@ -39,7 +39,7 @@ type exporter struct {
 }
 
 func New(opts ...Option) (s Stackdriver, err error) {
-	e := new(exporter)
+	e := new(exp)
 	e.Options = new(stackdriver.Options)
 
 	for _, opt := range append(defaultOpts, opts...) {
@@ -52,7 +52,7 @@ func New(opts ...Option) (s Stackdriver, err error) {
 	return e, nil
 }
 
-func (e *exporter) Start(ctx context.Context) (err error) {
+func (e *exp) Start(ctx context.Context) (err error) {
 	e.Options.Context = ctx
 
 	e.exporter, err = stackdriver.NewExporter(*e.Options)
@@ -74,7 +74,7 @@ func (e *exporter) Start(ctx context.Context) (err error) {
 	return nil
 }
 
-func (e *exporter) Stop(ctx context.Context) {
+func (e *exp) Stop(ctx context.Context) {
 	if e.exporter != nil {
 		if e.monitoringEnabled {
 			e.exporter.StopMetricsExporter()
