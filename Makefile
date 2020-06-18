@@ -150,10 +150,6 @@ SHELL = bash
 
 include Makefile.d/functions.mk
 
-.PHONY: all
-## execute clean and deps
-all: clean deps
-
 .PHONY: help
 ## print all available commands
 help:
@@ -169,6 +165,10 @@ help:
 	} \
 	{ lastLine = $$0 }' $(MAKELISTS) | sort -u
 	@printf "\n"
+
+.PHONY: all
+## execute clean and deps
+all: clean deps
 
 .PHONY: clean
 ## clean
