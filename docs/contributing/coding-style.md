@@ -264,6 +264,33 @@ func (s *something) SetSignedTok(st string) {
 }
 ```
 
+### Unused Variables
+
+An unused variable may increase the complexity of the source code, it may confuse the developer hence introduce a new bug.
+So please delete the unused variable.
+
+Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error. 
+This is an example of the unused variable declaration that does not cause a compilation error.
+
+```golang
+// In this case, this example are not using `port` field, but dose not cause a compilation error.
+// So please delete `port` field of `server`.
+
+type server struct {
+    addr string
+    port int  // you have to delete this field.
+}
+
+// The `port` field of `server` is not used.
+srv := &server {
+    addr: "192.168.33.10:1234",
+}
+
+if err := srv.Run(); err != nil {
+    log.Fatal(err)
+}
+```
+
 ### Error handling
 
 All errors should define in [internal/errors package](https://github.com/vdaas/vald/blob/master/internal/errors). All errors should be start with `Err` prefix, and all errors should be handle if possible.
@@ -602,4 +629,42 @@ We do not suggest to modify the generated code other than the `tests` variable, 
             test.beforeFunc(test.args)
         }
         // generated test code
+    ```
+
+1. Unused fields
+
+    By default, the template provides `fields` structure to initialize object of the test target. 
+    But in some cases, not all `fields` are needed, so please delete the unnecessary fields.
+    For example, the following struct and the corresponding function:
+    
+    ```golang
+    type server struct {
+        addr string
+        port int
+    }
+    func (s *server) Addr() string {
+        return s.addr
+    }
+    ```
+
+    And the generated test code is:
+    ```golang
+    func Test_server_Addr(t *testing.T) {
+        type fields struct {
+            addr string
+            port int
+        }
+        type want struct {
+            // generated test code
+    ```
+
+    Since the `port` variable is not used in this test case, you can delete the `port` definition in the test case.
+    ```golang
+    func Test_server_Addr(t *testing.T) {
+        type fields struct {
+            addr string
+            // port int   <-- this line should be deleted
+        }
+        type want struct {
+            // generated test code
     ```

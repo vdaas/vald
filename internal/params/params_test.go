@@ -18,7 +18,10 @@
 package params
 
 import (
+	stderrs "errors"
+	"os"
 	"reflect"
+	"syscall"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -48,36 +51,87 @@ func TestNew(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns *parser when opts is nil",
+			want: want{
+				want: &parser{
+					filePath: struct {
+						keys        []string
+						defaultPath string
+						description string
+					}{
+						keys: []string{
+							"f",
+							"file",
+							"c",
+							"config",
+						},
+						defaultPath: "/etc/server/config.yaml",
+						description: "config file path",
+					},
+					version: struct {
+						keys        []string
+						defaultFlag bool
+						description string
+					}{
+						keys: []string{
+							"v",
+							"ver",
+							"version",
+						},
+						defaultFlag: false,
+						description: "show server version",
+					},
+				},
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns *parser when opts is not nil",
+			args: args{
+				opts: []Option{
+					WithConfigFilePathKeys("t", "test"),
+				},
+			},
+			want: want{
+				want: &parser{
+					filePath: struct {
+						keys        []string
+						defaultPath string
+						description string
+					}{
+						keys: []string{
+							"f",
+							"file",
+							"c",
+							"config",
+							"t",
+							"test",
+						},
+						defaultPath: "/etc/server/config.yaml",
+						description: "config file path",
+					},
+					version: struct {
+						keys        []string
+						defaultFlag bool
+						description string
+					}{
+						keys: []string{
+							"v",
+							"ver",
+							"version",
+						},
+						defaultFlag: false,
+						description: "show server version",
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -92,7 +146,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -136,38 +189,107 @@ func Test_parser_Parse(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           filePath: struct{keys []string; defaultPath string; description string}{},
-		           version: struct{keys []string; defaultFlag bool; description string}{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns (d, false, nil) when parse succeed",
+			fields: fields{
+				filePath: struct {
+					keys        []string
+					defaultPath string
+					description string
+				}{
+					keys: []string{
+						"path", "p",
+					},
+					defaultPath: "./params.go",
+					description: "sets file path",
+				},
+				version: struct {
+					keys        []string
+					defaultFlag bool
+					description string
+				}{
+					keys: []string{
+						"version", "v",
+					},
+					defaultFlag: true,
+					description: "show version",
+				},
+			},
+			beforeFunc: func() {
+				os.Args = []string{
+					"test", "--path=./params.go", "--version=false",
+				}
+			},
+			afterFunc: func() { os.Args = nil },
+			want: want{
+				want: &data{
+					configFilePath: "./params.go",
+					showVersion:    false,
+				},
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           filePath: struct{keys []string; defaultPath string; description string}{},
-		           version: struct{keys []string; defaultFlag bool; description string}{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns (nil, true, nil) When parse fails but the help option is set",
+			beforeFunc: func() {
+				os.Args = []string{
+					"test", "--help",
+				}
+			},
+			afterFunc: func() { os.Args = nil },
+			want: want{
+				want1: true,
+			},
+		},
+
+		{
+			name: "returns (nil, true, nil) When parse fails but the help option is not set",
+			beforeFunc: func() {
+				os.Args = []string{
+					"test", "--name",
+				}
+			},
+			afterFunc: func() { os.Args = nil },
+			want: want{
+				want1: false,
+				err:   errors.ErrArgumentParseFailed(stderrs.New("flag provided but not defined: -name")),
+			},
+		},
+
+		{
+			name: "returns (nil, true, error) When the configFilePath option is set but file dose not exist",
+			fields: fields{
+				filePath: struct {
+					keys        []string
+					defaultPath string
+					description string
+				}{
+					keys: []string{
+						"path", "p",
+					},
+					description: "sets file path",
+				},
+			},
+			beforeFunc: func() {
+				os.Args = []string{
+					"test", "--path=config.yml",
+				}
+			},
+			afterFunc: func() { os.Args = nil },
+			want: want{
+				want1: true,
+				err: &os.PathError{
+					Op:   "stat",
+					Path: "config.yml",
+					Err:  syscall.Errno(0x2),
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -186,7 +308,6 @@ func Test_parser_Parse(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -194,7 +315,6 @@ func Test_parser_Parse(t *testing.T) {
 func Test_data_ConfigFilePath(t *testing.T) {
 	type fields struct {
 		configFilePath string
-		showVersion    bool
 	}
 	type want struct {
 		want string
@@ -214,38 +334,20 @@ func Test_data_ConfigFilePath(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           configFilePath: "",
-		           showVersion: false,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           configFilePath: "",
-		           showVersion: false,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns `./path` when d.configFilePath is `./path`",
+			fields: fields{
+				configFilePath: "./path",
+			},
+			want: want{
+				want: "./path",
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -257,22 +359,19 @@ func Test_data_ConfigFilePath(t *testing.T) {
 			}
 			d := &data{
 				configFilePath: test.fields.configFilePath,
-				showVersion:    test.fields.showVersion,
 			}
 
 			got := d.ConfigFilePath()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_data_ShowVersion(t *testing.T) {
 	type fields struct {
-		configFilePath string
-		showVersion    bool
+		showVersion bool
 	}
 	type want struct {
 		want bool
@@ -292,38 +391,20 @@ func Test_data_ShowVersion(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           configFilePath: "",
-		           showVersion: false,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           configFilePath: "",
-		           showVersion: false,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns true when d.showVersion is true",
+			fields: fields{
+				showVersion: true,
+			},
+			want: want{
+				want: true,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -334,15 +415,13 @@ func Test_data_ShowVersion(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			d := &data{
-				configFilePath: test.fields.configFilePath,
-				showVersion:    test.fields.showVersion,
+				showVersion: test.fields.showVersion,
 			}
 
 			got := d.ShowVersion()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
