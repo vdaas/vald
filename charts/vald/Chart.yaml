@@ -22,14 +22,25 @@ type: application
 keywords:
   - Vald
   - NGT
-home: https://vdaas.org
+  - vector
+  - search
+  - approximate-nearest-neighbor-search
+  - nearest-neighbor-search
+  - vector-search-engine
+  - similarity-search
+  - image-search
+  - Kubernetes
+  - k8s
+  - AI
+  - artificial-intelligence
+home: https://vald.vdaas.org
 icon: https://raw.githubusercontent.com/vdaas/vald/master/assets/image/svg/icon_color.svg
 sources:
   - https://github.com/vdaas/vald
 maintainers:
   - name: kpango
-    email: i.can.feel.gravity@gmail.com
+    email: kpango@vdaas.org
   - name: rinx
-    email: rintaro.okamura@gmail.com
+    email: rinx@vdaas.org
   - name: kmrmt
-    email: kou.morimoto@gmail.com
+    email: ksk@vdaas.org
