@@ -23,6 +23,7 @@ type BlobStorageType uint8
 
 const (
 	S3 BlobStorageType = 1 + iota
+	CloudStrage
 )
 
 func (bst BlobStorageType) String() string {
@@ -52,7 +53,7 @@ type Blob struct {
 	S3 *S3Config `json:"s3" yaml:"s3"`
 
 	// CloudStrage represents CloudStrage config
-	CloudStrage *CloudStrage `json:"cloud_strage" yaml:"cloud_strage"`
+	CloudStrage *CloudStrageConfig `json:"cloud_strage" yaml:"cloud_strage"`
 }
 
 type S3Config struct {
@@ -77,7 +78,7 @@ type S3Config struct {
 	MaxPartSize string `json:"max_part_size" yaml:"max_part_size"`
 }
 
-type CloudStrage struct {
+type CloudStrageConfig struct {
 	URL string `json:"url" yaml:"url"`
 
 	Reader struct {
@@ -106,7 +107,7 @@ func (b *Blob) Bind() *Blob {
 	if b.CloudStrage != nil {
 		b.CloudStrage = b.CloudStrage.Bind()
 	} else {
-		b.CloudStrage = new(CloudStrage)
+		b.CloudStrage = new(CloudStrageConfig)
 	}
 
 	return b
@@ -123,7 +124,7 @@ func (s *S3Config) Bind() *S3Config {
 	return s
 }
 
-func (c *CloudStrage) Bind() *CloudStrage {
+func (c *CloudStrageConfig) Bind() *CloudStrageConfig {
 	c.Writer.CacheControl = GetActualValue(c.Writer.CacheControl)
 	c.Writer.ContentDisposition = GetActualValue(c.Writer.ContentDisposition)
 	c.Writer.ContentEncoding = GetActualValue(c.Writer.ContentEncoding)

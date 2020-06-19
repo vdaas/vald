@@ -18,6 +18,7 @@
 package storage
 
 import (
+	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -90,6 +91,18 @@ func WithS3SessionOpts(opts ...session.Option) Option {
 		}
 
 		b.s3SessionOpts = append(b.s3SessionOpts, opts...)
+
+		return nil
+	}
+}
+
+func WithCloudStrageOpts(opts ...cloudstorage.Option) Option {
+	return func(b *bs) error {
+		if b.cloudStrageOpts == nil {
+			b.cloudStrageOpts = opts
+		}
+
+		b.cloudStrageOpts = append(b.cloudStrageOpts, opts...)
 
 		return nil
 	}

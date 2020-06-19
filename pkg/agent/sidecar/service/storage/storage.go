@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/compress"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/storage/blob"
+	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -46,6 +47,8 @@ type bs struct {
 
 	s3Opts        []s3.Option
 	s3SessionOpts []session.Option
+
+	cloudStrageOpts []cloudstorage.Option
 
 	compressAlgorithm string
 	compressionLevel  int
@@ -113,6 +116,13 @@ func (b *bs) initBucket() (err error) {
 				s3.WithSession(s),
 				s3.WithBucket(b.bucketName),
 			)...,
+		)
+		if err != nil {
+			return err
+		}
+	case config.CloudStrage:
+		b.bucket, err = cloudstorage.New(
+			b.cloudStrageOpts...,
 		)
 		if err != nil {
 			return err

@@ -21,6 +21,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/agent/sidecar"
 	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -93,6 +94,15 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		),
 		storage.WithS3Opts(
 			s3.WithMaxPartSize(cfg.AgentSidecar.BlobStorage.S3.MaxPartSize),
+		),
+		storage.WithCloudStrageOpts(
+			cloudstorage.WithURL(cfg.AgentSidecar.BlobStorage.CloudStrage.URL),
+			cloudstorage.WithWriteBufferSize(cfg.AgentSidecar.BlobStorage.CloudStrage.Writer.BufferSize),
+			cloudstorage.WithWriteCacheControl(cfg.AgentSidecar.BlobStorage.CloudStrage.Writer.CacheControl),
+			cloudstorage.WithWriteContentDisposition(cfg.AgentSidecar.BlobStorage.CloudStrage.Writer.ContentDisposition),
+			cloudstorage.WithWriteContentEncoding(cfg.AgentSidecar.BlobStorage.CloudStrage.Writer.ContentEncoding),
+			cloudstorage.WithWriteContentLanguage(cfg.AgentSidecar.BlobStorage.CloudStrage.Writer.ContentLanguage),
+			cloudstorage.WithWriteContentType(cfg.AgentSidecar.BlobStorage.CloudStrage.Writer.ContentType),
 		),
 		storage.WithCompressAlgorithm(cfg.AgentSidecar.Compress.CompressAlgorithm),
 		storage.WithCompressionLevel(cfg.AgentSidecar.Compress.CompressionLevel),
