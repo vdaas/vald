@@ -9,7 +9,7 @@ var (
 	defaultOpts = []Option{}
 )
 
-// WithBucket returns Option that set r.bucket.
+// WithBucket returns Option that sets r.bucket.
 func WithBucket(bucket *blob.Bucket) Option {
 	return func(r *reader) error {
 		if bucket != nil {
@@ -19,7 +19,7 @@ func WithBucket(bucket *blob.Bucket) Option {
 	}
 }
 
-// WithKey returns Option that set r.key.
+// WithKey returns Option that sets r.key.
 func WithKey(key string) Option {
 	return func(r *reader) error {
 		if len(key) != 0 {
@@ -29,14 +29,11 @@ func WithKey(key string) Option {
 	}
 }
 
-// WithBeforeRead returns Option that set r.opts.BeforeRead.
-func WithBeforeRead(fn func(asFunc func(interface{}) bool) error) Option {
+// WithReaderOptions returns Option that sets r.opts.
+func WithReaderOptions(opts *blob.ReaderOptions) Option {
 	return func(r *reader) error {
-		if fn != nil {
-			if r.opts == nil {
-				r.opts = new(blob.ReaderOptions)
-			}
-			r.opts.BeforeRead = fn
+		if opts != nil {
+			r.opts = opts
 		}
 		return nil
 	}

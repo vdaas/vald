@@ -26,7 +26,7 @@ func New(opts ...Option) (Writer, error) {
 	w := new(writer)
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(w); err != nil {
-			return nil, errors.Wrap(err, "failed to apply option")
+			return nil, err
 		}
 	}
 	return w, nil
@@ -35,7 +35,7 @@ func New(opts ...Option) (Writer, error) {
 func (w *writer) Open(ctx context.Context) (err error) {
 	w.Writer, err = w.bucket.NewWriter(ctx, w.key, w.opts)
 	if err != nil {
-		return errors.Wrap(err, "failed to create writer")
+		return err
 	}
 	return nil
 }
@@ -44,22 +44,12 @@ func (w *writer) Close() error {
 	if w.Writer == nil {
 		return errors.ErrStorageWriterNotOpened
 	}
-
-	err := w.Writer.Close()
-	if err != nil {
-		return errors.Wrap(err, "failed to close")
-	}
-	return nil
+	return w.Writer.Close()
 }
 
 func (w *writer) Write(p []byte) (n int, err error) {
 	if w.Writer == nil {
 		return 0, errors.ErrStorageWriterNotOpened
 	}
-
-	n, err = w.Writer.Write(p)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to write")
-	}
-	return n, nil
+	return w.Writer.Write(p)
 }

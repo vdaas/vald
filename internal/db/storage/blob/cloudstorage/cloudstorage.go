@@ -6,6 +6,8 @@ import (
 
 	iblob "github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage/reader"
+	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage/writer"
+	"github.com/vdaas/vald/internal/errors"
 	"gocloud.dev/blob"
 )
 
@@ -13,6 +15,9 @@ type client struct {
 	urlstr string
 
 	bucket *blob.Bucket
+
+	readerOpts *blob.ReaderOptions
+	writerOpts *blob.WriterOptions
 }
 
 // New returns blob.Bucket implementation.
@@ -24,7 +29,6 @@ func New(opts ...Option) (iblob.Bucket, error) {
 			return nil, err
 		}
 	}
-
 	return c, nil
 }
 
@@ -37,21 +41,20 @@ func (c *client) Open(ctx context.Context) (err error) {
 }
 func (c *client) Close() error {
 	if c.bucket == nil {
-		// TODO: return err
-		return nil
+		return errors.ErrBucketNotOpened
 	}
 	return c.bucket.Close()
 }
 
 func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) {
 	if c.bucket == nil {
-		// TODO: return nil, error
-		return nil, nil
+		return nil, errors.ErrBucketNotOpened
 	}
 
 	r, err := reader.New(
-		reader.WithBucket(c.bucket),
 		reader.WithKey(key),
+		reader.WithBucket(c.bucket),
+		reader.WithReaderOptions(c.readerOpts),
 	)
 	if err != nil {
 		return nil, err
@@ -61,5 +64,17 @@ func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) 
 }
 
 func (c *client) Writer(ctx context.Context, key string) (io.WriteCloser, error) {
-	return nil, nil
+	if c.bucket == nil {
+		return nil, errors.ErrBucketNotOpened
+	}
+
+	w, err := writer.New(
+		writer.WithKey(key),
+		writer.WithBucket(c.bucket),
+		writer.WithWriterOptions(c.writerOpts),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return w, w.Open(ctx)
 }

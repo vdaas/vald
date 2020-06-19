@@ -45,22 +45,12 @@ func (r *reader) Close() error {
 	if r.Reader == nil {
 		return errors.ErrStorageReaderNotOpened
 	}
-
-	err := r.Reader.Close()
-	if err != nil {
-		return errors.Wrap(err, "failed to close")
-	}
-	return nil
+	return r.Reader.Close()
 }
 
 func (r *reader) Read(p []byte) (n int, err error) {
 	if r.Reader == nil {
 		return 0, errors.ErrStorageReaderNotOpened
 	}
-
-	n, err = r.Reader.Read(p)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to read")
-	}
-	return n, nil
+	return r.Reader.Read(p)
 }
