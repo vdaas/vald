@@ -193,11 +193,14 @@ func TestGet(t *testing.T) {
 		}
 		return nil
 	}
-	defaultBeforeFunc := func() {
+	initFunc := func() {
 		instance, once = nil, sync.Once{}
 	}
+	defaultBeforeFunc := func() {
+		initFunc()
+	}
 	defaultAfterFunc := func() {
-		defaultBeforeFunc()
+		initFunc()
 	}
 
 	tests := []test{
