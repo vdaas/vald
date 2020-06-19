@@ -83,7 +83,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -103,7 +103,7 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_exporter_Start(t *testing.T) {
+func Test_exp_Start(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
@@ -167,7 +167,7 @@ func Test_exporter_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -177,7 +177,7 @@ func Test_exporter_Start(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			e := &exporter{
+			e := &exp{
 				exporter: test.fields.exporter,
 				options:  test.fields.options,
 			}
@@ -191,7 +191,7 @@ func Test_exporter_Start(t *testing.T) {
 	}
 }
 
-func Test_exporter_Stop(t *testing.T) {
+func Test_exp_Stop(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
@@ -251,7 +251,7 @@ func Test_exporter_Stop(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -261,7 +261,7 @@ func Test_exporter_Stop(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			e := &exporter{
+			e := &exp{
 				exporter: test.fields.exporter,
 				options:  test.fields.options,
 			}
@@ -274,7 +274,7 @@ func Test_exporter_Stop(t *testing.T) {
 	}
 }
 
-func Test_exporter_NewHTTPHandler(t *testing.T) {
+func Test_exp_NewHTTPHandler(t *testing.T) {
 	type fields struct {
 		exporter *prometheus.Exporter
 		options  prometheusOptions
@@ -338,7 +338,7 @@ func Test_exporter_NewHTTPHandler(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			e := &exporter{
+			e := &exp{
 				exporter: test.fields.exporter,
 				options:  test.fields.options,
 			}

@@ -24,6 +24,7 @@ import (
 )
 
 func TestWithEndpoint(t *testing.T) {
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		ep string
@@ -61,7 +62,7 @@ func TestWithEndpoint(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -99,7 +100,7 @@ func TestWithEndpoint(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -120,7 +121,7 @@ func TestWithEndpoint(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -128,7 +129,7 @@ func TestWithEndpoint(t *testing.T) {
 			   got := WithEndpoint(test.args.ep)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -137,6 +138,7 @@ func TestWithEndpoint(t *testing.T) {
 }
 
 func TestWithNamespace(t *testing.T) {
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		ns string
@@ -174,7 +176,7 @@ func TestWithNamespace(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -212,7 +214,7 @@ func TestWithNamespace(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -233,7 +235,7 @@ func TestWithNamespace(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -241,7 +243,7 @@ func TestWithNamespace(t *testing.T) {
 			   got := WithNamespace(test.args.ns)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -250,6 +252,7 @@ func TestWithNamespace(t *testing.T) {
 }
 
 func TestWithOnErrorFunc(t *testing.T) {
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		f func(error)
@@ -287,7 +290,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -325,7 +328,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -346,7 +349,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -354,7 +357,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 			   got := WithOnErrorFunc(test.args.f)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

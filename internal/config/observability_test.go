@@ -27,11 +27,12 @@ import (
 
 func TestObservability_Bind(t *testing.T) {
 	type fields struct {
-		Enabled    bool
-		Collector  *Collector
-		Trace      *Trace
-		Prometheus *Prometheus
-		Jaeger     *Jaeger
+		Enabled     bool
+		Collector   *Collector
+		Trace       *Trace
+		Prometheus  *Prometheus
+		Jaeger      *Jaeger
+		Stackdriver *Stackdriver
 	}
 	type want struct {
 		want *Observability
@@ -61,6 +62,7 @@ func TestObservability_Bind(t *testing.T) {
 		           Trace: Trace{},
 		           Prometheus: Prometheus{},
 		           Jaeger: Jaeger{},
+		           Stackdriver: Stackdriver{},
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -78,6 +80,7 @@ func TestObservability_Bind(t *testing.T) {
 		           Trace: Trace{},
 		           Prometheus: Prometheus{},
 		           Jaeger: Jaeger{},
+		           Stackdriver: Stackdriver{},
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -88,6 +91,7 @@ func TestObservability_Bind(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -98,11 +102,12 @@ func TestObservability_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			o := &Observability{
-				Enabled:    test.fields.Enabled,
-				Collector:  test.fields.Collector,
-				Trace:      test.fields.Trace,
-				Prometheus: test.fields.Prometheus,
-				Jaeger:     test.fields.Jaeger,
+				Enabled:     test.fields.Enabled,
+				Collector:   test.fields.Collector,
+				Trace:       test.fields.Trace,
+				Prometheus:  test.fields.Prometheus,
+				Jaeger:      test.fields.Jaeger,
+				Stackdriver: test.fields.Stackdriver,
 			}
 
 			got := o.Bind()
@@ -114,9 +119,88 @@ func TestObservability_Bind(t *testing.T) {
 	}
 }
 
+func TestCollector_Bind(t *testing.T) {
+	type fields struct {
+		Duration string
+		Metrics  *Metrics
+	}
+	type want struct {
+		want *Collector
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, *Collector) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got *Collector) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           Duration: "",
+		           Metrics: Metrics{},
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           Duration: "",
+		           Metrics: Metrics{},
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &Collector{
+				Duration: test.fields.Duration,
+				Metrics:  test.fields.Metrics,
+			}
+
+			got := c.Bind()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
 func TestStackdriver_Bind(t *testing.T) {
 	type fields struct {
 		ProjectID string
+		Client    *StackdriverClient
 		Exporter  *StackdriverExporter
 		Profiler  *StackdriverProfiler
 	}
@@ -144,6 +228,7 @@ func TestStackdriver_Bind(t *testing.T) {
 		       name: "test_case_1",
 		       fields: fields {
 		           ProjectID: "",
+		           Client: StackdriverClient{},
 		           Exporter: StackdriverExporter{},
 		           Profiler: StackdriverProfiler{},
 		       },
@@ -159,6 +244,7 @@ func TestStackdriver_Bind(t *testing.T) {
 		           name: "test_case_2",
 		           fields: fields {
 		           ProjectID: "",
+		           Client: StackdriverClient{},
 		           Exporter: StackdriverExporter{},
 		           Profiler: StackdriverProfiler{},
 		           },
@@ -183,6 +269,7 @@ func TestStackdriver_Bind(t *testing.T) {
 			}
 			sd := &Stackdriver{
 				ProjectID: test.fields.ProjectID,
+				Client:    test.fields.Client,
 				Exporter:  test.fields.Exporter,
 				Profiler:  test.fields.Profiler,
 			}

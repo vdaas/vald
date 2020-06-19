@@ -24,8 +24,8 @@ import (
 
 	"cloud.google.com/go/profiler"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/observability/client/google"
 	"go.uber.org/goleak"
-	"google.golang.org/api/option"
 )
 
 func TestNew(t *testing.T) {
@@ -109,7 +109,7 @@ func Test_prof_Start(t *testing.T) {
 	}
 	type fields struct {
 		Config     *profiler.Config
-		clientOpts []option.ClientOption
+		clientOpts []google.Option
 	}
 	type want struct {
 		err error
@@ -187,6 +187,89 @@ func Test_prof_Start(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 
+		})
+	}
+}
+
+func Test_prof_Stop(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	type fields struct {
+		Config     *profiler.Config
+		clientOpts []google.Option
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           Config: nil,
+		           clientOpts: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           Config: nil,
+		           clientOpts: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			p := &prof{
+				Config:     test.fields.Config,
+				clientOpts: test.fields.clientOpts,
+			}
+
+			p.Stop(test.args.ctx)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }

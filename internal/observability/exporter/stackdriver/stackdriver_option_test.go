@@ -22,9 +22,9 @@ import (
 
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"contrib.go.opencensus.io/exporter/stackdriver/monitoredresource"
+	"github.com/vdaas/vald/internal/observability/client/google"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"go.uber.org/goleak"
-	"google.golang.org/api/option"
 )
 
 func TestWithMonitoring(t *testing.T) {
@@ -601,7 +601,7 @@ func TestWithMonitoringClientOptions(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		copts []option.ClientOption
+		copts []google.Option
 	}
 	type want struct {
 		obj *T
@@ -715,7 +715,7 @@ func TestWithTraceClientOptions(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		copts []option.ClientOption
+		copts []google.Option
 	}
 	type want struct {
 		obj *T

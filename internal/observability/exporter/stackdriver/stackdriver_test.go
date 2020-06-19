@@ -102,7 +102,7 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_exporter_Start(t *testing.T) {
+func Test_exp_Start(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
@@ -182,7 +182,7 @@ func Test_exporter_Start(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			e := &exporter{
+			e := &exp{
 				exporter:          test.fields.exporter,
 				monitoringEnabled: test.fields.monitoringEnabled,
 				tracingEnabled:    test.fields.tracingEnabled,
@@ -198,7 +198,7 @@ func Test_exporter_Start(t *testing.T) {
 	}
 }
 
-func Test_exporter_Stop(t *testing.T) {
+func Test_exp_Stop(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
@@ -274,7 +274,7 @@ func Test_exporter_Stop(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			e := &exporter{
+			e := &exp{
 				exporter:          test.fields.exporter,
 				monitoringEnabled: test.fields.monitoringEnabled,
 				tracingEnabled:    test.fields.tracingEnabled,
