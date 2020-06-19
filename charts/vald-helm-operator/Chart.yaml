@@ -30,6 +30,10 @@ keywords:
   - similarity-search
   - image-search
   - operator
+  - Kubernetes
+  - k8s
+  - AI
+  - artificial-intelligence
 home: https://vald.vdaas.org
 icon: https://raw.githubusercontent.com/vdaas/vald/master/assets/image/svg/icon_color.svg
 sources:
