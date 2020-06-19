@@ -9,6 +9,16 @@ var (
 	defaultOpts = []Option{}
 )
 
+// WithURL returns Option that sets c.urlstr.
+func WithURL(str string) Option {
+	return func(c *client) error {
+		if len(str) != 0 {
+			c.urlstr = str
+		}
+		return nil
+	}
+}
+
 // WithBeforeRead returns Option that sets c.readerOpts.BeforeRead.
 func WithBeforeRead(fn func(asFunc func(interface{}) bool) error) Option {
 	return func(c *client) error {

@@ -50,6 +50,9 @@ type Blob struct {
 
 	// S3 represents S3 config
 	S3 *S3Config `json:"s3" yaml:"s3"`
+
+	// CloudStrage represents CloudStrage config
+	CloudStrage *CloudStrage `json:"cloud_strage" yaml:"cloud_strage"`
 }
 
 type S3Config struct {
@@ -74,6 +77,22 @@ type S3Config struct {
 	MaxPartSize string `json:"max_part_size" yaml:"max_part_size"`
 }
 
+type CloudStrage struct {
+	URL string `json:"url" yaml:"url"`
+
+	Reader struct {
+	} `json:"reader" yaml:"reader"`
+
+	Writer struct {
+		BufferSize         int    `json:"buffer_size" yaml:"buffer_size"`
+		CacheControl       string `json:"cache_control" yaml:"cache_control"`
+		ContentDisposition string `json:"content_disposition" yaml:"content_disposition"`
+		ContentEncoding    string `json:"content_encoding" yaml:"content_encoding"`
+		ContentLanguage    string `json:"content_language" yaml:"content_language"`
+		ContentType        string `json:"content_type" yaml:"content_type"`
+	} `json:"writer" yaml:"writer"`
+}
+
 func (b *Blob) Bind() *Blob {
 	b.StorageType = GetActualValue(b.StorageType)
 	b.Bucket = GetActualValue(b.Bucket)
@@ -82,6 +101,12 @@ func (b *Blob) Bind() *Blob {
 		b.S3 = b.S3.Bind()
 	} else {
 		b.S3 = new(S3Config)
+	}
+
+	if b.CloudStrage != nil {
+		b.CloudStrage = b.CloudStrage.Bind()
+	} else {
+		b.CloudStrage = new(CloudStrage)
 	}
 
 	return b
@@ -96,4 +121,14 @@ func (s *S3Config) Bind() *S3Config {
 	s.MaxPartSize = GetActualValue(s.MaxPartSize)
 
 	return s
+}
+
+func (c *CloudStrage) Bind() *CloudStrage {
+	c.Writer.CacheControl = GetActualValue(c.Writer.CacheControl)
+	c.Writer.ContentDisposition = GetActualValue(c.Writer.ContentDisposition)
+	c.Writer.ContentEncoding = GetActualValue(c.Writer.ContentEncoding)
+	c.Writer.ContentLanguage = GetActualValue(c.Writer.ContentLanguage)
+	c.Writer.ContentType = GetActualValue(c.Writer.ContentType)
+
+	return c
 }
