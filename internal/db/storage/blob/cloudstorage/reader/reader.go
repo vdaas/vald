@@ -9,8 +9,9 @@ import (
 )
 
 type reader struct {
+	key string
+
 	bucket *blob.Bucket
-	key    string
 	opts   *blob.ReaderOptions
 	*blob.Reader
 }
@@ -26,7 +27,7 @@ func New(opts ...Option) (Reader, error) {
 	r := new(reader)
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(r); err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to apply option")
 		}
 	}
 	return r, nil
@@ -35,7 +36,7 @@ func New(opts ...Option) (Reader, error) {
 func (r *reader) Open(ctx context.Context) (err error) {
 	r.Reader, err = r.bucket.NewReader(ctx, r.key, r.opts)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to create reader")
 	}
 	return nil
 }
@@ -44,12 +45,22 @@ func (r *reader) Close() error {
 	if r.Reader == nil {
 		return errors.ErrStorageReaderNotOpened
 	}
-	return r.Reader.Close()
+
+	err := r.Reader.Close()
+	if err != nil {
+		return errors.Wrap(err, "failed to close")
+	}
+	return nil
 }
 
 func (r *reader) Read(p []byte) (n int, err error) {
 	if r.Reader == nil {
 		return 0, errors.ErrStorageReaderNotOpened
 	}
-	return r.Reader.Read(p)
+
+	n, err = r.Reader.Read(p)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to read")
+	}
+	return n, nil
 }
