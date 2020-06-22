@@ -79,7 +79,6 @@ func TestNew(t *testing.T) {
 					cfg.ClientCAs = pool
 					cfg.ClientAuth = tls.RequireAndVerifyClientCert
 
-					cfg.BuildNameToCertificate()
 					return cfg
 				}(),
 			},
