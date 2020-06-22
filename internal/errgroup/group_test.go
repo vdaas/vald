@@ -362,6 +362,22 @@ func Test_group_Limitation(t *testing.T) {
 			args: args{
 				limit: 0,
 			},
+			want: want{
+				want: &group{
+					enableLimitation: func() atomic.Value {
+						var el atomic.Value
+						el.Store(false)
+						return el
+					}(),
+				},
+			},
+		},
+
+		{
+			name: "set disable and close limitation when limit is 0 and g.limitation is not nil",
+			args: args{
+				limit: 0,
+			},
 			fields: fields{
 				limitation: make(chan struct{}),
 			},
