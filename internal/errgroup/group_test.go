@@ -497,7 +497,7 @@ func Test_group_Go(t *testing.T) {
 			egctx, cancel := context.WithCancel(context.Background())
 
 			return test{
-				name: "f is called but f returns error and revious process also returns error",
+				name: "f is called but f returns error and previous process also returns error",
 				args: args{
 					f: func() error {
 						atomic.AddInt32(&calledCnt, 1)
