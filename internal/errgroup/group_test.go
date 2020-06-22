@@ -379,7 +379,7 @@ func Test_group_Limitation(t *testing.T) {
 				limit: 1,
 			},
 			fields: fields{
-				limitation: make(chan struct{}),
+				limitation: make(chan struct{}, 1),
 			},
 			want: want{
 				want: &group{
@@ -707,7 +707,6 @@ func Test_group_Wait(t *testing.T) {
 			return test{
 				name: "returns nil after all goroutne returns",
 				fields: fields{
-					limitation: make(chan struct{}),
 					enableLimitation: func() (el atomic.Value) {
 						el.Store(false)
 						return
@@ -736,7 +735,6 @@ func Test_group_Wait(t *testing.T) {
 		{
 			name: "returns error when g.errs is not nil",
 			fields: fields{
-				limitation: make(chan struct{}),
 				errs: []error{
 					errors.New("err1"),
 					errors.New("err2"),
