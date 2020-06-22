@@ -22,7 +22,6 @@ import (
 	"github.com/vdaas/vald/apis/grpc/manager/replication/agent"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
@@ -119,7 +118,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 }
 
 func (r *run) PreStart(ctx context.Context) error {
-	log.Info("daemon pre-start")
 	if r.observability != nil {
 		return r.observability.PreStart(ctx)
 	}

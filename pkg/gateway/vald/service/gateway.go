@@ -70,7 +70,7 @@ func (g *gateway) BroadCast(ctx context.Context,
 		default:
 			err = f(ctx, addr, agent.NewAgentClient(conn), copts...)
 			if err != nil {
-				log.Debug(addr, err)
+				log.Debugf("an error occurred while calling RPC of %s: %s", addr, err)
 				return err
 			}
 		}
@@ -93,7 +93,7 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 	var cur uint32 = 0
 	limit := uint32(num)
 	addrs := g.client.GetAddrs(ctx)
-	log.Debug("DoMulti", addrs)
+	log.Debug("executing DoMulti for addrs:", addrs)
 	err = g.client.GetClient().OrderedRange(ctx, addrs, func(ictx context.Context,
 		addr string,
 		conn *grpc.ClientConn,
@@ -101,7 +101,7 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 		if atomic.LoadUint32(&cur) < limit {
 			err = f(ictx, addr, agent.NewAgentClient(conn), copts...)
 			if err != nil {
-				log.Debug(addr, err)
+				log.Debugf("an error occurred while calling RPC of %s: %s", addr, err)
 				return err
 			}
 			atomic.AddUint32(&cur, 1)

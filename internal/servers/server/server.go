@@ -128,7 +128,7 @@ func New(opts ...Option) (Server, error) {
 		opt(srv)
 	}
 	if srv.eg == nil {
-		log.Warn(srv.name)
+		log.Warnf("errgroup not found for %s, getting new errgroup.", srv.name)
 		srv.eg = errgroup.Get()
 	}
 

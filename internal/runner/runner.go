@@ -130,11 +130,13 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 
 	rctx = errgroup.Init(rctx)
 
+	log.Info("executing daemon pre-start function")
 	err = run.PreStart(rctx)
 	if err != nil {
 		return err
 	}
 
+	log.Info("executing daemon start function")
 	ech, err := run.Start(rctx)
 	if err != nil {
 		return errors.ErrDaemonStartFailed(err)
@@ -157,6 +159,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 				emap[err.Error()]++
 			}
 		case <-rctx.Done():
+			log.Info("executing daemon pre-stop function")
 			err = run.PreStop(ctx)
 			if err != nil {
 				log.Error(errors.ErrPreStopFunc(name, err))
@@ -165,6 +168,8 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 				}
 				emap[err.Error()]++
 			}
+
+			log.Info("executing daemon stop function")
 			err = run.Stop(ctx)
 			if err != nil {
 				log.Error(errors.ErrStopFunc(name, err))
@@ -173,6 +178,8 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 				}
 				emap[err.Error()]++
 			}
+
+			log.Info("executing daemon post-stop function")
 			err = run.PostStop(ctx)
 			if err != nil {
 				log.Error(errors.ErrPostStopFunc(name, err))
@@ -181,6 +188,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 				}
 				emap[err.Error()]++
 			}
+
 			err = errgroup.Wait()
 			if err != nil {
 				log.Error(errors.ErrRunnerWait(name, err))
@@ -189,6 +197,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 				}
 				emap[err.Error()]++
 			}
+
 			err = nil
 			for _, ierr := range errs {
 				if ierr != nil {
@@ -203,7 +212,9 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 			if err != nil {
 				err = errors.ErrDaemonStopFailed(err)
 			}
+
 			log.Warn("daemon stopped")
+
 			return err
 		}
 	}

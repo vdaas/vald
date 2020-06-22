@@ -93,7 +93,7 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 	uuid := req.GetUuid()
 	ips, err := s.cassandra.GetIPs(ctx, uuid)
 	if err != nil {
-		log.Errorf("[Locations]\tunknown error\t%+v", err)
+		log.Errorf("[Locations]\tnot found\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
