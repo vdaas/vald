@@ -97,7 +97,7 @@ func WithDialerKeepAlive(dur string) DialerOption {
 		if err != nil {
 			pd = time.Second * 30
 		}
-		d.dialerTimeout = pd
+		d.dialerKeepAlive = pd
 	}
 }
 
