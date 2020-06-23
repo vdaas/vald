@@ -70,3 +70,18 @@ func WithMaxPartSize(size string) Option {
 		return nil
 	}
 }
+
+func WithMaxChunkSize(size string) Option {
+	return func(c *client) error {
+		b, err := unit.ParseBytes(size)
+		if err != nil {
+			return err
+		}
+
+		if int64(b) >= s3manager.MinUploadPartSize {
+			c.maxChunkSize = int64(b)
+		}
+
+		return nil
+	}
+}

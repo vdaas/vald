@@ -1442,6 +1442,9 @@ agent:
           # @schema {"name": "agent.sidecar.config.blob_storage.s3.max_part_size", "type": "string", "pattern": "^[0-9]+(kb|mb|gb)$"}
           # agent.sidecar.config.blob_storage.s3.max_part_size -- s3 multipart upload max part size
           max_part_size: 64mb
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.max_chunk_size", "type": "string", "pattern": "^[0-9]+(kb|mb|gb)$"}
+          # agent.sidecar.config.blob_storage.s3.max_chunk_size -- s3 download max chunk size
+          max_chunk_size: 64mb
       # @schema {"name": "agent.sidecar.config.compress", "type": "object"}
       compress:
         # @schema {"name": "agent.sidecar.config.compress.compress_algorithm", "type": "string", "enum": ["gob", "gzip", "lz4", "zstd"]}
@@ -1536,6 +1539,8 @@ agent:
             retry_count: 100
             # agent.sidecar.config.client.transport.backoff.enable_error_log -- backoff error log enabled
             enable_error_log: true
+      # agent.sidecar.config.restore_backoff_enabled -- restore backoff enabled
+      restore_backoff_enabled: false
       # @schema {"name": "agent.sidecar.config.restore_backoff", "alias": "backoff"}
       restore_backoff:
         # agent.sidecar.config.restore_backoff.initial_duration -- restore backoff initial duration

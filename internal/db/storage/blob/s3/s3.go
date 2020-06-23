@@ -36,7 +36,8 @@ type client struct {
 	service *s3.S3
 	bucket  string
 
-	maxPartSize int64
+	maxPartSize  int64
+	maxChunkSize int64
 }
 
 func New(opts ...Option) (blob.Bucket, error) {
@@ -66,6 +67,7 @@ func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) 
 		reader.WithService(c.service),
 		reader.WithBucket(c.bucket),
 		reader.WithKey(key),
+		reader.WithMaxChunkSize(c.maxChunkSize),
 	)
 
 	return r, r.Open(ctx)

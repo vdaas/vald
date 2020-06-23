@@ -26,6 +26,7 @@ type Option func(w *writer)
 var (
 	defaultOpts = []Option{
 		WithErrGroup(errgroup.Get()),
+		WithContentType("application/octet-stream"),
 		WithMaxPartSize(64 * 1024 * 1024),
 	}
 )
@@ -55,6 +56,14 @@ func WithBucket(bucket string) Option {
 func WithKey(key string) Option {
 	return func(w *writer) {
 		w.key = key
+	}
+}
+
+func WithContentType(ct string) Option {
+	return func(w *writer) {
+		if ct != "" {
+			w.contentType = ct
+		}
 	}
 }
 

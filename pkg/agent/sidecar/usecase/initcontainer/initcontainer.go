@@ -120,6 +120,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		),
 		storage.WithS3Opts(
 			s3.WithMaxPartSize(cfg.AgentSidecar.BlobStorage.S3.MaxPartSize),
+			s3.WithMaxChunkSize(cfg.AgentSidecar.BlobStorage.S3.MaxChunkSize),
 		),
 		storage.WithCompressAlgorithm(cfg.AgentSidecar.Compress.CompressAlgorithm),
 		storage.WithCompressionLevel(cfg.AgentSidecar.Compress.CompressionLevel),
@@ -132,6 +133,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		restorer.WithErrGroup(eg),
 		restorer.WithDir(cfg.AgentSidecar.WatchDir),
 		restorer.WithBlobStorage(bs),
+		restorer.WithBackoff(cfg.AgentSidecar.RestoreBackoffEnabled),
 		restorer.WithBackoffOpts(cfg.AgentSidecar.RestoreBackoff.Opts()...),
 	)
 	if err != nil {

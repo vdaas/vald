@@ -42,6 +42,9 @@ type AgentSidecar struct {
 	// Compress represent compression configurations
 	Compress *CompressCore `yaml:"compress" json:"compress"`
 
+	// RestoreBackoffEnabled represent backoff enabled or not
+	RestoreBackoffEnabled bool `yaml:"restore_backoff_enabled" json:"restore_backoff_enabled"`
+
 	// RestoreBackoff represent backoff configurations for restoring process
 	RestoreBackoff *Backoff `yaml:"restore_backoff" json:"restore_backoff"`
 

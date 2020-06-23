@@ -26,6 +26,7 @@ type Option func(r *reader)
 var (
 	defaultOpts = []Option{
 		WithErrGroup(errgroup.Get()),
+		WithMaxChunkSize(512 * 1024 * 1024),
 	}
 )
 
@@ -54,5 +55,11 @@ func WithBucket(bucket string) Option {
 func WithKey(key string) Option {
 	return func(r *reader) {
 		r.key = key
+	}
+}
+
+func WithMaxChunkSize(size int64) Option {
+	return func(r *reader) {
+		r.maxChunkSize = size
 	}
 }

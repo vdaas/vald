@@ -17,8 +17,11 @@
 package reader
 
 import (
+	"bytes"
 	"context"
 	"io"
+	"io/ioutil"
+	"strconv"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -26,6 +29,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -37,6 +41,8 @@ type reader struct {
 
 	pr io.ReadCloser
 	wg *sync.WaitGroup
+
+	maxChunkSize int64
 }
 
 type Reader interface {
@@ -54,42 +60,82 @@ func New(opts ...Option) Reader {
 }
 
 func (r *reader) Open(ctx context.Context) (err error) {
-	input := &s3.GetObjectInput{
-		Bucket: aws.String(r.bucket),
-		Key:    aws.String(r.key),
-	}
-
 	var pw io.WriteCloser
 
 	r.pr, pw = io.Pipe()
 
-	resp, err := r.service.GetObjectWithContext(ctx, input)
+	r.wg = new(sync.WaitGroup)
+	r.wg.Add(1)
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer r.wg.Done()
+		defer pw.Close()
+
+		var offset int64
+
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+			}
+
+			log.Debugf("loading %d bytes...", offset)
+			body, err := r.getObject(ctx, offset, r.maxChunkSize)
+			if err != nil {
+				return err
+			}
+
+			chunk, err := io.Copy(pw, body)
+			if err != nil {
+				return err
+			}
+
+			if chunk < r.maxChunkSize {
+				log.Debugf("read %d bytes.", offset+chunk)
+				return nil
+			}
+
+			offset += chunk
+
+			err = body.Close()
+			if err != nil {
+				return err
+			}
+		}
+	}))
+
+	return nil
+}
+
+func (r *reader) getObject(ctx context.Context, offset, length int64) (io.ReadCloser, error) {
+	resp, err := r.service.GetObjectWithContext(
+		ctx,
+		&s3.GetObjectInput{
+			Bucket: aws.String(r.bucket),
+			Key:    aws.String(r.key),
+			Range: aws.String("bytes=" +
+				strconv.FormatInt(offset, 10) +
+				"-" +
+				strconv.FormatInt(offset+length-1, 10),
+			),
+		},
+	)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case s3.ErrCodeNoSuchBucket:
-				return errors.NewErrBlobNoSuchBucket(err, r.bucket)
+				return nil, errors.NewErrBlobNoSuchBucket(err, r.bucket)
 			case s3.ErrCodeNoSuchKey:
-				return errors.NewErrBlobNoSuchKey(err, r.key)
+				return nil, errors.NewErrBlobNoSuchKey(err, r.key)
+			case "InvalidRange":
+				return ioutil.NopCloser(bytes.NewReader(nil)), nil
 			}
 		}
 
-		return err
+		return nil, err
 	}
 
-	r.wg = new(sync.WaitGroup)
-	r.wg.Add(1)
-
-	r.eg.Go(safety.RecoverFunc(func() (err error) {
-		defer r.wg.Done()
-		defer resp.Body.Close()
-		defer pw.Close()
-
-		_, err = io.Copy(pw, resp.Body)
-		return err
-	}))
-
-	return nil
+	return resp.Body, nil
 }
 
 func (r *reader) Close() error {
