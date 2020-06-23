@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-FROM ubuntu:latest AS builder
+FROM ubuntu:devel AS builder
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive

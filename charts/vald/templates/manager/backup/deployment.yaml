@@ -20,6 +20,12 @@ metadata:
   name: {{ .Values.backupManager.name }}
   labels:
     app: {{ .Values.backupManager.name }}
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: manager-backup
   {{- if .Values.backupManager.annotations }}
   annotations:
     {{- toYaml .Values.backupManager.annotations | nindent 4 }}
@@ -43,6 +49,9 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.backupManager.name }}
+        app.kubernetes.io/name: {{ include "vald.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: manager-backup
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/manager/backup/configmap.yaml") . | sha256sum }}
         {{- if .Values.backupManager.podAnnotations }}
@@ -56,8 +65,10 @@ spec:
       {{- end }}
       affinity:
         {{- include "vald.affinity" .Values.backupManager.affinity | nindent 8 }}
+      {{- if .Values.backupManager.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- toYaml .Values.backupManager.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Values.backupManager.name }}
           image: "{{ .Values.backupManager.image.repository }}:{{ default .Values.defaults.image.tag .Values.backupManager.image.tag }}"

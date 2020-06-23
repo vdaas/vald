@@ -17,26 +17,39 @@ jobs:
           fetch-depth: 0
       - name: Get latest gitwerk
         run: |
-          curl -LO "https://github.com/rinx/gitwerk/releases/download/v0.1.2/gitwerk-linux-amd64.zip"
+          curl -LO "https://github.com/rinx/gitwerk/releases/download/v0.2.2/gitwerk-linux-amd64.zip"
           unzip gitwerk-linux-amd64.zip
       - name: Run gitwerk semver-auto
         id: semver
         run: |
-          GITWERK_RESULT=`./gitwerk sci << EOF
-          (let [ctx {:options {:dry-run? true}}
-                res (semver-auto ctx nil)
-                status (get-in res [:console-out :status])
-                oldv (get-in res [:console-out :old-version])
-                newv (get-in res [:console-out :new-version])]
-            (if (= status :updated)
-              newv
-              "not-updated"))
+          GITWERK_RESULT=`./gitwerk --stdin sv << EOF
+          (defn sv []
+            (let [repo (git/repo ".")
+                  message (-> repo
+                              (git/latest-log)
+                              :full-message)
+                  tag (or (-> repo
+                              (git/tags)
+                              (semver/latest-tag))
+                          (semver/default-version-str))
+                  new-tag (semver/contextual-semver message tag)]
+              (if (not (= tag new-tag))
+                new-tag
+                "not-updated")))
           EOF`
           if [ "${GITWERK_RESULT}" = "not-updated" ]; then
             echo "version not updated"
             exit 0
           fi
           echo "version updated: ${GITWERK_RESULT}"
+
+          git checkout master
+
+          LAST_COMMIT_MESSAGE=`git log --pretty=format:%s -1`
+          PR_NUM=`echo "$LAST_COMMIT_MESSAGE" | grep -o "#[[:digit:]]\+" | sed -e 's/#//' | head -1`
+
+          PREVIOUS_VERSION=`cat versions/VALD_VERSION`
+
           echo "${GITWERK_RESULT}" > versions/VALD_VERSION
 
           sed -i -e "s/^version: .*$/version: ${GITWERK_RESULT}/" charts/vald/Chart.yaml
@@ -47,7 +60,22 @@ jobs:
           make helm/docs/vald
           make helm/docs/vald-helm-operator
 
-          git checkout master
+          make helm/schema/vald
+          make helm/schema/vald-helm-operator
+
+          BODY=""
+          if [ ! -z "${PR_NUM}" ]; then
+            PR_COMMENTS=`curl https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${PR_NUM}/comments?per_page=10000`
+            BODY=`echo -E $PR_COMMENTS | jq 'last(.[] | select(.user.login == "vdaas-ci") | select(.body | test("^\\\\*\\\\*\\\\[CHANGELOG")))' -r | jq '.body'`
+            BODY=`echo -e $BODY | tail -n +2`
+          fi
+
+          if [ -z "$BODY" ]; then
+            BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..master | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%"`
+          fi
+
+          CHANGELOG=`make changelog/next/print BODY="$BODY"`
+          make changelog/update BODY="$BODY"
 
           git config --global user.name "vdaas-ci"
           git config --global user.email "ci@vdaas.org"
@@ -56,10 +84,13 @@ jobs:
             versions/VALD_VERSION \
             charts/vald/Chart.yaml \
             charts/vald/values.yaml \
+            charts/vald/values.schema.json \
             charts/vald/README.md \
             charts/vald-helm-operator/Chart.yaml \
             charts/vald-helm-operator/values.yaml \
-            charts/vald-helm-operator/README.md
+            charts/vald-helm-operator/values.schema.json \
+            charts/vald-helm-operator/README.md \
+            CHANGELOG.md
           git commit --signoff -m ":bookmark: :robot: Release ${GITWERK_RESULT}"
 
           git tag ${GITWERK_RESULT}
@@ -77,11 +108,16 @@ jobs:
       - name: Create release
         if: steps.semver.outputs.RELEASE == 'true'
         id: create_release
-        uses: actions/create-release@v1.0.0
+        uses: actions/create-release@v1.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         with:
           tag_name: ${{ steps.semver.outputs.VERSION }}
           release_name: Release ${{ steps.semver.outputs.VERSION }}
+          body: |
+            See [CHANGELOG.md](https://github.com/vdaas/vald/blob/${{ steps.semver.outputs.VERSION }}/CHANGELOG.md) for details.
           draft: false
           prerelease: false
+      - name: Add the version to goproxy
+        run: |
+          curl "https://proxy.golang.org/github.com/vdaas/vald/@v/${{ steps.semver.outputs.VERSION }}.info"

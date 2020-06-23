@@ -26,6 +26,14 @@ import (
 )
 
 func RecoverFunc(fn func() error) func() error {
+	return recoverFunc(fn, true)
+}
+
+func RecoverWithoutPanicFunc(fn func() error) func() error {
+	return recoverFunc(fn, false)
+}
+
+func recoverFunc(fn func() error, withPanic bool) func() error {
 	return func() (err error) {
 		defer func() {
 			if r := recover(); r != nil {
@@ -33,8 +41,10 @@ func RecoverFunc(fn func() error) func() error {
 				switch x := r.(type) {
 				case runtime.Error:
 					err = errors.ErrRuntimeError(err, x)
-					log.Error(err, info.Get())
-					panic(err)
+					if withPanic {
+						log.Error(err, info.Get())
+						panic(err)
+					}
 				case string:
 					err = errors.ErrPanicString(err, x)
 				case error:

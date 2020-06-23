@@ -23,9 +23,10 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/runner"
-	"github.com/vdaas/vald/pkg/agent/ngt/config"
-
+	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
+	"github.com/vdaas/vald/pkg/tools/cli/loadtest/service"
 	"go.uber.org/goleak"
 )
 
@@ -84,7 +85,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -109,8 +110,9 @@ func Test_run_PreStart(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		eg  errgroup.Group
-		cfg *config.Data
+		eg     errgroup.Group
+		loader service.Loader
+		client grpc.Client
 	}
 	type want struct {
 		err error
@@ -140,7 +142,8 @@ func Test_run_PreStart(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           cfg: nil,
+		           loader: nil,
+		           client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -157,7 +160,8 @@ func Test_run_PreStart(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           cfg: nil,
+		           loader: nil,
+		           client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -168,7 +172,7 @@ func Test_run_PreStart(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -179,8 +183,9 @@ func Test_run_PreStart(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &run{
-				eg:  test.fields.eg,
-				cfg: test.fields.cfg,
+				eg:     test.fields.eg,
+				loader: test.fields.loader,
+				client: test.fields.client,
 			}
 
 			err := r.PreStart(test.args.ctx)
@@ -197,8 +202,9 @@ func Test_run_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		eg  errgroup.Group
-		cfg *config.Data
+		eg     errgroup.Group
+		loader service.Loader
+		client grpc.Client
 	}
 	type want struct {
 		want <-chan error
@@ -232,7 +238,8 @@ func Test_run_Start(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           cfg: nil,
+		           loader: nil,
+		           client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -249,7 +256,8 @@ func Test_run_Start(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           cfg: nil,
+		           loader: nil,
+		           client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -260,7 +268,7 @@ func Test_run_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -271,8 +279,9 @@ func Test_run_Start(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &run{
-				eg:  test.fields.eg,
-				cfg: test.fields.cfg,
+				eg:     test.fields.eg,
+				loader: test.fields.loader,
+				client: test.fields.client,
 			}
 
 			got, err := r.Start(test.args.ctx)
@@ -289,8 +298,9 @@ func Test_run_PreStop(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		eg  errgroup.Group
-		cfg *config.Data
+		eg     errgroup.Group
+		loader service.Loader
+		client grpc.Client
 	}
 	type want struct {
 		err error
@@ -320,7 +330,8 @@ func Test_run_PreStop(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           cfg: nil,
+		           loader: nil,
+		           client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -337,7 +348,8 @@ func Test_run_PreStop(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           cfg: nil,
+		           loader: nil,
+		           client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -348,7 +360,7 @@ func Test_run_PreStop(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -359,8 +371,9 @@ func Test_run_PreStop(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &run{
-				eg:  test.fields.eg,
-				cfg: test.fields.cfg,
+				eg:     test.fields.eg,
+				loader: test.fields.loader,
+				client: test.fields.client,
 			}
 
 			err := r.PreStop(test.args.ctx)
@@ -377,8 +390,9 @@ func Test_run_Stop(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		eg  errgroup.Group
-		cfg *config.Data
+		eg     errgroup.Group
+		loader service.Loader
+		client grpc.Client
 	}
 	type want struct {
 		err error
@@ -408,7 +422,8 @@ func Test_run_Stop(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           cfg: nil,
+		           loader: nil,
+		           client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -425,7 +440,8 @@ func Test_run_Stop(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           cfg: nil,
+		           loader: nil,
+		           client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -436,7 +452,7 @@ func Test_run_Stop(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -447,8 +463,9 @@ func Test_run_Stop(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &run{
-				eg:  test.fields.eg,
-				cfg: test.fields.cfg,
+				eg:     test.fields.eg,
+				loader: test.fields.loader,
+				client: test.fields.client,
 			}
 
 			err := r.Stop(test.args.ctx)
@@ -465,8 +482,9 @@ func Test_run_PostStop(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		eg  errgroup.Group
-		cfg *config.Data
+		eg     errgroup.Group
+		loader service.Loader
+		client grpc.Client
 	}
 	type want struct {
 		err error
@@ -496,7 +514,8 @@ func Test_run_PostStop(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           cfg: nil,
+		           loader: nil,
+		           client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -513,7 +532,8 @@ func Test_run_PostStop(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           cfg: nil,
+		           loader: nil,
+		           client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -524,7 +544,7 @@ func Test_run_PostStop(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -535,8 +555,9 @@ func Test_run_PostStop(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &run{
-				eg:  test.fields.eg,
-				cfg: test.fields.cfg,
+				eg:     test.fields.eg,
+				loader: test.fields.loader,
+				client: test.fields.client,
 			}
 
 			err := r.PostStop(test.args.ctx)

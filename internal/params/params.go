@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
+// Data is an interface to get the configuration path and flag.
 type Data interface {
 	ConfigFilePath() string
 	ShowVersion() bool
@@ -48,6 +49,7 @@ type parser struct {
 	}
 }
 
+// New returns parser object.
 func New(opts ...Option) *parser {
 	p := new(parser)
 	for _, opt := range append(defaultOpts, opts...) {
@@ -56,6 +58,7 @@ func New(opts ...Option) *parser {
 	return p
 }
 
+// Parse parses command-line argument and returns parsed data and whether there is a help option or not and error.
 func (p *parser) Parse() (Data, bool, error) {
 	f := flag.NewFlagSet(filepath.Base(os.Args[0]), flag.ContinueOnError)
 
@@ -94,10 +97,12 @@ func (p *parser) Parse() (Data, bool, error) {
 	return d, false, nil
 }
 
+// ConfigFilePath returns configFilePath.
 func (d *data) ConfigFilePath() string {
 	return d.configFilePath
 }
 
+// ShowVersion returns showVersion.
 func (d *data) ShowVersion() bool {
 	return d.showVersion
 }

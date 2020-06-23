@@ -26,11 +26,10 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/collector"
-	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
-	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
+	"github.com/vdaas/vald/internal/observability/exporter"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/observability/profiler"
 	"github.com/vdaas/vald/internal/observability/trace"
-
 	"go.uber.org/goleak"
 )
 
@@ -92,7 +91,7 @@ func TestNewWithConfig(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -167,7 +166,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -192,11 +191,11 @@ func Test_observability_PreStart(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		eg         errgroup.Group
-		collector  collector.Collector
-		tracer     trace.Tracer
-		prometheus prometheus.Prometheus
-		jaeger     jaeger.Jaeger
+		eg        errgroup.Group
+		collector collector.Collector
+		tracer    trace.Tracer
+		exporters []exporter.Exporter
+		profilers []profiler.Profiler
 	}
 	type want struct {
 		err error
@@ -228,8 +227,8 @@ func Test_observability_PreStart(t *testing.T) {
 		           eg: nil,
 		           collector: nil,
 		           tracer: nil,
-		           prometheus: nil,
-		           jaeger: nil,
+		           exporters: nil,
+		           profilers: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -248,8 +247,8 @@ func Test_observability_PreStart(t *testing.T) {
 		           eg: nil,
 		           collector: nil,
 		           tracer: nil,
-		           prometheus: nil,
-		           jaeger: nil,
+		           exporters: nil,
+		           profilers: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -260,7 +259,7 @@ func Test_observability_PreStart(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -271,11 +270,11 @@ func Test_observability_PreStart(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			o := &observability{
-				eg:         test.fields.eg,
-				collector:  test.fields.collector,
-				tracer:     test.fields.tracer,
-				prometheus: test.fields.prometheus,
-				jaeger:     test.fields.jaeger,
+				eg:        test.fields.eg,
+				collector: test.fields.collector,
+				tracer:    test.fields.tracer,
+				exporters: test.fields.exporters,
+				profilers: test.fields.profilers,
 			}
 
 			err := o.PreStart(test.args.ctx)
@@ -292,11 +291,11 @@ func Test_observability_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		eg         errgroup.Group
-		collector  collector.Collector
-		tracer     trace.Tracer
-		prometheus prometheus.Prometheus
-		jaeger     jaeger.Jaeger
+		eg        errgroup.Group
+		collector collector.Collector
+		tracer    trace.Tracer
+		exporters []exporter.Exporter
+		profilers []profiler.Profiler
 	}
 	type want struct {
 		want <-chan error
@@ -328,8 +327,8 @@ func Test_observability_Start(t *testing.T) {
 		           eg: nil,
 		           collector: nil,
 		           tracer: nil,
-		           prometheus: nil,
-		           jaeger: nil,
+		           exporters: nil,
+		           profilers: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -348,8 +347,8 @@ func Test_observability_Start(t *testing.T) {
 		           eg: nil,
 		           collector: nil,
 		           tracer: nil,
-		           prometheus: nil,
-		           jaeger: nil,
+		           exporters: nil,
+		           profilers: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -360,7 +359,7 @@ func Test_observability_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -371,11 +370,11 @@ func Test_observability_Start(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			o := &observability{
-				eg:         test.fields.eg,
-				collector:  test.fields.collector,
-				tracer:     test.fields.tracer,
-				prometheus: test.fields.prometheus,
-				jaeger:     test.fields.jaeger,
+				eg:        test.fields.eg,
+				collector: test.fields.collector,
+				tracer:    test.fields.tracer,
+				exporters: test.fields.exporters,
+				profilers: test.fields.profilers,
 			}
 
 			got := o.Start(test.args.ctx)
@@ -392,11 +391,11 @@ func Test_observability_Stop(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		eg         errgroup.Group
-		collector  collector.Collector
-		tracer     trace.Tracer
-		prometheus prometheus.Prometheus
-		jaeger     jaeger.Jaeger
+		eg        errgroup.Group
+		collector collector.Collector
+		tracer    trace.Tracer
+		exporters []exporter.Exporter
+		profilers []profiler.Profiler
 	}
 	type want struct {
 	}
@@ -424,8 +423,8 @@ func Test_observability_Stop(t *testing.T) {
 		           eg: nil,
 		           collector: nil,
 		           tracer: nil,
-		           prometheus: nil,
-		           jaeger: nil,
+		           exporters: nil,
+		           profilers: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -444,8 +443,8 @@ func Test_observability_Stop(t *testing.T) {
 		           eg: nil,
 		           collector: nil,
 		           tracer: nil,
-		           prometheus: nil,
-		           jaeger: nil,
+		           exporters: nil,
+		           profilers: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -456,7 +455,7 @@ func Test_observability_Stop(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -467,11 +466,11 @@ func Test_observability_Stop(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			o := &observability{
-				eg:         test.fields.eg,
-				collector:  test.fields.collector,
-				tracer:     test.fields.tracer,
-				prometheus: test.fields.prometheus,
-				jaeger:     test.fields.jaeger,
+				eg:        test.fields.eg,
+				collector: test.fields.collector,
+				tracer:    test.fields.tracer,
+				exporters: test.fields.exporters,
+				profilers: test.fields.profilers,
 			}
 
 			o.Stop(test.args.ctx)

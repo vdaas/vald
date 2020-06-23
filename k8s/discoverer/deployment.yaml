@@ -20,6 +20,12 @@ metadata:
   name: vald-discoverer
   labels:
     app: vald-discoverer
+    app.kubernetes.io/name: vald
+    helm.sh/chart: vald-v0.0.37
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: v0.0.37
+    app.kubernetes.io/component: discoverer
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
@@ -37,8 +43,11 @@ spec:
       creationTimestamp: null
       labels:
         app: vald-discoverer
+        app.kubernetes.io/name: vald
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/component: discoverer
       annotations:
-        checksum/configmap: eb10f6df7636681a5cdad7e76da2dadc2821871b3d07ab5e343f055793d3d304
+        checksum/configmap: 851cc01b6f6eff0464b759f05c3a1ca8694bfca34ebce0efa6193239db59ec5c
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-discoverer
@@ -61,7 +70,6 @@ spec:
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
-      topologySpreadConstraints: []
       containers:
         - name: vald-discoverer
           image: "vdaas/vald-discoverer-k8s:nightly"

@@ -14,55 +14,78 @@
 # limitations under the License.
 #
 
+# @schema {"name": "name", "type": "string"}
 # name -- name of the deployment
 name: vald-helm-operator
+# @schema {"name": "replicas", "type": "integer"}
 # replicas -- number of replicas
 replicas: 2
 
+# @schema {"name": "image", "type": "object"}
 image:
+  # @schema {"name": "image.repository", "type": "string"}
   # image.repository -- image repository
   repository: vdaas/vald-helm-operator
+  # @schema {"name": "image.tag", "type": "string"}
   # image.tag -- image tag
-  tag: v0.0.37
+  tag: v0.0.42
+  # @schema {"name": "image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
   # image.pullPolicy -- image pull policy
   pullPolicy: Always
 
+# @schema {"name": "rbac", "type": "object"}
 rbac:
+  # @schema {"name": "rbac.create", "type": "boolean"}
   # rbac.create -- required roles and rolebindings will be created
   create: true
+  # @schema {"name": "rbac.name", "type": "string"}
   # rbac.name -- name of roles and rolebindings
   name: vald-helm-operator
 
+# @schema {"name": "serviceAccount", "type": "object"}
 serviceAccount:
+  # @schema {"name": "serviceAccount.create", "type": "boolean"}
   # serviceAccount.create -- service account will be created
   create: true
+  # @schema {"name": "serviceAccount.name", "type": "string"}
   # serviceAccount.name -- name of service account
   name: vald-helm-operator
 
-# resources -- k8s resources of pod
+# @schema {"name": "resources", "type": "object"}
+# resources -- kubernetes resources of pod
 resources: {}
 
+# @schema {"name": "nodeSelector", "type": "object"}
 # nodeSelector -- node labels for pod assignment
 nodeSelector: {}
 
+# @schema {"name": "tolerations", "type": "array", "items": {"type": "object"}}
 # tolerations -- tolerations
 tolerations: []
 
+# @schema {"name": "affinity", "type": "object"}
 # affinity -- affinity
 affinity: {}
 
+# @schema {"name": "reconcilePeriod", "type": "string"}
 # reconcilePeriod -- reconcile duration of operator
 reconcilePeriod: 1m
 
+# @schema {"name": "maxWorkers", "type": "integer"}
 # maxWorkers -- number of workers inside one operator pod
 maxWorkers: 1
 
+# @schema {"name": "logging", "type": "object"}
 logging:
+  # @schema {"name": "logging.level", "type": "string", "enum": ["debug", "info", "error"]}
   # logging.level -- logging level of operator (debug, info, or error)
   level: info
+  # @schema {"name": "logging.stacktraceLevel", "type": "string", "enum": ["debug", "info", "error"]}
   # logging.stacktraceLevel -- minimum log level triggers stacktrace generation
   stacktraceLevel: error
+  # @schema {"name": "logging.format", "type": "string", "enum": ["console", "json"]}
   # logging.format -- logging format of operator (console or json)
   format: console
+  # @schema {"name": "logging.timeEncoding", "type": "string", "enum": ["epoch", "millis", "nano", "iso8601"]}
   # logging.timeEncoding -- logging time format of operator (epoch, millis, nano, or iso8601)
   timeEncoding: iso8601

@@ -18,6 +18,13 @@ apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
   name: vald-gateway
+  labels:
+    app.kubernetes.io/name: vald
+    helm.sh/chart: vald-v0.0.37
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: v0.0.37
+    app.kubernetes.io/component: gateway
 spec:
   maxUnavailable: 50%
   selector:

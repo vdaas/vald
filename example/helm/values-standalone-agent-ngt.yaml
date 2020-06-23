@@ -1,0 +1,54 @@
+#
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+agent:
+  minReplicas: 4
+  maxReplicas: 8
+  # Set Parallel to podManagementPolicy is not recommended for production.
+  # In this time, it is just an example, we set Parallel to podManagementPolicy.
+  podManagementPolicy: Parallel
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+  ngt:
+    # The number of dimensions for feature vector of fashion-mnist dataset.
+    dimension: 784
+    # We use L2-Norm for distance_type.
+    distance_type: l2
+    # The type of fashion-mnist's feature vectors.
+    object_type: float
+    # Check duration of automatic indexing.
+    auto_index_duration_limit: 1m
+    # The limit duration of automatic indexing.
+    auto_index_duration_limit: 10s
+
+gateway:
+  enabled: false
+
+discoverer:
+  enabled: false
+
+compressor:
+  enabled: false
+
+backupManager:
+  enabled: false
+
+indexManager:
+  enabled: false
+
+meta:
+  enabled: false

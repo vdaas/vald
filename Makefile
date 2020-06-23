@@ -20,6 +20,7 @@ GOPKG                           = github.com/$(REPO)/$(NAME)
 TAG                             = $(eval TAG := $(shell date -u +%Y%m%d-%H%M%S))$(TAG)
 BASE_IMAGE                      = $(NAME)-base
 AGENT_IMAGE                     = $(NAME)-agent-ngt
+AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
 GATEWAY_IMAGE                   = $(NAME)-gateway
 DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
 META_REDIS_IMAGE                = $(NAME)-meta-redis
@@ -30,6 +31,9 @@ MANAGER_COMPRESSOR_IMAGE        = $(NAME)-manager-compressor
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
+LOADTEST_IMAGE                  = $(NAME)-loadtest
+
+VERSION := $(eval VALD_VERSION := $(shell cat versions/VALD_VERSION))$(VALD_VERSION)
 
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
@@ -43,10 +47,10 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
 DOCKFMT_VERSION      ?= v0.3.3
-KIND_VERSION         ?= v0.7.0
-HELM_VERSION         ?= v3.2.0
-HELM_DOCS_VERSION    ?= 0.12.0
-VALDCLI_VERSION      ?= v0.0.35
+KIND_VERSION         ?= v0.8.1
+HELM_VERSION         ?= v3.2.1
+HELM_DOCS_VERSION    ?= 0.13.0
+VALDCLI_VERSION      ?= v0.0.38
 TELEPRESENCE_VERSION ?= 0.105
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
@@ -90,6 +94,8 @@ PORT      ?= 80
 NUMBER    ?= 10
 DIMENSION ?= 6
 NUMPANES  ?= 4
+
+BODY = ""
 
 PROTO_PATHS = \
 	$(PROTODIRS:%=./apis/proto/%) \
@@ -144,10 +150,6 @@ SHELL = bash
 
 include Makefile.d/functions.mk
 
-.PHONY: all
-## execute clean and deps
-all: clean deps
-
 .PHONY: help
 ## print all available commands
 help:
@@ -163,6 +165,10 @@ help:
 	} \
 	{ lastLine = $$0 }' $(MAKELISTS) | sort -u
 	@printf "\n"
+
+.PHONY: all
+## execute clean and deps
+all: clean deps
 
 .PHONY: clean
 ## clean
@@ -261,6 +267,11 @@ goimports/install:
 prettier/install:
 	npm install -g prettier
 
+.PHONY: version/vald
+## print vald version
+version/vald:
+	@echo $(VALD_VERSION)
+
 .PHONY: version/go
 ## print go version
 version/go:
@@ -325,17 +336,22 @@ coverage:
 	go test -v -race -covermode=atomic -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out -o coverage.html
 
-.PHONY: readme/update/authors
-## update authors in README
-readme/update/authors:
-	$(eval AUTHORS = $(shell awk '{printf "- [%s]\\(https:\\/\\/github.com\\/%s\\)\\n", $$1, $$1}' AUTHORS))
-	sed -i -e ':lbl1;N;s/## Author.*## Contributor/## Author\n\n$(AUTHORS)\n## Contributor/;b lbl1;' README.md
+.PHONY: changelog/update
+## update changelog
+changelog/update:
+	echo "# CHANGELOG" > /tmp/CHANGELOG.md
+	echo "" >> /tmp/CHANGELOG.md
+	$(MAKE) -s changelog/next/print >> /tmp/CHANGELOG.md
+	echo "" >> /tmp/CHANGELOG.md
+	tail -n +2 CHANGELOG.md >> /tmp/CHANGELOG.md
+	mv -f /tmp/CHANGELOG.md CHANGELOG.md
 
-.PHONY: readme/update/contributors
-## update contributors in README
-readme/update/contributors:
-	$(eval CONTRIBUTORS = $(shell awk '{printf "- [%s]\\(https:\\/\\/github.com\\/%s\\)\\n", $$1, $$1}' CONTRIBUTORS))
-	sed -i -e ':lbl1;N;s/## Contributor.*## LICENSE/## Contributor\n\n$(CONTRIBUTORS)\n## LICENSE/;b lbl1;' README.md
+.PHONY: changelog/next/print
+## print next changelog entry
+changelog/next/print:
+	@cat hack/CHANGELOG.template.md | \
+	    sed -e 's/{{ version }}/$(VALD_VERSION)/g'
+	@echo "$$BODY"
 
 include Makefile.d/bench.mk
 include Makefile.d/docker.mk

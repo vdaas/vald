@@ -16,44 +16,57 @@
 
 package s3
 
-type Option func(s *sess)
-
-var (
-	defaultOpts = []Option{}
+import (
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/unit"
 )
 
-func WithEndpoint(ep string) Option {
-	return func(s *sess) {
-		s.endpoint = ep
+type Option func(c *client) error
+
+var (
+	defaultOpts = []Option{
+		WithErrGroup(errgroup.Get()),
+	}
+)
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(c *client) error {
+		if eg != nil {
+			c.eg = eg
+		}
+		return nil
 	}
 }
 
-func WithRegion(rg string) Option {
-	return func(s *sess) {
-		s.region = rg
+func WithSession(sess *session.Session) Option {
+	return func(c *client) error {
+		if sess != nil {
+			c.session = sess
+		}
+		return nil
 	}
 }
 
-func WithAccessKey(ak string) Option {
-	return func(s *sess) {
-		s.accessKey = ak
+func WithBucket(bucket string) Option {
+	return func(c *client) error {
+		c.bucket = bucket
+		return nil
 	}
 }
 
-func WithSecretAccessKey(sak string) Option {
-	return func(s *sess) {
-		s.secretAccessKey = sak
-	}
-}
+func WithMaxPartSize(size string) Option {
+	return func(c *client) error {
+		b, err := unit.ParseBytes(size)
+		if err != nil {
+			return err
+		}
 
-func WithToken(tk string) Option {
-	return func(s *sess) {
-		s.token = tk
-	}
-}
+		if int64(b) >= s3manager.MinUploadPartSize {
+			c.maxPartSize = int64(b)
+		}
 
-func WithUseLegacyList(flg bool) Option {
-	return func(s *sess) {
-		s.useLegacyList = flg
+		return nil
 	}
 }

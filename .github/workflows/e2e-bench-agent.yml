@@ -6,9 +6,12 @@ on:
     paths:
       - '.github/workflows/e2e-bench-agent.yml'
       - 'internal/**'
+      - '!internal/**/*_test.go'
+      - '!internal/db/**'
+      - '!internal/k8s/**'
       - 'apis/grpc/**'
-      - 'pkg/agent/ngt/**'
-      - 'cmd/agent/ngt/**'
+      - 'pkg/agent/core/ngt/**'
+      - 'cmd/agent/core/ngt/**'
       - 'hack/benchmark/**'
       - 'versions/GO_VERSION'
       - 'versions/NGT_VERSION'
@@ -16,9 +19,12 @@ on:
     paths:
       - '.github/workflows/e2e-bench-agent.yml'
       - 'internal/**'
+      - '!internal/**/*_test.go'
+      - '!internal/db/**'
+      - '!internal/k8s/**'
       - 'apis/grpc/**'
-      - 'pkg/agent/ngt/**'
-      - 'cmd/agent/ngt/**'
+      - 'pkg/agent/core/ngt/**'
+      - 'cmd/agent/core/ngt/**'
       - 'hack/benchmark/**'
       - 'versions/GO_VERSION'
       - 'versions/NGT_VERSION'
@@ -33,7 +39,7 @@ jobs:
       - name: Check out code.
         uses: actions/checkout@v1
         with:
-          fetch-depth: 10
+          fetch-depth: 1
       - name: Run grpc-sequential
         run: |
           make bench/agent/sequential/grpc
@@ -47,7 +53,7 @@ jobs:
       - name: Check out code.
         uses: actions/checkout@v1
         with:
-          fetch-depth: 10
+          fetch-depth: 1
       - name: Run grpc-stream
         run: |
           make bench/agent/stream
@@ -61,7 +67,7 @@ jobs:
       - name: Check out code.
         uses: actions/checkout@v1
         with:
-          fetch-depth: 10
+          fetch-depth: 1
       - name: Run rest
         run: |
           make bench/agent/sequential/rest

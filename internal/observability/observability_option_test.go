@@ -22,14 +22,14 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/observability/collector"
-	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
-	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
+	"github.com/vdaas/vald/internal/observability/exporter"
+	"github.com/vdaas/vald/internal/observability/profiler"
 	"github.com/vdaas/vald/internal/observability/trace"
-
 	"go.uber.org/goleak"
 )
 
 func TestWithErrGroup(t *testing.T) {
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		eg errgroup.Group
@@ -67,7 +67,7 @@ func TestWithErrGroup(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -105,7 +105,7 @@ func TestWithErrGroup(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -126,7 +126,7 @@ func TestWithErrGroup(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -134,7 +134,7 @@ func TestWithErrGroup(t *testing.T) {
 			   got := WithErrGroup(test.args.eg)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -143,6 +143,7 @@ func TestWithErrGroup(t *testing.T) {
 }
 
 func TestWithCollector(t *testing.T) {
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		c collector.Collector
@@ -180,7 +181,7 @@ func TestWithCollector(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -218,7 +219,7 @@ func TestWithCollector(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -239,7 +240,7 @@ func TestWithCollector(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -247,7 +248,7 @@ func TestWithCollector(t *testing.T) {
 			   got := WithCollector(test.args.c)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -256,6 +257,7 @@ func TestWithCollector(t *testing.T) {
 }
 
 func TestWithTracer(t *testing.T) {
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		t trace.Tracer
@@ -293,7 +295,7 @@ func TestWithTracer(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -331,7 +333,7 @@ func TestWithTracer(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -352,7 +354,7 @@ func TestWithTracer(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -360,7 +362,7 @@ func TestWithTracer(t *testing.T) {
 			   got := WithTracer(test.args.t)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -368,10 +370,11 @@ func TestWithTracer(t *testing.T) {
 	}
 }
 
-func TestWithPrometheus(t *testing.T) {
+func TestWithExporters(t *testing.T) {
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		p prometheus.Prometheus
+		exps []exporter.Exporter
 	}
 	type want struct {
 		obj *T
@@ -406,7 +409,7 @@ func TestWithPrometheus(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -418,7 +421,7 @@ func TestWithPrometheus(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           p: nil,
+		           exps: nil,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -432,7 +435,7 @@ func TestWithPrometheus(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           p: nil,
+		           exps: nil,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -444,7 +447,7 @@ func TestWithPrometheus(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -458,22 +461,22 @@ func TestWithPrometheus(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithPrometheus(test.args.p)
+			   got := WithExporters(test.args.exps...)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithPrometheus(test.args.p)
+			   got := WithExporters(test.args.exps...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -481,10 +484,11 @@ func TestWithPrometheus(t *testing.T) {
 	}
 }
 
-func TestWithJaeger(t *testing.T) {
+func TestWithProfilers(t *testing.T) {
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		j jaeger.Jaeger
+		profs []profiler.Profiler
 	}
 	type want struct {
 		obj *T
@@ -519,7 +523,7 @@ func TestWithJaeger(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got = %v, want %v", obj, w.c)
+	           return errors.Errorf("got = %v, want %v", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -531,7 +535,7 @@ func TestWithJaeger(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           j: nil,
+		           profs: nil,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -545,7 +549,7 @@ func TestWithJaeger(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           j: nil,
+		           profs: nil,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -557,7 +561,7 @@ func TestWithJaeger(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -571,22 +575,22 @@ func TestWithJaeger(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithJaeger(test.args.j)
+			   got := WithProfilers(test.args.profs...)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithJaeger(test.args.j)
+			   got := WithProfilers(test.args.profs...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

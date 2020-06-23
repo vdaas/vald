@@ -1,0 +1,134 @@
+#
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "kpango",
+      "name": "Yusuke Kato",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/9798091?v=4",
+      "profile": "http://kpango.com",
+      "contributions": [
+        "code",
+        "design",
+        "maintenance",
+        "projectManagement"
+      ]
+    },
+    {
+      "login": "rinx",
+      "name": "Rintaro Okamura",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1588935?v=4",
+      "profile": "https://github.com/rinx",
+      "contributions": [
+        "code",
+        "doc",
+        "maintenance",
+        "platform"
+      ]
+    },
+    {
+      "login": "kmrmt",
+      "name": "Kosuke Morimoto",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/413873?v=4",
+      "profile": "https://morimoto.dev/",
+      "contributions": [
+        "code",
+        "example",
+        "tool",
+        "test"
+      ]
+    },
+    {
+      "login": "vankichi",
+      "name": "Kiichiro YUKAWA",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/13959763?v=4",
+      "profile": "https://github.com/vankichi",
+      "contributions": [
+        "doc",
+        "maintenance",
+        "test",
+        "tutorial"
+      ]
+    },
+    {
+      "login": "datelier",
+      "name": "datelier",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/57349093?v=4",
+      "profile": "https://github.com/datelier",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
+    },
+    {
+      "login": "kevindiu",
+      "name": "Kevin Diu",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/1985382?v=4",
+      "profile": "https://github.com/kevindiu",
+      "contributions": [
+        "doc",
+        "example",
+        "test",
+        "tutorial"
+      ]
+    },
+    {
+      "login": "hlts2",
+      "name": "Hiroto Funakoshi",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/25459661?v=4",
+      "profile": "https://twitter.com/hiroto_hlts2",
+      "contributions": [
+        "doc",
+        "tool",
+        "test",
+        "tutorial"
+      ]
+    },
+    {
+      "login": "taisuou",
+      "name": "taisho",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/21119375?v=4",
+      "profile": "https://github.com/taisuou",
+      "contributions": [
+        "design",
+        "doc",
+        "example"
+      ]
+    },
+    {
+      "login": "pgrimaud",
+      "name": "Pierre Grimaud",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/1866496?v=4",
+      "profile": "https://github.com/pgrimaud",
+      "contributions": [
+        "doc"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "contributorsSortAlphabetically": false,
+  "badgeTemplate": "[![All Contributors](https://img.shields.io/badge/all_contributors-<%= contributors.length %>-orange.svg?style=flat-square)](#contributors)",
+  "projectName": "vald",
+  "projectOwner": "vdaas",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}

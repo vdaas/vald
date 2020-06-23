@@ -112,7 +112,7 @@ func TestWrap(t *testing.T) {
 			}
 		}(),
 		func() test {
-			wantErr := errors.Errorf("faild")
+			wantErr := errors.New("faild")
 
 			var cnt int
 			h := func(w http.ResponseWriter, req *http.Request) (code int, err error) {

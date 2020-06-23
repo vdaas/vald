@@ -20,6 +20,12 @@ metadata:
   name: {{ .Values.indexManager.name }}
   labels:
     app: {{ .Values.indexManager.name }}
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: manager-index
   {{- if .Values.indexManager.annotations }}
   annotations:
     {{- toYaml .Values.indexManager.annotations | nindent 4 }}
@@ -38,6 +44,9 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.indexManager.name }}
+        app.kubernetes.io/name: {{ include "vald.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: manager-index
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/manager/index/configmap.yaml") . | sha256sum }}
         {{- if .Values.indexManager.podAnnotations }}
@@ -51,8 +60,10 @@ spec:
       {{- end }}
       affinity:
         {{- include "vald.affinity" .Values.indexManager.affinity | nindent 8 }}
+      {{- if .Values.indexManager.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- toYaml .Values.indexManager.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Values.indexManager.name }}
           image: "{{ .Values.indexManager.image.repository }}:{{ default .Values.defaults.image.tag .Values.indexManager.image.tag }}"

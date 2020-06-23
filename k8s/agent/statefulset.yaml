@@ -20,6 +20,12 @@ metadata:
   name: vald-agent-ngt
   labels:
     app: vald-agent-ngt
+    app.kubernetes.io/name: vald
+    helm.sh/chart: vald-v0.0.37
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: v0.0.37
+    app.kubernetes.io/component: agent
 spec:
   serviceName: vald-agent-ngt
   podManagementPolicy: Parallel
@@ -37,12 +43,15 @@ spec:
       creationTimestamp: null
       labels:
         app: vald-agent-ngt
+        app.kubernetes.io/name: vald
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/component: agent
       annotations:
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-agent-ngt
       # annotations:
-      #   checksum/configmap: 5d81d783166d6b5418eef46c924c83504d26b7c618f8cd51f3e120702cf90726
+      #   checksum/configmap: d62feea39f02ad4ae36174e20bb277501cdc8bc45b2827accad869e14feeeb05
     spec:
       affinity:
         nodeAffinity:
@@ -62,7 +71,6 @@ spec:
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
-      topologySpreadConstraints: []
       containers:
         - name: vald-agent-ngt
           image: "vdaas/vald-agent-ngt:nightly"
@@ -100,7 +108,7 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: 120
       volumes:
         - name: vald-agent-ngt-config
           configMap:

@@ -21,22 +21,26 @@ gateway:
       memory: 50Mi
 
 agent:
-  minReplicas: 3
-  maxReplicas: 5
+  minReplicas: 6
+  maxReplicas: 10
   # Set Parallel to podManagementPolicy is not recommended for production.
   # In this time, it is just an example, we set Parallel to podManagementPolicy.
   podManagementPolicy: Parallel
   resources:
     requests:
       cpu: 100m
-      memory: 50Mi
+      memory: 100Mi
   ngt:
     # The number of dimensions for feature vector of fashion-mnist dataset.
     dimension: 784
     # We use L2-Norm for distance_type.
     distance_type: l2
-    # the type of fashion-mnist's feature vectors.
+    # The type of fashion-mnist's feature vectors.
     object_type: float
+    # Check duration of automatic indexing.
+    auto_index_duration_limit: 1m
+    # The limit duration of automatic indexing.
+    auto_index_duration_limit: 20s
 
 discoverer:
   resources:
@@ -48,11 +52,19 @@ compressor:
     requests:
       cpu: 100m
       memory: 50Mi
+
 indexManager:
   resources:
     requests:
       cpu: 100m
       memory: 30Mi
+  indexer:
+    # The limit duration of automatic indexing.
+    # This trigger the force indexing on each Vald Agent.
+    auto_index_duration_limit: 1m
+    # The check duration of automatic indexing.
+    # This trigger the indexing on each Vald Agnet if uncommitted index exceed limit.
+    auto_index_check_duration: 40s
 
 backupManager:
   image:
@@ -64,8 +76,6 @@ backupManager:
       cassandra:
         hosts:
           - scylla-0.scylla.default.svc.cluster.local
-          - scylla-1.scylla.default.svc.cluster.local
-          - scylla-2.scylla.default.svc.cluster.local
       sleepDuration: 2
   env: []
   resources:
@@ -79,8 +89,7 @@ backupManager:
     config:
       hosts:
         - scylla-0.scylla.default.svc.cluster.local
-        - scylla-1.scylla.default.svc.cluster.local
-        - scylla-2.scylla.default.svc.cluster.local
+      consistency: one
 
 meta:
   image:
@@ -92,8 +101,6 @@ meta:
       cassandra:
         hosts:
           - scylla-0.scylla.default.svc.cluster.local
-          - scylla-1.scylla.default.svc.cluster.local
-          - scylla-2.scylla.default.svc.cluster.local
       sleepDuration: 2
   env: []
   resources:
@@ -107,5 +114,4 @@ meta:
     config:
       hosts:
         - scylla-0.scylla.default.svc.cluster.local
-        - scylla-1.scylla.default.svc.cluster.local
-        - scylla-2.scylla.default.svc.cluster.local
+      consistency: one

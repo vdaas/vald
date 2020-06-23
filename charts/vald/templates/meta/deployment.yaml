@@ -20,6 +20,12 @@ metadata:
   name: {{.Values.meta.name }}
   labels:
     app: {{ .Values.meta.name }}
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: meta
   {{- if .Values.meta.annotations }}
   annotations:
     {{- toYaml .Values.meta.annotations | nindent 4 }}
@@ -43,6 +49,9 @@ spec:
       creationTimestamp: null
       labels:
         app: {{ .Values.meta.name }}
+        app.kubernetes.io/name: {{ include "vald.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: meta
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/meta/configmap.yaml") . | sha256sum }}
         {{- if .Values.meta.podAnnotations }}
@@ -56,8 +65,10 @@ spec:
       {{- end }}
       affinity:
         {{- include "vald.affinity" .Values.meta.affinity | nindent 8 }}
+      {{- if .Values.meta.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- toYaml .Values.meta.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Values.meta.name }}
           image: "{{ .Values.meta.image.repository }}:{{ default .Values.defaults.image.tag .Values.meta.image.tag }}"

@@ -25,327 +25,79 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	type test struct {
-		name string
+	type args struct {
 		opts []Option
-		want *retry
 	}
-
-	tests := []test{
-		func() test {
-			return test{
-				name: "returns retry object when options is empty",
-				want: &retry{
-					warnFn:  nopFunc,
-					errorFn: nopFunc,
-				},
-			}
-		}(),
-
-		func() test {
-			errorFn := func(vals ...interface{}) {}
-
-			return test{
-				name: "returns retry object when WithError options is on",
-				opts: []Option{
-					WithError(errorFn),
-				},
-				want: &retry{
-					warnFn:  nopFunc,
-					errorFn: errorFn,
-				},
-			}
-		}(),
-
-		func() test {
-			warnFn := func(vals ...interface{}) {}
-
-			return test{
-				name: "returns retry object when WithWarn options is on",
-				opts: []Option{
-					WithWarn(warnFn),
-				},
-				want: &retry{
-					warnFn:  warnFn,
-					errorFn: nopFunc,
-				},
-			}
-		}(),
-
-		func() test {
-			warnFn := func(vals ...interface{}) {}
-			errorFn := func(vals ...interface{}) {}
-
-			return test{
-				name: "returns retry object when WithError and WithWarn options is on",
-				opts: []Option{
-					WithWarn(warnFn),
-					WithError(errorFn),
-				},
-				want: &retry{
-					warnFn:  warnFn,
-					errorFn: errorFn,
-				},
-			}
-		}(),
+	type want struct {
+		want Retry
 	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, ok := New(tt.opts...).(*retry)
-			if !ok {
-				t.Errorf("type is invalid")
-			}
-
-			if reflect.ValueOf(got.errorFn).Pointer() != reflect.ValueOf(tt.want.errorFn).Pointer() {
-				t.Error("errorfn is not equals")
-			}
-
-			if reflect.ValueOf(got.warnFn).Pointer() != reflect.ValueOf(tt.want.warnFn).Pointer() {
-				t.Error("warnfn is not equals")
-			}
-		})
-	}
-}
-
-func TestOut(t *testing.T) {
-	type args struct {
-		fn     func(vals ...interface{}) error
-		format string
-		vals   []interface{}
-	}
-
-	type field struct {
-		warnFn  func(...interface{})
-		errorFn func(...interface{})
-	}
-
 	type test struct {
-		name      string
-		args      args
-		field     field
-		panicked  bool
-		checkFunc func() error
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, Retry) error
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
+	defaultCheckFunc := func(w want, got Retry) error {
+		wantr, gotr := w.want.(*retry), got.(*retry)
 
+		if reflect.ValueOf(wantr.errorFn).Pointer() != reflect.ValueOf(gotr.errorFn).Pointer() {
+			return errors.Errorf("errorFn: got = %v, want %v", gotr, wantr)
+		}
+
+		if reflect.ValueOf(wantr.warnFn).Pointer() != reflect.ValueOf(gotr.warnFn).Pointer() {
+			return errors.Errorf("warnFn: got = %v, want %v", gotr, wantr)
+		}
+
+		return nil
+	}
 	tests := []test{
+		{
+			name: "returns l when opts is nil",
+			want: want{
+				want: &retry{
+					errorFn: nopFunc,
+					warnFn:  nopFunc,
+				},
+			},
+		},
+
 		func() test {
-			cnt := 0
-			fn := func(vals ...interface{}) error {
-				cnt++
-				return nil
-			}
+			fn := func(...interface{}) {}
 			return test{
-				name: "returns nothing when fn returns nil",
+				name: "returns l when opts is not nil",
 				args: args{
-					fn: fn,
+					opts: []Option{
+						WithError(fn),
+					},
 				},
-				checkFunc: func() error {
-					if cnt != 1 {
-						return errors.Errorf("called cnt is wrong. want: %v, but got: %v", 1, cnt)
-					}
-					return nil
+				want: want{
+					want: &retry{
+						errorFn: fn,
+						warnFn:  nopFunc,
+					},
 				},
-			}
-		}(),
-
-		func() test {
-			return test{
-				name: "returns nothing when fn is nil",
-				checkFunc: func() error {
-					return nil
-				},
-			}
-		}(),
-
-		func() test {
-			err := errors.New("fn error")
-			fn := func(vals ...interface{}) error {
-				return err
-			}
-
-			var gotWarnErr error
-			warnFn := func(vals ...interface{}) {
-				if len(vals) == 1 {
-					gotWarnErr = vals[0].(error)
-				}
-			}
-
-			var gotError error
-			errorFn := func(vals ...interface{}) {
-				if len(vals) == 1 {
-					gotError = vals[0].(error)
-				}
-			}
-
-			return test{
-				name: "panic when fn returns error",
-				args: args{
-					fn: fn,
-				},
-				field: field{
-					warnFn:  warnFn,
-					errorFn: errorFn,
-				},
-				checkFunc: func() error {
-					if !errors.Is(gotWarnErr, err) {
-						return errors.New("warnFn argument is not wrong")
-					}
-
-					if !errors.Is(gotError, err) {
-						return errors.New("errorFn argument is not wrong")
-					}
-					return nil
-				},
-				panicked: true,
 			}
 		}(),
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if tt.panicked {
-					if e := recover(); e != nil {
-						if err := tt.checkFunc(); err != nil {
-							t.Error(err)
-						}
-					} else {
-						t.Error("panic not occurs")
-					}
-				}
-			}()
-
-			r := &retry{
-				warnFn:  tt.field.warnFn,
-				errorFn: tt.field.errorFn,
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
 			}
-			r.Out(tt.args.fn, tt.args.vals...)
-
-			if err := tt.checkFunc(); err != nil {
-				t.Error(err)
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
 			}
-		})
-	}
-
-}
-
-func TestOutf(t *testing.T) {
-	type args struct {
-		fn     func(format string, vals ...interface{}) error
-		format string
-		vals   []interface{}
-	}
-
-	type field struct {
-		warnFn  func(...interface{})
-		errorFn func(...interface{})
-	}
-
-	type test struct {
-		name      string
-		args      args
-		field     field
-		panicked  bool
-		checkFunc func() error
-	}
-
-	tests := []test{
-		func() test {
-			cnt := 0
-			fn := func(format string, vals ...interface{}) error {
-				cnt++
-				return nil
-			}
-			return test{
-				name: "returns nothing when fn returns nil",
-				args: args{
-					fn: fn,
-				},
-				checkFunc: func() error {
-					if cnt != 1 {
-						return errors.Errorf("called cnt is wrong. want: %v, but got: %v", 1, cnt)
-					}
-					return nil
-				},
-			}
-		}(),
-
-		func() test {
-			return test{
-				name: "returns nothing when fn is nil",
-				checkFunc: func() error {
-					return nil
-				},
-			}
-		}(),
-
-		func() test {
-			err := errors.New("fn error")
-			fn := func(format string, vals ...interface{}) error {
-				return err
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
 			}
 
-			var gotWarnErr error
-			warnFn := func(vals ...interface{}) {
-				if len(vals) == 1 {
-					gotWarnErr = vals[0].(error)
-				}
-			}
-
-			var gotError error
-			errorFn := func(vals ...interface{}) {
-				if len(vals) == 1 {
-					gotError = vals[0].(error)
-				}
-			}
-
-			return test{
-				name: "panic when fn returns error",
-				args: args{
-					fn: fn,
-				},
-				field: field{
-					warnFn:  warnFn,
-					errorFn: errorFn,
-				},
-				checkFunc: func() error {
-					if !errors.Is(gotWarnErr, err) {
-						return errors.New("warnFn argument is not wrong")
-					}
-
-					if !errors.Is(gotError, err) {
-						return errors.New("errorFn argument is not wrong")
-					}
-					return nil
-				},
-				panicked: true,
-			}
-		}(),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if tt.panicked {
-					if e := recover(); e != nil {
-						if err := tt.checkFunc(); err != nil {
-							t.Error(err)
-						}
-					} else {
-						t.Error("panic not occurs")
-					}
-				}
-			}()
-
-			r := &retry{
-				warnFn:  tt.field.warnFn,
-				errorFn: tt.field.errorFn,
-			}
-			r.Outf(tt.args.fn, tt.args.format, tt.args.vals...)
-
-			if err := tt.checkFunc(); err != nil {
-				t.Error(err)
+			got := New(test.args.opts...)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
 			}
 		})
 	}
@@ -360,66 +112,104 @@ func Test_retry_Out(t *testing.T) {
 		warnFn  func(vals ...interface{})
 		errorFn func(vals ...interface{})
 	}
-	type want struct {
-	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
-		want       want
-		checkFunc  func(want) error
+		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(args, *testing.T)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           fn: nil,
-		           vals: nil,
-		       },
-		       fields: fields {
-		           warnFn: nil,
-		           errorFn: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			var (
+				wantCnt = 1
+				gotCnt  = 0
+			)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           fn: nil,
-		           vals: nil,
-		           },
-		           fields: fields {
-		           warnFn: nil,
-		           errorFn: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			fn := func(vals ...interface{}) error {
+				gotCnt++
+				return nil
+			}
+
+			return test{
+				name: "called success when fn returns nil",
+				args: args{
+					fn: fn,
+				},
+				checkFunc: func() error {
+					if gotCnt != wantCnt {
+						return errors.Errorf("count: got: %d, want: %d", gotCnt, wantCnt)
+					}
+					return nil
+				},
+			}
+		}(),
+
+		func() test {
+			err := errors.New("error")
+			fn := func(vals ...interface{}) error {
+				return err
+			}
+
+			var (
+				gotWarnFnErr  error
+				gotErrorFnErr error
+			)
+
+			warnFn := func(vals ...interface{}) {
+				if len(vals) == 1 {
+					gotWarnFnErr = vals[0].(error)
+				}
+			}
+
+			errorFn := func(vals ...interface{}) {
+				if len(vals) == 1 {
+					gotErrorFnErr = vals[0].(error)
+				}
+			}
+
+			return test{
+				name: "panic occurs when fn returns error",
+				args: args{
+					fn: fn,
+				},
+				fields: fields{
+					warnFn:  warnFn,
+					errorFn: errorFn,
+				},
+				checkFunc: func() error {
+					if !errors.Is(gotErrorFnErr, err) {
+						return errors.Errorf("errorFn argument: got: %v, want: %v", gotErrorFnErr, err)
+					}
+
+					if !errors.Is(gotWarnFnErr, err) {
+						return errors.Errorf("warnFn argument: got: %v, want: %v", gotWarnFnErr, err)
+					}
+
+					return nil
+				},
+				afterFunc: func(args args, t *testing.T) {
+					t.Helper()
+					if e := recover(); e == nil {
+						t.Error("panic dose not occur")
+					}
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(test.args, tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -430,7 +220,7 @@ func Test_retry_Out(t *testing.T) {
 			}
 
 			r.Out(test.args.fn, test.args.vals...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -447,68 +237,126 @@ func Test_retry_Outf(t *testing.T) {
 		warnFn  func(vals ...interface{})
 		errorFn func(vals ...interface{})
 	}
-	type want struct {
-	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
-		want       want
-		checkFunc  func(want) error
+		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(args, *testing.T)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           fn: nil,
-		           format: "",
-		           vals: nil,
-		       },
-		       fields: fields {
-		           warnFn: nil,
-		           errorFn: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			var (
+				wantCnt    = 1
+				wantFormat = "foramt"
+				wantVals   = []interface{}{
+					"vald",
+				}
+			)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           fn: nil,
-		           format: "",
-		           vals: nil,
-		           },
-		           fields: fields {
-		           warnFn: nil,
-		           errorFn: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			var (
+				gotCnt    int
+				gotFormat string
+				gotVals   []interface{}
+			)
+
+			fn := func(format string, vals ...interface{}) error {
+				gotCnt++
+				gotFormat = format
+				gotVals = vals
+				return nil
+			}
+
+			return test{
+				name: "called success when fn returns nil",
+				args: args{
+					fn:     fn,
+					format: wantFormat,
+					vals:   wantVals,
+				},
+				checkFunc: func() error {
+					if gotCnt != wantCnt {
+						return errors.Errorf("count: got: %d, want: %d", gotCnt, wantCnt)
+					}
+
+					if gotFormat != wantFormat {
+						return errors.Errorf("format: got: %d, want: %d", gotFormat, wantFormat)
+					}
+
+					if gotCnt != wantCnt {
+						return errors.Errorf("vals: got: %d, want: %d", gotVals, wantVals)
+					}
+
+					return nil
+				},
+			}
+		}(),
+
+		func() test {
+			err := errors.New("error")
+			fn := func(format string, vals ...interface{}) error {
+				return err
+			}
+
+			var (
+				gotWarnFnErr  error
+				gotErrorFnErr error
+			)
+
+			warnFn := func(vals ...interface{}) {
+				if len(vals) == 1 {
+					gotWarnFnErr = vals[0].(error)
+				}
+			}
+
+			errorFn := func(vals ...interface{}) {
+				if len(vals) == 1 {
+					gotErrorFnErr = vals[0].(error)
+				}
+			}
+
+			return test{
+				name: "panic occurs when fn returns error",
+				args: args{
+					fn: fn,
+				},
+				fields: fields{
+					warnFn:  warnFn,
+					errorFn: errorFn,
+				},
+				checkFunc: func() error {
+					if !errors.Is(gotErrorFnErr, err) {
+						return errors.Errorf("errorFn argument: got: %v, want: %v", gotErrorFnErr, err)
+					}
+
+					if !errors.Is(gotWarnFnErr, err) {
+						return errors.Errorf("warnFn argument: got: %v, want: %v", gotWarnFnErr, err)
+					}
+
+					return nil
+				},
+				afterFunc: func(args args, t *testing.T) {
+					t.Helper()
+					if e := recover(); e == nil {
+						t.Error("panic dose not occur")
+					}
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(test.args, tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -519,7 +367,7 @@ func Test_retry_Outf(t *testing.T) {
 			}
 
 			r.Outf(test.args.fn, test.args.format, test.args.vals...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

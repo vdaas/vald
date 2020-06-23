@@ -1,0 +1,90 @@
+name: 'Build docker image: loadtest'
+on:
+  push:
+    branches:
+      - master
+    tags:
+       - '*.*.*'
+       - 'v*.*.*'
+       - '*.*.*-*'
+       - 'v*.*.*-*'
+    paths:
+      - 'internal/**'
+      - '!internal/**/*_test.go'
+      - '!internal/db/**'
+      - '!internal/k8s/**'
+      - 'apis/grpc/**'
+      - 'pkg/tools/cli/loadtest/**'
+      - 'cmd/tools/cli/loadtest/**'
+      - 'dockers/base/Dockerfile'
+      - 'dockers/tools/cli/loadtest/Dockerfile'
+      - 'versions/GO_VERSION'
+  pull_request:
+    paths:
+      - 'internal/**'
+      - '!internal/**/*_test.go'
+      - '!internal/db/**'
+      - '!internal/k8s/**'
+      - 'apis/grpc/**'
+      - 'pkg/tools/cli/loadtest/**'
+      - 'cmd/tools/cli/loadtest/**'
+      - 'dockers/base/Dockerfile'
+      - 'dockers/tools/cli/loadtest/Dockerfile'
+      - 'versions/GO_VERSION'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 10
+    - name: Build the Docker image
+      run: |
+        make docker/build/loadtest
+    - name: login to DockerHub
+      run: |
+        echo ${DOCKERHUB_PASS} | docker login --username ${DOCKERHUB_USER} --password-stdin
+      env:
+        DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+        DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+    - name: push to DockerHub (master)
+      if: github.ref == 'refs/heads/master'
+      run: |
+        imagename=`make docker/name/loadtest`
+        docker tag ${imagename} ${imagename}:nightly
+        docker push ${imagename}:nightly
+    - name: push to DockerHub (pull request)
+      if: github.event_name == 'pull_request'
+      run: |
+        imagename=`make docker/name/loadtest`
+        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+        docker tag ${imagename} ${imagename}:pr-${pr_num}
+        docker push ${imagename}:pr-${pr_num}
+    - name: push to DockerHub (tags)
+      if: startsWith( github.ref, 'refs/tags/')
+      run: |
+        imagename=`make docker/name/loadtest`
+        docker push ${imagename}:latest
+        tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
+        docker tag ${imagename} ${imagename}:${tag_name}
+        docker push ${imagename}:${tag_name}
+        docker tag ${imagename} ${imagename}:nightly
+        docker push ${imagename}:nightly
+  slack:
+    name: Slack notification
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' || startsWith( github.ref, 'refs/tags/')
+    steps:
+      - uses: technote-space/workflow-conclusion-action@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: 8398a7/action-slack@v2
+        with:
+          author_name: vald-loadtest image build
+          status: ${{ env.WORKFLOW_CONCLUSION }}
+          only_mention_fail: channel
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}

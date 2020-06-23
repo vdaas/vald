@@ -1,8 +1,14 @@
-area/agent:
-  - apis/proto/agent/**/*
-  - apis/grpc/agent/**/*
-  - cmd/agent/**/*
-  - pkg/agent/**/*
+area/agent/core:
+  - apis/proto/agent/core/**/*
+  - apis/grpc/agent/core/**/*
+  - cmd/agent/core/**/*
+  - pkg/agent/core/**/*
+
+area/agent/sidecar:
+  - apis/proto/agent/sidecar/**/*
+  - apis/grpc/agent/sidecar/**/*
+  - cmd/agent/sidecar/**/*
+  - pkg/agent/sidecar/**/*
 
 area/discoverer:
   - apis/proto/discoverer/**/*
@@ -51,6 +57,15 @@ area/meta:
   - apis/grpc/meta/**/*
   - cmd/meta/**/*
   - pkg/meta/**/*
+
+area/tools/cli/loadtest:
+  - apis/proto/agent/core/**/*
+  - apis/grpc/agent/core/**/*
+  - apis/proto/vald/**/*
+  - apis/grpc/vald/**/*
+  - cmd/tools/cli/loadtest/**/*
+  - pkg/tools/cli/loadtest/**/*
+
 
 area/internal:
   - internal/**/*

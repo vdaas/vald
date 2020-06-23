@@ -45,8 +45,8 @@ type Blob struct {
 	// StorageType represents blob storaget type
 	StorageType string `json:"storage_type" yaml:"storage_type"`
 
-	// BucketURL represents bucket URL
-	BucketURL string `json:"bucket_url" yaml:"bucket_url"`
+	// Bucket represents bucket name
+	Bucket string `json:"bucket" yaml:"bucket"`
 
 	// S3 represents S3 config
 	S3 *S3Config `json:"s3" yaml:"s3"`
@@ -58,12 +58,25 @@ type S3Config struct {
 	AccessKey       string `json:"access_key" yaml:"access_key"`
 	SecretAccessKey string `json:"secret_access_key" yaml:"secret_access_key"`
 	Token           string `json:"token" yaml:"token"`
-	UseLegacyList   bool   `json:"use_legacy_list" yaml:"use_legacy_list"`
+
+	MaxRetries                 int  `json:"max_retries" yaml:"max_retries"`
+	ForcePathStyle             bool `json:"force_path_style" yaml:"force_path_style"`
+	UseAccelerate              bool `json:"use_accelerate" yaml:"use_accelerate"`
+	UseARNRegion               bool `json:"use_arn_region" yaml:"use_arn_region"`
+	UseDualStack               bool `json:"use_dual_stack" yaml:"use_dual_stack"`
+	EnableSSL                  bool `json:"enable_ssl" yaml:"enable_ssl"`
+	EnableParamValidation      bool `json:"enable_param_validation" yaml:"enable_param_validation"`
+	Enable100Continue          bool `json:"enable_100_continue" yaml:"enable_100_continue"`
+	EnableContentMD5Validation bool `json:"enable_content_md5_validation" yaml:"enable_content_md5_validation"`
+	EnableEndpointDiscovery    bool `json:"enable_endpoint_discovery" yaml:"enable_endpoint_discovery"`
+	EnableEndpointHostPrefix   bool `json:"enable_endpoint_host_prefix" yaml:"enable_endpoint_host_prefix"`
+
+	MaxPartSize string `json:"max_part_size" yaml:"max_part_size"`
 }
 
 func (b *Blob) Bind() *Blob {
 	b.StorageType = GetActualValue(b.StorageType)
-	b.BucketURL = GetActualValue(b.BucketURL)
+	b.Bucket = GetActualValue(b.Bucket)
 
 	if b.S3 != nil {
 		b.S3 = b.S3.Bind()
@@ -80,6 +93,7 @@ func (s *S3Config) Bind() *S3Config {
 	s.AccessKey = GetActualValue(s.AccessKey)
 	s.SecretAccessKey = GetActualValue(s.SecretAccessKey)
 	s.Token = GetActualValue(s.Token)
+	s.MaxPartSize = GetActualValue(s.MaxPartSize)
 
 	return s
 }

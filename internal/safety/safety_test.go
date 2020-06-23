@@ -16,72 +16,292 @@
 package safety
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"go.uber.org/goleak"
 )
 
+var (
+	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+	goleakIgnoreOptions = []goleak.Option{
+		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	}
+)
+
+func init() {
+	log.Init()
+}
+
 func TestRecoverFunc(t *testing.T) {
+	type args struct {
+		fn func() error
+	}
+	type want struct {
+		want      func() error
+		wantPanic func() error
+	}
 	type test struct {
 		name       string
-		fn         func() error
-		runtimeErr bool
-		want       error
+		args       args
+		want       want
+		checkFunc  func(want, func() error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
+	defaultCheckFunc := func(w want, got func() error) error {
+		gotErr := got()
 
+		// if wantPanic is not nil then the panic should be recovered and this line should not be executed
+		if w.wantPanic != nil {
+			return errors.Errorf("wantPanic is not nil, but got return error: %v", gotErr)
+		}
+
+		if (w.want == nil && got != nil) || (w.want != nil && got == nil) {
+			return errors.Errorf("got = %v, want %v", got, w)
+		}
+		wantErr := w.want()
+		if !errors.Is(gotErr, wantErr) {
+			return errors.Errorf("got error= %v, want error= %v", gotErr, wantErr)
+		}
+		return nil
+	}
 	tests := []test{
 		{
 			name: "returns error when system paniced caused by runtime error",
-			fn: func() error {
-				_ = []string{}[10]
-				return nil
+			args: args{
+				fn: func() error {
+					_ = []string{}[10]
+					return nil
+				},
 			},
-			runtimeErr: true,
-			want:       errors.New("system paniced caused by runtime error: runtime error: index out of range [10] with length 0"),
+			want: want{
+				wantPanic: func() error {
+					return errors.New("system paniced caused by runtime error: runtime error: index out of range [10] with length 0")
+				},
+			},
 		},
-
 		{
 			name: "returns error when system paniced caused by panic with string value",
-			fn: func() error {
-				panic("panic")
+			args: args{
+				fn: func() error {
+					panic("panic")
+				},
 			},
-			want: errors.New("panic recovered: panic"),
+			want: want{
+				want: func() error {
+					return errors.New("panic recovered: panic")
+				},
+			},
 		},
-
 		{
 			name: "returns error when system paniced caused by panic with error",
-			fn: func() error {
-				panic(errors.Errorf("error"))
+			args: args{
+				fn: func() error {
+					panic(errors.Errorf("error"))
+				},
 			},
-			want: errors.New("error"),
+			want: want{
+				want: func() error {
+					return errors.Errorf("error")
+				},
+			},
 		},
-
 		{
 			name: "returns error when system paniced caused by panic with int value",
-			fn: func() error {
-				panic(10)
+			args: args{
+				fn: func() error {
+					panic(10)
+				},
 			},
-			want: errors.New("panic recovered: 10"),
+			want: want{
+				want: func() error {
+					return errors.New("panic recovered: 10")
+				},
+			},
 		},
 	}
 
-	log.Init()
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if ok := tt.runtimeErr; ok {
-					if want, got := tt.want, recover().(error); !errors.Is(got, want) {
-						t.Errorf("not equals. want: %v, got: %v", want, got)
-					}
+			defer func(w want, tt *testing.T) {
+				gotPanic := recover()
+				if w.wantPanic == nil && gotPanic == nil {
+					return
 				}
-			}()
+				panicErr, ok := gotPanic.(error)
+				if !ok {
+					tt.Errorf("cannot cast panic to error, panic: %v", gotPanic)
+					return
+				}
+				if want := w.wantPanic(); !errors.Is(want, panicErr) {
+					tt.Errorf("want: %v, got: %v", want, panicErr)
+				}
+			}(test.want, tt)
 
-			got := RecoverFunc(tt.fn)()
-			if !errors.Is(got, tt.want) {
-				t.Errorf("not equals. want: %v, got: %v", tt.want, got)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
 			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := RecoverFunc(test.args.fn)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestRecoverWithoutPanicFunc(t *testing.T) {
+	type args struct {
+		fn func() error
+	}
+	type want struct {
+		want func() error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, func() error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got func() error) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           fn: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           fn: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := RecoverWithoutPanicFunc(test.args.fn)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_recoverFunc(t *testing.T) {
+	type args struct {
+		fn        func() error
+		withPanic bool
+	}
+	type want struct {
+		want func() error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, func() error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got func() error) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           fn: nil,
+		           withPanic: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           fn: nil,
+		           withPanic: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := recoverFunc(test.args.fn, test.args.withPanic)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
 		})
 	}
 }

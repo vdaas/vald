@@ -56,6 +56,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
 			agent.RegisterReplicationServer(srv, g)
 		}),
+		server.WithGRPCOption(
+			grpc.ChainUnaryInterceptor(grpc.RecoverInterceptor()),
+			grpc.ChainStreamInterceptor(grpc.RecoverStreamInterceptor()),
+		),
 		server.WithPreStartFunc(func() error {
 			// TODO check unbackupped upstream
 			return nil

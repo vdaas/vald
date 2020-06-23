@@ -20,6 +20,12 @@ metadata:
   name: vald-manager-index
   labels:
     app: vald-manager-index
+    app.kubernetes.io/name: vald
+    helm.sh/chart: vald-v0.0.37
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: v0.0.37
+    app.kubernetes.io/component: manager-index
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
@@ -37,8 +43,11 @@ spec:
       creationTimestamp: null
       labels:
         app: vald-manager-index
+        app.kubernetes.io/name: vald
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/component: manager-index
       annotations:
-        checksum/configmap: 9aa4dd9cfba3a59605e8a208fd9ed03c604748377beaea5a15d795ef541f0af2
+        checksum/configmap: f6783fd56c55f5c196c392da32e387a2bd0800aba3520c59bbfbeb2d91731a59
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-index
@@ -75,7 +84,6 @@ spec:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution: []
           requiredDuringSchedulingIgnoredDuringExecution: []
-      topologySpreadConstraints: []
       containers:
         - name: vald-manager-index
           image: "vdaas/vald-manager-index:nightly"

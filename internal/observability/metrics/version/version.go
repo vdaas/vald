@@ -36,8 +36,8 @@ type version struct {
 	kvs  map[metrics.Key]string
 }
 
-func New() (metrics.Metric, error) {
-	kvs, err := labelKVs()
+func New(labels ...string) (metrics.Metric, error) {
+	kvs, err := labelKVs(labels...)
 	if err != nil {
 		return nil, err
 	}
@@ -48,17 +48,27 @@ func New() (metrics.Metric, error) {
 	}, nil
 }
 
-func labelKVs() (map[metrics.Key]string, error) {
+func labelKVs(labels ...string) (map[metrics.Key]string, error) {
+	labelMap := make(map[string]struct{}, len(labels))
+	for _, label := range labels {
+		labelMap[reps.Replace(label)] = struct{}{}
+	}
+
 	d := info.Get()
 	rt, rv := reflect.TypeOf(d), reflect.ValueOf(d)
 	info := make(map[metrics.Key]string, rt.NumField())
 	for i := 0; i < rt.NumField(); i++ {
+		keyName := reps.Replace(rt.Field(i).Tag.Get("json"))
+		if _, ok := labelMap[keyName]; !ok {
+			continue
+		}
+
 		v := rv.Field(i).Interface()
 		value, ok := v.(string)
 		if !ok {
 			ss, ok := v.([]string)
 			if ok {
-				k, err := metrics.NewKey(reps.Replace(rt.Field(i).Tag.Get("json")))
+				k, err := metrics.NewKey(keyName)
 				if err != nil {
 					return nil, err
 				}
@@ -68,7 +78,7 @@ func labelKVs() (map[metrics.Key]string, error) {
 			continue
 		}
 		if value != "" {
-			k, err := metrics.NewKey(reps.Replace(rt.Field(i).Tag.Get("json")))
+			k, err := metrics.NewKey(keyName)
 			if err != nil {
 				return nil, err
 			}
