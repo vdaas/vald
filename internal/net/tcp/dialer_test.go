@@ -134,7 +134,7 @@ func TestNewDialer(t *testing.T) {
 				args: args{
 					opts: []DialerOption{
 						WithTLS(tc),
-						WithCache(c),
+						// WithCache(c),
 						WithEnableDNSCache(),
 						WithDNSRefreshDuration("5s"),
 						WithDNSCacheExpiration("10s"),
@@ -572,18 +572,7 @@ func Test_dialer_DialContext(t *testing.T) {
 		address string
 	}
 	type fields struct {
-		cache                 cache.Cache
-		dnsCache              bool
-		tlsConfig             *tls.Config
-		dnsRefreshDurationStr string
-		dnsCacheExpirationStr string
-		dnsRefreshDuration    time.Duration
-		dnsCacheExpiration    time.Duration
-		dialerTimeout         time.Duration
-		dialerKeepAlive       time.Duration
-		dialerDualStack       bool
-		der                   *net.Dialer
-		dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer func(ctx context.Context, network, addr string) (net.Conn, error)
 	}
 	type want struct {
 		want net.Conn
@@ -608,63 +597,22 @@ func Test_dialer_DialContext(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           network: "",
-		           address: "",
-		       },
-		       fields: fields {
-		           cache: nil,
-		           dnsCache: false,
-		           tlsConfig: nil,
-		           dnsRefreshDurationStr: "",
-		           dnsCacheExpirationStr: "",
-		           dnsRefreshDuration: nil,
-		           dnsCacheExpiration: nil,
-		           dialerTimeout: nil,
-		           dialerKeepAlive: nil,
-		           dialerDualStack: false,
-		           der: nil,
-		           dialer: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           network: "",
-		           address: "",
-		           },
-		           fields: fields {
-		           cache: nil,
-		           dnsCache: false,
-		           tlsConfig: nil,
-		           dnsRefreshDurationStr: "",
-		           dnsCacheExpirationStr: "",
-		           dnsRefreshDuration: nil,
-		           dnsCacheExpiration: nil,
-		           dialerTimeout: nil,
-		           dialerKeepAlive: nil,
-		           dialerDualStack: false,
-		           der: nil,
-		           dialer: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return non nil error",
+			args: args{
+				ctx:     context.Background(),
+				network: "dummyNetwork",
+				address: "dummyAddress",
+			},
+			fields: fields{
+				dialer: func(ctx context.Context, network, addr string) (net.Conn, error) {
+					if network == "dummyNetwork" && addr == "dummyAddress" {
+						return nil, nil
+					}
+					return nil, errors.New("invalid error")
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -680,25 +628,13 @@ func Test_dialer_DialContext(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			d := &dialer{
-				cache:                 test.fields.cache,
-				dnsCache:              test.fields.dnsCache,
-				tlsConfig:             test.fields.tlsConfig,
-				dnsRefreshDurationStr: test.fields.dnsRefreshDurationStr,
-				dnsCacheExpirationStr: test.fields.dnsCacheExpirationStr,
-				dnsRefreshDuration:    test.fields.dnsRefreshDuration,
-				dnsCacheExpiration:    test.fields.dnsCacheExpiration,
-				dialerTimeout:         test.fields.dialerTimeout,
-				dialerKeepAlive:       test.fields.dialerKeepAlive,
-				dialerDualStack:       test.fields.dialerDualStack,
-				der:                   test.fields.der,
-				dialer:                test.fields.dialer,
+				dialer: test.fields.dialer,
 			}
 
 			got, err := d.DialContext(test.args.ctx, test.args.network, test.args.address)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -746,63 +682,124 @@ func Test_dialer_cachedDialer(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dctx: nil,
-		           network: "",
-		           addr: "",
-		       },
-		       fields: fields {
-		           cache: nil,
-		           dnsCache: false,
-		           tlsConfig: nil,
-		           dnsRefreshDurationStr: "",
-		           dnsCacheExpirationStr: "",
-		           dnsRefreshDuration: nil,
-		           dnsCacheExpiration: nil,
-		           dialerTimeout: nil,
-		           dialerKeepAlive: nil,
-		           dialerDualStack: false,
-		           der: nil,
-		           dialer: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns conn and nil when dialer returns conn and nil",
+			args: args{
+				dctx:    context.Background(),
+				network: "tcp",
+				addr:    "google.com:80",
+			},
+			fields: fields{
+				der: &net.Dialer{
+					Resolver: &net.Resolver{
+						PreferGo: false,
+					},
+				},
+				cache: gache.New(),
+			},
+			checkFunc: func(w want, gotConn net.Conn, err error) error {
+				if err != nil {
+					return errors.Errorf("err is not nil: %v", err)
+				}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dctx: nil,
-		           network: "",
-		           addr: "",
-		           },
-		           fields: fields {
-		           cache: nil,
-		           dnsCache: false,
-		           tlsConfig: nil,
-		           dnsRefreshDurationStr: "",
-		           dnsCacheExpirationStr: "",
-		           dnsRefreshDuration: nil,
-		           dnsCacheExpiration: nil,
-		           dialerTimeout: nil,
-		           dialerKeepAlive: nil,
-		           dialerDualStack: false,
-		           der: nil,
-		           dialer: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+				if gotConn == nil {
+					return errors.New("conn is nil")
+				}
+				return nil
+			},
+		},
+		{
+			name: "returns tls conn and nil when dialer returns tls conn and nil",
+			args: args{
+				dctx:    context.Background(),
+				network: "tcp",
+				addr:    "google.com:80",
+			},
+			fields: fields{
+				der: &net.Dialer{
+					Resolver: &net.Resolver{
+						PreferGo: false,
+					},
+				},
+				cache:     gache.New(),
+				tlsConfig: new(tls.Config),
+			},
+			checkFunc: func(w want, gotConn net.Conn, err error) error {
+				if err != nil {
+					return errors.Errorf("err is not nil: %v", err)
+				}
+
+				if gotConn == nil {
+					return errors.New("conn is nil")
+				}
+				return nil
+			},
+		},
+		{
+			name: "returns nil and error when lookup and dialer returns error about missing port in address",
+			args: args{
+				dctx:    context.Background(),
+				network: "tcp",
+				addr:    "addr",
+			},
+			fields: fields{
+				der: &net.Dialer{
+					Resolver: &net.Resolver{
+						PreferGo: false,
+					},
+				},
+				cache: gache.New(),
+			},
+			checkFunc: func(w want, gotConn net.Conn, err error) error {
+				if err == nil {
+					return errors.New("err is nil")
+				}
+
+				if gotConn != nil {
+					return errors.Errorf("conn is not nil: %v", gotConn)
+				}
+
+				return nil
+			},
+		},
+		func() test {
+			addr := "google.com"
+			cache := gache.New()
+			cache.Set(addr, []string{
+				"invalid_ip",
+			})
+
+			return test{
+				name: "returns conn and nil when re-dial returns conn and nil due to invalid cache IP",
+				args: args{
+					dctx:    context.Background(),
+					network: "tcp",
+					addr:    addr + ":80",
+				},
+				fields: fields{
+					der: &net.Dialer{
+						Resolver: &net.Resolver{
+							PreferGo: false,
+						},
+					},
+					cache: cache,
+				},
+				checkFunc: func(w want, gotConn net.Conn, err error) error {
+					if err != nil {
+						return errors.Errorf("err is not nil: %v", err)
+					}
+
+					if gotConn == nil {
+						return errors.New("conn is nil")
+					}
+
+					if _, ok := cache.Get(addr); !ok {
+						return errors.New("cache value is not deleted")
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -836,7 +833,6 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			if err := test.checkFunc(test.want, gotConn, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
