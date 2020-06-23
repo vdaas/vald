@@ -345,14 +345,14 @@ func TestRun(t *testing.T) {
 				},
 				want: want{
 					err: func() (err error) {
-						errs := []error{
-							errors.ErrPreStopFunc("vald", errors.New("err1")),
-							errors.ErrStopFunc("vald", errors.New("err2")),
-							errors.ErrPostStopFunc("vald", errors.New("err3")),
+						emap := map[error]int{
+							errors.New("err1"): 1,
+							errors.New("err2"): 1,
+							errors.New("err3"): 1,
 						}
 
-						for _, ierr := range errs {
-							err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", ierr.Error(), 0)
+						for ierr, n := range emap {
+							err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", ierr.Error(), n)
 						}
 
 						return errors.ErrDaemonStopFailed(err)
@@ -374,9 +374,10 @@ func TestRun(t *testing.T) {
 								return nil
 							},
 							StartFunc: func(ctx context.Context) (<-chan error, error) {
-								ch := make(chan error, 2)
+								ch := make(chan error, 3)
 								ch <- errors.New("err1")
 								ch <- errors.New("err2")
+								ch <- errors.New("err1")
 								return ch, nil
 							},
 							PreStopFunc: func(ctx context.Context) error {
@@ -399,12 +400,13 @@ func TestRun(t *testing.T) {
 				},
 				want: want{
 					err: func() (err error) {
-						errs := []error{
-							errors.ErrStartFunc("vald", errors.New("err1")),
-							errors.ErrStartFunc("vald", errors.New("err2")),
+						emap := map[error]int{
+							errors.New("err1"): 2,
+							errors.New("err2"): 1,
 						}
-						for _, ierr := range errs {
-							err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", ierr.Error(), 0)
+
+						for ierr, n := range emap {
+							err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", ierr.Error(), n)
 						}
 
 						return errors.ErrDaemonStopFailed(err)
