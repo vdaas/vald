@@ -132,9 +132,9 @@ func (d *dialer) lookup(ctx context.Context, addr string) (ips []string, err err
 		return nil, err
 	}
 
-	ips = make([]string, 0, len(r)+2)
-	for _, ip := range r {
-		ips = append(ips, ip.String())
+	ips = make([]string, len(r))
+	for i, ip := range r {
+		ips[i] = ip.String()
 	}
 
 	d.cache.Set(addr, ips)
