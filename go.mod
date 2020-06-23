@@ -30,7 +30,7 @@ require (
 	contrib.go.opencensus.io/exporter/jaeger v0.2.0
 	contrib.go.opencensus.io/exporter/prometheus v0.2.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.1
-	github.com/aws/aws-sdk-go v1.32.2
+	github.com/aws/aws-sdk-go v1.32.7
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/cockroachdb/errors v0.0.0-00010101000000-000000000000
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
@@ -60,7 +60,6 @@ require (
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/goleak v1.0.0
 	gocloud.dev v0.19.0
-	golang.org/x/mod v0.3.0 // indirect
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
 	golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
 	golang.org/x/tools v0.0.0-20200610052024-8d7dbee4c8ae // indirect
