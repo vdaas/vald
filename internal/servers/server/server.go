@@ -44,15 +44,15 @@ type Server interface {
 	Shutdown(context.Context) error
 }
 
-type mode uint8
+type ServerMode uint8
 
 const (
-	REST mode = 1 + iota
+	REST ServerMode = 1 + iota
 	GRPC
 	GQL
 )
 
-func (m mode) String() string {
+func (m ServerMode) String() string {
 	switch m {
 	case REST:
 		return "REST"
@@ -64,7 +64,7 @@ func (m mode) String() string {
 	return "unknown"
 }
 
-func Mode(m string) mode {
+func Mode(m string) ServerMode {
 	switch strings.ToLower(m) {
 	case "rest", "http":
 		return REST
@@ -77,7 +77,7 @@ func Mode(m string) mode {
 }
 
 type server struct {
-	mode mode
+	mode ServerMode
 	name string
 	mu   sync.RWMutex
 	wg   sync.WaitGroup

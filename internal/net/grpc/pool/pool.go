@@ -88,7 +88,7 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 	p.host, p.port, p.isIP, err = net.Parse(p.addr)
 	if err != nil {
 		log.Warnf("failed to parse addr %s: %s", p.addr, err)
-		if len(p.host) == 0 {
+		if p.host == "" {
 			p.host = strings.SplitN(p.addr, ":", 2)[0]
 		}
 		err = p.scanGRPCPort(ctx)
@@ -409,11 +409,11 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 }
 
 func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
-	if p.isIP && len(p.reconnectHash) != 0 && !p.IsHealthy(ctx) {
+	if p.isIP && p.reconnectHash != "" && !p.IsHealthy(ctx) {
 		return nil, errors.ErrInvalidGRPCClientConn(p.addr)
 	}
 
-	if len(p.reconnectHash) == 0 {
+	if p.reconnectHash == "" {
 		log.Debugf("connection history for %s not found starting connection phase", p.addr)
 		if p.isIP {
 			return p.connect(ctx)
