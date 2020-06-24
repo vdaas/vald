@@ -1,9 +1,9 @@
 # Agent on Docker
 
-Vald is desidned and implemented based on Cloud-Native architecture.
-However, there mqy be cases who want to use only Vald Agent without kubernetes.
+Vald is designed and implemented based on Cloud-Native architecture.
+However, there may be cases who want to use only Vald Agent without kubernetes.
 
-This article will show you haw to deploy and run the Vald Agent on Docker.
+This article will show you how to deploy and run the Vald Agent on Docker.
 Fashion-mnist is used as an example of a dataset as same as [Get Stared](../tutorial/get-started.md)
 
 ## Requirements
@@ -31,7 +31,7 @@ brew install hdf5
 ## Deploy
 
 This chapter will show you how to deploy Vald Agent on docker.<br>
-This chapter will use NGT for core method of Vald Agent.
+This chapter will use NGT for the core method of Vald Agent.
 
 1. Clone the vdaas/vald repository
 
@@ -41,8 +41,8 @@ This chapter will use NGT for core method of Vald Agent.
 
 1. Create `config.yaml`
 
-    The configuration of Vald agnet for docker is set using `config.yaml`<br>
-    You also check [the `sample.yaml`](https://github.com/vdaas/vald/blob/master/cmd/agent/core/ngt/sample.yaml).
+    The configuration of Vald agent for docker is set using `config.yaml`<br>
+    You also check [the sample](https://github.com/vdaas/vald/blob/master/cmd/agent/core/ngt/sample.yaml).
 
     ```bash
     ---
@@ -109,7 +109,7 @@ This chapter will use NGT for core method of Vald Agent.
 
 1. Verify
 
-    If the deployment is successed, you can confirm the output similar to the below.
+    If the deployment ends with success, you can confirm the output similar to the below.
 
     ```bash
     {"Date":"2020-06-24T05:49:53.615263Z","Level":"INFO","Detail":"maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined"}
@@ -135,15 +135,15 @@ This chapter will use NGT for core method of Vald Agent.
 
 1. Running example
 
-    Vald provides multiple languages client library such as Go, Java, Node.js, Python and so on.<br>
+    Vald provides multiple language client libraries such as Go, Java, Node.js, Python, and so on.<br>
     In this example, the fashion-mnist dataset will insert into the Vald and search using [vald-client-go](https://github.com/vdaas/vald-client-go).
     
     We use [`example/client/agent/main.go`](https://github.com/vdaas/vald/blob/master/example/client/agent/main.go) to run the example.
-    The example code is same as running example only Vald agent on kubernetes.
-    If you want to learn the detail of running example, please refer to the tutorial of [standalone Vald Agent on kubernetes](../tutorial/get-started.md/#run-using-example-code-1).
+    The example code is the same as running an example only Vald agent on kubernetes.
+    If you want to learn the detail of running an example, please refer to the tutorial of [standalone Vald Agent on kubernetes](../tutorial/get-started.md/#run-using-example-code-1).
 
     Note:
-        - We recommend you to run `CreateIndex()` after `Insert()` without waiting auto indexing.
+      - We recommend you to run `CreateIndex()` after `Insert()` without waiting auto indexing.
 
 1. Clean Up
 
