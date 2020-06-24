@@ -216,7 +216,7 @@ func TestDo(t *testing.T) {
 					"test", "-c=./runner.go",
 				}
 				go func() {
-					time.Sleep(2 * time.Second)
+					time.Sleep(5 * time.Second)
 					syscall.Kill(syscall.Getpid(), syscall.SIGINT)
 				}()
 			},
@@ -225,8 +225,6 @@ func TestDo(t *testing.T) {
 			},
 		},
 	}
-
-	// got error = invalid config version 1.1.7 not satisfies version constraints >= v1.1.0, <= v1.1.5,
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
@@ -339,7 +337,7 @@ func TestRun(t *testing.T) {
 				},
 				beforeFunc: func(args) {
 					go func() {
-						time.Sleep(2 * time.Second)
+						time.Sleep(5 * time.Second)
 						cancel()
 					}()
 				},
@@ -394,7 +392,7 @@ func TestRun(t *testing.T) {
 				},
 				beforeFunc: func(args) {
 					go func() {
-						time.Sleep(2 * time.Second)
+						time.Sleep(5 * time.Second)
 						cancel()
 					}()
 				},
