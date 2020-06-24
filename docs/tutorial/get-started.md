@@ -294,7 +294,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
 
     ```bash
     helm uninstall vald
-    ````
+    ```
 
 ## Deploy and Run standalone Vald Agent on kubernetes
 
@@ -470,6 +470,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
             }
             ```
             </details>
+
         - Wait until indexing finish.
             <details><summary>example code</summary><br>
 
@@ -479,10 +480,26 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
             time.Sleep(wt)
             ```
             </details>
+
+        - [Optional] Expressly create indexing instead of waiting auto indexing
+            Agent NGT can be set `auto_index_duration_limit` and `auto_index_check_duration` for auto indexing.
+            But, in this example case, you can create index without auto indexing via `CreateIndex()` mthod.
+            <detail><summary>example code</summary><br>
+
+            ```go
+        	_, err = client.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+        		PoolSize: uint32(insertCount),
+        	})
+        	if err != nil {
+        		glg.Fatal(err)
+        	}
+            ```
+            </detail>
+
     5. Search
-        
+
         - Search 10 neighbor vectors for each 20 test datasets and return list of neighbor vector.
-        
+
         - When getting approximate vectors, the Vald client sends search config and vector to the server via gRPC.
             <details><summary>example code</summary><br>
 
