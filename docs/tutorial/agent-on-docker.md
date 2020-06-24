@@ -145,6 +145,12 @@ This chapter will use NGT for the core method of Vald Agent.
     Note:
       - We recommend you to run `CreateIndex()` after `Insert()` without waiting auto indexing.
 
+
+    ```bash
+    # run example
+    go run main.go
+    ```
+
 1. Clean Up
 
     Remove the Vald Agent docker via `Ctrl+C`.
