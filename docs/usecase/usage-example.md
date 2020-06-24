@@ -6,7 +6,7 @@ Vald is the approximate nearest neighbor dense vector search engine, which use [
 In general, you cannot search your unstructured data using the inverted index, like images and videos.
 By using a vector search engine like Vald, you can search the corresponding unstructured data by converting them to the corresponding feature vectors and process in Vald.
 
-Here are the example of the general use cases of Vald or vector search engine.
+Here are some general use cases of Vald or vector search engine.
 
 1. Image and video processing
 
