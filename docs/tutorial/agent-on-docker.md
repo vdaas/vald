@@ -142,14 +142,12 @@ This chapter will use NGT for the core method of Vald Agent.
     The example code is the same as running an example only Vald agent on kubernetes.
     If you want to learn the detail of running an example, please refer to the tutorial of [standalone Vald Agent on kubernetes](../tutorial/get-started.md/#run-using-example-code-1).
 
-    Note:
-      - We recommend you to run `CreateIndex()` after `Insert()` without waiting auto indexing.
-
-
     ```bash
     # run example
     go run main.go
     ```
+    Note:
+      - We recommend you to run `CreateIndex()` after `Insert()` without waiting auto indexing.
 
 1. Clean Up
 
