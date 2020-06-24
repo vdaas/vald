@@ -24,29 +24,33 @@ import (
 
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func TestWithCache(t *testing.T) {
+	type T = dialer
 	type args struct {
 		c cache.Cache
 	}
 	type want struct {
-		want DialerOption
+		obj *T
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, DialerOption) error
+		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got DialerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+
+	defaultCheckFunc := func(w want, obj *T) error {
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
 		}
 		return nil
 	}
+
 	tests := []test{
 		// TODO test cases
 		/*
@@ -55,8 +59,9 @@ func TestWithCache(t *testing.T) {
 		       args: args {
 		           c: nil,
 		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
+		       want: want {
+		           obj: new(T),
+		       },
 		   },
 		*/
 
@@ -68,8 +73,9 @@ func TestWithCache(t *testing.T) {
 		           args: args {
 		           c: nil,
 		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
+		           want: want {
+		               obj: new(T),
+		           },
 		       }
 		   }(),
 		*/
@@ -77,46 +83,53 @@ func TestWithCache(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
 
 			got := WithCache(test.args.c)
-			if err := test.checkFunc(test.want, got); err != nil {
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestWithDNSRefreshDuration(t *testing.T) {
+	// Change interface type to the type of object you are testing
+	type T = dialer
 	type args struct {
 		dur string
 	}
 	type want struct {
-		want DialerOption
+		obj *T
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, DialerOption) error
+		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got DialerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+
+	defaultCheckFunc := func(w want, obj *T) error {
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
 		}
 		return nil
 	}
+
 	tests := []test{
 		// TODO test cases
 		/*
@@ -125,8 +138,9 @@ func TestWithDNSRefreshDuration(t *testing.T) {
 		       args: args {
 		           dur: "",
 		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
+		       want: want {
+		           obj: new(T),
+		       },
 		   },
 		*/
 
@@ -138,8 +152,9 @@ func TestWithDNSRefreshDuration(t *testing.T) {
 		           args: args {
 		           dur: "",
 		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
+		           want: want {
+		               obj: new(T),
+		           },
 		       }
 		   }(),
 		*/
@@ -147,6 +162,7 @@ func TestWithDNSRefreshDuration(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -156,37 +172,40 @@ func TestWithDNSRefreshDuration(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-
 			got := WithDNSRefreshDuration(test.args.dur)
-			if err := test.checkFunc(test.want, got); err != nil {
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestWithDNSCacheExpiration(t *testing.T) {
+	type T = dialer
 	type args struct {
 		dur string
 	}
 	type want struct {
-		want DialerOption
+		obj *T
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, DialerOption) error
+		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got DialerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+
+	defaultCheckFunc := func(w want, obj *T) error {
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
 		}
 		return nil
 	}
+
 	tests := []test{
 		// TODO test cases
 		/*
@@ -195,8 +214,9 @@ func TestWithDNSCacheExpiration(t *testing.T) {
 		       args: args {
 		           dur: "",
 		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
+		       want: want {
+		           obj: new(T),
+		       },
 		   },
 		*/
 
@@ -208,8 +228,9 @@ func TestWithDNSCacheExpiration(t *testing.T) {
 		           args: args {
 		           dur: "",
 		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
+		           want: want {
+		               obj: new(T),
+		           },
 		       }
 		   }(),
 		*/
@@ -217,46 +238,50 @@ func TestWithDNSCacheExpiration(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-
 			got := WithDNSCacheExpiration(test.args.dur)
-			if err := test.checkFunc(test.want, got); err != nil {
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestWithDialerTimeout(t *testing.T) {
+	type T = dialer
 	type args struct {
 		dur string
 	}
 	type want struct {
-		want DialerOption
+		obj *T
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, DialerOption) error
+		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got DialerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+	defaultCheckFunc := func(w want, obj *T) error {
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
 		}
 		return nil
 	}
+
 	tests := []test{
 		// TODO test cases
 		/*
@@ -265,8 +290,9 @@ func TestWithDialerTimeout(t *testing.T) {
 		       args: args {
 		           dur: "",
 		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
+		       want: want {
+		           obj: new(T),
+		       },
 		   },
 		*/
 
@@ -278,8 +304,9 @@ func TestWithDialerTimeout(t *testing.T) {
 		           args: args {
 		           dur: "",
 		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
+		           want: want {
+		               obj: new(T),
+		           },
 		       }
 		   }(),
 		*/
@@ -287,46 +314,51 @@ func TestWithDialerTimeout(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-
 			got := WithDialerTimeout(test.args.dur)
-			if err := test.checkFunc(test.want, got); err != nil {
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestWithDialerKeepAlive(t *testing.T) {
+	type T = dialer
 	type args struct {
 		dur string
 	}
 	type want struct {
-		want DialerOption
+		obj *T
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, DialerOption) error
+		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got DialerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+
+	defaultCheckFunc := func(w want, obj *T) error {
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
 		}
 		return nil
 	}
+
 	tests := []test{
 		// TODO test cases
 		/*
@@ -335,8 +367,9 @@ func TestWithDialerKeepAlive(t *testing.T) {
 		       args: args {
 		           dur: "",
 		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
+		       want: want {
+		           obj: new(T),
+		       },
 		   },
 		*/
 
@@ -348,8 +381,9 @@ func TestWithDialerKeepAlive(t *testing.T) {
 		           args: args {
 		           dur: "",
 		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
+		           want: want {
+		               obj: new(T),
+		           },
 		       }
 		   }(),
 		*/
@@ -357,6 +391,7 @@ func TestWithDialerKeepAlive(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -368,32 +403,35 @@ func TestWithDialerKeepAlive(t *testing.T) {
 			}
 
 			got := WithDialerKeepAlive(test.args.dur)
-			if err := test.checkFunc(test.want, got); err != nil {
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestWithTLS(t *testing.T) {
+	type T = dialer
 	type args struct {
 		cfg *tls.Config
 	}
 	type want struct {
-		want DialerOption
+		obj *T
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, DialerOption) error
+		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got DialerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+
+	defaultCheckFunc := func(w want, obj *T) error {
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
 		}
 		return nil
 	}
@@ -405,8 +443,9 @@ func TestWithTLS(t *testing.T) {
 		       args: args {
 		           cfg: nil,
 		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
+		       want: want {
+		           obj: new(T),
+		       },
 		   },
 		*/
 
@@ -418,8 +457,9 @@ func TestWithTLS(t *testing.T) {
 		           args: args {
 		           cfg: nil,
 		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
+		           want: want {
+		               obj: new(T),
+		           },
 		       }
 		   }(),
 		*/
@@ -427,6 +467,7 @@ func TestWithTLS(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -438,28 +479,31 @@ func TestWithTLS(t *testing.T) {
 			}
 
 			got := WithTLS(test.args.cfg)
-			if err := test.checkFunc(test.want, got); err != nil {
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestWithEnableDNSCache(t *testing.T) {
+	type T = dialer
 	type want struct {
-		want DialerOption
+		obj *T
 	}
 	type test struct {
 		name       string
 		want       want
-		checkFunc  func(want, DialerOption) error
+		checkFunc  func(want, *T) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got DialerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+
+	defaultCheckFunc := func(w want, obj *T) error {
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
 		}
 		return nil
 	}
@@ -468,8 +512,9 @@ func TestWithEnableDNSCache(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
+		       want: want {
+		           obj: new(T),
+		       },
 		   },
 		*/
 
@@ -478,8 +523,9 @@ func TestWithEnableDNSCache(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
+		           want: want {
+		               obj: new(T),
+		           },
 		       }
 		   }(),
 		*/
@@ -487,6 +533,7 @@ func TestWithEnableDNSCache(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -498,28 +545,31 @@ func TestWithEnableDNSCache(t *testing.T) {
 			}
 
 			got := WithEnableDNSCache()
-			if err := test.checkFunc(test.want, got); err != nil {
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestWithDisableDNSCache(t *testing.T) {
+	type T = dialer
 	type want struct {
-		want DialerOption
+		obj *T
 	}
 	type test struct {
 		name       string
 		want       want
-		checkFunc  func(want, DialerOption) error
+		checkFunc  func(want, *T) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got DialerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+
+	defaultCheckFunc := func(w want, obj *T) error {
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
 		}
 		return nil
 	}
@@ -528,8 +578,9 @@ func TestWithDisableDNSCache(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
+		       want: want {
+		           obj: new(T),
+		       },
 		   },
 		*/
 
@@ -538,8 +589,9 @@ func TestWithDisableDNSCache(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
+		           want: want {
+		               obj: new(T),
+		           },
 		       }
 		   }(),
 		*/
@@ -547,6 +599,7 @@ func TestWithDisableDNSCache(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -558,28 +611,31 @@ func TestWithDisableDNSCache(t *testing.T) {
 			}
 
 			got := WithDisableDNSCache()
-			if err := test.checkFunc(test.want, got); err != nil {
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestWithEnableDialerDualStack(t *testing.T) {
+	type T = dialer
 	type want struct {
-		want DialerOption
+		obj *T
 	}
 	type test struct {
 		name       string
 		want       want
-		checkFunc  func(want, DialerOption) error
+		checkFunc  func(want, *T) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got DialerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+
+	defaultCheckFunc := func(w want, obj *T) error {
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
 		}
 		return nil
 	}
@@ -588,8 +644,9 @@ func TestWithEnableDialerDualStack(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
+		       want: want {
+		           obj: new(T),
+		       },
 		   },
 		*/
 
@@ -598,8 +655,9 @@ func TestWithEnableDialerDualStack(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
+		           want: want {
+		               obj: new(T),
+		           },
 		       }
 		   }(),
 		*/
@@ -607,6 +665,7 @@ func TestWithEnableDialerDualStack(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -618,28 +677,31 @@ func TestWithEnableDialerDualStack(t *testing.T) {
 			}
 
 			got := WithEnableDialerDualStack()
-			if err := test.checkFunc(test.want, got); err != nil {
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestWithDisableDialerDualStack(t *testing.T) {
+	type T = dialer
 	type want struct {
-		want DialerOption
+		obj *T
 	}
 	type test struct {
 		name       string
 		want       want
-		checkFunc  func(want, DialerOption) error
+		checkFunc  func(want, *T) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got DialerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+
+	defaultCheckFunc := func(w want, obj *T) error {
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
 		}
 		return nil
 	}
@@ -648,8 +710,9 @@ func TestWithDisableDialerDualStack(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
+		       want: want {
+		           obj: new(T),
+		       },
 		   },
 		*/
 
@@ -658,8 +721,9 @@ func TestWithDisableDialerDualStack(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
+		           want: want {
+		               obj: new(T),
+		           },
 		       }
 		   }(),
 		*/
@@ -667,6 +731,7 @@ func TestWithDisableDialerDualStack(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -678,10 +743,11 @@ func TestWithDisableDialerDualStack(t *testing.T) {
 			}
 
 			got := WithDisableDialerDualStack()
-			if err := test.checkFunc(test.want, got); err != nil {
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
