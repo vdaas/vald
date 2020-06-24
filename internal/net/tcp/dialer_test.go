@@ -63,6 +63,13 @@ func TestNewDialer(t *testing.T) {
 			return errors.Errorf("got error = %+v, want %+v", err, w.err)
 		}
 
+		if w.wantDer == nil && gotDer == nil {
+			return nil
+		}
+		if w.wantDer == nil && gotDer != nil || w.wantDer != nil && gotDer == nil {
+			return errors.Errorf("got der: %+v, want der: %+v", gotDer, w.wantDer)
+		}
+
 		want := w.wantDer.(*dialer)
 		got := gotDer.(*dialer)
 		opts := []cmp.Option{cmp.AllowUnexported(*want),
@@ -134,7 +141,6 @@ func TestNewDialer(t *testing.T) {
 				args: args{
 					opts: []DialerOption{
 						WithTLS(tc),
-						// WithCache(c),
 						WithEnableDNSCache(),
 						WithDNSRefreshDuration("5s"),
 						WithDNSCacheExpiration("10s"),
@@ -155,6 +161,34 @@ func TestNewDialer(t *testing.T) {
 						cache:                 c,
 						tlsConfig:             tc,
 					},
+				},
+			}
+		}(),
+		func() test {
+			d := &net.Dialer{
+				Timeout:   time.Second * 30,
+				KeepAlive: time.Second * 30,
+				DualStack: true,
+				Control:   Control,
+			}
+			d.Resolver = &net.Resolver{
+				PreferGo: false,
+				Dial:     d.DialContext,
+			}
+			tc := new(tls.Config)
+
+			return test{
+				name: "return error when refresh duration > cache expiration and cache enabled",
+				args: args{
+					opts: []DialerOption{
+						WithTLS(tc),
+						WithEnableDNSCache(),
+						WithDNSRefreshDuration("50s"),
+						WithDNSCacheExpiration("10s"),
+					},
+				},
+				want: want{
+					err: errors.ErrInvalidDNSConfig(50*time.Second, 10*time.Second),
 				},
 			}
 		}(),

@@ -20,11 +20,11 @@ package tcp
 import (
 	"context"
 	"crypto/tls"
-	"errors"
 	"strings"
 	"time"
 
 	"github.com/vdaas/vald/internal/cache"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
@@ -58,10 +58,6 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 		opt(d)
 	}
 
-	if d.dnsRefreshDuration > d.dnsCacheExpiration {
-		return nil, errors.New("dnsRefreshDuration > dnsCacheExpiration")
-	}
-
 	d.der = &net.Dialer{
 		Timeout:   d.dialerTimeout,
 		KeepAlive: d.dialerKeepAlive,
@@ -87,6 +83,10 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 			Dial:     d.dialer,
 		}
 		return d, nil
+	}
+
+	if d.dnsRefreshDuration > d.dnsCacheExpiration {
+		return nil, errors.ErrInvalidDNSConfig(d.dnsRefreshDuration, d.dnsCacheExpiration)
 	}
 
 	if d.cache == nil {
