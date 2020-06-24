@@ -33,7 +33,7 @@ agent:
     # Check duration of automatic indexing.
     auto_index_duration_limit: 1m
     # The limit duration of automatic indexing.
-    auto_index_duration_limit: 10s
+    auto_index_check_duration: 10s
 
 gateway:
   enabled: false
