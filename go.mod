@@ -34,7 +34,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/cockroachdb/errors v0.0.0-00010101000000-000000000000
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
-	github.com/envoyproxy/protoc-gen-validate v0.1.0
+	github.com/envoyproxy/protoc-gen-validate v0.4.0
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-redis/redis/v7 v7.3.0
 	github.com/go-sql-driver/mysql v1.5.0
@@ -44,6 +44,7 @@ require (
 	github.com/google/gofuzz v1.1.0
 	github.com/gorilla/mux v1.7.1
 	github.com/hashicorp/go-version v1.2.0
+	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334 // indirect
 	github.com/json-iterator/go v1.1.9
 	github.com/klauspost/compress v1.10.6
 	github.com/kpango/fastime v1.0.16
@@ -51,6 +52,7 @@ require (
 	github.com/kpango/gache v1.2.1
 	github.com/kpango/glg v1.5.1
 	github.com/lucasb-eyer/go-colorful v1.0.3
+	github.com/lyft/protoc-gen-star v0.4.15 // indirect
 	github.com/pierrec/lz4/v3 v3.3.2
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
@@ -60,7 +62,6 @@ require (
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/goleak v1.0.0
 	gocloud.dev v0.19.0
-	golang.org/x/mod v0.3.0 // indirect
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
 	golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
 	golang.org/x/tools v0.0.0-20200610052024-8d7dbee4c8ae // indirect
