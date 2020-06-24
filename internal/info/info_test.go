@@ -406,12 +406,52 @@ func TestDetail_prepare(t *testing.T) {
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got *Detail) error {
-		w.want.BuildCPUInfoFlags = nil
-		got.BuildCPUInfoFlags = nil
-		if !reflect.DeepEqual(w.want, got) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+		if w.want.GitCommit != got.GitCommit {
+			return errors.Errorf("GitCommit got = %v, want %v", got.GitCommit, w.want.GitCommit)
+		}
+		if w.want.Version != got.Version {
+			return errors.Errorf("Version got = %v, want %v", got.Version, w.want.Version)
+		}
+		if w.want.BuildTime != got.BuildTime {
+			return errors.Errorf("BuildTime got = %v, want %v", got.BuildTime, w.want.BuildTime)
+		}
+		if w.want.GoVersion != got.GoVersion {
+			return errors.Errorf("GoVersion got = %v, want %v", got.GoVersion, w.want.GoVersion)
+		}
+		if w.want.GoOS != got.GoOS {
+			return errors.Errorf("GoOS got = %v, want %v", got.GoOS, w.want.GoOS)
+		}
+		if w.want.GoArch != got.GoArch {
+			return errors.Errorf("GoArch got = %v, want %v", got.GoArch, w.want.GoArch)
+		}
+		if w.want.CGOEnabled != got.CGOEnabled {
+			return errors.Errorf("CGOEnabled got = %v, want %v", got.CGOEnabled, w.want.CGOEnabled)
+		}
+		if w.want.NGTVersion != got.NGTVersion {
+			return errors.Errorf("NGTVersion got = %v, want %v", got.NGTVersion, w.want.NGTVersion)
+		}
+		if len(w.want.StackTrace) != 0 {
+			return errors.Errorf("StackTrace count got = %v, want %v", len(got.StackTrace), 0)
+		}
+		if want, got := w.want.BuildCPUInfoFlags, got.BuildCPUInfoFlags; len(want) == len(got) {
+			for i := range want {
+				if got[i] != want[i] {
+					return errors.Errorf("BuildCPUInfoFlags[%d] got = %v, want %v", i, got[i], want[i])
+				}
+			}
+		} else {
+			return errors.Errorf("BuildCPUInfoFlags count = %v, want: %v", len(got), len(want))
 		}
 		return nil
+	}
+	defaultBeforeFunc := func() {
+		Version = ""
+		GitCommit = "gitcommit"
+		BuildTime = "1s"
+		CGOEnabled = "true"
+		NGTVersion = "v1.11.6"
+		BuildCPUInfoFlags = "\t\tavx512f avx512dq\t"
+
 	}
 	tests := []test{
 		{
@@ -423,6 +463,7 @@ func TestDetail_prepare(t *testing.T) {
 					BuildTime:  "1s",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
 					CGOEnabled: "true",
 					NGTVersion: "v1.11.6",
 					BuildCPUInfoFlags: []string{
@@ -430,22 +471,192 @@ func TestDetail_prepare(t *testing.T) {
 					},
 				},
 			},
-			beforeFunc: func() {
-				GitCommit = "gitcommit"
-				Version = ""
-				BuildTime = "1s"
-				CGOEnabled = "true"
-				NGTVersion = "v1.11.6"
-				BuildCPUInfoFlags = "\t\tavx512f avx512dq\t"
+		},
+
+		{
+			name: "GitCommit and Version field set nothing when GitCommit is `internal`",
+			fields: fields{
+				GitCommit: "internal",
+			},
+			want: want{
+				want: &Detail{
+					GitCommit:  "internal",
+					Version:    "gitcommit",
+					BuildTime:  "1s",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					CGOEnabled: "true",
+					NGTVersion: "v1.11.6",
+					BuildCPUInfoFlags: []string{
+						"avx512f", "avx512dq",
+					},
+				},
+			},
+		},
+
+		{
+			name: "BuildTime field set nothing when BuildTime is `10`",
+			fields: fields{
+				BuildTime: "10s",
+			},
+			want: want{
+				want: &Detail{
+					GitCommit:  "master",
+					Version:    "gitcommit",
+					BuildTime:  "10s",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					CGOEnabled: "true",
+					NGTVersion: "v1.11.6",
+					BuildCPUInfoFlags: []string{
+						"avx512f", "avx512dq",
+					},
+				},
+			},
+		},
+
+		{
+			name: "GoVersion field set nothing when GoVersion is `1.14`",
+			fields: fields{
+				GoVersion: "1.14",
+			},
+			want: want{
+				want: &Detail{
+					GitCommit:  "master",
+					Version:    "gitcommit",
+					BuildTime:  "1s",
+					GoVersion:  "1.14",
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					CGOEnabled: "true",
+					NGTVersion: "v1.11.6",
+					BuildCPUInfoFlags: []string{
+						"avx512f", "avx512dq",
+					},
+				},
+			},
+		},
+
+		{
+			name: "GoOS field set nothing when GoOS is `linux`",
+			fields: fields{
+				GoOS: "linux",
+			},
+			want: want{
+				want: &Detail{
+					GitCommit:  "master",
+					Version:    "gitcommit",
+					BuildTime:  "1s",
+					GoVersion:  runtime.Version(),
+					GoOS:       "linux",
+					GoArch:     runtime.GOARCH,
+					CGOEnabled: "true",
+					NGTVersion: "v1.11.6",
+					BuildCPUInfoFlags: []string{
+						"avx512f", "avx512dq",
+					},
+				},
+			},
+		},
+
+		{
+			name: "GoArch fields set nothing when GoArch is `amd`",
+			fields: fields{
+				GoArch: "amd",
+			},
+			want: want{
+				want: &Detail{
+					GitCommit:  "master",
+					Version:    "gitcommit",
+					BuildTime:  "1s",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     "amd",
+					CGOEnabled: "true",
+					NGTVersion: "v1.11.6",
+					BuildCPUInfoFlags: []string{
+						"avx512f", "avx512dq",
+					},
+				},
+			},
+		},
+
+		{
+			name: "CGOEnabled field set nothing when CGOEnabled is `1`",
+			fields: fields{
+				CGOEnabled: "1",
+			},
+			want: want{
+				want: &Detail{
+					GitCommit:  "master",
+					Version:    "gitcommit",
+					BuildTime:  "1s",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					CGOEnabled: "1",
+					NGTVersion: "v1.11.6",
+					BuildCPUInfoFlags: []string{
+						"avx512f", "avx512dq",
+					},
+				},
+			},
+		},
+
+		{
+			name: "NGTVersion field set nothing when NGTVersion is `v1.11.5`",
+			fields: fields{
+				NGTVersion: "v1.11.5",
+			},
+			want: want{
+				want: &Detail{
+					GitCommit:  "master",
+					Version:    "gitcommit",
+					BuildTime:  "1s",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					CGOEnabled: "true",
+					NGTVersion: "v1.11.5",
+					BuildCPUInfoFlags: []string{
+						"avx512f", "avx512dq",
+					},
+				},
+			},
+		},
+
+		{
+			name: "BuildCPUInfoFlags field set nothing when BuildCPUInfoFlags is `test`",
+			fields: fields{
+				BuildCPUInfoFlags: []string{"test"},
+			},
+			want: want{
+				want: &Detail{
+					GitCommit:  "master",
+					Version:    "gitcommit",
+					BuildTime:  "1s",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					CGOEnabled: "true",
+					NGTVersion: "v1.11.6",
+					BuildCPUInfoFlags: []string{
+						"test",
+					},
+				},
 			},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			if test.beforeFunc != nil {
-				test.beforeFunc()
+			if test.beforeFunc == nil {
+				test.beforeFunc = defaultBeforeFunc
 			}
+			test.beforeFunc()
+
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
@@ -479,44 +690,86 @@ func TestInit(t *testing.T) {
 		name string
 	}
 	type want struct {
+		want *Detail
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want) error
+		checkFunc  func(want, *Detail) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(w want, got *Detail) error {
+		if w.want.GitCommit != got.GitCommit {
+			return errors.Errorf("GitCommit got = %v, want %v", got.GitCommit, w.want.GitCommit)
+		}
+		if w.want.Version != got.Version {
+			return errors.Errorf("Version got = %v, want %v", got.Version, w.want.Version)
+		}
+		if w.want.BuildTime != got.BuildTime {
+			return errors.Errorf("BuildTime got = %v, want %v", got.BuildTime, w.want.BuildTime)
+		}
+		if w.want.GoVersion != got.GoVersion {
+			return errors.Errorf("GoVersion got = %v, want %v", got.GoVersion, w.want.GoVersion)
+		}
+		if w.want.GoOS != got.GoOS {
+			return errors.Errorf("GoOS got = %v, want %v", got.GoOS, w.want.GoOS)
+		}
+		if w.want.GoArch != got.GoArch {
+			return errors.Errorf("GoArch got = %v, want %v", got.GoArch, w.want.GoArch)
+		}
+		if w.want.CGOEnabled != got.CGOEnabled {
+			return errors.Errorf("CGOEnabled got = %v, want %v", got.CGOEnabled, w.want.CGOEnabled)
+		}
+		if w.want.NGTVersion != got.NGTVersion {
+			return errors.Errorf("NGTVersion got = %v, want %v", got.NGTVersion, w.want.NGTVersion)
+		}
+		if len(w.want.StackTrace) != 0 {
+			return errors.Errorf("StackTrace count got = %v, want %v", len(got.StackTrace), 0)
+		}
+		if want, got := w.want.BuildCPUInfoFlags, got.BuildCPUInfoFlags; len(want) == len(got) {
+			for i := range want {
+				if got[i] != want[i] {
+					return errors.Errorf("BuildCPUInfoFlags[%d] got = %v, want %v", i, got[i], want[i])
+				}
+			}
+		} else {
+			return errors.Errorf("BuildCPUInfoFlags count = %v, want: %v", len(got), len(want))
+		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           name: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           name: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "set success when all fields are empty",
+			args: args{
+				name: "gateway",
+			},
+			want: want{
+				want: &Detail{
+					GitCommit:  "gitcommit",
+					ServerName: "gateway",
+					Version:    "gitcommit",
+					BuildTime:  "1s",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					CGOEnabled: "true",
+					NGTVersion: "v1.11.6",
+					BuildCPUInfoFlags: []string{
+						"avx512f", "avx512dq",
+					},
+				},
+			},
+			beforeFunc: func(args) {
+				GitCommit = "gitcommit"
+				Version = ""
+				BuildTime = "1s"
+				CGOEnabled = "true"
+				NGTVersion = "v1.11.6"
+				BuildCPUInfoFlags = "\t\tavx512f avx512dq\t"
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -532,7 +785,7 @@ func TestInit(t *testing.T) {
 			}
 
 			Init(test.args.name)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(test.want, &detail); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
