@@ -21,8 +21,10 @@ import (
 	"crypto/tls"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/cache"
+	"github.com/vdaas/vald/internal/cache/gache"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
@@ -52,38 +54,36 @@ func TestWithCache(t *testing.T) {
 	}
 
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           c: nil,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           c: nil,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		func() test {
+			c := gache.New()
+			return test{
+				name: "set cache success",
+				args: args{
+					c: c,
+				},
+				want: want{
+					obj: &T{
+						cache: c,
+					},
+				},
+			}
+		}(),
+		{
+			name: "set cache to nil success",
+			args: args{
+				c: nil,
+			},
+			want: want{
+				obj: &T{
+					cache: nil,
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -131,38 +131,41 @@ func TestWithDNSRefreshDuration(t *testing.T) {
 	}
 
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dur: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dur: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set success when dur is valid",
+			args: args{
+				dur: "10s",
+			},
+			want: want{
+				obj: &T{
+					dnsRefreshDuration:    10 * time.Second,
+					dnsRefreshDurationStr: "10s",
+				},
+			},
+		},
+		{
+			name: "set success when dur is invalid",
+			args: args{
+				dur: "dummy",
+			},
+			want: want{
+				obj: &T{
+					dnsRefreshDuration:    30 * time.Minute,
+					dnsRefreshDurationStr: "30m",
+				},
+			},
+		},
+		{
+			name: "set success when dur is empty",
+			want: want{
+				obj: &T{},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -207,38 +210,43 @@ func TestWithDNSCacheExpiration(t *testing.T) {
 	}
 
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dur: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dur: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set success when dur is valid",
+			args: args{
+				dur: "10s",
+			},
+			want: want{
+				obj: &T{
+					dnsCacheExpiration:    10 * time.Second,
+					dnsCacheExpirationStr: "10s",
+					dnsCache:              true,
+				},
+			},
+		},
+		{
+			name: "set success when dur is invalid",
+			args: args{
+				dur: "dummy",
+			},
+			want: want{
+				obj: &T{
+					dnsCacheExpiration:    1 * time.Hour,
+					dnsCacheExpirationStr: "1h",
+					dnsCache:              true,
+				},
+			},
+		},
+		{
+			name: "set success when dur is empty",
+			want: want{
+				obj: &T{},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -283,38 +291,39 @@ func TestWithDialerTimeout(t *testing.T) {
 	}
 
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dur: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dur: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set success when dur is valid",
+			args: args{
+				dur: "10s",
+			},
+			want: want{
+				obj: &T{
+					dialerTimeout: 10 * time.Second,
+				},
+			},
+		},
+		{
+			name: "set success when dur is invalid",
+			args: args{
+				dur: "dummy",
+			},
+			want: want{
+				obj: &T{
+					dialerTimeout: 30 * time.Second,
+				},
+			},
+		},
+		{
+			name: "set success when dur is empty",
+			want: want{
+				obj: &T{},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -360,38 +369,39 @@ func TestWithDialerKeepAlive(t *testing.T) {
 	}
 
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dur: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dur: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set success when dur is valid",
+			args: args{
+				dur: "10s",
+			},
+			want: want{
+				obj: &T{
+					dialerKeepAlive: 10 * time.Second,
+				},
+			},
+		},
+		{
+			name: "set success when dur is invalid",
+			args: args{
+				dur: "dummy",
+			},
+			want: want{
+				obj: &T{
+					dialerKeepAlive: 30 * time.Second,
+				},
+			},
+		},
+		{
+			name: "set success when dur is empty",
+			want: want{
+				obj: &T{},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -436,38 +446,31 @@ func TestWithTLS(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           cfg: nil,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           cfg: nil,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		func() test {
+			cfg := new(tls.Config)
+			return test{
+				name: "set success when cfg is not nil",
+				args: args{
+					cfg: cfg,
+				},
+				want: want{
+					obj: &T{
+						tlsConfig: cfg,
+					},
+				},
+			}
+		}(),
+		{
+			name: "set success when cfg is nil",
+			want: want{
+				obj: &T{},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -508,32 +511,19 @@ func TestWithEnableDNSCache(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "dnsCache enabled",
+			want: want{
+				obj: &T{
+					dnsCache: true,
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -574,32 +564,19 @@ func TestWithDisableDNSCache(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "dnsCache disabled",
+			want: want{
+				obj: &T{
+					dnsCache: false,
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -640,32 +617,19 @@ func TestWithEnableDialerDualStack(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "DialerDualStack enabled",
+			want: want{
+				obj: &T{
+					dialerDualStack: true,
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -706,32 +670,19 @@ func TestWithDisableDialerDualStack(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "DialerDualStack disabled",
+			want: want{
+				obj: &T{
+					dialerDualStack: false,
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
