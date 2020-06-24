@@ -216,7 +216,7 @@ func TestDo(t *testing.T) {
 					"test", "-c=./runner.go",
 				}
 				go func() {
-					time.Sleep(5 * time.Second)
+					time.Sleep(2 * time.Second)
 					syscall.Kill(syscall.Getpid(), syscall.SIGINT)
 				}()
 			},
@@ -337,20 +337,32 @@ func TestRun(t *testing.T) {
 				},
 				beforeFunc: func(args) {
 					go func() {
-						time.Sleep(5 * time.Second)
+						time.Sleep(2 * time.Second)
 						cancel()
 					}()
 				},
 				want: want{
 					err: func() (err error) {
-						emap := map[error]int{
-							errors.New("err1"): 1,
-							errors.New("err2"): 1,
-							errors.New("err3"): 1,
+						details := []struct {
+							err error
+							cnt int
+						}{
+							{
+								err: errors.New("err1"),
+								cnt: 1,
+							},
+							{
+								err: errors.New("err2"),
+								cnt: 1,
+							},
+							{
+								err: errors.New("err3"),
+								cnt: 1,
+							},
 						}
 
-						for ierr, n := range emap {
-							err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", ierr.Error(), n)
+						for _, det := range details {
+							err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", det.err.Error(), det.cnt)
 						}
 
 						return errors.ErrDaemonStopFailed(err)
@@ -392,19 +404,28 @@ func TestRun(t *testing.T) {
 				},
 				beforeFunc: func(args) {
 					go func() {
-						time.Sleep(5 * time.Second)
+						time.Sleep(2 * time.Second)
 						cancel()
 					}()
 				},
 				want: want{
 					err: func() (err error) {
-						emap := map[error]int{
-							errors.New("err1"): 2,
-							errors.New("err2"): 1,
+						details := []struct {
+							err error
+							cnt int
+						}{
+							{
+								err: errors.New("err1"),
+								cnt: 2,
+							},
+							{
+								err: errors.New("err2"),
+								cnt: 1,
+							},
 						}
 
-						for ierr, n := range emap {
-							err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", ierr.Error(), n)
+						for _, detail := range details {
+							err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", detail.err.Error(), detail.cnt)
 						}
 
 						return errors.ErrDaemonStopFailed(err)
