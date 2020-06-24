@@ -19,6 +19,7 @@ package info
 
 import (
 	"reflect"
+	"runtime"
 	"sync"
 	"testing"
 
@@ -392,69 +393,52 @@ func TestDetail_prepare(t *testing.T) {
 		NGTVersion        string
 		BuildCPUInfoFlags []string
 		StackTrace        []StackTrace
-		PrepOnce          sync.Once
 	}
 	type want struct {
+		want *Detail
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want) error
+		checkFunc  func(want, *Detail) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(w want, got *Detail) error {
+		w.want.BuildCPUInfoFlags = nil
+		got.BuildCPUInfoFlags = nil
+		if !reflect.DeepEqual(w.want, got) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Version: "",
-		           ServerName: "",
-		           GitCommit: "",
-		           BuildTime: "",
-		           GoVersion: "",
-		           GoOS: "",
-		           GoArch: "",
-		           CGOEnabled: "",
-		           NGTVersion: "",
-		           BuildCPUInfoFlags: nil,
-		           StackTrace: nil,
-		           PrepOnce: sync.Once{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Version: "",
-		           ServerName: "",
-		           GitCommit: "",
-		           BuildTime: "",
-		           GoVersion: "",
-		           GoOS: "",
-		           GoArch: "",
-		           CGOEnabled: "",
-		           NGTVersion: "",
-		           BuildCPUInfoFlags: nil,
-		           StackTrace: nil,
-		           PrepOnce: sync.Once{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "set success when all fields are empty",
+			want: want{
+				want: &Detail{
+					GitCommit:  "master",
+					Version:    "gitcommit",
+					BuildTime:  "1s",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					CGOEnabled: "true",
+					NGTVersion: "v1.11.6",
+					BuildCPUInfoFlags: []string{
+						"avx512f", "avx512dq",
+					},
+				},
+			},
+			beforeFunc: func() {
+				GitCommit = "gitcommit"
+				Version = ""
+				BuildTime = "1s"
+				CGOEnabled = "true"
+				NGTVersion = "v1.11.6"
+				BuildCPUInfoFlags = "\t\tavx512f avx512dq\t"
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -480,11 +464,10 @@ func TestDetail_prepare(t *testing.T) {
 				NGTVersion:        test.fields.NGTVersion,
 				BuildCPUInfoFlags: test.fields.BuildCPUInfoFlags,
 				StackTrace:        test.fields.StackTrace,
-				PrepOnce:          test.fields.PrepOnce,
 			}
 
 			d.prepare()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(test.want, d); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
