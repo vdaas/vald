@@ -1,7 +1,9 @@
 # Use cases
 
 This document will introduce you to the example of what Vald can do.
-Vald is the approximate nearest neighbor dense vector search engine. Vald supports the general use case of the similarity vector search engine, like faiss.
+Vald is the approximate nearest neighbor dense vector search engine, which use [NGT](https://github.com/yahoojapan/NGT) as the core engine of Vald, and Vald manage to intergrate with kubernetes.
+In general, you cannot search your unstructed data using inverted index, like images and videos.
+By using a vector search engine like Vald, you can search the correspoinding unstructed data by converting them to the corresponding feature vectors and process in Vald.
 
 Here is the example of the use cases of Vald.
 
