@@ -116,11 +116,6 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 		if err != nil {
 			log.Errorf("restoring failed: %s", err)
 
-			if errors.IsErrBlobNoSuchBucket(err) ||
-				errors.IsErrBlobNoSuchKey(err) {
-				return nil, nil
-			}
-
 			return nil, err
 		}
 
