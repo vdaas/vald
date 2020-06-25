@@ -21,6 +21,7 @@ import (
 	"context"
 	"crypto/tls"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/cache"
@@ -50,6 +51,7 @@ type dialer struct {
 	dialerDualStack       bool
 	der                   *net.Dialer
 	dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
+	reqCnt                uint64
 }
 
 func NewDialer(opts ...DialerOption) (der Dialer, err error) {
@@ -151,34 +153,56 @@ func (d *dialer) DialContext(ctx context.Context, network, address string) (net.
 	return d.GetDialer()(ctx, network, address)
 }
 
-func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (
-	conn net.Conn, err error) {
+func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn net.Conn, err error) {
 	sep := strings.LastIndex(addr, ":")
-
 	if sep < 0 {
 		sep = len(addr)
 	}
+	host := addr[:sep]
+	port := addr[sep:] // includes ":" char
 
-	ips, err := d.lookup(dctx, addr[:sep])
-	if err == nil {
-		for _, ip := range ips {
-			conn, err = d.der.DialContext(dctx, network, ip+addr[sep:])
-			if err == nil {
-				if d.tlsConfig != nil {
-					return tls.Client(conn, d.tlsConfig), nil
-				}
-				return conn, nil
-			}
-			if conn != nil {
-				conn.Close()
+	if ips, err := d.lookup(dctx, host); err == nil {
+		cnt := int(d.getAndAddReqCnt()) % len(ips)
+
+		for i := cnt; i < len(ips); i++ {
+			if conn, err := d.dial(dctx, network, ips[i]+port); err == nil {
+				return conn, err
 			}
 		}
-		d.cache.Delete(addr[:sep])
+		if cnt > 1 {
+			for i := 0; i < cnt; i++ {
+				if conn, err := d.dial(dctx, network, ips[i]+port); err == nil {
+					return conn, err
+				}
+			}
+		}
+		d.cache.Delete(host)
 	}
 
-	conn, err = d.der.DialContext(dctx, network, addr)
+	// TODO should use lookup
+	return d.dial(dctx, network, addr)
+}
+
+func (d *dialer) dial(ctx context.Context, network string, addr string) (net.Conn, error) {
+	conn, err := d.der.DialContext(ctx, network, addr)
+	if err != nil {
+		if conn != nil {
+			conn.Close()
+		}
+		return nil, err
+	}
+
 	if d.tlsConfig != nil {
 		return tls.Client(conn, d.tlsConfig), nil
 	}
-	return
+	return conn, nil
+}
+
+func (d *dialer) getAndAddReqCnt() uint64 {
+	for {
+		i := atomic.LoadUint64(&d.reqCnt)
+		if atomic.CompareAndSwapUint64(&d.reqCnt, i, i+1) {
+			return i
+		}
+	}
 }
