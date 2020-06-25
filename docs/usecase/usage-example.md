@@ -4,7 +4,8 @@ This document will introduce you to the example of what Vald can do.
 Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine, which uses [NGT](https://github.com/yahoojapan/NGT) as the core engine of Vald, and Vald manages to integrate with Kubernetes.
 
 In general, you cannot search your unstructured data using the inverted index, like images and videos.
-By using a vector search engine like Vald, you can search the corresponding unstructured data by converting them to the corresponding feature vectors and process in Vald.
+By applying the model like BERT, you can convert your unstructured data into vectors.
+After converting them into vectors, you can insert it to Vald and process them in Vald.
 
 Here are some general use cases of Vald or vector search engine.
 
@@ -54,6 +55,8 @@ Here are some general use cases of Vald or vector search engine.
     1. AI malware detection
     2. Price optimization
     3. Social analysis
+
+## Advanced usecase
 
 Besides the general use case of Vald or vector search engine, Vald supports a user-defined filter that the user can customize the filter to filter the specific result.
 
