@@ -21,7 +21,6 @@ import (
 	"context"
 	"crypto/tls"
 	"strings"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/cache"
@@ -52,6 +51,11 @@ type dialer struct {
 	der                   *net.Dialer
 	dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
 	reqCnt                uint64
+}
+
+type dialerCache struct {
+	ips    []string
+	curIdx int
 }
 
 func NewDialer(opts ...DialerOption) (der Dialer, err error) {
@@ -123,26 +127,6 @@ func (d *dialer) GetDialer() func(ctx context.Context, network, addr string) (ne
 	return d.dialer
 }
 
-func (d *dialer) lookup(ctx context.Context, addr string) (ips []string, err error) {
-	cache, ok := d.cache.Get(addr)
-	if ok {
-		return cache.([]string), nil
-	}
-
-	r, err := d.der.Resolver.LookupIPAddr(ctx, addr)
-	if err != nil {
-		return nil, err
-	}
-
-	ips = make([]string, len(r))
-	for i, ip := range r {
-		ips[i] = ip.String()
-	}
-
-	d.cache.Set(addr, ips)
-	return ips, nil
-}
-
 func (d *dialer) StartDialerCache(ctx context.Context) {
 	if d.dnsCache && d.cache != nil {
 		d.cache.Start(ctx)
@@ -161,26 +145,43 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 	host := addr[:sep]
 	port := addr[sep:] // includes ":" char
 
-	if ips, err := d.lookup(dctx, host); err == nil {
-		cnt := int(d.getAndAddReqCnt()) % len(ips)
+	if dc, err := d.lookup(dctx, host); err == nil {
+		ipLen := len(dc.ips)
+		idx := dc.curIdx
 
-		for i := cnt; i < len(ips); i++ {
-			if conn, err := d.dial(dctx, network, ips[i]+port); err == nil {
-				return conn, err
+		for i := 1; i <= ipLen; i++ {
+			idx = (idx + i) % ipLen
+			if conn, err := d.dial(dctx, network, dc.ips[idx]+port); err == nil {
+				dc.curIdx = idx
+				return conn, nil
 			}
 		}
-		if cnt > 1 {
-			for i := 0; i < cnt; i++ {
-				if conn, err := d.dial(dctx, network, ips[i]+port); err == nil {
-					return conn, err
-				}
-			}
-		}
-		d.cache.Delete(host)
 	}
 
-	// TODO should use lookup
 	return d.dial(dctx, network, addr)
+}
+
+func (d *dialer) lookup(ctx context.Context, addr string) (*dialerCache, error) {
+	cache, ok := d.cache.Get(addr)
+	if ok {
+		return cache.(*dialerCache), nil
+	}
+
+	r, err := d.der.Resolver.LookupIPAddr(ctx, addr)
+	if err != nil {
+		return nil, err
+	}
+
+	ips := make([]string, len(r))
+	for i, ip := range r {
+		ips[i] = ip.String()
+	}
+
+	dc := &dialerCache{
+		ips: ips,
+	}
+	d.cache.Set(addr, dc)
+	return dc, nil
 }
 
 func (d *dialer) dial(ctx context.Context, network string, addr string) (net.Conn, error) {
@@ -196,13 +197,4 @@ func (d *dialer) dial(ctx context.Context, network string, addr string) (net.Con
 		return tls.Client(conn, d.tlsConfig), nil
 	}
 	return conn, nil
-}
-
-func (d *dialer) getAndAddReqCnt() uint64 {
-	for {
-		i := atomic.LoadUint64(&d.reqCnt)
-		if atomic.CompareAndSwapUint64(&d.reqCnt, i, i+1) {
-			return i
-		}
-	}
 }
