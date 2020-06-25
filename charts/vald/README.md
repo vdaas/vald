@@ -3,7 +3,17 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.42`
+Current chart version is `v0.0.43`
+
+Table of Contents
+---
+
+- [Install](#install)
+- [Configuration](#configuration)
+    - [Overview](#overview)
+    - [Parameters](#parameters)
+- [Miscellaneous](#miscellaneous)
+    - [Standalone Vald agent NGT deployment](#standalone-vald-agent-ngt-deployment)
 
 Install
 ---
@@ -115,6 +125,7 @@ Configuration
 | agent.sidecar.config.blob_storage.s3.enable_ssl | bool | `true` | enable ssl for s3 session |
 | agent.sidecar.config.blob_storage.s3.endpoint | string | `""` | s3 endpoint |
 | agent.sidecar.config.blob_storage.s3.force_path_style | bool | `false` | use path-style addressing |
+| agent.sidecar.config.blob_storage.s3.max_chunk_size | string | `"64mb"` | s3 download max chunk size |
 | agent.sidecar.config.blob_storage.s3.max_part_size | string | `"64mb"` | s3 multipart upload max part size |
 | agent.sidecar.config.blob_storage.s3.max_retries | int | `3` | maximum number of retries of s3 client |
 | agent.sidecar.config.blob_storage.s3.region | string | `""` | s3 region |
@@ -164,6 +175,7 @@ Configuration
 | agent.sidecar.config.restore_backoff.jitter_limit | string | `"10s"` | restore backoff jitter limit |
 | agent.sidecar.config.restore_backoff.maximum_duration | string | `"1m"` | restore backoff maximum duration |
 | agent.sidecar.config.restore_backoff.retry_count | int | `100` | restore backoff retry count |
+| agent.sidecar.config.restore_backoff_enabled | bool | `false` | restore backoff enabled |
 | agent.sidecar.enabled | bool | `false` | sidecar enabled |
 | agent.sidecar.env | list | `[{"name":"MY_POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"AWS_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"access-key","name":"aws-secret"}}},{"name":"AWS_SECRET_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"secret-access-key","name":"aws-secret"}}}]` | environment variables |
 | agent.sidecar.image.pullPolicy | string | `"Always"` | image pull policy |
@@ -404,7 +416,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.42"` | docker image tag |
+| defaults.image.tag | string | `"v0.0.43"` | docker image tag |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
 | defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg`. |

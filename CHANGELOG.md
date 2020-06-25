@@ -1,5 +1,37 @@
 # CHANGELOG
 
+## v0.0.43
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.43`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.43`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.43`
+gateway | `docker pull vdaas/vald-gateway:v0.0.43`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.43`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.43`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.43`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.43`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.43`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.43`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.43`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.43)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.43/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.43/charts/vald-helm-operator/README.md)
+
+### Changes
+- Revise S3 reader/writer: compatible with IBM Cloud Object Storage ([#509](https://github.com/vdaas/vald/pull/509))
+- :bug: Close [#502](https://github.com/vdaas/vald/pull/502) / Fix roundtrip error handling (#508)
+- Feature/drawio ([#500](https://github.com/vdaas/vald/pull/500))
+- Added test case for `internal/errorgroup`  ([#494](https://github.com/vdaas/vald/pull/494))
+- Update Helm Chart info ([#496](https://github.com/vdaas/vald/pull/496))
+- Revise triggers of workflow run & Fix reading changelogs from PR comments ([#495](https://github.com/vdaas/vald/pull/495))
+
+
 ## v0.0.42
 
 ### Docker images
