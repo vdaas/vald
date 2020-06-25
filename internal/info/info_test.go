@@ -23,6 +23,8 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vdaas/vald/internal/errors"
 )
 
@@ -406,41 +408,11 @@ func TestDetail_prepare(t *testing.T) {
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got *Detail) error {
-		if w.want.GitCommit != got.GitCommit {
-			return errors.Errorf("GitCommit got = %v, want %v", got.GitCommit, w.want.GitCommit)
+		opts := []cmp.Option{
+			cmpopts.IgnoreFields(*w.want, "PrepOnce"),
 		}
-		if w.want.Version != got.Version {
-			return errors.Errorf("Version got = %v, want %v", got.Version, w.want.Version)
-		}
-		if w.want.BuildTime != got.BuildTime {
-			return errors.Errorf("BuildTime got = %v, want %v", got.BuildTime, w.want.BuildTime)
-		}
-		if w.want.GoVersion != got.GoVersion {
-			return errors.Errorf("GoVersion got = %v, want %v", got.GoVersion, w.want.GoVersion)
-		}
-		if w.want.GoOS != got.GoOS {
-			return errors.Errorf("GoOS got = %v, want %v", got.GoOS, w.want.GoOS)
-		}
-		if w.want.GoArch != got.GoArch {
-			return errors.Errorf("GoArch got = %v, want %v", got.GoArch, w.want.GoArch)
-		}
-		if w.want.CGOEnabled != got.CGOEnabled {
-			return errors.Errorf("CGOEnabled got = %v, want %v", got.CGOEnabled, w.want.CGOEnabled)
-		}
-		if w.want.NGTVersion != got.NGTVersion {
-			return errors.Errorf("NGTVersion got = %v, want %v", got.NGTVersion, w.want.NGTVersion)
-		}
-		if len(w.want.StackTrace) != 0 {
-			return errors.Errorf("StackTrace count got = %v, want %v", len(got.StackTrace), 0)
-		}
-		if want, got := w.want.BuildCPUInfoFlags, got.BuildCPUInfoFlags; len(want) == len(got) {
-			for i := range want {
-				if got[i] != want[i] {
-					return errors.Errorf("BuildCPUInfoFlags[%d] got = %v, want %v", i, got[i], want[i])
-				}
-			}
-		} else {
-			return errors.Errorf("BuildCPUInfoFlags count = %v, want: %v", len(got), len(want))
+		if diff := cmp.Diff(*w.want, *got, opts...); len(diff) != 0 {
+			return errors.Errorf("err: %s", diff)
 		}
 		return nil
 	}
@@ -701,41 +673,11 @@ func TestInit(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got *Detail) error {
-		if w.want.GitCommit != got.GitCommit {
-			return errors.Errorf("GitCommit got = %v, want %v", got.GitCommit, w.want.GitCommit)
+		opts := []cmp.Option{
+			cmpopts.IgnoreFields(*w.want, "PrepOnce"),
 		}
-		if w.want.Version != got.Version {
-			return errors.Errorf("Version got = %v, want %v", got.Version, w.want.Version)
-		}
-		if w.want.BuildTime != got.BuildTime {
-			return errors.Errorf("BuildTime got = %v, want %v", got.BuildTime, w.want.BuildTime)
-		}
-		if w.want.GoVersion != got.GoVersion {
-			return errors.Errorf("GoVersion got = %v, want %v", got.GoVersion, w.want.GoVersion)
-		}
-		if w.want.GoOS != got.GoOS {
-			return errors.Errorf("GoOS got = %v, want %v", got.GoOS, w.want.GoOS)
-		}
-		if w.want.GoArch != got.GoArch {
-			return errors.Errorf("GoArch got = %v, want %v", got.GoArch, w.want.GoArch)
-		}
-		if w.want.CGOEnabled != got.CGOEnabled {
-			return errors.Errorf("CGOEnabled got = %v, want %v", got.CGOEnabled, w.want.CGOEnabled)
-		}
-		if w.want.NGTVersion != got.NGTVersion {
-			return errors.Errorf("NGTVersion got = %v, want %v", got.NGTVersion, w.want.NGTVersion)
-		}
-		if len(w.want.StackTrace) != 0 {
-			return errors.Errorf("StackTrace count got = %v, want %v", len(got.StackTrace), 0)
-		}
-		if want, got := w.want.BuildCPUInfoFlags, got.BuildCPUInfoFlags; len(want) == len(got) {
-			for i := range want {
-				if got[i] != want[i] {
-					return errors.Errorf("BuildCPUInfoFlags[%d] got = %v, want %v", i, got[i], want[i])
-				}
-			}
-		} else {
-			return errors.Errorf("BuildCPUInfoFlags count = %v, want: %v", len(got), len(want))
+		if diff := cmp.Diff(*w.want, *got, opts...); len(diff) != 0 {
+			return errors.Errorf("err: %s", diff)
 		}
 		return nil
 	}
