@@ -52,7 +52,7 @@ func TestParseBytes(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns (1, nil) when bs is `a`",
+			name: "returns (1, nil) when bs is `1M`",
 			args: args{
 				bs: "1M",
 			},
