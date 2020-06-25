@@ -171,14 +171,16 @@ func (r *reader) getObject(ctx context.Context, offset, length int64) (io.Reader
 
 	buf := new(bytes.Buffer)
 
+	defer func() {
+		e := res.Close()
+		if e != nil {
+			log.Warn(e)
+		}
+	}()
+
 	_, err = io.Copy(buf, res)
 	if err != nil {
 		return nil, err
-	}
-
-	err = res.Close()
-	if err != nil {
-		log.Warn(err)
 	}
 
 	return buf, nil
