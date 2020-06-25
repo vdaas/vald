@@ -27,6 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	ctxio "github.com/vdaas/vald/internal/io"
@@ -43,7 +44,9 @@ type reader struct {
 	pr io.ReadCloser
 	wg *sync.WaitGroup
 
-	maxChunkSize int64
+	backoffEnabled bool
+	backoffOpts    []backoff.Option
+	maxChunkSize   int64
 }
 
 type Reader interface {
@@ -80,7 +83,6 @@ func (r *reader) Open(ctx context.Context) (err error) {
 			default:
 			}
 
-			log.Debugf("loading %d bytes...", offset)
 			body, err := r.getObject(ctx, offset, r.maxChunkSize)
 			if err != nil {
 				return err
@@ -114,18 +116,34 @@ func (r *reader) Open(ctx context.Context) (err error) {
 }
 
 func (r *reader) getObject(ctx context.Context, offset, length int64) (io.ReadCloser, error) {
-	resp, err := r.service.GetObjectWithContext(
-		ctx,
-		&s3.GetObjectInput{
-			Bucket: aws.String(r.bucket),
-			Key:    aws.String(r.key),
-			Range: aws.String("bytes=" +
-				strconv.FormatInt(offset, 10) +
-				"-" +
-				strconv.FormatInt(offset+length-1, 10),
-			),
-		},
-	)
+	getFunc := func() (interface{}, error) {
+		log.Debugf("reading %d-%d bytes...", offset, offset+length-1)
+		return r.service.GetObjectWithContext(
+			ctx,
+			&s3.GetObjectInput{
+				Bucket: aws.String(r.bucket),
+				Key:    aws.String(r.key),
+				Range: aws.String("bytes=" +
+					strconv.FormatInt(offset, 10) +
+					"-" +
+					strconv.FormatInt(offset+length-1, 10),
+				),
+			},
+		)
+	}
+
+	var resp interface{}
+	var err error
+
+	if r.backoffEnabled {
+		b := backoff.New(r.backoffOpts...)
+		defer b.Close()
+
+		resp, err = b.Do(ctx, getFunc)
+	} else {
+		resp, err = getFunc()
+	}
+
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -141,7 +159,7 @@ func (r *reader) getObject(ctx context.Context, offset, length int64) (io.ReadCl
 		return nil, err
 	}
 
-	return resp.Body, nil
+	return resp.(*s3.GetObjectOutput).Body, nil
 }
 
 func (r *reader) Close() error {

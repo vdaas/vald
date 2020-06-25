@@ -19,6 +19,7 @@ package s3
 import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/unit"
 )
@@ -81,6 +82,25 @@ func WithMaxChunkSize(size string) Option {
 		if int64(b) >= s3manager.MinUploadPartSize {
 			c.maxChunkSize = int64(b)
 		}
+
+		return nil
+	}
+}
+
+func WithReaderBackoff(enabled bool) Option {
+	return func(c *client) error {
+		c.readerBackoffEnabled = enabled
+		return nil
+	}
+}
+
+func WithReaderBackoffOpts(opts ...backoff.Option) Option {
+	return func(c *client) error {
+		if c.readerBackoffOpts == nil {
+			c.readerBackoffOpts = opts
+		}
+
+		c.readerBackoffOpts = append(c.readerBackoffOpts, opts...)
 
 		return nil
 	}
