@@ -446,7 +446,7 @@ func TestDetail_prepare(t *testing.T) {
 		},
 
 		{
-			name: "GitCommit and Version field set nothing when GitCommit is `internal`",
+			name: "GitCommit and Version field is not overwritten when GitCommit field is `internal`",
 			fields: fields{
 				GitCommit: "internal",
 			},
@@ -468,7 +468,7 @@ func TestDetail_prepare(t *testing.T) {
 		},
 
 		{
-			name: "BuildTime field set nothing when BuildTime is `10`",
+			name: "BuildTime field is not overwritten when BuildTime field is `10`",
 			fields: fields{
 				BuildTime: "10s",
 			},
@@ -490,7 +490,7 @@ func TestDetail_prepare(t *testing.T) {
 		},
 
 		{
-			name: "GoVersion field set nothing when GoVersion is `1.14`",
+			name: "GoVersion field is not overwritten when GoVersion field is `1.14`",
 			fields: fields{
 				GoVersion: "1.14",
 			},
@@ -512,7 +512,7 @@ func TestDetail_prepare(t *testing.T) {
 		},
 
 		{
-			name: "GoOS field set nothing when GoOS is `linux`",
+			name: "GoOS field is not overwritten when GoOS field is `linux`",
 			fields: fields{
 				GoOS: "linux",
 			},
@@ -534,7 +534,7 @@ func TestDetail_prepare(t *testing.T) {
 		},
 
 		{
-			name: "GoArch fields set nothing when GoArch is `amd`",
+			name: "GoArch fields is not overwritten when GoArch field is `amd`",
 			fields: fields{
 				GoArch: "amd",
 			},
@@ -556,7 +556,7 @@ func TestDetail_prepare(t *testing.T) {
 		},
 
 		{
-			name: "CGOEnabled field set nothing when CGOEnabled is `1`",
+			name: "CGOEnabled field is not overwritten when CGOEnabled field is `1`",
 			fields: fields{
 				CGOEnabled: "1",
 			},
@@ -578,7 +578,7 @@ func TestDetail_prepare(t *testing.T) {
 		},
 
 		{
-			name: "NGTVersion field set nothing when NGTVersion is `v1.11.5`",
+			name: "NGTVersion field is not overwritten when NGTVersion field is `v1.11.5`",
 			fields: fields{
 				NGTVersion: "v1.11.5",
 			},
@@ -600,7 +600,7 @@ func TestDetail_prepare(t *testing.T) {
 		},
 
 		{
-			name: "BuildCPUInfoFlags field set nothing when BuildCPUInfoFlags is `test`",
+			name: "BuildCPUInfoFlags is not overwritten when BuildCPUInfoFlags field is `test`",
 			fields: fields{
 				BuildCPUInfoFlags: []string{"test"},
 			},
