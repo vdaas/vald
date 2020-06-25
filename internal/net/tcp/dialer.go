@@ -173,7 +173,7 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 				return conn, nil
 			}
 
-			// if failed then try next and update the idx
+			// if failed then try next and update the idx (not thread safe)
 			for i := 1; i < ipLen; i++ {
 				idx = (idx + i) % ipLen
 				if conn, err := d.dial(dctx, network, dc.ips[idx]+port); err == nil {
@@ -181,6 +181,9 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 					return conn, nil
 				}
 			}
+
+			// if all failed then remove the cache
+			d.cache.Delete(host)
 		}
 	}
 
