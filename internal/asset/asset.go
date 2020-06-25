@@ -14,15 +14,14 @@ func GetTestdataPath(filename string) string {
 }
 
 func datasetDir() string {
-	cur, err := os.Getwd()
+	wd, err := os.Getwd()
 	if err != nil {
 		return ""
 	}
-	for {
+
+	for cur := filepath.Dir(wd); cur != "/"; cur = filepath.Dir(cur) {
 		if strings.HasSuffix(cur, "vald") {
 			return cur
-		} else {
-			cur = filepath.Dir(cur)
 		}
 	}
 	return ""
