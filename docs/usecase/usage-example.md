@@ -8,7 +8,7 @@ By using a vector search engine like Vald, you can search the corresponding unst
 
 Here are some general use cases of Vald or vector search engine.
 
-1. Image and video processing
+## Image and video processing
 
     You can use Vald as the image/video processing engine to search the similar image/video or analysis the image/video for your use case.
 
@@ -22,7 +22,7 @@ Here are some general use cases of Vald or vector search engine.
     1. Image/Video analysis
     1. Image/Video deduplication
 
-1. Audio processing
+## Audio processing
 
     Audio processing is important for personal assistant implementation.
 
@@ -34,7 +34,7 @@ Here are some general use cases of Vald or vector search engine.
     2. Speech recognition
     3. Natural language understanding and generation
 
-1. Text processing
+## Text processing
 
     Since Vald supports some texting vectorizing like `BERT`, you can process your text in Vald.
 
@@ -45,7 +45,7 @@ Here are some general use cases of Vald or vector search engine.
     3. Grammar checker
     4. Real-time translator
 
-1. Data analysis
+## Data analysis
 
     Vald can process the vector data, you can analyze every data you can vectorize.
 
