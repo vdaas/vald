@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file/watch"
+	ctxio "github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -376,13 +377,23 @@ func (o *observer) backup(ctx context.Context) error {
 					}
 				}()
 
-				_, err = io.Copy(tw, data)
+				d, err := ctxio.NewReaderWithContext(ctx, data)
+				if err != nil {
+					return err
+				}
+
+				_, err = io.Copy(tw, d)
 				return err
 			}()
 		})
 	}))
 
-	_, err = io.Copy(sw, pr)
+	prr, err := ctxio.NewReaderWithContext(ctx, pr)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(sw, prr)
 	if err != nil {
 		return err
 	}

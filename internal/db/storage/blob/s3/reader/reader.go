@@ -29,6 +29,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	ctxio "github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 )
@@ -81,6 +82,11 @@ func (r *reader) Open(ctx context.Context) (err error) {
 
 			log.Debugf("loading %d bytes...", offset)
 			body, err := r.getObject(ctx, offset, r.maxChunkSize)
+			if err != nil {
+				return err
+			}
+
+			body, err = ctxio.NewReadCloserWithContext(ctx, body)
 			if err != nil {
 				return err
 			}

@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	ctxio "github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -167,6 +168,11 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 			return err
 		}
 
+		sr, err = ctxio.NewReaderWithContext(ctx, sr)
+		if err != nil {
+			return err
+		}
+
 		_, err = io.Copy(pw, sr)
 		if err != nil {
 			return err
@@ -216,7 +222,12 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 				return err
 			}
 
-			_, err = io.Copy(f, tr)
+			fw, err := ctxio.NewWriterWithContext(ctx, f)
+			if err != nil {
+				return errors.Wrap(f.Close(), err.Error())
+			}
+
+			_, err = io.Copy(fw, tr)
 			if err != nil {
 				return err
 			}
