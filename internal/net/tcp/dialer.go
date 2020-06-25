@@ -21,7 +21,9 @@ import (
 	"context"
 	"crypto/tls"
 	"strings"
+	"sync/atomic"
 	"time"
+	"unsafe"
 
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/errors"
@@ -55,7 +57,7 @@ type dialer struct {
 
 type dialerCache struct {
 	ips    []string
-	curIdx int
+	curIdx uint32
 }
 
 func NewDialer(opts ...DialerOption) (der Dialer, err error) {
@@ -147,13 +149,37 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 
 	if dc, err := d.lookup(dctx, host); err == nil {
 		ipLen := len(dc.ips)
-		idx := dc.curIdx
 
-		for i := 1; i <= ipLen; i++ {
-			idx = (idx + i) % ipLen
-			if conn, err := d.dial(dctx, network, dc.ips[idx]+port); err == nil {
-				dc.curIdx = idx
+		switch ipLen {
+		case 0:
+		case 1:
+			if conn, err := d.dial(dctx, network, dc.ips[0]+port); err == nil {
 				return conn, nil
+			}
+		default:
+			// get and add the idx, and make sure another thread will get the different idx
+			var idx int
+			for {
+				curIdx := atomic.LoadUint32(&dc.curIdx)
+				idx = *(*int)(unsafe.Pointer(&curIdx))
+				next := uint32((idx + 1) % ipLen)
+				if atomic.CompareAndSwapUint32(&dc.curIdx, curIdx, next) {
+					break
+				}
+			}
+
+			// try the first dial and return if success
+			if conn, err := d.dial(dctx, network, dc.ips[idx]+port); err == nil {
+				return conn, nil
+			}
+
+			// if failed then try next and update the idx
+			for i := 1; i < ipLen; i++ {
+				idx = (idx + i) % ipLen
+				if conn, err := d.dial(dctx, network, dc.ips[idx]+port); err == nil {
+					atomic.StoreUint32(&dc.curIdx, uint32(idx))
+					return conn, nil
+				}
 			}
 		}
 	}
