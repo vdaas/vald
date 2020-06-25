@@ -17,15 +17,21 @@
 package reader
 
 import (
+	"bytes"
 	"context"
 	"io"
+	"io/ioutil"
+	"strconv"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	ctxio "github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -37,6 +43,10 @@ type reader struct {
 
 	pr io.ReadCloser
 	wg *sync.WaitGroup
+
+	backoffEnabled bool
+	backoffOpts    []backoff.Option
+	maxChunkSize   int64
 }
 
 type Reader interface {
@@ -54,42 +64,126 @@ func New(opts ...Option) Reader {
 }
 
 func (r *reader) Open(ctx context.Context) (err error) {
-	input := &s3.GetObjectInput{
-		Bucket: aws.String(r.bucket),
-		Key:    aws.String(r.key),
-	}
-
 	var pw io.WriteCloser
 
 	r.pr, pw = io.Pipe()
 
-	resp, err := r.service.GetObjectWithContext(ctx, input)
+	r.wg = new(sync.WaitGroup)
+	r.wg.Add(1)
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer r.wg.Done()
+		defer pw.Close()
+
+		var offset int64
+
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+			}
+
+			body, err := func() (io.Reader, error) {
+				if r.backoffEnabled {
+					return r.getObjectWithBackoff(ctx, offset, r.maxChunkSize)
+				} else {
+					return r.getObject(ctx, offset, r.maxChunkSize)
+				}
+			}()
+			if err != nil {
+				return err
+			}
+
+			body, err = ctxio.NewReaderWithContext(ctx, body)
+			if err != nil {
+				return err
+			}
+
+			chunk, err := io.Copy(pw, body)
+			if err != nil {
+				return err
+			}
+
+			if chunk < r.maxChunkSize {
+				log.Debugf("read %d bytes.", offset+chunk)
+				return nil
+			}
+
+			offset += chunk
+		}
+	}))
+
+	return nil
+}
+
+func (r *reader) getObjectWithBackoff(ctx context.Context, offset, length int64) (io.Reader, error) {
+	getFunc := func() (interface{}, error) {
+		return r.getObject(ctx, offset, length)
+	}
+
+	b := backoff.New(r.backoffOpts...)
+	defer b.Close()
+
+	res, err := b.Do(ctx, getFunc)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.(io.Reader), nil
+}
+
+func (r *reader) getObject(ctx context.Context, offset, length int64) (io.Reader, error) {
+	log.Debugf("reading %d-%d bytes...", offset, offset+length-1)
+	resp, err := r.service.GetObjectWithContext(
+		ctx,
+		&s3.GetObjectInput{
+			Bucket: aws.String(r.bucket),
+			Key:    aws.String(r.key),
+			Range: aws.String("bytes=" +
+				strconv.FormatInt(offset, 10) +
+				"-" +
+				strconv.FormatInt(offset+length-1, 10),
+			),
+		},
+	)
+
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case s3.ErrCodeNoSuchBucket:
-				return errors.NewErrBlobNoSuchBucket(err, r.bucket)
+				log.Error(errors.NewErrBlobNoSuchBucket(err, r.bucket))
+				return ioutil.NopCloser(bytes.NewReader(nil)), nil
 			case s3.ErrCodeNoSuchKey:
-				return errors.NewErrBlobNoSuchKey(err, r.key)
+				log.Error(errors.NewErrBlobNoSuchKey(err, r.key))
+				return ioutil.NopCloser(bytes.NewReader(nil)), nil
+			case "InvalidRange":
+				return ioutil.NopCloser(bytes.NewReader(nil)), nil
 			}
 		}
 
-		return err
+		return nil, err
 	}
 
-	r.wg = new(sync.WaitGroup)
-	r.wg.Add(1)
+	res, err := ctxio.NewReadCloserWithContext(ctx, resp.Body)
+	if err != nil {
+		return nil, err
+	}
 
-	r.eg.Go(safety.RecoverFunc(func() (err error) {
-		defer r.wg.Done()
-		defer resp.Body.Close()
-		defer pw.Close()
+	buf := new(bytes.Buffer)
 
-		_, err = io.Copy(pw, resp.Body)
-		return err
-	}))
+	defer func() {
+		e := res.Close()
+		if e != nil {
+			log.Warn(e)
+		}
+	}()
 
-	return nil
+	_, err = io.Copy(buf, res)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf, nil
 }
 
 func (r *reader) Close() error {

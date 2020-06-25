@@ -23,6 +23,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/reader"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/writer"
@@ -36,7 +37,11 @@ type client struct {
 	service *s3.S3
 	bucket  string
 
-	maxPartSize int64
+	maxPartSize  int64
+	maxChunkSize int64
+
+	readerBackoffEnabled bool
+	readerBackoffOpts    []backoff.Option
 }
 
 func New(opts ...Option) (blob.Bucket, error) {
@@ -66,6 +71,9 @@ func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) 
 		reader.WithService(c.service),
 		reader.WithBucket(c.bucket),
 		reader.WithKey(key),
+		reader.WithMaxChunkSize(c.maxChunkSize),
+		reader.WithBackoff(c.readerBackoffEnabled),
+		reader.WithBackoffOpts(c.readerBackoffOpts...),
 	)
 
 	return r, r.Open(ctx)

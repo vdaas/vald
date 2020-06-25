@@ -28,6 +28,7 @@ type Option func(r *restorer) error
 var (
 	defaultOpts = []Option{
 		WithErrGroup(errgroup.Get()),
+		WithBackoff(false),
 	}
 )
 
@@ -57,6 +58,13 @@ func WithBlobStorage(storage storage.Storage) Option {
 		if storage != nil {
 			r.storage = storage
 		}
+		return nil
+	}
+}
+
+func WithBackoff(enabled bool) Option {
+	return func(r *restorer) error {
+		r.backoffEnabled = enabled
 		return nil
 	}
 }

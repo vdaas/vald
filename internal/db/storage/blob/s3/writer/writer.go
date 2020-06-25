@@ -36,6 +36,7 @@ type writer struct {
 	bucket  string
 	key     string
 
+	contentType string
 	maxPartSize int64
 
 	pw io.WriteCloser
@@ -103,9 +104,10 @@ func (w *writer) upload(ctx context.Context, body io.Reader) (err error) {
 		},
 	)
 	input := &s3manager.UploadInput{
-		Bucket: aws.String(w.bucket),
-		Key:    aws.String(w.key),
-		Body:   body,
+		Bucket:      aws.String(w.bucket),
+		Key:         aws.String(w.key),
+		Body:        body,
+		ContentType: aws.String(w.contentType),
 	}
 
 	res, err := uploader.UploadWithContext(ctx, input)
