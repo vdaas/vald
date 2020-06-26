@@ -3,16 +3,19 @@ package cloudstorage
 import (
 	"context"
 	"io"
+	"net/url"
 
 	iblob "github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/errors"
 	"gocloud.dev/blob"
+	"gocloud.dev/blob/gcsblob"
 )
 
 type client struct {
-	urlstr string
+	url *url.URL
 
-	bucket *blob.Bucket
+	urlOpner *gcsblob.URLOpener
+	bucket   *blob.Bucket
 
 	readerOpts *blob.ReaderOptions
 	writerOpts *blob.WriterOptions
@@ -31,7 +34,7 @@ func New(opts ...Option) (iblob.Bucket, error) {
 }
 
 func (c *client) Open(ctx context.Context) (err error) {
-	c.bucket, err = blob.OpenBucket(ctx, c.urlstr)
+	c.bucket, err = c.urlOpner.OpenBucketURL(ctx, c.url)
 	if err != nil {
 		return err
 	}

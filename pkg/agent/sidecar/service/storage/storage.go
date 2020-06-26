@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage"
+	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage/urlopener"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -49,7 +50,8 @@ type bs struct {
 	s3Opts        []s3.Option
 	s3SessionOpts []session.Option
 
-	cloudStrageOpts []cloudstorage.Option
+	cloudStorageOpts          []cloudstorage.Option
+	cloudStorageUrlOpenerOpts []urlopener.Option
 
 	compressAlgorithm string
 	compressionLevel  int
@@ -122,8 +124,21 @@ func (b *bs) initBucket() (err error) {
 			return err
 		}
 	case config.CloudStrage:
+		uoi, err := urlopener.New(b.cloudStorageUrlOpenerOpts...)
+		if err != nil {
+			return err
+		}
+
+		uo, err := uoi.URLOpener()
+		if err != nil {
+			return err
+		}
+
 		b.bucket, err = cloudstorage.New(
-			b.cloudStrageOpts...,
+			append(
+				b.cloudStorageOpts,
+				cloudstorage.WithURLOpener(uo),
+			)...,
 		)
 		if err != nil {
 			return err

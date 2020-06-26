@@ -1,6 +1,11 @@
 package cloudstorage
 
-import "gocloud.dev/blob"
+import (
+	"net/url"
+
+	"gocloud.dev/blob"
+	"gocloud.dev/blob/gcsblob"
+)
 
 // Option configures client of google cloud storage.
 type Option func(*client) error
@@ -13,7 +18,21 @@ var (
 func WithURL(str string) Option {
 	return func(c *client) error {
 		if len(str) != 0 {
-			c.urlstr = str
+			url, err := url.Parse(str)
+			if err != nil {
+				return err
+			}
+			c.url = url
+		}
+		return nil
+	}
+}
+
+// WithURLOpener returns Option that sets c.urlOpner
+func WithURLOpener(uo *gcsblob.URLOpener) Option {
+	return func(c *client) error {
+		if uo != nil {
+			c.urlOpner = uo
 		}
 		return nil
 	}
