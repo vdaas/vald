@@ -26,12 +26,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/cache/gache"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
-
 	"go.uber.org/goleak"
 )
 
@@ -346,24 +344,24 @@ func Test_dialer_lookup(t *testing.T) {
 		dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
 	}
 	type want struct {
-		wantIps []string
-		err     error
+		want *dialerCache
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, []string, error, *dialer) error
+		checkFunc  func(want, *dialerCache, error, *dialer) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotIps []string, err error, d *dialer) error {
+	defaultCheckFunc := func(w want, got *dialerCache, err error, d *dialer) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(gotIps, w.wantIps) {
-			return errors.Errorf("got = %v, want %v", gotIps, w.wantIps)
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
@@ -382,19 +380,19 @@ func Test_dialer_lookup(t *testing.T) {
 					},
 				},
 			},
-			checkFunc: func(w want, gotIps []string, err error, d *dialer) error {
+			checkFunc: func(w want, got *dialerCache, err error, d *dialer) error {
 				if !errors.Is(err, w.err) {
 					return errors.Errorf("got error = %v, want %v", err, w.err)
 				}
 
-				if len(gotIps) == 0 {
+				if got.Len() == 0 {
 					return errors.New("ips is empty")
 				}
 				return nil
 			},
 		},
 		{
-			name: "return ips when lookupIpAddr returns ips and the cache is set",
+			name: "return ips when lookupIpAddr returns and the cache is set",
 			args: args{
 				ctx:  context.Background(),
 				addr: "google.com",
@@ -407,12 +405,12 @@ func Test_dialer_lookup(t *testing.T) {
 					},
 				},
 			},
-			checkFunc: func(w want, gotIps []string, err error, d *dialer) error {
+			checkFunc: func(w want, got *dialerCache, err error, d *dialer) error {
 				if !errors.Is(err, w.err) {
 					return errors.Errorf("got error = %v, want %v", err, w.err)
 				}
 
-				if len(gotIps) == 0 {
+				if got.Len() == 0 {
 					return errors.New("ips is empty")
 				}
 
@@ -422,12 +420,12 @@ func Test_dialer_lookup(t *testing.T) {
 				}
 
 				// execute lookup again and check the result is the same
-				gotIps1, err1 := d.lookup(context.Background(), "google.com")
+				dc1, err1 := d.lookup(context.Background(), "google.com")
 				if err1 != nil {
 					return err1
 				}
-				if !reflect.DeepEqual(gotIps, gotIps1) {
-					return errors.Errorf("got = %v, got1 %v", gotIps, gotIps)
+				if !reflect.DeepEqual(got, dc1) {
+					return errors.Errorf("got = %v, got1 %v", got, dc1)
 				}
 
 				// check the cache is set
@@ -447,7 +445,9 @@ func Test_dialer_lookup(t *testing.T) {
 			fields: fields{
 				cache: func() cache.Cache {
 					g := gache.New()
-					g.Set("addr", []string{"999.999.999.999"})
+					g.Set("addr", &dialerCache{
+						ips: []string{"999.999.999.999"},
+					})
 					return g
 				}(),
 				der: &net.Dialer{
@@ -457,7 +457,9 @@ func Test_dialer_lookup(t *testing.T) {
 				},
 			},
 			want: want{
-				wantIps: []string{"999.999.999.999"},
+				want: &dialerCache{
+					ips: []string{"999.999.999.999"},
+				},
 			},
 		},
 	}
@@ -474,6 +476,7 @@ func Test_dialer_lookup(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+
 			d := &dialer{
 				cache:                 test.fields.cache,
 				dnsCache:              test.fields.dnsCache,
@@ -488,16 +491,13 @@ func Test_dialer_lookup(t *testing.T) {
 				der:                   test.fields.der,
 				dialer:                test.fields.dialer,
 			}
-
-			gotIps, err := d.lookup(test.args.ctx, test.args.addr)
-			if err := test.checkFunc(test.want, gotIps, err, d); err != nil {
+			got, err := d.lookup(test.args.ctx, test.args.addr)
+			if err := test.checkFunc(test.want, got, err, d); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
-
 func Test_dialer_StartDialerCache(t *testing.T) {
 	type args struct {
 		ctx context.Context
@@ -555,7 +555,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 					time.Sleep(time.Second)
 
 					val, _ := d.cache.Get(addr)
-					if reflect.DeepEqual(val, ips) {
+					if reflect.DeepEqual(val.(*dialerCache).ips, ips) {
 						return errors.New("cache is not cleared")
 					}
 					return nil
@@ -799,8 +799,10 @@ func Test_dialer_cachedDialer(t *testing.T) {
 		func() test {
 			addr := "google.com"
 			cache := gache.New()
-			cache.Set(addr, []string{
-				"invalid_ip",
+			cache.Set(addr, &dialerCache{
+				ips: []string{
+					"invalid_ip",
+				},
 			})
 
 			return test{
