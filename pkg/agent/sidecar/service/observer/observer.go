@@ -130,6 +130,8 @@ func (o *observer) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (o *observer) PostStop(ctx context.Context) (err error) {
+	defer o.storage.Stop(ctx)
+
 	finalize := func() (err error) {
 		err = ctx.Err()
 		if err != nil && err != context.Canceled {

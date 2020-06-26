@@ -34,6 +34,7 @@ import (
 
 type Storage interface {
 	Start(ctx context.Context) (<-chan error, error)
+	Stop(ctx context.Context) error
 	Reader(ctx context.Context) (io.Reader, error)
 	Writer(ctx context.Context) (io.WriteCloser, error)
 }
@@ -142,7 +143,19 @@ func (b *bs) Start(ctx context.Context) (<-chan error, error) {
 		return nil, err
 	}
 
+	err = b.bucket.Open(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	return ech, nil
+}
+
+func (b *bs) Stop(ctx context.Context) error {
+	if b.bucket != nil {
+		return b.bucket.Close()
+	}
+	return nil
 }
 
 func (b *bs) Reader(ctx context.Context) (r io.Reader, err error) {
