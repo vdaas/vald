@@ -96,13 +96,13 @@ func WithS3SessionOpts(opts ...session.Option) Option {
 	}
 }
 
-func WithCloudStrageOpts(opts ...cloudstorage.Option) Option {
+func WithCloudStorageOpts(opts ...cloudstorage.Option) Option {
 	return func(b *bs) error {
-		if b.cloudStrageOpts == nil {
-			b.cloudStrageOpts = opts
+		if b.cloudStorageOpts == nil {
+			b.cloudStorageOpts = opts
 		}
 
-		b.cloudStrageOpts = append(b.cloudStrageOpts, opts...)
+		b.cloudStorageOpts = append(b.cloudStorageOpts, opts...)
 
 		return nil
 	}

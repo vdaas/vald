@@ -95,7 +95,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		storage.WithS3Opts(
 			s3.WithMaxPartSize(cfg.AgentSidecar.BlobStorage.S3.MaxPartSize),
 		),
-		storage.WithCloudStrageOpts(
+		storage.WithCloudStorageOpts(
 			cloudstorage.WithURL(cfg.AgentSidecar.BlobStorage.CloudStrage.URL),
 			cloudstorage.WithWriteBufferSize(cfg.AgentSidecar.BlobStorage.CloudStrage.WriteBufferSize),
 			cloudstorage.WithWriteCacheControl(cfg.AgentSidecar.BlobStorage.CloudStrage.WriteCacheControl),
