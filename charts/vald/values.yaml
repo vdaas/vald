@@ -1317,13 +1317,13 @@ agent:
           write_cache_control: ""
           # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_disposition", "type": "string"}
           # agent.sidecar.config.blob_storage.cloud_storage.write_content_disposition -- Content-Disposition of HTTP Header
-          write_content_disposition: 111
+          write_content_disposition: ""
           # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_encoding", "type": "string"}
           # agent.sidecar.config.blob_storage.cloud_storage.write_content_encoding -- the encoding of the blob's content
-          write_content_encoding: utf8
+          write_content_encoding: ""
           # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_language", "type": "string"}
           # agent.sidecar.config.blob_storage.cloud_storage.write_content_language -- the language of blob's content
-          write_content_language: 1111
+          write_content_language: ""
           # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_type", "type": "string"}
           # agent.sidecar.config.blob_storage.cloud_storage.write_content_type -- MIME type of the blob
           write_content_type: ""
