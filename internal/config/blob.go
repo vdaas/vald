@@ -81,17 +81,12 @@ type S3Config struct {
 type CloudStrageConfig struct {
 	URL string `json:"url" yaml:"url"`
 
-	Reader struct {
-	} `json:"reader" yaml:"reader"`
-
-	Writer struct {
-		BufferSize         int    `json:"buffer_size" yaml:"buffer_size"`
-		CacheControl       string `json:"cache_control" yaml:"cache_control"`
-		ContentDisposition string `json:"content_disposition" yaml:"content_disposition"`
-		ContentEncoding    string `json:"content_encoding" yaml:"content_encoding"`
-		ContentLanguage    string `json:"content_language" yaml:"content_language"`
-		ContentType        string `json:"content_type" yaml:"content_type"`
-	} `json:"writer" yaml:"writer"`
+	WriteBufferSize         int    `json:"write_buffer_size" yaml:"write_buffer_size"`
+	WriteCacheControl       string `json:"write_cache_control" yaml:"write_cache_control"`
+	WriteContentDisposition string `json:"write_content_disposition" yaml:"write_content_disposition"`
+	WriteContentEncoding    string `json:"write_content_encoding" yaml:"write_content_encoding"`
+	WriteContentLanguage    string `json:"write_content_language" yaml:"write_content_language"`
+	WriteContentType        string `json:"write_content_type" yaml:"write_content_type"`
 }
 
 func (b *Blob) Bind() *Blob {
@@ -125,11 +120,11 @@ func (s *S3Config) Bind() *S3Config {
 }
 
 func (c *CloudStrageConfig) Bind() *CloudStrageConfig {
-	c.Writer.CacheControl = GetActualValue(c.Writer.CacheControl)
-	c.Writer.ContentDisposition = GetActualValue(c.Writer.ContentDisposition)
-	c.Writer.ContentEncoding = GetActualValue(c.Writer.ContentEncoding)
-	c.Writer.ContentLanguage = GetActualValue(c.Writer.ContentLanguage)
-	c.Writer.ContentType = GetActualValue(c.Writer.ContentType)
+	c.WriteCacheControl = GetActualValue(c.WriteCacheControl)
+	c.WriteContentDisposition = GetActualValue(c.WriteContentDisposition)
+	c.WriteContentEncoding = GetActualValue(c.WriteContentEncoding)
+	c.WriteContentLanguage = GetActualValue(c.WriteContentLanguage)
+	c.WriteContentType = GetActualValue(c.WriteContentType)
 
 	return c
 }
