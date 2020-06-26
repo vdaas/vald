@@ -1304,6 +1304,29 @@ agent:
           # @schema {"name": "agent.sidecar.config.blob_storage.s3.max_part_size", "type": "string", "pattern": "^[0-9]+(kb|mb|gb)$"}
           # agent.sidecar.config.blob_storage.s3.max_part_size -- s3 multipart upload max part size
           max_part_size: 64mb
+        # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage", "type": "object"}
+        cloud_storage:
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.url", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.url -- cloud storage url
+          url: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_buffer_size", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_buffer_size -- bytes of the chunks for upload
+          write_buffer_size: 0
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_cache_control", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_cache_control -- HTTP Header of Cache-Control
+          write_cache_control: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_disposition", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_content_disposition -- HTTP Header of Content-Disposition
+          write_content_disposition: 111
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_encoding", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_content_encoding -- the encoding of the blob's content
+          write_content_encoding: utf8
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_language", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_content_language -- the language of blob's content
+          write_content_language: 1111
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_type", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_content_type -- MIME type of the blob
+          write_content_type: ""
       # @schema {"name": "agent.sidecar.config.compress", "type": "object"}
       compress:
         # @schema {"name": "agent.sidecar.config.compress.compress_algorithm", "type": "string", "enum": ["gob", "gzip", "lz4", "zstd"]}
