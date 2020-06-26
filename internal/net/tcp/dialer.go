@@ -20,10 +20,10 @@ package tcp
 import (
 	"context"
 	"crypto/tls"
-	"strings"
+	"fmt"
+	"math"
 	"sync/atomic"
 	"time"
-	"unsafe"
 
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/errors"
@@ -58,6 +58,17 @@ type dialer struct {
 type dialerCache struct {
 	ips    []string
 	curIdx uint32
+}
+
+func (d *dialerCache) GetIP() string {
+	if atomic.LoadUint32(&d.curIdx) > math.MaxUint32-100 {
+		atomic.StoreUint32(&d.curIdx, 0)
+	}
+	return d.ips[atomic.AddUint32(&d.curIdx, 1)%d.Len()]
+}
+
+func (d *dialerCache) Len() uint32 {
+	return uint32(len(d.ips))
 }
 
 func NewDialer(opts ...DialerOption) (der Dialer, err error) {
@@ -129,6 +140,27 @@ func (d *dialer) GetDialer() func(ctx context.Context, network, addr string) (ne
 	return d.dialer
 }
 
+func (d *dialer) lookup(ctx context.Context, addr string) (*dialerCache, error) {
+	cache, ok := d.cache.Get(addr)
+	if ok {
+		return cache.(*dialerCache), nil
+	}
+
+	r, err := d.der.Resolver.LookupIPAddr(ctx, addr)
+	if err != nil {
+		return nil, err
+	}
+	dc := &dialerCache{
+		ips: make([]string, 0, len(r)),
+	}
+	for _, ip := range r {
+		dc.ips = append(dc.ips, ip.String())
+	}
+
+	d.cache.Set(addr, dc)
+	return dc, nil
+}
+
 func (d *dialer) StartDialerCache(ctx context.Context) {
 	if d.dnsCache && d.cache != nil {
 		d.cache.Start(ctx)
@@ -140,78 +172,16 @@ func (d *dialer) DialContext(ctx context.Context, network, address string) (net.
 }
 
 func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn net.Conn, err error) {
-	sep := strings.LastIndex(addr, ":")
-	if sep < 0 {
-		sep = len(addr)
-	}
-	host := addr[:sep]
-	port := addr[sep:] // includes ":" char
-
+	host, port, err := net.SplitHostPort(addr)
 	if dc, err := d.lookup(dctx, host); err == nil {
-		ipLen := len(dc.ips)
-
-		switch ipLen {
-		case 0:
-		case 1:
-			if conn, err := d.dial(dctx, network, dc.ips[0]+port); err == nil {
+		for i := uint32(0); i < dc.Len(); i++ {
+			if conn, err := d.dial(dctx, network, fmt.Sprintf("%s:%d", dc.GetIP(), port)); err == nil {
 				return conn, nil
 			}
-			d.cache.Delete(host)
-		default:
-			// get and add the idx, and make sure another thread will get the different idx
-			var idx int
-			for {
-				curIdx := atomic.LoadUint32(&dc.curIdx)
-				idx = *(*int)(unsafe.Pointer(&curIdx))
-				next := uint32((idx + 1) % ipLen)
-				if atomic.CompareAndSwapUint32(&dc.curIdx, curIdx, next) {
-					break
-				}
-			}
-
-			// try the first dial and return if success
-			if conn, err := d.dial(dctx, network, dc.ips[idx]+port); err == nil {
-				return conn, nil
-			}
-
-			// if failed then try next and update the idx (not thread safe)
-			for i := 1; i < ipLen; i++ {
-				idx = (idx + i) % ipLen
-				if conn, err := d.dial(dctx, network, dc.ips[idx]+port); err == nil {
-					atomic.StoreUint32(&dc.curIdx, uint32(idx))
-					return conn, nil
-				}
-			}
-
-			// if all failed then remove the cache
-			d.cache.Delete(host)
 		}
+		d.cache.Delete(host)
 	}
-
 	return d.dial(dctx, network, addr)
-}
-
-func (d *dialer) lookup(ctx context.Context, addr string) (*dialerCache, error) {
-	cache, ok := d.cache.Get(addr)
-	if ok {
-		return cache.(*dialerCache), nil
-	}
-
-	r, err := d.der.Resolver.LookupIPAddr(ctx, addr)
-	if err != nil {
-		return nil, err
-	}
-
-	ips := make([]string, len(r))
-	for i, ip := range r {
-		ips[i] = ip.String()
-	}
-
-	dc := &dialerCache{
-		ips: ips,
-	}
-	d.cache.Set(addr, dc)
-	return dc, nil
 }
 
 func (d *dialer) dial(ctx context.Context, network string, addr string) (net.Conn, error) {
