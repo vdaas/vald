@@ -156,6 +156,7 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 			if conn, err := d.dial(dctx, network, dc.ips[0]+port); err == nil {
 				return conn, nil
 			}
+			d.cache.Delete(host)
 		default:
 			// get and add the idx, and make sure another thread will get the different idx
 			var idx int
