@@ -56,15 +56,15 @@ type dialer struct {
 }
 
 type dialerCache struct {
-	ips    []string
-	curIdx uint32
+	ips []string
+	cnt uint32
 }
 
 func (d *dialerCache) GetIP() string {
-	if atomic.LoadUint32(&d.curIdx) > math.MaxUint32-100 {
-		atomic.StoreUint32(&d.curIdx, 0)
+	if atomic.LoadUint32(&d.cnt) > math.MaxUint32-100 {
+		atomic.StoreUint32(&d.cnt, 0)
 	}
-	return d.ips[atomic.AddUint32(&d.curIdx, 1)%d.Len()]
+	return d.ips[atomic.AddUint32(&d.cnt, 1)%d.Len()]
 }
 
 func (d *dialerCache) Len() uint32 {
@@ -173,6 +173,10 @@ func (d *dialer) DialContext(ctx context.Context, network, address string) (net.
 
 func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn net.Conn, err error) {
 	host, port, err := net.SplitHostPort(addr)
+	if err != nil {
+		return nil, err
+	}
+
 	if dc, err := d.lookup(dctx, host); err == nil {
 		for i := uint32(0); i < dc.Len(); i++ {
 			if conn, err := d.dial(dctx, network, fmt.Sprintf("%s:%d", dc.GetIP(), port)); err == nil {
