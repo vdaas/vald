@@ -5,8 +5,6 @@ import (
 	"io"
 
 	iblob "github.com/vdaas/vald/internal/db/storage/blob"
-	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage/reader"
-	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage/writer"
 	"github.com/vdaas/vald/internal/errors"
 	"gocloud.dev/blob"
 )
@@ -50,31 +48,12 @@ func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) 
 	if c.bucket == nil {
 		return nil, errors.ErrBucketNotOpened
 	}
-
-	r, err := reader.New(
-		reader.WithKey(key),
-		reader.WithBucket(c.bucket),
-		reader.WithReaderOptions(c.readerOpts),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return r, r.Open(ctx)
+	return c.bucket.NewReader(ctx, key, c.readerOpts)
 }
 
 func (c *client) Writer(ctx context.Context, key string) (io.WriteCloser, error) {
 	if c.bucket == nil {
 		return nil, errors.ErrBucketNotOpened
 	}
-
-	w, err := writer.New(
-		writer.WithKey(key),
-		writer.WithBucket(c.bucket),
-		writer.WithWriterOptions(c.writerOpts),
-	)
-	if err != nil {
-		return nil, err
-	}
-	return w, w.Open(ctx)
+	return c.bucket.NewWriter(ctx, key, c.writerOpts)
 }
