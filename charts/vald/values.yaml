@@ -1313,10 +1313,10 @@ agent:
           # agent.sidecar.config.blob_storage.cloud_storage.write_buffer_size -- bytes of the chunks for upload
           write_buffer_size: 0
           # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_cache_control", "type": "string"}
-          # agent.sidecar.config.blob_storage.cloud_storage.write_cache_control -- HTTP Header of Cache-Control
+          # agent.sidecar.config.blob_storage.cloud_storage.write_cache_control -- Cache-Control of HTTP Header
           write_cache_control: ""
           # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_disposition", "type": "string"}
-          # agent.sidecar.config.blob_storage.cloud_storage.write_content_disposition -- HTTP Header of Content-Disposition
+          # agent.sidecar.config.blob_storage.cloud_storage.write_content_disposition -- Content-Disposition of HTTP Header
           write_content_disposition: 111
           # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_encoding", "type": "string"}
           # agent.sidecar.config.blob_storage.cloud_storage.write_content_encoding -- the encoding of the blob's content
