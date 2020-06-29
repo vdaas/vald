@@ -71,7 +71,8 @@ func TestNew(t *testing.T) {
 					cfg := new(tls.Config)
 
 					cfg.Certificates = make([]tls.Certificate, 1)
-					cfg.Certificates[0], _ = tls.LoadX509KeyPair(testdata.GetTestdataPath("dummyServer.crt"), testdata.GetTestdataPath("dummyServer.key"))
+					cfg.Certificates[0], _ = tls.LoadX509KeyPair(testdata.GetTestdataPath("dummyServer.crt"),
+						testdata.GetTestdataPath("dummyServer.key"))
 
 					pool := x509.NewCertPool()
 					b, _ := ioutil.ReadFile(testdata.GetTestdataPath("dummyCa.pem"))
