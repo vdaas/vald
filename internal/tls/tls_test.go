@@ -26,8 +26,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/internal/asset"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/testdata"
 	"go.uber.org/goleak"
 )
 
@@ -61,9 +61,9 @@ func TestNew(t *testing.T) {
 			name: "returns cfg and nil when option is not empty",
 			args: args{
 				opts: []Option{
-					WithCert(asset.GetTestdataPath("dummyServer.crt")),
-					WithKey(asset.GetTestdataPath("dummyServer.key")),
-					WithCa(asset.GetTestdataPath("dummyCa.pem")),
+					WithCert(testdata.GetTestdataPath("dummyServer.crt")),
+					WithKey(testdata.GetTestdataPath("dummyServer.key")),
+					WithCa(testdata.GetTestdataPath("dummyCa.pem")),
 				},
 			},
 			want: want{
@@ -71,10 +71,10 @@ func TestNew(t *testing.T) {
 					cfg := new(tls.Config)
 
 					cfg.Certificates = make([]tls.Certificate, 1)
-					cfg.Certificates[0], _ = tls.LoadX509KeyPair(asset.GetTestdataPath("dummyServer.crt"), asset.GetTestdataPath("dummyServer.key"))
+					cfg.Certificates[0], _ = tls.LoadX509KeyPair(testdata.GetTestdataPath("dummyServer.crt"), testdata.GetTestdataPath("dummyServer.key"))
 
 					pool := x509.NewCertPool()
-					b, _ := ioutil.ReadFile(asset.GetTestdataPath("dummyCa.pem"))
+					b, _ := ioutil.ReadFile(testdata.GetTestdataPath("dummyCa.pem"))
 					pool.AppendCertsFromPEM(b)
 
 					cfg.ClientCAs = pool
@@ -123,7 +123,7 @@ func TestNew(t *testing.T) {
 			name: "returns nil and error when cert path is empty",
 			args: args{
 				opts: []Option{
-					WithKey(asset.GetTestdataPath("dummyServer.key")),
+					WithKey(testdata.GetTestdataPath("dummyServer.key")),
 				},
 			},
 			want: want{
@@ -134,7 +134,7 @@ func TestNew(t *testing.T) {
 			name: "returns nil and error when key path is empty",
 			args: args{
 				opts: []Option{
-					WithCert(asset.GetTestdataPath("dummyServer.crt")),
+					WithCert(testdata.GetTestdataPath("dummyServer.crt")),
 				},
 			},
 			want: want{
@@ -145,8 +145,8 @@ func TestNew(t *testing.T) {
 			name: "returns nil and error when contents of cert file is invalid",
 			args: args{
 				opts: []Option{
-					WithCert(asset.GetTestdataPath("invalid.crt")),
-					WithKey(asset.GetTestdataPath("dummyServer.key")),
+					WithCert(testdata.GetTestdataPath("invalid.crt")),
+					WithKey(testdata.GetTestdataPath("dummyServer.key")),
 				},
 			},
 			want: want{
@@ -157,9 +157,9 @@ func TestNew(t *testing.T) {
 			name: "returns nil and error when contents of ca file is invalid",
 			args: args{
 				opts: []Option{
-					WithCert(asset.GetTestdataPath("dummyServer.crt")),
-					WithKey(asset.GetTestdataPath("dummyServer.key")),
-					WithCa(asset.GetTestdataPath("invalid.pem")),
+					WithCert(testdata.GetTestdataPath("dummyServer.crt")),
+					WithKey(testdata.GetTestdataPath("dummyServer.key")),
+					WithCa(testdata.GetTestdataPath("invalid.pem")),
 				},
 			},
 			want: want{
@@ -232,8 +232,8 @@ func TestNewClientConfig(t *testing.T) {
 			name: "returns cfg and nil when cert and key option is not empty",
 			args: args{
 				opts: []Option{
-					WithCert(asset.GetTestdataPath("dummyServer.crt")),
-					WithKey(asset.GetTestdataPath("dummyServer.key")),
+					WithCert(testdata.GetTestdataPath("dummyServer.crt")),
+					WithKey(testdata.GetTestdataPath("dummyServer.key")),
 				},
 			},
 			checkFunc: func(w want, c *Config, err error) error {
@@ -253,7 +253,7 @@ func TestNewClientConfig(t *testing.T) {
 			name: "returns nil and error when contents of ca file is invalid",
 			args: args{
 				opts: []Option{
-					WithCa(asset.GetTestdataPath("invalid.pem")),
+					WithCa(testdata.GetTestdataPath("invalid.pem")),
 				},
 			},
 			want: want{
@@ -264,8 +264,8 @@ func TestNewClientConfig(t *testing.T) {
 			name: "returns nil and error when contents of cert file is invalid",
 			args: args{
 				opts: []Option{
-					WithCert(asset.GetTestdataPath("invalid.crt")),
-					WithKey(asset.GetTestdataPath("dummyServer.key")),
+					WithCert(testdata.GetTestdataPath("invalid.crt")),
+					WithKey(testdata.GetTestdataPath("dummyServer.key")),
 				},
 			},
 			checkFunc: func(w want, c *Config, err error) error {
@@ -332,12 +332,12 @@ func TestNewX509CertPool(t *testing.T) {
 		{
 			name: "returns pool and nil when the pool exists and adds the cert into pool",
 			args: args{
-				path: asset.GetTestdataPath("dummyServer.crt"),
+				path: testdata.GetTestdataPath("dummyServer.crt"),
 			},
 			want: want{
 				want: func() *x509.CertPool {
 					pool := x509.NewCertPool()
-					b, _ := ioutil.ReadFile(asset.GetTestdataPath("dummyServer.crt"))
+					b, _ := ioutil.ReadFile(testdata.GetTestdataPath("dummyServer.crt"))
 					pool.AppendCertsFromPEM(b)
 					return pool
 				}(),
@@ -364,7 +364,7 @@ func TestNewX509CertPool(t *testing.T) {
 		{
 			name: "returns nil and error when contents of path is invalid",
 			args: args{
-				path: asset.GetTestdataPath("invalid.pem"),
+				path: testdata.GetTestdataPath("invalid.pem"),
 			},
 			want: want{
 				err: errors.ErrCertificationFailed,

@@ -1,4 +1,4 @@
-package asset
+package testdata
 
 import (
 	"os"
@@ -9,7 +9,7 @@ import (
 func GetTestdataPath(filename string) string {
 	b := datasetDir()
 	basepath := filepath.Dir(b)
-	fp, _ := filepath.Abs(basepath + "/vald/internal/asset/testdata/" + filename)
+	fp, _ := filepath.Abs(basepath + "/vald/internal/testdata/testdata/" + filename)
 	return fp
 }
 
