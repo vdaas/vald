@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -327,7 +326,10 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	}
 
 	mu := new(sync.Mutex)
-	targets := make([]string, 0, s.replica)
+	ce = &payload.Object_Location{
+		Uuid: vec.GetId(),
+		Ips:  make([]string, 0, s.replica),
+	}
 	err = s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) (err error) {
 		ctx, span := trace.StartSpan(ctx, "vald/gateway-lb.Insert/"+target)
 		defer func() {
@@ -335,7 +337,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 				span.End()
 			}
 		}()
-		_, err = vc.Insert(ctx, vec, copts...)
+		loc, err := vc.Insert(ctx, vec, copts...)
 		if err != nil {
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -345,9 +347,9 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 			}
 			return err
 		}
-		target = strings.SplitN(target, ":", 2)[0]
 		mu.Lock()
-		targets = append(targets, target)
+		ce.Ips = append(ce.GetIps(), loc.GetIps()...)
+		ce.Name = loc.GetName()
 		mu.Unlock()
 		return nil
 	})
@@ -359,11 +361,8 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Insert API failed to Execute DoMulti error = %s", err.Error()), err, info.Get())
 	}
-	log.Debugf("Insert API insert succeeded to %v", targets)
-	return &payload.Object_Location{
-		Uuid: vec.GetId(),
-		Ips:  targets,
-	}, nil
+	log.Debugf("Insert API insert succeeded to %#v", ce)
+	return ce, nil
 }
 
 func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
@@ -380,7 +379,7 @@ func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
 		})
 }
 
-func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Object_Locations, err error) {
+func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (locs *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-lb.MultiInsert")
 	defer func() {
 		if span != nil {
@@ -388,6 +387,7 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		}
 	}()
 
+	ids := make([]string, 0, len(vecs.GetVectors()))
 	if s.strict {
 		for _, vec := range vecs.GetVectors() {
 			id, err := s.Exists(ctx, &payload.Object_ID{
@@ -402,11 +402,18 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 				return nil, status.WrapWithAlreadyExists(
 					fmt.Sprintf("MultiInsert API ID = %v already exists", vec.GetId()), err, info.Get())
 			}
+			ids = append(ids, vec.GetId())
+		}
+	} else {
+		for _, vec := range vecs.GetVectors() {
+			ids = append(ids, vec.GetId())
 		}
 	}
 
 	mu := new(sync.Mutex)
-	targets := make([]string, 0, s.replica)
+	locs = &payload.Object_Locations{
+		Locations: make([]*payload.Object_Location, 0, s.replica),
+	}
 	err = s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) (err error) {
 		ctx, span := trace.StartSpan(ctx, "vald/gateway-lb.MultiInsert/"+target)
 		defer func() {
@@ -414,16 +421,15 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 				span.End()
 			}
 		}()
-		_, err = vc.MultiInsert(ctx, vecs, copts...)
+		loc, err := vc.MultiInsert(ctx, vecs, copts...)
 		if err != nil {
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
 			return err
 		}
-		target = strings.SplitN(target, ":", 2)[0]
 		mu.Lock()
-		targets = append(targets, target)
+		locs.Locations = append(locs.Locations, loc.Locations...)
 		mu.Unlock()
 		return nil
 	})
@@ -433,7 +439,7 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiInsert API failed request %#v", vecs), err, info.Get())
 	}
-	return new(payload.Object_Locations), nil
+	return reStructureLocations(ids, locs), nil
 }
 
 func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Object_Location, err error) {
@@ -453,6 +459,8 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 		}
 		return nil, err
 	}
+
+	log.Debugf("uuid %s were removed from %v for Update it will insert soon", loc.GetUuid(), loc.GetIps())
 
 	return s.Insert(ctx, vec)
 }
@@ -482,7 +490,7 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 	for _, vec := range vecs.GetVectors() {
 		ids = append(ids, vec.GetId())
 	}
-	_, err = s.MultiRemove(ctx, &payload.Object_IDs{
+	locs, err := s.MultiRemove(ctx, &payload.Object_IDs{
 		Ids: ids,
 	})
 	if err != nil {
@@ -491,17 +499,18 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed Remove request %#v", ids), err, info.Get())
 	}
-	_, err = s.MultiInsert(ctx, vecs)
+	log.Debugf("uuids %v were removed from %v for MultiUpdate it will execute MultiInsert soon, see detailt %#v", ids, locs.GetLocations(), locs)
+	locs, err = s.MultiInsert(ctx, vecs)
 	if err != nil {
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed Insert request %#v", vecs), err, info.Get())
 	}
-	return new(payload.Object_Locations), nil
+	return locs, nil
 }
 
-func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*payload.Object_Location, error) {
+func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-lb.Upsert")
 	defer func() {
 		if span != nil {
@@ -509,28 +518,20 @@ func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*paylo
 		}
 	}()
 
-	meta := vec.GetId()
-	exists, errs := s.metadata.Exists(ctx, meta)
-	if errs != nil {
-		log.Error(errs)
-		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(errs.Error()))
-		}
-	}
-
-	if exists {
-		_, err := s.Update(ctx, vec)
-		if err != nil {
-			errs = errors.Wrap(errs, err.Error())
-		}
+	_, err = s.Exists(ctx, &payload.Object_ID{
+		Id: vec.GetId(),
+	})
+	if err != nil {
+		loc, err = s.Insert(ctx, vec)
 	} else {
-		_, err := s.Insert(ctx, vec)
-		if err != nil {
-			errs = errors.Wrap(errs, err.Error())
-		}
+		loc, err = s.Update(ctx, vec)
 	}
 
-	return new(payload.Object_Location), errs
+	if err != nil {
+		return nil, err
+	}
+
+	return loc, nil
 }
 
 func (s *server) StreamUpsert(stream vald.Vald_StreamUpsertServer) error {
@@ -547,7 +548,7 @@ func (s *server) StreamUpsert(stream vald.Vald_StreamUpsertServer) error {
 		})
 }
 
-func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) (*payload.Object_Locations, error) {
+func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) (locs *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-lb.MultiUpsert")
 	defer func() {
 		if span != nil {
@@ -559,52 +560,69 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	updateVecs := make([]*payload.Object_Vector, 0, len(vecs.GetVectors()))
 
 	var errs error
+	ids := make([]string, 0, len(vecs.GetVectors()))
 	for _, vec := range vecs.GetVectors() {
-		exists, err := s.metadata.Exists(ctx, vec.GetId())
+		ids = append(ids, vec.GetId())
+		_, err = s.Exists(ctx, &payload.Object_ID{
+			Id: vec.GetId(),
+		})
 		if err != nil {
-			log.Error(err)
-			if span != nil {
-				span.SetStatus(trace.StatusCodeInternal(err.Error()))
-			}
-			errs = errors.Wrap(errs, err.Error())
-		}
-
-		if exists {
-			updateVecs = append(updateVecs, vec)
-		} else {
 			insertVecs = append(insertVecs, vec)
+		} else {
+			updateVecs = append(updateVecs, vec)
 		}
 	}
 
 	eg, ectx := errgroup.New(ctx)
 
+	insertLocs := make([]*payload.Object_Location, 0, len(insertVecs))
+	updateLocs := make([]*payload.Object_Location, 0, len(updateVecs))
 	eg.Go(safety.RecoverFunc(func() error {
+		ectx, span := trace.StartSpan(ectx, "vald/gateway-lb.MultiUpsert/Go-MultiUpdate")
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
 		var err error
 		if len(updateVecs) > 0 {
-			_, err = s.MultiUpdate(ectx, &payload.Object_Vectors{
+			loc, err := s.MultiUpdate(ectx, &payload.Object_Vectors{
 				Vectors: updateVecs,
 			})
+			if err == nil {
+				updateLocs = loc.GetLocations()
+			}
 		}
 		return err
 	}))
-
 	eg.Go(safety.RecoverFunc(func() error {
+		ectx, span := trace.StartSpan(ectx, "vald/gateway-lb.MultiUpsert/Go-MultiInsert")
+
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
 		var err error
 		if len(insertVecs) > 0 {
-			_, err = s.MultiInsert(ectx, &payload.Object_Vectors{
+			loc, err := s.MultiInsert(ectx, &payload.Object_Vectors{
 				Vectors: insertVecs,
 			})
+			if err == nil {
+				insertLocs = loc.GetLocations()
+			}
 		}
 		return err
 	}))
 
-	err := eg.Wait()
+	err = eg.Wait()
 	if err != nil {
-		errs = errors.Wrap(errs, err.Error())
-		return nil, status.WrapWithInternal("MultiUpsert API failed", errs, info.Get())
+		return nil, status.WrapWithInternal("MultiUpsert API failed", err, info.Get())
 	}
 
-	return new(payload.Object_Locations), errs
+	return reStructureLocations(ids, &payload.Object_Locations{
+		Locations: append(insertLocs, updateLocs...),
+	}), nil
 }
 
 func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (locs *payload.Object_Location, err error) {
@@ -729,25 +747,7 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (locs
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiRemove API failed to request uuids %v ", ids.GetIds()), err, info.Get())
 	}
-	lmap := make(map[string]*payload.Object_Location, len(locs.Locations))
-	for _, loc := range locs.Locations {
-		_, ok := lmap[loc.Uuid]
-		if !ok {
-			lmap[loc.Uuid] = new(payload.Object_Location)
-		}
-		lmap[loc.Uuid].Ips = append(lmap[loc.Uuid].GetIps(), loc.GetIps()...)
-	}
-	locs = &payload.Object_Locations{
-		Locations: make([]*payload.Object_Location, 0, len(lmap)),
-	}
-	for _, id := range ids.GetIds() {
-		loc, ok := lmap[id]
-		if !ok {
-			loc = new(payload.Object_Location)
-		}
-		locs.Locations = append(locs.Locations, loc)
-	}
-	return locs, nil
+	return reStructureLocations(ids.GetIds(), locs), nil
 }
 
 func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *payload.Object_Vector, err error) {
@@ -804,4 +804,30 @@ func (s *server) StreamGetObject(stream vald.Vald_StreamGetObjectServer) error {
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			return s.GetObject(ctx, data.(*payload.Object_ID))
 		})
+}
+
+func reStructureLocations(uuids []string, locs *payload.Object_Locations) *payload.Object_Locations {
+	if locs == nil {
+		return nil
+	}
+	lmap := make(map[string]*payload.Object_Location, len(locs.Locations))
+	for _, loc := range locs.Locations {
+		uuid := loc.GetUuid()
+		_, ok := lmap[uuid]
+		if !ok {
+			lmap[uuid] = new(payload.Object_Location)
+		}
+		lmap[uuid].Ips = append(lmap[uuid].GetIps(), loc.GetIps()...)
+	}
+	locs = &payload.Object_Locations{
+		Locations: make([]*payload.Object_Location, 0, len(lmap)),
+	}
+	for _, id := range uuids {
+		loc, ok := lmap[id]
+		if !ok {
+			loc = new(payload.Object_Location)
+		}
+		locs.Locations = append(locs.Locations, loc)
+	}
+	return locs
 }
