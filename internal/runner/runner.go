@@ -150,47 +150,42 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 			cancel()
 		case err = <-ech:
 			if err != nil {
+				log.Error(errors.ErrStartFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
-					e := errors.ErrStartFunc(name, err)
-					errs = append(errs, e)
-					log.Error(err)
+					errs = append(errs, err)
 				}
 				emap[err.Error()]++
 			}
 		case <-rctx.Done():
 			err = run.PreStop(ctx)
 			if err != nil {
+				log.Error(errors.ErrPreStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
-					e := errors.ErrPreStopFunc(name, err)
-					errs = append(errs, e)
-					log.Error(err)
+					errs = append(errs, err)
 				}
 				emap[err.Error()]++
 			}
 			err = run.Stop(ctx)
 			if err != nil {
+				log.Error(errors.ErrStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
-					e := errors.ErrStopFunc(name, err)
-					errs = append(errs, e)
-					log.Error(err)
+					errs = append(errs, err)
 				}
 				emap[err.Error()]++
 			}
 			err = run.PostStop(ctx)
 			if err != nil {
+				log.Error(errors.ErrPostStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
-					e := errors.ErrPostStopFunc(name, err)
-					errs = append(errs, e)
-					log.Error(err)
+					errs = append(errs, err)
 				}
 				emap[err.Error()]++
 			}
 			err = errgroup.Wait()
 			if err != nil {
+				log.Error(errors.ErrRunnerWait(name, err))
 				if _, ok := emap[err.Error()]; !ok {
-					e := errors.ErrRunnerWait(name, err)
-					errs = append(errs, e)
-					log.Error(err)
+					errs = append(errs, err)
 				}
 				emap[err.Error()]++
 			}
