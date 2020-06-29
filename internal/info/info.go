@@ -46,7 +46,7 @@ type Detail struct {
 	PrepOnce          sync.Once    `json:"-" yaml:"-"`
 }
 
-// StackTrace represents stacktrace infomation about url, function name, file, line ..etc.
+// StackTrace represents stacktrace information about url, function name, file, line ..etc.
 type StackTrace struct {
 	URL      string `json:"url,omitempty" yaml:"url,omitempty"`
 	FuncName string `json:"function_name,omitempty" yaml:"func_name,omitempty"`
