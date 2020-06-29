@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
+// Detail represents environment information of system and stacktrace information.
 type Detail struct {
 	Version           string       `json:"vald_version,omitempty" yaml:"vald_version,omitempty"`
 	ServerName        string       `json:"server_name,omitempty" yaml:"server_name,omitempty"`
@@ -45,6 +46,7 @@ type Detail struct {
 	PrepOnce          sync.Once    `json:"-" yaml:"-"`
 }
 
+// StackTrace represents stacktrace infomation about url, function name, file, line ..etc.
 type StackTrace struct {
 	URL      string `json:"url,omitempty" yaml:"url,omitempty"`
 	FuncName string `json:"function_name,omitempty" yaml:"func_name,omitempty"`
@@ -75,14 +77,17 @@ var (
 	detail Detail
 )
 
+// String calls String method of global detail object.
 func String() string {
 	return detail.String()
 }
 
+// Get calls Get method of global detail object.
 func Get() Detail {
 	return detail.Get()
 }
 
+// String returns summary of Detail object.
 func (d Detail) String() string {
 	if len(d.StackTrace) == 0 {
 		d = d.Get()
@@ -143,6 +148,7 @@ func (d Detail) String() string {
 	return "\n" + strings.Join(strs, "\n")
 }
 
+// Get returns parased Detail object.
 func (d Detail) Get() Detail {
 	d.prepare()
 	valdRepo := fmt.Sprintf("github.com/%s/%s", Organization, Repository)
@@ -221,6 +227,7 @@ func (d *Detail) prepare() {
 	})
 }
 
+// Init initializes Detail object only once.
 func Init(name string) {
 	once.Do(func() {
 		detail = Detail{
