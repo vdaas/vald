@@ -1,4 +1,4 @@
-# Agent on Docker
+# Deploy Vald Agent on Docker
 
 Vald is designed and implemented based on Cloud-Native architecture.
 However, there may be cases that want to use only Vald Agent without Kubernetes.
@@ -45,6 +45,7 @@ This chapter will use NGT for the core engine of Vald Agent.
     You can also check [the sample](https://github.com/vdaas/vald/blob/master/cmd/agent/core/ngt/sample.yaml).
 
     ```bash
+    cat << EOF > config.yaml
     ---
     version: v0.0.0
     time_zone: JST
@@ -97,6 +98,7 @@ This chapter will use NGT for the core engine of Vald Agent.
       auto_index_check_duration: 10s
       # The number of cache to trigger automatic indexing
       auto_index_length: 100
+    EOF
     ```
 
 1. Deploy Vald Agent on Docker
@@ -104,7 +106,7 @@ This chapter will use NGT for the core engine of Vald Agent.
     To deploy Vald agent on docker with `config.yaml`, you can run below command.
 
     ```bash
-    docker run -v path-to-dir-of-config.yaml:/etc/server -p 8081:8081 --rm -it vdaas/vald-agent-ngt
+    docker run -v $(pwd)/config.yaml:/etc/server/config.yaml -p 8081:8081 --rm -it vdaas/vald-agent-ngt
     ```
 
 1. Verify
