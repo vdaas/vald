@@ -360,7 +360,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
 3. Running example
 
-    Vald provides multiple langurages client library such as Go, Java, Node.js, Python and so on.<br>
+    Vald provides multiple languages client library such as Go, Java, Node.js, Python and so on.<br>
     In this example, the fashion-mnist dataset will insert into the Vald and search using [vald-client-go](https://github.com/vdaas/vald-client-go).
 
     We use [`example/client/agent/main.go`](https://github.com/vdaas/vald/blob/master/example/client/agent/main.go) to run the example.
@@ -482,9 +482,9 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
             ```
             </details>
 
-        - [Optional] Expressly create indexing instead of waiting auto indexing
-            Agent NGT can be set `auto_index_duration_limit` and `auto_index_check_duration` for auto indexing.
-            But, in this example case, you can create index without auto indexing via `CreateIndex()` mthod.
+        - [Optional] Indexing manually instead of waiting for auto indexing
+            You can set Agent NGT configuration `auto_index_duration_limit` and `auto_index_check_duration` for auto indexing.
+            In this example, you can create index manually using `CreateIndex()` mthod in the client library.
             <detail><summary>example code</summary><br>
 
             ```go

@@ -92,7 +92,7 @@ func main() {
 	}
 	/**
 	Option: Run Indexing instead of Auto Indexing
-	If you run client.CreateIndex, it consts less time for search
+	If you run client.CreateIndex, it costs less time for search
 	**/
 	// glg.Info("Start Indexing dataset.")
 	// _, err = client.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
