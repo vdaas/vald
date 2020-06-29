@@ -27,7 +27,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/testdata"
+	testdata "github.com/vdaas/vald/internal/test/data"
 	"go.uber.org/goleak"
 )
 
