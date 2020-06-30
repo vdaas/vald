@@ -72,14 +72,14 @@ func TestLogging_Bind(t *testing.T) {
 				Format: "_format_",
 			},
 			beforeFunc: func() {
-				os.Setenv("logger", "glg")
-				os.Setenv("level", "info")
-				os.Setenv("format", "json")
+				_ = os.Setenv("logger", "glg")
+				_ = os.Setenv("level", "info")
+				_ = os.Setenv("format", "json")
 			},
 			afterFunc: func() {
-				os.Unsetenv("logger")
-				os.Unsetenv("level")
-				os.Unsetenv("format")
+				_ = os.Unsetenv("logger")
+				_ = os.Unsetenv("level")
+				_ = os.Unsetenv("format")
 			},
 			want: want{
 				want: &Logging{
