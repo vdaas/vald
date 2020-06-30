@@ -61,7 +61,6 @@ require (
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/goleak v1.0.0
 	gocloud.dev v0.19.0
-	golang.org/x/mod v0.3.0 // indirect
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
 	golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
 	golang.org/x/tools v0.0.0-20200610052024-8d7dbee4c8ae // indirect
@@ -73,7 +72,7 @@ require (
 	google.golang.org/grpc v1.29.1
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.18.3
-	k8s.io/apimachinery v0.18.3
+	k8s.io/apimachinery v0.18.5
 	k8s.io/client-go v0.18.3
 	k8s.io/metrics v0.18.3
 	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
