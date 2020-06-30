@@ -178,9 +178,9 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 
 	eg.Go(safety.RecoverFunc(func() error {
 		defer cancel()
-		// cl := new(checkList)
-		visited := make(map[string]bool, len(res.Results))
-		mu := sync.RWMutex{}
+		vl := new(visitList)
+		// visited := make(map[string]bool, len(res.Results))
+		// mu := sync.RWMutex{}
 		return s.gateway.BroadCast(ectx, func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) error {
 			ctx, span := trace.StartSpan(ctx, "vald/gateway-lb.search/"+target)
 			defer func() {
@@ -201,16 +201,21 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					return nil
 				}
 				id := dist.GetId()
-				mu.RLock()
-				if !visited[id] {
-					mu.RUnlock()
-					mu.Lock()
-					visited[id] = true
-					mu.Unlock()
+				visited, ok := vl.Load(id)
+				if !ok || !visited {
+					vl.Store(id, true)
 					dch <- dist
-				} else {
-					mu.RUnlock()
 				}
+				// mu.RLock()
+				// if !visited[id] {
+				// 	mu.RUnlock()
+				// 	mu.Lock()
+				// 	visited[id] = true
+				// 	mu.Unlock()
+				// 	dch <- dist
+				// } else {
+				// 	mu.RUnlock()
+				// }
 			}
 			return nil
 		})
@@ -559,7 +564,6 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	insertVecs := make([]*payload.Object_Vector, 0, len(vecs.GetVectors()))
 	updateVecs := make([]*payload.Object_Vector, 0, len(vecs.GetVectors()))
 
-	var errs error
 	ids := make([]string, 0, len(vecs.GetVectors()))
 	for _, vec := range vecs.GetVectors() {
 		ids = append(ids, vec.GetId())

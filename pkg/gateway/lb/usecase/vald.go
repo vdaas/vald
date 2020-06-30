@@ -43,76 +43,38 @@ type run struct {
 	cfg           *config.Data
 	server        starter.Server
 	observability observability.Observability
-	filter        service.Filter
 	gateway       service.Gateway
-	metadata      service.Meta
-	backup        service.Backup
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
 	var (
-		filter   service.Filter
 		gateway  service.Gateway
-		metadata service.Meta
-		backup   service.Backup
 	)
 
 	if addrs := cfg.Gateway.BackupManager.Client.Addrs; len(addrs) == 0 {
 		return nil, errors.ErrInvalidBackupConfig
 	}
 
-	backupClientOptions := append(
-		cfg.Gateway.BackupManager.Client.Opts(),
-		grpc.WithErrGroup(eg),
-	)
-
 	discovererClientOptions := append(
 		cfg.Gateway.Discoverer.Client.Opts(),
 		grpc.WithErrGroup(eg),
 	)
-
-	metadataClientOptions := append(
-		cfg.Gateway.Meta.Client.Opts(),
-		grpc.WithErrGroup(eg),
-	)
-
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(cfg.Observability)
 		if err != nil {
 			return nil, err
 		}
-		backupClientOptions = append(
-			backupClientOptions,
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
 		discovererClientOptions = append(
 			discovererClientOptions,
 			grpc.WithDialOptions(
 				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
 		)
-		metadataClientOptions = append(
-			metadataClientOptions,
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
 	}
 
-	backup, err = service.NewBackup(
-		service.WithBackupAddr(cfg.Gateway.BackupManager.Client.Addrs[0]),
-		service.WithBackupClient(
-			grpc.New(backupClientOptions...),
-		),
-	)
-	if err != nil {
-		return nil, err
-	}
 	client, err := discoverer.New(
 		discoverer.WithAutoConnect(true),
 		discoverer.WithName(cfg.Gateway.AgentName),
@@ -142,48 +104,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if addrs := cfg.Gateway.Meta.Client.Addrs; len(addrs) == 0 {
 		return nil, errors.ErrInvalidMetaDataConfig
 	}
-	metadata, err = service.NewMeta(
-		service.WithMetaAddr(cfg.Gateway.Meta.Client.Addrs[0]),
-		service.WithMetaClient(
-			grpc.New(metadataClientOptions...),
-		),
-		service.WithMetaCacheEnabled(cfg.Gateway.Meta.EnableCache),
-		service.WithMetaCacheExpireDuration(cfg.Gateway.Meta.CacheExpiration),
-		service.WithMetaCacheExpiredCheckDuration(cfg.Gateway.Meta.ExpiredCacheCheckDuration),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	ef := cfg.Gateway.EgressFilter
-	if ef != nil &&
-		ef.Client != nil &&
-		ef.Client.Addrs != nil &&
-		len(ef.Client.Addrs) != 0 {
-		egressFilterClientOptions := append(
-			ef.Client.Opts(),
-			grpc.WithErrGroup(eg),
-		)
-		if cfg.Observability.Enabled {
-			egressFilterClientOptions = append(
-				egressFilterClientOptions,
-				grpc.WithDialOptions(
-					grpc.WithStatsHandler(metric.NewClientHandler()),
-				),
-			)
-		}
-		filter, err = service.NewFilter(
-			service.WithFilterClient(
-				grpc.New(egressFilterClientOptions...),
-			),
-		)
-	}
 
 	v := handler.New(
 		handler.WithGateway(gateway),
-		handler.WithBackup(backup),
-		handler.WithMeta(metadata),
-		handler.WithFilters(filter),
 		handler.WithErrGroup(eg),
 		handler.WithReplicationCount(cfg.Gateway.IndexReplica),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
@@ -237,10 +160,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		cfg:           cfg,
 		server:        srv,
 		observability: obs,
-		filter:        filter,
 		gateway:       gateway,
-		metadata:      metadata,
-		backup:        backup,
 	}, nil
 }
 
@@ -253,31 +173,10 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 6)
-	var bech, fech, mech, gech, sech, oech <-chan error
+	var gech, sech, oech <-chan error
 	var err error
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)
-	}
-	if r.backup != nil {
-		bech, err = r.backup.Start(ctx)
-		if err != nil {
-			close(ech)
-			return nil, err
-		}
-	}
-	if r.filter != nil {
-		fech, err = r.filter.Start(ctx)
-		if err != nil {
-			close(ech)
-			return nil, err
-		}
-	}
-	if r.metadata != nil {
-		mech, err = r.metadata.Start(ctx)
-		if err != nil {
-			close(ech)
-			return nil, err
-		}
 	}
 	if r.gateway != nil {
 		gech, err = r.gateway.Start(ctx)
@@ -294,10 +193,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return ctx.Err()
 			case err = <-oech:
-			case err = <-bech:
-			case err = <-fech:
 			case err = <-gech:
-			case err = <-mech:
 			case err = <-sech:
 			}
 			if err != nil {

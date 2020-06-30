@@ -191,7 +191,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	}
 	uuid := fuid.String()
 	vec.Id = uuid
-	_, err = s.gateway.Insert(ctx, vec, s.copts...)
+	loc, err := s.gateway.Insert(ctx, vec, s.copts...)
 	if err != nil {
 		err = errors.Wrapf(err, "Insert API (do multiple) failed to Insert uuid = %s\tmeta = %s\t info = %#v", uuid, meta, info.Get())
 		log.Error(err)
@@ -208,7 +208,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Insert API meta %s & uuid %s couldn't store", meta, uuid), err, info.Get())
 	}
-	return new(payload.Object_Location), nil
+	return loc, nil
 }
 
 func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
@@ -305,7 +305,7 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 		return nil, status.WrapWithInternal(fmt.Sprintf("Update API failed request %#v", vec), err, info.Get())
 	}
 
-	return new(payload.Object_Location), nil
+	return res, nil
 }
 
 func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
@@ -333,23 +333,24 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 	for _, vec := range vecs.GetVectors() {
 		ids = append(ids, vec.GetId())
 	}
-	_, err = s.MultiRemove(ctx, &payload.Object_IDs{
-		Ids: ids,
-	})
+	metas, err := s.metadata.GetUUIDs(ctx, ids...)
 	if err != nil {
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed Remove request %#v", ids), err, info.Get())
+		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed MultiUpdate request %#v", ids), err, info.Get())
 	}
-	_, err = s.MultiInsert(ctx, vecs)
+	for i := range vecs.GetVectors(){
+		vecs.Vectors[i].Id = metas[i]
+	}
+	res, err = s.MultiUpdate(ctx, vecs)
 	if err != nil {
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed Insert request %#v", vecs), err, info.Get())
+		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed MultiUpdate request %#v", ids), err, info.Get())
 	}
-	return new(payload.Object_Locations), nil
+	return res, err
 }
 
 func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*payload.Object_Location, error) {
@@ -361,6 +362,7 @@ func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*paylo
 	}()
 
 	meta := vec.GetId()
+	s.metadata.GetUUID(ctx, string)
 	exists, errs := s.metadata.Exists(ctx, meta)
 	if errs != nil {
 		log.Error(errs)
