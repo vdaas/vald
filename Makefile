@@ -319,22 +319,10 @@ tensorflow/install: /usr/local/lib/libtensorflow.so
 	rm -f libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
 	ldconfig
 
-.PHONY: test
-## run tests
-test:
-	GO111MODULE=on go test --race -coverprofile=cover.out ./...
-
 .PHONY: lint
 ## run lints
 lint:
 	$(call go-lint)
-
-
-.PHONY: coverage
-## calculate coverages
-coverage:
-	go test -v -race -covermode=atomic -coverprofile=coverage.out ./...
-	go tool cover -html=coverage.out -o coverage.html
 
 .PHONY: changelog/update
 ## update changelog

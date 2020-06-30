@@ -14,7 +14,24 @@
 # limitations under the License.
 #
 
+.PHONY: test
+## run tests
+test:
+	go test -json -cover ./... | tparse -top
+
+.PHONY: coverage
+## calculate coverages
+coverage:
+	go test -v -race -covermode=atomic -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out -o coverage.html
+
+.PHONY: tparse/install
+## install tparse
+tparse/install:
+	go get -u github.com/mfridman/tparse
+
 .PHONY: gotests/install
+## install gotests
 gotests/install:
 	go get -u github.com/cweill/gotests/...
 

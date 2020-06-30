@@ -1,0 +1,31 @@
+name: 'Run tests'
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/test.yml'
+      - 'internal/**'
+      - 'pkg/**'
+      - 'cmd/**'
+  pull_request:
+    paths:
+      - '.github/workflows/test.yml'
+      - 'internal/**'
+      - 'pkg/**'
+      - 'cmd/**'
+
+jobs:
+  coverage:
+    name: Run tests
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: Run tests
+        run: |
+          make test
