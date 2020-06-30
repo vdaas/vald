@@ -358,7 +358,14 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 	res = new(payload.Empty)
 	err = s.ngt.CreateIndex(ctx, c.GetPoolSize())
 	if err != nil {
-		// TODO: Use WrapWithFailedPrecondition when the error is "uncommitted indexes are not found"
+		if err == errors.ErrUncommittedIndexNotFound {
+			log.Warnf("[CreateIndex]\tfailed precondition error\t%+v", err)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
+			}
+			return nil, status.WrapWithFailedPrecondition("CreateIndex API failed", err)
+		}
+
 		log.Errorf("[CreateIndex]\tUnknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))

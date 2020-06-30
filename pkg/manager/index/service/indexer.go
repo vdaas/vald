@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 )
@@ -158,14 +159,10 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 					PoolSize: idx.creationPoolSize,
 				}, copts...)
 				if err != nil {
-					// TODO: handle FailedPrecondition errors using
-					// if erpc := status.FromError(err); erpc != nil {
-					// 	switch erpc.Status {
-					// 	case status.FailedPrecondition:
-					// 		return nil
-					// 	default:
-					// 	}
-					// }
+					if status.Code(err) == status.FailedPrecondition {
+						log.Debugf("CreateIndex of %s skipped: %s", addr, err)
+						return nil
+					}
 					log.Warnf("an error occurred while calling CreateIndex of %s: %s", addr, err)
 					return err
 				}
