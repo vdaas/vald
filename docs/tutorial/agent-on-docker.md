@@ -153,5 +153,5 @@ This chapter will use NGT for the core engine of Vald Agent.
 
 1. Clean Up
 
-    Stop the Vald Agent docker instance via `Ctrl+C`.
+    Stop the Vald Agent docker container via `Ctrl+C`.
 
