@@ -132,20 +132,18 @@ func Test_watch_init(t *testing.T) {
 	type test struct {
 		name       string
 		fields     fields
-		wantFunc   func(*testing.T) want
+		want       want
 		checkFunc  func(want, *watch, error) error
-		beforeFunc func()
+		beforeFunc func(*testing.T, *fields)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		// if w.want != nil {
-		// 	if !reflect.DeepEqual(got.w, w.want.w) {
-		// 		return errors.Errorf("got = %v, want %v", got, w.want)
-		// 	}
-		// }
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
 		return nil
 	}
 	tests := []test{
@@ -156,10 +154,8 @@ func Test_watch_init(t *testing.T) {
 					"vald.go": struct{}{},
 				},
 			},
-			wantFunc: func(*testing.T) want {
-				return want{
-					err: syscall.Errno(0x2),
-				}
+			want: want{
+				err: syscall.Errno(0x2),
 			},
 		},
 
@@ -170,20 +166,20 @@ func Test_watch_init(t *testing.T) {
 					"watch.go": struct{}{},
 				},
 			},
-			wantFunc: func(t *testing.T) want {
-				t.Helper()
-
-				w, err := fsnotify.NewWatcher()
-				if err != nil {
-					t.Fatal(err)
+			checkFunc: func(w want, got *watch, err error) error {
+				if !errors.Is(err, w.err) {
+					return errors.Errorf("got error = %v, want %v", err, w.err)
 				}
-
-				return want{
-					want: &watch{
-						w: w,
-					},
-					err: nil,
+				if got == nil {
+					return errors.New("got is nil")
 				}
+				if got.w == nil {
+					return errors.New("got w is nil")
+				}
+				return nil
+			},
+			want: want{
+				err: nil,
 			},
 		},
 	}
@@ -192,7 +188,7 @@ func Test_watch_init(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt, &test.fields)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc()
@@ -206,7 +202,7 @@ func Test_watch_init(t *testing.T) {
 			}
 
 			got, err := w.init()
-			if err := test.checkFunc(test.wantFunc(tt), got, err); err != nil {
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
