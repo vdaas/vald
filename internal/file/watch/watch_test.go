@@ -19,14 +19,14 @@ package watch
 import (
 	"context"
 	"fmt"
+	"os"
 	"reflect"
-	"sync"
 	"syscall"
 	"testing"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"go.uber.org/goleak"
 )
 
@@ -37,6 +37,14 @@ var (
 		goleak.IgnoreTopFunction("syscall.Syscall6"),
 	}
 )
+
+func TestMain(m *testing.M) {
+	log.Init()
+
+	code := m.Run()
+
+	os.Exit(code)
+}
 
 func TestNew(t *testing.T) {
 	type args struct {
@@ -108,24 +116,14 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_watch_init(t *testing.T) {
 	type fields struct {
-		w        *fsnotify.Watcher
-		eg       errgroup.Group
-		dirs     map[string]struct{}
-		mu       sync.RWMutex
-		onChange func(ctx context.Context, name string) error
-		onCreate func(ctx context.Context, name string) error
-		onRename func(ctx context.Context, name string) error
-		onDelete func(ctx context.Context, name string) error
-		onWrite  func(ctx context.Context, name string) error
-		onChmod  func(ctx context.Context, name string) error
-		onError  func(ctx context.Context, err error) error
+		w    *fsnotify.Watcher
+		dirs map[string]struct{}
 	}
 	type want struct {
 		want *watch
@@ -134,7 +132,7 @@ func Test_watch_init(t *testing.T) {
 	type test struct {
 		name       string
 		fields     fields
-		want       want
+		wantFunc   func(*testing.T) want
 		checkFunc  func(want, *watch, error) error
 		beforeFunc func()
 		afterFunc  func()
@@ -143,62 +141,56 @@ func Test_watch_init(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
+		// if w.want != nil {
+		// 	if !reflect.DeepEqual(got.w, w.want.w) {
+		// 		return errors.Errorf("got = %v, want %v", got, w.want)
+		// 	}
+		// }
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           w: nil,
-		           eg: nil,
-		           dirs: nil,
-		           mu: sync.RWMutex{},
-		           onChange: nil,
-		           onCreate: nil,
-		           onRename: nil,
-		           onDelete: nil,
-		           onWrite: nil,
-		           onChmod: nil,
-		           onError: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns (nil, error) when watcher.Add returns no such file or directory",
+			fields: fields{
+				dirs: map[string]struct{}{
+					"vald.go": struct{}{},
+				},
+			},
+			wantFunc: func(*testing.T) want {
+				return want{
+					err: syscall.Errno(0x2),
+				}
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           w: nil,
-		           eg: nil,
-		           dirs: nil,
-		           mu: sync.RWMutex{},
-		           onChange: nil,
-		           onCreate: nil,
-		           onRename: nil,
-		           onDelete: nil,
-		           onWrite: nil,
-		           onChmod: nil,
-		           onError: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns (*watch, nil) when no error occurs internally",
+			fields: fields{
+				dirs: map[string]struct{}{
+					"watch.go": struct{}{},
+				},
+			},
+			wantFunc: func(t *testing.T) want {
+				t.Helper()
+
+				w, err := fsnotify.NewWatcher()
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				return want{
+					want: &watch{
+						w: w,
+					},
+					err: nil,
+				}
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -209,24 +201,14 @@ func Test_watch_init(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			w := &watch{
-				w:        test.fields.w,
-				eg:       test.fields.eg,
-				dirs:     test.fields.dirs,
-				mu:       test.fields.mu,
-				onChange: test.fields.onChange,
-				onCreate: test.fields.onCreate,
-				onRename: test.fields.onRename,
-				onDelete: test.fields.onDelete,
-				onWrite:  test.fields.onWrite,
-				onChmod:  test.fields.onChmod,
-				onError:  test.fields.onError,
+				w:    test.fields.w,
+				dirs: test.fields.dirs,
 			}
 
 			got, err := w.init()
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := test.checkFunc(test.wantFunc(tt), got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -237,9 +219,7 @@ func Test_watch_Start(t *testing.T) {
 	}
 	type fields struct {
 		w        *fsnotify.Watcher
-		eg       errgroup.Group
 		dirs     map[string]struct{}
-		mu       sync.RWMutex
 		onChange func(ctx context.Context, name string) error
 		onCreate func(ctx context.Context, name string) error
 		onRename func(ctx context.Context, name string) error
@@ -338,9 +318,7 @@ func Test_watch_Start(t *testing.T) {
 			}
 			w := &watch{
 				w:        test.fields.w,
-				eg:       test.fields.eg,
 				dirs:     test.fields.dirs,
-				mu:       test.fields.mu,
 				onChange: test.fields.onChange,
 				onCreate: test.fields.onCreate,
 				onRename: test.fields.onRename,
@@ -479,48 +457,51 @@ func Test_watch_Remove(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if w.want != nil {
-			for name := range w.want.dirs {
-				fmt.Println(name)
+
+		if got, want := got.dirs, w.want.dirs; len(got) == len(want) {
+			for name := range want {
+				if _, ok := got[name]; !ok {
+					return errors.Errorf("dirs %s key is not exists", name)
+				}
 			}
 		} else {
-			if got != nil {
-				return errors.Errorf("got watch = %v, want %v", got, w.want)
-			}
+			return errors.Errorf("got dirs length = %d, want: %d", len(got), len(want))
 		}
 		return nil
+	}
+	defaultBeforeFunc := func(t *testing.T, fields *fields, args args) {
+		t.Helper()
+
+		var err error
+		fields.w, err = fsnotify.NewWatcher()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for name := range fields.dirs {
+			if err = fields.w.Add(name); err != nil {
+				t.Fatal(err)
+			}
+		}
 	}
 	tests := []test{
 		{
 			name: "returns nil when w.w.Remove returns nil",
 			args: args{
 				dirs: []string{
-					"./watch.go", "./watch_test.go",
+					"watch.go", "watch_test.go",
 				},
 			},
 			fields: fields{
 				dirs: map[string]struct{}{
-					"./watch.go":      struct{}{},
-					"./watch_test.go": struct{}{},
+					"watch.go":      struct{}{},
+					"watch_test.go": struct{}{},
 				},
 			},
-			beforeFunc: func(t *testing.T, fields *fields, args args) {
-				t.Helper()
-
-				var err error
-
-				fields.w, err = fsnotify.NewWatcher()
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				for _, name := range args.dirs {
-					if err = fields.w.Add(name); err != nil {
-						t.Fatal(err)
-					}
-				}
-			},
 			want: want{
+				want: &watch{
+					dirs: map[string]struct{}{},
+				},
 				err: nil,
 			},
 		},
@@ -529,31 +510,21 @@ func Test_watch_Remove(t *testing.T) {
 			name: "returns error when w.w.Remove returns non-exist inotify error",
 			args: args{
 				dirs: []string{
-					"./watch.go", "./watch_test.go", "vald.go",
+					"watch.go", "vald.go", "watch_test.go",
 				},
 			},
 			fields: fields{
 				dirs: map[string]struct{}{
-					"./watch.go":      struct{}{},
-					"./watch_test.go": struct{}{},
+					"watch.go":      struct{}{},
+					"watch_test.go": struct{}{},
 				},
 			},
-			beforeFunc: func(t *testing.T, fields *fields, args args) {
-				t.Helper()
-				var err error
-
-				fields.w, err = fsnotify.NewWatcher()
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				for _, name := range args.dirs[:2] {
-					if err = fields.w.Add(name); err != nil {
-						t.Fatal(err)
-					}
-				}
-			},
 			want: want{
+				want: &watch{
+					dirs: map[string]struct{}{
+						"watch_test.go": struct{}{},
+					},
+				},
 				err: fmt.Errorf("can't remove non-existent inotify watch for: vald.go"),
 			},
 		},
@@ -562,9 +533,11 @@ func Test_watch_Remove(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, &test.fields, test.args)
+			if test.beforeFunc == nil {
+				test.beforeFunc = defaultBeforeFunc
 			}
+			test.beforeFunc(tt, &test.fields, test.args)
+
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
@@ -590,17 +563,8 @@ func Test_watch_Stop(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		w        *fsnotify.Watcher
-		eg       errgroup.Group
-		dirs     map[string]struct{}
-		mu       sync.RWMutex
-		onChange func(ctx context.Context, name string) error
-		onCreate func(ctx context.Context, name string) error
-		onRename func(ctx context.Context, name string) error
-		onDelete func(ctx context.Context, name string) error
-		onWrite  func(ctx context.Context, name string) error
-		onChmod  func(ctx context.Context, name string) error
-		onError  func(ctx context.Context, err error) error
+		w    *fsnotify.Watcher
+		dirs map[string]struct{}
 	}
 	type want struct {
 		err error
@@ -611,7 +575,7 @@ func Test_watch_Stop(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
+		beforeFunc func(*testing.T, *fields, args)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
@@ -621,64 +585,68 @@ func Test_watch_Stop(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           w: nil,
-		           eg: nil,
-		           dirs: nil,
-		           mu: sync.RWMutex{},
-		           onChange: nil,
-		           onCreate: nil,
-		           onRename: nil,
-		           onDelete: nil,
-		           onWrite: nil,
-		           onChmod: nil,
-		           onError: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns nil when w.Remove returns nil",
+			args: args{
+				ctx: context.Background(),
+			},
+			fields: fields{
+				dirs: map[string]struct{}{
+					"watch.go":      struct{}{},
+					"watch_test.go": struct{}{},
+				},
+			},
+			beforeFunc: func(t *testing.T, fields *fields, args args) {
+				t.Helper()
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           w: nil,
-		           eg: nil,
-		           dirs: nil,
-		           mu: sync.RWMutex{},
-		           onChange: nil,
-		           onCreate: nil,
-		           onRename: nil,
-		           onDelete: nil,
-		           onWrite: nil,
-		           onChmod: nil,
-		           onError: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+				var err error
+				fields.w, err = fsnotify.NewWatcher()
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				for name := range fields.dirs {
+					err = fields.w.Add(name)
+					if err != nil {
+						t.Fatal(err)
+					}
+				}
+			},
+			want: want{
+				err: nil,
+			},
+		},
+
+		{
+			name: "returns error when w.Remove returns non-exist inotify error",
+			args: args{
+				ctx: context.Background(),
+			},
+			fields: fields{
+				dirs: map[string]struct{}{
+					"watch.go": struct{}{},
+				},
+			},
+			beforeFunc: func(t *testing.T, fields *fields, args args) {
+				t.Helper()
+
+				var err error
+				fields.w, err = fsnotify.NewWatcher()
+				if err != nil {
+					t.Fatal(err)
+				}
+			},
+			want: want{
+				err: fmt.Errorf("can't remove non-existent inotify watch for: watch.go"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, &test.fields, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -687,24 +655,14 @@ func Test_watch_Stop(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			w := &watch{
-				w:        test.fields.w,
-				eg:       test.fields.eg,
-				dirs:     test.fields.dirs,
-				mu:       test.fields.mu,
-				onChange: test.fields.onChange,
-				onCreate: test.fields.onCreate,
-				onRename: test.fields.onRename,
-				onDelete: test.fields.onDelete,
-				onWrite:  test.fields.onWrite,
-				onChmod:  test.fields.onChmod,
-				onError:  test.fields.onError,
+				w:    test.fields.w,
+				dirs: test.fields.dirs,
 			}
 
 			err := w.Stop(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
