@@ -4,7 +4,7 @@ Vald is designed and implemented based on Cloud-Native architecture.
 However, there may be cases that want to use only Vald Agent without Kubernetes.
 
 This article will show you how to deploy and run the Vald Agent on Docker.
-Fashion-mnist is used as an example dataset, same as [Get Stared](../tutorial/get-started.md)
+Fashion-mnist is used as an example dataset, same as [Get Started](../tutorial/get-started.md).
 
 ## Requirements
 
