@@ -23,12 +23,11 @@ import (
 
 // GetTestdataPath returns the test data file path under `internal/test/data`
 func GetTestdataPath(filename string) string {
-	basepath := filepath.Dir(datasetDir())
-	fp, _ := filepath.Abs(basepath + "/vald/internal/test/data/" + filename)
+	fp, _ := filepath.Abs(baseDir() + "/internal/test/data/" + filename)
 	return fp
 }
 
-func datasetDir() string {
+func baseDir() string {
 	wd, err := os.Getwd()
 	if err != nil {
 		return ""

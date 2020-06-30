@@ -53,7 +53,7 @@ func TestGetTestdataPath(t *testing.T) {
 			},
 			want: want{
 				want: func() string {
-					return datasetDir() + "/internal/test/data/tls/dummyCa.pem"
+					return baseDir() + "/internal/test/data/tls/dummyCa.pem"
 				}(),
 			},
 		},
@@ -81,7 +81,7 @@ func TestGetTestdataPath(t *testing.T) {
 	}
 }
 
-func Test_datasetDir(t *testing.T) {
+func Test_baseDir(t *testing.T) {
 	type want struct {
 		want string
 	}
@@ -121,7 +121,7 @@ func Test_datasetDir(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := datasetDir()
+			got := baseDir()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
