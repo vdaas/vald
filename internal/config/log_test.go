@@ -65,7 +65,7 @@ func TestLogging_Bind(t *testing.T) {
 			},
 		},
 		{
-			name: "returns Logging when all fields contain has prefix/suffix symbol",
+			name: "returns Logging with environment variable when it contains `_` prefix and suffix",
 			fields: fields{
 				Logger: "_logger_",
 				Level:  "_level_",
