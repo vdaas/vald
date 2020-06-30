@@ -50,7 +50,7 @@ func TestLogging_Bind(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return Logging when all fields contain no prefix/suffix symbol",
+			name: "returns Logging when all fields contain no prefix/suffix symbol",
 			fields: fields{
 				Logger: "logger",
 				Level:  "info",
@@ -65,7 +65,7 @@ func TestLogging_Bind(t *testing.T) {
 			},
 		},
 		{
-			name: "return Logging when all fields contain has prefix/suffix symbol",
+			name: "returns Logging when all fields contain has prefix/suffix symbol",
 			fields: fields{
 				Logger: "_logger_",
 				Level:  "_level_",
@@ -90,7 +90,7 @@ func TestLogging_Bind(t *testing.T) {
 			},
 		},
 		{
-			name: "return Logging when all fields are empty",
+			name: "returns Logging when all fields are empty",
 			want: want{
 				want: new(Logging),
 			},
