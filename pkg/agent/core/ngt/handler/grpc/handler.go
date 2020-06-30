@@ -359,11 +359,11 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 	err = s.ngt.CreateIndex(ctx, c.GetPoolSize())
 	if err != nil {
 		if err == errors.ErrUncommittedIndexNotFound {
-			log.Warnf("[CreateIndex]\tfailed precondition error\t%+v", err)
+			log.Warnf("[CreateIndex]\tfailed precondition error\t%s", err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
 			}
-			return nil, status.WrapWithFailedPrecondition("CreateIndex API failed", err)
+			return nil, status.WrapWithFailedPrecondition(fmt.Sprintf("CreateIndex API failed: %s", err), err)
 		}
 
 		log.Errorf("[CreateIndex]\tUnknown error\t%+v", err)
