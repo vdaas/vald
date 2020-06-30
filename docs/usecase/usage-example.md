@@ -53,10 +53,22 @@
   Here are some examples of the use case of data analysis.
 
   1. AI malware detection
+
+  To detect the malware in Vald, you need to vectorize the malware binary file and insert into Vald first.
+  You can analysis your binary by performing a search to find a similar binary in Vald.
+  If your binary is similar with the malware binary, you can trigger the alert for users.
+
   1. Price optimization
+
+  By applying the price optimization technique using Vald, you can find the most optimized price for your business.
+  You can apply model like GLMs to achieve it and use Vald as a machine learning engine for your business.
+
   1. Social analysis
 
-## Advanced usecase
+  To analysis the social relationship of users, you can suggest them their related friends, page recommandation, or other use cases.
+  You can apply different models to analysis the social data, and use Vald as a recommandation engine for your business.
+
+## Advanced use cases
 
   Besides the general use case of Vald or vector search engine, Vald supports a user-defined filter that the user can customize the filter to filter the specific result.
 
