@@ -42,7 +42,7 @@ This chapter will use NGT for the core engine of Vald Agent.
 1. Create `config.yaml`
 
     The configuration of Vald agent for docker is set using `config.yaml`<br>
-    You can also check [the sample](https://github.com/vdaas/vald/blob/master/cmd/agent/core/ngt/sample.yaml).
+    You can also check [the sample configuration](https://github.com/vdaas/vald/blob/master/cmd/agent/core/ngt/sample.yaml).
 
     ```bash
     cat << EOF > config.yaml
@@ -153,5 +153,5 @@ This chapter will use NGT for the core engine of Vald Agent.
 
 1. Clean Up
 
-    Remove the Vald Agent docker via `Ctrl+C`.
+    Stop the Vald Agent docker instance via `Ctrl+C`.
 
