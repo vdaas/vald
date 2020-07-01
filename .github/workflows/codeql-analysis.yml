@@ -11,6 +11,7 @@ on:
        - 'v*.*.*-*'
   pull_request:
     paths:
+      - '.github/workflows/codeql-analysis.yml'
       - '**.go'
   schedule:
     - cron: '0 1 * * 2'
@@ -39,6 +40,7 @@ jobs:
         uses: github/codeql-action/init@v1
         with:
           languages: go
+          config-file: ./.github/codeql/codeql-config.yaml
       - name: Autobuild
         uses: github/codeql-action/autobuild@v1
       - name: Perform CodeQL Analysis
