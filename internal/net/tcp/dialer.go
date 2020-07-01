@@ -61,7 +61,7 @@ type dialerCache struct {
 }
 
 func (d *dialerCache) GetIP() string {
-	if atomic.LoadUint32(&d.cnt) > math.MaxUint32-100 {
+	if atomic.LoadUint32(&d.cnt) > math.MaxUint32/2 {
 		atomic.StoreUint32(&d.cnt, 0)
 	}
 	return d.ips[atomic.AddUint32(&d.cnt, 1)%d.Len()]
@@ -141,14 +141,11 @@ func (d *dialer) GetDialer() func(ctx context.Context, network, addr string) (ne
 }
 
 func (d *dialer) lookup(ctx context.Context, addr string) (*dialerCache, error) {
-	fmt.Println("lookup cache " + addr)
 	cache, ok := d.cache.Get(addr)
 	if ok {
-		fmt.Printf("lookup %v cache %v\n", addr, cache)
 		return cache.(*dialerCache), nil
 	}
 
-	fmt.Println("lookup")
 	r, err := d.der.Resolver.LookupIPAddr(ctx, addr)
 	if err != nil {
 		return nil, err
@@ -180,13 +177,15 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 		return nil, err
 	}
 
-	if dc, err := d.lookup(dctx, host); err == nil {
-		for i := uint32(0); i < dc.Len(); i++ {
-			if conn, err := d.dial(dctx, network, fmt.Sprintf("%s:%d", dc.GetIP(), port)); err == nil {
-				return conn, nil
+	if d.dnsCache {
+		if dc, err := d.lookup(dctx, host); err == nil {
+			for i := uint32(0); i < dc.Len(); i++ {
+				if conn, err := d.dial(dctx, network, fmt.Sprintf("%s:%d", dc.GetIP(), port)); err == nil {
+					return conn, nil
+				}
 			}
+			d.cache.Delete(host)
 		}
-		d.cache.Delete(host)
 	}
 	return d.dial(dctx, network, addr)
 }
