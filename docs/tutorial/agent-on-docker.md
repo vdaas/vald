@@ -52,7 +52,7 @@ This chapter will use NGT for the core engine of Vald Agent.
     logging:
       logger: glg
       level: debug
-      format: json
+      format: raw
     server_config:
       servers:
         - name: agent-grpc
@@ -92,9 +92,11 @@ This chapter will use NGT for the core engine of Vald Agent.
       search_edge_size: 10
       # in-memory mode enabled
       enable_in_memory_mode: true
-      # The limit duration of automatic indexing 
+      # The limit duration of automatic indexing
+      # auto_index_duration_limit should be 30m-6h for producation use. Below setting is a just example
       auto_index_duration_limit: 1m
       # Check duration of automatic indexing.
+      # auto_index_check_duration be 10m-1h for producation use. Below setting is a just example
       auto_index_check_duration: 10s
       # The number of cache to trigger automatic indexing
       auto_index_length: 100
@@ -114,11 +116,11 @@ This chapter will use NGT for the core engine of Vald Agent.
     If the deployment success, you can confirm the output will be similar to below.
 
     ```bash
-    {"Date":"2020-06-24T05:49:53.615263Z","Level":"INFO","Detail":"maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined"}
-    {"Date":"2020-06-24T05:49:53.615263Z","Level":"INFO","Detail":"service agent ngt v0.0.0 starting..."}
-    {"Date":"2020-06-24T05:49:53.615263Z","Level":"INFO","Detail":["daemon start"]}
-    {"Date":"2020-06-24T05:49:53.620263Z","Level":"INFO","Detail":"server agent-grpc executing preStartFunc"}
-    {"Date":"2020-06-24T05:49:53.620263Z","Level":"INFO","Detail":"gRPC server agent-grpc starting on 0.0.0.0:8081"}
+    2020-07-01 03:02:41	[INFO]:	maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+    2020-07-01 03:02:41	[INFO]:	service agent ngt v0.0.0 starting...
+    2020-07-01 03:02:41	[INFO]:	daemon start
+    2020-07-01 03:02:41	[INFO]:	server agent-grpc executing preStartFunc
+    2020-07-01 12:02:41	[INFO]:	gRPC server agent-grpc starting on 0.0.0.0:8081
     ```
 
 ## Run using example code
