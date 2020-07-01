@@ -29,7 +29,7 @@ var (
 	defaultOpts = []Option{
 		WithErrGroup(errgroup.Get()),
 		WithBackupDuration("10m"),
-		WithPostStopTimeout("10s"),
+		WithPostStopTimeout("20s"),
 	}
 )
 

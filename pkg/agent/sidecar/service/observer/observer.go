@@ -159,10 +159,19 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 		return err
 	}
 
-	_, err = o.w.Start(ctx)
+	wctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	_, err = o.w.Start(wctx)
 	if err != nil {
 		return err
 	}
+	defer func() {
+		e := o.w.Stop(wctx)
+		if e != nil {
+			log.Error("an error occurred when watcher stopped:", e)
+		}
+	}()
 
 	for {
 		select {
