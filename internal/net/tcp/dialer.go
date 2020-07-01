@@ -141,11 +141,14 @@ func (d *dialer) GetDialer() func(ctx context.Context, network, addr string) (ne
 }
 
 func (d *dialer) lookup(ctx context.Context, addr string) (*dialerCache, error) {
+	fmt.Println("lookup cache " + addr)
 	cache, ok := d.cache.Get(addr)
 	if ok {
+		fmt.Printf("lookup %v cache %v\n", addr, cache)
 		return cache.(*dialerCache), nil
 	}
 
+	fmt.Println("lookup")
 	r, err := d.der.Resolver.LookupIPAddr(ctx, addr)
 	if err != nil {
 		return nil, err
@@ -191,9 +194,11 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 func (d *dialer) dial(ctx context.Context, network string, addr string) (net.Conn, error) {
 	conn, err := d.der.DialContext(ctx, network, addr)
 	if err != nil {
-		if conn != nil {
-			conn.Close()
-		}
+		defer func(conn net.Conn) {
+			if conn != nil {
+				conn.Close()
+			}
+		}(conn)
 		return nil, err
 	}
 

@@ -717,7 +717,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns conn and nil when dialer returns conn and nil",
+			name: "returns conn",
 			args: args{
 				dctx:    context.Background(),
 				network: "tcp",
@@ -743,7 +743,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			},
 		},
 		{
-			name: "returns tls conn and nil when dialer returns tls conn and nil",
+			name: "returns tls conn",
 			args: args{
 				dctx:    context.Background(),
 				network: "tcp",
@@ -770,7 +770,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			},
 		},
 		{
-			name: "returns nil and error when lookup and dialer returns error about missing port in address",
+			name: "returns error when missing port in address",
 			args: args{
 				dctx:    context.Background(),
 				network: "tcp",
@@ -797,7 +797,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			},
 		},
 		func() test {
-			addr := "google.com"
+			addr := "invalid_ip"
 			cache := gache.New()
 			cache.Set(addr, &dialerCache{
 				ips: []string{
@@ -806,7 +806,46 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			})
 
 			return test{
-				name: "returns conn and nil when re-dial returns conn and nil due to invalid cache IP",
+				name: "remove cache when dial failed",
+				args: args{
+					dctx:    context.Background(),
+					network: "tcp",
+					addr:    addr + ":80",
+				},
+				fields: fields{
+					der: &net.Dialer{
+						Resolver: &net.Resolver{
+							PreferGo: false,
+						},
+					},
+					cache: cache,
+				},
+				checkFunc: func(w want, gotConn net.Conn, err error) error {
+					if err == nil {
+						return errors.New("err is nil")
+					}
+					if gotConn != nil {
+						return errors.New("conn is nil")
+					}
+
+					if _, ok := cache.Get(addr); ok {
+						return errors.New("cache value is not deleted")
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			addr := "google.com"
+			cache := gache.New()
+			cache.Set(addr, &dialerCache{
+				ips: []string{
+					"invalid_ip111",
+				},
+			})
+
+			return test{
+				name: "retry when cache invalid",
 				args: args{
 					dctx:    context.Background(),
 					network: "tcp",
@@ -824,13 +863,12 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					if err != nil {
 						return errors.Errorf("err is not nil: %v", err)
 					}
-
 					if gotConn == nil {
 						return errors.New("conn is nil")
 					}
 
-					if _, ok := cache.Get(addr); !ok {
-						return errors.New("cache value is not deleted")
+					if c, ok := cache.Get(addr); ok {
+						return errors.Errorf("cache value is set: %+v", c)
 					}
 					return nil
 				},
