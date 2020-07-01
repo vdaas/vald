@@ -55,7 +55,7 @@ jobs:
           git commit --signoff -m ":robot: Automatically update k8s manifests"
 
           git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push origin ${BRANCH_NAME}
+          git push -u origin ${BRANCH_NAME}
 
           curl --include --verbose --fail \
           -H "Accept: application/json" \
