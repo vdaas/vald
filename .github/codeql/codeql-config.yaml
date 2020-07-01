@@ -4,7 +4,7 @@ queries:
   # - uses: github/codeql-go/ql/src@lgtm.com
 
 paths:
-  - '/cmd'
-  - '/hack'
-  - '/internal'
-  - '/pkg'
+  - "/cmd"
+  - "/hack"
+  - "/internal"
+  - "/pkg"
