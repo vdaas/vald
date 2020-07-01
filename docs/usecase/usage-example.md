@@ -11,11 +11,11 @@
 
 ## Image and video processing
 
-  You can use Vald as the image/video processing engine to search the similar image/video or analysis the image/video for your use case.
+  You can use Vald as the image/video processing engine to search the similar image/video or analyze the image/video for your use case.
 
   Vald is capable to process a huge number of images at the same time so it case fit with your use case.
 
-  Here are some examples of what you can do with images and videos in Vald.
+  Here are some examples of what you can do with images and videos using Vald.
 
 - Search by image
 - Face recognition
@@ -29,7 +29,7 @@
 
   Vald can act as a brain of the personal assistant function, conversation interpreter and the natural language generation.
 
-  Here are some examples of what you can process in Vald.
+  Here are some examples of what you can process using Vald.
 
 - Personal assistant
 - Speech recognition
@@ -37,9 +37,9 @@
 
 ## Text processing
 
-  Since Vald supports some texting vectorizing like `BERT`, you can process your text in Vald.
+  Using a text vectorizing model like BERT, you can process your text data in Vald.
 
-  Here are some examples of the use case of text processing in Vald.
+  Here are some examples of the use case of text processing using Vald.
 
 - Search by text
 - Product recommendation based on text
@@ -54,8 +54,8 @@
 
 - AI malware detection
 
-  To detect the malware in Vald, you need to vectorize the malware binary file and insert into Vald first.
-  You can analysis your binary by performing a search to find a similar binary in Vald.
+  To detect the malware using Vald, you need to vectorize the malware binary file and insert into Vald first.
+  You can analyze your binary by performing a search to find a similar binary in Vald.
   If your binary is similar with the malware binary, you can trigger the alert for users.
   
 - Price optimization
@@ -65,8 +65,8 @@
 
 - Social analysis
 
-  To analysis the social relationship of users, you can suggest them their related friends, page recommendation, or other use cases.
-  You can apply different models to analysis the social data, and use Vald as a recommendation engine for your business.
+  To analyze the social relationship of users, you can suggest them their related friends, page recommendation, or other use cases.
+  You can apply different models to analyze the social data, and use Vald as a recommendation engine for your business.
 
 ## Advanced use cases
 
