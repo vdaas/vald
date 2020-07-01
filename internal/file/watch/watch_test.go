@@ -623,20 +623,29 @@ func Test_watch_Add(t *testing.T) {
 		dirs map[string]struct{}
 	}
 	type want struct {
-		err error
+		err  error
+		want *watch
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, *watch, error) error
 		beforeFunc func(*testing.T, *fields, args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if got, want := len(got.dirs), len(w.want.dirs); got != want {
+			return errors.Errorf("dirs length = %d, want %d", got, want)
+		}
+		for name := range w.want.dirs {
+			if _, ok := got.dirs[name]; !ok {
+				return errors.Errorf("dirs %s is not exists", name)
+			}
 		}
 		return nil
 	}
@@ -662,6 +671,12 @@ func Test_watch_Add(t *testing.T) {
 			},
 			want: want{
 				err: nil,
+				want: &watch{
+					dirs: map[string]struct{}{
+						"./watch.go":  struct{}{},
+						"./option.go": struct{}{},
+					},
+				},
 			},
 		},
 
@@ -677,6 +692,9 @@ func Test_watch_Add(t *testing.T) {
 			},
 			want: want{
 				err: syscall.Errno(0x2),
+				want: &watch{
+					dirs: make(map[string]struct{}),
+				},
 			},
 		},
 	}
@@ -701,7 +719,7 @@ func Test_watch_Add(t *testing.T) {
 			}
 
 			err := w.Add(test.args.dirs...)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -735,14 +753,14 @@ func Test_watch_Remove(t *testing.T) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
 
-		if got, want := got.dirs, w.want.dirs; len(got) == len(want) {
-			for name := range want {
-				if _, ok := got[name]; !ok {
-					return errors.Errorf("dirs %s key is not exists", name)
-				}
+		if got, want := len(got.dirs), len(w.want.dirs); got != want {
+			return errors.Errorf("dirs length = %d, want %d", got, want)
+		}
+
+		for name := range w.want.dirs {
+			if _, ok := got.dirs[name]; !ok {
+				return errors.Errorf("dirs %s is not exists", name)
 			}
-		} else {
-			return errors.Errorf("got dirs length = %d, want: %d", len(got), len(want))
 		}
 		return nil
 	}
@@ -844,20 +862,30 @@ func Test_watch_Stop(t *testing.T) {
 		dirs map[string]struct{}
 	}
 	type want struct {
-		err error
+		err  error
+		want *watch
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, *watch, error) error
 		beforeFunc func(*testing.T, *fields, args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if got, want := len(got.dirs), len(w.want.dirs); got != want {
+			return errors.Errorf("dirs length = %d, want %d", got, want)
+		}
+
+		for name := range w.want.dirs {
+			if _, ok := got.dirs[name]; !ok {
+				return errors.Errorf("dirs %s is not exists", name)
+			}
 		}
 		return nil
 	}
@@ -890,6 +918,9 @@ func Test_watch_Stop(t *testing.T) {
 				}
 			},
 			want: want{
+				want: &watch{
+					dirs: make(map[string]struct{}),
+				},
 				err: nil,
 			},
 		},
@@ -914,6 +945,9 @@ func Test_watch_Stop(t *testing.T) {
 				}
 			},
 			want: want{
+				want: &watch{
+					dirs: make(map[string]struct{}),
+				},
 				err: fmt.Errorf("can't remove non-existent inotify watch for: watch.go"),
 			},
 		},
@@ -937,7 +971,7 @@ func Test_watch_Stop(t *testing.T) {
 			}
 
 			err := w.Stop(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
