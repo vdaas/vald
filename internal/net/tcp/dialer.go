@@ -61,7 +61,7 @@ type dialerCache struct {
 }
 
 func (d *dialerCache) GetIP() string {
-	if atomic.LoadUint32(&d.cnt) > math.MaxUint32/2 {
+	if atomic.LoadUint32(&d.cnt) > math.MaxUint32-10000 {
 		atomic.StoreUint32(&d.cnt, 0)
 	}
 	return d.ips[atomic.AddUint32(&d.cnt, 1)%d.Len()]
