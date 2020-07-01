@@ -421,8 +421,8 @@ func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.
 		}
 	}()
 	return &payload.Info_Index_Count{
-		Stored:      uint32(len(s.ngt.UUIDs(ctx))),
-		Uncommitted: uint32(len(s.ngt.UncommittedUUIDs())),
+		Stored:      uint32(s.ngt.Len()),
+		Uncommitted: uint32(s.ngt.InsertVCacheLen()),
 		Indexing:    s.ngt.IsIndexing(),
 	}, nil
 }
