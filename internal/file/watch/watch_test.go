@@ -25,6 +25,7 @@ import (
 	"testing"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"go.uber.org/goleak"
@@ -72,31 +73,33 @@ func TestNew(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns (Watcher, nil) when option is not nil",
+			args: args{
+				opts: []Option{
+					WithDirs("watch.go"),
+				},
+			},
+			want: want{
+				err: nil,
+			},
+			checkFunc: func(w want, got Watcher, err error) error {
+				if !errors.Is(err, w.err) {
+					return errors.Errorf("got error = %v, want %v", err, w.err)
+				}
+				if got == nil {
+					return errors.Errorf("got is nil")
+				}
+				return nil
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns (nil, error) when option is nil and w.dirs is empty",
+			want: want{
+				err: errors.ErrWatchDirNotFound,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -216,6 +219,7 @@ func Test_watch_Start(t *testing.T) {
 	type fields struct {
 		w        *fsnotify.Watcher
 		dirs     map[string]struct{}
+		eg       errgroup.Group
 		onChange func(ctx context.Context, name string) error
 		onCreate func(ctx context.Context, name string) error
 		onRename func(ctx context.Context, name string) error
@@ -231,7 +235,7 @@ func Test_watch_Start(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		fieldsFunc func(*testing.T) fields
 		want       want
 		checkFunc  func(want, <-chan error, error) error
 		beforeFunc func(args)
@@ -241,68 +245,342 @@ func Test_watch_Start(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+
+		if !errors.Is(<-got, <-w.want) {
+			return errors.Errorf("errCh got = %v, want %v", got, w.want)
 		}
+
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           w: nil,
-		           eg: nil,
-		           dirs: nil,
-		           mu: sync.RWMutex{},
-		           onChange: nil,
-		           onCreate: nil,
-		           onRename: nil,
-		           onDelete: nil,
-		           onWrite: nil,
-		           onChmod: nil,
-		           onError: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "returns (chan error, nil) but channel contains error when w.w.Errors contains error and w.init returns nil",
+				args: args{
+					ctx: ctx,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					w, err := fsnotify.NewWatcher()
+					if err != nil {
+						t.Fatal(err)
+					}
+					w.Errors = make(chan error, 1)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           w: nil,
-		           eg: nil,
-		           dirs: nil,
-		           mu: sync.RWMutex{},
-		           onChange: nil,
-		           onCreate: nil,
-		           onRename: nil,
-		           onDelete: nil,
-		           onWrite: nil,
-		           onChmod: nil,
-		           onError: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+					w.Errors <- errors.New("err")
+					w.Close()
+
+					return fields{
+						w:  w,
+						eg: errgroup.Get(),
+						dirs: map[string]struct{}{
+							"watch.go": struct{}{},
+						},
+					}
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					want: func() chan error {
+						ch := make(chan error, 1)
+						ch <- errors.New("err")
+						close(ch)
+						return ch
+					}(),
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "returns (chan error, nil) but channel contains error when w.OnChange is not nil and w.Write returns error",
+				args: args{
+					ctx: ctx,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					w, err := fsnotify.NewWatcher()
+					if err != nil {
+						t.Fatal(err)
+					}
+					w.Events = make(chan fsnotify.Event, 1)
+
+					w.Events <- fsnotify.Event{
+						Name: "watch.go",
+						Op:   fsnotify.Write,
+					}
+
+					return fields{
+						w:  w,
+						eg: errgroup.Get(),
+						onChange: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onChange name got = %s, want %s", got, want)
+							}
+							return errors.New("err1")
+						},
+						onWrite: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onWrite name got = %s, want %s", got, want)
+							}
+							return errors.New("err2")
+						},
+					}
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					want: func() chan error {
+						ch := make(chan error, 2)
+						ch <- errors.New("err1")
+						ch <- errors.New("err2")
+						close(ch)
+						return ch
+					}(),
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "returns (chan error, nil) but channel contains error when w.Write returns error",
+				args: args{
+					ctx: ctx,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					w, err := fsnotify.NewWatcher()
+					if err != nil {
+						t.Fatal(err)
+					}
+					w.Events = make(chan fsnotify.Event, 1)
+
+					w.Events <- fsnotify.Event{
+						Name: "watch.go",
+						Op:   fsnotify.Write,
+					}
+
+					return fields{
+						w:  w,
+						eg: errgroup.Get(),
+						onWrite: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onWrite name got = %s, want %s", got, want)
+							}
+							return errors.New("err")
+						},
+					}
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					want: func() chan error {
+						ch := make(chan error, 1)
+						ch <- errors.New("err")
+						close(ch)
+						return ch
+					}(),
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "returns (chan error, nil) but channel contains error when w.Create returns error",
+				args: args{
+					ctx: ctx,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					w, err := fsnotify.NewWatcher()
+					if err != nil {
+						t.Fatal(err)
+					}
+					w.Events = make(chan fsnotify.Event, 1)
+
+					w.Events <- fsnotify.Event{
+						Name: "watch.go",
+						Op:   fsnotify.Create,
+					}
+
+					return fields{
+						w:  w,
+						eg: errgroup.Get(),
+						onCreate: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onWrite name got = %s, want %s", got, want)
+							}
+							return errors.New("err")
+						},
+					}
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					want: func() chan error {
+						ch := make(chan error, 1)
+						ch <- errors.New("err")
+						close(ch)
+						return ch
+					}(),
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "returns (chan error, nil) but channel contains error when w.Delete returns error",
+				args: args{
+					ctx: ctx,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					w, err := fsnotify.NewWatcher()
+					if err != nil {
+						t.Fatal(err)
+					}
+					w.Events = make(chan fsnotify.Event, 1)
+
+					w.Events <- fsnotify.Event{
+						Name: "watch.go",
+						Op:   fsnotify.Remove,
+					}
+
+					return fields{
+						w:  w,
+						eg: errgroup.Get(),
+						onDelete: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onWrite name got = %s, want %s", got, want)
+							}
+							return errors.New("err")
+						},
+					}
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					want: func() chan error {
+						ch := make(chan error, 1)
+						ch <- errors.New("err")
+						close(ch)
+						return ch
+					}(),
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "returns (chan error, nil) but channel contains error when w.Chmod returns error",
+				args: args{
+					ctx: ctx,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					w, err := fsnotify.NewWatcher()
+					if err != nil {
+						t.Fatal(err)
+					}
+					w.Events = make(chan fsnotify.Event, 1)
+
+					w.Events <- fsnotify.Event{
+						Name: "watch.go",
+						Op:   fsnotify.Chmod,
+					}
+
+					return fields{
+						w:  w,
+						eg: errgroup.Get(),
+						onChmod: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onWrite name got = %s, want %s", got, want)
+							}
+							return errors.New("err")
+						},
+					}
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					want: func() chan error {
+						ch := make(chan error, 1)
+						ch <- errors.New("err")
+						close(ch)
+						return ch
+					}(),
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "returns (chan error, nil) but channel contains error when w.Rename returns error",
+				args: args{
+					ctx: ctx,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					w, err := fsnotify.NewWatcher()
+					if err != nil {
+						t.Fatal(err)
+					}
+					w.Events = make(chan fsnotify.Event, 1)
+
+					w.Events <- fsnotify.Event{
+						Name: "watch.go",
+						Op:   fsnotify.Rename,
+					}
+
+					return fields{
+						w:  w,
+						eg: errgroup.Get(),
+						onRename: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onWrite name got = %s, want %s", got, want)
+							}
+							return errors.New("err")
+						},
+					}
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					want: func() chan error {
+						ch := make(chan error, 1)
+						ch <- errors.New("err")
+						close(ch)
+						return ch
+					}(),
+					err: nil,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -312,16 +590,19 @@ func Test_watch_Start(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			fields := test.fieldsFunc(tt)
+
 			w := &watch{
-				w:        test.fields.w,
-				dirs:     test.fields.dirs,
-				onChange: test.fields.onChange,
-				onCreate: test.fields.onCreate,
-				onRename: test.fields.onRename,
-				onDelete: test.fields.onDelete,
-				onWrite:  test.fields.onWrite,
-				onChmod:  test.fields.onChmod,
-				onError:  test.fields.onError,
+				w:        fields.w,
+				eg:       fields.eg,
+				dirs:     fields.dirs,
+				onChange: fields.onChange,
+				onCreate: fields.onCreate,
+				onRename: fields.onRename,
+				onDelete: fields.onDelete,
+				onWrite:  fields.onWrite,
+				onChmod:  fields.onChmod,
+				onError:  fields.onError,
 			}
 
 			got, err := w.Start(test.args.ctx)

@@ -145,7 +145,10 @@ func (w *watch) Start(ctx context.Context) (<-chan error, error) {
 			case err, ok = <-w.w.Errors:
 			}
 			if !ok {
-				w, err = w.init()
+				iw, err := w.init()
+				if err == nil {
+					w = iw
+				}
 			}
 			if err != nil {
 				handleErr(ctx, err)
@@ -159,12 +162,12 @@ func (w *watch) Add(dirs ...string) (err error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	for _, dir := range dirs {
-		w.dirs[dir] = struct{}{}
 		if w.w != nil {
 			err = w.w.Add(dir)
 			if err != nil {
 				return err
 			}
+			w.dirs[dir] = struct{}{}
 		}
 	}
 	return nil
