@@ -23,7 +23,7 @@ import (
 
 	"github.com/kpango/fuid"
 	"github.com/kpango/glg"
-	"github.com/vdaas/vald-client-go/agent"
+	agent "github.com/vdaas/vald-client-go/agent/core"
 	"github.com/vdaas/vald-client-go/payload"
 
 	"gonum.org/v1/hdf5"
@@ -90,7 +90,18 @@ func main() {
 			glg.Fatal(err)
 		}
 	}
-	glg.Info("Finish Inserting dataset. \n\n")
+	/**
+	Option: Run Indexing instead of Auto Indexing
+	If you run client.CreateIndex, it costs less time for search
+	**/
+	// glg.Info("Start Indexing dataset.")
+	// _, err = client.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+	// 	PoolSize: uint32(insertCount),
+	// })
+	// if err != nil {
+	// 	glg.Fatal(err)
+	// }
+	// glg.Info("Finish Indexing dataset. \n\n")
 
 	// Vald Agent starts indexing automatically after insert. It needs to wait until the indexing is completed before a search action is performed.
 	wt := time.Duration(indexingWaitSeconds) * time.Second
@@ -101,7 +112,7 @@ func main() {
 	Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
 	In this example, Vald Agent gets 10 approximate vectors each search vector.
 	**/
-	glg.Info("Start searching %d times", testCount)
+	glg.Infof("Start searching %d times", testCount)
 	for i, vec := range test[:testCount] {
 		// Send searching vector and configuration object to the Vald Agent server via gRPC.
 		res, err := client.Search(ctx, &payload.Search_Request{
