@@ -2,6 +2,40 @@
 
 This page introduces best practices to set up values for Vald Helm Chart.
 
+Table of Contents
+---
+
+- [Vald Helm Chart Overview](#vald-helm-chart-overview)
+- [Notable values in Vald Helm Chart](#notable-values-in-vald-helm-chart)
+    - [Basics](#basics)
+        - [Specify image tag](#specify-image-tag)
+        - [Specify appropriate logging level and format](#specify-appropriate-logging-level-and-format)
+        - [Servers](#servers)
+        - [Observability](#observability)
+    - [Agents](#agents)
+        - [NGT](#ngt)
+        - [Resource requests and limits, Pod priorities](#resource-requests-and-limits-pod-priorities)
+        - [Pod scheduling](#pod-scheduling)
+    - [Gateway](#gateway)
+        - [Ingress](#ingress)
+        - [Index replica](#index-replica)
+        - [Discoverer request duration](#discoverer-request-duration)
+        - [Meta cache](#meta-cache)
+        - [Resource requests and limits](#gateway-resource-requests-and-limits)
+        - [Init containers](#gateway-init-containers)
+    - [Discoverer](#discoverer)
+        - [Resource requests and limits](#discoverer-resource-requests-and-limits)
+    - [Index Manager](#index-manager)
+        - [Init containers](#index-manager-init-containers)
+        - [Discoverer request duration](#index-manager-discoverer-request-duration)
+    - [Replication Manager](#replication-manager)
+    - [Meta, Backup Manager](#meta-backup-manager)
+        - [Init containers](#meta-backup-init-containers)
+- [Advanced](#advanced)
+    - [Ingress/Egress Filters](#ingressegress-filters)
+- [References](#references)
+
+
 ## Vald Helm Chart Overview
 
 Vald Helm Chart's `values.yaml` is composed of the following sections:
@@ -265,12 +299,12 @@ If discoverer's CPU utilization is too high, try to make this value longer or re
 Gateway has a cache functionality for metadata.
 It can be enabled by `gateway.gateway_config.meta.enable_cache` and the behaviors controlled by `gateway.gateway_config.meta.cache_expiration` and `gateway.gateway_config.meta.expired_cache_check_duration`.
 
-#### Resource requests and limits
+#### <a name="gateway-resource-requests-and-limits"></a> Resource requests and limits
 
 Gateway's resource requests and limits depend on the request traffic and available resources.
 If the request traffic varies largely, it is recommended to enable HPA for gateway and adjust the resource requests.
 
-#### Init containers
+#### <a name="gateway-init-containers"></a> Init containers
 
 Gateway should wait for discoverer, agent, meta, and compressor to be ready because it depends on these components.
 For this purpose, "wait-for" type initContainers are provided in the Chart.
@@ -293,7 +327,7 @@ The definitions can be found in `_helpers.tpl` in Chart's templates directory.
 
 ### Discoverer
 
-#### Resource requests and limits
+#### <a name="discoverer-resource-requests-and-limits"></a> Resource requests and limits
 
 The number of discoverer pods and resource limits are determined by the configurations of your gateways and index managers because APIs of discoverers are called by gateways and index managers.
 Discoverer CPU loads depend on API request traffic = (the number of gateways x gateway's request duration) + (the number of index managers x index manager's request duration).
@@ -301,13 +335,13 @@ Discoverer CPU loads depend on API request traffic = (the number of gateways x g
 
 ### Index Manager
 
-#### Init containers
+#### <a name="index-manager-init-containers"></a> Init containers
 
 Index managers depend on discoverer and agents.
 It is recommended to use initContainers to wait for these components to be ready.
 
 
-#### Discoverer request duration
+#### <a name="index-manager-discoverer-request-duration"></a> Discoverer request duration
 
 Same as gateway, `indexManager.indexer.discoverer.duration` means a frequency to ask agent pod IPs to discoverer.
 
@@ -319,7 +353,7 @@ TBW
 
 ### Meta, Backup Manager
 
-#### Init containers
+#### <a name="meta-backup-init-containers"></a> Init containers
 
 Meta and backup manager depends on their backend databases such as Cassandra, MySQL, Redis, etc...
 The Chart provides useful initContainers for waiting for these databases.
@@ -397,7 +431,7 @@ The definitions can be found in `_helpers.tpl` in Chart's templates directory.
 TBW
 
 
-### References
+## References
 
 For further details, there are references of Helm values in GitHub Vald repository.
 
