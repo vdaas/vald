@@ -42,6 +42,12 @@ func TestNew(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
+	graph := tf.NewGraph()
+	session := &mockSession{
+		RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
+			return []*tf.Tensor{}, nil
+		},
+	}
 	defaultCheckFunc := func(w want, got TF, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
@@ -61,8 +67,10 @@ func TestNew(t *testing.T) {
 			},
 			beforeFunc: func(args args) {
 				defaultOpts = []Option{}
-				loadFunc = func(s string, ss []string, o *SessionOptions) (*tf.SavedModel, error) {
-					return &tf.SavedModel{}, nil
+				loadFunc = func(t *tensorflow) error {
+					t.graph = nil
+					t.session = (&tf.SavedModel{}).Session
+					return nil
 				}
 			},
 		},
@@ -88,8 +96,57 @@ func TestNew(t *testing.T) {
 			},
 			beforeFunc: func(args args) {
 				defaultOpts = []Option{}
-				loadFunc = func(s string, ss []string, o *SessionOptions) (*tf.SavedModel, error) {
-					return &tf.SavedModel{}, nil
+				loadFunc = func(t *tensorflow) error {
+					t.graph = nil
+					t.session = (&tf.SavedModel{}).Session
+					return nil
+				}
+			},
+		},
+		{
+			name: "returns (t, nil) when args and warmupInputs are not nil",
+			args: args{
+				opts: []Option{
+					WithFeed("test", 0),
+					WithFetch("test", 0),
+					WithSessionTarget("test"),
+					WithSessionConfig([]byte{}),
+					WithWarmupInputs("test"),
+					WithNdim(1),
+				},
+			},
+			want: want{
+				want: &tensorflow{
+					feeds: []OutputSpec{
+						{
+							operationName: "test",
+							outputIndex:   0,
+						},
+					},
+					fetches: []OutputSpec{
+						{
+							operationName: "test",
+							outputIndex:   0,
+						},
+					},
+					options: &tf.SessionOptions{
+						Target: "test",
+						Config: []byte{},
+					},
+					graph:   graph,
+					session: session,
+					warmupInputs: []string{
+						"test",
+					},
+					ndim: 1,
+				},
+			},
+			beforeFunc: func(args args) {
+				defaultOpts = []Option{}
+				loadFunc = func(t *tensorflow) error {
+					t.graph = graph
+					t.session = session
+					return nil
 				}
 			},
 		},
@@ -100,8 +157,25 @@ func TestNew(t *testing.T) {
 			},
 			beforeFunc: func(args args) {
 				defaultOpts = []Option{}
-				loadFunc = func(s string, ss []string, o *SessionOptions) (*tf.SavedModel, error) {
-					return nil, errors.New("load error")
+				loadFunc = func(t *tensorflow) error {
+					return errors.New("load error")
+				}
+			},
+		},
+		{
+			name: "returns (nil, error) when warmup error",
+			args: args{
+				opts: []Option{
+					WithWarmupInputs("test"),
+				},
+			},
+			want: want{
+				err: errors.ErrInputLength(1, 0),
+			},
+			beforeFunc: func(args args) {
+				defaultOpts = []Option{}
+				loadFunc = func(t *tensorflow) error {
+					return nil
 				}
 			},
 		},

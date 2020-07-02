@@ -138,6 +138,19 @@ func WithFetches(operationNames []string, outputIndexes []int) Option {
 	}
 }
 
+// WithWarmupInputs returns Option that sets warmupInputs.
+func WithWarmupInputs(warmupInputs ...string) Option {
+	return func(t *tensorflow) {
+		if warmupInputs != nil {
+			if t.warmupInputs != nil {
+				t.warmupInputs = append(t.warmupInputs, warmupInputs...)
+			} else {
+				t.warmupInputs = warmupInputs
+			}
+		}
+	}
+}
+
 // WithNdim returns Option that sets ndim.
 func WithNdim(ndim uint8) Option {
 	return func(t *tensorflow) {
