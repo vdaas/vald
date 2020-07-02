@@ -121,4 +121,3 @@ func (m *visitList) Store(key string, value bool) {
 	}
 	m.mu.Unlock()
 }
-

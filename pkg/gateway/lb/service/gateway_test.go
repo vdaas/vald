@@ -14,40 +14,44 @@
 // limitations under the License.
 //
 
-package reader
+// Package service
+package service
 
 import (
 	"context"
-	"io"
 	"reflect"
-	"sync"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/apis/grpc/gateway/vald"
+	"github.com/vdaas/vald/internal/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"go.uber.org/goleak"
 )
 
-func TestNew(t *testing.T) {
+func TestNewGateway(t *testing.T) {
 	type args struct {
-		opts []Option
+		opts []GWOption
 	}
 	type want struct {
-		want Reader
+		wantGw Gateway
+		err    error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Reader) error
+		checkFunc  func(want, Gateway, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Reader) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+	defaultCheckFunc := func(w want, gotGw Gateway, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if !reflect.DeepEqual(gotGw, w.wantGw) {
+			return errors.Errorf("got = %v, want %v", gotGw, w.wantGw)
 		}
 		return nil
 	}
@@ -92,8 +96,8 @@ func TestNew(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got); err != nil {
+			gotGw, err := NewGateway(test.args.opts...)
+			if err := test.checkFunc(test.want, gotGw, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -101,17 +105,106 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_reader_Open(t *testing.T) {
+func Test_gateway_Start(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
-		eg      errgroup.Group
-		service *s3.S3
-		bucket  string
-		key     string
-		pr      io.ReadCloser
-		wg      *sync.WaitGroup
+		client discoverer.Client
+		eg     errgroup.Group
+	}
+	type want struct {
+		want <-chan error
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, <-chan error, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got <-chan error, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           client: nil,
+		           eg: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           client: nil,
+		           eg: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			g := &gateway{
+				client: test.fields.client,
+				eg:     test.fields.eg,
+			}
+
+			got, err := g.Start(test.args.ctx)
+			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_gateway_BroadCast(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		f   func(ctx context.Context, target string, ac vald.ValdClient, copts ...grpc.CallOption) error
+	}
+	type fields struct {
+		client discoverer.Client
+		eg     errgroup.Group
 	}
 	type want struct {
 		err error
@@ -138,14 +231,11 @@ func Test_reader_Open(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
+		           f: nil,
 		       },
 		       fields: fields {
+		           client: nil,
 		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           pr: nil,
-		           wg: sync.WaitGroup{},
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -159,14 +249,11 @@ func Test_reader_Open(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
+		           f: nil,
 		           },
 		           fields: fields {
+		           client: nil,
 		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           pr: nil,
-		           wg: sync.WaitGroup{},
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -187,16 +274,12 @@ func Test_reader_Open(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			r := &reader{
-				eg:      test.fields.eg,
-				service: test.fields.service,
-				bucket:  test.fields.bucket,
-				key:     test.fields.key,
-				pr:      test.fields.pr,
-				wg:      test.fields.wg,
+			g := &gateway{
+				client: test.fields.client,
+				eg:     test.fields.eg,
 			}
 
-			err := r.Open(test.args.ctx)
+			err := g.BroadCast(test.args.ctx, test.args.f)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -205,25 +288,26 @@ func Test_reader_Open(t *testing.T) {
 	}
 }
 
-func Test_reader_Close(t *testing.T) {
+func Test_gateway_Do(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		f   func(ctx context.Context, target string, ac vald.ValdClient, copts ...grpc.CallOption) error
+	}
 	type fields struct {
-		eg      errgroup.Group
-		service *s3.S3
-		bucket  string
-		key     string
-		pr      io.ReadCloser
-		wg      *sync.WaitGroup
+		client discoverer.Client
+		eg     errgroup.Group
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
 		name       string
+		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -236,13 +320,13 @@ func Test_reader_Close(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           f: nil,
+		       },
 		       fields: fields {
+		           client: nil,
 		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           pr: nil,
-		           wg: sync.WaitGroup{},
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -254,13 +338,13 @@ func Test_reader_Close(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           f: nil,
+		           },
 		           fields: fields {
+		           client: nil,
 		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           pr: nil,
-		           wg: sync.WaitGroup{},
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -273,24 +357,20 @@ func Test_reader_Close(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			r := &reader{
-				eg:      test.fields.eg,
-				service: test.fields.service,
-				bucket:  test.fields.bucket,
-				key:     test.fields.key,
-				pr:      test.fields.pr,
-				wg:      test.fields.wg,
+			g := &gateway{
+				client: test.fields.client,
+				eg:     test.fields.eg,
 			}
 
-			err := r.Close()
+			err := g.Do(test.args.ctx, test.args.f)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -299,37 +379,31 @@ func Test_reader_Close(t *testing.T) {
 	}
 }
 
-func Test_reader_Read(t *testing.T) {
+func Test_gateway_DoMulti(t *testing.T) {
 	type args struct {
-		p []byte
+		ctx context.Context
+		num int
+		f   func(ctx context.Context, target string, ac vald.ValdClient, copts ...grpc.CallOption) error
 	}
 	type fields struct {
-		eg      errgroup.Group
-		service *s3.S3
-		bucket  string
-		key     string
-		pr      io.ReadCloser
-		wg      *sync.WaitGroup
+		client discoverer.Client
+		eg     errgroup.Group
 	}
 	type want struct {
-		wantN int
-		err   error
+		err error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, int, error) error
+		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotN int, err error) error {
+	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(gotN, w.wantN) {
-			return errors.Errorf("got = %v, want %v", gotN, w.wantN)
 		}
 		return nil
 	}
@@ -339,15 +413,13 @@ func Test_reader_Read(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           p: nil,
+		           ctx: nil,
+		           num: 0,
+		           f: nil,
 		       },
 		       fields: fields {
+		           client: nil,
 		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           pr: nil,
-		           wg: sync.WaitGroup{},
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -360,15 +432,13 @@ func Test_reader_Read(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           p: nil,
+		           ctx: nil,
+		           num: 0,
+		           f: nil,
 		           },
 		           fields: fields {
+		           client: nil,
 		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           pr: nil,
-		           wg: sync.WaitGroup{},
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -389,17 +459,13 @@ func Test_reader_Read(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			r := &reader{
-				eg:      test.fields.eg,
-				service: test.fields.service,
-				bucket:  test.fields.bucket,
-				key:     test.fields.key,
-				pr:      test.fields.pr,
-				wg:      test.fields.wg,
+			g := &gateway{
+				client: test.fields.client,
+				eg:     test.fields.eg,
 			}
 
-			gotN, err := r.Read(test.args.p)
-			if err := test.checkFunc(test.want, gotN, err); err != nil {
+			err := g.DoMulti(test.args.ctx, test.args.num, test.args.f)
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -407,40 +473,27 @@ func Test_reader_Read(t *testing.T) {
 	}
 }
 
-func Test_reader_getObjectWithBackoff(t *testing.T) {
+func Test_gateway_GetAgentCount(t *testing.T) {
 	type args struct {
-		ctx    context.Context
-		offset int64
-		length int64
+		ctx context.Context
 	}
 	type fields struct {
-		eg             errgroup.Group
-		service        *s3.S3
-		bucket         string
-		key            string
-		pr             io.ReadCloser
-		wg             *sync.WaitGroup
-		backoffEnabled bool
-		backoffOpts    []backoff.Option
-		maxChunkSize   int64
+		client discoverer.Client
+		eg     errgroup.Group
 	}
 	type want struct {
-		want io.Reader
-		err  error
+		want int
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, io.Reader, error) error
+		checkFunc  func(want, int) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got io.Reader, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
+	defaultCheckFunc := func(w want, got int) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
@@ -453,19 +506,10 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           offset: 0,
-		           length: 0,
 		       },
 		       fields: fields {
+		           client: nil,
 		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           pr: nil,
-		           wg: sync.WaitGroup{},
-		           backoffEnabled: false,
-		           backoffOpts: nil,
-		           maxChunkSize: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -479,19 +523,10 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           offset: 0,
-		           length: 0,
 		           },
 		           fields: fields {
+		           client: nil,
 		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           pr: nil,
-		           wg: sync.WaitGroup{},
-		           backoffEnabled: false,
-		           backoffOpts: nil,
-		           maxChunkSize: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -512,146 +547,13 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			r := &reader{
-				eg:             test.fields.eg,
-				service:        test.fields.service,
-				bucket:         test.fields.bucket,
-				key:            test.fields.key,
-				pr:             test.fields.pr,
-				wg:             test.fields.wg,
-				backoffEnabled: test.fields.backoffEnabled,
-				backoffOpts:    test.fields.backoffOpts,
-				maxChunkSize:   test.fields.maxChunkSize,
+			g := &gateway{
+				client: test.fields.client,
+				eg:     test.fields.eg,
 			}
 
-			got, err := r.getObjectWithBackoff(test.args.ctx, test.args.offset, test.args.length)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_reader_getObject(t *testing.T) {
-	type args struct {
-		ctx    context.Context
-		offset int64
-		length int64
-	}
-	type fields struct {
-		eg             errgroup.Group
-		service        *s3.S3
-		bucket         string
-		key            string
-		pr             io.ReadCloser
-		wg             *sync.WaitGroup
-		backoffEnabled bool
-		backoffOpts    []backoff.Option
-		maxChunkSize   int64
-	}
-	type want struct {
-		want io.Reader
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, io.Reader, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got io.Reader, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           offset: 0,
-		           length: 0,
-		       },
-		       fields: fields {
-		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           pr: nil,
-		           wg: sync.WaitGroup{},
-		           backoffEnabled: false,
-		           backoffOpts: nil,
-		           maxChunkSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           offset: 0,
-		           length: 0,
-		           },
-		           fields: fields {
-		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           pr: nil,
-		           wg: sync.WaitGroup{},
-		           backoffEnabled: false,
-		           backoffOpts: nil,
-		           maxChunkSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			r := &reader{
-				eg:             test.fields.eg,
-				service:        test.fields.service,
-				bucket:         test.fields.bucket,
-				key:            test.fields.key,
-				pr:             test.fields.pr,
-				wg:             test.fields.wg,
-				backoffEnabled: test.fields.backoffEnabled,
-				backoffOpts:    test.fields.backoffOpts,
-				maxChunkSize:   test.fields.maxChunkSize,
-			}
-
-			got, err := r.getObject(test.args.ctx, test.args.offset, test.args.length)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			got := g.GetAgentCount(test.args.ctx)
+			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 

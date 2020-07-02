@@ -34,7 +34,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/cockroachdb/errors v0.0.0-00010101000000-000000000000
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
-	github.com/envoyproxy/protoc-gen-validate v0.4.0
+	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-redis/redis/v7 v7.4.0
 	github.com/go-sql-driver/mysql v1.5.0
@@ -46,8 +46,6 @@ require (
 	github.com/google/pprof v0.0.0-20200630070148-6609db78bf68 // indirect
 	github.com/gorilla/mux v1.7.1
 	github.com/hashicorp/go-version v1.2.1
-	github.com/hashicorp/golang-lru v0.5.4 // indirect
-	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/json-iterator/go v1.1.10
 	github.com/klauspost/compress v1.10.10
 	github.com/kpango/fastime v1.0.16
