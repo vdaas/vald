@@ -180,12 +180,12 @@ func (d *dialer) DialContext(ctx context.Context, network, address string) (net.
 }
 
 func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn net.Conn, err error) {
-	host, port, err := net.SplitHostPort(addr)
+	host, port, isIP, err := net.Parse(addr)
 	if err != nil {
 		return nil, err
 	}
 
-	if d.dnsCache {
+	if d.dnsCache && !isIP {
 		if dc, err := d.lookup(dctx, host); err == nil {
 			for i := uint32(0); i < dc.Len(); i++ {
 				if conn, err := d.dial(dctx, network, fmt.Sprintf("%s:%d", dc.GetIP(), port)); err == nil {
