@@ -15,6 +15,7 @@
 //
 package mock
 
+// Logger represents struct of each log level function
 type Logger struct {
 	DebugFunc  func(vals ...interface{})
 	DebugfFunc func(format string, vals ...interface{})
@@ -28,42 +29,52 @@ type Logger struct {
 	FatalfFunc func(format string, vals ...interface{})
 }
 
+// Debug calls DebugFunc of Logger
 func (l *Logger) Debug(vals ...interface{}) {
 	l.DebugFunc(vals...)
 }
 
+// Debugf calls DebugfFunc of Logger
 func (l *Logger) Debugf(format string, vals ...interface{}) {
 	l.DebugfFunc(format, vals...)
 }
 
+// Info calls InfoFunc of Logger
 func (l *Logger) Info(vals ...interface{}) {
 	l.InfoFunc(vals...)
 }
 
+// Infof calls InfofFunc of Logger
 func (l *Logger) Infof(format string, vals ...interface{}) {
 	l.InfofFunc(format, vals...)
 }
 
+// Warn calls WarnFunc of Logger
 func (l *Logger) Warn(vals ...interface{}) {
 	l.WarnFunc(vals...)
 }
 
+// Warnf calls WarnfFunc of Logger
 func (l *Logger) Warnf(format string, vals ...interface{}) {
 	l.WarnfFunc(format, vals...)
 }
 
+// Error calls ErrorFunc of Logger
 func (l *Logger) Error(vals ...interface{}) {
 	l.ErrorFunc(vals...)
 }
 
+// Errorf calls ErrorfFunc of Logger
 func (l *Logger) Errorf(format string, vals ...interface{}) {
 	l.ErrorfFunc(format, vals...)
 }
 
+// Fatal calls FatalFunc of Logger
 func (l *Logger) Fatal(vals ...interface{}) {
 	l.FatalFunc(vals...)
 }
 
+// Fatalf calls FatalfFunc of Logger
 func (l *Logger) Fatalf(format string, vals ...interface{}) {
 	l.FatalfFunc(format, vals...)
 }
