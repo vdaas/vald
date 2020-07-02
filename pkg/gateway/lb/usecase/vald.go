@@ -50,7 +50,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
 	var (
-		gateway  service.Gateway
+		gateway service.Gateway
 	)
 
 	if addrs := cfg.Gateway.BackupManager.Client.Addrs; len(addrs) == 0 {

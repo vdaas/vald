@@ -340,7 +340,7 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed MultiUpdate request %#v", ids), err, info.Get())
 	}
-	for i := range vecs.GetVectors(){
+	for i := range vecs.GetVectors() {
 		vecs.Vectors[i].Id = metas[i]
 	}
 	res, err = s.MultiUpdate(ctx, vecs)
