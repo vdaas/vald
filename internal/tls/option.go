@@ -22,8 +22,7 @@ import "crypto/tls"
 type Option func(*credentials) error
 
 var (
-	defaultOpts = []Option{
-	}
+	defaultOpts = []Option{}
 )
 
 func WithCert(cert string) Option {
