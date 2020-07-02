@@ -25,7 +25,6 @@ import (
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/model"
-
 	"go.uber.org/goleak"
 )
 

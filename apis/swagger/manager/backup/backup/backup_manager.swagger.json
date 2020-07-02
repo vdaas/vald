@@ -269,9 +269,6 @@
         "uuid": {
           "type": "string"
         },
-        "meta": {
-          "type": "string"
-        },
         "vector": {
           "type": "string",
           "format": "byte"

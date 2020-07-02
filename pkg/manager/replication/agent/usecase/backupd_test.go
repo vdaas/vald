@@ -28,7 +28,6 @@ import (
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/pkg/manager/replication/agent/config"
 	"github.com/vdaas/vald/pkg/manager/replication/agent/service"
-
 	"go.uber.org/goleak"
 )
 

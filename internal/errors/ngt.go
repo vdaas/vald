@@ -39,6 +39,10 @@ var (
 		return Errorf("supported dimension limit exceed:\trequired = %d,\tlimit = %d", current, limit)
 	}
 
+	ErrIncompatibleDimensionSize = func(req, dim int) error {
+		return Errorf("incompatible dimension size detected\trequested: %d,\tconfigured: %d", req, dim)
+	}
+
 	ErrUnsupportedObjectType = New("unsupported ObjectType")
 
 	ErrUnsupportedDistanceType = New("unsupported DistanceType")

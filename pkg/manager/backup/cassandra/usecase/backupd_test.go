@@ -28,7 +28,6 @@ import (
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/config"
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/service"
-
 	"go.uber.org/goleak"
 )
 

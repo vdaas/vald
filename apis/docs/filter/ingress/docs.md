@@ -30,6 +30,10 @@
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
+| GenVector | [.payload.Object.Blob](#payload.Object.Blob) | [.payload.Object.Vector](#payload.Object.Vector) |  |
+| StreamGenVector | [.payload.Object.Blob](#payload.Object.Blob) stream | [.payload.Object.Vector](#payload.Object.Vector) stream |  |
+| FilterVector | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Object.Vector](#payload.Object.Vector) |  |
+| StreamFilterVector | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Object.Vector](#payload.Object.Vector) stream |  |
 
  
 

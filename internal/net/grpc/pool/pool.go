@@ -20,7 +20,6 @@ package pool
 import (
 	"context"
 	"fmt"
-	"math"
 	"sort"
 	"strings"
 	"sync/atomic"
@@ -345,9 +344,6 @@ func (p *pool) get(retry uint64) (*ClientConn, bool) {
 		}
 		return nil, false
 	}
-	if atomic.LoadUint64(&p.current) >= math.MaxUint64-2 {
-		atomic.StoreUint64(&p.current, 0)
-	}
 
 	if res := p.pool[atomic.AddUint64(&p.current, 1)%p.Len()].Load(); res != nil {
 		if pc, ok := res.(*poolConn); ok && pc != nil && isHealthy(pc.conn) {
@@ -377,6 +373,7 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 	if len(addrs) == 0 {
 		return nil, errors.ErrGRPCLookupIPAddrNotFound(p.host)
 	}
+
 	ips = make([]string, 0, len(addrs))
 
 	const network = "tcp"
@@ -411,6 +408,7 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 	if len(ips) == 0 {
 		return nil, errors.ErrGRPCLookupIPAddrNotFound(p.host)
 	}
+
 	sort.Strings(ips)
 
 	return ips, nil

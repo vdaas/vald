@@ -48,7 +48,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadEmpty"
+              "$ref": "#/definitions/payloadObjectLocation"
             }
           },
           "default": {
@@ -80,7 +80,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadBackupMetaVector"
+              "$ref": "#/definitions/ObjectVector"
             }
           },
           "default": {
@@ -110,7 +110,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadEmpty"
+              "$ref": "#/definitions/payloadObjectLocation"
             }
           },
           "default": {
@@ -204,7 +204,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadEmpty"
+              "$ref": "#/definitions/payloadObjectLocation"
             }
           },
           "default": {
@@ -236,7 +236,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadEmpty"
+              "$ref": "#/definitions/payloadObjectLocation"
             }
           },
           "default": {
@@ -341,21 +341,14 @@
         }
       }
     },
-    "payloadBackupMetaVector": {
+    "payloadObjectLocation": {
       "type": "object",
       "properties": {
+        "name": {
+          "type": "string"
+        },
         "uuid": {
           "type": "string"
-        },
-        "meta": {
-          "type": "string"
-        },
-        "vector": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "format": "float"
-          }
         },
         "ips": {
           "type": "array",
@@ -365,8 +358,16 @@
         }
       }
     },
-    "payloadEmpty": {
-      "type": "object"
+    "payloadObjectLocations": {
+      "type": "object",
+      "properties": {
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/payloadObjectLocation"
+          }
+        }
+      }
     },
     "payloadSearchRequest": {
       "type": "object",

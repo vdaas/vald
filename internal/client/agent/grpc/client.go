@@ -21,6 +21,7 @@ import (
 	"context"
 
 	agent "github.com/vdaas/vald/apis/grpc/agent/core"
+	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/internal/client"
 	"github.com/vdaas/vald/internal/net/grpc"
 )
@@ -60,7 +61,7 @@ func (c *agentClient) Exists(
 ) (*client.ObjectID, error) {
 	res, err := c.Client.Do(ctx, c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return agent.NewAgentClient(conn).Exists(ctx, req, copts...)
+			return vald.NewValdClient(conn).Exists(ctx, req, copts...)
 		},
 	)
 	if err != nil {
@@ -75,7 +76,7 @@ func (c *agentClient) Search(
 ) (*client.SearchResponse, error) {
 	res, err := c.Client.Do(ctx, c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return agent.NewAgentClient(conn).Search(ctx, req, copts...)
+			return vald.NewValdClient(conn).Search(ctx, req, copts...)
 		},
 	)
 	if err != nil {
@@ -90,7 +91,7 @@ func (c *agentClient) SearchByID(
 ) (*client.SearchResponse, error) {
 	res, err := c.Client.Do(ctx, c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return agent.NewAgentClient(conn).SearchByID(ctx, req, copts...)
+			return vald.NewValdClient(conn).SearchByID(ctx, req, copts...)
 		},
 	)
 	if err != nil {
@@ -106,9 +107,9 @@ func (c *agentClient) StreamSearch(
 ) error {
 	_, err := c.Client.Do(ctx, c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (res interface{}, err error) {
-			var st agent.Agent_StreamSearchClient
+			var st vald.Vald_StreamSearchClient
 
-			st, err = agent.NewAgentClient(conn).StreamSearch(ctx, copts...)
+			st, err = vald.NewValdClient(conn).StreamSearch(ctx, copts...)
 			if err != nil {
 				return nil, err
 			}
@@ -129,9 +130,9 @@ func (c *agentClient) StreamSearchByID(
 ) error {
 	_, err := c.Client.Do(ctx, c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (res interface{}, err error) {
-			var st agent.Agent_StreamSearchByIDClient
+			var st vald.Vald_StreamSearchByIDClient
 
-			st, err = agent.NewAgentClient(conn).StreamSearchByID(ctx, copts...)
+			st, err = vald.NewValdClient(conn).StreamSearchByID(ctx, copts...)
 			if err != nil {
 				return nil, err
 			}
@@ -152,7 +153,7 @@ func (c *agentClient) Insert(
 ) error {
 	_, err := c.Client.Do(ctx, c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return agent.NewAgentClient(conn).Insert(ctx, req, copts...)
+			return vald.NewValdClient(conn).Insert(ctx, req, copts...)
 		},
 	)
 	return err
@@ -165,9 +166,9 @@ func (c *agentClient) StreamInsert(
 ) error {
 	_, err := c.Client.Do(ctx, c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (res interface{}, err error) {
-			var st agent.Agent_StreamInsertClient
+			var st vald.Vald_StreamInsertClient
 
-			st, err = agent.NewAgentClient(conn).StreamInsert(ctx, copts...)
+			st, err = vald.NewValdClient(conn).StreamInsert(ctx, copts...)
 			if err != nil {
 				return nil, err
 			}
@@ -188,7 +189,7 @@ func (c *agentClient) MultiInsert(
 ) error {
 	_, err := c.Client.Do(ctx, c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return agent.NewAgentClient(conn).MultiInsert(ctx, req, copts...)
+			return vald.NewValdClient(conn).MultiInsert(ctx, req, copts...)
 		},
 	)
 	return err
@@ -200,7 +201,7 @@ func (c *agentClient) Update(
 ) error {
 	_, err := c.Client.Do(ctx, c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return agent.NewAgentClient(conn).Update(ctx, req, copts...)
+			return vald.NewValdClient(conn).Update(ctx, req, copts...)
 		},
 	)
 	return err
@@ -213,9 +214,9 @@ func (c *agentClient) StreamUpdate(
 ) error {
 	_, err := c.Client.Do(ctx, c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (res interface{}, err error) {
-			var st agent.Agent_StreamUpdateClient
+			var st vald.Vald_StreamUpdateClient
 
-			st, err = agent.NewAgentClient(conn).StreamUpdate(ctx, copts...)
+			st, err = vald.NewValdClient(conn).StreamUpdate(ctx, copts...)
 			if err != nil {
 				return nil, err
 			}
@@ -236,7 +237,7 @@ func (c *agentClient) MultiUpdate(
 ) error {
 	_, err := c.Client.Do(ctx, c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return agent.NewAgentClient(conn).MultiUpdate(ctx, req, copts...)
+			return vald.NewValdClient(conn).MultiUpdate(ctx, req, copts...)
 		},
 	)
 	return err
@@ -248,7 +249,7 @@ func (c *agentClient) Remove(
 ) error {
 	_, err := c.Client.Do(ctx, c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return agent.NewAgentClient(conn).Remove(ctx, req, copts...)
+			return vald.NewValdClient(conn).Remove(ctx, req, copts...)
 		},
 	)
 	return err
@@ -261,7 +262,7 @@ func (c *agentClient) StreamRemove(
 ) error {
 	_, err := c.Client.Do(ctx, c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			st, err := agent.NewAgentClient(conn).StreamRemove(ctx, copts...)
+			st, err := vald.NewValdClient(conn).StreamRemove(ctx, copts...)
 			if err != nil {
 				return nil, err
 			}
@@ -282,7 +283,7 @@ func (c *agentClient) MultiRemove(
 ) error {
 	_, err := c.Client.Do(ctx, c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return agent.NewAgentClient(conn).MultiRemove(ctx, req, copts...)
+			return vald.NewValdClient(conn).MultiRemove(ctx, req, copts...)
 		},
 	)
 	return err
@@ -294,7 +295,7 @@ func (c *agentClient) GetObject(
 ) (*client.ObjectVector, error) {
 	res, err := c.Client.Do(ctx, c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return agent.NewAgentClient(conn).GetObject(ctx, req, copts...)
+			return vald.NewValdClient(conn).GetObject(ctx, req, copts...)
 		},
 	)
 	if err != nil {
@@ -310,9 +311,9 @@ func (c *agentClient) StreamGetObject(
 ) error {
 	_, err := c.Client.Do(ctx, c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (res interface{}, err error) {
-			var st agent.Agent_StreamGetObjectClient
+			var st vald.Vald_StreamGetObjectClient
 
-			st, err = agent.NewAgentClient(conn).StreamGetObject(ctx, copts...)
+			st, err = vald.NewValdClient(conn).StreamGetObject(ctx, copts...)
 			if err != nil {
 				return nil, err
 			}

@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/db/kvs/redis"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/tcp"
-
 	"go.uber.org/goleak"
 )
 
