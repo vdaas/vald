@@ -52,7 +52,6 @@ type dialer struct {
 	dialerDualStack       bool
 	der                   *net.Dialer
 	dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
-	reqCnt                uint64
 }
 
 type dialerCache struct {
@@ -62,10 +61,14 @@ type dialerCache struct {
 
 // GetIP returns the next cached IP address in round robin order
 func (d *dialerCache) GetIP() string {
+	if d.Len() == 1 {
+		return d.ips[0]
+	}
+
 	if atomic.LoadUint32(&d.cnt) > math.MaxUint32-10000 {
 		atomic.StoreUint32(&d.cnt, 0)
 	}
-	return d.ips[atomic.AddUint32(&d.cnt, 1)%d.Len()]
+	return d.ips[(atomic.AddUint32(&d.cnt, 1)-1)%d.Len()]
 }
 
 // Len returns the length of cached IP addresses
@@ -115,14 +118,7 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 		d.cache, err = cache.New(
 			cache.WithExpireDuration(d.dnsCacheExpirationStr),
 			cache.WithExpireCheckDuration(d.dnsRefreshDurationStr),
-			cache.WithExpiredHook(func(ctx context.Context, addr string) {
-				if err := safety.RecoverFunc(func() (err error) {
-					_, err = d.lookup(ctx, addr)
-					return err
-				}); err != nil {
-					log.Error(err)
-				}
-			}),
+			cache.WithExpiredHook(d.cacheExpireHook),
 		)
 		if err != nil {
 			return nil, err
@@ -213,4 +209,14 @@ func (d *dialer) dial(ctx context.Context, network string, addr string) (net.Con
 		return tls.Client(conn, d.tlsConfig), nil
 	}
 	return conn, nil
+}
+
+func (d *dialer) cacheExpireHook(ctx context.Context, addr string) {
+	log.Debugf("DNS cache expireHook called, addr: %v", addr)
+	if err := safety.RecoverFunc(func() (err error) {
+		_, err = d.lookup(ctx, addr)
+		return err
+	}); err != nil {
+		log.Errorf("error occurred: %v", err)
+	}
 }

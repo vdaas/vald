@@ -20,8 +20,10 @@ package tcp
 import (
 	"context"
 	"crypto/tls"
+	stderrors "errors"
 	"fmt"
 	"math"
+	stdnet "net"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -34,6 +36,7 @@ import (
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/cache/gache"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"go.uber.org/goleak"
 )
@@ -45,6 +48,192 @@ var (
 		goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
 	}
 )
+
+func init() {
+	log.Init()
+}
+func Test_dialerCache_GetIP(t *testing.T) {
+	type fields struct {
+		ips []string
+		cnt uint32
+	}
+	type want struct {
+		want string
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(*dialerCache, want, string) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(d *dialerCache, w want, got string) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return IP directly if size is 1",
+			fields: fields{
+				ips: []string{
+					"a",
+				},
+			},
+			want: want{
+				want: "a",
+			},
+			checkFunc: func(d *dialerCache, w want, got string) error {
+				if err := defaultCheckFunc(d, w, got); err != nil {
+					return err
+				}
+
+				for i := 1; i < 100; i++ {
+					if d.GetIP() != "a" {
+						return errors.New("invalid output")
+					}
+					if d.cnt != 0 {
+						return errors.New("invalid cnt")
+					}
+				}
+				return nil
+			},
+		},
+		{
+			name: "return IP in round robin order",
+			fields: fields{
+				ips: []string{
+					"a", "b", "c",
+				},
+			},
+			want: want{
+				want: "a",
+			},
+			checkFunc: func(d *dialerCache, w want, got string) error {
+				if err := defaultCheckFunc(d, w, got); err != nil {
+					return err
+				}
+
+				for i := 1; i < 100; i++ {
+					idx := i % len(d.ips)
+					if s := d.GetIP(); s != d.ips[idx] {
+						return errors.New("invalid output")
+					}
+					if d.cnt != uint32(i+1) {
+						return errors.New("invalid cnt")
+					}
+				}
+				return nil
+			},
+		},
+		{
+			name: "cnt reset when it is about to overflow",
+			fields: fields{
+				ips: []string{
+					"a", "b", "c",
+				},
+				cnt: math.MaxUint32 - 1000,
+			},
+			want: want{
+				want: "a",
+			},
+			checkFunc: func(d *dialerCache, w want, got string) error {
+				if err := defaultCheckFunc(d, w, got); err != nil {
+					return err
+				}
+				if d.cnt != 1 {
+					return errors.New("invalid cnt")
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			d := &dialerCache{
+				ips: test.fields.ips,
+				cnt: test.fields.cnt,
+			}
+
+			got := d.GetIP()
+			if err := test.checkFunc(d, test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_dialerCache_Len(t *testing.T) {
+	type fields struct {
+		ips []string
+		cnt uint32
+	}
+	type want struct {
+		want uint32
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, uint32) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got uint32) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return ips length",
+			fields: fields{
+				ips: []string{"a"},
+			},
+			want: want{want: uint32(1)},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			d := &dialerCache{
+				ips: test.fields.ips,
+				cnt: test.fields.cnt,
+			}
+
+			got := d.Len()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
 
 func TestNewDialer(t *testing.T) {
 	type args struct {
@@ -530,58 +719,55 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(*dialer) error
-		beforeFunc func(args)
+		beforeFunc func(*dialer)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(d *dialer) error {
 		return nil
 	}
 	tests := []test{
-		/*
-			func() test {
-				addr := "google.com"
-				ips := []string{"0.0.0.0"}
-				cache, _ := cache.New(cache.WithExpireDuration("100ms"), cache.WithExpireCheckDuration("100ms"))
-				cache.Set(addr, ips)
+		func() test {
+			addr := "google.com"
+			ips := []string{"0.0.0.0"}
 
-				return test{
-					name: "hook is called when expired",
-					args: args{
-						ctx: context.Background(),
-					},
-					fields: fields{
-						dnsCache:           true,
-						cache:              cache,
-						dnsRefreshDuration: time.Millisecond * 100,
-						dnsCacheExpiration: time.Millisecond * 100,
-						der: &net.Dialer{
-							Resolver: &net.Resolver{
-								PreferGo: false,
-							}},
-					},
-					checkFunc: func(d *dialer) error {
-						time.Sleep(450 * time.Millisecond)
+			return test{
+				name: "cache refresh when it is expired",
+				args: args{
+					ctx: context.Background(),
+				},
+				fields: fields{
+					dnsCache:           true,
+					dnsRefreshDuration: time.Millisecond * 100,
+					dnsCacheExpiration: time.Millisecond * 100,
+					der: &net.Dialer{
+						Resolver: &net.Resolver{
+							PreferGo: false,
+						}},
+				},
+				beforeFunc: func(d *dialer) {
+					d.cache, _ = cache.New(cache.WithExpireDuration("100ms"), cache.WithExpireCheckDuration("800ms"),
+						cache.WithExpiredHook(d.cacheExpireHook))
+					d.cache.Set(addr, &dialerCache{ips: ips})
+				},
+				checkFunc: func(d *dialer) error {
+					time.Sleep(400 * time.Millisecond)
 
-						val, ok := d.cache.Get(addr)
-						if !ok {
-							return errors.New("cache not found")
-						}
-						if reflect.DeepEqual(val.(*dialerCache).ips, ips) {
-							return errors.New("cache is not cleared")
-						}
-						return nil
-					},
-				}
-			}(),
-		*/
+					val, ok := d.cache.Get(addr)
+					if !ok {
+						return errors.New("cache not found")
+					}
+					if reflect.DeepEqual(val.(*dialerCache).ips, ips) {
+						return errors.New("cache is not updated")
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
@@ -601,6 +787,9 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 				dialerDualStack:       test.fields.dialerDualStack,
 				der:                   test.fields.der,
 				dialer:                test.fields.dialer,
+			}
+			if test.beforeFunc != nil {
+				test.beforeFunc(d)
 			}
 
 			d.StartDialerCache(test.args.ctx)
@@ -885,8 +1074,9 @@ func Test_dialer_cachedDialer(t *testing.T) {
 							PreferGo: false,
 						},
 					},
-					cache:    cache,
-					dnsCache: true,
+					cache:     cache,
+					dnsCache:  true,
+					tlsConfig: new(tls.Config),
 				},
 				checkFunc: func(d *dialer, w want, gotConn net.Conn, err error) error {
 					if err == nil {
@@ -1109,7 +1299,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			cache, _ := cache.New()
 			cache.Set(addr, &dialerCache{
 				ips: []string{
-					host,
+					host, host,
 				},
 				cnt: math.MaxUint32 - 10,
 			})
@@ -1181,6 +1371,211 @@ func Test_dialer_cachedDialer(t *testing.T) {
 
 			gotConn, gotErr := d.cachedDialer(test.args.dctx, test.args.network, test.args.addr)
 			if err := test.checkFunc(d, test.want, gotConn, gotErr); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_dialer_dial(t *testing.T) {
+	type args struct {
+		ctx     context.Context
+		network string
+		addr    string
+	}
+	type fields struct {
+		tlsConfig *tls.Config
+		der       *net.Dialer
+	}
+	type want struct {
+		want net.Conn
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, net.Conn, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got net.Conn, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if got == nil {
+			return errors.New("got is nil")
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return conn",
+			args: args{
+				ctx:     context.Background(),
+				network: "tcp",
+				addr:    "google.com:80",
+			},
+			fields: fields{
+				tlsConfig: nil,
+				der: &net.Dialer{
+					Timeout:   time.Minute,
+					KeepAlive: time.Minute,
+					DualStack: true,
+				},
+			},
+		},
+		{
+			name: "return tls conn",
+			args: args{
+				ctx:     context.Background(),
+				network: "tcp",
+				addr:    "google.com:80",
+			},
+			fields: fields{
+				tlsConfig: new(tls.Config),
+				der: &net.Dialer{
+					Timeout:   time.Minute,
+					KeepAlive: time.Minute,
+					DualStack: true,
+				},
+			},
+		},
+		{
+			name: "return error if invalid address",
+			args: args{
+				ctx:     context.Background(),
+				network: "tcp",
+				addr:    "invalid_address",
+			},
+			fields: fields{
+				tlsConfig: nil,
+				der: &net.Dialer{
+					Timeout:   time.Minute,
+					KeepAlive: time.Minute,
+					DualStack: true,
+				},
+			},
+			checkFunc: func(w want, got net.Conn, err error) error {
+				if !errors.Is(err, w.err) {
+					return errors.Errorf("got error = %v, want %v", err, w.err)
+				}
+
+				if got != nil {
+					return errors.New("got is not nil")
+				}
+				return nil
+			},
+			want: want{
+				err: &stdnet.AddrError{Err: "missing port in address", Addr: "invalid_address"},
+			},
+		},
+		{
+			name: "return error if empty address",
+			args: args{
+				ctx:     context.Background(),
+				network: "tcp",
+			},
+			fields: fields{
+				tlsConfig: nil,
+				der: &net.Dialer{
+					Timeout:   time.Minute,
+					KeepAlive: time.Minute,
+					DualStack: true,
+				},
+			},
+			checkFunc: func(w want, got net.Conn, err error) error {
+				if !errors.Is(err, w.err) {
+					return errors.Errorf("got error = %v, want %v", err, w.err)
+				}
+
+				if got != nil {
+					return errors.New("got is not nil")
+				}
+				return nil
+			},
+			want: want{
+				err: stderrors.New("missing address"),
+			},
+		},
+		{
+			name: "return error if invalid network",
+			args: args{
+				ctx:     context.Background(),
+				network: "invalid",
+			},
+			fields: fields{
+				tlsConfig: nil,
+				der: &net.Dialer{
+					Timeout:   time.Minute,
+					KeepAlive: time.Minute,
+					DualStack: true,
+				},
+			},
+			checkFunc: func(w want, got net.Conn, err error) error {
+				if !errors.Is(err, w.err) {
+					return errors.Errorf("got error = %v, want %v", err, w.err)
+				}
+
+				if got != nil {
+					return errors.New("got is not nil")
+				}
+				return nil
+			},
+			want: want{
+				err: stdnet.UnknownNetworkError("invalid"),
+			},
+		},
+		{
+			name: "return error if empty network",
+			args: args{
+				ctx: context.Background(),
+			},
+			fields: fields{
+				tlsConfig: nil,
+				der: &net.Dialer{
+					Timeout:   time.Minute,
+					KeepAlive: time.Minute,
+					DualStack: true,
+				},
+			},
+			checkFunc: func(w want, got net.Conn, err error) error {
+				if !errors.Is(err, w.err) {
+					return errors.Errorf("got error = %v, want %v", err, w.err)
+				}
+
+				if got != nil {
+					return errors.New("got is not nil")
+				}
+				return nil
+			},
+			want: want{
+				err: stdnet.UnknownNetworkError(""),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			d := &dialer{
+				tlsConfig: test.fields.tlsConfig,
+				der:       test.fields.der,
+			}
+
+			got, err := d.dial(test.args.ctx, test.args.network, test.args.addr)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
