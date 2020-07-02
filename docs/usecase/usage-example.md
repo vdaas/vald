@@ -21,7 +21,7 @@
 
 - Search by image
 - Face recognition
-- Product recommendation base on images
+- Product recommendation based on images
 - Image/Video analysis
 - Image/Video deduplication
 
@@ -64,7 +64,7 @@
 
   To detect the malware using Vald, you need to vectorize the malware binary file and insert into Vald first.
   You can analyze your binary by performing a search to find a similar binary in Vald.
-  If your binary is similar with the malware binary, you can trigger the alert for users.
+  If your binary is similar to the malware binary, you can trigger the alert for users.
 
 - Price optimization
 
