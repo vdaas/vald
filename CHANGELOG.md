@@ -1,5 +1,43 @@
 # CHANGELOG
 
+## v0.0.44
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.44`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.44`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.44`
+gateway | `docker pull vdaas/vald-gateway:v0.0.44`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.44`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.44`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.44`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.44`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.44`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.44`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.44`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.44)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.44/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.44/charts/vald-helm-operator/README.md)
+
+### Changes
+- use Len and InsertVCacheLen method for IndexInfo / add mutex for (Create|Save)Index ([#536](https://github.com/vdaas/vald/pull/536))
+- documentation: tutorial/agent-on-docker ([#516](https://github.com/vdaas/vald/pull/516))
+- Revise log messages along with the coding guideline ([#504](https://github.com/vdaas/vald/pull/504))
+- :art: Add images of usecase ([#537](https://github.com/vdaas/vald/pull/537))
+- :white_check_mark: add internal/config/tls test ([#534](https://github.com/vdaas/vald/pull/534))
+- :bug: Add cancel hook for file watcher ([#535](https://github.com/vdaas/vald/pull/535))
+- :green_heart: Add test workflow ([#531](https://github.com/vdaas/vald/pull/531))
+- added internal/config/log test ([#530](https://github.com/vdaas/vald/pull/530))
+- add codeql config ([#532](https://github.com/vdaas/vald/pull/532))
+- Added test case for `internal/info` pacakge. ([#514](https://github.com/vdaas/vald/pull/514))
+- Add `internal/runner` test ([#505](https://github.com/vdaas/vald/pull/505))
+- Added test case for `internal/unit` pacakge ([#515](https://github.com/vdaas/vald/pull/515))
+
+
 ## v0.0.43
 
 ### Docker images

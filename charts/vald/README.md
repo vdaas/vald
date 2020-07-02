@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.43`
+Current chart version is `v0.0.44`
 
 Table of Contents
 ---
@@ -167,7 +167,7 @@ Configuration
 | agent.sidecar.config.compress.compression_level | int | `-1` | compression level. value range relies on which algorithm is used. `gob`: level will be ignored. `gzip`: -1 (default compression), 0 (no compression), or 1 (best speed) to 9 (best compression). `lz4`: >= 0, higher is better compression. `zstd`: 1 (fastest) to 22 (best), however implementation relies on klauspost/compress. |
 | agent.sidecar.config.filename | string | `"_MY_POD_NAME_"` | backup filename |
 | agent.sidecar.config.filename_suffix | string | `".tar.gz"` | suffix for backup filename |
-| agent.sidecar.config.post_stop_timeout | string | `"10s"` | timeout duration for file changing during post stop |
+| agent.sidecar.config.post_stop_timeout | string | `"20s"` | timeout duration for file changing during post stop |
 | agent.sidecar.config.restore_backoff.backoff_factor | float | `1.2` | restore backoff factor |
 | agent.sidecar.config.restore_backoff.backoff_time_limit | string | `"30m"` | restore backoff time limit |
 | agent.sidecar.config.restore_backoff.enable_error_log | bool | `true` | restore backoff log enabled |
@@ -416,7 +416,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.43"` | docker image tag |
+| defaults.image.tag | string | `"v0.0.44"` | docker image tag |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
 | defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg`. |
