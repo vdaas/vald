@@ -38,7 +38,7 @@ import (
 func TestString(t *testing.T) {
 	type test struct {
 		name string
-		m    mode
+		m    ServerMode
 		want string
 	}
 
@@ -82,7 +82,7 @@ func TestMode(t *testing.T) {
 	type test struct {
 		name string
 		str  string
-		want mode
+		want ServerMode
 	}
 
 	tests := []test{
@@ -383,7 +383,7 @@ func TestListenAndServe(t *testing.T) {
 	type field struct {
 		running        bool
 		eg             errgroup.Group
-		mode           mode
+		mode           ServerMode
 		pwt            time.Duration
 		sddur          time.Duration
 		httpSrvStarter func(net.Listener) error
@@ -530,7 +530,7 @@ func TestShutdown(t *testing.T) {
 	type field struct {
 		running     bool
 		eg          errgroup.Group
-		mode        mode
+		mode        ServerMode
 		pwt         time.Duration
 		sddur       time.Duration
 		httpSrv     *http.Server
@@ -673,7 +673,7 @@ func Test_mode_String(t *testing.T) {
 	}
 	type test struct {
 		name       string
-		m          mode
+		m          ServerMode
 		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
@@ -731,7 +731,7 @@ func Test_mode_String(t *testing.T) {
 
 func Test_server_IsRunning(t *testing.T) {
 	type fields struct {
-		mode mode
+		mode ServerMode
 		name string
 		mu   sync.RWMutex
 		wg   sync.WaitGroup
@@ -898,7 +898,7 @@ func Test_server_IsRunning(t *testing.T) {
 
 func Test_server_Name(t *testing.T) {
 	type fields struct {
-		mode mode
+		mode ServerMode
 		name string
 		mu   sync.RWMutex
 		wg   sync.WaitGroup
@@ -1069,7 +1069,7 @@ func Test_server_ListenAndServe(t *testing.T) {
 		ech chan<- error
 	}
 	type fields struct {
-		mode mode
+		mode ServerMode
 		name string
 		mu   sync.RWMutex
 		wg   sync.WaitGroup
@@ -1248,7 +1248,7 @@ func Test_server_Shutdown(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		mode mode
+		mode ServerMode
 		name string
 		mu   sync.RWMutex
 		wg   sync.WaitGroup

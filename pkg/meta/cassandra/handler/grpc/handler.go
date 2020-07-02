@@ -55,7 +55,7 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(errors.UnWrapAll(err)):
-			log.Warnf("[GetMeta]\tnot found\t%v\t%+v", key.GetKey(), err)
+			log.Warnf("[GetMeta]\tnot found\t%v\t%s", key.GetKey(), err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -93,7 +93,7 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(errors.UnWrapAll(err)):
-			log.Warnf("[GetMetas]\tnot found\t%v\t%+v", keys.GetKeys(), err)
+			log.Warnf("[GetMetas]\tnot found\t%v\t%s", keys.GetKeys(), err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -128,7 +128,7 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(errors.UnWrapAll(err)):
-			log.Warnf("[GetMetaInverse]\tnot found\t%v\t%+v", val.GetVal(), err)
+			log.Warnf("[GetMetaInverse]\tnot found\t%v\t%s", val.GetVal(), err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -166,7 +166,7 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(errors.UnWrapAll(err)):
-			log.Warnf("[GetMetasInverse]\tnot found\t%v\t%+v", vals.GetVals(), err)
+			log.Warnf("[GetMetasInverse]\tnot found\t%v\t%s", vals.GetVals(), err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -241,7 +241,7 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(errors.UnWrapAll(err)):
-			log.Warnf("[DeleteMeta]\tnot found\t%v\t%+v", key.GetKey(), err)
+			log.Warnf("[DeleteMeta]\tnot found\t%v\t%s", key.GetKey(), err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -279,7 +279,7 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(errors.UnWrapAll(err)):
-			log.Warnf("[DeleteMetas]\tnot found\t%v\t%+v", keys.GetKeys(), err)
+			log.Warnf("[DeleteMetas]\tnot found\t%v\t%s", keys.GetKeys(), err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -314,7 +314,7 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(errors.UnWrapAll(err)):
-			log.Warnf("[DeleteMetaInverse]\tnot found\t%v\t%+v", val.GetVal(), err)
+			log.Warnf("[DeleteMetaInverse]\tnot found\t%v\t%s", val.GetVal(), err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -352,7 +352,7 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(errors.UnWrapAll(err)):
-			log.Warnf("[DeleteMetasInverse]\tnot found\t%v\t%+v", vals.GetVals(), err)
+			log.Warnf("[DeleteMetasInverse]\tnot found\t%v\t%s", vals.GetVals(), err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}

@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 )
@@ -102,14 +103,14 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				err = idx.execute(ctx, true)
 				if err != nil {
 					ech <- err
-					log.Error(err)
+					log.Error("an error occurred during indexing", err)
 					err = nil
 				}
 			case <-itl.C:
 				err = idx.execute(ctx, false)
 				if err != nil {
 					ech <- err
-					log.Error(err)
+					log.Error("an error occurred during indexing", err)
 					err = nil
 				}
 			}
@@ -158,12 +159,16 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 					PoolSize: idx.creationPoolSize,
 				}, copts...)
 				if err != nil {
-					log.Debug(addr, err)
+					if status.Code(err) == status.FailedPrecondition {
+						log.Debugf("CreateIndex of %s skipped: %s", addr, err)
+						return nil
+					}
+					log.Warnf("an error occurred while calling CreateIndex of %s: %s", addr, err)
 					return err
 				}
 				_, err = ac.SaveIndex(ctx, &payload.Empty{}, copts...)
 				if err != nil {
-					log.Debug(addr, err)
+					log.Warnf("an error occurred while calling SaveIndex of %s: %s", addr, err)
 					return err
 				}
 			}
@@ -194,7 +199,7 @@ func (idx *index) loadInfos(ctx context.Context) (err error) {
 			default:
 				info, err := agent.NewAgentClient(conn).IndexInfo(ctx, new(payload.Empty), copts...)
 				if err != nil {
-					log.Debug(addr, err)
+					log.Warnf("an error occurred while calling IndexInfo of %s: %s", addr, err)
 					return nil
 				}
 				infoMap.Store(addr, info)

@@ -187,7 +187,7 @@ func WithListenConfig(lc *net.ListenConfig) Option {
 	}
 }
 
-func WithServerMode(m mode) Option {
+func WithServerMode(m ServerMode) Option {
 	return func(s *server) {
 		switch m {
 		case GRPC, REST, GQL:

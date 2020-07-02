@@ -209,12 +209,12 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 				err = o.requestBackup(ctx)
 				if err != nil {
 					ech <- err
-					log.Error(err)
+					log.Error("failed to request backup:", err)
 					err = nil
 				}
 			}
 			if err != nil {
-				log.Error(err)
+				log.Error("an error occurred on observer loop:", err)
 				select {
 				case <-ctx.Done():
 					return finalize()
@@ -250,7 +250,7 @@ func (o *observer) startBackupLoop(ctx context.Context) (<-chan error, error) {
 				err = o.backup(ctx)
 				if err != nil {
 					ech <- err
-					log.Error(err)
+					log.Error("an error occurred during backup:", err)
 					err = nil
 				}
 			}
@@ -299,6 +299,9 @@ func (o *observer) backup(ctx context.Context) error {
 			span.End()
 		}
 	}()
+
+	log.Infof("backup directory %s started", o.dir)
+	defer log.Infof("backup directory %s finished", o.dir)
 
 	pr, pw := io.Pipe()
 	defer func() {

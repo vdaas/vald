@@ -57,7 +57,7 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 	uuid := req.GetUuid()
 	r, err := s.backup.GetObject(ctx, uuid)
 	if err != nil {
-		log.Errorf("[GetVector]\tunknown error\t%+v", err)
+		log.Errorf("[GetVector]\tnot found\t%s", err.Error())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -91,7 +91,7 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 	uuid := req.GetUuid()
 	r, err := s.backup.GetLocation(ctx, uuid)
 	if err != nil {
-		log.Errorf("[Locations]\tunknown error\t%+v", err)
+		log.Errorf("[Locations]\tnot found\t%s", err.Error())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}

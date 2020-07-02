@@ -227,7 +227,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 	if c.dscClient == nil || (c.autoconn && c.client == nil) {
 		return errors.ErrGRPCClientNotFound
 	}
-	log.Info("starting discoverer discovery")
+	log.Debug("starting discoverer discovery")
 	connected := make([]string, 0, len(c.GetAddrs(ctx)))
 	var cur sync.Map
 	if _, err = c.dscClient.Do(ctx, c.dscAddr, func(ictx context.Context,
@@ -263,7 +263,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 							addr := fmt.Sprintf("%s:%d", pods[i].GetIp(), c.port)
 							if err = c.connect(ctx, addr); err != nil {
 								err = errors.ErrAddrCouldNotDiscover(err, addr)
-								log.Debug(err)
+								log.Debugf("could not discover %s: %s", addr, err)
 								ech <- err
 								err = nil
 							} else {
@@ -344,6 +344,6 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 		}
 	}
 
-	log.Info("finished discoverer discovery")
+	log.Debug("finished discoverer discovery")
 	return nil
 }

@@ -761,7 +761,7 @@ func TestWithListenConfig(t *testing.T) {
 func TestWithServerMode(t *testing.T) {
 	type test struct {
 		name      string
-		m         mode
+		m         ServerMode
 		checkFunc func(opt Option) error
 	}
 
@@ -782,7 +782,7 @@ func TestWithServerMode(t *testing.T) {
 
 		{
 			name: "not set when mode is invalid",
-			m:    mode(100),
+			m:    ServerMode(100),
 			checkFunc: func(opt Option) error {
 				got := &server{
 					mode: GRPC,
