@@ -11,6 +11,8 @@
 
 ## Image and video processing
 
+  ![Image and video processing](../../assets/docs/usecase_image.png)
+
   You can use Vald as the image/video processing engine to search the similar image/video or analyze the image/video for your use case.
 
   Vald is capable to process a huge number of images at the same time so it case fit with your use case.
@@ -25,6 +27,8 @@
 
 ## Audio processing
 
+  ![Audio processing](../../assets/docs/usecase_audio.png)
+
   Audio processing is important for personal assistant implementation.
 
   Vald can act as a brain of the personal assistant function, conversation interpreter and the natural language generation.
@@ -37,6 +41,8 @@
 
 ## Text processing
 
+  ![Text processing](../../assets/docs/usecase_text.png)
+
   Using a text vectorizing model like BERT, you can process your text data in Vald.
 
   Here are some examples of the use case of text processing using Vald.
@@ -48,6 +54,8 @@
 
 ## Data analysis
 
+  ![Data analysis](../../assets/docs/usecase_data.png)
+
   Vald can process the vector data, you can analyze every data you can vectorize.
 
   Here are some examples of the use case of data analysis.
@@ -57,7 +65,7 @@
   To detect the malware using Vald, you need to vectorize the malware binary file and insert into Vald first.
   You can analyze your binary by performing a search to find a similar binary in Vald.
   If your binary is similar with the malware binary, you can trigger the alert for users.
-  
+
 - Price optimization
 
    By applying the price optimization technique using Vald, you can find the most optimized price for your business.
