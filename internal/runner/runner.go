@@ -32,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/params"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/timeutil/location"
 	ver "github.com/vdaas/vald/internal/version"
 	"go.uber.org/automaxprocs/maxprocs"
@@ -160,7 +161,9 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 			}
 		case <-rctx.Done():
 			log.Info("executing daemon pre-stop function")
-			err = run.PreStop(ctx)
+			err = safety.RecoverFunc(func() error {
+				return run.PreStop(ctx)
+			})()
 			if err != nil {
 				log.Error(errors.ErrPreStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
@@ -170,7 +173,9 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 			}
 
 			log.Info("executing daemon stop function")
-			err = run.Stop(ctx)
+			err = safety.RecoverFunc(func() error {
+				return run.Stop(ctx)
+			})()
 			if err != nil {
 				log.Error(errors.ErrStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
@@ -180,7 +185,9 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 			}
 
 			log.Info("executing daemon post-stop function")
-			err = run.PostStop(ctx)
+			err = safety.RecoverFunc(func() error {
+				return run.PostStop(ctx)
+			})()
 			if err != nil {
 				log.Error(errors.ErrPostStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {

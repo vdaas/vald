@@ -69,6 +69,7 @@ type NGT interface {
 type ngt struct {
 	alen     int
 	indexing atomic.Value
+	saveMu   sync.Mutex    // creating or saving index
 	lim      time.Duration // auto indexing time limit
 	dur      time.Duration // auto indexing check duration
 	sdur     time.Duration // auto save index check duration
@@ -234,7 +235,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			err = nil
 			select {
 			case <-ctx.Done():
-				err = n.CreateAndSaveIndex(ctx, n.dps)
+				err = n.CreateIndex(ctx, n.dps)
 				if err != nil {
 					ech <- err
 					return errors.Wrap(ctx.Err(), err.Error())
@@ -454,6 +455,9 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		}
 	}()
 
+	n.saveMu.Lock()
+	defer n.saveMu.Unlock()
+
 	if n.indexing.Load().(bool) {
 		return nil
 	}
@@ -558,6 +562,9 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 		}
 	}()
 
+	n.saveMu.Lock()
+	defer n.saveMu.Unlock()
+
 	if len(n.path) != 0 && !n.inMem {
 		eg, ctx := errgroup.New(ctx)
 		eg.Go(safety.RecoverFunc(func() error {
@@ -594,7 +601,7 @@ func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err erro
 	}()
 
 	err = n.CreateIndex(ctx, poolSize)
-	if err != nil {
+	if err != nil && err != errors.ErrUncommittedIndexNotFound {
 		return err
 	}
 	return n.SaveIndex(ctx)
@@ -667,7 +674,7 @@ func (n *ngt) DeleteVCacheLen() uint64 {
 
 func (n *ngt) Close(ctx context.Context) (err error) {
 	if len(n.path) != 0 {
-		err = n.SaveIndex(ctx)
+		err = n.CreateAndSaveIndex(ctx, n.dps)
 	}
 	n.core.Close()
 	return
