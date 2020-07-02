@@ -77,7 +77,7 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 		k8s.WithResourceController(mnode.New(
 			mnode.WithControllerName("node metrics discoverer"),
 			mnode.WithOnErrorFunc(func(err error) {
-				log.Error(err)
+				log.Error("failed to reconcile:", err)
 			}),
 			mnode.WithOnReconcileFunc(func(nodes map[string]mnode.Node) {
 				log.Debugf("node metrics reconciled\t%#v", nodes)
@@ -96,7 +96,7 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 		k8s.WithResourceController(mpod.New(
 			mpod.WithControllerName("pod metrics discoverer"),
 			mpod.WithOnErrorFunc(func(err error) {
-				log.Error(err)
+				log.Error("failed to reconcile:", err)
 			}),
 			mpod.WithOnReconcileFunc(func(podList map[string]mpod.Pod) {
 				log.Debugf("pod metrics reconciled\t%#v", podList)
@@ -115,7 +115,7 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 		k8s.WithResourceController(pod.New(
 			pod.WithControllerName("pod discoverer"),
 			pod.WithOnErrorFunc(func(err error) {
-				log.Error(err)
+				log.Error("failed to reconcile:", err)
 			}),
 			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
 				log.Debugf("pod resource reconciled\t%#v", podList)
@@ -137,7 +137,7 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 		k8s.WithResourceController(node.New(
 			node.WithControllerName("node discoverer"),
 			node.WithOnErrorFunc(func(err error) {
-				log.Error(err)
+				log.Error("failed to reconcile:", err)
 			}),
 			node.WithOnReconcileFunc(func(nodes []node.Node) {
 				log.Debugf("node resource reconciled\t%#v", nodes)

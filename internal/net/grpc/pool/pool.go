@@ -87,8 +87,8 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 
 	p.host, p.port, p.isIP, err = net.Parse(p.addr)
 	if err != nil {
-		log.Warn(err)
-		if len(p.host) == 0 {
+		log.Warnf("failed to parse addr %s: %s", p.addr, err)
+		if p.host == "" {
 			p.host = strings.SplitN(p.addr, ":", 2)[0]
 		}
 		err = p.scanGRPCPort(ctx)
@@ -259,7 +259,7 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 			if err != nil {
 				if conn != nil {
 					err = errors.Wrap(conn.Close(), err.Error())
-					log.Debug(err)
+					log.Debugf("failed to dial to %s: %s", addr, err)
 				}
 				retry++
 				return nil, err
@@ -267,7 +267,7 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 			if !isHealthy(conn) {
 				if conn != nil {
 					err = errors.Wrap(conn.Close(), err.Error())
-					log.Debug(err)
+					log.Debugf("connection for %s is unhealthy: %s", addr, err)
 				}
 				retry++
 				return nil, errors.ErrGRPCClientConnNotFound(addr)
@@ -397,7 +397,7 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 		if conn != nil {
 			err = conn.Close()
 			if err != nil {
-				log.Warn(err)
+				log.Warn("failed to close connection:", err)
 			}
 		}
 		ips = append(ips, ipStr)
@@ -409,11 +409,11 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 }
 
 func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
-	if p.isIP && len(p.reconnectHash) != 0 && !p.IsHealthy(ctx) {
+	if p.isIP && p.reconnectHash != "" && !p.IsHealthy(ctx) {
 		return nil, errors.ErrInvalidGRPCClientConn(p.addr)
 	}
 
-	if len(p.reconnectHash) == 0 {
+	if p.reconnectHash == "" {
 		log.Debugf("connection history for %s not found starting connection phase", p.addr)
 		if p.isIP {
 			return p.connect(ctx)

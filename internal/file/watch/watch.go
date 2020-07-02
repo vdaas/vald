@@ -116,7 +116,7 @@ func (w *watch) Start(ctx context.Context) (<-chan error, error) {
 				return ctx.Err()
 			case event, ok = <-w.w.Events:
 				if ok {
-					log.Debug("change detected file: ", event.Name)
+					log.Debug("change detected for file: ", event.Name)
 					if w.onChange != nil {
 						err = w.onChange(ctx, event.Name)
 						if err != nil {
@@ -138,7 +138,7 @@ func (w *watch) Start(ctx context.Context) (<-chan error, error) {
 						log.Debug("Renamed file: ", event.Name)
 						err = w.onRename(ctx, event.Name)
 					case event.Op&fsnotify.Chmod == fsnotify.Chmod && w.onChmod != nil:
-						log.Debug("File changed permission: ", event.Name)
+						log.Debug("Changed permission: ", event.Name)
 						err = w.onChmod(ctx, event.Name)
 					}
 				}
