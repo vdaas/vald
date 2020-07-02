@@ -85,7 +85,9 @@ var (
 // Server and CA Certificate, and private key will read from a file from the file path definied in environment variable.
 func New(opts ...Option) (*Config, error) {
 	var err error
-	c := new(credentials)
+	c := &credentials{
+		cfg: defaultTLSConfig,
+	}
 
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(c); err != nil {
@@ -95,10 +97,6 @@ func New(opts ...Option) (*Config, error) {
 
 	if c.cert == "" || c.key == "" {
 		return nil, errors.ErrTLSCertOrKeyNotFound
-	}
-
-	if c.cfg == nil {
-		c.cfg = defaultTLSConfig
 	}
 
 	c.cfg.Certificates = make([]tls.Certificate, 1)
@@ -121,16 +119,14 @@ func New(opts ...Option) (*Config, error) {
 
 func NewClientConfig(opts ...Option) (*Config, error) {
 	var err error
-	c := new(credentials)
+	c := &credentials{
+		cfg: defaultTLSConfig,
+	}
 
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
-	}
-
-	if c.cfg == nil {
-		c.cfg = defaultTLSConfig
 	}
 
 	if c.ca != "" {

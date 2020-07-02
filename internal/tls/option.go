@@ -48,7 +48,9 @@ func WithCa(ca string) Option {
 
 func WithTLSConfig(cfg *tls.Config) Option {
 	return func(c *credentials) error {
-		c.cfg = cfg
+		if cfg != nil {
+			c.cfg = cfg
+		}
 		return nil
 	}
 }
