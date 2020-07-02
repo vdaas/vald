@@ -21,6 +21,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"io/ioutil"
 	"math"
 	"net/http"
 	"net/http/httptest"
@@ -1054,15 +1055,13 @@ func Test_dialer_cachedDialer(t *testing.T) {
 						}
 
 						// read the output from the server and check if it is equals to the count
-						/*
-							buf, err := ioutil.ReadAll(gotConn)
-							if err != nil {
-								return err
-							}
-							if string(buf) != fmt.Sprint(cnt) {
-								return errors.Errorf("excepted output from server, got: %v, want: %v", buf, fmt.Sprint(cnt))
-							}
-						*/
+						buf, err := ioutil.ReadAll(gotConn)
+						if err != nil {
+							return err
+						}
+						if string(buf) != fmt.Sprint(cnt) {
+							return errors.Errorf("excepted output from server, got: %v, want: %v", buf, fmt.Sprint(cnt))
+						}
 
 						return nil
 					}
@@ -1079,7 +1078,8 @@ func Test_dialer_cachedDialer(t *testing.T) {
 						}
 					}
 
-					// check all the connections again and it should start with index 0
+					// check all the connections again and it should start with index 0,
+					// and the count should not be reset
 					for i := 0; i < srvNums; i++ {
 						c, e := d.cachedDialer(context.Background(), "tcp", addr+":"+ports[i])
 						cnt := srvNums + i + 1

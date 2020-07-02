@@ -60,6 +60,7 @@ type dialerCache struct {
 	cnt uint32
 }
 
+// GetIP returns the next cached IP address in round robin order
 func (d *dialerCache) GetIP() string {
 	if atomic.LoadUint32(&d.cnt) > math.MaxUint32-10000 {
 		atomic.StoreUint32(&d.cnt, 0)
@@ -67,10 +68,12 @@ func (d *dialerCache) GetIP() string {
 	return d.ips[atomic.AddUint32(&d.cnt, 1)%d.Len()]
 }
 
+// Len returns the length of cached IP addresses
 func (d *dialerCache) Len() uint32 {
 	return uint32(len(d.ips))
 }
 
+// NewDialer initialize and return the dialer instance
 func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 	d := new(dialer)
 	for _, opt := range append(defaultDialerOptions, opts...) {
@@ -136,17 +139,18 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 	return d, nil
 }
 
+// GetDialer returns a function to return the connection
 func (d *dialer) GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error) {
 	return d.dialer
 }
 
-func (d *dialer) lookup(ctx context.Context, addr string) (*dialerCache, error) {
-	cache, ok := d.cache.Get(addr)
+func (d *dialer) lookup(ctx context.Context, host string) (*dialerCache, error) {
+	cache, ok := d.cache.Get(host)
 	if ok {
 		return cache.(*dialerCache), nil
 	}
 
-	r, err := d.der.Resolver.LookupIPAddr(ctx, addr)
+	r, err := d.der.Resolver.LookupIPAddr(ctx, host)
 	if err != nil {
 		return nil, err
 	}
@@ -157,16 +161,20 @@ func (d *dialer) lookup(ctx context.Context, addr string) (*dialerCache, error) 
 		dc.ips = append(dc.ips, ip.String())
 	}
 
-	d.cache.Set(addr, dc)
+	d.cache.Set(host, dc)
 	return dc, nil
 }
 
+// StartDialerCache starts the dialer cache to expire the cache automatically
 func (d *dialer) StartDialerCache(ctx context.Context) {
 	if d.dnsCache && d.cache != nil {
 		d.cache.Start(ctx)
 	}
 }
 
+// DialContext returns the connection or error base on the input.
+// If the DNS cache is enabled, it will lookup the DNS cache in round robin order and return a connection of it.
+// Also if TLS is enabled, it will create a TLS connection for it.
 func (d *dialer) DialContext(ctx context.Context, network, address string) (net.Conn, error) {
 	return d.GetDialer()(ctx, network, address)
 }
