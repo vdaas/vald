@@ -1,7 +1,7 @@
 name: "ChatOps help"
 on:
   pull_request:
-    types: [opened]
+    types: [opened, reopened]
 jobs:
   print-help:
     name: print help
@@ -15,7 +15,7 @@ jobs:
           if [ "$COMMENT_BODY" = "null" ]; then
             # curl -o chatops_commands.md https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_commands.md
             curl -o chatops_commands.md https://raw.githubusercontent.com/vdaas/vald/ci/run-tests/exclude-hack-codes/.github/chatops_commands.md
-            BODY=`echo chatops_commands.md | sed ':a;N;$!ba;s/\n/\\\\n/g'`
+            BODY=`cat chatops_commands.md | sed ':a;N;$!ba;s/\n/\\\\n/g'`
             curl --include --verbose --fail \
             -H "Accept: application/json" \
             -H "Content-Type:application/json" \
