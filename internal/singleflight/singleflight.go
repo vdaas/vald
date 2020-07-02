@@ -19,6 +19,7 @@ package singleflight
 
 import (
 	"context"
+	"fmt"
 	"sync"
 )
 
@@ -29,6 +30,7 @@ type call struct {
 	dups int
 }
 
+// Group represents interface for zero time cache
 type Group interface {
 	Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error)
 }
@@ -38,6 +40,7 @@ type group struct {
 	m  map[string]*call
 }
 
+// New returns Group imple
 func New(size int) Group {
 	if size < 1 {
 		size = 1
@@ -47,11 +50,14 @@ func New(size int) Group {
 	}
 }
 
+// Do returns a set of the cache of the first return value from function as interface{}, shared flg as bool, and err as error when the function is called multiple times in an instant
 func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error) {
 	g.mu.RLock()
+	fmt.Println(g.m[key])
 	if c, ok := g.m[key]; ok {
 		g.mu.RUnlock()
 		c.dups++
+		fmt.Println("waiting")
 		c.wg.Wait()
 		return c.val, true, c.err
 	}
@@ -65,11 +71,12 @@ func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, erro
 	g.mu.Unlock()
 
 	c.val, c.err = fn()
+	fmt.Println("release")
 	c.wg.Done()
 
 	g.mu.Lock()
 	delete(g.m, key)
 	g.mu.Unlock()
-
+	fmt.Println("delete")
 	return c.val, c.dups > 0, c.err
 }
