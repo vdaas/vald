@@ -16,8 +16,8 @@ on:
       - 'cmd/**'
 
 jobs:
-  coverage:
-    name: Run tests
+  test-cmd:
+    name: Run tests for cmd packages
     runs-on: ubuntu-latest
     container:
       image: vdaas/vald-ci-container:nightly
@@ -26,6 +26,32 @@ jobs:
         uses: actions/checkout@v1
         with:
           fetch-depth: 1
-      - name: Run tests
+      - name: Run tests for cmd packages
         run: |
-          make test
+          make test/cmd
+  test-internal:
+    name: Run tests for internal packages
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: Run tests for internal packages
+        run: |
+          make test/internal
+  test-pkg:
+    name: Run tests for pkg packages
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: Run tests for pkg packages
+        run: |
+          make test/pkg

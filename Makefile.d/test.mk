@@ -15,9 +15,34 @@
 #
 
 .PHONY: test
-## run tests
+## run tests for cmd, internal, pkg
 test:
-	go test -json -cover ./... | tparse -top
+	go test -json -cover ./cmd/... ./internal/... ./pkg/... | tparse -notests
+
+.PHONY: test/cmd
+## run tests for cmd
+test/cmd:
+	go test -json -cover ./cmd/... | tparse -pass -notests
+
+.PHONY: test/internal
+## run tests for internal
+test/internal:
+	go test -json -cover ./internal/... | tparse -pass -notests
+
+.PHONY: test/pkg
+## run tests for pkg
+test/pkg:
+	go test -json -cover ./pkg/... | tparse -pass -notests
+
+.PHONY: test/hack
+## run tests for hack
+test/hack:
+	go test -json -cover ./hack/... | tparse -pass -notests
+
+.PHONY: test/all
+## run tests for all Go codes
+test/all:
+	go test -json -cover ./... | tparse -notests
 
 .PHONY: coverage
 ## calculate coverages
