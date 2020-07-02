@@ -1,0 +1,93 @@
+name: 'Build docker image: gateway-meta'
+on:
+  push:
+    branches:
+      - master
+    tags:
+       - '*.*.*'
+       - 'v*.*.*'
+       - '*.*.*-*'
+       - 'v*.*.*-*'
+    paths:
+      - 'internal/**'
+      - '!internal/db/**'
+      - '!internal/k8s/**'
+      - 'apis/grpc/**'
+      - 'pkg/gateway/meta/**'
+      - 'cmd/gateway/meta/**'
+      - 'dockers/base/Dockerfile'
+      - 'dockers/gateway/meta/Dockerfile'
+      - 'versions/GO_VERSION'
+  pull_request:
+    paths:
+      - 'internal/**'
+      - '!internal/db/**'
+      - '!internal/k8s/**'
+      - 'apis/grpc/**'
+      - 'pkg/gateway/meta/**'
+      - 'cmd/gateway/meta/**'
+      - 'dockers/base/Dockerfile'
+      - 'dockers/gateway/meta/Dockerfile'
+      - 'versions/GO_VERSION'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 10
+    - name: Build the Docker image
+      run: |
+        echo 'Build docker image'
+        make docker/build/gateway-meta
+    - name: login to DockerHub
+      run: |
+        echo 'Login to DockerHub'
+        echo ${DOCKERHUB_PASS} | docker login --username ${DOCKERHUB_USER} --password-stdin
+      env:
+        DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+        DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+    - name: push to DockerHub (master)
+      if: github.ref == 'refs/heads/master'
+      run: |
+        echo 'Push to DockerHub (master)'
+        imagename=`make docker/name/gateway-meta`
+        docker tag ${imagename} ${imagename}:nightly
+        docker push ${imagename}:nightly
+    - name: push to DockerHub (pull request)
+      if: github.event_name == 'pull_request'
+      run: |
+        echo 'Push to DockerHub (pull request)'
+        imagename=`make docker/name/gateway-meta`
+        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+        docker tag ${imagename} ${imagename}:pr-${pr_num}
+        docker push ${imagename}:pr-${pr_num}
+    - name: push to DockerHub (tags)
+      if: startsWith( github.ref, 'refs/tags/')
+      run: |
+        echo 'Push to DockerHub (tags)'
+        imagename=`make docker/name/gateway-meta`
+        docker push ${imagename}:latest
+        tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
+        docker tag ${imagename} ${imagename}:${tag_name}
+        docker push ${imagename}:${tag_name}
+        docker tag ${imagename} ${imagename}:nightly
+        docker push ${imagename}:nightly
+  slack:
+    name: Slack notification
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' || startsWith( github.ref, 'refs/tags/')
+    steps:
+      - uses: technote-space/workflow-conclusion-action@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: 8398a7/action-slack@v2
+        with:
+          author_name: meta-gateway image build
+          status: ${{ env.WORKFLOW_CONCLUSION }}
+          only_mention_fail: channel
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}

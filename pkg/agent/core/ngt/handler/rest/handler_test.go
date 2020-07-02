@@ -22,9 +22,8 @@ import (
 	"reflect"
 	"testing"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
 	"github.com/vdaas/vald/internal/errors"
-
+	"github.com/vdaas/vald/pkg/agent/core/ngt/handler/grpc"
 	"go.uber.org/goleak"
 )
 
@@ -105,7 +104,7 @@ func Test_handler_Index(t *testing.T) {
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		want int
@@ -196,7 +195,7 @@ func Test_handler_Search(t *testing.T) {
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -287,7 +286,7 @@ func Test_handler_SearchByID(t *testing.T) {
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -378,7 +377,7 @@ func Test_handler_Insert(t *testing.T) {
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -469,7 +468,7 @@ func Test_handler_MultiInsert(t *testing.T) {
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -560,7 +559,7 @@ func Test_handler_Update(t *testing.T) {
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -651,7 +650,7 @@ func Test_handler_MultiUpdate(t *testing.T) {
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -742,7 +741,7 @@ func Test_handler_Remove(t *testing.T) {
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -833,7 +832,7 @@ func Test_handler_MultiRemove(t *testing.T) {
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -924,7 +923,7 @@ func Test_handler_CreateIndex(t *testing.T) {
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -1015,7 +1014,7 @@ func Test_handler_SaveIndex(t *testing.T) {
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -1106,7 +1105,7 @@ func Test_handler_CreateAndSaveIndex(t *testing.T) {
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -1197,7 +1196,7 @@ func Test_handler_GetObject(t *testing.T) {
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -1288,7 +1287,7 @@ func Test_handler_Exists(t *testing.T) {
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int

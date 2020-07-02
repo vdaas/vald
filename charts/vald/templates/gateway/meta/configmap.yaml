@@ -1,0 +1,76 @@
+#
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{{- if .Values.gateway.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.gateway.name }}-config
+  labels:
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: gateway
+data:
+  config.yaml: |
+    ---
+    version: {{ .Values.gateway.version }}
+    time_zone: {{ default .Values.defaults.time_zone .Values.gateway.time_zone }}
+    logging:
+      {{- $logging := dict "Values" .Values.gateway.logging "default" .Values.defaults.logging }}
+      {{- include "vald.logging" $logging | nindent 6 }}
+    server_config:
+      {{- $servers := dict "Values" .Values.gateway.server_config "default" .Values.defaults.server_config }}
+      {{- include "vald.servers" $servers | nindent 6 }}
+    observability:
+      {{- $observability := dict "Values" .Values.gateway.observability "default" .Values.defaults.observability }}
+      {{- include "vald.observability" $observability | nindent 6 }}
+    gateway:
+      agent_port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.agent.server_config.servers.grpc.port }}
+      agent_name: {{ .Values.agent.name | quote }}
+      agent_dns: {{ .Values.agent.name }}.{{ .Release.Namespace }}.svc.cluster.local
+      agent_namespace: {{ .Values.gateway.gateway_config.agent_namespace | quote }}
+      node_name: {{ .Values.gateway.gateway_config.node_name | quote }}
+      index_replica: {{ .Values.gateway.gateway_config.index_replica }}
+      discoverer:
+        host: {{ .Values.discoverer.name }}.{{ .Release.Namespace }}.svc.cluster.local
+        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.discoverer.server_config.servers.grpc.port }}
+        duration: {{ .Values.gateway.gateway_config.discoverer.duration }}
+        discover_client:
+          {{- $discoverClient := dict "Values" .Values.gateway.gateway_config.discoverer.discover_client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $discoverClient | nindent 10 }}
+        agent_client:
+          {{- $agentClient := dict "Values" .Values.gateway.gateway_config.discoverer.agent_client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $agentClient | nindent 10 }}
+      meta:
+        host: {{ .Values.meta.name }}.{{ .Release.Namespace }}.svc.cluster.local
+        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.meta.server_config.servers.grpc.port }}
+        client:
+          {{- $metaClient := dict "Values" .Values.gateway.gateway_config.meta.client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $metaClient | nindent 10 }}
+        enable_cache: {{ .Values.gateway.gateway_config.meta.enable_cache }}
+        cache_expiration: {{ .Values.gateway.gateway_config.meta.cache_expiration }}
+        expired_cache_check_duration: {{ .Values.gateway.gateway_config.meta.expired_cache_check_duration }}
+      backup:
+        host: {{ .Values.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
+        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.compressor.server_config.servers.grpc.port }}
+        client:
+          {{- $backupClient := dict "Values" .Values.gateway.gateway_config.backup.client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $backupClient | nindent 10 }}
+      egress_filter:
+        client: null
+{{- end }}

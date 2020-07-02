@@ -200,7 +200,6 @@ func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) worker
 			ctx,
 			&payload.Backup_Compressed_MetaVector{
 				Uuid:   meta.GetUuid(),
-				Meta:   meta.GetMeta(),
 				Vector: vector,
 				Ips:    meta.GetIps(),
 			},

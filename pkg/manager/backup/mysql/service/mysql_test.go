@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/pkg/manager/backup/mysql/model"
-
 	"go.uber.org/goleak"
 )
 
