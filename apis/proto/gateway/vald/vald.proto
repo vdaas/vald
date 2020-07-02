@@ -50,7 +50,7 @@ service Vald {
   rpc StreamSearchByID(stream payload.Search.IDRequest)
       returns (stream payload.Search.Response) {}
 
-  rpc Insert(payload.Object.Vector) returns (payload.Empty) {
+  rpc Insert(payload.Object.Vector) returns (payload.Object.Location) {
     option (google.api.http) = {
       post : "/insert"
       body : "*"
@@ -58,10 +58,10 @@ service Vald {
     option (gql.rpc_type) = MUTATION;
   }
   rpc StreamInsert(stream payload.Object.Vector)
-      returns (stream payload.Empty) {}
-  rpc MultiInsert(payload.Object.Vectors) returns (payload.Empty) {}
+      returns (stream payload.Object.Location) {}
+  rpc MultiInsert(payload.Object.Vectors) returns (payload.Object.Locations) {}
 
-  rpc Update(payload.Object.Vector) returns (payload.Empty) {
+  rpc Update(payload.Object.Vector) returns (payload.Object.Location) {
     option (google.api.http) = {
       post : "/update"
       body : "*"
@@ -69,10 +69,10 @@ service Vald {
     option (gql.rpc_type) = MUTATION;
   }
   rpc StreamUpdate(stream payload.Object.Vector)
-      returns (stream payload.Empty) {}
-  rpc MultiUpdate(payload.Object.Vectors) returns (payload.Empty) {}
+      returns (stream payload.Object.Location) {}
+  rpc MultiUpdate(payload.Object.Vectors) returns (payload.Object.Locations) {}
 
-  rpc Upsert(payload.Object.Vector) returns (payload.Empty) {
+  rpc Upsert(payload.Object.Vector) returns (payload.Object.Location) {
     option (google.api.http) = {
       post : "/upsert"
       body : "*"
@@ -80,19 +80,19 @@ service Vald {
     option (gql.rpc_type) = MUTATION;
   }
   rpc StreamUpsert(stream payload.Object.Vector)
-      returns (stream payload.Empty) {}
-  rpc MultiUpsert(payload.Object.Vectors) returns (payload.Empty) {}
+      returns (stream payload.Object.Location) {}
+  rpc MultiUpsert(payload.Object.Vectors) returns (payload.Object.Locations) {}
 
-  rpc Remove(payload.Object.ID) returns (payload.Empty) {
+  rpc Remove(payload.Object.ID) returns (payload.Object.Location) {
     option (google.api.http).delete = "/remove/{id}";
     option (gql.rpc_type) = MUTATION;
   }
-  rpc StreamRemove(stream payload.Object.ID) returns (stream payload.Empty) {}
-  rpc MultiRemove(payload.Object.IDs) returns (payload.Empty) {}
+  rpc StreamRemove(stream payload.Object.ID) returns (stream payload.Object.Location) {}
+  rpc MultiRemove(payload.Object.IDs) returns (payload.Object.Locations) {}
 
-  rpc GetObject(payload.Object.ID) returns (payload.Backup.MetaVector) {
+  rpc GetObject(payload.Object.ID) returns (payload.Object.Vector) {
     option (google.api.http).get = "/object/{id}";
   }
   rpc StreamGetObject(stream payload.Object.ID)
-      returns (stream payload.Backup.MetaVector) {}
+      returns (stream payload.Object.Vector) {}
 }

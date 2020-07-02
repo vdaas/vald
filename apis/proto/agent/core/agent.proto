@@ -28,63 +28,6 @@ import "google/api/annotations.proto";
 import "pb/gql.proto";
 
 service Agent {
-  option (gql.svc_type) = QUERY;
-  rpc Exists(payload.Object.ID) returns (payload.Object.ID) {
-    option (google.api.http).get = "/exists/{id}";
-  }
-
-  rpc Search(payload.Search.Request) returns (payload.Search.Response) {
-    option (google.api.http) = {
-      post : "/search"
-      body : "*"
-    };
-  }
-  rpc SearchByID(payload.Search.IDRequest) returns (payload.Search.Response) {
-    option (google.api.http) = {
-      post : "/search/id"
-      body : "*"
-    };
-  }
-  rpc StreamSearch(stream payload.Search.Request)
-      returns (stream payload.Search.Response) {}
-  rpc StreamSearchByID(stream payload.Search.IDRequest)
-      returns (stream payload.Search.Response) {}
-
-  rpc Insert(payload.Object.Vector) returns (payload.Empty) {
-    option (google.api.http) = {
-      post : "/insert"
-      body : "*"
-    };
-    option (gql.rpc_type) = MUTATION;
-  }
-  rpc StreamInsert(stream payload.Object.Vector)
-      returns (stream payload.Empty) {}
-  rpc MultiInsert(payload.Object.Vectors) returns (payload.Empty) {}
-
-  rpc Update(payload.Object.Vector) returns (payload.Empty) {
-    option (google.api.http) = {
-      post : "/update"
-      body : "*"
-    };
-    option (gql.rpc_type) = MUTATION;
-  }
-  rpc StreamUpdate(stream payload.Object.Vector)
-      returns (stream payload.Empty) {}
-  rpc MultiUpdate(payload.Object.Vectors) returns (payload.Empty) {}
-
-  rpc Remove(payload.Object.ID) returns (payload.Empty) {
-    option (google.api.http).delete = "/remove/{id}";
-    option (gql.rpc_type) = MUTATION;
-  }
-  rpc StreamRemove(stream payload.Object.ID) returns (stream payload.Empty) {}
-  rpc MultiRemove(payload.Object.IDs) returns (payload.Empty) {}
-
-  rpc GetObject(payload.Object.ID) returns (payload.Object.Vector) {
-    option (google.api.http).get = "/object/{id}";
-  }
-  rpc StreamGetObject(stream payload.Object.ID)
-      returns (stream payload.Object.Vector) {}
-
   rpc CreateIndex(payload.Control.CreateIndexRequest) returns (payload.Empty) {
     option (google.api.http).get = "/index/create";
   }

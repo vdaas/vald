@@ -22,7 +22,6 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/handler/rest"
-
 	"go.uber.org/goleak"
 )
 

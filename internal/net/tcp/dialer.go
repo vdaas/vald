@@ -98,7 +98,7 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 				if err := safety.RecoverFunc(func() (err error) {
 					_, err = d.lookup(ctx, addr)
 					return err
-				}); err != nil {
+				})(); err != nil {
 					log.Error(err)
 				}
 			}),

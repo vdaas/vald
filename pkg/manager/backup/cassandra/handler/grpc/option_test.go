@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/service"
-
 	"go.uber.org/goleak"
 )
 

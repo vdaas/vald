@@ -75,7 +75,6 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 
 	return &payload.Backup_MetaVector{
 		Uuid:   r.GetUuid(),
-		Meta:   r.GetMeta(),
 		Vector: vector,
 		Ips:    r.GetIps(),
 	}, nil

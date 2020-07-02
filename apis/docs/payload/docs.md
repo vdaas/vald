@@ -49,9 +49,12 @@
     - [Meta.Val](#payload.Meta.Val)
     - [Meta.Vals](#payload.Meta.Vals)
     - [Object](#payload.Object)
+    - [Object.Blob](#payload.Object.Blob)
     - [Object.Distance](#payload.Object.Distance)
     - [Object.ID](#payload.Object.ID)
     - [Object.IDs](#payload.Object.IDs)
+    - [Object.Location](#payload.Object.Location)
+    - [Object.Locations](#payload.Object.Locations)
     - [Object.Vector](#payload.Object.Vector)
     - [Object.Vectors](#payload.Object.Vectors)
     - [Replication](#payload.Replication)
@@ -61,6 +64,7 @@
     - [Search](#payload.Search)
     - [Search.Config](#payload.Search.Config)
     - [Search.IDRequest](#payload.Search.IDRequest)
+    - [Search.ObjectRequest](#payload.Search.ObjectRequest)
     - [Search.Request](#payload.Search.Request)
     - [Search.Response](#payload.Search.Response)
   
@@ -104,7 +108,6 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | uuid | [string](#string) |  |  |
-| meta | [string](#string) |  |  |
 | vector | [bytes](#bytes) |  |  |
 | ips | [string](#string) | repeated |  |
 
@@ -263,7 +266,6 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | uuid | [string](#string) |  |  |
-| meta | [string](#string) |  |  |
 | vector | [float](#float) | repeated |  |
 | ips | [string](#string) | repeated |  |
 
@@ -697,6 +699,22 @@
 
 
 
+<a name="payload.Object.Blob"></a>
+
+### Object.Blob
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+| object | [bytes](#bytes) |  |  |
+
+
+
+
+
+
 <a name="payload.Object.Distance"></a>
 
 ### Object.Distance
@@ -737,6 +755,38 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | ids | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Object.Location"></a>
+
+### Object.Location
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | [string](#string) |  |  |
+| uuid | [string](#string) |  |  |
+| ips | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Object.Locations"></a>
+
+### Object.Locations
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| locations | [Object.Location](#payload.Object.Location) | repeated |  |
 
 
 
@@ -869,6 +919,22 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | id | [string](#string) |  |  |
+| config | [Search.Config](#payload.Search.Config) |  |  |
+
+
+
+
+
+
+<a name="payload.Search.ObjectRequest"></a>
+
+### Search.ObjectRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| object | [bytes](#bytes) |  |  |
 | config | [Search.Config](#payload.Search.Config) |  |  |
 
 

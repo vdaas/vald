@@ -22,12 +22,11 @@ import (
 	"reflect"
 	"testing"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
+	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/internal/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-
 	"go.uber.org/goleak"
 )
 
@@ -86,7 +85,7 @@ func TestNewGateway(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -174,7 +173,7 @@ func Test_gateway_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -201,7 +200,7 @@ func Test_gateway_Start(t *testing.T) {
 func Test_gateway_BroadCast(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		f   func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error
+		f   func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) error
 	}
 	type fields struct {
 		client discoverer.Client
@@ -265,7 +264,7 @@ func Test_gateway_BroadCast(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -292,7 +291,7 @@ func Test_gateway_BroadCast(t *testing.T) {
 func Test_gateway_Do(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		f   func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error
+		f   func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) error
 	}
 	type fields struct {
 		client discoverer.Client
@@ -356,7 +355,7 @@ func Test_gateway_Do(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -384,7 +383,7 @@ func Test_gateway_DoMulti(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		num int
-		f   func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error
+		f   func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) error
 	}
 	type fields struct {
 		client discoverer.Client
@@ -450,7 +449,7 @@ func Test_gateway_DoMulti(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -538,7 +537,7 @@ func Test_gateway_GetAgentCount(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

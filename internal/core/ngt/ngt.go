@@ -97,7 +97,7 @@ type (
 // ObjectType is alias of object type in NGT
 type objectType int
 
-// DistanceType is alias of distance type in NGT
+// DistanceType is alias of distance type in NGTErrInvalidVector
 type distanceType int
 
 const (
@@ -263,6 +263,10 @@ func (n *ngt) loadObjectSpace() error {
 
 // Search returns search result as []SearchResult
 func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) ([]SearchResult, error) {
+	if len(vec) != int(n.dimension) {
+		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
+	}
+
 	results := C.ngt_create_empty_results(n.ebuf)
 
 	defer C.ngt_destroy_results(results)
@@ -322,6 +326,10 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) ([]Search
 // Insert returns NGT object id.
 // This only stores not indexing, you must call CreateIndex and SaveIndex.
 func (n *ngt) Insert(vec []float32) (uint, error) {
+	dim := int(n.dimension)
+	if len(vec) != dim {
+		return 0, errors.ErrIncompatibleDimensionSize(len(vec), dim)
+	}
 	n.mu.Lock()
 	id := C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), n.ebuf)
 	n.mu.Unlock()
@@ -359,14 +367,20 @@ func (n *ngt) BulkInsert(vecs [][]float32) ([]uint, []error) {
 	ids := make([]uint, 0, len(vecs))
 	errs := make([]error, 0, len(vecs))
 
+	dim := int(n.dimension)
 	var id uint
 	n.mu.Lock()
 	for _, vec := range vecs {
-		// n.mu.Lock()
-		id = uint(C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), n.ebuf))
-		// n.mu.Unlock()
-		if id == 0 {
-			errs = append(errs, n.newGoError(n.ebuf))
+		id = 0
+		if len(vec) != dim {
+			errs = append(errs, errors.ErrIncompatibleDimensionSize(len(vec), dim))
+		} else {
+			// n.mu.Lock()
+			id = uint(C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), n.ebuf))
+			// n.mu.Unlock()
+			if id == 0 {
+				errs = append(errs, n.newGoError(n.ebuf))
+			}
 		}
 		ids = append(ids, id)
 	}

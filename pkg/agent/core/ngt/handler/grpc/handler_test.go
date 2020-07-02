@@ -22,12 +22,11 @@ import (
 	"reflect"
 	"testing"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
+	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
-
 	"go.uber.org/goleak"
 )
 
@@ -102,12 +101,110 @@ func TestNew(t *testing.T) {
 	}
 }
 
+func Test_server_newLocation(t *testing.T) {
+	type args struct {
+		uuids []string
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		streamConcurrency int
+	}
+	type want struct {
+		wantLocs *payload.Object_Locations
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Object_Locations) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotLocs *payload.Object_Locations) error {
+		if !reflect.DeepEqual(gotLocs, w.wantLocs) {
+			return errors.Errorf("got = %v, want %v", gotLocs, w.wantLocs)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           uuids: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           uuids: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotLocs := s.newLocation(test.args.uuids...)
+			if err := test.checkFunc(test.want, gotLocs); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
 func Test_server_Exists(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		uid *payload.Object_ID
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
@@ -143,6 +240,8 @@ func Test_server_Exists(t *testing.T) {
 		           uid: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -161,6 +260,8 @@ func Test_server_Exists(t *testing.T) {
 		           uid: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -184,6 +285,8 @@ func Test_server_Exists(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -203,6 +306,8 @@ func Test_server_Search(t *testing.T) {
 		req *payload.Search_Request
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
@@ -238,6 +343,8 @@ func Test_server_Search(t *testing.T) {
 		           req: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -256,6 +363,8 @@ func Test_server_Search(t *testing.T) {
 		           req: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -279,6 +388,8 @@ func Test_server_Search(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -298,6 +409,8 @@ func Test_server_SearchByID(t *testing.T) {
 		req *payload.Search_IDRequest
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
@@ -333,6 +446,8 @@ func Test_server_SearchByID(t *testing.T) {
 		           req: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -351,6 +466,8 @@ func Test_server_SearchByID(t *testing.T) {
 		           req: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -374,6 +491,8 @@ func Test_server_SearchByID(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -467,9 +586,11 @@ func Test_toSearchResponse(t *testing.T) {
 
 func Test_server_StreamSearch(t *testing.T) {
 	type args struct {
-		stream agent.Agent_StreamSearchServer
+		stream vald.Vald_StreamSearchServer
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
@@ -500,6 +621,8 @@ func Test_server_StreamSearch(t *testing.T) {
 		           stream: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -517,6 +640,8 @@ func Test_server_StreamSearch(t *testing.T) {
 		           stream: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -540,6 +665,8 @@ func Test_server_StreamSearch(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -555,9 +682,11 @@ func Test_server_StreamSearch(t *testing.T) {
 
 func Test_server_StreamSearchByID(t *testing.T) {
 	type args struct {
-		stream agent.Agent_StreamSearchByIDServer
+		stream vald.Vald_StreamSearchByIDServer
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
@@ -588,6 +717,8 @@ func Test_server_StreamSearchByID(t *testing.T) {
 		           stream: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -605,6 +736,8 @@ func Test_server_StreamSearchByID(t *testing.T) {
 		           stream: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -628,6 +761,8 @@ func Test_server_StreamSearchByID(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -647,11 +782,13 @@ func Test_server_Insert(t *testing.T) {
 		vec *payload.Object_Vector
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Empty
+		wantRes *payload.Object_Location
 		err     error
 	}
 	type test struct {
@@ -659,11 +796,11 @@ func Test_server_Insert(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Location, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -682,6 +819,8 @@ func Test_server_Insert(t *testing.T) {
 		           vec: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -700,6 +839,8 @@ func Test_server_Insert(t *testing.T) {
 		           vec: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -723,6 +864,8 @@ func Test_server_Insert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -738,9 +881,11 @@ func Test_server_Insert(t *testing.T) {
 
 func Test_server_StreamInsert(t *testing.T) {
 	type args struct {
-		stream agent.Agent_StreamInsertServer
+		stream vald.Vald_StreamInsertServer
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
@@ -771,6 +916,8 @@ func Test_server_StreamInsert(t *testing.T) {
 		           stream: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -788,6 +935,8 @@ func Test_server_StreamInsert(t *testing.T) {
 		           stream: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -811,6 +960,8 @@ func Test_server_StreamInsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -830,11 +981,13 @@ func Test_server_MultiInsert(t *testing.T) {
 		vecs *payload.Object_Vectors
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Empty
+		wantRes *payload.Object_Locations
 		err     error
 	}
 	type test struct {
@@ -842,11 +995,11 @@ func Test_server_MultiInsert(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -865,6 +1018,8 @@ func Test_server_MultiInsert(t *testing.T) {
 		           vecs: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -883,6 +1038,8 @@ func Test_server_MultiInsert(t *testing.T) {
 		           vecs: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -906,6 +1063,8 @@ func Test_server_MultiInsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -925,11 +1084,13 @@ func Test_server_Update(t *testing.T) {
 		vec *payload.Object_Vector
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Empty
+		wantRes *payload.Object_Location
 		err     error
 	}
 	type test struct {
@@ -937,11 +1098,11 @@ func Test_server_Update(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Location, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -960,6 +1121,8 @@ func Test_server_Update(t *testing.T) {
 		           vec: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -978,6 +1141,8 @@ func Test_server_Update(t *testing.T) {
 		           vec: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -1001,6 +1166,8 @@ func Test_server_Update(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1016,9 +1183,11 @@ func Test_server_Update(t *testing.T) {
 
 func Test_server_StreamUpdate(t *testing.T) {
 	type args struct {
-		stream agent.Agent_StreamUpdateServer
+		stream vald.Vald_StreamUpdateServer
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
@@ -1049,6 +1218,8 @@ func Test_server_StreamUpdate(t *testing.T) {
 		           stream: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -1066,6 +1237,8 @@ func Test_server_StreamUpdate(t *testing.T) {
 		           stream: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -1089,6 +1262,8 @@ func Test_server_StreamUpdate(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1108,11 +1283,13 @@ func Test_server_MultiUpdate(t *testing.T) {
 		vecs *payload.Object_Vectors
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Empty
+		wantRes *payload.Object_Locations
 		err     error
 	}
 	type test struct {
@@ -1120,11 +1297,11 @@ func Test_server_MultiUpdate(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -1143,6 +1320,8 @@ func Test_server_MultiUpdate(t *testing.T) {
 		           vecs: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -1161,6 +1340,8 @@ func Test_server_MultiUpdate(t *testing.T) {
 		           vecs: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -1184,6 +1365,8 @@ func Test_server_MultiUpdate(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1197,34 +1380,36 @@ func Test_server_MultiUpdate(t *testing.T) {
 	}
 }
 
-func Test_server_Remove(t *testing.T) {
+func Test_server_Upsert(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		id  *payload.Object_ID
+		vec *payload.Object_Vector
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Empty
-		err     error
+		want *payload.Object_Location
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Location, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, got *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
@@ -1235,9 +1420,11 @@ func Test_server_Remove(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           id: nil,
+		           vec: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -1253,9 +1440,11 @@ func Test_server_Remove(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           id: nil,
+		           vec: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -1279,12 +1468,14 @@ func Test_server_Remove(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.Remove(test.args.ctx, test.args.id)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			got, err := s.Upsert(test.args.ctx, test.args.vec)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -1292,11 +1483,13 @@ func Test_server_Remove(t *testing.T) {
 	}
 }
 
-func Test_server_StreamRemove(t *testing.T) {
+func Test_server_StreamUpsert(t *testing.T) {
 	type args struct {
-		stream agent.Agent_StreamRemoveServer
+		stream vald.Vald_StreamUpsertServer
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
@@ -1327,6 +1520,8 @@ func Test_server_StreamRemove(t *testing.T) {
 		           stream: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -1344,6 +1539,8 @@ func Test_server_StreamRemove(t *testing.T) {
 		           stream: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -1367,6 +1564,310 @@ func Test_server_StreamRemove(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			err := s.StreamUpsert(test.args.stream)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_MultiUpsert(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		vecs *payload.Object_Vectors
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Object_Locations
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Object_Locations, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           vecs: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           vecs: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.MultiUpsert(test.args.ctx, test.args.vecs)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_Remove(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		id  *payload.Object_ID
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Object_Location
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Object_Location, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           id: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           id: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.Remove(test.args.ctx, test.args.id)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_StreamRemove(t *testing.T) {
+	type args struct {
+		stream vald.Vald_StreamRemoveServer
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		streamConcurrency int
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           stream: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           stream: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1386,11 +1887,13 @@ func Test_server_MultiRemove(t *testing.T) {
 		ids *payload.Object_IDs
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Empty
+		wantRes *payload.Object_Locations
 		err     error
 	}
 	type test struct {
@@ -1398,11 +1901,11 @@ func Test_server_MultiRemove(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -1421,6 +1924,8 @@ func Test_server_MultiRemove(t *testing.T) {
 		           ids: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -1439,6 +1944,8 @@ func Test_server_MultiRemove(t *testing.T) {
 		           ids: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -1462,6 +1969,8 @@ func Test_server_MultiRemove(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1481,6 +1990,8 @@ func Test_server_GetObject(t *testing.T) {
 		id  *payload.Object_ID
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
@@ -1516,6 +2027,8 @@ func Test_server_GetObject(t *testing.T) {
 		           id: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -1534,6 +2047,8 @@ func Test_server_GetObject(t *testing.T) {
 		           id: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -1557,6 +2072,8 @@ func Test_server_GetObject(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1572,9 +2089,11 @@ func Test_server_GetObject(t *testing.T) {
 
 func Test_server_StreamGetObject(t *testing.T) {
 	type args struct {
-		stream agent.Agent_StreamGetObjectServer
+		stream vald.Vald_StreamGetObjectServer
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
@@ -1605,6 +2124,8 @@ func Test_server_StreamGetObject(t *testing.T) {
 		           stream: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -1622,6 +2143,8 @@ func Test_server_StreamGetObject(t *testing.T) {
 		           stream: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -1645,6 +2168,8 @@ func Test_server_StreamGetObject(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1664,6 +2189,8 @@ func Test_server_CreateIndex(t *testing.T) {
 		c   *payload.Control_CreateIndexRequest
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
@@ -1699,6 +2226,8 @@ func Test_server_CreateIndex(t *testing.T) {
 		           c: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -1717,6 +2246,8 @@ func Test_server_CreateIndex(t *testing.T) {
 		           c: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -1740,6 +2271,8 @@ func Test_server_CreateIndex(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1759,6 +2292,8 @@ func Test_server_SaveIndex(t *testing.T) {
 		in1 *payload.Empty
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
@@ -1794,6 +2329,8 @@ func Test_server_SaveIndex(t *testing.T) {
 		           in1: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -1812,6 +2349,8 @@ func Test_server_SaveIndex(t *testing.T) {
 		           in1: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -1835,6 +2374,8 @@ func Test_server_SaveIndex(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1854,6 +2395,8 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		c   *payload.Control_CreateIndexRequest
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
@@ -1889,6 +2432,8 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		           c: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -1907,6 +2452,8 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		           c: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -1930,6 +2477,8 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1949,6 +2498,8 @@ func Test_server_IndexInfo(t *testing.T) {
 		in1 *payload.Empty
 	}
 	type fields struct {
+		name              string
+		ip                string
 		ngt               service.NGT
 		streamConcurrency int
 	}
@@ -1984,6 +2535,8 @@ func Test_server_IndexInfo(t *testing.T) {
 		           in1: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		       },
@@ -2002,6 +2555,8 @@ func Test_server_IndexInfo(t *testing.T) {
 		           in1: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
 		           ngt: nil,
 		           streamConcurrency: 0,
 		           },
@@ -2025,6 +2580,8 @@ func Test_server_IndexInfo(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
 				streamConcurrency: test.fields.streamConcurrency,
 			}

@@ -52,6 +52,9 @@ type NGT struct {
 	// AutoIndexLength represent auto index length limit
 	AutoIndexLength int `yaml:"auto_index_length" json:"auto_index_length"`
 
+	// AutoCreateIndexPoolSize represent the pool size for create index operation
+	AutoCreateIndexPoolSize uint32 `yaml:"auto_create_index_pool_size" json:"auto_create_index_pool_size"`
+
 	// InitialDelayMaxDuration represent maximum duration for initial delay
 	InitialDelayMaxDuration string `yaml:"initial_delay_max_duration" json:"initial_delay_max_duration"`
 

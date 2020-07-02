@@ -20,15 +20,14 @@ package rest
 import (
 	"testing"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
-
+	"github.com/vdaas/vald/pkg/agent/core/ngt/handler/grpc"
 	"go.uber.org/goleak"
 )
 
 func TestWithAgent(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		a agent.AgentServer
+		a grpc.Server
 	}
 	type want struct {
 		obj *T

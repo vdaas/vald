@@ -30,7 +30,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
-
 	"go.uber.org/goleak"
 )
 
@@ -118,6 +117,8 @@ func Test_ngt_Start(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -128,6 +129,7 @@ func Test_ngt_Start(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		want <-chan error
@@ -160,6 +162,8 @@ func Test_ngt_Start(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -170,6 +174,7 @@ func Test_ngt_Start(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -189,6 +194,8 @@ func Test_ngt_Start(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -199,6 +206,7 @@ func Test_ngt_Start(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -224,6 +232,8 @@ func Test_ngt_Start(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -234,6 +244,7 @@ func Test_ngt_Start(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			got := n.Start(test.args.ctx)
@@ -257,6 +268,8 @@ func Test_ngt_Search(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -267,6 +280,7 @@ func Test_ngt_Search(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		want []model.Distance
@@ -306,6 +320,8 @@ func Test_ngt_Search(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -316,6 +332,7 @@ func Test_ngt_Search(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -338,6 +355,8 @@ func Test_ngt_Search(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -348,6 +367,7 @@ func Test_ngt_Search(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -373,6 +393,8 @@ func Test_ngt_Search(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -383,6 +405,7 @@ func Test_ngt_Search(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			got, err := n.Search(test.args.vec, test.args.size, test.args.epsilon, test.args.radius)
@@ -406,6 +429,8 @@ func Test_ngt_SearchByID(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -416,6 +441,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		wantDst []model.Distance
@@ -455,6 +481,8 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -465,6 +493,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -487,6 +516,8 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -497,6 +528,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -522,6 +554,8 @@ func Test_ngt_SearchByID(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -532,6 +566,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			gotDst, err := n.SearchByID(test.args.uuid, test.args.size, test.args.epsilon, test.args.radius)
@@ -553,6 +588,8 @@ func Test_ngt_Insert(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -563,6 +600,7 @@ func Test_ngt_Insert(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		err error
@@ -596,6 +634,8 @@ func Test_ngt_Insert(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -606,6 +646,7 @@ func Test_ngt_Insert(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -626,6 +667,8 @@ func Test_ngt_Insert(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -636,6 +679,7 @@ func Test_ngt_Insert(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -661,6 +705,8 @@ func Test_ngt_Insert(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -671,6 +717,7 @@ func Test_ngt_Insert(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			err := n.Insert(test.args.uuid, test.args.vec)
@@ -694,6 +741,8 @@ func Test_ngt_insert(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -704,6 +753,7 @@ func Test_ngt_insert(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		err error
@@ -739,6 +789,8 @@ func Test_ngt_insert(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -749,6 +801,7 @@ func Test_ngt_insert(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -771,6 +824,8 @@ func Test_ngt_insert(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -781,6 +836,7 @@ func Test_ngt_insert(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -806,6 +862,8 @@ func Test_ngt_insert(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -816,6 +874,7 @@ func Test_ngt_insert(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			err := n.insert(test.args.uuid, test.args.vec, test.args.t, test.args.validation)
@@ -836,6 +895,8 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -846,6 +907,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		err error
@@ -878,6 +940,8 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -888,6 +952,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -907,6 +972,8 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -917,6 +984,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -942,6 +1010,8 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -952,6 +1022,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			err := n.InsertMultiple(test.args.vecs)
@@ -973,6 +1044,8 @@ func Test_ngt_Update(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -983,6 +1056,7 @@ func Test_ngt_Update(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		err error
@@ -1016,6 +1090,8 @@ func Test_ngt_Update(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -1026,6 +1102,7 @@ func Test_ngt_Update(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1046,6 +1123,8 @@ func Test_ngt_Update(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -1056,6 +1135,7 @@ func Test_ngt_Update(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1081,6 +1161,8 @@ func Test_ngt_Update(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -1091,6 +1173,7 @@ func Test_ngt_Update(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			err := n.Update(test.args.uuid, test.args.vec)
@@ -1111,6 +1194,8 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -1121,6 +1206,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		err error
@@ -1153,6 +1239,8 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -1163,6 +1251,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1182,6 +1271,8 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -1192,6 +1283,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1217,6 +1309,8 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -1227,6 +1321,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			err := n.UpdateMultiple(test.args.vecs)
@@ -1247,6 +1342,8 @@ func Test_ngt_Delete(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -1257,6 +1354,7 @@ func Test_ngt_Delete(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		err error
@@ -1289,6 +1387,8 @@ func Test_ngt_Delete(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -1299,6 +1399,7 @@ func Test_ngt_Delete(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1318,6 +1419,8 @@ func Test_ngt_Delete(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -1328,6 +1431,7 @@ func Test_ngt_Delete(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1353,6 +1457,8 @@ func Test_ngt_Delete(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -1363,6 +1469,7 @@ func Test_ngt_Delete(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			err := n.Delete(test.args.uuid)
@@ -1384,6 +1491,8 @@ func Test_ngt_delete(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -1394,6 +1503,7 @@ func Test_ngt_delete(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		err error
@@ -1427,6 +1537,8 @@ func Test_ngt_delete(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -1437,6 +1549,7 @@ func Test_ngt_delete(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1457,6 +1570,8 @@ func Test_ngt_delete(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -1467,6 +1582,7 @@ func Test_ngt_delete(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1492,6 +1608,8 @@ func Test_ngt_delete(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -1502,6 +1620,7 @@ func Test_ngt_delete(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			err := n.delete(test.args.uuid, test.args.t)
@@ -1522,6 +1641,8 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -1532,6 +1653,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		err error
@@ -1564,6 +1686,8 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -1574,6 +1698,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1593,6 +1718,8 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -1603,6 +1730,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1628,6 +1756,8 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -1638,6 +1768,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			err := n.DeleteMultiple(test.args.uuids...)
@@ -1658,6 +1789,8 @@ func Test_ngt_GetObject(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -1668,6 +1801,7 @@ func Test_ngt_GetObject(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		wantVec []float32
@@ -1704,6 +1838,8 @@ func Test_ngt_GetObject(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -1714,6 +1850,7 @@ func Test_ngt_GetObject(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1733,6 +1870,8 @@ func Test_ngt_GetObject(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -1743,6 +1882,7 @@ func Test_ngt_GetObject(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1768,6 +1908,8 @@ func Test_ngt_GetObject(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -1778,6 +1920,7 @@ func Test_ngt_GetObject(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			gotVec, err := n.GetObject(test.args.uuid)
@@ -1799,6 +1942,8 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -1809,6 +1954,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		err error
@@ -1834,6 +1980,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           poolSize: 0,
 		       },
 		       fields: fields {
@@ -1841,6 +1988,8 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -1851,6 +2000,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1863,6 +2013,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           poolSize: 0,
 		           },
 		           fields: fields {
@@ -1870,6 +2021,8 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -1880,6 +2033,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1905,6 +2059,8 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -1915,6 +2071,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			err := n.CreateIndex(test.args.ctx, test.args.poolSize)
@@ -1935,6 +2092,8 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -1945,6 +2104,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		err error
@@ -1977,6 +2137,8 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -1987,6 +2149,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -2006,6 +2169,8 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -2016,6 +2181,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -2041,6 +2207,8 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -2051,6 +2219,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			err := n.SaveIndex(test.args.ctx)
@@ -2072,6 +2241,8 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -2082,6 +2253,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		err error
@@ -2115,6 +2287,8 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -2125,6 +2299,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -2145,6 +2320,8 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -2155,6 +2332,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -2180,6 +2358,8 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -2190,6 +2370,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			err := n.CreateAndSaveIndex(test.args.ctx, test.args.poolSize)
@@ -2210,6 +2391,8 @@ func Test_ngt_Exists(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -2220,6 +2403,7 @@ func Test_ngt_Exists(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		wantOid uint32
@@ -2256,6 +2440,8 @@ func Test_ngt_Exists(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -2266,6 +2452,7 @@ func Test_ngt_Exists(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -2285,6 +2472,8 @@ func Test_ngt_Exists(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -2295,6 +2484,7 @@ func Test_ngt_Exists(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -2320,6 +2510,8 @@ func Test_ngt_Exists(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -2330,6 +2522,7 @@ func Test_ngt_Exists(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			gotOid, gotOk := n.Exists(test.args.uuid)
@@ -2350,6 +2543,8 @@ func Test_ngt_insertCache(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -2360,6 +2555,7 @@ func Test_ngt_insertCache(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		want  *vcache
@@ -2396,6 +2592,8 @@ func Test_ngt_insertCache(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -2406,6 +2604,7 @@ func Test_ngt_insertCache(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -2425,6 +2624,8 @@ func Test_ngt_insertCache(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -2435,6 +2636,7 @@ func Test_ngt_insertCache(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -2460,6 +2662,8 @@ func Test_ngt_insertCache(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -2470,6 +2674,7 @@ func Test_ngt_insertCache(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			got, got1 := n.insertCache(test.args.uuid)
@@ -2487,6 +2692,8 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -2497,6 +2704,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		want bool
@@ -2525,6 +2733,8 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -2535,6 +2745,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -2551,6 +2762,8 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -2561,6 +2774,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -2586,6 +2800,8 @@ func Test_ngt_IsIndexing(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -2596,6 +2812,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			got := n.IsIndexing()
@@ -2616,6 +2833,8 @@ func Test_ngt_UUIDs(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -2626,6 +2845,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		wantUuids []string
@@ -2658,6 +2878,8 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -2668,6 +2890,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -2687,6 +2910,8 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -2697,6 +2922,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -2722,6 +2948,8 @@ func Test_ngt_UUIDs(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -2732,6 +2960,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			gotUuids := n.UUIDs(test.args.ctx)
@@ -2749,6 +2978,8 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -2759,6 +2990,7 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		wantUuids []string
@@ -2787,6 +3019,8 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -2797,6 +3031,7 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -2813,6 +3048,8 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -2823,6 +3060,7 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -2848,6 +3086,8 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -2858,6 +3098,7 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			gotUuids := n.UncommittedUUIDs()
@@ -2875,6 +3116,8 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -2885,6 +3128,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		want uint64
@@ -2913,6 +3157,8 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -2923,6 +3169,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -2939,6 +3186,8 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -2949,6 +3198,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -2974,6 +3224,8 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -2984,6 +3236,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			got := n.NumberOfCreateIndexExecution()
@@ -3001,6 +3254,8 @@ func Test_ngt_Len(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -3011,6 +3266,7 @@ func Test_ngt_Len(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		want uint64
@@ -3039,6 +3295,8 @@ func Test_ngt_Len(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -3049,6 +3307,7 @@ func Test_ngt_Len(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -3065,6 +3324,8 @@ func Test_ngt_Len(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -3075,6 +3336,7 @@ func Test_ngt_Len(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -3100,6 +3362,8 @@ func Test_ngt_Len(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -3110,6 +3374,7 @@ func Test_ngt_Len(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			got := n.Len()
@@ -3127,6 +3392,8 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -3137,6 +3404,7 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		want uint64
@@ -3165,6 +3433,8 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -3175,6 +3445,7 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -3191,6 +3462,8 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -3201,6 +3474,7 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -3226,6 +3500,8 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -3236,6 +3512,7 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			got := n.InsertVCacheLen()
@@ -3253,6 +3530,8 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -3263,6 +3542,7 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		want uint64
@@ -3291,6 +3571,8 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -3301,6 +3583,7 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -3317,6 +3600,8 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -3327,6 +3612,7 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -3352,6 +3638,8 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -3362,6 +3650,7 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			got := n.DeleteVCacheLen()
@@ -3382,6 +3671,8 @@ func Test_ngt_Close(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
+		sdur     time.Duration
+		idelay   time.Duration
 		dps      uint32
 		ic       uint64
 		nocie    uint64
@@ -3392,6 +3683,7 @@ func Test_ngt_Close(t *testing.T) {
 		kvs      kvs.BidiMap
 		core     core.NGT
 		dcd      bool
+		inMem    bool
 	}
 	type want struct {
 		err error
@@ -3424,6 +3716,8 @@ func Test_ngt_Close(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -3434,6 +3728,7 @@ func Test_ngt_Close(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -3453,6 +3748,8 @@ func Test_ngt_Close(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
+		           sdur: nil,
+		           idelay: nil,
 		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
@@ -3463,6 +3760,7 @@ func Test_ngt_Close(t *testing.T) {
 		           kvs: nil,
 		           core: nil,
 		           dcd: false,
+		           inMem: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -3488,6 +3786,8 @@ func Test_ngt_Close(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
+				sdur:     test.fields.sdur,
+				idelay:   test.fields.idelay,
 				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
@@ -3498,6 +3798,7 @@ func Test_ngt_Close(t *testing.T) {
 				kvs:      test.fields.kvs,
 				core:     test.fields.core,
 				dcd:      test.fields.dcd,
+				inMem:    test.fields.inMem,
 			}
 
 			err := n.Close(test.args.ctx)
