@@ -212,11 +212,10 @@ func (d *dialer) dial(ctx context.Context, network string, addr string) (net.Con
 }
 
 func (d *dialer) cacheExpireHook(ctx context.Context, addr string) {
-	log.Debugf("DNS cache expireHook called, addr: %v", addr)
-	if err := safety.RecoverFunc(func() (err error) {
-		_, err = d.lookup(ctx, addr)
-		return err
-	}); err != nil {
-		log.Errorf("error occurred: %v", err)
+	if err := safety.RecoverFunc(func() error {
+		_, err1 := d.lookup(ctx, addr)
+		return err1
+	})(); err != nil {
+		log.Errorf("DNS cacheExpireHook error occurred: %v", err)
 	}
 }

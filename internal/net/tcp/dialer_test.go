@@ -739,18 +739,25 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 					dnsCache:           true,
 					dnsRefreshDuration: time.Millisecond * 100,
 					dnsCacheExpiration: time.Millisecond * 100,
-					der: &net.Dialer{
-						Resolver: &net.Resolver{
-							PreferGo: false,
-						}},
 				},
 				beforeFunc: func(d *dialer) {
-					d.cache, _ = cache.New(cache.WithExpireDuration("100ms"), cache.WithExpireCheckDuration("800ms"),
+					d.cache, _ = cache.New(cache.WithExpireDuration("300ms"), cache.WithExpireCheckDuration("100ms"),
 						cache.WithExpiredHook(d.cacheExpireHook))
 					d.cache.Set(addr, &dialerCache{ips: ips})
+
+					d.der = &net.Dialer{
+						Timeout:   time.Minute,
+						KeepAlive: time.Minute,
+						DualStack: d.dialerDualStack,
+						Control:   Control,
+						Resolver: &net.Resolver{
+							PreferGo: false,
+							Dial:     d.dialer,
+						},
+					}
 				},
 				checkFunc: func(d *dialer) error {
-					time.Sleep(400 * time.Millisecond)
+					time.Sleep(420 * time.Millisecond)
 
 					val, ok := d.cache.Get(addr)
 					if !ok {
