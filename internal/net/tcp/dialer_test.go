@@ -729,11 +729,12 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 		func() test {
 			addr := "google.com"
 			ips := []string{"0.0.0.0"}
+			ctx, cancel := context.WithCancel(context.Background())
 
 			return test{
 				name: "cache refresh when it is expired",
 				args: args{
-					ctx: context.Background(),
+					ctx: ctx,
 				},
 				fields: fields{
 					dnsCache:           true,
@@ -779,16 +780,20 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 					}
 					return nil
 				},
+				afterFunc: func(args) {
+					cancel()
+				},
 			}
 		}(),
 		func() test {
 			addr := "invalid"
 			ips := []string{"0.0.0.0"}
+			ctx, cancel := context.WithCancel(context.Background())
 
 			return test{
 				name: "cache deleted when it is expired and the address is invalid or not available anymore",
 				args: args{
-					ctx: context.Background(),
+					ctx: ctx,
 				},
 				fields: fields{
 					dnsCache:           true,
@@ -830,6 +835,9 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 					}
 					return nil
 				},
+				afterFunc: func(args) {
+					cancel()
+				},
 			}
 		}(),
 	}
@@ -837,9 +845,6 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
@@ -864,6 +869,9 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 			d.StartDialerCache(test.args.ctx)
 			if err := test.checkFunc(d); err != nil {
 				tt.Errorf("error = %v", err)
+			}
+			if test.afterFunc != nil {
+				test.afterFunc(test.args)
 			}
 		})
 	}

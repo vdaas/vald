@@ -92,8 +92,7 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 
 	if !d.dnsCache {
 		if d.tlsConfig != nil {
-			d.dialer = func(ctx context.Context, network,
-				addr string) (conn net.Conn, err error) {
+			d.dialer = func(ctx context.Context, network, addr string) (conn net.Conn, err error) {
 				conn, err = d.der.DialContext(ctx, network, addr)
 				if err != nil {
 					return nil, err
@@ -115,12 +114,11 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 	}
 
 	if d.cache == nil {
-		d.cache, err = cache.New(
+		if d.cache, err = cache.New(
 			cache.WithExpireDuration(d.dnsCacheExpirationStr),
 			cache.WithExpireCheckDuration(d.dnsRefreshDurationStr),
 			cache.WithExpiredHook(d.cacheExpireHook),
-		)
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
 	}
