@@ -130,7 +130,6 @@ func Test_group_Do(t *testing.T) {
 		want       want
 		checkFunc  func(want, interface{}, bool, error) error
 		beforeFunc func(Group, args)
-		execFunc   func(*testing.T, Group)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, gotV interface{}, gotShared bool, err error) error {
