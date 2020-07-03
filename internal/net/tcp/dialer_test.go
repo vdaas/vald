@@ -757,14 +757,76 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 					}
 				},
 				checkFunc: func(d *dialer) error {
+					// ensure the cache exists
+					val, ok := d.cache.Get(addr)
+					if !ok {
+						return errors.New("cache not found")
+					}
+					if !reflect.DeepEqual(val.(*dialerCache).ips, ips) {
+						return errors.New("cache is not correct")
+					}
+
+					// sleep and wait the cache update
 					time.Sleep(420 * time.Millisecond)
 
-					val, ok := d.cache.Get(addr)
+					// get again and check if the cache is updated
+					val, ok = d.cache.Get(addr)
 					if !ok {
 						return errors.New("cache not found")
 					}
 					if reflect.DeepEqual(val.(*dialerCache).ips, ips) {
 						return errors.New("cache is not updated")
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			addr := "invalid"
+			ips := []string{"0.0.0.0"}
+
+			return test{
+				name: "cache deleted when it is expired and the address is invalid or not availiable anymore",
+				args: args{
+					ctx: context.Background(),
+				},
+				fields: fields{
+					dnsCache:           true,
+					dnsRefreshDuration: time.Millisecond * 100,
+					dnsCacheExpiration: time.Millisecond * 100,
+				},
+				beforeFunc: func(d *dialer) {
+					d.cache, _ = cache.New(cache.WithExpireDuration("300ms"), cache.WithExpireCheckDuration("100ms"),
+						cache.WithExpiredHook(d.cacheExpireHook))
+					d.cache.Set(addr, &dialerCache{ips: ips})
+
+					d.der = &net.Dialer{
+						Timeout:   time.Minute,
+						KeepAlive: time.Minute,
+						DualStack: d.dialerDualStack,
+						Control:   Control,
+						Resolver: &net.Resolver{
+							PreferGo: false,
+							Dial:     d.dialer,
+						},
+					}
+				},
+				checkFunc: func(d *dialer) error {
+					// ensure the cache exists
+					val, ok := d.cache.Get(addr)
+					if !ok {
+						return errors.New("cache not found")
+					}
+					if !reflect.DeepEqual(val.(*dialerCache).ips, ips) {
+						return errors.New("cache is not correct")
+					}
+
+					// sleep and wait the cache removed
+					time.Sleep(420 * time.Millisecond)
+
+					// get again and check if the cache deleted
+					if _, ok := d.cache.Get(addr); ok {
+						return errors.New("cache found")
 					}
 					return nil
 				},
@@ -1586,6 +1648,114 @@ func Test_dialer_dial(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 
+		})
+	}
+}
+
+func Test_dialer_cacheExpireHook(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		addr string
+	}
+	type fields struct {
+		cache                 cache.Cache
+		dnsCache              bool
+		tlsConfig             *tls.Config
+		dnsRefreshDurationStr string
+		dnsCacheExpirationStr string
+		dnsRefreshDuration    time.Duration
+		dnsCacheExpiration    time.Duration
+		dialerTimeout         time.Duration
+		dialerKeepAlive       time.Duration
+		dialerDualStack       bool
+		der                   *net.Dialer
+		dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(*dialer) error
+		beforeFunc func(*dialer)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(*dialer) error {
+		return nil
+	}
+	tests := []test{
+		func() test {
+			addr := "google.com"
+			return test{
+				name: "cache refresh",
+				args: args{
+					ctx:  context.Background(),
+					addr: addr,
+				},
+				fields: fields{
+					dnsCache:           true,
+					dnsRefreshDuration: time.Millisecond * 100,
+					dnsCacheExpiration: time.Millisecond * 100,
+				},
+				beforeFunc: func(d *dialer) {
+					d.cache, _ = cache.New()
+
+					d.der = &net.Dialer{
+						Timeout:   time.Minute,
+						KeepAlive: time.Minute,
+						DualStack: d.dialerDualStack,
+						Control:   Control,
+						Resolver: &net.Resolver{
+							PreferGo: false,
+							Dial:     d.dialer,
+						},
+					}
+				},
+				checkFunc: func(d *dialer) error {
+					// get again and check if the cache is updated
+					if _, ok := d.cache.Get(addr); !ok {
+						return errors.New("cache not found")
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			d := &dialer{
+				cache:                 test.fields.cache,
+				dnsCache:              test.fields.dnsCache,
+				tlsConfig:             test.fields.tlsConfig,
+				dnsRefreshDurationStr: test.fields.dnsRefreshDurationStr,
+				dnsCacheExpirationStr: test.fields.dnsCacheExpirationStr,
+				dnsRefreshDuration:    test.fields.dnsRefreshDuration,
+				dnsCacheExpiration:    test.fields.dnsCacheExpiration,
+				dialerTimeout:         test.fields.dialerTimeout,
+				dialerKeepAlive:       test.fields.dialerKeepAlive,
+				dialerDualStack:       test.fields.dialerDualStack,
+				der:                   test.fields.der,
+				dialer:                test.fields.dialer,
+			}
+
+			if test.beforeFunc != nil {
+				test.beforeFunc(d)
+			}
+
+			d.cacheExpireHook(test.args.ctx, test.args.addr)
+			if err := test.checkFunc(d); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }
