@@ -32,6 +32,10 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 )
 
+const (
+	maxDialerCacheCount = math.MaxUint32 - 10000
+)
+
 // Dialer is an interface to get the dialer instance to connect to an address.
 type Dialer interface {
 	GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error)
@@ -65,7 +69,7 @@ func (d *dialerCache) GetIP() string {
 		return d.ips[0]
 	}
 
-	if atomic.LoadUint32(&d.cnt) > math.MaxUint32-10000 {
+	if atomic.LoadUint32(&d.cnt) > maxDialerCacheCount {
 		atomic.StoreUint32(&d.cnt, 0)
 	}
 	return d.ips[(atomic.AddUint32(&d.cnt, 1)-1)%d.Len()]
