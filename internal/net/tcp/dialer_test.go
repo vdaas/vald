@@ -786,7 +786,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 			ips := []string{"0.0.0.0"}
 
 			return test{
-				name: "cache deleted when it is expired and the address is invalid or not availiable anymore",
+				name: "cache deleted when it is expired and the address is invalid or not available anymore",
 				args: args{
 					ctx: context.Background(),
 				},
