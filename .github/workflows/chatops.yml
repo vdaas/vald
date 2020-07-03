@@ -8,7 +8,7 @@ jobs:
   label:
     name: Add labels
     runs-on: ubuntu-latest
-    if: steps.check_comments_label.outputs.COMMENTER_USERNAME != 'vdaas-ci'
+    if: github.event.comment.user.login != 'vdaas-ci'
     steps:
       - name: check PR Comments
         id: check_comments_label
@@ -61,7 +61,7 @@ jobs:
   changelog:
     name: Add draft comment for a new CHANGELOG entry
     runs-on: ubuntu-latest
-    if: steps.check_comments_label.outputs.COMMENTER_USERNAME != 'vdaas-ci'
+    if: github.event.comment.user.login != 'vdaas-ci'
     steps:
       - name: check PR Comments
         id: check_comments_changelog
@@ -121,7 +121,7 @@ jobs:
   rebase:
     name: Rebase
     runs-on: ubuntu-latest
-    if: steps.check_comments_label.outputs.COMMENTER_USERNAME != 'vdaas-ci'
+    if: github.event.comment.user.login != 'vdaas-ci'
     steps:
       - name: check PR Comments
         id: check_comments_rebase
@@ -195,7 +195,7 @@ jobs:
     needs:
       - rebase
     runs-on: ubuntu-latest
-    if: steps.check_comments_label.outputs.COMMENTER_USERNAME != 'vdaas-ci'
+    if: github.event.comment.user.login != 'vdaas-ci'
     steps:
       - name: check PR Comments
         id: check_comments_gen_test
@@ -302,7 +302,7 @@ jobs:
       - rebase
       - gentest
     runs-on: ubuntu-latest
-    if: steps.check_comments_label.outputs.COMMENTER_USERNAME != 'vdaas-ci'
+    if: github.event.comment.user.login != 'vdaas-ci'
     steps:
       - name: check PR Comments
         id: check_comments_format
@@ -433,7 +433,7 @@ jobs:
       - rebase
       - format
     runs-on: ubuntu-latest
-    if: steps.check_comments_label.outputs.COMMENTER_USERNAME != 'vdaas-ci'
+    if: github.event.comment.user.login != 'vdaas-ci'
     steps:
       - name: check PR Comments
         id: check_comments_approve
