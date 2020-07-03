@@ -41,10 +41,7 @@ type group struct {
 }
 
 // New returns Group imple
-func New(size int) Group {
-	if size < 1 {
-		size = 1
-	}
+func New() Group {
 	return new(group)
 }
 

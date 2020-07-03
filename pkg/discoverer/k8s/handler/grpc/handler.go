@@ -59,7 +59,7 @@ func New(opts ...Option) (ds DiscovererServer, err error) {
 		}
 	}
 
-	s.group = singleflight.New(10)
+	s.group = singleflight.New()
 
 	return s, nil
 }
