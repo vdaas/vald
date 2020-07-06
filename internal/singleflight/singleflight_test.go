@@ -30,81 +30,81 @@ import (
 	"go.uber.org/goleak"
 )
 
-// func TestNew(t *testing.T) {
-// 	type args struct {
-// 		size int
-// 	}
-// 	type want struct {
-// 		want Group
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, Group) error
-// 		beforeFunc func(args)
-// 		afterFunc  func(args)
-// 	}
-// 	defaultCheckFunc := func(w want, got Group) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got = %v, want %v", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		{
-// 			name: "returns Group when size is 0",
-// 			want: want{
-// 				want: &group{
-// 					m: make(map[string]*call, 1),
-// 				},
-// 			},
-// 		},
-// 		{
-// 			name: "returns Group when size is 1",
-// 			args: args{
-// 				size: 1,
-// 			},
-// 			want: want{
-// 				want: &group{
-// 					m: make(map[string]*call, 1),
-// 				},
-// 			},
-// 		},
-// 		{
-// 			name: "returns Group when size is over than 1",
-// 			args: args{
-// 				size: 2,
-// 			},
-// 			want: want{
-// 				want: &group{
-// 					m: make(map[string]*call, 2),
-// 				},
-// 			},
-// 		},
-// 	}
-//
-// 	for _, test := range tests {
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			defer goleak.VerifyNone(t)
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(test.args)
-// 			}
-// 			if test.checkFunc == nil {
-// 				test.checkFunc = defaultCheckFunc
-// 			}
-//
-// 			got := New(test.args.size)
-// 			if err := test.checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-//
-// 		})
-// 	}
-// }
+func TestNew(t *testing.T) {
+	type args struct {
+		size int
+	}
+	type want struct {
+		want Group
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, Group) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got Group) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns Group when size is 0",
+			want: want{
+				want: &group{
+					m: make(map[string]*call, 1),
+				},
+			},
+		},
+		{
+			name: "returns Group when size is 1",
+			args: args{
+				size: 1,
+			},
+			want: want{
+				want: &group{
+					m: make(map[string]*call, 1),
+				},
+			},
+		},
+		{
+			name: "returns Group when size is over than 1",
+			args: args{
+				size: 2,
+			},
+			want: want{
+				want: &group{
+					m: make(map[string]*call, 2),
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := New(test.args.size)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
 
 func Test_group_Do(t *testing.T) {
 	type args struct {
