@@ -150,7 +150,7 @@ func Test_group_Do(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			var calledCnt uint32
+			var cnt uint32
 
 			var (
 				mu         = new(sync.Mutex)
@@ -178,7 +178,7 @@ func Test_group_Do(t *testing.T) {
 					key: "req_1",
 					ctx: context.Background(),
 					fn: func() (interface{}, error) {
-						atomic.AddUint32(&calledCnt, 1)
+						atomic.AddUint32(&cnt, 1)
 						return "res_1", nil
 					},
 				},
@@ -198,9 +198,9 @@ func Test_group_Do(t *testing.T) {
 							defer wg.Done()
 							condWaitFn()
 
-							g.Do(context.Background(), strconv.Itoa(i), func() (interface{}, error) {
+							_, _, _ = g.Do(context.Background(), strconv.Itoa(i), func() (interface{}, error) {
 								time.Sleep(time.Nanosecond * 100)
-								atomic.AddUint32(&calledCnt, 1)
+								atomic.AddUint32(&cnt, 1)
 								return "vdaas/vald", nil
 							})
 						}(i)
@@ -212,8 +212,8 @@ func Test_group_Do(t *testing.T) {
 					close(ch)
 				},
 				checkFunc: func(w want, gotV interface{}, gotShared bool, err error) error {
-					if got, want := int(atomic.LoadUint32(&calledCnt)), 11; got != want {
-						return errors.Errorf("calledCnt got = %d, want = %d", got, want)
+					if got, want := int(atomic.LoadUint32(&cnt)), 11; got != want {
+						return errors.Errorf("cnt got = %d, want = %d", got, want)
 					}
 
 					if err := defaultCheckFunc(w, gotV, gotShared, err); err != nil {
@@ -225,7 +225,7 @@ func Test_group_Do(t *testing.T) {
 		}(),
 
 		func() test {
-			var calledCnt uint32
+			var cnt uint32
 
 			var (
 				mu         = new(sync.Mutex)
@@ -244,7 +244,7 @@ func Test_group_Do(t *testing.T) {
 					key: "req_1",
 					ctx: context.Background(),
 					fn: func() (interface{}, error) {
-						atomic.AddUint32(&calledCnt, 1)
+						atomic.AddUint32(&cnt, 1)
 						return "res_1", nil
 					},
 				},
@@ -266,7 +266,7 @@ func Test_group_Do(t *testing.T) {
 					wg.Add(1)
 					go func() {
 						defer wg.Done()
-						g.Do(context.Background(), args.key, func() (interface{}, error) {
+						_, _, _ = g.Do(context.Background(), args.key, func() (interface{}, error) {
 							time.Sleep(3 * time.Second)
 							return args.fn()
 						})
@@ -282,8 +282,8 @@ func Test_group_Do(t *testing.T) {
 							defer wg.Done()
 							condWaitFn()
 
-							g.Do(context.Background(), args.key, func() (interface{}, error) {
-								atomic.AddUint32(&calledCnt, 1)
+							_, _, _ = g.Do(context.Background(), args.key, func() (interface{}, error) {
+								atomic.AddUint32(&cnt, 1)
 								return "vdaas/vald", nil
 							})
 						}()
@@ -295,8 +295,8 @@ func Test_group_Do(t *testing.T) {
 					close(ch)
 				},
 				checkFunc: func(w want, gotV interface{}, gotShared bool, err error) error {
-					if got, want := int(atomic.LoadUint32(&calledCnt)), 1; got != want {
-						return errors.Errorf("calledCnt got = %d, want = %d", got, want)
+					if got, want := int(atomic.LoadUint32(&cnt)), 1; got != want {
+						return errors.Errorf("cnt got = %d, want = %d", got, want)
 					}
 
 					if err := defaultCheckFunc(w, gotV, gotShared, err); err != nil {
