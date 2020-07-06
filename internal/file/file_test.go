@@ -61,10 +61,10 @@ func TestOpen(t *testing.T) {
 			args: args{
 				path: "test/data",
 				flg:  os.O_CREATE,
-				perm: os.ModeDir,
+				perm: os.ModePerm,
 			},
 			checkFunc: func(_ want, got *os.File) error {
-				file, err := os.OpenFile("test/data", os.O_CREATE, os.ModeDir)
+				file, err := os.OpenFile("test/data", os.O_CREATE, os.ModePerm)
 				if err != nil {
 					return err
 				}
