@@ -233,7 +233,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 			finalize(err)
 			return p.Signal(syscall.SIGKILL) // TODO: #403
 		}
-		log.Infof("result:%s\t%d\t%d\t%f", l.service.String(), l.concurrency, l.batchSize, vps(int(pgCnt) * l.batchSize, start, end))
+		log.Infof("result:%s\t%d\t%d\t%f", l.service.String(), l.concurrency, l.batchSize, vps(int(pgCnt)*l.batchSize, start, end))
 
 		return p.Signal(syscall.SIGTERM) // TODO: #403
 	}))

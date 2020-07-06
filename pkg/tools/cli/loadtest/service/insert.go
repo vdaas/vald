@@ -66,7 +66,7 @@ func objectVectorProvider(dataset assets.Dataset) (func() interface{}, int) {
 func objectVectorsProvider(dataset assets.Dataset, n int) (func() interface{}, int) {
 	provider, s := objectVectorProvider(dataset)
 	size := s / n
-	if s % n != 0 {
+	if s%n != 0 {
 		size = size + 1
 	}
 	return func() (ret interface{}) {
@@ -138,7 +138,7 @@ func (l *loader) newInsert() (f loadFunc, err error) {
 	return f, nil
 }
 
-func (l *loader) newStreamInsert() (f loadFunc, err  error) {
+func (l *loader) newStreamInsert() (f loadFunc, err error) {
 	l.batchSize = 1
 	switch l.service {
 	case config.Agent:

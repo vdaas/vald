@@ -46,8 +46,6 @@ func searchRequestProvider(dataset assets.Dataset) (func() interface{}, int, err
 	}, size, nil
 }
 
-
-
 func (l *loader) newSearch() (loadFunc, error) {
 	switch l.service {
 	case config.Agent:
