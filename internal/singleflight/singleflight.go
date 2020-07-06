@@ -49,7 +49,8 @@ func New(size int) Group {
 	}
 }
 
-// Do returns a set of the cache of the first return value from function as interface{}, shared flg as bool, and err as error
+// Do returns a set of the cache of the first return value from function
+// as interface{}, shared flg as bool, and err as error
 // when the function is called multiple times in an instant.
 func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error) {
 	g.mu.RLock()
