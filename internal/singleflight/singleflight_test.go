@@ -151,6 +151,7 @@ func Test_group_Do(t *testing.T) {
 	tests := []test{
 		func() test {
 			var cnt uint32
+			var res string = "res_1"
 
 			var (
 				mu         = new(sync.Mutex)
@@ -179,11 +180,11 @@ func Test_group_Do(t *testing.T) {
 					ctx: context.Background(),
 					fn: func() (interface{}, error) {
 						atomic.AddUint32(&cnt, 1)
-						return "res_1", nil
+						return res, nil
 					},
 				},
 				want: want{
-					wantV:      "res_1",
+					wantV:      res,
 					wantShared: false,
 					err:        nil,
 				},
@@ -226,6 +227,7 @@ func Test_group_Do(t *testing.T) {
 
 		func() test {
 			var cnt uint32
+			var res string = "res_1"
 
 			var (
 				mu         = new(sync.Mutex)
@@ -245,7 +247,7 @@ func Test_group_Do(t *testing.T) {
 					ctx: context.Background(),
 					fn: func() (interface{}, error) {
 						atomic.AddUint32(&cnt, 1)
-						return "res_1", nil
+						return res, nil
 					},
 				},
 				fields: fields{
@@ -258,7 +260,7 @@ func Test_group_Do(t *testing.T) {
 					condWaitFn: condWaitFn,
 				},
 				want: want{
-					wantV:      "res_1",
+					wantV:      res,
 					wantShared: true,
 					err:        nil,
 				},
