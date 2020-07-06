@@ -94,40 +94,25 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 		Control:   Control,
 	}
 
-	if !d.dnsCache {
-		if d.tlsConfig != nil {
-			d.dialer = func(ctx context.Context, network, addr string) (conn net.Conn, err error) {
-				conn, err = d.der.DialContext(ctx, network, addr)
-				if err != nil {
-					return nil, err
-				}
-				return tls.Client(conn, d.tlsConfig), nil
+	d.dialer = d.dial
+
+	if d.dnsCache {
+		if d.dnsRefreshDuration > d.dnsCacheExpiration {
+			return nil, errors.ErrInvalidDNSConfig(d.dnsRefreshDuration, d.dnsCacheExpiration)
+		}
+
+		if d.cache == nil {
+			if d.cache, err = cache.New(
+				cache.WithExpireDuration(d.dnsCacheExpirationStr),
+				cache.WithExpireCheckDuration(d.dnsRefreshDurationStr),
+				cache.WithExpiredHook(d.cacheExpireHook),
+			); err != nil {
+				return nil, err
 			}
-		} else {
-			d.dialer = d.der.DialContext
 		}
-		d.der.Resolver = &net.Resolver{
-			PreferGo: false,
-			Dial:     d.dialer,
-		}
-		return d, nil
-	}
 
-	if d.dnsRefreshDuration > d.dnsCacheExpiration {
-		return nil, errors.ErrInvalidDNSConfig(d.dnsRefreshDuration, d.dnsCacheExpiration)
+		d.dialer = d.cachedDialer
 	}
-
-	if d.cache == nil {
-		if d.cache, err = cache.New(
-			cache.WithExpireDuration(d.dnsCacheExpirationStr),
-			cache.WithExpireCheckDuration(d.dnsRefreshDurationStr),
-			cache.WithExpiredHook(d.cacheExpireHook),
-		); err != nil {
-			return nil, err
-		}
-	}
-
-	d.dialer = d.cachedDialer
 
 	d.der.Resolver = &net.Resolver{
 		PreferGo: false,
