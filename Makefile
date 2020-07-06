@@ -46,7 +46,6 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
-DOCKFMT_VERSION      ?= v0.3.3
 KIND_VERSION         ?= v0.8.1
 HELM_VERSION         ?= v3.2.1
 HELM_DOCS_VERSION    ?= 0.13.0
@@ -242,20 +241,12 @@ format/yaml:
 	    "hack/**/*.yaml" \
 	    "k8s/**/*.yaml"
 
-.PHONY: format/docker
-format/docker:
-	dockfmt fmt -w \
-	    dockers/*/Dockerfile \
-	    dockers/*/*/Dockerfile \
-	    dockers/*/*/*/Dockerfile
-
 .PHONY: deps
 ## install dependencies
 deps: \
 	proto/deps \
 	goimports/install \
 	prettier/install \
-	dockfmt/install
 	go mod tidy
 
 .PHONY: goimports/install
