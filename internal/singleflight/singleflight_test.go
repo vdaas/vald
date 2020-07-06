@@ -19,8 +19,8 @@ package singleflight
 
 import (
 	"context"
-	"fmt"
 	"reflect"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -30,81 +30,81 @@ import (
 	"go.uber.org/goleak"
 )
 
-func TestNew(t *testing.T) {
-	type args struct {
-		size int
-	}
-	type want struct {
-		want Group
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, Group) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got Group) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		{
-			name: "returns Group when size is 0",
-			want: want{
-				want: &group{
-					m: make(map[string]*call, 1),
-				},
-			},
-		},
-		{
-			name: "returns Group when size is 1",
-			args: args{
-				size: 1,
-			},
-			want: want{
-				want: &group{
-					m: make(map[string]*call, 1),
-				},
-			},
-		},
-		{
-			name: "returns Group when size is over than 1",
-			args: args{
-				size: 2,
-			},
-			want: want{
-				want: &group{
-					m: make(map[string]*call, 2),
-				},
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got := New(test.args.size)
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
+// func TestNew(t *testing.T) {
+// 	type args struct {
+// 		size int
+// 	}
+// 	type want struct {
+// 		want Group
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, Group) error
+// 		beforeFunc func(args)
+// 		afterFunc  func(args)
+// 	}
+// 	defaultCheckFunc := func(w want, got Group) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got = %v, want %v", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		{
+// 			name: "returns Group when size is 0",
+// 			want: want{
+// 				want: &group{
+// 					m: make(map[string]*call, 1),
+// 				},
+// 			},
+// 		},
+// 		{
+// 			name: "returns Group when size is 1",
+// 			args: args{
+// 				size: 1,
+// 			},
+// 			want: want{
+// 				want: &group{
+// 					m: make(map[string]*call, 1),
+// 				},
+// 			},
+// 		},
+// 		{
+// 			name: "returns Group when size is over than 1",
+// 			args: args{
+// 				size: 2,
+// 			},
+// 			want: want{
+// 				want: &group{
+// 					m: make(map[string]*call, 2),
+// 				},
+// 			},
+// 		},
+// 	}
+//
+// 	for _, test := range tests {
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			defer goleak.VerifyNone(t)
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(test.args)
+// 			}
+// 			if test.checkFunc == nil {
+// 				test.checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := New(test.args.size)
+// 			if err := test.checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }
 
 func Test_group_Do(t *testing.T) {
 	type args struct {
@@ -115,6 +115,12 @@ func Test_group_Do(t *testing.T) {
 	type fields struct {
 		m map[string]*call
 	}
+	type util struct {
+		mu         *sync.Mutex
+		wg         *sync.WaitGroup
+		cond       *sync.Cond
+		condWaitFn func()
+	}
 	type want struct {
 		wantV      interface{}
 		wantShared bool
@@ -124,12 +130,11 @@ func Test_group_Do(t *testing.T) {
 		name       string
 		args       args
 		fields     fields
+		util       util
 		want       want
-		cond       *sync.Cond
-		mu         *sync.Mutex
-		wg         *sync.WaitGroup
 		checkFunc  func(want, interface{}, bool, error) error
 		beforeFunc func(Group, args)
+		execFunc   func(*testing.T, Group)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, gotV interface{}, gotShared bool, err error) error {
@@ -145,44 +150,38 @@ func Test_group_Do(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           key: "",
-		           fn: nil,
-		       },
-		       fields: fields {
-		           mu: sync.RWMutex{},
-		           m: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
 		func() test {
-			mu := new(sync.Mutex)
-			cond := sync.NewCond(mu)
-			cnt := uint32(0)
-			wg := new(sync.WaitGroup)
+			var calledCnt uint32
+
+			var (
+				mu         = new(sync.Mutex)
+				cond       = sync.NewCond(mu)
+				wg         = new(sync.WaitGroup)
+				condWaitFn = func() {
+					mu.Lock()
+					defer mu.Unlock()
+					cond.Wait()
+				}
+			)
+
 			return test{
-				mu:   mu,
-				cond: cond,
-				wg:   wg,
 				name: "returns (v, shared, nil) when Do is called with another key",
+				fields: fields{
+					m: make(map[string]*call),
+				},
+				util: util{
+					mu:         mu,
+					cond:       cond,
+					wg:         wg,
+					condWaitFn: condWaitFn,
+				},
 				args: args{
-					ctx: context.Background(),
 					key: "req_1",
+					ctx: context.Background(),
 					fn: func() (interface{}, error) {
-						atomic.AddUint32(&cnt, 1)
+						atomic.AddUint32(&calledCnt, 1)
 						return "res_1", nil
 					},
-				},
-				fields: fields{
-					m: make(map[string]*call, 2),
 				},
 				want: want{
 					wantV:      "res_1",
@@ -190,47 +189,74 @@ func Test_group_Do(t *testing.T) {
 					err:        nil,
 				},
 				beforeFunc: func(g Group, args args) {
-					wg.Add(1)
-					go func() {
-						mu.Lock()
-						defer mu.Unlock()
-						cond.Wait()
-						g.Do(context.Background(), "req_2", func() (interface{}, error) {
+					gcnt := 10
+					ch := make(chan struct{}, gcnt)
+
+					for i := 0; i < gcnt; i++ {
+						wg.Add(1)
+						go func(i int) {
+							ch <- struct{}{}
 							defer wg.Done()
-							atomic.AddUint32(&cnt, 1)
-							return "res_2", nil
-						})
-					}()
+							condWaitFn()
+
+							g.Do(context.Background(), strconv.Itoa(i), func() (interface{}, error) {
+								time.Sleep(time.Nanosecond * 100)
+								atomic.AddUint32(&calledCnt, 1)
+								return "vdaas/vald", nil
+							})
+						}(i)
+					}
+
+					for i := 0; i < gcnt; i++ {
+						<-ch
+					}
+					close(ch)
 				},
-				checkFunc: func(want, interface{}, bool, error) error {
-					if got, want := int(atomic.LoadUint32(&cnt)), 2; got != want {
-						return errors.Errorf("cnt got = %d, want = %d", got, want)
+				checkFunc: func(w want, gotV interface{}, gotShared bool, err error) error {
+					if got, want := int(atomic.LoadUint32(&calledCnt)), 11; got != want {
+						return errors.Errorf("calledCnt got = %d, want = %d", got, want)
+					}
+
+					if err := defaultCheckFunc(w, gotV, gotShared, err); err != nil {
+						return err
 					}
 					return nil
 				},
 			}
 		}(),
+
 		func() test {
-			mu := new(sync.Mutex)
-			cond := sync.NewCond(mu)
-			cnt := uint32(0)
-			wg := new(sync.WaitGroup)
+			var calledCnt uint32
+
+			var (
+				mu         = new(sync.Mutex)
+				cond       = sync.NewCond(mu)
+				wg         = new(sync.WaitGroup)
+				condWaitFn = func() {
+					mu.Lock()
+					defer mu.Unlock()
+					cond.Wait()
+				}
+			)
+
 			return test{
 				name: "returns (v, shared, nil) when Do is called with same key",
-				mu:   mu,
-				cond: cond,
-				wg:   wg,
 				args: args{
-					ctx: context.Background(),
 					key: "req_1",
+					ctx: context.Background(),
 					fn: func() (interface{}, error) {
-						fmt.Println("args")
-						atomic.AddUint32(&cnt, 1)
+						atomic.AddUint32(&calledCnt, 1)
 						return "res_1", nil
 					},
 				},
 				fields: fields{
-					m: make(map[string]*call, 2),
+					m: make(map[string]*call),
+				},
+				util: util{
+					mu:         mu,
+					cond:       cond,
+					wg:         wg,
+					condWaitFn: condWaitFn,
 				},
 				want: want{
 					wantV:      "res_1",
@@ -239,35 +265,43 @@ func Test_group_Do(t *testing.T) {
 				},
 				beforeFunc: func(g Group, args args) {
 					wg.Add(1)
-					ch := make(chan struct{})
 					go func() {
-						g.Do(context.Background(), "req_1", func() (interface{}, error) {
-							ch <- struct{}{}
-							fmt.Println("test")
-							defer wg.Done()
-							time.Sleep(time.Second * 10)
-							return "res_1", nil
+						defer wg.Done()
+						g.Do(context.Background(), args.key, func() (interface{}, error) {
+							time.Sleep(3 * time.Second)
+							return args.fn()
 						})
 					}()
-					<- ch
-					for i := 0; i < 10; i++ {
+
+					gcnt := 10
+					ch := make(chan struct{}, gcnt)
+
+					for i := 0; i < gcnt; i++ {
 						wg.Add(1)
-						go func(i int) {
-							mu.Lock()
-							defer mu.Unlock()
-							cond.Wait()
+						go func() {
+							ch <- struct{}{}
 							defer wg.Done()
-							fmt.Println(i)
-							g.Do(context.Background(), "req_1", func() (interface{}, error) {
-								atomic.AddUint32(&cnt, 1)
-								return "res_1", nil
+							condWaitFn()
+
+							g.Do(context.Background(), args.key, func() (interface{}, error) {
+								atomic.AddUint32(&calledCnt, 1)
+								return "vdaas/vald", nil
 							})
-						}(i)
+						}()
 					}
+
+					for i := 0; i < gcnt; i++ {
+						<-ch
+					}
+					close(ch)
 				},
-				checkFunc: func(want, interface{}, bool, error) error {
-					if got, want := int(atomic.LoadUint32(&cnt)), 1; got != want {
-						return errors.Errorf("cnt got = %d, want = %d", got, want)
+				checkFunc: func(w want, gotV interface{}, gotShared bool, err error) error {
+					if got, want := int(atomic.LoadUint32(&calledCnt)), 1; got != want {
+						return errors.Errorf("calledCnt got = %d, want = %d", got, want)
+					}
+
+					if err := defaultCheckFunc(w, gotV, gotShared, err); err != nil {
+						return err
 					}
 					return nil
 				},
@@ -284,6 +318,7 @@ func Test_group_Do(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+
 			g := &group{
 				m: test.fields.m,
 			}
@@ -292,24 +327,24 @@ func Test_group_Do(t *testing.T) {
 				test.beforeFunc(g, test.args)
 			}
 
-			var gotV interface{}
-			var gotShared bool
-			var err error
-			test.wg.Add(1)
+			var (
+				gotV      interface{}
+				gotShared bool
+				err       error
+			)
+
+			test.util.wg.Add(1)
 			go func() {
-				test.mu.Lock()
-				defer test.mu.Unlock()
-				test.cond.Wait()
-				defer test.wg.Done()
-				gotV, gotShared, err = g.Do(test.args.ctx, test.args.key, test.args.fn)
+				defer test.util.wg.Done()
+				gotV, gotShared, err = g.Do(context.Background(), test.args.key, test.args.fn)
 			}()
-			time.Sleep(time.Second)
-			test.cond.Broadcast()
-			test.wg.Wait()
+
+			test.util.cond.Broadcast()
+			test.util.wg.Wait()
+
 			if err := test.checkFunc(test.want, gotV, gotShared, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
