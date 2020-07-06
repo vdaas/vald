@@ -16,8 +16,10 @@
 package mock
 
 import (
+	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
 
@@ -27,15 +29,14 @@ func TestRetry_Out(t *testing.T) {
 		vals []interface{}
 	}
 	type fields struct {
-		OutFunc  func(fn func(vals ...interface{}) error, vals ...interface{})
-		OutfFunc func(fn func(format string, vals ...interface{}) error, format string, vals ...interface{})
+		OutFunc func(fn func(vals ...interface{}) error, vals ...interface{})
 	}
 	type want struct {
 	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		fieldsFunc func(*testing.T) fields
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(args)
@@ -45,46 +46,50 @@ func TestRetry_Out(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           fn: nil,
-		           vals: nil,
-		       },
-		       fields: fields {
-		           OutFunc: nil,
-		           OutfFunc: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           fn: nil,
-		           vals: nil,
-		           },
-		           fields: fields {
-		           OutFunc: nil,
-		           OutfFunc: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			var (
+				wantFn = func(vals ...interface{}) error {
+					return nil
+				}
+				wantVals = []interface{}{
+					"Vald",
+				}
+				cnt int
+			)
+			return test{
+				name: "Call Out",
+				args: args{
+					fn:   wantFn,
+					vals: wantVals,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					return fields{
+						OutFunc: func(fn func(vals ...interface{}) error, vals ...interface{}) {
+							if !reflect.DeepEqual(vals, wantVals) {
+								t.Errorf("vals got = %v, want = %v", vals, wantVals)
+							}
+							if reflect.ValueOf(fn).Pointer() != reflect.ValueOf(wantFn).Pointer() {
+								t.Errorf("fn got = %p, want = %p", fn, wantFn)
+							}
+							cnt++
+						},
+					}
+				},
+				want: want{},
+				checkFunc: func(w want) error {
+					if cnt != 1 {
+						return errors.Errorf("cnt got = %d, want = %d", cnt, 1)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -94,9 +99,9 @@ func TestRetry_Out(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			fields := test.fieldsFunc(tt)
 			r := &Retry{
-				OutFunc:  test.fields.OutFunc,
-				OutfFunc: test.fields.OutfFunc,
+				OutFunc: fields.OutFunc,
 			}
 
 			r.Out(test.args.fn, test.args.vals...)
@@ -114,7 +119,6 @@ func TestRetry_Outf(t *testing.T) {
 		vals   []interface{}
 	}
 	type fields struct {
-		OutFunc  func(fn func(vals ...interface{}) error, vals ...interface{})
 		OutfFunc func(fn func(format string, vals ...interface{}) error, format string, vals ...interface{})
 	}
 	type want struct {
@@ -122,7 +126,7 @@ func TestRetry_Outf(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		fieldsFunc func(*testing.T) fields
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(args)
@@ -132,48 +136,55 @@ func TestRetry_Outf(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           fn: nil,
-		           format: "",
-		           vals: nil,
-		       },
-		       fields: fields {
-		           OutFunc: nil,
-		           OutfFunc: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           fn: nil,
-		           format: "",
-		           vals: nil,
-		           },
-		           fields: fields {
-		           OutFunc: nil,
-		           OutfFunc: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			var (
+				wantFn = func(format string, vals ...interface{}) error {
+					return nil
+				}
+				wantVals = []interface{}{
+					"Vald",
+				}
+				wantFormat = "json"
+				cnt        int
+			)
+			return test{
+				name: "Call Outf",
+				args: args{
+					fn:     wantFn,
+					format: wantFormat,
+					vals:   wantVals,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					return fields{
+						OutfFunc: func(fn func(format string, vals ...interface{}) error, format string, vals ...interface{}) {
+							if !reflect.DeepEqual(vals, wantVals) {
+								t.Errorf("vals got = %v, want = %v", vals, wantVals)
+							}
+							if format != wantFormat {
+								t.Errorf("format got = %s, want = %s", format, wantFormat)
+							}
+							if reflect.ValueOf(fn).Pointer() != reflect.ValueOf(wantFn).Pointer() {
+								t.Errorf("fn got = %p, want = %p", fn, wantFn)
+							}
+							cnt++
+						},
+					}
+				},
+				want: want{},
+				checkFunc: func(w want) error {
+					if cnt != 1 {
+						return errors.Errorf("cnt got = %d, want = %d", cnt, 1)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -183,9 +194,9 @@ func TestRetry_Outf(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			fields := test.fieldsFunc(tt)
 			r := &Retry{
-				OutFunc:  test.fields.OutFunc,
-				OutfFunc: test.fields.OutfFunc,
+				OutfFunc: fields.OutfFunc,
 			}
 
 			r.Outf(test.args.fn, test.args.format, test.args.vals...)
