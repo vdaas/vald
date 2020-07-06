@@ -23,7 +23,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/vdaas/vald/apis/grpc/gateway/vald"
+	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -40,8 +40,7 @@ type Loader interface {
 }
 
 type (
-	requestFunc func(assets.Dataset) ([]interface{}, error)
-	loaderFunc  func(context.Context, vald.ValdClient, interface{}, ...grpc.CallOption) error
+	loadFunc func(context.Context, *grpc.ClientConn, interface{}, ...grpc.CallOption) (interface{}, error)
 )
 
 type loader struct {
@@ -49,11 +48,13 @@ type loader struct {
 	client           grpc.Client
 	addr             string
 	concurrency      int
+	batchSize        int
 	dataset          string
-	requests         []interface{}
 	progressDuration time.Duration
-	requestsFunc     requestFunc
-	loaderFunc       loaderFunc
+	loaderFunc       loadFunc
+	dataProvider     func() interface{}
+	dataSize         int
+	service          config.Service
 	operation        config.Operation
 }
 
@@ -66,13 +67,21 @@ func NewLoader(opts ...Option) (Loader, error) {
 		}
 	}
 
+	var err error
 	switch l.operation {
 	case config.Insert:
-		l.requestsFunc, l.loaderFunc = newInsert()
+		l.loaderFunc, err = l.newInsert()
+	case config.StreamInsert:
+		l.loaderFunc, err = l.newStreamInsert()
 	case config.Search:
-		l.requestsFunc, l.loaderFunc = newSearch()
+		l.loaderFunc, err = l.newSearch()
+	case config.StreamSearch:
+		l.loaderFunc, err = l.newStreamSearch()
 	default:
-		return nil, errors.Errorf("undefined method: %v", l.operation)
+		err = errors.Errorf("undefined method: %s", l.operation.String())
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	return l, nil
@@ -88,13 +97,15 @@ func (l *loader) Prepare(context.Context) (err error) {
 	if err != nil {
 		return err
 	}
-	l.requests, err = l.requestsFunc(dataset)
+
+	switch l.operation {
+	case config.Insert, config.StreamInsert:
+		l.dataProvider, l.dataSize, err = insertRequestProvider(dataset, l.batchSize)
+	case config.Search, config.StreamSearch:
+		l.dataProvider, l.dataSize, err = searchRequestProvider(dataset)
+	}
 	if err != nil {
 		return err
-	}
-
-	if len(l.requests) == 0 {
-		return errors.New("prepare data is empty")
 	}
 
 	return nil
@@ -102,34 +113,48 @@ func (l *loader) Prepare(context.Context) (err error) {
 
 // Do operates load test.
 func (l *loader) Do(ctx context.Context) <-chan error {
-	ech := make(chan error, len(l.requests))
-
-	// TODO: related to #403.
-	p, err := os.FindProcess(os.Getpid())
-	if err != nil {
+	ech := make(chan error, l.dataSize)
+	finalize := func(err error) {
 		select {
 		case <-ctx.Done():
 			ech <- errors.Wrap(err, ctx.Err().Error())
 		case ech <- err:
 		}
+	}
+
+	// TODO: related to #403.
+	p, err := os.FindProcess(os.Getpid())
+	if err != nil {
+		finalize(err)
 		return ech
 	}
 
-	var pgCnt int32 = 0
-	var start time.Time
-	progress := func() {
-		log.Infof("progress %d items, %f[qps]", pgCnt, float64(pgCnt)/time.Now().Sub(start).Seconds())
+	var pgCnt, errCnt int32 = 0, 0
+	var start, end time.Time
+	vps := func(count int, t1, t2 time.Time) float64 {
+		return float64(count) / t2.Sub(t1).Seconds()
 	}
+	progress := func() {
+		log.Infof("progress %d requests, %f[vps]", pgCnt, vps(int(pgCnt)*l.batchSize, start, time.Now()))
+	}
+
+	f := func(i interface{}, err error) {
+		atomic.AddInt32(&pgCnt, 1)
+		if err != nil {
+			atomic.AddInt32(&errCnt, 1)
+		}
+	}
+
+	ticker := time.NewTicker(l.progressDuration)
 	l.eg.Go(safety.RecoverFunc(func() error {
-		ticker := time.NewTicker(l.progressDuration)
 		defer ticker.Stop()
-		for pgCnt != int32(len(l.requests)) {
+		for int(pgCnt) < l.dataSize {
 			if err := func() error {
-				defer progress()
 				select {
 				case <-ctx.Done():
 					return ctx.Err()
 				case <-ticker.C:
+					progress()
 					return nil
 				}
 			}(); err != nil {
@@ -138,44 +163,78 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 		}
 		return nil
 	}))
-	start = time.Now()
-	var errCnt int32 = 0
+
 	l.eg.Go(safety.RecoverFunc(func() error {
+		log.Infof("start load test(%s, %s)", l.service.String(), l.operation.String())
 		defer close(ech)
 		eg, egctx := errgroup.New(ctx)
-		eg.Limitation(l.concurrency)
-		for _, req := range l.requests {
-			r := req
-			eg.Go(safety.RecoverFunc(
-				func() error {
-					_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-						err := l.loaderFunc(ctx, vald.NewValdClient(conn), r, copts...)
-						atomic.AddInt32(&pgCnt, 1)
-						if err != nil {
-							log.Warn("an error occurred while executing loaderfunc:", err)
-							atomic.AddInt32(&errCnt, 1)
-						}
+		switch l.operation {
+		case config.StreamInsert, config.StreamSearch:
+			var newData func() interface{}
+			switch l.operation {
+			case config.StreamInsert:
+				newData = func() interface{} {
+					return new(payload.Empty)
+				}
+			case config.StreamSearch:
+				newData = func() interface{} {
+					return new(payload.Search_Response)
+				}
+			}
+
+			start = time.Now()
+			eg.Go(safety.RecoverFunc(func() error {
+				_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+					st, err := l.loaderFunc(ctx, conn, nil, copts...)
+					if err != nil {
 						return nil, err
+					}
+					return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f)
+				})
+				if err != nil {
+					finalize(err)
+				}
+				return nil
+			}))
+			err = eg.Wait()
+			end = time.Now()
+		case config.Insert, config.Search:
+			eg.Limitation(l.concurrency)
+			start = time.Now()
+			for {
+				r := l.dataProvider()
+				if r == nil {
+					break
+				}
+				eg.Go(safety.RecoverFunc(func() error {
+					_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+						res, err := l.loaderFunc(ctx, conn, r, copts...)
+						f(res, err)
+						return res, err
 					})
 					if err != nil {
-						select {
-						case <-ctx.Done():
-							ech <- errors.Wrap(err, ctx.Err().Error())
-						case ech <- err:
-						}
+						finalize(err)
 					}
 					return nil
 				}))
-		}
-		if err := eg.Wait(); err != nil {
-			select {
-			case <-ctx.Done():
-				ech <- errors.Wrap(err, ctx.Err().Error())
-			case ech <- err:
 			}
+			err = eg.Wait()
+			end = time.Now()
+		default:
+			err = errors.Errorf("undefined type: %s", l.operation.String())
+		}
+		ticker.Stop()
+
+		if errCnt > 0 {
+			log.Warnf("Error ratio: %.2f%%", float64(errCnt)/float64(pgCnt)*100)
+			err = errors.Errorf("insert failure: %d", errCnt)
+		}
+		if err != nil {
+			finalize(err)
 			return p.Signal(syscall.SIGKILL) // TODO: #403
 		}
-		log.Infof("Error ratio: %.2f%%", float64(errCnt)/float64(pgCnt)*100)
+		log.Infof("result:%s\t%d\t%d\t%f", l.service.String(), l.concurrency, l.batchSize, vps(int(pgCnt) * l.batchSize, start, end))
+
 		return p.Signal(syscall.SIGTERM) // TODO: #403
 	}))
 	return ech

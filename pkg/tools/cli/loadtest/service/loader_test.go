@@ -116,7 +116,7 @@ func Test_loader_Prepare(t *testing.T) {
 		requests         []interface{}
 		progressDuration time.Duration
 		requestsFunc     requestFunc
-		loaderFunc       loaderFunc
+		loaderFunc       loadFunc
 		operation        config.Operation
 	}
 	type want struct {
@@ -154,7 +154,7 @@ func Test_loader_Prepare(t *testing.T) {
 		           requests: nil,
 		           progressDuration: nil,
 		           requestsFunc: nil,
-		           loaderFunc: nil,
+		           loadFunc: nil,
 		           operation: nil,
 		       },
 		       want: want{},
@@ -179,7 +179,7 @@ func Test_loader_Prepare(t *testing.T) {
 		           requests: nil,
 		           progressDuration: nil,
 		           requestsFunc: nil,
-		           loaderFunc: nil,
+		           loadFunc: nil,
 		           operation: nil,
 		           },
 		           want: want{},
@@ -236,7 +236,7 @@ func Test_loader_Do(t *testing.T) {
 		requests         []interface{}
 		progressDuration time.Duration
 		requestsFunc     requestFunc
-		loaderFunc       loaderFunc
+		loaderFunc       loadFunc
 		operation        config.Operation
 	}
 	type want struct {
@@ -274,7 +274,7 @@ func Test_loader_Do(t *testing.T) {
 		           requests: nil,
 		           progressDuration: nil,
 		           requestsFunc: nil,
-		           loaderFunc: nil,
+		           loadFunc: nil,
 		           operation: nil,
 		       },
 		       want: want{},
@@ -299,7 +299,7 @@ func Test_loader_Do(t *testing.T) {
 		           requests: nil,
 		           progressDuration: nil,
 		           requestsFunc: nil,
-		           loaderFunc: nil,
+		           loadFunc: nil,
 		           operation: nil,
 		           },
 		           want: want{},

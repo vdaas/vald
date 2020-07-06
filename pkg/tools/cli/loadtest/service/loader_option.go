@@ -29,6 +29,7 @@ type Option func(*loader) error
 var (
 	defaultOpts = []Option{
 		WithConcurrency(100),
+		WithBatchSize(1),
 		WithErrGroup(errgroup.Get()),
 		WithProgressDuration("5s"),
 	}
@@ -56,9 +57,21 @@ func WithClient(c grpc.Client) Option {
 // WithConcurrency sets load test concurrency.
 func WithConcurrency(c int) Option {
 	return func(l *loader) error {
-		if c > 0 {
-			l.concurrency = c
+		if c <= 0 {
+			return errors.Errorf("concurrency must be natural number")
 		}
+		l.concurrency = c
+		return nil
+	}
+}
+
+// WithBatchSize sets load test batch size.
+func WithBatchSize(b int) Option {
+	return func(l *loader) error {
+		if b <= 0 {
+			return errors.Errorf("batch size must be natural number")
+		}
+		l.batchSize = b
 		return nil
 	}
 }
@@ -100,6 +113,14 @@ func WithProgressDuration(pd string) Option {
 func WithOperation(op string) Option {
 	return func(l *loader) error {
 		l.operation = config.OperationMethod(op)
+		return nil
+	}
+}
+
+// WithService sets service of load test.
+func WithService(s string) Option {
+	return func(l *loader) error {
+		l.service = config.ServiceMethod(s)
 		return nil
 	}
 }

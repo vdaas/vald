@@ -26,16 +26,16 @@ import (
 func Test_newSearch(t *testing.T) {
 	type want struct {
 		want  requestFunc
-		want1 loaderFunc
+		want1 loadFunc
 	}
 	type test struct {
 		name       string
 		want       want
-		checkFunc  func(want, requestFunc, loaderFunc) error
+		checkFunc  func(want, requestFunc, loadFunc) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got requestFunc, got1 loaderFunc) error {
+	defaultCheckFunc := func(w want, got requestFunc, got1 loadFunc) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}

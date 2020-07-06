@@ -92,14 +92,14 @@ func Load(path string) (train, test, distances [][]float32, neighbors [][]int, d
 	}()
 	trainDim, v1, err := loadDataset(f, "train", loadFloat32)
 	if err != nil {
-		log.Error("couldn't load train dataset for path %s: %s", path, err)
+		log.Errorf("couldn't load train dataset for path %s: %s", path, err)
 		return nil, nil, nil, nil, 0, err
 	}
 	train = v1.([][]float32)
 	dim = trainDim
 	testDim, v2, err := loadDataset(f, "test", loadFloat32)
 	if err != nil {
-		log.Error("couldn't load test dataset for path %s: %s", path, err)
+		log.Errorf("couldn't load test dataset for path %s: %s", path, err)
 		return train, nil, nil, nil, dim, err
 	}
 	test = v2.([][]float32)
@@ -108,14 +108,14 @@ func Load(path string) (train, test, distances [][]float32, neighbors [][]int, d
 	}
 	distancesDim, v3, err := loadDataset(f, "distances", loadFloat32)
 	if err != nil {
-		log.Error("couldn't load distances dataset for path %s: %s", path, err)
+		log.Errorf("couldn't load distances dataset for path %s: %s", path, err)
 		return train, test, nil, nil, dim, err
 	}
 	distances = v3.([][]float32)
 
 	neighborsDim, v4, err := loadDataset(f, "neighbors", loadInt)
 	if err != nil {
-		log.Error("couldn't load neighbors dataset for path %s: %s", path, err)
+		log.Errorf("couldn't load neighbors dataset for path %s: %s", path, err)
 		return train, test, distances, nil, trainDim, err
 	}
 	neighbors = v4.([][]int)
