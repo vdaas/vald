@@ -76,7 +76,6 @@ func TestRetry_Out(t *testing.T) {
 						},
 					}
 				},
-				want: want{},
 				checkFunc: func(w want) error {
 					if cnt != 1 {
 						return errors.Errorf("cnt got = %d, want = %d", cnt, 1)
@@ -171,7 +170,6 @@ func TestRetry_Outf(t *testing.T) {
 						},
 					}
 				},
-				want: want{},
 				checkFunc: func(w want) error {
 					if cnt != 1 {
 						return errors.Errorf("cnt got = %d, want = %d", cnt, 1)
