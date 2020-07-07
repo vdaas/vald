@@ -81,6 +81,30 @@ func TestOpen(t *testing.T) {
 		},
 
 		{
+			name: "returns *os.File when path is `test/test/data`",
+			args: args{
+				path: "test/test/data",
+				flg:  os.O_CREATE,
+				perm: os.ModePerm,
+			},
+			checkFunc: func(_ want, got *os.File) error {
+				file, err := os.OpenFile("test/test/data", os.O_CREATE, os.ModePerm)
+				if err != nil {
+					return err
+				}
+				return defaultCheckFunc(want{
+					want: file,
+				}, got)
+			},
+			afterFunc: func(t *testing.T, _ args) {
+				t.Helper()
+				if err := os.RemoveAll("test"); err != nil {
+					t.Fatal(err)
+				}
+			},
+		},
+
+		{
 			name: "returns *os.File when path is `file.go`",
 			args: args{
 				path: "file.go",
