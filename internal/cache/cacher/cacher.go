@@ -36,7 +36,7 @@ func (m Type) String() string {
 	return "unknown"
 }
 
-// ToType returns the type base on the string.
+// ToType returns the type based on the string.
 func ToType(str string) Type {
 	switch strings.ToLower(str) {
 	case "gache":
