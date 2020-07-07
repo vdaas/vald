@@ -29,6 +29,7 @@ type call struct {
 	dups int
 }
 
+// Group represents interface for zero time cache
 type Group interface {
 	Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error)
 }
@@ -38,6 +39,7 @@ type group struct {
 	m  map[string]*call
 }
 
+// New returns Group imple
 func New(size int) Group {
 	if size < 1 {
 		size = 1
@@ -47,6 +49,9 @@ func New(size int) Group {
 	}
 }
 
+// Do returns a set of the cache of the first return value from function
+// as interface{}, shared flg as bool, and err as error
+// when the function is called multiple times in an instant.
 func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error) {
 	g.mu.RLock()
 	if c, ok := g.m[key]; ok {
@@ -70,6 +75,5 @@ func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, erro
 	g.mu.Lock()
 	delete(g.m, key)
 	g.mu.Unlock()
-
 	return c.val, c.dups > 0, c.err
 }
