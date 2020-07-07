@@ -43,25 +43,27 @@ func TestType_String(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return `gache` when type is gache",
+			m:    GACHE,
+			want: want{
+				want: "gache",
+			},
+		},
+		{
+			name: "return `unknown` when type is unknown",
+			m:    Unknown,
+			want: want{
+				want: "unknown",
+			},
+		},
+		{
+			name: "return `unknown` when the type is invalid",
+			m:    Type(100),
+			want: want{
+				want: "unknown",
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -107,31 +109,51 @@ func TestToType(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           str: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           str: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return GACHE type when the string is `gache`",
+			args: args{
+				str: "gache",
+			},
+			want: want{
+				want: GACHE,
+			},
+		},
+		{
+			name: "return GACHE type when the string is `Gache`",
+			args: args{
+				str: "Gache",
+			},
+			want: want{
+				want: GACHE,
+			},
+		},
+		{
+			name: "return GACHE type when the string is `GACHE`",
+			args: args{
+				str: "GACHE",
+			},
+			want: want{
+				want: GACHE,
+			},
+		},
+		{
+			name: "return Unknown type when the string is invalid",
+			args: args{
+				str: "invalid",
+			},
+			want: want{
+				want: Unknown,
+			},
+		},
+		{
+			name: "return Unknown type when the string is empty",
+			args: args{
+				str: "",
+			},
+			want: want{
+				want: Unknown,
+			},
+		},
 	}
 
 	for _, test := range tests {
