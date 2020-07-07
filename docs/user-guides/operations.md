@@ -24,6 +24,11 @@ Table of Contents
 
 ### Kubernetes cluster
 
+Since Vald agents hold vector data on their memory, unexpected disruption or eviction of agents may cause loss of indices.
+Also, disruption or deletion of worker nodes that have Vald agents may cause loss of indices.
+
+
+
 It is recommended to have more than 3 worker nodes with larger than 16 GB RAM.
 It is better to deploy 2 or 3 Vald agent pods to each worker node.
 
@@ -36,11 +41,11 @@ For example:
 
 If you're going to deploy Vald on multi-tenant cluster, please take care about the followings.
 
-- Since Vald agents holds vector data on their memory, unexpected eviction of agents may cause loss of indices.
 - It is recommended to define PriorityClasses for agents not to be evicted.
     - For more info, please visit the page [Pod Priority and Preemption][pod-priority-preemption].
     - If you are using [the Vald chart][vald-helm-chart], PriorityClasses are defined by default.
-- It is recommended to define namespaces for each Vald and the other apps. Then, please define ResourceQuotas for the namespace for the other apps.
+- It is recommended to define namespaces for each Vald and the other apps.
+- Then, please define ResourceQuotas for the namespace for the other apps to limit the memory usage for the other apps.
     - For more info, please visit tha page [Resource Quotas][resource-quota].
 
 ## Monitoring
