@@ -87,8 +87,11 @@ func (l *lz4Compressor) DecompressVector(bs []byte) ([]float32, error) {
 	return vec, nil
 }
 
-func (l *lz4Compressor) Reader(src io.Reader) (io.Reader, error) {
-	return lz4.NewReader(src), nil
+func (l *lz4Compressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
+	return &lz4Reader{
+		src: src,
+		r:   lz4.NewReader(src),
+	}, nil
 }
 
 func (l *lz4Compressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
@@ -96,6 +99,19 @@ func (l *lz4Compressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
 		dst: dst,
 		w:   lz4.NewWriter(dst),
 	}, nil
+}
+
+type lz4Reader struct {
+	src io.ReadCloser
+	r   io.Reader
+}
+
+func (l *lz4Reader) Read(p []byte) (n int, err error) {
+	return l.r.Read(p)
+}
+
+func (l *lz4Reader) Close() (err error) {
+	return l.src.Close()
 }
 
 type lz4Writer struct {

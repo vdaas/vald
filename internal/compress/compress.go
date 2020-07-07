@@ -22,6 +22,6 @@ import "io"
 type Compressor interface {
 	CompressVector(vector []float32) (bytes []byte, err error)
 	DecompressVector(bytes []byte) (vector []float32, err error)
-	Reader(src io.Reader) (io.Reader, error)
+	Reader(src io.ReadCloser) (io.ReadCloser, error)
 	Writer(dst io.WriteCloser) (io.WriteCloser, error)
 }

@@ -60,7 +60,7 @@ func (g *gobCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	return vector, nil
 }
 
-func (g *gobCompressor) Reader(src io.Reader) (io.Reader, error) {
+func (g *gobCompressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
 	return &gobReader{
 		src:     src,
 		decoder: gob.NewDecoder(src),
@@ -75,7 +75,7 @@ func (g *gobCompressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
 }
 
 type gobReader struct {
-	src     io.Reader
+	src     io.ReadCloser
 	decoder *gob.Decoder
 }
 
@@ -86,6 +86,10 @@ func (gr *gobReader) Read(p []byte) (n int, err error) {
 	}
 
 	return len(p), nil
+}
+
+func (gr *gobReader) Close() error {
+	return gr.src.Close()
 }
 
 type gobWriter struct {

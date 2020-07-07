@@ -166,10 +166,16 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 			return err
 		}
 
-		sr, err = ctxio.NewReaderWithContext(ctx, sr)
+		sr, err = ctxio.NewReadCloserWithContext(ctx, sr)
 		if err != nil {
 			return err
 		}
+		defer func() {
+			e := sr.Close()
+			if e != nil {
+				log.Errorf("error on closing blob-storage reader: %s", e)
+			}
+		}()
 
 		_, err = io.Copy(pw, sr)
 		if err != nil {
@@ -211,6 +217,13 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 				}
 			}
 		case tar.TypeReg:
+			if _, err := os.Stat(target); err == nil {
+				log.Warn(errors.ErrFileAlreadyExists(target))
+				return nil
+			} else if !os.IsNotExist(err) {
+				return err
+			}
+
 			f, err := os.OpenFile(
 				target,
 				os.O_CREATE|os.O_RDWR,
@@ -227,7 +240,7 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 
 			_, err = io.Copy(fw, tr)
 			if err != nil {
-				return err
+				return errors.Wrap(f.Close(), err.Error())
 			}
 
 			err = f.Close()

@@ -87,8 +87,16 @@ func (g *gzipCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	return vec, nil
 }
 
-func (g *gzipCompressor) Reader(src io.Reader) (io.Reader, error) {
-	return gzip.NewReader(src)
+func (g *gzipCompressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
+	r, err := gzip.NewReader(src)
+	if err != nil {
+		return nil, err
+	}
+
+	return &gzipReader{
+		src: src,
+		r:   r,
+	}, nil
 }
 
 func (g *gzipCompressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
@@ -101,6 +109,24 @@ func (g *gzipCompressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
 		dst: dst,
 		w:   w,
 	}, nil
+}
+
+type gzipReader struct {
+	src io.ReadCloser
+	r   io.ReadCloser
+}
+
+func (g *gzipReader) Read(p []byte) (n int, err error) {
+	return g.r.Read(p)
+}
+
+func (g *gzipReader) Close() (err error) {
+	err = g.r.Close()
+	if err != nil {
+		return errors.Wrap(g.src.Close(), err.Error())
+	}
+
+	return g.src.Close()
 }
 
 type gzipWriter struct {
