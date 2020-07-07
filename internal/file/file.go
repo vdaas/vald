@@ -22,7 +22,9 @@ import (
 	"path/filepath"
 )
 
-// Open opens file with a gien path and flag and permission. If file does not exist, create the file.
+// Open opens the file with the given path, flag and permission.
+// If the folder does not exists, create the folder.
+// If the file does not exist, create the file.
 func Open(path string, flg int, perm os.FileMode) *os.File {
 	if path == "" {
 		return nil
