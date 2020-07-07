@@ -57,6 +57,13 @@ func TestType_String(t *testing.T) {
 				want: "unknown",
 			},
 		},
+		{
+			name: "return `unknown` when the type is invalid",
+			m:    Type(100),
+			want: want{
+				want: "unknown",
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -133,6 +140,15 @@ func TestToType(t *testing.T) {
 			name: "return Unknown type when the string is invalid",
 			args: args{
 				str: "invalid",
+			},
+			want: want{
+				want: Unknown,
+			},
+		},
+		{
+			name: "return Unknown type when the string is empty",
+			args: args{
+				str: "",
 			},
 			want: want{
 				want: Unknown,
