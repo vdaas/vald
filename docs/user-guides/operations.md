@@ -7,7 +7,7 @@ Table of Contents
 
 - [Deployment](#deployment)
     - [Kubernetes cluster](#kubernetes-cluster)
-    - [Multi tenant](#multi-tenant)
+    - [On multi-tenant cluster](#on-multi-tenant-cluster)
 - [Monitoring](#monitoring)
     - [Logging](#logging)
     - [Observability features of Vald](#observability-features-of-vald)
@@ -24,10 +24,24 @@ Table of Contents
 
 ### Kubernetes cluster
 
+It is recommended to have more than 3 worker nodes with larger than 16 GB RAM.
+It is better to deploy 2 or 3 Vald agent pods to each worker node.
 
-### Multi tenant
+For example:
 
+- 10 worker nodes with 24 GB RAM and 3 Vald agents on each worker node (total: 240 GB RAM, 30 Vald agents)
+- 20 worker nodes with 16 GB RAM and 2 Vald agents on each worker node (total: 320 GB RAM, 40 Vald agents)
 
+### On multi-tenant cluster
+
+If you're going to deploy Vald on multi-tenant cluster, please take care about the followings.
+
+- Since Vald agents holds vector data on their memory, unexpected eviction of agents may cause loss of indices.
+- It is recommended to define PriorityClasses for agents not to be evicted.
+    - For more info, please visit the page [Pod Priority and Preemption][pod-priority-preemption].
+    - If you are using [the Vald chart][vald-helm-chart], PriorityClasses are defined by default.
+- It is recommended to define namespaces for each Vald and the other apps. Then, please define ResourceQuotas for the namespace for the other apps.
+    - For more info, please visit tha page [Resource Quotas][resource-quota].
 
 ## Monitoring
 
@@ -107,6 +121,9 @@ This is an example of a custom dashboard. It is based on [our standard dashboard
 
 [vald-helm-chart]: https://github.com/vdaas/vald/tree/master/charts/vald
 [vald-helm-operator-chart]: https://github.com/vdaas/vald/tree/master/charts/vald-helm-operator
+
+[pod-priority-preemption]: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+[resource-quota]: https://kubernetes.io/docs/concepts/policy/resource-quotas/
 
 [coding-style-logging]: ../contributing/coding-style.md#logging
 
