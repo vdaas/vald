@@ -27,7 +27,6 @@ import (
 )
 
 func TestWithCert(t *testing.T) {
-	// Change interface type to the type of object you are testing
 	type T = credentials
 	type args struct {
 		cert string
