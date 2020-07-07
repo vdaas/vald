@@ -47,7 +47,7 @@ func TestGetTestdataPath(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "get exists test file success",
+			name: "returns the result of combining the given path and test directory",
 			args: args{
 				filename: "tls/dummyCa.pem",
 			},
