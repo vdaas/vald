@@ -481,7 +481,7 @@ func Test_bs_Reader(t *testing.T) {
 		compressor        compress.Compressor
 	}
 	type want struct {
-		wantR io.Reader
+		wantR io.ReadCloser
 		err   error
 	}
 	type test struct {
@@ -489,11 +489,11 @@ func Test_bs_Reader(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, io.Reader, error) error
+		checkFunc  func(want, io.ReadCloser, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotR io.Reader, err error) error {
+	defaultCheckFunc := func(w want, gotR io.ReadCloser, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}

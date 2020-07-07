@@ -121,7 +121,7 @@ func TestNewGob(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -197,7 +197,7 @@ func Test_gobCompressor_CompressVector(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -274,7 +274,7 @@ func Test_gobCompressor_DecompressVector(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -297,10 +297,10 @@ func Test_gobCompressor_DecompressVector(t *testing.T) {
 
 func Test_gobCompressor_Reader(t *testing.T) {
 	type args struct {
-		src io.Reader
+		src io.ReadCloser
 	}
 	type want struct {
-		want io.Reader
+		want io.ReadCloser
 		err  error
 	}
 	type test struct {
@@ -308,11 +308,11 @@ func Test_gobCompressor_Reader(t *testing.T) {
 		args       args
 		g          *gobCompressor
 		want       want
-		checkFunc  func(want, io.Reader, error) error
+		checkFunc  func(want, io.ReadCloser, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got io.Reader, err error) error {
+	defaultCheckFunc := func(w want, got io.ReadCloser, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -351,7 +351,7 @@ func Test_gobCompressor_Reader(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -428,7 +428,7 @@ func Test_gobCompressor_Writer(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -454,7 +454,7 @@ func Test_gobReader_Read(t *testing.T) {
 		p []byte
 	}
 	type fields struct {
-		src     io.Reader
+		src     io.ReadCloser
 		decoder *gob.Decoder
 	}
 	type want struct {
@@ -517,7 +517,7 @@ func Test_gobReader_Read(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -534,6 +534,84 @@ func Test_gobReader_Read(t *testing.T) {
 
 			gotN, err := gr.Read(test.args.p)
 			if err := test.checkFunc(test.want, gotN, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_gobReader_Close(t *testing.T) {
+	type fields struct {
+		src     io.ReadCloser
+		decoder *gob.Decoder
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           src: nil,
+		           decoder: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           src: nil,
+		           decoder: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			gr := &gobReader{
+				src:     test.fields.src,
+				decoder: test.fields.decoder,
+			}
+
+			err := gr.Close()
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -609,7 +687,7 @@ func Test_gobWriter_Write(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -687,7 +765,7 @@ func Test_gobWriter_Close(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
