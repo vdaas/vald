@@ -55,13 +55,24 @@ func TestWithCert(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "test_case_1",
+			name: "set cert success",
 			args: args{
 				cert: "cert",
 			},
 			want: want{
 				obj: &T{
 					cert: "cert",
+				},
+			},
+		},
+		{
+			name: "set cert success if cert is empty",
+			args: args{
+				cert: "",
+			},
+			want: want{
+				obj: &T{
+					cert: "",
 				},
 			},
 		},
@@ -127,7 +138,17 @@ func TestWithKey(t *testing.T) {
 				obj: &T{
 					key: "key",
 				},
-				err: nil,
+			},
+		},
+		{
+			name: "set success when key is empty",
+			args: args{
+				key: "",
+			},
+			want: want{
+				obj: &T{
+					key: "",
+				},
 			},
 		},
 	}
@@ -192,7 +213,17 @@ func TestWithCa(t *testing.T) {
 				obj: &T{
 					ca: "ca",
 				},
-				err: nil,
+			},
+		},
+		{
+			name: "set success when ca is empty",
+			args: args{
+				ca: "",
+			},
+			want: want{
+				obj: &T{
+					ca: "",
+				},
 			},
 		},
 	}
@@ -258,6 +289,17 @@ func TestWithTLSConfig(t *testing.T) {
 					cfg: new(tls.Config),
 				},
 				err: nil,
+			},
+		},
+		{
+			name: "set success when cfg is nil",
+			args: args{
+				cfg: nil,
+			},
+			want: want{
+				obj: &T{
+					cfg: nil,
+				},
 			},
 		},
 	}
