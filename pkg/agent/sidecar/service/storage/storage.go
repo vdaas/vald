@@ -33,7 +33,7 @@ import (
 
 type Storage interface {
 	Start(ctx context.Context) (<-chan error, error)
-	Reader(ctx context.Context) (io.Reader, error)
+	Reader(ctx context.Context) (io.ReadCloser, error)
 	Writer(ctx context.Context) (io.WriteCloser, error)
 }
 
@@ -135,7 +135,7 @@ func (b *bs) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (b *bs) Reader(ctx context.Context) (r io.Reader, err error) {
+func (b *bs) Reader(ctx context.Context) (r io.ReadCloser, err error) {
 	r, err = b.bucket.Reader(ctx, b.filename+b.suffix)
 	if err != nil {
 		return nil, err

@@ -19,4 +19,8 @@ package errors
 
 var (
 	ErrWatchDirNotFound = New("fs watcher watch dir not found")
+
+	ErrFileAlreadyExists = func(path string) error {
+		return Errorf("file already exists: %s", path)
+	}
 )
