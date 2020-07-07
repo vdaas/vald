@@ -80,16 +80,12 @@ gotests/patch: \
 	find $(ROOTDIR)/internal/errors -name '*_test.go' | xargs sed -i -E "s%\"github.com/vdaas/vald/internal/errors\"%%g"
 	find $(ROOTDIR)/internal/errors -name '*_test.go' | xargs sed -i -E "s/errors\.//g"
 
-# force to rebuild all GO_TEST_SOURCES targets
-.PHONY: $(GO_TEST_SOURCES)
 $(GO_TEST_SOURCES): \
 	./assets/test/templates/common \
 	$(GO_SOURCES)
 	@$(call green, $(patsubst %,"generating go test file: %",$@))
 	gotests -w -template_dir ./assets/test/templates/common -all $(patsubst %_test.go,%.go,$@)
 
-# force to rebuild all GO_OPTION_TEST_SOURCES targets
-.PHONY: $(GO_OPTION_TEST_SOURCES)
 $(GO_OPTION_TEST_SOURCES): \
 	./assets/test/templates/option \
 	$(GO_OPTION_SOURCES)

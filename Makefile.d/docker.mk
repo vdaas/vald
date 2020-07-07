@@ -157,18 +157,3 @@ docker/name/loadtest:
 ## build loadtest image
 docker/build/loadtest: docker/build/base
 	docker build -f dockers/tools/cli/loadtest/Dockerfile -t $(REPO)/$(LOADTEST_IMAGE) .
-
-.PHONY: dockfmt/install
-dockfmt/install: $(BINDIR)/dockfmt
-
-ifeq ($(UNAME),Darwin)
-$(BINDIR)/dockfmt:
-	mkdir -p $(BINDIR)
-	curl -fSL https://github.com/jessfraz/dockfmt/releases/download/$(DOCKFMT_VERSION)/dockfmt-darwin-amd64 -o $(BINDIR)/dockfmt
-	chmod a+x $(BINDIR)/dockfmt
-else
-$(BINDIR)/dockfmt:
-	mkdir -p $(BINDIR)
-	curl -fSL https://github.com/jessfraz/dockfmt/releases/download/$(DOCKFMT_VERSION)/dockfmt-linux-amd64 -o $(BINDIR)/dockfmt
-	chmod a+x $(BINDIR)/dockfmt
-endif
