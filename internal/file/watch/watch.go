@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 )
 
+// Watcher is an interface that represents a file monitor.
 type Watcher interface {
 	Start(ctx context.Context) (<-chan error, error)
 	Add(dirs ...string) error
@@ -49,6 +50,7 @@ type watch struct {
 	onError  func(ctx context.Context, err error) error
 }
 
+// New returns Watcher implementation.
 func New(opts ...Option) (Watcher, error) {
 	w := new(watch)
 	for _, opt := range append(defaultOpts, opts...) {
@@ -93,6 +95,8 @@ func (w *watch) init() (*watch, error) {
 	return w, nil
 }
 
+// Start starts watching all named files or directories. If an error occurs, returns the error.
+// And performs the processing corresponding to the file change event, and returns an error via channel if an error occurs in them.
 func (w *watch) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 10)
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -158,6 +162,7 @@ func (w *watch) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
+// Add starts watching all named files or directories. If an error occurs, returns the error.
 func (w *watch) Add(dirs ...string) (err error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
@@ -173,6 +178,7 @@ func (w *watch) Add(dirs ...string) (err error) {
 	return nil
 }
 
+// Remove stops watching all named files or directories. If an error occurs, returns the error.
 func (w *watch) Remove(dirs ...string) (err error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
@@ -188,6 +194,7 @@ func (w *watch) Remove(dirs ...string) (err error) {
 	return nil
 }
 
+// Stop stops watching all named files or directories. If an error occurs, returns the error.
 func (w *watch) Stop(ctx context.Context) (err error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()

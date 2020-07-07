@@ -256,7 +256,7 @@ func Test_watch_Start(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			return test{
-				name: "returns (chan error, nil) but channel contains error when w.w.Errors contains error and w.init returns nil",
+				name: "returns (chan error, nil) but channel contains error when w.w.Errors contains error and w.init returns error",
 				args: args{
 					ctx: ctx,
 				},
@@ -275,7 +275,7 @@ func Test_watch_Start(t *testing.T) {
 						w:  w,
 						eg: errgroup.Get(),
 						dirs: map[string]struct{}{
-							"watch.go": struct{}{},
+							"vald": struct{}{},
 						},
 					}
 				},
