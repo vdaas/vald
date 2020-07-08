@@ -32,7 +32,9 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/json"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/metadata"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/safety"
@@ -566,30 +568,54 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 	defer n.saveMu.Unlock()
 
 	if len(n.path) != 0 && !n.inMem {
-		eg, ctx := errgroup.New(ctx)
-		eg.Go(safety.RecoverFunc(func() error {
-			if len(n.path) != 0 {
-				m := make(map[string]uint32, n.kvs.Len())
-				var mu sync.Mutex
-				n.kvs.Range(ctx, func(key string, id uint32) bool {
-					mu.Lock()
-					m[key] = id
-					mu.Unlock()
-					return true
-				})
-				f := file.Open(n.path+"/"+kvsFileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
-				defer f.Close()
-				gob.Register(map[string]uint32{})
-				return gob.NewEncoder(f).Encode(&m)
-			}
-			return nil
-		}))
-		eg.Go(safety.RecoverFunc(func() error {
-			return n.core.SaveIndex()
-		}))
-		err = eg.Wait()
+		err = n.saveIndex(ctx)
 	}
+
 	return
+}
+
+func (n *ngt) saveIndex(ctx context.Context) (err error) {
+	eg, ctx := errgroup.New(ctx)
+
+	eg.Go(safety.RecoverFunc(func() error {
+		if len(n.path) != 0 {
+			m := make(map[string]uint32, n.kvs.Len())
+			var mu sync.Mutex
+			n.kvs.Range(ctx, func(key string, id uint32) bool {
+				mu.Lock()
+				m[key] = id
+				mu.Unlock()
+				return true
+			})
+			f := file.Open(n.path+"/"+kvsFileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+			defer f.Close()
+			gob.Register(map[string]uint32{})
+			return gob.NewEncoder(f).Encode(&m)
+		}
+		return nil
+	}))
+
+	eg.Go(safety.RecoverFunc(func() error {
+		return n.core.SaveIndex()
+	}))
+
+	err = eg.Wait()
+	if err != nil {
+		return err
+	}
+
+	f := file.Open(
+		n.path+"/"+metadata.AgentMetadataFileName,
+		os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
+		os.ModePerm,
+	)
+	defer f.Close()
+
+	return json.Encode(f, &metadata.Metadata{
+		NGT: &metadata.NGT{
+			IndexCount: n.Len(),
+		},
+	})
 }
 
 func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err error) {
