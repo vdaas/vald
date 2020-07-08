@@ -33,7 +33,7 @@ type cache struct {
 
 func New(opts ...Option) (c *cache) {
 	c = new(cache)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions(), opts...) {
 		opt(c)
 	}
 	c.gache.SetDefaultExpire(c.expireDur)
