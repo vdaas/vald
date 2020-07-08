@@ -633,12 +633,13 @@ func Test_watch_Add(t *testing.T) {
 		want       want
 		checkFunc  func(want, *watch, error) error
 		beforeFunc func(*testing.T, *fields, args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
+
 		if got, want := len(got.dirs), len(w.want.dirs); got != want {
 			return errors.Errorf("dirs length = %d, want %d", got, want)
 		}
@@ -660,7 +661,7 @@ func Test_watch_Add(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns nil when w.w.Add returns nil",
+			name: "returns nil when add success",
 			args: args{
 				dirs: []string{
 					"./watch.go", "./option.go",
@@ -681,7 +682,48 @@ func Test_watch_Add(t *testing.T) {
 		},
 
 		{
-			name: "returns error when w.w.Add returns no such file or director error",
+			name: "returns nil when directory add success",
+			args: args{
+				dirs: []string{
+					"../watch",
+				},
+			},
+			fields: fields{
+				dirs: make(map[string]struct{}),
+			},
+			want: want{
+				err: nil,
+				want: &watch{
+					dirs: map[string]struct{}{
+						"../watch": struct{}{},
+					},
+				},
+			},
+		},
+
+		{
+			name: "returns nil when same file add and add success",
+			args: args{
+				dirs: []string{
+					"./watch.go", "../watch/watch.go",
+				},
+			},
+			fields: fields{
+				dirs: make(map[string]struct{}),
+			},
+			want: want{
+				err: nil,
+				want: &watch{
+					dirs: map[string]struct{}{
+						"./watch.go":        struct{}{},
+						"../watch/watch.go": struct{}{},
+					},
+				},
+			},
+		},
+
+		{
+			name: "returns no such file or directory error when file not exists",
 			args: args{
 				dirs: []string{
 					"vald.go",
@@ -708,7 +750,7 @@ func Test_watch_Add(t *testing.T) {
 			test.beforeFunc(tt, &test.fields, test.args)
 
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -722,7 +764,6 @@ func Test_watch_Add(t *testing.T) {
 			if err := test.checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -746,7 +787,7 @@ func Test_watch_Remove(t *testing.T) {
 		want       want
 		checkFunc  func(want, *watch, error) error
 		beforeFunc func(*testing.T, *fields, args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if !errors.Is(err, w.err) {
@@ -781,7 +822,7 @@ func Test_watch_Remove(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns nil when w.w.Remove returns nil",
+			name: "returns nil when remove success",
 			args: args{
 				dirs: []string{
 					"watch.go", "watch_test.go",
@@ -802,7 +843,27 @@ func Test_watch_Remove(t *testing.T) {
 		},
 
 		{
-			name: "returns error when w.w.Remove returns non-exist inotify error",
+			name: "returns nil when dirs is directory and remove success",
+			args: args{
+				dirs: []string{
+					"../watch",
+				},
+			},
+			fields: fields{
+				dirs: map[string]struct{}{
+					"../watch": struct{}{},
+				},
+			},
+			want: want{
+				want: &watch{
+					dirs: map[string]struct{}{},
+				},
+				err: nil,
+			},
+		},
+
+		{
+			name: "returns non-exist error when the file not exists",
 			args: args{
 				dirs: []string{
 					"watch.go", "vald.go", "watch_test.go",
@@ -834,7 +895,7 @@ func Test_watch_Remove(t *testing.T) {
 			test.beforeFunc(tt, &test.fields, test.args)
 
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -889,9 +950,18 @@ func Test_watch_Stop(t *testing.T) {
 		}
 		return nil
 	}
+	defaultBeforeFunc := func(t *testing.T, fields *fields, args args) {
+		t.Helper()
+
+		var err error
+		fields.w, err = fsnotify.NewWatcher()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 	tests := []test{
 		{
-			name: "returns nil when w.Remove returns nil",
+			name: "returns nil when stop success",
 			args: args{
 				ctx: context.Background(),
 			},
@@ -903,15 +973,10 @@ func Test_watch_Stop(t *testing.T) {
 			},
 			beforeFunc: func(t *testing.T, fields *fields, args args) {
 				t.Helper()
-
-				var err error
-				fields.w, err = fsnotify.NewWatcher()
-				if err != nil {
-					t.Fatal(err)
-				}
+				defaultBeforeFunc(t, fields, args)
 
 				for name := range fields.dirs {
-					err = fields.w.Add(name)
+					err := fields.w.Add(name)
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -926,7 +991,7 @@ func Test_watch_Stop(t *testing.T) {
 		},
 
 		{
-			name: "returns error when w.Remove returns non-exist inotify error",
+			name: "returns non-exist error when the file not exists",
 			args: args{
 				ctx: context.Background(),
 			},
@@ -934,15 +999,6 @@ func Test_watch_Stop(t *testing.T) {
 				dirs: map[string]struct{}{
 					"watch.go": struct{}{},
 				},
-			},
-			beforeFunc: func(t *testing.T, fields *fields, args args) {
-				t.Helper()
-
-				var err error
-				fields.w, err = fsnotify.NewWatcher()
-				if err != nil {
-					t.Fatal(err)
-				}
 			},
 			want: want{
 				want: &watch{
@@ -956,9 +1012,10 @@ func Test_watch_Stop(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, &test.fields, test.args)
+			if test.beforeFunc == nil {
+				test.beforeFunc = defaultBeforeFunc
 			}
+			test.beforeFunc(tt, &test.fields, test.args)
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
