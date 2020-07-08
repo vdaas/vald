@@ -74,7 +74,6 @@ type ngt struct {
 	dur      time.Duration // auto indexing check duration
 	sdur     time.Duration // auto save index check duration
 	idelay   time.Duration // initial delay duration
-	dps      uint32        // default pool size
 	ic       uint64        // insert count
 	nocie    uint64        // number of create index execution
 	eg       errgroup.Group
@@ -109,6 +108,7 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 		core.WithBulkInsertChunkSize(cfg.BulkInsertChunkSize),
 		core.WithCreationEdgeSize(cfg.CreationEdgeSize),
 		core.WithSearchEdgeSize(cfg.SearchEdgeSize),
+		core.WithDefaultPoolSize(cfg.DefaultPoolSize),
 	}
 
 	if !n.inMem && len(cfg.IndexPath) != 0 {
@@ -235,7 +235,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			err = nil
 			select {
 			case <-ctx.Done():
-				err = n.CreateIndex(ctx, n.dps)
+				err = n.CreateIndex(ctx, 0)
 				if err != nil {
 					ech <- err
 					return errors.Wrap(ctx.Err(), err.Error())
@@ -243,10 +243,10 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				return ctx.Err()
 			case <-tick.C:
 				if int(atomic.LoadUint64(&n.ic)) >= n.alen {
-					err = n.CreateIndex(ctx, n.dps)
+					err = n.CreateIndex(ctx, 0)
 				}
 			case <-limit.C:
-				err = n.CreateAndSaveIndex(ctx, n.dps)
+				err = n.CreateAndSaveIndex(ctx, 0)
 			case <-sTick.C:
 				err = n.SaveIndex(ctx)
 			}
@@ -674,7 +674,7 @@ func (n *ngt) DeleteVCacheLen() uint64 {
 
 func (n *ngt) Close(ctx context.Context) (err error) {
 	if len(n.path) != 0 {
-		err = n.CreateAndSaveIndex(ctx, n.dps)
+		err = n.CreateAndSaveIndex(ctx, 0)
 	}
 	n.core.Close()
 	return
