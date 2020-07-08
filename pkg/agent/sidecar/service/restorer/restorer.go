@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	ctxio "github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -224,7 +225,7 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 				return err
 			}
 
-			f, err := os.OpenFile(
+			f, err := file.Open(
 				target,
 				os.O_CREATE|os.O_RDWR,
 				os.FileMode(header.Mode),

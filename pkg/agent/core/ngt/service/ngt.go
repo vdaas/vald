@@ -131,7 +131,14 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 			if len(n.path) != 0 && !n.inMem {
 				m := make(map[string]uint32)
 				gob.Register(map[string]uint32{})
-				f := file.Open(n.path+"/"+kvsFileName, os.O_RDONLY|os.O_SYNC, os.ModePerm)
+				f, err := file.Open(
+					n.path+"/"+kvsFileName,
+					os.O_RDONLY|os.O_SYNC,
+					os.ModePerm,
+				)
+				if err != nil {
+					return err
+				}
 				defer f.Close()
 				err = gob.NewDecoder(f).Decode(&m)
 				if err != nil {
@@ -587,7 +594,14 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 				mu.Unlock()
 				return true
 			})
-			f := file.Open(n.path+"/"+kvsFileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+			f, err := file.Open(
+				n.path+"/"+kvsFileName,
+				os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
+				os.ModePerm,
+			)
+			if err != nil {
+				return err
+			}
 			defer f.Close()
 			gob.Register(map[string]uint32{})
 			return gob.NewEncoder(f).Encode(&m)
@@ -604,11 +618,14 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		return err
 	}
 
-	f := file.Open(
+	f, err := file.Open(
 		n.path+"/"+metadata.AgentMetadataFileName,
 		os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
 		os.ModePerm,
 	)
+	if err != nil {
+		return err
+	}
 	defer f.Close()
 
 	return json.Encode(f, &metadata.Metadata{

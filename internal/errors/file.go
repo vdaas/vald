@@ -23,4 +23,6 @@ var (
 	ErrFileAlreadyExists = func(path string) error {
 		return Errorf("file already exists: %s", path)
 	}
+
+	ErrPathNotSpecified = New("the path is not specified")
 )
