@@ -118,7 +118,6 @@ func Test_ngt_Start(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -160,7 +159,6 @@ func Test_ngt_Start(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -189,7 +187,6 @@ func Test_ngt_Start(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -224,7 +221,6 @@ func Test_ngt_Start(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -257,7 +253,6 @@ func Test_ngt_Search(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -306,7 +301,6 @@ func Test_ngt_Search(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -338,7 +332,6 @@ func Test_ngt_Search(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -373,7 +366,6 @@ func Test_ngt_Search(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -406,7 +398,6 @@ func Test_ngt_SearchByID(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -455,7 +446,6 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -487,7 +477,6 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -522,7 +511,6 @@ func Test_ngt_SearchByID(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -553,7 +541,6 @@ func Test_ngt_Insert(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -596,7 +583,6 @@ func Test_ngt_Insert(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -626,7 +612,6 @@ func Test_ngt_Insert(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -661,7 +646,6 @@ func Test_ngt_Insert(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -694,7 +678,6 @@ func Test_ngt_insert(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -739,7 +722,6 @@ func Test_ngt_insert(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -771,7 +753,6 @@ func Test_ngt_insert(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -806,7 +787,6 @@ func Test_ngt_insert(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -836,7 +816,6 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -878,7 +857,6 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -907,7 +885,6 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -942,7 +919,6 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -973,7 +949,6 @@ func Test_ngt_Update(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -1016,7 +991,6 @@ func Test_ngt_Update(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -1046,7 +1020,6 @@ func Test_ngt_Update(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -1081,7 +1054,6 @@ func Test_ngt_Update(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -1111,7 +1083,6 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -1153,7 +1124,6 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -1182,7 +1152,6 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -1217,7 +1186,6 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -1247,7 +1215,6 @@ func Test_ngt_Delete(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -1289,7 +1256,6 @@ func Test_ngt_Delete(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -1318,7 +1284,6 @@ func Test_ngt_Delete(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -1353,7 +1318,6 @@ func Test_ngt_Delete(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -1384,7 +1348,6 @@ func Test_ngt_delete(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -1427,7 +1390,6 @@ func Test_ngt_delete(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -1457,7 +1419,6 @@ func Test_ngt_delete(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -1492,7 +1453,6 @@ func Test_ngt_delete(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -1522,7 +1482,6 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -1564,7 +1523,6 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -1593,7 +1551,6 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -1628,7 +1585,6 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -1658,7 +1614,6 @@ func Test_ngt_GetObject(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -1704,7 +1659,6 @@ func Test_ngt_GetObject(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -1733,7 +1687,6 @@ func Test_ngt_GetObject(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -1768,7 +1721,6 @@ func Test_ngt_GetObject(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -1799,7 +1751,6 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -1841,7 +1792,6 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -1870,7 +1820,6 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -1905,7 +1854,6 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -1935,7 +1883,6 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -1977,7 +1924,6 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -2006,7 +1952,6 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -2041,7 +1986,6 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -2072,7 +2016,6 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -2115,7 +2058,6 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -2145,7 +2087,6 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -2180,7 +2121,6 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -2210,7 +2150,6 @@ func Test_ngt_Exists(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -2256,7 +2195,6 @@ func Test_ngt_Exists(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -2285,7 +2223,6 @@ func Test_ngt_Exists(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -2320,7 +2257,6 @@ func Test_ngt_Exists(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -2350,7 +2286,6 @@ func Test_ngt_insertCache(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -2396,7 +2331,6 @@ func Test_ngt_insertCache(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -2425,7 +2359,6 @@ func Test_ngt_insertCache(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -2460,7 +2393,6 @@ func Test_ngt_insertCache(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -2487,7 +2419,6 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -2525,7 +2456,6 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -2551,7 +2481,6 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -2586,7 +2515,6 @@ func Test_ngt_IsIndexing(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -2616,7 +2544,6 @@ func Test_ngt_UUIDs(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -2658,7 +2585,6 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -2687,7 +2613,6 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -2722,7 +2647,6 @@ func Test_ngt_UUIDs(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -2749,7 +2673,6 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -2787,7 +2710,6 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -2813,7 +2735,6 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -2848,7 +2769,6 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -2875,7 +2795,6 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -2913,7 +2832,6 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -2939,7 +2857,6 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -2974,7 +2891,6 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -3001,7 +2917,6 @@ func Test_ngt_Len(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -3039,7 +2954,6 @@ func Test_ngt_Len(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -3065,7 +2979,6 @@ func Test_ngt_Len(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -3100,7 +3013,6 @@ func Test_ngt_Len(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -3127,7 +3039,6 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -3165,7 +3076,6 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -3191,7 +3101,6 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -3226,7 +3135,6 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -3253,7 +3161,6 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -3291,7 +3198,6 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -3317,7 +3223,6 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -3352,7 +3257,6 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
@@ -3382,7 +3286,6 @@ func Test_ngt_Close(t *testing.T) {
 		indexing atomic.Value
 		lim      time.Duration
 		dur      time.Duration
-		dps      uint32
 		ic       uint64
 		nocie    uint64
 		eg       errgroup.Group
@@ -3424,7 +3327,6 @@ func Test_ngt_Close(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -3453,7 +3355,6 @@ func Test_ngt_Close(t *testing.T) {
 		           indexing: nil,
 		           lim: nil,
 		           dur: nil,
-		           dps: 0,
 		           ic: 0,
 		           nocie: 0,
 		           eg: nil,
@@ -3488,7 +3389,6 @@ func Test_ngt_Close(t *testing.T) {
 				indexing: test.fields.indexing,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
-				dps:      test.fields.dps,
 				ic:       test.fields.ic,
 				nocie:    test.fields.nocie,
 				eg:       test.fields.eg,
