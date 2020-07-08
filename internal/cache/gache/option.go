@@ -26,11 +26,11 @@ import (
 
 type Option func(*cache)
 
-var (
-	defaultOpts = []Option{
+func defaultOptions() []Option {
+	return []Option{
 		WithGache(gache.New()),
 	}
-)
+}
 
 func WithGache(g gache.Gache) Option {
 	return func(c *cache) {
