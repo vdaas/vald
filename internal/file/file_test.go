@@ -33,17 +33,22 @@ func TestOpen(t *testing.T) {
 	}
 	type want struct {
 		want *os.File
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *os.File) error
+		checkFunc  func(want, *os.File, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
 
-	defaultCheckFunc := func(w want, got *os.File) error {
+	defaultCheckFunc := func(w want, got *os.File, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+
 		if w.want == nil {
 			if got != nil {
 				return errors.New("got is not nil")
@@ -63,14 +68,15 @@ func TestOpen(t *testing.T) {
 				flg:  os.O_CREATE,
 				perm: os.ModePerm,
 			},
-			checkFunc: func(_ want, got *os.File) error {
+			checkFunc: func(_ want, got *os.File, gotErr error) error {
 				file, err := os.OpenFile("test/data", os.O_CREATE, os.ModePerm)
 				if err != nil {
 					return err
 				}
 				return defaultCheckFunc(want{
 					want: file,
-				}, got)
+					err:  nil,
+				}, got, gotErr)
 			},
 			afterFunc: func(t *testing.T, _ args) {
 				t.Helper()
@@ -87,14 +93,15 @@ func TestOpen(t *testing.T) {
 				flg:  os.O_CREATE,
 				perm: os.ModePerm,
 			},
-			checkFunc: func(_ want, got *os.File) error {
+			checkFunc: func(_ want, got *os.File, gotErr error) error {
 				file, err := os.OpenFile("test/test/data", os.O_CREATE, os.ModePerm)
 				if err != nil {
 					return err
 				}
 				return defaultCheckFunc(want{
 					want: file,
-				}, got)
+					err:  nil,
+				}, got, gotErr)
 			},
 			afterFunc: func(t *testing.T, _ args) {
 				t.Helper()
@@ -116,6 +123,7 @@ func TestOpen(t *testing.T) {
 					f, _ := os.OpenFile("file.go", os.O_RDONLY, os.ModePerm)
 					return f
 				}(),
+				err: nil,
 			},
 		},
 
@@ -127,6 +135,7 @@ func TestOpen(t *testing.T) {
 			},
 			want: want{
 				want: nil,
+				err:  errors.ErrPathNotSpecified,
 			},
 		},
 	}
@@ -144,8 +153,8 @@ func TestOpen(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := Open(test.args.path, test.args.flg, test.args.perm)
-			if err := test.checkFunc(test.want, got); err != nil {
+			got, err := Open(test.args.path, test.args.flg, test.args.perm)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
