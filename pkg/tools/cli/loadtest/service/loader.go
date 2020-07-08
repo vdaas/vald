@@ -188,14 +188,14 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 			eg.Go(safety.RecoverFunc(func() error {
 				// TODO: related to #557
 				/*
-				_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-					st, err := l.loaderFunc(ctx, conn, nil, copts...)
-					if err != nil {
-						return nil, err
-					}
-					return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f)
-				})
-				 */
+					_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+						st, err := l.loaderFunc(ctx, conn, nil, copts...)
+						if err != nil {
+							return nil, err
+						}
+						return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f)
+					})
+				*/
 				eg.Go(safety.RecoverFunc(func() error {
 					conn, err := grpc.Dial(l.addr, grpc.WithInsecure())
 					if err != nil {
@@ -233,12 +233,12 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 				eg.Go(safety.RecoverFunc(func() error {
 					// TODO: related to #557
 					/*
-					_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-						res, err := l.loaderFunc(ctx, conn, r, copts...)
-						f(res, err)
-						return res, err
-					})
-					 */
+						_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+							res, err := l.loaderFunc(ctx, conn, r, copts...)
+							f(res, err)
+							return res, err
+						})
+					*/
 					conn, err := grpc.Dial(l.addr, grpc.WithInsecure())
 					if err != nil {
 						finalize(err)
