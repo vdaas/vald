@@ -18,6 +18,7 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
@@ -26,17 +27,19 @@ import (
 
 func TestNGT_Bind(t *testing.T) {
 	type fields struct {
-		IndexPath              string
-		Dimension              int
-		BulkInsertChunkSize    int
-		DistanceType           string
-		ObjectType             string
-		CreationEdgeSize       int
-		SearchEdgeSize         int
-		AutoIndexDurationLimit string
-		AutoIndexCheckDuration string
-		AutoIndexLength        int
-		EnableInMemoryMode     bool
+		IndexPath               string
+		Dimension               int
+		BulkInsertChunkSize     int
+		DistanceType            string
+		ObjectType              string
+		CreationEdgeSize        int
+		SearchEdgeSize          int
+		AutoIndexDurationLimit  string
+		AutoIndexCheckDuration  string
+		AutoSaveIndexDuration   string
+		AutoIndexLength         int
+		InitialDelayMaxDuration string
+		EnableInMemoryMode      bool
 	}
 	type want struct {
 		want *NGT
@@ -56,51 +59,100 @@ func TestNGT_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           IndexPath: "",
-		           Dimension: 0,
-		           BulkInsertChunkSize: 0,
-		           DistanceType: "",
-		           ObjectType: "",
-		           CreationEdgeSize: 0,
-		           SearchEdgeSize: 0,
-		           AutoIndexDurationLimit: "",
-		           AutoIndexCheckDuration: "",
-		           AutoIndexLength: 0,
-		           EnableInMemoryMode: false,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           IndexPath: "",
-		           Dimension: 0,
-		           BulkInsertChunkSize: 0,
-		           DistanceType: "",
-		           ObjectType: "",
-		           CreationEdgeSize: 0,
-		           SearchEdgeSize: 0,
-		           AutoIndexDurationLimit: "",
-		           AutoIndexCheckDuration: "",
-		           AutoIndexLength: 0,
-		           EnableInMemoryMode: false,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return NGT when all fields contain no prefix/suffix symbol",
+			fields: fields{
+				IndexPath:               "config/ngt",
+				Dimension:               1000,
+				BulkInsertChunkSize:     100,
+				DistanceType:            "l2",
+				ObjectType:              "float",
+				CreationEdgeSize:        3,
+				SearchEdgeSize:          5,
+				AutoIndexDurationLimit:  "1h",
+				AutoIndexCheckDuration:  "30m",
+				AutoSaveIndexDuration:   "30m",
+				AutoIndexLength:         100,
+				InitialDelayMaxDuration: "1h",
+				EnableInMemoryMode:      false,
+			},
+			want: want{
+				want: &NGT{
+					IndexPath:               "config/ngt",
+					Dimension:               1000,
+					BulkInsertChunkSize:     100,
+					DistanceType:            "l2",
+					ObjectType:              "float",
+					CreationEdgeSize:        3,
+					SearchEdgeSize:          5,
+					AutoIndexDurationLimit:  "1h",
+					AutoIndexCheckDuration:  "30m",
+					AutoSaveIndexDuration:   "30m",
+					AutoIndexLength:         100,
+					InitialDelayMaxDuration: "1h",
+					EnableInMemoryMode:      false,
+				},
+			},
+		},
+		{
+			name: "return NGT with environment variable when it contains `_` as prefix and suffix",
+			fields: fields{
+				IndexPath:               "_indexPath_",
+				Dimension:               1000,
+				BulkInsertChunkSize:     100,
+				DistanceType:            "_distanceType_",
+				ObjectType:              "_objectType_",
+				CreationEdgeSize:        3,
+				SearchEdgeSize:          5,
+				AutoIndexDurationLimit:  "_autoIndexDurationLimit_",
+				AutoIndexCheckDuration:  "_autoIndexCheckDuration_",
+				AutoSaveIndexDuration:   "_autoSaveIndexDuration_",
+				AutoIndexLength:         100,
+				InitialDelayMaxDuration: "_initialDelayMaxDuration_",
+				EnableInMemoryMode:      false,
+			},
+			beforeFunc: func() {
+				_ = os.Setenv("indexPath", "config/ngt")
+				_ = os.Setenv("distanceType", "l2")
+				_ = os.Setenv("objectType", "float")
+				_ = os.Setenv("autoIndexDurationLimit", "1h")
+				_ = os.Setenv("autoIndexCheckDuration", "30m")
+				_ = os.Setenv("autoSaveIndexDuration", "30m")
+				_ = os.Setenv("initialDelayMaxDuration", "1h")
+			},
+			afterFunc: func() {
+				_ = os.Unsetenv("indexPath")
+				_ = os.Unsetenv("distanceType")
+				_ = os.Unsetenv("objectType")
+				_ = os.Unsetenv("autoIndexDurationLimit")
+				_ = os.Unsetenv("autoIndexCheckDuration")
+				_ = os.Unsetenv("autoSaveIndexDuration")
+				_ = os.Unsetenv("initialDelayMaxDuration")
+			},
+			want: want{
+				want: &NGT{
+					IndexPath:               "config/ngt",
+					Dimension:               1000,
+					BulkInsertChunkSize:     100,
+					DistanceType:            "l2",
+					ObjectType:              "float",
+					CreationEdgeSize:        3,
+					SearchEdgeSize:          5,
+					AutoIndexDurationLimit:  "1h",
+					AutoIndexCheckDuration:  "30m",
+					AutoSaveIndexDuration:   "30m",
+					AutoIndexLength:         100,
+					InitialDelayMaxDuration: "1h",
+					EnableInMemoryMode:      false,
+				},
+			},
+		},
+		{
+			name: "returns NGT when all fields are empty",
+			want: want{
+				want: new(NGT),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -115,17 +167,19 @@ func TestNGT_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &NGT{
-				IndexPath:              test.fields.IndexPath,
-				Dimension:              test.fields.Dimension,
-				BulkInsertChunkSize:    test.fields.BulkInsertChunkSize,
-				DistanceType:           test.fields.DistanceType,
-				ObjectType:             test.fields.ObjectType,
-				CreationEdgeSize:       test.fields.CreationEdgeSize,
-				SearchEdgeSize:         test.fields.SearchEdgeSize,
-				AutoIndexDurationLimit: test.fields.AutoIndexDurationLimit,
-				AutoIndexCheckDuration: test.fields.AutoIndexCheckDuration,
-				AutoIndexLength:        test.fields.AutoIndexLength,
-				EnableInMemoryMode:     test.fields.EnableInMemoryMode,
+				IndexPath:               test.fields.IndexPath,
+				Dimension:               test.fields.Dimension,
+				BulkInsertChunkSize:     test.fields.BulkInsertChunkSize,
+				DistanceType:            test.fields.DistanceType,
+				ObjectType:              test.fields.ObjectType,
+				CreationEdgeSize:        test.fields.CreationEdgeSize,
+				SearchEdgeSize:          test.fields.SearchEdgeSize,
+				AutoIndexDurationLimit:  test.fields.AutoIndexDurationLimit,
+				AutoIndexCheckDuration:  test.fields.AutoIndexCheckDuration,
+				AutoSaveIndexDuration:   test.fields.AutoSaveIndexDuration,
+				AutoIndexLength:         test.fields.AutoIndexLength,
+				InitialDelayMaxDuration: test.fields.InitialDelayMaxDuration,
+				EnableInMemoryMode:      test.fields.EnableInMemoryMode,
 			}
 
 			got := n.Bind()

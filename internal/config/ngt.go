@@ -59,6 +59,7 @@ type NGT struct {
 	EnableInMemoryMode bool `yaml:"enable_in_memory_mode" json:"enable_in_memory_mode"`
 }
 
+// Bind returns NGT object whose some string value is filed value or environment value.
 func (n *NGT) Bind() *NGT {
 	n.IndexPath = GetActualValue(n.IndexPath)
 	n.DistanceType = GetActualValue(n.DistanceType)
