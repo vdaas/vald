@@ -18,7 +18,7 @@
 package metadata
 
 const (
-	AgentMetadataFileName = "agent.json"
+	AgentMetadataFileName = "metadata.json"
 )
 
 type Metadata struct {

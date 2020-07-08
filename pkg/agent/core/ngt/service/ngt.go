@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/gob"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -132,7 +133,7 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 				m := make(map[string]uint32)
 				gob.Register(map[string]uint32{})
 				f, err := file.Open(
-					n.path+"/"+kvsFileName,
+					filepath.Join(n.path, kvsFileName),
 					os.O_RDONLY|os.O_SYNC,
 					os.ModePerm,
 				)
@@ -595,7 +596,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 				return true
 			})
 			f, err := file.Open(
-				n.path+"/"+kvsFileName,
+				filepath.Join(n.path, kvsFileName),
 				os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
 				os.ModePerm,
 			)
@@ -619,7 +620,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	}
 
 	f, err := file.Open(
-		n.path+"/"+metadata.AgentMetadataFileName,
+		filepath.Join(n.path, metadata.AgentMetadataFileName),
 		os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
 		os.ModePerm,
 	)
