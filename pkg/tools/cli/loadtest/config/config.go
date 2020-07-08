@@ -62,8 +62,12 @@ func (o Operation) String() string {
 	switch o {
 	case Insert:
 		return "Insert"
+	case StreamInsert:
+		return "StreamInsert"
 	case Search:
 		return "Search"
+	case StreamSearch:
+		return "StreamSearch"
 	default:
 		return "Unknown operation"
 	}

@@ -78,6 +78,9 @@ func objectVectorsProvider(dataset assets.Dataset, n int) (func() interface{}, i
 			}
 			v = append(v, d.(*payload.Object_Vector))
 		}
+		if len(v) == 0 {
+			return nil
+		}
 		return &payload.Object_Vectors{
 			Vectors: v,
 		}

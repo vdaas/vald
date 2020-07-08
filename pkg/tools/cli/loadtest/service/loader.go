@@ -27,10 +27,12 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net/grpc"
+	igrpc "github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
+
+	"google.golang.org/grpc" // TODO: related to #557
 )
 
 // Loader is representation of load test
@@ -45,7 +47,7 @@ type (
 
 type loader struct {
 	eg               errgroup.Group
-	client           grpc.Client
+	client           igrpc.Client
 	addr             string
 	concurrency      int
 	batchSize        int
@@ -135,7 +137,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 		return float64(count) / t2.Sub(t1).Seconds()
 	}
 	progress := func() {
-		log.Infof("progress %d requests, %f[vps]", pgCnt, vps(int(pgCnt)*l.batchSize, start, time.Now()))
+		log.Infof("progress %d requests, %f[vps], error: %d", pgCnt, vps(int(pgCnt)*l.batchSize, start, time.Now()), errCnt)
 	}
 
 	f := func(i interface{}, err error) {
@@ -184,6 +186,8 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 
 			start = time.Now()
 			eg.Go(safety.RecoverFunc(func() error {
+				// TODO: related to #557
+				/*
 				_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 					st, err := l.loaderFunc(ctx, conn, nil, copts...)
 					if err != nil {
@@ -191,6 +195,26 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 					}
 					return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f)
 				})
+				 */
+				eg.Go(safety.RecoverFunc(func() error {
+					conn, err := grpc.Dial(l.addr, grpc.WithInsecure())
+					if err != nil {
+						finalize(err)
+						return nil
+					}
+					defer func() {
+						finalize(conn.Close())
+					}()
+					st, err := l.loaderFunc(egctx, conn, nil)
+					if err != nil {
+						finalize(err)
+						return nil
+					}
+					if err := igrpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f); err != nil {
+						finalize(err)
+					}
+					return nil
+				}))
 				if err != nil {
 					finalize(err)
 				}
@@ -207,14 +231,28 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 					break
 				}
 				eg.Go(safety.RecoverFunc(func() error {
+					// TODO: related to #557
+					/*
 					_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 						res, err := l.loaderFunc(ctx, conn, r, copts...)
 						f(res, err)
 						return res, err
 					})
+					 */
+					conn, err := grpc.Dial(l.addr, grpc.WithInsecure())
+					if err != nil {
+						finalize(err)
+						return nil
+					}
+					defer func() {
+						finalize(conn.Close())
+					}()
+					res, err := l.loaderFunc(ctx, conn, r)
+					f(res, err)
 					if err != nil {
 						finalize(err)
 					}
+
 					return nil
 				}))
 			}
