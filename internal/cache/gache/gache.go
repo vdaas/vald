@@ -36,9 +36,6 @@ func New(opts ...Option) (c *cache) {
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(c)
 	}
-	if c.gache == nil {
-		c.gache = gache.New()
-	}
 	c.gache.SetDefaultExpire(c.expireDur)
 	if c.expiredHook != nil {
 		c.gache = c.gache.

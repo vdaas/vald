@@ -27,7 +27,9 @@ import (
 type Option func(*cache)
 
 var (
-	defaultOpts = []Option{}
+	defaultOpts = []Option{
+		WithGache(gache.New()),
+	}
 )
 
 func WithGache(g gache.Gache) Option {
