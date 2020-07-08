@@ -1266,6 +1266,9 @@ agent:
     # @schema {"name": "agent.ngt.enable_in_memory_mode", "type": "boolean"}
     # agent.ngt.enable_in_memory_mode -- in-memory mode enabled
     enable_in_memory_mode: true
+    # @schema {"name": "agent.ngt.default_pool_size", "type": "integer"}
+    # agent.ngt.default_pool_size -- default create index batch pool size
+    default_pool_size: 10000
   # @schema {"name": "agent.sidecar", "type": "object"}
   sidecar:
     # @schema {"name": "agent.sidecar.enabled", "type": "boolean"}

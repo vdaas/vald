@@ -37,7 +37,7 @@ var (
 		WithDimension(0),
 		WithDefaultRadius(-1.0),
 		WithDefaultEpsilon(0.01),
-		WithDefaultPoolSize(1),
+		WithDefaultPoolSize(10000),
 		WithCreationEdgeSize(10),
 		WithSearchEdgeSize(40),
 		WithObjectType(Float),

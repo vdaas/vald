@@ -57,6 +57,9 @@ type NGT struct {
 
 	// EnableInMemoryMode enables on memory ngt indexing mode
 	EnableInMemoryMode bool `yaml:"enable_in_memory_mode" json:"enable_in_memory_mode"`
+
+	// DefaultPoolSize represent default create index batch pool size
+	DefaultPoolSize uint32 `yaml:"default_pool_size" json:"default_pool_size"`
 }
 
 // Bind returns NGT object whose some string value is filed value or environment value.
