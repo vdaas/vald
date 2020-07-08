@@ -43,7 +43,7 @@ func New(opts ...Option) (*Config, error) {
 	var err error
 	c := new(credentials)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions(), opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -51,50 +51,6 @@ func New(opts ...Option) (*Config, error) {
 
 	if c.cert == "" || c.key == "" {
 		return nil, errors.ErrTLSCertOrKeyNotFound
-	}
-
-	if c.cfg == nil {
-		c.cfg = &tls.Config{
-			MinVersion: tls.VersionTLS12,
-			NextProtos: []string{
-				"http/1.1",
-				"h2",
-			},
-			CurvePreferences: []tls.CurveID{
-				tls.CurveP521,
-				tls.CurveP384,
-				tls.CurveP256,
-				tls.X25519,
-			},
-			SessionTicketsDisabled: true,
-			// PreferServerCipherSuites: true,
-			// CipherSuites: []uint16{
-			// tls.TLS_RSA_WITH_RC4_128_SHA,
-			// tls.TLS_RSA_WITH_AES_128_CBC_SHA,
-			// tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-			// tls.TLS_RSA_WITH_AES_128_CBC_SHA256,
-			// tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
-			// tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
-			// tls.TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
-			// tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
-			// tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
-			// tls.TLS_ECDHE_RSA_WITH_RC4_128_SHA,
-			// tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
-			// tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
-			// tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-			// tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
-			// tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
-			// tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-			// tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-			// tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-			// tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, // Maybe this is work on TLS 1.2
-			// tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA, // TLS1.3 Feature
-			// tls.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA, // TLS1.3 Feature
-			// tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305, // Go 1.8 only
-			// tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, // Go 1.8 only
-			// },
-			ClientAuth: tls.NoClientCert,
-		}
 	}
 
 	c.cfg.Certificates = make([]tls.Certificate, 1)
@@ -119,53 +75,9 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 	var err error
 	c := new(credentials)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions(), opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-		}
-	}
-
-	if c.cfg == nil {
-		c.cfg = &tls.Config{
-			MinVersion: tls.VersionTLS12,
-			NextProtos: []string{
-				"http/1.1",
-				"h2",
-			},
-			CurvePreferences: []tls.CurveID{
-				tls.CurveP521,
-				tls.CurveP384,
-				tls.CurveP256,
-				tls.X25519,
-			},
-			SessionTicketsDisabled: true,
-			// PreferServerCipherSuites: true,
-			// CipherSuites: []uint16{
-			// tls.TLS_RSA_WITH_RC4_128_SHA,
-			// tls.TLS_RSA_WITH_AES_128_CBC_SHA,
-			// tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-			// tls.TLS_RSA_WITH_AES_128_CBC_SHA256,
-			// tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
-			// tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
-			// tls.TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
-			// tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
-			// tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
-			// tls.TLS_ECDHE_RSA_WITH_RC4_128_SHA,
-			// tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
-			// tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
-			// tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-			// tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
-			// tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
-			// tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-			// tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-			// tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-			// tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, // Maybe this is work on TLS 1.2
-			// tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA, // TLS1.3 Feature
-			// tls.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA, // TLS1.3 Feature
-			// tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305, // Go 1.8 only
-			// tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, // Go 1.8 only
-			// },
-			ClientAuth: tls.NoClientCert,
 		}
 	}
 
