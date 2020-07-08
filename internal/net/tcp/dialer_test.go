@@ -44,14 +44,14 @@ import (
 var (
 	goleakIgnoreOptions = []goleak.Option{
 		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-		goleak.IgnoreTopFunction("github.com/kpango/gache.(*gache).StartExpired.func1"),
 		goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
+		goleak.IgnoreTopFunction("net._C2func_getaddrinfo"),
 	}
 )
 
 func init() {
-	log.Init()
 }
+
 func Test_dialerCache_GetIP(t *testing.T) {
 	type fields struct {
 		ips []string
@@ -273,7 +273,7 @@ func TestNewDialer(t *testing.T) {
 				}
 				return !(x == nil && y != nil) || !(y == nil && x != nil)
 			}),
-			cmp.Comparer(func(x, y tls.Config) bool {
+			cmp.Comparer(func(x, y *tls.Config) bool {
 				return reflect.DeepEqual(x, y)
 			}),
 		}
@@ -768,7 +768,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 					}
 
 					// sleep and wait the cache update
-					time.Sleep(420 * time.Millisecond)
+					time.Sleep(500 * time.Millisecond)
 
 					// get again and check if the cache is updated
 					val, ok = d.cache.Get(addr)
@@ -827,7 +827,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 					}
 
 					// sleep and wait the cache removed
-					time.Sleep(420 * time.Millisecond)
+					time.Sleep(500 * time.Millisecond)
 
 					// get again and check if the cache deleted
 					if _, ok := d.cache.Get(addr); ok {
@@ -842,6 +842,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 		}(),
 	}
 
+	log.Init()
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
@@ -1179,7 +1180,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			cache, _ := cache.New()
 			cache.Set(addr, &dialerCache{
 				ips: []string{
-					"invalid_ip",
+					addr,
 				},
 			})
 
@@ -1302,7 +1303,9 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					dc := c.(*dialerCache)
 
 					check := func(gotConn net.Conn, gotErr error, cnt int, port string) error {
-						defer gotConn.Close()
+						defer func() {
+							_ = gotConn.Close()
+						}()
 
 						if gotErr != nil {
 							return errors.Errorf("err is not nil: %v", gotErr)
