@@ -33,7 +33,6 @@ type Operation uint8
 const (
 	UnknownOperation Operation = iota
 	Insert
-	BulkInsert
 	StreamInsert
 	Search
 	StreamSearch
@@ -44,8 +43,6 @@ func OperationMethod(s string) Operation {
 	switch strings.ToLower(s) {
 	case "insert":
 		return Insert
-	case "bulkinsert":
-		return BulkInsert
 	case "streaminsert":
 		return StreamInsert
 	case "search":

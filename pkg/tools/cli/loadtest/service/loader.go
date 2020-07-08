@@ -80,7 +80,7 @@ func NewLoader(opts ...Option) (Loader, error) {
 	case config.StreamSearch:
 		l.loaderFunc, err = l.newStreamSearch()
 	default:
-		err = errors.Errorf("undefined method: %s", l.operation.String())
+		err = errors.Errorf("undefined operation: %s", l.operation.String())
 	}
 	if err != nil {
 		return nil, err
@@ -196,26 +196,20 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 						return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f)
 					})
 				*/
-				eg.Go(safety.RecoverFunc(func() error {
-					conn, err := grpc.Dial(l.addr, grpc.WithInsecure())
-					if err != nil {
-						finalize(err)
-						return nil
-					}
-					defer func() {
-						finalize(conn.Close())
-					}()
-					st, err := l.loaderFunc(egctx, conn, nil)
-					if err != nil {
-						finalize(err)
-						return nil
-					}
-					if err := igrpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f); err != nil {
-						finalize(err)
-					}
-					return nil
-				}))
+				conn, err := grpc.Dial(l.addr, grpc.WithInsecure())
 				if err != nil {
+					finalize(err)
+					return nil
+				}
+				defer func() {
+					finalize(conn.Close())
+				}()
+				st, err := l.loaderFunc(egctx, conn, nil)
+				if err != nil {
+					finalize(err)
+					return nil
+				}
+				if err := igrpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f); err != nil {
 					finalize(err)
 				}
 				return nil
