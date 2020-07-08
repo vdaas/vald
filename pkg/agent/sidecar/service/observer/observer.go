@@ -32,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/file/watch"
 	ctxio "github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/metadata"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
@@ -139,12 +140,22 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 		return nil
 	}
 
-	ticker := time.NewTicker(o.postStopTimeout / 5)
+	ticker := time.NewTicker(func() time.Duration {
+		if o.postStopTimeout/5 < 2*time.Second {
+			return o.postStopTimeout / 5
+		}
+		return 2 * time.Second
+	}())
 	defer ticker.Stop()
 
 	t := time.Now()
 
 	f := func(ctx context.Context, name string) error {
+		if name == filepath.Join(o.dir, metadata.AgentMetadataFileName) {
+			t = time.Now().Add(-o.postStopTimeout)
+			return nil
+		}
+
 		t = time.Now()
 		return nil
 	}
@@ -268,6 +279,10 @@ func (o *observer) onWrite(ctx context.Context, name string) error {
 		}
 	}()
 
+	if name != filepath.Join(o.dir, metadata.AgentMetadataFileName) {
+		return nil
+	}
+
 	return o.requestBackup(ctx)
 }
 
@@ -278,6 +293,10 @@ func (o *observer) onCreate(ctx context.Context, name string) error {
 			span.End()
 		}
 	}()
+
+	if name != filepath.Join(o.dir, metadata.AgentMetadataFileName) {
+		return nil
+	}
 
 	return o.requestBackup(ctx)
 }

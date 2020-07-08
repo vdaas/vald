@@ -1080,7 +1080,7 @@ agent:
   revisionHistoryLimit: 2
   # @schema {"name": "agent.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
   # agent.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
-  terminationGracePeriodSeconds: 120
+  terminationGracePeriodSeconds: 600
   # @schema {"name": "agent.podManagementPolicy", "type": "string", "enum": ["OrderedReady", "Parallel"]}
   # agent.podManagementPolicy -- pod management policy: OrderedReady or Parallel
   podManagementPolicy: OrderedReady
@@ -1379,8 +1379,8 @@ agent:
       # agent.sidecar.config.auto_backup_duration -- auto backup duration
       auto_backup_duration: 10m
       # @schema {"name": "agent.sidecar.config.post_stop_timeout", "type": "string"}
-      # agent.sidecar.config.post_stop_timeout -- timeout duration for file changing during post stop
-      post_stop_timeout: 20s
+      # agent.sidecar.config.post_stop_timeout -- timeout for observing file changes during post stop
+      post_stop_timeout: 2m
       # @schema {"name": "agent.sidecar.config.filename", "type": "string"}
       # agent.sidecar.config.filename -- backup filename
       filename: _MY_POD_NAME_
