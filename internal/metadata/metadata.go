@@ -26,5 +26,5 @@ type Metadata struct {
 }
 
 type NGT struct {
-	IndexCount int64 `json:"index_count" yaml:"index_count"`
+	IndexCount uint64 `json:"index_count" yaml:"index_count"`
 }
