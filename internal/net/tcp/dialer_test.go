@@ -49,9 +49,6 @@ var (
 	}
 )
 
-func init() {
-}
-
 func Test_dialerCache_GetIP(t *testing.T) {
 	type fields struct {
 		ips []string

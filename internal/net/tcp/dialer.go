@@ -141,7 +141,6 @@ func (d *dialer) lookup(ctx context.Context, host string) (*dialerCache, error) 
 	dc := &dialerCache{
 		ips: make([]string, 0, len(r)),
 	}
-
 	for _, ip := range r {
 		dc.ips = append(dc.ips, ip.String())
 	}
