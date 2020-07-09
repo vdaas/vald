@@ -151,7 +151,7 @@ func Test_watch_init(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns (nil, error) when watcher.Add returns no such file or directory",
+			name: "returns no such file or directory error when file not exists",
 			fields: fields{
 				dirs: map[string]struct{}{
 					"vald.go": struct{}{},
@@ -163,10 +163,37 @@ func Test_watch_init(t *testing.T) {
 		},
 
 		{
-			name: "returns (*watch, nil) when no error occurs internally",
+			name: "returns no such file or directory error when directory not exists",
+			fields: fields{
+				dirs: map[string]struct{}{
+					"test": struct{}{},
+				},
+			},
+			want: want{
+				err: syscall.Errno(0x2),
+			},
+		},
+
+		{
+			name: "returns no such file or directory error when some file not exists",
 			fields: fields{
 				dirs: map[string]struct{}{
 					"watch.go": struct{}{},
+					"vald.go":  struct{}{},
+				},
+			},
+			want: want{
+				err: syscall.Errno(0x2),
+			},
+		},
+
+		{
+			name: "returns nil when initialize success",
+			fields: fields{
+				dirs: map[string]struct{}{
+					"../watch":      struct{}{},
+					"watch.go":      struct{}{},
+					"watch_test.go": struct{}{},
 				},
 			},
 			checkFunc: func(w want, got *watch, err error) error {
@@ -256,7 +283,7 @@ func Test_watch_Start(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			return test{
-				name: "returns (chan error, nil) but channel contains error when w.w.Errors contains error and w.init returns error",
+				name: "returns channel with error when watcher closed and initialize fails",
 				args: args{
 					ctx: ctx,
 				},
@@ -297,12 +324,13 @@ func Test_watch_Start(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			return test{
-				name: "returns (chan error, nil) but channel contains error when w.OnChange is not nil and w.Write returns error",
+				name: "return channel with error when the write event occurs and onChange and onWrite hook returns error",
 				args: args{
 					ctx: ctx,
 				},
 				fieldsFunc: func(t *testing.T) fields {
 					t.Helper()
+
 					w, err := fsnotify.NewWatcher()
 					if err != nil {
 						t.Fatal(err)
@@ -350,7 +378,7 @@ func Test_watch_Start(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			return test{
-				name: "returns (chan error, nil) but channel contains error when w.Write returns error",
+				name: "return channel with error when onWrite hook return error and send to returned channel",
 				args: args{
 					ctx: ctx,
 				},
@@ -396,7 +424,7 @@ func Test_watch_Start(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			return test{
-				name: "returns (chan error, nil) but channel contains error when w.Create returns error",
+				name: "return channel with error when onCreate hook return error and send to returned channel",
 				args: args{
 					ctx: ctx,
 				},
@@ -442,7 +470,7 @@ func Test_watch_Start(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			return test{
-				name: "returns (chan error, nil) but channel contains error when w.Delete returns error",
+				name: "return channel with error when onDelete hook return error and send to returned channel",
 				args: args{
 					ctx: ctx,
 				},
@@ -488,7 +516,7 @@ func Test_watch_Start(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			return test{
-				name: "returns (chan error, nil) but channel contains error when w.Chmod returns error",
+				name: "return channel with error when onChmod hook return error and send to returned channel",
 				args: args{
 					ctx: ctx,
 				},
@@ -534,7 +562,7 @@ func Test_watch_Start(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			return test{
-				name: "returns (chan error, nil) but channel contains error when w.Rename returns error",
+				name: "return channel with error when onRename hook return error and send to returned channel",
 				args: args{
 					ctx: ctx,
 				},
@@ -569,6 +597,64 @@ func Test_watch_Start(t *testing.T) {
 					want: func() chan error {
 						ch := make(chan error, 1)
 						ch <- errors.New("err")
+						close(ch)
+						return ch
+					}(),
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "return channel with error when onWrite and onRename hook return error and send to returned channel",
+				args: args{
+					ctx: ctx,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					w, err := fsnotify.NewWatcher()
+					if err != nil {
+						t.Fatal(err)
+					}
+					w.Events = make(chan fsnotify.Event, 2)
+
+					w.Events <- fsnotify.Event{
+						Name: "watch.go",
+						Op:   fsnotify.Write,
+					}
+
+					w.Events <- fsnotify.Event{
+						Name: "watch.go",
+						Op:   fsnotify.Rename,
+					}
+
+					return fields{
+						w:  w,
+						eg: errgroup.Get(),
+						onWrite: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onWrite name got = %s, want %s", got, want)
+							}
+							return errors.New("err1")
+						},
+						onRename: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onRename name got = %s, want %s", got, want)
+							}
+							return errors.New("err2")
+						},
+					}
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					want: func() chan error {
+						ch := make(chan error, 2)
+						ch <- errors.New("err1")
+						ch <- errors.New("err2")
 						close(ch)
 						return ch
 					}(),
@@ -664,18 +750,22 @@ func Test_watch_Add(t *testing.T) {
 			name: "returns nil when add success",
 			args: args{
 				dirs: []string{
-					"./watch.go", "./option.go",
+					"./watch.go",
+					"./option.go",
 				},
 			},
 			fields: fields{
-				dirs: make(map[string]struct{}),
+				dirs: map[string]struct{}{
+					"watch_test.go": struct{}{},
+				},
 			},
 			want: want{
 				err: nil,
 				want: &watch{
 					dirs: map[string]struct{}{
-						"./watch.go":  struct{}{},
-						"./option.go": struct{}{},
+						"watch_test.go": struct{}{},
+						"./watch.go":    struct{}{},
+						"./option.go":   struct{}{},
 					},
 				},
 			},
@@ -702,30 +792,10 @@ func Test_watch_Add(t *testing.T) {
 		},
 
 		{
-			name: "returns nil when same file add and add success",
+			name: "returns no such file or directory error when some file not exists",
 			args: args{
 				dirs: []string{
-					"./watch.go", "../watch/watch.go",
-				},
-			},
-			fields: fields{
-				dirs: make(map[string]struct{}),
-			},
-			want: want{
-				err: nil,
-				want: &watch{
-					dirs: map[string]struct{}{
-						"./watch.go":        struct{}{},
-						"../watch/watch.go": struct{}{},
-					},
-				},
-			},
-		},
-
-		{
-			name: "returns no such file or directory error when file not exists",
-			args: args{
-				dirs: []string{
+					"watch.go",
 					"vald.go",
 				},
 			},
@@ -735,7 +805,9 @@ func Test_watch_Add(t *testing.T) {
 			want: want{
 				err: syscall.Errno(0x2),
 				want: &watch{
-					dirs: make(map[string]struct{}),
+					dirs: map[string]struct{}{
+						"watch.go": struct{}{},
+					},
 				},
 			},
 		},
@@ -825,25 +897,29 @@ func Test_watch_Remove(t *testing.T) {
 			name: "returns nil when remove success",
 			args: args{
 				dirs: []string{
-					"watch.go", "watch_test.go",
+					"watch.go",
+					"watch_test.go",
 				},
 			},
 			fields: fields{
 				dirs: map[string]struct{}{
 					"watch.go":      struct{}{},
 					"watch_test.go": struct{}{},
+					"option.go":     struct{}{},
 				},
 			},
 			want: want{
 				want: &watch{
-					dirs: map[string]struct{}{},
+					dirs: map[string]struct{}{
+						"option.go": struct{}{},
+					},
 				},
 				err: nil,
 			},
 		},
 
 		{
-			name: "returns nil when dirs is directory and remove success",
+			name: "returns nil when directory remove success",
 			args: args{
 				dirs: []string{
 					"../watch",
@@ -863,10 +939,12 @@ func Test_watch_Remove(t *testing.T) {
 		},
 
 		{
-			name: "returns non-exist error when the file not exists",
+			name: "returns non-exist error when some file not exists",
 			args: args{
 				dirs: []string{
-					"watch.go", "vald.go", "watch_test.go",
+					"watch.go",
+					"vald.go",
+					"watch_test.go",
 				},
 			},
 			fields: fields{
@@ -967,6 +1045,7 @@ func Test_watch_Stop(t *testing.T) {
 			},
 			fields: fields{
 				dirs: map[string]struct{}{
+					"../watch":      struct{}{},
 					"watch.go":      struct{}{},
 					"watch_test.go": struct{}{},
 				},
