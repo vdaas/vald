@@ -25,7 +25,7 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/vdaas/vald/internal/json"
+	"github.com/vdaas/vald/internal/encoding/json"
 	yaml "gopkg.in/yaml.v2"
 )
 
