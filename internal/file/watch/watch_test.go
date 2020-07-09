@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 	"syscall"
 	"testing"
 
@@ -36,6 +37,7 @@ var (
 	goleakIgnoreOptions = []goleak.Option{
 		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
 		goleak.IgnoreTopFunction("syscall.Syscall6"),
+		goleak.IgnoreTopFunction("syscall.syscall6"),
 	}
 )
 
@@ -862,8 +864,18 @@ func Test_watch_Remove(t *testing.T) {
 		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+		if w.err == nil {
+			if err != nil {
+				return errors.Errorf("got error is not nil: %v", err)
+			}
+		} else {
+			if err == nil {
+				return errors.New("got error is nil")
+			}
+
+			if !strings.Contains(err.Error(), w.err.Error()) {
+				return errors.Errorf("got error  %v, not contains: %v", err, w.err.Error())
+			}
 		}
 
 		if got, want := len(got.dirs), len(w.want.dirs); got != want {
@@ -959,7 +971,7 @@ func Test_watch_Remove(t *testing.T) {
 						"watch_test.go": struct{}{},
 					},
 				},
-				err: fmt.Errorf("can't remove non-existent inotify watch for: vald.go"),
+				err: fmt.Errorf("can't remove non-existent"),
 			},
 		},
 	}
@@ -1014,9 +1026,20 @@ func Test_watch_Stop(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+		if w.err == nil {
+			if err != nil {
+				return errors.Errorf("got error is not nil: %v", err)
+			}
+		} else {
+			if err == nil {
+				return errors.New("got error is nil")
+			}
+
+			if !strings.Contains(err.Error(), w.err.Error()) {
+				return errors.Errorf("got error  %v, not contains: %v", err, w.err.Error())
+			}
 		}
+
 		if got, want := len(got.dirs), len(w.want.dirs); got != want {
 			return errors.Errorf("dirs length = %d, want %d", got, want)
 		}
@@ -1083,7 +1106,7 @@ func Test_watch_Stop(t *testing.T) {
 				want: &watch{
 					dirs: make(map[string]struct{}),
 				},
-				err: fmt.Errorf("can't remove non-existent inotify watch for: watch.go"),
+				err: fmt.Errorf("can't remove non-existent"),
 			},
 		},
 	}
