@@ -161,14 +161,14 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request,
 }
 
 // Request sends http json request.
-func Request(ctx context.Context, method string, url string, payloyd interface{}, data interface{}) error {
+func Request(ctx context.Context, method, url string, payload, data interface{}) error {
 	req, err := http.NewRequestWithContext(ctx, method, url, nil)
 	if err != nil {
 		return err
 	}
 
-	if payloyd != nil && method != http.MethodGet {
-		if err := EncodeRequest(req, payloyd, rest.ApplicationJSON, rest.CharsetUTF8); err != nil {
+	if payload != nil && method != http.MethodGet {
+		if err := EncodeRequest(req, payload, rest.ApplicationJSON, rest.CharsetUTF8); err != nil {
 			return err
 		}
 	}

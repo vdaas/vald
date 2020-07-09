@@ -252,7 +252,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	}))
 
 	eg.Go(safety.RecoverFunc(func() (err error) {
-		if len(n.path) != 0 && !n.inMem {
+		if n.path != "" && !n.inMem {
 			gob.Register(map[string]uint32{})
 			f, err := file.Open(
 				filepath.Join(n.path, kvsFileName),
@@ -653,7 +653,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	eg, ctx := errgroup.New(ctx)
 
 	eg.Go(safety.RecoverFunc(func() error {
-		if len(n.path) != 0 {
+		if n.path != "" {
 			m := make(map[string]uint32, n.kvs.Len())
 			var mu sync.Mutex
 			n.kvs.Range(ctx, func(key string, id uint32) bool {
