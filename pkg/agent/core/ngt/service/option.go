@@ -17,6 +17,7 @@
 package service
 
 import (
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -62,7 +63,7 @@ func WithEnableInMemoryMode(enabled bool) Option {
 
 func WithIndexPath(path string) Option {
 	return func(n *ngt) error {
-		n.path = strings.TrimSuffix(path, "/")
+		n.path = filepath.Clean(strings.TrimSuffix(path, "/"))
 
 		return WithNGTOpts(core.WithIndexPath(n.path))(n)
 	}
