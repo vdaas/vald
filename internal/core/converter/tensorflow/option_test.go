@@ -507,17 +507,14 @@ func TestWithLoadFunc(t *testing.T) {
 			cmp.AllowUnexported(tensorflow{}),
 			cmp.AllowUnexported(OutputSpec{}),
 			cmpopts.IgnoreFields(tensorflow{}, "loadFunc"),
+			cmp.Comparer(func(want, obj T) bool {
+				p1 := reflect.ValueOf(want).FieldByName("loadFunc").Pointer()
+				p2 := reflect.ValueOf(obj).FieldByName("loadFunc").Pointer()
+				return p1 == p2
+			}),
 		}
 		if diff := cmp.Diff(w.obj, obj, opts...); diff != "" {
 			return errors.Errorf("err: %s", diff)
-		}
-		opt := cmp.Comparer(func(want, obj T) bool {
-			p1 := reflect.ValueOf(want).FieldByName("loadFunc").Pointer()
-			p2 := reflect.ValueOf(obj).FieldByName("loadFunc").Pointer()
-			return p1 == p2
-		})
-		if !cmp.Equal(w.obj, obj, opt) {
-			return errors.Errorf("got = %v, want = %v", obj, w.obj)
 		}
 		return nil
 	}

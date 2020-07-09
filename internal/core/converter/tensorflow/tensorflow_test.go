@@ -57,17 +57,14 @@ func TestNew(t *testing.T) {
 			cmp.AllowUnexported(tensorflow{}),
 			cmp.AllowUnexported(OutputSpec{}),
 			cmpopts.IgnoreFields(tensorflow{}, "loadFunc"),
+			cmp.Comparer(func(want, got TF) bool {
+				p1 := reflect.ValueOf(want).Elem().FieldByName("loadFunc").Pointer()
+				p2 := reflect.ValueOf(got).Elem().FieldByName("loadFunc").Pointer()
+				return p1 == p2
+			}),
 		}
 		if diff := cmp.Diff(w.want, got, opts...); diff != "" {
 			return errors.Errorf("err: %s", diff)
-		}
-		opt := cmp.Comparer(func(want, got TF) bool {
-			p1 := reflect.ValueOf(want).Elem().FieldByName("loadFunc").Pointer()
-			p2 := reflect.ValueOf(got).Elem().FieldByName("loadFunc").Pointer()
-			return p1 == p2
-		})
-		if !cmp.Equal(w.want, got, opt) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
