@@ -1,0 +1,209 @@
+//
+// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+package service
+
+import (
+	"strings"
+	"time"
+
+	core "github.com/vdaas/vald/internal/core/ngt"
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/rand"
+	"github.com/vdaas/vald/internal/timeutil"
+)
+
+type Option func(n *ngt) error
+
+var (
+	defaultOpts = []Option{
+		WithErrGroup(errgroup.Get()),
+		WithAutoIndexCheckDuration("30m"),
+		WithAutoIndexDurationLimit("24h"),
+		WithAutoSaveIndexDuration("35m"),
+		WithAutoIndexLength(100),
+		WithInitialDelayMaxDuration("3m"),
+		WithMinLoadIndexTimeout("3m"),
+		WithMaxLoadIndexTimeout("10m"),
+		WithLoadIndexTimeoutFactor("1ms"),
+	}
+)
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(n *ngt) error {
+		if eg != nil {
+			n.eg = eg
+		}
+
+		return nil
+	}
+}
+
+func WithEnableInMemoryMode(enabled bool) Option {
+	return func(n *ngt) error {
+		n.inMem = enabled
+
+		return WithNGTOpts(core.WithInMemoryMode(n.inMem))(n)
+	}
+}
+
+func WithIndexPath(path string) Option {
+	return func(n *ngt) error {
+		n.path = strings.TrimSuffix(path, "/")
+
+		return WithNGTOpts(core.WithIndexPath(n.path))(n)
+	}
+}
+
+func WithAutoIndexCheckDuration(dur string) Option {
+	return func(n *ngt) error {
+		if dur == "" {
+			return nil
+		}
+
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+
+		n.dur = d
+
+		return nil
+	}
+}
+
+func WithAutoIndexDurationLimit(dur string) Option {
+	return func(n *ngt) error {
+		if dur == "" {
+			return nil
+		}
+
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+
+		n.lim = d
+
+		return nil
+	}
+}
+
+func WithAutoSaveIndexDuration(dur string) Option {
+	return func(n *ngt) error {
+		if dur == "" {
+			return nil
+		}
+
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+
+		n.sdur = d
+
+		return nil
+	}
+}
+
+func WithAutoIndexLength(l int) Option {
+	return func(n *ngt) error {
+		n.alen = l
+
+		return nil
+	}
+}
+
+func WithInitialDelayMaxDuration(dur string) Option {
+	return func(n *ngt) error {
+		if dur == "" {
+			return nil
+		}
+
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+
+		n.idelay = time.Duration(int64(rand.LimitedUint32(uint64(d/time.Second)))) * time.Second
+
+		return nil
+	}
+}
+
+func WithMinLoadIndexTimeout(dur string) Option {
+	return func(n *ngt) error {
+		if dur == "" {
+			return nil
+		}
+
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+
+		n.minLit = d
+
+		return nil
+	}
+}
+
+func WithMaxLoadIndexTimeout(dur string) Option {
+	return func(n *ngt) error {
+		if dur == "" {
+			return nil
+		}
+
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+
+		n.maxLit = d
+
+		return nil
+	}
+}
+
+func WithLoadIndexTimeoutFactor(dur string) Option {
+	return func(n *ngt) error {
+		if dur == "" {
+			return nil
+		}
+
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+
+		n.litFactor = d
+
+		return nil
+	}
+}
+
+func WithNGTOpts(opts ...core.Option) Option {
+	return func(n *ngt) error {
+		if n.ngtOpts == nil {
+			n.ngtOpts = opts
+			return nil
+		}
+
+		n.ngtOpts = append(n.ngtOpts, opts...)
+
+		return nil
+	}
+}
