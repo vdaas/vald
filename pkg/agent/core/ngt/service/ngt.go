@@ -31,10 +31,10 @@ import (
 
 	"github.com/vdaas/vald/internal/config"
 	core "github.com/vdaas/vald/internal/core/ngt"
+	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
-	"github.com/vdaas/vald/internal/json"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/metadata"
 	"github.com/vdaas/vald/internal/observability/trace"
