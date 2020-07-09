@@ -26,10 +26,12 @@ jobs:
         uses: actions/checkout@v1
         with:
           fetch-depth: 1
-      - name: Run tests for cmd packages
+      - name: Run tests for cmd packages / tparse
         run: |
           make test/cmd/tparse | tee tparse.txt | true
           cat tparse.txt
+      - name: Run tests for cmd packages
+        run: |
           make test/cmd
   test-internal:
     name: Run tests for internal packages
@@ -41,10 +43,12 @@ jobs:
         uses: actions/checkout@v1
         with:
           fetch-depth: 1
-      - name: Run tests for internal packages
+      - name: Run tests for internal packages / tparse
         run: |
           make test/internal/tparse | tee tparse.txt | true
           cat tparse.txt
+      - name: Run tests for internal packages
+        run: |
           make test/internal
   test-pkg:
     name: Run tests for pkg packages
@@ -56,8 +60,10 @@ jobs:
         uses: actions/checkout@v1
         with:
           fetch-depth: 1
-      - name: Run tests for pkg packages
+      - name: Run tests for pkg packages / tparse
         run: |
           make test/pkg/tparse | tee tparse.txt | true
           cat tparse.txt
+      - name: Run tests for pkg packages
+        run: |
           make test/pkg
