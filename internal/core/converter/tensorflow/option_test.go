@@ -508,7 +508,7 @@ func TestWithLoadFunc(t *testing.T) {
 			cmp.AllowUnexported(OutputSpec{}),
 			cmpopts.IgnoreFields(tensorflow{}, "loadFunc"),
 		}
-		if diff := cmp.Diff(w.obj, obj, opts...); len(diff) != 0 {
+		if diff := cmp.Diff(w.obj, obj, opts...); diff != "" {
 			return errors.Errorf("err: %s", diff)
 		}
 		opt := cmp.Comparer(func(want, obj T) bool {
