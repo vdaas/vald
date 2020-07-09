@@ -190,6 +190,36 @@ func Test_watch_init(t *testing.T) {
 		},
 
 		{
+			name: "returns nil when watcher already created and initialize success",
+			fields: fields{
+				dirs: map[string]struct{}{
+					"../watch":      struct{}{},
+					"watch.go":      struct{}{},
+					"watch_test.go": struct{}{},
+				},
+				w: func() *fsnotify.Watcher {
+					w, _ := fsnotify.NewWatcher()
+					return w
+				}(),
+			},
+			checkFunc: func(w want, got *watch, err error) error {
+				if !errors.Is(err, w.err) {
+					return errors.Errorf("got error = %v, want %v", err, w.err)
+				}
+				if got == nil {
+					return errors.New("got is nil")
+				}
+				if got.w == nil {
+					return errors.New("got w is nil")
+				}
+				return nil
+			},
+			want: want{
+				err: nil,
+			},
+		},
+
+		{
 			name: "returns nil when initialize success",
 			fields: fields{
 				dirs: map[string]struct{}{
