@@ -1321,7 +1321,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 						}
 
 						// read the output from the server and check if it is equals to the count
-						/*
+						/* TODO verify the connection is working
 							buf, err := ioutil.ReadAll(gotConn)
 							if err != nil {
 								return err
