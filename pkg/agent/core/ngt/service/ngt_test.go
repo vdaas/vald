@@ -20,94 +20,18 @@ package service
 import (
 	"context"
 	"reflect"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/internal/config"
 	core "github.com/vdaas/vald/internal/core/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
-
 	"go.uber.org/goleak"
 )
-
-func TestNew(t *testing.T) {
-	type args struct {
-		cfg *config.NGT
-	}
-	type want struct {
-		wantNn NGT
-		err    error
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, NGT, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotNn NGT, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(gotNn, w.wantNn) {
-			return errors.Errorf("got = %v, want %v", gotNn, w.wantNn)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           cfg: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           cfg: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			gotNn, err := New(test.args.cfg)
-			if err := test.checkFunc(test.want, gotNn, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
 
 func Test_ngt_Start(t *testing.T) {
 	type args struct {
@@ -3401,6 +3325,409 @@ func Test_ngt_Close(t *testing.T) {
 			}
 
 			err := n.Close(test.args.ctx)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func TestNew(t *testing.T) {
+	type args struct {
+		opts []Option
+	}
+	type want struct {
+		wantNn NGT
+		err    error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, NGT, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotNn NGT, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if !reflect.DeepEqual(gotNn, w.wantNn) {
+			return errors.Errorf("got = %v, want %v", gotNn, w.wantNn)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           opts: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           opts: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			gotNn, err := New(test.args.opts...)
+			if err := test.checkFunc(test.want, gotNn, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_ngt_initNGT(t *testing.T) {
+	type args struct {
+		opts []core.Option
+	}
+	type fields struct {
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		idelay    time.Duration
+		dcd       bool
+		ngtOpts   []core.Option
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           opts: nil,
+		       },
+		       fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           ivc: vcaches{},
+		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           path: "",
+		           idelay: nil,
+		           dcd: false,
+		           ngtOpts: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           opts: nil,
+		           },
+		           fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           ivc: vcaches{},
+		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           path: "",
+		           idelay: nil,
+		           dcd: false,
+		           ngtOpts: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
+				ngtOpts:   test.fields.ngtOpts,
+			}
+
+			err := n.initNGT(test.args.opts...)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_ngt_saveIndex(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	type fields struct {
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		idelay    time.Duration
+		dcd       bool
+		ngtOpts   []core.Option
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           ivc: vcaches{},
+		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           path: "",
+		           idelay: nil,
+		           dcd: false,
+		           ngtOpts: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           ivc: vcaches{},
+		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           path: "",
+		           idelay: nil,
+		           dcd: false,
+		           ngtOpts: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
+				ngtOpts:   test.fields.ngtOpts,
+			}
+
+			err := n.saveIndex(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
