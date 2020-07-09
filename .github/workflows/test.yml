@@ -28,6 +28,8 @@ jobs:
           fetch-depth: 1
       - name: Run tests for cmd packages
         run: |
+          make test/cmd/tparse | tee tparse.txt | true
+          cat tparse.txt
           make test/cmd
   test-internal:
     name: Run tests for internal packages
@@ -41,6 +43,8 @@ jobs:
           fetch-depth: 1
       - name: Run tests for internal packages
         run: |
+          make test/internal/tparse | tee tparse.txt | true
+          cat tparse.txt
           make test/internal
   test-pkg:
     name: Run tests for pkg packages
@@ -54,4 +58,6 @@ jobs:
           fetch-depth: 1
       - name: Run tests for pkg packages
         run: |
+          make test/pkg/tparse | tee tparse.txt | true
+          cat tparse.txt
           make test/pkg
