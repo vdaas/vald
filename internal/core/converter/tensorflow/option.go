@@ -17,14 +17,19 @@
 // Package tensorflow provides implementation of Go API for extract data to vector
 package tensorflow
 
+import (
+	tf "github.com/tensorflow/tensorflow/tensorflow/go"
+)
+
 // Option is tensorflow configure.
 type Option func(*tensorflow)
 
 var (
 	defaultOpts = []Option{
-		WithOperations(),        // set to default
-		WithSessionOptions(nil), // set to default
-		WithNdim(0),             // set to default
+		withLoadFunc(tf.LoadSavedModel), // set to default
+		WithOperations(),                // set to default
+		WithSessionOptions(nil),         // set to default
+		WithNdim(0),                     // set to default
 	}
 )
 
@@ -98,6 +103,15 @@ func WithTags(tags ...string) Option {
 			} else {
 				t.tags = tags
 			}
+		}
+	}
+}
+
+func withLoadFunc(
+	loadFunc func(exportDir string, tags []string, options *SessionOptions) (*tf.SavedModel, error)) Option {
+	return func(t *tensorflow) {
+		if loadFunc != nil {
+			t.loadFunc = loadFunc
 		}
 	}
 }

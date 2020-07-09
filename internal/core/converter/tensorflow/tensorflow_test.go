@@ -21,6 +21,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	tf "github.com/tensorflow/tensorflow/tensorflow/go"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
@@ -42,17 +44,29 @@ func TestNew(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	graph := tf.NewGraph()
-	session := &mockSession{
-		RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
-			return []*tf.Tensor{}, nil
-		},
+	savedModel := &tf.SavedModel{}
+	loadFunc := func(exportDir string, tags []string, options *SessionOptions) (*tf.SavedModel, error) {
+		return savedModel, nil
 	}
 	defaultCheckFunc := func(w want, got TF, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
+
+		opts := []cmp.Option{
+			cmp.AllowUnexported(tensorflow{}),
+			cmp.AllowUnexported(OutputSpec{}),
+			cmpopts.IgnoreFields(tensorflow{}, "loadFunc"),
+		}
+		if diff := cmp.Diff(w.want, got, opts...); len(diff) != 0 {
+			return errors.Errorf("err: %s", diff)
+		}
+		opt := cmp.Comparer(func(want, got TF) bool {
+			p1 := reflect.ValueOf(want).Elem().FieldByName("loadFunc").Pointer()
+			p2 := reflect.ValueOf(got).Elem().FieldByName("loadFunc").Pointer()
+			return p1 == p2
+		})
+		if !cmp.Equal(w.want, got, opt) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
@@ -60,63 +74,38 @@ func TestNew(t *testing.T) {
 	tests := []test{
 		{
 			name: "returns (t, nil) when opts is nil",
+			args: args{
+				opts: []Option{
+					withLoadFunc(loadFunc),
+				},
+			},
 			want: want{
 				want: &tensorflow{
-					session: (&tf.SavedModel{}).Session,
+					loadFunc: loadFunc,
+					graph:    savedModel.Graph,
+					session:  savedModel.Session,
 				},
 			},
 			beforeFunc: func(args args) {
 				defaultOpts = []Option{}
-				loadFunc = func(t *tensorflow) error {
-					t.graph = nil
-					t.session = (&tf.SavedModel{}).Session
-					return nil
-				}
 			},
 		},
 		{
 			name: "returns (t, nil) when args is not nil",
 			args: args{
 				opts: []Option{
-					WithSessionTarget("test"),
-					WithSessionConfig([]byte{}),
-					WithNdim(1),
-				},
-			},
-			want: want{
-				want: &tensorflow{
-					options: &tf.SessionOptions{
-						Target: "test",
-						Config: []byte{},
-					},
-					graph:   nil,
-					session: (&tf.SavedModel{}).Session,
-					ndim:    1,
-				},
-			},
-			beforeFunc: func(args args) {
-				defaultOpts = []Option{}
-				loadFunc = func(t *tensorflow) error {
-					t.graph = nil
-					t.session = (&tf.SavedModel{}).Session
-					return nil
-				}
-			},
-		},
-		{
-			name: "returns (t, nil) when args and warmupInputs are not nil",
-			args: args{
-				opts: []Option{
+					withLoadFunc(loadFunc),
 					WithFeed("test", 0),
 					WithFetch("test", 0),
 					WithSessionTarget("test"),
 					WithSessionConfig([]byte{}),
-					WithWarmupInputs("test"),
+					WithWarmupInputs(),
 					WithNdim(1),
 				},
 			},
 			want: want{
 				want: &tensorflow{
+					loadFunc: loadFunc,
 					feeds: []OutputSpec{
 						{
 							operationName: "test",
@@ -133,39 +122,37 @@ func TestNew(t *testing.T) {
 						Target: "test",
 						Config: []byte{},
 					},
-					graph:   graph,
-					session: session,
-					warmupInputs: []string{
-						"test",
-					},
-					ndim: 1,
+					graph:        savedModel.Graph,
+					session:      savedModel.Session,
+					warmupInputs: nil,
+					ndim:         1,
 				},
 			},
 			beforeFunc: func(args args) {
 				defaultOpts = []Option{}
-				loadFunc = func(t *tensorflow) error {
-					t.graph = graph
-					t.session = session
-					return nil
-				}
 			},
 		},
 		{
 			name: "returns (nil, error) when loadFunc function returns error",
+			args: args{
+				opts: []Option{
+					withLoadFunc(func(exportDir string, tags []string, options *SessionOptions) (*tf.SavedModel, error) {
+						return nil, errors.New("load error")
+					}),
+				},
+			},
 			want: want{
 				err: errors.New("load error"),
 			},
 			beforeFunc: func(args args) {
 				defaultOpts = []Option{}
-				loadFunc = func(t *tensorflow) error {
-					return errors.New("load error")
-				}
 			},
 		},
 		{
 			name: "returns (nil, error) when warmup error",
 			args: args{
 				opts: []Option{
+					withLoadFunc(loadFunc),
 					WithWarmupInputs("test"),
 				},
 			},
@@ -174,16 +161,13 @@ func TestNew(t *testing.T) {
 			},
 			beforeFunc: func(args args) {
 				defaultOpts = []Option{}
-				loadFunc = func(t *tensorflow) error {
-					return nil
-				}
 			},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -196,6 +180,100 @@ func TestNew(t *testing.T) {
 
 			got, err := New(test.args.opts...)
 			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_tensorflow_warmup(t *testing.T) {
+	type fields struct {
+		feeds        []OutputSpec
+		graph        *tf.Graph
+		session      session
+		warmupInputs []string
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return nil when warmupInputs is nil",
+			want: want{
+				err: nil,
+			},
+		},
+		{
+			name: "return nil when warmupInputs is not nil",
+			fields: fields{
+				feeds: []OutputSpec{
+					{
+						operationName: "test",
+						outputIndex:   0,
+					},
+				},
+				graph: tf.NewGraph(),
+				session: &mockSession{
+					RunFunc: func(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*tf.Operation) ([]*tf.Tensor, error) {
+						return []*tf.Tensor{}, nil
+					},
+				},
+				warmupInputs: []string{
+					"test",
+				},
+			},
+			want: want{
+				err: nil,
+			},
+		},
+		{
+			name: "return error",
+			fields: fields{
+				warmupInputs: []string{
+					"test",
+				},
+			},
+			want: want{
+				err: errors.ErrInputLength(1, 0),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			t := &tensorflow{
+				feeds:        test.fields.feeds,
+				graph:        test.fields.graph,
+				session:      test.fields.session,
+				warmupInputs: test.fields.warmupInputs,
+			}
+
+			err := t.warmup()
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -251,7 +329,7 @@ func Test_tensorflow_Close(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -372,7 +450,7 @@ func Test_tensorflow_run(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -606,7 +684,7 @@ func Test_tensorflow_GetVector(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -719,7 +797,7 @@ func Test_tensorflow_GetValue(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -808,7 +886,7 @@ func Test_tensorflow_GetValues(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

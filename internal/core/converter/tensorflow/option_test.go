@@ -21,6 +21,9 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	tf "github.com/tensorflow/tensorflow/tensorflow/go"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
@@ -71,7 +74,7 @@ func TestWithSessionOptions(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -140,7 +143,7 @@ func TestWithSessionTarget(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -209,7 +212,7 @@ func TestWithSessionConfig(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -294,7 +297,7 @@ func TestWithOperations(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -363,7 +366,7 @@ func TestWithExportPath(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -459,7 +462,7 @@ func TestWithTags(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -474,6 +477,92 @@ func TestWithTags(t *testing.T) {
 			obj := &T{
 				tags: test.fields.tags,
 			}
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithLoadFunc(t *testing.T) {
+	type T = tensorflow
+	type args struct {
+		loadFunc func(string, []string, *SessionOptions) (*tf.SavedModel, error)
+	}
+	type want struct {
+		obj *T
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T) error {
+		opts := []cmp.Option{
+			cmp.AllowUnexported(tensorflow{}),
+			cmp.AllowUnexported(OutputSpec{}),
+			cmpopts.IgnoreFields(tensorflow{}, "loadFunc"),
+		}
+		if diff := cmp.Diff(w.obj, obj, opts...); len(diff) != 0 {
+			return errors.Errorf("err: %s", diff)
+		}
+		opt := cmp.Comparer(func(want, obj T) bool {
+			p1 := reflect.ValueOf(want).FieldByName("loadFunc").Pointer()
+			p2 := reflect.ValueOf(obj).FieldByName("loadFunc").Pointer()
+			return p1 == p2
+		})
+		if !cmp.Equal(w.obj, obj, opt) {
+			return errors.Errorf("got = %v, want = %v", obj, w.obj)
+		}
+		return nil
+	}
+
+	loadFunc := func(exportDir string, tags []string, options *SessionOptions) (*tf.SavedModel, error) {
+		return nil, nil
+	}
+	tests := []test{
+		{
+			name: "set success when loadFunc is not nil",
+			args: args{
+				loadFunc: loadFunc,
+			},
+			want: want{
+				obj: &T{
+					loadFunc: loadFunc,
+				},
+			},
+		},
+		{
+			name: "do nothing when loadFunc is nil",
+			args: args{
+				loadFunc: nil,
+			},
+			want: want{
+				obj: &T{},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			got := withLoadFunc(test.args.loadFunc)
+			obj := new(T)
 			got(obj)
 			if err := test.checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
@@ -529,7 +618,7 @@ func TestWithFeed(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -635,7 +724,7 @@ func TestWithFeeds(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -703,7 +792,7 @@ func TestWithFetch(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -809,7 +898,7 @@ func TestWithFetches(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -905,7 +994,7 @@ func TestWithWarmupInputs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -968,7 +1057,7 @@ func TestWithNdim(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
