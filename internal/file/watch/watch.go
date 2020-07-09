@@ -71,12 +71,12 @@ func (w *watch) init() (*watch, error) {
 		return nil, err
 	}
 	w.mu.RLock()
-	dirs := make(map[string]struct{}, len(w.dirs))
-	for name, val := range w.dirs {
-		dirs[name] = val
+	dirs := make([]string, 0, len(w.dirs))
+	for d := range w.dirs {
+		dirs = append(dirs, d)
 	}
 	w.mu.RUnlock()
-	for dir := range dirs {
+	for _, dir := range dirs {
 		log.Debug("Adding watcher target: ", dir)
 
 		err = watcher.Add(dir)
