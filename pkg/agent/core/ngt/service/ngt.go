@@ -20,6 +20,7 @@ package service
 import (
 	"context"
 	"encoding/gob"
+	"math"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -30,7 +31,6 @@ import (
 	"time"
 
 	core "github.com/vdaas/vald/internal/core/ngt"
-	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
@@ -124,7 +124,7 @@ func New(opts ...Option) (nn NGT, err error) {
 
 	n.kvs = kvs.New()
 
-	err = n.initNGT(n.ngtOpts...)
+	err = n.initNGT()
 	if err != nil {
 		return nil, err
 	}
@@ -146,110 +146,92 @@ func New(opts ...Option) (nn NGT, err error) {
 	return n, nil
 }
 
-func (n *ngt) initNGT(opts ...core.Option) (err error) {
+func (n *ngt) initNGT() (err error) {
 	if _, err = os.Stat(n.path); os.IsNotExist(err) || n.inMem {
-		n.core, err = core.New(opts...)
+		n.core, err = core.New(n.ngtOpts...)
 		return err
 	}
 
 	log.Debugf("load index from %s", n.path)
 
-	agentMetadata, err := func() (*metadata.Metadata, error) {
-		f, err := file.Open(
-			filepath.Join(n.path, metadata.AgentMetadataFileName),
-			os.O_RDONLY|os.O_SYNC,
-			os.ModePerm,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		var meta metadata.Metadata
-		err = json.Decode(f, &meta)
-		if err != nil {
-			return nil, err
-		}
-
-		err = f.Close()
-		if err != nil {
-			return nil, err
-		}
-
-		return &meta, nil
-	}()
+	agentMetadata, err := metadata.Load(filepath.Join(n.path, metadata.AgentMetadataFileName))
 	if err != nil {
 		log.Warnf("cannot read metadata from %s: %s", metadata.AgentMetadataFileName, err)
 	}
 
-	ctx, cancel := context.WithTimeout(
-		context.Background(),
-		func() time.Duration {
-			if agentMetadata != nil && agentMetadata.NGT != nil {
-				log.Debugf("the backup index size is %d. starting to load...", agentMetadata.NGT.IndexCount)
-				return func() time.Duration {
-					d := time.Duration(agentMetadata.NGT.IndexCount) * n.litFactor
-					if d < n.minLit {
-						return n.minLit
-					} else if d < n.maxLit {
-						return d
-					}
-					return n.maxLit
-				}()
+	var timeout time.Duration
+	if agentMetadata != nil && agentMetadata.NGT != nil {
+		log.Debugf("the backup index size is %d. starting to load...", agentMetadata.NGT.IndexCount)
+		timeout = time.Duration(
+			math.Min(
+				math.Max(
+					float64(agentMetadata.NGT.IndexCount)*float64(n.litFactor),
+					float64(n.minLit),
+				),
+				float64(n.maxLit),
+			),
+		)
+	} else {
+		log.Debugf("cannot inspect the backup index size. starting to load.")
+		timeout = time.Duration(math.Min(float64(n.minLit), float64(n.maxLit)))
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	toEg, _ := errgroup.New(ctx)
+	toEg.Go(safety.RecoverFunc(func() (err error) {
+		<-ctx.Done()
+		if ctx.Err() == context.DeadlineExceeded {
+			log.Errorf("cannot load index backup data within the timeout %s. the process is going to be killed.", timeout)
+
+			// TODO: related to #403.
+			p, err := os.FindProcess(os.Getpid())
+			if err != nil {
+				return err
 			}
-			return n.minLit
-		}(),
-	)
+
+			return p.Signal(syscall.SIGKILL) // TODO: #403
+		}
+		return nil
+	}))
+	defer toEg.Wait()
 	defer cancel()
 
 	eg, _ := errgroup.New(ctx)
 	eg.Go(safety.RecoverFunc(func() (err error) {
-		select {
-		case <-ctx.Done():
-			if ctx.Err() == context.DeadlineExceeded {
-				log.Error("cannot load index backup data within the timeout. the process is going to be killed.")
-				// TODO: related to #403.
-				p, err := os.FindProcess(os.Getpid())
-				if err != nil {
-					return err
-				}
-				return p.Signal(syscall.SIGKILL) // TODO: #403
-			}
-		}
-		return nil
-	}))
-
-	eg, _ = errgroup.New(ctx)
-	eg.Go(safety.RecoverFunc(func() (err error) {
-		n.core, err = core.Load(opts...)
+		n.core, err = core.Load(n.ngtOpts...)
 		return err
 	}))
 
-	eg.Go(safety.RecoverFunc(func() (err error) {
-		if n.path != "" && !n.inMem {
-			gob.Register(map[string]uint32{})
-			f, err := file.Open(
-				filepath.Join(n.path, kvsFileName),
-				os.O_RDONLY|os.O_SYNC,
-				os.ModePerm,
-			)
-			if err != nil {
-				return err
-			}
-			defer f.Close()
-
-			m := make(map[string]uint32)
-			err = gob.NewDecoder(f).Decode(&m)
-			if err != nil {
-				return err
-			}
-			for k, id := range m {
-				n.kvs.Set(k, id)
-			}
-		}
-		return nil
-	}))
+	eg.Go(safety.RecoverFunc(n.loadKVS))
 
 	return eg.Wait()
+}
+
+func (n *ngt) loadKVS() error {
+	gob.Register(map[string]uint32{})
+
+	f, err := file.Open(
+		filepath.Join(n.path, kvsFileName),
+		os.O_RDONLY|os.O_SYNC,
+		os.ModePerm,
+	)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	m := make(map[string]uint32)
+	err = gob.NewDecoder(f).Decode(&m)
+	if err != nil {
+		return err
+	}
+
+	for k, id := range m {
+		n.kvs.Set(k, id)
+	}
+
+	return nil
 }
 
 func (n *ngt) Start(ctx context.Context) <-chan error {
@@ -659,21 +641,14 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		return err
 	}
 
-	f, err := file.Open(
+	return metadata.Store(
 		filepath.Join(n.path, metadata.AgentMetadataFileName),
-		os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
-		os.ModePerm,
-	)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	return json.Encode(f, &metadata.Metadata{
-		NGT: &metadata.NGT{
-			IndexCount: n.Len(),
+		&metadata.Metadata{
+			NGT: &metadata.NGT{
+				IndexCount: n.Len(),
+			},
 		},
-	})
+	)
 }
 
 func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err error) {

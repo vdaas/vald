@@ -17,6 +17,13 @@
 // Package metadata provides agent metadata structs and info.
 package metadata
 
+import (
+	"os"
+
+	"github.com/vdaas/vald/internal/encoding/json"
+	"github.com/vdaas/vald/internal/file"
+)
+
 const (
 	AgentMetadataFileName = "metadata.json"
 )
@@ -27,4 +34,30 @@ type Metadata struct {
 
 type NGT struct {
 	IndexCount uint64 `json:"index_count" yaml:"index_count"`
+}
+
+func Load(path string) (*Metadata, error) {
+	f, err := file.Open(path, os.O_RDONLY|os.O_SYNC, os.ModePerm)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var meta Metadata
+	err = json.Decode(f, &meta)
+	if err != nil {
+		return nil, err
+	}
+
+	return &meta, nil
+}
+
+func Store(path string, meta *Metadata) error {
+	f, err := file.Open(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	return json.Encode(f, &meta)
 }
