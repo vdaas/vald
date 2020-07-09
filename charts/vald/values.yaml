@@ -1269,6 +1269,16 @@ agent:
     # @schema {"name": "agent.ngt.default_pool_size", "type": "integer"}
     # agent.ngt.default_pool_size -- default create index batch pool size
     default_pool_size: 10000
+    # @schema {"name": "agent.ngt.min_load_index_timeout", "type": "string"}
+    # agent.ngt.min_load_index_timeout -- minimum duration of load index timeout
+    min_load_index_timeout: 3m
+    # @schema {"name": "agent.ngt.max_load_index_timeout", "type": "string"}
+    # agent.ngt.max_load_index_timeout -- maximum duration of load index timeout
+    max_load_index_timeout: 10m
+    # @schema {"name": "agent.ngt.load_index_timeout_factor", "type": "string"}
+    # agent.ngt.load_index_timeout_factor -- a factor of load index timeout.
+    # timeout duration will be calculated by (index count to be loaded) * (factor).
+    load_index_timeout_factor: 1ms
   # @schema {"name": "agent.sidecar", "type": "object"}
   sidecar:
     # @schema {"name": "agent.sidecar.enabled", "type": "boolean"}

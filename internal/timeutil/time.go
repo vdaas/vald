@@ -33,3 +33,17 @@ func Parse(t string) (time.Duration, error) {
 	}
 	return dur, nil
 }
+
+// ParseWithDefault parses string to time.Duration and returns d when the parse failed.
+func ParseWithDefault(t string, d time.Duration) time.Duration {
+	if t == "" {
+		return d
+	}
+
+	parsed, err := Parse(t)
+	if err != nil {
+		return d
+	}
+
+	return parsed
+}

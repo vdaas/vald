@@ -26,6 +26,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/vdaas/vald/internal/config"
@@ -87,6 +88,10 @@ type ngt struct {
 	core     core.NGT
 	dcd      bool // disable commit daemon
 	inMem    bool
+
+	minLit    time.Duration // minimum load index timeout
+	maxLit    time.Duration // maximum load index timeout
+	litFactor time.Duration // load index timeout factor
 }
 
 type vcache struct {
@@ -100,11 +105,12 @@ const (
 
 func New(cfg *config.NGT) (nn NGT, err error) {
 	n := new(ngt)
-	n.inMem = cfg.EnableInMemoryMode
-	cfg.IndexPath = strings.TrimSuffix(cfg.IndexPath, "/")
+
+	n.parseCfg(cfg)
+
 	opts := []core.Option{
 		core.WithInMemoryMode(n.inMem),
-		core.WithIndexPath(cfg.IndexPath),
+		core.WithIndexPath(n.path),
 		core.WithDimension(cfg.Dimension),
 		core.WithDistanceTypeByString(cfg.DistanceType),
 		core.WithObjectTypeByString(cfg.ObjectType),
@@ -114,84 +120,12 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 		core.WithDefaultPoolSize(cfg.DefaultPoolSize),
 	}
 
-	if !n.inMem && len(cfg.IndexPath) != 0 {
-		n.path = cfg.IndexPath
-	}
-
 	n.kvs = kvs.New()
 
-	if _, err = os.Stat(cfg.IndexPath); os.IsNotExist(err) || n.inMem {
-		n.core, err = core.New(opts...)
-	} else {
-		eg, _ := errgroup.New(context.Background())
-		eg.Go(safety.RecoverFunc(func() (err error) {
-			n.core, err = core.Load(opts...)
-			return err
-		}))
-		eg.Go(safety.RecoverFunc(func() (err error) {
-			if len(n.path) != 0 && !n.inMem {
-				m := make(map[string]uint32)
-				gob.Register(map[string]uint32{})
-				f, err := file.Open(
-					filepath.Join(n.path, kvsFileName),
-					os.O_RDONLY|os.O_SYNC,
-					os.ModePerm,
-				)
-				if err != nil {
-					return err
-				}
-				defer f.Close()
-				err = gob.NewDecoder(f).Decode(&m)
-				if err != nil {
-					return err
-				}
-				for k, id := range m {
-					n.kvs.Set(k, id)
-				}
-			}
-			return nil
-		}))
-		err = eg.Wait()
-	}
+	err = n.initNGT(opts...)
 	if err != nil {
 		return nil, err
 	}
-
-	if cfg.AutoIndexCheckDuration != "" {
-		d, err := timeutil.Parse(cfg.AutoIndexCheckDuration)
-		if err != nil {
-			d = 0
-		}
-		n.dur = d
-	}
-
-	if cfg.AutoIndexDurationLimit != "" {
-		d, err := timeutil.Parse(cfg.AutoIndexDurationLimit)
-		if err != nil {
-			d = 0
-		}
-		n.lim = d
-	}
-
-	if cfg.AutoSaveIndexDuration != "" {
-		d, err := timeutil.Parse(cfg.AutoSaveIndexDuration)
-		if err != nil {
-			d = 0
-		}
-		n.sdur = d
-	}
-
-	if cfg.InitialDelayMaxDuration != "" {
-		d, err := timeutil.Parse(cfg.InitialDelayMaxDuration)
-		if err != nil {
-			d = 0
-		}
-		n.idelay = time.Duration(
-			int64(rand.LimitedUint32(uint64(d/time.Second))),
-		) * time.Second
-	}
-
-	n.alen = cfg.AutoIndexLength
 
 	n.eg = errgroup.Get()
 
@@ -210,6 +144,139 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 	}
 
 	return n, nil
+}
+
+func (n *ngt) parseCfg(cfg *config.NGT) {
+	cfg.IndexPath = strings.TrimSuffix(cfg.IndexPath, "/")
+
+	n.inMem = cfg.EnableInMemoryMode
+
+	if !n.inMem && cfg.IndexPath != "" {
+		n.path = cfg.IndexPath
+	}
+
+	n.dur = timeutil.ParseWithDefault(cfg.AutoIndexCheckDuration, 0)
+	n.lim = timeutil.ParseWithDefault(cfg.AutoIndexDurationLimit, 0)
+	n.sdur = timeutil.ParseWithDefault(cfg.AutoSaveIndexDuration, 0)
+
+	if cfg.InitialDelayMaxDuration != "" {
+		d := timeutil.ParseWithDefault(cfg.InitialDelayMaxDuration, 0)
+		n.idelay = time.Duration(
+			int64(rand.LimitedUint32(uint64(d/time.Second))),
+		) * time.Second
+	}
+
+	n.alen = cfg.AutoIndexLength
+
+	n.minLit = timeutil.ParseWithDefault(cfg.MinLoadIndexTimeout, 3*time.Minute)
+	n.maxLit = timeutil.ParseWithDefault(cfg.MaxLoadIndexTimeout, 10*time.Minute)
+	n.litFactor = timeutil.ParseWithDefault(cfg.LoadIndexTimeoutFactor, time.Millisecond)
+}
+
+func (n *ngt) initNGT(opts ...core.Option) (err error) {
+	if _, err = os.Stat(n.path); os.IsNotExist(err) || n.inMem {
+		n.core, err = core.New(opts...)
+		return err
+	}
+
+	log.Debugf("load index from %s", n.path)
+
+	agentMetadata, err := func() (*metadata.Metadata, error) {
+		f, err := file.Open(
+			filepath.Join(n.path, metadata.AgentMetadataFileName),
+			os.O_RDONLY|os.O_SYNC,
+			os.ModePerm,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		var meta metadata.Metadata
+		err = json.Decode(f, &meta)
+		if err != nil {
+			return nil, err
+		}
+
+		err = f.Close()
+		if err != nil {
+			return nil, err
+		}
+
+		return &meta, nil
+	}()
+	if err != nil {
+		log.Warnf("cannot read metadata from %s: %s", metadata.AgentMetadataFileName, err)
+	}
+
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		func() time.Duration {
+			if agentMetadata != nil && agentMetadata.NGT != nil {
+				log.Debugf("the backup index size is %d. starting to load...", agentMetadata.NGT.IndexCount)
+				return func() time.Duration {
+					d := time.Duration(agentMetadata.NGT.IndexCount) * n.litFactor
+					if d < n.minLit {
+						return n.minLit
+					} else if d < n.maxLit {
+						return d
+					}
+					return n.maxLit
+				}()
+			}
+			return n.minLit
+		}(),
+	)
+	defer cancel()
+
+	eg, _ := errgroup.New(ctx)
+	eg.Go(safety.RecoverFunc(func() (err error) {
+		select {
+		case <-ctx.Done():
+			if ctx.Err() == context.DeadlineExceeded {
+				log.Error("cannot load index backup data within the timeout. the process is going to be killed.")
+				// TODO: related to #403.
+				p, err := os.FindProcess(os.Getpid())
+				if err != nil {
+					return err
+				}
+				return p.Signal(syscall.SIGKILL) // TODO: #403
+			}
+		}
+		return nil
+	}))
+
+	eg, _ = errgroup.New(ctx)
+	eg.Go(safety.RecoverFunc(func() (err error) {
+		n.core, err = core.Load(opts...)
+		return err
+	}))
+
+	eg.Go(safety.RecoverFunc(func() (err error) {
+		if len(n.path) != 0 && !n.inMem {
+			gob.Register(map[string]uint32{})
+			f, err := file.Open(
+				filepath.Join(n.path, kvsFileName),
+				os.O_RDONLY|os.O_SYNC,
+				os.ModePerm,
+			)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+
+			m := make(map[string]uint32)
+			err = gob.NewDecoder(f).Decode(&m)
+			if err != nil {
+				return err
+			}
+			for k, id := range m {
+				n.kvs.Set(k, id)
+			}
+		}
+		return nil
+	}))
+
+	return eg.Wait()
 }
 
 func (n *ngt) Start(ctx context.Context) <-chan error {
