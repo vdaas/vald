@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/url"
+	"reflect"
 
 	iblob "github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/errors"
@@ -27,7 +28,7 @@ func New(opts ...Option) (iblob.Bucket, error) {
 
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(c); err != nil {
-			return nil, err
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
 	return c, nil

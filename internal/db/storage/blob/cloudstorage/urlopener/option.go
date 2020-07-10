@@ -3,6 +3,7 @@ package urlopener
 import (
 	"context"
 	"net/http"
+	"unsafe"
 
 	"gocloud.dev/blob/gcsblob"
 )
@@ -18,10 +19,10 @@ func WithGoogleAccessID(id string) Option {
 	}
 }
 
-func WithPrivateKey(b []byte) Option {
+func WithPrivateKey(str string) Option {
 	return func(uo *urlOpener) error {
-		if len(b) != 0 {
-			uo.privateKey = b
+		if len(str) != 0 {
+			uo.privateKey = *(*[]byte)(unsafe.Pointer(&str))
 		}
 		return nil
 	}
@@ -40,6 +41,24 @@ func WithMakeSignBytes(f func(requestCtx context.Context) gcsblob.SignBytesFunc)
 	return func(uo *urlOpener) error {
 		if f != nil {
 			uo.makeSignBytes = f
+		}
+		return nil
+	}
+}
+
+func WithCredentialsFile(path string) Option {
+	return func(uo *urlOpener) error {
+		if len(path) != 0 {
+			uo.credentialsFilePath = path
+		}
+		return nil
+	}
+}
+
+func WithCredentialsJSON(str string) Option {
+	return func(uo *urlOpener) error {
+		if len(str) != 0 {
+			uo.credentialsJSON = str
 		}
 		return nil
 	}

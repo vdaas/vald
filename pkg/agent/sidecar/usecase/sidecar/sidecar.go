@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/agent/sidecar"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage"
+	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage/urlopener"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -94,6 +95,12 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		),
 		storage.WithS3Opts(
 			s3.WithMaxPartSize(cfg.AgentSidecar.BlobStorage.S3.MaxPartSize),
+		),
+		storage.WithCloudStorageURLOpnerOpts(
+			urlopener.WithGoogleAccessID(cfg.AgentSidecar.BlobStorage.CloudStrage.Client.GoogleAccessID),
+			urlopener.WithPrivateKey(cfg.AgentSidecar.BlobStorage.CloudStrage.Client.PrivateKey),
+			urlopener.WithCredentialsFile(cfg.AgentSidecar.BlobStorage.CloudStrage.Client.CredentialsFilePath),
+			urlopener.WithCredentialsJSON(cfg.AgentSidecar.BlobStorage.CloudStrage.Client.CredentialsJSON),
 		),
 		storage.WithCloudStorageOpts(
 			cloudstorage.WithURL(cfg.AgentSidecar.BlobStorage.CloudStrage.URL),

@@ -81,6 +81,13 @@ type S3Config struct {
 type CloudStrageConfig struct {
 	URL string `json:"url" yaml:"url"`
 
+	Client struct {
+		GoogleAccessID      string
+		PrivateKey          string
+		CredentialsFilePath string
+		CredentialsJSON     string
+	} `json:"client" yaml:"client"`
+
 	WriteBufferSize         int    `json:"write_buffer_size" yaml:"write_buffer_size"`
 	WriteCacheControl       string `json:"write_cache_control" yaml:"write_cache_control"`
 	WriteContentDisposition string `json:"write_content_disposition" yaml:"write_content_disposition"`
@@ -120,6 +127,13 @@ func (s *S3Config) Bind() *S3Config {
 }
 
 func (c *CloudStrageConfig) Bind() *CloudStrageConfig {
+	c.URL = GetActualValue(c.URL)
+
+	c.Client.GoogleAccessID = GetActualValue(c.Client.GoogleAccessID)
+	c.Client.PrivateKey = GetActualValue(c.Client.PrivateKey)
+	c.Client.CredentialsFilePath = GetActualValue(c.Client.CredentialsFilePath)
+	c.Client.CredentialsJSON = GetActualValue(c.Client.CredentialsJSON)
+
 	c.WriteCacheControl = GetActualValue(c.WriteCacheControl)
 	c.WriteContentDisposition = GetActualValue(c.WriteContentDisposition)
 	c.WriteContentEncoding = GetActualValue(c.WriteContentEncoding)

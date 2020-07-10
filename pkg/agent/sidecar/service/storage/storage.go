@@ -51,7 +51,7 @@ type bs struct {
 	s3SessionOpts []session.Option
 
 	cloudStorageOpts          []cloudstorage.Option
-	cloudStorageUrlOpenerOpts []urlopener.Option
+	cloudStorageURLOpenerOpts []urlopener.Option
 
 	compressAlgorithm string
 	compressionLevel  int
@@ -104,7 +104,7 @@ func (b *bs) initCompressor() (err error) {
 	return err
 }
 
-func (b *bs) initBucket() (err error) {
+func (b *bs) initBucket(ctx context.Context) (err error) {
 	switch config.AtoBST(b.storageType) {
 	case config.S3:
 		s, err := session.New(b.s3SessionOpts...).Session()
@@ -124,12 +124,12 @@ func (b *bs) initBucket() (err error) {
 			return err
 		}
 	case config.CloudStrage:
-		uoi, err := urlopener.New(b.cloudStorageUrlOpenerOpts...)
+		uoi, err := urlopener.New(b.cloudStorageURLOpenerOpts...)
 		if err != nil {
 			return err
 		}
 
-		uo, err := uoi.URLOpener()
+		uo, err := uoi.URLOpener(ctx)
 		if err != nil {
 			return err
 		}
@@ -153,7 +153,7 @@ func (b *bs) initBucket() (err error) {
 func (b *bs) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 1)
 
-	err := b.initBucket()
+	err := b.initBucket(ctx)
 	if err != nil {
 		return nil, err
 	}
