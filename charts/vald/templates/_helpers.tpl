@@ -450,7 +450,7 @@ addrs:
 {{- else if .default.addrs }}
 addrs:
   {{- toYaml .default.addrs | nindent 2 }}
-{{- else }}
+{{- else -}}
 addrs: []
 {{- end }}
 health_check_duration: {{ default .default.health_check_duration .Values.health_check_duration | quote }}

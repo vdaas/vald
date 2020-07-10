@@ -32,13 +32,16 @@ jobs:
       - name: Helm version
         run: |
           helm version
-      - name: Update k8s-dir
+      - name: switch new branch
+        id: switch_to_new_branch
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
           BRANCH_NAME="documentation/k8s-manifests/update_k8s_manifests_${TIMESTAMP}"
           git checkout master
           git checkout -b ${BRANCH_NAME}
-
+          echo "::set-output name=BRANCH_NAME::${BRANCH_NAME}"
+      - name: Update k8s-dir
+        run: |
           make k8s/manifest/update
           make k8s/manifest/helm-operator/update
       - name: Run formatter and license.go
@@ -68,6 +71,7 @@ jobs:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: https://api.github.com/repos/vdaas/vald/pulls
+          BRANCH_NAME: ${{ steps.switch_to_new_branch.outputs.BRANCH_NAME }}
   update-helm-chart:
     name: Update Helm chart
     runs-on: ubuntu-latest
