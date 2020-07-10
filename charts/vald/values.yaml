@@ -419,6 +419,9 @@ defaults:
       health_check_duration: "1s"
       # @schema {"name": "defaults.grpc.client.connection_pool", "type": "object"}
       connection_pool:
+        # @schema {"name": "defaults.grpc.client.connection_pool.enable_dns_resolver", "type": "boolean"}
+        # defaults.grpc.client.connection_pool.enable_dns_resolver -- enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance
+        enable_dns_resolver: true
         # @schema {"name": "defaults.grpc.client.connection_pool.enable_rebalance", "type": "boolean"}
         # defaults.grpc.client.connection_pool.enable_rebalance -- enables gRPC client connection pool rebalance
         enable_rebalance: true
@@ -2067,11 +2070,11 @@ backupManager:
           - "-p${MYSQL_PASSWORD}"
       sleepDuration: 2
       env:
-      - name: MYSQL_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: mysql-secret
-            key: password
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: password
     # - type: wait-for-cassandra
     #   name: wait-for-cassandra
     #   image: cassandra:latest
@@ -2285,10 +2288,10 @@ backupManager:
       num_conns: 2
       # @schema {"name": "backupManager.cassandra.config.consistency", "type": "string", "enum": ["any", "one", "two", "three", "all", "quorum", "localquorum", "eachquorum", "localone"]}
       # backupManager.cassandra.config.consistency -- consistency type
-      consistency:  quorum
+      consistency: quorum
       # @schema {"name": "backupManager.cassandra.config.serial_consistency", "type": "string", "enum": ["localserial", "serial"]}
       # backupManager.cassandra.config.serial_consistency -- read consistency type
-      serial_consistency:  localserial
+      serial_consistency: localserial
       # @schema {"name": "backupManager.cassandra.config.username", "type": "string"}
       # backupManager.cassandra.config.username -- cassandra username
       username: root
@@ -2966,9 +2969,9 @@ meta:
       # meta.cassandra.config.num_conns -- number of connections per hosts
       num_conns: 2
       # meta.cassandra.config.consistency -- consistency type
-      consistency:  quorum
+      consistency: quorum
       # meta.cassandra.config.serial_consistency -- read consistency type
-      serial_consistency:  localserial
+      serial_consistency: localserial
       # meta.cassandra.config.username -- cassandra username
       username: root
       # meta.cassandra.config.password -- cassandra password
@@ -3059,8 +3062,6 @@ meta:
         data_center: ""
         # meta.cassandra.config.host_filter.white_list -- list of white_list which allows each connection
         white_list: []
-
-
 
 initializer:
   mysql:

@@ -26,6 +26,13 @@ var (
 
 	ErrIndexNotFound = New("index file not found")
 
+	ErrInvalidDimensionSize = func(current, limit int) error {
+		if limit == 0 {
+			return Errorf("dimension size %d is invalid, the supporting dimension size must be bigger than 2", current)
+		}
+		return Errorf("dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d", current, limit)
+	}
+
 	ErrDimensionLimitExceed = func(current, limit int) error {
 		return Errorf("supported dimension limit exceed:\trequired = %d,\tlimit = %d", current, limit)
 	}
