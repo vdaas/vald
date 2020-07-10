@@ -22,11 +22,13 @@ import (
 	"crypto/tls"
 	stderrors "errors"
 	"fmt"
+	"io/ioutil"
 	"math"
 	stdnet "net"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -1073,7 +1075,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(200)
 			}))
-			host, port, _ := net.SplitHostPort(srv.URL[7:len(srv.URL)])
+			host, port, _ := net.SplitHostPort(srv.URL[len("http://"):])
 
 			addr := "invalid_ip"
 
@@ -1124,7 +1126,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				w.WriteHeader(200)
 			}))
 
-			host, port, _ := net.SplitHostPort(srv.URL[8:len(srv.URL)])
+			host, port, _ := net.SplitHostPort(srv.URL[len("https://"):])
 
 			addr := "invalid_ip"
 
@@ -1254,20 +1256,20 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			}
 		}(),
 		func() test {
-			srvNums := 30
+			srvNums := 20
 			srvs := make([]*httptest.Server, 0, srvNums)
 			hosts := make([]string, 0, srvNums)
 			ports := make([]string, 0, srvNums)
 
+			// create servers that will return the server number
 			for i := 0; i < srvNums; i++ {
-				srvs = append(srvs, httptest.NewServer(http.HandlerFunc(
-					func(w http.ResponseWriter, r *http.Request) {
-						fmt.Fprint(w, fmt.Sprint(i))
-						w.WriteHeader(200)
-					},
-				)))
-				hp := srvs[i].URL[7:len(srvs[i].URL)]
-				h, p, _ := net.SplitHostPort(hp)
+				content := fmt.Sprint(i)
+				hf := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					fmt.Fprint(w, content)
+					w.WriteHeader(200)
+				})
+				srvs = append(srvs, httptest.NewServer(hf))
+				h, p, _ := net.SplitHostPort(srvs[i].URL[len("http://"):])
 				hosts = append(hosts, h)
 				ports = append(ports, fmt.Sprint(p))
 			}
@@ -1299,11 +1301,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					c, _ := d.cache.Get(addr)
 					dc := c.(*dialerCache)
 
-					check := func(gotConn net.Conn, gotErr error, cnt int, port string) error {
-						defer func() {
-							_ = gotConn.Close()
-						}()
-
+					check := func(gotConn net.Conn, gotErr error, cnt int, port string, srvContent string) error {
 						if gotErr != nil {
 							return errors.Errorf("err is not nil: %v", gotErr)
 						}
@@ -1321,27 +1319,26 @@ func Test_dialer_cachedDialer(t *testing.T) {
 						}
 
 						// read the output from the server and check if it is equals to the count
-						/* TODO verify the connection is working
-							buf, err := ioutil.ReadAll(gotConn)
-							if err != nil {
-								return err
-							}
-							if string(buf) != fmt.Sprint(cnt) {
-								return errors.Errorf("excepted output from server, got: %v, want: %v", buf, fmt.Sprint(cnt))
-							}
-						*/
+						fmt.Fprintf(gotConn, "GET / HTTP/1.0\r\n\r\n")
+						buf, _ := ioutil.ReadAll(gotConn)
+						content := strings.Split(string(buf), "\n")[5]
+						if content != srvContent {
+							return errors.Errorf("excepted output from server, got: %v, want: %v", content, fmt.Sprint(cnt))
+						}
 
 						return nil
 					}
 
-					if err := check(gotConn, err, 1, ports[0]); err != nil {
+					// check the return of the returned connection
+					if err := check(gotConn, err, 1, ports[0], "0"); err != nil {
 						return err
 					}
 
 					// check all the connection
 					for i := 1; i < srvNums; i++ {
 						c, e := d.cachedDialer(context.Background(), "tcp", addr+":"+ports[i])
-						if err := check(c, e, i+1, ports[i]); err != nil {
+						srvContent := fmt.Sprint(i)
+						if err := check(c, e, i+1, ports[i], srvContent); err != nil {
 							return err
 						}
 					}
@@ -1351,7 +1348,8 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					for i := 0; i < srvNums; i++ {
 						c, e := d.cachedDialer(context.Background(), "tcp", addr+":"+ports[i])
 						cnt := srvNums + i + 1
-						if err := check(c, e, cnt, ports[i]); err != nil {
+						srvContent := fmt.Sprint(i)
+						if err := check(c, e, cnt, ports[i], srvContent); err != nil {
 							return err
 						}
 					}
@@ -1369,7 +1367,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(200)
 			}))
-			host, port, _ := net.SplitHostPort(srv.URL[7:len(srv.URL)])
+			host, port, _ := net.SplitHostPort(srv.URL[len("http://"):])
 
 			addr := "invalid_ip"
 
