@@ -22,7 +22,6 @@ import (
 	agent "github.com/vdaas/vald/apis/grpc/agent/core"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
@@ -139,7 +138,6 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 3)
 	var oech, nech, sech <-chan error
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
-		log.Info("daemon start")
 		defer close(ech)
 		if r.observability != nil {
 			oech = r.observability.Start(ctx)

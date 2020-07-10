@@ -3,7 +3,17 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.40`
+Current chart version is `v0.0.44`
+
+Table of Contents
+---
+
+- [Install](#install)
+- [Configuration](#configuration)
+    - [Overview](#overview)
+    - [Parameters](#parameters)
+- [Miscellaneous](#miscellaneous)
+    - [Standalone Vald agent NGT deployment](#standalone-vald-agent-ngt-deployment)
 
 Install
 ---
@@ -85,7 +95,7 @@ Configuration
 | agent.ngt.search_edge_size | int | `10` | search edge size |
 | agent.nodeName | string | `""` | node name |
 | agent.nodeSelector | object | `{}` | node selector |
-| agent.observability | object | `{"jaeger":{"service_name":"vald-agent-ngt"}}` | observability config (overrides defaults.observability) |
+| agent.observability | object | `{"jaeger":{"service_name":"vald-agent-ngt"},"stackdriver":{"profiler":{"service":"vald-agent-ngt"}}}` | observability config (overrides defaults.observability) |
 | agent.persistentVolume.accessMode | string | `"ReadWriteOnce"` | agent pod storage accessMode |
 | agent.persistentVolume.enabled | bool | `false` | enables PVC. It is required to enable if agent pod's file store functionality is enabled with non in-memory mode |
 | agent.persistentVolume.size | string | `"100Gi"` | size of agent pod volume |
@@ -107,17 +117,65 @@ Configuration
 | agent.sidecar.config.auto_backup_duration | string | `"10m"` | auto backup duration |
 | agent.sidecar.config.blob_storage.bucket | string | `""` | bucket name |
 | agent.sidecar.config.blob_storage.s3.access_key | string | `"_AWS_ACCESS_KEY_"` | s3 access key |
+| agent.sidecar.config.blob_storage.s3.enable_100_continue | bool | `true` | enable AWS SDK adding the 'Expect: 100-Continue' header to PUT requests over 2MB of content. |
+| agent.sidecar.config.blob_storage.s3.enable_content_md5_validation | bool | `true` | enable the S3 client to add MD5 checksum to upload API calls. |
+| agent.sidecar.config.blob_storage.s3.enable_endpoint_discovery | bool | `false` | enable endpoint discovery |
+| agent.sidecar.config.blob_storage.s3.enable_endpoint_host_prefix | bool | `true` | enable prefixing request endpoint hosts with modeled information |
+| agent.sidecar.config.blob_storage.s3.enable_param_validation | bool | `true` | enables semantic parameter validation |
+| agent.sidecar.config.blob_storage.s3.enable_ssl | bool | `true` | enable ssl for s3 session |
 | agent.sidecar.config.blob_storage.s3.endpoint | string | `""` | s3 endpoint |
-| agent.sidecar.config.blob_storage.s3.max_part_size_mb | int | `64` | s3 multipart upload max part size |
+| agent.sidecar.config.blob_storage.s3.force_path_style | bool | `false` | use path-style addressing |
+| agent.sidecar.config.blob_storage.s3.max_chunk_size | string | `"64mb"` | s3 download max chunk size |
+| agent.sidecar.config.blob_storage.s3.max_part_size | string | `"64mb"` | s3 multipart upload max part size |
+| agent.sidecar.config.blob_storage.s3.max_retries | int | `3` | maximum number of retries of s3 client |
 | agent.sidecar.config.blob_storage.s3.region | string | `""` | s3 region |
 | agent.sidecar.config.blob_storage.s3.secret_access_key | string | `"_AWS_SECRET_ACCESS_KEY_"` | s3 secret access key |
 | agent.sidecar.config.blob_storage.s3.token | string | `""` | s3 token |
+| agent.sidecar.config.blob_storage.s3.use_accelerate | bool | `false` | enable s3 accelerate feature |
+| agent.sidecar.config.blob_storage.s3.use_arn_region | bool | `false` | s3 service client to use the region specified in the ARN |
+| agent.sidecar.config.blob_storage.s3.use_dual_stack | bool | `false` | use dual stack |
 | agent.sidecar.config.blob_storage.storage_type | string | `"s3"` | storage type |
+| agent.sidecar.config.client.tcp.dialer.dual_stack_enabled | bool | `false` | HTTP client TCP dialer dual stack enabled |
+| agent.sidecar.config.client.tcp.dialer.keep_alive | string | `"5m"` | HTTP client TCP dialer keep alive |
+| agent.sidecar.config.client.tcp.dialer.timeout | string | `"5s"` | HTTP client TCP dialer connect timeout |
+| agent.sidecar.config.client.tcp.dns.cache_enabled | bool | `true` | HTTP client TCP DNS cache enabled |
+| agent.sidecar.config.client.tcp.dns.cache_expiration | string | `"24h"` |  |
+| agent.sidecar.config.client.tcp.dns.refresh_duration | string | `"1h"` | HTTP client TCP DNS cache expiration |
+| agent.sidecar.config.client.tcp.tls.ca | string | `"/path/to/ca"` | HTTP client TCP TLS ca path |
+| agent.sidecar.config.client.tcp.tls.cert | string | `"/path/to/cert"` | HTTP client TCP TLS cert path |
+| agent.sidecar.config.client.tcp.tls.enabled | bool | `false` | HTTP client TCP TLS enabled |
+| agent.sidecar.config.client.tcp.tls.key | string | `"/path/to/key"` | HTTP client TCP TLS key path |
+| agent.sidecar.config.client.transport.backoff.backoff_factor | float | `1.1` | backoff backoff factor |
+| agent.sidecar.config.client.transport.backoff.backoff_time_limit | string | `"5s"` | backoff time limit |
+| agent.sidecar.config.client.transport.backoff.enable_error_log | bool | `true` | backoff error log enabled |
+| agent.sidecar.config.client.transport.backoff.initial_duration | string | `"5ms"` | backoff initial duration |
+| agent.sidecar.config.client.transport.backoff.jitter_limit | string | `"100ms"` | backoff jitter limit |
+| agent.sidecar.config.client.transport.backoff.maximum_duration | string | `"5s"` | backoff maximum duration |
+| agent.sidecar.config.client.transport.backoff.retry_count | int | `100` | backoff retry count |
+| agent.sidecar.config.client.transport.round_tripper.expect_continue_timeout | string | `"5s"` | expect continue timeout |
+| agent.sidecar.config.client.transport.round_tripper.force_attempt_http_2 | bool | `true` | force attempt HTTP2 |
+| agent.sidecar.config.client.transport.round_tripper.idle_conn_timeout | string | `"90s"` | timeout for idle connections |
+| agent.sidecar.config.client.transport.round_tripper.max_conns_per_host | int | `10` | maximum count of connections per host |
+| agent.sidecar.config.client.transport.round_tripper.max_idle_conns | int | `100` | maximum count of idle connections |
+| agent.sidecar.config.client.transport.round_tripper.max_idle_conns_per_host | int | `10` | maximum count of idle connections per host |
+| agent.sidecar.config.client.transport.round_tripper.max_response_header_size | int | `0` | maximum response header size |
+| agent.sidecar.config.client.transport.round_tripper.read_buffer_size | int | `0` | read buffer size |
+| agent.sidecar.config.client.transport.round_tripper.response_header_timeout | string | `"5s"` | timeout for response header |
+| agent.sidecar.config.client.transport.round_tripper.tls_handshake_timeout | string | `"5s"` | TLS handshake timeout |
+| agent.sidecar.config.client.transport.round_tripper.write_buffer_size | int | `0` | write buffer size |
 | agent.sidecar.config.compress.compress_algorithm | string | `"gzip"` | compression algorithm. must be `gob`, `gzip`, `lz4` or `zstd` |
 | agent.sidecar.config.compress.compression_level | int | `-1` | compression level. value range relies on which algorithm is used. `gob`: level will be ignored. `gzip`: -1 (default compression), 0 (no compression), or 1 (best speed) to 9 (best compression). `lz4`: >= 0, higher is better compression. `zstd`: 1 (fastest) to 22 (best), however implementation relies on klauspost/compress. |
 | agent.sidecar.config.filename | string | `"_MY_POD_NAME_"` | backup filename |
 | agent.sidecar.config.filename_suffix | string | `".tar.gz"` | suffix for backup filename |
-| agent.sidecar.config.post_stop_timeout | string | `"10s"` | timeout duration for file changing during post stop |
+| agent.sidecar.config.post_stop_timeout | string | `"20s"` | timeout duration for file changing during post stop |
+| agent.sidecar.config.restore_backoff.backoff_factor | float | `1.2` | restore backoff factor |
+| agent.sidecar.config.restore_backoff.backoff_time_limit | string | `"30m"` | restore backoff time limit |
+| agent.sidecar.config.restore_backoff.enable_error_log | bool | `true` | restore backoff log enabled |
+| agent.sidecar.config.restore_backoff.initial_duration | string | `"1s"` | restore backoff initial duration |
+| agent.sidecar.config.restore_backoff.jitter_limit | string | `"10s"` | restore backoff jitter limit |
+| agent.sidecar.config.restore_backoff.maximum_duration | string | `"1m"` | restore backoff maximum duration |
+| agent.sidecar.config.restore_backoff.retry_count | int | `100` | restore backoff retry count |
+| agent.sidecar.config.restore_backoff_enabled | bool | `false` | restore backoff enabled |
 | agent.sidecar.enabled | bool | `false` | sidecar enabled |
 | agent.sidecar.env | list | `[{"name":"MY_POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"AWS_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"access-key","name":"aws-secret"}}},{"name":"AWS_SECRET_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"secret-access-key","name":"aws-secret"}}}]` | environment variables |
 | agent.sidecar.image.pullPolicy | string | `"Always"` | image pull policy |
@@ -126,7 +184,7 @@ Configuration
 | agent.sidecar.initContainerEnabled | bool | `false` | sidecar on initContainer mode enabled. |
 | agent.sidecar.logging | object | `{}` | logging config (overrides defaults.logging) |
 | agent.sidecar.name | string | `"vald-agent-sidecar"` | name of agent sidecar |
-| agent.sidecar.observability | object | `{"jaeger":{"service_name":"vald-agent-sidecar"}}` | observability config (overrides defaults.observability) |
+| agent.sidecar.observability | object | `{"jaeger":{"service_name":"vald-agent-sidecar"},"stackdriver":{"profiler":{"service":"vald-agent-sidecar"}}}` | observability config (overrides defaults.observability) |
 | agent.sidecar.resources | object | `{"requests":{"cpu":"100m","memory":"100Mi"}}` | compute resources. |
 | agent.sidecar.server_config | object | `{"healths":{"liveness":{"enabled":false,"port":13000,"servicePort":13000},"readiness":{"enabled":false,"port":13001,"servicePort":13001}},"metrics":{"pprof":{"port":16060,"servicePort":16060},"prometheus":{"port":16061,"servicePort":16061}},"servers":{"grpc":{"enabled":false,"port":18081,"servicePort":18081},"rest":{"enabled":false,"port":18080,"servicePort":18080}}}` | server config (overrides defaults.server_config) |
 | agent.sidecar.service.annotations | object | `{}` | agent sidecar service annotations |
@@ -243,7 +301,7 @@ Configuration
 | backupManager.name | string | `"vald-manager-backup"` | name of backup manager deployment |
 | backupManager.nodeName | string | `""` | node name |
 | backupManager.nodeSelector | object | `{}` | node selector |
-| backupManager.observability | object | `{"jaeger":{"service_name":"vald-manager-backup"}}` | observability config (overrides defaults.observability) |
+| backupManager.observability | object | `{"jaeger":{"service_name":"vald-manager-backup"},"stackdriver":{"profiler":{"service":"vald-manager-backup"}}}` | observability config (overrides defaults.observability) |
 | backupManager.podAnnotations | object | `{}` | pod annotations |
 | backupManager.podPriority.enabled | bool | `true` | backup manager pod PriorityClass enabled |
 | backupManager.podPriority.value | int | `1000000` | backup manager pod PriorityClass value |
@@ -292,7 +350,7 @@ Configuration
 | compressor.name | string | `"vald-manager-compressor"` | name of compressor deployment |
 | compressor.nodeName | string | `""` | node name |
 | compressor.nodeSelector | object | `{}` | node selector |
-| compressor.observability | object | `{"jaeger":{"service_name":"vald-manager-compressor"}}` | observability config (overrides defaults.observability) |
+| compressor.observability | object | `{"jaeger":{"service_name":"vald-manager-compressor"},"stackdriver":{"profiler":{"service":"vald-manager-compressor"}}}` | observability config (overrides defaults.observability) |
 | compressor.podAnnotations | object | `{}` | pod annotations |
 | compressor.podPriority.enabled | bool | `true` | compressor pod PriorityClass enabled |
 | compressor.podPriority.value | int | `100000000` | compressor pod PriorityClass value |
@@ -358,7 +416,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.40"` | docker image tag |
+| defaults.image.tag | string | `"v0.0.44"` | docker image tag |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
 | defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg`. |
@@ -367,6 +425,7 @@ Configuration
 | defaults.observability.collector.metrics.enable_goroutine | bool | `true` | goroutine metrics enabled |
 | defaults.observability.collector.metrics.enable_memory | bool | `true` | memory metrics enabled |
 | defaults.observability.collector.metrics.enable_version_info | bool | `true` | version info metrics enabled |
+| defaults.observability.collector.metrics.version_info_labels | list | `["vald_version","server_name","git_commit","build_time","go_version","go_os","go_arch","ngt_version"]` | enabled label names of version info |
 | defaults.observability.enabled | bool | `false` | observability features enabled |
 | defaults.observability.jaeger.agent_endpoint | string | `"jaeger-agent.default.svc.cluster.local:6831"` | Jaeger agent endpoint |
 | defaults.observability.jaeger.buffer_max_count | int | `10` | Jaeger buffer max count |
@@ -378,6 +437,42 @@ Configuration
 | defaults.observability.prometheus.enabled | bool | `false` | Prometheus exporter enabled |
 | defaults.observability.prometheus.endpoint | string | `"/metrics"` | Prometheus exporter endpoint |
 | defaults.observability.prometheus.namespace | string | `"vald"` | prefix of exported metrics name |
+| defaults.observability.stackdriver.client.api_key | string | `""` | API key to be used as the basis for authentication. |
+| defaults.observability.stackdriver.client.audiences | list | `[]` | to be used as the audience field ("aud") for the JWT token authentication. |
+| defaults.observability.stackdriver.client.authentication_enabled | bool | `true` | enables authentication. |
+| defaults.observability.stackdriver.client.credentials_file | string | `""` | service account or refresh token JSON credentials file. |
+| defaults.observability.stackdriver.client.credentials_json | string | `""` | service account or refresh token JSON credentials. |
+| defaults.observability.stackdriver.client.endpoint | string | `""` | overrides the default endpoint to be used for a service. |
+| defaults.observability.stackdriver.client.quota_project | string | `""` | the project used for quota and billing purposes. |
+| defaults.observability.stackdriver.client.request_reason | string | `""` | a reason for making the request, which is intended to be recorded in audit logging. |
+| defaults.observability.stackdriver.client.scopes | list | `[]` | overrides the default OAuth2 scopes to be used for a service. |
+| defaults.observability.stackdriver.client.telemetry_enabled | bool | `true` | enables default telemetry settings on gRPC and HTTP clients. |
+| defaults.observability.stackdriver.client.user_agent | string | `""` | sets the User-Agent. |
+| defaults.observability.stackdriver.exporter.bundle_count_threshold | int | `0` | how many view data events or trace spans can be buffered. |
+| defaults.observability.stackdriver.exporter.bundle_delay_threshold | string | `"0"` | the max amount of time the exporter can wait before uploading data. |
+| defaults.observability.stackdriver.exporter.location | string | `""` | identifier of the GCP or AWS cloud region/zone the data is stored. |
+| defaults.observability.stackdriver.exporter.metric_prefix | string | `"vald.vdaas.org"` | the prefix of a stackdriver metric names. |
+| defaults.observability.stackdriver.exporter.monitoring_enabled | bool | `false` | stackdriver monitoring enabled |
+| defaults.observability.stackdriver.exporter.number_of_workers | int | `1` | number of workers |
+| defaults.observability.stackdriver.exporter.reporting_interval | string | `"1m"` | interval between reporting metrics |
+| defaults.observability.stackdriver.exporter.skip_cmd | bool | `false` | skip all the CreateMetricDescriptor calls |
+| defaults.observability.stackdriver.exporter.timeout | string | `"5s"` | timeout for all API calls |
+| defaults.observability.stackdriver.exporter.trace_spans_buffer_max_bytes | int | `0` | maximum size of spans that will be buffered. |
+| defaults.observability.stackdriver.exporter.tracing_enabled | bool | `false` | stackdriver tracing enabled |
+| defaults.observability.stackdriver.profiler.alloc_force_gc | bool | `false` | forces GC before the collection of each heap profile. |
+| defaults.observability.stackdriver.profiler.alloc_profiling | bool | `true` | enables allocation profiling. |
+| defaults.observability.stackdriver.profiler.api_addr | string | `""` | HTTP endpoint to use to connect to the profiler agent API. |
+| defaults.observability.stackdriver.profiler.cpu_profiling | bool | `true` | enables CPU profiling. |
+| defaults.observability.stackdriver.profiler.debug_logging | bool | `false` | enables detailed logging from profiler. |
+| defaults.observability.stackdriver.profiler.enabled | bool | `false` | stackdriver profiler enabled. |
+| defaults.observability.stackdriver.profiler.goroutine_profiling | bool | `true` | enables goroutine profiling. |
+| defaults.observability.stackdriver.profiler.heap_profiling | bool | `true` | enables heap profiling. |
+| defaults.observability.stackdriver.profiler.instance | string | `""` | the name of Compute Engine instance. This is normally determined from the Compute Engine metadata server and doesn't need to be initialized. |
+| defaults.observability.stackdriver.profiler.mutex_profiling | bool | `true` | enables mutex profiling. |
+| defaults.observability.stackdriver.profiler.service | string | `""` | the name of the service. |
+| defaults.observability.stackdriver.profiler.service_version | string | `""` | the version of the service. |
+| defaults.observability.stackdriver.profiler.zone | string | `""` | the zone of Compute Engine instance. This is normally determined from the Compute Engine metadata server and doesn't need to be initialized. |
+| defaults.observability.stackdriver.project_id | string | `""` | project id for uploading the stats data |
 | defaults.observability.trace.enabled | bool | `false` | trace enabled |
 | defaults.observability.trace.sampling_rate | float | `1` | trace sampling rate. must be between 0.0 to 1.0. |
 | defaults.server_config.full_shutdown_duration | string | `"600s"` | server full shutdown duration |
@@ -516,7 +611,7 @@ Configuration
 | discoverer.name | string | `"vald-discoverer"` | name of discoverer deployment |
 | discoverer.nodeName | string | `""` | node name |
 | discoverer.nodeSelector | object | `{}` | node selector |
-| discoverer.observability | object | `{"jaeger":{"service_name":"vald-discoverer"}}` | observability config (overrides defaults.observability) |
+| discoverer.observability | object | `{"jaeger":{"service_name":"vald-discoverer"},"stackdriver":{"profiler":{"service":"vald-discoverer"}}}` | observability config (overrides defaults.observability) |
 | discoverer.podAnnotations | object | `{}` | pod annotations |
 | discoverer.podPriority.enabled | bool | `true` | discoverer pod PriorityClass enabled |
 | discoverer.podPriority.value | int | `1000000` | discoverer pod PriorityClass value |
@@ -579,7 +674,7 @@ Configuration
 | gateway.name | string | `"vald-gateway"` | name of gateway deployment |
 | gateway.nodeName | string | `""` | node name |
 | gateway.nodeSelector | object | `{}` | node selector |
-| gateway.observability | object | `{"jaeger":{"service_name":"vald-gateway"}}` | observability config (overrides defaults.observability) |
+| gateway.observability | object | `{"jaeger":{"service_name":"vald-gateway"},"stackdriver":{"profiler":{"service":"vald-gateway"}}}` | observability config (overrides defaults.observability) |
 | gateway.podAnnotations | object | `{}` | pod annotations |
 | gateway.podPriority.enabled | bool | `true` | gateway pod PriorityClass enabled |
 | gateway.podPriority.value | int | `1000000` | gateway pod PriorityClass value |
@@ -629,7 +724,7 @@ Configuration
 | indexManager.name | string | `"vald-manager-index"` | name of index manager deployment |
 | indexManager.nodeName | string | `""` | node name |
 | indexManager.nodeSelector | object | `{}` | node selector |
-| indexManager.observability | object | `{"jaeger":{"service_name":"vald-manager-index"}}` | observability config (overrides defaults.observability) |
+| indexManager.observability | object | `{"jaeger":{"service_name":"vald-manager-index"},"stackdriver":{"profiler":{"service":"vald-manager-index"}}}` | observability config (overrides defaults.observability) |
 | indexManager.podAnnotations | object | `{}` | pod annotations |
 | indexManager.podPriority.enabled | bool | `true` | index manager pod PriorityClass enabled |
 | indexManager.podPriority.value | int | `1000000` | index manager pod PriorityClass value |
@@ -771,7 +866,7 @@ Configuration
 | meta.name | string | `"vald-meta"` | name of meta deployment |
 | meta.nodeName | string | `""` | node name |
 | meta.nodeSelector | object | `{}` | node selector |
-| meta.observability | object | `{"jaeger":{"service_name":"vald-meta"}}` | observability config (overrides defaults.observability) |
+| meta.observability | object | `{"jaeger":{"service_name":"vald-meta"},"stackdriver":{"profiler":{"service":"vald-meta"}}}` | observability config (overrides defaults.observability) |
 | meta.podAnnotations | object | `{}` | pod annotations |
 | meta.podPriority.enabled | bool | `true` | meta pod PriorityClass enabled |
 | meta.podPriority.value | int | `1000000` | meta pod PriorityClass value |

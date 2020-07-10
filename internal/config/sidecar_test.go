@@ -30,10 +30,12 @@ func TestAgentSidecar_Bind(t *testing.T) {
 		Mode               string
 		WatchDir           string
 		AutoBackupDuration string
+		PostStopTimeout    string
 		Filename           string
 		FilenameSuffix     string
 		BlobStorage        *Blob
 		Compress           *CompressCore
+		RestoreBackoff     *Backoff
 	}
 	type want struct {
 		want *AgentSidecar
@@ -61,10 +63,12 @@ func TestAgentSidecar_Bind(t *testing.T) {
 		           Mode: "",
 		           WatchDir: "",
 		           AutoBackupDuration: "",
+		           PostStopTimeout: "",
 		           Filename: "",
 		           FilenameSuffix: "",
 		           BlobStorage: Blob{},
 		           Compress: CompressCore{},
+		           RestoreBackoff: Backoff{},
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -80,10 +84,12 @@ func TestAgentSidecar_Bind(t *testing.T) {
 		           Mode: "",
 		           WatchDir: "",
 		           AutoBackupDuration: "",
+		           PostStopTimeout: "",
 		           Filename: "",
 		           FilenameSuffix: "",
 		           BlobStorage: Blob{},
 		           Compress: CompressCore{},
+		           RestoreBackoff: Backoff{},
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -94,7 +100,7 @@ func TestAgentSidecar_Bind(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -108,10 +114,12 @@ func TestAgentSidecar_Bind(t *testing.T) {
 				Mode:               test.fields.Mode,
 				WatchDir:           test.fields.WatchDir,
 				AutoBackupDuration: test.fields.AutoBackupDuration,
+				PostStopTimeout:    test.fields.PostStopTimeout,
 				Filename:           test.fields.Filename,
 				FilenameSuffix:     test.fields.FilenameSuffix,
 				BlobStorage:        test.fields.BlobStorage,
 				Compress:           test.fields.Compress,
+				RestoreBackoff:     test.fields.RestoreBackoff,
 			}
 
 			got := s.Bind()

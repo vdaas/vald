@@ -761,7 +761,7 @@ func TestWithListenConfig(t *testing.T) {
 func TestWithServerMode(t *testing.T) {
 	type test struct {
 		name      string
-		m         mode
+		m         ServerMode
 		checkFunc func(opt Option) error
 	}
 
@@ -782,7 +782,7 @@ func TestWithServerMode(t *testing.T) {
 
 		{
 			name: "not set when mode is invalid",
-			m:    mode(100),
+			m:    ServerMode(100),
 			checkFunc: func(opt Option) error {
 				got := &server{
 					mode: GRPC,
@@ -1210,8 +1210,22 @@ func TestWithGRPCMaxReceiveMessageSize(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set success",
+			name: "set success when size is mode than 0",
 			size: 1024,
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 1 {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "set success when size is -1",
+			size: -1,
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
@@ -1241,8 +1255,8 @@ func TestWithGRPCMaxReceiveMessageSize(t *testing.T) {
 		},
 
 		{
-			name: "not set when size is less than 0",
-			size: -1,
+			name: "not set when size is less than -1",
+			size: -2,
 			checkFunc: func(opt Option) error {
 				sopts := []grpc.ServerOption{
 					grpc.ConnectionTimeout(100 * time.Second),
@@ -1278,8 +1292,22 @@ func TestWithGRPCMaxSendMessageSize(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set success",
+			name: "set success when size is more than 0",
 			size: 1024,
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 1 {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "set success when size is -1",
+			size: -1,
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
@@ -1309,8 +1337,8 @@ func TestWithGRPCMaxSendMessageSize(t *testing.T) {
 		},
 
 		{
-			name: "not set when size is less than 0",
-			size: -1,
+			name: "not set when size is less than -1",
+			size: -2,
 			checkFunc: func(opt Option) error {
 				sopts := []grpc.ServerOption{
 					grpc.ConnectionTimeout(100 * time.Second),
@@ -1346,8 +1374,22 @@ func TestWithGRPCInitialWindowSize(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set success",
+			name: "set success when size is more than 0",
 			size: 1024,
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 1 {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "set success when size is -1",
+			size: -1,
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
@@ -1377,8 +1419,8 @@ func TestWithGRPCInitialWindowSize(t *testing.T) {
 		},
 
 		{
-			name: "not set when size is less than 0",
-			size: -1,
+			name: "not set when size is less than -1",
+			size: -2,
 			checkFunc: func(opt Option) error {
 				sopts := []grpc.ServerOption{
 					grpc.ConnectionTimeout(100 * time.Second),
@@ -1414,8 +1456,22 @@ func TestWithGRPCInitialConnWindowSize(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set success",
+			name: "set success when size is more than 0",
 			size: 1024,
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 1 {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "set success when size is -1",
+			size: -1,
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
@@ -1445,8 +1501,8 @@ func TestWithGRPCInitialConnWindowSize(t *testing.T) {
 		},
 
 		{
-			name: "not set when size is less than 0",
-			size: -1,
+			name: "not set when size is less than -1",
+			size: -2,
 			checkFunc: func(opt Option) error {
 				sopts := []grpc.ServerOption{
 					grpc.ConnectionTimeout(100 * time.Second),
@@ -1822,8 +1878,22 @@ func TestWithGRPCWriteBufferSize(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set success",
+			name: "set success when size is more than 0",
 			size: 1024,
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 1 {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "set success when size is -1",
+			size: -1,
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
@@ -1853,8 +1923,8 @@ func TestWithGRPCWriteBufferSize(t *testing.T) {
 		},
 
 		{
-			name: "not set when size is less than 0",
-			size: -1,
+			name: "not set when size is less than -1",
+			size: -2,
 			checkFunc: func(opt Option) error {
 				gopts := []grpc.ServerOption{
 					grpc.ConnectionTimeout(10 * time.Second),
@@ -1890,8 +1960,22 @@ func TestWithGRPCReadBufferSize(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set success",
+			name: "set success when size is more than 0",
 			size: 1024,
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 1 {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "set success when size is -1",
+			size: -1,
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
@@ -1921,8 +2005,8 @@ func TestWithGRPCReadBufferSize(t *testing.T) {
 		},
 
 		{
-			name: "not set when size is less than 0",
-			size: -1,
+			name: "not set when size is less than -1",
+			size: -2,
 			checkFunc: func(opt Option) error {
 				gopts := []grpc.ServerOption{
 					grpc.ConnectionTimeout(10 * time.Second),

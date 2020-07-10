@@ -32,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/params"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/timeutil/location"
 	ver "github.com/vdaas/vald/internal/version"
 	"go.uber.org/automaxprocs/maxprocs"
@@ -130,11 +131,13 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 
 	rctx = errgroup.Init(rctx)
 
+	log.Info("executing daemon pre-start function")
 	err = run.PreStart(rctx)
 	if err != nil {
 		return err
 	}
 
+	log.Info("executing daemon start function")
 	ech, err := run.Start(rctx)
 	if err != nil {
 		return errors.ErrDaemonStartFailed(err)
@@ -150,50 +153,58 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 			cancel()
 		case err = <-ech:
 			if err != nil {
+				log.Error(errors.ErrStartFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
-					e := errors.ErrStartFunc(name, err)
-					errs = append(errs, e)
-					log.Error(err)
+					errs = append(errs, err)
 				}
 				emap[err.Error()]++
 			}
 		case <-rctx.Done():
-			err = run.PreStop(ctx)
+			log.Info("executing daemon pre-stop function")
+			err = safety.RecoverFunc(func() error {
+				return run.PreStop(ctx)
+			})()
 			if err != nil {
+				log.Error(errors.ErrPreStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
-					e := errors.ErrPreStopFunc(name, err)
-					errs = append(errs, e)
-					log.Error(err)
+					errs = append(errs, err)
 				}
 				emap[err.Error()]++
 			}
-			err = run.Stop(ctx)
+
+			log.Info("executing daemon stop function")
+			err = safety.RecoverFunc(func() error {
+				return run.Stop(ctx)
+			})()
 			if err != nil {
+				log.Error(errors.ErrStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
-					e := errors.ErrStopFunc(name, err)
-					errs = append(errs, e)
-					log.Error(err)
+					errs = append(errs, err)
 				}
 				emap[err.Error()]++
 			}
-			err = run.PostStop(ctx)
+
+			log.Info("executing daemon post-stop function")
+			err = safety.RecoverFunc(func() error {
+				return run.PostStop(ctx)
+			})()
 			if err != nil {
+				log.Error(errors.ErrPostStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
-					e := errors.ErrPostStopFunc(name, err)
-					errs = append(errs, e)
-					log.Error(err)
+					errs = append(errs, err)
 				}
 				emap[err.Error()]++
 			}
+
 			err = errgroup.Wait()
 			if err != nil {
+				log.Error(errors.ErrRunnerWait(name, err))
 				if _, ok := emap[err.Error()]; !ok {
-					e := errors.ErrRunnerWait(name, err)
-					errs = append(errs, e)
-					log.Error(err)
+					errs = append(errs, err)
 				}
 				emap[err.Error()]++
 			}
+
 			err = nil
 			for _, ierr := range errs {
 				if ierr != nil {
@@ -208,7 +219,9 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 			if err != nil {
 				err = errors.ErrDaemonStopFailed(err)
 			}
+
 			log.Warn("daemon stopped")
+
 			return err
 		}
 	}

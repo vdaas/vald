@@ -1,0 +1,10 @@
+name: "Go CodeQL config"
+queries:
+  - uses: security-and-quality
+  # - uses: github/codeql-go/ql/src@lgtm.com
+
+paths:
+  - "/cmd"
+  - "/hack"
+  - "/internal"
+  - "/pkg"

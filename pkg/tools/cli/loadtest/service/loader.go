@@ -152,7 +152,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 						err := l.loaderFunc(ctx, vald.NewValdClient(conn), r, copts...)
 						atomic.AddInt32(&pgCnt, 1)
 						if err != nil {
-							log.Warn(err)
+							log.Warn("an error occurred while executing loaderfunc:", err)
 							atomic.AddInt32(&errCnt, 1)
 						}
 						return nil, err
@@ -168,7 +168,6 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 				}))
 		}
 		if err := eg.Wait(); err != nil {
-			log.Warn(err)
 			select {
 			case <-ctx.Done():
 				ech <- errors.Wrap(err, ctx.Err().Error())

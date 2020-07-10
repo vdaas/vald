@@ -17,12 +17,14 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+// Logging represents Logging configuration.
 type Logging struct {
 	Logger string `json:"logger" yaml:"logger"`
 	Level  string `json:"level" yaml:"level"`
 	Format string `json:"format" yaml:"format"`
 }
 
+// Bind returns Logging object whose every value is field value or envirionment value.
 func (l *Logging) Bind() *Logging {
 	l.Logger = GetActualValue(l.Logger)
 	l.Level = GetActualValue(l.Level)

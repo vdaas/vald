@@ -18,6 +18,7 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
@@ -48,35 +49,52 @@ func TestLogging_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Logger: "",
-		           Level: "",
-		           Format: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Logger: "",
-		           Level: "",
-		           Format: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns Logging when all fields contain no prefix/suffix symbol",
+			fields: fields{
+				Logger: "logger",
+				Level:  "info",
+				Format: "json",
+			},
+			want: want{
+				want: &Logging{
+					Logger: "logger",
+					Level:  "info",
+					Format: "json",
+				},
+			},
+		},
+		{
+			name: "returns Logging with environment variable when it contains `_` prefix and suffix",
+			fields: fields{
+				Logger: "_logger_",
+				Level:  "_level_",
+				Format: "_format_",
+			},
+			beforeFunc: func() {
+				_ = os.Setenv("logger", "glg")
+				_ = os.Setenv("level", "info")
+				_ = os.Setenv("format", "json")
+			},
+			afterFunc: func() {
+				_ = os.Unsetenv("logger")
+				_ = os.Unsetenv("level")
+				_ = os.Unsetenv("format")
+			},
+			want: want{
+				want: &Logging{
+					Logger: "glg",
+					Level:  "info",
+					Format: "json",
+				},
+			},
+		},
+		{
+			name: "returns Logging when all fields are empty",
+			want: want{
+				want: new(Logging),
+			},
+		},
 	}
 
 	for _, test := range tests {

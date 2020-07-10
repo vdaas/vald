@@ -10,6 +10,7 @@ on:
        - 'v*.*.*-*'
     paths:
       - 'internal/**'
+      - '!internal/**/*_test.go'
       - '!internal/db/**'
       - '!internal/k8s/**'
       - 'apis/grpc/**'
@@ -22,6 +23,7 @@ on:
   pull_request:
     paths:
       - 'internal/**'
+      - '!internal/**/*_test.go'
       - '!internal/db/**'
       - '!internal/k8s/**'
       - 'apis/grpc/**'

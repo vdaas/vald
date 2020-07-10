@@ -75,7 +75,8 @@ type S3Config struct {
 	EnableEndpointDiscovery    bool `json:"enable_endpoint_discovery" yaml:"enable_endpoint_discovery"`
 	EnableEndpointHostPrefix   bool `json:"enable_endpoint_host_prefix" yaml:"enable_endpoint_host_prefix"`
 
-	MaxPartSize string `json:"max_part_size" yaml:"max_part_size"`
+	MaxPartSize  string `json:"max_part_size" yaml:"max_part_size"`
+	MaxChunkSize string `json:"max_chunk_size" yaml:"max_chunk_size"`
 }
 
 type CloudStrageConfig struct {
@@ -122,6 +123,7 @@ func (s *S3Config) Bind() *S3Config {
 	s.SecretAccessKey = GetActualValue(s.SecretAccessKey)
 	s.Token = GetActualValue(s.Token)
 	s.MaxPartSize = GetActualValue(s.MaxPartSize)
+	s.MaxChunkSize = GetActualValue(s.MaxChunkSize)
 
 	return s
 }

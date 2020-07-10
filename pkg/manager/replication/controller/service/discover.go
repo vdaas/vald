@@ -66,7 +66,7 @@ func New(opts ...Option) (rp Replicator, err error) {
 		k8s.WithResourceController(pod.New(
 			pod.WithControllerName("pod discoverer"),
 			pod.WithOnErrorFunc(func(err error) {
-				log.Error(err)
+				log.Error("failed to reconcile:", err)
 			}),
 			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
 				var pods map[string]pod.Pod
@@ -130,7 +130,7 @@ func (r *replicator) Start(ctx context.Context) (<-chan error, error) {
 			case <-rt.C:
 				err = r.SendRecoveryRequest(ctx)
 				if err != nil {
-					log.Error(err)
+					log.Error("failed to send recovery request", err)
 					ech <- err
 				}
 			case err = <-rech:

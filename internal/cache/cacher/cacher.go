@@ -19,6 +19,7 @@ package cacher
 
 import "strings"
 
+// Type represents the cacher type. Currently it support GACHE only.
 type Type uint8
 
 const (
@@ -26,6 +27,7 @@ const (
 	GACHE
 )
 
+// String returns the type name.
 func (m Type) String() string {
 	switch m {
 	case GACHE:
@@ -34,6 +36,7 @@ func (m Type) String() string {
 	return "unknown"
 }
 
+// ToType returns the type based on the string.
 func ToType(str string) Type {
 	switch strings.ToLower(str) {
 	case "gache":

@@ -22,6 +22,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
@@ -83,7 +84,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -108,9 +109,10 @@ func Test_restorer_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		dir     string
-		eg      errgroup.Group
-		storage storage.Storage
+		dir         string
+		eg          errgroup.Group
+		storage     storage.Storage
+		backoffOpts []backoff.Option
 	}
 	type want struct {
 		want <-chan error
@@ -146,6 +148,7 @@ func Test_restorer_Start(t *testing.T) {
 		           dir: "",
 		           eg: nil,
 		           storage: nil,
+		           backoffOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -164,6 +167,7 @@ func Test_restorer_Start(t *testing.T) {
 		           dir: "",
 		           eg: nil,
 		           storage: nil,
+		           backoffOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -174,7 +178,7 @@ func Test_restorer_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -185,9 +189,10 @@ func Test_restorer_Start(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &restorer{
-				dir:     test.fields.dir,
-				eg:      test.fields.eg,
-				storage: test.fields.storage,
+				dir:         test.fields.dir,
+				eg:          test.fields.eg,
+				storage:     test.fields.storage,
+				backoffOpts: test.fields.backoffOpts,
 			}
 
 			got, err := r.Start(test.args.ctx)
@@ -204,9 +209,10 @@ func Test_restorer_startRestore(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		dir     string
-		eg      errgroup.Group
-		storage storage.Storage
+		dir         string
+		eg          errgroup.Group
+		storage     storage.Storage
+		backoffOpts []backoff.Option
 	}
 	type want struct {
 		want <-chan error
@@ -242,6 +248,7 @@ func Test_restorer_startRestore(t *testing.T) {
 		           dir: "",
 		           eg: nil,
 		           storage: nil,
+		           backoffOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -260,6 +267,7 @@ func Test_restorer_startRestore(t *testing.T) {
 		           dir: "",
 		           eg: nil,
 		           storage: nil,
+		           backoffOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -270,7 +278,7 @@ func Test_restorer_startRestore(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -281,9 +289,10 @@ func Test_restorer_startRestore(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &restorer{
-				dir:     test.fields.dir,
-				eg:      test.fields.eg,
-				storage: test.fields.storage,
+				dir:         test.fields.dir,
+				eg:          test.fields.eg,
+				storage:     test.fields.storage,
+				backoffOpts: test.fields.backoffOpts,
 			}
 
 			got, err := r.startRestore(test.args.ctx)
@@ -300,9 +309,10 @@ func Test_restorer_restore(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		dir     string
-		eg      errgroup.Group
-		storage storage.Storage
+		dir         string
+		eg          errgroup.Group
+		storage     storage.Storage
+		backoffOpts []backoff.Option
 	}
 	type want struct {
 		err error
@@ -334,6 +344,7 @@ func Test_restorer_restore(t *testing.T) {
 		           dir: "",
 		           eg: nil,
 		           storage: nil,
+		           backoffOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -352,6 +363,7 @@ func Test_restorer_restore(t *testing.T) {
 		           dir: "",
 		           eg: nil,
 		           storage: nil,
+		           backoffOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -362,7 +374,7 @@ func Test_restorer_restore(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -373,9 +385,10 @@ func Test_restorer_restore(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &restorer{
-				dir:     test.fields.dir,
-				eg:      test.fields.eg,
-				storage: test.fields.storage,
+				dir:         test.fields.dir,
+				eg:          test.fields.eg,
+				storage:     test.fields.storage,
+				backoffOpts: test.fields.backoffOpts,
 			}
 
 			err := r.restore(test.args.ctx)

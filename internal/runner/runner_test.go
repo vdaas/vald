@@ -18,12 +18,24 @@ package runner
 
 import (
 	"context"
+	stderrs "errors"
+	"os"
+	"syscall"
 	"testing"
+	"time"
 
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 
 	"go.uber.org/goleak"
 )
+
+func TestMain(m *testing.M) {
+	log.Init()
+	code := m.Run()
+	os.Exit(code)
+}
 
 func TestDo(t *testing.T) {
 	type args struct {
@@ -47,45 +59,184 @@ func TestDo(t *testing.T) {
 		}
 		return nil
 	}
+	defaultAfterFunc := func(args) {
+		os.Args = []string{
+			"test",
+		}
+	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns nil when option is nil and version option is set",
+			args: args{
+				ctx: context.Background(),
+			},
+			beforeFunc: func(args) {
+				os.Args = []string{
+					"test", "-version",
+				}
+			},
+			want: want{
+				err: nil,
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns error when option is nil and params.Parse returns error",
+			args: args{
+				ctx: context.Background(),
+			},
+			beforeFunc: func(args) {
+				os.Args = []string{
+					"test", "-team=set",
+				}
+			},
+			want: want{
+				err: errors.ErrArgumentParseFailed(stderrs.New("flag provided but not defined: -team")),
+			},
+		},
+
+		{
+			name: "returns error when option is not nil and r.loadConfig returns error",
+			args: args{
+				ctx: context.Background(),
+				opts: []Option{
+					WithConfigLoader(func(string) (interface{}, *config.GlobalConfig, error) {
+						return nil, nil, errors.New("err")
+					}),
+				},
+			},
+			beforeFunc: func(args) {
+				os.Args = []string{
+					"test", "-c=./runner.go",
+				}
+			},
+			want: want{
+				err: errors.New("err"),
+			},
+		},
+
+		{
+			name: "returns error when option is not nil and ver.Check returns error",
+			args: args{
+				ctx: context.Background(),
+				opts: []Option{
+					WithVersion("v1.1.7", "v1.1.5", "v1.1.0"),
+					WithConfigLoader(func(string) (interface{}, *config.GlobalConfig, error) {
+						return nil, &config.GlobalConfig{
+							Logging: &config.Logging{
+								Logger: "glg",
+								Level:  "info",
+								Format: "json",
+							},
+							Version: "v1.1.7",
+						}, nil
+					}),
+				},
+			},
+			beforeFunc: func(args) {
+				os.Args = []string{
+					"test", "-c=./runner.go",
+				}
+			},
+			want: want{
+				err: errors.ErrInvalidConfigVersion("1.1.7", ">= v1.1.0, <= v1.1.5"),
+			},
+		},
+
+		{
+			name: "returns error when option is not nil and r.initializeDaemon returns error",
+			args: args{
+				ctx: context.Background(),
+				opts: []Option{
+					WithVersion("v1.1.2", "v1.1.5", "v1.1.0"),
+					WithConfigLoader(func(string) (interface{}, *config.GlobalConfig, error) {
+						return nil, &config.GlobalConfig{
+							Logging: &config.Logging{
+								Logger: "glg",
+								Level:  "info",
+								Format: "json",
+							},
+							Version: "v1.1.2",
+						}, nil
+					}),
+					WithDaemonInitializer(func(interface{}) (Runner, error) {
+						return nil, errors.New("err")
+					}),
+				},
+			},
+			beforeFunc: func(args) {
+				os.Args = []string{
+					"test", "-c=./runner.go",
+				}
+			},
+			want: want{
+				err: errors.New("err"),
+			},
+		},
+
+		{
+			name: "returns nil when option is not nil and Run returns nil",
+			args: args{
+				ctx: context.Background(),
+				opts: []Option{
+					WithVersion("v1.1.2", "v1.1.5", "v1.1.0"),
+					WithConfigLoader(func(string) (interface{}, *config.GlobalConfig, error) {
+						return nil, &config.GlobalConfig{
+							Logging: &config.Logging{
+								Logger: "glg",
+								Level:  "info",
+								Format: "json",
+							},
+							Version: "v1.1.2",
+						}, nil
+					}),
+					WithDaemonInitializer(func(interface{}) (Runner, error) {
+						return &runnerMock{
+							PreStartFunc: func(ctx context.Context) error {
+								return nil
+							},
+							StartFunc: func(ctx context.Context) (<-chan error, error) {
+								return make(chan error, 1), nil
+							},
+							PreStopFunc: func(ctx context.Context) error {
+								return nil
+							},
+							StopFunc: func(ctx context.Context) error {
+								return nil
+							},
+							PostStopFunc: func(ctx context.Context) error {
+								return nil
+							},
+						}, nil
+					}),
+				},
+			},
+			beforeFunc: func(args) {
+				os.Args = []string{
+					"test", "-c=./runner.go",
+				}
+				go func() {
+					time.Sleep(2 * time.Second)
+					syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+				}()
+			},
+			want: want{
+				err: nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
 			}
+			defer test.afterFunc(test.args)
+
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
@@ -94,7 +245,6 @@ func TestDo(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -123,40 +273,210 @@ func TestRun(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           run: nil,
-		           name: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "returns nil when internal functionally occurs no error",
+				args: args{
+					ctx: ctx,
+					run: func() Runner {
+						return &runnerMock{
+							PreStartFunc: func(ctx context.Context) error {
+								return nil
+							},
+							StartFunc: func(ctx context.Context) (<-chan error, error) {
+								return make(chan error, 1), nil
+							},
+							PreStopFunc: func(ctx context.Context) error {
+								return nil
+							},
+							StopFunc: func(ctx context.Context) error {
+								return nil
+							},
+							PostStopFunc: func(ctx context.Context) error {
+								return nil
+							},
+						}
+					}(),
+				},
+				beforeFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           run: nil,
-		           name: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "returns error when run.PreStop and run.Stop and run.PostStop returns error",
+				args: args{
+					ctx:  ctx,
+					name: "vald",
+					run: func() Runner {
+						return &runnerMock{
+							PreStartFunc: func(ctx context.Context) error {
+								return nil
+							},
+							StartFunc: func(ctx context.Context) (<-chan error, error) {
+								return make(chan error, 1), nil
+							},
+							PreStopFunc: func(ctx context.Context) error {
+								return errors.New("err1")
+							},
+							StopFunc: func(ctx context.Context) error {
+								return errors.New("err2")
+							},
+							PostStopFunc: func(ctx context.Context) error {
+								return errors.New("err3")
+							},
+						}
+					}(),
+				},
+				beforeFunc: func(args) {
+					go func() {
+						time.Sleep(2 * time.Second)
+						cancel()
+					}()
+				},
+				want: want{
+					err: func() (err error) {
+						details := []struct {
+							err error
+							cnt int
+						}{
+							{
+								err: errors.New("err1"),
+								cnt: 1,
+							},
+							{
+								err: errors.New("err2"),
+								cnt: 1,
+							},
+							{
+								err: errors.New("err3"),
+								cnt: 1,
+							},
+						}
+
+						for _, det := range details {
+							err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", det.err.Error(), det.cnt)
+						}
+
+						return errors.ErrDaemonStopFailed(err)
+					}(),
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "returns error when channel of run.StartFunc contains error",
+				args: args{
+					ctx:  ctx,
+					name: "vald",
+					run: func() Runner {
+						return &runnerMock{
+							PreStartFunc: func(ctx context.Context) error {
+								return nil
+							},
+							StartFunc: func(ctx context.Context) (<-chan error, error) {
+								ch := make(chan error, 3)
+								ch <- errors.New("err1")
+								ch <- errors.New("err2")
+								ch <- errors.New("err1")
+								return ch, nil
+							},
+							PreStopFunc: func(ctx context.Context) error {
+								return nil
+							},
+							StopFunc: func(ctx context.Context) error {
+								return nil
+							},
+							PostStopFunc: func(ctx context.Context) error {
+								return nil
+							},
+						}
+					}(),
+				},
+				beforeFunc: func(args) {
+					go func() {
+						time.Sleep(2 * time.Second)
+						cancel()
+					}()
+				},
+				want: want{
+					err: func() (err error) {
+						details := []struct {
+							err error
+							cnt int
+						}{
+							{
+								err: errors.New("err1"),
+								cnt: 2,
+							},
+							{
+								err: errors.New("err2"),
+								cnt: 1,
+							},
+						}
+
+						for _, detail := range details {
+							err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", detail.err.Error(), detail.cnt)
+						}
+
+						return errors.ErrDaemonStopFailed(err)
+					}(),
+				},
+			}
+		}(),
+
+		{
+			name: "returns error when run.PreStart returns error",
+			args: args{
+				ctx: context.Background(),
+				run: func() Runner {
+					return &runnerMock{
+						PreStartFunc: func(context.Context) error {
+							return errors.New("err")
+						},
+					}
+				}(),
+				name: "vald",
+			},
+			want: want{
+				err: errors.New("err"),
+			},
+		},
+
+		{
+			name: "returns error when run.Start returns error",
+			args: args{
+				ctx: context.Background(),
+				run: func() Runner {
+					return &runnerMock{
+						PreStartFunc: func(context.Context) error {
+							return nil
+						},
+						StartFunc: func(context.Context) (<-chan error, error) {
+							return nil, errors.New("err")
+						},
+					}
+				}(),
+				name: "vald",
+			},
+			want: want{
+				err: errors.ErrDaemonStartFailed(errors.New("err")),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -171,7 +491,6 @@ func TestRun(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

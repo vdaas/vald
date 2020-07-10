@@ -3,7 +3,16 @@ vald-helm-operator
 
 This is a Helm chart to install vald-helm-operator.
 
-Current chart version is `v0.0.40`
+Current chart version is `v0.0.44`
+
+Table of Contents
+---
+
+- [Install](#install)
+- [Custom Resources](#custom-resources)
+    - [ValdRelease](#valdrelease)
+    - [ValdHelmOperatorRelease](#valdhelmoperatorrelease)
+- [Configuration](#configuration)
 
 Install
 ---
@@ -57,7 +66,7 @@ Configuration
 | affinity | object | `{}` | affinity |
 | image.pullPolicy | string | `"Always"` | image pull policy |
 | image.repository | string | `"vdaas/vald-helm-operator"` | image repository |
-| image.tag | string | `"v0.0.40"` | image tag |
+| image.tag | string | `"v0.0.44"` | image tag |
 | logging.format | string | `"console"` | logging format of operator (console or json) |
 | logging.level | string | `"info"` | logging level of operator (debug, info, or error) |
 | logging.stacktraceLevel | string | `"error"` | minimum log level triggers stacktrace generation |

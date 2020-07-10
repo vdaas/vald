@@ -16,13 +16,29 @@
 
 package reader
 
-import "github.com/aws/aws-sdk-go/service/s3"
+import (
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/errgroup"
+)
 
 type Option func(r *reader)
 
 var (
-	defaultOpts = []Option{}
+	defaultOpts = []Option{
+		WithErrGroup(errgroup.Get()),
+		WithMaxChunkSize(512 * 1024 * 1024),
+		WithBackoff(false),
+	}
 )
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(r *reader) {
+		if eg != nil {
+			r.eg = eg
+		}
+	}
+}
 
 func WithService(s *s3.S3) Option {
 	return func(r *reader) {
@@ -41,5 +57,27 @@ func WithBucket(bucket string) Option {
 func WithKey(key string) Option {
 	return func(r *reader) {
 		r.key = key
+	}
+}
+
+func WithMaxChunkSize(size int64) Option {
+	return func(r *reader) {
+		r.maxChunkSize = size
+	}
+}
+
+func WithBackoff(enabled bool) Option {
+	return func(r *reader) {
+		r.backoffEnabled = enabled
+	}
+}
+
+func WithBackoffOpts(opts ...backoff.Option) Option {
+	return func(r *reader) {
+		if r.backoffOpts == nil {
+			r.backoffOpts = opts
+		}
+
+		r.backoffOpts = append(r.backoffOpts, opts...)
 	}
 }

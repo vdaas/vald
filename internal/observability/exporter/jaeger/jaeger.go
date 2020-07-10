@@ -21,18 +21,17 @@ import (
 	"context"
 
 	"contrib.go.opencensus.io/exporter/jaeger"
+	"github.com/vdaas/vald/internal/observability/exporter"
 	"go.opencensus.io/trace"
 )
 
 type jaegerOptions = jaeger.Options
 
 type Jaeger interface {
-	Start(ctx context.Context) error
-	Stop(ctx context.Context)
-	Exporter() *jaeger.Exporter
+	exporter.Exporter
 }
 
-type exporter struct {
+type exp struct {
 	exporter *jaeger.Exporter
 	options  jaegerOptions
 }
@@ -47,12 +46,12 @@ func New(opts ...JaegerOption) (j Jaeger, err error) {
 		}
 	}
 
-	return &exporter{
+	return &exp{
 		options: *jo,
 	}, nil
 }
 
-func (e *exporter) Start(ctx context.Context) (err error) {
+func (e *exp) Start(ctx context.Context) (err error) {
 	e.exporter, err = jaeger.NewExporter(e.options)
 	if err != nil {
 		return err
@@ -63,12 +62,8 @@ func (e *exporter) Start(ctx context.Context) (err error) {
 	return nil
 }
 
-func (e *exporter) Stop(ctx context.Context) {
+func (e *exp) Stop(ctx context.Context) {
 	if e.exporter != nil {
 		e.exporter.Flush()
 	}
-}
-
-func (e *exporter) Exporter() *jaeger.Exporter {
-	return e.exporter
 }

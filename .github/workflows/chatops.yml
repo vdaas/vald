@@ -8,6 +8,7 @@ jobs:
   label:
     name: Add labels
     runs-on: ubuntu-latest
+    if: github.event.comment.user.login != 'vdaas-ci'
     steps:
       - name: check PR Comments
         id: check_comments_label
@@ -60,6 +61,7 @@ jobs:
   changelog:
     name: Add draft comment for a new CHANGELOG entry
     runs-on: ubuntu-latest
+    if: github.event.comment.user.login != 'vdaas-ci'
     steps:
       - name: check PR Comments
         id: check_comments_changelog
@@ -102,7 +104,7 @@ jobs:
         run: |
           git checkout master
           PREVIOUS_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
-          BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..master | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%" | sed ':a;N;$!ba;s/\n/\\\\n/g'`
+          BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..master | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%g" | sed ':a;N;$!ba;s/\n/\\\\n/g'`
           CURRENT="- ${PR_TITLE} ([#${PR_NUM}](https://github.com/vdaas/vald/pull/${PR_NUM}))"
           curl --include --verbose --fail \
           -H "Accept: application/json" \
@@ -119,6 +121,7 @@ jobs:
   rebase:
     name: Rebase
     runs-on: ubuntu-latest
+    if: github.event.comment.user.login != 'vdaas-ci'
     steps:
       - name: check PR Comments
         id: check_comments_rebase
@@ -192,6 +195,7 @@ jobs:
     needs:
       - rebase
     runs-on: ubuntu-latest
+    if: github.event.comment.user.login != 'vdaas-ci'
     steps:
       - name: check PR Comments
         id: check_comments_gen_test
@@ -298,6 +302,7 @@ jobs:
       - rebase
       - gentest
     runs-on: ubuntu-latest
+    if: github.event.comment.user.login != 'vdaas-ci'
     steps:
       - name: check PR Comments
         id: check_comments_format
@@ -428,6 +433,7 @@ jobs:
       - rebase
       - format
     runs-on: ubuntu-latest
+    if: github.event.comment.user.login != 'vdaas-ci'
     steps:
       - name: check PR Comments
         id: check_comments_approve

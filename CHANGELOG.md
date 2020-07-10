@@ -1,5 +1,145 @@
 # CHANGELOG
 
+## v0.0.44
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.44`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.44`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.44`
+gateway | `docker pull vdaas/vald-gateway:v0.0.44`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.44`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.44`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.44`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.44`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.44`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.44`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.44`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.44)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.44/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.44/charts/vald-helm-operator/README.md)
+
+### Changes
+- use Len and InsertVCacheLen method for IndexInfo / add mutex for (Create|Save)Index ([#536](https://github.com/vdaas/vald/pull/536))
+- documentation: tutorial/agent-on-docker ([#516](https://github.com/vdaas/vald/pull/516))
+- Revise log messages along with the coding guideline ([#504](https://github.com/vdaas/vald/pull/504))
+- :art: Add images of usecase ([#537](https://github.com/vdaas/vald/pull/537))
+- :white_check_mark: add internal/config/tls test ([#534](https://github.com/vdaas/vald/pull/534))
+- :bug: Add cancel hook for file watcher ([#535](https://github.com/vdaas/vald/pull/535))
+- :green_heart: Add test workflow ([#531](https://github.com/vdaas/vald/pull/531))
+- added internal/config/log test ([#530](https://github.com/vdaas/vald/pull/530))
+- add codeql config ([#532](https://github.com/vdaas/vald/pull/532))
+- Added test case for `internal/info` pacakge. ([#514](https://github.com/vdaas/vald/pull/514))
+- Add `internal/runner` test ([#505](https://github.com/vdaas/vald/pull/505))
+- Added test case for `internal/unit` pacakge ([#515](https://github.com/vdaas/vald/pull/515))
+
+
+## v0.0.43
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.43`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.43`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.43`
+gateway | `docker pull vdaas/vald-gateway:v0.0.43`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.43`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.43`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.43`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.43`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.43`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.43`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.43`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.43)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.43/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.43/charts/vald-helm-operator/README.md)
+
+### Changes
+- Revise S3 reader/writer: compatible with IBM Cloud Object Storage ([#509](https://github.com/vdaas/vald/pull/509))
+- :bug: Close [#502](https://github.com/vdaas/vald/pull/502) / Fix roundtrip error handling (#508)
+- Feature/drawio ([#500](https://github.com/vdaas/vald/pull/500))
+- Added test case for `internal/errorgroup`  ([#494](https://github.com/vdaas/vald/pull/494))
+- Update Helm Chart info ([#496](https://github.com/vdaas/vald/pull/496))
+- Revise triggers of workflow run & Fix reading changelogs from PR comments ([#495](https://github.com/vdaas/vald/pull/495))
+
+
+## v0.0.42
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.42`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.42`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.42`
+gateway | `docker pull vdaas/vald-gateway:v0.0.42`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.42`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.42`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.42`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.42`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.42`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.42`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.42`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.42)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.42/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.42/charts/vald-helm-operator/README.md)
+
+### Changes
+- ✨ Add Stackdriver Monitoring, Tracing and Profiler support ([#479](https://github.com/vdaas/vald/pull/479))
+- :green_heart: Add CodeQL workflow instead of LGTM.com ([#486](https://github.com/vdaas/vald/pull/486))
+- Add `internal/params` pacakge test ([#474](https://github.com/vdaas/vald/pull/474))
+- :sparkles: aws region can be specified with empty string ([#477](https://github.com/vdaas/vald/pull/477))
+- Fix failed test case of internal/safety package ([#464](https://github.com/vdaas/vald/pull/464))
+- send a request to GoProxy after a new version is published ([#475](https://github.com/vdaas/vald/pull/475))
+- internal/db/storage/blob/s3: remove ctx from struct ([#473](https://github.com/vdaas/vald/pull/473))
+
+
+## v0.0.41
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.41`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.41`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.41`
+gateway | `docker pull vdaas/vald-gateway:v0.0.41`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.41`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.41`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.41`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.41`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.41`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.41`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.41`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.41)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.41/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.41/charts/vald-helm-operator/README.md)
+
+### Changes
+- Refactor agent-sidecar: fix S3 reader & add backoff logic ([#467](https://github.com/vdaas/vald/pull/467))
+- :bug: :pencil: fix link ([#471](https://github.com/vdaas/vald/pull/471))
+- Fix /changelog command format ([#470](https://github.com/vdaas/vald/pull/470))
+- fix: failing test ([#469](https://github.com/vdaas/vald/pull/469))
+- fix: failing test ([#468](https://github.com/vdaas/vald/pull/468))
+- ✨ Add options for AWS client ([#460](https://github.com/vdaas/vald/pull/460))
+- Fix /format command ([#466](https://github.com/vdaas/vald/pull/466))
+- Fix /format command ([#465](https://github.com/vdaas/vald/pull/465))
+- Fix `internal/log/retry` pacakge ([#458](https://github.com/vdaas/vald/pull/458))
+- [ImgBot] Optimize images ([#461](https://github.com/vdaas/vald/pull/461))
+- :art: trim white margin at data flow images ([#459](https://github.com/vdaas/vald/pull/459))
+
+
 ## v0.0.40
 
 ### Docker images

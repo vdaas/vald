@@ -24,6 +24,7 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 )
 
 type ert struct {
@@ -65,9 +66,16 @@ func (e *ert) roundTrip(req *http.Request) (res *http.Response, err error) {
 	if err == nil {
 		return res, nil
 	}
-	if res != nil {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
+	if res == nil {
+		return nil, err
+	}
+	_, err = io.Copy(ioutil.Discard, res.Body)
+	if err != nil {
+		log.Error(err)
+	}
+	err = res.Body.Close()
+	if err != nil {
+		log.Error(err)
 	}
 	switch res.StatusCode {
 	case http.StatusTooManyRequests,

@@ -34,6 +34,7 @@ type TLS struct {
 	CA string `yaml:"ca" json:"ca"`
 }
 
+// Bind returns TLS object whose every value except Enabled is field value of environment value.
 func (t *TLS) Bind() *TLS {
 	t.Cert = GetActualValue(t.Cert)
 	t.Key = GetActualValue(t.Key)
@@ -41,6 +42,7 @@ func (t *TLS) Bind() *TLS {
 	return t
 }
 
+// Opts returns []tls.Option object whose every value is field value.
 func (t *TLS) Opts() []tls.Option {
 	return []tls.Option{
 		tls.WithCa(t.CA),

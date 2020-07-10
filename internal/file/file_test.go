@@ -19,7 +19,6 @@ package file
 
 import (
 	"os"
-	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -40,55 +39,106 @@ func TestOpen(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *os.File) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
+
 	defaultCheckFunc := func(w want, got *os.File) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+		if w.want == nil {
+			if got != nil {
+				return errors.New("got is not nil")
+			}
+		} else {
+			if got, want := got.Name(), w.want.Name(); got != want {
+				return errors.Errorf("got name = %s, want: %s")
+			}
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           path: "",
-		           flg: 0,
-		           perm: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns *os.File when path is `test/data`",
+			args: args{
+				path: "test/data",
+				flg:  os.O_CREATE,
+				perm: os.ModePerm,
+			},
+			checkFunc: func(_ want, got *os.File) error {
+				file, err := os.OpenFile("test/data", os.O_CREATE, os.ModePerm)
+				if err != nil {
+					return err
+				}
+				return defaultCheckFunc(want{
+					want: file,
+				}, got)
+			},
+			afterFunc: func(t *testing.T, _ args) {
+				t.Helper()
+				if err := os.RemoveAll("test"); err != nil {
+					t.Fatal(err)
+				}
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           path: "",
-		           flg: 0,
-		           perm: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns *os.File when path is `test/test/data`",
+			args: args{
+				path: "test/test/data",
+				flg:  os.O_CREATE,
+				perm: os.ModePerm,
+			},
+			checkFunc: func(_ want, got *os.File) error {
+				file, err := os.OpenFile("test/test/data", os.O_CREATE, os.ModePerm)
+				if err != nil {
+					return err
+				}
+				return defaultCheckFunc(want{
+					want: file,
+				}, got)
+			},
+			afterFunc: func(t *testing.T, _ args) {
+				t.Helper()
+				if err := os.RemoveAll("test"); err != nil {
+					t.Fatal(err)
+				}
+			},
+		},
+
+		{
+			name: "returns *os.File when path is `file.go`",
+			args: args{
+				path: "file.go",
+				flg:  os.O_RDONLY,
+				perm: os.ModePerm,
+			},
+			want: want{
+				want: func() *os.File {
+					f, _ := os.OpenFile("file.go", os.O_RDONLY, os.ModePerm)
+					return f
+				}(),
+			},
+		},
+
+		{
+			name: "returns nil when path is empty",
+			args: args{
+				flg:  os.O_CREATE,
+				perm: os.ModeDir,
+			},
+			want: want{
+				want: nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -98,7 +148,6 @@ func TestOpen(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

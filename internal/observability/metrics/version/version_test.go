@@ -24,21 +24,24 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/metrics"
-
 	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
+	type args struct {
+		labels []string
+	}
 	type want struct {
 		want metrics.Metric
 		err  error
 	}
 	type test struct {
 		name       string
+		args       args
 		want       want
 		checkFunc  func(want, metrics.Metric, error) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got metrics.Metric, err error) error {
 		if !errors.Is(err, w.err) {
@@ -54,6 +57,9 @@ func TestNew(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
+		       args: args {
+		           labels: nil,
+		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
 		   },
@@ -64,6 +70,9 @@ func TestNew(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
+		           args: args {
+		           labels: nil,
+		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
 		       }
@@ -73,18 +82,18 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got, err := New()
+			got, err := New(test.args.labels...)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -94,16 +103,20 @@ func TestNew(t *testing.T) {
 }
 
 func Test_labelKVs(t *testing.T) {
+	type args struct {
+		labels []string
+	}
 	type want struct {
 		want map[metrics.Key]string
 		err  error
 	}
 	type test struct {
 		name       string
+		args       args
 		want       want
 		checkFunc  func(want, map[metrics.Key]string, error) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got map[metrics.Key]string, err error) error {
 		if !errors.Is(err, w.err) {
@@ -119,6 +132,9 @@ func Test_labelKVs(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
+		       args: args {
+		           labels: nil,
+		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
 		   },
@@ -129,6 +145,9 @@ func Test_labelKVs(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
+		           args: args {
+		           labels: nil,
+		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
 		       }
@@ -138,18 +157,18 @@ func Test_labelKVs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got, err := labelKVs()
+			got, err := labelKVs(test.args.labels...)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -226,7 +245,7 @@ func Test_version_Measurement(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -318,7 +337,7 @@ func Test_version_MeasurementWithTags(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -396,7 +415,7 @@ func Test_version_View(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

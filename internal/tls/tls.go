@@ -43,7 +43,7 @@ func New(opts ...Option) (*Config, error) {
 	var err error
 	c := new(credentials)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions(), opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -68,7 +68,6 @@ func New(opts ...Option) (*Config, error) {
 		c.cfg.ClientAuth = tls.RequireAndVerifyClientCert
 	}
 
-	c.cfg.BuildNameToCertificate()
 	return c.cfg, nil
 }
 
@@ -76,7 +75,7 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 	var err error
 	c := new(credentials)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions(), opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -96,7 +95,6 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 		if err != nil {
 			return nil, err
 		}
-		c.cfg.BuildNameToCertificate()
 	}
 
 	return c.cfg, nil

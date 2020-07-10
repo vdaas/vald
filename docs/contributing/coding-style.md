@@ -174,7 +174,7 @@ c := &Something{
 }
 ```
 
-To initialize complex structs, we can use [functional option pattern](https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis). Please read [server.go](../../../internal/servers/servers.go) and [option.go](../../../internal/servers/option.go) for the reference implementation.
+To initialize complex structs, we can use [functional option pattern](https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis). Please read [server.go](https://github.com/vdaas/vald/blob/master/internal/servers/servers.go) and [option.go](https://github.com/vdaas/vald/blob/master/internal/servers/option.go) for the reference implementation.
 The options implementation should be separated as another file called `option.go` to improve the readability of the source code, and the method name should start with `With` word to differentiate with other methods.
 
 ### Variables and Constant
@@ -264,15 +264,42 @@ func (s *something) SetSignedTok(st string) {
 }
 ```
 
+### Unused Variables
+
+An unused variable may increase the complexity of the source code, it may confuse the developer hence introduce a new bug.
+So please delete the unused variable.
+
+Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error. 
+This is an example of the unused variable declaration that does not cause a compilation error.
+
+```golang
+// In this case, this example are not using `port` field, but dose not cause a compilation error.
+// So please delete `port` field of `server`.
+
+type server struct {
+    addr string
+    port int  // you have to delete this field.
+}
+
+// The `port` field of `server` is not used.
+srv := &server {
+    addr: "192.168.33.10:1234",
+}
+
+if err := srv.Run(); err != nil {
+    log.Fatal(err)
+}
+```
+
 ### Error handling
 
-All errors should define in [internal/errors package](../../internal/errors). All errors should be start with `Err` prefix, and all errors should be handle if possible.
+All errors should define in [internal/errors package](https://github.com/vdaas/vald/blob/master/internal/errors). All errors should be start with `Err` prefix, and all errors should be handle if possible.
 
-Please use [internal/errgroup](../../internal/errgroup) for synchronized error handling on multi-goroutine processing.
+Please use [internal/errgroup](https://github.com/vdaas/vald/blob/master/internal/errgroup) for synchronized error handling on multi-goroutine processing.
 
 ### Logging
 
-We define our own logging interface in [internal/log package](../../internal/log). By default we use [glg](https://github.com/kpango/glg) to do the logging internally.
+We define our own logging interface in [internal/log package](https://github.com/vdaas/vald/blob/master/internal/log). By default we use [glg](https://github.com/kpango/glg) to do the logging internally.
 We defined the following logging levels.
 
 | Log level | Description                                                                                                                                                                                                                                    | Example situation                                                                                                                                  | Example message                                                                                                                                                                                                        |
@@ -291,13 +318,13 @@ Everyone should write the comments to all the public objects on your source code
 
 ## Documentation
 
-Documentation is generated from the program comments. Please refer to [Godoc](https://godoc.org/github.com/vdaas/vald) for the program documentation.
+Documentation is generated from the program comments. Please refer to [Godoc](https://pkg.go.dev/github.com/vdaas/vald) for the program documentation.
 
 ## Internal packages
 
 Vald implements its internal package to extend and customize the functionality of the standard library and third-party library.
 We should use the internal package instead of standard libray to implement Vald.
-Please refer to [godoc](https://godoc.org/github.com/vdaas/vald/internal) for the internal package document.
+Please refer to [godoc](https://pkg.go.dev/github.com/vdaas/vald/internal) for the internal package document.
 
 ## Dependency management and Build
 
@@ -509,3 +536,135 @@ for name, fn := range tests {
 }
 
 ```
+
+### Generate test code
+
+We implement our own [gotests](https://github.com/cweill/gotests) template to generate test code.
+If you want to install `gotest` tools, please execute the following command under the project root directory.
+
+```bash
+make gotests/install
+```
+
+If you use the following command to generate the missing test code.
+
+```bash
+make make gotests/gen
+```
+
+After the command above executed, the file `*target*_test.go` will be generated for each Go source file.
+The test code generated follows the table-driven test format.
+You can implement your test code under the `tests` variable generated following the table-driven test format.
+
+### Customize test case
+
+We do not suggest to modify the generated code other than the `tests` variable, but in some cases, you may need to modify the generated code to meet your requirement, for example:
+
+1. init() function
+
+    init() function is executed automatically before the test is started.
+    You may need to initialize some singleton before your test cases are executed.
+    For example, Vald uses [glg](https://github.com/kpango/glg) library for logging by default, if the logger is not initialized before the test, the nil pointer error may be thrown during the test is running.
+    You may need to implement `init()` function like:
+
+    ```golang
+    func init() {
+        log.Init()
+    }
+    ```
+
+    And place it on the header of the test file.
+
+1. goleak option
+
+    By default, the generated test code will use [goleak](https://github.com/uber-go/goleak) library to test if there is any Goroutine leak.
+    Sometimes you may want to skip the detection, for example, Vald uses [fastime](https://github.com/kpango/fastime) library but the internal Goroutine is not closed due to the needs of the library. 
+    To skip the goleak detection we need to create the following variable to store the ignore function.
+
+    ```golang
+    var (
+        // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+        goleakIgnoreOptions = []goleak.Option{
+            goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+        }
+    )
+    ```
+
+    And modify the generated test code.
+
+    ```golang
+    // before
+    for _, test := range tests {
+        t.Run(test.name, func(tt *testing.T) {
+            defer goleak.VerifyNone(tt)
+
+    // after
+    for _, test := range tests {
+        t.Run(test.name, func(tt *testing.T) {
+            // modify the following line
+            defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+    ```
+
+1. Defer function
+
+    By default the template provides `beforeFunc()` and `afterFunc()` to initialize and finalize the test case, but in some case, it may not support your use case.
+    For example `recover()` function only works in `defer()` function, if you need to use `recover()` function to handle the panic in your test code, you may need to implement your custom `defer()` function and change the generated test code.
+
+    For example:
+
+    ```golang
+    for _, test := range tests {
+      t.Run(test.name, func(tt *testing.T) {
+        defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+
+        // insert your defer function here
+        defer func(w want, tt *testing.T) {
+            // implement your defer func logic
+            if err:= recover(); err != nil {
+                // check the panic
+            }
+        }(test.want, tt)
+
+        if test.beforeFunc != nil {
+            test.beforeFunc(test.args)
+        }
+        // generated test code
+    ```
+
+1. Unused fields
+
+    By default, the template provides `fields` structure to initialize object of the test target. 
+    But in some cases, not all `fields` are needed, so please delete the unnecessary fields.
+    For example, the following struct and the corresponding function:
+    
+    ```golang
+    type server struct {
+        addr string
+        port int
+    }
+    func (s *server) Addr() string {
+        return s.addr
+    }
+    ```
+
+    And the generated test code is:
+    ```golang
+    func Test_server_Addr(t *testing.T) {
+        type fields struct {
+            addr string
+            port int
+        }
+        type want struct {
+            // generated test code
+    ```
+
+    Since the `port` variable is not used in this test case, you can delete the `port` definition in the test case.
+    ```golang
+    func Test_server_Addr(t *testing.T) {
+        type fields struct {
+            addr string
+            // port int   <-- this line should be deleted
+        }
+        type want struct {
+            // generated test code
+    ```

@@ -1,0 +1,6 @@
+- :ok_woman: `/approve` - approve
+- :love_letter: `/changelog` - add changelog comment
+- :bento: `/format` - format codes and add licenses
+- :white_check_mark: `/gen-test` - generate test codes
+- :label: `/label` - add labels
+- :rewind: `/rebase` - rebase master

@@ -66,10 +66,11 @@ jobs:
           BODY=""
           if [ ! -z "${PR_NUM}" ]; then
             PR_COMMENTS=`curl https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${PR_NUM}/comments?per_page=10000`
-            BODY=`echo -E $PR_COMMENTS | jq 'last(.[] | select(.user.login == "vdaas-ci") | select(.body | test("^\\\\*\\\\*\\\\[CHANGELOG")) | .body)' -r | tail -n +2`
+            BODY=`echo -E $PR_COMMENTS | jq 'last(.[] | select(.user.login == "vdaas-ci") | select(.body | test("^\\\\*\\\\*\\\\[CHANGELOG")))' -r | jq '.body'`
+            BODY=`echo -e $BODY | tail -n +2`
           fi
 
-          if [ -z "$BODY"]; then
+          if [ -z "$BODY" ]; then
             BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..master | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%"`
           fi
 
@@ -107,13 +108,16 @@ jobs:
       - name: Create release
         if: steps.semver.outputs.RELEASE == 'true'
         id: create_release
-        uses: actions/create-release@v1.0.0
+        uses: actions/create-release@v1.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         with:
           tag_name: ${{ steps.semver.outputs.VERSION }}
           release_name: Release ${{ steps.semver.outputs.VERSION }}
+          body: |
+            See [CHANGELOG.md](https://github.com/vdaas/vald/blob/${{ steps.semver.outputs.VERSION }}/CHANGELOG.md) for details.
           draft: false
           prerelease: false
-          body: |
-            See [CHANGELOG.md](https://github.com/vdaas/vald/blob/master/CHANGELOG.md) for details.
+      - name: Add the version to goproxy
+        run: |
+          curl "https://proxy.golang.org/github.com/vdaas/vald/@v/${{ steps.semver.outputs.VERSION }}.info"

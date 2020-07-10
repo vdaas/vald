@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file/watch"
+	ctxio "github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -160,10 +161,19 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 		return err
 	}
 
-	_, err = o.w.Start(ctx)
+	wctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	_, err = o.w.Start(wctx)
 	if err != nil {
 		return err
 	}
+	defer func() {
+		e := o.w.Stop(wctx)
+		if e != nil {
+			log.Error("an error occurred when watcher stopped:", e)
+		}
+	}()
 
 	for {
 		select {
@@ -201,12 +211,12 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 				err = o.requestBackup(ctx)
 				if err != nil {
 					ech <- err
-					log.Error(err)
+					log.Error("failed to request backup:", err)
 					err = nil
 				}
 			}
 			if err != nil {
-				log.Error(err)
+				log.Error("an error occurred on observer loop:", err)
 				select {
 				case <-ctx.Done():
 					return finalize()
@@ -242,7 +252,7 @@ func (o *observer) startBackupLoop(ctx context.Context) (<-chan error, error) {
 				err = o.backup(ctx)
 				if err != nil {
 					ech <- err
-					log.Error(err)
+					log.Error("an error occurred during backup:", err)
 					err = nil
 				}
 			}
@@ -291,6 +301,9 @@ func (o *observer) backup(ctx context.Context) error {
 			span.End()
 		}
 	}()
+
+	log.Infof("backup directory %s started", o.dir)
+	defer log.Infof("backup directory %s finished", o.dir)
 
 	pr, pw := io.Pipe()
 	defer func() {
@@ -378,13 +391,23 @@ func (o *observer) backup(ctx context.Context) error {
 					}
 				}()
 
-				_, err = io.Copy(tw, data)
+				d, err := ctxio.NewReaderWithContext(ctx, data)
+				if err != nil {
+					return err
+				}
+
+				_, err = io.Copy(tw, d)
 				return err
 			}()
 		})
 	}))
 
-	_, err = io.Copy(sw, pr)
+	prr, err := ctxio.NewReaderWithContext(ctx, pr)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(sw, prr)
 	if err != nil {
 		return err
 	}

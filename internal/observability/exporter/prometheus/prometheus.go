@@ -23,10 +23,11 @@ import (
 	"sync"
 
 	"contrib.go.opencensus.io/exporter/prometheus"
+	"github.com/vdaas/vald/internal/observability/exporter"
 )
 
 var (
-	instance *exporter
+	instance *exp
 	once     sync.Once
 )
 
@@ -36,13 +37,11 @@ type prometheusOptions struct {
 }
 
 type Prometheus interface {
-	Start(ctx context.Context) error
-	Stop(ctx context.Context)
-	Exporter() *prometheus.Exporter
+	exporter.Exporter
 	NewHTTPHandler() http.Handler
 }
 
-type exporter struct {
+type exp struct {
 	exporter *prometheus.Exporter
 	options  prometheusOptions
 }
@@ -63,7 +62,7 @@ func New(opts ...PrometheusOption) (Prometheus, error) {
 		return nil, err
 	}
 
-	e := exporter{
+	e := exp{
 		exporter: ex,
 		options:  *po,
 	}
@@ -75,18 +74,14 @@ func New(opts ...PrometheusOption) (Prometheus, error) {
 	return &e, nil
 }
 
-func (e *exporter) Start(ctx context.Context) error {
+func (e *exp) Start(ctx context.Context) error {
 	return nil
 }
 
-func (e *exporter) Stop(ctx context.Context) {
+func (e *exp) Stop(ctx context.Context) {
 }
 
-func (e *exporter) Exporter() *prometheus.Exporter {
-	return e.exporter
-}
-
-func (e *exporter) NewHTTPHandler() http.Handler {
+func (e *exp) NewHTTPHandler() http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle(e.options.endpoint, e.exporter)
 	return mux

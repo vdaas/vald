@@ -26,8 +26,10 @@ import (
 	"reflect"
 	"syscall"
 
+	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	ctxio "github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -44,6 +46,9 @@ type restorer struct {
 	eg  errgroup.Group
 
 	storage storage.Storage
+
+	backoffEnabled bool
+	backoffOpts    []backoff.Option
 }
 
 func New(opts ...Option) (Restorer, error) {
@@ -114,12 +119,31 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 		return ech, err
 	}
 
+	restore := func() (interface{}, error) {
+		err := r.restore(ctx)
+		if err != nil {
+			log.Errorf("restoring failed: %s", err)
+
+			return nil, err
+		}
+
+		return nil, nil
+	}
+
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 
-		err = r.restore(ctx)
+		if r.backoffEnabled {
+			b := backoff.New(r.backoffOpts...)
+			defer b.Close()
+
+			_, err = b.Do(ctx, restore)
+		} else {
+			_, err = restore()
+		}
+
 		if err != nil {
-			log.Errorf("restoring failed: %s", err)
+			log.Errorf("couldn't restore: %s", err)
 		}
 
 		return p.Signal(syscall.SIGTERM) // TODO: #403
@@ -136,6 +160,9 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 		}
 	}()
 
+	log.Infof("restoring directory %s started", r.dir)
+	defer log.Infof("restoring directory %s finished", r.dir)
+
 	pr, pw := io.Pipe()
 	defer pr.Close()
 
@@ -143,6 +170,11 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 		defer pw.Close()
 
 		sr, err := r.storage.Reader(ctx)
+		if err != nil {
+			return err
+		}
+
+		sr, err = ctxio.NewReaderWithContext(ctx, sr)
 		if err != nil {
 			return err
 		}
@@ -158,6 +190,12 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 	tr := tar.NewReader(pr)
 
 	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+
 		header, err := tr.Next()
 		if err != nil {
 			if err == io.EOF {
@@ -190,7 +228,12 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 				return err
 			}
 
-			_, err = io.Copy(f, tr)
+			fw, err := ctxio.NewWriterWithContext(ctx, f)
+			if err != nil {
+				return errors.Wrap(f.Close(), err.Error())
+			}
+
+			_, err = io.Copy(fw, tr)
 			if err != nil {
 				return err
 			}

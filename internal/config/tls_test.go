@@ -18,6 +18,7 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
@@ -50,37 +51,56 @@ func TestTLS_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Enabled: false,
-		           Cert: "",
-		           Key: "",
-		           CA: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Enabled: false,
-		           Cert: "",
-		           Key: "",
-		           CA: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns TLS when all fields contain no prefix/suffix symbol",
+			fields: fields{
+				Enabled: true,
+				Cert:    "cert",
+				Key:     "key",
+				CA:      "ca",
+			},
+			want: want{
+				want: &TLS{
+					Enabled: true,
+					Cert:    "cert",
+					Key:     "key",
+					CA:      "ca",
+				},
+			},
+		},
+		{
+			name: "returns TLS with environment variable when it contains `_` prefix and suffix",
+			fields: fields{
+				Enabled: true,
+				Cert:    "_cert_",
+				Key:     "_key_",
+				CA:      "_ca_",
+			},
+			beforeFunc: func() {
+				_ = os.Setenv("cert", "tls_cert")
+				_ = os.Setenv("key", "tls_key")
+				_ = os.Setenv("ca", "tls_ca")
+			},
+			afterFunc: func() {
+				_ = os.Unsetenv("cert")
+				_ = os.Unsetenv("key")
+				_ = os.Unsetenv("ca")
+			},
+			want: want{
+				want: &TLS{
+					Enabled: true,
+					Cert:    "tls_cert",
+					Key:     "tls_key",
+					CA:      "tls_ca",
+				},
+			},
+		},
+		{
+			name: "returns TLS when all fields are empty",
+			want: want{
+				want: new(TLS),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -129,43 +149,50 @@ func TestTLS_Opts(t *testing.T) {
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got []tls.Option) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+		if len(w.want) != len(got) {
+			return errors.Errorf("len(got) = %d, len(want) = %d", len(got), len(w.want))
+		}
+		for i := range w.want {
+			ok := false
+			for j := range got {
+				if reflect.ValueOf(w.want[i]).Pointer() == reflect.ValueOf(got[j]).Pointer() {
+					ok = true
+					break
+				}
+			}
+			if !ok {
+				return errors.Errorf("got = %v, want %v", got, w.want)
+			}
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Enabled: false,
-		           Cert: "",
-		           Key: "",
-		           CA: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Enabled: false,
-		           Cert: "",
-		           Key: "",
-		           CA: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns []tls.Option",
+			fields: fields{
+				Enabled: true,
+				Cert:    "cert",
+				Key:     "key",
+				CA:      "ca",
+			},
+			want: want{
+				want: []tls.Option{
+					tls.WithCa("ca"),
+					tls.WithCert("cert"),
+					tls.WithKey("key"),
+				},
+			},
+		},
+		{
+			name: "returns []tls.Option",
+			want: want{
+				want: []tls.Option{
+					tls.WithCa(""),
+					tls.WithCert(""),
+					tls.WithKey(""),
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {

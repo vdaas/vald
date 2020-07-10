@@ -61,7 +61,7 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 	oid, ok := s.ngt.Exists(uuid)
 	if !ok {
 		err = errors.ErrObjectIDNotFound(uuid)
-		log.Warn(err)
+		log.Warn("[Exists] an error occurred:", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -358,6 +358,14 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 	res = new(payload.Empty)
 	err = s.ngt.CreateIndex(ctx, c.GetPoolSize())
 	if err != nil {
+		if err == errors.ErrUncommittedIndexNotFound {
+			log.Warnf("[CreateIndex]\tfailed precondition error\t%s", err.Error())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
+			}
+			return nil, status.WrapWithFailedPrecondition(fmt.Sprintf("CreateIndex API failed: %s", err), err)
+		}
+
 		log.Errorf("[CreateIndex]\tUnknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -413,8 +421,8 @@ func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.
 		}
 	}()
 	return &payload.Info_Index_Count{
-		Stored:      uint32(len(s.ngt.UUIDs(ctx))),
-		Uncommitted: uint32(len(s.ngt.UncommittedUUIDs())),
+		Stored:      uint32(s.ngt.Len()),
+		Uncommitted: uint32(s.ngt.InsertVCacheLen()),
 		Indexing:    s.ngt.IsIndexing(),
 	}, nil
 }

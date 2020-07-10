@@ -85,7 +85,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -111,7 +111,6 @@ func Test_run_PreStart(t *testing.T) {
 	}
 	type fields struct {
 		eg     errgroup.Group
-		cfg    *config.Data
 		loader service.Loader
 		client grpc.Client
 	}
@@ -143,7 +142,6 @@ func Test_run_PreStart(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           cfg: nil,
 		           loader: nil,
 		           client: nil,
 		       },
@@ -162,7 +160,6 @@ func Test_run_PreStart(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           cfg: nil,
 		           loader: nil,
 		           client: nil,
 		           },
@@ -175,7 +172,7 @@ func Test_run_PreStart(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -187,7 +184,6 @@ func Test_run_PreStart(t *testing.T) {
 			}
 			r := &run{
 				eg:     test.fields.eg,
-				cfg:    test.fields.cfg,
 				loader: test.fields.loader,
 				client: test.fields.client,
 			}
@@ -207,7 +203,6 @@ func Test_run_Start(t *testing.T) {
 	}
 	type fields struct {
 		eg     errgroup.Group
-		cfg    *config.Data
 		loader service.Loader
 		client grpc.Client
 	}
@@ -243,7 +238,6 @@ func Test_run_Start(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           cfg: nil,
 		           loader: nil,
 		           client: nil,
 		       },
@@ -262,7 +256,6 @@ func Test_run_Start(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           cfg: nil,
 		           loader: nil,
 		           client: nil,
 		           },
@@ -275,7 +268,7 @@ func Test_run_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -287,7 +280,6 @@ func Test_run_Start(t *testing.T) {
 			}
 			r := &run{
 				eg:     test.fields.eg,
-				cfg:    test.fields.cfg,
 				loader: test.fields.loader,
 				client: test.fields.client,
 			}
@@ -307,7 +299,6 @@ func Test_run_PreStop(t *testing.T) {
 	}
 	type fields struct {
 		eg     errgroup.Group
-		cfg    *config.Data
 		loader service.Loader
 		client grpc.Client
 	}
@@ -339,7 +330,6 @@ func Test_run_PreStop(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           cfg: nil,
 		           loader: nil,
 		           client: nil,
 		       },
@@ -358,7 +348,6 @@ func Test_run_PreStop(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           cfg: nil,
 		           loader: nil,
 		           client: nil,
 		           },
@@ -371,7 +360,7 @@ func Test_run_PreStop(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -383,7 +372,6 @@ func Test_run_PreStop(t *testing.T) {
 			}
 			r := &run{
 				eg:     test.fields.eg,
-				cfg:    test.fields.cfg,
 				loader: test.fields.loader,
 				client: test.fields.client,
 			}
@@ -403,7 +391,6 @@ func Test_run_Stop(t *testing.T) {
 	}
 	type fields struct {
 		eg     errgroup.Group
-		cfg    *config.Data
 		loader service.Loader
 		client grpc.Client
 	}
@@ -435,7 +422,6 @@ func Test_run_Stop(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           cfg: nil,
 		           loader: nil,
 		           client: nil,
 		       },
@@ -454,7 +440,6 @@ func Test_run_Stop(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           cfg: nil,
 		           loader: nil,
 		           client: nil,
 		           },
@@ -467,7 +452,7 @@ func Test_run_Stop(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -479,7 +464,6 @@ func Test_run_Stop(t *testing.T) {
 			}
 			r := &run{
 				eg:     test.fields.eg,
-				cfg:    test.fields.cfg,
 				loader: test.fields.loader,
 				client: test.fields.client,
 			}
@@ -499,7 +483,6 @@ func Test_run_PostStop(t *testing.T) {
 	}
 	type fields struct {
 		eg     errgroup.Group
-		cfg    *config.Data
 		loader service.Loader
 		client grpc.Client
 	}
@@ -531,7 +514,6 @@ func Test_run_PostStop(t *testing.T) {
 		       },
 		       fields: fields {
 		           eg: nil,
-		           cfg: nil,
 		           loader: nil,
 		           client: nil,
 		       },
@@ -550,7 +532,6 @@ func Test_run_PostStop(t *testing.T) {
 		           },
 		           fields: fields {
 		           eg: nil,
-		           cfg: nil,
 		           loader: nil,
 		           client: nil,
 		           },
@@ -563,7 +544,7 @@ func Test_run_PostStop(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -575,7 +556,6 @@ func Test_run_PostStop(t *testing.T) {
 			}
 			r := &run{
 				eg:     test.fields.eg,
-				cfg:    test.fields.cfg,
 				loader: test.fields.loader,
 				client: test.fields.client,
 			}

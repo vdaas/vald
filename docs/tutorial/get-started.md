@@ -127,19 +127,19 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
     ```bash
     # move to working directory
     cd example/client
-    
+
     # download fashion-mnist testing dataset
     wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
     ```
 
 3. Running example
 
-    Vald provides multiple langurages client library such as Go, Java, Node.js, Python and so on.<br>
+    Vald provides multiple language client libraries such as Go, Java, Node.js, Python, and so on.<br>
     In this example, the fashion-mnist dataset will insert into the Vald cluster and perform a search using [vald-client-go](https://github.com/vdaas/vald-client-go).
 
     We use [`example/client/main.go`](https://github.com/vdaas/vald/blob/master/example/client/main.go) to run the example.
     This will execute 4 steps.
-    
+
     1. init
         - Import packages
             <details><summary>example code</summary><br>
@@ -199,7 +199,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
             ```
             </details>
     2. load
-        
+
         - Loading from fashion-mnist dataset and set id for each vector that is loaded. This step will return the training dataset, test dataset, and ids list of ids when loading is completed with success.
             <details><summary>example code</summary><br>
 
@@ -211,7 +211,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
             ```
             </details>
     3. Create the gRPC connection and Vald client with gRPC connection.
-        
+
         <details><summary>example code</summary><br>
 
         ```go
@@ -226,7 +226,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
         ```
         </details>
     4. Insert and Index
-        
+
         - Insert and Indexing 400 training datasets to the Vald agent.
             <details><summary>example code</summary><br>
 
@@ -255,9 +255,9 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
             ```
             </details>
     5. Search
-        
+
         - Search 10 neighbor vectors for each 20 test datasets and return list of neighbor vector.
-        
+
         - When getting approximate vectors, the Vald client sends search config and vector to the server via gRPC.
             <details><summary>example code</summary><br>
 
@@ -289,12 +289,12 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
     ```
 
 4. Cleanup
-    
+
     Remove the Vald pods by executing:
 
     ```bash
     helm uninstall vald
-    ````
+    ```
 
 ## Deploy and Run standalone Vald Agent on kubernetes
 
@@ -314,7 +314,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
     There is the [values.yaml](https://github.com/vdaas/vald/blob/master/example/helm/values-standalone-agent-ngt.yaml) to deploy standalone Vald Agent. 
     Each component can be disabled by setting the value `false` to the `[component].enabled` field. 
     This is useful for deploying standalone Vald Agent NGT pods.
-    
+
     ```bash
     helm repo add vald https://vald.vdaas.org/charts
     helm install --values example/helm/values-standalone-agent-ngt.yaml vald-agent-ngt vald/vald
@@ -353,7 +353,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
     ```bash
     # move to working directory
     cd example/client/agent
-    
+
     # download fashion-mnist testing dataset
     wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
     ```
@@ -365,8 +365,9 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
     We use [`example/client/agent/main.go`](https://github.com/vdaas/vald/blob/master/example/client/agent/main.go) to run the example.
     This will execute 4 steps.
+
     1. init
-    
+
        - Import packages
            <details><summary>example code</summary><br>
 
@@ -425,7 +426,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
            ```
            </details>
     2. load
-    
+
         - Loading from fashion-mnist dataset and set id for each vector that is loaded. This step will return the training dataset, test dataset, and ids list of ids when loading is completed with success.
             <details><summary>example code</summary><br>
 
@@ -451,7 +452,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
         ```
         </details>
     4. Insert and Index
-        
+
         - Insert and Indexing 400 training datasets to the Vald agent.
             <details><summary>example code</summary><br>
 
@@ -470,6 +471,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
             }
             ```
             </details>
+
         - Wait until indexing finish.
             <details><summary>example code</summary><br>
 
@@ -479,10 +481,26 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
             time.Sleep(wt)
             ```
             </details>
+
+        - [Optional] Indexing manually instead of waiting for auto indexing
+            You can set Agent NGT configuration `auto_index_duration_limit` and `auto_index_check_duration` for auto indexing.
+            In this example, you can create index manually using `CreateIndex()` mthod in the client library.
+            <detail><summary>example code</summary><br>
+
+            ```go
+        	_, err = client.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+        		PoolSize: uint32(insertCount),
+        	})
+        	if err != nil {
+        		glg.Fatal(err)
+        	}
+            ```
+            </detail>
+
     5. Search
-        
+
         - Search 10 neighbor vectors for each 20 test datasets and return list of neighbor vector.
-        
+
         - When getting approximate vectors, the Vald client sends search config and vector to the server via gRPC.
             <details><summary>example code</summary><br>
 
@@ -519,4 +537,4 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
     ```bash
     helm uninstall vald-agent-ngt
-    ````
+    ```

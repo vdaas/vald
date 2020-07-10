@@ -16,8 +16,10 @@
 package mock
 
 import (
+	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
 
@@ -26,23 +28,14 @@ func TestLogger_Debug(t *testing.T) {
 		vals []interface{}
 	}
 	type fields struct {
-		DebugFunc  func(vals ...interface{})
-		DebugfFunc func(format string, vals ...interface{})
-		InfoFunc   func(vals ...interface{})
-		InfofFunc  func(format string, vals ...interface{})
-		WarnFunc   func(vals ...interface{})
-		WarnfFunc  func(format string, vals ...interface{})
-		ErrorFunc  func(vals ...interface{})
-		ErrorfFunc func(format string, vals ...interface{})
-		FatalFunc  func(vals ...interface{})
-		FatalfFunc func(format string, vals ...interface{})
+		DebugFunc func(vals ...interface{})
 	}
 	type want struct {
 	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		fieldsFunc func(*testing.T) fields
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(args)
@@ -52,60 +45,40 @@ func TestLogger_Debug(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           vals: nil,
-		       },
-		       fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           vals: nil,
-		           },
-		           fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			wantVals := []interface{}{
+				"Vald",
+			}
+			var cnt int
+			return test{
+				name: "Call DebugFunc",
+				args: args{
+					vals: wantVals,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					return fields{
+						DebugFunc: func(vals ...interface{}) {
+							if !reflect.DeepEqual(vals, wantVals) {
+								t.Errorf("got = %v, want = %v", vals, wantVals)
+							}
+							cnt++
+						},
+					}
+				},
+				checkFunc: func(want) error {
+					if cnt != 1 {
+						return errors.Errorf("got cnt = %d, want = %d", cnt, 1)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -115,17 +88,9 @@ func TestLogger_Debug(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			fields := test.fieldsFunc(tt)
 			l := &Logger{
-				DebugFunc:  test.fields.DebugFunc,
-				DebugfFunc: test.fields.DebugfFunc,
-				InfoFunc:   test.fields.InfoFunc,
-				InfofFunc:  test.fields.InfofFunc,
-				WarnFunc:   test.fields.WarnFunc,
-				WarnfFunc:  test.fields.WarnfFunc,
-				ErrorFunc:  test.fields.ErrorFunc,
-				ErrorfFunc: test.fields.ErrorfFunc,
-				FatalFunc:  test.fields.FatalFunc,
-				FatalfFunc: test.fields.FatalfFunc,
+				DebugFunc: fields.DebugFunc,
 			}
 
 			l.Debug(test.args.vals...)
@@ -142,23 +107,14 @@ func TestLogger_Debugf(t *testing.T) {
 		vals   []interface{}
 	}
 	type fields struct {
-		DebugFunc  func(vals ...interface{})
 		DebugfFunc func(format string, vals ...interface{})
-		InfoFunc   func(vals ...interface{})
-		InfofFunc  func(format string, vals ...interface{})
-		WarnFunc   func(vals ...interface{})
-		WarnfFunc  func(format string, vals ...interface{})
-		ErrorFunc  func(vals ...interface{})
-		ErrorfFunc func(format string, vals ...interface{})
-		FatalFunc  func(vals ...interface{})
-		FatalfFunc func(format string, vals ...interface{})
 	}
 	type want struct {
 	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		fieldsFunc func(*testing.T) fields
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(args)
@@ -168,62 +124,42 @@ func TestLogger_Debugf(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           format: "",
-		           vals: nil,
-		       },
-		       fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           format: "",
-		           vals: nil,
-		           },
-		           fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			wantVals := []interface{}{
+				"Vald",
+			}
+			wantFormat := "json"
+			var cnt int
+			return test{
+				name: "Call DebugfFunc",
+				args: args{
+					vals:   wantVals,
+					format: wantFormat,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					return fields{
+						DebugfFunc: func(format string, vals ...interface{}) {
+							if !reflect.DeepEqual(vals, wantVals) || !reflect.DeepEqual(format, wantFormat) {
+								t.Errorf("got = %v, want = %v", vals, wantVals)
+							}
+							cnt++
+						},
+					}
+				},
+				checkFunc: func(want) error {
+					if cnt != 1 {
+						return errors.Errorf("got cnt = %d, want = %d", cnt, 1)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -233,17 +169,9 @@ func TestLogger_Debugf(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			fields := test.fieldsFunc(tt)
 			l := &Logger{
-				DebugFunc:  test.fields.DebugFunc,
-				DebugfFunc: test.fields.DebugfFunc,
-				InfoFunc:   test.fields.InfoFunc,
-				InfofFunc:  test.fields.InfofFunc,
-				WarnFunc:   test.fields.WarnFunc,
-				WarnfFunc:  test.fields.WarnfFunc,
-				ErrorFunc:  test.fields.ErrorFunc,
-				ErrorfFunc: test.fields.ErrorfFunc,
-				FatalFunc:  test.fields.FatalFunc,
-				FatalfFunc: test.fields.FatalfFunc,
+				DebugfFunc: fields.DebugfFunc,
 			}
 
 			l.Debugf(test.args.format, test.args.vals...)
@@ -259,23 +187,14 @@ func TestLogger_Info(t *testing.T) {
 		vals []interface{}
 	}
 	type fields struct {
-		DebugFunc  func(vals ...interface{})
-		DebugfFunc func(format string, vals ...interface{})
-		InfoFunc   func(vals ...interface{})
-		InfofFunc  func(format string, vals ...interface{})
-		WarnFunc   func(vals ...interface{})
-		WarnfFunc  func(format string, vals ...interface{})
-		ErrorFunc  func(vals ...interface{})
-		ErrorfFunc func(format string, vals ...interface{})
-		FatalFunc  func(vals ...interface{})
-		FatalfFunc func(format string, vals ...interface{})
+		InfoFunc func(vals ...interface{})
 	}
 	type want struct {
 	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		fieldsFunc func(*testing.T) fields
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(args)
@@ -285,60 +204,40 @@ func TestLogger_Info(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           vals: nil,
-		       },
-		       fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           vals: nil,
-		           },
-		           fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			wantVals := []interface{}{
+				"Vald",
+			}
+			var cnt int
+			return test{
+				name: "Call InfoFunc",
+				args: args{
+					vals: wantVals,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					return fields{
+						InfoFunc: func(vals ...interface{}) {
+							if !reflect.DeepEqual(vals, wantVals) {
+								t.Errorf("got = %v, want = %v", vals, wantVals)
+							}
+							cnt++
+						},
+					}
+				},
+				checkFunc: func(want) error {
+					if cnt != 1 {
+						return errors.Errorf("got cnt = %d, want = %d", cnt, 1)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -348,17 +247,9 @@ func TestLogger_Info(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			fields := test.fieldsFunc(tt)
 			l := &Logger{
-				DebugFunc:  test.fields.DebugFunc,
-				DebugfFunc: test.fields.DebugfFunc,
-				InfoFunc:   test.fields.InfoFunc,
-				InfofFunc:  test.fields.InfofFunc,
-				WarnFunc:   test.fields.WarnFunc,
-				WarnfFunc:  test.fields.WarnfFunc,
-				ErrorFunc:  test.fields.ErrorFunc,
-				ErrorfFunc: test.fields.ErrorfFunc,
-				FatalFunc:  test.fields.FatalFunc,
-				FatalfFunc: test.fields.FatalfFunc,
+				InfoFunc: fields.InfoFunc,
 			}
 
 			l.Info(test.args.vals...)
@@ -375,23 +266,14 @@ func TestLogger_Infof(t *testing.T) {
 		vals   []interface{}
 	}
 	type fields struct {
-		DebugFunc  func(vals ...interface{})
-		DebugfFunc func(format string, vals ...interface{})
-		InfoFunc   func(vals ...interface{})
-		InfofFunc  func(format string, vals ...interface{})
-		WarnFunc   func(vals ...interface{})
-		WarnfFunc  func(format string, vals ...interface{})
-		ErrorFunc  func(vals ...interface{})
-		ErrorfFunc func(format string, vals ...interface{})
-		FatalFunc  func(vals ...interface{})
-		FatalfFunc func(format string, vals ...interface{})
+		InfofFunc func(format string, vals ...interface{})
 	}
 	type want struct {
 	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		fieldsFunc func(*testing.T) fields
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(args)
@@ -401,62 +283,42 @@ func TestLogger_Infof(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           format: "",
-		           vals: nil,
-		       },
-		       fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           format: "",
-		           vals: nil,
-		           },
-		           fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			wantVals := []interface{}{
+				"Vald",
+			}
+			wantFormat := "json"
+			var cnt int
+			return test{
+				name: "Call InfofFunc",
+				args: args{
+					vals:   wantVals,
+					format: wantFormat,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					return fields{
+						InfofFunc: func(format string, vals ...interface{}) {
+							if !reflect.DeepEqual(vals, wantVals) || !reflect.DeepEqual(format, wantFormat) {
+								t.Errorf("got = %v, want = %v", vals, wantVals)
+							}
+							cnt++
+						},
+					}
+				},
+				checkFunc: func(want) error {
+					if cnt != 1 {
+						return errors.Errorf("got cnt = %d, want = %d", cnt, 1)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -466,17 +328,9 @@ func TestLogger_Infof(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			fields := test.fieldsFunc(t)
 			l := &Logger{
-				DebugFunc:  test.fields.DebugFunc,
-				DebugfFunc: test.fields.DebugfFunc,
-				InfoFunc:   test.fields.InfoFunc,
-				InfofFunc:  test.fields.InfofFunc,
-				WarnFunc:   test.fields.WarnFunc,
-				WarnfFunc:  test.fields.WarnfFunc,
-				ErrorFunc:  test.fields.ErrorFunc,
-				ErrorfFunc: test.fields.ErrorfFunc,
-				FatalFunc:  test.fields.FatalFunc,
-				FatalfFunc: test.fields.FatalfFunc,
+				InfofFunc: fields.InfofFunc,
 			}
 
 			l.Infof(test.args.format, test.args.vals...)
@@ -492,23 +346,14 @@ func TestLogger_Warn(t *testing.T) {
 		vals []interface{}
 	}
 	type fields struct {
-		DebugFunc  func(vals ...interface{})
-		DebugfFunc func(format string, vals ...interface{})
-		InfoFunc   func(vals ...interface{})
-		InfofFunc  func(format string, vals ...interface{})
-		WarnFunc   func(vals ...interface{})
-		WarnfFunc  func(format string, vals ...interface{})
-		ErrorFunc  func(vals ...interface{})
-		ErrorfFunc func(format string, vals ...interface{})
-		FatalFunc  func(vals ...interface{})
-		FatalfFunc func(format string, vals ...interface{})
+		WarnFunc func(vals ...interface{})
 	}
 	type want struct {
 	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		fieldsFunc func(*testing.T) fields
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(args)
@@ -518,60 +363,40 @@ func TestLogger_Warn(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           vals: nil,
-		       },
-		       fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           vals: nil,
-		           },
-		           fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			wantVals := []interface{}{
+				"Vald",
+			}
+			var cnt int
+			return test{
+				name: "Call WarnFunc",
+				args: args{
+					vals: wantVals,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					return fields{
+						WarnFunc: func(vals ...interface{}) {
+							if !reflect.DeepEqual(vals, wantVals) {
+								t.Errorf("got = %v, want = %v", vals, wantVals)
+							}
+							cnt++
+						},
+					}
+				},
+				checkFunc: func(want) error {
+					if cnt != 1 {
+						return errors.Errorf("got cnt = %d, want = %d", cnt, 1)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -581,17 +406,9 @@ func TestLogger_Warn(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			fields := test.fieldsFunc(tt)
 			l := &Logger{
-				DebugFunc:  test.fields.DebugFunc,
-				DebugfFunc: test.fields.DebugfFunc,
-				InfoFunc:   test.fields.InfoFunc,
-				InfofFunc:  test.fields.InfofFunc,
-				WarnFunc:   test.fields.WarnFunc,
-				WarnfFunc:  test.fields.WarnfFunc,
-				ErrorFunc:  test.fields.ErrorFunc,
-				ErrorfFunc: test.fields.ErrorfFunc,
-				FatalFunc:  test.fields.FatalFunc,
-				FatalfFunc: test.fields.FatalfFunc,
+				WarnFunc: fields.WarnFunc,
 			}
 
 			l.Warn(test.args.vals...)
@@ -608,23 +425,14 @@ func TestLogger_Warnf(t *testing.T) {
 		vals   []interface{}
 	}
 	type fields struct {
-		DebugFunc  func(vals ...interface{})
-		DebugfFunc func(format string, vals ...interface{})
-		InfoFunc   func(vals ...interface{})
-		InfofFunc  func(format string, vals ...interface{})
-		WarnFunc   func(vals ...interface{})
-		WarnfFunc  func(format string, vals ...interface{})
-		ErrorFunc  func(vals ...interface{})
-		ErrorfFunc func(format string, vals ...interface{})
-		FatalFunc  func(vals ...interface{})
-		FatalfFunc func(format string, vals ...interface{})
+		WarnfFunc func(format string, vals ...interface{})
 	}
 	type want struct {
 	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		fieldsFunc func(*testing.T) fields
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(args)
@@ -634,62 +442,42 @@ func TestLogger_Warnf(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           format: "",
-		           vals: nil,
-		       },
-		       fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           format: "",
-		           vals: nil,
-		           },
-		           fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			wantVals := []interface{}{
+				"Vald",
+			}
+			wantFormat := "json"
+			var cnt int
+			return test{
+				name: "Call WarnfFunc",
+				args: args{
+					vals:   wantVals,
+					format: wantFormat,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					return fields{
+						WarnfFunc: func(format string, vals ...interface{}) {
+							if !reflect.DeepEqual(vals, wantVals) || !reflect.DeepEqual(format, wantFormat) {
+								t.Errorf("got = %v, want = %v", vals, wantVals)
+							}
+							cnt++
+						},
+					}
+				},
+				checkFunc: func(want) error {
+					if cnt != 1 {
+						return errors.Errorf("got cnt = %d, want = %d", cnt, 1)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -699,17 +487,9 @@ func TestLogger_Warnf(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			fields := test.fieldsFunc(tt)
 			l := &Logger{
-				DebugFunc:  test.fields.DebugFunc,
-				DebugfFunc: test.fields.DebugfFunc,
-				InfoFunc:   test.fields.InfoFunc,
-				InfofFunc:  test.fields.InfofFunc,
-				WarnFunc:   test.fields.WarnFunc,
-				WarnfFunc:  test.fields.WarnfFunc,
-				ErrorFunc:  test.fields.ErrorFunc,
-				ErrorfFunc: test.fields.ErrorfFunc,
-				FatalFunc:  test.fields.FatalFunc,
-				FatalfFunc: test.fields.FatalfFunc,
+				WarnfFunc: fields.WarnfFunc,
 			}
 
 			l.Warnf(test.args.format, test.args.vals...)
@@ -725,23 +505,14 @@ func TestLogger_Error(t *testing.T) {
 		vals []interface{}
 	}
 	type fields struct {
-		DebugFunc  func(vals ...interface{})
-		DebugfFunc func(format string, vals ...interface{})
-		InfoFunc   func(vals ...interface{})
-		InfofFunc  func(format string, vals ...interface{})
-		WarnFunc   func(vals ...interface{})
-		WarnfFunc  func(format string, vals ...interface{})
-		ErrorFunc  func(vals ...interface{})
-		ErrorfFunc func(format string, vals ...interface{})
-		FatalFunc  func(vals ...interface{})
-		FatalfFunc func(format string, vals ...interface{})
+		ErrorFunc func(vals ...interface{})
 	}
 	type want struct {
 	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		fieldsFunc func(*testing.T) fields
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(args)
@@ -751,60 +522,40 @@ func TestLogger_Error(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           vals: nil,
-		       },
-		       fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           vals: nil,
-		           },
-		           fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			wantVals := []interface{}{
+				"Vald",
+			}
+			var cnt int
+			return test{
+				name: "Call ErrorFunc",
+				args: args{
+					vals: wantVals,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					return fields{
+						ErrorFunc: func(vals ...interface{}) {
+							if !reflect.DeepEqual(vals, wantVals) {
+								t.Errorf("got = %v, want = %v", vals, wantVals)
+							}
+							cnt++
+						},
+					}
+				},
+				checkFunc: func(want) error {
+					if cnt != 1 {
+						return errors.Errorf("got cnt = %d, want = %d", cnt, 1)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -814,17 +565,9 @@ func TestLogger_Error(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			fields := test.fieldsFunc(tt)
 			l := &Logger{
-				DebugFunc:  test.fields.DebugFunc,
-				DebugfFunc: test.fields.DebugfFunc,
-				InfoFunc:   test.fields.InfoFunc,
-				InfofFunc:  test.fields.InfofFunc,
-				WarnFunc:   test.fields.WarnFunc,
-				WarnfFunc:  test.fields.WarnfFunc,
-				ErrorFunc:  test.fields.ErrorFunc,
-				ErrorfFunc: test.fields.ErrorfFunc,
-				FatalFunc:  test.fields.FatalFunc,
-				FatalfFunc: test.fields.FatalfFunc,
+				ErrorFunc: fields.ErrorFunc,
 			}
 
 			l.Error(test.args.vals...)
@@ -841,23 +584,14 @@ func TestLogger_Errorf(t *testing.T) {
 		vals   []interface{}
 	}
 	type fields struct {
-		DebugFunc  func(vals ...interface{})
-		DebugfFunc func(format string, vals ...interface{})
-		InfoFunc   func(vals ...interface{})
-		InfofFunc  func(format string, vals ...interface{})
-		WarnFunc   func(vals ...interface{})
-		WarnfFunc  func(format string, vals ...interface{})
-		ErrorFunc  func(vals ...interface{})
 		ErrorfFunc func(format string, vals ...interface{})
-		FatalFunc  func(vals ...interface{})
-		FatalfFunc func(format string, vals ...interface{})
 	}
 	type want struct {
 	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		fieldsFunc func(*testing.T) fields
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(args)
@@ -867,62 +601,42 @@ func TestLogger_Errorf(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           format: "",
-		           vals: nil,
-		       },
-		       fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           format: "",
-		           vals: nil,
-		           },
-		           fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			wantVals := []interface{}{
+				"Vald",
+			}
+			wantFormat := "json"
+			var cnt int
+			return test{
+				name: "Call ErrorfFunc",
+				args: args{
+					vals:   wantVals,
+					format: wantFormat,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					return fields{
+						ErrorfFunc: func(format string, vals ...interface{}) {
+							if !reflect.DeepEqual(vals, wantVals) || !reflect.DeepEqual(format, wantFormat) {
+								t.Errorf("got = %v, want = %v", vals, wantVals)
+							}
+							cnt++
+						},
+					}
+				},
+				checkFunc: func(want) error {
+					if cnt != 1 {
+						return errors.Errorf("got cnt = %d, want = %d", cnt, 1)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -932,17 +646,9 @@ func TestLogger_Errorf(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			fields := test.fieldsFunc(tt)
 			l := &Logger{
-				DebugFunc:  test.fields.DebugFunc,
-				DebugfFunc: test.fields.DebugfFunc,
-				InfoFunc:   test.fields.InfoFunc,
-				InfofFunc:  test.fields.InfofFunc,
-				WarnFunc:   test.fields.WarnFunc,
-				WarnfFunc:  test.fields.WarnfFunc,
-				ErrorFunc:  test.fields.ErrorFunc,
-				ErrorfFunc: test.fields.ErrorfFunc,
-				FatalFunc:  test.fields.FatalFunc,
-				FatalfFunc: test.fields.FatalfFunc,
+				ErrorfFunc: fields.ErrorfFunc,
 			}
 
 			l.Errorf(test.args.format, test.args.vals...)
@@ -958,23 +664,14 @@ func TestLogger_Fatal(t *testing.T) {
 		vals []interface{}
 	}
 	type fields struct {
-		DebugFunc  func(vals ...interface{})
-		DebugfFunc func(format string, vals ...interface{})
-		InfoFunc   func(vals ...interface{})
-		InfofFunc  func(format string, vals ...interface{})
-		WarnFunc   func(vals ...interface{})
-		WarnfFunc  func(format string, vals ...interface{})
-		ErrorFunc  func(vals ...interface{})
-		ErrorfFunc func(format string, vals ...interface{})
-		FatalFunc  func(vals ...interface{})
-		FatalfFunc func(format string, vals ...interface{})
+		FatalFunc func(vals ...interface{})
 	}
 	type want struct {
 	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		fieldsFunc func(*testing.T) fields
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(args)
@@ -984,60 +681,40 @@ func TestLogger_Fatal(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           vals: nil,
-		       },
-		       fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           vals: nil,
-		           },
-		           fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			wantVals := []interface{}{
+				"Vald",
+			}
+			var cnt int
+			return test{
+				name: "Call FatalFunc",
+				args: args{
+					vals: wantVals,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					return fields{
+						FatalFunc: func(vals ...interface{}) {
+							if !reflect.DeepEqual(vals, wantVals) {
+								t.Errorf("got = %v, want = %v", vals, wantVals)
+							}
+							cnt++
+						},
+					}
+				},
+				checkFunc: func(want) error {
+					if cnt != 1 {
+						return errors.Errorf("got cnt = %d, want = %d", cnt, 1)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1047,17 +724,9 @@ func TestLogger_Fatal(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			fields := test.fieldsFunc(tt)
 			l := &Logger{
-				DebugFunc:  test.fields.DebugFunc,
-				DebugfFunc: test.fields.DebugfFunc,
-				InfoFunc:   test.fields.InfoFunc,
-				InfofFunc:  test.fields.InfofFunc,
-				WarnFunc:   test.fields.WarnFunc,
-				WarnfFunc:  test.fields.WarnfFunc,
-				ErrorFunc:  test.fields.ErrorFunc,
-				ErrorfFunc: test.fields.ErrorfFunc,
-				FatalFunc:  test.fields.FatalFunc,
-				FatalfFunc: test.fields.FatalfFunc,
+				FatalFunc: fields.FatalFunc,
 			}
 
 			l.Fatal(test.args.vals...)
@@ -1074,15 +743,6 @@ func TestLogger_Fatalf(t *testing.T) {
 		vals   []interface{}
 	}
 	type fields struct {
-		DebugFunc  func(vals ...interface{})
-		DebugfFunc func(format string, vals ...interface{})
-		InfoFunc   func(vals ...interface{})
-		InfofFunc  func(format string, vals ...interface{})
-		WarnFunc   func(vals ...interface{})
-		WarnfFunc  func(format string, vals ...interface{})
-		ErrorFunc  func(vals ...interface{})
-		ErrorfFunc func(format string, vals ...interface{})
-		FatalFunc  func(vals ...interface{})
 		FatalfFunc func(format string, vals ...interface{})
 	}
 	type want struct {
@@ -1090,7 +750,7 @@ func TestLogger_Fatalf(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		fieldsFunc func(*testing.T) fields
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(args)
@@ -1100,62 +760,42 @@ func TestLogger_Fatalf(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           format: "",
-		           vals: nil,
-		       },
-		       fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           format: "",
-		           vals: nil,
-		           },
-		           fields: fields {
-		           DebugFunc: nil,
-		           DebugfFunc: nil,
-		           InfoFunc: nil,
-		           InfofFunc: nil,
-		           WarnFunc: nil,
-		           WarnfFunc: nil,
-		           ErrorFunc: nil,
-		           ErrorfFunc: nil,
-		           FatalFunc: nil,
-		           FatalfFunc: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			wantVals := []interface{}{
+				"Vald",
+			}
+			wantFormat := "json"
+			var cnt int
+			return test{
+				name: "Call FatalfFunc",
+				args: args{
+					vals:   wantVals,
+					format: wantFormat,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					return fields{
+						FatalfFunc: func(format string, vals ...interface{}) {
+							if !reflect.DeepEqual(vals, wantVals) || !reflect.DeepEqual(format, wantFormat) {
+								t.Errorf("got = %v, want = %v", vals, wantVals)
+							}
+							cnt++
+						},
+					}
+				},
+				checkFunc: func(want) error {
+					if cnt != 1 {
+						return errors.Errorf("got cnt = %d, want = %d", cnt, 1)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1165,17 +805,9 @@ func TestLogger_Fatalf(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			fields := test.fieldsFunc(tt)
 			l := &Logger{
-				DebugFunc:  test.fields.DebugFunc,
-				DebugfFunc: test.fields.DebugfFunc,
-				InfoFunc:   test.fields.InfoFunc,
-				InfofFunc:  test.fields.InfofFunc,
-				WarnFunc:   test.fields.WarnFunc,
-				WarnfFunc:  test.fields.WarnfFunc,
-				ErrorFunc:  test.fields.ErrorFunc,
-				ErrorfFunc: test.fields.ErrorfFunc,
-				FatalFunc:  test.fields.FatalFunc,
-				FatalfFunc: test.fields.FatalfFunc,
+				FatalfFunc: fields.FatalfFunc,
 			}
 
 			l.Fatalf(test.args.format, test.args.vals...)

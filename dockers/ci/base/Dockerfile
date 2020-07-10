@@ -55,6 +55,8 @@ RUN make helm-docs/install
 RUN make kind/install
 RUN make valdcli/install
 
+RUN make tparse/install
+
 RUN curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl \
     && chmod a+x /usr/local/bin/kubectl
 

@@ -51,13 +51,6 @@ var (
 
 func newStatus(code codes.Code, msg string, err error, details ...interface{}) (st *status.Status) {
 	st = status.New(code, msg)
-	defer func() {
-		if err != nil {
-			log.Error(st.Err())
-		} else {
-			log.Debug(st.Err())
-		}
-	}()
 
 	data := errors.Errors_RPC{
 		Type:   code.String(),
@@ -75,7 +68,6 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 			case *errors.Errors_RPC:
 				data.Roots = append(data.Roots, v)
 			case info.Detail:
-				log.Debug(v.String())
 				data.Details = append(data.Details, v.String())
 			default:
 				data.Details = append(data.Details, fmt.Sprintf("%#v", detail))
@@ -90,14 +82,12 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 
 	data.Instance, err = os.Hostname()
 	if err != nil {
-		log.Debugf("error body: %#v, msg: %v", data, err)
-		log.Error(err)
+		log.Warn("failed to fetch hostname:", err)
 	}
 
 	st, err = st.WithDetails(&data)
 	if err != nil {
-		log.Debugf("error body: %#v, msg: %v", data, err)
-		log.Error(err)
+		log.Warn("failed to set error details:", err)
 	}
 
 	return st

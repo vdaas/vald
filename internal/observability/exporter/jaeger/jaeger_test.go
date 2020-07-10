@@ -24,7 +24,6 @@ import (
 
 	"contrib.go.opencensus.io/exporter/jaeger"
 	"github.com/vdaas/vald/internal/errors"
-
 	"go.uber.org/goleak"
 )
 
@@ -83,7 +82,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -103,7 +102,7 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_exporter_Start(t *testing.T) {
+func Test_exp_Start(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
@@ -167,7 +166,7 @@ func Test_exporter_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -177,7 +176,7 @@ func Test_exporter_Start(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			e := &exporter{
+			e := &exp{
 				exporter: test.fields.exporter,
 				options:  test.fields.options,
 			}
@@ -191,7 +190,7 @@ func Test_exporter_Start(t *testing.T) {
 	}
 }
 
-func Test_exporter_Stop(t *testing.T) {
+func Test_exp_Stop(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
@@ -251,7 +250,7 @@ func Test_exporter_Stop(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -261,7 +260,7 @@ func Test_exporter_Stop(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			e := &exporter{
+			e := &exp{
 				exporter: test.fields.exporter,
 				options:  test.fields.options,
 			}
@@ -270,84 +269,6 @@ func Test_exporter_Stop(t *testing.T) {
 			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-		})
-	}
-}
-
-func Test_exporter_Exporter(t *testing.T) {
-	type fields struct {
-		exporter *jaeger.Exporter
-		options  jaegerOptions
-	}
-	type want struct {
-		want *jaeger.Exporter
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, *jaeger.Exporter) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got *jaeger.Exporter) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           exporter: nil,
-		           options: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           exporter: nil,
-		           options: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			e := &exporter{
-				exporter: test.fields.exporter,
-				options:  test.fields.options,
-			}
-
-			got := e.Exporter()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
 		})
 	}
 }

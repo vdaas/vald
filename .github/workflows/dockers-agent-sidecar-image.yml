@@ -10,7 +10,9 @@ on:
        - 'v*.*.*-*'
     paths:
       - 'internal/**'
+      - '!internal/**/*_test.go'
       - '!internal/db/**'
+      - 'internal/db/storage/blob/**'
       - '!internal/k8s/**'
       - 'apis/grpc/**'
       - 'pkg/agent/sidecar/**'
@@ -21,7 +23,9 @@ on:
   pull_request:
     paths:
       - 'internal/**'
+      - '!internal/**/*_test.go'
       - '!internal/db/**'
+      - 'internal/db/storage/blob/**'
       - '!internal/k8s/**'
       - 'apis/grpc/**'
       - 'pkg/agent/sidecar/**'

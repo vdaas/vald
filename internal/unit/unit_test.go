@@ -17,6 +17,7 @@
 package unit
 
 import (
+	stderrs "errors"
 	"reflect"
 	"testing"
 
@@ -50,31 +51,49 @@ func TestParseBytes(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           bs: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns (1, nil) when bs is `1M`",
+			args: args{
+				bs: "1M",
+			},
+			want: want{
+				wantBytes: 1048576,
+				err:       nil,
+			},
+		},
+		{
+			name: "returns (0, nil) when bs is empty",
+			want: want{
+				wantBytes: 0,
+				err:       nil,
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           bs: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns (0, nil) when bs is `0`",
+			args: args{
+				bs: "0",
+			},
+			want: want{
+				wantBytes: 0,
+				err:       nil,
+			},
+		},
+
+		{
+			name: "returns (0, error) when bs is `a`",
+			args: args{
+				bs: "a",
+			},
+			want: want{
+				wantBytes: 0,
+				err: func() (err error) {
+					err = stderrs.New("byte quantity must be a positive integer with a unit of measurement like M, MB, MiB, G, GiB, or GB")
+					err = errors.Wrap(err, errors.ErrParseUnitFailed("a").Error())
+					return
+				}(),
+			},
+		},
 	}
 
 	for _, test := range tests {

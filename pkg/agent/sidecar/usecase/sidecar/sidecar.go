@@ -29,6 +29,8 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
+	"github.com/vdaas/vald/internal/net/http/client"
+	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -69,6 +71,30 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		// TODO observe something
 		_ = obs
 	}
+
+	dialer, err := tcp.NewDialer(cfg.AgentSidecar.Client.TCP.Opts()...)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := client.New(
+		client.WithDialContext(dialer.DialContext),
+		client.WithTLSHandshakeTimeout(cfg.AgentSidecar.Client.Transport.RoundTripper.TLSHandshakeTimeout),
+		client.WithMaxIdleConns(cfg.AgentSidecar.Client.Transport.RoundTripper.MaxIdleConns),
+		client.WithMaxIdleConnsPerHost(cfg.AgentSidecar.Client.Transport.RoundTripper.MaxIdleConnsPerHost),
+		client.WithMaxConnsPerHost(cfg.AgentSidecar.Client.Transport.RoundTripper.MaxConnsPerHost),
+		client.WithIdleConnTimeout(cfg.AgentSidecar.Client.Transport.RoundTripper.IdleConnTimeout),
+		client.WithResponseHeaderTimeout(cfg.AgentSidecar.Client.Transport.RoundTripper.ResponseHeaderTimeout),
+		client.WithExpectContinueTimeout(cfg.AgentSidecar.Client.Transport.RoundTripper.ExpectContinueTimeout),
+		client.WithMaxResponseHeaderBytes(cfg.AgentSidecar.Client.Transport.RoundTripper.MaxResponseHeaderSize),
+		client.WithWriteBufferSize(cfg.AgentSidecar.Client.Transport.RoundTripper.WriteBufferSize),
+		client.WithReadBufferSize(cfg.AgentSidecar.Client.Transport.RoundTripper.ReadBufferSize),
+		client.WithForceAttemptHTTP2(cfg.AgentSidecar.Client.Transport.RoundTripper.ForceAttemptHTTP2),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	bs, err = storage.New(
 		storage.WithErrGroup(eg),
 		storage.WithType(cfg.AgentSidecar.BlobStorage.StorageType),
@@ -92,9 +118,13 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			session.WithEnableContentMD5Validation(cfg.AgentSidecar.BlobStorage.S3.EnableContentMD5Validation),
 			session.WithEnableEndpointDiscovery(cfg.AgentSidecar.BlobStorage.S3.EnableEndpointDiscovery),
 			session.WithEnableEndpointHostPrefix(cfg.AgentSidecar.BlobStorage.S3.EnableEndpointHostPrefix),
+			session.WithHTTPClient(client),
 		),
 		storage.WithS3Opts(
 			s3.WithMaxPartSize(cfg.AgentSidecar.BlobStorage.S3.MaxPartSize),
+			s3.WithMaxChunkSize(cfg.AgentSidecar.BlobStorage.S3.MaxChunkSize),
+			s3.WithReaderBackoff(cfg.AgentSidecar.RestoreBackoffEnabled),
+			s3.WithReaderBackoffOpts(cfg.AgentSidecar.RestoreBackoff.Opts()...),
 		),
 		storage.WithCloudStorageURLOpnerOpts(
 			urlopener.WithGoogleAccessID(cfg.AgentSidecar.BlobStorage.CloudStrage.Client.GoogleAccessID),
@@ -121,6 +151,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	so, err = observer.New(
 		observer.WithErrGroup(eg),
 		observer.WithBackupDuration(cfg.AgentSidecar.AutoBackupDuration),
+		observer.WithPostStopTimeout(cfg.AgentSidecar.PostStopTimeout),
 		observer.WithDir(cfg.AgentSidecar.WatchDir),
 		observer.WithBlobStorage(bs),
 	)

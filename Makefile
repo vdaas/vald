@@ -46,7 +46,6 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
-DOCKFMT_VERSION      ?= v0.3.3
 KIND_VERSION         ?= v0.8.1
 HELM_VERSION         ?= v3.2.1
 HELM_DOCS_VERSION    ?= 0.13.0
@@ -150,10 +149,6 @@ SHELL = bash
 
 include Makefile.d/functions.mk
 
-.PHONY: all
-## execute clean and deps
-all: clean deps
-
 .PHONY: help
 ## print all available commands
 help:
@@ -169,6 +164,10 @@ help:
 	} \
 	{ lastLine = $$0 }' $(MAKELISTS) | sort -u
 	@printf "\n"
+
+.PHONY: all
+## execute clean and deps
+all: clean deps
 
 .PHONY: clean
 ## clean
@@ -242,20 +241,12 @@ format/yaml:
 	    "hack/**/*.yaml" \
 	    "k8s/**/*.yaml"
 
-.PHONY: format/docker
-format/docker:
-	dockfmt fmt -w \
-	    dockers/*/Dockerfile \
-	    dockers/*/*/Dockerfile \
-	    dockers/*/*/*/Dockerfile
-
 .PHONY: deps
 ## install dependencies
 deps: \
 	proto/deps \
 	goimports/install \
 	prettier/install \
-	dockfmt/install
 	go mod tidy
 
 .PHONY: goimports/install
@@ -319,22 +310,10 @@ tensorflow/install: /usr/local/lib/libtensorflow.so
 	rm -f libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
 	ldconfig
 
-.PHONY: test
-## run tests
-test:
-	GO111MODULE=on go test --race -coverprofile=cover.out ./...
-
 .PHONY: lint
 ## run lints
 lint:
 	$(call go-lint)
-
-
-.PHONY: coverage
-## calculate coverages
-coverage:
-	go test -v -race -covermode=atomic -coverprofile=coverage.out ./...
-	go tool cover -html=coverage.out -o coverage.html
 
 .PHONY: changelog/update
 ## update changelog

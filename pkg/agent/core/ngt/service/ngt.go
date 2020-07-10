@@ -69,6 +69,7 @@ type NGT interface {
 type ngt struct {
 	alen     int
 	indexing atomic.Value
+	saveMu   sync.Mutex    // creating or saving index
 	lim      time.Duration // auto indexing time limit
 	dur      time.Duration // auto indexing check duration
 	sdur     time.Duration // auto save index check duration
@@ -234,7 +235,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			err = nil
 			select {
 			case <-ctx.Done():
-				err = n.CreateAndSaveIndex(ctx, n.dps)
+				err = n.CreateIndex(ctx, n.dps)
 				if err != nil {
 					ech <- err
 					return errors.Wrap(ctx.Err(), err.Error())
@@ -272,7 +273,7 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 	ds := make([]model.Distance, 0, len(sr))
 	for _, d := range sr {
 		if err = d.Error; d.ID == 0 && err != nil {
-			log.Debug(err)
+			log.Debug("an error occurred while searching:", err)
 			continue
 		}
 		key, ok := n.kvs.GetInverse(d.ID)
@@ -454,6 +455,9 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		}
 	}()
 
+	n.saveMu.Lock()
+	defer n.saveMu.Unlock()
+
 	if n.indexing.Load().(bool) {
 		return nil
 	}
@@ -479,7 +483,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		return true
 	})
 	log.Info("create index delete kvs phase started")
-	log.Debug(delList)
+	log.Debugf("deleting kvs: %#v", delList)
 	doids := make([]uint, 0, ic)
 	for _, duuid := range delList {
 		n.dvc.Delete(duuid)
@@ -494,11 +498,11 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	log.Info("create index delete kvs phase finished")
 
 	log.Info("create index delete index phase started")
-	log.Debug(doids)
+	log.Debugf("deleting index: %#v", doids)
 	brerr := n.core.BulkRemove(doids...)
 	log.Info("create index delete index phase finished")
 	if brerr != nil {
-		log.Error(brerr)
+		log.Error("an error occurred on deleting index phase:", brerr)
 		err = errors.Wrap(err, brerr.Error())
 	}
 	uuids := make([]string, 0, ic)
@@ -511,13 +515,13 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		return true
 	})
 	log.Info("create index insert index phase started")
-	log.Debug(vecs)
+	log.Debugf("inserting index: %#v", vecs)
 	oids, errs := n.core.BulkInsert(vecs)
 	log.Info("create index insert index phase finished")
 	if errs != nil && len(errs) != 0 {
 		for _, bierr := range errs {
 			if bierr != nil {
-				log.Error(bierr)
+				log.Error("an error occurred on inserting index phase:", bierr)
 				err = errors.Wrap(err, bierr.Error())
 			}
 		}
@@ -540,7 +544,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	log.Debugf("pool size = %d", poolSize)
 	cierr := n.core.CreateIndex(poolSize)
 	if cierr != nil {
-		log.Error(cierr)
+		log.Error("an error occurred on creating graph and tree phase:", cierr)
 		err = errors.Wrap(err, cierr.Error())
 	}
 	log.Info("create graph and tree phase finished")
@@ -557,6 +561,9 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 			span.End()
 		}
 	}()
+
+	n.saveMu.Lock()
+	defer n.saveMu.Unlock()
 
 	if len(n.path) != 0 && !n.inMem {
 		eg, ctx := errgroup.New(ctx)
@@ -594,7 +601,7 @@ func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err erro
 	}()
 
 	err = n.CreateIndex(ctx, poolSize)
-	if err != nil {
+	if err != nil && err != errors.ErrUncommittedIndexNotFound {
 		return err
 	}
 	return n.SaveIndex(ctx)
@@ -667,7 +674,7 @@ func (n *ngt) DeleteVCacheLen() uint64 {
 
 func (n *ngt) Close(ctx context.Context) (err error) {
 	if len(n.path) != 0 {
-		err = n.SaveIndex(ctx)
+		err = n.CreateAndSaveIndex(ctx, n.dps)
 	}
 	n.core.Close()
 	return
