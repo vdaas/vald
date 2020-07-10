@@ -1302,6 +1302,10 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					dc := c.(*dialerCache)
 
 					check := func(gotConn net.Conn, gotErr error, cnt int, port string, srvContent string) error {
+						defer func() {
+							_ = gotConn.Close()
+						}()
+
 						if gotErr != nil {
 							return errors.Errorf("err is not nil: %v", gotErr)
 						}
@@ -1321,7 +1325,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 						// read the output from the server and check if it is equals to the count
 						fmt.Fprintf(gotConn, "GET / HTTP/1.0\r\n\r\n")
 						buf, _ := ioutil.ReadAll(gotConn)
-						content := strings.Split(string(buf), "\n")[5]
+						content := strings.Split(string(buf), "\n")[5] // skip HTTP header
 						if content != srvContent {
 							return errors.Errorf("excepted output from server, got: %v, want: %v", content, fmt.Sprint(cnt))
 						}
