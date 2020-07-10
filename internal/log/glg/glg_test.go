@@ -112,7 +112,7 @@ func TestSetLevelMode(t *testing.T) {
 					return errors.New("error level is wrong")
 				}
 
-				if g.GetCurrentMode(glg.FAIL) != glg.STD {
+				if g.GetCurrentMode(glg.FATAL) != glg.STD {
 					return errors.New("fatal level is wrong")
 				}
 
@@ -147,7 +147,7 @@ func TestSetLevelMode(t *testing.T) {
 					return errors.New("error level is wrong")
 				}
 
-				if g.GetCurrentMode(glg.FAIL) != glg.STD {
+				if g.GetCurrentMode(glg.FATAL) != glg.STD {
 					return errors.New("fatal level is wrong")
 				}
 
@@ -182,7 +182,7 @@ func TestSetLevelMode(t *testing.T) {
 					return errors.New("error level is wrong")
 				}
 
-				if g.GetCurrentMode(glg.FAIL) != glg.STD {
+				if g.GetCurrentMode(glg.FATAL) != glg.STD {
 					return errors.New("fatal level is wrong")
 				}
 
@@ -217,7 +217,7 @@ func TestSetLevelMode(t *testing.T) {
 					return errors.New("error level is wrong")
 				}
 
-				if g.GetCurrentMode(glg.FAIL) != glg.STD {
+				if g.GetCurrentMode(glg.FATAL) != glg.STD {
 					return errors.New("fatal level is wrong")
 				}
 
@@ -252,7 +252,7 @@ func TestSetLevelMode(t *testing.T) {
 					return errors.New("error level is wrong")
 				}
 
-				if g.GetCurrentMode(glg.FAIL) != glg.STD {
+				if g.GetCurrentMode(glg.FATAL) != glg.STD {
 					return errors.New("fatal level is wrong")
 				}
 
@@ -287,7 +287,7 @@ func TestSetLevelMode(t *testing.T) {
 					return errors.New("error level is wrong")
 				}
 
-				if g.GetCurrentMode(glg.FAIL) != glg.NONE {
+				if g.GetCurrentMode(glg.FATAL) != glg.NONE {
 					return errors.New("fatal level is wrong")
 				}
 
@@ -301,7 +301,6 @@ func TestSetLevelMode(t *testing.T) {
 			l := (&logger{
 				glg: tt.field.glg,
 			}).setLevelMode(tt.args.lv)
-
 			if err := tt.checkFunc(l); err != nil {
 				t.Error(err)
 			}

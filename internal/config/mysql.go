@@ -17,6 +17,7 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+// MySQL represent the mysql configuration.
 type MySQL struct {
 	DB                   string `json:"db" yaml:"db"`
 	Host                 string `json:"host" yaml:"host"`
@@ -35,6 +36,7 @@ type MySQL struct {
 	TCP                  *TCP   `json:"tcp" yaml:"tcp"`
 }
 
+// Bind returns MySQL object whose some string value is filed value or environment value.
 func (m *MySQL) Bind() *MySQL {
 	if m.TLS != nil {
 		m.TLS.Bind()
