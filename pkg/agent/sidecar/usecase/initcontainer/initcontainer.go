@@ -131,6 +131,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			urlopener.WithPrivateKey(cfg.AgentSidecar.BlobStorage.CloudStrage.Client.PrivateKey),
 			urlopener.WithCredentialsFile(cfg.AgentSidecar.BlobStorage.CloudStrage.Client.CredentialsFilePath),
 			urlopener.WithCredentialsJSON(cfg.AgentSidecar.BlobStorage.CloudStrage.Client.CredentialsJSON),
+			urlopener.WithHTTPClient(client),
 		),
 		storage.WithCloudStorageOpts(
 			cloudstorage.WithURL(cfg.AgentSidecar.BlobStorage.CloudStrage.URL),
