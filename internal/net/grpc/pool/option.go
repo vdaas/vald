@@ -31,6 +31,7 @@ var (
 		WithEndPort(65535),
 		WithDialTimeout("1s"),
 		WithOldConnCloseDuration("1s"),
+		WithResolveDNS(true),
 	}
 )
 
@@ -76,6 +77,12 @@ func WithEndPort(port int) Option {
 			return
 		}
 		p.endPort = uint16(port)
+	}
+}
+
+func WithResolveDNS(flg bool) Option {
+	return func(p *pool) {
+		p.resolveDNS = flg
 	}
 }
 
