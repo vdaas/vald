@@ -108,7 +108,7 @@ func Test_dialerCache_GetIP(t *testing.T) {
 				},
 			},
 			want: want{
-				want: "a",
+				want: "b",
 			},
 			checkFunc: func(d *dialerCache, w want, got string) error {
 				if err := defaultCheckFunc(d, w, got); err != nil {
@@ -116,7 +116,7 @@ func Test_dialerCache_GetIP(t *testing.T) {
 				}
 
 				for i := 1; i < 100; i++ {
-					idx := i % len(d.ips)
+					idx := (i + 1) % len(d.ips)
 					if s := d.GetIP(); s != d.ips[idx] {
 						return errors.New("invalid output")
 					}
@@ -133,7 +133,7 @@ func Test_dialerCache_GetIP(t *testing.T) {
 				ips: []string{
 					"a", "b", "c",
 				},
-				cnt: math.MaxUint32 - 1000,
+				cnt: math.MaxUint32,
 			},
 			want: want{
 				want: "a",
@@ -142,7 +142,7 @@ func Test_dialerCache_GetIP(t *testing.T) {
 				if err := defaultCheckFunc(d, w, got); err != nil {
 					return err
 				}
-				if d.cnt != 1 {
+				if d.cnt != 0 {
 					return errors.New("invalid cnt")
 				}
 				return nil
@@ -1380,11 +1380,11 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				ips: []string{
 					host, host,
 				},
-				cnt: math.MaxUint32 - 10,
+				cnt: math.MaxUint32,
 			})
 
 			return test{
-				name: "reset cache count when it is about to overflow",
+				name: "reset cache count when it is  overflow",
 				args: args{
 					dctx:    context.Background(),
 					network: "tcp",
@@ -1408,7 +1408,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					}
 
 					c, _ := d.cache.Get(addr)
-					if dc := c.(*dialerCache); dc.cnt != 1 {
+					if dc := c.(*dialerCache); dc.cnt != 0 {
 						return errors.Errorf("count do not reset, cnt: %v", dc.cnt)
 					}
 

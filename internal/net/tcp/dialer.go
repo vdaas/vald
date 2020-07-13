@@ -21,7 +21,6 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"math"
 	"sync/atomic"
 	"time"
 
@@ -30,10 +29,6 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
-)
-
-const (
-	maxDialerCacheCount = math.MaxUint32 - 10000
 )
 
 // Dialer is an interface to get the dialer instance to connect to an address.
@@ -63,16 +58,14 @@ type dialerCache struct {
 	cnt uint32
 }
 
-// GetIP returns the next cached IP address in round robin order
+// GetIP returns the next cached IP address in round robin order.
+// It starts getting the index 1 cache instead of index 0 cache.
 func (d *dialerCache) GetIP() string {
 	if d.Len() == 1 {
 		return d.ips[0]
 	}
 
-	if atomic.LoadUint32(&d.cnt) > maxDialerCacheCount {
-		atomic.StoreUint32(&d.cnt, 0)
-	}
-	return d.ips[(atomic.AddUint32(&d.cnt, 1)-1)%d.Len()]
+	return d.ips[atomic.AddUint32(&d.cnt, 1)%d.Len()]
 }
 
 // Len returns the length of cached IP addresses
