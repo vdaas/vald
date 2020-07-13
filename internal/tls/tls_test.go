@@ -74,10 +74,7 @@ func TestNew(t *testing.T) {
 					cfg.Certificates[0], _ = tls.LoadX509KeyPair(testdata.GetTestdataPath("tls/dummyServer.crt"),
 						testdata.GetTestdataPath("tls/dummyServer.key"))
 
-					pool := x509.NewCertPool()
-					b, _ := ioutil.ReadFile(testdata.GetTestdataPath("tls/dummyCa.pem"))
-					pool.AppendCertsFromPEM(b)
-
+					pool, _ := NewX509CertPool(testdata.GetTestdataPath("tls/dummyCa.pem"))
 					cfg.ClientCAs = pool
 					cfg.ClientAuth = tls.RequireAndVerifyClientCert
 
@@ -103,7 +100,12 @@ func TestNew(t *testing.T) {
 				if sl == 0 {
 					return errors.New("subjects are empty")
 				}
-				if got, want := c.ClientCAs.Subjects()[sl-1], w.want.ClientCAs.Subjects()[0]; !reflect.DeepEqual(got, want) {
+
+				if got, want := c.ClientCAs.Subjects()[sl-1], w.want.ClientCAs.Subjects()[sl-1]; !reflect.DeepEqual(got, want) {
+					return errors.Errorf("ClientCAs.Subjects want: %v, got: %v", want, got)
+				}
+
+				if got, want := c.ClientCAs.Subjects()[sl-1], w.want.ClientCAs.Subjects()[sl-1]; !reflect.DeepEqual(got, want) {
 					return errors.Errorf("ClientCAs.Subjects want: %v, got: %v", want, got)
 				}
 
