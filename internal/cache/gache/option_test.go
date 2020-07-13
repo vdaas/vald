@@ -23,6 +23,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/kpango/gache"
 	"github.com/vdaas/vald/internal/errors"
 
@@ -39,47 +40,40 @@ var (
 func TestDefaultOptions(t *testing.T) {
 	type args struct{}
 	type want struct {
-		want []Option
+		want *cache
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, []Option) error
+		checkFunc  func(want, *cache) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
 
-	defaultCheckFunc := func(w want, got []Option) error {
-		if !reflect.DeepEqual(got, w.want) {
+	defaultCheckFunc := func(w want, got *cache) error {
+		opts := []cmp.Option{
+			cmp.AllowUnexported(*w.want),
+			cmp.AllowUnexported(*got),
+			cmp.Comparer(func(want, got *cache) bool {
+				return want.gache != nil && got.gache != nil
+			}),
+		}
+		if diff := cmp.Diff(w.want, got, opts...); diff != "" {
 			return errors.Errorf("got = %v, want = %v", got, w.want)
 		}
 		return nil
 	}
 
 	tests := []test{
-		func() test {
-			opt := []Option{
-				WithGache(gache.New()),
-			}
-			return test{
-				name: "set sucess",
-				want: want{
-					want: opt,
+		{
+			name: "set succuess",
+			want: want{
+				want: &cache{
+					gache: gache.New(),
 				},
-				checkFunc: func(w want, got []Option) error {
-					if len(w.want) != len(got) {
-						return errors.Errorf("got length = %d want length = %d", len(got), len(w.want))
-					}
-					for i := range w.want {
-						if reflect.ValueOf(w.want[i]).Pointer() != reflect.ValueOf(got[i]).Pointer() {
-							return errors.Errorf("got = %v, want = %v", got, w.want)
-						}
-					}
-					return nil
-				},
-			}
-		}(),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -94,8 +88,11 @@ func TestDefaultOptions(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			got := defaultOptions()
-			if err := test.checkFunc(test.want, got); err != nil {
+			g := new(cache)
+			for _, opt := range defaultOptions() {
+				opt(g)
+			}
+			if err := test.checkFunc(test.want, g); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
