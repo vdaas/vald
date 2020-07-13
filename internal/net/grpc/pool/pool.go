@@ -68,6 +68,7 @@ type pool struct {
 	roccd         time.Duration // reconnection old connection closing duration
 	closing       atomic.Value
 	isIP          bool
+	resolveDNS    bool
 	reconnectHash string
 }
 
@@ -125,7 +126,7 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 		p.pool = make([]atomic.Value, p.size)
 	}
 
-	if p.isIP {
+	if p.isIP || !p.resolveDNS {
 		return p.connect(ctx)
 	}
 	ips, err := p.lookupIPAddr(ctx)
@@ -372,6 +373,10 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 		log.Debugf("failed to resolve ip addr for %s \terr: %s", p.addr, err.Error())
 		return nil, err
 	}
+
+	if len(addrs) == 0 {
+		return nil, errors.ErrGRPCLookupIPAddrNotFound(p.host)
+	}
 	ips = make([]string, 0, len(addrs))
 
 	const network = "tcp"
@@ -403,6 +408,9 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 		ips = append(ips, ipStr)
 	}
 
+	if len(ips) == 0 {
+		return nil, errors.ErrGRPCLookupIPAddrNotFound(p.host)
+	}
 	sort.Strings(ips)
 
 	return ips, nil
@@ -415,7 +423,7 @@ func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
 
 	if p.reconnectHash == "" {
 		log.Debugf("connection history for %s not found starting connection phase", p.addr)
-		if p.isIP {
+		if p.isIP || !p.resolveDNS {
 			return p.connect(ctx)
 		}
 		return p.Connect(ctx)

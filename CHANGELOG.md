@@ -1,5 +1,49 @@
 # CHANGELOG
 
+## v0.0.45
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.45`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.45`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.45`
+gateway | `docker pull vdaas/vald-gateway:v0.0.45`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.45`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.45`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.45`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.45`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.45`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.45`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.45`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.45)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.45/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.45/charts/vald-helm-operator/README.md)
+
+### Changes
+- bugfix gateway & internal/net/grpc ([#569](https://github.com/vdaas/vald/pull/569))
+- fix update-k8s workflow & update sample manifests ([#567](https://github.com/vdaas/vald/pull/567))
+- :white_check_mark: Add test for `internal/config/mysql.go` ([#563](https://github.com/vdaas/vald/pull/563))
+- :bug: :white_check_mark: fix failed test ([#561](https://github.com/vdaas/vald/pull/561))
+- :white_check_mark: internal/tls test ([#485](https://github.com/vdaas/vald/pull/485))
+- pass tparse by tee command ([#562](https://github.com/vdaas/vald/pull/562))
+- fix global cache ([#560](https://github.com/vdaas/vald/pull/560))
+- :white_check_mark: add internal/config/ngt test ([#554](https://github.com/vdaas/vald/pull/554))
+- :white_check_mark: internal/cache/cacher test ([#553](https://github.com/vdaas/vald/pull/553))
+- :white_check_mark: Add test case for `internal/file` ([#550](https://github.com/vdaas/vald/pull/550))
+- :white_check_mark: add internal/singleflight test ([#542](https://github.com/vdaas/vald/pull/542))
+- not to force rebuild gotests ([#548](https://github.com/vdaas/vald/pull/548))
+- :pencil: Add use case document ([#482](https://github.com/vdaas/vald/pull/482))
+- :white_check_mark: add internal/log/mock/retry test ([#549](https://github.com/vdaas/vald/pull/549))
+- feat: options test ([#518](https://github.com/vdaas/vald/pull/518))
+- :white_check_mark: add log/mock/logger test ([#538](https://github.com/vdaas/vald/pull/538))
+- :bug: Fix condition check of chatops ([#544](https://github.com/vdaas/vald/pull/544))
+- exclude hack codes ([#543](https://github.com/vdaas/vald/pull/543))
+
+
 ## v0.0.44
 
 ### Docker images

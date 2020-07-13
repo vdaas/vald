@@ -101,19 +101,23 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			span.End()
 		}
 	}()
-	metaID := req.GetId()
-	req.Id, err = s.metadata.GetUUID(ctx, metaID)
+
+	vec, err := s.GetObject(ctx, &payload.Object_ID{
+		Id: req.GetId(),
+	})
 	if err != nil {
-		req.Id = metaID
 		log.Errorf("error at SearchByID\t%v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
-		return nil, status.WrapWithNotFound(fmt.Sprintf("SearchByID API meta %s's uuid not found", metaID), err, req, info.Get())
+		return nil, status.WrapWithNotFound(fmt.Sprintf("SearchByID API meta %s's uuid not found", req.GetId()), err, req, info.Get())
 	}
 	return s.search(ctx, req.GetConfig(),
 		func(ctx context.Context, ac agent.AgentClient, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-			return ac.SearchByID(ctx, req, copts...)
+			return ac.Search(ctx, &payload.Search_Request{
+				Vector: vec.GetVector(),
+				Config: req.GetConfig(),
+			}, copts...)
 		})
 }
 
@@ -290,6 +294,13 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 			span.End()
 		}
 	}()
+	if len(vec.GetVector()) < 2 {
+		err = errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
+		return nil, status.WrapWithInvalidArgument(fmt.Sprintf("Insert API meta datas %v's vector invalid", vec.GetId()), err, info.Get())
+	}
 	meta := vec.GetId()
 	exists, err := s.metadata.Exists(ctx, meta)
 	if err != nil {
@@ -389,6 +400,13 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	metaMap := make(map[string]string)
 	metas := make([]string, 0, len(vecs.GetVectors()))
 	for i, vec := range vecs.GetVectors() {
+		if len(vec.GetVector()) < 2 {
+			err = errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			}
+			return nil, status.WrapWithInvalidArgument(fmt.Sprintf("MultiInsert API meta datas %v's vector invalid", vec.GetId()), err, info.Get())
+		}
 		uuid := fuid.String()
 		meta := vec.GetId()
 		metaMap[uuid] = meta
@@ -473,6 +491,13 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 			span.End()
 		}
 	}()
+	if len(vec.GetVector()) < 2 {
+		err = errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
+		return nil, status.WrapWithInvalidArgument(fmt.Sprintf("Update API meta datas %v's vector invalid", vec.GetId()), err, info.Get())
+	}
 	meta := vec.GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil {
@@ -550,6 +575,13 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 	}()
 	ids := make([]string, 0, len(vecs.GetVectors()))
 	for _, vec := range vecs.GetVectors() {
+		if len(vec.GetVector()) < 2 {
+			err = errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			}
+			return nil, status.WrapWithInvalidArgument(fmt.Sprintf("MultiUpdate API meta datas %v's vector invalid", vec.GetId()), err, info.Get())
+		}
 		ids = append(ids, vec.GetId())
 	}
 	_, err = s.MultiRemove(ctx, &payload.Object_IDs{
@@ -579,6 +611,13 @@ func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*paylo
 		}
 	}()
 
+	if len(vec.GetVector()) < 2 {
+		err := errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
+		return nil, status.WrapWithInvalidArgument(fmt.Sprintf("Upsert API meta datas %v's vector invalid", vec.GetId()), err, info.Get())
+	}
 	meta := vec.GetId()
 	exists, errs := s.metadata.Exists(ctx, meta)
 	if errs != nil {
@@ -630,6 +669,13 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 
 	var errs error
 	for _, vec := range vecs.GetVectors() {
+		if len(vec.GetVector()) < 2 {
+			err := errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			}
+			return nil, status.WrapWithInvalidArgument(fmt.Sprintf("MultiUpsert API meta datas %v's vector invalid", vec.GetId()), err, info.Get())
+		}
 		exists, err := s.metadata.Exists(ctx, vec.GetId())
 		if err != nil {
 			log.Error("an error occurred during calling meta Exists:", err)

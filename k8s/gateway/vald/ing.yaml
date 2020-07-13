@@ -24,10 +24,10 @@ metadata:
     name: vald-gateway-ingress
     app: vald-gateway-ingress
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.44
+    helm.sh/chart: vald-v0.0.45
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.44
+    app.kubernetes.io/version: v0.0.45
     app.kubernetes.io/component: gateway
   name: vald-gateway-ingress
 spec:
