@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
+// Cache represent the cache interface to store cache
 type Cache interface {
 	Start(context.Context)
 	Get(string) (interface{}, bool)
@@ -41,6 +42,7 @@ type cache struct {
 	expiredHook    func(context.Context, string)
 }
 
+// New returns the Cache instance or error
 func New(opts ...Option) (cc Cache, err error) {
 	c := new(cache)
 	for _, opt := range append(defaultOpts, opts...) {
