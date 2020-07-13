@@ -27,7 +27,6 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
-
 	"go.uber.org/goleak"
 )
 
@@ -680,6 +679,7 @@ func TestWait(t *testing.T) {
 
 func Test_group_Wait(t *testing.T) {
 	type fields struct {
+		escape           chan struct{}
 		limitation       chan struct{}
 		enableLimitation atomic.Value
 		errs             []error
@@ -705,7 +705,7 @@ func Test_group_Wait(t *testing.T) {
 		func() test {
 			var num int32
 			return test{
-				name: "returns nil after all goroutne returns",
+				name: "returns nil after all goroutine returns",
 				fields: fields{
 					enableLimitation: func() (el atomic.Value) {
 						el.Store(false)
@@ -731,7 +731,6 @@ func Test_group_Wait(t *testing.T) {
 				},
 			}
 		}(),
-
 		{
 			name: "returns error when g.errs is not nil",
 			fields: fields{
@@ -744,6 +743,39 @@ func Test_group_Wait(t *testing.T) {
 				err: errors.Wrap(errors.New("err1"), errors.New("err2").Error()),
 			},
 		},
+		func() test {
+			var num int32
+			return test{
+				name: "returns err when escaped before all goroutine returns",
+				fields: fields{
+					escape: make(chan struct{}, 1),
+					enableLimitation: func() (el atomic.Value) {
+						el.Store(false)
+						return
+					}(),
+				},
+				beforeFunc: func(g Group) {
+					g.Go(func() error {
+						atomic.StoreInt32(&num, int32(runtime.NumGoroutine()))
+						time.Sleep(time.Second)
+						return nil
+					})
+					g.Escape()
+				},
+				checkFunc: func(w want, err error) error {
+					if err := defaultCheckFunc(w, err); err != nil {
+						return err
+					}
+					return nil
+				},
+				afterFunc: func() {
+					time.Sleep(time.Second)
+				},
+				want: want{
+					err: errors.Wrap(nil, errors.ErrErrgroupEscaped.Error()),
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -756,6 +788,7 @@ func Test_group_Wait(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			g := &group{
+				escape:           test.fields.escape,
 				limitation:       test.fields.limitation,
 				errs:             test.fields.errs,
 				enableLimitation: test.fields.enableLimitation,
@@ -767,6 +800,58 @@ func Test_group_Wait(t *testing.T) {
 
 			err := g.Wait()
 			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_group_Escape(t *testing.T) {
+	type fields struct {
+		escape chan struct{}
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		{
+			name: "it is able to send a struct{} to escape channel",
+			fields: fields{
+				escape: make(chan struct{}, 1),
+			},
+			want:      want{},
+			checkFunc: defaultCheckFunc,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			g := &group{
+				escape: test.fields.escape,
+			}
+
+			g.Escape()
+			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
