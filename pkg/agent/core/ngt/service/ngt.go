@@ -183,6 +183,16 @@ func (n *ngt) initNGT() (err error) {
 		if ctx.Err() == context.DeadlineExceeded {
 			log.Errorf("cannot load index backup data within the timeout %s. the process is going to be killed.", timeout)
 
+			err := metadata.Store(
+				filepath.Join(n.path, metadata.AgentMetadataFileName),
+				&metadata.Metadata{
+					IsValid: false,
+					NGT: &metadata.NGT{
+						IndexCount: 0,
+					},
+				},
+			)
+
 			// TODO: related to #403.
 			p, err := os.FindProcess(os.Getpid())
 			if err != nil {
@@ -644,6 +654,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	return metadata.Store(
 		filepath.Join(n.path, metadata.AgentMetadataFileName),
 		&metadata.Metadata{
+			IsValid: true,
 			NGT: &metadata.NGT{
 				IndexCount: n.Len(),
 			},

@@ -25,6 +25,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
@@ -279,11 +280,16 @@ func (o *observer) onWrite(ctx context.Context, name string) error {
 		}
 	}()
 
-	if name != filepath.Join(o.dir, metadata.AgentMetadataFileName) {
-		return nil
+	ok, err := o.checkCondition(name)
+	if err != nil {
+		return err
 	}
 
-	return o.requestBackup(ctx)
+	if ok {
+		return o.requestBackup(ctx)
+	}
+
+	return o.terminate()
 }
 
 func (o *observer) onCreate(ctx context.Context, name string) error {
@@ -294,11 +300,39 @@ func (o *observer) onCreate(ctx context.Context, name string) error {
 		}
 	}()
 
-	if name != filepath.Join(o.dir, metadata.AgentMetadataFileName) {
-		return nil
+	ok, err := o.checkCondition(name)
+	if err != nil {
+		return err
 	}
 
-	return o.requestBackup(ctx)
+	if ok {
+		return o.requestBackup(ctx)
+	}
+
+	return o.terminate()
+}
+
+func (o *observer) checkCondition(name string) (bool, error) {
+	metadataPath := filepath.Join(o.dir, metadata.AgentMetadataFileName)
+	if name != metadataPath {
+		return false, nil
+	}
+
+	metadata, err := metadata.Load(metadataPath)
+	if err != nil {
+		return false, err
+	}
+
+	return metadata.IsValid, nil
+}
+
+func (o *observer) terminate() error {
+	p, err := os.FindProcess(os.Getpid())
+	if err != nil {
+		return err
+	}
+
+	return p.Signal(syscall.SIGTERM)
 }
 
 func (o *observer) requestBackup(ctx context.Context) error {
