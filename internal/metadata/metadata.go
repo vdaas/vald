@@ -29,7 +29,7 @@ const (
 )
 
 type Metadata struct {
-	IsInvalid bool `json: "is_invalid" yaml:"is_invalid"`
+	IsInvalid bool `json:"is_invalid" yaml:"is_invalid"`
 	NGT       *NGT `json:"ngt,omitempty" yaml:"ngt"`
 }
 
