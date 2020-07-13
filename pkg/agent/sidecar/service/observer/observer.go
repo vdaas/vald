@@ -323,7 +323,7 @@ func (o *observer) checkCondition(name string) (bool, error) {
 		return false, err
 	}
 
-	return metadata.IsValid, nil
+	return !metadata.IsInvalid, nil
 }
 
 func (o *observer) terminate() error {

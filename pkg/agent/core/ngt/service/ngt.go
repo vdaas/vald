@@ -186,7 +186,7 @@ func (n *ngt) initNGT() (err error) {
 			err := metadata.Store(
 				filepath.Join(n.path, metadata.AgentMetadataFileName),
 				&metadata.Metadata{
-					IsValid: false,
+					IsInvalid: true,
 					NGT: &metadata.NGT{
 						IndexCount: 0,
 					},
@@ -654,7 +654,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	return metadata.Store(
 		filepath.Join(n.path, metadata.AgentMetadataFileName),
 		&metadata.Metadata{
-			IsValid: true,
+			IsInvalid: false,
 			NGT: &metadata.NGT{
 				IndexCount: n.Len(),
 			},
