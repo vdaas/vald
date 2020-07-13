@@ -151,8 +151,10 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 
 	t := time.Now()
 
+	metadataPath := filepath.Join(o.dir, metadata.AgentMetadataFileName)
+
 	f := func(ctx context.Context, name string) error {
-		if name == filepath.Join(o.dir, metadata.AgentMetadataFileName) {
+		if name == metadataPath {
 			t = time.Now().Add(-o.postStopTimeout)
 			return nil
 		}
@@ -191,6 +193,16 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 			return finalize()
 		case <-ticker.C:
 			if time.Since(t) > o.postStopTimeout {
+				metadata, err := metadata.Load(metadataPath)
+				if err != nil {
+					return err
+				}
+
+				if metadata.IsInvalid {
+					log.Warn("backup skipped because the files are invalid")
+					return nil
+				}
+
 				return o.backup(ctx)
 			}
 		}
@@ -327,6 +339,8 @@ func (o *observer) checkCondition(name string) (bool, error) {
 }
 
 func (o *observer) terminate() error {
+	log.Error("the process will be terminated because the files are invalid")
+
 	p, err := os.FindProcess(os.Getpid())
 	if err != nil {
 		return err
