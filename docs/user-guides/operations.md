@@ -112,6 +112,10 @@ This is an example of a custom dashboard. It is based on [our standard dashboard
 
 ## Upgrading
 
+Our versioning strategy is based on [Semantic Versioning][semver].
+Upgrading to new minor or major version may require you to change your configurations.
+Please read the [CHANGELOG][CHANGELOG] before upgrading.
+
 ### In case of manual deploy
 
 
@@ -129,6 +133,7 @@ This is an example of a custom dashboard. It is based on [our standard dashboard
 
 [vald-helm-chart]: https://github.com/vdaas/vald/tree/master/charts/vald
 [vald-helm-operator-chart]: https://github.com/vdaas/vald/tree/master/charts/vald-helm-operator
+[CHANGELOG]: https://vald.vdaas.org/docs/release/changelog/
 
 [pod-priority-preemption]: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
 [resource-quota]: https://kubernetes.io/docs/concepts/policy/resource-quotas/
@@ -143,3 +148,4 @@ This is an example of a custom dashboard. It is based on [our standard dashboard
 [vald-grafana]: https://github.com/vdaas/vald/tree/master/k8s/metrics/grafana
 [vald-grafana-dashboards]: https://github.com/vdaas/vald/tree/master/k8s/metrics/grafana/dashboards
 [grafana-operator]: https://operatorhub.io/operator/grafana-operator
+[semver]: https://semver.org/
