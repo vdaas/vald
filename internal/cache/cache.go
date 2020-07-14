@@ -46,10 +46,7 @@ type cache struct {
 func New(opts ...Option) (cc Cache, err error) {
 	c := new(cache)
 	for _, opt := range append(defaultOpts, opts...) {
-		err = opt(c)
-		if err != nil {
-			return nil, err
-		}
+		opt(c)
 	}
 	switch c.cacher {
 	case cacher.GACHE:

@@ -76,9 +76,34 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{
-			name: "return unknown error",
+			name: "return unknown error when type is unknown",
 			args: args{
 				opts: []Option{WithType("unknown")},
+			},
+			want: want{
+				err: errors.ErrInvalidCacherType,
+			},
+		},
+		{
+			name: "return cache when type is empty",
+			args: args{
+				opts: []Option{WithType("")},
+			},
+			checkFunc: func(w want, got Cache, err error) error {
+				if err != nil {
+					return err
+				}
+				if got == nil {
+					return errors.New("got cache is nil")
+				}
+
+				return nil
+			},
+		},
+		{
+			name: "return unknown error when type is dummy string",
+			args: args{
+				opts: []Option{WithType("dummy")},
 			},
 			want: want{
 				err: errors.ErrInvalidCacherType,
