@@ -26,8 +26,9 @@ Table of Contents
 
 Since Vald agents hold vector data on their memory, unexpected disruption or eviction of agents may cause loss of indices.
 Also, disruption or deletion of worker nodes that have Vald agents may cause loss of indices.
+To minimize the loss of indices, it is better to increase number of nodes and pods.
 
-
+However, to maximize the efficiency of search operations, it is better to have a certain amount of vectors in each NGT vector space.
 
 It is recommended to have more than 3 worker nodes with larger than 16 GB RAM.
 It is better to deploy 2 or 3 Vald agent pods to each worker node.
@@ -44,8 +45,8 @@ If you're going to deploy Vald on multi-tenant cluster, please take care about t
 - It is recommended to define PriorityClasses for agents not to be evicted.
     - For more info, please visit the page [Pod Priority and Preemption][pod-priority-preemption].
     - If you are using [the Vald chart][vald-helm-chart], PriorityClasses are defined by default.
-- It is recommended to define namespaces for each Vald and the other apps.
-- Then, please define ResourceQuotas for the namespace for the other apps to limit the memory usage for the other apps.
+- It is recommended to define unique namespaces for each Vald and the other apps.
+- Then, please define ResourceQuotas for the namespace for the other apps to limit the memory usage of them.
     - For more info, please visit tha page [Resource Quotas][resource-quota].
 
 ## Monitoring
@@ -89,6 +90,7 @@ Prometheus can be installed using one of the followings.
 - [Prometheus Operator][prometheus-operator]
 - [Prometheus deployments in Vald repository][vald-prometheus]
 
+If you use Prometheus Operator, it is required to set configurations properly along with [Prometheus Configuration][prometheus-configuration] page.
 It is recommended to use the endpoints role of the service discovery.
 
 #### Deploy Grafana
@@ -98,6 +100,7 @@ Grafana can be installed using one of the followings.
 - [Grafana Operator][grafana-operator]
 - [Grafana deployments in Vald repository][vald-grafana]
 
+It is required to set your Prometheus to a data source.
 
 #### Example dashboard
 
@@ -136,6 +139,7 @@ This is an example of a custom dashboard. It is based on [our standard dashboard
 [grafana]: https://grafana.com
 [vald-prometheus]: https://github.com/vdaas/vald/tree/master/k8s/metrics/prometheus
 [prometheus-operator]: https://github.com/coreos/prometheus-operator
+[prometheus-configuration]: https://prometheus.io/docs/prometheus/latest/configuration/configuration/
 [vald-grafana]: https://github.com/vdaas/vald/tree/master/k8s/metrics/grafana
 [vald-grafana-dashboards]: https://github.com/vdaas/vald/tree/master/k8s/metrics/grafana/dashboards
 [grafana-operator]: https://operatorhub.io/operator/grafana-operator
