@@ -24,6 +24,7 @@ import (
 	"github.com/kpango/gache"
 )
 
+// Option represents a type of func(*cache).
 type Option func(*cache)
 
 // defaultOptions returns []Option with gache.New().
