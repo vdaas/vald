@@ -93,7 +93,7 @@ func WithDialerTimeout(dur string) DialerOption {
 	}
 }
 
-// WithDialerKeeyAlive returns the functional option to set the DialerKeepAlive
+// WithDialerKeepAlive returns the functional option to set the DialerKeepAlive
 func WithDialerKeepAlive(dur string) DialerOption {
 	return func(d *dialer) {
 		if dur == "" {
