@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
+// DialerOption represent the functional option for dialer
 type DialerOption func(*dialer)
 
 var (
@@ -36,12 +37,14 @@ var (
 	}
 )
 
+// WithCache returns the functional option to set the cache
 func WithCache(c cache.Cache) DialerOption {
 	return func(d *dialer) {
 		d.cache = c
 	}
 }
 
+// WithDNSRefreshDuration returns the functional option to set the DNSRefreshDuration
 func WithDNSRefreshDuration(dur string) DialerOption {
 	return func(d *dialer) {
 		if dur == "" {
@@ -57,6 +60,7 @@ func WithDNSRefreshDuration(dur string) DialerOption {
 	}
 }
 
+// WithDNSCacheExpiration returns the functional option to set the DNSCacheExpiration
 func WithDNSCacheExpiration(dur string) DialerOption {
 	return func(d *dialer) {
 		if dur == "" {
@@ -75,6 +79,7 @@ func WithDNSCacheExpiration(dur string) DialerOption {
 	}
 }
 
+// WithDialerTimeout returns the functional option to set the DialerTimeout
 func WithDialerTimeout(dur string) DialerOption {
 	return func(d *dialer) {
 		if dur == "" {
@@ -88,6 +93,7 @@ func WithDialerTimeout(dur string) DialerOption {
 	}
 }
 
+// WithDialerKeeyAlive returns the functional option to set the DialerKeepAlive
 func WithDialerKeepAlive(dur string) DialerOption {
 	return func(d *dialer) {
 		if dur == "" {
@@ -101,28 +107,35 @@ func WithDialerKeepAlive(dur string) DialerOption {
 	}
 }
 
+// WithTLS returns the functional option to set the DialerTLS
 func WithTLS(cfg *tls.Config) DialerOption {
 	return func(d *dialer) {
 		d.tlsConfig = cfg
 	}
 }
 
+// WithEnableDNSCache returns the functional option to enable DNSCache
 func WithEnableDNSCache() DialerOption {
 	return func(d *dialer) {
 		d.dnsCache = true
 	}
 }
+
+// WithDisableDNSCache returns the functional option to disable DNSCache
 func WithDisableDNSCache() DialerOption {
 	return func(d *dialer) {
 		d.dnsCache = false
 	}
 }
 
+// WithEnableDialerDualStack returns the functional option to enable DialerDualStack
 func WithEnableDialerDualStack() DialerOption {
 	return func(d *dialer) {
 		d.dialerDualStack = true
 	}
 }
+
+// WithDisableDialerDualStack returns the functional option to disable DialerDualStack
 func WithDisableDialerDualStack() DialerOption {
 	return func(d *dialer) {
 		d.dialerDualStack = false
