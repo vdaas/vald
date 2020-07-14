@@ -24,20 +24,24 @@ import (
 	"github.com/kpango/gache"
 )
 
+// Option represents the functional option for cache.
 type Option func(*cache)
 
+// defaultOptions returns []Option with gache.New().
 func defaultOptions() []Option {
 	return []Option{
 		WithGache(gache.New()),
 	}
 }
 
+// WithGache returns Option after set gache to cache.
 func WithGache(g gache.Gache) Option {
 	return func(c *cache) {
 		c.gache = g
 	}
 }
 
+// WithExpiredHook returns Option after set expiredHook when f is not nil.
 func WithExpiredHook(f func(context.Context, string)) Option {
 	return func(c *cache) {
 		if f != nil {
@@ -46,6 +50,7 @@ func WithExpiredHook(f func(context.Context, string)) Option {
 	}
 }
 
+// WithExpireDuration returns Option after set expireDur when dur is not 0.
 func WithExpireDuration(dur time.Duration) Option {
 	return func(c *cache) {
 		if dur != 0 {
@@ -54,6 +59,7 @@ func WithExpireDuration(dur time.Duration) Option {
 	}
 }
 
+// WithExpireCheckDuration returns Option after set expireCheckDur when dur is not 0.
 func WithExpireCheckDuration(dur time.Duration) Option {
 	return func(c *cache) {
 		if dur != 0 {
