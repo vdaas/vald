@@ -53,8 +53,8 @@ func (h *helper) Do(parallel int, b *testing.B) Result {
 		calledCnt, totalCnt int64
 
 		fn = func() (interface{}, error) {
-			time.Sleep(h.sleepDur)
 			atomic.AddInt64(&calledCnt, 1)
+			time.Sleep(h.sleepDur)
 			return "", nil
 		}
 	)
@@ -62,6 +62,7 @@ func (h *helper) Do(parallel int, b *testing.B) Result {
 	ch := make(chan struct{})
 	go func() {
 		ch <- struct{}{}
+		atomic.AddInt64(&calledCnt, -1)
 		h.g.Do(context.Background(), "key", fn)
 	}()
 	<-ch
