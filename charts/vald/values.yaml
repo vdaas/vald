@@ -1238,7 +1238,7 @@ agent:
     # @schema {"name": "agent.ngt.auto_save_index_duration", "type": "string"}
     # agent.ngt.auto_save_index_duration -- duration of automatic save index
     auto_save_index_duration: 35m
-    # @schema {"name": "agent.ngt.auto_create_index_pool_size", "type": "int"}
+    # @schema {"name": "agent.ngt.auto_create_index_pool_size", "type": "integer"}
     # agent.ngt.auto_create_index_pool_size -- batch process pool size of automatic create index operation
     auto_create_index_pool_size: 10000
     # @schema {"name": "agent.ngt.initial_delay_max_duration", "type": "string"}
