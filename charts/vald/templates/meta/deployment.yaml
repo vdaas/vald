@@ -89,10 +89,6 @@ spec:
             {{- if .Values.meta.volumeMounts }}
             {{- toYaml .Values.meta.volumeMounts | nindent 12 }}
             {{- end }}
-        {{- if .Values.meta.containers }}
-        {{- $containers := dict "containers" .Values.meta.containers "Values" .Values -}}
-        {{- include "vald.containers" $containers | trim | nindent 8 }}
-        {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler

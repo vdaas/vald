@@ -138,10 +138,6 @@ spec:
             {{- toYaml .Values.agent.volumeMounts | nindent 12 }}
             {{- end }}
         {{- end }}
-        {{- if .Values.agent.containers }}
-        {{- $containers := dict "containers" .Values.agent.containers "Values" .Values -}}
-        {{- include "vald.containers" $containers | trim | nindent 8 }}
-        {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
