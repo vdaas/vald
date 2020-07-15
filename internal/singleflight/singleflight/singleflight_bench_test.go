@@ -27,7 +27,7 @@ type helper struct {
 
 const (
 	minGoroutine  = 10
-	maxGoroutine  = 100000
+	maxGoroutine  = 10000
 	goroutineStep = 10
 )
 
@@ -86,42 +86,6 @@ func (h *helper) Do(parallel int, b *testing.B) {
 		}
 		wg.Wait()
 	})
-}
-
-func Benchmark_group_Do_with_mutex(b *testing.B) {
-	results := make([]Result, 0, len(durs)*maxGoroutine-minGoroutine/goroutineStep)
-	for i := minGoroutine; i <= maxGoroutine; i *= goroutineStep {
-		for _, dur := range durs {
-			h := &helper{
-				g:        singleflight.New(10),
-				sleepDur: dur,
-			}
-
-			b.StopTimer()
-			b.ReportAllocs()
-			b.ResetTimer()
-			b.StartTimer()
-
-			b.Run(fmt.Sprintf("%d %s", i, dur), func(b *testing.B) {
-				h.Do(i, b)
-			})
-
-			hitCnt := h.totalCnt - h.calledCnt
-			hitRate := float64(hitCnt) / float64(h.totalCnt)
-
-			b.Logf("Parallel: %d\tTotal Goroutine Count: %d\tHit Count: %d\tHit Rate: %f",
-				i,
-				h.totalCnt,
-				hitCnt,
-				hitRate,
-			)
-			results = append(results, Result{
-				Goroutine: i,
-				Duration:  dur,
-				HitRate:   hitRate,
-			})
-		}
-	}
 }
 
 func Benchmark_group_Do_with_mutex_1(b *testing.B) {
