@@ -871,6 +871,9 @@ gateway:
       target: agent
       image: busybox
       sleepDuration: 2
+  # @schema {"name": "gateway.containers", "type": "array", "items": {"type": "object"}, "anchor": "containers"}
+  # gateway.containers -- additional containers
+  containers: []
   # @schema {"name": "gateway.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
   # gateway.env -- environment variables
   env:
@@ -1145,6 +1148,17 @@ agent:
   # @schema {"name": "agent.initContainers", "alias": "initContainers"}
   # agent.initContainers -- init containers
   initContainers: []
+  # @schema {"name": "agent.containers", "alias": "containers"}
+  # agent.containers -- additional containers
+  containers:
+    - type: readiness-check
+      name: readiness-check
+      image: busybox
+      mainSleepDuration: 7200
+      sleepDuration: 5
+      timeout: 600
+      port: 3001
+      endpoint: /readiness
   # @schema {"name": "agent.env", "alias": "env"}
   # agent.env -- environment variables
   env: []
@@ -1661,6 +1675,9 @@ discoverer:
   # @schema {"name": "discoverer.initContainers", "alias": "initContainers"}
   # discoverer.initContainers -- init containers
   initContainers: []
+  # @schema {"name": "discoverer.containers", "alias": "containers"}
+  # discoverer.containers -- additional containers
+  containers: []
   # @schema {"name": "discoverer.env", "alias": "env"}
   # discoverer.env -- environment variables
   env:
@@ -1870,6 +1887,9 @@ compressor:
       target: manager-backup
       image: busybox
       sleepDuration: 2
+  # @schema {"name": "compressor.containers", "alias": "containers"}
+  # compressor.containers -- additional containers
+  containers: []
   # @schema {"name": "compressor.env", "alias": "env"}
   # compressor.env -- environment variables
   env:
@@ -2115,6 +2135,9 @@ backupManager:
     #       - scylla-1.scylla.default.svc.cluster.local
     #       - scylla-2.scylla.default.svc.cluster.local
     #   sleepDuration: 2
+  # @schema {"name": "backupManager.containers", "alias": "containers"}
+  # backupManager.containers -- additional containers
+  containers: []
   # @schema {"name": "backupManager.env", "alias": "env"}
   # backupManager.env -- environment variables
   env:
@@ -2519,6 +2542,9 @@ indexManager:
       target: discoverer
       image: busybox
       sleepDuration: 2
+  # @schema {"name": "indexManager.containers", "alias": "containers"}
+  # indexManager.containers -- additional containers
+  containers: []
   # @schema {"name": "indexManager.env", "alias": "env"}
   # indexManager.env -- environment variables
   env:
@@ -2764,6 +2790,9 @@ meta:
     #       - scylla-1.scylla.default.svc.cluster.local
     #       - scylla-2.scylla.default.svc.cluster.local
     #   sleepDuration: 2
+  # @schema {"name": "meta.containers", "alias": "containers"}
+  # meta.containers -- additional containers
+  containers: []
   # @schema {"name": "meta.env", "alias": "env"}
   # meta.env -- environment variables
   env:

@@ -789,6 +789,47 @@ initContainers
 {{- end -}}
 
 {{/*
+containers
+*/}}
+{{- define "vald.containers" -}}
+{{- range .containers -}}
+{{- if .type }}
+- name: {{ .name }}
+  image: {{ .image }}
+  {{- if eq .type "readiness-check" }}
+  command:
+    - "/bin/sh"
+    - "-e"
+    - "-c"
+    - "while true; do sleep {{ default 3600 .mainSleepDuration }}; done"
+  lifecycle:
+    postStart:
+      exec:
+        command:
+          - "/bin/sh"
+          - "-e"
+          - "-c"
+          - |
+            timeout {{ default 600 .timeout }} /bin/sh -c "until curl {{ .url | default (printf "http://localhost:%v%v" .port .endpoint) }}; do sleep {{ default 2 .sleepDuration }}; done"
+  {{- else }}
+  command:
+    {{- toYaml .command | nindent 4 }}
+  {{- end }}
+  {{- if .env }}
+  env:
+    {{- toYaml .env | nindent 4 }}
+  {{- end }}
+  {{- if .volumeMounts }}
+  volumeMounts:
+    {{- toYaml .volumeMounts | nindent 4 }}
+  {{- end }}
+{{- else }}
+- {{ . | toYaml | nindent 2 | trim }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
 Affinity rules
 */}}
 {{- define "vald.affinity" -}}

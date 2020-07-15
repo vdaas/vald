@@ -84,6 +84,10 @@ spec:
             {{- if .Values.gateway.volumeMounts }}
             {{- toYaml .Values.gateway.volumeMounts | nindent 12 }}
             {{- end }}
+        {{- if .Values.gateway.containers }}
+        {{- $containers := dict "containers" .Values.gateway.containers "Values" .Values -}}
+        {{- include "vald.containers" $containers | trim | nindent 8 }}
+        {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
