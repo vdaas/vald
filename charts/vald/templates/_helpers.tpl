@@ -691,9 +691,9 @@ initContainers
     - -c
     - |
       {{- if eq .target "compressor" }}
-      {{- $compressorReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.compressor.server_config.healths.readiness.port }}
+      {{- $compressorReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.manager.compressor.server_config.healths.readiness.port }}
       {{- $compressorReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
-      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.compressor.name }}.{{ $.namespace }}.svc.cluster.local:{{ $compressorReadinessPort }}{{ $compressorReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.manager.compressor.name }}.{{ $.namespace }}.svc.cluster.local:{{ $compressorReadinessPort }}{{ $compressorReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
       {{- else if eq .target "meta" }}
       {{- $metaReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.meta.server_config.healths.readiness.port }}
       {{- $metaReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
@@ -707,9 +707,9 @@ initContainers
       {{- $agentReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
       until [ "$(wget --server-response --spider --quiet http://{{ $.Values.agent.name }}.{{ $.namespace }}.svc.cluster.local:{{ $agentReadinessPort }}{{ $agentReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
       {{- else if eq .target "manager-backup" }}
-      {{- $backupManagerReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.backupManager.server_config.healths.readiness.port }}
+      {{- $backupManagerReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.manager.backup.server_config.healths.readiness.port }}
       {{- $backupManagerReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
-      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.backupManager.name }}.{{ $.namespace }}.svc.cluster.local:{{ $backupManagerReadinessPort }}{{ $backupManagerReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.manager.backup.name }}.{{ $.namespace }}.svc.cluster.local:{{ $backupManagerReadinessPort }}{{ $backupManagerReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
       {{- else if .untilCondition }}
       until [ {{ .untilCondition }} ]; do
       {{- else if .whileCondition }}

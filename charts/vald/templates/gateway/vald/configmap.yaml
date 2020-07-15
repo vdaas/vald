@@ -66,8 +66,8 @@ data:
         cache_expiration: {{ .Values.gateway.gateway_config.meta.cache_expiration }}
         expired_cache_check_duration: {{ .Values.gateway.gateway_config.meta.expired_cache_check_duration }}
       backup:
-        host: {{ .Values.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
-        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.compressor.server_config.servers.grpc.port }}
+        host: {{ .Values.manager.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
+        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.manager.compressor.server_config.servers.grpc.port }}
         client:
           {{- $backupClient := dict "Values" .Values.gateway.gateway_config.backup.client "default" .Values.defaults.grpc.client }}
           {{- include "vald.grpc.client" $backupClient | nindent 10 }}

@@ -13,104 +13,105 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.backupManager.enabled (eq .Values.backupManager.kind "DaemonSet") }}
+{{- $backup := .Values.manager.backup -}}
+{{- if and $backup.enabled (eq $backup.kind "DaemonSet") }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: {{ .Values.backupManager.name }}
+  name: {{ $backup.name }}
   labels:
-    app: {{ .Values.backupManager.name }}
+    app: {{ $backup.name }}
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: manager-backup
-  {{- if .Values.backupManager.annotations }}
+  {{- if $backup.annotations }}
   annotations:
-    {{- toYaml .Values.backupManager.annotations | nindent 4 }}
+    {{- toYaml $backup.annotations | nindent 4 }}
   {{- end }}
 spec:
-  revisionHistoryLimit: {{ .Values.backupManager.revisionHistoryLimit }}
+  revisionHistoryLimit: {{ $backup.revisionHistoryLimit }}
   selector:
     matchLabels:
-      app: {{ .Values.backupManager.name }}
+      app: {{ $backup.name }}
   updateStrategy:
     rollingUpdate:
-      maxUnavailable: {{ .Values.backupManager.rollingUpdate.maxUnavailable }}
+      maxUnavailable: {{ $backup.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: {{ .Values.backupManager.name }}
+        app: {{ $backup.name }}
         app.kubernetes.io/name: {{ include "vald.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: manager-backup
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/manager/backup/configmap.yaml") . | sha256sum }}
-        {{- if .Values.backupManager.podAnnotations }}
-        {{- toYaml .Values.backupManager.podAnnotations | nindent 8 }}
+        {{- if $backup.podAnnotations }}
+        {{- toYaml $backup.podAnnotations | nindent 8 }}
         {{- end }}
     spec:
-      {{- if .Values.backupManager.initContainers }}
+      {{- if $backup.initContainers }}
       initContainers:
-        {{- $initContainers := dict "initContainers" .Values.backupManager.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+        {{- $initContainers := dict "initContainers" $backup.initContainers "Values" .Values "namespace" .Release.Namespace -}}
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
       affinity:
-        {{- include "vald.affinity" .Values.backupManager.affinity | nindent 8 }}
-      {{- if .Values.backupManager.topologySpreadConstraints }}
+        {{- include "vald.affinity" $backup.affinity | nindent 8 }}
+      {{- if $backup.topologySpreadConstraints }}
       topologySpreadConstraints:
-        {{- toYaml .Values.backupManager.topologySpreadConstraints | nindent 8 }}
+        {{- toYaml $backup.topologySpreadConstraints | nindent 8 }}
       {{- end }}
       containers:
-        - name: {{ .Values.backupManager.name }}
-          image: "{{ .Values.backupManager.image.repository }}:{{ default .Values.defaults.image.tag .Values.backupManager.image.tag }}"
-          imagePullPolicy: {{ .Values.backupManager.image.pullPolicy }}
-          {{- $servers := dict "Values" .Values.backupManager.server_config "default" .Values.defaults.server_config -}}
+        - name: {{ $backup.name }}
+          image: "{{ $backup.image.repository }}:{{ default .Values.defaults.image.tag $backup.image.tag }}"
+          imagePullPolicy: {{ $backup.image.pullPolicy }}
+          {{- $servers := dict "Values" $backup.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
           resources:
-            {{- toYaml .Values.backupManager.resources | nindent 12 }}
+            {{- toYaml $backup.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-          {{- if .Values.backupManager.env }}
+          {{- if $backup.env }}
           env:
-            {{- toYaml .Values.backupManager.env | nindent 12 }}
+            {{- toYaml $backup.env | nindent 12 }}
           {{- end }}
           volumeMounts:
-            - name: {{ .Values.backupManager.name }}-config
+            - name: {{ $backup.name }}-config
               mountPath: /etc/server/
-            {{- if .Values.backupManager.volumeMounts }}
-            {{- toYaml .Values.backupManager.volumeMounts | nindent 12 }}
+            {{- if $backup.volumeMounts }}
+            {{- toYaml $backup.volumeMounts | nindent 12 }}
             {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      terminationGracePeriodSeconds: {{ .Values.backupManager.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ $backup.terminationGracePeriodSeconds }}
       volumes:
-        - name: {{ .Values.backupManager.name }}-config
+        - name: {{ $backup.name }}-config
           configMap:
             defaultMode: 420
-            name: {{ .Values.backupManager.name }}-config
-        {{- if .Values.backupManager.volumes }}
-        {{- toYaml .Values.backupManager.volumes | nindent 8 }}
+            name: {{ $backup.name }}-config
+        {{- if $backup.volumes }}
+        {{- toYaml $backup.volumes | nindent 8 }}
         {{- end }}
-      {{- if .Values.backupManager.nodeName }}
-      nodeName: {{ .Values.backupManager.nodeName }}
+      {{- if $backup.nodeName }}
+      nodeName: {{ $backup.nodeName }}
       {{- end }}
-      {{- if .Values.backupManager.nodeSelector }}
+      {{- if $backup.nodeSelector }}
       nodeSelector:
-        {{- toYaml .Values.backupManager.nodeSelector | nindent 8 }}
+        {{- toYaml $backup.nodeSelector | nindent 8 }}
       {{- end }}
-      {{- if .Values.backupManager.tolerations }}
+      {{- if $backup.tolerations }}
       tolerations:
-        {{- toYaml .Values.backupManager.tolerations | nindent 8 }}
+        {{- toYaml $backup.tolerations | nindent 8 }}
       {{- end }}
-      {{- if .Values.backupManager.podPriority }}
-      {{- if .Values.backupManager.podPriority.enabled }}
-      priorityClassName: {{ .Values.backupManager.name }}-priority
+      {{- if $backup.podPriority }}
+      {{- if $backup.podPriority.enabled }}
+      priorityClassName: {{ $backup.name }}-priority
       {{- end }}
       {{- end }}
 status:

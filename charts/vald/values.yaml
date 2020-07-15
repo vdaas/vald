@@ -1793,861 +1793,864 @@ discoverer:
     # discoverer.serviceAccount.name -- name of service account
     name: vald
 
-# @schema {"name": "compressor", "type": "object"}
-compressor:
-  # @schema {"name": "compressor.enabled", "type": "boolean"}
-  # compressor.enabled -- compressor enabled
-  enabled: true
-  # @schema {"name": "compressor.version", "alias": "version"}
-  # compressor.version -- version of compressor config
-  version: v0.0.0
-  # @schema {"name": "compressor.time_zone", "type": "string"}
-  # compressor.time_zone -- Time zone
-  time_zone: ""
-  # @schema {"name": "compressor.logging", "alias": "logging"}
-  # compressor.logging -- logging config (overrides defaults.logging)
-  logging: {}
-  # @schema {"name": "compressor.name", "type": "string"}
-  # compressor.name -- name of compressor deployment
-  name: vald-manager-compressor
-  # @schema {"name": "compressor.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
-  # compressor.kind -- deployment kind: Deployment or DaemonSet
-  kind: Deployment
-  # @schema {"name": "compressor.serviceType", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
-  # compressor.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
-  serviceType: ClusterIP
-  # @schema {"name": "compressor.externalTrafficPolicy", "type": "string"}
-  # compressor.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
-  externalTrafficPolicy: ""
-  # @schema {"name": "compressor.progressDeadlineSeconds", "type": "integer"}
-  # compressor.progressDeadlineSeconds -- progress deadline seconds
-  progressDeadlineSeconds: 600
-  # @schema {"name": "compressor.minReplicas", "type": "integer", "minimum": 0}
-  # compressor.minReplicas -- minimum number of replicas.
-  # if HPA is disabled, the replicas will be set to this value
-  minReplicas: 3
-  # @schema {"name": "compressor.maxReplicas", "type": "integer", "minimum": 0}
-  # compressor.maxReplicas -- maximum number of replicas.
-  # if HPA is disabled, this value will be ignored.
-  maxReplicas: 15
-  # @schema {"name": "compressor.maxUnavailable", "type": "string"}
-  # compressor.maxUnavailable -- maximum number of unavailable replicas
-  maxUnavailable: "1"
-  # @schema {"name": "compressor.revisionHistoryLimit", "type": "integer", "minimum": 0}
-  # compressor.revisionHistoryLimit -- number of old history to retain to allow rollback
-  revisionHistoryLimit: 2
-  # @schema {"name": "compressor.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
-  # compressor.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
-  terminationGracePeriodSeconds: 120
-  # @schema {"name": "compressor.podPriority", "alias": "podPriority"}
-  podPriority:
-    # compressor.podPriority.enabled -- compressor pod PriorityClass enabled
+# @schema {"name": "manager", "type": "object"}
+manager:
+
+  # @schema {"name": "manager.compressor", "type": "object"}
+  compressor:
+    # @schema {"name": "manager.compressor.enabled", "type": "boolean"}
+    # manager.compressor.enabled -- compressor enabled
     enabled: true
-    # compressor.podPriority.value -- compressor pod PriorityClass value
-    value: 100000000
-  # @schema {"name": "compressor.annotations", "type": "object"}
-  # compressor.annotations -- deployment annotations
-  annotations: {}
-  # @schema {"name": "compressor.podAnnotations", "type": "object"}
-  # compressor.podAnnotations -- pod annotations
-  podAnnotations: {}
-  # @schema {"name": "compressor.service", "alias": "service"}
-  service:
-    # compressor.service.annotations -- service annotations
+    # @schema {"name": "manager.compressor.version", "alias": "version"}
+    # manager.compressor.version -- version of compressor config
+    version: v0.0.0
+    # @schema {"name": "manager.compressor.time_zone", "type": "string"}
+    # manager.compressor.time_zone -- Time zone
+    time_zone: ""
+    # @schema {"name": "manager.compressor.logging", "alias": "logging"}
+    # manager.compressor.logging -- logging config (overrides defaults.logging)
+    logging: {}
+    # @schema {"name": "manager.compressor.name", "type": "string"}
+    # manager.compressor.name -- name of compressor deployment
+    name: vald-manager-compressor
+    # @schema {"name": "manager.compressor.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
+    # manager.compressor.kind -- deployment kind: Deployment or DaemonSet
+    kind: Deployment
+    # @schema {"name": "manager.compressor.serviceType", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
+    # manager.compressor.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
+    serviceType: ClusterIP
+    # @schema {"name": "manager.compressor.externalTrafficPolicy", "type": "string"}
+    # manager.compressor.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+    externalTrafficPolicy: ""
+    # @schema {"name": "manager.compressor.progressDeadlineSeconds", "type": "integer"}
+    # manager.compressor.progressDeadlineSeconds -- progress deadline seconds
+    progressDeadlineSeconds: 600
+    # @schema {"name": "manager.compressor.minReplicas", "type": "integer", "minimum": 0}
+    # manager.compressor.minReplicas -- minimum number of replicas.
+    # if HPA is disabled, the replicas will be set to this value
+    minReplicas: 3
+    # @schema {"name": "manager.compressor.maxReplicas", "type": "integer", "minimum": 0}
+    # manager.compressor.maxReplicas -- maximum number of replicas.
+    # if HPA is disabled, this value will be ignored.
+    maxReplicas: 15
+    # @schema {"name": "manager.compressor.maxUnavailable", "type": "string"}
+    # manager.compressor.maxUnavailable -- maximum number of unavailable replicas
+    maxUnavailable: "1"
+    # @schema {"name": "manager.compressor.revisionHistoryLimit", "type": "integer", "minimum": 0}
+    # manager.compressor.revisionHistoryLimit -- number of old history to retain to allow rollback
+    revisionHistoryLimit: 2
+    # @schema {"name": "manager.compressor.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
+    # manager.compressor.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
+    terminationGracePeriodSeconds: 120
+    # @schema {"name": "manager.compressor.podPriority", "alias": "podPriority"}
+    podPriority:
+      # manager.compressor.podPriority.enabled -- compressor pod PriorityClass enabled
+      enabled: true
+      # manager.compressor.podPriority.value -- compressor pod PriorityClass value
+      value: 100000000
+    # @schema {"name": "manager.compressor.annotations", "type": "object"}
+    # manager.compressor.annotations -- deployment annotations
     annotations: {}
-    # compressor.service.labels -- service labels
-    labels: {}
-  # @schema {"name": "compressor.hpa", "alias": "hpa"}
-  hpa:
-    # compressor.hpa.enabled -- HPA enabled
-    enabled: true
-    # compressor.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
-    targetCPUUtilizationPercentage: 80
-  # @schema {"name": "compressor.image", "alias": "image"}
-  image:
-    # compressor.image.repository -- image repository
-    repository: vdaas/vald-manager-compressor
-    # compressor.image.tag -- image tag (overrides defaults.image.tag)
-    tag: ""
-    # compressor.image.pullPolicy -- image pull policy
-    pullPolicy: Always
-  # @schema {"name": "compressor.rollingUpdate", "alias": "rollingUpdate"}
-  rollingUpdate:
-    # compressor.rollingUpdate.maxSurge -- max surge of rolling update
-    maxSurge: 25%
-    # compressor.rollingUpdate.maxUnavailable -- max unavailable of rolling update
-    maxUnavailable: 25%
-  # @schema {"name": "compressor.initContainers", "alias": "initContainers"}
-  # compressor.initContainers -- init containers
-  initContainers:
-    - type: wait-for
-      name: wait-for-manager-backup
-      target: manager-backup
-      image: busybox
-      sleepDuration: 2
-  # @schema {"name": "compressor.env", "alias": "env"}
-  # compressor.env -- environment variables
-  env:
-    - name: MY_POD_IP
-      valueFrom:
-        fieldRef:
-          fieldPath: status.podIP
-  # @schema {"name": "compressor.volumeMounts", "alias": "volumeMounts"}
-  # compressor.volumeMounts -- volume mounts
-  volumeMounts: []
-  # @schema {"name": "compressor.volumes", "alias": "volumes"}
-  # compressor.volumes -- volumes
-  volumes: []
-  # @schema {"name": "compressor.nodeName", "type": "string"}
-  # compressor.nodeName -- node name
-  nodeName: ""
-  # @schema {"name": "compressor.nodeSelector", "alias": "nodeSelector"}
-  # compressor.nodeSelector -- node selector
-  nodeSelector: {}
-  # @schema {"name": "compressor.tolerations", "alias": "tolerations"}
-  # compressor.tolerations -- tolerations
-  tolerations: []
-  # @schema {"name": "compressor.affinity", "alias": "affinity"}
-  affinity:
-    nodeAffinity:
-      # compressor.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
-      preferredDuringSchedulingIgnoredDuringExecution: []
-      requiredDuringSchedulingIgnoredDuringExecution:
-        # compressor.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
-        nodeSelectorTerms: []
-    podAffinity:
-      # compressor.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
-      preferredDuringSchedulingIgnoredDuringExecution: []
-      # compressor.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
-      requiredDuringSchedulingIgnoredDuringExecution: []
-    podAntiAffinity:
-      # compressor.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
-      preferredDuringSchedulingIgnoredDuringExecution: []
-      # compressor.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
-      requiredDuringSchedulingIgnoredDuringExecution: []
-  # @schema {"name": "compressor.topologySpreadConstraints", "alias": "topologySpreadConstraints"}
-  # compressor.topologySpreadConstraints -- topology spread constraints of compressor pods
-  topologySpreadConstraints: []
-  # @schema {"name": "compressor.server_config", "alias": "server_config"}
-  # compressor.server_config -- server config (overrides defaults.server_config)
-  server_config:
-    servers:
-      rest: {}
-      grpc: {}
-    healths:
-      liveness:
-        server:
-          http:
-            shutdown_duration: 2m
-      readiness: {}
-    metrics:
-      pprof: {}
-      prometheus: {}
-  # @schema {"name": "compressor.observability", "alias": "observability"}
-  # compressor.observability -- observability config (overrides defaults.observability)
-  observability:
-    jaeger:
-      service_name: vald-manager-compressor
-    stackdriver:
-      profiler:
-        service: vald-manager-compressor
-  # @schema {"name": "compressor.resources", "alias": "resources"}
-  # compressor.resources -- compute resources
-  resources:
-    requests:
-      cpu: 300m
-      memory: 50Mi
-    limits:
-      cpu: 800m
-      memory: 500Mi
-  # @schema {"name": "compressor.backup", "type": "object"}
-  backup:
-    # @schema {"name": "compressor.backup.client", "alias": "grpc.client"}
-    # compressor.backup.client -- grpc client for backup (overrides defaults.grpc.client)
-    client: {}
-  # @schema {"name": "compressor.compress", "type": "object"}
-  compress:
-    # @schema {"name": "compressor.compress.compress_algorithm", "type": "string", "enum": ["gob", "gzip", "lz4", "zstd"]}
-    # compressor.compress.compress_algorithm -- compression algorithm.
-    # must be `gob`, `gzip`, `lz4` or `zstd`
-    compress_algorithm: zstd
-    # @schema {"name": "compressor.compress.compression_level", "type": "integer"}
-    # compressor.compress.compression_level -- compression level.
-    # value range relies on which algorithm is used.
-    # `gob`: level will be ignored.
-    # `gzip`: -1 (default compression), 0 (no compression), or 1 (best speed) to 9 (best compression).
-    # `lz4`: >= 0, higher is better compression.
-    # `zstd`: 1 (fastest) to 22 (best), however implementation relies on klauspost/compress.
-    compression_level: 3
-    # @schema {"name": "compressor.compress.concurrent_limit", "type": "integer"}
-    # compressor.compress.concurrent_limit -- concurrency limit for compress/decompress processes
-    concurrent_limit: 10
-    # @schema {"name": "compressor.compress.queue_check_duration", "type": "string"}
-    # compressor.compress.queue_check_duration represents duration of queue daemon block
-    queue_check_duration: 200ms
-  # @schema {"name": "compressor.registerer", "type": "object"}
-  registerer:
-    # @schema {"name": "compressor.registerer.concurrent_limit", "type": "integer"}
-    # compressor.registerer.concurrent_limit -- concurrency limit for registering vector processes
-    concurrent_limit: 10
-    # @schema {"name": "compressor.registerer.queue_check_duration", "type": "string"}
-    # compressor.registerer.queue_check_duration represents duration of queue daemon block
-    queue_check_duration: 200ms
-    # @schema {"name": "compressor.registerer.compressor", "type": "object"}
-    compressor:
-      # @schema {"name": "compressor.registerer.compressor.client", "alias": "grpc.client"}
-      # compressor.registerer.compressor.client -- gRPC client for compressor (overrides defaults.grpc.client)
+    # @schema {"name": "manager.compressor.podAnnotations", "type": "object"}
+    # manager.compressor.podAnnotations -- pod annotations
+    podAnnotations: {}
+    # @schema {"name": "manager.compressor.service", "alias": "service"}
+    service:
+      # manager.compressor.service.annotations -- service annotations
+      annotations: {}
+      # manager.compressor.service.labels -- service labels
+      labels: {}
+    # @schema {"name": "manager.compressor.hpa", "alias": "hpa"}
+    hpa:
+      # manager.compressor.hpa.enabled -- HPA enabled
+      enabled: true
+      # manager.compressor.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
+      targetCPUUtilizationPercentage: 80
+    # @schema {"name": "manager.compressor.image", "alias": "image"}
+    image:
+      # manager.compressor.image.repository -- image repository
+      repository: vdaas/vald-manager-compressor
+      # manager.compressor.image.tag -- image tag (overrides defaults.image.tag)
+      tag: ""
+      # manager.compressor.image.pullPolicy -- image pull policy
+      pullPolicy: Always
+    # @schema {"name": "manager.compressor.rollingUpdate", "alias": "rollingUpdate"}
+    rollingUpdate:
+      # manager.compressor.rollingUpdate.maxSurge -- max surge of rolling update
+      maxSurge: 25%
+      # manager.compressor.rollingUpdate.maxUnavailable -- max unavailable of rolling update
+      maxUnavailable: 25%
+    # @schema {"name": "manager.compressor.initContainers", "alias": "initContainers"}
+    # manager.compressor.initContainers -- init containers
+    initContainers:
+      - type: wait-for
+        name: wait-for-manager-backup
+        target: manager-backup
+        image: busybox
+        sleepDuration: 2
+    # @schema {"name": "manager.compressor.env", "alias": "env"}
+    # manager.compressor.env -- environment variables
+    env:
+      - name: MY_POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+    # @schema {"name": "manager.compressor.volumeMounts", "alias": "volumeMounts"}
+    # manager.compressor.volumeMounts -- volume mounts
+    volumeMounts: []
+    # @schema {"name": "manager.compressor.volumes", "alias": "volumes"}
+    # manager.compressor.volumes -- volumes
+    volumes: []
+    # @schema {"name": "manager.compressor.nodeName", "type": "string"}
+    # manager.compressor.nodeName -- node name
+    nodeName: ""
+    # @schema {"name": "manager.compressor.nodeSelector", "alias": "nodeSelector"}
+    # manager.compressor.nodeSelector -- node selector
+    nodeSelector: {}
+    # @schema {"name": "manager.compressor.tolerations", "alias": "tolerations"}
+    # manager.compressor.tolerations -- tolerations
+    tolerations: []
+    # @schema {"name": "manager.compressor.affinity", "alias": "affinity"}
+    affinity:
+      nodeAffinity:
+        # manager.compressor.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        requiredDuringSchedulingIgnoredDuringExecution:
+          # manager.compressor.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+          nodeSelectorTerms: []
+      podAffinity:
+        # manager.compressor.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        # manager.compressor.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+        requiredDuringSchedulingIgnoredDuringExecution: []
+      podAntiAffinity:
+        # manager.compressor.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        # manager.compressor.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+        requiredDuringSchedulingIgnoredDuringExecution: []
+    # @schema {"name": "manager.compressor.topologySpreadConstraints", "alias": "topologySpreadConstraints"}
+    # manager.compressor.topologySpreadConstraints -- topology spread constraints of compressor pods
+    topologySpreadConstraints: []
+    # @schema {"name": "manager.compressor.server_config", "alias": "server_config"}
+    # manager.compressor.server_config -- server config (overrides defaults.server_config)
+    server_config:
+      servers:
+        rest: {}
+        grpc: {}
+      healths:
+        liveness:
+          server:
+            http:
+              shutdown_duration: 2m
+        readiness: {}
+      metrics:
+        pprof: {}
+        prometheus: {}
+    # @schema {"name": "manager.compressor.observability", "alias": "observability"}
+    # manager.compressor.observability -- observability config (overrides defaults.observability)
+    observability:
+      jaeger:
+        service_name: vald-manager-compressor
+      stackdriver:
+        profiler:
+          service: vald-manager-compressor
+    # @schema {"name": "manager.compressor.resources", "alias": "resources"}
+    # manager.compressor.resources -- compute resources
+    resources:
+      requests:
+        cpu: 300m
+        memory: 50Mi
+      limits:
+        cpu: 800m
+        memory: 500Mi
+    # @schema {"name": "manager.compressor.backup", "type": "object"}
+    backup:
+      # @schema {"name": "manager.compressor.backup.client", "alias": "grpc.client"}
+      # manager.compressor.backup.client -- grpc client for backup (overrides defaults.grpc.client)
       client: {}
+    # @schema {"name": "manager.compressor.compress", "type": "object"}
+    compress:
+      # @schema {"name": "manager.compressor.compress.compress_algorithm", "type": "string", "enum": ["gob", "gzip", "lz4", "zstd"]}
+      # manager.compressor.compress.compress_algorithm -- compression algorithm.
+      # must be `gob`, `gzip`, `lz4` or `zstd`
+      compress_algorithm: zstd
+      # @schema {"name": "manager.compressor.compress.compression_level", "type": "integer"}
+      # manager.compressor.compress.compression_level -- compression level.
+      # value range relies on which algorithm is used.
+      # `gob`: level will be ignored.
+      # `gzip`: -1 (default compression), 0 (no compression), or 1 (best speed) to 9 (best compression).
+      # `lz4`: >= 0, higher is better compression.
+      # `zstd`: 1 (fastest) to 22 (best), however implementation relies on klauspost/compress.
+      compression_level: 3
+      # @schema {"name": "manager.compressor.compress.concurrent_limit", "type": "integer"}
+      # manager.compressor.compress.concurrent_limit -- concurrency limit for compress/decompress processes
+      concurrent_limit: 10
+      # @schema {"name": "manager.compressor.compress.queue_check_duration", "type": "string"}
+      # manager.compressor.compress.queue_check_duration represents duration of queue daemon block
+      queue_check_duration: 200ms
+    # @schema {"name": "manager.compressor.registerer", "type": "object"}
+    registerer:
+      # @schema {"name": "manager.compressor.registerer.concurrent_limit", "type": "integer"}
+      # manager.compressor.registerer.concurrent_limit -- concurrency limit for registering vector processes
+      concurrent_limit: 10
+      # @schema {"name": "manager.compressor.registerer.queue_check_duration", "type": "string"}
+      # manager.compressor.registerer.queue_check_duration represents duration of queue daemon block
+      queue_check_duration: 200ms
+      # @schema {"name": "manager.compressor.registerer.compressor", "type": "object"}
+      compressor:
+        # @schema {"name": "manager.compressor.registerer.compressor.client", "alias": "grpc.client"}
+        # manager.compressor.registerer.compressor.client -- gRPC client for compressor (overrides defaults.grpc.client)
+        client: {}
 
-# @schema {"name": "backupManager", "type": "object"}
-backupManager:
-  # @schema {"name": "backupManager.enabled", "type": "boolean"}
-  # backupManager.enabled -- backup manager enabled
-  enabled: true
-  # @schema {"name": "backupManager.version", "alias": "version"}
-  # backupManager.version -- version of backup manager config
-  version: v0.0.0
-  # @schema {"name": "backupManager.time_zone", "type": "string"}
-  # backupManager.time_zone -- Time zone
-  time_zone: ""
-  # @schema {"name": "backupManager.logging", "alias": "logging"}
-  # backupManager.logging -- logging config (overrides defaults.logging)
-  logging: {}
-  # @schema {"name": "backupManager.name", "type": "string"}
-  # backupManager.name -- name of backup manager deployment
-  name: vald-manager-backup
-  # @schema {"name": "backupManager.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
-  # backupManager.kind -- deployment kind: Deployment or DaemonSet
-  kind: Deployment
-  # @schema {"name": "backupManager.serviceType", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
-  # backupManager.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
-  serviceType: ClusterIP
-  # @schema {"name": "backupManager.externalTrafficPolicy", "type": "string"}
-  # backupManager.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
-  externalTrafficPolicy: ""
-  # @schema {"name": "backupManager.progressDeadlineSeconds", "type": "integer"}
-  # backupManager.progressDeadlineSeconds -- progress deadline seconds
-  progressDeadlineSeconds: 600
-  # @schema {"name": "backupManager.minReplicas", "type": "integer", "minimum": 0}
-  # backupManager.minReplicas -- minimum number of replicas.
-  # if HPA is disabled, the replicas will be set to this value
-  minReplicas: 3
-  # @schema {"name": "backupManager.maxReplicas", "type": "integer", "minimum": 0}
-  # backupManager.maxReplicas -- maximum number of replicas.
-  # if HPA is disabled, this value will be ignored.
-  maxReplicas: 15
-  # @schema {"name": "backupManager.maxUnavailable", "type": "string"}
-  # backupManager.maxUnavailable -- maximum number of unavailable replicas
-  maxUnavailable: 50%
-  # @schema {"name": "backupManager.revisionHistoryLimit", "type": "integer", "minimum": 0}
-  # backupManager.revisionHistoryLimit -- number of old history to retain to allow rollback
-  revisionHistoryLimit: 2
-  # @schema {"name": "backupManager.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
-  # backupManager.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
-  terminationGracePeriodSeconds: 30
-  # @schema {"name": "backupManager.podPriority", "alias": "podPriority"}
-  podPriority:
-    # backupManager.podPriority.enabled -- backup manager pod PriorityClass enabled
+  # @schema {"name": "manager.backup", "type": "object"}
+  backup:
+    # @schema {"name": "manager.backup.enabled", "type": "boolean"}
+    # manager.backup.enabled -- backup manager enabled
     enabled: true
-    # backupManager.podPriority.value -- backup manager pod PriorityClass value
-    value: 1000000
-  # @schema {"name": "backupManager.annotations", "type": "object"}
-  # backupManager.annotations -- deployment annotations
-  annotations: {}
-  # @schema {"name": "backupManager.podAnnotations", "type": "object"}
-  # backupManager.podAnnotations -- pod annotations
-  podAnnotations: {}
-  # @schema {"name": "backupManager.service", "alias": "service"}
-  service:
-    # backupManager.service.annotations -- service annotations
+    # @schema {"name": "manager.backup.version", "alias": "version"}
+    # manager.backup.version -- version of backup manager config
+    version: v0.0.0
+    # @schema {"name": "manager.backup.time_zone", "type": "string"}
+    # manager.backup.time_zone -- Time zone
+    time_zone: ""
+    # @schema {"name": "manager.backup.logging", "alias": "logging"}
+    # manager.backup.logging -- logging config (overrides defaults.logging)
+    logging: {}
+    # @schema {"name": "manager.backup.name", "type": "string"}
+    # manager.backup.name -- name of backup manager deployment
+    name: vald-manager-backup
+    # @schema {"name": "manager.backup.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
+    # manager.backup.kind -- deployment kind: Deployment or DaemonSet
+    kind: Deployment
+    # @schema {"name": "manager.backup.serviceType", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
+    # manager.backup.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
+    serviceType: ClusterIP
+    # @schema {"name": "manager.backup.externalTrafficPolicy", "type": "string"}
+    # manager.backup.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+    externalTrafficPolicy: ""
+    # @schema {"name": "manager.backup.progressDeadlineSeconds", "type": "integer"}
+    # manager.backup.progressDeadlineSeconds -- progress deadline seconds
+    progressDeadlineSeconds: 600
+    # @schema {"name": "manager.backup.minReplicas", "type": "integer", "minimum": 0}
+    # manager.backup.minReplicas -- minimum number of replicas.
+    # if HPA is disabled, the replicas will be set to this value
+    minReplicas: 3
+    # @schema {"name": "manager.backup.maxReplicas", "type": "integer", "minimum": 0}
+    # manager.backup.maxReplicas -- maximum number of replicas.
+    # if HPA is disabled, this value will be ignored.
+    maxReplicas: 15
+    # @schema {"name": "manager.backup.maxUnavailable", "type": "string"}
+    # manager.backup.maxUnavailable -- maximum number of unavailable replicas
+    maxUnavailable: 50%
+    # @schema {"name": "manager.backup.revisionHistoryLimit", "type": "integer", "minimum": 0}
+    # manager.backup.revisionHistoryLimit -- number of old history to retain to allow rollback
+    revisionHistoryLimit: 2
+    # @schema {"name": "manager.backup.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
+    # manager.backup.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
+    terminationGracePeriodSeconds: 30
+    # @schema {"name": "manager.backup.podPriority", "alias": "podPriority"}
+    podPriority:
+      # manager.backup.podPriority.enabled -- backup manager pod PriorityClass enabled
+      enabled: true
+      # manager.backup.podPriority.value -- backup manager pod PriorityClass value
+      value: 1000000
+    # @schema {"name": "manager.backup.annotations", "type": "object"}
+    # manager.backup.annotations -- deployment annotations
     annotations: {}
-    # backupManager.service.labels -- service labels
-    labels: {}
-  # @schema {"name": "backupManager.hpa", "alias": "hpa"}
-  hpa:
-    # backupManager.hpa.enabled -- HPA enabled
-    enabled: true
-    # backupManager.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
-    targetCPUUtilizationPercentage: 80
-  # @schema {"name": "backupManager.image", "alias": "image"}
-  image:
-    # backupManager.image.repository -- image repository
-    repository: vdaas/vald-manager-backup-mysql
-    # repository: vdaas/vald-manager-backup-cassandra
-    # backupManager.image.tag -- image tag (overrides defaults.image.tag)
-    tag: ""
-    # backupManager.image.pullPolicy -- image pull policy
-    pullPolicy: Always
-  # @schema {"name": "backupManager.rollingUpdate", "alias": "rollingUpdate"}
-  rollingUpdate:
-    # backupManager.rollingUpdate.maxSurge -- max surge of rolling update
-    maxSurge: 25%
-    # backupManager.rollingUpdate.maxUnavailable -- max unavailable of rolling update
-    maxUnavailable: 25%
-  # @schema {"name": "backupManager.initContainers", "alias": "initContainers"}
-  # backupManager.initContainers -- init containers
-  initContainers:
-    - type: wait-for-mysql
-      name: wait-for-mysql
-      image: mysql:latest
-      mysql:
-        hosts:
-          - mysql.default.svc.cluster.local
-        options:
-          - "-uroot"
-          - "-p${MYSQL_PASSWORD}"
-      sleepDuration: 2
-      env:
-        - name: MYSQL_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: password
-    # - type: wait-for-cassandra
-    #   name: wait-for-cassandra
-    #   image: cassandra:latest
-    #   cassandra:
-    #     hosts:
-    #       - cassandra-0.cassandra.default.svc.cluster.local
-    #       - cassandra-1.cassandra.default.svc.cluster.local
-    #       - cassandra-2.cassandra.default.svc.cluster.local
-    #     options:
-    #       - "-uroot"
-    #       - "-p${CASSANDRA_PASSWORD}"
-    #   sleepDuration: 2
-    #   env:
-    #   - name: CASSANDRA_PASSWORD
-    #     valueFrom:
-    #       secretKeyRef:
-    #         name: cassandra-secret
-    #         key: password
-    # - type: wait-for-cassandra
-    #   name: wait-for-scylla
-    #   image: cassandra:latest
-    #   cassandra:
-    #     hosts:
-    #       - scylla-0.scylla.default.svc.cluster.local
-    #       - scylla-1.scylla.default.svc.cluster.local
-    #       - scylla-2.scylla.default.svc.cluster.local
-    #   sleepDuration: 2
-  # @schema {"name": "backupManager.env", "alias": "env"}
-  # backupManager.env -- environment variables
-  env:
-    - name: MYSQL_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: mysql-secret
-          key: password
-    # - name: CASSANDRA_PASSWORD
-    #   valueFrom:
-    #     secretKeyRef:
-    #       name: cassandra-secret
-    #       key: password
-  # @schema {"name": "backupManager.volumeMounts", "alias": "volumeMounts"}
-  # backupManager.volumeMounts -- volume mounts
-  volumeMounts: []
-  # @schema {"name": "backupManager.volumes", "alias": "volumes"}
-  # backupManager.volumes -- volumes
-  volumes: []
-  # @schema {"name": "backupManager.nodeName", "type": "string"}
-  # backupManager.nodeName -- node name
-  nodeName: ""
-  # @schema {"name": "backupManager.nodeSelector", "alias": "nodeSelector"}
-  # backupManager.nodeSelector -- node selector
-  nodeSelector: {}
-  # @schema {"name": "backupManager.tolerations", "alias": "tolerations"}
-  # backupManager.tolerations -- tolerations
-  tolerations: []
-  # @schema {"name": "backupManager.affinity", "alias": "affinity"}
-  affinity:
-    nodeAffinity:
-      # backupManager.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
-      preferredDuringSchedulingIgnoredDuringExecution: []
-      requiredDuringSchedulingIgnoredDuringExecution:
-        # backupManager.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
-        nodeSelectorTerms: []
-    podAffinity:
-      # backupManager.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
-      preferredDuringSchedulingIgnoredDuringExecution: []
-      # backupManager.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
-      requiredDuringSchedulingIgnoredDuringExecution: []
-    podAntiAffinity:
-      # backupManager.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
-      preferredDuringSchedulingIgnoredDuringExecution: []
-      # backupManager.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
-      requiredDuringSchedulingIgnoredDuringExecution: []
-  # @schema {"name": "backupManager.topologySpreadConstraints", "alias": "topologySpreadConstraints"}
-  # backupManager.topologySpreadConstraints -- topology spread constraints of backup manager pods
-  topologySpreadConstraints: []
-  # @schema {"name": "backupManager.server_config", "alias": "server_config"}
-  # backupManager.server_config -- server config (overrides defaults.server_config)
-  server_config:
-    servers:
-      rest: {}
-      grpc: {}
-    healths:
-      liveness: {}
-      readiness: {}
-    metrics:
-      pprof: {}
-      prometheus: {}
-  # @schema {"name": "backupManager.observability", "alias": "observability"}
-  # backupManager.observability -- observability config (overrides defaults.observability)
-  observability:
-    jaeger:
-      service_name: vald-manager-backup
-    stackdriver:
-      profiler:
-        service: vald-manager-backup
-  # @schema {"name": "backupManager.resources", "alias": "resources"}
-  # backupManager.resources -- compute resources
-  resources:
-    requests:
-      cpu: 100m
-      memory: 50Mi
-    limits:
-      cpu: 500m
-      memory: 150Mi
-  # @schema {"name": "backupManager.mysql", "type": "object"}
-  mysql:
-    # @schema {"name": "backupManager.mysql.enabled", "type": "boolean"}
-    # backupManager.mysql.enabled -- mysql config enabled
-    enabled: true
-    # @schema {"name": "backupManager.mysql.config", "type": "object"}
-    config:
-      # @schema {"name": "backupManager.mysql.config.db", "type": "string", "enum": ["mysql", "postgres", "sqlite3"]}
-      # backupManager.mysql.config.db -- mysql db: mysql, postgres or sqlite3
-      db: mysql
-      # @schema {"name": "backupManager.mysql.config.host", "type": "string"}
-      # backupManager.mysql.config.host -- mysql hostname
-      host: mysql.default.svc.cluster.local
-      # @schema {"name": "backupManager.mysql.config.port", "type": "integer"}
-      # backupManager.mysql.config.port -- mysql port
-      port: 3306
-      # @schema {"name": "backupManager.mysql.config.user", "type": "string"}
-      # backupManager.mysql.config.user -- mysql username
-      user: root
-      # @schema {"name": "backupManager.mysql.config.pass", "type": "string"}
-      # backupManager.mysql.config.pass -- mysql password
-      pass: _MYSQL_PASSWORD_
-      # @schema {"name": "backupManager.mysql.config.name", "type": "string"}
-      # backupManager.mysql.config.name -- mysql db name
-      name: vald
-      # @schema {"name": "backupManager.mysql.config.conn_max_life_time", "type": "string"}
-      # backupManager.mysql.config.conn_max_life_time -- connection maximum life time
-      conn_max_life_time: 30s
-      # @schema {"name": "backupManager.mysql.config.max_open_conns", "type": "integer"}
-      # backupManager.mysql.config.max_open_conns -- maximum number of open connections
-      max_open_conns: 100
-      # @schema {"name": "backupManager.mysql.config.max_idle_conns", "type": "integer"}
-      # backupManager.mysql.config.max_idle_conns -- maximum number of idle connections
-      max_idle_conns: 100
-      # @schema {"name": "backupManager.mysql.config.tls", "alias": "tls"}
-      tls:
-        # backupManager.mysql.config.tls.enabled -- TLS enabled
-        enabled: false
-        # backupManager.mysql.config.tls.cert -- path to TLS cert
-        cert: /path/to/cert
-        # backupManager.mysql.config.tls.key -- path to TLS key
-        key: /path/to/key
-        # backupManager.mysql.config.tls.ca -- path to TLS ca
-        ca: /path/to/ca
-      # @schema {"name": "backupManager.mysql.config.tls", "alias": "tcp"}
-      tcp:
-        dns:
-          # backupManager.mysql.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
-          cache_enabled: true
-          # backupManager.mysql.config.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
-          refresh_duration: 1h
-          # backupManager.mysql.config.tcp.dns.cache_expiration -- TCP DNS cache expiration
-          cache_expiration: 24h
-        dialer:
-          # backupManager.mysql.config.tcp.dialer.timeout -- TCP dialer timeout
-          timeout: 5s
-          # backupManager.mysql.config.tcp.dialer.keep_alive -- TCP dialer keep alive
-          keep_alive: 5m
-          # backupManager.mysql.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
-          dual_stack_enabled: false
+    # @schema {"name": "manager.backup.podAnnotations", "type": "object"}
+    # manager.backup.podAnnotations -- pod annotations
+    podAnnotations: {}
+    # @schema {"name": "manager.backup.service", "alias": "service"}
+    service:
+      # manager.backup.service.annotations -- service annotations
+      annotations: {}
+      # manager.backup.service.labels -- service labels
+      labels: {}
+    # @schema {"name": "manager.backup.hpa", "alias": "hpa"}
+    hpa:
+      # manager.backup.hpa.enabled -- HPA enabled
+      enabled: true
+      # manager.backup.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
+      targetCPUUtilizationPercentage: 80
+    # @schema {"name": "manager.backup.image", "alias": "image"}
+    image:
+      # manager.backup.image.repository -- image repository
+      repository: vdaas/vald-manager-backup-mysql
+      # repository: vdaas/vald-manager-backup-cassandra
+      # manager.backup.image.tag -- image tag (overrides defaults.image.tag)
+      tag: ""
+      # manager.backup.image.pullPolicy -- image pull policy
+      pullPolicy: Always
+    # @schema {"name": "manager.backup.rollingUpdate", "alias": "rollingUpdate"}
+    rollingUpdate:
+      # manager.backup.rollingUpdate.maxSurge -- max surge of rolling update
+      maxSurge: 25%
+      # manager.backup.rollingUpdate.maxUnavailable -- max unavailable of rolling update
+      maxUnavailable: 25%
+    # @schema {"name": "manager.backup.initContainers", "alias": "initContainers"}
+    # manager.backup.initContainers -- init containers
+    initContainers:
+      - type: wait-for-mysql
+        name: wait-for-mysql
+        image: mysql:latest
+        mysql:
+          hosts:
+            - mysql.default.svc.cluster.local
+          options:
+            - "-uroot"
+            - "-p${MYSQL_PASSWORD}"
+        sleepDuration: 2
+        env:
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysql-secret
+                key: password
+      # - type: wait-for-cassandra
+      #   name: wait-for-cassandra
+      #   image: cassandra:latest
+      #   cassandra:
+      #     hosts:
+      #       - cassandra-0.cassandra.default.svc.cluster.local
+      #       - cassandra-1.cassandra.default.svc.cluster.local
+      #       - cassandra-2.cassandra.default.svc.cluster.local
+      #     options:
+      #       - "-uroot"
+      #       - "-p${CASSANDRA_PASSWORD}"
+      #   sleepDuration: 2
+      #   env:
+      #   - name: CASSANDRA_PASSWORD
+      #     valueFrom:
+      #       secretKeyRef:
+      #         name: cassandra-secret
+      #         key: password
+      # - type: wait-for-cassandra
+      #   name: wait-for-scylla
+      #   image: cassandra:latest
+      #   cassandra:
+      #     hosts:
+      #       - scylla-0.scylla.default.svc.cluster.local
+      #       - scylla-1.scylla.default.svc.cluster.local
+      #       - scylla-2.scylla.default.svc.cluster.local
+      #   sleepDuration: 2
+    # @schema {"name": "manager.backup.env", "alias": "env"}
+    # manager.backup.env -- environment variables
+    env:
+      - name: MYSQL_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: mysql-secret
+            key: password
+      # - name: CASSANDRA_PASSWORD
+      #   valueFrom:
+      #     secretKeyRef:
+      #       name: cassandra-secret
+      #       key: password
+    # @schema {"name": "manager.backup.volumeMounts", "alias": "volumeMounts"}
+    # manager.backup.volumeMounts -- volume mounts
+    volumeMounts: []
+    # @schema {"name": "manager.backup.volumes", "alias": "volumes"}
+    # manager.backup.volumes -- volumes
+    volumes: []
+    # @schema {"name": "manager.backup.nodeName", "type": "string"}
+    # manager.backup.nodeName -- node name
+    nodeName: ""
+    # @schema {"name": "manager.backup.nodeSelector", "alias": "nodeSelector"}
+    # manager.backup.nodeSelector -- node selector
+    nodeSelector: {}
+    # @schema {"name": "manager.backup.tolerations", "alias": "tolerations"}
+    # manager.backup.tolerations -- tolerations
+    tolerations: []
+    # @schema {"name": "manager.backup.affinity", "alias": "affinity"}
+    affinity:
+      nodeAffinity:
+        # manager.backup.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        requiredDuringSchedulingIgnoredDuringExecution:
+          # manager.backup.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+          nodeSelectorTerms: []
+      podAffinity:
+        # manager.backup.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        # manager.backup.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+        requiredDuringSchedulingIgnoredDuringExecution: []
+      podAntiAffinity:
+        # manager.backup.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        # manager.backup.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+        requiredDuringSchedulingIgnoredDuringExecution: []
+    # @schema {"name": "manager.backup.topologySpreadConstraints", "alias": "topologySpreadConstraints"}
+    # manager.backup.topologySpreadConstraints -- topology spread constraints of backup manager pods
+    topologySpreadConstraints: []
+    # @schema {"name": "manager.backup.server_config", "alias": "server_config"}
+    # manager.backup.server_config -- server config (overrides defaults.server_config)
+    server_config:
+      servers:
+        rest: {}
+        grpc: {}
+      healths:
+        liveness: {}
+        readiness: {}
+      metrics:
+        pprof: {}
+        prometheus: {}
+    # @schema {"name": "manager.backup.observability", "alias": "observability"}
+    # manager.backup.observability -- observability config (overrides defaults.observability)
+    observability:
+      jaeger:
+        service_name: vald-manager-backup
+      stackdriver:
+        profiler:
+          service: vald-manager-backup
+    # @schema {"name": "manager.backup.resources", "alias": "resources"}
+    # manager.backup.resources -- compute resources
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
+      limits:
+        cpu: 500m
+        memory: 150Mi
+    # @schema {"name": "manager.backup.mysql", "type": "object"}
+    mysql:
+      # @schema {"name": "manager.backup.mysql.enabled", "type": "boolean"}
+      # manager.backup.mysql.enabled -- mysql config enabled
+      enabled: true
+      # @schema {"name": "manager.backup.mysql.config", "type": "object"}
+      config:
+        # @schema {"name": "manager.backup.mysql.config.db", "type": "string", "enum": ["mysql", "postgres", "sqlite3"]}
+        # manager.backup.mysql.config.db -- mysql db: mysql, postgres or sqlite3
+        db: mysql
+        # @schema {"name": "manager.backup.mysql.config.host", "type": "string"}
+        # manager.backup.mysql.config.host -- mysql hostname
+        host: mysql.default.svc.cluster.local
+        # @schema {"name": "manager.backup.mysql.config.port", "type": "integer"}
+        # manager.backup.mysql.config.port -- mysql port
+        port: 3306
+        # @schema {"name": "manager.backup.mysql.config.user", "type": "string"}
+        # manager.backup.mysql.config.user -- mysql username
+        user: root
+        # @schema {"name": "manager.backup.mysql.config.pass", "type": "string"}
+        # manager.backup.mysql.config.pass -- mysql password
+        pass: _MYSQL_PASSWORD_
+        # @schema {"name": "manager.backup.mysql.config.name", "type": "string"}
+        # manager.backup.mysql.config.name -- mysql db name
+        name: vald
+        # @schema {"name": "manager.backup.mysql.config.conn_max_life_time", "type": "string"}
+        # manager.backup.mysql.config.conn_max_life_time -- connection maximum life time
+        conn_max_life_time: 30s
+        # @schema {"name": "manager.backup.mysql.config.max_open_conns", "type": "integer"}
+        # manager.backup.mysql.config.max_open_conns -- maximum number of open connections
+        max_open_conns: 100
+        # @schema {"name": "manager.backup.mysql.config.max_idle_conns", "type": "integer"}
+        # manager.backup.mysql.config.max_idle_conns -- maximum number of idle connections
+        max_idle_conns: 100
+        # @schema {"name": "manager.backup.mysql.config.tls", "alias": "tls"}
         tls:
-          # backupManager.mysql.config.tcp.tls.enabled -- TCP TLS enabled
+          # manager.backup.mysql.config.tls.enabled -- TLS enabled
           enabled: false
-          # backupManager.mysql.config.tcp.tls.cert -- path to TCP TLS cert
+          # manager.backup.mysql.config.tls.cert -- path to TLS cert
           cert: /path/to/cert
-          # backupManager.mysql.config.tcp.tls.key -- path to TCP TLS key
+          # manager.backup.mysql.config.tls.key -- path to TLS key
           key: /path/to/key
-          # backupManager.mysql.config.tcp.tls.ca -- path to TCP TLS ca
+          # manager.backup.mysql.config.tls.ca -- path to TLS ca
           ca: /path/to/ca
-  # @schema {"name": "backupManager.cassandra", "type": "object", "anchor": "cassandra"}
-  cassandra:
-    # @schema {"name": "backupManager.cassandra.enabled", "type": "boolean"}
-    # backupManager.cassandra.enabled -- cassandra config enabled
-    enabled: false
-    # @schema {"name": "backupManager.cassandra.config", "type": "object"}
-    config:
-      # @schema {"name": "backupManager.cassandra.config.hosts", "type": "array", "items": {"type": "string"}}
-      # backupManager.cassandra.config.hosts -- cassandra hosts
-      hosts:
-        - cassandra-0.cassandra.default.svc.cluster.local
-        - cassandra-1.cassandra.default.svc.cluster.local
-        - cassandra-2.cassandra.default.svc.cluster.local
-        # - scylla-0.scylla.default.svc.cluster.local
-        # - scylla-1.scylla.default.svc.cluster.local
-        # - scylla-2.scylla.default.svc.cluster.local
-      # @schema {"name": "backupManager.cassandra.config.cql_version", "type": "string"}
-      # backupManager.cassandra.config.cql_version -- cassandra CQL version
-      cql_version: 3.0.0
-      # @schema {"name": "backupManager.cassandra.config.proto_version", "type": "integer"}
-      # backupManager.cassandra.config.proto_version -- cassandra proto version
-      proto_version: 0
-      # @schema {"name": "backupManager.cassandra.config.timeout", "type": "string"}
-      # backupManager.cassandra.config.timeout -- timeout
-      timeout: 600ms
-      # @schema {"name": "backupManager.cassandra.config.connect_timeout", "type": "string"}
-      # backupManager.cassandra.config.connect_timeout -- connect timeout
-      connect_timeout: 3s
-      # @schema {"name": "backupManager.cassandra.config.port", "type": "integer"}
-      # backupManager.cassandra.config.port -- cassandra port
-      port: 9042
-      # @schema {"name": "backupManager.cassandra.config.keyspace", "type": "string"}
-      # backupManager.cassandra.config.keyspace -- cassandra keyspace
-      keyspace: vald
-      # @schema {"name": "backupManager.cassandra.config.num_conns", "type": "integer"}
-      # backupManager.cassandra.config.num_conns -- number of connections per hosts
-      num_conns: 2
-      # @schema {"name": "backupManager.cassandra.config.consistency", "type": "string", "enum": ["any", "one", "two", "three", "all", "quorum", "localquorum", "eachquorum", "localone"]}
-      # backupManager.cassandra.config.consistency -- consistency type
-      consistency: quorum
-      # @schema {"name": "backupManager.cassandra.config.serial_consistency", "type": "string", "enum": ["localserial", "serial"]}
-      # backupManager.cassandra.config.serial_consistency -- read consistency type
-      serial_consistency: localserial
-      # @schema {"name": "backupManager.cassandra.config.username", "type": "string"}
-      # backupManager.cassandra.config.username -- cassandra username
-      username: root
-      # @schema {"name": "backupManager.cassandra.config.password", "type": "string"}
-      # backupManager.cassandra.config.password -- cassandra password
-      password: _CASSANDRA_PASSWORD_
-      # @schema {"name": "backupManager.cassandra.config.retry_policy", "type": "object"}
-      retry_policy:
-        # @schema {"name": "backupManager.cassandra.config.retry_policy.num_retries", "type": "integer"}
-        # backupManager.cassandra.config.retry_policy.num_retries -- number of retries
-        num_retries: 3
-        # @schema {"name": "backupManager.cassandra.config.retry_policy.min_duration", "type": "string"}
-        # backupManager.cassandra.config.retry_policy.min_duration -- minimum duration to retry
-        min_duration: 10ms
-        # @schema {"name": "backupManager.cassandra.config.retry_policy.max_duration", "type": "string"}
-        # backupManager.cassandra.config.retry_policy.max_duration -- maximum duration to retry
-        max_duration: 1s
-      # @schema {"name": "backupManager.cassandra.config.reconnection_policy", "type": "object"}
-      reconnection_policy:
-        # @schema {"name": "backupManager.cassandra.config.reconnection_policy.max_retries", "type": "integer"}
-        # backupManager.cassandra.config.reconnection_policy.max_retries -- maximum number of retries to reconnect
-        max_retries: 3
-        # @schema {"name": "backupManager.cassandra.config.reconnection_policy.initial_interval", "type": "string"}
-        # backupManager.cassandra.config.reconnection_policy.initial_interval -- initial interval to reconnect
-        initial_interval: 100ms
-      # @schema {"name": "backupManager.cassandra.config.socket_keepalive", "type": "string"}
-      # backupManager.cassandra.config.socket_keepalive -- socket keep alive time
-      socket_keepalive: 0s
-      # @schema {"name": "backupManager.cassandra.config.max_prepared_stmts", "type": "integer"}
-      # backupManager.cassandra.config.max_prepared_stmts -- maximum number of prepared statements
-      max_prepared_stmts: 1000
-      # @schema {"name": "backupManager.cassandra.config.max_routing_key_info", "type": "integer"}
-      # backupManager.cassandra.config.max_routing_key_info -- maximum number of routing key info
-      max_routing_key_info: 1000
-      # @schema {"name": "backupManager.cassandra.config.page_size", "type": "integer"}
-      # backupManager.cassandra.config.page_size -- page size
-      page_size: 5000
-      # @schema {"name": "backupManager.cassandra.config.tls", "alias": "tls"}
-      tls:
-        # backupManager.cassandra.config.tls.enabled -- TLS enabled
-        enabled: false
-        # backupManager.cassandra.config.tls.cert -- path to TLS cert
-        cert: /path/to/cert
-        # backupManager.cassandra.config.tls.key -- path to TLS key
-        key: /path/to/key
-        # backupManager.cassandra.config.tls.ca -- path to TLS ca
-        ca: /path/to/ca
-      # @schema {"name": "backupManager.cassandra.config.tcp", "alias": "tcp"}
-      tcp:
-        dns:
-          # backupManager.cassandra.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
-          cache_enabled: true
-          # backupManager.cassandra.config.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
-          refresh_duration: 5m
-          # backupManager.cassandra.config.tcp.dns.cache_expiration -- TCP DNS cache expiration
-          cache_expiration: 24h
-        dialer:
-          # backupManager.cassandra.config.tcp.dialer.timeout -- TCP dialer timeout
-          timeout: 30s
-          # backupManager.cassandra.config.tcp.dialer.keep_alive -- TCP dialer keep alive
-          keep_alive: 10m
-          # backupManager.cassandra.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
-          dual_stack_enabled: false
-      # @schema {"name": "backupManager.cassandra.config.enable_host_verification", "type": "boolean"}
-      # backupManager.cassandra.config.enable_host_verification -- host verification enabled
-      enable_host_verification: false
-      # @schema {"name": "backupManager.cassandra.config.default_timestamp", "type": "boolean"}
-      # backupManager.cassandra.config.default_timestamp -- default timestamp enabled
-      default_timestamp: true
-      # @schema {"name": "backupManager.cassandra.config.reconnect_interval", "type": "string"}
-      # backupManager.cassandra.config.reconnect_interval -- interval of reconnection
-      reconnect_interval: 100ms
-      # @schema {"name": "backupManager.cassandra.config.max_wait_schema_agreement", "type": "string"}
-      # backupManager.cassandra.config.max_wait_schema_agreement -- maximum duration to wait for schema agreement
-      max_wait_schema_agreement: 1m
-      # @schema {"name": "backupManager.cassandra.config.ignore_peer_addr", "type": "boolean"}
-      # backupManager.cassandra.config.ignore_peer_addr -- ignore peer addresses
-      ignore_peer_addr: false
-      # @schema {"name": "backupManager.cassandra.config.disable_initial_host_lookup", "type": "boolean"}
-      # backupManager.cassandra.config.disable_initial_host_lookup -- initial host lookup disabled
-      disable_initial_host_lookup: false
-      # @schema {"name": "backupManager.cassandra.config.disable_node_status_events", "type": "boolean"}
-      # backupManager.cassandra.config.disable_node_status_events -- node status events disabled
-      disable_node_status_events: false
-      # @schema {"name": "backupManager.cassandra.config.disable_topology_events", "type": "boolean"}
-      # backupManager.cassandra.config.disable_topology_events -- topology events disabled
-      disable_topology_events: false
-      # @schema {"name": "backupManager.cassandra.config.disable_skip_metadata", "type": "boolean"}
-      # backupManager.cassandra.config.disable_skip_metadata -- skip metadata disabled
-      disable_skip_metadata: false
-      # @schema {"name": "backupManager.cassandra.config.default_idempotence", "type": "boolean"}
-      # backupManager.cassandra.config.default_idempotence -- default idempotence enabled
-      default_idempotence: false
-      # @schema {"name": "backupManager.cassandra.config.write_coalesce_wait_time", "type": "string"}
-      # backupManager.cassandra.config.write_coalesce_wait_time -- write coalesce wait time
-      write_coalesce_wait_time: 200µs
-      # @schema {"name": "backupManager.cassandra.config.meta_table", "type": "string"}
-      # backupManager.cassandra.config.meta_table -- table name of backup
-      meta_table: meta_vector
-      # @schema {"name": "backupManager.cassandra.config.pool_config", "type": "object"}
-      pool_config:
-        # @schema {"name": "backupManager.cassandra.config.pool_config.data_center", "type": "string"}
-        # backupManager.cassandra.config.pool_config.data_center -- name of data center
-        data_center: ""
-        # @schema {"name": "backupManager.cassandra.config.pool_config.dc_aware_routing", "type": "boolean"}
-        # backupManager.cassandra.config.pool_config.dc_aware_routing -- data center aware routine enabled
-        dc_aware_routing: false
-        # @schema {"name": "backupManager.cassandra.config.pool_config.non_local_replicas_fallback", "type": "boolean"}
-        # backupManager.cassandra.config.pool_config.non_local_replicas_fallback -- non-local replica fallback enabled
-        non_local_replicas_fallback: false
-        # @schema {"name": "backupManager.cassandra.config.pool_config.shuffle_replicas", "type": "boolean"}
-        # backupManager.cassandra.config.pool_config.shuffle_replicas -- shuffle replica enabled
-        shuffle_replicas: false
-        # @schema {"name": "backupManager.cassandra.config.pool_config.token_aware_host_policy", "type": "boolean"}
-        # backupManager.cassandra.config.pool_config.token_aware_host_policy -- token aware host policy enabled
-        token_aware_host_policy: false
-      # @schema {"name": "backupManager.cassandra.config.host_filter", "type": "object"}
-      host_filter:
-        # @schema {"name": "backupManager.cassandra.config.host_filter.enabled", "type": "boolean"}
-        # backupManager.cassandra.config.host_filter.enabled -- enables host filtering
-        enabled: false
-        # @schema {"name": "backupManager.cassandra.config.host_filter.data_center", "type": "string"}
-        # backupManager.cassandra.config.host_filter.data_center -- name of data center of filtering target
-        data_center: ""
-        # @schema {"name": "backupManager.cassandra.config.host_filter.white_list", "type": "array", "items": {"type": "string"}}
-        # backupManager.cassandra.config.host_filter.white_list -- list of white_list which allows each connection
-        white_list: []
+        # @schema {"name": "manager.backup.mysql.config.tls", "alias": "tcp"}
+        tcp:
+          dns:
+            # manager.backup.mysql.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
+            cache_enabled: true
+            # manager.backup.mysql.config.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
+            refresh_duration: 1h
+            # manager.backup.mysql.config.tcp.dns.cache_expiration -- TCP DNS cache expiration
+            cache_expiration: 24h
+          dialer:
+            # manager.backup.mysql.config.tcp.dialer.timeout -- TCP dialer timeout
+            timeout: 5s
+            # manager.backup.mysql.config.tcp.dialer.keep_alive -- TCP dialer keep alive
+            keep_alive: 5m
+            # manager.backup.mysql.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
+            dual_stack_enabled: false
+          tls:
+            # manager.backup.mysql.config.tcp.tls.enabled -- TCP TLS enabled
+            enabled: false
+            # manager.backup.mysql.config.tcp.tls.cert -- path to TCP TLS cert
+            cert: /path/to/cert
+            # manager.backup.mysql.config.tcp.tls.key -- path to TCP TLS key
+            key: /path/to/key
+            # manager.backup.mysql.config.tcp.tls.ca -- path to TCP TLS ca
+            ca: /path/to/ca
+    # @schema {"name": "manager.backup.cassandra", "type": "object", "anchor": "cassandra"}
+    cassandra:
+      # @schema {"name": "manager.backup.cassandra.enabled", "type": "boolean"}
+      # manager.backup.cassandra.enabled -- cassandra config enabled
+      enabled: false
+      # @schema {"name": "manager.backup.cassandra.config", "type": "object"}
+      config:
+        # @schema {"name": "manager.backup.cassandra.config.hosts", "type": "array", "items": {"type": "string"}}
+        # manager.backup.cassandra.config.hosts -- cassandra hosts
+        hosts:
+          - cassandra-0.cassandra.default.svc.cluster.local
+          - cassandra-1.cassandra.default.svc.cluster.local
+          - cassandra-2.cassandra.default.svc.cluster.local
+          # - scylla-0.scylla.default.svc.cluster.local
+          # - scylla-1.scylla.default.svc.cluster.local
+          # - scylla-2.scylla.default.svc.cluster.local
+        # @schema {"name": "manager.backup.cassandra.config.cql_version", "type": "string"}
+        # manager.backup.cassandra.config.cql_version -- cassandra CQL version
+        cql_version: 3.0.0
+        # @schema {"name": "manager.backup.cassandra.config.proto_version", "type": "integer"}
+        # manager.backup.cassandra.config.proto_version -- cassandra proto version
+        proto_version: 0
+        # @schema {"name": "manager.backup.cassandra.config.timeout", "type": "string"}
+        # manager.backup.cassandra.config.timeout -- timeout
+        timeout: 600ms
+        # @schema {"name": "manager.backup.cassandra.config.connect_timeout", "type": "string"}
+        # manager.backup.cassandra.config.connect_timeout -- connect timeout
+        connect_timeout: 3s
+        # @schema {"name": "manager.backup.cassandra.config.port", "type": "integer"}
+        # manager.backup.cassandra.config.port -- cassandra port
+        port: 9042
+        # @schema {"name": "manager.backup.cassandra.config.keyspace", "type": "string"}
+        # manager.backup.cassandra.config.keyspace -- cassandra keyspace
+        keyspace: vald
+        # @schema {"name": "manager.backup.cassandra.config.num_conns", "type": "integer"}
+        # manager.backup.cassandra.config.num_conns -- number of connections per hosts
+        num_conns: 2
+        # @schema {"name": "manager.backup.cassandra.config.consistency", "type": "string", "enum": ["any", "one", "two", "three", "all", "quorum", "localquorum", "eachquorum", "localone"]}
+        # manager.backup.cassandra.config.consistency -- consistency type
+        consistency: quorum
+        # @schema {"name": "manager.backup.cassandra.config.serial_consistency", "type": "string", "enum": ["localserial", "serial"]}
+        # manager.backup.cassandra.config.serial_consistency -- read consistency type
+        serial_consistency: localserial
+        # @schema {"name": "manager.backup.cassandra.config.username", "type": "string"}
+        # manager.backup.cassandra.config.username -- cassandra username
+        username: root
+        # @schema {"name": "manager.backup.cassandra.config.password", "type": "string"}
+        # manager.backup.cassandra.config.password -- cassandra password
+        password: _CASSANDRA_PASSWORD_
+        # @schema {"name": "manager.backup.cassandra.config.retry_policy", "type": "object"}
+        retry_policy:
+          # @schema {"name": "manager.backup.cassandra.config.retry_policy.num_retries", "type": "integer"}
+          # manager.backup.cassandra.config.retry_policy.num_retries -- number of retries
+          num_retries: 3
+          # @schema {"name": "manager.backup.cassandra.config.retry_policy.min_duration", "type": "string"}
+          # manager.backup.cassandra.config.retry_policy.min_duration -- minimum duration to retry
+          min_duration: 10ms
+          # @schema {"name": "manager.backup.cassandra.config.retry_policy.max_duration", "type": "string"}
+          # manager.backup.cassandra.config.retry_policy.max_duration -- maximum duration to retry
+          max_duration: 1s
+        # @schema {"name": "manager.backup.cassandra.config.reconnection_policy", "type": "object"}
+        reconnection_policy:
+          # @schema {"name": "manager.backup.cassandra.config.reconnection_policy.max_retries", "type": "integer"}
+          # manager.backup.cassandra.config.reconnection_policy.max_retries -- maximum number of retries to reconnect
+          max_retries: 3
+          # @schema {"name": "manager.backup.cassandra.config.reconnection_policy.initial_interval", "type": "string"}
+          # manager.backup.cassandra.config.reconnection_policy.initial_interval -- initial interval to reconnect
+          initial_interval: 100ms
+        # @schema {"name": "manager.backup.cassandra.config.socket_keepalive", "type": "string"}
+        # manager.backup.cassandra.config.socket_keepalive -- socket keep alive time
+        socket_keepalive: 0s
+        # @schema {"name": "manager.backup.cassandra.config.max_prepared_stmts", "type": "integer"}
+        # manager.backup.cassandra.config.max_prepared_stmts -- maximum number of prepared statements
+        max_prepared_stmts: 1000
+        # @schema {"name": "manager.backup.cassandra.config.max_routing_key_info", "type": "integer"}
+        # manager.backup.cassandra.config.max_routing_key_info -- maximum number of routing key info
+        max_routing_key_info: 1000
+        # @schema {"name": "manager.backup.cassandra.config.page_size", "type": "integer"}
+        # manager.backup.cassandra.config.page_size -- page size
+        page_size: 5000
+        # @schema {"name": "manager.backup.cassandra.config.tls", "alias": "tls"}
+        tls:
+          # manager.backup.cassandra.config.tls.enabled -- TLS enabled
+          enabled: false
+          # manager.backup.cassandra.config.tls.cert -- path to TLS cert
+          cert: /path/to/cert
+          # manager.backup.cassandra.config.tls.key -- path to TLS key
+          key: /path/to/key
+          # manager.backup.cassandra.config.tls.ca -- path to TLS ca
+          ca: /path/to/ca
+        # @schema {"name": "manager.backup.cassandra.config.tcp", "alias": "tcp"}
+        tcp:
+          dns:
+            # manager.backup.cassandra.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
+            cache_enabled: true
+            # manager.backup.cassandra.config.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
+            refresh_duration: 5m
+            # manager.backup.cassandra.config.tcp.dns.cache_expiration -- TCP DNS cache expiration
+            cache_expiration: 24h
+          dialer:
+            # manager.backup.cassandra.config.tcp.dialer.timeout -- TCP dialer timeout
+            timeout: 30s
+            # manager.backup.cassandra.config.tcp.dialer.keep_alive -- TCP dialer keep alive
+            keep_alive: 10m
+            # manager.backup.cassandra.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
+            dual_stack_enabled: false
+        # @schema {"name": "manager.backup.cassandra.config.enable_host_verification", "type": "boolean"}
+        # manager.backup.cassandra.config.enable_host_verification -- host verification enabled
+        enable_host_verification: false
+        # @schema {"name": "manager.backup.cassandra.config.default_timestamp", "type": "boolean"}
+        # manager.backup.cassandra.config.default_timestamp -- default timestamp enabled
+        default_timestamp: true
+        # @schema {"name": "manager.backup.cassandra.config.reconnect_interval", "type": "string"}
+        # manager.backup.cassandra.config.reconnect_interval -- interval of reconnection
+        reconnect_interval: 100ms
+        # @schema {"name": "manager.backup.cassandra.config.max_wait_schema_agreement", "type": "string"}
+        # manager.backup.cassandra.config.max_wait_schema_agreement -- maximum duration to wait for schema agreement
+        max_wait_schema_agreement: 1m
+        # @schema {"name": "manager.backup.cassandra.config.ignore_peer_addr", "type": "boolean"}
+        # manager.backup.cassandra.config.ignore_peer_addr -- ignore peer addresses
+        ignore_peer_addr: false
+        # @schema {"name": "manager.backup.cassandra.config.disable_initial_host_lookup", "type": "boolean"}
+        # manager.backup.cassandra.config.disable_initial_host_lookup -- initial host lookup disabled
+        disable_initial_host_lookup: false
+        # @schema {"name": "manager.backup.cassandra.config.disable_node_status_events", "type": "boolean"}
+        # manager.backup.cassandra.config.disable_node_status_events -- node status events disabled
+        disable_node_status_events: false
+        # @schema {"name": "manager.backup.cassandra.config.disable_topology_events", "type": "boolean"}
+        # manager.backup.cassandra.config.disable_topology_events -- topology events disabled
+        disable_topology_events: false
+        # @schema {"name": "manager.backup.cassandra.config.disable_skip_metadata", "type": "boolean"}
+        # manager.backup.cassandra.config.disable_skip_metadata -- skip metadata disabled
+        disable_skip_metadata: false
+        # @schema {"name": "manager.backup.cassandra.config.default_idempotence", "type": "boolean"}
+        # manager.backup.cassandra.config.default_idempotence -- default idempotence enabled
+        default_idempotence: false
+        # @schema {"name": "manager.backup.cassandra.config.write_coalesce_wait_time", "type": "string"}
+        # manager.backup.cassandra.config.write_coalesce_wait_time -- write coalesce wait time
+        write_coalesce_wait_time: 200µs
+        # @schema {"name": "manager.backup.cassandra.config.meta_table", "type": "string"}
+        # manager.backup.cassandra.config.meta_table -- table name of backup
+        meta_table: meta_vector
+        # @schema {"name": "manager.backup.cassandra.config.pool_config", "type": "object"}
+        pool_config:
+          # @schema {"name": "manager.backup.cassandra.config.pool_config.data_center", "type": "string"}
+          # manager.backup.cassandra.config.pool_config.data_center -- name of data center
+          data_center: ""
+          # @schema {"name": "manager.backup.cassandra.config.pool_config.dc_aware_routing", "type": "boolean"}
+          # manager.backup.cassandra.config.pool_config.dc_aware_routing -- data center aware routine enabled
+          dc_aware_routing: false
+          # @schema {"name": "manager.backup.cassandra.config.pool_config.non_local_replicas_fallback", "type": "boolean"}
+          # manager.backup.cassandra.config.pool_config.non_local_replicas_fallback -- non-local replica fallback enabled
+          non_local_replicas_fallback: false
+          # @schema {"name": "manager.backup.cassandra.config.pool_config.shuffle_replicas", "type": "boolean"}
+          # manager.backup.cassandra.config.pool_config.shuffle_replicas -- shuffle replica enabled
+          shuffle_replicas: false
+          # @schema {"name": "manager.backup.cassandra.config.pool_config.token_aware_host_policy", "type": "boolean"}
+          # manager.backup.cassandra.config.pool_config.token_aware_host_policy -- token aware host policy enabled
+          token_aware_host_policy: false
+        # @schema {"name": "manager.backup.cassandra.config.host_filter", "type": "object"}
+        host_filter:
+          # @schema {"name": "manager.backup.cassandra.config.host_filter.enabled", "type": "boolean"}
+          # manager.backup.cassandra.config.host_filter.enabled -- enables host filtering
+          enabled: false
+          # @schema {"name": "manager.backup.cassandra.config.host_filter.data_center", "type": "string"}
+          # manager.backup.cassandra.config.host_filter.data_center -- name of data center of filtering target
+          data_center: ""
+          # @schema {"name": "manager.backup.cassandra.config.host_filter.white_list", "type": "array", "items": {"type": "string"}}
+          # manager.backup.cassandra.config.host_filter.white_list -- list of white_list which allows each connection
+          white_list: []
 
-# @schema {"name": "indexManager", "type": "object"}
-indexManager:
-  # @schema {"name": "indexManager.enabled", "type": "boolean"}
-  # indexManager.enabled -- index manager enabled
-  enabled: true
-  # @schema {"name": "indexManager.version", "alias": "version"}
-  # indexManager.version -- version of index manager config
-  version: v0.0.0
-  # @schema {"name": "indexManager.time_zone", "type": "string"}
-  # indexManager.time_zone -- Time zone
-  time_zone: ""
-  # @schema {"name": "indexManager.logging", "alias": "logging"}
-  # indexManager.logging -- logging config (overrides defaults.logging)
-  logging: {}
-  # @schema {"name": "indexManager.name", "type": "string"}
-  # indexManager.name -- name of index manager deployment
-  name: vald-manager-index
-  # @schema {"name": "indexManager.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
-  # indexManager.kind -- deployment kind: Deployment or DaemonSet
-  kind: Deployment
-  # @schema {"name": "indexManager.serviceType", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
-  # indexManager.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
-  serviceType: ClusterIP
-  # @schema {"name": "indexManager.externalTrafficPolicy", "type": "string"}
-  # indexManager.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
-  externalTrafficPolicy: ""
-  # @schema {"name": "indexManager.progressDeadlineSeconds", "type": "integer"}
-  # indexManager.progressDeadlineSeconds -- progress deadline seconds
-  progressDeadlineSeconds: 600
-  # @schema {"name": "indexManager.replicas", "type": "integer", "minimum": 0}
-  # indexManager.replicas -- number of replicas
-  replicas: 1
-  # @schema {"name": "indexManager.maxUnavailable", "type": "string"}
-  # indexManager.maxUnavailable -- maximum number of unavailable replicas
-  maxUnavailable: 50%
-  # @schema {"name": "indexManager.revisionHistoryLimit", "type": "integer", "minimum": 0}
-  # indexManager.revisionHistoryLimit -- number of old history to retain to allow rollback
-  revisionHistoryLimit: 2
-  # @schema {"name": "indexManager.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
-  # indexManager.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
-  terminationGracePeriodSeconds: 30
-  # @schema {"name": "indexManager.podPriority", "alias": "podPriority"}
-  podPriority:
-    # indexManager.podPriority.enabled -- index manager pod PriorityClass enabled
+  # @schema {"name": "manager.index", "type": "object"}
+  index:
+    # @schema {"name": "manager.index.enabled", "type": "boolean"}
+    # manager.index.enabled -- index manager enabled
     enabled: true
-    # indexManager.podPriority.value -- index manager pod PriorityClass value
-    value: 1000000
-  # @schema {"name": "indexManager.annotations", "type": "object"}
-  # indexManager.annotations -- deployment annotations
-  annotations: {}
-  # @schema {"name": "indexManager.podAnnotations", "type": "object"}
-  # indexManager.podAnnotations -- pod annotations
-  podAnnotations: {}
-  # @schema {"name": "indexManager.service", "alias": "service"}
-  service:
-    # indexManager.service.annotations -- service annotations
+    # @schema {"name": "manager.index.version", "alias": "version"}
+    # manager.index.version -- version of index manager config
+    version: v0.0.0
+    # @schema {"name": "manager.index.time_zone", "type": "string"}
+    # manager.index.time_zone -- Time zone
+    time_zone: ""
+    # @schema {"name": "manager.index.logging", "alias": "logging"}
+    # manager.index.logging -- logging config (overrides defaults.logging)
+    logging: {}
+    # @schema {"name": "manager.index.name", "type": "string"}
+    # manager.index.name -- name of index manager deployment
+    name: vald-manager-index
+    # @schema {"name": "manager.index.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
+    # manager.index.kind -- deployment kind: Deployment or DaemonSet
+    kind: Deployment
+    # @schema {"name": "manager.index.serviceType", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
+    # manager.index.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
+    serviceType: ClusterIP
+    # @schema {"name": "manager.index.externalTrafficPolicy", "type": "string"}
+    # manager.index.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+    externalTrafficPolicy: ""
+    # @schema {"name": "manager.index.progressDeadlineSeconds", "type": "integer"}
+    # manager.index.progressDeadlineSeconds -- progress deadline seconds
+    progressDeadlineSeconds: 600
+    # @schema {"name": "manager.index.replicas", "type": "integer", "minimum": 0}
+    # manager.index.replicas -- number of replicas
+    replicas: 1
+    # @schema {"name": "manager.index.maxUnavailable", "type": "string"}
+    # manager.index.maxUnavailable -- maximum number of unavailable replicas
+    maxUnavailable: 50%
+    # @schema {"name": "manager.index.revisionHistoryLimit", "type": "integer", "minimum": 0}
+    # manager.index.revisionHistoryLimit -- number of old history to retain to allow rollback
+    revisionHistoryLimit: 2
+    # @schema {"name": "manager.index.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
+    # manager.index.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
+    terminationGracePeriodSeconds: 30
+    # @schema {"name": "manager.index.podPriority", "alias": "podPriority"}
+    podPriority:
+      # manager.index.podPriority.enabled -- index manager pod PriorityClass enabled
+      enabled: true
+      # manager.index.podPriority.value -- index manager pod PriorityClass value
+      value: 1000000
+    # @schema {"name": "manager.index.annotations", "type": "object"}
+    # manager.index.annotations -- deployment annotations
     annotations: {}
-    # indexManager.service.labels -- service labels
-    labels: {}
-  # @schema {"name": "indexManager.image", "alias": "image"}
-  image:
-    # indexManager.image.repository -- image repository
-    repository: vdaas/vald-manager-index
-    # indexManager.image.tag -- image tag (overrides defaults.image.tag)
-    tag: ""
-    # indexManager.image.pullPolicy -- image pull policy
-    pullPolicy: Always
-  # @schema {"name": "indexManager.rollingUpdate", "alias": "rollingUpdate"}
-  rollingUpdate:
-    # indexManager.rollingUpdate.maxSurge -- max surge of rolling update
-    maxSurge: 25%
-    # indexManager.rollingUpdate.maxUnavailable -- max unavailable of rolling update
-    maxUnavailable: 25%
-  # @schema {"name": "indexManager.initContainers", "alias": "initContainers"}
-  # indexManager.initContainers -- init containers
-  initContainers:
-    - type: wait-for
-      name: wait-for-agent
-      target: agent
-      image: busybox
-      sleepDuration: 2
-    - type: wait-for
-      name: wait-for-discoverer
-      target: discoverer
-      image: busybox
-      sleepDuration: 2
-  # @schema {"name": "indexManager.env", "alias": "env"}
-  # indexManager.env -- environment variables
-  env:
-    # - name: MY_NODE_NAME
-    #   valueFrom:
-    #     fieldRef:
-    #       fieldPath: spec.nodeName
-    - name: MY_POD_NAMESPACE
-      valueFrom:
-        fieldRef:
-          fieldPath: metadata.namespace
-  # @schema {"name": "indexManager.volumeMounts", "alias": "volumeMounts"}
-  # indexManager.volumeMounts -- volume mounts
-  volumeMounts: []
-  # @schema {"name": "indexManager.volumes", "alias": "volumes"}
-  # indexManager.volumes -- volumes
-  volumes: []
-  # @schema {"name": "indexManager.nodeName", "type": "string"}
-  # indexManager.nodeName -- node name
-  nodeName: ""
-  # @schema {"name": "indexManager.nodeSelector", "alias": "nodeSelector"}
-  # indexManager.nodeSelector -- node selector
-  nodeSelector: {}
-  # @schema {"name": "indexManager.tolerations", "alias": "tolerations"}
-  # indexManager.tolerations -- tolerations
-  tolerations: []
-  # @schema {"name": "indexManager.affinity", "alias": "affinity"}
-  affinity:
-    nodeAffinity:
-      # indexManager.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
-      preferredDuringSchedulingIgnoredDuringExecution: []
-      requiredDuringSchedulingIgnoredDuringExecution:
-        # indexManager.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
-        nodeSelectorTerms: []
-    podAffinity:
-      # indexManager.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
-      preferredDuringSchedulingIgnoredDuringExecution: []
-      # indexManager.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
-      requiredDuringSchedulingIgnoredDuringExecution: []
-    podAntiAffinity:
-      # indexManager.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
-      preferredDuringSchedulingIgnoredDuringExecution: []
-      # indexManager.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
-      requiredDuringSchedulingIgnoredDuringExecution: []
-  # @schema {"name": "indexManager.topologySpreadConstraints", "alias": "topologySpreadConstraints"}
-  # indexManager.topologySpreadConstraints -- topology spread constraints of index manager pods
-  topologySpreadConstraints: []
-  # @schema {"name": "indexManager.server_config", "alias": "server_config"}
-  # indexManager.server_config -- server config (overrides defaults.server_config)
-  server_config:
-    servers:
-      rest: {}
-      grpc: {}
-    healths:
-      liveness: {}
-      readiness: {}
-    metrics:
-      pprof: {}
-      prometheus: {}
-  # @schema {"name": "indexManager.observability", "alias": "observability"}
-  # indexManager.observability -- observability config (overrides defaults.observability)
-  observability:
-    jaeger:
-      service_name: vald-manager-index
-    stackdriver:
-      profiler:
-        service: vald-manager-index
-  # @schema {"name": "indexManager.resources", "alias": "resources"}
-  # indexManager.resources -- compute resources
-  resources:
-    requests:
-      cpu: 200m
-      memory: 80Mi
-    limits:
-      cpu: 1000m
-      memory: 500Mi
-  # @schema {"name": "indexManager.indexer", "type": "object"}
-  indexer:
-    # @schema {"name": "indexManager.indexer.agent_namespace", "type": "string"}
-    # indexManager.indexer.agent_namespace -- namespace of agent pods to manage
-    agent_namespace: _MY_POD_NAMESPACE_
-    # @schema {"name": "indexManager.indexer.node_name", "type": "string"}
-    # indexManager.indexer.node_name -- node name
-    node_name: "" # _MY_NODE_NAME_
-    # @schema {"name": "indexManager.indexer.concurrency", "type": "integer", "minimum": 1}
-    # indexManager.indexer.concurrency -- concurrency
-    concurrency: 1
-    # @schema {"name": "indexManager.indexer.auto_index_duration_limit", "type": "string"}
-    # indexManager.indexer.auto_index_duration_limit -- limit duration of automatic indexing
-    auto_index_duration_limit: 30m
-    # @schema {"name": "indexManager.indexer.auto_index_check_duration", "type": "string"}
-    # indexManager.indexer.auto_index_check_duration -- check duration of automatic indexing
-    auto_index_check_duration: 1m
-    # @schema {"name": "indexManager.indexer.auto_index_length", "type": "integer"}
-    # indexManager.indexer.auto_index_length -- number of cache to trigger automatic indexing
-    auto_index_length: 100
-    # @schema {"name": "indexManager.indexer.creation_pool_size", "type": "integer"}
-    # indexManager.indexer.creation_pool_size -- number of pool size of create index processing
-    creation_pool_size: 10000
-    # @schema {"name": "indexManager.indexer.discoverer", "type": "object"}
-    discoverer:
-      # @schema {"name": "indexManager.indexer.discoverer.duration", "type": "string"}
-      # indexManager.indexer.discoverer.duration -- refresh duration to discover
-      duration: 500ms
-      # @schema {"name": "indexManager.indexer.discoverer.discover_client", "alias": "grpc.client"}
-      # indexManager.indexer.discoverer.discover_client -- gRPC client for discoverer (overrides defaults.grpc.client)
-      discover_client: {}
-      # @schema {"name": "indexManager.indexer.discoverer.agent_client", "alias": "grpc.client"}
-      # indexManager.indexer.discoverer.agent_client -- gRPC client for agents (overrides defaults.grpc.client)
-      agent_client:
-        dial_option:
-          tcp:
-            dialer:
-              keep_alive: 15m
+    # @schema {"name": "manager.index.podAnnotations", "type": "object"}
+    # manager.index.podAnnotations -- pod annotations
+    podAnnotations: {}
+    # @schema {"name": "manager.index.service", "alias": "service"}
+    service:
+      # manager.index.service.annotations -- service annotations
+      annotations: {}
+      # manager.index.service.labels -- service labels
+      labels: {}
+    # @schema {"name": "manager.index.image", "alias": "image"}
+    image:
+      # manager.index.image.repository -- image repository
+      repository: vdaas/vald-manager-index
+      # manager.index.image.tag -- image tag (overrides defaults.image.tag)
+      tag: ""
+      # manager.index.image.pullPolicy -- image pull policy
+      pullPolicy: Always
+    # @schema {"name": "manager.index.rollingUpdate", "alias": "rollingUpdate"}
+    rollingUpdate:
+      # manager.index.rollingUpdate.maxSurge -- max surge of rolling update
+      maxSurge: 25%
+      # manager.index.rollingUpdate.maxUnavailable -- max unavailable of rolling update
+      maxUnavailable: 25%
+    # @schema {"name": "manager.index.initContainers", "alias": "initContainers"}
+    # manager.index.initContainers -- init containers
+    initContainers:
+      - type: wait-for
+        name: wait-for-agent
+        target: agent
+        image: busybox
+        sleepDuration: 2
+      - type: wait-for
+        name: wait-for-discoverer
+        target: discoverer
+        image: busybox
+        sleepDuration: 2
+    # @schema {"name": "manager.index.env", "alias": "env"}
+    # manager.index.env -- environment variables
+    env:
+      # - name: MY_NODE_NAME
+      #   valueFrom:
+      #     fieldRef:
+      #       fieldPath: spec.nodeName
+      - name: MY_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+    # @schema {"name": "manager.index.volumeMounts", "alias": "volumeMounts"}
+    # manager.index.volumeMounts -- volume mounts
+    volumeMounts: []
+    # @schema {"name": "manager.index.volumes", "alias": "volumes"}
+    # manager.index.volumes -- volumes
+    volumes: []
+    # @schema {"name": "manager.index.nodeName", "type": "string"}
+    # manager.index.nodeName -- node name
+    nodeName: ""
+    # @schema {"name": "manager.index.nodeSelector", "alias": "nodeSelector"}
+    # manager.index.nodeSelector -- node selector
+    nodeSelector: {}
+    # @schema {"name": "manager.index.tolerations", "alias": "tolerations"}
+    # manager.index.tolerations -- tolerations
+    tolerations: []
+    # @schema {"name": "manager.index.affinity", "alias": "affinity"}
+    affinity:
+      nodeAffinity:
+        # manager.index.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        requiredDuringSchedulingIgnoredDuringExecution:
+          # manager.index.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+          nodeSelectorTerms: []
+      podAffinity:
+        # manager.index.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        # manager.index.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+        requiredDuringSchedulingIgnoredDuringExecution: []
+      podAntiAffinity:
+        # manager.index.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        # manager.index.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+        requiredDuringSchedulingIgnoredDuringExecution: []
+    # @schema {"name": "manager.index.topologySpreadConstraints", "alias": "topologySpreadConstraints"}
+    # manager.index.topologySpreadConstraints -- topology spread constraints of index manager pods
+    topologySpreadConstraints: []
+    # @schema {"name": "manager.index.server_config", "alias": "server_config"}
+    # manager.index.server_config -- server config (overrides defaults.server_config)
+    server_config:
+      servers:
+        rest: {}
+        grpc: {}
+      healths:
+        liveness: {}
+        readiness: {}
+      metrics:
+        pprof: {}
+        prometheus: {}
+    # @schema {"name": "manager.index.observability", "alias": "observability"}
+    # manager.index.observability -- observability config (overrides defaults.observability)
+    observability:
+      jaeger:
+        service_name: vald-manager-index
+      stackdriver:
+        profiler:
+          service: vald-manager-index
+    # @schema {"name": "manager.index.resources", "alias": "resources"}
+    # manager.index.resources -- compute resources
+    resources:
+      requests:
+        cpu: 200m
+        memory: 80Mi
+      limits:
+        cpu: 1000m
+        memory: 500Mi
+    # @schema {"name": "manager.index.indexer", "type": "object"}
+    indexer:
+      # @schema {"name": "manager.index.indexer.agent_namespace", "type": "string"}
+      # manager.index.indexer.agent_namespace -- namespace of agent pods to manage
+      agent_namespace: _MY_POD_NAMESPACE_
+      # @schema {"name": "manager.index.indexer.node_name", "type": "string"}
+      # manager.index.indexer.node_name -- node name
+      node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.indexer.concurrency", "type": "integer", "minimum": 1}
+      # manager.index.indexer.concurrency -- concurrency
+      concurrency: 1
+      # @schema {"name": "manager.index.indexer.auto_index_duration_limit", "type": "string"}
+      # manager.index.indexer.auto_index_duration_limit -- limit duration of automatic indexing
+      auto_index_duration_limit: 30m
+      # @schema {"name": "manager.index.indexer.auto_index_check_duration", "type": "string"}
+      # manager.index.indexer.auto_index_check_duration -- check duration of automatic indexing
+      auto_index_check_duration: 1m
+      # @schema {"name": "manager.index.indexer.auto_index_length", "type": "integer"}
+      # manager.index.indexer.auto_index_length -- number of cache to trigger automatic indexing
+      auto_index_length: 100
+      # @schema {"name": "manager.index.indexer.creation_pool_size", "type": "integer"}
+      # manager.index.indexer.creation_pool_size -- number of pool size of create index processing
+      creation_pool_size: 10000
+      # @schema {"name": "manager.index.indexer.discoverer", "type": "object"}
+      discoverer:
+        # @schema {"name": "manager.index.indexer.discoverer.duration", "type": "string"}
+        # manager.index.indexer.discoverer.duration -- refresh duration to discover
+        duration: 500ms
+        # @schema {"name": "manager.index.indexer.discoverer.discover_client", "alias": "grpc.client"}
+        # manager.index.indexer.discoverer.discover_client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        discover_client: {}
+        # @schema {"name": "manager.index.indexer.discoverer.agent_client", "alias": "grpc.client"}
+        # manager.index.indexer.discoverer.agent_client -- gRPC client for agents (overrides defaults.grpc.client)
+        agent_client:
+          dial_option:
+            tcp:
+              dialer:
+                keep_alive: 15m
 
 # @schema {"name": "meta", "type": "object"}
 meta:
