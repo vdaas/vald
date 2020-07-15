@@ -23,8 +23,17 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/kpango/gache"
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
+)
+
+var (
+	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+	goleakIgnoreOptions = []goleak.Option{
+		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	}
 )
 
 func TestNew(t *testing.T) {
@@ -43,41 +52,61 @@ func TestNew(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, gotC *cache) error {
-		if !reflect.DeepEqual(gotC, w.wantC) {
+		opts := []cmp.Option{
+			cmp.AllowUnexported(*w.wantC),
+			cmp.AllowUnexported(*gotC),
+			cmp.Comparer(func(want, got *cache) bool {
+				return want.gache != nil && got.gache != nil && want.expireDur == got.expireDur && want.expireCheckDur == got.expireCheckDur
+			}),
+		}
+		if diff := cmp.Diff(w.wantC, gotC, opts...); diff != "" {
 			return errors.Errorf("got = %v, want %v", gotC, w.wantC)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			c := new(cache)
+			for _, opt := range defaultOptions() {
+				opt(c)
+			}
+			c.gache.SetDefaultExpire(c.expireDur)
+			return test{
+				name: "set success when opts is nil",
+				want: want{
+					wantC: c,
+				},
+				checkFunc: defaultCheckFunc,
+			}
+		}(),
+		func() test {
+			expiredHook := func(context.Context, string) {}
+			c := new(cache)
+			for _, opt := range append(defaultOptions(), WithExpiredHook(expiredHook)) {
+				opt(c)
+			}
+			c.gache.SetDefaultExpire(c.expireDur)
+			if c.expiredHook != nil {
+				c.gache = c.gache.SetExpiredHook(c.expiredHook).EnableExpiredHook()
+			}
+			return test{
+				name: "set success when opts is not nil",
+				args: args{
+					opts: []Option{
+						WithExpiredHook(expiredHook),
+					},
+				},
+				want: want{
+					wantC: c,
+				},
+				checkFunc: defaultCheckFunc,
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -87,12 +116,10 @@ func TestNew(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-
 			gotC := New(test.args.opts...)
 			if err := test.checkFunc(test.want, gotC); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -122,47 +149,28 @@ func Test_cache_Start(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           gache: nil,
-		           expireDur: nil,
-		           expireCheckDur: nil,
-		           expiredHook: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           gache: nil,
-		           expireDur: nil,
-		           expireCheckDur: nil,
-		           expiredHook: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "Call Start",
+			args: args{
+				ctx: func() context.Context {
+					ctx, cancel := context.WithCancel(context.Background())
+					defer cancel()
+					return ctx
+				}(),
+			},
+			fields: fields{
+				gache:          gache.New(),
+				expireDur:      1 * time.Second,
+				expireCheckDur: 1 * time.Second,
+				expiredHook:    nil,
+			},
+			checkFunc: defaultCheckFunc,
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -178,7 +186,6 @@ func Test_cache_Start(t *testing.T) {
 				expireCheckDur: test.fields.expireCheckDur,
 				expiredHook:    test.fields.expiredHook,
 			}
-
 			c.Start(test.args.ctx)
 			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
@@ -207,7 +214,7 @@ func Test_cache_Get(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, interface{}, bool) error
-		beforeFunc func(args)
+		beforeFunc func(args, *cache)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got interface{}, got1 bool) error {
@@ -220,49 +227,56 @@ func Test_cache_Get(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           key: "",
-		       },
-		       fields: fields {
-		           gache: nil,
-		           expireDur: nil,
-		           expireCheckDur: nil,
-		           expiredHook: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           key: "",
-		           },
-		           fields: fields {
-		           gache: nil,
-		           expireDur: nil,
-		           expireCheckDur: nil,
-		           expiredHook: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "Call Get when gache is empty",
+			args: args{
+				key: "vdaas",
+			},
+			fields: fields{
+				gache:          gache.New(),
+				expireDur:      1 * time.Second,
+				expireCheckDur: 1 * time.Second,
+				expiredHook:    nil,
+			},
+			want: want{
+				want:  nil,
+				want1: false,
+			},
+			checkFunc: defaultCheckFunc,
+		},
+		{
+			name: "Call Get when gache is not empty",
+			args: args{
+				key: "vdaas",
+			},
+			fields: fields{
+				gache:          gache.New(),
+				expireDur:      1 * time.Second,
+				expireCheckDur: 1 * time.Second,
+				expiredHook:    nil,
+			},
+			want: want{
+				want:  "vald",
+				want1: true,
+			},
+			beforeFunc: func(args args, c *cache) {
+				c.Set(args.key, "vald")
+			},
+			checkFunc: defaultCheckFunc,
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			c := &cache{
+				gache:          test.fields.gache,
+				expireDur:      test.fields.expireDur,
+				expireCheckDur: test.fields.expireCheckDur,
+				expiredHook:    test.fields.expiredHook,
+			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(test.args, c)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -270,18 +284,10 @@ func Test_cache_Get(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			c := &cache{
-				gache:          test.fields.gache,
-				expireDur:      test.fields.expireDur,
-				expireCheckDur: test.fields.expireCheckDur,
-				expiredHook:    test.fields.expiredHook,
-			}
-
 			got, got1 := c.Get(test.args.key)
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -312,49 +318,25 @@ func Test_cache_Set(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           key: "",
-		           val: nil,
-		       },
-		       fields: fields {
-		           gache: nil,
-		           expireDur: nil,
-		           expireCheckDur: nil,
-		           expiredHook: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           key: "",
-		           val: nil,
-		           },
-		           fields: fields {
-		           gache: nil,
-		           expireDur: nil,
-		           expireCheckDur: nil,
-		           expiredHook: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "Call Set",
+			args: args{
+				key: "vdaas",
+				val: "vald",
+			},
+			fields: fields{
+				gache:          gache.New(),
+				expireDur:      1 * time.Second,
+				expireCheckDur: 1 * time.Second,
+				expiredHook:    nil,
+			},
+			checkFunc: defaultCheckFunc,
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -397,68 +379,61 @@ func Test_cache_Delete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
+		beforeFunc func(args, *cache)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           key: "",
-		       },
-		       fields: fields {
-		           gache: nil,
-		           expireDur: nil,
-		           expireCheckDur: nil,
-		           expiredHook: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           key: "",
-		           },
-		           fields: fields {
-		           gache: nil,
-		           expireDur: nil,
-		           expireCheckDur: nil,
-		           expiredHook: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "Call Delete when gache is empty",
+			args: args{
+				key: "vdaas",
+			},
+			fields: fields{
+				gache:          gache.New(),
+				expireDur:      1 * time.Second,
+				expireCheckDur: 1 * time.Second,
+				expiredHook:    nil,
+			},
+			checkFunc: defaultCheckFunc,
+		},
+		{
+			name: "Call Delete when gache is not empty",
+			args: args{
+				key: "vdaas",
+			},
+			fields: fields{
+				gache:          gache.New(),
+				expireDur:      1 * time.Second,
+				expireCheckDur: 1 * time.Second,
+				expiredHook:    nil,
+			},
+			beforeFunc: func(args args, c *cache) {
+				c.Set(args.key, "vald")
+			},
+			checkFunc: defaultCheckFunc,
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			c := &cache{
+				gache:          test.fields.gache,
+				expireDur:      test.fields.expireDur,
+				expireCheckDur: test.fields.expireCheckDur,
+				expiredHook:    test.fields.expiredHook,
+			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(test.args, c)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
-			}
-			c := &cache{
-				gache:          test.fields.gache,
-				expireDur:      test.fields.expireDur,
-				expireCheckDur: test.fields.expireCheckDur,
-				expiredHook:    test.fields.expiredHook,
 			}
 
 			c.Delete(test.args.key)
@@ -489,7 +464,7 @@ func Test_cache_GetAndDelete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, interface{}, bool) error
-		beforeFunc func(args)
+		beforeFunc func(args, *cache)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got interface{}, got1 bool) error {
@@ -502,61 +477,62 @@ func Test_cache_GetAndDelete(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           key: "",
-		       },
-		       fields: fields {
-		           gache: nil,
-		           expireDur: nil,
-		           expireCheckDur: nil,
-		           expiredHook: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           key: "",
-		           },
-		           fields: fields {
-		           gache: nil,
-		           expireDur: nil,
-		           expireCheckDur: nil,
-		           expiredHook: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "Call GetAndDelete when gache is empty",
+			args: args{
+				key: "vdaas",
+			},
+			fields: fields{
+				gache:          gache.New(),
+				expireDur:      1 * time.Second,
+				expireCheckDur: 1 * time.Second,
+				expiredHook:    nil,
+			},
+			want: want{
+				want: nil,
+				want1: false,
+			},
+			checkFunc: defaultCheckFunc,
+		},
+		{
+			name: "Call GetAndDelete when gache is not empty",
+			args: args{
+				key: "vdaas",
+			},
+			fields: fields{
+				gache:          gache.New(),
+				expireDur:      1 * time.Second,
+				expireCheckDur: 1 * time.Second,
+				expiredHook:    nil,
+			},
+			want: want{
+				want: "vald",
+				want1: true,
+			},
+			beforeFunc: func(args args, c *cache) {
+				c.Set(args.key, "vald")
+			},
+			checkFunc: defaultCheckFunc,
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			c := &cache{
+				gache:          test.fields.gache,
+				expireDur:      test.fields.expireDur,
+				expireCheckDur: test.fields.expireCheckDur,
+				expiredHook:    test.fields.expiredHook,
+			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(test.args, c)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
-			}
-			c := &cache{
-				gache:          test.fields.gache,
-				expireDur:      test.fields.expireDur,
-				expireCheckDur: test.fields.expireCheckDur,
-				expiredHook:    test.fields.expiredHook,
 			}
 
 			got, got1 := c.GetAndDelete(test.args.key)
