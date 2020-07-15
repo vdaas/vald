@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- $gateway := .Values.gateway -}}
+{{- $gateway := .Values.gateway.vald -}}
 {{- if $gateway.enabled }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
