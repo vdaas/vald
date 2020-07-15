@@ -58,18 +58,6 @@ func (h *helper) Do(parallel int, b *testing.B) {
 
 	hitCnt := totalCnt - calledCnt
 
-	// fmt.Printf(`
-	// Parallel: %d
-	// Total Goroutine Count: %d,
-	// Hit Count: %d,
-	// Hit Rate: %f
-	// 	`,
-	// 	parallel,
-	// 	totalCnt,
-	// 	hitCnt,
-	// 	float64(hitCnt)/float64(totalCnt),
-	// )
-
 	b.Logf("Parallel: %d\tTotal Goroutine Count: %d\tHit Count: %d\tHit Rate: %f",
 		parallel,
 		totalCnt,
