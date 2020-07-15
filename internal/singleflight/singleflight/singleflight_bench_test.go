@@ -19,8 +19,10 @@ type Result struct {
 }
 
 type helper struct {
-	g        Group
-	sleepDur time.Duration
+	g         Group
+	sleepDur  time.Duration
+	calledCnt int64
+	totalCnt  int64
 }
 
 const (
@@ -46,14 +48,12 @@ var (
 	}
 )
 
-func (h *helper) Do(parallel int, b *testing.B) Result {
+func (h *helper) Do(parallel int, b *testing.B) {
 	b.Helper()
 
 	var (
-		calledCnt, totalCnt int64
-
 		fn = func() (interface{}, error) {
-			atomic.AddInt64(&calledCnt, 1)
+			atomic.AddInt64(&h.calledCnt, 1)
 			time.Sleep(h.sleepDur)
 			return "", nil
 		}
@@ -62,7 +62,7 @@ func (h *helper) Do(parallel int, b *testing.B) Result {
 	ch := make(chan struct{})
 	go func() {
 		ch <- struct{}{}
-		atomic.AddInt64(&calledCnt, -1)
+		atomic.AddInt64(&h.calledCnt, -1)
 		h.g.Do(context.Background(), "key", fn)
 	}()
 	<-ch
@@ -78,7 +78,7 @@ func (h *helper) Do(parallel int, b *testing.B) Result {
 		var wg sync.WaitGroup
 		for pb.Next() {
 			wg.Add(1)
-			atomic.AddInt64(&totalCnt, 1)
+			atomic.AddInt64(&h.totalCnt, 1)
 			go func() {
 				defer wg.Done()
 				h.g.Do(context.Background(), "key", fn)
@@ -86,24 +86,9 @@ func (h *helper) Do(parallel int, b *testing.B) Result {
 		}
 		wg.Wait()
 	})
-
-	hitCnt := totalCnt - calledCnt
-
-	b.StopTimer()
-
-	b.Logf("Parallel: %d\tTotal Goroutine Count: %d\tHit Count: %d\tHit Rate: %f",
-		parallel,
-		totalCnt,
-		hitCnt,
-		float64(hitCnt)/float64(totalCnt),
-	)
-	return Result{
-		Goroutine: parallel,
-		HitRate:   float64(hitCnt) / float64(totalCnt),
-	}
 }
 
-func Benchmark_group_Do_with_mutex_1(b *testing.B) {
+func Benchmark_group_Do_with_mutex(b *testing.B) {
 	results := make([]Result, 0, len(durs)*maxGoroutine-minGoroutine/goroutineStep)
 	for i := minGoroutine; i <= maxGoroutine; i *= goroutineStep {
 		for _, dur := range durs {
@@ -118,14 +103,63 @@ func Benchmark_group_Do_with_mutex_1(b *testing.B) {
 			b.StartTimer()
 
 			b.Run(fmt.Sprintf("%d %s", i, dur), func(b *testing.B) {
-				res := h.Do(i, b)
-				res.Duration = dur
-				results = append(results, res)
+				h.Do(i, b)
 			})
-			b.StopTimer()
+
+			hitCnt := h.totalCnt - h.calledCnt
+			hitRate := float64(hitCnt) / float64(h.totalCnt)
+
+			b.Logf("Parallel: %d\tTotal Goroutine Count: %d\tHit Count: %d\tHit Rate: %f",
+				i,
+				h.totalCnt,
+				hitCnt,
+				hitRate,
+			)
+			results = append(results, Result{
+				Goroutine: i,
+				Duration:  dur,
+				HitRate:   hitRate,
+			})
 		}
 	}
-	b.StopTimer()
+}
+
+func Benchmark_group_Do_with_mutex_1(b *testing.B) {
+	results := make([]Result, 0, len(durs)*maxGoroutine-minGoroutine/goroutineStep)
+	for i := minGoroutine; i <= maxGoroutine; i *= goroutineStep {
+		for _, dur := range durs {
+			h := &helper{
+				g:        singleflight.New(10),
+				sleepDur: dur,
+			}
+
+			b.Helper()
+			b.StopTimer()
+			b.ReportAllocs()
+			b.ResetTimer()
+			b.StartTimer()
+
+			b.Run(fmt.Sprintf("%d %s", i, dur), func(b *testing.B) {
+				h.Do(i, b)
+			})
+			b.StopTimer()
+
+			hitCnt := h.totalCnt - h.calledCnt
+			hitRate := float64(hitCnt) / float64(h.totalCnt)
+
+			b.Logf("Parallel: %d\tTotal Goroutine Count: %d\tHit Count: %d\tHit Rate: %f",
+				i,
+				h.totalCnt,
+				hitCnt,
+				hitRate,
+			)
+			results = append(results, Result{
+				Goroutine: i,
+				Duration:  dur,
+				HitRate:   hitRate,
+			})
+		}
+	}
 	toCSV("mutex.csv", results)
 }
 
@@ -144,14 +178,26 @@ func Benchmark_group_Do_with_syncMap(b *testing.B) {
 			b.StartTimer()
 
 			b.Run(fmt.Sprintf("%d %s", i, dur), func(b *testing.B) {
-				res := h.Do(i, b)
-				res.Duration = dur
-				results = append(results, res)
+				h.Do(i, b)
 			})
 			b.StopTimer()
+
+			hitCnt := h.totalCnt - h.calledCnt
+			hitRate := float64(hitCnt) / float64(h.totalCnt)
+
+			b.Logf("Parallel: %d\tTotal Goroutine Count: %d\tHit Count: %d\tHit Rate: %f",
+				i,
+				h.totalCnt,
+				hitCnt,
+				hitRate,
+			)
+			results = append(results, Result{
+				Goroutine: i,
+				Duration:  dur,
+				HitRate:   hitRate,
+			})
 		}
 	}
-	b.StopTimer()
 	toCSV("syncmap.csv", results)
 }
 
