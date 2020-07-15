@@ -20,6 +20,7 @@ package service
 import (
 	"context"
 	"reflect"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -34,6 +35,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		cfg *config.NGT
 	}
@@ -88,7 +90,8 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -109,12 +112,14 @@ func TestNew(t *testing.T) {
 }
 
 func Test_ngt_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -160,6 +165,7 @@ func Test_ngt_Start(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -192,6 +198,7 @@ func Test_ngt_Start(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -217,7 +224,8 @@ func Test_ngt_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -230,6 +238,7 @@ func Test_ngt_Start(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -257,6 +266,7 @@ func Test_ngt_Start(t *testing.T) {
 }
 
 func Test_ngt_Search(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		vec     []float32
 		size    uint32
@@ -266,6 +276,7 @@ func Test_ngt_Search(t *testing.T) {
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -318,6 +329,7 @@ func Test_ngt_Search(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -353,6 +365,7 @@ func Test_ngt_Search(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -378,7 +391,8 @@ func Test_ngt_Search(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -391,6 +405,7 @@ func Test_ngt_Search(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -418,6 +433,7 @@ func Test_ngt_Search(t *testing.T) {
 }
 
 func Test_ngt_SearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid    string
 		size    uint32
@@ -427,6 +443,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -479,6 +496,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -514,6 +532,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -539,7 +558,8 @@ func Test_ngt_SearchByID(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -552,6 +572,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -579,6 +600,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 }
 
 func Test_ngt_Insert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid string
 		vec  []float32
@@ -586,6 +608,7 @@ func Test_ngt_Insert(t *testing.T) {
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -632,6 +655,7 @@ func Test_ngt_Insert(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -665,6 +689,7 @@ func Test_ngt_Insert(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -690,7 +715,8 @@ func Test_ngt_Insert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -703,6 +729,7 @@ func Test_ngt_Insert(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -730,6 +757,7 @@ func Test_ngt_Insert(t *testing.T) {
 }
 
 func Test_ngt_insert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid       string
 		vec        []float32
@@ -739,6 +767,7 @@ func Test_ngt_insert(t *testing.T) {
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -787,6 +816,7 @@ func Test_ngt_insert(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -822,6 +852,7 @@ func Test_ngt_insert(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -847,7 +878,8 @@ func Test_ngt_insert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -860,6 +892,7 @@ func Test_ngt_insert(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -887,12 +920,14 @@ func Test_ngt_insert(t *testing.T) {
 }
 
 func Test_ngt_InsertMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		vecs map[string][]float32
 	}
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -938,6 +973,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -970,6 +1006,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -995,7 +1032,8 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1008,6 +1046,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -1035,6 +1074,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 }
 
 func Test_ngt_Update(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid string
 		vec  []float32
@@ -1042,6 +1082,7 @@ func Test_ngt_Update(t *testing.T) {
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -1088,6 +1129,7 @@ func Test_ngt_Update(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -1121,6 +1163,7 @@ func Test_ngt_Update(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -1146,7 +1189,8 @@ func Test_ngt_Update(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1159,6 +1203,7 @@ func Test_ngt_Update(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -1186,12 +1231,14 @@ func Test_ngt_Update(t *testing.T) {
 }
 
 func Test_ngt_UpdateMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		vecs map[string][]float32
 	}
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -1237,6 +1284,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -1269,6 +1317,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -1294,7 +1343,8 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1307,6 +1357,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -1334,12 +1385,14 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 }
 
 func Test_ngt_Delete(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid string
 	}
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -1385,6 +1438,7 @@ func Test_ngt_Delete(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -1417,6 +1471,7 @@ func Test_ngt_Delete(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -1442,7 +1497,8 @@ func Test_ngt_Delete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1455,6 +1511,7 @@ func Test_ngt_Delete(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -1482,6 +1539,7 @@ func Test_ngt_Delete(t *testing.T) {
 }
 
 func Test_ngt_delete(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid string
 		t    int64
@@ -1489,6 +1547,7 @@ func Test_ngt_delete(t *testing.T) {
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -1535,6 +1594,7 @@ func Test_ngt_delete(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -1568,6 +1628,7 @@ func Test_ngt_delete(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -1593,7 +1654,8 @@ func Test_ngt_delete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1606,6 +1668,7 @@ func Test_ngt_delete(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -1633,12 +1696,14 @@ func Test_ngt_delete(t *testing.T) {
 }
 
 func Test_ngt_DeleteMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuids []string
 	}
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -1684,6 +1749,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -1716,6 +1782,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -1741,7 +1808,8 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1754,6 +1822,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -1781,12 +1850,14 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 }
 
 func Test_ngt_GetObject(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid string
 	}
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -1836,6 +1907,7 @@ func Test_ngt_GetObject(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -1868,6 +1940,7 @@ func Test_ngt_GetObject(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -1893,7 +1966,8 @@ func Test_ngt_GetObject(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1906,6 +1980,7 @@ func Test_ngt_GetObject(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -1933,6 +2008,7 @@ func Test_ngt_GetObject(t *testing.T) {
 }
 
 func Test_ngt_CreateIndex(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx      context.Context
 		poolSize uint32
@@ -1940,6 +2016,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -1986,6 +2063,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -2019,6 +2097,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -2044,7 +2123,8 @@ func Test_ngt_CreateIndex(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2057,6 +2137,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -2084,12 +2165,14 @@ func Test_ngt_CreateIndex(t *testing.T) {
 }
 
 func Test_ngt_SaveIndex(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -2135,6 +2218,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -2167,6 +2251,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -2192,7 +2277,8 @@ func Test_ngt_SaveIndex(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2205,6 +2291,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -2232,6 +2319,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 }
 
 func Test_ngt_CreateAndSaveIndex(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx      context.Context
 		poolSize uint32
@@ -2239,6 +2327,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -2285,6 +2374,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -2318,6 +2408,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -2343,7 +2434,8 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2356,6 +2448,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -2383,12 +2476,14 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 }
 
 func Test_ngt_Exists(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid string
 	}
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -2438,6 +2533,7 @@ func Test_ngt_Exists(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -2470,6 +2566,7 @@ func Test_ngt_Exists(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -2495,7 +2592,8 @@ func Test_ngt_Exists(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2508,6 +2606,7 @@ func Test_ngt_Exists(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -2535,12 +2634,14 @@ func Test_ngt_Exists(t *testing.T) {
 }
 
 func Test_ngt_insertCache(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid string
 	}
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -2590,6 +2691,7 @@ func Test_ngt_insertCache(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -2622,6 +2724,7 @@ func Test_ngt_insertCache(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -2647,7 +2750,8 @@ func Test_ngt_insertCache(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2660,6 +2764,7 @@ func Test_ngt_insertCache(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -2687,9 +2792,11 @@ func Test_ngt_insertCache(t *testing.T) {
 }
 
 func Test_ngt_IsIndexing(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -2731,6 +2838,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -2760,6 +2868,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -2785,7 +2894,8 @@ func Test_ngt_IsIndexing(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -2798,6 +2908,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -2825,12 +2936,14 @@ func Test_ngt_IsIndexing(t *testing.T) {
 }
 
 func Test_ngt_UUIDs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -2876,6 +2989,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -2908,6 +3022,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -2933,7 +3048,8 @@ func Test_ngt_UUIDs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2946,6 +3062,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -2973,9 +3090,11 @@ func Test_ngt_UUIDs(t *testing.T) {
 }
 
 func Test_ngt_UncommittedUUIDs(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -3017,6 +3136,7 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -3046,6 +3166,7 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -3071,7 +3192,8 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -3084,6 +3206,7 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -3111,9 +3234,11 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 }
 
 func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -3155,6 +3280,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -3184,6 +3310,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -3209,7 +3336,8 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -3222,6 +3350,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -3249,9 +3378,11 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 }
 
 func Test_ngt_Len(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -3293,6 +3424,7 @@ func Test_ngt_Len(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -3322,6 +3454,7 @@ func Test_ngt_Len(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -3347,7 +3480,8 @@ func Test_ngt_Len(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -3360,6 +3494,7 @@ func Test_ngt_Len(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -3387,9 +3522,11 @@ func Test_ngt_Len(t *testing.T) {
 }
 
 func Test_ngt_InsertVCacheLen(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -3431,6 +3568,7 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -3460,6 +3598,7 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -3485,7 +3624,8 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -3498,6 +3638,7 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -3525,9 +3666,11 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 }
 
 func Test_ngt_DeleteVCacheLen(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -3569,6 +3712,7 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -3598,6 +3742,7 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -3623,7 +3768,8 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -3636,6 +3782,7 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,
@@ -3663,12 +3810,14 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 }
 
 func Test_ngt_Close(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
 		alen     int
 		indexing atomic.Value
+		saveMu   sync.Mutex
 		lim      time.Duration
 		dur      time.Duration
 		sdur     time.Duration
@@ -3714,6 +3863,7 @@ func Test_ngt_Close(t *testing.T) {
 		       fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -3746,6 +3896,7 @@ func Test_ngt_Close(t *testing.T) {
 		           fields: fields {
 		           alen: 0,
 		           indexing: nil,
+		           saveMu: sync.Mutex{},
 		           lim: nil,
 		           dur: nil,
 		           sdur: nil,
@@ -3771,7 +3922,8 @@ func Test_ngt_Close(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -3784,6 +3936,7 @@ func Test_ngt_Close(t *testing.T) {
 			n := &ngt{
 				alen:     test.fields.alen,
 				indexing: test.fields.indexing,
+				saveMu:   test.fields.saveMu,
 				lim:      test.fields.lim,
 				dur:      test.fields.dur,
 				sdur:     test.fields.sdur,

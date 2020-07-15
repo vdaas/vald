@@ -33,6 +33,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -83,6 +84,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -104,6 +106,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_server_Exists(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		meta *payload.Object_ID
@@ -192,6 +195,7 @@ func Test_server_Exists(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -223,6 +227,7 @@ func Test_server_Exists(t *testing.T) {
 }
 
 func Test_server_Search(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_Request
@@ -311,6 +316,7 @@ func Test_server_Search(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -342,6 +348,7 @@ func Test_server_Search(t *testing.T) {
 }
 
 func Test_server_SearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_IDRequest
@@ -430,6 +437,7 @@ func Test_server_SearchByID(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -461,6 +469,7 @@ func Test_server_SearchByID(t *testing.T) {
 }
 
 func Test_server_search(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		cfg *payload.Search_Config
@@ -552,6 +561,7 @@ func Test_server_search(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -583,6 +593,7 @@ func Test_server_search(t *testing.T) {
 }
 
 func Test_server_StreamSearch(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamSearchServer
 	}
@@ -664,6 +675,7 @@ func Test_server_StreamSearch(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -695,6 +707,7 @@ func Test_server_StreamSearch(t *testing.T) {
 }
 
 func Test_server_StreamSearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamSearchByIDServer
 	}
@@ -776,6 +789,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -807,6 +821,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 }
 
 func Test_server_Insert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		vec *payload.Object_Vector
@@ -895,6 +910,7 @@ func Test_server_Insert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -926,6 +942,7 @@ func Test_server_Insert(t *testing.T) {
 }
 
 func Test_server_StreamInsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamInsertServer
 	}
@@ -1007,6 +1024,7 @@ func Test_server_StreamInsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1038,6 +1056,7 @@ func Test_server_StreamInsert(t *testing.T) {
 }
 
 func Test_server_MultiInsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vecs *payload.Object_Vectors
@@ -1126,6 +1145,7 @@ func Test_server_MultiInsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1157,6 +1177,7 @@ func Test_server_MultiInsert(t *testing.T) {
 }
 
 func Test_server_Update(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		vec *payload.Object_Vector
@@ -1245,6 +1266,7 @@ func Test_server_Update(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1276,6 +1298,7 @@ func Test_server_Update(t *testing.T) {
 }
 
 func Test_server_StreamUpdate(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamUpdateServer
 	}
@@ -1357,6 +1380,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1388,6 +1412,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 }
 
 func Test_server_MultiUpdate(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vecs *payload.Object_Vectors
@@ -1476,6 +1501,7 @@ func Test_server_MultiUpdate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1507,6 +1533,7 @@ func Test_server_MultiUpdate(t *testing.T) {
 }
 
 func Test_server_Upsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		vec *payload.Object_Vector
@@ -1595,6 +1622,7 @@ func Test_server_Upsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1626,6 +1654,7 @@ func Test_server_Upsert(t *testing.T) {
 }
 
 func Test_server_StreamUpsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamUpsertServer
 	}
@@ -1707,6 +1736,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1738,6 +1768,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 }
 
 func Test_server_MultiUpsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vecs *payload.Object_Vectors
@@ -1826,6 +1857,7 @@ func Test_server_MultiUpsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1857,6 +1889,7 @@ func Test_server_MultiUpsert(t *testing.T) {
 }
 
 func Test_server_Remove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		id  *payload.Object_ID
@@ -1945,6 +1978,7 @@ func Test_server_Remove(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1976,6 +2010,7 @@ func Test_server_Remove(t *testing.T) {
 }
 
 func Test_server_StreamRemove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamRemoveServer
 	}
@@ -2057,6 +2092,7 @@ func Test_server_StreamRemove(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -2088,6 +2124,7 @@ func Test_server_StreamRemove(t *testing.T) {
 }
 
 func Test_server_MultiRemove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		ids *payload.Object_IDs
@@ -2176,6 +2213,7 @@ func Test_server_MultiRemove(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -2207,6 +2245,7 @@ func Test_server_MultiRemove(t *testing.T) {
 }
 
 func Test_server_GetObject(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		id  *payload.Object_ID
@@ -2295,6 +2334,7 @@ func Test_server_GetObject(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -2326,6 +2366,7 @@ func Test_server_GetObject(t *testing.T) {
 }
 
 func Test_server_StreamGetObject(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamGetObjectServer
 	}
@@ -2407,6 +2448,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)

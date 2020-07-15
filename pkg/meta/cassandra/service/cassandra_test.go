@@ -29,6 +29,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		cfg *config.Cassandra
 	}
@@ -83,7 +84,8 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -104,6 +106,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_client_Connect(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -170,7 +173,8 @@ func Test_client_Connect(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -196,6 +200,7 @@ func Test_client_Connect(t *testing.T) {
 }
 
 func Test_client_Close(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -262,7 +267,8 @@ func Test_client_Close(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -288,6 +294,7 @@ func Test_client_Close(t *testing.T) {
 }
 
 func Test_client_Get(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -358,7 +365,8 @@ func Test_client_Get(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -384,6 +392,7 @@ func Test_client_Get(t *testing.T) {
 }
 
 func Test_client_GetMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		keys []string
 	}
@@ -454,7 +463,8 @@ func Test_client_GetMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -480,6 +490,7 @@ func Test_client_GetMultiple(t *testing.T) {
 }
 
 func Test_client_GetInverse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		val string
 	}
@@ -550,7 +561,8 @@ func Test_client_GetInverse(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -576,6 +588,7 @@ func Test_client_GetInverse(t *testing.T) {
 }
 
 func Test_client_GetInverseMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		vals []string
 	}
@@ -646,7 +659,8 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -672,6 +686,7 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 }
 
 func Test_client_Set(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 		val string
@@ -741,7 +756,8 @@ func Test_client_Set(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -767,6 +783,7 @@ func Test_client_Set(t *testing.T) {
 }
 
 func Test_client_SetMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		kvs map[string]string
 	}
@@ -833,7 +850,8 @@ func Test_client_SetMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -859,6 +877,7 @@ func Test_client_SetMultiple(t *testing.T) {
 }
 
 func Test_client_deleteByKeys(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		keys []string
 	}
@@ -929,7 +948,8 @@ func Test_client_deleteByKeys(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -955,6 +975,7 @@ func Test_client_deleteByKeys(t *testing.T) {
 }
 
 func Test_client_Delete(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -1025,7 +1046,8 @@ func Test_client_Delete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1051,6 +1073,7 @@ func Test_client_Delete(t *testing.T) {
 }
 
 func Test_client_DeleteMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		keys []string
 	}
@@ -1121,7 +1144,8 @@ func Test_client_DeleteMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1147,6 +1171,7 @@ func Test_client_DeleteMultiple(t *testing.T) {
 }
 
 func Test_client_deleteByValues(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		vals []string
 	}
@@ -1217,7 +1242,8 @@ func Test_client_deleteByValues(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1243,6 +1269,7 @@ func Test_client_deleteByValues(t *testing.T) {
 }
 
 func Test_client_DeleteInverse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		val string
 	}
@@ -1313,7 +1340,8 @@ func Test_client_DeleteInverse(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1339,6 +1367,7 @@ func Test_client_DeleteInverse(t *testing.T) {
 }
 
 func Test_client_DeleteInverseMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		vals []string
 	}
@@ -1409,7 +1438,8 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

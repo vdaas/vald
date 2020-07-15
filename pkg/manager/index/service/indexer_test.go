@@ -31,6 +31,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -85,7 +86,8 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -106,6 +108,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_index_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -206,7 +209,8 @@ func Test_index_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -242,6 +246,7 @@ func Test_index_Start(t *testing.T) {
 }
 
 func Test_index_execute(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx                context.Context
 		enableLowIndexSkip bool
@@ -341,7 +346,8 @@ func Test_index_execute(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -377,6 +383,7 @@ func Test_index_execute(t *testing.T) {
 }
 
 func Test_index_loadInfos(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -473,7 +480,8 @@ func Test_index_loadInfos(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -509,6 +517,7 @@ func Test_index_loadInfos(t *testing.T) {
 }
 
 func Test_index_IsIndexing(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		client                discoverer.Client
 		eg                    errgroup.Group
@@ -595,7 +604,8 @@ func Test_index_IsIndexing(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -631,6 +641,7 @@ func Test_index_IsIndexing(t *testing.T) {
 }
 
 func Test_index_NumberOfUUIDs(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		client                discoverer.Client
 		eg                    errgroup.Group
@@ -717,7 +728,8 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -753,6 +765,7 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 }
 
 func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		client                discoverer.Client
 		eg                    errgroup.Group
@@ -839,7 +852,8 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

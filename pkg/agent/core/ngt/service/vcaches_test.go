@@ -28,6 +28,7 @@ import (
 )
 
 func Test_newEntryVCache(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i vcache
 	}
@@ -78,7 +79,8 @@ func Test_newEntryVCache(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -99,6 +101,7 @@ func Test_newEntryVCache(t *testing.T) {
 }
 
 func Test_vcaches_Load(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -175,7 +178,8 @@ func Test_vcaches_Load(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -203,6 +207,7 @@ func Test_vcaches_Load(t *testing.T) {
 }
 
 func Test_entryVCache_load(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -257,7 +262,8 @@ func Test_entryVCache_load(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -281,6 +287,7 @@ func Test_entryVCache_load(t *testing.T) {
 }
 
 func Test_vcaches_Store(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key   string
 		value vcache
@@ -352,7 +359,8 @@ func Test_vcaches_Store(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -379,6 +387,7 @@ func Test_vcaches_Store(t *testing.T) {
 }
 
 func Test_entryVCache_tryStore(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i *vcache
 	}
@@ -439,7 +448,8 @@ func Test_entryVCache_tryStore(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -463,6 +473,7 @@ func Test_entryVCache_tryStore(t *testing.T) {
 }
 
 func Test_entryVCache_unexpungeLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -513,7 +524,8 @@ func Test_entryVCache_unexpungeLocked(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -537,6 +549,7 @@ func Test_entryVCache_unexpungeLocked(t *testing.T) {
 }
 
 func Test_entryVCache_storeLocked(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i *vcache
 	}
@@ -593,7 +606,8 @@ func Test_entryVCache_storeLocked(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -616,6 +630,7 @@ func Test_entryVCache_storeLocked(t *testing.T) {
 }
 
 func Test_vcaches_Delete(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -684,7 +699,8 @@ func Test_vcaches_Delete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -711,6 +727,7 @@ func Test_vcaches_Delete(t *testing.T) {
 }
 
 func Test_entryVCache_delete(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -761,7 +778,8 @@ func Test_entryVCache_delete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -785,6 +803,7 @@ func Test_entryVCache_delete(t *testing.T) {
 }
 
 func Test_vcaches_Range(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		f func(key string, value vcache) bool
 	}
@@ -853,7 +872,8 @@ func Test_vcaches_Range(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -880,6 +900,7 @@ func Test_vcaches_Range(t *testing.T) {
 }
 
 func Test_vcaches_missLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		length uint64
 		mu     sync.Mutex
@@ -938,7 +959,8 @@ func Test_vcaches_missLocked(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -965,6 +987,7 @@ func Test_vcaches_missLocked(t *testing.T) {
 }
 
 func Test_vcaches_dirtyLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		length uint64
 		mu     sync.Mutex
@@ -1023,7 +1046,8 @@ func Test_vcaches_dirtyLocked(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1050,6 +1074,7 @@ func Test_vcaches_dirtyLocked(t *testing.T) {
 }
 
 func Test_entryVCache_tryExpungeLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -1100,7 +1125,8 @@ func Test_entryVCache_tryExpungeLocked(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1124,6 +1150,7 @@ func Test_entryVCache_tryExpungeLocked(t *testing.T) {
 }
 
 func Test_vcaches_Len(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		length uint64
 		mu     sync.Mutex
@@ -1186,7 +1213,8 @@ func Test_vcaches_Len(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

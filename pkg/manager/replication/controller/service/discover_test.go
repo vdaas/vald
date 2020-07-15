@@ -33,6 +33,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -87,7 +88,8 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -108,6 +110,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_replicator_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -193,7 +196,8 @@ func Test_replicator_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -224,6 +228,7 @@ func Test_replicator_Start(t *testing.T) {
 }
 
 func Test_replicator_GetCurrentPodIPs(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		pods      atomic.Value
 		ctrl      k8s.Controller
@@ -299,7 +304,8 @@ func Test_replicator_GetCurrentPodIPs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -330,6 +336,7 @@ func Test_replicator_GetCurrentPodIPs(t *testing.T) {
 }
 
 func Test_replicator_SendRecoveryRequest(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -411,7 +418,8 @@ func Test_replicator_SendRecoveryRequest(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

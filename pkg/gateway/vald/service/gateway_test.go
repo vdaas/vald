@@ -31,6 +31,7 @@ import (
 )
 
 func TestNewGateway(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []GWOption
 	}
@@ -85,6 +86,7 @@ func TestNewGateway(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -106,6 +108,7 @@ func TestNewGateway(t *testing.T) {
 }
 
 func Test_gateway_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -173,6 +176,7 @@ func Test_gateway_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -198,6 +202,7 @@ func Test_gateway_Start(t *testing.T) {
 }
 
 func Test_gateway_BroadCast(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		f   func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) error
@@ -264,6 +269,7 @@ func Test_gateway_BroadCast(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -289,6 +295,7 @@ func Test_gateway_BroadCast(t *testing.T) {
 }
 
 func Test_gateway_Do(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		f   func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) error
@@ -355,6 +362,7 @@ func Test_gateway_Do(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -380,6 +388,7 @@ func Test_gateway_Do(t *testing.T) {
 }
 
 func Test_gateway_DoMulti(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		num int
@@ -449,6 +458,7 @@ func Test_gateway_DoMulti(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -474,6 +484,7 @@ func Test_gateway_DoMulti(t *testing.T) {
 }
 
 func Test_gateway_GetAgentCount(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -537,6 +548,7 @@ func Test_gateway_GetAgentCount(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)

@@ -30,6 +30,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		cfg *config.MySQL
 	}
@@ -84,7 +85,8 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -105,6 +107,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_client_Connect(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -168,7 +171,8 @@ func Test_client_Connect(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -193,6 +197,7 @@ func Test_client_Connect(t *testing.T) {
 }
 
 func Test_client_Close(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -256,7 +261,8 @@ func Test_client_Close(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -281,6 +287,7 @@ func Test_client_Close(t *testing.T) {
 }
 
 func Test_client_GetMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
@@ -351,7 +358,8 @@ func Test_client_GetMeta(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -376,6 +384,7 @@ func Test_client_GetMeta(t *testing.T) {
 }
 
 func Test_client_GetIPs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
@@ -446,7 +455,8 @@ func Test_client_GetIPs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -471,6 +481,7 @@ func Test_client_GetIPs(t *testing.T) {
 }
 
 func Test_client_SetMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		meta *model.MetaVector
@@ -537,7 +548,8 @@ func Test_client_SetMeta(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -562,6 +574,7 @@ func Test_client_SetMeta(t *testing.T) {
 }
 
 func Test_client_SetMetas(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		metas []*model.MetaVector
@@ -628,7 +641,8 @@ func Test_client_SetMetas(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -653,6 +667,7 @@ func Test_client_SetMetas(t *testing.T) {
 }
 
 func Test_client_DeleteMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
@@ -719,7 +734,8 @@ func Test_client_DeleteMeta(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -744,6 +760,7 @@ func Test_client_DeleteMeta(t *testing.T) {
 }
 
 func Test_client_DeleteMetas(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		uuids []string
@@ -810,7 +827,8 @@ func Test_client_DeleteMetas(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -835,6 +853,7 @@ func Test_client_DeleteMetas(t *testing.T) {
 }
 
 func Test_client_SetIPs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
@@ -904,7 +923,8 @@ func Test_client_SetIPs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -929,6 +949,7 @@ func Test_client_SetIPs(t *testing.T) {
 }
 
 func Test_client_RemoveIPs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		ips []string
@@ -995,7 +1016,8 @@ func Test_client_RemoveIPs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

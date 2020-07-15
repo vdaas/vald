@@ -30,6 +30,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -80,7 +81,8 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -101,6 +103,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_server_GetMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		key *payload.Meta_Key
@@ -168,7 +171,8 @@ func Test_server_GetMeta(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -192,6 +196,7 @@ func Test_server_GetMeta(t *testing.T) {
 }
 
 func Test_server_GetMetas(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		keys *payload.Meta_Keys
@@ -259,7 +264,8 @@ func Test_server_GetMetas(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -283,6 +289,7 @@ func Test_server_GetMetas(t *testing.T) {
 }
 
 func Test_server_GetMetaInverse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		val *payload.Meta_Val
@@ -350,7 +357,8 @@ func Test_server_GetMetaInverse(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -374,6 +382,7 @@ func Test_server_GetMetaInverse(t *testing.T) {
 }
 
 func Test_server_GetMetasInverse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vals *payload.Meta_Vals
@@ -441,7 +450,8 @@ func Test_server_GetMetasInverse(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -465,6 +475,7 @@ func Test_server_GetMetasInverse(t *testing.T) {
 }
 
 func Test_server_SetMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		kv  *payload.Meta_KeyVal
@@ -532,7 +543,8 @@ func Test_server_SetMeta(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -556,6 +568,7 @@ func Test_server_SetMeta(t *testing.T) {
 }
 
 func Test_server_SetMetas(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		kvs *payload.Meta_KeyVals
@@ -623,7 +636,8 @@ func Test_server_SetMetas(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -647,6 +661,7 @@ func Test_server_SetMetas(t *testing.T) {
 }
 
 func Test_server_DeleteMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		key *payload.Meta_Key
@@ -714,7 +729,8 @@ func Test_server_DeleteMeta(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -738,6 +754,7 @@ func Test_server_DeleteMeta(t *testing.T) {
 }
 
 func Test_server_DeleteMetas(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		keys *payload.Meta_Keys
@@ -805,7 +822,8 @@ func Test_server_DeleteMetas(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -829,6 +847,7 @@ func Test_server_DeleteMetas(t *testing.T) {
 }
 
 func Test_server_DeleteMetaInverse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		val *payload.Meta_Val
@@ -896,7 +915,8 @@ func Test_server_DeleteMetaInverse(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -920,6 +940,7 @@ func Test_server_DeleteMetaInverse(t *testing.T) {
 }
 
 func Test_server_DeleteMetasInverse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vals *payload.Meta_Vals
@@ -987,7 +1008,8 @@ func Test_server_DeleteMetasInverse(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

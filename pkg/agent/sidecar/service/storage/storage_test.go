@@ -33,6 +33,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -87,6 +88,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -108,6 +110,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_bs_initCompressor(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		eg                errgroup.Group
 		storageType       string
@@ -188,6 +191,7 @@ func Test_bs_initCompressor(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -222,6 +226,7 @@ func Test_bs_initCompressor(t *testing.T) {
 }
 
 func Test_bs_initBucket(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		eg                errgroup.Group
 		storageType       string
@@ -302,6 +307,7 @@ func Test_bs_initBucket(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -336,6 +342,7 @@ func Test_bs_initBucket(t *testing.T) {
 }
 
 func Test_bs_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -430,6 +437,7 @@ func Test_bs_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -464,6 +472,7 @@ func Test_bs_Start(t *testing.T) {
 }
 
 func Test_bs_Reader(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -558,6 +567,7 @@ func Test_bs_Reader(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -592,6 +602,7 @@ func Test_bs_Reader(t *testing.T) {
 }
 
 func Test_bs_Writer(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -686,6 +697,7 @@ func Test_bs_Writer(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
