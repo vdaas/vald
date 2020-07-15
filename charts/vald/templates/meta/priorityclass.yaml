@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.meta.enabled .Values.meta.podPriority.enabled }}
+{{- $meta := .Values.meta -}}
+{{- if and $meta.enabled $meta.podPriority.enabled }}
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
-  name: {{ .Values.meta.name }}-priority
+  name: {{ $meta.name }}-priority
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
@@ -25,7 +26,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: meta
-value: {{ .Values.meta.podPriority.value }}
+value: {{ $meta.podPriority.value }}
 globalDefault: false
 description: "A priority class for Vald meta."
 {{- end }}
