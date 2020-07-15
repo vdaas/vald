@@ -14,7 +14,7 @@ import (
 
 type Result struct {
 	Goroutine int           `csv:"goroutine"`
-	Duration  time.Duration `csv:"duration"`
+	Duration  int64 `csv:"duration"`
 	HitRate   float64       `csv:"hit_rate"`
 }
 
@@ -119,7 +119,7 @@ func Benchmark_group_Do_with_mutex_1(b *testing.B) {
 			)
 			results = append(results, Result{
 				Goroutine: i,
-				Duration:  dur,
+				Duration:  dur.Nanoseconds(),
 				HitRate:   hitRate,
 			})
 		}
@@ -157,7 +157,7 @@ func Benchmark_group_Do_with_syncMap(b *testing.B) {
 			)
 			results = append(results, Result{
 				Goroutine: i,
-				Duration:  dur,
+				Duration:  dur.Nanoseconds(),
 				HitRate:   hitRate,
 			})
 		}
@@ -171,7 +171,7 @@ func toCSV(name string, r []Result) error {
 		return err
 	}
 	defer f.Close()
-	_, err = fmt.Fprint(f, "goroutine,duration,hit_rate")
+	_, err = fmt.Fprintln(f, "goroutine,duration,hit_rate")
 	for _, res := range r {
 		_, err = fmt.Fprintf(f, "%d,%v,%f\n", res.Goroutine, res.Duration, res.HitRate)
 		if err != nil {
