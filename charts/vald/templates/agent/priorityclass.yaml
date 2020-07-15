@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.agent.enabled .Values.agent.podPriority.enabled }}
+{{- $agent := .Values.agent -}}
+{{- if and $agent.enabled $agent.podPriority.enabled }}
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
-  name: {{ .Values.agent.name }}-priority
+  name: {{ $agent.name }}-priority
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
@@ -25,7 +26,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: agent
-value: {{ .Values.agent.podPriority.value }}
+value: {{ $agent.podPriority.value }}
 preemptionPolicy: Never
 globalDefault: false
 description: "A priority class for Vald agent."
