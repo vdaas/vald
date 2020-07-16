@@ -79,7 +79,6 @@ func TestNew(t *testing.T) {
 				want: want{
 					wantC: c,
 				},
-				checkFunc: defaultCheckFunc,
 			}
 		}(),
 		func() test {
@@ -102,7 +101,6 @@ func TestNew(t *testing.T) {
 				want: want{
 					wantC: c,
 				},
-				checkFunc: defaultCheckFunc,
 			}
 		}(),
 	}
@@ -167,7 +165,6 @@ func Test_cache_Start(t *testing.T) {
 				expireCheckDur: 1 * time.Second,
 				expiredHook:    nil,
 			},
-			checkFunc: defaultCheckFunc,
 		},
 	}
 
@@ -245,7 +242,6 @@ func Test_cache_Get(t *testing.T) {
 				want:  nil,
 				want1: false,
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
 			name: "Call Get when gache is not empty",
@@ -265,7 +261,6 @@ func Test_cache_Get(t *testing.T) {
 			beforeFunc: func(args args, c *cache) {
 				c.Set(args.key, "vald")
 			},
-			checkFunc: defaultCheckFunc,
 		},
 	}
 
@@ -348,7 +343,6 @@ func Test_cache_Set(t *testing.T) {
 				want:  "vald",
 				want1: true,
 			},
-			checkFunc: defaultCheckFunc,
 		},
 	}
 
@@ -430,7 +424,6 @@ func Test_cache_Delete(t *testing.T) {
 				want:  nil,
 				want1: false,
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
 			name: "Call Delete when gache is not empty",
@@ -451,7 +444,6 @@ func Test_cache_Delete(t *testing.T) {
 			beforeFunc: func(args args, c *cache) {
 				c.Set(args.key, "vald")
 			},
-			checkFunc: defaultCheckFunc,
 		},
 	}
 
@@ -530,7 +522,6 @@ func Test_cache_GetAndDelete(t *testing.T) {
 				want:  nil,
 				want1: false,
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
 			name: "Call GetAndDelete when gache is not empty",
@@ -550,7 +541,6 @@ func Test_cache_GetAndDelete(t *testing.T) {
 			beforeFunc: func(args args, c *cache) {
 				c.Set(args.key, "vald")
 			},
-			checkFunc: defaultCheckFunc,
 		},
 	}
 
