@@ -52,8 +52,9 @@ func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, erro
 	c := actual.(*call)
 	if loaded {
 		c.wg.Wait()
+		v, err = c.val, c.err
 		atomic.AddUint64(&c.dups, 1)
-		return c.val, true, c.err
+		return v, true, err
 	}
 
 	c.wg.Add(1)
