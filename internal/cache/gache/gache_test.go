@@ -56,7 +56,7 @@ func TestNew(t *testing.T) {
 			cmp.AllowUnexported(*w.wantC),
 			cmp.AllowUnexported(*gotC),
 			cmp.Comparer(func(want, got *cache) bool {
-				return want.gache != nil && got.gache != nil && want.expireDur == got.expireDur && want.expireCheckDur == got.expireCheckDur
+				return want.gache != nil && got.gache != nil
 			}),
 		}
 		if diff := cmp.Diff(w.wantC, gotC, opts...); diff != "" {
