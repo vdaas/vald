@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
+// Option represents the functional option for cache.
 type Option func(*cache)
 
 var (
@@ -34,6 +35,7 @@ var (
 	}
 )
 
+// WithExpiredHook returns Option after set expiredHook when f is not nil.
 func WithExpiredHook(f func(context.Context, string)) Option {
 	return func(c *cache) {
 		if f != nil {
@@ -42,6 +44,7 @@ func WithExpiredHook(f func(context.Context, string)) Option {
 	}
 }
 
+// WithType returns Option after set cacher when len(mo string) is not nil.
 func WithType(mo string) Option {
 	return func(c *cache) {
 		if len(mo) == 0 {
@@ -52,6 +55,7 @@ func WithType(mo string) Option {
 	}
 }
 
+// WithExpireDuration returns Option after set expireDur when dur is cprrect param.
 func WithExpireDuration(dur string) Option {
 	return func(c *cache) {
 		if len(dur) == 0 {
@@ -65,6 +69,7 @@ func WithExpireDuration(dur string) Option {
 	}
 }
 
+// WithExpireCheckDuration returns Option after set expireCheckDur when dur is cprrect param.
 func WithExpireCheckDuration(dur string) Option {
 	return func(c *cache) {
 		if len(dur) == 0 {
