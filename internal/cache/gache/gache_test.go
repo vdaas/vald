@@ -55,12 +55,15 @@ func TestNew(t *testing.T) {
 		opts := []cmp.Option{
 			cmp.AllowUnexported(*w.wantC),
 			cmp.AllowUnexported(*gotC),
-			cmp.Comparer(func(want, got *cache) bool {
-				return want.gache != nil && got.gache != nil
+			cmp.Comparer(func(want, got gache.Gache) bool {
+				return want != nil && got != nil
 			}),
 		}
 		if diff := cmp.Diff(w.wantC, gotC, opts...); diff != "" {
-			return errors.Errorf("got = %v, want %v", gotC, w.wantC)
+			if reflect.ValueOf(w.wantC.expiredHook).Pointer() != reflect.ValueOf(gotC.expiredHook).Pointer() {
+				return errors.Errorf("got = %v, want %v", gotC, w.wantC)
+
+			}
 		}
 		return nil
 	}
