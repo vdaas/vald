@@ -304,17 +304,27 @@ func Test_cache_Set(t *testing.T) {
 		expiredHook    func(context.Context, string)
 	}
 	type want struct {
+		key   string
+		want  interface{}
+		want1 bool
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want) error
+		checkFunc  func(want, *cache) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(w want, c *cache) error {
+		got, got1 := c.Get(w.key)
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want = %v", got, w.want)
+		}
+		if !reflect.DeepEqual(got1, w.want1) {
+			return errors.Errorf("got = %v, want = %v", got1, w.want1)
+		}
 		return nil
 	}
 	tests := []test{
@@ -329,6 +339,11 @@ func Test_cache_Set(t *testing.T) {
 				expireDur:      1 * time.Second,
 				expireCheckDur: 1 * time.Second,
 				expiredHook:    nil,
+			},
+			want: want{
+				key:   "vdaas",
+				want:  "vald",
+				want1: true,
 			},
 			checkFunc: defaultCheckFunc,
 		},
@@ -354,7 +369,7 @@ func Test_cache_Set(t *testing.T) {
 			}
 
 			c.Set(test.args.key, test.args.val)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(test.want, c); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -372,17 +387,27 @@ func Test_cache_Delete(t *testing.T) {
 		expiredHook    func(context.Context, string)
 	}
 	type want struct {
+		key   string
+		want  interface{}
+		want1 bool
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want) error
+		checkFunc  func(want, *cache) error
 		beforeFunc func(args, *cache)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(w want, c *cache) error {
+		got, got1 := c.Get(w.key)
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want = %v", got, w.want)
+		}
+		if !reflect.DeepEqual(got1, w.want1) {
+			return errors.Errorf("got = %v, want = %v", got1, w.want1)
+		}
 		return nil
 	}
 	tests := []test{
@@ -397,6 +422,11 @@ func Test_cache_Delete(t *testing.T) {
 				expireCheckDur: 1 * time.Second,
 				expiredHook:    nil,
 			},
+			want: want{
+				key:   "vdaas",
+				want:  nil,
+				want1: false,
+			},
 			checkFunc: defaultCheckFunc,
 		},
 		{
@@ -409,6 +439,11 @@ func Test_cache_Delete(t *testing.T) {
 				expireDur:      1 * time.Second,
 				expireCheckDur: 1 * time.Second,
 				expiredHook:    nil,
+			},
+			want: want{
+				key:   "vdaas",
+				want:  nil,
+				want1: false,
 			},
 			beforeFunc: func(args args, c *cache) {
 				c.Set(args.key, "vald")
@@ -437,7 +472,7 @@ func Test_cache_Delete(t *testing.T) {
 			}
 
 			c.Delete(test.args.key)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(test.want, c); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -489,7 +524,7 @@ func Test_cache_GetAndDelete(t *testing.T) {
 				expiredHook:    nil,
 			},
 			want: want{
-				want: nil,
+				want:  nil,
 				want1: false,
 			},
 			checkFunc: defaultCheckFunc,
@@ -506,7 +541,7 @@ func Test_cache_GetAndDelete(t *testing.T) {
 				expiredHook:    nil,
 			},
 			want: want{
-				want: "vald",
+				want:  "vald",
 				want1: true,
 			},
 			beforeFunc: func(args args, c *cache) {
