@@ -26,6 +26,13 @@ import (
 	"go.uber.org/goleak"
 )
 
+var (
+	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+	goleakIgnoreOptions = []goleak.Option{
+		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	}
+)
+
 func TestNew(t *testing.T) {
 	type args struct {
 		opts []Option
@@ -52,36 +59,61 @@ func TestNew(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "return gache cacher",
+			args: args{
+				opts: []Option{WithType("gache")},
+			},
+			checkFunc: func(w want, got Cache, err error) error {
+				if err != nil {
+					return err
+				}
+				if got == nil {
+					return errors.New("got cache is nil")
+				}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+				return nil
+			},
+		},
+		{
+			name: "return unknown error when type is unknown",
+			args: args{
+				opts: []Option{WithType("unknown")},
+			},
+			want: want{
+				err: errors.ErrInvalidCacherType,
+			},
+		},
+		{
+			name: "return cache when type is empty",
+			args: args{
+				opts: []Option{WithType("")},
+			},
+			checkFunc: func(w want, got Cache, err error) error {
+				if err != nil {
+					return err
+				}
+				if got == nil {
+					return errors.New("got cache is nil")
+				}
+
+				return nil
+			},
+		},
+		{
+			name: "return unknown error when type is dummy string",
+			args: args{
+				opts: []Option{WithType("dummy")},
+			},
+			want: want{
+				err: errors.ErrInvalidCacherType,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
