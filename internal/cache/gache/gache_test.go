@@ -58,12 +58,12 @@ func TestNew(t *testing.T) {
 			cmp.Comparer(func(want, got gache.Gache) bool {
 				return want != nil && got != nil
 			}),
+			cmp.Comparer(func(want, got func(context.Context, string)) bool {
+				return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
+			}),
 		}
 		if diff := cmp.Diff(w.wantC, gotC, opts...); diff != "" {
-			if reflect.ValueOf(w.wantC.expiredHook).Pointer() != reflect.ValueOf(gotC.expiredHook).Pointer() {
-				return errors.Errorf("got = %v, want %v", gotC, w.wantC)
-
-			}
+			return errors.Errorf("got = %v, want %v", gotC, w.wantC)
 		}
 		return nil
 	}
