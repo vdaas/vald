@@ -19,8 +19,8 @@ package service
 
 import (
 	"context"
+	"reflect"
 
-	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/errors"
 )
@@ -52,34 +52,26 @@ type Cassandra interface {
 }
 
 type client struct {
-	db      cassandra.Cassandra
-	kvTable string
-	vkTable string
+	db            cassandra.Cassandra
+	kvTable       string
+	vkTable       string
+	cassandraOpts []cassandra.Option
 }
 
-func New(cfg *config.Cassandra) (Cassandra, error) {
-	opts, err := cfg.Opts()
+func New(opts ...Option) (cas Cassandra, err error) {
+	c := new(client)
+	for _, opt := range append(defaultOpts, opts...) {
+		if err := opt(c); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
+	}
+
+	c.db, err = cassandra.New(c.cassandraOpts...)
 	if err != nil {
 		return nil, err
 	}
 
-	db, err := cassandra.New(opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	if cfg.KVTable == "" {
-		cfg.KVTable = "kv"
-	}
-	if cfg.VKTable == "" {
-		cfg.VKTable = "vk"
-	}
-
-	return &client{
-		db:      db,
-		kvTable: cfg.KVTable,
-		vkTable: cfg.VKTable,
-	}, nil
+	return c, nil
 }
 
 func (c *client) Connect(ctx context.Context) error {
