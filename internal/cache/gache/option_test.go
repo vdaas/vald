@@ -30,13 +30,6 @@ import (
 	"go.uber.org/goleak"
 )
 
-var (
-	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-	goleakIgnoreOptions = []goleak.Option{
-		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-	}
-)
-
 func TestDefaultOptions(t *testing.T) {
 	type args struct{}
 	type want struct {

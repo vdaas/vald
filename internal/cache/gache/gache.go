@@ -31,6 +31,7 @@ type cache struct {
 	expiredHook    func(context.Context, string)
 }
 
+// New loads a cache model and returns a new cache struct.
 func New(opts ...Option) (c *cache) {
 	c = new(cache)
 	for _, opt := range append(defaultOptions(), opts...) {
@@ -45,19 +46,28 @@ func New(opts ...Option) (c *cache) {
 	return c
 }
 
+// Start calls StartExpired func of c.gache.
 func (c *cache) Start(ctx context.Context) {
 	c.gache.StartExpired(ctx, c.expireCheckDur)
 }
+
+// Get calls StartExpired func of c.gache and returns (interface{}, bool) according to key.
 func (c *cache) Get(key string) (interface{}, bool) {
 	return c.gache.Get(key)
 }
+
+// Set calls Set func of c.gache.
 func (c *cache) Set(key string, val interface{}) {
 	c.gache.Set(key, val)
 }
+
+// Delete calls Delete func of c.gache.
 func (c *cache) Delete(key string) {
 	c.gache.Delete(key)
 }
 
+// GetAndDelete returns (interface{}, bool) and delete value according to key when value of key is set.
+// When value of key is not set, returns (nil, false).
 func (c *cache) GetAndDelete(key string) (interface{}, bool) {
 	v, ok := c.gache.Get(key)
 	if !ok {
