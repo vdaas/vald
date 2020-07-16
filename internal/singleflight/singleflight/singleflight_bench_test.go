@@ -3,6 +3,7 @@ package singleflight
 import (
 	"context"
 	"fmt"
+	"math"
 	"os"
 	"sync"
 	"sync/atomic"
@@ -13,9 +14,9 @@ import (
 )
 
 type Result struct {
-	Goroutine int           `csv:"goroutine"`
-	Duration  int64 `csv:"duration"`
-	HitRate   float64       `csv:"hit_rate"`
+	Goroutine int     `csv:"goroutine"`
+	Duration  int64   `csv:"duration"`
+	HitRate   float64 `csv:"hit_rate"`
 }
 
 type helper struct {
@@ -29,6 +30,7 @@ const (
 	minGoroutine  = 10
 	maxGoroutine  = 10000
 	goroutineStep = 10
+	tryCnt        = 5
 )
 
 var (
@@ -89,80 +91,147 @@ func (h *helper) Do(parallel int, b *testing.B) {
 }
 
 func Benchmark_group_Do_with_mutex_1(b *testing.B) {
-	results := make([]Result, 0, len(durs)*maxGoroutine-minGoroutine/goroutineStep)
+	const (
+		dispersionCSV = "mutex_dispersion.csv"
+		averageCSV    = "mutex_average.csv"
+	)
+	resultsmap := make(map[string][]Result)
 	for i := minGoroutine; i <= maxGoroutine; i *= goroutineStep {
 		for _, dur := range durs {
-			h := &helper{
-				g:        singleflight.New(10),
-				sleepDur: dur,
+			results := make([]Result, 0, tryCnt)
+			for j := 0; j < tryCnt; j++ {
+				h := &helper{
+					g:        singleflight.New(10),
+					sleepDur: dur,
+				}
+
+				b.Helper()
+				b.StopTimer()
+				b.ReportAllocs()
+				b.ResetTimer()
+				b.StartTimer()
+
+				b.Run(fmt.Sprintf("%d %s", i, dur), func(b *testing.B) {
+					h.Do(i, b)
+				})
+				b.StopTimer()
+
+				hitCnt := h.totalCnt - h.calledCnt
+				hitRate := float64(hitCnt) / float64(h.totalCnt)
+
+				b.Logf("Parallel: %d\tTotal Goroutine Count: %d\tHit Count: %d\tHit Rate: %f",
+					i,
+					h.totalCnt,
+					hitCnt,
+					hitRate,
+				)
+				results = append(results, Result{
+					Goroutine: i,
+					Duration:  dur.Nanoseconds(),
+					HitRate:   hitRate,
+				})
 			}
 
-			b.Helper()
-			b.StopTimer()
-			b.ReportAllocs()
-			b.ResetTimer()
-			b.StartTimer()
-
-			b.Run(fmt.Sprintf("%d %s", i, dur), func(b *testing.B) {
-				h.Do(i, b)
-			})
-			b.StopTimer()
-
-			hitCnt := h.totalCnt - h.calledCnt
-			hitRate := float64(hitCnt) / float64(h.totalCnt)
-
-			b.Logf("Parallel: %d\tTotal Goroutine Count: %d\tHit Count: %d\tHit Rate: %f",
-				i,
-				h.totalCnt,
-				hitCnt,
-				hitRate,
+			resultsmap[averageCSV] = append(
+				resultsmap[averageCSV],
+				calcAverage(results),
 			)
-			results = append(results, Result{
-				Goroutine: i,
-				Duration:  dur.Nanoseconds(),
-				HitRate:   hitRate,
-			})
+			resultsmap[dispersionCSV] = append(
+				resultsmap[dispersionCSV],
+				calcAverage(results),
+			)
 		}
 	}
-	toCSV("mutex.csv", results)
+
+	for name, results := range resultsmap {
+		toCSV(name, results)
+	}
+}
+
+func calcAverage(in []Result) (out Result) {
+	var sum float64
+	for i, r := range in {
+		if i == 0 {
+			out.Goroutine = r.Goroutine
+			out.Duration = r.Duration
+		}
+		sum += r.HitRate
+	}
+	out.HitRate = sum / float64(len(in))
+
+	return
+}
+
+func calcDispersion(in []Result) (out Result) {
+	aveResult := calcAverage(in)
+
+	var sum float64
+	for i, r := range in {
+		if i == 0 {
+			out.Goroutine = r.Goroutine
+			out.Duration = r.Duration
+		}
+		sum += math.Pow(r.HitRate-aveResult.HitRate, 2)
+	}
+	out.HitRate = sum / float64(len(in))
+
+	return
 }
 
 func Benchmark_group_Do_with_syncMap(b *testing.B) {
-	results := make([]Result, 0, len(durs)*maxGoroutine-minGoroutine/goroutineStep)
+	const (
+		dispersionCSV = "syncmap_dispersion.csv"
+		averageCSV    = "syncmap_average.csv"
+	)
+	resultsmap := make(map[string][]Result)
 	for i := minGoroutine; i <= maxGoroutine; i *= goroutineStep {
 		for _, dur := range durs {
-			h := &helper{
-				g:        New(),
-				sleepDur: dur,
+			results := make([]Result, 0, tryCnt)
+			for j := 0; j < tryCnt; j++ {
+				h := &helper{
+					g:        New(),
+					sleepDur: dur,
+				}
+
+				b.StopTimer()
+				b.ReportAllocs()
+				b.ResetTimer()
+				b.StartTimer()
+
+				b.Run(fmt.Sprintf("%d %s", i, dur), func(b *testing.B) {
+					h.Do(i, b)
+				})
+				b.StopTimer()
+
+				hitCnt := h.totalCnt - h.calledCnt
+				hitRate := float64(hitCnt) / float64(h.totalCnt)
+
+				b.Logf("Parallel: %d\tTotal Goroutine Count: %d\tHit Count: %d\tHit Rate: %f",
+					i,
+					h.totalCnt,
+					hitCnt,
+					hitRate,
+				)
+				results = append(results, Result{
+					Goroutine: i,
+					Duration:  dur.Nanoseconds(),
+					HitRate:   hitRate,
+				})
 			}
 
-			b.StopTimer()
-			b.ReportAllocs()
-			b.ResetTimer()
-			b.StartTimer()
-
-			b.Run(fmt.Sprintf("%d %s", i, dur), func(b *testing.B) {
-				h.Do(i, b)
-			})
-			b.StopTimer()
-
-			hitCnt := h.totalCnt - h.calledCnt
-			hitRate := float64(hitCnt) / float64(h.totalCnt)
-
-			b.Logf("Parallel: %d\tTotal Goroutine Count: %d\tHit Count: %d\tHit Rate: %f",
-				i,
-				h.totalCnt,
-				hitCnt,
-				hitRate,
+			resultsmap[averageCSV] = append(
+				resultsmap[averageCSV],
+				calcAverage(results),
 			)
-			results = append(results, Result{
-				Goroutine: i,
-				Duration:  dur.Nanoseconds(),
-				HitRate:   hitRate,
-			})
+			resultsmap[dispersionCSV] = append(
+				resultsmap[dispersionCSV],
+				calcAverage(results),
+			)
 		}
 	}
-	toCSV("syncmap.csv", results)
+	for name, results := range resultsmap {
+		toCSV(name, results)
+	}
 }
 
 func toCSV(name string, r []Result) error {
