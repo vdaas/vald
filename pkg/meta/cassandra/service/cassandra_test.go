@@ -22,20 +22,18 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/errors"
-
 	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
 	type args struct {
-		cfg *config.Cassandra
+		opts []Option
 	}
 	type want struct {
-		want Cassandra
-		err  error
+		wantCas Cassandra
+		err     error
 	}
 	type test struct {
 		name       string
@@ -45,12 +43,12 @@ func TestNew(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Cassandra, err error) error {
+	defaultCheckFunc := func(w want, gotCas Cassandra, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+		if !reflect.DeepEqual(gotCas, w.wantCas) {
+			return errors.Errorf("got = %v, want %v", gotCas, w.wantCas)
 		}
 		return nil
 	}
@@ -60,7 +58,7 @@ func TestNew(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           cfg: nil,
+		           opts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -73,7 +71,7 @@ func TestNew(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           cfg: nil,
+		           opts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -84,7 +82,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -95,8 +93,8 @@ func TestNew(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got, err := New(test.args.cfg)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			gotCas, err := New(test.args.opts...)
+			if err := test.checkFunc(test.want, gotCas, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -109,9 +107,10 @@ func Test_client_Connect(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		db      cassandra.Cassandra
-		kvTable string
-		vkTable string
+		db            cassandra.Cassandra
+		kvTable       string
+		vkTable       string
+		cassandraOpts []cassandra.Option
 	}
 	type want struct {
 		err error
@@ -143,6 +142,7 @@ func Test_client_Connect(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -161,6 +161,7 @@ func Test_client_Connect(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -171,7 +172,7 @@ func Test_client_Connect(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -182,9 +183,10 @@ func Test_client_Connect(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:      test.fields.db,
-				kvTable: test.fields.kvTable,
-				vkTable: test.fields.vkTable,
+				db:            test.fields.db,
+				kvTable:       test.fields.kvTable,
+				vkTable:       test.fields.vkTable,
+				cassandraOpts: test.fields.cassandraOpts,
 			}
 
 			err := c.Connect(test.args.ctx)
@@ -201,9 +203,10 @@ func Test_client_Close(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		db      cassandra.Cassandra
-		kvTable string
-		vkTable string
+		db            cassandra.Cassandra
+		kvTable       string
+		vkTable       string
+		cassandraOpts []cassandra.Option
 	}
 	type want struct {
 		err error
@@ -235,6 +238,7 @@ func Test_client_Close(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -253,6 +257,7 @@ func Test_client_Close(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -263,7 +268,7 @@ func Test_client_Close(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -274,9 +279,10 @@ func Test_client_Close(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:      test.fields.db,
-				kvTable: test.fields.kvTable,
-				vkTable: test.fields.vkTable,
+				db:            test.fields.db,
+				kvTable:       test.fields.kvTable,
+				vkTable:       test.fields.vkTable,
+				cassandraOpts: test.fields.cassandraOpts,
 			}
 
 			err := c.Close(test.args.ctx)
@@ -293,9 +299,10 @@ func Test_client_Get(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		db      cassandra.Cassandra
-		kvTable string
-		vkTable string
+		db            cassandra.Cassandra
+		kvTable       string
+		vkTable       string
+		cassandraOpts []cassandra.Option
 	}
 	type want struct {
 		want string
@@ -331,6 +338,7 @@ func Test_client_Get(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -349,6 +357,7 @@ func Test_client_Get(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -359,7 +368,7 @@ func Test_client_Get(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -370,9 +379,10 @@ func Test_client_Get(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:      test.fields.db,
-				kvTable: test.fields.kvTable,
-				vkTable: test.fields.vkTable,
+				db:            test.fields.db,
+				kvTable:       test.fields.kvTable,
+				vkTable:       test.fields.vkTable,
+				cassandraOpts: test.fields.cassandraOpts,
 			}
 
 			got, err := c.Get(test.args.key)
@@ -389,9 +399,10 @@ func Test_client_GetMultiple(t *testing.T) {
 		keys []string
 	}
 	type fields struct {
-		db      cassandra.Cassandra
-		kvTable string
-		vkTable string
+		db            cassandra.Cassandra
+		kvTable       string
+		vkTable       string
+		cassandraOpts []cassandra.Option
 	}
 	type want struct {
 		wantVals []string
@@ -427,6 +438,7 @@ func Test_client_GetMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -445,6 +457,7 @@ func Test_client_GetMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -455,7 +468,7 @@ func Test_client_GetMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -466,9 +479,10 @@ func Test_client_GetMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:      test.fields.db,
-				kvTable: test.fields.kvTable,
-				vkTable: test.fields.vkTable,
+				db:            test.fields.db,
+				kvTable:       test.fields.kvTable,
+				vkTable:       test.fields.vkTable,
+				cassandraOpts: test.fields.cassandraOpts,
 			}
 
 			gotVals, err := c.GetMultiple(test.args.keys...)
@@ -485,9 +499,10 @@ func Test_client_GetInverse(t *testing.T) {
 		val string
 	}
 	type fields struct {
-		db      cassandra.Cassandra
-		kvTable string
-		vkTable string
+		db            cassandra.Cassandra
+		kvTable       string
+		vkTable       string
+		cassandraOpts []cassandra.Option
 	}
 	type want struct {
 		want string
@@ -523,6 +538,7 @@ func Test_client_GetInverse(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -541,6 +557,7 @@ func Test_client_GetInverse(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -551,7 +568,7 @@ func Test_client_GetInverse(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -562,9 +579,10 @@ func Test_client_GetInverse(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:      test.fields.db,
-				kvTable: test.fields.kvTable,
-				vkTable: test.fields.vkTable,
+				db:            test.fields.db,
+				kvTable:       test.fields.kvTable,
+				vkTable:       test.fields.vkTable,
+				cassandraOpts: test.fields.cassandraOpts,
 			}
 
 			got, err := c.GetInverse(test.args.val)
@@ -581,9 +599,10 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 		vals []string
 	}
 	type fields struct {
-		db      cassandra.Cassandra
-		kvTable string
-		vkTable string
+		db            cassandra.Cassandra
+		kvTable       string
+		vkTable       string
+		cassandraOpts []cassandra.Option
 	}
 	type want struct {
 		wantKeys []string
@@ -619,6 +638,7 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -637,6 +657,7 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -647,7 +668,7 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -658,9 +679,10 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:      test.fields.db,
-				kvTable: test.fields.kvTable,
-				vkTable: test.fields.vkTable,
+				db:            test.fields.db,
+				kvTable:       test.fields.kvTable,
+				vkTable:       test.fields.vkTable,
+				cassandraOpts: test.fields.cassandraOpts,
 			}
 
 			gotKeys, err := c.GetInverseMultiple(test.args.vals...)
@@ -678,9 +700,10 @@ func Test_client_Set(t *testing.T) {
 		val string
 	}
 	type fields struct {
-		db      cassandra.Cassandra
-		kvTable string
-		vkTable string
+		db            cassandra.Cassandra
+		kvTable       string
+		vkTable       string
+		cassandraOpts []cassandra.Option
 	}
 	type want struct {
 		err error
@@ -713,6 +736,7 @@ func Test_client_Set(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -732,6 +756,7 @@ func Test_client_Set(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -742,7 +767,7 @@ func Test_client_Set(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -753,9 +778,10 @@ func Test_client_Set(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:      test.fields.db,
-				kvTable: test.fields.kvTable,
-				vkTable: test.fields.vkTable,
+				db:            test.fields.db,
+				kvTable:       test.fields.kvTable,
+				vkTable:       test.fields.vkTable,
+				cassandraOpts: test.fields.cassandraOpts,
 			}
 
 			err := c.Set(test.args.key, test.args.val)
@@ -772,9 +798,10 @@ func Test_client_SetMultiple(t *testing.T) {
 		kvs map[string]string
 	}
 	type fields struct {
-		db      cassandra.Cassandra
-		kvTable string
-		vkTable string
+		db            cassandra.Cassandra
+		kvTable       string
+		vkTable       string
+		cassandraOpts []cassandra.Option
 	}
 	type want struct {
 		err error
@@ -806,6 +833,7 @@ func Test_client_SetMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -824,6 +852,7 @@ func Test_client_SetMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -834,7 +863,7 @@ func Test_client_SetMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -845,9 +874,10 @@ func Test_client_SetMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:      test.fields.db,
-				kvTable: test.fields.kvTable,
-				vkTable: test.fields.vkTable,
+				db:            test.fields.db,
+				kvTable:       test.fields.kvTable,
+				vkTable:       test.fields.vkTable,
+				cassandraOpts: test.fields.cassandraOpts,
 			}
 
 			err := c.SetMultiple(test.args.kvs)
@@ -864,9 +894,10 @@ func Test_client_deleteByKeys(t *testing.T) {
 		keys []string
 	}
 	type fields struct {
-		db      cassandra.Cassandra
-		kvTable string
-		vkTable string
+		db            cassandra.Cassandra
+		kvTable       string
+		vkTable       string
+		cassandraOpts []cassandra.Option
 	}
 	type want struct {
 		want []string
@@ -902,6 +933,7 @@ func Test_client_deleteByKeys(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -920,6 +952,7 @@ func Test_client_deleteByKeys(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -930,7 +963,7 @@ func Test_client_deleteByKeys(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -941,9 +974,10 @@ func Test_client_deleteByKeys(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:      test.fields.db,
-				kvTable: test.fields.kvTable,
-				vkTable: test.fields.vkTable,
+				db:            test.fields.db,
+				kvTable:       test.fields.kvTable,
+				vkTable:       test.fields.vkTable,
+				cassandraOpts: test.fields.cassandraOpts,
 			}
 
 			got, err := c.deleteByKeys(test.args.keys...)
@@ -960,9 +994,10 @@ func Test_client_Delete(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		db      cassandra.Cassandra
-		kvTable string
-		vkTable string
+		db            cassandra.Cassandra
+		kvTable       string
+		vkTable       string
+		cassandraOpts []cassandra.Option
 	}
 	type want struct {
 		want string
@@ -998,6 +1033,7 @@ func Test_client_Delete(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1016,6 +1052,7 @@ func Test_client_Delete(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1026,7 +1063,7 @@ func Test_client_Delete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1037,9 +1074,10 @@ func Test_client_Delete(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:      test.fields.db,
-				kvTable: test.fields.kvTable,
-				vkTable: test.fields.vkTable,
+				db:            test.fields.db,
+				kvTable:       test.fields.kvTable,
+				vkTable:       test.fields.vkTable,
+				cassandraOpts: test.fields.cassandraOpts,
 			}
 
 			got, err := c.Delete(test.args.key)
@@ -1056,9 +1094,10 @@ func Test_client_DeleteMultiple(t *testing.T) {
 		keys []string
 	}
 	type fields struct {
-		db      cassandra.Cassandra
-		kvTable string
-		vkTable string
+		db            cassandra.Cassandra
+		kvTable       string
+		vkTable       string
+		cassandraOpts []cassandra.Option
 	}
 	type want struct {
 		want []string
@@ -1094,6 +1133,7 @@ func Test_client_DeleteMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1112,6 +1152,7 @@ func Test_client_DeleteMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1122,7 +1163,7 @@ func Test_client_DeleteMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1133,9 +1174,10 @@ func Test_client_DeleteMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:      test.fields.db,
-				kvTable: test.fields.kvTable,
-				vkTable: test.fields.vkTable,
+				db:            test.fields.db,
+				kvTable:       test.fields.kvTable,
+				vkTable:       test.fields.vkTable,
+				cassandraOpts: test.fields.cassandraOpts,
 			}
 
 			got, err := c.DeleteMultiple(test.args.keys...)
@@ -1152,9 +1194,10 @@ func Test_client_deleteByValues(t *testing.T) {
 		vals []string
 	}
 	type fields struct {
-		db      cassandra.Cassandra
-		kvTable string
-		vkTable string
+		db            cassandra.Cassandra
+		kvTable       string
+		vkTable       string
+		cassandraOpts []cassandra.Option
 	}
 	type want struct {
 		want []string
@@ -1190,6 +1233,7 @@ func Test_client_deleteByValues(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1208,6 +1252,7 @@ func Test_client_deleteByValues(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1218,7 +1263,7 @@ func Test_client_deleteByValues(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1229,9 +1274,10 @@ func Test_client_deleteByValues(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:      test.fields.db,
-				kvTable: test.fields.kvTable,
-				vkTable: test.fields.vkTable,
+				db:            test.fields.db,
+				kvTable:       test.fields.kvTable,
+				vkTable:       test.fields.vkTable,
+				cassandraOpts: test.fields.cassandraOpts,
 			}
 
 			got, err := c.deleteByValues(test.args.vals...)
@@ -1248,9 +1294,10 @@ func Test_client_DeleteInverse(t *testing.T) {
 		val string
 	}
 	type fields struct {
-		db      cassandra.Cassandra
-		kvTable string
-		vkTable string
+		db            cassandra.Cassandra
+		kvTable       string
+		vkTable       string
+		cassandraOpts []cassandra.Option
 	}
 	type want struct {
 		want string
@@ -1286,6 +1333,7 @@ func Test_client_DeleteInverse(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1304,6 +1352,7 @@ func Test_client_DeleteInverse(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1314,7 +1363,7 @@ func Test_client_DeleteInverse(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1325,9 +1374,10 @@ func Test_client_DeleteInverse(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:      test.fields.db,
-				kvTable: test.fields.kvTable,
-				vkTable: test.fields.vkTable,
+				db:            test.fields.db,
+				kvTable:       test.fields.kvTable,
+				vkTable:       test.fields.vkTable,
+				cassandraOpts: test.fields.cassandraOpts,
 			}
 
 			got, err := c.DeleteInverse(test.args.val)
@@ -1344,9 +1394,10 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 		vals []string
 	}
 	type fields struct {
-		db      cassandra.Cassandra
-		kvTable string
-		vkTable string
+		db            cassandra.Cassandra
+		kvTable       string
+		vkTable       string
+		cassandraOpts []cassandra.Option
 	}
 	type want struct {
 		want []string
@@ -1382,6 +1433,7 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1400,6 +1452,7 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
+		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1410,7 +1463,7 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1421,9 +1474,10 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:      test.fields.db,
-				kvTable: test.fields.kvTable,
-				vkTable: test.fields.vkTable,
+				db:            test.fields.db,
+				kvTable:       test.fields.kvTable,
+				vkTable:       test.fields.vkTable,
+				cassandraOpts: test.fields.cassandraOpts,
 			}
 
 			got, err := c.DeleteInverseMultiple(test.args.vals...)
