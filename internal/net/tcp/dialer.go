@@ -20,7 +20,7 @@ package tcp
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
+	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -165,7 +165,8 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 	if d.dnsCache && !isIP {
 		if dc, err := d.lookup(dctx, host); err == nil {
 			for i := uint32(0); i < dc.Len(); i++ {
-				if conn, err := d.dial(dctx, network, fmt.Sprintf("%s:%d", dc.IP(), port)); err == nil {
+				hostIP := dc.IP() + ":" + strconv.FormatUint(uint64(port), 10)
+				if conn, err := d.dial(dctx, network, hostIP); err == nil {
 					return conn, nil
 				}
 			}
