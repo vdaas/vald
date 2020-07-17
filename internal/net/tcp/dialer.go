@@ -175,7 +175,7 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 	return d.dial(dctx, network, addr)
 }
 
-func (d *dialer) dial(ctx context.Context, network string, addr string) (net.Conn, error) {
+func (d *dialer) dial(ctx context.Context, network, addr string) (net.Conn, error) {
 	conn, err := d.der.DialContext(ctx, network, addr)
 	if err != nil {
 		defer func(conn net.Conn) {
