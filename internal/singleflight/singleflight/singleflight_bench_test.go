@@ -65,7 +65,10 @@ func (h *helper) Do(parallel int, b *testing.B) {
 	go func() {
 		ch <- struct{}{}
 		atomic.AddInt64(&h.calledCnt, -1)
-		h.g.Do(context.Background(), "key", fn)
+		_, _, err := h.g.Do(context.Background(), "key", fn)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}()
 	<-ch
 	close(ch)
@@ -83,7 +86,10 @@ func (h *helper) Do(parallel int, b *testing.B) {
 			atomic.AddInt64(&h.totalCnt, 1)
 			go func() {
 				defer wg.Done()
-				h.g.Do(context.Background(), "key", fn)
+				_, _, err := h.g.Do(context.Background(), "key", fn)
+				if err != nil {
+					b.Fatal(err)
+				}
 			}()
 		}
 		wg.Wait()
@@ -144,7 +150,9 @@ func Benchmark_group_Do_with_mutex_1(b *testing.B) {
 	}
 
 	for name, results := range resultsmap {
-		toCSV(name, results)
+		if err := toCSV(name, results); err != nil {
+			b.Error(err)
+		}
 	}
 }
 
@@ -230,7 +238,9 @@ func Benchmark_group_Do_with_syncMap(b *testing.B) {
 		}
 	}
 	for name, results := range resultsmap {
-		toCSV(name, results)
+		if err := toCSV(name, results); err != nil {
+			b.Error(err)
+		}
 	}
 }
 

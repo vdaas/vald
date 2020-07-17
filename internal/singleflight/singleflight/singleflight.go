@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package singleflight represents zero time caching
+// Package singleflight represents zero time caching.
 package singleflight
 
 import (
@@ -30,7 +30,7 @@ type call struct {
 	dups uint64
 }
 
-// Group represents interface for zero time cache
+// Group represents interface for zero time cache.
 type Group interface {
 	Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error)
 }
@@ -39,7 +39,7 @@ type group struct {
 	m sync.Map
 }
 
-// New returns Group imple
+// New returns Group implementation.
 func New() Group {
 	return new(group)
 }
@@ -47,13 +47,19 @@ func New() Group {
 // Do returns a set of the cache of the first return value from function
 // as interface{}, shared flg as bool, and err as error
 // when the function is called multiple times in an instant.
-func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error) {
+func (g *group) Do(
+	ctx context.Context,
+	key string,
+	fn func() (interface{}, error),
+) (v interface{}, shared bool, err error) {
 	actual, loaded := g.m.LoadOrStore(key, new(call))
 	c := actual.(*call)
+
 	if loaded {
 		c.wg.Wait()
 		v, err = c.val, c.err
 		atomic.AddUint64(&c.dups, 1)
+
 		return v, true, err
 	}
 
