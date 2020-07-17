@@ -47,19 +47,13 @@ func New() Group {
 // Do returns a set of the cache of the first return value from function
 // as interface{}, shared flg as bool, and err as error
 // when the function is called multiple times in an instant.
-func (g *group) Do(
-	ctx context.Context,
-	key string,
-	fn func() (interface{}, error),
-) (v interface{}, shared bool, err error) {
+func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error) {
 	actual, loaded := g.m.LoadOrStore(key, new(call))
 	c := actual.(*call)
-
 	if loaded {
 		c.wg.Wait()
 		v, err = c.val, c.err
 		atomic.AddUint64(&c.dups, 1)
-
 		return v, true, err
 	}
 
