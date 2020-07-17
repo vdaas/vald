@@ -1,5 +1,41 @@
 # CHANGELOG
 
+## v0.0.46
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.46`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.46`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.46`
+gateway | `docker pull vdaas/vald-gateway:v0.0.46`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.46`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.46`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.46`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.46`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.46`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.46`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.46`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.46)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.46/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.46/charts/vald-helm-operator/README.md)
+
+### Changes
+- Test/internal/tcp ([#501](https://github.com/vdaas/vald/pull/501))
+- :white_check_mark: add internal/cache/gache test ([#583](https://github.com/vdaas/vald/pull/583))
+- :white_check_mark: add cache test ([#576](https://github.com/vdaas/vald/pull/576))
+- :white_check_mark: add internal/cache/gache/option test ([#575](https://github.com/vdaas/vald/pull/575))
+- :bug: :white_check_mark: fix: fails test ([#578](https://github.com/vdaas/vald/pull/578))
+- :white_check_mark: Add test for `internal/file/watch` ([#526](https://github.com/vdaas/vald/pull/526))
+- :art: update k8s manifests only on publish tags ([#574](https://github.com/vdaas/vald/pull/574))
+- :robot: Automatically update k8s manifests ([#572](https://github.com/vdaas/vald/pull/572))
+- :robot: Automatically update k8s manifests ([#571](https://github.com/vdaas/vald/pull/571))
+- :robot: Automatically update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE ([#570](https://github.com/vdaas/vald/pull/570))
+
+
 ## v0.0.45
 
 ### Docker images
