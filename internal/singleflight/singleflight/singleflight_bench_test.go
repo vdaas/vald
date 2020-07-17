@@ -138,7 +138,7 @@ func Benchmark_group_Do_with_mutex_1(b *testing.B) {
 			)
 			resultsmap[dispersionCSV] = append(
 				resultsmap[dispersionCSV],
-				calcAverage(results),
+				calcDispersion(results),
 			)
 		}
 	}
@@ -225,7 +225,7 @@ func Benchmark_group_Do_with_syncMap(b *testing.B) {
 			)
 			resultsmap[dispersionCSV] = append(
 				resultsmap[dispersionCSV],
-				calcAverage(results),
+				calcDispersion(results),
 			)
 		}
 	}
