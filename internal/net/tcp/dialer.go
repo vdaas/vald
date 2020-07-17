@@ -194,8 +194,8 @@ func (d *dialer) dial(ctx context.Context, network, addr string) (net.Conn, erro
 
 func (d *dialer) cacheExpireHook(ctx context.Context, addr string) {
 	if err := safety.RecoverFunc(func() error {
-		_, err1 := d.lookup(ctx, addr)
-		return err1
+		_, lerr := d.lookup(ctx, addr)
+		return lerr
 	})(); err != nil {
 		log.Errorf("DNS cacheExpireHook error occurred: %v", err)
 	}
