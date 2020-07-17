@@ -22,7 +22,9 @@ import "time"
 var (
 	// tcp
 
+	// ErrFailedInitDialer defines the init dialer error
 	ErrFailedInitDialer = New("failed to init dialer")
+	// ErrInvalidDNSConfig defines the invalid DNS config error
 	ErrInvalidDNSConfig = func(dnsRefreshDur, dnsCacheExp time.Duration) error {
 		return Errorf("dnsRefreshDuration  > dnsCacheExp, %s, %s", dnsRefreshDur, dnsCacheExp)
 	}
