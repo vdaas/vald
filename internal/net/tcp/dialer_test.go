@@ -385,7 +385,9 @@ func TestNewDialer(t *testing.T) {
 			}
 		}(),
 		func() test {
-			tc := new(tls.Config)
+			tc := &tls.Config{
+				InsecureSkipVerify: true,
+			}
 
 			d := &net.Dialer{
 				Timeout:   time.Second * 30,
