@@ -1464,7 +1464,7 @@ agent:
             # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.client.credentials_json", "type": "string"}
             # agent.sidecar.config.blob_storage.cloud_storage.client.credentials_json -- credentials json
             credentials_json: ""
-          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_buffer_size", "type": "string"}
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_buffer_size", "type": "integer"}
           # agent.sidecar.config.blob_storage.cloud_storage.write_buffer_size -- bytes of the chunks for upload
           write_buffer_size: 0
           # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_cache_control", "type": "string"}
