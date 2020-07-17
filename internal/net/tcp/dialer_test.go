@@ -51,7 +51,7 @@ var (
 	}
 )
 
-func Test_dialerCache_GetIP(t *testing.T) {
+func Test_dialerCache_IP(t *testing.T) {
 	type fields struct {
 		ips []string
 		cnt uint32
@@ -90,7 +90,7 @@ func Test_dialerCache_GetIP(t *testing.T) {
 				}
 
 				for i := 1; i < 100; i++ {
-					if d.GetIP() != "a" {
+					if d.IP() != "a" {
 						return errors.New("invalid output")
 					}
 					if d.cnt != 0 {
@@ -117,7 +117,7 @@ func Test_dialerCache_GetIP(t *testing.T) {
 
 				for i := 1; i < 100; i++ {
 					idx := (i + 1) % len(d.ips)
-					if s := d.GetIP(); s != d.ips[idx] {
+					if s := d.IP(); s != d.ips[idx] {
 						return errors.New("invalid output")
 					}
 					if d.cnt != uint32(i+1) {
@@ -167,7 +167,7 @@ func Test_dialerCache_GetIP(t *testing.T) {
 				cnt: test.fields.cnt,
 			}
 
-			got := d.GetIP()
+			got := d.IP()
 			if err := test.checkFunc(d, test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

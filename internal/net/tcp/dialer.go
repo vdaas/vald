@@ -58,9 +58,9 @@ type dialerCache struct {
 	cnt uint32
 }
 
-// GetIP returns the next cached IP address in round robin order.
+// IP returns the next cached IP address in round robin order.
 // It starts getting the index 1 cache instead of index 0 cache.
-func (d *dialerCache) GetIP() string {
+func (d *dialerCache) IP() string {
 	if d.Len() == 1 {
 		return d.ips[0]
 	}
@@ -165,7 +165,7 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 	if d.dnsCache && !isIP {
 		if dc, err := d.lookup(dctx, host); err == nil {
 			for i := uint32(0); i < dc.Len(); i++ {
-				if conn, err := d.dial(dctx, network, fmt.Sprintf("%s:%d", dc.GetIP(), port)); err == nil {
+				if conn, err := d.dial(dctx, network, fmt.Sprintf("%s:%d", dc.IP(), port)); err == nil {
 					return conn, nil
 				}
 			}
