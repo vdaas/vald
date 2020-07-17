@@ -86,7 +86,7 @@ type CloudStrageConfig struct {
 		GoogleAccessID      string `json:"google_access_id" yaml:"google_access_id"`
 		PrivateKey          string `json:"private_key" yaml:"private_key"`
 		CredentialsFilePath string `json:"credentials_file_path" yaml:"credentials_file_path"`
-		CredentialsJSON     string `json:"credentials_json" yaml:"credentials_credentials_json"`
+		CredentialsJSON     string `json:"credentials_json" yaml:"credentials_json"`
 	} `json:"client" yaml:"client"`
 
 	WriteBufferSize         int    `json:"write_buffer_size" yaml:"write_buffer_size"`
