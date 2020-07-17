@@ -288,6 +288,8 @@ func TestGo(t *testing.T) {
 				beforeFunc: func(args) {
 					g := new(group)
 					g.enableLimitation.Store(false)
+					g.egctx = context.Background()
+					g.esctx = context.Background()
 					instance = g
 				},
 				checkFunc: func(got Group) error {
@@ -423,6 +425,7 @@ func Test_group_Go(t *testing.T) {
 	}
 	type fields struct {
 		egctx            context.Context
+		esctx            context.Context
 		cancel           func()
 		limitation       chan struct{}
 		enableLimitation atomic.Value
@@ -457,6 +460,7 @@ func Test_group_Go(t *testing.T) {
 				},
 				fields: fields{
 					egctx:      egctx,
+					esctx:      context.Background(),
 					limitation: make(chan struct{}, limit),
 					enableLimitation: func() (el atomic.Value) {
 						el.Store(true)
@@ -502,6 +506,7 @@ func Test_group_Go(t *testing.T) {
 				},
 				fields: fields{
 					egctx:  egctx,
+					esctx:  context.Background(),
 					cancel: cancel,
 					enableLimitation: func() (el atomic.Value) {
 						el.Store(false)
@@ -550,6 +555,7 @@ func Test_group_Go(t *testing.T) {
 
 			g := &group{
 				egctx:            test.fields.egctx,
+				esctx:            test.fields.esctx,
 				cancel:           test.fields.cancel,
 				limitation:       test.fields.limitation,
 				enableLimitation: test.fields.enableLimitation,
@@ -679,7 +685,8 @@ func TestWait(t *testing.T) {
 
 func Test_group_Wait(t *testing.T) {
 	type fields struct {
-		escape           chan struct{}
+		egctx            context.Context
+		esctx            context.Context
 		limitation       chan struct{}
 		enableLimitation atomic.Value
 		errs             []error
@@ -707,6 +714,8 @@ func Test_group_Wait(t *testing.T) {
 			return test{
 				name: "returns nil after all goroutine returns",
 				fields: fields{
+					egctx: context.Background(),
+					esctx: context.Background(),
 					enableLimitation: func() (el atomic.Value) {
 						el.Store(false)
 						return
@@ -734,6 +743,8 @@ func Test_group_Wait(t *testing.T) {
 		{
 			name: "returns error when g.errs is not nil",
 			fields: fields{
+				egctx: context.Background(),
+				esctx: context.Background(),
 				errs: []error{
 					errors.New("err1"),
 					errors.New("err2"),
@@ -743,12 +754,73 @@ func Test_group_Wait(t *testing.T) {
 				err: errors.Wrap(errors.New("err1"), errors.New("err2").Error()),
 			},
 		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			g := &group{
+				egctx:            test.fields.egctx,
+				esctx:            test.fields.esctx,
+				limitation:       test.fields.limitation,
+				errs:             test.fields.errs,
+				enableLimitation: test.fields.enableLimitation,
+			}
+
+			if test.beforeFunc != nil {
+				test.beforeFunc(g)
+			}
+
+			err := g.Wait()
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_group_Wait_with_goroutine_leak(t *testing.T) {
+	type fields struct {
+		egctx            context.Context
+		esctx            context.Context
+		escape           func()
+		limitation       chan struct{}
+		enableLimitation atomic.Value
+		errs             []error
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(Group)
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
 		func() test {
 			var num int32
+			esctx, escape := context.WithCancel(context.Background())
 			return test{
 				name: "returns err when escaped before all goroutine returns",
 				fields: fields{
-					escape: make(chan struct{}, 1),
+					egctx:  context.Background(),
+					esctx:  esctx,
+					escape: escape,
 					enableLimitation: func() (el atomic.Value) {
 						el.Store(false)
 						return
@@ -768,9 +840,6 @@ func Test_group_Wait(t *testing.T) {
 					}
 					return nil
 				},
-				afterFunc: func() {
-					time.Sleep(time.Second)
-				},
 				want: want{
 					err: errors.Wrap(nil, errors.ErrErrgroupEscaped.Error()),
 				},
@@ -780,7 +849,8 @@ func Test_group_Wait(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			// must leak
+			// defer goleak.VerifyNone(tt)
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
@@ -788,6 +858,8 @@ func Test_group_Wait(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			g := &group{
+				egctx:            test.fields.egctx,
+				esctx:            test.fields.esctx,
 				escape:           test.fields.escape,
 				limitation:       test.fields.limitation,
 				errs:             test.fields.errs,
@@ -808,7 +880,8 @@ func Test_group_Wait(t *testing.T) {
 
 func Test_group_Escape(t *testing.T) {
 	type fields struct {
-		escape chan struct{}
+		esctx  context.Context
+		escape func()
 	}
 	type want struct {
 	}
@@ -824,19 +897,24 @@ func Test_group_Escape(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		{
-			name: "it is able to send a struct{} to escape channel",
-			fields: fields{
-				escape: make(chan struct{}, 1),
-			},
-			want:      want{},
-			checkFunc: defaultCheckFunc,
-		},
+		func() test {
+			esctx, escape := context.WithCancel(context.Background())
+			return test{
+				name: "it is able to escape eg.wait",
+				fields: fields{
+					esctx:  esctx,
+					escape: escape,
+				},
+				want:      want{},
+				checkFunc: defaultCheckFunc,
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			// must leak
+			// defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -847,6 +925,7 @@ func Test_group_Escape(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			g := &group{
+				esctx:  test.fields.esctx,
 				escape: test.fields.escape,
 			}
 
