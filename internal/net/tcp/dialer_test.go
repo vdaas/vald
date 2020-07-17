@@ -384,55 +384,6 @@ func TestNewDialer(t *testing.T) {
 				},
 			}
 		}(),
-		func() test {
-			tc := &tls.Config{
-				InsecureSkipVerify: true,
-			}
-
-			d := &net.Dialer{
-				Timeout:   time.Second * 30,
-				KeepAlive: time.Second * 30,
-				DualStack: true,
-				Control:   Control,
-			}
-			d.Resolver = &net.Resolver{
-				PreferGo: false,
-				Dial:     d.DialContext,
-			}
-
-			return test{
-				name: "returns dialer when tls option is not empty and connection confirmation succeeds",
-				args: args{
-					opts: []DialerOption{WithTLS(tc)},
-				},
-				want: want{
-					wantDer: &dialer{
-						dialerKeepAlive: time.Second * 30,
-						dialerTimeout:   time.Second * 30,
-						dialerDualStack: true,
-						der:             d,
-						dialer:          d.DialContext,
-						tlsConfig:       tc,
-					},
-				},
-				checkFunc: func(w want, gotDer Dialer, err error) error {
-					if err := defaultCheckFunc(w, gotDer, err); err != nil {
-						return err
-					}
-
-					f := gotDer.GetDialer()
-					conn, err := f(context.Background(), "tcp", "google.com:80")
-					if err != nil {
-						return errors.Errorf("err is not nil: %v", err)
-					}
-					if conn == nil {
-						return errors.Errorf("conn is nil")
-					}
-
-					return nil
-				},
-			}
-		}(),
 	}
 
 	for _, test := range tests {
