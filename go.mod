@@ -28,7 +28,6 @@ require (
 	github.com/cockroachdb/errors v0.0.0-00010101000000-000000000000
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/kpango/glg v1.5.1
-	go.uber.org/goleak v1.0.0
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
 	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
 	golang.org/x/text v0.3.3 // indirect
