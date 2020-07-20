@@ -29,9 +29,11 @@ import (
 )
 
 var (
+	// Nil is a type alias of redis.Nil.
 	Nil = redis.Nil
 )
 
+// Redis is an interface to manipulate Redis server.
 type Redis interface {
 	TxPipeline() redis.Pipeliner
 	Ping() *StatusCmd
@@ -42,10 +44,16 @@ type Redis interface {
 	Deleter
 }
 
-type Conn = redis.Conn
-type IntCmd = redis.IntCmd
-type StringCmd = redis.StringCmd
-type StatusCmd = redis.StatusCmd
+type (
+	// Conn is a type alias of redis.Conn.
+	Conn = redis.Conn
+	// IntCmd is a type alias of redis.IntCmd.
+	IntCmd = redis.IntCmd
+	// StringCmd is a type alias of redis.StringCmd.
+	StringCmd = redis.StringCmd
+	// StatusCmd is a type alias of redis.StatusCmd.
+	StatusCmd = redis.StatusCmd
+)
 
 type redisClient struct {
 	addrs                []string
@@ -75,8 +83,12 @@ type redisClient struct {
 	routeRandomly        bool
 	tlsConfig            *tls.Config
 	writeTimeout         time.Duration
+
+	client      Redis
+	pingEnabled bool
 }
 
+// New returns Redis implementation if no error occurs.
 func New(ctx context.Context, opts ...Option) (rc Redis, err error) {
 	r := new(redisClient)
 	for _, opt := range append(defaultOpts, opts...) {
@@ -84,6 +96,7 @@ func New(ctx context.Context, opts ...Option) (rc Redis, err error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
+
 	switch len(r.addrs) {
 	case 0:
 		return nil, errors.ErrRedisAddrsNotFound
@@ -91,7 +104,7 @@ func New(ctx context.Context, opts ...Option) (rc Redis, err error) {
 		if len(r.addrs[0]) == 0 {
 			return nil, errors.ErrRedisAddrsNotFound
 		}
-		rc = redis.NewClient(&redis.Options{
+		r.client = redis.NewClient(&redis.Options{
 			Addr:               r.addrs[0],
 			Password:           r.password,
 			Dialer:             r.dialer,
@@ -112,7 +125,7 @@ func New(ctx context.Context, opts ...Option) (rc Redis, err error) {
 			TLSConfig:          r.tlsConfig,
 		})
 	default:
-		rc = redis.NewClusterClient(&redis.ClusterOptions{
+		r.client = redis.NewClusterClient(&redis.ClusterOptions{
 			Addrs:              r.addrs,
 			Dialer:             r.dialer,
 			MaxRedirects:       r.maxRedirects,
@@ -139,25 +152,29 @@ func New(ctx context.Context, opts ...Option) (rc Redis, err error) {
 		}).WithContext(ctx)
 	}
 
-	err = func() (err error) {
-		pctx, cancel := context.WithTimeout(ctx, r.initialPingTimeLimit)
-		defer cancel()
-		tick := time.NewTicker(r.initialPingDuration)
-		for {
-			select {
-			case <-pctx.Done():
-				return errors.Wrap(errors.Wrap(err, errors.ErrRedisConnectionPingFailed.Error()), ctx.Err().Error())
-			case <-tick.C:
-				err = rc.Ping().Err()
-				if err == nil {
-					return nil
-				}
-				log.Error(err)
-			}
+	if r.pingEnabled {
+		if err = r.ping(ctx); err != nil {
+			return nil, err
 		}
-	}()
-	if err != nil {
-		return nil, err
 	}
-	return rc, nil
+
+	return r.client, nil
+}
+
+func (rc *redisClient) ping(ctx context.Context) (err error) {
+	pctx, cancel := context.WithTimeout(ctx, rc.initialPingTimeLimit)
+	defer cancel()
+	tick := time.NewTicker(rc.initialPingDuration)
+	for {
+		select {
+		case <-pctx.Done():
+			return errors.Wrap(errors.Wrap(err, errors.ErrRedisConnectionPingFailed.Error()), pctx.Err().Error())
+		case <-tick.C:
+			err = rc.client.Ping().Err()
+			if err == nil {
+				return nil
+			}
+			log.Error(err)
+		}
+	}
 }
