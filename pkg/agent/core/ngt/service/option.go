@@ -21,7 +21,6 @@ import (
 	"strings"
 	"time"
 
-	core "github.com/vdaas/vald/internal/core/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -57,7 +56,7 @@ func WithEnableInMemoryMode(enabled bool) Option {
 	return func(n *ngt) error {
 		n.inMem = enabled
 
-		return WithNGTOpts(core.WithInMemoryMode(n.inMem))(n)
+		return nil
 	}
 }
 
@@ -65,7 +64,7 @@ func WithIndexPath(path string) Option {
 	return func(n *ngt) error {
 		n.path = filepath.Clean(strings.TrimSuffix(path, "/"))
 
-		return WithNGTOpts(core.WithIndexPath(n.path))(n)
+		return nil
 	}
 }
 
@@ -191,19 +190,6 @@ func WithLoadIndexTimeoutFactor(dur string) Option {
 		}
 
 		n.litFactor = d
-
-		return nil
-	}
-}
-
-func WithNGTOpts(opts ...core.Option) Option {
-	return func(n *ngt) error {
-		if n.ngtOpts == nil {
-			n.ngtOpts = opts
-			return nil
-		}
-
-		n.ngtOpts = append(n.ngtOpts, opts...)
 
 		return nil
 	}

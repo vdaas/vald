@@ -21,7 +21,6 @@ import (
 
 	agent "github.com/vdaas/vald/apis/grpc/agent/core"
 	iconf "github.com/vdaas/vald/internal/config"
-	"github.com/vdaas/vald/internal/core/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
@@ -48,6 +47,7 @@ type run struct {
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	ngt, err := service.New(
+		cfg.NGT,
 		service.WithErrGroup(errgroup.Get()),
 		service.WithEnableInMemoryMode(cfg.NGT.EnableInMemoryMode),
 		service.WithIndexPath(cfg.NGT.IndexPath),
@@ -59,15 +59,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithMinLoadIndexTimeout(cfg.NGT.MinLoadIndexTimeout),
 		service.WithMaxLoadIndexTimeout(cfg.NGT.MaxLoadIndexTimeout),
 		service.WithLoadIndexTimeoutFactor(cfg.NGT.LoadIndexTimeoutFactor),
-		service.WithNGTOpts(
-			ngt.WithDimension(cfg.NGT.Dimension),
-			ngt.WithDistanceTypeByString(cfg.NGT.DistanceType),
-			ngt.WithObjectTypeByString(cfg.NGT.ObjectType),
-			ngt.WithBulkInsertChunkSize(cfg.NGT.BulkInsertChunkSize),
-			ngt.WithCreationEdgeSize(cfg.NGT.CreationEdgeSize),
-			ngt.WithSearchEdgeSize(cfg.NGT.SearchEdgeSize),
-			ngt.WithDefaultPoolSize(cfg.NGT.DefaultPoolSize),
-		),
 	)
 	if err != nil {
 		return nil, err

@@ -25,6 +25,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vdaas/vald/internal/config"
 	core "github.com/vdaas/vald/internal/core/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -35,6 +36,7 @@ import (
 
 func TestNew(t *testing.T) {
 	type args struct {
+		cfg  *config.NGT
 		opts []Option
 	}
 	type want struct {
@@ -64,6 +66,7 @@ func TestNew(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           cfg: nil,
 		           opts: nil,
 		       },
 		       want: want{},
@@ -77,6 +80,7 @@ func TestNew(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           cfg: nil,
 		           opts: nil,
 		           },
 		           want: want{},
@@ -99,7 +103,7 @@ func TestNew(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			gotNn, err := New(test.args.opts...)
+			gotNn, err := New(test.args.cfg, test.args.opts...)
 			if err := test.checkFunc(test.want, gotNn, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -109,6 +113,9 @@ func TestNew(t *testing.T) {
 }
 
 func Test_ngt_initNGT(t *testing.T) {
+	type args struct {
+		opts []core.Option
+	}
 	type fields struct {
 		core      core.NGT
 		eg        errgroup.Group
@@ -130,18 +137,18 @@ func Test_ngt_initNGT(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
 		name       string
+		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -154,6 +161,9 @@ func Test_ngt_initNGT(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
+		       args: args {
+		           opts: nil,
+		       },
 		       fields: fields {
 		           core: nil,
 		           eg: nil,
@@ -175,7 +185,6 @@ func Test_ngt_initNGT(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -187,6 +196,9 @@ func Test_ngt_initNGT(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
+		           args: args {
+		           opts: nil,
+		           },
 		           fields: fields {
 		           core: nil,
 		           eg: nil,
@@ -208,7 +220,6 @@ func Test_ngt_initNGT(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -221,10 +232,10 @@ func Test_ngt_initNGT(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -250,10 +261,9 @@ func Test_ngt_initNGT(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
-			err := n.initNGT()
+			err := n.initNGT(test.args.opts...)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -284,7 +294,6 @@ func Test_ngt_loadKVS(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		err error
@@ -329,7 +338,6 @@ func Test_ngt_loadKVS(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -362,7 +370,6 @@ func Test_ngt_loadKVS(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -404,7 +411,6 @@ func Test_ngt_loadKVS(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			err := n.loadKVS()
@@ -441,7 +447,6 @@ func Test_ngt_Start(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		want <-chan error
@@ -490,7 +495,6 @@ func Test_ngt_Start(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -526,7 +530,6 @@ func Test_ngt_Start(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -568,7 +571,6 @@ func Test_ngt_Start(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			got := n.Start(test.args.ctx)
@@ -608,7 +610,6 @@ func Test_ngt_Search(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		want []model.Distance
@@ -664,7 +665,6 @@ func Test_ngt_Search(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -703,7 +703,6 @@ func Test_ngt_Search(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -745,7 +744,6 @@ func Test_ngt_Search(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			got, err := n.Search(test.args.vec, test.args.size, test.args.epsilon, test.args.radius)
@@ -785,7 +783,6 @@ func Test_ngt_SearchByID(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		wantDst []model.Distance
@@ -841,7 +838,6 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -880,7 +876,6 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -922,7 +917,6 @@ func Test_ngt_SearchByID(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			gotDst, err := n.SearchByID(test.args.uuid, test.args.size, test.args.epsilon, test.args.radius)
@@ -960,7 +954,6 @@ func Test_ngt_Insert(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		err error
@@ -1010,7 +1003,6 @@ func Test_ngt_Insert(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1047,7 +1039,6 @@ func Test_ngt_Insert(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1089,7 +1080,6 @@ func Test_ngt_Insert(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			err := n.Insert(test.args.uuid, test.args.vec)
@@ -1129,7 +1119,6 @@ func Test_ngt_insert(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		err error
@@ -1181,7 +1170,6 @@ func Test_ngt_insert(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1220,7 +1208,6 @@ func Test_ngt_insert(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1262,7 +1249,6 @@ func Test_ngt_insert(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			err := n.insert(test.args.uuid, test.args.vec, test.args.t, test.args.validation)
@@ -1299,7 +1285,6 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		err error
@@ -1348,7 +1333,6 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1384,7 +1368,6 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1426,7 +1409,6 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			err := n.InsertMultiple(test.args.vecs)
@@ -1464,7 +1446,6 @@ func Test_ngt_Update(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		err error
@@ -1514,7 +1495,6 @@ func Test_ngt_Update(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1551,7 +1531,6 @@ func Test_ngt_Update(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1593,7 +1572,6 @@ func Test_ngt_Update(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			err := n.Update(test.args.uuid, test.args.vec)
@@ -1630,7 +1608,6 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		err error
@@ -1679,7 +1656,6 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1715,7 +1691,6 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1757,7 +1732,6 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			err := n.UpdateMultiple(test.args.vecs)
@@ -1794,7 +1768,6 @@ func Test_ngt_Delete(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		err error
@@ -1843,7 +1816,6 @@ func Test_ngt_Delete(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1879,7 +1851,6 @@ func Test_ngt_Delete(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1921,7 +1892,6 @@ func Test_ngt_Delete(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			err := n.Delete(test.args.uuid)
@@ -1959,7 +1929,6 @@ func Test_ngt_delete(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		err error
@@ -2009,7 +1978,6 @@ func Test_ngt_delete(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -2046,7 +2014,6 @@ func Test_ngt_delete(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -2088,7 +2055,6 @@ func Test_ngt_delete(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			err := n.delete(test.args.uuid, test.args.t)
@@ -2125,7 +2091,6 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		err error
@@ -2174,7 +2139,6 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -2210,7 +2174,6 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -2252,7 +2215,6 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			err := n.DeleteMultiple(test.args.uuids...)
@@ -2289,7 +2251,6 @@ func Test_ngt_GetObject(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		wantVec []float32
@@ -2342,7 +2303,6 @@ func Test_ngt_GetObject(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -2378,7 +2338,6 @@ func Test_ngt_GetObject(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -2420,7 +2379,6 @@ func Test_ngt_GetObject(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			gotVec, err := n.GetObject(test.args.uuid)
@@ -2458,7 +2416,6 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		err error
@@ -2508,7 +2465,6 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -2545,7 +2501,6 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -2587,7 +2542,6 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			err := n.CreateIndex(test.args.ctx, test.args.poolSize)
@@ -2624,7 +2578,6 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		err error
@@ -2673,7 +2626,6 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -2709,7 +2661,6 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -2751,7 +2702,6 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			err := n.SaveIndex(test.args.ctx)
@@ -2788,7 +2738,6 @@ func Test_ngt_saveIndex(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		err error
@@ -2837,7 +2786,6 @@ func Test_ngt_saveIndex(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -2873,7 +2821,6 @@ func Test_ngt_saveIndex(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -2915,7 +2862,6 @@ func Test_ngt_saveIndex(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			err := n.saveIndex(test.args.ctx)
@@ -2953,7 +2899,6 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		err error
@@ -3003,7 +2948,6 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -3040,7 +2984,6 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -3082,7 +3025,6 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			err := n.CreateAndSaveIndex(test.args.ctx, test.args.poolSize)
@@ -3119,7 +3061,6 @@ func Test_ngt_Exists(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		wantOid uint32
@@ -3172,7 +3113,6 @@ func Test_ngt_Exists(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -3208,7 +3148,6 @@ func Test_ngt_Exists(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -3250,7 +3189,6 @@ func Test_ngt_Exists(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			gotOid, gotOk := n.Exists(test.args.uuid)
@@ -3287,7 +3225,6 @@ func Test_ngt_insertCache(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		want  *vcache
@@ -3340,7 +3277,6 @@ func Test_ngt_insertCache(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -3376,7 +3312,6 @@ func Test_ngt_insertCache(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -3418,7 +3353,6 @@ func Test_ngt_insertCache(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			got, got1 := n.insertCache(test.args.uuid)
@@ -3452,7 +3386,6 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		want bool
@@ -3497,7 +3430,6 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -3530,7 +3462,6 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -3572,7 +3503,6 @@ func Test_ngt_IsIndexing(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			got := n.IsIndexing()
@@ -3609,7 +3539,6 @@ func Test_ngt_UUIDs(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		wantUuids []string
@@ -3658,7 +3587,6 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -3694,7 +3622,6 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -3736,7 +3663,6 @@ func Test_ngt_UUIDs(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			gotUuids := n.UUIDs(test.args.ctx)
@@ -3770,7 +3696,6 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		wantUuids []string
@@ -3815,7 +3740,6 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -3848,7 +3772,6 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -3890,7 +3813,6 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			gotUuids := n.UncommittedUUIDs()
@@ -3924,7 +3846,6 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		want uint64
@@ -3969,7 +3890,6 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -4002,7 +3922,6 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -4044,7 +3963,6 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			got := n.NumberOfCreateIndexExecution()
@@ -4078,7 +3996,6 @@ func Test_ngt_Len(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		want uint64
@@ -4123,7 +4040,6 @@ func Test_ngt_Len(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -4156,7 +4072,6 @@ func Test_ngt_Len(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -4198,7 +4113,6 @@ func Test_ngt_Len(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			got := n.Len()
@@ -4232,7 +4146,6 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		want uint64
@@ -4277,7 +4190,6 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -4310,7 +4222,6 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -4352,7 +4263,6 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			got := n.InsertVCacheLen()
@@ -4386,7 +4296,6 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		want uint64
@@ -4431,7 +4340,6 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -4464,7 +4372,6 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -4506,7 +4413,6 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			got := n.DeleteVCacheLen()
@@ -4543,7 +4449,6 @@ func Test_ngt_Close(t *testing.T) {
 		path      string
 		idelay    time.Duration
 		dcd       bool
-		ngtOpts   []core.Option
 	}
 	type want struct {
 		err error
@@ -4592,7 +4497,6 @@ func Test_ngt_Close(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -4628,7 +4532,6 @@ func Test_ngt_Close(t *testing.T) {
 		           path: "",
 		           idelay: nil,
 		           dcd: false,
-		           ngtOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -4670,7 +4573,6 @@ func Test_ngt_Close(t *testing.T) {
 				path:      test.fields.path,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
-				ngtOpts:   test.fields.ngtOpts,
 			}
 
 			err := n.Close(test.args.ctx)

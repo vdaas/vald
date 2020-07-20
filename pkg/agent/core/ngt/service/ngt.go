@@ -29,6 +29,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/vdaas/vald/internal/config"
 	core "github.com/vdaas/vald/internal/core/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -105,8 +106,6 @@ type ngt struct {
 
 	idelay time.Duration // initial delay duration
 	dcd    bool          // disable commit daemon
-
-	ngtOpts []core.Option
 }
 
 type vcache struct {
@@ -118,7 +117,7 @@ const (
 	kvsFileName = "ngt-meta.kvsdb"
 )
 
-func New(opts ...Option) (nn NGT, err error) {
+func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	n := new(ngt)
 
 	for _, opt := range append(defaultOpts, opts...) {
@@ -129,7 +128,17 @@ func New(opts ...Option) (nn NGT, err error) {
 
 	n.kvs = kvs.New()
 
-	err = n.initNGT()
+	err = n.initNGT(
+		core.WithInMemoryMode(n.inMem),
+		core.WithIndexPath(n.path),
+		core.WithDimension(cfg.Dimension),
+		core.WithDistanceTypeByString(cfg.DistanceType),
+		core.WithObjectTypeByString(cfg.ObjectType),
+		core.WithBulkInsertChunkSize(cfg.BulkInsertChunkSize),
+		core.WithCreationEdgeSize(cfg.CreationEdgeSize),
+		core.WithSearchEdgeSize(cfg.SearchEdgeSize),
+		core.WithDefaultPoolSize(cfg.DefaultPoolSize),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -151,9 +160,9 @@ func New(opts ...Option) (nn NGT, err error) {
 	return n, nil
 }
 
-func (n *ngt) initNGT() (err error) {
+func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	if _, err = os.Stat(n.path); os.IsNotExist(err) || n.inMem {
-		n.core, err = core.New(n.ngtOpts...)
+		n.core, err = core.New(opts...)
 		return err
 	}
 
@@ -186,7 +195,7 @@ func (n *ngt) initNGT() (err error) {
 
 	eg, _ := errgroup.New(ctx)
 	eg.Go(safety.RecoverFunc(func() (err error) {
-		n.core, err = core.Load(n.ngtOpts...)
+		n.core, err = core.Load(opts...)
 		return err
 	}))
 
