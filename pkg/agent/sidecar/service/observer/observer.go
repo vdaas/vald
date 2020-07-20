@@ -33,9 +33,9 @@ import (
 	"github.com/vdaas/vald/internal/file/watch"
 	ctxio "github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/metadata"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
 )
 
