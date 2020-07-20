@@ -62,7 +62,6 @@ func TestWithExpiredHook(t *testing.T) {
 						expiredHook: fn,
 					},
 				},
-				checkFunc: defaultCheckFunc,
 			}
 		}(),
 		func() test {
@@ -74,7 +73,6 @@ func TestWithExpiredHook(t *testing.T) {
 				want: want{
 					want: &cache{},
 				},
-				checkFunc: defaultCheckFunc,
 			}
 		}(),
 	}
