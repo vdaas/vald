@@ -42,7 +42,10 @@ func NewExpBackoff(opts ...Option) http.RoundTripper {
 	return e
 }
 
-// RoundTrip round trip the HTTP request and return the response
+// RoundTrip round trip the HTTP request and return the response.
+// If backoff is not set, the default roundTrip implementation will be used.
+// The default roundTrip implementation round trip the request, and return any round trip error occurred.
+// It returns errors.ErrTransportRetryable to indicate if the request is consider as retryable.
 func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 	if e.bo == nil {
 		return e.roundTrip(req)
@@ -65,20 +68,18 @@ func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 
 func (e *ert) roundTrip(req *http.Request) (res *http.Response, err error) {
 	res, err = e.transport.RoundTrip(req)
-	if err == nil {
-		if res != nil && retryable(res) {
+	if err != nil {
+		if res != nil { // just in case we check the response as it depends on RoundTrip impl.
 			closeBody(res)
-			return nil, errors.ErrTransportRetryable
+			if retryable(res) {
+				return nil, errors.ErrTransportRetryable
+			}
 		}
-
-		return res, nil
-	}
-	if res == nil {
 		return nil, err
 	}
 
-	closeBody(res)
-	if retryable(res) {
+	if res != nil && retryable(res) {
+		closeBody(res)
 		return nil, errors.ErrTransportRetryable
 	}
 	return res, nil

@@ -188,16 +188,36 @@ func Test_ert_RoundTrip(t *testing.T) {
 				req: &http.Request{},
 			},
 			fields: fields{
-				transport: &roundTripMock{
-					RoundTripFunc: func(*http.Request) (*http.Response, error) {
-						return nil, errors.New("error")
-					},
-				},
 				bo: &backoffMock{
 					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
 						return &http.Response{
 							Status: "200",
 						}, nil
+					},
+				},
+			},
+			want: want{
+				wantRes: &http.Response{
+					Status: "200",
+				},
+			},
+		},
+		{
+			name: "return default roundtrip response if backoff use the default roundtrip",
+			args: args{
+				req: &http.Request{},
+			},
+			fields: fields{
+				transport: &roundTripMock{
+					RoundTripFunc: func(*http.Request) (*http.Response, error) {
+						return &http.Response{
+							Status: "200",
+						}, nil
+					},
+				},
+				bo: &backoffMock{
+					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
+						return fn()
 					},
 				},
 			},
@@ -237,6 +257,27 @@ func Test_ert_RoundTrip(t *testing.T) {
 			},
 			want: want{
 				err: errors.ErrInvalidTypeConversion(struct{}{}, &http.Response{}),
+			},
+		},
+		{
+			name: "return default roundtrip error if backoff use the default roundtrip",
+			args: args{
+				req: &http.Request{},
+			},
+			fields: fields{
+				transport: &roundTripMock{
+					RoundTripFunc: func(*http.Request) (*http.Response, error) {
+						return nil, errors.New("error")
+					},
+				},
+				bo: &backoffMock{
+					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
+						return fn()
+					},
+				},
+			},
+			want: want{
+				err: errors.New("error"),
 			},
 		},
 	}
@@ -358,6 +399,143 @@ func Test_ert_roundTrip(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 
+		})
+	}
+}
+
+func Test_retryable(t *testing.T) {
+	type args struct {
+		res *http.Response
+	}
+	type want struct {
+		want bool
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got bool) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           res: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           res: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := retryable(test.args.res)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_closeBody(t *testing.T) {
+	type args struct {
+		res *http.Response
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           res: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           res: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			closeBody(test.args.res)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }
