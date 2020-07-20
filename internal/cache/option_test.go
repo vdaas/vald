@@ -44,9 +44,9 @@ func TestWithExpiredHook(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got *cache) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
+					if reflect.ValueOf(w.want.expiredHook).Pointer() != reflect.ValueOf(got.expiredHook).Pointer() {
+						return errors.Errorf("got = %v, want %v", got, w.want)
+					}
 		return nil
 	}
 	tests := []test{
@@ -62,12 +62,7 @@ func TestWithExpiredHook(t *testing.T) {
 						expiredHook: fn,
 					},
 				},
-				checkFunc: func(w want, g *cache) error {
-					if reflect.ValueOf(w.want.expiredHook).Pointer() != reflect.ValueOf(g.expiredHook).Pointer() {
-						return errors.Errorf("got = %v, want %v", g, w.want)
-					}
-					return nil
-				},
+				checkFunc: defaultCheckFunc,
 			}
 		}(),
 		func() test {
@@ -77,14 +72,9 @@ func TestWithExpiredHook(t *testing.T) {
 					f: nil,
 				},
 				want: want{
-					want: new(cache),
+					want: &cache{},
 				},
-				checkFunc: func(w want, g *cache) error {
-					if reflect.ValueOf(w.want.expiredHook).Pointer() != reflect.ValueOf(g.expiredHook).Pointer() {
-						return errors.Errorf("got = %v, want %v", g, w.want)
-					}
-					return nil
-				},
+				checkFunc: defaultCheckFunc,
 			}
 		}(),
 	}
@@ -152,7 +142,7 @@ func TestWithType(t *testing.T) {
 			return test{
 				name: "set success when len(mo) is 0",
 				want: want{
-					want: new(cache),
+					want: &cache{},
 				},
 			}
 		}(),
@@ -222,7 +212,7 @@ func TestWithExpireDuration(t *testing.T) {
 			return test{
 				name: "set success when dur is empty",
 				want: want{
-					want: new(cache),
+					want: &cache{},
 				},
 			}
 		}(),
@@ -234,7 +224,7 @@ func TestWithExpireDuration(t *testing.T) {
 					dur: val,
 				},
 				want: want{
-					want: new(cache),
+					want: &cache{},
 				},
 			}
 		}(),
@@ -304,7 +294,7 @@ func TestWithExpireCheckDuration(t *testing.T) {
 			return test{
 				name: "set success when dur is empty",
 				want: want{
-					want: new(cache),
+					want: &cache{},
 				},
 			}
 		}(),
@@ -316,7 +306,7 @@ func TestWithExpireCheckDuration(t *testing.T) {
 					dur: val,
 				},
 				want: want{
-					want: new(cache),
+					want: &cache{},
 				},
 			}
 		}(),
