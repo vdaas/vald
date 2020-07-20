@@ -20,7 +20,7 @@ type Result struct {
 }
 
 type helper struct {
-	g         Group
+	initDoFn  func() func(ctx context.Context, key string, fn func() (interface{}, error))
 	sleepDur  time.Duration
 	calledCnt int64
 	totalCnt  int64
@@ -61,14 +61,13 @@ func (h *helper) Do(parallel int, b *testing.B) {
 		}
 	)
 
+	doFn := h.initDoFn()
+
 	ch := make(chan struct{})
 	go func() {
 		ch <- struct{}{}
 		atomic.AddInt64(&h.calledCnt, -1)
-		_, _, err := h.g.Do(context.Background(), "key", fn)
-		if err != nil {
-			b.Fatal(err)
-		}
+		doFn(context.Background(), "key", fn)
 	}()
 	<-ch
 	close(ch)
@@ -86,10 +85,7 @@ func (h *helper) Do(parallel int, b *testing.B) {
 			atomic.AddInt64(&h.totalCnt, 1)
 			go func() {
 				defer wg.Done()
-				_, _, err := h.g.Do(context.Background(), "key", fn)
-				if err != nil {
-					b.Fatal(err)
-				}
+				doFn(context.Background(), "key", fn)
 			}()
 		}
 		wg.Wait()
@@ -107,7 +103,12 @@ func Benchmark_group_Do_with_mutex_1(b *testing.B) {
 			results := make([]Result, 0, tryCnt)
 			for j := 0; j < tryCnt; j++ {
 				h := &helper{
-					g:        singleflight.New(10),
+					initDoFn: func() func(ctx context.Context, key string, fn func() (interface{}, error)) {
+						g := singleflight.New(10)
+						return func(ctx context.Context, key string, fn func() (interface{}, error)) {
+							g.Do(ctx, key, fn)
+						}
+					},
 					sleepDur: dur,
 				}
 
@@ -197,7 +198,12 @@ func Benchmark_group_Do_with_syncMap(b *testing.B) {
 			results := make([]Result, 0, tryCnt)
 			for j := 0; j < tryCnt; j++ {
 				h := &helper{
-					g:        New(),
+					initDoFn: func() func(ctx context.Context, key string, fn func() (interface{}, error)) {
+						g := New()
+						return func(ctx context.Context, key string, fn func() (interface{}, error)) {
+							g.Do(ctx, key, fn)
+						}
+					},
 					sleepDur: dur,
 				}
 

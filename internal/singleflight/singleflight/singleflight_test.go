@@ -259,7 +259,7 @@ func Test_group_Do(t *testing.T) {
 			test.util.wg.Add(1)
 			go func() {
 				defer test.util.wg.Done()
-				gotV, gotShared, err = g.Do(context.Background(), test.args.key, test.args.fn)
+				gotV, err, gotShared = g.Do(context.Background(), test.args.key, test.args.fn)
 			}()
 
 			test.util.cond.Broadcast()

@@ -32,7 +32,7 @@ type call struct {
 
 // Group represents interface for zero time cache.
 type Group interface {
-	Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error)
+	Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, err error, shared bool)
 }
 
 type group struct {
@@ -48,14 +48,14 @@ func New() Group {
 // It makes sure only one execution of the function for each given key.
 // If duplicate comes, the duplicated call with the same key will wait for the first caller return.
 // It returns the result and the error of the given function, and whether the result is shared from the first caller.
-func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error) {
+func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, err error, shared bool) {
 	actual, loaded := g.m.LoadOrStore(key, new(call))
 	c := actual.(*call)
 	if loaded {
 		c.wg.Wait()
 		v, err = c.val, c.err
 		atomic.AddUint64(&c.dups, 1)
-		return v, true, err
+		return v, err, true
 	}
 
 	c.wg.Add(1)
@@ -64,5 +64,5 @@ func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, erro
 
 	g.m.Delete(key)
 
-	return c.val, atomic.LoadUint64(&c.dups) > 0, c.err
+	return c.val, c.err, atomic.LoadUint64(&c.dups) > 0
 }
