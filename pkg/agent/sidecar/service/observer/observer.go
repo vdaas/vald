@@ -50,7 +50,12 @@ type observer struct {
 	eg            errgroup.Group
 	checkDuration time.Duration
 
+	metadataPath string
+
 	postStopTimeout time.Duration
+
+	watchEnabled  bool
+	tickerEnabled bool
 
 	storage storage.Storage
 
@@ -84,15 +89,19 @@ func (o *observer) Start(ctx context.Context) (<-chan error, error) {
 	var wech, tech, sech, bech <-chan error
 	var err error
 
-	wech, err = o.w.Start(ctx)
-	if err != nil {
-		return nil, err
+	if o.watchEnabled {
+		wech, err = o.w.Start(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	tech, err = o.startTicker(ctx)
-	if err != nil {
-		close(ech)
-		return nil, err
+	if o.tickerEnabled {
+		tech, err = o.startTicker(ctx)
+		if err != nil {
+			close(ech)
+			return nil, err
+		}
 	}
 
 	sech, err = o.storage.Start(ctx)
@@ -151,10 +160,8 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 
 	t := time.Now()
 
-	metadataPath := filepath.Join(o.dir, metadata.AgentMetadataFileName)
-
 	f := func(ctx context.Context, name string) error {
-		if name == metadataPath {
+		if name == o.metadataPath {
 			t = time.Now().Add(-o.postStopTimeout)
 			return nil
 		}
@@ -193,7 +200,7 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 			return finalize()
 		case <-ticker.C:
 			if time.Since(t) > o.postStopTimeout {
-				metadata, err := metadata.Load(metadataPath)
+				metadata, err := metadata.Load(o.metadataPath)
 				if err != nil {
 					return err
 				}
@@ -230,6 +237,17 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return finalize()
 			case <-ct.C:
+				metadata, err := metadata.Load(o.metadataPath)
+				if err != nil {
+					ech <- err
+					continue
+				}
+
+				if metadata.IsInvalid {
+					log.Warn("backup skipped because the files are invalid")
+					continue
+				}
+
 				err = o.requestBackup(ctx)
 				if err != nil {
 					ech <- err
@@ -325,12 +343,11 @@ func (o *observer) onCreate(ctx context.Context, name string) error {
 }
 
 func (o *observer) checkCondition(name string) (bool, error) {
-	metadataPath := filepath.Join(o.dir, metadata.AgentMetadataFileName)
-	if name != metadataPath {
+	if name != o.metadataPath {
 		return false, nil
 	}
 
-	metadata, err := metadata.Load(metadataPath)
+	metadata, err := metadata.Load(o.metadataPath)
 	if err != nil {
 		return false, err
 	}

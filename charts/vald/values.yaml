@@ -1385,9 +1385,15 @@ agent:
         memory: 100Mi
     # @schema {"name": "agent.sidecar.config", "type": "object"}
     config:
+      # @schema {"name": "agent.sidecar.config.watch_enabled", "type": "boolean"}
+      # agent.sidecar.config.watch_enabled -- auto backup triggered by file changes is enabled
+      watch_enabled: true
+      # @schema {"name": "agent.sidecar.config.auto_backup_enabled", "type": "boolean"}
+      # agent.sidecar.config.auto_backup_enabled -- auto backup triggered by timer is enabled
+      auto_backup_enabled: true
       # @schema {"name": "agent.sidecar.config.auto_backup_duration", "type": "string"}
       # agent.sidecar.config.auto_backup_duration -- auto backup duration
-      auto_backup_duration: 10m
+      auto_backup_duration: 24h
       # @schema {"name": "agent.sidecar.config.post_stop_timeout", "type": "string"}
       # agent.sidecar.config.post_stop_timeout -- timeout for observing file changes during post stop
       post_stop_timeout: 2m
