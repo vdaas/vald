@@ -59,7 +59,6 @@ func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, erro
 	}
 
 	c.wg.Add(1)
-
 	c.val, c.err = fn()
 	c.wg.Done()
 
