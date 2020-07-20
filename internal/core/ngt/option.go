@@ -32,12 +32,16 @@ import (
 type Option func(*ngt) error
 
 var (
+	DefaultPoolSize = uint32(10000)
+	DefaultRadius   = float32(-1.0)
+	DefaultEpsilon  = float32(0.01)
+
 	defaultOpts = []Option{
 		WithIndexPath("/tmp/ngt-" + string(fastime.FormattedNow())),
 		WithDimension(0),
-		WithDefaultRadius(-1.0),
-		WithDefaultEpsilon(0.01),
-		WithDefaultPoolSize(10000),
+		WithDefaultRadius(DefaultRadius),
+		WithDefaultEpsilon(DefaultEpsilon),
+		WithDefaultPoolSize(DefaultPoolSize),
 		WithCreationEdgeSize(10),
 		WithSearchEdgeSize(40),
 		WithObjectType(Float),

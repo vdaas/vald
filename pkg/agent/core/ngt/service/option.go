@@ -21,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	core "github.com/vdaas/vald/internal/core/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -39,6 +40,9 @@ var (
 		WithMinLoadIndexTimeout("3m"),
 		WithMaxLoadIndexTimeout("10m"),
 		WithLoadIndexTimeoutFactor("1ms"),
+		WithDefaultPoolSize(core.DefaultPoolSize),
+		WithDefaultRadius(core.DefaultRadius),
+		WithDefaultEpsilon(core.DefaultEpsilon),
 	}
 )
 
@@ -190,6 +194,29 @@ func WithLoadIndexTimeoutFactor(dur string) Option {
 		}
 
 		n.litFactor = d
+
+		return nil
+	}
+}
+
+func WithDefaultPoolSize(ps uint32) Option {
+	return func(n *ngt) error {
+		n.poolSize = ps
+
+		return nil
+	}
+}
+
+func WithDefaultRadius(rad float32) Option {
+	return func(n *ngt) error {
+		n.radius = rad
+
+		return nil
+	}
+}
+func WithDefaultEpsilon(epsilon float32) Option {
+	return func(n *ngt) error {
+		n.epsilon = epsilon
 
 		return nil
 	}

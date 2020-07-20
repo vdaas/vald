@@ -42,12 +42,6 @@ import (
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 )
 
-const (
-	// defaultPoolSize is zero because internal/core/ngt uses
-	// the default pool size when the provided value is 0.
-	defaultPoolSize = uint32(0)
-)
-
 type NGT interface {
 	Start(ctx context.Context) <-chan error
 	Search(vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error)
@@ -104,6 +98,10 @@ type ngt struct {
 
 	path string // index path
 
+	poolSize uint32  // default pool size
+	radius   float32 // default radius
+	epsilon  float32 // default epsilon
+
 	idelay time.Duration // initial delay duration
 	dcd    bool          // disable commit daemon
 }
@@ -131,13 +129,15 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	err = n.initNGT(
 		core.WithInMemoryMode(n.inMem),
 		core.WithIndexPath(n.path),
+		core.WithDefaultPoolSize(n.poolSize),
+		core.WithDefaultRadius(n.radius),
+		core.WithDefaultEpsilon(n.epsilon),
 		core.WithDimension(cfg.Dimension),
 		core.WithDistanceTypeByString(cfg.DistanceType),
 		core.WithObjectTypeByString(cfg.ObjectType),
 		core.WithBulkInsertChunkSize(cfg.BulkInsertChunkSize),
 		core.WithCreationEdgeSize(cfg.CreationEdgeSize),
 		core.WithSearchEdgeSize(cfg.SearchEdgeSize),
-		core.WithDefaultPoolSize(cfg.DefaultPoolSize),
 	)
 	if err != nil {
 		return nil, err
@@ -153,9 +153,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		n.dvc = new(vcaches)
 	}
 
-	if in, ok := n.indexing.Load().(bool); !ok || in {
-		n.indexing.Store(false)
-	}
+	n.indexing.Store(false)
 
 	return n, nil
 }
@@ -308,7 +306,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			err = nil
 			select {
 			case <-ctx.Done():
-				err = n.CreateIndex(ctx, defaultPoolSize)
+				err = n.CreateIndex(ctx, n.poolSize)
 				if err != nil {
 					ech <- err
 					return errors.Wrap(ctx.Err(), err.Error())
@@ -316,10 +314,10 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				return ctx.Err()
 			case <-tick.C:
 				if int(atomic.LoadUint64(&n.ic)) >= n.alen {
-					err = n.CreateIndex(ctx, defaultPoolSize)
+					err = n.CreateIndex(ctx, n.poolSize)
 				}
 			case <-limit.C:
-				err = n.CreateAndSaveIndex(ctx, defaultPoolSize)
+				err = n.CreateAndSaveIndex(ctx, n.poolSize)
 			case <-sTick.C:
 				err = n.SaveIndex(ctx)
 			}
@@ -775,7 +773,7 @@ func (n *ngt) DeleteVCacheLen() uint64 {
 
 func (n *ngt) Close(ctx context.Context) (err error) {
 	if len(n.path) != 0 {
-		err = n.CreateAndSaveIndex(ctx, defaultPoolSize)
+		err = n.CreateAndSaveIndex(ctx, n.poolSize)
 	}
 	n.core.Close()
 	return

@@ -128,7 +128,7 @@ func TestOpen(t *testing.T) {
 		},
 
 		{
-			name: "returns nil when path is empty",
+			name: "returns (nil, error) when path is empty",
 			args: args{
 				flg:  os.O_CREATE,
 				perm: os.ModeDir,

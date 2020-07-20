@@ -61,6 +61,12 @@ type NGT struct {
 	// DefaultPoolSize represent default create index batch pool size
 	DefaultPoolSize uint32 `yaml:"default_pool_size" json:"default_pool_size"`
 
+	// DefaultRadius represent default radius used for search
+	DefaultRadius float32 `yaml:"default_radius" json:"default_radius"`
+
+	// DefaultEpsilon represent default epsilon used for search
+	DefaultEpsilon float32 `yaml:"default_epsilon" json:"default_epsilon"`
+
 	// MinLoadIndexTimeout represents minimum duration of load index timeout
 	MinLoadIndexTimeout string `yaml:"min_load_index_timeout" json:"min_load_index_timeout"`
 

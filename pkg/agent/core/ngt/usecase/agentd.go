@@ -59,6 +59,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithMinLoadIndexTimeout(cfg.NGT.MinLoadIndexTimeout),
 		service.WithMaxLoadIndexTimeout(cfg.NGT.MaxLoadIndexTimeout),
 		service.WithLoadIndexTimeoutFactor(cfg.NGT.LoadIndexTimeoutFactor),
+		service.WithDefaultPoolSize(cfg.NGT.DefaultPoolSize),
+		service.WithDefaultRadius(cfg.NGT.DefaultRadius),
+		service.WithDefaultEpsilon(cfg.NGT.DefaultEpsilon),
 	)
 	if err != nil {
 		return nil, err

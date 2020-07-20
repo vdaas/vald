@@ -135,6 +135,9 @@ func Test_ngt_initNGT(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -183,6 +186,9 @@ func Test_ngt_initNGT(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -218,6 +224,9 @@ func Test_ngt_initNGT(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -259,6 +268,9 @@ func Test_ngt_initNGT(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -292,6 +304,9 @@ func Test_ngt_loadKVS(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -336,6 +351,9 @@ func Test_ngt_loadKVS(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -368,6 +386,9 @@ func Test_ngt_loadKVS(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -409,6 +430,9 @@ func Test_ngt_loadKVS(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -445,6 +469,9 @@ func Test_ngt_Start(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -493,6 +520,9 @@ func Test_ngt_Start(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -528,6 +558,9 @@ func Test_ngt_Start(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -569,6 +602,9 @@ func Test_ngt_Start(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -608,6 +644,9 @@ func Test_ngt_Search(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -663,6 +702,9 @@ func Test_ngt_Search(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -701,6 +743,9 @@ func Test_ngt_Search(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -742,6 +787,9 @@ func Test_ngt_Search(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -781,6 +829,9 @@ func Test_ngt_SearchByID(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -836,6 +887,9 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -874,6 +928,9 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -915,6 +972,9 @@ func Test_ngt_SearchByID(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -952,6 +1012,9 @@ func Test_ngt_Insert(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -1001,6 +1064,9 @@ func Test_ngt_Insert(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -1037,6 +1103,9 @@ func Test_ngt_Insert(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -1078,6 +1147,9 @@ func Test_ngt_Insert(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -1117,6 +1189,9 @@ func Test_ngt_insert(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -1168,6 +1243,9 @@ func Test_ngt_insert(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -1206,6 +1284,9 @@ func Test_ngt_insert(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -1247,6 +1328,9 @@ func Test_ngt_insert(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -1283,6 +1367,9 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -1331,6 +1418,9 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -1366,6 +1456,9 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -1407,6 +1500,9 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -1444,6 +1540,9 @@ func Test_ngt_Update(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -1493,6 +1592,9 @@ func Test_ngt_Update(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -1529,6 +1631,9 @@ func Test_ngt_Update(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -1570,6 +1675,9 @@ func Test_ngt_Update(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -1606,6 +1714,9 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -1654,6 +1765,9 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -1689,6 +1803,9 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -1730,6 +1847,9 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -1766,6 +1886,9 @@ func Test_ngt_Delete(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -1814,6 +1937,9 @@ func Test_ngt_Delete(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -1849,6 +1975,9 @@ func Test_ngt_Delete(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -1890,6 +2019,9 @@ func Test_ngt_Delete(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -1927,6 +2059,9 @@ func Test_ngt_delete(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -1976,6 +2111,9 @@ func Test_ngt_delete(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -2012,6 +2150,9 @@ func Test_ngt_delete(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -2053,6 +2194,9 @@ func Test_ngt_delete(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -2089,6 +2233,9 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -2137,6 +2284,9 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -2172,6 +2322,9 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -2213,6 +2366,9 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -2249,6 +2405,9 @@ func Test_ngt_GetObject(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -2301,6 +2460,9 @@ func Test_ngt_GetObject(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -2336,6 +2498,9 @@ func Test_ngt_GetObject(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -2377,6 +2542,9 @@ func Test_ngt_GetObject(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -2414,6 +2582,9 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -2463,6 +2634,9 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -2499,6 +2673,9 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -2540,6 +2717,9 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -2576,6 +2756,9 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -2624,6 +2807,9 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -2659,6 +2845,9 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -2700,6 +2889,9 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -2736,6 +2928,9 @@ func Test_ngt_saveIndex(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -2784,6 +2979,9 @@ func Test_ngt_saveIndex(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -2819,6 +3017,9 @@ func Test_ngt_saveIndex(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -2860,6 +3061,9 @@ func Test_ngt_saveIndex(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -2897,6 +3101,9 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -2946,6 +3153,9 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -2982,6 +3192,9 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -3023,6 +3236,9 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -3059,6 +3275,9 @@ func Test_ngt_Exists(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -3111,6 +3330,9 @@ func Test_ngt_Exists(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -3146,6 +3368,9 @@ func Test_ngt_Exists(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -3187,6 +3412,9 @@ func Test_ngt_Exists(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -3223,6 +3451,9 @@ func Test_ngt_insertCache(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -3275,6 +3506,9 @@ func Test_ngt_insertCache(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -3310,6 +3544,9 @@ func Test_ngt_insertCache(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -3351,6 +3588,9 @@ func Test_ngt_insertCache(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -3384,6 +3624,9 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -3428,6 +3671,9 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -3460,6 +3706,9 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -3501,6 +3750,9 @@ func Test_ngt_IsIndexing(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -3537,6 +3789,9 @@ func Test_ngt_UUIDs(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -3585,6 +3840,9 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -3620,6 +3878,9 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -3661,6 +3922,9 @@ func Test_ngt_UUIDs(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -3694,6 +3958,9 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -3738,6 +4005,9 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -3770,6 +4040,9 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -3811,6 +4084,9 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -3844,6 +4120,9 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -3888,6 +4167,9 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -3920,6 +4202,9 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -3961,6 +4246,9 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -3994,6 +4282,9 @@ func Test_ngt_Len(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -4038,6 +4329,9 @@ func Test_ngt_Len(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -4070,6 +4364,9 @@ func Test_ngt_Len(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -4111,6 +4408,9 @@ func Test_ngt_Len(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -4144,6 +4444,9 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -4188,6 +4491,9 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -4220,6 +4526,9 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -4261,6 +4570,9 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -4294,6 +4606,9 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -4338,6 +4653,9 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -4370,6 +4688,9 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -4411,6 +4732,9 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
@@ -4447,6 +4771,9 @@ func Test_ngt_Close(t *testing.T) {
 		maxLit    time.Duration
 		litFactor time.Duration
 		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
 		idelay    time.Duration
 		dcd       bool
 	}
@@ -4495,6 +4822,9 @@ func Test_ngt_Close(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		       },
@@ -4530,6 +4860,9 @@ func Test_ngt_Close(t *testing.T) {
 		           maxLit: nil,
 		           litFactor: nil,
 		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
 		           idelay: nil,
 		           dcd: false,
 		           },
@@ -4571,6 +4904,9 @@ func Test_ngt_Close(t *testing.T) {
 				maxLit:    test.fields.maxLit,
 				litFactor: test.fields.litFactor,
 				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
 				idelay:    test.fields.idelay,
 				dcd:       test.fields.dcd,
 			}
