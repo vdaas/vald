@@ -41,6 +41,12 @@ import (
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 )
 
+const (
+	// defaultPoolSize is zero because internal/core/ngt uses
+	// the default pool size when the provided value is 0.
+	defaultPoolSize = uint32(0)
+)
+
 type NGT interface {
 	Start(ctx context.Context) <-chan error
 	Search(vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error)
@@ -293,7 +299,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			err = nil
 			select {
 			case <-ctx.Done():
-				err = n.CreateIndex(ctx, 0)
+				err = n.CreateIndex(ctx, defaultPoolSize)
 				if err != nil {
 					ech <- err
 					return errors.Wrap(ctx.Err(), err.Error())
@@ -301,10 +307,10 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				return ctx.Err()
 			case <-tick.C:
 				if int(atomic.LoadUint64(&n.ic)) >= n.alen {
-					err = n.CreateIndex(ctx, 0)
+					err = n.CreateIndex(ctx, defaultPoolSize)
 				}
 			case <-limit.C:
-				err = n.CreateAndSaveIndex(ctx, 0)
+				err = n.CreateAndSaveIndex(ctx, defaultPoolSize)
 			case <-sTick.C:
 				err = n.SaveIndex(ctx)
 			}
@@ -760,7 +766,7 @@ func (n *ngt) DeleteVCacheLen() uint64 {
 
 func (n *ngt) Close(ctx context.Context) (err error) {
 	if len(n.path) != 0 {
-		err = n.CreateAndSaveIndex(ctx, 0)
+		err = n.CreateAndSaveIndex(ctx, defaultPoolSize)
 	}
 	n.core.Close()
 	return
