@@ -37,10 +37,8 @@ type group struct {
 	egctx  context.Context
 	cancel func()
 
-	wg sync.WaitGroup
-
-	esctx  context.Context
-	escape func()
+	wg     sync.WaitGroup
+	escape chan struct{}
 
 	limitation       chan struct{}
 	enableLimitation atomic.Value
@@ -63,7 +61,7 @@ func New(ctx context.Context) (Group, context.Context) {
 		emap:   make(map[string]struct{}),
 		cancel: cancel,
 	}
-	g.esctx, g.escape = context.WithCancel(ctx)
+	g.escape = make(chan struct{}, 1)
 	g.enableLimitation.Store(false)
 	return g, egctx
 }
@@ -155,23 +153,20 @@ func Wait() error {
 }
 
 func (g *group) Wait() error {
-	ctx, cancel := context.WithCancel(g.egctx)
-	var wg sync.WaitGroup
+	done := make(chan struct{}, 1)
 
-	wg.Add(1)
 	go func() {
-		defer wg.Done()
-		defer cancel()
+		defer close(done)
 		g.wg.Wait()
+		done <- struct{}{}
 	}()
 
 	select {
-	case <-g.esctx.Done():
+	case <-done:
+	case <-g.escape:
 		g.mu.Lock()
 		g.errs = append(g.errs, errors.ErrErrgroupEscaped)
 		g.mu.Unlock()
-	case <-ctx.Done():
-		wg.Wait()
 	}
 
 	g.doCancel()
@@ -188,5 +183,5 @@ func (g *group) Wait() error {
 }
 
 func (g *group) Escape() {
-	g.escape()
+	g.escape <- struct{}{}
 }
