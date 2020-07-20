@@ -27,6 +27,7 @@ import (
 	"runtime"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	core "github.com/vdaas/vald/internal/core/ngt"
@@ -177,8 +178,6 @@ func (n *ngt) initNGT() (err error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	toEg, _ := errgroup.New(ctx)
-	eg, _ := errgroup.New(ctx)
-
 	toEg.Go(safety.RecoverFunc(func() (err error) {
 		<-ctx.Done()
 		if ctx.Err() == context.DeadlineExceeded {
@@ -193,19 +192,21 @@ func (n *ngt) initNGT() (err error) {
 					},
 				},
 			)
+
+			// TODO: related to #403.
+			p, err := os.FindProcess(os.Getpid())
 			if err != nil {
 				return err
 			}
 
-			eg.Escape()
-
-			return nil
+			return p.Signal(syscall.SIGKILL) // TODO: #403
 		}
 		return nil
 	}))
 	defer toEg.Wait()
 	defer cancel()
 
+	eg, _ := errgroup.New(ctx)
 	eg.Go(safety.RecoverFunc(func() (err error) {
 		n.core, err = core.Load(n.ngtOpts...)
 		return err
