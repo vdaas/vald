@@ -27,7 +27,6 @@ import (
 	"runtime"
 	"sync"
 	"sync/atomic"
-	"syscall"
 	"time"
 
 	core "github.com/vdaas/vald/internal/core/ngt"
@@ -177,9 +176,40 @@ func (n *ngt) initNGT() (err error) {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	toEg, _ := errgroup.New(ctx)
-	toEg.Go(safety.RecoverFunc(func() (err error) {
-		<-ctx.Done()
+	defer cancel()
+
+	eg, _ := errgroup.New(ctx)
+	eg.Go(safety.RecoverFunc(func() (err error) {
+		n.core, err = core.Load(n.ngtOpts...)
+		return err
+	}))
+
+	eg.Go(safety.RecoverFunc(n.loadKVS))
+
+	ech := make(chan error, 1)
+
+	// NOTE: when it exceeds the timeout while loading,
+	// it should exit this function and leave this goroutine running.
+	go func() {
+		defer close(ech)
+
+		err = safety.RecoverFunc(func() (err error) {
+			err = eg.Wait()
+			if err != nil {
+				return err
+			}
+			cancel()
+			return nil
+		})()
+		if err != nil {
+			ech <- err
+		}
+	}()
+
+	select {
+	case err := <-ech:
+		return err
+	case <-ctx.Done():
 		if ctx.Err() == context.DeadlineExceeded {
 			log.Errorf("cannot load index backup data within the timeout %s. the process is going to be killed.", timeout)
 
@@ -192,29 +222,15 @@ func (n *ngt) initNGT() (err error) {
 					},
 				},
 			)
-
-			// TODO: related to #403.
-			p, err := os.FindProcess(os.Getpid())
 			if err != nil {
 				return err
 			}
 
-			return p.Signal(syscall.SIGKILL) // TODO: #403
+			return errors.ErrIndexLoadTimeout
 		}
-		return nil
-	}))
-	defer toEg.Wait()
-	defer cancel()
+	}
 
-	eg, _ := errgroup.New(ctx)
-	eg.Go(safety.RecoverFunc(func() (err error) {
-		n.core, err = core.Load(n.ngtOpts...)
-		return err
-	}))
-
-	eg.Go(safety.RecoverFunc(n.loadKVS))
-
-	return eg.Wait()
+	return nil
 }
 
 func (n *ngt) loadKVS() error {

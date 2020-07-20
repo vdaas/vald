@@ -26,6 +26,8 @@ var (
 
 	ErrIndexNotFound = New("index file not found")
 
+	ErrIndexLoadTimeout = New("index load timeout")
+
 	ErrInvalidDimensionSize = func(current, limit int) error {
 		if limit == 0 {
 			return Errorf("dimension size %d is invalid, the supporting dimension size must be bigger than 2", current)
