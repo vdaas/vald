@@ -52,16 +52,16 @@ func (cm *cassandraMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.
 func (cm *cassandraMetrics) View() []*metrics.View {
 	return []*metrics.View{
 		&metrics.View{
-			Name:        "completed_query_total",
+			Name:        "db_nosql_cassandra_completed_query_total",
 			Description: "cumulative count of completed queries",
 			Measure:     &cm.queryTotal,
-			Aggregation: metrics.Count(),
+			Aggregation: metrics.Sum(),
 		},
 		&metrics.View{
-			Name:        "query_milliseconds_total",
+			Name:        "db_nosql_cassandra_query_milliseconds_total",
 			Description: "cumulative count of query time in milliseconds",
 			Measure:     &cm.queryMsTotal,
-			Aggregation: metrics.Count(),
+			Aggregation: metrics.Sum(),
 		},
 	}
 }
