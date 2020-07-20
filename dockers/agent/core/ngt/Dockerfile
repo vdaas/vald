@@ -19,6 +19,7 @@ FROM vdaas/vald-base:latest AS builder
 ENV ORG vdaas
 ENV REPO vald
 ENV PKG agent/core/ngt
+ENV PKG_INTERNAL agent/internal
 ENV APP_NAME ngt
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
@@ -29,6 +30,9 @@ COPY apis/grpc .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/pkg/${PKG}
 COPY pkg/${PKG} .
+
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/pkg/${PKG_INTERNAL}
+COPY pkg/${PKG_INTERNAL} .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 COPY cmd/${PKG} .
