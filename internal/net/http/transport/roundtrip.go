@@ -66,19 +66,25 @@ func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 func (e *ert) roundTrip(req *http.Request) (res *http.Response, err error) {
 	res, err = e.transport.RoundTrip(req)
 	if err == nil {
+		if res != nil && retryable(res) {
+			closeBody(res)
+			return nil, errors.ErrTransportRetryable
+		}
+
 		return res, nil
 	}
 	if res == nil {
 		return nil, err
 	}
-	_, err = io.Copy(ioutil.Discard, res.Body)
-	if err != nil {
-		log.Error(err)
+
+	closeBody(res)
+	if retryable(res) {
+		return nil, errors.ErrTransportRetryable
 	}
-	err = res.Body.Close()
-	if err != nil {
-		log.Error(err)
-	}
+	return res, nil
+}
+
+func retryable(res *http.Response) bool {
 	switch res.StatusCode {
 	case http.StatusTooManyRequests,
 		http.StatusInternalServerError,
@@ -86,7 +92,18 @@ func (e *ert) roundTrip(req *http.Request) (res *http.Response, err error) {
 		http.StatusMovedPermanently,
 		http.StatusBadGateway,
 		http.StatusGatewayTimeout:
-		return nil, errors.ErrTransportRetryable
+		return true
 	}
-	return res, nil
+	return false
+}
+
+func closeBody(res *http.Response) {
+	_, err := io.Copy(ioutil.Discard, res.Body)
+	if err != nil {
+		log.Error(err)
+	}
+	err = res.Body.Close()
+	if err != nil {
+		log.Error(err)
+	}
 }
