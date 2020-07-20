@@ -32,6 +32,7 @@ type ert struct {
 	bo        backoff.Backoff
 }
 
+// NewExpBackoff returns the backoff roundtripper implementation
 func NewExpBackoff(opts ...Option) http.RoundTripper {
 	e := new(ert)
 	for _, opt := range append(defaultOpts, opts...) {
@@ -41,6 +42,7 @@ func NewExpBackoff(opts ...Option) http.RoundTripper {
 	return e
 }
 
+// RoundTrip round trip the HTTP request and return the response
 func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 	if e.bo == nil {
 		return e.roundTrip(req)

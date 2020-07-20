@@ -13,221 +13,95 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+// Package transport provides http transport roundtrip option
 package transport
 
 import (
-	"bytes"
 	"context"
-	"io/ioutil"
 	"net/http"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
-
 	"go.uber.org/goleak"
 )
 
-func TestNewExpBackoff(t *testing.T) {
-	type test struct {
-		name        string
-		opts        []Option
-		initialized bool
+var (
+	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+	goleakIgnoreOptions = []goleak.Option{
+		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
 	}
+)
 
+func TestNewExpBackoff(t *testing.T) {
+	type args struct {
+		opts []Option
+	}
+	type want struct {
+		want http.RoundTripper
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, http.RoundTripper) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got http.RoundTripper) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
 	tests := []test{
 		{
-			name:        "initialize success",
-			initialized: true,
+			name: "initialize success",
+			want: want{
+				want: &ert{
+					transport: http.DefaultTransport,
+				},
+			},
 		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := NewExpBackoff(tt.opts...)
-
-			if (got != nil) != tt.initialized {
-				t.Error("New() is wrong")
-			}
-		})
-	}
-}
-
-func TestRoundTrip(t *testing.T) {
-	type args struct {
-		req *http.Request
-	}
-
-	type field struct {
-		bo        backoff.Backoff
-		transport http.RoundTripper
-	}
-
-	type test struct {
-		name      string
-		args      args
-		field     field
-		checkFunc func(*http.Response, error) error
-	}
-
-	tests := []test{
 		func() test {
-			wantRes := new(http.Response)
-
-			tr := &roundTripMock{
-				RoundTripFunc: func(*http.Request) (*http.Response, error) {
-					return wantRes, nil
-				},
-			}
-
+			b := backoff.New()
 			return test{
-				name: "returns not error when backoff object is nil",
-				field: field{
-					transport: tr,
-				},
-				checkFunc: func(res *http.Response, err error) error {
-					if err != nil {
-						return errors.Errorf("error not nil. err: %v", err)
-					}
-
-					if !reflect.DeepEqual(res, wantRes) {
-						return errors.Errorf("res not equals. want: %v, got: %v", wantRes, err)
-					}
-
-					return nil
-				},
-			}
-		}(),
-
-		func() test {
-			wantRes := new(http.Response)
-
-			tr := &roundTripMock{
-				RoundTripFunc: func(*http.Request) (*http.Response, error) {
-					return wantRes, nil
-				},
-			}
-
-			bo := &backoffMock{
-				DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
-					return fn()
-				},
-			}
-
-			return test{
-				name: "returns not error when backoff object is not nil",
+				name: "initialize success with option",
 				args: args{
-					req: new(http.Request),
+					opts: []Option{
+						WithBackoff(b),
+					},
 				},
-				field: field{
-					transport: tr,
-					bo:        bo,
-				},
-				checkFunc: func(res *http.Response, err error) error {
-					if err != nil {
-						return errors.Errorf("error not nil. err: %v", err)
-					}
-
-					if !reflect.DeepEqual(res, wantRes) {
-						return errors.Errorf("res not equals. want: %v, got: %v", wantRes, err)
-					}
-
-					return nil
-				},
-			}
-		}(),
-
-		func() test {
-			res := &http.Response{
-				StatusCode: http.StatusTooManyRequests,
-				Body:       ioutil.NopCloser(new(bytes.Buffer)),
-			}
-
-			tr := &roundTripMock{
-				RoundTripFunc: func(*http.Request) (*http.Response, error) {
-					return res, errors.New("faild")
-				},
-			}
-
-			bo := &backoffMock{
-				DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
-					return fn()
-				},
-			}
-
-			return test{
-				name: "returns error when Do function returns error",
-				args: args{
-					req: new(http.Request),
-				},
-				field: field{
-					transport: tr,
-					bo:        bo,
-				},
-				checkFunc: func(res *http.Response, err error) error {
-					if err == nil {
-						return errors.New("err is nil")
-					}
-
-					if res != nil {
-						return errors.Errorf("res not nil. res: %v", res)
-					}
-
-					return nil
-				},
-			}
-		}(),
-
-		func() test {
-			tr := &roundTripMock{
-				RoundTripFunc: func(*http.Request) (*http.Response, error) {
-					return nil, nil
-				},
-			}
-
-			bo := &backoffMock{
-				DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
-					_, err := fn()
-					return "dumy", err
-				},
-			}
-
-			return test{
-				name: "returns error when type conversion error occurs",
-				args: args{
-					req: new(http.Request),
-				},
-				field: field{
-					transport: tr,
-					bo:        bo,
-				},
-				checkFunc: func(res *http.Response, err error) error {
-					if err == nil {
-						return errors.New("err is nil")
-					}
-
-					if res != nil {
-						return errors.Errorf("res not nil. res: %v", res)
-					}
-
-					return nil
+				want: want{
+					want: &ert{
+						transport: http.DefaultTransport,
+						bo:        b,
+					},
 				},
 			}
 		}(),
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			e := &ert{
-				transport: tt.field.transport,
-				bo:        tt.field.bo,
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
 			}
 
-			res, err := e.RoundTrip(tt.args.req)
-			if err := tt.checkFunc(res, err); err != nil {
-				t.Error(err)
+			got := NewExpBackoff(test.args.opts...)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -263,44 +137,113 @@ func Test_ert_RoundTrip(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           req: nil,
-		       },
-		       fields: fields {
-		           transport: nil,
-		           bo: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           req: nil,
-		           },
-		           fields: fields {
-		           transport: nil,
-		           bo: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return roundtrip response if backoff is nil",
+			args: args{
+				req: nil,
+			},
+			fields: fields{
+				transport: &roundTripMock{
+					RoundTripFunc: func(*http.Request) (*http.Response, error) {
+						return &http.Response{
+							Status: "200",
+						}, nil
+					},
+				},
+			},
+			want: want{
+				wantRes: &http.Response{
+					Status: "200",
+				},
+			},
+		},
+		{
+			name: "return backoff response if backoff is not nil",
+			args: args{
+				req: &http.Request{},
+			},
+			fields: fields{
+				transport: &roundTripMock{
+					RoundTripFunc: func(*http.Request) (*http.Response, error) {
+						return nil, errors.New("error")
+					},
+				},
+				bo: &backoffMock{
+					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
+						return &http.Response{
+							Status: "200",
+						}, nil
+					},
+				},
+			},
+			want: want{
+				wantRes: &http.Response{
+					Status: "200",
+				},
+			},
+		},
+		{
+			name: "return backoff response if backoff is not nil",
+			args: args{
+				req: &http.Request{},
+			},
+			fields: fields{
+				transport: &roundTripMock{
+					RoundTripFunc: func(*http.Request) (*http.Response, error) {
+						return nil, errors.New("error")
+					},
+				},
+				bo: &backoffMock{
+					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
+						return &http.Response{
+							Status: "200",
+						}, nil
+					},
+				},
+			},
+			want: want{
+				wantRes: &http.Response{
+					Status: "200",
+				},
+			},
+		},
+		{
+			name: "return backoff error",
+			args: args{
+				req: &http.Request{},
+			},
+			fields: fields{
+				bo: &backoffMock{
+					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
+						return nil, errors.New("error")
+					},
+				},
+			},
+			want: want{
+				err: errors.New("error"),
+			},
+		},
+		{
+			name: "return error when backoff return invalid type result",
+			args: args{
+				req: &http.Request{},
+			},
+			fields: fields{
+				bo: &backoffMock{
+					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
+						return struct{}{}, nil
+					},
+				},
+			},
+			want: want{
+				err: errors.ErrInvalidTypeConversion(struct{}{}, &http.Response{}),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -355,44 +298,47 @@ func Test_ert_roundTrip(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           req: nil,
-		       },
-		       fields: fields {
-		           transport: nil,
-		           bo: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           req: nil,
-		           },
-		           fields: fields {
-		           transport: nil,
-		           bo: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "roundtrip return success",
+			args: args{
+				req: &http.Request{},
+			},
+			fields: fields{
+				transport: &roundTripMock{
+					RoundTripFunc: func(*http.Request) (*http.Response, error) {
+						return &http.Response{
+							Status: "200",
+						}, nil
+					},
+				},
+			},
+			want: want{
+				wantRes: &http.Response{
+					Status: "200",
+				},
+			},
+		},
+		{
+			name: "roundtrip return empty response with error",
+			args: args{
+				req: &http.Request{},
+			},
+			fields: fields{
+				transport: &roundTripMock{
+					RoundTripFunc: func(*http.Request) (*http.Response, error) {
+						return nil, errors.New("error")
+					},
+				},
+			},
+			want: want{
+				err: errors.New("error"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
