@@ -61,8 +61,13 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		)
 	}
 
+	db, err := cassandra.New(cassandraOpts...)
+	if err != nil {
+		return nil, err
+	}
+
 	c, err := service.New(
-		service.WithCassandraOpts(cassandraOpts...),
+		service.WithCassandra(db),
 		service.WithKVTable(cfg.Cassandra.KVTable),
 		service.WithVKTable(cfg.Cassandra.VKTable),
 	)

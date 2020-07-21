@@ -30,14 +30,11 @@ var (
 	}
 )
 
-func WithCassandraOpts(opts ...cassandra.Option) Option {
+func WithCassandra(db cassandra.Cassandra) Option {
 	return func(c *client) error {
-		if c.cassandraOpts == nil {
-			c.cassandraOpts = opts
-			return nil
+		if db != nil {
+			c.db = db
 		}
-
-		c.cassandraOpts = append(c.cassandraOpts, opts...)
 
 		return nil
 	}

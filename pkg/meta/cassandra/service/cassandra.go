@@ -52,10 +52,9 @@ type Cassandra interface {
 }
 
 type client struct {
-	db            cassandra.Cassandra
-	kvTable       string
-	vkTable       string
-	cassandraOpts []cassandra.Option
+	db      cassandra.Cassandra
+	kvTable string
+	vkTable string
 }
 
 func New(opts ...Option) (cas Cassandra, err error) {
@@ -64,11 +63,6 @@ func New(opts ...Option) (cas Cassandra, err error) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
-	}
-
-	c.db, err = cassandra.New(c.cassandraOpts...)
-	if err != nil {
-		return nil, err
 	}
 
 	return c, nil

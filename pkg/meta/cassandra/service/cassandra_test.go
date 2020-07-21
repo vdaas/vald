@@ -107,10 +107,9 @@ func Test_client_Connect(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		db            cassandra.Cassandra
-		kvTable       string
-		vkTable       string
-		cassandraOpts []cassandra.Option
+		db      cassandra.Cassandra
+		kvTable string
+		vkTable string
 	}
 	type want struct {
 		err error
@@ -142,7 +141,6 @@ func Test_client_Connect(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -161,7 +159,6 @@ func Test_client_Connect(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -183,10 +180,9 @@ func Test_client_Connect(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:            test.fields.db,
-				kvTable:       test.fields.kvTable,
-				vkTable:       test.fields.vkTable,
-				cassandraOpts: test.fields.cassandraOpts,
+				db:      test.fields.db,
+				kvTable: test.fields.kvTable,
+				vkTable: test.fields.vkTable,
 			}
 
 			err := c.Connect(test.args.ctx)
@@ -203,10 +199,9 @@ func Test_client_Close(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		db            cassandra.Cassandra
-		kvTable       string
-		vkTable       string
-		cassandraOpts []cassandra.Option
+		db      cassandra.Cassandra
+		kvTable string
+		vkTable string
 	}
 	type want struct {
 		err error
@@ -238,7 +233,6 @@ func Test_client_Close(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -257,7 +251,6 @@ func Test_client_Close(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -279,10 +272,9 @@ func Test_client_Close(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:            test.fields.db,
-				kvTable:       test.fields.kvTable,
-				vkTable:       test.fields.vkTable,
-				cassandraOpts: test.fields.cassandraOpts,
+				db:      test.fields.db,
+				kvTable: test.fields.kvTable,
+				vkTable: test.fields.vkTable,
 			}
 
 			err := c.Close(test.args.ctx)
@@ -299,10 +291,9 @@ func Test_client_Get(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		db            cassandra.Cassandra
-		kvTable       string
-		vkTable       string
-		cassandraOpts []cassandra.Option
+		db      cassandra.Cassandra
+		kvTable string
+		vkTable string
 	}
 	type want struct {
 		want string
@@ -338,7 +329,6 @@ func Test_client_Get(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -357,7 +347,6 @@ func Test_client_Get(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -379,10 +368,9 @@ func Test_client_Get(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:            test.fields.db,
-				kvTable:       test.fields.kvTable,
-				vkTable:       test.fields.vkTable,
-				cassandraOpts: test.fields.cassandraOpts,
+				db:      test.fields.db,
+				kvTable: test.fields.kvTable,
+				vkTable: test.fields.vkTable,
 			}
 
 			got, err := c.Get(test.args.key)
@@ -399,10 +387,9 @@ func Test_client_GetMultiple(t *testing.T) {
 		keys []string
 	}
 	type fields struct {
-		db            cassandra.Cassandra
-		kvTable       string
-		vkTable       string
-		cassandraOpts []cassandra.Option
+		db      cassandra.Cassandra
+		kvTable string
+		vkTable string
 	}
 	type want struct {
 		wantVals []string
@@ -438,7 +425,6 @@ func Test_client_GetMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -457,7 +443,6 @@ func Test_client_GetMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -479,10 +464,9 @@ func Test_client_GetMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:            test.fields.db,
-				kvTable:       test.fields.kvTable,
-				vkTable:       test.fields.vkTable,
-				cassandraOpts: test.fields.cassandraOpts,
+				db:      test.fields.db,
+				kvTable: test.fields.kvTable,
+				vkTable: test.fields.vkTable,
 			}
 
 			gotVals, err := c.GetMultiple(test.args.keys...)
@@ -499,10 +483,9 @@ func Test_client_GetInverse(t *testing.T) {
 		val string
 	}
 	type fields struct {
-		db            cassandra.Cassandra
-		kvTable       string
-		vkTable       string
-		cassandraOpts []cassandra.Option
+		db      cassandra.Cassandra
+		kvTable string
+		vkTable string
 	}
 	type want struct {
 		want string
@@ -538,7 +521,6 @@ func Test_client_GetInverse(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -557,7 +539,6 @@ func Test_client_GetInverse(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -579,10 +560,9 @@ func Test_client_GetInverse(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:            test.fields.db,
-				kvTable:       test.fields.kvTable,
-				vkTable:       test.fields.vkTable,
-				cassandraOpts: test.fields.cassandraOpts,
+				db:      test.fields.db,
+				kvTable: test.fields.kvTable,
+				vkTable: test.fields.vkTable,
 			}
 
 			got, err := c.GetInverse(test.args.val)
@@ -599,10 +579,9 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 		vals []string
 	}
 	type fields struct {
-		db            cassandra.Cassandra
-		kvTable       string
-		vkTable       string
-		cassandraOpts []cassandra.Option
+		db      cassandra.Cassandra
+		kvTable string
+		vkTable string
 	}
 	type want struct {
 		wantKeys []string
@@ -638,7 +617,6 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -657,7 +635,6 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -679,10 +656,9 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:            test.fields.db,
-				kvTable:       test.fields.kvTable,
-				vkTable:       test.fields.vkTable,
-				cassandraOpts: test.fields.cassandraOpts,
+				db:      test.fields.db,
+				kvTable: test.fields.kvTable,
+				vkTable: test.fields.vkTable,
 			}
 
 			gotKeys, err := c.GetInverseMultiple(test.args.vals...)
@@ -700,10 +676,9 @@ func Test_client_Set(t *testing.T) {
 		val string
 	}
 	type fields struct {
-		db            cassandra.Cassandra
-		kvTable       string
-		vkTable       string
-		cassandraOpts []cassandra.Option
+		db      cassandra.Cassandra
+		kvTable string
+		vkTable string
 	}
 	type want struct {
 		err error
@@ -736,7 +711,6 @@ func Test_client_Set(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -756,7 +730,6 @@ func Test_client_Set(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -778,10 +751,9 @@ func Test_client_Set(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:            test.fields.db,
-				kvTable:       test.fields.kvTable,
-				vkTable:       test.fields.vkTable,
-				cassandraOpts: test.fields.cassandraOpts,
+				db:      test.fields.db,
+				kvTable: test.fields.kvTable,
+				vkTable: test.fields.vkTable,
 			}
 
 			err := c.Set(test.args.key, test.args.val)
@@ -798,10 +770,9 @@ func Test_client_SetMultiple(t *testing.T) {
 		kvs map[string]string
 	}
 	type fields struct {
-		db            cassandra.Cassandra
-		kvTable       string
-		vkTable       string
-		cassandraOpts []cassandra.Option
+		db      cassandra.Cassandra
+		kvTable string
+		vkTable string
 	}
 	type want struct {
 		err error
@@ -833,7 +804,6 @@ func Test_client_SetMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -852,7 +822,6 @@ func Test_client_SetMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -874,10 +843,9 @@ func Test_client_SetMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:            test.fields.db,
-				kvTable:       test.fields.kvTable,
-				vkTable:       test.fields.vkTable,
-				cassandraOpts: test.fields.cassandraOpts,
+				db:      test.fields.db,
+				kvTable: test.fields.kvTable,
+				vkTable: test.fields.vkTable,
 			}
 
 			err := c.SetMultiple(test.args.kvs)
@@ -894,10 +862,9 @@ func Test_client_deleteByKeys(t *testing.T) {
 		keys []string
 	}
 	type fields struct {
-		db            cassandra.Cassandra
-		kvTable       string
-		vkTable       string
-		cassandraOpts []cassandra.Option
+		db      cassandra.Cassandra
+		kvTable string
+		vkTable string
 	}
 	type want struct {
 		want []string
@@ -933,7 +900,6 @@ func Test_client_deleteByKeys(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -952,7 +918,6 @@ func Test_client_deleteByKeys(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -974,10 +939,9 @@ func Test_client_deleteByKeys(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:            test.fields.db,
-				kvTable:       test.fields.kvTable,
-				vkTable:       test.fields.vkTable,
-				cassandraOpts: test.fields.cassandraOpts,
+				db:      test.fields.db,
+				kvTable: test.fields.kvTable,
+				vkTable: test.fields.vkTable,
 			}
 
 			got, err := c.deleteByKeys(test.args.keys...)
@@ -994,10 +958,9 @@ func Test_client_Delete(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		db            cassandra.Cassandra
-		kvTable       string
-		vkTable       string
-		cassandraOpts []cassandra.Option
+		db      cassandra.Cassandra
+		kvTable string
+		vkTable string
 	}
 	type want struct {
 		want string
@@ -1033,7 +996,6 @@ func Test_client_Delete(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1052,7 +1014,6 @@ func Test_client_Delete(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1074,10 +1035,9 @@ func Test_client_Delete(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:            test.fields.db,
-				kvTable:       test.fields.kvTable,
-				vkTable:       test.fields.vkTable,
-				cassandraOpts: test.fields.cassandraOpts,
+				db:      test.fields.db,
+				kvTable: test.fields.kvTable,
+				vkTable: test.fields.vkTable,
 			}
 
 			got, err := c.Delete(test.args.key)
@@ -1094,10 +1054,9 @@ func Test_client_DeleteMultiple(t *testing.T) {
 		keys []string
 	}
 	type fields struct {
-		db            cassandra.Cassandra
-		kvTable       string
-		vkTable       string
-		cassandraOpts []cassandra.Option
+		db      cassandra.Cassandra
+		kvTable string
+		vkTable string
 	}
 	type want struct {
 		want []string
@@ -1133,7 +1092,6 @@ func Test_client_DeleteMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1152,7 +1110,6 @@ func Test_client_DeleteMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1174,10 +1131,9 @@ func Test_client_DeleteMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:            test.fields.db,
-				kvTable:       test.fields.kvTable,
-				vkTable:       test.fields.vkTable,
-				cassandraOpts: test.fields.cassandraOpts,
+				db:      test.fields.db,
+				kvTable: test.fields.kvTable,
+				vkTable: test.fields.vkTable,
 			}
 
 			got, err := c.DeleteMultiple(test.args.keys...)
@@ -1194,10 +1150,9 @@ func Test_client_deleteByValues(t *testing.T) {
 		vals []string
 	}
 	type fields struct {
-		db            cassandra.Cassandra
-		kvTable       string
-		vkTable       string
-		cassandraOpts []cassandra.Option
+		db      cassandra.Cassandra
+		kvTable string
+		vkTable string
 	}
 	type want struct {
 		want []string
@@ -1233,7 +1188,6 @@ func Test_client_deleteByValues(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1252,7 +1206,6 @@ func Test_client_deleteByValues(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1274,10 +1227,9 @@ func Test_client_deleteByValues(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:            test.fields.db,
-				kvTable:       test.fields.kvTable,
-				vkTable:       test.fields.vkTable,
-				cassandraOpts: test.fields.cassandraOpts,
+				db:      test.fields.db,
+				kvTable: test.fields.kvTable,
+				vkTable: test.fields.vkTable,
 			}
 
 			got, err := c.deleteByValues(test.args.vals...)
@@ -1294,10 +1246,9 @@ func Test_client_DeleteInverse(t *testing.T) {
 		val string
 	}
 	type fields struct {
-		db            cassandra.Cassandra
-		kvTable       string
-		vkTable       string
-		cassandraOpts []cassandra.Option
+		db      cassandra.Cassandra
+		kvTable string
+		vkTable string
 	}
 	type want struct {
 		want string
@@ -1333,7 +1284,6 @@ func Test_client_DeleteInverse(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1352,7 +1302,6 @@ func Test_client_DeleteInverse(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1374,10 +1323,9 @@ func Test_client_DeleteInverse(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:            test.fields.db,
-				kvTable:       test.fields.kvTable,
-				vkTable:       test.fields.vkTable,
-				cassandraOpts: test.fields.cassandraOpts,
+				db:      test.fields.db,
+				kvTable: test.fields.kvTable,
+				vkTable: test.fields.vkTable,
 			}
 
 			got, err := c.DeleteInverse(test.args.val)
@@ -1394,10 +1342,9 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 		vals []string
 	}
 	type fields struct {
-		db            cassandra.Cassandra
-		kvTable       string
-		vkTable       string
-		cassandraOpts []cassandra.Option
+		db      cassandra.Cassandra
+		kvTable string
+		vkTable string
 	}
 	type want struct {
 		want []string
@@ -1433,7 +1380,6 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1452,7 +1398,6 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 		           db: nil,
 		           kvTable: "",
 		           vkTable: "",
-		           cassandraOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1474,10 +1419,9 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:            test.fields.db,
-				kvTable:       test.fields.kvTable,
-				vkTable:       test.fields.vkTable,
-				cassandraOpts: test.fields.cassandraOpts,
+				db:      test.fields.db,
+				kvTable: test.fields.kvTable,
+				vkTable: test.fields.vkTable,
 			}
 
 			got, err := c.DeleteInverseMultiple(test.args.vals...)
