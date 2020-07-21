@@ -94,8 +94,8 @@ func (h *helper) Do(parallel int, b *testing.B) {
 
 func Benchmark_group_Do_with_mutex_1(b *testing.B) {
 	const (
-		dispersionCSV = "mutex_dispersion.csv"
-		averageCSV    = "mutex_average.csv"
+		varianceCSV = "mutex_variance.csv"
+		averageCSV  = "mutex_average.csv"
 	)
 	resultsmap := make(map[string][]Result)
 	for i := minGoroutine; i <= maxGoroutine; i *= goroutineStep {
@@ -143,9 +143,9 @@ func Benchmark_group_Do_with_mutex_1(b *testing.B) {
 				resultsmap[averageCSV],
 				calcAverage(results),
 			)
-			resultsmap[dispersionCSV] = append(
-				resultsmap[dispersionCSV],
-				calcDispersion(results),
+			resultsmap[varianceCSV] = append(
+				resultsmap[varianceCSV],
+				calcVariance(results),
 			)
 		}
 	}
@@ -171,7 +171,7 @@ func calcAverage(in []Result) (out Result) {
 	return
 }
 
-func calcDispersion(in []Result) (out Result) {
+func calcVariance(in []Result) (out Result) {
 	aveResult := calcAverage(in)
 
 	var sum float64
@@ -189,8 +189,8 @@ func calcDispersion(in []Result) (out Result) {
 
 func Benchmark_group_Do_with_syncMap(b *testing.B) {
 	const (
-		dispersionCSV = "syncmap_dispersion.csv"
-		averageCSV    = "syncmap_average.csv"
+		varianceCSV = "syncmap_variance.csv"
+		averageCSV  = "syncmap_average.csv"
 	)
 	resultsmap := make(map[string][]Result)
 	for i := minGoroutine; i <= maxGoroutine; i *= goroutineStep {
@@ -237,9 +237,9 @@ func Benchmark_group_Do_with_syncMap(b *testing.B) {
 				resultsmap[averageCSV],
 				calcAverage(results),
 			)
-			resultsmap[dispersionCSV] = append(
-				resultsmap[dispersionCSV],
-				calcDispersion(results),
+			resultsmap[varianceCSV] = append(
+				resultsmap[varianceCSV],
+				calcVariance(results),
 			)
 		}
 	}
