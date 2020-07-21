@@ -52,9 +52,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	var queryObserver cassandra.QueryObserver
+	var queryObserver dbmetrics.Observer
 	if cfg.Observability.Enabled {
-		queryObserver = cassandra.NewQueryObserver()
+		queryObserver = dbmetrics.New()
 		cassandraOpts = append(
 			cassandraOpts,
 			cassandra.WithQueryObserver(queryObserver),
@@ -94,7 +94,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
-			dbmetrics.New(queryObserver),
+			queryObserver,
 		)
 		if err != nil {
 			return nil, err

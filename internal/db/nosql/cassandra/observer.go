@@ -17,52 +17,14 @@
 package cassandra
 
 import (
-	"context"
-	"sync/atomic"
-
 	"github.com/gocql/gocql"
 )
 
-type QueryObserver interface {
-	gocql.QueryObserver
-	CompletedQueryTotal() uint64
-	QueryNsTotal() uint64
-}
+type QueryObserver = gocql.QueryObserver
+type ObservedQuery = gocql.ObservedQuery
 
-type BatchObserver interface {
-	gocql.BatchObserver
-}
+type BatchObserver = gocql.BatchObserver
 
-type ConnectObserver interface {
-	gocql.ConnectObserver
-}
+type ConnectObserver = gocql.ConnectObserver
 
-type FrameHeaderObserver interface {
-	gocql.FrameHeaderObserver
-}
-
-type queryObserver struct {
-	queryTotal   uint64 // completed query count total
-	queryNsTotal uint64 // query time total
-}
-
-// NewQueryObserver returns a new QueryObserver instance.
-func NewQueryObserver() QueryObserver {
-	return &queryObserver{}
-}
-
-// ObserveQuery updates the member variables by passed ObservedQuery instance.
-func (qo *queryObserver) ObserveQuery(ctx context.Context, q gocql.ObservedQuery) {
-	atomic.AddUint64(&qo.queryTotal, 1)
-	atomic.AddUint64(&qo.queryNsTotal, uint64(q.End.Sub(q.Start)))
-}
-
-// CompletedQueryTotal returns the cumulative number of completed query during uptime.
-func (qo *queryObserver) CompletedQueryTotal() uint64 {
-	return atomic.LoadUint64(&qo.queryTotal)
-}
-
-// QueryNsTotal returns the total consumed time by query operations in nanosecond.
-func (qo *queryObserver) QueryNsTotal() uint64 {
-	return atomic.LoadUint64(&qo.queryNsTotal)
-}
+type FrameHeaderObserver = gocql.FrameHeaderObserver

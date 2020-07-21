@@ -20,6 +20,7 @@ package mem
 import (
 	"context"
 	"runtime"
+	"time"
 
 	"github.com/vdaas/vald/internal/observability/metrics"
 )
@@ -37,7 +38,7 @@ type memory struct {
 	heapReleased metrics.Int64Measure
 	stackInuse   metrics.Int64Measure
 	stackSys     metrics.Int64Measure
-	pauseTotalMs metrics.Float64Measure
+	pauseTotalMs metrics.Int64Measure
 	numGC        metrics.Int64Measure
 }
 
@@ -55,7 +56,7 @@ func New() metrics.Metric {
 		heapReleased: *metrics.Int64(metrics.ValdOrg+"/memory/heap_released", "bytes of physical memory returned to the OS", metrics.UnitBytes),
 		stackInuse:   *metrics.Int64(metrics.ValdOrg+"/memory/stack_inuse", "bytes in stack spans", metrics.UnitBytes),
 		stackSys:     *metrics.Int64(metrics.ValdOrg+"/memory/stack_sys", "bytes of stack memory obtained from the OS", metrics.UnitBytes),
-		pauseTotalMs: *metrics.Float64(metrics.ValdOrg+"/memory/pause_ms_total", "the cumulative milliseconds in GC", metrics.UnitMilliseconds),
+		pauseTotalMs: *metrics.Int64(metrics.ValdOrg+"/memory/pause_ms_total", "the cumulative milliseconds in GC", metrics.UnitMilliseconds),
 		numGC:        *metrics.Int64(metrics.ValdOrg+"/memory/gc_count", "the number of completed GC cycles", metrics.UnitDimensionless),
 	}
 }
@@ -64,9 +65,9 @@ func (m *memory) Measurement(ctx context.Context) ([]metrics.Measurement, error)
 	var mstats runtime.MemStats
 	runtime.ReadMemStats(&mstats)
 
-	pauseTotalMs := 0.0
+	pauseTotalMs := int64(0)
 	if mstats.PauseTotalNs > 0 {
-		pauseTotalMs = float64(mstats.PauseTotalNs) / 1000000.0
+		pauseTotalMs = int64(mstats.PauseTotalNs / uint64(time.Millisecond))
 	}
 
 	return []metrics.Measurement{
@@ -82,7 +83,7 @@ func (m *memory) Measurement(ctx context.Context) ([]metrics.Measurement, error)
 		m.heapReleased.M(int64(mstats.HeapReleased)),
 		m.stackInuse.M(int64(mstats.StackInuse)),
 		m.stackSys.M(int64(mstats.StackSys)),
-		m.pauseTotalMs.M(float64(pauseTotalMs)),
+		m.pauseTotalMs.M(pauseTotalMs),
 		m.numGC.M(int64(mstats.NumGC)),
 	}, nil
 }

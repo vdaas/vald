@@ -19,30 +19,31 @@ package cassandra
 
 import (
 	"context"
+	"time"
 
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
 type cassandraMetrics struct {
-	queryObserver cassandra.QueryObserver
-	queryTotal    metrics.Int64Measure
-	queryMsTotal  metrics.Float64Measure
+	queryTotal   metrics.Int64Measure
+	queryLatency metrics.Float64Measure
 }
 
-func New(qo cassandra.QueryObserver) metrics.Metric {
+type Observer interface {
+	metrics.Metric
+	cassandra.QueryObserver
+}
+
+func New() Observer {
 	return &cassandraMetrics{
-		queryObserver: qo,
-		queryTotal:    *metrics.Int64(metrics.ValdOrg+"/db/nosql/cassandra/completed_query_total", "cumulative count of completed queries", metrics.UnitDimensionless),
-		queryMsTotal:  *metrics.Float64(metrics.ValdOrg+"/db/nosql/cassandra/query_milliseconds_total", "cumulative count of query time in milliseconds", metrics.UnitMilliseconds),
+		queryTotal:   *metrics.Int64(metrics.ValdOrg+"/db/nosql/cassandra/completed_query_total", "cumulative count of completed queries", metrics.UnitDimensionless),
+		queryLatency: *metrics.Float64(metrics.ValdOrg+"/db/nosql/cassandra/query_latency", "query latency", metrics.UnitMilliseconds),
 	}
 }
 
 func (cm *cassandraMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
-	return []metrics.Measurement{
-		cm.queryTotal.M(int64(cm.queryObserver.CompletedQueryTotal())),
-		cm.queryMsTotal.M(float64(cm.queryObserver.QueryNsTotal()) / 1000000.0),
-	}, nil
+	return []metrics.Measurement{}, nil
 }
 
 func (cm *cassandraMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
@@ -55,13 +56,20 @@ func (cm *cassandraMetrics) View() []*metrics.View {
 			Name:        "db_nosql_cassandra_completed_query_total",
 			Description: "cumulative count of completed queries",
 			Measure:     &cm.queryTotal,
-			Aggregation: metrics.LastValue(),
+			Aggregation: metrics.Count(),
 		},
 		&metrics.View{
-			Name:        "db_nosql_cassandra_query_milliseconds_total",
-			Description: "cumulative count of query time in milliseconds",
-			Measure:     &cm.queryMsTotal,
-			Aggregation: metrics.LastValue(),
+			Name:        "db_nosql_cassandra_query_latency",
+			Description: "query latency",
+			Measure:     &cm.queryLatency,
+			Aggregation: metrics.DefaultMillisecondsDistribution,
 		},
 	}
+}
+
+// ObserveQuery updates the member variables by passed ObservedQuery instance.
+func (cm *cassandraMetrics) ObserveQuery(ctx context.Context, q cassandra.ObservedQuery) {
+	latencyMillis := float64(q.End.Sub(q.Start)) / float64(time.Millisecond)
+	cm.queryTotal.M(1)
+	cm.queryLatency.M(latencyMillis)
 }
