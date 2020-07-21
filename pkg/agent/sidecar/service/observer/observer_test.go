@@ -843,7 +843,7 @@ func Test_observer_onCreate(t *testing.T) {
 	}
 }
 
-func Test_observer_checkCondition(t *testing.T) {
+func Test_observer_isValidMetadata(t *testing.T) {
 	type args struct {
 		name string
 	}
@@ -958,7 +958,7 @@ func Test_observer_checkCondition(t *testing.T) {
 				ch:              test.fields.ch,
 			}
 
-			got, err := o.checkCondition(test.args.name)
+			got, err := o.isValidMetadata(test.args.name)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
