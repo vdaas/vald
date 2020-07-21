@@ -18,13 +18,18 @@
 package transport
 
 import (
+	"bytes"
 	"context"
+	"io"
+	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"go.uber.org/goleak"
 )
 
@@ -32,6 +37,7 @@ var (
 	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
 	goleakIgnoreOptions = []goleak.Option{
 		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+		goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
 	}
 )
 
@@ -360,7 +366,7 @@ func Test_ert_roundTrip(t *testing.T) {
 			},
 		},
 		{
-			name: "roundtrip return empty response with error",
+			name: "roundtrip return error",
 			args: args{
 				req: &http.Request{},
 			},
@@ -373,6 +379,44 @@ func Test_ert_roundTrip(t *testing.T) {
 			},
 			want: want{
 				err: errors.New("error"),
+			},
+		},
+		{
+			name: "roundtrip return retryable error",
+			args: args{
+				req: &http.Request{},
+			},
+			fields: fields{
+				transport: &roundTripMock{
+					RoundTripFunc: func(*http.Request) (*http.Response, error) {
+						return &http.Response{
+							StatusCode: http.StatusBadGateway,
+							Body:       ioutil.NopCloser(bytes.NewBuffer([]byte("abc"))),
+						}, nil
+					},
+				},
+			},
+			want: want{
+				err: errors.ErrTransportRetryable,
+			},
+		},
+		{
+			name: "roundtrip return retryable error even when error occurred and roundtrip response is not nil",
+			args: args{
+				req: &http.Request{},
+			},
+			fields: fields{
+				transport: &roundTripMock{
+					RoundTripFunc: func(*http.Request) (*http.Response, error) {
+						return &http.Response{
+							StatusCode: http.StatusBadGateway,
+							Body:       ioutil.NopCloser(bytes.NewBuffer([]byte("abc"))),
+						}, errors.New("dummy")
+					},
+				},
+			},
+			want: want{
+				err: errors.ErrTransportRetryable,
 			},
 		},
 	}
@@ -425,36 +469,33 @@ func Test_retryable(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           res: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           res: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return true when response status is retryable",
+			args: args{
+				res: &http.Response{
+					StatusCode: http.StatusTooManyRequests,
+				},
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return false when response status is not retryable",
+			args: args{
+				res: &http.Response{
+					StatusCode: http.StatusOK,
+				},
+			},
+			want: want{
+				want: false,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -484,44 +525,35 @@ func Test_closeBody(t *testing.T) {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want) error
+		checkFunc  func(*http.Response, want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(res *http.Response, w want) error {
+		if i, err := res.Body.Read([]byte{}); i != 0 || err != io.EOF {
+			return errors.Errorf("connection not closed, num: %d, err: %v", i, err)
+		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           res: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			rr := httptest.NewRecorder()
+			rr.WriteString("abc")
+			res := rr.Result()
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           res: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "close response body",
+				args: args{
+					res: res,
+				},
+			}
+		}(),
 	}
 
+	log.Init()
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -533,7 +565,7 @@ func Test_closeBody(t *testing.T) {
 			}
 
 			closeBody(test.args.res)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(test.args.res, test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
