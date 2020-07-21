@@ -30,8 +30,16 @@ type cassandraMetrics struct {
 	queryTotal   metrics.Int64Measure
 	queryLatency metrics.Float64Measure
 
+	keyspaceKey    metrics.Key
+	clusterNameKey metrics.Key
+	dataCenterKey  metrics.Key
+	hostIDKey      metrics.Key
+	hostPortKey    metrics.Key
+	rackKey        metrics.Key
+	versionKey     metrics.Key
+
 	mu sync.Mutex
-	ms []metrics.Measurement
+	ms []metrics.MeasurementWithTags
 }
 
 type Observer interface {
@@ -39,38 +47,98 @@ type Observer interface {
 	cassandra.QueryObserver
 }
 
-func New() Observer {
-	return &cassandraMetrics{
-		queryTotal:   *metrics.Int64(metrics.ValdOrg+"/db/nosql/cassandra/completed_query_total", "cumulative count of completed queries", metrics.UnitDimensionless),
-		queryLatency: *metrics.Float64(metrics.ValdOrg+"/db/nosql/cassandra/query_latency", "query latency", metrics.UnitMilliseconds),
-		ms:           make([]metrics.Measurement, 0),
+func New() (o Observer, err error) {
+	cms := new(cassandraMetrics)
+
+	cms.queryTotal = *metrics.Int64(
+		metrics.ValdOrg+"/db/nosql/cassandra/completed_query_total",
+		"cumulative count of completed queries",
+		metrics.UnitDimensionless,
+	)
+
+	cms.queryLatency = *metrics.Float64(
+		metrics.ValdOrg+"/db/nosql/cassandra/query_latency",
+		"query latency",
+		metrics.UnitMilliseconds,
+	)
+
+	cms.keyspaceKey, err = metrics.NewKey("cassandra_keyspace")
+	if err != nil {
+		return nil, err
 	}
+
+	cms.clusterNameKey, err = metrics.NewKey("cassandra_cluster_name")
+	if err != nil {
+		return nil, err
+	}
+
+	cms.dataCenterKey, err = metrics.NewKey("cassandra_data_center")
+	if err != nil {
+		return nil, err
+	}
+
+	cms.hostIDKey, err = metrics.NewKey("cassandra_host_id")
+	if err != nil {
+		return nil, err
+	}
+
+	cms.hostPortKey, err = metrics.NewKey("cassandra_host_port")
+	if err != nil {
+		return nil, err
+	}
+
+	cms.rackKey, err = metrics.NewKey("cassandra_rack")
+	if err != nil {
+		return nil, err
+	}
+
+	cms.versionKey, err = metrics.NewKey("cassandra_version")
+	if err != nil {
+		return nil, err
+	}
+
+	cms.ms = make([]metrics.MeasurementWithTags, 0)
+
+	return cms, nil
 }
 
 func (cm *cassandraMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-	defer func() {
-		cm.ms = make([]metrics.Measurement, 0)
-	}()
-	return cm.ms, nil
+	return []metrics.Measurement{}, nil
 }
 
 func (cm *cassandraMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
-	return []metrics.MeasurementWithTags{}, nil
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	defer func() {
+		cm.ms = make([]metrics.MeasurementWithTags, 0)
+	}()
+
+	return cm.ms, nil
 }
 
 func (cm *cassandraMetrics) View() []*metrics.View {
+	keys := []metrics.Key{
+		cm.keyspaceKey,
+		cm.clusterNameKey,
+		cm.dataCenterKey,
+		cm.hostIDKey,
+		cm.hostPortKey,
+		cm.rackKey,
+		cm.versionKey,
+	}
+
 	return []*metrics.View{
 		&metrics.View{
 			Name:        "db_nosql_cassandra_completed_query_total",
 			Description: "cumulative count of completed queries",
+			TagKeys:     keys,
 			Measure:     &cm.queryTotal,
 			Aggregation: metrics.Count(),
 		},
 		&metrics.View{
 			Name:        "db_nosql_cassandra_query_latency",
 			Description: "query latency",
+			TagKeys:     keys,
 			Measure:     &cm.queryLatency,
 			Aggregation: metrics.DefaultMillisecondsDistribution,
 		},
@@ -80,11 +148,28 @@ func (cm *cassandraMetrics) View() []*metrics.View {
 // ObserveQuery updates the member variables by passed ObservedQuery instance.
 func (cm *cassandraMetrics) ObserveQuery(ctx context.Context, q cassandra.ObservedQuery) {
 	latencyMillis := float64(q.End.Sub(q.Start)) / float64(time.Millisecond)
+	tags := map[metrics.Key]string{
+		cm.keyspaceKey:    q.Keyspace,
+		cm.clusterNameKey: q.Host.ClusterName(),
+		cm.dataCenterKey:  q.Host.DataCenter(),
+		cm.hostIDKey:      q.Host.HostID(),
+		cm.hostPortKey:    q.Host.HostnameAndPort(),
+		cm.rackKey:        q.Host.Rack(),
+		cm.versionKey:     q.Host.Version().String(),
+	}
+
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
+
 	cm.ms = append(
 		cm.ms,
-		cm.queryTotal.M(1),
-		cm.queryLatency.M(latencyMillis),
+		metrics.MeasurementWithTags{
+			Measurement: cm.queryTotal.M(1),
+			Tags:        tags,
+		},
+		metrics.MeasurementWithTags{
+			Measurement: cm.queryLatency.M(latencyMillis),
+			Tags:        tags,
+		},
 	)
 }
