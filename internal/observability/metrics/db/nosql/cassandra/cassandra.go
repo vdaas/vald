@@ -19,6 +19,7 @@ package cassandra
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
@@ -28,6 +29,9 @@ import (
 type cassandraMetrics struct {
 	queryTotal   metrics.Int64Measure
 	queryLatency metrics.Float64Measure
+
+	mu sync.Mutex
+	ms []metrics.Measurement
 }
 
 type Observer interface {
@@ -39,11 +43,17 @@ func New() Observer {
 	return &cassandraMetrics{
 		queryTotal:   *metrics.Int64(metrics.ValdOrg+"/db/nosql/cassandra/completed_query_total", "cumulative count of completed queries", metrics.UnitDimensionless),
 		queryLatency: *metrics.Float64(metrics.ValdOrg+"/db/nosql/cassandra/query_latency", "query latency", metrics.UnitMilliseconds),
+		ms:           make([]metrics.Measurement, 0),
 	}
 }
 
 func (cm *cassandraMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
-	return []metrics.Measurement{}, nil
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	defer func() {
+		cm.ms = make([]metrics.Measurement, 0)
+	}()
+	return cm.ms, nil
 }
 
 func (cm *cassandraMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
@@ -70,6 +80,11 @@ func (cm *cassandraMetrics) View() []*metrics.View {
 // ObserveQuery updates the member variables by passed ObservedQuery instance.
 func (cm *cassandraMetrics) ObserveQuery(ctx context.Context, q cassandra.ObservedQuery) {
 	latencyMillis := float64(q.End.Sub(q.Start)) / float64(time.Millisecond)
-	cm.queryTotal.M(1)
-	cm.queryLatency.M(latencyMillis)
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	cm.ms = append(
+		cm.ms,
+		cm.queryTotal.M(1),
+		cm.queryLatency.M(latencyMillis),
+	)
 }
