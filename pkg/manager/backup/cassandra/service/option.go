@@ -25,8 +25,7 @@ type Option func(*client) error
 
 var (
 	defaultOpts = []Option{
-		WithKVTable("kv"),
-		WithVKTable("vk"),
+		WithMetaTable("meta_vector"),
 	}
 )
 
@@ -40,20 +39,10 @@ func WithCassandra(db cassandra.Cassandra) Option {
 	}
 }
 
-func WithKVTable(name string) Option {
+func WithMetaTable(name string) Option {
 	return func(c *client) error {
 		if name != "" {
-			c.kvTable = name
-		}
-
-		return nil
-	}
-}
-
-func WithVKTable(name string) Option {
-	return func(c *client) error {
-		if name != "" {
-			c.vkTable = name
+			c.metaTable = name
 		}
 
 		return nil
