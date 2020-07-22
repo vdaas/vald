@@ -22,11 +22,19 @@ import (
 	"reflect"
 	"sync/atomic"
 	"testing"
+	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-
 	"go.uber.org/goleak"
+)
+
+var (
+	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+	goleakIgnoreOptions = []goleak.Option{
+		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	}
 )
 
 func TestNew(t *testing.T) {
@@ -49,42 +57,113 @@ func TestNew(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+
+		want := w.want.(*worker)
+
+		avComparer := func(x, y atomic.Value) bool {
+			return reflect.DeepEqual(x.Load(), y.Load())
+		}
+		egComparer := func(x, y errgroup.Group) bool {
+			return reflect.DeepEqual(x, y)
+		}
+
+		queueOpts := []cmp.Option{
+			cmp.AllowUnexported(*(want.queue.(*queue))),
+			cmp.Comparer(func(x, y chan JobFunc) bool {
+				return len(x) == len(y)
+			}),
+			cmp.Comparer(egComparer),
+			cmp.Comparer(avComparer),
+		}
+
+		opts := []cmp.Option{
+			cmp.AllowUnexported(*want),
+			cmp.Comparer(func(x, y queue) bool {
+				return cmp.Equal(x, y, queueOpts...)
+			}),
+			cmp.Comparer(avComparer),
+			cmp.Comparer(egComparer),
+		}
+		if diff := cmp.Diff(want, got, opts...); diff != "" {
+			return errors.New(diff)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return worker without option",
+			want: want{
+				want: &worker{
+					name:       "worker",
+					limitation: 10,
+					eg:         errgroup.Get(),
+					running: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(false)
+						return *v
+					}(),
+					queue: &queue{
+						buffer: 10,
+						eg:     errgroup.Get(),
+						qcdur:  200 * time.Millisecond,
+						qLen: func() atomic.Value {
+							v := new(atomic.Value)
+							v.Store(uint64(0))
+							return *v
+						}(),
+						running: func() atomic.Value {
+							v := new(atomic.Value)
+							v.Store(false)
+							return *v
+						}(),
+						inCh:  make(chan JobFunc, 10),
+						outCh: make(chan JobFunc, 1),
+					},
+				},
+			},
+		},
+		{
+			name: "return worker with option",
+			args: args{
+				opts: []WorkerOption{
+					WithName("test1"),
+				},
+			},
+			want: want{
+				want: &worker{
+					name:       "test1",
+					limitation: 10,
+					running: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(false)
+						return *v
+					}(),
+					eg: errgroup.Get(),
+					queue: &queue{
+						buffer: 10,
+						eg:     errgroup.Get(),
+						qcdur:  200 * time.Millisecond,
+						qLen: func() atomic.Value {
+							v := new(atomic.Value)
+							v.Store(uint64(0))
+							return *v
+						}(),
+						running: func() atomic.Value {
+							v := new(atomic.Value)
+							v.Store(false)
+							return *v
+						}(),
+						inCh:  make(chan JobFunc, 10),
+						outCh: make(chan JobFunc, 1),
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -190,7 +269,7 @@ func Test_worker_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -302,7 +381,7 @@ func Test_worker_startJobLoop(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -400,7 +479,7 @@ func Test_worker_Pause(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -497,7 +576,7 @@ func Test_worker_Resume(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -598,7 +677,7 @@ func Test_worker_IsRunning(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -700,7 +779,7 @@ func Test_worker_Name(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -802,7 +881,7 @@ func Test_worker_Len(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -904,7 +983,7 @@ func Test_worker_TotalRequested(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1006,7 +1085,7 @@ func Test_worker_TotalCompleted(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1121,7 +1200,7 @@ func Test_worker_Dispatch(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
