@@ -1,0 +1,85 @@
+<!doctype html><html><head><link rel=canonical href=https://vald.vdaas.org><meta charset=utf-8><meta name=viewport content="width=device-width"><meta name=robots content="noindex"><title>Vald | Agent on Docker</title><meta name=description content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine" }><meta name=format-detection content="telephone=no"><meta http-equiv=x-ua-compatible content="IE=edge"><meta property="og:type" content="article"><meta property="og:title" content="Vald | Agent on Docker"><meta property="og:description" content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine"><meta property="og:url" content="https://vald.vdaas.org"><meta property="og:image" content="https://vald.netlify.app/images/ogp_vald.png"><meta property="og:site_name" content="vald"><meta property="og:locale" content="en_US"><meta property="fb:app_id" content="615732422350002"><meta name=twitter:site content="@vdaas_vald"><meta name=twitter:card content="app"><link rel="shortcut icon" href=https://vald.netlify.app/favicon.ico><link rel=stylesheet type=text/css href=/css/style.min.css><link rel=stylesheet type=text/css href=/css/header.min.css><link rel=stylesheet type=text/css href=/css/footer.min.css><link rel=stylesheet type=text/css href=/css/main.min.css><script type=text/javascript src=/js/script.min.js defer></script></head><body><header class=header id=header><div class=header__content><nav class="header__nav cf"><a href=https://vald.netlify.app class=header-nav__link><picture>
+<source srcset=https://vald.netlify.app/images/vald_white.svg media="(prefers-color-scheme: dark)" class=header-nav__image><img src=https://vald.netlify.app/images/vald_color_1.svg alt class=header-nav__image></picture></a>
+<a class=header-nav__icon id=nav-btn><span class=header-nav__button></span></a><ul class=header__list id=menu><li class=header__item><a href=https://vald.netlify.app/docs/overview/about-vald class=header__link>About</a></li><li class=header__item><a href=https://vald.netlify.app/docs/tutorial/get-started class=header__link>Get Started</a></li><li class=header__item><a href=https://medium.com/@vdaas_vald target=_blank class=header__link>Blog<br></a></li><li class=header__item><a href=https://github.com/vdaas/vald target=_blank class="header__link header__link--button">Github</a></li></ul></nav></div></header><main role=main><div class=single><aside class=page><nav><button class=index id=list-button>Pages</button><ul id=list-body><li class=withchild id=menu_Overview>Overview<ul><ul><li class=index><a href=/docs/v0.0.46/overview/about-vald/>About Vald</a></li><ul><li class=index><a href=/docs/v0.0.46/overview/architecture/>Architecture</a></li></ul></li><li class=withchild id=menu_Tutorial>Tutorial<ul><ul><li class=view><a href=/docs/v0.0.46/tutorial/agent-on-docker/>Agent on Docker</a></li><ul><li class=index><a href=/docs/v0.0.46/tutorial/get-started/>Get Started</a></li></ul></li><li class=withchild id="menu_User Guides">User Guides<ul><ul><li class=index><a href=/docs/v0.0.46/user-guides/configuration/>Configuration</a></li></ul></li><li class=withchild id=menu_Usecase>Usecase<ul><ul><li class=index><a href=/docs/v0.0.46/usecase/usage-example/>Usage Example</a></li></ul></li><li class=withchild id=menu_Contributing>Contributing<ul><ul><li class=index><a href=/docs/v0.0.46/contributing/coding-style/>Coding Style</a></li><ul><li class=index><a href=/docs/v0.0.46/contributing/contributing-guide/>Contributing Guide</a></li></ul></li><li class=withchild id=menu_Support>Support<ul><ul><li class=index><a href=/docs/v0.0.46/support/contacts/>Contacts</a></li></ul></li><li class=withchild id=menu_Release>Release<ul><ul><li class=index><a href=/docs/v0.0.46/release/changelog/>Changelog</a></li></ul></li></ul><nav></aside><div class=content><div class=markdown id=markdown><h1 id=deploy-vald-agent-on-docker>Deploy Vald Agent on Docker</h1><p>Vald is designed and implemented based on Cloud-Native architecture.
+However, there may be cases that want to use only Vald Agent without Kubernetes.</p><p>This article will show you how to deploy and run the Vald Agent on Docker.
+Fashion-mnist is used as an example dataset, same as <a href=/docs/v0.0.46/tutorial/get-started>Get Started</a>.</p><h2 id=requirements>Requirements</h2><ul><li>docker: v19.0 ~</li><li>go: v1.14 ~</li><li>libhdf5 (<em>only required for this tutorial.</em>)</li></ul><p>Hdf5 is required for this tutorial. If hdf5 is not installed, please install <a href=https://www.hdfgroup.org/>hdf5</a>.</p><details><summary>[Optional] Install hdf5</summary><br><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># yum</span>
+yum install -y hdf5-devel
+
+<span style=color:#75715e># apt</span>
+apt-get install libhdf5-serial-dev
+
+<span style=color:#75715e># homebrew</span>
+brew install hdf5
+</code></pre></div></details><h2 id=deploy>Deploy</h2><p>This chapter will show you how to deploy Vald Agent on docker.<br>This chapter will use NGT for the core engine of Vald Agent.</p><ol><li><p>Clone the vdaas/vald repository</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>git clone https://github.com/vdaas/vald.git
+</code></pre></div></li><li><p>Create <code>config.yaml</code></p><p>The configuration of Vald agent for docker is set using <code>config.yaml</code><br>You can also check <a href=https://github.com/vdaas/vald/blob/master//agent/core/ngt/sample.yaml>the sample configuration</a>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>cat <span style=color:#e6db74>&lt;&lt; EOF &gt; config.yaml
+</span><span style=color:#e6db74>---
+</span><span style=color:#e6db74>version: v0.0.0
+</span><span style=color:#e6db74>time_zone: JST
+</span><span style=color:#e6db74>logging:
+</span><span style=color:#e6db74>  logger: glg
+</span><span style=color:#e6db74>  level: debug
+</span><span style=color:#e6db74>  format: raw
+</span><span style=color:#e6db74>server_config:
+</span><span style=color:#e6db74>  servers:
+</span><span style=color:#e6db74>    - name: agent-grpc
+</span><span style=color:#e6db74>      host: 0.0.0.0
+</span><span style=color:#e6db74>      port: 8081
+</span><span style=color:#e6db74>      mode: GRPC
+</span><span style=color:#e6db74>      probe_wait_time: &#34;3s&#34;
+</span><span style=color:#e6db74>      http:
+</span><span style=color:#e6db74>        shutdown_duration: &#34;5s&#34;
+</span><span style=color:#e6db74>        handler_timeout: &#34;&#34;
+</span><span style=color:#e6db74>        idle_timeout: &#34;&#34;
+</span><span style=color:#e6db74>        read_header_timeout: &#34;&#34;
+</span><span style=color:#e6db74>        read_timeout: &#34;&#34;
+</span><span style=color:#e6db74>        write_timeout: &#34;&#34;
+</span><span style=color:#e6db74>  startup_strategy:
+</span><span style=color:#e6db74>    - agent-grpc
+</span><span style=color:#e6db74>  shutdown_strategy:
+</span><span style=color:#e6db74>    - agent-grpc
+</span><span style=color:#e6db74>  full_shutdown_duration: 600s
+</span><span style=color:#e6db74>  tls:
+</span><span style=color:#e6db74>    enabled: false
+</span><span style=color:#e6db74>    # cert: /path/to/cert
+</span><span style=color:#e6db74>    # key: /path/to/key
+</span><span style=color:#e6db74>    # ca: /path/to/ca
+</span><span style=color:#e6db74>ngt:
+</span><span style=color:#e6db74>  # vector dimension
+</span><span style=color:#e6db74>  dimension: 784
+</span><span style=color:#e6db74>  # bulk insert chunk size
+</span><span style=color:#e6db74>  bulk_insert_chunk_size: 10
+</span><span style=color:#e6db74>  # distance_type, which should be &#34;l1&#34;, &#34;l2&#34; &#34;angle&#34;, &#34;hamming&#34;, &#34;cosine&#34;, &#34;normalizedangle&#34; or &#34;nomralizedcosine&#34;
+</span><span style=color:#e6db74>  distance_type: l2
+</span><span style=color:#e6db74>  # object_type, which should be &#34;float&#34; or &#34;uint8&#34;
+</span><span style=color:#e6db74>  object_type: float
+</span><span style=color:#e6db74>  # creation edge size
+</span><span style=color:#e6db74>  creation_edge_size: 20
+</span><span style=color:#e6db74>  # search edge size
+</span><span style=color:#e6db74>  search_edge_size: 10
+</span><span style=color:#e6db74>  # in-memory mode enabled
+</span><span style=color:#e6db74>  enable_in_memory_mode: true
+</span><span style=color:#e6db74>  # The limit duration of automatic indexing
+</span><span style=color:#e6db74>  # auto_index_duration_limit should be 30m-6h for producation use. Below setting is a just example
+</span><span style=color:#e6db74>  auto_index_duration_limit: 1m
+</span><span style=color:#e6db74>  # Check duration of automatic indexing.
+</span><span style=color:#e6db74>  # auto_index_check_duration be 10m-1h for producation use. Below setting is a just example
+</span><span style=color:#e6db74>  auto_index_check_duration: 10s
+</span><span style=color:#e6db74>  # The number of cache to trigger automatic indexing
+</span><span style=color:#e6db74>  auto_index_length: 100
+</span><span style=color:#e6db74>EOF</span>
+</code></pre></div></li><li><p>Deploy Vald Agent on Docker</p><p>To deploy Vald agent on docker with <code>config.yaml</code>, you can run below command.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>docker run -v <span style=color:#66d9ef>$(</span>pwd<span style=color:#66d9ef>)</span>/config.yaml:/etc/server/config.yaml -p 8081:8081 --rm -it vdaas/vald-agent-ngt
+</code></pre></div></li><li><p>Verify</p><p>If the deployment success, you can confirm the output will be similar to below.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>2020-07-01 03:02:41	<span style=color:#f92672>[</span>INFO<span style=color:#f92672>]</span>:	maxprocs: Leaving GOMAXPROCS<span style=color:#f92672>=</span>4: CPU quota undefined
+2020-07-01 03:02:41	<span style=color:#f92672>[</span>INFO<span style=color:#f92672>]</span>:	service agent ngt v0.0.0 starting...
+2020-07-01 03:02:41	<span style=color:#f92672>[</span>INFO<span style=color:#f92672>]</span>:	daemon start
+2020-07-01 03:02:41	<span style=color:#f92672>[</span>INFO<span style=color:#f92672>]</span>:	server agent-grpc executing preStartFunc
+2020-07-01 12:02:41	<span style=color:#f92672>[</span>INFO<span style=color:#f92672>]</span>:	gRPC server agent-grpc starting on 0.0.0.0:8081
+</code></pre></div></li></ol><h2 id=run-using-example-code>Run using example code</h2><ol><li><p>Download dataset</p><p>In this tutorial. we use <a href=https://github.com/zalandoresearch/fashion-mnist>fashion-mnist</a> as a dataset for indexing and search query.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># move to working directory</span>
+cd example/client/agent
+   
+<span style=color:#75715e># download fashion-mnist testing dataset</span>
+wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
+</code></pre></div></li><li><p>Running example</p><p>Vald provides multiple language client libraries such as Go, Java, Node.js, Python, and so on.<br>In this example, the fashion-mnist dataset will insert into the Vald and search using <a href=https://github.com/vdaas/vald-client-go>vald-client-go</a>.</p><p>We use <a href=https://github.com/vdaas/vald/blob/master/example/client/agent/main.go><code>example/client/agent/main.go</code></a> to run the example.
+The example code is the same as running an example only Vald agent on Kubernetes.
+If you want to learn the detail of running an example, please refer to the tutorial of <a href=/docs/v0.0.46/tutorial/get-started/#run-using-example-code-1>standalone Vald Agent on kubernetes</a>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># run example</span>
+go run main.go
+</code></pre></div><p>Note:</p><ul><li>We recommend you to run <code>CreateIndex()</code> after <code>Insert()</code> without waiting auto indexing.</li></ul></li><li><p>Clean Up</p><p>Stop the Vald Agent docker container via <code>Ctrl+C</code>.</p></li></ol></div><aside class=current id=current><button class=menu><span class=dot></span></button><nav id=TableOfContents><ul><li><a href=#requirements>Requirements</a></li><li><a href=#deploy>Deploy</a></li><li><a href=#run-using-example-code>Run using example code</a></li></ul></nav></aside></div></div></main><footer class=footer><div class="footer__content cf"><ul class=footer__list><li class=footer__item><a href=https://vald.netlify.app/docs/overview/about-vald class=footer__link>About<br></a></li><li class=footer__item><a href=https://vald.netlify.app/docs/tutorial/get-started class=footer__link>Get Started<br></a></li><li class=footer__item><a href=https://medium.com/@vdaas_vald target=_blank class=footer__link>Blog<br></a></li><li class=footer__item><a href=https://github.com/vdaas/vald target=_blank class="footer__link footer__link--button">Github<br></a></li></ul></div><p class=footer__copylight>©2019-2020 vald.vdaas.org Vald team</p></footer></body></html>

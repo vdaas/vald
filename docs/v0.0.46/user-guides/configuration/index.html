@@ -1,0 +1,155 @@
+<!doctype html><html><head><link rel=canonical href=https://vald.vdaas.org><meta charset=utf-8><meta name=viewport content="width=device-width"><meta name=robots content="noindex"><title>Vald | Configuration</title><meta name=description content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine" }><meta name=format-detection content="telephone=no"><meta http-equiv=x-ua-compatible content="IE=edge"><meta property="og:type" content="article"><meta property="og:title" content="Vald | Configuration"><meta property="og:description" content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine"><meta property="og:url" content="https://vald.vdaas.org"><meta property="og:image" content="https://vald.netlify.app/images/ogp_vald.png"><meta property="og:site_name" content="vald"><meta property="og:locale" content="en_US"><meta property="fb:app_id" content="615732422350002"><meta name=twitter:site content="@vdaas_vald"><meta name=twitter:card content="app"><link rel="shortcut icon" href=https://vald.netlify.app/favicon.ico><link rel=stylesheet type=text/css href=/css/style.min.css><link rel=stylesheet type=text/css href=/css/header.min.css><link rel=stylesheet type=text/css href=/css/footer.min.css><link rel=stylesheet type=text/css href=/css/main.min.css><script type=text/javascript src=/js/script.min.js defer></script></head><body><header class=header id=header><div class=header__content><nav class="header__nav cf"><a href=https://vald.netlify.app class=header-nav__link><picture>
+<source srcset=https://vald.netlify.app/images/vald_white.svg media="(prefers-color-scheme: dark)" class=header-nav__image><img src=https://vald.netlify.app/images/vald_color_1.svg alt class=header-nav__image></picture></a>
+<a class=header-nav__icon id=nav-btn><span class=header-nav__button></span></a><ul class=header__list id=menu><li class=header__item><a href=https://vald.netlify.app/docs/overview/about-vald class=header__link>About</a></li><li class=header__item><a href=https://vald.netlify.app/docs/tutorial/get-started class=header__link>Get Started</a></li><li class=header__item><a href=https://medium.com/@vdaas_vald target=_blank class=header__link>Blog<br></a></li><li class=header__item><a href=https://github.com/vdaas/vald target=_blank class="header__link header__link--button">Github</a></li></ul></nav></div></header><main role=main><div class=single><aside class=page><nav><button class=index id=list-button>Pages</button><ul id=list-body><li class=withchild id=menu_Overview>Overview<ul><ul><li class=index><a href=/docs/v0.0.46/overview/about-vald/>About Vald</a></li><ul><li class=index><a href=/docs/v0.0.46/overview/architecture/>Architecture</a></li></ul></li><li class=withchild id=menu_Tutorial>Tutorial<ul><ul><li class=index><a href=/docs/v0.0.46/tutorial/agent-on-docker/>Agent on Docker</a></li><ul><li class=index><a href=/docs/v0.0.46/tutorial/get-started/>Get Started</a></li></ul></li><li class=withchild id="menu_User Guides">User Guides<ul><ul><li class=view><a href=/docs/v0.0.46/user-guides/configuration/>Configuration</a></li></ul></li><li class=withchild id=menu_Usecase>Usecase<ul><ul><li class=index><a href=/docs/v0.0.46/usecase/usage-example/>Usage Example</a></li></ul></li><li class=withchild id=menu_Contributing>Contributing<ul><ul><li class=index><a href=/docs/v0.0.46/contributing/coding-style/>Coding Style</a></li><ul><li class=index><a href=/docs/v0.0.46/contributing/contributing-guide/>Contributing Guide</a></li></ul></li><li class=withchild id=menu_Support>Support<ul><ul><li class=index><a href=/docs/v0.0.46/support/contacts/>Contacts</a></li></ul></li><li class=withchild id=menu_Release>Release<ul><ul><li class=index><a href=/docs/v0.0.46/release/changelog/>Changelog</a></li></ul></li></ul><nav></aside><div class=content><div class=markdown id=markdown><h1 id=configurations>Configurations</h1><p>This page introduces best practices to set up values for Vald Helm Chart.</p><h2 id=vald-helm-chart-overview>Vald Helm Chart Overview</h2><p>Vald Helm Chart&rsquo;s <code>values.yaml</code> is composed of the following sections:</p><ul><li><code>defaults</code><ul><li>default configurations of common parts</li><li>be overridden by the fields in each section.</li></ul></li><li><code>gateway</code><ul><li>configurations of vald-gateway</li></ul></li><li><code>agent</code><ul><li>configurations of vald-agent</li></ul></li><li><code>discoverer</code><ul><li>configurations of vald-discoverer</li></ul></li><li><code>compressor</code><ul><li>configurations of vald-manager-compressor</li></ul></li><li><code>backupManager</code><ul><li>configurations of vald-manager-backup</li></ul></li><li><code>indexManager</code><ul><li>configurations of vald-manager-index</li></ul></li><li><code>meta</code><ul><li>configurations of vald-meta</li></ul></li><li><code>initializer</code><ul><li>configurations of MySQL, Cassandra and Redis initializer jobs</li></ul></li></ul><p>In each section, users can configure the deployments and behaviors of each component.</p><p>The detailed descriptions of each value can be found in <a href=https://github.com/vdaas/vald/tree/master/charts/vald>README of Vald Helm Chart</a>.</p><h2 id=notable-values-in-vald-helm-chart>Notable values in Vald Helm Chart</h2><h3 id=basics>Basics</h3><h4 id=specify-image-tag>Specify image tag</h4><p>It is highly recommended to specify Vald version.
+You can specify image version by set <code>image.tag</code> field in each component (<code>[component].image.tag</code>) or <code>defaults</code> section.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#66d9ef>defaults</span>:
+  <span style=color:#66d9ef>image</span>:
+    <span style=color:#66d9ef>tag</span>: master
+</code></pre></div><p>or you can use the older image only for agent,</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#66d9ef>agent</span>:
+  <span style=color:#66d9ef>image</span>:
+    <span style=color:#66d9ef>tag</span>: v0<span style=color:#ae81ff>.0.31</span>
+</code></pre></div><h4 id=specify-appropriate-logging-level-and-format>Specify appropriate logging level and format</h4><p>The default logging levels and formats are configured in <code>defaults.logging.level</code> and <code>defaults.logging.format</code>.
+You can also specify logging levels and formats in each component section (<code>[component].logging</code>).</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#66d9ef>defaults</span>:
+  <span style=color:#66d9ef>logging</span>:
+    <span style=color:#66d9ef>level</span>: info
+    <span style=color:#66d9ef>format</span>: raw
+</code></pre></div><p>you can specify log level <code>debug</code> and json format for gateway by the followings:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#66d9ef>gateway</span>:
+  <span style=color:#66d9ef>logging</span>:
+    <span style=color:#66d9ef>level</span>: debug
+    <span style=color:#66d9ef>format</span>: json
+</code></pre></div><h4 id=servers>Servers</h4><p>Each Vald component has several types of servers.
+They can be configured by specifying the values in <code>defaults.server_config</code> and can be overwritten by specifying <code>[component].server_config</code>.</p><p>Examples:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#66d9ef>defaults</span>:
+  <span style=color:#66d9ef>server_config</span>:
+    <span style=color:#66d9ef>servers</span>:
+      <span style=color:#66d9ef>grpc</span>:
+        <span style=color:#66d9ef>enabled</span>: <span style=color:#66d9ef>true</span>
+        <span style=color:#66d9ef>host</span>: <span style=color:#ae81ff>0.0.0.0</span>
+        <span style=color:#66d9ef>port</span>: <span style=color:#ae81ff>8081</span>
+        <span style=color:#66d9ef>servicePort</span>: <span style=color:#ae81ff>8081</span>
+        <span style=color:#66d9ef>server</span>:
+          <span style=color:#66d9ef>mode</span>: GRPC
+          ...
+</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#66d9ef>gateway</span>:
+  <span style=color:#66d9ef>server_config</span>:
+    <span style=color:#66d9ef>servers</span>:
+      <span style=color:#66d9ef>rest</span>:
+        <span style=color:#66d9ef>enabled</span>: <span style=color:#66d9ef>true</span>
+        <span style=color:#66d9ef>host</span>: <span style=color:#ae81ff>0.0.0.0</span>
+        <span style=color:#66d9ef>port</span>: <span style=color:#ae81ff>8080</span>
+        <span style=color:#66d9ef>servicePort</span>: <span style=color:#ae81ff>8080</span>
+        <span style=color:#66d9ef>server</span>:
+          <span style=color:#66d9ef>mode</span>: REST
+          ...
+</code></pre></div><h5 id=grpc-server>gRPC server</h5><p>gRPC server should be enabled, because all Vald components are using gRPC to communicate with other Vald components.</p><p>The API specs are placed in <a href=https://github.com/vdaas/vald/tree/master/apis/docs>apis/docs</a>.</p><h5 id=rest-server>REST server</h5><p>REST server is optional.</p><p>The swagger specs are placed in <a href=https://github.com/vdaas/vald/tree/master/apis/swagger>apis/swagger</a>.</p><h5 id=health-check-servers>Health check servers</h5><p>There are two types of health check servers are built-in, liveness and readiness.
+They are used as servers for <a href=https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/>Kubernetes liveness and readiness probe</a>.</p><p>By default, liveness servers are disabled for agent and compressor, because the liveness probes may accidentally kill these components.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#66d9ef>agent</span>:
+  <span style=color:#66d9ef>server_config</span>:
+    <span style=color:#66d9ef>healths</span>:
+      <span style=color:#66d9ef>liveness</span>:
+        <span style=color:#66d9ef>enabled</span>: <span style=color:#66d9ef>false</span>
+</code></pre></div><h5 id=metrics-servers>Metrics servers</h5><p>Metrics servers are useful for debugging and monitor Vald components.
+There are two types of metrics servers, pprof and Prometheus.</p><p>pprof server is a server that implemented using Go&rsquo;s net/http/pprof package.
+You can use <a href=https://github.com/google/pprof>google&rsquo;s pprof</a> to analyze the profiling data exported from it.</p><p>Prometheus server is a <a href=https://prometheus.io/>Prometheus</a> exporter.
+It is required to set the <code>observability</code> section on each Vald component to enable the monitoring using Prometheus.</p><h4 id=observability>Observability</h4><p>The observability features are useful for monitoring Vald components.
+They can be enabled by setting the value <code>true</code> on the <code>defaults.observability.enabled</code> field or override it in each component (<code>[component].observability.enabled</code>). And also, enable each feature by setting the value <code>true</code> on its <code>enabled</code> field.</p><p>If observability features are enabled, the metrics will be collected periodically. the duration can be set on <code>observability.collector.duration</code>.</p><p>Please refer to <a href=./operations>Vald operation guide</a> for more detail.</p><h3 id=agents>Agents</h3><h4 id=ngt>NGT</h4><p>Agent-NGT uses <a href=https://github.com/yahoojapan/NGT>yahoojapan/NGT</a> as a core library for searching vector.
+The behaviors of NGT can be configured by setting <code>agent.ngt</code> field object.</p><p>The important parameters are the followings:</p><ul><li><code>agent.ngt.dimension</code></li><li><code>agent.ngt.distance_type</code></li><li><code>agent.ngt.object_type</code></li></ul><p>Users should configure these parameters first for their use case.</p><p>For further details, please read <a href=https://github.com/yahoojapan/NGT/wiki>NGT wiki</a>.</p><p>Agent-NGT has a feature to start indexing automatically.
+The behavior of this feature can be configured with these parameters:</p><ul><li><code>agent.ngt.auto_index_duration_limit</code></li><li><code>agent.ngt.auto_index_check_duration</code></li><li><code>agent.ngt.auto_index_length</code></li></ul><h4 id=resource-requests-and-limits-pod-priorities>Resource requests and limits, Pod priorities</h4><p>Because agent places indices on memory, termination of agent pods mean loss of indices.
+It is important to set resource requests and limits appropriately not to terminate agent pods.</p><p>It is highly recommended to request a totally 40% of cluster memory for agent pods.
+And also it is highly recommended not to set resource limits to agent pods.</p><p>Pod priorities are also useful for saving agent pods from eviction.
+By default, very high priority is set to agent pods in the Chart.</p><h4 id=pod-scheduling>Pod scheduling</h4><p>It is recommended to schedule agent pods on different nodes as much as possible.
+To achieve this, the following <a href=https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity>podAntiAffinity</a> is set by default.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#66d9ef>agent</span>:
+  <span style=color:#66d9ef>affinity</span>:
+    <span style=color:#66d9ef>podAntiAffinity</span>:
+      <span style=color:#66d9ef>preferredDuringSchedulingIgnoredDuringExecution</span>:
+        - <span style=color:#66d9ef>weight</span>: <span style=color:#ae81ff>100</span>
+          <span style=color:#66d9ef>podAffinityTerm</span>:
+            <span style=color:#66d9ef>topologyKey</span>: kubernetes.io/hostname
+            <span style=color:#66d9ef>labelSelector</span>:
+              <span style=color:#66d9ef>matchExpressions</span>:
+                - <span style=color:#66d9ef>key</span>: app
+                  <span style=color:#66d9ef>operator</span>: In
+                  <span style=color:#66d9ef>values</span>:
+                    - vald-agent-ngt
+</code></pre></div><p>It can be also achieved by using <a href=https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/>pod topology spread constraints</a>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#66d9ef>agent</span>:
+  <span style=color:#66d9ef>topologySpreadConstraints</span>:
+    - <span style=color:#66d9ef>topologyKey</span>: node
+      <span style=color:#66d9ef>maxSkew</span>: <span style=color:#ae81ff>1</span>
+      <span style=color:#66d9ef>whenUnsatisfiable</span>: ScheduleAnyway
+      <span style=color:#66d9ef>labelSelector</span>:
+        <span style=color:#66d9ef>matchLabels</span>:
+          <span style=color:#66d9ef>app</span>: vald-agent-ngt
+  <span style=color:#66d9ef>affinity</span>:
+    <span style=color:#66d9ef>podAntiAffinity</span>:
+      <span style=color:#66d9ef>preferredDuringSchedulingIgnoredDuringExecution</span>: [] <span style=color:#75715e># to disable default settings</span>
+</code></pre></div><h3 id=gateway>Gateway</h3><h4 id=ingress>Ingress</h4><p>Ingress for gateway can be configured by <code>gateway.ingress</code> field object.
+It is important to set your host to <code>gateway.ingress.host</code> field.
+<code>gateway.ingress.servicePort</code> should be <code>grpc</code> or <code>rest</code>.</p><p>If you&rsquo;re using Vald-Helm-operator, you can check the ingress host by using kubectl command.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>$ kubectl get valdrelease
+NAME           INGRESS                  AGE
+vald-cluster   gateway.vald.vdaas.org   9d
+</code></pre></div><h4 id=index-replica>Index replica</h4><p><code>gateway.gateway_config.index_replica</code> means how many number of agent pods that a vector will be inserted.</p><h4 id=discoverer-request-duration>Discoverer request duration</h4><p><code>gateway.gateway_config.discoverer.duration</code> means a frequency to ask agent pod&rsquo;s IPs to the discoverer.
+If discoverer&rsquo;s CPU utilization is too high, try to make this value longer or reduce the number of gateway pods.</p><h4 id=meta-cache>Meta cache</h4><p>Gateway has a cache functionality for metadata.
+It can be enabled by <code>gateway.gateway_config.meta.enable_cache</code> and the behaviors controlled by <code>gateway.gateway_config.meta.cache_expiration</code> and <code>gateway.gateway_config.meta.expired_cache_check_duration</code>.</p><h4 id=resource-requests-and-limits>Resource requests and limits</h4><p>Gateway&rsquo;s resource requests and limits depend on the request traffic and available resources.
+If the request traffic varies largely, it is recommended to enable HPA for gateway and adjust the resource requests.</p><h4 id=init-containers>Init containers</h4><p>Gateway should wait for discoverer, agent, meta, and compressor to be ready because it depends on these components.
+For this purpose, &ldquo;wait-for&rdquo; type initContainers are provided in the Chart.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml>  <span style=color:#66d9ef>initContainers</span>:
+    - <span style=color:#66d9ef>type</span>: wait-for
+      <span style=color:#66d9ef>name</span>: wait-for-manager-compressor
+      <span style=color:#66d9ef>target</span>: compressor
+      <span style=color:#66d9ef>image</span>: busybox
+      <span style=color:#66d9ef>sleepDuration</span>: <span style=color:#ae81ff>2</span>
+      ...
+</code></pre></div><p>&ldquo;wait-for&rdquo; type initContainers check readiness port of the target component is ok or not every &ldquo;sleepDuration&rdquo; seconds.
+Once it became ready, the initContainer returns zero and become &ldquo;Completed&rdquo; status.</p><p>The definitions can be found in <code>_helpers.tpl</code> in Chart&rsquo;s templates directory.</p><h3 id=discoverer>Discoverer</h3><h4 id=resource-requests-and-limits-1>Resource requests and limits</h4><p>The number of discoverer pods and resource limits are determined by the configurations of your gateways and index managers because APIs of discoverers are called by gateways and index managers.
+Discoverer CPU loads depend on API request traffic = (the number of gateways x gateway&rsquo;s request duration) + (the number of index managers x index manager&rsquo;s request duration).</p><h3 id=index-manager>Index Manager</h3><h4 id=init-containers-1>Init containers</h4><p>Index managers depend on discoverer and agents.
+It is recommended to use initContainers to wait for these components to be ready.</p><h4 id=discoverer-request-duration-1>Discoverer request duration</h4><p>Same as gateway, <code>indexManager.indexer.discoverer.duration</code> means a frequency to ask agent pod IPs to discoverer.</p><h3 id=replication-manager>Replication Manager</h3><p>TBW</p><h3 id=meta-backup-manager>Meta, Backup Manager</h3><h4 id=init-containers-2>Init containers</h4><p>Meta and backup manager depends on their backend databases such as Cassandra, MySQL, Redis, etc&mldr;
+The Chart provides useful initContainers for waiting for these databases.
+They can be used as follows:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml>  <span style=color:#66d9ef>initContainers</span>:
+    - <span style=color:#66d9ef>type</span>: wait-for-mysql
+      <span style=color:#66d9ef>name</span>: wait-for-mysql
+      <span style=color:#66d9ef>image</span>: mysql:latest
+      <span style=color:#66d9ef>mysql</span>:
+        <span style=color:#66d9ef>hosts</span>:
+          - mysql.default.svc.cluster.local
+        <span style=color:#66d9ef>options</span>:
+          - <span style=color:#e6db74>&#34;-uroot&#34;</span>
+          - <span style=color:#e6db74>&#34;-p${MYSQL_PASSWORD}&#34;</span>
+      <span style=color:#66d9ef>sleepDuration</span>: <span style=color:#ae81ff>2</span>
+      <span style=color:#66d9ef>env</span>:
+      - <span style=color:#66d9ef>name</span>: MYSQL_PASSWORD
+        <span style=color:#66d9ef>valueFrom</span>:
+          <span style=color:#66d9ef>secretKeyRef</span>:
+            <span style=color:#66d9ef>name</span>: mysql-secret
+            <span style=color:#66d9ef>key</span>: password
+</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml>  <span style=color:#66d9ef>initContainers</span>:
+    - <span style=color:#66d9ef>type</span>: wait-for-redis
+      <span style=color:#66d9ef>name</span>: wait-for-redis
+      <span style=color:#66d9ef>image</span>: redis:latest
+      <span style=color:#66d9ef>redis</span>:
+        <span style=color:#66d9ef>hosts</span>:
+          - redis.default.svc.cluster.local
+        <span style=color:#66d9ef>options</span>:
+          - <span style=color:#e6db74>&#34;-a ${REDIS_PASSWORD}&#34;</span>
+      <span style=color:#66d9ef>sleepDuration</span>: <span style=color:#ae81ff>2</span>
+      <span style=color:#66d9ef>env</span>:
+        - <span style=color:#66d9ef>name</span>: REDIS_PASSWORD
+          <span style=color:#66d9ef>valueFrom</span>:
+            <span style=color:#66d9ef>secretKeyRef</span>:
+              <span style=color:#66d9ef>name</span>: redis-secret
+              <span style=color:#66d9ef>key</span>: password
+</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml>  <span style=color:#66d9ef>initContainers</span>:
+    - <span style=color:#66d9ef>type</span>: wait-for-cassandra
+      <span style=color:#66d9ef>name</span>: wait-for-cassandra
+      <span style=color:#66d9ef>image</span>: cassandra:latest
+      <span style=color:#66d9ef>cassandra</span>:
+        <span style=color:#66d9ef>hosts</span>:
+          - cassandra<span style=color:#ae81ff>-0.</span>cassandra.default.svc.cluster.local
+          - cassandra<span style=color:#ae81ff>-1.</span>cassandra.default.svc.cluster.local
+          - cassandra<span style=color:#ae81ff>-2.</span>cassandra.default.svc.cluster.local
+        <span style=color:#66d9ef>options</span>:
+          - <span style=color:#e6db74>&#34;-uroot&#34;</span>
+          - <span style=color:#e6db74>&#34;-p${CASSANDRA_PASSWORD}&#34;</span>
+      <span style=color:#66d9ef>sleepDuration</span>: <span style=color:#ae81ff>2</span>
+      <span style=color:#66d9ef>env</span>:
+      - <span style=color:#66d9ef>name</span>: CASSANDRA_PASSWORD
+        <span style=color:#66d9ef>valueFrom</span>:
+          <span style=color:#66d9ef>secretKeyRef</span>:
+            <span style=color:#66d9ef>name</span>: cassandra-secret
+            <span style=color:#66d9ef>key</span>: password
+</code></pre></div><p>The definitions can be found in <code>_helpers.tpl</code> in Chart&rsquo;s templates directory.</p><h2 id=advanced>Advanced</h2><h3 id=ingressegress-filters>Ingress/Egress Filters</h3><p>TBW</p><h3 id=references>References</h3><p>For further details, there are references of Helm values in GitHub Vald repository.</p><ul><li><a href=https://github.com/vdaas/vald/tree/master/charts/vald>README of Vald Helm Chart</a></li><li><a href=https://github.com/vdaas/vald/tree/master/charts/vald-helm-operator>README of Vald-Helm-Operator Chart</a></li></ul></div><aside class=current id=current><button class=menu><span class=dot></span></button><nav id=TableOfContents><ul><li><a href=#vald-helm-chart-overview>Vald Helm Chart Overview</a></li><li><a href=#notable-values-in-vald-helm-chart>Notable values in Vald Helm Chart</a><ul><li><a href=#basics>Basics</a></li><li><a href=#agents>Agents</a></li><li><a href=#gateway>Gateway</a></li><li><a href=#discoverer>Discoverer</a></li><li><a href=#index-manager>Index Manager</a></li><li><a href=#replication-manager>Replication Manager</a></li><li><a href=#meta-backup-manager>Meta, Backup Manager</a></li></ul></li><li><a href=#advanced>Advanced</a><ul><li><a href=#ingressegress-filters>Ingress/Egress Filters</a></li><li><a href=#references>References</a></li></ul></li></ul></nav></aside></div></div></main><footer class=footer><div class="footer__content cf"><ul class=footer__list><li class=footer__item><a href=https://vald.netlify.app/docs/overview/about-vald class=footer__link>About<br></a></li><li class=footer__item><a href=https://vald.netlify.app/docs/tutorial/get-started class=footer__link>Get Started<br></a></li><li class=footer__item><a href=https://medium.com/@vdaas_vald target=_blank class=footer__link>Blog<br></a></li><li class=footer__item><a href=https://github.com/vdaas/vald target=_blank class="footer__link footer__link--button">Github<br></a></li></ul></div><p class=footer__copylight>©2019-2020 vald.vdaas.org Vald team</p></footer></body></html>

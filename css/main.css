@@ -374,7 +374,6 @@ pre {
   font-size: 85%;
   line-height: 1.45;
   background-color: #f6f8fa;
-  border-radius: 3px;
   margin-bottom: 8px;
   font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
   letter-spacing: 0;
@@ -396,6 +395,25 @@ button {
 
 main {
   width: 100%;
+}
+
+
+details {
+  margin-bottom: 12px;
+}
+
+details #text{
+  margin: 12px 0;
+}
+
+details br{
+  display: none;
+}
+
+details > summary  {
+  color: #ffffff;
+  padding: 6px 12px;
+  background-color: #272822;
 }
 
 .single {
@@ -563,6 +581,25 @@ main {
   margin-bottom: 2px;
 }
 
+.page button.index::before {
+  display: inline-block;
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin-right: 9px;
+  border-top: 2px solid #006076;
+  border-right: 2px solid #006076;
+  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+  margin-bottom: 2px;
+}
+
+.page button.index.open::before {
+  -webkit-transform: rotate(135deg);
+  transform: rotate(135deg);
+  margin-bottom: 2px;
+}
+
 /*content*/
 .markdown {
   margin: 0 24px 64px 24px;
@@ -661,6 +698,10 @@ main {
 
 .markdown li p {
   margin: 0 0 12px 0;
+}
+
+.markdown .highlight {
+    margin-bottom: 16px;
 }
 
 .error {

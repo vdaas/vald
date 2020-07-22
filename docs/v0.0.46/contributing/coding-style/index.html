@@ -1,0 +1,368 @@
+<!doctype html><html><head><link rel=canonical href=https://vald.vdaas.org><meta charset=utf-8><meta name=viewport content="width=device-width"><meta name=robots content="noindex"><title>Vald | Coding Style</title><meta name=description content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine" }><meta name=format-detection content="telephone=no"><meta http-equiv=x-ua-compatible content="IE=edge"><meta property="og:type" content="article"><meta property="og:title" content="Vald | Coding Style"><meta property="og:description" content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine"><meta property="og:url" content="https://vald.vdaas.org"><meta property="og:image" content="https://vald.netlify.app/images/ogp_vald.png"><meta property="og:site_name" content="vald"><meta property="og:locale" content="en_US"><meta property="fb:app_id" content="615732422350002"><meta name=twitter:site content="@vdaas_vald"><meta name=twitter:card content="app"><link rel="shortcut icon" href=https://vald.netlify.app/favicon.ico><link rel=stylesheet type=text/css href=/css/style.min.css><link rel=stylesheet type=text/css href=/css/header.min.css><link rel=stylesheet type=text/css href=/css/footer.min.css><link rel=stylesheet type=text/css href=/css/main.min.css><script type=text/javascript src=/js/script.min.js defer></script></head><body><header class=header id=header><div class=header__content><nav class="header__nav cf"><a href=https://vald.netlify.app class=header-nav__link><picture>
+<source srcset=https://vald.netlify.app/images/vald_white.svg media="(prefers-color-scheme: dark)" class=header-nav__image><img src=https://vald.netlify.app/images/vald_color_1.svg alt class=header-nav__image></picture></a>
+<a class=header-nav__icon id=nav-btn><span class=header-nav__button></span></a><ul class=header__list id=menu><li class=header__item><a href=https://vald.netlify.app/docs/overview/about-vald class=header__link>About</a></li><li class=header__item><a href=https://vald.netlify.app/docs/tutorial/get-started class=header__link>Get Started</a></li><li class=header__item><a href=https://medium.com/@vdaas_vald target=_blank class=header__link>Blog<br></a></li><li class=header__item><a href=https://github.com/vdaas/vald target=_blank class="header__link header__link--button">Github</a></li></ul></nav></div></header><main role=main><div class=single><aside class=page><nav><button class=index id=list-button>Pages</button><ul id=list-body><li class=withchild id=menu_Overview>Overview<ul><ul><li class=index><a href=/docs/v0.0.46/overview/about-vald/>About Vald</a></li><ul><li class=index><a href=/docs/v0.0.46/overview/architecture/>Architecture</a></li></ul></li><li class=withchild id=menu_Tutorial>Tutorial<ul><ul><li class=index><a href=/docs/v0.0.46/tutorial/agent-on-docker/>Agent on Docker</a></li><ul><li class=index><a href=/docs/v0.0.46/tutorial/get-started/>Get Started</a></li></ul></li><li class=withchild id="menu_User Guides">User Guides<ul><ul><li class=index><a href=/docs/v0.0.46/user-guides/configuration/>Configuration</a></li></ul></li><li class=withchild id=menu_Usecase>Usecase<ul><ul><li class=index><a href=/docs/v0.0.46/usecase/usage-example/>Usage Example</a></li></ul></li><li class=withchild id=menu_Contributing>Contributing<ul><ul><li class=view><a href=/docs/v0.0.46/contributing/coding-style/>Coding Style</a></li><ul><li class=index><a href=/docs/v0.0.46/contributing/contributing-guide/>Contributing Guide</a></li></ul></li><li class=withchild id=menu_Support>Support<ul><ul><li class=index><a href=/docs/v0.0.46/support/contacts/>Contacts</a></li></ul></li><li class=withchild id=menu_Release>Release<ul><ul><li class=index><a href=/docs/v0.0.46/release/changelog/>Changelog</a></li></ul></li></ul><nav></aside><div class=content><div class=markdown id=markdown><h1 id=go-style-guide-in-vald>Go Style Guide in Vald</h1><h2 id=introduction>Introduction</h2><p>This guideline includes the coding style for all Vald contributors and reviewers. Everyone should follow this guideline to keep the style consistent so everyone can understand and contribute to Vald easier once they learn this guideline. You should have the basic knowledge of how to write Go before contributing to Vald. If you found any bug please create <a href="https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report&title=">a GitHub issue</a> and we will work on it.</p><p>Please also read the <a href=/docs/v0.0.46/contributing/contributing-guide>Contribution guideline</a> before you start contributing to Vald.</p><h2 id=code-formatting-and-naming-convension>Code Formatting and Naming Convension</h2><p>Code formatting and naming conventions affect coding readability and maintainability. Every developer has a different coding style, luckily Go provides tools to format source code and checking for the potential issue in the source code. We recommend using <a href=https://github.com/golang/tools/tree/master//goimports>goimports</a> to format the source code in Vald, and <a href=https://github.com/golangci/golangci-lint>golangci-lint</a> with <code>--enable-all</code> option. We suggest everyone install the plugin for your editor to format the code once you edit the code automatically, and we suggest using <code>make update/goimports</code> command if you want to format the source code manually.</p><p>But having tools to format source code doesn&rsquo;t mean you do not need to care the formatting of the code, for example:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#75715e>// bad
+</span><span style=color:#75715e></span><span style=color:#a6e22e>badStr</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>&#34;apiVersion: v1\n&#34;</span> <span style=color:#f92672>+</span>
+   <span style=color:#e6db74>&#34;kind: Service\n&#34;</span> <span style=color:#f92672>+</span>
+   <span style=color:#e6db74>&#34;metadata:\n&#34;</span> <span style=color:#f92672>+</span>
+   <span style=color:#e6db74>&#34;  name: grafana\n&#34;</span> <span style=color:#f92672>+</span>
+   <span style=color:#e6db74>&#34;spec:\n&#34;</span> <span style=color:#f92672>+</span>
+   <span style=color:#e6db74>&#34;  ports:\n&#34;</span> <span style=color:#f92672>+</span>
+   <span style=color:#e6db74>&#34;    - name: grafana\n&#34;</span> <span style=color:#f92672>+</span>
+   <span style=color:#e6db74>&#34;      port: 3000\n&#34;</span> <span style=color:#f92672>+</span>
+   <span style=color:#e6db74>&#34;      targetPort: 3000\n&#34;</span> <span style=color:#f92672>+</span>
+   <span style=color:#e6db74>&#34;      protocol: TCP\n&#34;</span>
+
+<span style=color:#75715e>// good
+</span><span style=color:#75715e></span><span style=color:#a6e22e>goodStr</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>`apiVersion: v1
+</span><span style=color:#e6db74>kind: Service
+</span><span style=color:#e6db74>metadata:
+</span><span style=color:#e6db74>  name: grafana
+</span><span style=color:#e6db74>spec:
+</span><span style=color:#e6db74>  ports:
+</span><span style=color:#e6db74>    - name: grafana
+</span><span style=color:#e6db74>      port: 3000
+</span><span style=color:#e6db74>      targetPort: 3000
+</span><span style=color:#e6db74>      protocol: TCP
+</span><span style=color:#e6db74>`</span>
+</code></pre></div><h3 id=project-layout>Project Layout</h3><p>The project layout includes the folder and the file structure in the project. We follow the <a href=https://github.com/golang-standards/project-layout>project-layout</a> example in Vald.</p><h3 id=packages>Packages</h3><p>The package defines the context of the objects in the package, for example, the corresponding methods and structs belong to the corresponding package. Unlike other languages like Java, in Go we use the package name to declare which context of the object we are going to use. For example in <a href=https://golang.org/pkg/time/>time</a> package, it defines all the objects about time like <code>time.Now()</code> method to get the current time.</p><p>Here is the naming conventions of the package:</p><ul><li>All lower case.</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#75715e>// bad
+</span><span style=color:#75715e></span><span style=color:#f92672>package</span> <span style=color:#a6e22e>ioUtil</span>
+
+<span style=color:#75715e>// good
+</span><span style=color:#75715e></span><span style=color:#f92672>package</span> <span style=color:#a6e22e>ioutil</span>
+</code></pre></div><ul><li>No plurals.</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#75715e>// bad
+</span><span style=color:#75715e></span><span style=color:#f92672>package</span> <span style=color:#a6e22e>times</span>
+
+<span style=color:#75715e>// good
+</span><span style=color:#75715e></span><span style=color:#f92672>package</span> <span style=color:#a6e22e>time</span>
+
+</code></pre></div><ul><li>Should be the same as the folder name.</li><li>Should keep as simple as it should, and should contain only one specific context in the package.</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#75715e>// bad
+</span><span style=color:#75715e></span><span style=color:#f92672>package</span> <span style=color:#a6e22e>encodebase64</span>
+
+<span style=color:#75715e>// good
+</span><span style=color:#75715e></span><span style=color:#f92672>package</span> <span style=color:#a6e22e>base64</span> <span style=color:#75715e>// inside the encoding/base64 folder
+</span></code></pre></div><ul><li>Should not be too general, for example <code>util</code> or <code>helper</code>, which will cause all the objects from different contexts to be store in one package. If you want to name the package as <code>util</code>, please define the more specific package name more <code>ioutil</code> or <code>httputil</code>.</li></ul><p>All packages should contain <code>doc.go</code> file under the package to describe what is the package is. For example, under the folder name called <code>cache</code>, should contains a file named <code>doc.go</code>, which contains the package documentation. Here is the example <code>doc.go</code> of the cache package.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#75715e>// Package cache provides implementation of cache
+</span><span style=color:#75715e></span><span style=color:#f92672>package</span> <span style=color:#a6e22e>cache</span>
+</code></pre></div><h3 id=interfaces>Interfaces</h3><p>Interface defines the program interface for usability and future extendability.
+Unlike other languages like Java, Go supports implicit interface implementation. The type implements do not need to specify the interface name; to &ldquo;implements&rdquo; the interface the structs only need to defined the methods the same as the interface, so please be careful to define the method name inside the interface.</p><p>The interface should be named as:</p><ul><li>Use MixedCaps</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#75715e>// bad
+</span><span style=color:#75715e></span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Roundtripper</span> <span style=color:#66d9ef>interface</span> {
+  <span style=color:#75715e>// interface definition
+</span><span style=color:#75715e></span>}
+
+<span style=color:#75715e>// good
+</span><span style=color:#75715e></span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>RoundTripper</span> <span style=color:#66d9ef>interface</span> {
+  <span style=color:#75715e>// interface definition
+</span><span style=color:#75715e></span>}
+</code></pre></div><ul><li>Use understandable common short form.</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#75715e>// bad
+</span><span style=color:#75715e></span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>ATSigner</span> <span style=color:#66d9ef>interface</span> {
+  <span style=color:#75715e>// interface definition
+</span><span style=color:#75715e></span>}
+
+<span style=color:#75715e>// good
+</span><span style=color:#75715e></span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>AccessTokenSigner</span> <span style=color:#66d9ef>interface</span> {
+  <span style=color:#75715e>// interface definition
+</span><span style=color:#75715e></span>}
+
+<span style=color:#75715e>// good
+</span><span style=color:#75715e></span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>HTTPServer</span> <span style=color:#66d9ef>interface</span> {
+  <span style=color:#75715e>// interface definition
+</span><span style=color:#75715e></span>}
+</code></pre></div><h3 id=structs>Structs</h3><p>Structs in Go is the object definition, we can attach any fields and methods to the struct. The naming convention is the same as the interface one.
+If the structs are implementing the interface, the structs name should be related to the interface, for example:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Listener</span> <span style=color:#66d9ef>interface</span> {
+   <span style=color:#75715e>// interface definition
+</span><span style=color:#75715e></span>}
+
+<span style=color:#75715e>// Listener instance for file
+</span><span style=color:#75715e></span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>FileListener</span> <span style=color:#66d9ef>struct</span> {
+   <span style=color:#75715e>// implement listener interface
+</span><span style=color:#75715e></span>}
+
+<span style=color:#75715e>// Listener instance for HTTP
+</span><span style=color:#75715e></span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>HTTPListener</span> <span style=color:#66d9ef>struct</span> {
+   <span style=color:#75715e>// implement listener interface
+</span><span style=color:#75715e></span>}
+</code></pre></div><h4 id=struct-initialization>Struct initialization</h4><p>There are many ways to initialize structs in Go, base on the use case we can decide which way to initialize structs in Go.
+To initialize struct, it is suggested to use <code>new(T)</code> instead of <code>&T{}</code> unless you need to initialize with values. For example:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Something</span> <span style=color:#66d9ef>struct</span> {
+    <span style=color:#a6e22e>name</span> <span style=color:#66d9ef>string</span>
+}
+
+<span style=color:#75715e>// good
+</span><span style=color:#75715e></span><span style=color:#a6e22e>a</span> <span style=color:#f92672>:=</span> new(<span style=color:#a6e22e>Something</span>)
+
+<span style=color:#75715e>// bad
+</span><span style=color:#75715e></span><span style=color:#a6e22e>b</span> <span style=color:#f92672>:=</span> new(<span style=color:#a6e22e>Something</span>)
+<span style=color:#a6e22e>b</span>.<span style=color:#a6e22e>name</span> = <span style=color:#e6db74>&#34;Mary&#34;</span>
+
+<span style=color:#75715e>// use this syntax instead of b
+</span><span style=color:#75715e></span><span style=color:#a6e22e>c</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>Something</span>{
+    <span style=color:#a6e22e>name</span>: <span style=color:#e6db74>&#34;Mary&#34;</span>,
+}
+</code></pre></div><p>To initialize complex structs, we can use <a href=https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis>functional option pattern</a>. Please read <a href=https://github.com/vdaas/vald/blob/master/internal/servers/servers.go>server.go</a> and <a href=https://github.com/vdaas/vald/blob/master/internal/servers/option.go>option.go</a> for the reference implementation.
+The options implementation should be separated as another file called <code>option.go</code> to improve the readability of the source code, and the method name should start with <code>With</code> word to differentiate with other methods.</p><h3 id=variables-and-constant>Variables and Constant</h3><p>The variable and the constant should be named as:</p><ul><li>Use MixedCaps</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#75715e>// bad
+</span><span style=color:#75715e></span><span style=color:#a6e22e>yamlprocessor</span> <span style=color:#f92672>:=</span> new(<span style=color:#a6e22e>something</span>)
+
+<span style=color:#75715e>// good
+</span><span style=color:#75715e></span><span style=color:#a6e22e>yamlProcessor</span> <span style=color:#f92672>:=</span> new(<span style=color:#a6e22e>something</span>)
+</code></pre></div><ul><li>Use short form.</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#75715e>// bad
+</span><span style=color:#75715e></span><span style=color:#a6e22e>yamlString</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>&#34;something&#34;</span>
+
+<span style=color:#75715e>// good
+</span><span style=color:#75715e></span><span style=color:#a6e22e>yamlStr</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>&#34;something&#34;</span>
+
+<span style=color:#75715e>// in some case it is acceptable and actually if it is easier to read
+</span><span style=color:#75715e></span><span style=color:#a6e22e>s</span> <span style=color:#f92672>:=</span> new(<span style=color:#a6e22e>something</span>)
+</code></pre></div><p>The variable and the constant name may lead to misunderstanding or confusion, so if the variable and constant name are different to understand, please write some comment even if it is a private member.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#75715e>// somebody may not understand this variable, so write a simple comment to the variable definition
+</span><span style=color:#75715e></span><span style=color:#a6e22e>sac</span> <span style=color:#f92672>:=</span> new(<span style=color:#a6e22e>something</span>) <span style=color:#75715e>// signed access token
+</span></code></pre></div><p>If the multiple variables and the constants have the same grouping, please use the grouping name as the prefix of the variable and constant name.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#75715e>// Same group of variable (error), so add a prefix `Err` to each error variables
+</span><span style=color:#75715e></span><span style=color:#a6e22e>ErrInvalidCacherType</span> = <span style=color:#a6e22e>New</span>(<span style=color:#e6db74>&#34;invalid cacher type&#34;</span>)
+<span style=color:#75715e>// ErrXXXXXXX
+</span></code></pre></div><h3 id=methods>Methods</h3><p>The method name should be named as:</p><ul><li>Use MixedCaps.</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#75715e>// bad
+</span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>s</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>something</span>) <span style=color:#a6e22e>somemethod</span>() {}
+
+<span style=color:#75715e>// bad
+</span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>s</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>something</span>) <span style=color:#a6e22e>some_method</span>() {}
+
+<span style=color:#75715e>// good
+</span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>s</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>something</span>) <span style=color:#a6e22e>someMethod</span>() {}
+</code></pre></div><ul><li>Do not use short form unless the function name is too long.</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#75715e>// bad
+</span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>s</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>something</span>) <span style=color:#a6e22e>genereateRandomNumber</span>() <span style=color:#66d9ef>int</span> {}
+
+<span style=color:#75715e>// good
+</span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>s</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>something</span>) <span style=color:#a6e22e>genRandNum</span>() <span style=color:#66d9ef>int</span> {}
+</code></pre></div><ul><li>It should be understandable for everyone even if it is a private method.</li></ul><h4 id=getter-and-setter>Getter and Setter</h4><p>The Getter and Setter are almost the same as other languages, but the naming convention of the Getter method is different from other languages. Instead of <code>GetVar1()</code>, the getter of <code>Var1</code> should be the same as the variable name itself <code>Var1()</code>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#75715e>// getter of the `signedTok`
+</span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>s</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>something</span>) <span style=color:#a6e22e>SignedTok</span>() <span style=color:#66d9ef>string</span>{
+    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>signedTok</span>
+}
+
+<span style=color:#75715e>// setter of the `signedTok`
+</span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>s</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>something</span>) <span style=color:#a6e22e>SetSignedTok</span>(<span style=color:#a6e22e>st</span> <span style=color:#66d9ef>string</span>) {
+    <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>signedTok</span> = <span style=color:#a6e22e>st</span>
+}
+</code></pre></div><h3 id=unused-variables>Unused Variables</h3><p>An unused variable may increase the complexity of the source code, it may confuse the developer hence introduce a new bug.
+So please delete the unused variable.</p><p>Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error.
+This is an example of the unused variable declaration that does not cause a compilation error.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-golang data-lang=golang><span style=color:#75715e>// In this case, this example are not using `port` field, but dose not cause a compilation error.
+</span><span style=color:#75715e>// So please delete `port` field of `server`.
+</span><span style=color:#75715e></span>
+<span style=color:#66d9ef>type</span> <span style=color:#a6e22e>server</span> <span style=color:#66d9ef>struct</span> {
+    <span style=color:#a6e22e>addr</span> <span style=color:#66d9ef>string</span>
+    <span style=color:#a6e22e>port</span> <span style=color:#66d9ef>int</span>  <span style=color:#75715e>// you have to delete this field.
+</span><span style=color:#75715e></span>}
+
+<span style=color:#75715e>// The `port` field of `server` is not used.
+</span><span style=color:#75715e></span><span style=color:#a6e22e>srv</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>server</span> {
+    <span style=color:#a6e22e>addr</span>: <span style=color:#e6db74>&#34;192.168.33.10:1234&#34;</span>,
+}
+
+<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>srv</span>.<span style=color:#a6e22e>Run</span>(); <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+    <span style=color:#a6e22e>log</span>.<span style=color:#a6e22e>Fatal</span>(<span style=color:#a6e22e>err</span>)
+}
+</code></pre></div><h3 id=error-handling>Error handling</h3><p>All errors should define in <a href=https://github.com/vdaas/vald/blob/master/internal/errors>internal/errors package</a>. All errors should be start with <code>Err</code> prefix, and all errors should be handle if possible.</p><p>Please use <a href=https://github.com/vdaas/vald/blob/master/internal/errgroup>internal/errgroup</a> for synchronized error handling on multi-goroutine processing.</p><h3 id=logging>Logging</h3><p>We define our own logging interface in <a href=https://github.com/vdaas/vald/blob/master/internal/log>internal/log package</a>. By default we use <a href=https://github.com/kpango/glg>glg</a> to do the logging internally.
+We defined the following logging levels.</p><table><thead><tr><th>Log level</th><th>Description</th><th>Example situation</th><th>Example message</th></tr></thead><tbody><tr><td>DEBUG</td><td>Fine-grained information for debugging and diagnostic the application.<br>Enable this logging level in production environment may cause performance issue.</td><td>An entry that will insert into the database with details.<br>An HTTP request and response that will send and receive from the server with details.</td><td>User 1 will insert into the database, name: Mary, Age: 19.<br>An HTTP request will send to <a href=http://example.com>http://example.com</a>, with the body:<br>key1:value1, key2:value2.<br>The response of the HTTP request: body: HTTPResponseBody</td></tr><tr><td>INFO</td><td>Normal application behavior, to trace what is happening inside the application.</td><td>Inserted entry into the database without details.<br>HTTP requests sent to the server without details.<br>The server is started or stopped.</td><td>User 1 is inserted into the database.<br>The HTTP request is sent to XXX server successfully.</td></tr><tr><td>WARN</td><td>The message that indicates the application may having the issue or occurring unusual situation,<br>but does not affect the application behavior.<br>Someone should investigate the warning later.</td><td>Failed to insert entry into the the database, but success with the retry.<br>Failed to update the cache, and the cache is not important.</td><td>User 1 is successfully inserted into the database with retry,<br>retry count: 1, error: ErrMsg1, retry count: 2, error: ErrMsg2</td></tr><tr><td>ERROR</td><td>The message that indicates the application is having a serious issue or,<br>represent the failure of some important going on in the application.<br>It does not cause the application to go down.<br>Someone must investigate the error later.</td><td>Failed to insert an entry into the database, with retry count exceeded.<br>Failed to update the cache, and the cache is not important.</td><td>User 1 is failed to insert in the database, errors:<br>retry count: 1, error: ErrMsg1, retry count: 2, error: ErrMsg2, &mldr;.</td></tr><tr><td>FATAL</td><td>Message that indicate the application is corrupting or having serious issue.<br>The application will go down after logging the fatal error.<br>Someone must investigate and resolve the fatal as soon as possible.</td><td>Failed to init the required cache during the application start.</td><td></td></tr></tbody></table><h2 id=program-comments>Program comments</h2><p>Program comments make easier to understand the source code. We suggest not to write many comments inside the source code unless the source code is very complicated and confusing; otherwise we should divide the source code into methods to keep the readability and usability of the source code.</p><p>Everyone should write the comments to all the public objects on your source code, like public packages, interface, structs, methods, and even public constant and variable. The godoc will be generated base on the comment of source code.</p><h2 id=documentation>Documentation</h2><p>Documentation is generated from the program comments. Please refer to <a href=https://pkg.go.dev/github.com/vdaas/vald>Godoc</a> for the program documentation.</p><h2 id=internal-packages>Internal packages</h2><p>Vald implements its internal package to extend and customize the functionality of the standard library and third-party library.
+We should use the internal package instead of standard libray to implement Vald.
+Please refer to <a href=https://pkg.go.dev/github.com/vdaas/vald/internal>godoc</a> for the internal package document.</p><h2 id=dependency-management-and-build>Dependency management and Build</h2><p>We should use <code>go mod tidy</code> to manage the <code>go.mod</code> file in the project.</p><h2 id=test>Test</h2><p>The testing guideline has 3 important rules for the coding quality and readability:</p><ol><li>Use Table-Driven-Test</li><li>Keep code coverage over 85%<ul><li>test coverage != high testing quality, but low coverage means bad testing quality</li><li>check with the following commands <code>go test -cover ./...</code></li></ul></li><li>Test all use cases and error cases</li></ol><h3 id=table-driven-test>Table-Driven-Test</h3><p>Use table-driven tests with subtests to avoid duplicating code.</p><table><thead><tr><th>Bad</th><th>Good</th></tr></thead><tbody><tr><td><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#960050;background-color:#1e0010>##</span> <span style=color:#66d9ef>case</span> <span style=color:#ae81ff>1</span>
+<span style=color:#a6e22e>host</span>, <span style=color:#a6e22e>port</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>net</span>.<span style=color:#a6e22e>SplitHostPort</span>(<span style=color:#e6db74>&#34;192.0.2.0:8000&#34;</span>)
+<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+    <span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>Errorf</span>(<span style=color:#e6db74>&#34;error is not nil: %v&#34;</span>, <span style=color:#a6e22e>err</span>)
+}
+
+<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>want</span>, <span style=color:#a6e22e>got</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>&#34;192.0.2.0&#34;</span>, <span style=color:#a6e22e>host</span>; <span style=color:#a6e22e>want</span> <span style=color:#f92672>!=</span> <span style=color:#a6e22e>got</span> {
+    <span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>Errorf</span>(<span style=color:#e6db74>&#34;host is not equals. want: %s, but got: %s&#34;</span>, <span style=color:#a6e22e>want</span>: <span style=color:#f92672>%</span><span style=color:#a6e22e>s</span>, <span style=color:#a6e22e>got</span>)
+}
+
+<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>want</span>, <span style=color:#a6e22e>got</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>&#34;8000&#34;</span>, <span style=color:#a6e22e>port</span>; <span style=color:#a6e22e>want</span> <span style=color:#f92672>!=</span> <span style=color:#a6e22e>got</span> {
+    <span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>Errorf</span>(<span style=color:#e6db74>&#34;port is not equals. want: %s, but got: %s&#34;</span>, <span style=color:#a6e22e>want</span>: <span style=color:#f92672>%</span><span style=color:#a6e22e>s</span>, <span style=color:#a6e22e>got</span>)
+}
+
+<span style=color:#960050;background-color:#1e0010>##</span> <span style=color:#a6e22e>case2</span>
+<span style=color:#a6e22e>host</span>, <span style=color:#a6e22e>port</span>, <span style=color:#a6e22e>err</span> = <span style=color:#a6e22e>net</span>.<span style=color:#a6e22e>SplitHostPort</span>(<span style=color:#e6db74>&#34;192.0.2.0:http&#34;</span>)
+<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+    <span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>Errorf</span>(<span style=color:#e6db74>&#34;error is not nil: %v&#34;</span>, <span style=color:#a6e22e>err</span>)
+}
+
+<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>want</span>, <span style=color:#a6e22e>got</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>&#34;192.0.2.0&#34;</span>, <span style=color:#a6e22e>host</span>; <span style=color:#a6e22e>want</span> <span style=color:#f92672>!=</span> <span style=color:#a6e22e>got</span> {
+    <span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>Errorf</span>(<span style=color:#e6db74>&#34;host is not equals. want: %s, but got: %s&#34;</span>, <span style=color:#a6e22e>want</span>: <span style=color:#f92672>%</span><span style=color:#a6e22e>s</span>, <span style=color:#a6e22e>got</span>)
+}
+
+<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>want</span>, <span style=color:#a6e22e>got</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>&#34;http&#34;</span>, <span style=color:#a6e22e>port</span>; <span style=color:#a6e22e>want</span> <span style=color:#f92672>!=</span> <span style=color:#a6e22e>got</span> {
+    <span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>Errorf</span>(<span style=color:#e6db74>&#34;port is not equals. want: %s, but got: %s&#34;</span>, <span style=color:#a6e22e>want</span>: <span style=color:#f92672>%</span><span style=color:#a6e22e>s</span>, <span style=color:#a6e22e>got</span>)
+}
+</code></pre></div></td><td><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#a6e22e>tests</span> <span style=color:#f92672>:=</span> []<span style=color:#66d9ef>struct</span> {
+    <span style=color:#a6e22e>str</span> <span style=color:#66d9ef>string</span>
+    <span style=color:#a6e22e>wantHost</span> <span style=color:#66d9ef>string</span>
+    <span style=color:#a6e22e>wantPort</span> <span style=color:#66d9ef>string</span>
+} {
+    <span style=color:#960050;background-color:#1e0010>##</span> <span style=color:#66d9ef>case</span> <span style=color:#ae81ff>1</span>
+    {
+        <span style=color:#a6e22e>str</span>: <span style=color:#e6db74>&#34;192.0.2.0:8000&#34;</span>,
+        <span style=color:#a6e22e>wantHost</span>: <span style=color:#e6db74>&#34;192.0.2.0&#34;</span>,
+        <span style=color:#a6e22e>wantPort</span>: <span style=color:#e6db74>&#34;8000&#34;</span>,
+    },
+    <span style=color:#960050;background-color:#1e0010>##</span> <span style=color:#66d9ef>case</span> <span style=color:#ae81ff>2</span>
+    {
+        <span style=color:#a6e22e>str</span>: <span style=color:#e6db74>&#34;192.0.2.0:8000&#34;</span>,
+        <span style=color:#a6e22e>wantHost</span>: <span style=color:#e6db74>&#34;192.0.2.0&#34;</span>,
+        <span style=color:#a6e22e>wantPort</span>: <span style=color:#e6db74>&#34;http&#34;</span>,
+    },
+}
+
+<span style=color:#66d9ef>for</span> <span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>tt</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>range</span> <span style=color:#a6e22e>tests</span> {
+    <span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>Run</span>(<span style=color:#a6e22e>tt</span>.<span style=color:#a6e22e>str</span>, <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>tt</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>testing</span>.<span style=color:#a6e22e>T</span>) {
+        <span style=color:#a6e22e>host</span>, <span style=color:#a6e22e>port</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>net</span>.<span style=color:#a6e22e>SplitHostPort</span>(<span style=color:#a6e22e>tt</span>.<span style=color:#a6e22e>str</span>)
+        <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+            <span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>Errorf</span>(<span style=color:#e6db74>&#34;error is not nil: %v&#34;</span>, <span style=color:#a6e22e>err</span>)
+        }
+        <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>want</span>, <span style=color:#a6e22e>got</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>tt</span>.<span style=color:#a6e22e>wantHost</span>, <span style=color:#a6e22e>host</span>; <span style=color:#a6e22e>want</span> <span style=color:#f92672>!=</span> <span style=color:#a6e22e>got</span> {
+            <span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>Errorf</span>(<span style=color:#e6db74>&#34;host is not equals. want: %s, but got: %s&#34;</span>, <span style=color:#a6e22e>want</span>: <span style=color:#f92672>%</span><span style=color:#a6e22e>s</span>, <span style=color:#a6e22e>got</span>)
+        }
+        <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>want</span>, <span style=color:#a6e22e>got</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>tt</span>.<span style=color:#a6e22e>wantPort</span>, <span style=color:#a6e22e>port</span>; <span style=color:#a6e22e>want</span> <span style=color:#f92672>!=</span> <span style=color:#a6e22e>got</span> {
+            <span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>Errorf</span>(<span style=color:#e6db74>&#34;port is not equals. want: %s, but got: %s&#34;</span>, <span style=color:#a6e22e>want</span>: <span style=color:#f92672>%</span><span style=color:#a6e22e>s</span>, <span style=color:#a6e22e>got</span>)
+        }
+    })
+}
+</code></pre></div></td></tr></tbody></table><p>Table-Driven-Test makes it easy to add a new test case.</p><p>We define the test case table as <code>map[string]func(*testing.T)test</code>, which is referred to the test case name and the test case implementation <code>tt</code>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#a6e22e>tests</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>map</span>[<span style=color:#66d9ef>string</span>]<span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>t</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>testing</span>.<span style=color:#a6e22e>T</span>) <span style=color:#a6e22e>test</span> {
+    <span style=color:#e6db74>&#34;test case name&#34;</span>: <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>tt</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>testing</span>.<span style=color:#a6e22e>T</span>) <span style=color:#a6e22e>test</span> {
+        <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>test</span> {
+            <span style=color:#a6e22e>args</span>: <span style=color:#a6e22e>args</span> {
+                <span style=color:#a6e22e>host</span>: <span style=color:#e6db74>&#34;host&#34;</span>,
+                <span style=color:#a6e22e>port</span>: <span style=color:#e6db74>&#34;port&#34;</span>,
+            },
+            <span style=color:#a6e22e>field</span>: <span style=color:#a6e22e>field</span> {
+                <span style=color:#a6e22e>timeout</span>: <span style=color:#ae81ff>1</span> <span style=color:#f92672>*</span> <span style=color:#a6e22e>time</span>.<span style=color:#a6e22e>Second</span>,
+            },
+        }
+    }
+}
+</code></pre></div><h3 id=the-steps-to-create-a-table-driven-test>The steps to create a Table-Driven-Test</h3><ol><li><p><code>args</code> structure</p><p>If there are two or more arguments to be passed to the method, create a <code>args</code> structure. If there is only one argument, do not create an <code>args</code> structure.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>args</span> <span style=color:#66d9ef>struct</span> {
+    <span style=color:#a6e22e>host</span> <span style=color:#66d9ef>string</span>
+    <span style=color:#a6e22e>port</span> <span style=color:#66d9ef>string</span>
+}
+</code></pre></div></li><li><p><code>field</code> structure</p><p>If you create an object and test its methods, create a <code>field</code> struct if the object has two or more fields to initialize. If there is only one field, do not create <code>field</code> structure.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>field</span> <span style=color:#66d9ef>struct</span> {
+    <span style=color:#a6e22e>host</span> <span style=color:#66d9ef>string</span>
+    <span style=color:#a6e22e>port</span> <span style=color:#66d9ef>string</span>
+}
+</code></pre></div></li><li><p><code>test</code> structure</p><p><code>test</code> structure has <code>args</code> and <code>field</code> structure and <code>checkFunc</code> function. If you need one of <code>args</code> and <code>field</code> structure, create <code>field</code> and <code>args</code> structure.
+The <code>checkFunc</code> function is used to check the return value of the function being tested.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>test</span> <span style=color:#66d9ef>struct</span> {
+    <span style=color:#a6e22e>args</span> <span style=color:#a6e22e>args</span>
+    <span style=color:#a6e22e>field</span> <span style=color:#a6e22e>field</span>
+    <span style=color:#a6e22e>checkFunc</span> <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>t</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>testing</span>.<span style=color:#a6e22e>T</span>, <span style=color:#a6e22e>err</span> <span style=color:#66d9ef>error</span>)
+}
+</code></pre></div></li></ol><p>Example:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>args</span> <span style=color:#66d9ef>struct</span> {
+    <span style=color:#a6e22e>addr</span> <span style=color:#66d9ef>string</span>
+    <span style=color:#a6e22e>txt</span> <span style=color:#66d9ef>string</span>
+}
+
+<span style=color:#66d9ef>type</span> <span style=color:#a6e22e>field</span> <span style=color:#66d9ef>struct</span> {
+    <span style=color:#a6e22e>timeout</span> <span style=color:#a6e22e>time</span>.<span style=color:#a6e22e>Duration</span>
+}
+
+<span style=color:#66d9ef>type</span> <span style=color:#a6e22e>test</span> <span style=color:#66d9ef>struct</span> {
+    <span style=color:#a6e22e>args</span> <span style=color:#a6e22e>args</span>
+    <span style=color:#a6e22e>field</span> <span style=color:#a6e22e>field</span>
+    <span style=color:#a6e22e>checkFunc</span> <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>t</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>testing</span>.<span style=color:#a6e22e>T</span>, <span style=color:#a6e22e>err</span> <span style=color:#66d9ef>error</span>)
+}
+
+<span style=color:#a6e22e>tests</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>map</span>[<span style=color:#66d9ef>string</span>]<span style=color:#66d9ef>func</span>(<span style=color:#f92672>*</span><span style=color:#a6e22e>testing</span>.<span style=color:#a6e22e>T</span>) <span style=color:#a6e22e>test</span> {
+    <span style=color:#e6db74>&#34;test name&#34;</span>: <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>tt</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>testing</span>.<span style=color:#a6e22e>T</span>) <span style=color:#a6e22e>test</span> {
+        <span style=color:#a6e22e>tt</span>.<span style=color:#a6e22e>Helper</span>()
+
+        <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>test</span> {
+            <span style=color:#a6e22e>args</span>: <span style=color:#a6e22e>args</span> {
+                <span style=color:#a6e22e>host</span>: <span style=color:#e6db74>&#34;host&#34;</span>,
+                <span style=color:#a6e22e>port</span>: <span style=color:#e6db74>&#34;port&#34;</span>,
+            },
+            <span style=color:#a6e22e>field</span>: <span style=color:#a6e22e>field</span> {
+                <span style=color:#a6e22e>host</span>: <span style=color:#e6db74>&#34;host&#34;</span>,
+                <span style=color:#a6e22e>port</span>: <span style=color:#e6db74>&#34;port&#34;</span>,
+            },
+            <span style=color:#a6e22e>checkFunc</span> <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>tt</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>testing</span>.<span style=color:#a6e22e>T</span>, <span style=color:#a6e22e>err</span> <span style=color:#66d9ef>error</span>) {
+                <span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>Helper</span>()
+                <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+                    <span style=color:#a6e22e>tt</span>.<span style=color:#a6e22e>Errorf</span>(<span style=color:#e6db74>&#34;error is not nil: %v&#34;</span>, <span style=color:#a6e22e>err</span>)
+                }
+            },
+        }
+    }
+}
+
+<span style=color:#66d9ef>for</span> <span style=color:#a6e22e>name</span>, <span style=color:#a6e22e>fn</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>range</span> <span style=color:#a6e22e>tests</span> {
+    <span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>Run</span>(<span style=color:#a6e22e>name</span>, <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>tt</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>tesint</span>.<span style=color:#a6e22e>T</span>) {
+        <span style=color:#a6e22e>test</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>fn</span>(<span style=color:#a6e22e>tt</span>)
+
+        <span style=color:#a6e22e>c</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>client</span> {
+            <span style=color:#a6e22e>timeout</span>: <span style=color:#a6e22e>test</span>.<span style=color:#a6e22e>field</span>.<span style=color:#a6e22e>timeout</span>,
+        }
+
+        <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Send</span>(<span style=color:#a6e22e>test</span>.<span style=color:#a6e22e>args</span>.<span style=color:#a6e22e>addr</span>, <span style=color:#a6e22e>test</span>.<span style=color:#a6e22e>args</span>.<span style=color:#a6e22e>txt</span>)
+        <span style=color:#a6e22e>test</span>.<span style=color:#a6e22e>checkFunc</span>(<span style=color:#a6e22e>tt</span>, <span style=color:#a6e22e>err</span>)
+    })
+}
+
+</code></pre></div><h3 id=generate-test-code>Generate test code</h3><p>We implement our own <a href=https://github.com/cweill/gotests>gotests</a> template to generate test code.
+If you want to install <code>gotest</code> tools, please execute the following command under the project root directory.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>make gotests/install
+</code></pre></div><p>If you use the following command to generate the missing test code.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>make make gotests/gen
+</code></pre></div><p>After the command above executed, the file <code>*target*_test.go</code> will be generated for each Go source file.
+The test code generated follows the table-driven test format.
+You can implement your test code under the <code>tests</code> variable generated following the table-driven test format.</p><h3 id=customize-test-case>Customize test case</h3><p>We do not suggest to modify the generated code other than the <code>tests</code> variable, but in some cases, you may need to modify the generated code to meet your requirement, for example:</p><ol><li><p>init() function</p><p>init() function is executed automatically before the test is started.
+You may need to initialize some singleton before your test cases are executed.
+For example, Vald uses <a href=https://github.com/kpango/glg>glg</a> library for logging by default, if the logger is not initialized before the test, the nil pointer error may be thrown during the test is running.
+You may need to implement <code>init()</code> function like:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-golang data-lang=golang><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>init</span>() {
+    <span style=color:#a6e22e>log</span>.<span style=color:#a6e22e>Init</span>()
+}
+</code></pre></div><p>And place it on the header of the test file.</p></li><li><p>goleak option</p><p>By default, the generated test code will use <a href=https://github.com/uber-go/goleak>goleak</a> library to test if there is any Goroutine leak.
+Sometimes you may want to skip the detection, for example, Vald uses <a href=https://github.com/kpango/fastime>fastime</a> library but the internal Goroutine is not closed due to the needs of the library.
+To skip the goleak detection we need to create the following variable to store the ignore function.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-golang data-lang=golang><span style=color:#66d9ef>var</span> (
+    <span style=color:#75715e>// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+</span><span style=color:#75715e></span>    <span style=color:#a6e22e>goleakIgnoreOptions</span> = []<span style=color:#a6e22e>goleak</span>.<span style=color:#a6e22e>Option</span>{
+        <span style=color:#a6e22e>goleak</span>.<span style=color:#a6e22e>IgnoreTopFunction</span>(<span style=color:#e6db74>&#34;github.com/kpango/fastime.(*Fastime).StartTimerD.func1&#34;</span>),
+    }
+)
+</code></pre></div><p>And modify the generated test code.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-golang data-lang=golang><span style=color:#75715e>// before
+</span><span style=color:#75715e></span><span style=color:#66d9ef>for</span> <span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>test</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>range</span> <span style=color:#a6e22e>tests</span> {
+    <span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>Run</span>(<span style=color:#a6e22e>test</span>.<span style=color:#a6e22e>name</span>, <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>tt</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>testing</span>.<span style=color:#a6e22e>T</span>) {
+        <span style=color:#66d9ef>defer</span> <span style=color:#a6e22e>goleak</span>.<span style=color:#a6e22e>VerifyNone</span>(<span style=color:#a6e22e>tt</span>)
+
+<span style=color:#75715e>// after
+</span><span style=color:#75715e></span><span style=color:#66d9ef>for</span> <span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>test</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>range</span> <span style=color:#a6e22e>tests</span> {
+    <span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>Run</span>(<span style=color:#a6e22e>test</span>.<span style=color:#a6e22e>name</span>, <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>tt</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>testing</span>.<span style=color:#a6e22e>T</span>) {
+        <span style=color:#75715e>// modify the following line
+</span><span style=color:#75715e></span>        <span style=color:#66d9ef>defer</span> <span style=color:#a6e22e>goleak</span>.<span style=color:#a6e22e>VerifyNone</span>(<span style=color:#a6e22e>tt</span>, <span style=color:#a6e22e>goleakIgnoreOptions</span><span style=color:#f92672>...</span>)
+</code></pre></div></li><li><p>Defer function</p><p>By default the template provides <code>beforeFunc()</code> and <code>afterFunc()</code> to initialize and finalize the test case, but in some case, it may not support your use case.
+For example <code>recover()</code> function only works in <code>defer()</code> function, if you need to use <code>recover()</code> function to handle the panic in your test code, you may need to implement your custom <code>defer()</code> function and change the generated test code.</p><p>For example:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-golang data-lang=golang><span style=color:#66d9ef>for</span> <span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>test</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>range</span> <span style=color:#a6e22e>tests</span> {
+  <span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>Run</span>(<span style=color:#a6e22e>test</span>.<span style=color:#a6e22e>name</span>, <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>tt</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>testing</span>.<span style=color:#a6e22e>T</span>) {
+    <span style=color:#66d9ef>defer</span> <span style=color:#a6e22e>goleak</span>.<span style=color:#a6e22e>VerifyNone</span>(<span style=color:#a6e22e>tt</span>, <span style=color:#a6e22e>goleakIgnoreOptions</span><span style=color:#f92672>...</span>)
+
+    <span style=color:#75715e>// insert your defer function here
+</span><span style=color:#75715e></span>    <span style=color:#66d9ef>defer</span> <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>w</span> <span style=color:#a6e22e>want</span>, <span style=color:#a6e22e>tt</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>testing</span>.<span style=color:#a6e22e>T</span>) {
+        <span style=color:#75715e>// implement your defer func logic
+</span><span style=color:#75715e></span>        <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span><span style=color:#f92672>:=</span> recover(); <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+            <span style=color:#75715e>// check the panic
+</span><span style=color:#75715e></span>        }
+    }(<span style=color:#a6e22e>test</span>.<span style=color:#a6e22e>want</span>, <span style=color:#a6e22e>tt</span>)
+
+    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>test</span>.<span style=color:#a6e22e>beforeFunc</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+        <span style=color:#a6e22e>test</span>.<span style=color:#a6e22e>beforeFunc</span>(<span style=color:#a6e22e>test</span>.<span style=color:#a6e22e>args</span>)
+    }
+    <span style=color:#75715e>// generated test code
+</span></code></pre></div></li><li><p>Unused fields</p><p>By default, the template provides <code>fields</code> structure to initialize object of the test target.
+But in some cases, not all <code>fields</code> are needed, so please delete the unnecessary fields.
+For example, the following struct and the corresponding function:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-golang data-lang=golang><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>server</span> <span style=color:#66d9ef>struct</span> {
+    <span style=color:#a6e22e>addr</span> <span style=color:#66d9ef>string</span>
+    <span style=color:#a6e22e>port</span> <span style=color:#66d9ef>int</span>
+}
+<span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>s</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>server</span>) <span style=color:#a6e22e>Addr</span>() <span style=color:#66d9ef>string</span> {
+    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>addr</span>
+}
+</code></pre></div><p>And the generated test code is:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-golang data-lang=golang><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>Test_server_Addr</span>(<span style=color:#a6e22e>t</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>testing</span>.<span style=color:#a6e22e>T</span>) {
+    <span style=color:#66d9ef>type</span> <span style=color:#a6e22e>fields</span> <span style=color:#66d9ef>struct</span> {
+        <span style=color:#a6e22e>addr</span> <span style=color:#66d9ef>string</span>
+        <span style=color:#a6e22e>port</span> <span style=color:#66d9ef>int</span>
+    }
+    <span style=color:#66d9ef>type</span> <span style=color:#a6e22e>want</span> <span style=color:#66d9ef>struct</span> {
+        <span style=color:#75715e>// generated test code
+</span></code></pre></div><p>Since the <code>port</code> variable is not used in this test case, you can delete the <code>port</code> definition in the test case.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-golang data-lang=golang><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>Test_server_Addr</span>(<span style=color:#a6e22e>t</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>testing</span>.<span style=color:#a6e22e>T</span>) {
+    <span style=color:#66d9ef>type</span> <span style=color:#a6e22e>fields</span> <span style=color:#66d9ef>struct</span> {
+        <span style=color:#a6e22e>addr</span> <span style=color:#66d9ef>string</span>
+        <span style=color:#75715e>// port int   &lt;-- this line should be deleted
+</span><span style=color:#75715e></span>    }
+    <span style=color:#66d9ef>type</span> <span style=color:#a6e22e>want</span> <span style=color:#66d9ef>struct</span> {
+        <span style=color:#75715e>// generated test code
+</span></code></pre></div></li></ol></div><aside class=current id=current><button class=menu><span class=dot></span></button><nav id=TableOfContents><ul><li><a href=#introduction>Introduction</a></li><li><a href=#code-formatting-and-naming-convension>Code Formatting and Naming Convension</a><ul><li><a href=#project-layout>Project Layout</a></li><li><a href=#packages>Packages</a></li><li><a href=#interfaces>Interfaces</a></li><li><a href=#structs>Structs</a></li><li><a href=#variables-and-constant>Variables and Constant</a></li><li><a href=#methods>Methods</a></li><li><a href=#unused-variables>Unused Variables</a></li><li><a href=#error-handling>Error handling</a></li><li><a href=#logging>Logging</a></li></ul></li><li><a href=#program-comments>Program comments</a></li><li><a href=#documentation>Documentation</a></li><li><a href=#internal-packages>Internal packages</a></li><li><a href=#dependency-management-and-build>Dependency management and Build</a></li><li><a href=#test>Test</a><ul><li><a href=#table-driven-test>Table-Driven-Test</a></li><li><a href=#the-steps-to-create-a-table-driven-test>The steps to create a Table-Driven-Test</a></li><li><a href=#generate-test-code>Generate test code</a></li><li><a href=#customize-test-case>Customize test case</a></li></ul></li></ul></nav></aside></div></div></main><footer class=footer><div class="footer__content cf"><ul class=footer__list><li class=footer__item><a href=https://vald.netlify.app/docs/overview/about-vald class=footer__link>About<br></a></li><li class=footer__item><a href=https://vald.netlify.app/docs/tutorial/get-started class=footer__link>Get Started<br></a></li><li class=footer__item><a href=https://medium.com/@vdaas_vald target=_blank class=footer__link>Blog<br></a></li><li class=footer__item><a href=https://github.com/vdaas/vald target=_blank class="footer__link footer__link--button">Github<br></a></li></ul></div><p class=footer__copylight>©2019-2020 vald.vdaas.org Vald team</p></footer></body></html>
