@@ -48,7 +48,7 @@ func (g *goroutines) View() []*metrics.View {
 	return []*metrics.View{
 		&metrics.View{
 			Name:        "goroutine_count",
-			Description: "number of goroutines",
+			Description: g.count.Description(),
 			Measure:     &g.count,
 			Aggregation: metrics.LastValue(),
 		},
