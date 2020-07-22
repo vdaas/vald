@@ -25,6 +25,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
@@ -34,6 +35,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
 )
 
@@ -48,7 +50,12 @@ type observer struct {
 	eg            errgroup.Group
 	checkDuration time.Duration
 
+	metadataPath string
+
 	postStopTimeout time.Duration
+
+	watchEnabled  bool
+	tickerEnabled bool
 
 	storage storage.Storage
 
@@ -82,15 +89,19 @@ func (o *observer) Start(ctx context.Context) (<-chan error, error) {
 	var wech, tech, sech, bech <-chan error
 	var err error
 
-	wech, err = o.w.Start(ctx)
-	if err != nil {
-		return nil, err
+	if o.watchEnabled {
+		wech, err = o.w.Start(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	tech, err = o.startTicker(ctx)
-	if err != nil {
-		close(ech)
-		return nil, err
+	if o.tickerEnabled {
+		tech, err = o.startTicker(ctx)
+		if err != nil {
+			close(ech)
+			return nil, err
+		}
 	}
 
 	sech, err = o.storage.Start(ctx)
@@ -139,12 +150,30 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 		return nil
 	}
 
-	ticker := time.NewTicker(o.postStopTimeout / 5)
-	defer ticker.Stop()
+	backup := func() error {
+		metadata, err := metadata.Load(o.metadataPath)
+		if err != nil {
+			return err
+		}
+
+		if metadata.IsInvalid {
+			log.Warn("backup skipped because the files are invalid")
+			return nil
+		}
+
+		return o.backup(ctx)
+	}
 
 	t := time.Now()
+	ch := make(chan struct{}, 1)
+	defer close(ch)
 
 	f := func(ctx context.Context, name string) error {
+		if name == o.metadataPath {
+			ch <- struct{}{}
+			return nil
+		}
+
 		t = time.Now()
 		return nil
 	}
@@ -173,13 +202,23 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 		}
 	}()
 
+	ticker := time.NewTicker(func() time.Duration {
+		if o.postStopTimeout/5 < 2*time.Second {
+			return o.postStopTimeout / 5
+		}
+		return 2 * time.Second
+	}())
+	defer ticker.Stop()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return finalize()
+		case <-ch:
+			return backup()
 		case <-ticker.C:
 			if time.Since(t) > o.postStopTimeout {
-				return o.backup(ctx)
+				return backup()
 			}
 		}
 	}
@@ -206,6 +245,17 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return finalize()
 			case <-ct.C:
+				metadata, err := metadata.Load(o.metadataPath)
+				if err != nil {
+					ech <- err
+					continue
+				}
+
+				if metadata.IsInvalid {
+					log.Warn("backup skipped because the files are invalid")
+					continue
+				}
+
 				err = o.requestBackup(ctx)
 				if err != nil {
 					ech <- err
@@ -268,7 +318,16 @@ func (o *observer) onWrite(ctx context.Context, name string) error {
 		}
 	}()
 
-	return o.requestBackup(ctx)
+	ok, err := o.isValidMetadata(name)
+	if err != nil {
+		return err
+	}
+
+	if ok {
+		return o.requestBackup(ctx)
+	}
+
+	return o.terminate()
 }
 
 func (o *observer) onCreate(ctx context.Context, name string) error {
@@ -279,7 +338,40 @@ func (o *observer) onCreate(ctx context.Context, name string) error {
 		}
 	}()
 
-	return o.requestBackup(ctx)
+	ok, err := o.isValidMetadata(name)
+	if err != nil {
+		return err
+	}
+
+	if ok {
+		return o.requestBackup(ctx)
+	}
+
+	return o.terminate()
+}
+
+func (o *observer) isValidMetadata(name string) (bool, error) {
+	if name != o.metadataPath {
+		return false, nil
+	}
+
+	metadata, err := metadata.Load(o.metadataPath)
+	if err != nil {
+		return false, err
+	}
+
+	return !metadata.IsInvalid, nil
+}
+
+func (o *observer) terminate() error {
+	log.Error("the process will be terminated because the files are invalid")
+
+	p, err := os.FindProcess(os.Getpid())
+	if err != nil {
+		return err
+	}
+
+	return p.Signal(syscall.SIGTERM)
 }
 
 func (o *observer) requestBackup(ctx context.Context) error {

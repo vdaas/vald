@@ -17,8 +17,12 @@
 package timeutil
 
 import (
+	"reflect"
 	"testing"
 	"time"
+
+	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func TestParse(t *testing.T) {
@@ -83,6 +87,83 @@ func TestParse(t *testing.T) {
 			if got != tt.want {
 				t.Errorf("Parse() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestParseWithDefault(t *testing.T) {
+	type args struct {
+		t string
+		d time.Duration
+	}
+	type want struct {
+		want time.Duration
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, time.Duration) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got time.Duration) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns parsed result when t is a valid string",
+			args: args{
+				t: "1s",
+				d: time.Hour,
+			},
+			want: want{
+				want: time.Second,
+			},
+		},
+		{
+			name: "returns default value when t is empty string",
+			args: args{
+				t: "",
+				d: time.Hour,
+			},
+			want: want{
+				want: time.Hour,
+			},
+		},
+		{
+			name: "returns default value when t is invalid string",
+			args: args{
+				t: "hoge",
+				d: time.Hour,
+			},
+			want: want{
+				want: time.Hour,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ParseWithDefault(test.args.t, test.args.d)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
 		})
 	}
 }

@@ -46,7 +46,23 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	ngt, err := service.New(cfg.NGT)
+	ngt, err := service.New(
+		cfg.NGT,
+		service.WithErrGroup(errgroup.Get()),
+		service.WithEnableInMemoryMode(cfg.NGT.EnableInMemoryMode),
+		service.WithIndexPath(cfg.NGT.IndexPath),
+		service.WithAutoIndexCheckDuration(cfg.NGT.AutoIndexCheckDuration),
+		service.WithAutoIndexDurationLimit(cfg.NGT.AutoIndexDurationLimit),
+		service.WithAutoSaveIndexDuration(cfg.NGT.AutoSaveIndexDuration),
+		service.WithAutoIndexLength(cfg.NGT.AutoIndexLength),
+		service.WithInitialDelayMaxDuration(cfg.NGT.InitialDelayMaxDuration),
+		service.WithMinLoadIndexTimeout(cfg.NGT.MinLoadIndexTimeout),
+		service.WithMaxLoadIndexTimeout(cfg.NGT.MaxLoadIndexTimeout),
+		service.WithLoadIndexTimeoutFactor(cfg.NGT.LoadIndexTimeoutFactor),
+		service.WithDefaultPoolSize(cfg.NGT.DefaultPoolSize),
+		service.WithDefaultRadius(cfg.NGT.DefaultRadius),
+		service.WithDefaultEpsilon(cfg.NGT.DefaultEpsilon),
+	)
 	if err != nil {
 		return nil, err
 	}

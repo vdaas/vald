@@ -24,6 +24,12 @@ type AgentSidecar struct {
 	// WatchDir represents watch target directory for backup
 	WatchDir string `yaml:"watch_dir" json:"watch_dir"`
 
+	// WatchEnabled represent auto backup triggered by file changes is enabled or not
+	WatchEnabled bool `yaml:"watch_enabled" json:"watch_enabled"`
+
+	// AutoBackupEnabled represent auto backup triggered by timer is enabled or not
+	AutoBackupEnabled bool `yaml:"auto_backup_enabled" json:"auto_backup_enabled"`
+
 	// AutoBackupDuration represent checking loop duration for auto backup execution
 	AutoBackupDuration string `yaml:"auto_backup_duration" json:"auto_backup_duration"`
 

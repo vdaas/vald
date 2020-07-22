@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	ctxio "github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -166,10 +167,16 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 			return err
 		}
 
-		sr, err = ctxio.NewReaderWithContext(ctx, sr)
+		sr, err = ctxio.NewReadCloserWithContext(ctx, sr)
 		if err != nil {
 			return err
 		}
+		defer func() {
+			e := sr.Close()
+			if e != nil {
+				log.Errorf("error on closing blob-storage reader: %s", e)
+			}
+		}()
 
 		_, err = io.Copy(pw, sr)
 		if err != nil {
@@ -211,7 +218,14 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 				}
 			}
 		case tar.TypeReg:
-			f, err := os.OpenFile(
+			if _, err := os.Stat(target); err == nil {
+				log.Warn(errors.ErrFileAlreadyExists(target))
+				return nil
+			} else if !os.IsNotExist(err) {
+				return err
+			}
+
+			f, err := file.Open(
 				target,
 				os.O_CREATE|os.O_RDWR,
 				os.FileMode(header.Mode),
@@ -227,7 +241,7 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 
 			_, err = io.Copy(fw, tr)
 			if err != nil {
-				return err
+				return errors.Wrap(f.Close(), err.Error())
 			}
 
 			err = f.Close()

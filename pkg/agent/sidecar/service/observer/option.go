@@ -18,8 +18,11 @@
 package observer
 
 import (
+	"path/filepath"
+
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
+	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
 )
 
@@ -29,7 +32,9 @@ var (
 	defaultOpts = []Option{
 		WithErrGroup(errgroup.Get()),
 		WithBackupDuration("10m"),
-		WithPostStopTimeout("20s"),
+		WithPostStopTimeout("2m"),
+		WithWatch(true),
+		WithTicker(true),
 	}
 )
 
@@ -61,6 +66,22 @@ func WithPostStopTimeout(dur string) Option {
 	}
 }
 
+func WithWatch(enabled bool) Option {
+	return func(o *observer) error {
+		o.watchEnabled = enabled
+
+		return nil
+	}
+}
+
+func WithTicker(enabled bool) Option {
+	return func(o *observer) error {
+		o.tickerEnabled = enabled
+
+		return nil
+	}
+}
+
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(o *observer) error {
 		if eg != nil {
@@ -77,6 +98,7 @@ func WithDir(dir string) Option {
 		}
 
 		o.dir = dir
+		o.metadataPath = filepath.Join(dir, metadata.AgentMetadataFileName)
 
 		return nil
 	}
