@@ -1,5 +1,34 @@
 # CHANGELOG
 
+## v0.0.47
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.47`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.47`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.47`
+gateway | `docker pull vdaas/vald-gateway:v0.0.47`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.47`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.47`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.47`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.47`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.47`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.47`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.47`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.47)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.47/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.47/charts/vald-helm-operator/README.md)
+
+### Changes
+- [agent-NGT, sidecar] Improve S3 backup/recover behavior ([#556](https://github.com/vdaas/vald/pull/556))
+- :white_check_mark: add internal/cache/option test ([#586](https://github.com/vdaas/vald/pull/586))
+- :robot: Automatically update k8s manifests ([#588](https://github.com/vdaas/vald/pull/588))
+
+
 ## v0.0.46
 
 ### Docker images
