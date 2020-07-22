@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-errors/errors"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"go.uber.org/goleak"
 )
