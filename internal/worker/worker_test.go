@@ -27,6 +27,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
 )
 
@@ -60,29 +61,22 @@ func TestNew(t *testing.T) {
 
 		want := w.want.(*worker)
 
-		avComparer := func(x, y atomic.Value) bool {
-			return reflect.DeepEqual(x.Load(), y.Load())
-		}
-		egComparer := func(x, y errgroup.Group) bool {
-			return reflect.DeepEqual(x, y)
-		}
-
 		queueOpts := []cmp.Option{
 			cmp.AllowUnexported(*(want.queue.(*queue))),
 			cmp.Comparer(func(x, y chan JobFunc) bool {
 				return len(x) == len(y)
 			}),
-			cmp.Comparer(egComparer),
-			cmp.Comparer(avComparer),
+			cmp.Comparer(comparator.ErrorGroup),
+			cmp.Comparer(comparator.AtomicValue),
 		}
 
 		opts := []cmp.Option{
 			cmp.AllowUnexported(*want),
-			cmp.Comparer(func(x, y queue) bool {
+			cmp.Comparer(func(x, y Queue) bool {
 				return cmp.Equal(x, y, queueOpts...)
 			}),
-			cmp.Comparer(avComparer),
-			cmp.Comparer(egComparer),
+			cmp.Comparer(comparator.ErrorGroup),
+			cmp.Comparer(comparator.AtomicValue),
 		}
 		if diff := cmp.Diff(want, got, opts...); diff != "" {
 			return errors.New(diff)
@@ -214,62 +208,84 @@ func Test_worker_Start(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+
+		opts := []cmp.Option{
+			cmp.Comparer(comparator.ErrorChannel),
+		}
+
+		if diff := cmp.Diff(w.want, got, opts...); diff != "" {
+			return errors.New(diff)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "Start without error",
+				args: args{
+					ctx: ctx,
+				},
+				fields: fields{
+					name:       "worker",
+					limitation: 10,
+					eg:         errgroup.Get(),
+					running: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(false)
+						return *v
+					}(),
+					queue: &queue{
+						buffer: 10,
+						eg:     errgroup.Get(),
+						qcdur:  200 * time.Millisecond,
+						qLen: func() atomic.Value {
+							v := new(atomic.Value)
+							v.Store(uint64(0))
+							return *v
+						}(),
+						running: func() atomic.Value {
+							v := new(atomic.Value)
+							v.Store(false)
+							return *v
+						}(),
+						inCh:  make(chan JobFunc, 10),
+						outCh: make(chan JobFunc, 1),
+					},
+				},
+				want: want{
+					want: func() <-chan error {
+						ch := make(chan error, 2)
+						close(ch)
+						return ch
+					}(),
+				},
+				checkFunc: func(w want, got <-chan error, err error) error {
+					cancel()
+					return defaultCheckFunc(w, got, err)
+				},
+			}
+		}(),
+		{
+			name: "return error if it is running",
+			args: args{},
+			fields: fields{
+				name: "test",
+				running: func() atomic.Value {
+					v := new(atomic.Value)
+					v.Store(true)
+					return *v
+				}(),
+			},
+			want: want{
+				err: errors.ErrWorkerIsAlreadyRunning("test"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
