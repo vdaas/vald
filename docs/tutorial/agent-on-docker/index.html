@@ -12,7 +12,7 @@ apt-get install libhdf5-serial-dev
 <span style=color:#75715e># homebrew</span>
 brew install hdf5
 </code></pre></div></details><h2 id=deploy>Deploy</h2><p>This chapter will show you how to deploy Vald Agent on docker.<br>This chapter will use NGT for the core engine of Vald Agent.</p><ol><li><p>Clone the vdaas/vald repository</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>git clone https://github.com/vdaas/vald.git
-</code></pre></div></li><li><p>Create <code>config.yaml</code></p><p>The configuration of Vald agent for docker is set using <code>config.yaml</code><br>You can also check <a href=https://github.com/vdaas/vald/blob/master//agent/core/ngt/sample.yaml>the sample configuration</a>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>cat <span style=color:#e6db74>&lt;&lt; EOF &gt; config.yaml
+</code></pre></div></li><li><p>Create <code>config.yaml</code></p><p>The configuration of Vald agent for docker is set using <code>config.yaml</code><br>You can also check <a href=https://github.com/vdaas/vald/blob/master/cmd/agent/core/ngt/sample.yaml>the sample configuration</a>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>cat <span style=color:#e6db74>&lt;&lt; EOF &gt; config.yaml
 </span><span style=color:#e6db74>---
 </span><span style=color:#e6db74>version: v0.0.0
 </span><span style=color:#e6db74>time_zone: JST
