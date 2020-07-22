@@ -40,5 +40,40 @@ data:
     observability:
       {{- $observability := dict "Values" $gateway.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
+    client:
+      {{- $client := dict "Values" $gateway.gateway_config.client "default" .Values.defaults.grpc.client }}
+      {{- include "vald.grpc.client" $client | nindent 6 }}
+    ingress_filter:
+      client:
+        {{- $ingressFilterClient := dict "Values" $gateway.gateway_config.ingress_filter.client "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $ingressFilterClient | nindent 8 }}
+      {{- if $gateway.gateway_config.ingress_filter.search }}
+      search:
+        {{- toYaml $gateway.gateway_config.ingress_filter.search | nindent 8 }}
+      {{- else }}
+      search: []
+      {{- end }}
+      {{- if $gateway.gateway_config.ingress_filter.insert }}
+      insert:
+        {{- toYaml $gateway.gateway_config.ingress_filter.insert | nindent 8 }}
+      {{- else }}
+      insert: []
+      {{- end }}
+      {{- if $gateway.gateway_config.ingress_filter.update }}
+      update:
+        {{- toYaml $gateway.gateway_config.ingress_filter.update | nindent 8 }}
+      {{- else }}
+      update: []
+      {{- end }}
+      {{- if $gateway.gateway_config.ingress_filter.upsert }}
+      upsert:
+        {{- toYaml $gateway.gateway_config.ingress_filter.upsert | nindent 8 }}
+      {{- else }}
+      upsert: []
+      {{- end }}
+    egress_filter:
+      client:
+        {{- $egressFilterClient := dict "Values" $gateway.gateway_config.egress_filter.client "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $egressFilterClient | nindent 8 }}
     gateway: {} # TODO
 {{- end }}

@@ -40,5 +40,21 @@ data:
     observability:
       {{- $observability := dict "Values" $gateway.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
-    gateway: {} # TODO
+    gateway:
+      agent_port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.agent.server_config.servers.grpc.port }}
+      agent_name: {{ .Values.agent.name | quote }}
+      agent_dns: {{ .Values.agent.name }}.{{ .Release.Namespace }}.svc.cluster.local
+      agent_namespace: {{ $gateway.gateway_config.agent_namespace | quote }}
+      node_name: {{ $gateway.gateway_config.node_name | quote }}
+      index_replica: {{ $gateway.gateway_config.index_replica }}
+      discoverer:
+        host: {{ .Values.discoverer.name }}.{{ .Release.Namespace }}.svc.cluster.local
+        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.discoverer.server_config.servers.grpc.port }}
+        duration: {{ $gateway.gateway_config.discoverer.duration }}
+        discover_client:
+          {{- $discoverClient := dict "Values" $gateway.gateway_config.discoverer.discover_client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $discoverClient | nindent 10 }}
+        agent_client:
+          {{- $agentClient := dict "Values" $gateway.gateway_config.discoverer.agent_client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $agentClient | nindent 10 }}
 {{- end }}

@@ -1235,7 +1235,15 @@ gateway:
         cpu: 2000m
         memory: 700Mi
     # @schema {"name": "gateway.backup.gateway_config", "type": "object"}
-    gateway_config: {} # TODO
+    gateway_config:
+      # @schema {"name": "gateway.backup.gateway_config.client", "alias": "grpc.client"}
+      # gateway.backup.gateway_config.client -- gRPC client for next gateway (overrides defaults.grpc.client)
+      client: {}
+      # @schema {"name": "gateway.backup.gateway_config.backup", "type": "object"}
+      backup:
+        # @schema {"name": "gateway.backup.gateway_config.backup.client", "alias": "grpc.client"}
+        # gateway.backup.gateway_config.backup.client -- gRPC client for backup (overrides defaults.grpc.client)
+        client: {}
   # @schema {"name": "gateway.filter", "type": "object"}
   filter:
     # @schema {"name": "gateway.filter.enabled", "type": "boolean"}
@@ -1439,7 +1447,32 @@ gateway:
         cpu: 2000m
         memory: 700Mi
     # @schema {"name": "gateway.filter.gateway_config", "type": "object"}
-    gateway_config: {} # TODO
+    gateway_config:
+      # @schema {"name": "gateway.filter.gateway_config.client", "alias": "grpc.client"}
+      # gateway.filter.gateway_config.client -- gRPC client for next gateway (overrides defaults.grpc.client)
+      client: {}
+      # @schema {"name": "gateway.filter.gateway_config.ingress_filter", "type": "object"}
+      ingress_filter:
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.client", "alias": "grpc.client"}
+        # gateway.filter.gateway_config.ingress_filter.client -- gRPC client for ingress filters (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.search", "type": "array", "items": {"type": "string"}}
+        # gateway.filter.gateway_config.ingress_filter.search -- ingress filters for search operation
+        search: []
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.insert", "type": "array", "items": {"type": "string"}}
+        # gateway.filter.gateway_config.ingress_filter.insert -- ingress filters for insert operation
+        insert: []
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.update", "type": "array", "items": {"type": "string"}}
+        # gateway.filter.gateway_config.ingress_filter.update -- ingress filters for update operation
+        update: []
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.upsert", "type": "array", "items": {"type": "string"}}
+        # gateway.filter.gateway_config.ingress_filter.upsert -- ingress filters for upsert operation
+        upsert: []
+      # @schema {"name": "gateway.filter.gateway_config.egress_filter", "type": "object"}
+      egress_filter:
+        # @schema {"name": "gateway.filter.gateway_config.egress_filter.client", "alias": "grpc.client"}
+        # gateway.filter.gateway_config.egress_filter.client -- gRPC client for egress filter (overrides defaults.grpc.client)
+        client: {}
   # @schema {"name": "gateway.lb", "type": "object"}
   lb:
     # @schema {"name": "gateway.lb.enabled", "type": "boolean"}
@@ -1661,7 +1694,27 @@ gateway:
         cpu: 2000m
         memory: 700Mi
     # @schema {"name": "gateway.lb.gateway_config", "type": "object"}
-    gateway_config: {} # TODO
+    gateway_config:
+      # @schema {"name": "gateway.lb.gateway_config.agent_namespace", "type": "string"}
+      # gateway.lb.gateway_config.agent_namespace -- agent namespace
+      agent_namespace: _MY_POD_NAMESPACE_
+      # @schema {"name": "gateway.lb.gateway_config.node_namespace", "type": "string"}
+      # gateway.lb.gateway_config.node_name -- node name
+      node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "gateway.lb.gateway_config.index_replica", "type": "integer", "minimum": 1}
+      # gateway.lb.gateway_config.index_replica -- number of index replica
+      index_replica: 5
+      # @schema {"name": "gateway.lb.gateway_config.discoverer", "type": "object"}
+      discoverer:
+        # @schema {"name": "gateway.lb.gateway_config.discoverer.duration", "type": "string"}
+        # gateway.lb.discoverer.duration -- discoverer duration
+        duration: 200ms
+        # @schema {"name": "gateway.lb.gateway_config.discoverer.discover_client", "alias": "grpc.client"}
+        # gateway.lb.gateway_config.discoverer.discover_client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        discover_client: {}
+        # @schema {"name": "gateway.lb.gateway_config.discoverer.agent_client", "alias": "grpc.client"}
+        # gateway.lb.gateway_config.discoverer.agent_client -- gRPC client for agents (overrides defaults.grpc.client)
+        agent_client: {}
   # @schema {"name": "gateway.meta", "type": "object"}
   meta:
     # @schema {"name": "gateway.meta.enabled", "type": "boolean"}
@@ -1871,7 +1924,24 @@ gateway:
         cpu: 2000m
         memory: 700Mi
     # @schema {"name": "gateway.meta.gateway_config", "type": "object"}
-    gateway_config: {} # TODO
+    gateway_config:
+      # @schema {"name": "gateway.meta.gateway_config.client", "alias": "grpc.client"}
+      # gateway.meta.gateway_config.client -- gRPC client for next gateway (overrides defaults.grpc.client)
+      client: {}
+      # @schema {"name": "gateway.meta.gateway_config.meta", "type": "object"}
+      meta:
+        # @schema {"name": "gateway.meta.gateway_config.meta.client", "alias": "grpc.client"}
+        # gateway.meta.gateway_config.meta.client -- gRPC client for meta (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "gateway.meta.gateway_config.meta.enable_cache", "type": "boolean"}
+        # gateway.meta.gateway_config.meta.enable_cache -- meta cache enabled
+        enable_cache: true
+        # @schema {"name": "gateway.meta.gateway_config.meta.cache_expiration", "type": "string"}
+        # gateway.meta.gateway_config.meta.cache_expiration -- meta cache expire duration
+        cache_expiration: "30m"
+        # @schema {"name": "gateway.meta.gateway_config.meta.expired_cache_check_duration", "type": "string"}
+        # gateway.meta.gateway_config.meta.expired_cache_check_duration -- meta cache expired check duration
+        expired_cache_check_duration: "3m"
 
 # @schema {"name": "agent", "type": "object"}
 agent:

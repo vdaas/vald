@@ -40,5 +40,16 @@ data:
     observability:
       {{- $observability := dict "Values" $gateway.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
-    gateway: {} # TODO
+    client:
+      {{- $client := dict "Values" $gateway.gateway_config.client "default" .Values.defaults.grpc.client }}
+      {{- include "vald.grpc.client" $client | nindent 6 }}
+    meta:
+      host: {{ .Values.meta.name }}.{{ .Release.Namespace }}.svc.cluster.local
+      port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.meta.server_config.servers.grpc.port }}
+      client:
+        {{- $metaClient := dict "Values" $gateway.gateway_config.meta.client "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $metaClient | nindent 8 }}
+      enable_cache: {{ $gateway.gateway_config.meta.enable_cache }}
+      cache_expiration: {{ $gateway.gateway_config.meta.cache_expiration }}
+      expired_cache_check_duration: {{ $gateway.gateway_config.meta.expired_cache_check_duration }}
 {{- end }}

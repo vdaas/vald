@@ -40,5 +40,13 @@ data:
     observability:
       {{- $observability := dict "Values" $gateway.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
-    gateway: {} # TODO
+    client:
+      {{- $client := dict "Values" $gateway.gateway_config.client "default" .Values.defaults.grpc.client }}
+      {{- include "vald.grpc.client" $client | nindent 6 }}
+    backup:
+      host: {{ .Values.manager.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
+      port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.manager.compressor.server_config.servers.grpc.port }}
+      client:
+        {{- $backupClient := dict "Values" $gateway.gateway_config.backup.client "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $backupClient | nindent 8 }}
 {{- end }}
