@@ -1129,7 +1129,11 @@ gateway:
         target: compressor
         image: busybox
         sleepDuration: 2
-      # TODO: wait-for-gateway-lb
+      - type: wait-for
+        name: wait-for-gateway-lb
+        target: gateway-lb
+        image: busybox
+        sleepDuration: 2
     # @schema {"name": "gateway.backup.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.backup.env -- environment variables
     env: []
@@ -1341,7 +1345,12 @@ gateway:
       maxUnavailable: 25%
     # @schema {"name": "gateway.filter.initContainers", "type": "array", "items": {"type": "object"}, "anchor": "initContainers"}
     # gateway.filter.initContainers -- init containers
-    initContainers: [] # TODO: wait-for-gateway-meta
+    initContainers:
+      - type: wait-for
+        name: wait-for-gateway-meta
+        target: gateway-meta
+        image: busybox
+        sleepDuration: 2
     # @schema {"name": "gateway.filter.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.filter.env -- environment variables
     env: []
@@ -1818,7 +1827,11 @@ gateway:
         target: meta
         image: busybox
         sleepDuration: 2
-      # TODO: wait-for-gateway-backup
+      - type: wait-for
+        name: wait-for-gateway-backup
+        target: gateway-backup
+        image: busybox
+        sleepDuration: 2
     # @schema {"name": "gateway.meta.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.meta.env -- environment variables
     env: []
