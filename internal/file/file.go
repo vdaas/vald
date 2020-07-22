@@ -20,14 +20,16 @@ package file
 import (
 	"os"
 	"path/filepath"
+
+	"github.com/vdaas/vald/internal/errors"
 )
 
 // Open opens the file with the given path, flag and permission.
 // If the folder does not exists, create the folder.
 // If the file does not exist, create the file.
-func Open(path string, flg int, perm os.FileMode) *os.File {
+func Open(path string, flg int, perm os.FileMode) (*os.File, error) {
 	if path == "" {
-		return nil
+		return nil, errors.ErrPathNotSpecified
 	}
 
 	var err error
@@ -36,25 +38,27 @@ func Open(path string, flg int, perm os.FileMode) *os.File {
 		if _, err = os.Stat(filepath.Dir(path)); err != nil {
 			err = os.MkdirAll(filepath.Dir(path), perm)
 			if err != nil {
-				return nil
+				return nil, err
 			}
 		}
+
 		file, err = os.Create(path)
 		if err != nil {
-			return nil
+			return nil, err
 		}
 
-		err = file.Close()
-		if err != nil {
-			return nil
+		if file != nil {
+			err = file.Close()
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
 	file, err = os.OpenFile(path, flg, perm)
-
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	return file
+	return file, nil
 }

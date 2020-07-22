@@ -450,12 +450,13 @@ addrs:
 {{- else if .default.addrs }}
 addrs:
   {{- toYaml .default.addrs | nindent 2 }}
-{{- else }}
+{{- else -}}
 addrs: []
 {{- end }}
 health_check_duration: {{ default .default.health_check_duration .Values.health_check_duration | quote }}
 connection_pool:
   {{- if .Values.connection_pool }}
+  enable_dns_resolver: {{ default .default.connection_pool.enable_dns_resolver .Values.connection_pool.enable_dns_resolver }}
   enable_rebalance: {{ default .default.connection_pool.enable_rebalance .Values.connection_pool.enable_rebalance }}
   rebalance_duration: {{ default .default.connection_pool.rebalance_duration .Values.connection_pool.rebalance_duration | quote }}
   size: {{ default .default.connection_pool.size .Values.connection_pool.size }}

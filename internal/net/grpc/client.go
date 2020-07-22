@@ -83,6 +83,7 @@ type gRPCClient struct {
 	hcDur               time.Duration
 	prDur               time.Duration
 	enablePoolRebalance bool
+	resolveDNS          bool
 	dopts               []DialOption
 	copts               []CallOption
 	roccd               string // reconnection old connection closing duration
@@ -452,8 +453,8 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 	opts := []pool.Option{
 		pool.WithAddr(addr),
 		pool.WithSize(g.poolSize),
-		pool.WithDialOptions(g.dopts...),
-		pool.WithDialOptions(dopts...),
+		pool.WithDialOptions(append(g.dopts, dopts...)...),
+		pool.WithResolveDNS(g.resolveDNS),
 	}
 	if g.bo != nil {
 		opts = append(opts, pool.WithBackoff(g.bo))

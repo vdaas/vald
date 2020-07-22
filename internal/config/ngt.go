@@ -57,6 +57,24 @@ type NGT struct {
 
 	// EnableInMemoryMode enables on memory ngt indexing mode
 	EnableInMemoryMode bool `yaml:"enable_in_memory_mode" json:"enable_in_memory_mode"`
+
+	// DefaultPoolSize represent default create index batch pool size
+	DefaultPoolSize uint32 `yaml:"default_pool_size" json:"default_pool_size"`
+
+	// DefaultRadius represent default radius used for search
+	DefaultRadius float32 `yaml:"default_radius" json:"default_radius"`
+
+	// DefaultEpsilon represent default epsilon used for search
+	DefaultEpsilon float32 `yaml:"default_epsilon" json:"default_epsilon"`
+
+	// MinLoadIndexTimeout represents minimum duration of load index timeout
+	MinLoadIndexTimeout string `yaml:"min_load_index_timeout" json:"min_load_index_timeout"`
+
+	// MaxLoadIndexTimeout represents maximum duration of load index timeout
+	MaxLoadIndexTimeout string `yaml:"max_load_index_timeout" json:"max_load_index_timeout"`
+
+	// LoadIndexTimeoutFactor represents a factor of load index timeout
+	LoadIndexTimeoutFactor string `yaml:"load_index_timeout_factor" json:"load_index_timeout_factor"`
 }
 
 // Bind returns NGT object whose some string value is filed value or environment value.
@@ -68,5 +86,8 @@ func (n *NGT) Bind() *NGT {
 	n.AutoIndexDurationLimit = GetActualValue(n.AutoIndexDurationLimit)
 	n.AutoSaveIndexDuration = GetActualValue(n.AutoSaveIndexDuration)
 	n.InitialDelayMaxDuration = GetActualValue(n.InitialDelayMaxDuration)
+	n.MinLoadIndexTimeout = GetActualValue(n.MinLoadIndexTimeout)
+	n.MaxLoadIndexTimeout = GetActualValue(n.MaxLoadIndexTimeout)
+	n.LoadIndexTimeoutFactor = GetActualValue(n.LoadIndexTimeoutFactor)
 	return n
 }

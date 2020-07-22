@@ -20,10 +20,10 @@ metadata:
   name: vald-gateway-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.37
+    helm.sh/chart: vald-v0.0.47
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.37
+    app.kubernetes.io/version: v0.0.47
     app.kubernetes.io/component: gateway
 data:
   config.yaml: |
@@ -118,6 +118,15 @@ data:
           enable_goroutine: true
           enable_memory: true
           enable_version_info: true
+          version_info_labels:
+          - vald_version
+          - server_name
+          - git_commit
+          - build_time
+          - go_version
+          - go_os
+          - go_arch
+          - ngt_version
       trace:
         enabled: false
         sampling_rate: 1
@@ -126,13 +135,53 @@ data:
         endpoint: /metrics
         namespace: vald
       jaeger:
+        enabled: false
+        collector_endpoint: ""
+        agent_endpoint: "jaeger-agent.default.svc.cluster.local:6831"
+        username: ""
+        password: ""
+        service_name: "vald-gateway"
+        buffer_max_count: 10
+      stackdriver:
+        project_id: ""
+        client:
+          api_key: ""
+          audiences: []
+          authentication_enabled: true
+          credentials_file: ""
+          credentials_json: ""
+          endpoint: ""
+          quota_project: ""
+          request_reason: ""
+          scopes: []
+          telemetry_enabled: true
+          user_agent: ""
+        exporter:
+          bundle_count_threshold: 0
+          bundle_delay_threshold: "0"
+          location: ""
+          metric_prefix: vald.vdaas.org
+          monitoring_enabled: false
+          number_of_workers: 1
+          reporting_interval: 1m
+          skip_cmd: false
+          timeout: 5s
+          trace_spans_buffer_max_bytes: 0
+          tracing_enabled: false
+        profiler:
           enabled: false
-          collector_endpoint: ""
-          agent_endpoint: "jaeger-agent.default.svc.cluster.local:6831"
-          username: ""
-          password: ""
-          service_name: "vald-gateway"
-          buffer_max_count: 10
+          service: "vald-gateway"
+          service_version: ""
+          debug_logging: false
+          mutex_profiling: true
+          cpu_profiling: true
+          alloc_profiling: true
+          heap_profiling: true
+          goroutine_profiling: true
+          alloc_force_gc: false
+          api_addr: ""
+          instance: ""
+          zone: ""
     gateway:
       agent_port: 8081
       agent_name: "vald-agent-ngt"
@@ -148,6 +197,7 @@ data:
           addrs: []
           health_check_duration: "1s"
           connection_pool:
+            enable_dns_resolver: true
             enable_rebalance: true
             old_conn_close_duration: 3s
             rebalance_duration: 30m
@@ -202,6 +252,7 @@ data:
           addrs: []
           health_check_duration: "1s"
           connection_pool:
+            enable_dns_resolver: true
             enable_rebalance: true
             old_conn_close_duration: 3s
             rebalance_duration: 30m
@@ -259,6 +310,7 @@ data:
           addrs: []
           health_check_duration: "1s"
           connection_pool:
+            enable_dns_resolver: true
             enable_rebalance: true
             old_conn_close_duration: 3s
             rebalance_duration: 30m
@@ -319,6 +371,7 @@ data:
           addrs: []
           health_check_duration: "1s"
           connection_pool:
+            enable_dns_resolver: true
             enable_rebalance: true
             old_conn_close_duration: 3s
             rebalance_duration: 30m

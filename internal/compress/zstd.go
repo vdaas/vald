@@ -88,8 +88,16 @@ func (z *zstdCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	return vec, nil
 }
 
-func (z *zstdCompressor) Reader(src io.Reader) (io.Reader, error) {
-	return zstd.NewReader(src)
+func (z *zstdCompressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
+	r, err := zstd.NewReader(src)
+	if err != nil {
+		return nil, err
+	}
+
+	return &zstdReader{
+		src: src,
+		r:   r,
+	}, nil
 }
 
 func (z *zstdCompressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
@@ -102,6 +110,19 @@ func (z *zstdCompressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
 		dst: dst,
 		w:   w,
 	}, nil
+}
+
+type zstdReader struct {
+	src io.ReadCloser
+	r   io.Reader
+}
+
+func (z *zstdReader) Read(p []byte) (n int, err error) {
+	return z.r.Read(p)
+}
+
+func (z *zstdReader) Close() error {
+	return z.src.Close()
 }
 
 type zstdWriter struct {

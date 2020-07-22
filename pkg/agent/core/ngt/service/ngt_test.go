@@ -20,6 +20,7 @@ package service
 import (
 	"context"
 	"reflect"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -30,13 +31,13 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
-
 	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
 	type args struct {
-		cfg *config.NGT
+		cfg  *config.NGT
+		opts []Option
 	}
 	type want struct {
 		wantNn NGT
@@ -66,6 +67,7 @@ func TestNew(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           cfg: nil,
+		           opts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -79,6 +81,7 @@ func TestNew(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           cfg: nil,
+		           opts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -89,7 +92,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -100,8 +103,342 @@ func TestNew(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			gotNn, err := New(test.args.cfg)
+			gotNn, err := New(test.args.cfg, test.args.opts...)
 			if err := test.checkFunc(test.want, gotNn, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_ngt_initNGT(t *testing.T) {
+	type args struct {
+		opts []core.Option
+	}
+	type fields struct {
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           opts: nil,
+		       },
+		       fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           ivc: vcaches{},
+		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           opts: nil,
+		           },
+		           fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           ivc: vcaches{},
+		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
+			}
+
+			err := n.initNGT(test.args.opts...)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_ngt_loadKVS(t *testing.T) {
+	type fields struct {
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           ivc: vcaches{},
+		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           ivc: vcaches{},
+		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
+			}
+
+			err := n.loadKVS()
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -114,20 +451,29 @@ func Test_ngt_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		want <-chan error
@@ -156,19 +502,28 @@ func Test_ngt_Start(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -185,19 +540,28 @@ func Test_ngt_Start(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -209,7 +573,7 @@ func Test_ngt_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -220,20 +584,29 @@ func Test_ngt_Start(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			got := n.Start(test.args.ctx)
@@ -253,20 +626,29 @@ func Test_ngt_Search(t *testing.T) {
 		radius  float32
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		want []model.Distance
@@ -302,19 +684,28 @@ func Test_ngt_Search(t *testing.T) {
 		           radius: 0,
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -334,19 +725,28 @@ func Test_ngt_Search(t *testing.T) {
 		           radius: 0,
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -358,7 +758,7 @@ func Test_ngt_Search(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -369,20 +769,29 @@ func Test_ngt_Search(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			got, err := n.Search(test.args.vec, test.args.size, test.args.epsilon, test.args.radius)
@@ -402,20 +811,29 @@ func Test_ngt_SearchByID(t *testing.T) {
 		radius  float32
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		wantDst []model.Distance
@@ -451,19 +869,28 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           radius: 0,
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -483,19 +910,28 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           radius: 0,
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -507,7 +943,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -518,20 +954,29 @@ func Test_ngt_SearchByID(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			gotDst, err := n.SearchByID(test.args.uuid, test.args.size, test.args.epsilon, test.args.radius)
@@ -549,20 +994,29 @@ func Test_ngt_Insert(t *testing.T) {
 		vec  []float32
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		err error
@@ -592,19 +1046,28 @@ func Test_ngt_Insert(t *testing.T) {
 		           vec: nil,
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -622,19 +1085,28 @@ func Test_ngt_Insert(t *testing.T) {
 		           vec: nil,
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -646,7 +1118,7 @@ func Test_ngt_Insert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -657,20 +1129,29 @@ func Test_ngt_Insert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			err := n.Insert(test.args.uuid, test.args.vec)
@@ -690,20 +1171,29 @@ func Test_ngt_insert(t *testing.T) {
 		validation bool
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		err error
@@ -735,19 +1225,28 @@ func Test_ngt_insert(t *testing.T) {
 		           validation: false,
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -767,19 +1266,28 @@ func Test_ngt_insert(t *testing.T) {
 		           validation: false,
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -791,7 +1299,7 @@ func Test_ngt_insert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -802,20 +1310,29 @@ func Test_ngt_insert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			err := n.insert(test.args.uuid, test.args.vec, test.args.t, test.args.validation)
@@ -832,20 +1349,29 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		vecs map[string][]float32
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		err error
@@ -874,19 +1400,28 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           vecs: nil,
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -903,19 +1438,28 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           vecs: nil,
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -927,7 +1471,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -938,20 +1482,29 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			err := n.InsertMultiple(test.args.vecs)
@@ -969,20 +1522,29 @@ func Test_ngt_Update(t *testing.T) {
 		vec  []float32
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		err error
@@ -1012,19 +1574,28 @@ func Test_ngt_Update(t *testing.T) {
 		           vec: nil,
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -1042,19 +1613,28 @@ func Test_ngt_Update(t *testing.T) {
 		           vec: nil,
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -1066,7 +1646,7 @@ func Test_ngt_Update(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1077,20 +1657,29 @@ func Test_ngt_Update(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			err := n.Update(test.args.uuid, test.args.vec)
@@ -1107,20 +1696,29 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		vecs map[string][]float32
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		err error
@@ -1149,19 +1747,28 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           vecs: nil,
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -1178,19 +1785,28 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           vecs: nil,
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -1202,7 +1818,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1213,20 +1829,29 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			err := n.UpdateMultiple(test.args.vecs)
@@ -1243,20 +1868,29 @@ func Test_ngt_Delete(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		err error
@@ -1285,19 +1919,28 @@ func Test_ngt_Delete(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -1314,19 +1957,28 @@ func Test_ngt_Delete(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -1338,7 +1990,7 @@ func Test_ngt_Delete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1349,20 +2001,29 @@ func Test_ngt_Delete(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			err := n.Delete(test.args.uuid)
@@ -1380,20 +2041,29 @@ func Test_ngt_delete(t *testing.T) {
 		t    int64
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		err error
@@ -1423,19 +2093,28 @@ func Test_ngt_delete(t *testing.T) {
 		           t: 0,
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -1453,19 +2132,28 @@ func Test_ngt_delete(t *testing.T) {
 		           t: 0,
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -1477,7 +2165,7 @@ func Test_ngt_delete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1488,20 +2176,29 @@ func Test_ngt_delete(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			err := n.delete(test.args.uuid, test.args.t)
@@ -1518,20 +2215,29 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		uuids []string
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		err error
@@ -1560,19 +2266,28 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           uuids: nil,
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -1589,19 +2304,28 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           uuids: nil,
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -1613,7 +2337,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1624,20 +2348,29 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			err := n.DeleteMultiple(test.args.uuids...)
@@ -1654,20 +2387,29 @@ func Test_ngt_GetObject(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		wantVec []float32
@@ -1700,19 +2442,28 @@ func Test_ngt_GetObject(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -1729,19 +2480,28 @@ func Test_ngt_GetObject(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -1753,7 +2513,7 @@ func Test_ngt_GetObject(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1764,20 +2524,29 @@ func Test_ngt_GetObject(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			gotVec, err := n.GetObject(test.args.uuid)
@@ -1795,20 +2564,29 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		poolSize uint32
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		err error
@@ -1834,22 +2612,32 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           poolSize: 0,
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -1863,22 +2651,32 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           poolSize: 0,
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -1890,7 +2688,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1901,20 +2699,29 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			err := n.CreateIndex(test.args.ctx, test.args.poolSize)
@@ -1931,20 +2738,29 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		err error
@@ -1973,19 +2789,28 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -2002,19 +2827,28 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -2026,7 +2860,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2037,23 +2871,204 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			err := n.SaveIndex(test.args.ctx)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_ngt_saveIndex(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	type fields struct {
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           ivc: vcaches{},
+		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           ivc: vcaches{},
+		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
+			}
+
+			err := n.saveIndex(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -2068,20 +3083,29 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		poolSize uint32
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		err error
@@ -2111,19 +3135,28 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           poolSize: 0,
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -2141,19 +3174,28 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           poolSize: 0,
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -2165,7 +3207,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2176,20 +3218,29 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			err := n.CreateAndSaveIndex(test.args.ctx, test.args.poolSize)
@@ -2206,20 +3257,29 @@ func Test_ngt_Exists(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		wantOid uint32
@@ -2252,19 +3312,28 @@ func Test_ngt_Exists(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -2281,19 +3350,28 @@ func Test_ngt_Exists(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -2305,7 +3383,7 @@ func Test_ngt_Exists(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2316,20 +3394,29 @@ func Test_ngt_Exists(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			gotOid, gotOk := n.Exists(test.args.uuid)
@@ -2346,20 +3433,29 @@ func Test_ngt_insertCache(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		want  *vcache
@@ -2392,19 +3488,28 @@ func Test_ngt_insertCache(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -2421,19 +3526,28 @@ func Test_ngt_insertCache(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -2445,7 +3559,7 @@ func Test_ngt_insertCache(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2456,20 +3570,29 @@ func Test_ngt_insertCache(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			got, got1 := n.insertCache(test.args.uuid)
@@ -2483,20 +3606,29 @@ func Test_ngt_insertCache(t *testing.T) {
 
 func Test_ngt_IsIndexing(t *testing.T) {
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		want bool
@@ -2521,19 +3653,28 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -2547,19 +3688,28 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -2571,7 +3721,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -2582,20 +3732,29 @@ func Test_ngt_IsIndexing(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			got := n.IsIndexing()
@@ -2612,20 +3771,29 @@ func Test_ngt_UUIDs(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		wantUuids []string
@@ -2654,19 +3822,28 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -2683,19 +3860,28 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -2707,7 +3893,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2718,20 +3904,29 @@ func Test_ngt_UUIDs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			gotUuids := n.UUIDs(test.args.ctx)
@@ -2745,20 +3940,29 @@ func Test_ngt_UUIDs(t *testing.T) {
 
 func Test_ngt_UncommittedUUIDs(t *testing.T) {
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		wantUuids []string
@@ -2783,19 +3987,28 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -2809,19 +4022,28 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -2833,7 +4055,7 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -2844,20 +4066,29 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			gotUuids := n.UncommittedUUIDs()
@@ -2871,20 +4102,29 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 
 func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		want uint64
@@ -2909,19 +4149,28 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -2935,19 +4184,28 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -2959,7 +4217,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -2970,20 +4228,29 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			got := n.NumberOfCreateIndexExecution()
@@ -2997,20 +4264,29 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 
 func Test_ngt_Len(t *testing.T) {
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		want uint64
@@ -3035,19 +4311,28 @@ func Test_ngt_Len(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -3061,19 +4346,28 @@ func Test_ngt_Len(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -3085,7 +4379,7 @@ func Test_ngt_Len(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -3096,20 +4390,29 @@ func Test_ngt_Len(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			got := n.Len()
@@ -3123,20 +4426,29 @@ func Test_ngt_Len(t *testing.T) {
 
 func Test_ngt_InsertVCacheLen(t *testing.T) {
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		want uint64
@@ -3161,19 +4473,28 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -3187,19 +4508,28 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -3211,7 +4541,7 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -3222,20 +4552,29 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			got := n.InsertVCacheLen()
@@ -3249,20 +4588,29 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 
 func Test_ngt_DeleteVCacheLen(t *testing.T) {
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		want uint64
@@ -3287,19 +4635,28 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -3313,19 +4670,28 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -3337,7 +4703,7 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -3348,20 +4714,29 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			got := n.DeleteVCacheLen()
@@ -3378,20 +4753,29 @@ func Test_ngt_Close(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		alen     int
-		indexing atomic.Value
-		lim      time.Duration
-		dur      time.Duration
-		dps      uint32
-		ic       uint64
-		nocie    uint64
-		eg       errgroup.Group
-		ivc      *vcaches
-		dvc      *vcaches
-		path     string
-		kvs      kvs.BidiMap
-		core     core.NGT
-		dcd      bool
+		core      core.NGT
+		eg        errgroup.Group
+		kvs       kvs.BidiMap
+		ivc       *vcaches
+		dvc       *vcaches
+		indexing  atomic.Value
+		saveMu    sync.Mutex
+		ic        uint64
+		nocie     uint64
+		inMem     bool
+		alen      int
+		lim       time.Duration
+		dur       time.Duration
+		sdur      time.Duration
+		minLit    time.Duration
+		maxLit    time.Duration
+		litFactor time.Duration
+		path      string
+		poolSize  uint32
+		radius    float32
+		epsilon   float32
+		idelay    time.Duration
+		dcd       bool
 	}
 	type want struct {
 		err error
@@ -3420,19 +4804,28 @@ func Test_ngt_Close(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		       },
 		       want: want{},
@@ -3449,19 +4842,28 @@ func Test_ngt_Close(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
-		           alen: 0,
-		           indexing: nil,
-		           lim: nil,
-		           dur: nil,
-		           dps: 0,
-		           ic: 0,
-		           nocie: 0,
+		           core: nil,
 		           eg: nil,
+		           kvs: nil,
 		           ivc: vcaches{},
 		           dvc: vcaches{},
+		           indexing: nil,
+		           saveMu: sync.Mutex{},
+		           ic: 0,
+		           nocie: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
 		           path: "",
-		           kvs: nil,
-		           core: nil,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
 		           dcd: false,
 		           },
 		           want: want{},
@@ -3473,7 +4875,7 @@ func Test_ngt_Close(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -3484,20 +4886,29 @@ func Test_ngt_Close(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
-				alen:     test.fields.alen,
-				indexing: test.fields.indexing,
-				lim:      test.fields.lim,
-				dur:      test.fields.dur,
-				dps:      test.fields.dps,
-				ic:       test.fields.ic,
-				nocie:    test.fields.nocie,
-				eg:       test.fields.eg,
-				ivc:      test.fields.ivc,
-				dvc:      test.fields.dvc,
-				path:     test.fields.path,
-				kvs:      test.fields.kvs,
-				core:     test.fields.core,
-				dcd:      test.fields.dcd,
+				core:      test.fields.core,
+				eg:        test.fields.eg,
+				kvs:       test.fields.kvs,
+				ivc:       test.fields.ivc,
+				dvc:       test.fields.dvc,
+				indexing:  test.fields.indexing,
+				saveMu:    test.fields.saveMu,
+				ic:        test.fields.ic,
+				nocie:     test.fields.nocie,
+				inMem:     test.fields.inMem,
+				alen:      test.fields.alen,
+				lim:       test.fields.lim,
+				dur:       test.fields.dur,
+				sdur:      test.fields.sdur,
+				minLit:    test.fields.minLit,
+				maxLit:    test.fields.maxLit,
+				litFactor: test.fields.litFactor,
+				path:      test.fields.path,
+				poolSize:  test.fields.poolSize,
+				radius:    test.fields.radius,
+				epsilon:   test.fields.epsilon,
+				idelay:    test.fields.idelay,
+				dcd:       test.fields.dcd,
 			}
 
 			err := n.Close(test.args.ctx)

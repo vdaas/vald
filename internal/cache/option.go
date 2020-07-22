@@ -21,11 +21,11 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/internal/cache/cacher"
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
-type Option func(*cache) error
+// Option represents the functional option for cache.
+type Option func(*cache)
 
 var (
 	defaultOpts = []Option{
@@ -35,53 +35,50 @@ var (
 	}
 )
 
+// WithExpiredHook returns Option after set expiredHook when f is not nil.
 func WithExpiredHook(f func(context.Context, string)) Option {
-	return func(c *cache) error {
+	return func(c *cache) {
 		if f != nil {
 			c.expiredHook = f
 		}
-		return nil
 	}
 }
 
+// WithType returns Option after set cacher when len(mo string) is not nil.
 func WithType(mo string) Option {
-	return func(c *cache) error {
+	return func(c *cache) {
 		if len(mo) == 0 {
-			return nil
+			return
 		}
-		m := cacher.ToType(mo)
-		if m == cacher.Unknown {
-			return errors.ErrInvalidCacherType
-		}
-		c.cacher = m
-		return nil
+
+		c.cacher = cacher.ToType(mo)
 	}
 }
 
+// WithExpireDuration returns Option after set expireDur when dur is cprrect param.
 func WithExpireDuration(dur string) Option {
-	return func(c *cache) error {
+	return func(c *cache) {
 		if len(dur) == 0 {
-			return nil
+			return
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			return nil
+			return
 		}
 		c.expireDur = d
-		return nil
 	}
 }
 
+// WithExpireCheckDuration returns Option after set expireCheckDur when dur is cprrect param.
 func WithExpireCheckDuration(dur string) Option {
-	return func(c *cache) error {
+	return func(c *cache) {
 		if len(dur) == 0 {
-			return nil
+			return
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			return nil
+			return
 		}
 		c.expireCheckDur = d
-		return nil
 	}
 }

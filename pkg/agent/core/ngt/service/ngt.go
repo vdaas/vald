@@ -20,9 +20,11 @@ package service
 import (
 	"context"
 	"encoding/gob"
+	"math"
 	"os"
+	"path/filepath"
+	"reflect"
 	"runtime"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -34,11 +36,10 @@ import (
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
-	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
+	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 )
 
 type NGT interface {
@@ -67,24 +68,42 @@ type NGT interface {
 }
 
 type ngt struct {
-	alen     int
+	// instances
+	core core.NGT
+	eg   errgroup.Group
+	kvs  kvs.BidiMap
+	ivc  *vcaches // insertion vector cache
+	dvc  *vcaches // deletion vector cache
+
+	// statuses
 	indexing atomic.Value
-	saveMu   sync.Mutex    // creating or saving index
-	lim      time.Duration // auto indexing time limit
-	dur      time.Duration // auto indexing check duration
-	sdur     time.Duration // auto save index check duration
-	idelay   time.Duration // initial delay duration
-	dps      uint32        // default pool size
-	ic       uint64        // insert count
-	nocie    uint64        // number of create index execution
-	eg       errgroup.Group
-	ivc      *vcaches // insertion vector cache
-	dvc      *vcaches // deletion vector cache
-	path     string
-	kvs      kvs.BidiMap
-	core     core.NGT
-	dcd      bool // disable commit daemon
-	inMem    bool
+	saveMu   sync.Mutex // creating or saving index
+
+	// counters
+	ic    uint64 // insert count
+	nocie uint64 // number of create index execution
+
+	// configurations
+	inMem bool // in-memory mode
+
+	alen int // auto indexing length
+
+	lim  time.Duration // auto indexing time limit
+	dur  time.Duration // auto indexing check duration
+	sdur time.Duration // auto save index check duration
+
+	minLit    time.Duration // minimum load index timeout
+	maxLit    time.Duration // maximum load index timeout
+	litFactor time.Duration // load index timeout factor
+
+	path string // index path
+
+	poolSize uint32  // default pool size
+	radius   float32 // default radius
+	epsilon  float32 // default epsilon
+
+	idelay time.Duration // initial delay duration
+	dcd    bool          // disable commit daemon
 }
 
 type vcache struct {
@@ -96,94 +115,33 @@ const (
 	kvsFileName = "ngt-meta.kvsdb"
 )
 
-func New(cfg *config.NGT) (nn NGT, err error) {
+func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	n := new(ngt)
-	n.inMem = cfg.EnableInMemoryMode
-	cfg.IndexPath = strings.TrimSuffix(cfg.IndexPath, "/")
-	opts := []core.Option{
+
+	for _, opt := range append(defaultOpts, opts...) {
+		if err := opt(n); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
+	}
+
+	n.kvs = kvs.New()
+
+	err = n.initNGT(
 		core.WithInMemoryMode(n.inMem),
-		core.WithIndexPath(cfg.IndexPath),
+		core.WithIndexPath(n.path),
+		core.WithDefaultPoolSize(n.poolSize),
+		core.WithDefaultRadius(n.radius),
+		core.WithDefaultEpsilon(n.epsilon),
 		core.WithDimension(cfg.Dimension),
 		core.WithDistanceTypeByString(cfg.DistanceType),
 		core.WithObjectTypeByString(cfg.ObjectType),
 		core.WithBulkInsertChunkSize(cfg.BulkInsertChunkSize),
 		core.WithCreationEdgeSize(cfg.CreationEdgeSize),
 		core.WithSearchEdgeSize(cfg.SearchEdgeSize),
-	}
-
-	if !n.inMem && len(cfg.IndexPath) != 0 {
-		n.path = cfg.IndexPath
-	}
-
-	n.kvs = kvs.New()
-
-	if _, err = os.Stat(cfg.IndexPath); os.IsNotExist(err) || n.inMem {
-		n.core, err = core.New(opts...)
-	} else {
-		eg, _ := errgroup.New(context.Background())
-		eg.Go(safety.RecoverFunc(func() (err error) {
-			n.core, err = core.Load(opts...)
-			return err
-		}))
-		eg.Go(safety.RecoverFunc(func() (err error) {
-			if len(n.path) != 0 && !n.inMem {
-				m := make(map[string]uint32)
-				gob.Register(map[string]uint32{})
-				f := file.Open(n.path+"/"+kvsFileName, os.O_RDONLY|os.O_SYNC, os.ModePerm)
-				defer f.Close()
-				err = gob.NewDecoder(f).Decode(&m)
-				if err != nil {
-					return err
-				}
-				for k, id := range m {
-					n.kvs.Set(k, id)
-				}
-			}
-			return nil
-		}))
-		err = eg.Wait()
-	}
+	)
 	if err != nil {
 		return nil, err
 	}
-
-	if cfg.AutoIndexCheckDuration != "" {
-		d, err := timeutil.Parse(cfg.AutoIndexCheckDuration)
-		if err != nil {
-			d = 0
-		}
-		n.dur = d
-	}
-
-	if cfg.AutoIndexDurationLimit != "" {
-		d, err := timeutil.Parse(cfg.AutoIndexDurationLimit)
-		if err != nil {
-			d = 0
-		}
-		n.lim = d
-	}
-
-	if cfg.AutoSaveIndexDuration != "" {
-		d, err := timeutil.Parse(cfg.AutoSaveIndexDuration)
-		if err != nil {
-			d = 0
-		}
-		n.sdur = d
-	}
-
-	if cfg.InitialDelayMaxDuration != "" {
-		d, err := timeutil.Parse(cfg.InitialDelayMaxDuration)
-		if err != nil {
-			d = 0
-		}
-		n.idelay = time.Duration(
-			int64(rand.LimitedUint32(uint64(d/time.Second))),
-		) * time.Second
-	}
-
-	n.alen = cfg.AutoIndexLength
-
-	n.eg = errgroup.Get()
 
 	if n.dur == 0 || n.alen == 0 {
 		n.dcd = true
@@ -195,11 +153,124 @@ func New(cfg *config.NGT) (nn NGT, err error) {
 		n.dvc = new(vcaches)
 	}
 
-	if in, ok := n.indexing.Load().(bool); !ok || in {
-		n.indexing.Store(false)
-	}
+	n.indexing.Store(false)
 
 	return n, nil
+}
+
+func (n *ngt) initNGT(opts ...core.Option) (err error) {
+	if _, err = os.Stat(n.path); os.IsNotExist(err) || n.inMem {
+		n.core, err = core.New(opts...)
+		return err
+	}
+
+	log.Debugf("load index from %s", n.path)
+
+	agentMetadata, err := metadata.Load(filepath.Join(n.path, metadata.AgentMetadataFileName))
+	if err != nil {
+		log.Warnf("cannot read metadata from %s: %s", metadata.AgentMetadataFileName, err)
+	}
+
+	var timeout time.Duration
+	if agentMetadata != nil && agentMetadata.NGT != nil {
+		log.Debugf("the backup index size is %d. starting to load...", agentMetadata.NGT.IndexCount)
+		timeout = time.Duration(
+			math.Min(
+				math.Max(
+					float64(agentMetadata.NGT.IndexCount)*float64(n.litFactor),
+					float64(n.minLit),
+				),
+				float64(n.maxLit),
+			),
+		)
+	} else {
+		log.Debugf("cannot inspect the backup index size. starting to load.")
+		timeout = time.Duration(math.Min(float64(n.minLit), float64(n.maxLit)))
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	eg, _ := errgroup.New(ctx)
+	eg.Go(safety.RecoverFunc(func() (err error) {
+		n.core, err = core.Load(opts...)
+		return err
+	}))
+
+	eg.Go(safety.RecoverFunc(n.loadKVS))
+
+	ech := make(chan error, 1)
+
+	// NOTE: when it exceeds the timeout while loading,
+	// it should exit this function and leave this goroutine running.
+	go func() {
+		defer close(ech)
+
+		err = safety.RecoverFunc(func() (err error) {
+			err = eg.Wait()
+			if err != nil {
+				return err
+			}
+			cancel()
+			return nil
+		})()
+		if err != nil {
+			ech <- err
+		}
+	}()
+
+	select {
+	case err := <-ech:
+		return err
+	case <-ctx.Done():
+		if ctx.Err() == context.DeadlineExceeded {
+			log.Errorf("cannot load index backup data within the timeout %s. the process is going to be killed.", timeout)
+
+			err := metadata.Store(
+				filepath.Join(n.path, metadata.AgentMetadataFileName),
+				&metadata.Metadata{
+					IsInvalid: true,
+					NGT: &metadata.NGT{
+						IndexCount: 0,
+					},
+				},
+			)
+			if err != nil {
+				return err
+			}
+
+			return errors.ErrIndexLoadTimeout
+		}
+	}
+
+	return nil
+}
+
+func (n *ngt) loadKVS() error {
+	gob.Register(map[string]uint32{})
+
+	f, err := file.Open(
+		filepath.Join(n.path, kvsFileName),
+		os.O_RDONLY|os.O_SYNC,
+		os.ModePerm,
+	)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	m := make(map[string]uint32)
+	err = gob.NewDecoder(f).Decode(&m)
+	if err != nil {
+		return err
+	}
+
+	for k, id := range m {
+		n.kvs.Set(k, id)
+	}
+
+	return nil
 }
 
 func (n *ngt) Start(ctx context.Context) <-chan error {
@@ -235,7 +306,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			err = nil
 			select {
 			case <-ctx.Done():
-				err = n.CreateIndex(ctx, n.dps)
+				err = n.CreateIndex(ctx, n.poolSize)
 				if err != nil {
 					ech <- err
 					return errors.Wrap(ctx.Err(), err.Error())
@@ -243,10 +314,10 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				return ctx.Err()
 			case <-tick.C:
 				if int(atomic.LoadUint64(&n.ic)) >= n.alen {
-					err = n.CreateIndex(ctx, n.dps)
+					err = n.CreateIndex(ctx, n.poolSize)
 				}
 			case <-limit.C:
-				err = n.CreateAndSaveIndex(ctx, n.dps)
+				err = n.CreateAndSaveIndex(ctx, n.poolSize)
 			case <-sTick.C:
 				err = n.SaveIndex(ctx)
 			}
@@ -566,30 +637,58 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 	defer n.saveMu.Unlock()
 
 	if len(n.path) != 0 && !n.inMem {
-		eg, ctx := errgroup.New(ctx)
-		eg.Go(safety.RecoverFunc(func() error {
-			if len(n.path) != 0 {
-				m := make(map[string]uint32, n.kvs.Len())
-				var mu sync.Mutex
-				n.kvs.Range(ctx, func(key string, id uint32) bool {
-					mu.Lock()
-					m[key] = id
-					mu.Unlock()
-					return true
-				})
-				f := file.Open(n.path+"/"+kvsFileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
-				defer f.Close()
-				gob.Register(map[string]uint32{})
-				return gob.NewEncoder(f).Encode(&m)
-			}
-			return nil
-		}))
-		eg.Go(safety.RecoverFunc(func() error {
-			return n.core.SaveIndex()
-		}))
-		err = eg.Wait()
+		err = n.saveIndex(ctx)
 	}
+
 	return
+}
+
+func (n *ngt) saveIndex(ctx context.Context) (err error) {
+	eg, ctx := errgroup.New(ctx)
+
+	eg.Go(safety.RecoverFunc(func() error {
+		if n.path != "" {
+			m := make(map[string]uint32, n.kvs.Len())
+			var mu sync.Mutex
+			n.kvs.Range(ctx, func(key string, id uint32) bool {
+				mu.Lock()
+				m[key] = id
+				mu.Unlock()
+				return true
+			})
+			f, err := file.Open(
+				filepath.Join(n.path, kvsFileName),
+				os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
+				os.ModePerm,
+			)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+			gob.Register(map[string]uint32{})
+			return gob.NewEncoder(f).Encode(&m)
+		}
+		return nil
+	}))
+
+	eg.Go(safety.RecoverFunc(func() error {
+		return n.core.SaveIndex()
+	}))
+
+	err = eg.Wait()
+	if err != nil {
+		return err
+	}
+
+	return metadata.Store(
+		filepath.Join(n.path, metadata.AgentMetadataFileName),
+		&metadata.Metadata{
+			IsInvalid: false,
+			NGT: &metadata.NGT{
+				IndexCount: n.Len(),
+			},
+		},
+	)
 }
 
 func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err error) {
@@ -674,7 +773,7 @@ func (n *ngt) DeleteVCacheLen() uint64 {
 
 func (n *ngt) Close(ctx context.Context) (err error) {
 	if len(n.path) != 0 {
-		err = n.CreateAndSaveIndex(ctx, n.dps)
+		err = n.CreateAndSaveIndex(ctx, n.poolSize)
 	}
 	n.core.Close()
 	return

@@ -18,15 +18,36 @@ package watch
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"reflect"
-	"sync"
+	"strings"
+	"syscall"
 	"testing"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"go.uber.org/goleak"
 )
+
+var (
+	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+	goleakIgnoreOptions = []goleak.Option{
+		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+		goleak.IgnoreTopFunction("syscall.Syscall6"),
+		goleak.IgnoreTopFunction("syscall.syscall6"),
+	}
+)
+
+func TestMain(m *testing.M) {
+	log.Init()
+
+	code := m.Run()
+
+	os.Exit(code)
+}
 
 func TestNew(t *testing.T) {
 	type args struct {
@@ -54,36 +75,38 @@ func TestNew(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns (Watcher, nil) when option is not nil",
+			args: args{
+				opts: []Option{
+					WithDirs("watch.go"),
+				},
+			},
+			want: want{
+				err: nil,
+			},
+			checkFunc: func(w want, got Watcher, err error) error {
+				if !errors.Is(err, w.err) {
+					return errors.Errorf("got error = %v, want %v", err, w.err)
+				}
+				if got == nil {
+					return errors.Errorf("got is nil")
+				}
+				return nil
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns (nil, error) when option is nil and w.dirs is empty",
+			want: want{
+				err: errors.ErrWatchDirNotFound,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -98,24 +121,14 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_watch_init(t *testing.T) {
 	type fields struct {
-		w        *fsnotify.Watcher
-		eg       errgroup.Group
-		dirs     map[string]struct{}
-		mu       sync.RWMutex
-		onChange func(ctx context.Context, name string) error
-		onCreate func(ctx context.Context, name string) error
-		onRename func(ctx context.Context, name string) error
-		onDelete func(ctx context.Context, name string) error
-		onWrite  func(ctx context.Context, name string) error
-		onChmod  func(ctx context.Context, name string) error
-		onError  func(ctx context.Context, err error) error
+		w    *fsnotify.Watcher
+		dirs map[string]struct{}
 	}
 	type want struct {
 		want *watch
@@ -126,7 +139,7 @@ func Test_watch_init(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *watch, error) error
-		beforeFunc func()
+		beforeFunc func(*testing.T, *fields)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
@@ -139,58 +152,105 @@ func Test_watch_init(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           w: nil,
-		           eg: nil,
-		           dirs: nil,
-		           mu: sync.RWMutex{},
-		           onChange: nil,
-		           onCreate: nil,
-		           onRename: nil,
-		           onDelete: nil,
-		           onWrite: nil,
-		           onChmod: nil,
-		           onError: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns no such file or directory error when file not exists",
+			fields: fields{
+				dirs: map[string]struct{}{
+					"vald.go": struct{}{},
+				},
+			},
+			want: want{
+				err: syscall.Errno(0x2),
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           w: nil,
-		           eg: nil,
-		           dirs: nil,
-		           mu: sync.RWMutex{},
-		           onChange: nil,
-		           onCreate: nil,
-		           onRename: nil,
-		           onDelete: nil,
-		           onWrite: nil,
-		           onChmod: nil,
-		           onError: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns no such file or directory error when directory not exists",
+			fields: fields{
+				dirs: map[string]struct{}{
+					"test": struct{}{},
+				},
+			},
+			want: want{
+				err: syscall.Errno(0x2),
+			},
+		},
+
+		{
+			name: "returns no such file or directory error when some file not exists",
+			fields: fields{
+				dirs: map[string]struct{}{
+					"watch.go": struct{}{},
+					"vald.go":  struct{}{},
+				},
+			},
+			want: want{
+				err: syscall.Errno(0x2),
+			},
+		},
+
+		{
+			name: "returns nil when watcher already created and initialize success",
+			fields: fields{
+				dirs: map[string]struct{}{
+					"../watch":      struct{}{},
+					"watch.go":      struct{}{},
+					"watch_test.go": struct{}{},
+				},
+				w: func() *fsnotify.Watcher {
+					w, _ := fsnotify.NewWatcher()
+					return w
+				}(),
+			},
+			checkFunc: func(w want, got *watch, err error) error {
+				if !errors.Is(err, w.err) {
+					return errors.Errorf("got error = %v, want %v", err, w.err)
+				}
+				if got == nil {
+					return errors.New("got is nil")
+				}
+				if got.w == nil {
+					return errors.New("got w is nil")
+				}
+				return nil
+			},
+			want: want{
+				err: nil,
+			},
+		},
+
+		{
+			name: "returns nil when initialize success",
+			fields: fields{
+				dirs: map[string]struct{}{
+					"../watch":      struct{}{},
+					"watch.go":      struct{}{},
+					"watch_test.go": struct{}{},
+				},
+			},
+			checkFunc: func(w want, got *watch, err error) error {
+				if !errors.Is(err, w.err) {
+					return errors.Errorf("got error = %v, want %v", err, w.err)
+				}
+				if got == nil {
+					return errors.New("got is nil")
+				}
+				if got.w == nil {
+					return errors.New("got w is nil")
+				}
+				return nil
+			},
+			want: want{
+				err: nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt, &test.fields)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc()
@@ -199,24 +259,14 @@ func Test_watch_init(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			w := &watch{
-				w:        test.fields.w,
-				eg:       test.fields.eg,
-				dirs:     test.fields.dirs,
-				mu:       test.fields.mu,
-				onChange: test.fields.onChange,
-				onCreate: test.fields.onCreate,
-				onRename: test.fields.onRename,
-				onDelete: test.fields.onDelete,
-				onWrite:  test.fields.onWrite,
-				onChmod:  test.fields.onChmod,
-				onError:  test.fields.onError,
+				w:    test.fields.w,
+				dirs: test.fields.dirs,
 			}
 
 			got, err := w.init()
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -227,9 +277,8 @@ func Test_watch_Start(t *testing.T) {
 	}
 	type fields struct {
 		w        *fsnotify.Watcher
-		eg       errgroup.Group
 		dirs     map[string]struct{}
-		mu       sync.RWMutex
+		eg       errgroup.Group
 		onChange func(ctx context.Context, name string) error
 		onCreate func(ctx context.Context, name string) error
 		onRename func(ctx context.Context, name string) error
@@ -245,7 +294,7 @@ func Test_watch_Start(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		fieldsFunc func(*testing.T) fields
 		want       want
 		checkFunc  func(want, <-chan error, error) error
 		beforeFunc func(args)
@@ -255,68 +304,401 @@ func Test_watch_Start(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+
+		if !errors.Is(<-got, <-w.want) {
+			return errors.Errorf("errCh got = %v, want %v", got, w.want)
 		}
+
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           w: nil,
-		           eg: nil,
-		           dirs: nil,
-		           mu: sync.RWMutex{},
-		           onChange: nil,
-		           onCreate: nil,
-		           onRename: nil,
-		           onDelete: nil,
-		           onWrite: nil,
-		           onChmod: nil,
-		           onError: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "returns channel with error when watcher closed and initialize fails",
+				args: args{
+					ctx: ctx,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					w, err := fsnotify.NewWatcher()
+					if err != nil {
+						t.Fatal(err)
+					}
+					w.Errors = make(chan error, 1)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           w: nil,
-		           eg: nil,
-		           dirs: nil,
-		           mu: sync.RWMutex{},
-		           onChange: nil,
-		           onCreate: nil,
-		           onRename: nil,
-		           onDelete: nil,
-		           onWrite: nil,
-		           onChmod: nil,
-		           onError: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+					w.Errors <- errors.New("err")
+					w.Close()
+
+					return fields{
+						w:  w,
+						eg: errgroup.Get(),
+						dirs: map[string]struct{}{
+							"vald": struct{}{},
+						},
+					}
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					want: func() chan error {
+						ch := make(chan error, 1)
+						ch <- errors.New("err")
+						close(ch)
+						return ch
+					}(),
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "return channel with error when the write event occurs and onChange and onWrite hook returns error",
+				args: args{
+					ctx: ctx,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+
+					w, err := fsnotify.NewWatcher()
+					if err != nil {
+						t.Fatal(err)
+					}
+					w.Events = make(chan fsnotify.Event, 1)
+
+					w.Events <- fsnotify.Event{
+						Name: "watch.go",
+						Op:   fsnotify.Write,
+					}
+
+					return fields{
+						w:  w,
+						eg: errgroup.Get(),
+						onChange: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onChange name got = %s, want %s", got, want)
+							}
+							return errors.New("err1")
+						},
+						onWrite: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onWrite name got = %s, want %s", got, want)
+							}
+							return errors.New("err2")
+						},
+					}
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					want: func() chan error {
+						ch := make(chan error, 2)
+						ch <- errors.New("err1")
+						ch <- errors.New("err2")
+						close(ch)
+						return ch
+					}(),
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "return channel with error when onWrite hook return error and send to returned channel",
+				args: args{
+					ctx: ctx,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					w, err := fsnotify.NewWatcher()
+					if err != nil {
+						t.Fatal(err)
+					}
+					w.Events = make(chan fsnotify.Event, 1)
+
+					w.Events <- fsnotify.Event{
+						Name: "watch.go",
+						Op:   fsnotify.Write,
+					}
+
+					return fields{
+						w:  w,
+						eg: errgroup.Get(),
+						onWrite: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onWrite name got = %s, want %s", got, want)
+							}
+							return errors.New("err")
+						},
+					}
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					want: func() chan error {
+						ch := make(chan error, 1)
+						ch <- errors.New("err")
+						close(ch)
+						return ch
+					}(),
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "return channel with error when onCreate hook return error and send to returned channel",
+				args: args{
+					ctx: ctx,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					w, err := fsnotify.NewWatcher()
+					if err != nil {
+						t.Fatal(err)
+					}
+					w.Events = make(chan fsnotify.Event, 1)
+
+					w.Events <- fsnotify.Event{
+						Name: "watch.go",
+						Op:   fsnotify.Create,
+					}
+
+					return fields{
+						w:  w,
+						eg: errgroup.Get(),
+						onCreate: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onWrite name got = %s, want %s", got, want)
+							}
+							return errors.New("err")
+						},
+					}
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					want: func() chan error {
+						ch := make(chan error, 1)
+						ch <- errors.New("err")
+						close(ch)
+						return ch
+					}(),
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "return channel with error when onDelete hook return error and send to returned channel",
+				args: args{
+					ctx: ctx,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					w, err := fsnotify.NewWatcher()
+					if err != nil {
+						t.Fatal(err)
+					}
+					w.Events = make(chan fsnotify.Event, 1)
+
+					w.Events <- fsnotify.Event{
+						Name: "watch.go",
+						Op:   fsnotify.Remove,
+					}
+
+					return fields{
+						w:  w,
+						eg: errgroup.Get(),
+						onDelete: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onWrite name got = %s, want %s", got, want)
+							}
+							return errors.New("err")
+						},
+					}
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					want: func() chan error {
+						ch := make(chan error, 1)
+						ch <- errors.New("err")
+						close(ch)
+						return ch
+					}(),
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "return channel with error when onChmod hook return error and send to returned channel",
+				args: args{
+					ctx: ctx,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					w, err := fsnotify.NewWatcher()
+					if err != nil {
+						t.Fatal(err)
+					}
+					w.Events = make(chan fsnotify.Event, 1)
+
+					w.Events <- fsnotify.Event{
+						Name: "watch.go",
+						Op:   fsnotify.Chmod,
+					}
+
+					return fields{
+						w:  w,
+						eg: errgroup.Get(),
+						onChmod: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onWrite name got = %s, want %s", got, want)
+							}
+							return errors.New("err")
+						},
+					}
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					want: func() chan error {
+						ch := make(chan error, 1)
+						ch <- errors.New("err")
+						close(ch)
+						return ch
+					}(),
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "return channel with error when onRename hook return error and send to returned channel",
+				args: args{
+					ctx: ctx,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					w, err := fsnotify.NewWatcher()
+					if err != nil {
+						t.Fatal(err)
+					}
+					w.Events = make(chan fsnotify.Event, 1)
+
+					w.Events <- fsnotify.Event{
+						Name: "watch.go",
+						Op:   fsnotify.Rename,
+					}
+
+					return fields{
+						w:  w,
+						eg: errgroup.Get(),
+						onRename: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onWrite name got = %s, want %s", got, want)
+							}
+							return errors.New("err")
+						},
+					}
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					want: func() chan error {
+						ch := make(chan error, 1)
+						ch <- errors.New("err")
+						close(ch)
+						return ch
+					}(),
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "return channel with error when onWrite and onRename hook return error and send to returned channel",
+				args: args{
+					ctx: ctx,
+				},
+				fieldsFunc: func(t *testing.T) fields {
+					t.Helper()
+					w, err := fsnotify.NewWatcher()
+					if err != nil {
+						t.Fatal(err)
+					}
+					w.Events = make(chan fsnotify.Event, 2)
+
+					w.Events <- fsnotify.Event{
+						Name: "watch.go",
+						Op:   fsnotify.Write,
+					}
+
+					w.Events <- fsnotify.Event{
+						Name: "watch.go",
+						Op:   fsnotify.Rename,
+					}
+
+					return fields{
+						w:  w,
+						eg: errgroup.Get(),
+						onWrite: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onWrite name got = %s, want %s", got, want)
+							}
+							return errors.New("err1")
+						},
+						onRename: func(ctx context.Context, name string) error {
+							if got, want := name, "watch.go"; got != want {
+								t.Errorf("onRename name got = %s, want %s", got, want)
+							}
+							return errors.New("err2")
+						},
+					}
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+				want: want{
+					want: func() chan error {
+						ch := make(chan error, 2)
+						ch <- errors.New("err1")
+						ch <- errors.New("err2")
+						close(ch)
+						return ch
+					}(),
+					err: nil,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -326,18 +708,19 @@ func Test_watch_Start(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			fields := test.fieldsFunc(tt)
+
 			w := &watch{
-				w:        test.fields.w,
-				eg:       test.fields.eg,
-				dirs:     test.fields.dirs,
-				mu:       test.fields.mu,
-				onChange: test.fields.onChange,
-				onCreate: test.fields.onCreate,
-				onRename: test.fields.onRename,
-				onDelete: test.fields.onDelete,
-				onWrite:  test.fields.onWrite,
-				onChmod:  test.fields.onChmod,
-				onError:  test.fields.onError,
+				w:        fields.w,
+				eg:       fields.eg,
+				dirs:     fields.dirs,
+				onChange: fields.onChange,
+				onCreate: fields.onCreate,
+				onRename: fields.onRename,
+				onDelete: fields.onDelete,
+				onWrite:  fields.onWrite,
+				onChmod:  fields.onChmod,
+				onError:  fields.onError,
 			}
 
 			got, err := w.Start(test.args.ctx)
@@ -354,121 +737,137 @@ func Test_watch_Add(t *testing.T) {
 		dirs []string
 	}
 	type fields struct {
-		w        *fsnotify.Watcher
-		eg       errgroup.Group
-		dirs     map[string]struct{}
-		mu       sync.RWMutex
-		onChange func(ctx context.Context, name string) error
-		onCreate func(ctx context.Context, name string) error
-		onRename func(ctx context.Context, name string) error
-		onDelete func(ctx context.Context, name string) error
-		onWrite  func(ctx context.Context, name string) error
-		onChmod  func(ctx context.Context, name string) error
-		onError  func(ctx context.Context, err error) error
+		w    *fsnotify.Watcher
+		dirs map[string]struct{}
 	}
 	type want struct {
-		err error
+		err  error
+		want *watch
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		checkFunc  func(want, *watch, error) error
+		beforeFunc func(*testing.T, *fields, args)
+		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
+
+		if got, want := len(got.dirs), len(w.want.dirs); got != want {
+			return errors.Errorf("dirs length = %d, want %d", got, want)
+		}
+		for name := range w.want.dirs {
+			if _, ok := got.dirs[name]; !ok {
+				return errors.Errorf("dirs %s is not exists", name)
+			}
+		}
 		return nil
 	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dirs: nil,
-		       },
-		       fields: fields {
-		           w: nil,
-		           eg: nil,
-		           dirs: nil,
-		           mu: sync.RWMutex{},
-		           onChange: nil,
-		           onCreate: nil,
-		           onRename: nil,
-		           onDelete: nil,
-		           onWrite: nil,
-		           onChmod: nil,
-		           onError: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+	defaultBeforeFunc := func(t *testing.T, fields *fields, args args) {
+		t.Helper()
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dirs: nil,
-		           },
-		           fields: fields {
-		           w: nil,
-		           eg: nil,
-		           dirs: nil,
-		           mu: sync.RWMutex{},
-		           onChange: nil,
-		           onCreate: nil,
-		           onRename: nil,
-		           onDelete: nil,
-		           onWrite: nil,
-		           onChmod: nil,
-		           onError: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		var err error
+		fields.w, err = fsnotify.NewWatcher()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	tests := []test{
+		{
+			name: "returns nil when add success",
+			args: args{
+				dirs: []string{
+					"./watch.go",
+					"./option.go",
+				},
+			},
+			fields: fields{
+				dirs: map[string]struct{}{
+					"watch_test.go": struct{}{},
+				},
+			},
+			want: want{
+				err: nil,
+				want: &watch{
+					dirs: map[string]struct{}{
+						"watch_test.go": struct{}{},
+						"./watch.go":    struct{}{},
+						"./option.go":   struct{}{},
+					},
+				},
+			},
+		},
+
+		{
+			name: "returns nil when directory add success",
+			args: args{
+				dirs: []string{
+					"../watch",
+				},
+			},
+			fields: fields{
+				dirs: make(map[string]struct{}),
+			},
+			want: want{
+				err: nil,
+				want: &watch{
+					dirs: map[string]struct{}{
+						"../watch": struct{}{},
+					},
+				},
+			},
+		},
+
+		{
+			name: "returns no such file or directory error when some file not exists",
+			args: args{
+				dirs: []string{
+					"watch.go",
+					"vald.go",
+				},
+			},
+			fields: fields{
+				dirs: make(map[string]struct{}),
+			},
+			want: want{
+				err: syscall.Errno(0x2),
+				want: &watch{
+					dirs: map[string]struct{}{
+						"watch.go": struct{}{},
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc == nil {
+				test.beforeFunc = defaultBeforeFunc
 			}
+			test.beforeFunc(tt, &test.fields, test.args)
+
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
 			w := &watch{
-				w:        test.fields.w,
-				eg:       test.fields.eg,
-				dirs:     test.fields.dirs,
-				mu:       test.fields.mu,
-				onChange: test.fields.onChange,
-				onCreate: test.fields.onCreate,
-				onRename: test.fields.onRename,
-				onDelete: test.fields.onDelete,
-				onWrite:  test.fields.onWrite,
-				onChmod:  test.fields.onChmod,
-				onError:  test.fields.onError,
+				w:    test.fields.w,
+				dirs: test.fields.dirs,
 			}
 
 			err := w.Add(test.args.dirs...)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -478,121 +877,159 @@ func Test_watch_Remove(t *testing.T) {
 		dirs []string
 	}
 	type fields struct {
-		w        *fsnotify.Watcher
-		eg       errgroup.Group
-		dirs     map[string]struct{}
-		mu       sync.RWMutex
-		onChange func(ctx context.Context, name string) error
-		onCreate func(ctx context.Context, name string) error
-		onRename func(ctx context.Context, name string) error
-		onDelete func(ctx context.Context, name string) error
-		onWrite  func(ctx context.Context, name string) error
-		onChmod  func(ctx context.Context, name string) error
-		onError  func(ctx context.Context, err error) error
+		w    *fsnotify.Watcher
+		dirs map[string]struct{}
 	}
 	type want struct {
-		err error
+		want *watch
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		checkFunc  func(want, *watch, error) error
+		beforeFunc func(*testing.T, *fields, args)
+		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+	defaultCheckFunc := func(w want, got *watch, err error) error {
+		if w.err == nil {
+			if err != nil {
+				return errors.Errorf("got error is not nil: %v", err)
+			}
+		} else {
+			if err == nil {
+				return errors.New("got error is nil")
+			}
+
+			if !strings.Contains(err.Error(), w.err.Error()) {
+				return errors.Errorf("got error  %v, not contains: %v", err, w.err.Error())
+			}
+		}
+
+		if got, want := len(got.dirs), len(w.want.dirs); got != want {
+			return errors.Errorf("dirs length = %d, want %d", got, want)
+		}
+
+		for name := range w.want.dirs {
+			if _, ok := got.dirs[name]; !ok {
+				return errors.Errorf("dirs %s is not exists", name)
+			}
 		}
 		return nil
 	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dirs: nil,
-		       },
-		       fields: fields {
-		           w: nil,
-		           eg: nil,
-		           dirs: nil,
-		           mu: sync.RWMutex{},
-		           onChange: nil,
-		           onCreate: nil,
-		           onRename: nil,
-		           onDelete: nil,
-		           onWrite: nil,
-		           onChmod: nil,
-		           onError: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+	defaultBeforeFunc := func(t *testing.T, fields *fields, args args) {
+		t.Helper()
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dirs: nil,
-		           },
-		           fields: fields {
-		           w: nil,
-		           eg: nil,
-		           dirs: nil,
-		           mu: sync.RWMutex{},
-		           onChange: nil,
-		           onCreate: nil,
-		           onRename: nil,
-		           onDelete: nil,
-		           onWrite: nil,
-		           onChmod: nil,
-		           onError: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		var err error
+		fields.w, err = fsnotify.NewWatcher()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for name := range fields.dirs {
+			if err = fields.w.Add(name); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	tests := []test{
+		{
+			name: "returns nil when remove success",
+			args: args{
+				dirs: []string{
+					"watch.go",
+					"watch_test.go",
+				},
+			},
+			fields: fields{
+				dirs: map[string]struct{}{
+					"watch.go":      struct{}{},
+					"watch_test.go": struct{}{},
+					"option.go":     struct{}{},
+				},
+			},
+			want: want{
+				want: &watch{
+					dirs: map[string]struct{}{
+						"option.go": struct{}{},
+					},
+				},
+				err: nil,
+			},
+		},
+
+		{
+			name: "returns nil when directory remove success",
+			args: args{
+				dirs: []string{
+					"../watch",
+				},
+			},
+			fields: fields{
+				dirs: map[string]struct{}{
+					"../watch": struct{}{},
+				},
+			},
+			want: want{
+				want: &watch{
+					dirs: map[string]struct{}{},
+				},
+				err: nil,
+			},
+		},
+
+		{
+			name: "returns non-exist error when some file not exists",
+			args: args{
+				dirs: []string{
+					"watch.go",
+					"vald.go",
+					"watch_test.go",
+				},
+			},
+			fields: fields{
+				dirs: map[string]struct{}{
+					"watch.go":      struct{}{},
+					"watch_test.go": struct{}{},
+				},
+			},
+			want: want{
+				want: &watch{
+					dirs: map[string]struct{}{
+						"watch_test.go": struct{}{},
+					},
+				},
+				err: fmt.Errorf("can't remove non-existent"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc == nil {
+				test.beforeFunc = defaultBeforeFunc
 			}
+			test.beforeFunc(tt, &test.fields, test.args)
+
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+
 			w := &watch{
-				w:        test.fields.w,
-				eg:       test.fields.eg,
-				dirs:     test.fields.dirs,
-				mu:       test.fields.mu,
-				onChange: test.fields.onChange,
-				onCreate: test.fields.onCreate,
-				onRename: test.fields.onRename,
-				onDelete: test.fields.onDelete,
-				onWrite:  test.fields.onWrite,
-				onChmod:  test.fields.onChmod,
-				onError:  test.fields.onError,
+				w:    test.fields.w,
+				dirs: test.fields.dirs,
 			}
 
 			err := w.Remove(test.args.dirs...)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -602,96 +1039,115 @@ func Test_watch_Stop(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		w        *fsnotify.Watcher
-		eg       errgroup.Group
-		dirs     map[string]struct{}
-		mu       sync.RWMutex
-		onChange func(ctx context.Context, name string) error
-		onCreate func(ctx context.Context, name string) error
-		onRename func(ctx context.Context, name string) error
-		onDelete func(ctx context.Context, name string) error
-		onWrite  func(ctx context.Context, name string) error
-		onChmod  func(ctx context.Context, name string) error
-		onError  func(ctx context.Context, err error) error
+		w    *fsnotify.Watcher
+		dirs map[string]struct{}
 	}
 	type want struct {
-		err error
+		err  error
+		want *watch
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
+		checkFunc  func(want, *watch, error) error
+		beforeFunc func(*testing.T, *fields, args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+	defaultCheckFunc := func(w want, got *watch, err error) error {
+		if w.err == nil {
+			if err != nil {
+				return errors.Errorf("got error is not nil: %v", err)
+			}
+		} else {
+			if err == nil {
+				return errors.New("got error is nil")
+			}
+
+			if !strings.Contains(err.Error(), w.err.Error()) {
+				return errors.Errorf("got error  %v, not contains: %v", err, w.err.Error())
+			}
+		}
+
+		if got, want := len(got.dirs), len(w.want.dirs); got != want {
+			return errors.Errorf("dirs length = %d, want %d", got, want)
+		}
+
+		for name := range w.want.dirs {
+			if _, ok := got.dirs[name]; !ok {
+				return errors.Errorf("dirs %s is not exists", name)
+			}
 		}
 		return nil
 	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           w: nil,
-		           eg: nil,
-		           dirs: nil,
-		           mu: sync.RWMutex{},
-		           onChange: nil,
-		           onCreate: nil,
-		           onRename: nil,
-		           onDelete: nil,
-		           onWrite: nil,
-		           onChmod: nil,
-		           onError: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+	defaultBeforeFunc := func(t *testing.T, fields *fields, args args) {
+		t.Helper()
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           w: nil,
-		           eg: nil,
-		           dirs: nil,
-		           mu: sync.RWMutex{},
-		           onChange: nil,
-		           onCreate: nil,
-		           onRename: nil,
-		           onDelete: nil,
-		           onWrite: nil,
-		           onChmod: nil,
-		           onError: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		var err error
+		fields.w, err = fsnotify.NewWatcher()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	tests := []test{
+		{
+			name: "returns nil when stop success",
+			args: args{
+				ctx: context.Background(),
+			},
+			fields: fields{
+				dirs: map[string]struct{}{
+					"../watch":      struct{}{},
+					"watch.go":      struct{}{},
+					"watch_test.go": struct{}{},
+				},
+			},
+			beforeFunc: func(t *testing.T, fields *fields, args args) {
+				t.Helper()
+				defaultBeforeFunc(t, fields, args)
+
+				for name := range fields.dirs {
+					err := fields.w.Add(name)
+					if err != nil {
+						t.Fatal(err)
+					}
+				}
+			},
+			want: want{
+				want: &watch{
+					dirs: make(map[string]struct{}),
+				},
+				err: nil,
+			},
+		},
+
+		{
+			name: "returns non-exist error when the file not exists",
+			args: args{
+				ctx: context.Background(),
+			},
+			fields: fields{
+				dirs: map[string]struct{}{
+					"watch.go": struct{}{},
+				},
+			},
+			want: want{
+				want: &watch{
+					dirs: make(map[string]struct{}),
+				},
+				err: fmt.Errorf("can't remove non-existent"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc == nil {
+				test.beforeFunc = defaultBeforeFunc
 			}
+			test.beforeFunc(tt, &test.fields, test.args)
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
@@ -699,24 +1155,14 @@ func Test_watch_Stop(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			w := &watch{
-				w:        test.fields.w,
-				eg:       test.fields.eg,
-				dirs:     test.fields.dirs,
-				mu:       test.fields.mu,
-				onChange: test.fields.onChange,
-				onCreate: test.fields.onCreate,
-				onRename: test.fields.onRename,
-				onDelete: test.fields.onDelete,
-				onWrite:  test.fields.onWrite,
-				onChmod:  test.fields.onChmod,
-				onError:  test.fields.onError,
+				w:    test.fields.w,
+				dirs: test.fields.dirs,
 			}
 
 			err := w.Stop(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

@@ -133,6 +133,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	so, err = observer.New(
 		observer.WithErrGroup(eg),
+		observer.WithWatch(cfg.AgentSidecar.WatchEnabled),
+		observer.WithTicker(cfg.AgentSidecar.AutoBackupEnabled),
 		observer.WithBackupDuration(cfg.AgentSidecar.AutoBackupDuration),
 		observer.WithPostStopTimeout(cfg.AgentSidecar.PostStopTimeout),
 		observer.WithDir(cfg.AgentSidecar.WatchDir),

@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v0.0.44
+    tag: v0.0.47
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -419,6 +419,9 @@ defaults:
       health_check_duration: "1s"
       # @schema {"name": "defaults.grpc.client.connection_pool", "type": "object"}
       connection_pool:
+        # @schema {"name": "defaults.grpc.client.connection_pool.enable_dns_resolver", "type": "boolean"}
+        # defaults.grpc.client.connection_pool.enable_dns_resolver -- enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance
+        enable_dns_resolver: true
         # @schema {"name": "defaults.grpc.client.connection_pool.enable_rebalance", "type": "boolean"}
         # defaults.grpc.client.connection_pool.enable_rebalance -- enables gRPC client connection pool rebalance
         enable_rebalance: true
@@ -1263,6 +1266,25 @@ agent:
     # @schema {"name": "agent.ngt.enable_in_memory_mode", "type": "boolean"}
     # agent.ngt.enable_in_memory_mode -- in-memory mode enabled
     enable_in_memory_mode: true
+    # @schema {"name": "agent.ngt.default_pool_size", "type": "integer"}
+    # agent.ngt.default_pool_size -- default create index batch pool size
+    default_pool_size: 10000
+    # @schema {"name": "agent.ngt.default_radius", "type": "number"}
+    # agent.ngt.default_radius -- default radius used for search
+    default_radius: -1.0
+    # @schema {"name": "agent.ngt.default_epsilon", "type": "number"}
+    # agent.ngt.default_epsilon -- default epsilon used for search
+    default_epsilon: 0.01
+    # @schema {"name": "agent.ngt.min_load_index_timeout", "type": "string"}
+    # agent.ngt.min_load_index_timeout -- minimum duration of load index timeout
+    min_load_index_timeout: 3m
+    # @schema {"name": "agent.ngt.max_load_index_timeout", "type": "string"}
+    # agent.ngt.max_load_index_timeout -- maximum duration of load index timeout
+    max_load_index_timeout: 10m
+    # @schema {"name": "agent.ngt.load_index_timeout_factor", "type": "string"}
+    # agent.ngt.load_index_timeout_factor -- a factor of load index timeout.
+    # timeout duration will be calculated by (index count to be loaded) * (factor).
+    load_index_timeout_factor: 1ms
   # @schema {"name": "agent.sidecar", "type": "object"}
   sidecar:
     # @schema {"name": "agent.sidecar.enabled", "type": "boolean"}
@@ -1369,12 +1391,18 @@ agent:
         memory: 100Mi
     # @schema {"name": "agent.sidecar.config", "type": "object"}
     config:
+      # @schema {"name": "agent.sidecar.config.watch_enabled", "type": "boolean"}
+      # agent.sidecar.config.watch_enabled -- auto backup triggered by file changes is enabled
+      watch_enabled: true
+      # @schema {"name": "agent.sidecar.config.auto_backup_enabled", "type": "boolean"}
+      # agent.sidecar.config.auto_backup_enabled -- auto backup triggered by timer is enabled
+      auto_backup_enabled: true
       # @schema {"name": "agent.sidecar.config.auto_backup_duration", "type": "string"}
       # agent.sidecar.config.auto_backup_duration -- auto backup duration
-      auto_backup_duration: 10m
+      auto_backup_duration: 24h
       # @schema {"name": "agent.sidecar.config.post_stop_timeout", "type": "string"}
-      # agent.sidecar.config.post_stop_timeout -- timeout duration for file changing during post stop
-      post_stop_timeout: 20s
+      # agent.sidecar.config.post_stop_timeout -- timeout for observing file changes during post stop
+      post_stop_timeout: 2m
       # @schema {"name": "agent.sidecar.config.filename", "type": "string"}
       # agent.sidecar.config.filename -- backup filename
       filename: _MY_POD_NAME_
@@ -2067,11 +2095,11 @@ backupManager:
           - "-p${MYSQL_PASSWORD}"
       sleepDuration: 2
       env:
-      - name: MYSQL_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: mysql-secret
-            key: password
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: password
     # - type: wait-for-cassandra
     #   name: wait-for-cassandra
     #   image: cassandra:latest
@@ -2285,10 +2313,10 @@ backupManager:
       num_conns: 2
       # @schema {"name": "backupManager.cassandra.config.consistency", "type": "string", "enum": ["any", "one", "two", "three", "all", "quorum", "localquorum", "eachquorum", "localone"]}
       # backupManager.cassandra.config.consistency -- consistency type
-      consistency:  quorum
+      consistency: quorum
       # @schema {"name": "backupManager.cassandra.config.serial_consistency", "type": "string", "enum": ["localserial", "serial"]}
       # backupManager.cassandra.config.serial_consistency -- read consistency type
-      serial_consistency:  localserial
+      serial_consistency: localserial
       # @schema {"name": "backupManager.cassandra.config.username", "type": "string"}
       # backupManager.cassandra.config.username -- cassandra username
       username: root
@@ -2966,9 +2994,9 @@ meta:
       # meta.cassandra.config.num_conns -- number of connections per hosts
       num_conns: 2
       # meta.cassandra.config.consistency -- consistency type
-      consistency:  quorum
+      consistency: quorum
       # meta.cassandra.config.serial_consistency -- read consistency type
-      serial_consistency:  localserial
+      serial_consistency: localserial
       # meta.cassandra.config.username -- cassandra username
       username: root
       # meta.cassandra.config.password -- cassandra password
@@ -3059,8 +3087,6 @@ meta:
         data_center: ""
         # meta.cassandra.config.host_filter.white_list -- list of white_list which allows each connection
         white_list: []
-
-
 
 initializer:
   mysql:

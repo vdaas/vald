@@ -25,7 +25,7 @@ jobs:
       - name: Check out code.
         uses: actions/checkout@v1
         with:
-          fetch-depth: 1
+          fetch-depth: 10
       - name: Run tests for cmd packages / tparse
         run: |
           make test/cmd/tparse | tee tparse.txt || cat tparse.txt

@@ -24,7 +24,7 @@ import (
 	"net/http"
 	"os"
 
-	jsoniter "github.com/json-iterator/go"
+	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/http/dump"
@@ -40,35 +40,19 @@ type RFC7807Error struct {
 	Error    string      `json:"error"`
 }
 
-func Encode(w io.Writer, data interface{}) (err error) {
-	return jsoniter.NewEncoder(w).Encode(data)
-}
-
-func Decode(r io.Reader, data interface{}) (err error) {
-	return jsoniter.NewDecoder(r).Decode(data)
-}
-
-func Unmarshal(data []byte, i interface{}) error {
-	return jsoniter.Unmarshal(data, i)
-}
-
-func MarshalIndent(data interface{}, pref, ind string) ([]byte, error) {
-	return jsoniter.MarshalIndent(data, pref, ind)
-}
-
 func EncodeResponse(w http.ResponseWriter,
 	data interface{}, status int, contentTypes ...string) error {
 	for _, ct := range contentTypes {
 		w.Header().Add(rest.ContentType, ct)
 	}
 	w.WriteHeader(status)
-	return Encode(w, data)
+	return json.Encode(w, data)
 }
 
 // DecodeResponse decodes http response body.
 func DecodeResponse(res *http.Response, data interface{}) (err error) {
 	if res != nil && res.Body != nil && data != nil && res.ContentLength != 0 {
-		err = Decode(res.Body, data)
+		err = json.Decode(res.Body, data)
 		if err != nil {
 			return err
 		}
@@ -94,7 +78,7 @@ func EncodeRequest(req *http.Request,
 	}
 
 	buf := new(bytes.Buffer)
-	if err := Encode(buf, data); err != nil {
+	if err := json.Encode(buf, data); err != nil {
 		return err
 	}
 
@@ -107,7 +91,7 @@ func EncodeRequest(req *http.Request,
 // DecodeRequest decodes http request body.
 func DecodeRequest(r *http.Request, data interface{}) (err error) {
 	if r != nil && r.Body != nil && r.ContentLength != 0 {
-		err = Decode(r.Body, data)
+		err = json.Decode(r.Body, data)
 		if err != nil {
 			return err
 		}
@@ -156,7 +140,7 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request,
 		log.Error(err)
 	}
 	body := make(map[string]interface{})
-	err = Decode(r.Body, &body)
+	err = json.Decode(r.Body, &body)
 	if err != nil {
 		log.Error(err)
 	}
@@ -165,7 +149,7 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request,
 		log.Error(err)
 	}
 
-	res, err := MarshalIndent(data, "", "    ")
+	res, err := json.MarshalIndent(data, "", "    ")
 	if err != nil {
 		return err
 	}
@@ -177,14 +161,14 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request,
 }
 
 // Request sends http json request.
-func Request(ctx context.Context, method string, url string, payloyd interface{}, data interface{}) error {
+func Request(ctx context.Context, method, url string, payload, data interface{}) error {
 	req, err := http.NewRequestWithContext(ctx, method, url, nil)
 	if err != nil {
 		return err
 	}
 
-	if payloyd != nil && method != http.MethodGet {
-		if err := EncodeRequest(req, payloyd, rest.ApplicationJSON, rest.CharsetUTF8); err != nil {
+	if payload != nil && method != http.MethodGet {
+		if err := EncodeRequest(req, payload, rest.ApplicationJSON, rest.CharsetUTF8); err != nil {
 			return err
 		}
 	}
