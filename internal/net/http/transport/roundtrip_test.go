@@ -29,7 +29,6 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
 	"go.uber.org/goleak"
 )
 
@@ -37,7 +36,6 @@ var (
 	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
 	goleakIgnoreOptions = []goleak.Option{
 		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-		goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
 	}
 )
 
@@ -550,7 +548,6 @@ func Test_closeBody(t *testing.T) {
 		}(),
 	}
 
-	log.Init()
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
