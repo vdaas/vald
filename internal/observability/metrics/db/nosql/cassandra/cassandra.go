@@ -27,8 +27,9 @@ import (
 )
 
 type cassandraMetrics struct {
-	queryTotal   metrics.Int64Measure
-	queryLatency metrics.Float64Measure
+	queryTotal         metrics.Int64Measure
+	queryAttemptsTotal metrics.Int64Measure
+	queryLatency       metrics.Float64Measure
 
 	keyspaceKey    metrics.Key
 	clusterNameKey metrics.Key
@@ -53,6 +54,12 @@ func New() (o Observer, err error) {
 	cms.queryTotal = *metrics.Int64(
 		metrics.ValdOrg+"/db/nosql/cassandra/completed_query_total",
 		"cumulative count of completed queries",
+		metrics.UnitDimensionless,
+	)
+
+	cms.queryAttemptsTotal = *metrics.Int64(
+		metrics.ValdOrg+"/db/nosql/cassandra/completed_query_attempts_total",
+		"cumulative count of query attempts (number of retry or fetching next page)",
 		metrics.UnitDimensionless,
 	)
 
@@ -130,14 +137,21 @@ func (cm *cassandraMetrics) View() []*metrics.View {
 	return []*metrics.View{
 		&metrics.View{
 			Name:        "db_nosql_cassandra_completed_query_total",
-			Description: "cumulative count of completed queries",
+			Description: cm.queryTotal.Description(),
 			TagKeys:     keys,
 			Measure:     &cm.queryTotal,
 			Aggregation: metrics.Count(),
 		},
 		&metrics.View{
+			Name:        "db_nosql_cassandra_query_attempts_total",
+			Description: cm.queryAttemptsTotal.Description(),
+			TagKeys:     keys,
+			Measure:     &cm.queryAttemptsTotal,
+			Aggregation: metrics.Count(),
+		},
+		&metrics.View{
 			Name:        "db_nosql_cassandra_query_latency",
-			Description: "query latency",
+			Description: cm.queryLatency.Description(),
 			TagKeys:     keys,
 			Measure:     &cm.queryLatency,
 			Aggregation: metrics.DefaultMillisecondsDistribution,
@@ -165,6 +179,10 @@ func (cm *cassandraMetrics) ObserveQuery(ctx context.Context, q cassandra.Observ
 		cm.ms,
 		metrics.MeasurementWithTags{
 			Measurement: cm.queryTotal.M(1),
+			Tags:        tags,
+		},
+		metrics.MeasurementWithTags{
+			Measurement: cm.queryAttemptsTotal.M(1 + int64(q.Attempt)),
 			Tags:        tags,
 		},
 		metrics.MeasurementWithTags{
