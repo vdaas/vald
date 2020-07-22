@@ -1,4 +1,4 @@
-# name: 'Build docker image: gateway-backup'
+name: 'Build docker image: gateway-backup'
 on:
   push:
     branches:
