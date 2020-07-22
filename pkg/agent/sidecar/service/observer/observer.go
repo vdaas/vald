@@ -150,19 +150,27 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 		return nil
 	}
 
-	ticker := time.NewTicker(func() time.Duration {
-		if o.postStopTimeout/5 < 2*time.Second {
-			return o.postStopTimeout / 5
+	backup := func() error {
+		metadata, err := metadata.Load(o.metadataPath)
+		if err != nil {
+			return err
 		}
-		return 2 * time.Second
-	}())
-	defer ticker.Stop()
+
+		if metadata.IsInvalid {
+			log.Warn("backup skipped because the files are invalid")
+			return nil
+		}
+
+		return o.backup(ctx)
+	}
 
 	t := time.Now()
+	ch := make(chan struct{}, 1)
+	defer close(ch)
 
 	f := func(ctx context.Context, name string) error {
 		if name == o.metadataPath {
-			t = time.Now().Add(-o.postStopTimeout)
+			ch <- struct{}{}
 			return nil
 		}
 
@@ -194,23 +202,23 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 		}
 	}()
 
+	ticker := time.NewTicker(func() time.Duration {
+		if o.postStopTimeout/5 < 2*time.Second {
+			return o.postStopTimeout / 5
+		}
+		return 2 * time.Second
+	}())
+	defer ticker.Stop()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return finalize()
+		case <-ch:
+			return backup()
 		case <-ticker.C:
 			if time.Since(t) > o.postStopTimeout {
-				metadata, err := metadata.Load(o.metadataPath)
-				if err != nil {
-					return err
-				}
-
-				if metadata.IsInvalid {
-					log.Warn("backup skipped because the files are invalid")
-					return nil
-				}
-
-				return o.backup(ctx)
+				return backup()
 			}
 		}
 	}
