@@ -30,7 +30,7 @@ type SessionOptions = tf.SessionOptions
 // Operation is a type alias for tensorflow.Operation.
 type Operation = tf.Operation
 
-// Closer is a type alias io.Closer
+// Closer is a type alias io.Closer.
 type Closer = io.Closer
 
 // TF represents a tensorflow interface.
@@ -47,15 +47,17 @@ type session interface {
 }
 
 type tensorflow struct {
-	exportDir  string
-	tags       []string
-	feeds      []OutputSpec
-	fetches    []OutputSpec
-	operations []*Operation
-	options    *SessionOptions
-	graph      *tf.Graph
-	session    session
-	ndim       uint8
+	exportDir    string
+	tags         []string
+	loadFunc     func(exportDir string, tags []string, options *SessionOptions) (*tf.SavedModel, error)
+	feeds        []OutputSpec
+	fetches      []OutputSpec
+	operations   []*Operation
+	options      *SessionOptions
+	graph        *tf.Graph
+	session      session
+	warmupInputs []string
+	ndim         uint8
 }
 
 // OutputSpec is the specification of an feed/fetch.
@@ -69,8 +71,6 @@ const (
 	threeDim
 )
 
-var loadFunc = tf.LoadSavedModel
-
 // New load a tensorlfow model and returns a new tensorflow struct.
 func New(opts ...Option) (TF, error) {
 	t := new(tensorflow)
@@ -79,7 +79,7 @@ func New(opts ...Option) (TF, error) {
 		opt(t)
 	}
 
-	model, err := loadFunc(t.exportDir, t.tags, t.options)
+	model, err := t.loadFunc(t.exportDir, t.tags, t.options)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,23 @@ func New(opts ...Option) (TF, error) {
 	t.graph = model.Graph
 	t.session = model.Session
 
+	err = t.warmup()
+	if err != nil {
+		return nil, err
+	}
+
 	return t, nil
+}
+
+func (t *tensorflow) warmup() error {
+	if t.warmupInputs != nil {
+		_, err := t.run(t.warmupInputs...)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (t *tensorflow) Close() error {
