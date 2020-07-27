@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/singleflight"
+	stdsingleflight "golang.org/x/sync/singleflight"
 )
 
 type Result struct {
@@ -107,10 +108,10 @@ func (h *helper) Do(parallel int, b *testing.B) {
 	})
 }
 
-func Benchmark_group_Do_with_mutex_1(b *testing.B) {
+func Benchmark_group_Do_with_sync_singleflight(b *testing.B) {
 	const (
-		varianceCSV = "mutex_variance.csv"
-		averageCSV  = "mutex_average.csv"
+		varianceCSV = "sync_singleflight_variance.csv"
+		averageCSV  = "sync_singleflight_average.csv"
 	)
 	resultsmap := make(map[string][]Result)
 	for i := minGoroutine; i <= maxGoroutine; i *= goroutineStep {
@@ -119,9 +120,9 @@ func Benchmark_group_Do_with_mutex_1(b *testing.B) {
 			for j := 0; j < tryCnt; j++ {
 				h := &helper{
 					initDoFn: func() func(ctx context.Context, key string, fn func() (interface{}, error)) {
-						g := singleflight.New()
+						g := new(stdsingleflight.Group)
 						return func(ctx context.Context, key string, fn func() (interface{}, error)) {
-							g.Do(ctx, key, fn)
+							g.Do(key, fn)
 						}
 					},
 					sleepDur: dur,
@@ -202,10 +203,10 @@ func calcVariance(in []Result) (out Result) {
 	return
 }
 
-func Benchmark_group_Do_with_syncMap(b *testing.B) {
+func Benchmark_group_Do_with_vald_internal_singleflight(b *testing.B) {
 	const (
-		varianceCSV = "syncmap_variance.csv"
-		averageCSV  = "syncmap_average.csv"
+		varianceCSV = "vald_internal_singlefligh_variance.csv"
+		averageCSV  = "vald_internal_singlefligh_average.csv"
 	)
 	resultsmap := make(map[string][]Result)
 	for i := minGoroutine; i <= maxGoroutine; i *= goroutineStep {
