@@ -33,7 +33,6 @@ var (
 	defaultOpts = []Option{
 		WithInitialPingDuration("30ms"),
 		WithInitialPingTimeLimit("5m"),
-		WithPing(true),
 	}
 )
 
@@ -320,13 +319,6 @@ func WithInitialPingDuration(dur string) Option {
 			pd = time.Millisecond * 50
 		}
 		r.initialPingDuration = pd
-		return nil
-	}
-}
-
-func WithPing(enabled bool) Option {
-	return func(r *redisClient) error {
-		r.pingEnabled = enabled
 		return nil
 	}
 }
