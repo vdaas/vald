@@ -119,7 +119,7 @@ func Benchmark_group_Do_with_mutex_1(b *testing.B) {
 			for j := 0; j < tryCnt; j++ {
 				h := &helper{
 					initDoFn: func() func(ctx context.Context, key string, fn func() (interface{}, error)) {
-						g := singleflight.New(10)
+						g := singleflight.New()
 						return func(ctx context.Context, key string, fn func() (interface{}, error)) {
 							g.Do(ctx, key, fn)
 						}
@@ -214,7 +214,7 @@ func Benchmark_group_Do_with_syncMap(b *testing.B) {
 			for j := 0; j < tryCnt; j++ {
 				h := &helper{
 					initDoFn: func() func(ctx context.Context, key string, fn func() (interface{}, error)) {
-						g := New()
+						g := singleflight.New()
 						return func(ctx context.Context, key string, fn func() (interface{}, error)) {
 							g.Do(ctx, key, fn)
 						}

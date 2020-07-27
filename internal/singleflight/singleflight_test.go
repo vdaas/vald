@@ -31,19 +31,15 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	type args struct {
-		size int
-	}
 	type want struct {
 		want Group
 	}
 	type test struct {
 		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Group) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func()
+		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got Group) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -53,51 +49,27 @@ func TestNew(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns Group when size is 0",
+			name: "returns Group implementation",
 			want: want{
-				want: &group{
-					m: make(map[string]*call, 1),
-				},
-			},
-		},
-		{
-			name: "returns Group when size is 1",
-			args: args{
-				size: 1,
-			},
-			want: want{
-				want: &group{
-					m: make(map[string]*call, 1),
-				},
-			},
-		},
-		{
-			name: "returns Group when size is over than 1",
-			args: args{
-				size: 2,
-			},
-			want: want{
-				want: &group{
-					m: make(map[string]*call, 2),
-				},
+				want: new(group),
 			},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := New(test.args.size)
+			got := New()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -165,7 +137,7 @@ func Test_group_Do(t *testing.T) {
 			)
 
 			return test{
-				name: "returns (v, shared, nil) when Do is called with another key",
+				name: "returns (v, nil, false) when Do is called with another key",
 				fields: fields{
 					m: make(map[string]*call),
 				},
@@ -199,7 +171,7 @@ func Test_group_Do(t *testing.T) {
 							defer wg.Done()
 							condWaitFn()
 
-							_, _, _ = g.Do(context.Background(), strconv.Itoa(i), func() (interface{}, error) {
+							g.Do(context.Background(), strconv.Itoa(i), func() (interface{}, error) {
 								time.Sleep(time.Nanosecond * 100)
 								atomic.AddUint32(&cnt, 1)
 								return "vdaas/vald", nil
@@ -241,7 +213,7 @@ func Test_group_Do(t *testing.T) {
 			)
 
 			return test{
-				name: "returns (v, shared, nil) when Do is called with same key",
+				name: "returns (v, nil, true) when Do is called with same key",
 				args: args{
 					key: "req_1",
 					ctx: context.Background(),
@@ -268,13 +240,13 @@ func Test_group_Do(t *testing.T) {
 					wg.Add(1)
 					go func() {
 						defer wg.Done()
-						_, _, _ = g.Do(context.Background(), args.key, func() (interface{}, error) {
+						g.Do(context.Background(), args.key, func() (interface{}, error) {
 							time.Sleep(3 * time.Second)
 							return args.fn()
 						})
 					}()
 
-					gcnt := 10
+					gcnt := 3
 					ch := make(chan struct{}, gcnt)
 
 					for i := 0; i < gcnt; i++ {
@@ -284,7 +256,7 @@ func Test_group_Do(t *testing.T) {
 							defer wg.Done()
 							condWaitFn()
 
-							_, _, _ = g.Do(context.Background(), args.key, func() (interface{}, error) {
+							g.Do(context.Background(), args.key, func() (interface{}, error) {
 								atomic.AddUint32(&cnt, 1)
 								return "vdaas/vald", nil
 							})
@@ -320,9 +292,7 @@ func Test_group_Do(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			g := &group{
-				m: test.fields.m,
-			}
+			g := new(group)
 
 			if test.beforeFunc != nil {
 				test.beforeFunc(g, test.args)
@@ -337,7 +307,7 @@ func Test_group_Do(t *testing.T) {
 			test.util.wg.Add(1)
 			go func() {
 				defer test.util.wg.Done()
-				gotV, gotShared, err = g.Do(context.Background(), test.args.key, test.args.fn)
+				gotV, err, gotShared = g.Do(context.Background(), test.args.key, test.args.fn)
 			}()
 
 			test.util.cond.Broadcast()
