@@ -1242,7 +1242,9 @@ gateway:
     gateway_config:
       # @schema {"name": "gateway.backup.gateway_config.client", "alias": "grpc.client"}
       # gateway.backup.gateway_config.client -- gRPC client for next gateway (overrides defaults.grpc.client)
-      client: {}
+      client:
+        addrs:
+          - "vald-gateway-lb.vald.svc.cluster.local"
       # @schema {"name": "gateway.backup.gateway_config.backup", "type": "object"}
       backup:
         # @schema {"name": "gateway.backup.gateway_config.backup.client", "alias": "grpc.client"}
@@ -1459,7 +1461,9 @@ gateway:
     gateway_config:
       # @schema {"name": "gateway.filter.gateway_config.client", "alias": "grpc.client"}
       # gateway.filter.gateway_config.client -- gRPC client for next gateway (overrides defaults.grpc.client)
-      client: {}
+      client:
+        addrs:
+          - "vald-gateway-meta.vald.svc.cluster.local"
       # @schema {"name": "gateway.filter.gateway_config.ingress_filter", "type": "object"}
       ingress_filter:
         # @schema {"name": "gateway.filter.gateway_config.ingress_filter.client", "alias": "grpc.client"}
@@ -1940,7 +1944,9 @@ gateway:
     gateway_config:
       # @schema {"name": "gateway.meta.gateway_config.client", "alias": "grpc.client"}
       # gateway.meta.gateway_config.client -- gRPC client for next gateway (overrides defaults.grpc.client)
-      client: {}
+      client:
+        addrs:
+          - "vald-gateway-backup.vald.svc.cluster.local"
       # @schema {"name": "gateway.meta.gateway_config.meta", "type": "object"}
       meta:
         # @schema {"name": "gateway.meta.gateway_config.meta.client", "alias": "grpc.client"}
