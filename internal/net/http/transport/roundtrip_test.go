@@ -515,7 +515,7 @@ func Test_retryable(t *testing.T) {
 
 func Test_closeBody(t *testing.T) {
 	type args struct {
-		res *http.Response
+		rc io.ReadCloser
 	}
 	type want struct {
 	}
@@ -523,12 +523,12 @@ func Test_closeBody(t *testing.T) {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(*http.Response, want) error
+		checkFunc  func(io.ReadCloser, want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(res *http.Response, w want) error {
-		if i, err := res.Body.Read([]byte{}); i != 0 || err != io.EOF {
+	defaultCheckFunc := func(rc io.ReadCloser, w want) error {
+		if i, err := rc.Read([]byte{}); i != 0 || err != io.EOF {
 			return errors.Errorf("connection not closed, num: %d, err: %v", i, err)
 		}
 		return nil
@@ -542,7 +542,7 @@ func Test_closeBody(t *testing.T) {
 			return test{
 				name: "close response body",
 				args: args{
-					res: res,
+					rc: res.Body,
 				},
 			}
 		}(),
@@ -561,8 +561,8 @@ func Test_closeBody(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			closeBody(test.args.res)
-			if err := test.checkFunc(test.args.res, test.want); err != nil {
+			closeBody(test.args.rc)
+			if err := test.checkFunc(test.args.rc, test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

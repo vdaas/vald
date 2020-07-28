@@ -44,9 +44,9 @@ func NewExpBackoff(opts ...Option) http.RoundTripper {
 
 // RoundTrip round trip the HTTP request and return the response.
 // If backoff is not set, the default roundTrip implementation will be used.
-// The default roundTrip implementation round trip the request, and return any round trip error occurred.
+// It round trip the request and returns the response, and return any error occurred.
 // It returns errors.ErrTransportRetryable to indicate if the request is consider as retryable.
-func (e *ert) RoundTrip(req *http.Request) (*http.Response, error) {
+func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 	if e.bo == nil {
 		return e.roundTrip(req)
 	}
@@ -65,11 +65,11 @@ func (e *ert) RoundTrip(req *http.Request) (*http.Response, error) {
 	return res, nil
 }
 
-func (e *ert) roundTrip(req *http.Request) (*http.Response, error) {
-	res, err := e.transport.RoundTrip(req)
+func (e *ert) roundTrip(req *http.Request) (res *http.Response, err error) {
+	res, err = e.transport.RoundTrip(req)
 	if err != nil {
 		if res != nil { // just in case we check the response as it depends on RoundTrip impl.
-			closeBody(res)
+			closeBody(res.Body)
 			if retryable(res) {
 				return nil, errors.ErrTransportRetryable
 			}
@@ -78,7 +78,7 @@ func (e *ert) roundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	if res != nil && retryable(res) {
-		closeBody(res)
+		closeBody(res.Body)
 		return nil, errors.ErrTransportRetryable
 	}
 	return res, nil
@@ -97,11 +97,11 @@ func retryable(res *http.Response) bool {
 	return false
 }
 
-func closeBody(res *http.Response) {
-	if _, err := io.Copy(ioutil.Discard, res.Body); err != nil {
+func closeBody(rc io.ReadCloser) {
+	if _, err := io.Copy(ioutil.Discard, rc); err != nil {
 		log.Error(err)
 	}
-	if err := res.Body.Close(); err != nil {
+	if err := rc.Close(); err != nil {
 		log.Error(err)
 	}
 }
