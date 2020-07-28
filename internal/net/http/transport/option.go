@@ -39,7 +39,7 @@ func WithRoundTripper(tr http.RoundTripper) Option {
 	}
 }
 
-// WithBackoff returns Option after set backoff when bo is not nil.
+// WithBackoff returns the Option that set the backoff when bo is not nil.
 func WithBackoff(bo backoff.Backoff) Option {
 	return func(e *ert) {
 		e.bo = bo
