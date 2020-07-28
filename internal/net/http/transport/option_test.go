@@ -60,7 +60,7 @@ func TestWithRoundTripper(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			tr := &roundTripMock{}
+			tr := new(roundTripMock)
 			return test{
 				name: "set success",
 				args: args{
