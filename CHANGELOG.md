@@ -1,5 +1,35 @@
 # CHANGELOG
 
+## v0.0.48
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.48`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.48`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.48`
+gateway | `docker pull vdaas/vald-gateway:v0.0.48`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.48`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.48`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.48`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.48`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.48`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.48`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.48`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.48)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.48/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.48/charts/vald-helm-operator/README.md)
+
+### Changes
+- :bug: fix behavior when index path is empty ([#596](https://github.com/vdaas/vald/pull/596))
+- :white_check_mark: add internal/net/http/transport/option test ([#594](https://github.com/vdaas/vald/pull/594))
+- tensorflow savedmodel warmup ([#539](https://github.com/vdaas/vald/pull/539))
+- :robot: Automatically update k8s manifests ([#592](https://github.com/vdaas/vald/pull/592))
+
+
 ## v0.0.47
 
 ### Docker images
