@@ -124,7 +124,7 @@ func TestWithBackoff(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			bo := &backoffMock{}
+			bo := new(backoffMock)
 			return test{
 				name: "set success",
 				args: args{
