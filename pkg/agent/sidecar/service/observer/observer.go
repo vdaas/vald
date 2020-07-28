@@ -318,7 +318,11 @@ func (o *observer) onWrite(ctx context.Context, name string) error {
 		}
 	}()
 
-	ok, err := o.isValidMetadata(name)
+	if name != o.metadataPath {
+		return nil
+	}
+
+	ok, err := o.isValidMetadata()
 	if err != nil {
 		return err
 	}
@@ -338,7 +342,11 @@ func (o *observer) onCreate(ctx context.Context, name string) error {
 		}
 	}()
 
-	ok, err := o.isValidMetadata(name)
+	if name != o.metadataPath {
+		return nil
+	}
+
+	ok, err := o.isValidMetadata()
 	if err != nil {
 		return err
 	}
@@ -350,11 +358,7 @@ func (o *observer) onCreate(ctx context.Context, name string) error {
 	return o.terminate()
 }
 
-func (o *observer) isValidMetadata(name string) (bool, error) {
-	if name != o.metadataPath {
-		return false, nil
-	}
-
+func (o *observer) isValidMetadata() (bool, error) {
 	metadata, err := metadata.Load(o.metadataPath)
 	if err != nil {
 		return false, err
