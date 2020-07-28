@@ -32,7 +32,7 @@ var (
 	}
 )
 
-// WithRoundTripper returns Option after set transport when tr is not nil.
+// WithRoundTripper returns the Option that set the RoundTripper when tr is not nil.
 func WithRoundTripper(tr http.RoundTripper) Option {
 	return func(e *ert) {
 		e.transport = tr
