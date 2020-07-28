@@ -23,6 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 )
 
+// Option represents the functional option for transport and backoff.
 type Option func(*ert)
 
 var (
@@ -31,12 +32,14 @@ var (
 	}
 )
 
+// WithRoundTripper returns Option after set transport when tr is not nil.
 func WithRoundTripper(tr http.RoundTripper) Option {
 	return func(e *ert) {
 		e.transport = tr
 	}
 }
 
+// WithBackoff returns Option after set backoff when bo is not nil.
 func WithBackoff(bo backoff.Backoff) Option {
 	return func(e *ert) {
 		e.bo = bo
