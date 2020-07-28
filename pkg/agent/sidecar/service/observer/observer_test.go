@@ -845,7 +845,6 @@ func Test_observer_onCreate(t *testing.T) {
 
 func Test_observer_isValidMetadata(t *testing.T) {
 	type args struct {
-		name string
 	}
 	type fields struct {
 		w               watch.Watcher
@@ -887,7 +886,6 @@ func Test_observer_isValidMetadata(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           name: "",
 		       },
 		       fields: fields {
 		           w: nil,
@@ -912,7 +910,6 @@ func Test_observer_isValidMetadata(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           name: "",
 		           },
 		           fields: fields {
 		           w: nil,
@@ -958,7 +955,7 @@ func Test_observer_isValidMetadata(t *testing.T) {
 				ch:              test.fields.ch,
 			}
 
-			got, err := o.isValidMetadata(test.args.name)
+			got, err := o.isValidMetadata()
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
