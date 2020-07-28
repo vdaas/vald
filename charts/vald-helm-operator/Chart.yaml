@@ -16,7 +16,7 @@
 
 apiVersion: v2
 name: vald-helm-operator
-version: v0.0.48
+version: v0.0.49
 description: A Helm chart for vald-helm-operator
 type: application
 keywords:
