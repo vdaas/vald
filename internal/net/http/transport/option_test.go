@@ -123,34 +123,20 @@ func TestWithBackoff(t *testing.T) {
 	}
 
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           bo: nil,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		   func() test {
-			   bo := &backoffMock{}
-		       return test {
-		           name: "set success",
-		           args: args {
-		           bo: bo,
-		           },
-		           want: want {
-		               obj: &T{
-						   bo: bo,
-					   },
-		           },
-		       }
-		   }(),
+		func() test {
+			bo := &backoffMock{}
+			return test{
+				name: "set success",
+				args: args{
+					bo: bo,
+				},
+				want: want{
+					obj: &T{
+						bo: bo,
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
