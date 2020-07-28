@@ -139,3 +139,24 @@ When the user deletes a vector which is indexed in Vald Agent:
 16. Vald Meta will delete the data from the persistent layer if it is successfully deleted from the Vald Agents store the deleted UUID(s) and the deletion time in the persistent layer.
 17. Vald Meta Gateway will return success to the Vald Filter Gateway.
 18. Vald Filter Gateway will return success to the Vald Ingress.
+
+When the user updates a vector from Vald:
+
+1. Vald Ingress receives the request from the user. The request includes the vector and the vector ID.
+2. Vald Ingress will forward the request to the Vald Filter Gateway to pre-process the request data.
+3. Vald Filter Gateway will forward the request to the user-defined Vald Ingress Filter. After the Vald Ingress Filter received the request, it will perform the pre-processing logic defined by the user, for example, padding the vector to match the vector dimension in Vald.
+4. After the request is processed by the user-defined Vald Ingress Filter, the result will return to the Vald Filter Gateway.
+5. Vald Filter Gateway will forward the processed data to the Vald Meta Gateway. Vald Meta Gateway is used to resolve the internal used UUID from Vald Meta to the user inserted vector ID in the Insert Step.
+6. Vald Meta Gateway will forward the request to the Vald Meta to confirm whether metadata which contains request ID(s) is existing or not.
+7. Vald Meta get the UUID(s) from the request ID(s). When the UUID(s) be not found, return with the error.
+8. If Vald Meta Gateway gets the UUID(s), Vald Meta Gateway will forward to the request with the UUID(s) to the Vald Backup Gateway.
+9. Vald Backup Gateway splits the updates into the deletes and the inserts. The first step is the deletes. Vald Backup Gateway will forward to the request with the UUID(s) to the Vald LB Gateway.
+10. Vald LB Gateway will broadcast the request to the Vald Agent. All pods of Vald Agent check the vector whose UUID is requested one is indexed or not. When idexing data is existing, Vald Agent will delete the vector and the UUID in an onmemory graph index.
+11. If Vald Agent successfully deletes the request data, it will return location information of Vald Agent to the Vald LB Gateway.
+12. After the result of bload cast is returned, Vald LB Gateway will returns the location information of the Vald Agents that deleted the vector in Vald Backup Gateway.
+13. Vald Backup Gateway will forward the request with the UUID to the Vald Compressor.
+14. Vald Compressor will forward the UUID(s) to the Vald Backup Manager.
+15. Vald Backup Manager will delete the data whose UUID is the requested UUID(s).
+
+
+<!-- ### Delete -->
