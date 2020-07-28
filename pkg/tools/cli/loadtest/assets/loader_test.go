@@ -25,6 +25,7 @@ import (
 )
 
 func Test_loadFloat32(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		dset    *hdf5.Dataset
 		npoints int
@@ -88,7 +89,8 @@ func Test_loadFloat32(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -109,6 +111,7 @@ func Test_loadFloat32(t *testing.T) {
 }
 
 func Test_loadInt(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		dset    *hdf5.Dataset
 		npoints int
@@ -172,7 +175,8 @@ func Test_loadInt(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -193,6 +197,7 @@ func Test_loadInt(t *testing.T) {
 }
 
 func Test_loadDataset(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		file *hdf5.File
 		name string
@@ -257,7 +262,8 @@ func Test_loadDataset(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -278,6 +284,7 @@ func Test_loadDataset(t *testing.T) {
 }
 
 func TestLoad(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		path string
 	}
@@ -348,7 +355,8 @@ func TestLoad(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -369,6 +377,7 @@ func TestLoad(t *testing.T) {
 }
 
 func TestCreateRandomIDs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		n int
 	}
@@ -419,7 +428,8 @@ func TestCreateRandomIDs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -440,6 +450,7 @@ func TestCreateRandomIDs(t *testing.T) {
 }
 
 func TestCreateRandomIDsWithLength(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		n int
 		l int
@@ -493,7 +504,8 @@ func TestCreateRandomIDsWithLength(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -514,6 +526,7 @@ func TestCreateRandomIDsWithLength(t *testing.T) {
 }
 
 func TestCreateSerialIDs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		n int
 	}
@@ -564,7 +577,8 @@ func TestCreateSerialIDs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -585,6 +599,7 @@ func TestCreateSerialIDs(t *testing.T) {
 }
 
 func TestLoadDataWithRandomIDs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		path string
 	}
@@ -639,7 +654,8 @@ func TestLoadDataWithRandomIDs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -660,6 +676,7 @@ func TestLoadDataWithRandomIDs(t *testing.T) {
 }
 
 func TestLoadDataWithSerialIDs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		path string
 	}
@@ -714,7 +731,8 @@ func TestLoadDataWithSerialIDs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

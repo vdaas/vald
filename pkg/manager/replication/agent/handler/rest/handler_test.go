@@ -28,6 +28,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -78,7 +79,8 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -99,6 +101,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_handler_Recover(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
@@ -166,7 +169,8 @@ func Test_handler_Recover(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -190,6 +194,7 @@ func Test_handler_Recover(t *testing.T) {
 }
 
 func Test_handler_Rebalance(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
@@ -257,7 +262,8 @@ func Test_handler_Rebalance(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -281,6 +287,7 @@ func Test_handler_Rebalance(t *testing.T) {
 }
 
 func Test_handler_AgentInfo(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
@@ -348,7 +355,8 @@ func Test_handler_AgentInfo(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

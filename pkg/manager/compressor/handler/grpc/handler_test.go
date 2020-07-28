@@ -29,6 +29,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -79,7 +80,8 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -100,6 +102,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_server_GetVector(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Backup_GetVector_Request
@@ -173,7 +176,8 @@ func Test_server_GetVector(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -199,6 +203,7 @@ func Test_server_GetVector(t *testing.T) {
 }
 
 func Test_server_Locations(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Backup_Locations_Request
@@ -272,7 +277,8 @@ func Test_server_Locations(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -298,6 +304,7 @@ func Test_server_Locations(t *testing.T) {
 }
 
 func Test_server_Register(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		meta *payload.Backup_MetaVector
@@ -371,7 +378,8 @@ func Test_server_Register(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -397,6 +405,7 @@ func Test_server_Register(t *testing.T) {
 }
 
 func Test_server_RegisterMulti(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		metas *payload.Backup_MetaVectors
@@ -470,7 +479,8 @@ func Test_server_RegisterMulti(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -496,6 +506,7 @@ func Test_server_RegisterMulti(t *testing.T) {
 }
 
 func Test_server_Remove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Backup_Remove_Request
@@ -569,7 +580,8 @@ func Test_server_Remove(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -595,6 +607,7 @@ func Test_server_Remove(t *testing.T) {
 }
 
 func Test_server_RemoveMulti(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Backup_Remove_RequestMulti
@@ -668,7 +681,8 @@ func Test_server_RemoveMulti(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -694,6 +708,7 @@ func Test_server_RemoveMulti(t *testing.T) {
 }
 
 func Test_server_RegisterIPs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Backup_IP_Register_Request
@@ -767,7 +782,8 @@ func Test_server_RegisterIPs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -793,6 +809,7 @@ func Test_server_RegisterIPs(t *testing.T) {
 }
 
 func Test_server_RemoveIPs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Backup_IP_Remove_Request
@@ -866,7 +883,8 @@ func Test_server_RemoveIPs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

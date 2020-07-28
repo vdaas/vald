@@ -26,6 +26,7 @@ import (
 )
 
 func TestMetaVector_GetUUID(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		UUID   string
 		Vector []byte
@@ -85,7 +86,8 @@ func TestMetaVector_GetUUID(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -112,6 +114,7 @@ func TestMetaVector_GetUUID(t *testing.T) {
 }
 
 func TestMetaVector_GetVector(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		UUID   string
 		Vector []byte
@@ -171,7 +174,8 @@ func TestMetaVector_GetVector(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -198,6 +202,7 @@ func TestMetaVector_GetVector(t *testing.T) {
 }
 
 func TestMetaVector_GetMeta(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		UUID   string
 		Vector []byte
@@ -257,7 +262,8 @@ func TestMetaVector_GetMeta(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -284,6 +290,7 @@ func TestMetaVector_GetMeta(t *testing.T) {
 }
 
 func TestMetaVector_GetIPs(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		UUID   string
 		Vector []byte
@@ -343,7 +350,8 @@ func TestMetaVector_GetIPs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

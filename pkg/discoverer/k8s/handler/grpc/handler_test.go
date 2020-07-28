@@ -30,6 +30,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -84,7 +85,8 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -105,6 +107,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_server_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -164,7 +167,8 @@ func Test_server_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -188,6 +192,7 @@ func Test_server_Start(t *testing.T) {
 }
 
 func Test_server_Pods(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Discoverer_Request
@@ -258,7 +263,8 @@ func Test_server_Pods(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -283,6 +289,7 @@ func Test_server_Pods(t *testing.T) {
 }
 
 func Test_server_Nodes(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Discoverer_Request
@@ -353,7 +360,8 @@ func Test_server_Nodes(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -378,6 +386,7 @@ func Test_server_Nodes(t *testing.T) {
 }
 
 func Test_singleflightKey(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		pref string
 		req  *payload.Discoverer_Request
@@ -431,7 +440,8 @@ func Test_singleflightKey(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

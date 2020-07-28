@@ -30,6 +30,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -84,6 +85,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -105,6 +107,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_filter_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -175,6 +178,7 @@ func Test_filter_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -201,6 +205,7 @@ func Test_filter_Start(t *testing.T) {
 }
 
 func Test_filter_IngressSearchVector(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		vec []float32
@@ -274,6 +279,7 @@ func Test_filter_IngressSearchVector(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -300,6 +306,7 @@ func Test_filter_IngressSearchVector(t *testing.T) {
 }
 
 func Test_filter_IngressInsertVector(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		vec []float32
@@ -373,6 +380,7 @@ func Test_filter_IngressInsertVector(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -399,6 +407,7 @@ func Test_filter_IngressInsertVector(t *testing.T) {
 }
 
 func Test_filter_IngressUpdateVector(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		vec []float32
@@ -472,6 +481,7 @@ func Test_filter_IngressUpdateVector(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -498,6 +508,7 @@ func Test_filter_IngressUpdateVector(t *testing.T) {
 }
 
 func Test_filter_IngressUpsertVector(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		vec []float32
@@ -571,6 +582,7 @@ func Test_filter_IngressUpsertVector(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -597,6 +609,7 @@ func Test_filter_IngressUpsertVector(t *testing.T) {
 }
 
 func Test_filter_IngressObject(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		vec []float32
@@ -670,6 +683,7 @@ func Test_filter_IngressObject(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -696,6 +710,7 @@ func Test_filter_IngressObject(t *testing.T) {
 }
 
 func Test_filter_EgressVectors(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vecs []*payload.Object_Distance
@@ -769,6 +784,7 @@ func Test_filter_EgressVectors(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)

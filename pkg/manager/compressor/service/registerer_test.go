@@ -31,6 +31,7 @@ import (
 )
 
 func TestNewRegisterer(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []RegistererOption
 	}
@@ -85,7 +86,8 @@ func TestNewRegisterer(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -106,6 +108,7 @@ func TestNewRegisterer(t *testing.T) {
 }
 
 func Test_registerer_PreStart(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -187,7 +190,8 @@ func Test_registerer_PreStart(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -218,6 +222,7 @@ func Test_registerer_PreStart(t *testing.T) {
 }
 
 func Test_registerer_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -303,7 +308,8 @@ func Test_registerer_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -334,6 +340,7 @@ func Test_registerer_Start(t *testing.T) {
 }
 
 func Test_registerer_PostStop(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -415,7 +422,8 @@ func Test_registerer_PostStop(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -446,6 +454,7 @@ func Test_registerer_PostStop(t *testing.T) {
 }
 
 func Test_registerer_Register(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		meta *payload.Backup_MetaVector
@@ -530,7 +539,8 @@ func Test_registerer_Register(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -561,6 +571,7 @@ func Test_registerer_Register(t *testing.T) {
 }
 
 func Test_registerer_RegisterMulti(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		metas *payload.Backup_MetaVectors
@@ -645,7 +656,8 @@ func Test_registerer_RegisterMulti(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -676,6 +688,7 @@ func Test_registerer_RegisterMulti(t *testing.T) {
 }
 
 func Test_registerer_Len(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		worker     worker.Worker
 		workerOpts []worker.WorkerOption
@@ -747,7 +760,8 @@ func Test_registerer_Len(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -778,6 +792,7 @@ func Test_registerer_Len(t *testing.T) {
 }
 
 func Test_registerer_TotalRequested(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		worker     worker.Worker
 		workerOpts []worker.WorkerOption
@@ -849,7 +864,8 @@ func Test_registerer_TotalRequested(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -880,6 +896,7 @@ func Test_registerer_TotalRequested(t *testing.T) {
 }
 
 func Test_registerer_TotalCompleted(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		worker     worker.Worker
 		workerOpts []worker.WorkerOption
@@ -951,7 +968,8 @@ func Test_registerer_TotalCompleted(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -982,6 +1000,7 @@ func Test_registerer_TotalCompleted(t *testing.T) {
 }
 
 func Test_registerer_dispatch(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		meta *payload.Backup_MetaVector
@@ -1066,7 +1085,8 @@ func Test_registerer_dispatch(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1097,6 +1117,7 @@ func Test_registerer_dispatch(t *testing.T) {
 }
 
 func Test_registerer_registerProcessFunc(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		meta *payload.Backup_MetaVector
 	}
@@ -1178,7 +1199,8 @@ func Test_registerer_registerProcessFunc(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1209,6 +1231,7 @@ func Test_registerer_registerProcessFunc(t *testing.T) {
 }
 
 func Test_registerer_forwardMetas(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -1290,7 +1313,8 @@ func Test_registerer_forwardMetas(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

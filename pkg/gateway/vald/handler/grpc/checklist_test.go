@@ -28,6 +28,7 @@ import (
 )
 
 func Test_checkList_Exists(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -97,6 +98,7 @@ func Test_checkList_Exists(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -124,6 +126,7 @@ func Test_checkList_Exists(t *testing.T) {
 }
 
 func Test_checkList_Check(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -189,6 +192,7 @@ func Test_checkList_Check(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -215,6 +219,7 @@ func Test_checkList_Check(t *testing.T) {
 }
 
 func Test_entryCheckList_tryStore(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i *struct{}
 	}
@@ -275,6 +280,7 @@ func Test_entryCheckList_tryStore(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -299,6 +305,7 @@ func Test_entryCheckList_tryStore(t *testing.T) {
 }
 
 func Test_entryCheckList_unexpungeLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -349,6 +356,7 @@ func Test_entryCheckList_unexpungeLocked(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -373,6 +381,7 @@ func Test_entryCheckList_unexpungeLocked(t *testing.T) {
 }
 
 func Test_checkList_missLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		mu     sync.Mutex
 		read   atomic.Value
@@ -428,6 +437,7 @@ func Test_checkList_missLocked(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -454,6 +464,7 @@ func Test_checkList_missLocked(t *testing.T) {
 }
 
 func Test_checkList_dirtyLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		mu     sync.Mutex
 		read   atomic.Value
@@ -509,6 +520,7 @@ func Test_checkList_dirtyLocked(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -535,6 +547,7 @@ func Test_checkList_dirtyLocked(t *testing.T) {
 }
 
 func Test_entryCheckList_tryExpungeLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -585,6 +598,7 @@ func Test_entryCheckList_tryExpungeLocked(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()

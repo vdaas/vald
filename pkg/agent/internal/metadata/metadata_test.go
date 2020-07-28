@@ -26,6 +26,7 @@ import (
 )
 
 func TestLoad(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		path string
 	}
@@ -80,6 +81,7 @@ func TestLoad(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -101,6 +103,7 @@ func TestLoad(t *testing.T) {
 }
 
 func TestStore(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		path string
 		meta *Metadata
@@ -154,6 +157,7 @@ func TestStore(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)

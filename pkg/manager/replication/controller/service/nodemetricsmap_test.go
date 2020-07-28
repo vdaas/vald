@@ -29,6 +29,7 @@ import (
 )
 
 func Test_newEntryNodeMetricsMap(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i mnode.Node
 	}
@@ -79,7 +80,8 @@ func Test_newEntryNodeMetricsMap(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -100,6 +102,7 @@ func Test_newEntryNodeMetricsMap(t *testing.T) {
 }
 
 func Test_nodeMetricsMap_Load(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -173,7 +176,8 @@ func Test_nodeMetricsMap_Load(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -200,6 +204,7 @@ func Test_nodeMetricsMap_Load(t *testing.T) {
 }
 
 func Test_entryNodeMetricsMap_load(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -254,7 +259,8 @@ func Test_entryNodeMetricsMap_load(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -278,6 +284,7 @@ func Test_entryNodeMetricsMap_load(t *testing.T) {
 }
 
 func Test_nodeMetricsMap_Store(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key   string
 		value mnode.Node
@@ -346,7 +353,8 @@ func Test_nodeMetricsMap_Store(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -372,6 +380,7 @@ func Test_nodeMetricsMap_Store(t *testing.T) {
 }
 
 func Test_entryNodeMetricsMap_tryStore(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i *mnode.Node
 	}
@@ -432,7 +441,8 @@ func Test_entryNodeMetricsMap_tryStore(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -456,6 +466,7 @@ func Test_entryNodeMetricsMap_tryStore(t *testing.T) {
 }
 
 func Test_entryNodeMetricsMap_unexpungeLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -506,7 +517,8 @@ func Test_entryNodeMetricsMap_unexpungeLocked(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -530,6 +542,7 @@ func Test_entryNodeMetricsMap_unexpungeLocked(t *testing.T) {
 }
 
 func Test_entryNodeMetricsMap_storeLocked(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i *mnode.Node
 	}
@@ -586,7 +599,8 @@ func Test_entryNodeMetricsMap_storeLocked(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -609,6 +623,7 @@ func Test_entryNodeMetricsMap_storeLocked(t *testing.T) {
 }
 
 func Test_nodeMetricsMap_LoadOrStore(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key   string
 		value mnode.Node
@@ -685,7 +700,8 @@ func Test_nodeMetricsMap_LoadOrStore(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -712,6 +728,7 @@ func Test_nodeMetricsMap_LoadOrStore(t *testing.T) {
 }
 
 func Test_entryNodeMetricsMap_tryLoadOrStore(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i mnode.Node
 	}
@@ -780,7 +797,8 @@ func Test_entryNodeMetricsMap_tryLoadOrStore(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -804,6 +822,7 @@ func Test_entryNodeMetricsMap_tryLoadOrStore(t *testing.T) {
 }
 
 func Test_nodeMetricsMap_Delete(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -869,7 +888,8 @@ func Test_nodeMetricsMap_Delete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -895,6 +915,7 @@ func Test_nodeMetricsMap_Delete(t *testing.T) {
 }
 
 func Test_entryNodeMetricsMap_delete(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -945,7 +966,8 @@ func Test_entryNodeMetricsMap_delete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -969,6 +991,7 @@ func Test_entryNodeMetricsMap_delete(t *testing.T) {
 }
 
 func Test_nodeMetricsMap_Range(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		f func(key string, value mnode.Node) bool
 	}
@@ -1034,7 +1057,8 @@ func Test_nodeMetricsMap_Range(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1060,6 +1084,7 @@ func Test_nodeMetricsMap_Range(t *testing.T) {
 }
 
 func Test_nodeMetricsMap_missLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		mu     sync.Mutex
 		read   atomic.Value
@@ -1115,7 +1140,8 @@ func Test_nodeMetricsMap_missLocked(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1141,6 +1167,7 @@ func Test_nodeMetricsMap_missLocked(t *testing.T) {
 }
 
 func Test_nodeMetricsMap_dirtyLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		mu     sync.Mutex
 		read   atomic.Value
@@ -1196,7 +1223,8 @@ func Test_nodeMetricsMap_dirtyLocked(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1222,6 +1250,7 @@ func Test_nodeMetricsMap_dirtyLocked(t *testing.T) {
 }
 
 func Test_entryNodeMetricsMap_tryExpungeLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -1272,7 +1301,8 @@ func Test_entryNodeMetricsMap_tryExpungeLocked(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

@@ -25,6 +25,7 @@ import (
 )
 
 func Test_identity(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		dim int
 	}
@@ -75,7 +76,8 @@ func Test_identity(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -96,6 +98,7 @@ func Test_identity(t *testing.T) {
 }
 
 func Test_random(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		dim  int
 		size int
@@ -149,7 +152,8 @@ func Test_random(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -170,6 +174,7 @@ func Test_random(t *testing.T) {
 }
 
 func Test_datasetDir(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want string
 		err  error
@@ -214,7 +219,8 @@ func Test_datasetDir(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -235,6 +241,7 @@ func Test_datasetDir(t *testing.T) {
 }
 
 func TestData(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		name string
 	}
@@ -285,7 +292,8 @@ func TestData(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -306,6 +314,7 @@ func TestData(t *testing.T) {
 }
 
 func Test_dataset_Train(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		train              [][]float32
 		trainAsFloat64     [][]float64
@@ -348,13 +357,13 @@ func Test_dataset_Train(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -375,13 +384,13 @@ func Test_dataset_Train(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -398,7 +407,8 @@ func Test_dataset_Train(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -436,6 +446,7 @@ func Test_dataset_Train(t *testing.T) {
 }
 
 func Test_dataset_TrainAsFloat64(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		train              [][]float32
 		trainAsFloat64     [][]float64
@@ -478,13 +489,13 @@ func Test_dataset_TrainAsFloat64(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -505,13 +516,13 @@ func Test_dataset_TrainAsFloat64(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -528,7 +539,8 @@ func Test_dataset_TrainAsFloat64(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -566,6 +578,7 @@ func Test_dataset_TrainAsFloat64(t *testing.T) {
 }
 
 func Test_dataset_Query(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		train              [][]float32
 		trainAsFloat64     [][]float64
@@ -608,13 +621,13 @@ func Test_dataset_Query(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -635,13 +648,13 @@ func Test_dataset_Query(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -658,7 +671,8 @@ func Test_dataset_Query(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -696,6 +710,7 @@ func Test_dataset_Query(t *testing.T) {
 }
 
 func Test_dataset_QueryAsFloat64(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		train              [][]float32
 		trainAsFloat64     [][]float64
@@ -738,13 +753,13 @@ func Test_dataset_QueryAsFloat64(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -765,13 +780,13 @@ func Test_dataset_QueryAsFloat64(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -788,7 +803,8 @@ func Test_dataset_QueryAsFloat64(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -826,6 +842,7 @@ func Test_dataset_QueryAsFloat64(t *testing.T) {
 }
 
 func Test_dataset_Distances(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		train              [][]float32
 		trainAsFloat64     [][]float64
@@ -868,13 +885,13 @@ func Test_dataset_Distances(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -895,13 +912,13 @@ func Test_dataset_Distances(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -918,7 +935,8 @@ func Test_dataset_Distances(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -956,6 +974,7 @@ func Test_dataset_Distances(t *testing.T) {
 }
 
 func Test_dataset_DistancesAsFloat64(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		train              [][]float32
 		trainAsFloat64     [][]float64
@@ -998,13 +1017,13 @@ func Test_dataset_DistancesAsFloat64(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1025,13 +1044,13 @@ func Test_dataset_DistancesAsFloat64(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1048,7 +1067,8 @@ func Test_dataset_DistancesAsFloat64(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1086,6 +1106,7 @@ func Test_dataset_DistancesAsFloat64(t *testing.T) {
 }
 
 func Test_dataset_Neighbors(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		train              [][]float32
 		trainAsFloat64     [][]float64
@@ -1128,13 +1149,13 @@ func Test_dataset_Neighbors(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1155,13 +1176,13 @@ func Test_dataset_Neighbors(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1178,7 +1199,8 @@ func Test_dataset_Neighbors(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1216,6 +1238,7 @@ func Test_dataset_Neighbors(t *testing.T) {
 }
 
 func Test_dataset_IDs(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		train              [][]float32
 		trainAsFloat64     [][]float64
@@ -1258,13 +1281,13 @@ func Test_dataset_IDs(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1285,13 +1308,13 @@ func Test_dataset_IDs(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1308,7 +1331,8 @@ func Test_dataset_IDs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1346,6 +1370,7 @@ func Test_dataset_IDs(t *testing.T) {
 }
 
 func Test_dataset_Name(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		train              [][]float32
 		trainAsFloat64     [][]float64
@@ -1388,13 +1413,13 @@ func Test_dataset_Name(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1415,13 +1440,13 @@ func Test_dataset_Name(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1438,7 +1463,8 @@ func Test_dataset_Name(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1476,6 +1502,7 @@ func Test_dataset_Name(t *testing.T) {
 }
 
 func Test_dataset_Dimension(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		train              [][]float32
 		trainAsFloat64     [][]float64
@@ -1518,13 +1545,13 @@ func Test_dataset_Dimension(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1545,13 +1572,13 @@ func Test_dataset_Dimension(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1568,7 +1595,8 @@ func Test_dataset_Dimension(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1606,6 +1634,7 @@ func Test_dataset_Dimension(t *testing.T) {
 }
 
 func Test_dataset_DistanceType(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		train              [][]float32
 		trainAsFloat64     [][]float64
@@ -1648,13 +1677,13 @@ func Test_dataset_DistanceType(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1675,13 +1704,13 @@ func Test_dataset_DistanceType(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1698,7 +1727,8 @@ func Test_dataset_DistanceType(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1736,6 +1766,7 @@ func Test_dataset_DistanceType(t *testing.T) {
 }
 
 func Test_dataset_ObjectType(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		train              [][]float32
 		trainAsFloat64     [][]float64
@@ -1778,13 +1809,13 @@ func Test_dataset_ObjectType(t *testing.T) {
 		       fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1805,13 +1836,13 @@ func Test_dataset_ObjectType(t *testing.T) {
 		           fields: fields {
 		           train: nil,
 		           trainAsFloat64: nil,
-		           trainOnce: nil,
+		           trainOnce: sync.Once{},
 		           query: nil,
 		           queryAsFloat64: nil,
-		           queryOnce: nil,
+		           queryOnce: sync.Once{},
 		           distances: nil,
 		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
+		           distancesOnce: sync.Once{},
 		           neighbors: nil,
 		           ids: nil,
 		           name: "",
@@ -1828,7 +1859,8 @@ func Test_dataset_ObjectType(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1866,6 +1898,7 @@ func Test_dataset_ObjectType(t *testing.T) {
 }
 
 func Test_float32To64(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		x [][]float32
 	}
@@ -1916,7 +1949,8 @@ func Test_float32To64(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
