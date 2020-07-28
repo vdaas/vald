@@ -27,6 +27,7 @@ import (
 )
 
 func TestWithClient(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -103,6 +104,7 @@ func TestWithClient(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -141,6 +143,7 @@ func TestWithClient(t *testing.T) {
 }
 
 func TestWithFilter(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -217,6 +220,7 @@ func TestWithFilter(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -255,6 +259,7 @@ func TestWithFilter(t *testing.T) {
 }
 
 func TestWithErrGroup(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -331,6 +336,7 @@ func TestWithErrGroup(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -369,6 +375,7 @@ func TestWithErrGroup(t *testing.T) {
 }
 
 func TestWithStreamConcurrency(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -445,6 +452,7 @@ func TestWithStreamConcurrency(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)

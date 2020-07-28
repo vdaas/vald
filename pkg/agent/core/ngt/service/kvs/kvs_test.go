@@ -26,6 +26,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want BidiMap
 	}
@@ -66,7 +67,8 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -87,6 +89,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_bidi_Get(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -157,7 +160,8 @@ func Test_bidi_Get(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -183,6 +187,7 @@ func Test_bidi_Get(t *testing.T) {
 }
 
 func Test_bidi_GetInverse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		val uint32
 	}
@@ -253,7 +258,8 @@ func Test_bidi_GetInverse(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -279,6 +285,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 }
 
 func Test_bidi_Set(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 		val uint32
@@ -344,7 +351,8 @@ func Test_bidi_Set(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -369,6 +377,7 @@ func Test_bidi_Set(t *testing.T) {
 }
 
 func Test_bidi_Delete(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -439,7 +448,8 @@ func Test_bidi_Delete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -465,6 +475,7 @@ func Test_bidi_Delete(t *testing.T) {
 }
 
 func Test_bidi_DeleteInverse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		val uint32
 	}
@@ -535,7 +546,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -561,6 +573,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 }
 
 func Test_bidi_Range(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		f   func(string, uint32) bool
@@ -626,7 +639,8 @@ func Test_bidi_Range(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -651,6 +665,7 @@ func Test_bidi_Range(t *testing.T) {
 }
 
 func Test_bidi_Len(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		ou [slen]*ou
 		uo [slen]*uo
@@ -707,7 +722,8 @@ func Test_bidi_Len(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

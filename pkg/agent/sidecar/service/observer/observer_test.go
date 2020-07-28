@@ -31,6 +31,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -85,6 +86,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -106,6 +108,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_observer_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -197,6 +200,7 @@ func Test_observer_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -230,6 +234,7 @@ func Test_observer_Start(t *testing.T) {
 }
 
 func Test_observer_PostStop(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -317,6 +322,7 @@ func Test_observer_PostStop(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -350,6 +356,7 @@ func Test_observer_PostStop(t *testing.T) {
 }
 
 func Test_observer_startTicker(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -441,6 +448,7 @@ func Test_observer_startTicker(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -474,6 +482,7 @@ func Test_observer_startTicker(t *testing.T) {
 }
 
 func Test_observer_startBackupLoop(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -565,6 +574,7 @@ func Test_observer_startBackupLoop(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -598,6 +608,7 @@ func Test_observer_startBackupLoop(t *testing.T) {
 }
 
 func Test_observer_onWrite(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		name string
@@ -688,6 +699,7 @@ func Test_observer_onWrite(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -721,6 +733,7 @@ func Test_observer_onWrite(t *testing.T) {
 }
 
 func Test_observer_onCreate(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		name string
@@ -811,6 +824,7 @@ func Test_observer_onCreate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -844,8 +858,7 @@ func Test_observer_onCreate(t *testing.T) {
 }
 
 func Test_observer_isValidMetadata(t *testing.T) {
-	type args struct {
-	}
+	t.Parallel()
 	type fields struct {
 		w               watch.Watcher
 		dir             string
@@ -864,12 +877,11 @@ func Test_observer_isValidMetadata(t *testing.T) {
 	}
 	type test struct {
 		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, bool, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func()
+		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got bool, err error) error {
 		if !errors.Is(err, w.err) {
@@ -885,8 +897,6 @@ func Test_observer_isValidMetadata(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       args: args {
-		       },
 		       fields: fields {
 		           w: nil,
 		           dir: "",
@@ -909,8 +919,6 @@ func Test_observer_isValidMetadata(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           args: args {
-		           },
 		           fields: fields {
 		           w: nil,
 		           dir: "",
@@ -932,12 +940,13 @@ func Test_observer_isValidMetadata(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -965,6 +974,7 @@ func Test_observer_isValidMetadata(t *testing.T) {
 }
 
 func Test_observer_terminate(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		w               watch.Watcher
 		dir             string
@@ -1042,6 +1052,7 @@ func Test_observer_terminate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -1075,6 +1086,7 @@ func Test_observer_terminate(t *testing.T) {
 }
 
 func Test_observer_requestBackup(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -1162,6 +1174,7 @@ func Test_observer_requestBackup(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1195,6 +1208,7 @@ func Test_observer_requestBackup(t *testing.T) {
 }
 
 func Test_observer_backup(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -1282,6 +1296,7 @@ func Test_observer_backup(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)

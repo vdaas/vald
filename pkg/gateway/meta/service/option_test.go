@@ -26,6 +26,7 @@ import (
 )
 
 func TestWithMetaAddr(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -102,6 +103,7 @@ func TestWithMetaAddr(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -140,6 +142,7 @@ func TestWithMetaAddr(t *testing.T) {
 }
 
 func TestWithMetaHostPort(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -219,6 +222,7 @@ func TestWithMetaHostPort(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -257,6 +261,7 @@ func TestWithMetaHostPort(t *testing.T) {
 }
 
 func TestWithMetaClient(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -333,6 +338,7 @@ func TestWithMetaClient(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -371,6 +377,7 @@ func TestWithMetaClient(t *testing.T) {
 }
 
 func TestWithMetaCacheEnabled(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -447,6 +454,7 @@ func TestWithMetaCacheEnabled(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -485,6 +493,7 @@ func TestWithMetaCacheEnabled(t *testing.T) {
 }
 
 func TestWithMetaCache(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -561,6 +570,7 @@ func TestWithMetaCache(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -599,6 +609,7 @@ func TestWithMetaCache(t *testing.T) {
 }
 
 func TestWithMetaCacheExpireDuration(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -675,6 +686,7 @@ func TestWithMetaCacheExpireDuration(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -713,6 +725,7 @@ func TestWithMetaCacheExpireDuration(t *testing.T) {
 }
 
 func TestWithMetaCacheExpiredCheckDuration(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -789,6 +802,7 @@ func TestWithMetaCacheExpiredCheckDuration(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)

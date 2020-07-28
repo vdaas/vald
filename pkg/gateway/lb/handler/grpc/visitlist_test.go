@@ -27,6 +27,7 @@ import (
 )
 
 func Test_visitList_Load(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -100,6 +101,7 @@ func Test_visitList_Load(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -127,6 +129,7 @@ func Test_visitList_Load(t *testing.T) {
 }
 
 func Test_visitList_Store(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key   string
 		value bool
@@ -195,6 +198,7 @@ func Test_visitList_Store(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)

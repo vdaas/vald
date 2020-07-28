@@ -28,6 +28,7 @@ import (
 )
 
 func TestNewFilter(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []FilterOption
 	}
@@ -82,6 +83,7 @@ func TestNewFilter(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -103,6 +105,7 @@ func TestNewFilter(t *testing.T) {
 }
 
 func Test_filter_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -167,6 +170,7 @@ func Test_filter_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -191,6 +195,7 @@ func Test_filter_Start(t *testing.T) {
 }
 
 func Test_filter_FilterSearch(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		res *payload.Search_Response
@@ -258,6 +263,7 @@ func Test_filter_FilterSearch(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)

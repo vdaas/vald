@@ -33,6 +33,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -83,6 +84,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -104,6 +106,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_server_Exists(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		meta *payload.Object_ID
@@ -112,6 +115,7 @@ func Test_server_Exists(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
@@ -150,6 +154,7 @@ func Test_server_Exists(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -171,6 +176,7 @@ func Test_server_Exists(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -183,6 +189,7 @@ func Test_server_Exists(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -197,6 +204,7 @@ func Test_server_Exists(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -211,6 +219,7 @@ func Test_server_Exists(t *testing.T) {
 }
 
 func Test_server_Search(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_Request
@@ -219,6 +228,7 @@ func Test_server_Search(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
@@ -257,6 +267,7 @@ func Test_server_Search(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -278,6 +289,7 @@ func Test_server_Search(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -290,6 +302,7 @@ func Test_server_Search(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -304,6 +317,7 @@ func Test_server_Search(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -318,6 +332,7 @@ func Test_server_Search(t *testing.T) {
 }
 
 func Test_server_SearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_IDRequest
@@ -326,6 +341,7 @@ func Test_server_SearchByID(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
@@ -364,6 +380,7 @@ func Test_server_SearchByID(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -385,6 +402,7 @@ func Test_server_SearchByID(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -397,6 +415,7 @@ func Test_server_SearchByID(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -411,6 +430,7 @@ func Test_server_SearchByID(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -425,6 +445,7 @@ func Test_server_SearchByID(t *testing.T) {
 }
 
 func Test_server_search(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		cfg *payload.Search_Config
@@ -434,6 +455,7 @@ func Test_server_search(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
@@ -473,6 +495,7 @@ func Test_server_search(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -495,6 +518,7 @@ func Test_server_search(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -507,6 +531,7 @@ func Test_server_search(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -521,6 +546,7 @@ func Test_server_search(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -535,6 +561,7 @@ func Test_server_search(t *testing.T) {
 }
 
 func Test_server_StreamSearch(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamSearchServer
 	}
@@ -542,6 +569,7 @@ func Test_server_StreamSearch(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
@@ -575,6 +603,7 @@ func Test_server_StreamSearch(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -595,6 +624,7 @@ func Test_server_StreamSearch(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -607,6 +637,7 @@ func Test_server_StreamSearch(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -621,6 +652,7 @@ func Test_server_StreamSearch(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -635,6 +667,7 @@ func Test_server_StreamSearch(t *testing.T) {
 }
 
 func Test_server_StreamSearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamSearchByIDServer
 	}
@@ -642,6 +675,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
@@ -675,6 +709,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -695,6 +730,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -707,6 +743,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -721,6 +758,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -735,6 +773,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 }
 
 func Test_server_Insert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		vec *payload.Object_Vector
@@ -743,6 +782,7 @@ func Test_server_Insert(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
@@ -781,6 +821,7 @@ func Test_server_Insert(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -802,6 +843,7 @@ func Test_server_Insert(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -814,6 +856,7 @@ func Test_server_Insert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -828,6 +871,7 @@ func Test_server_Insert(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -842,6 +886,7 @@ func Test_server_Insert(t *testing.T) {
 }
 
 func Test_server_StreamInsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamInsertServer
 	}
@@ -849,6 +894,7 @@ func Test_server_StreamInsert(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
@@ -882,6 +928,7 @@ func Test_server_StreamInsert(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -902,6 +949,7 @@ func Test_server_StreamInsert(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -914,6 +962,7 @@ func Test_server_StreamInsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -928,6 +977,7 @@ func Test_server_StreamInsert(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -942,6 +992,7 @@ func Test_server_StreamInsert(t *testing.T) {
 }
 
 func Test_server_MultiInsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vecs *payload.Object_Vectors
@@ -950,12 +1001,13 @@ func Test_server_MultiInsert(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Object_Locations
-		err     error
+		wantLocs *payload.Object_Locations
+		err      error
 	}
 	type test struct {
 		name       string
@@ -966,12 +1018,12 @@ func Test_server_MultiInsert(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
+	defaultCheckFunc := func(w want, gotLocs *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+		if !reflect.DeepEqual(gotLocs, w.wantLocs) {
+			return errors.Errorf("got = %v, want %v", gotLocs, w.wantLocs)
 		}
 		return nil
 	}
@@ -988,6 +1040,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1009,6 +1062,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1021,6 +1075,7 @@ func Test_server_MultiInsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1035,12 +1090,13 @@ func Test_server_MultiInsert(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.MultiInsert(test.args.ctx, test.args.vecs)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			gotLocs, err := s.MultiInsert(test.args.ctx, test.args.vecs)
+			if err := test.checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -1049,6 +1105,7 @@ func Test_server_MultiInsert(t *testing.T) {
 }
 
 func Test_server_Update(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		vec *payload.Object_Vector
@@ -1057,6 +1114,7 @@ func Test_server_Update(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
@@ -1095,6 +1153,7 @@ func Test_server_Update(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1116,6 +1175,7 @@ func Test_server_Update(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1128,6 +1188,7 @@ func Test_server_Update(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1142,6 +1203,7 @@ func Test_server_Update(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1156,6 +1218,7 @@ func Test_server_Update(t *testing.T) {
 }
 
 func Test_server_StreamUpdate(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamUpdateServer
 	}
@@ -1163,6 +1226,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
@@ -1196,6 +1260,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1216,6 +1281,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1228,6 +1294,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1242,6 +1309,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1256,6 +1324,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 }
 
 func Test_server_MultiUpdate(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vecs *payload.Object_Vectors
@@ -1264,6 +1333,7 @@ func Test_server_MultiUpdate(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
@@ -1302,6 +1372,7 @@ func Test_server_MultiUpdate(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1323,6 +1394,7 @@ func Test_server_MultiUpdate(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1335,6 +1407,7 @@ func Test_server_MultiUpdate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1349,6 +1422,7 @@ func Test_server_MultiUpdate(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1363,6 +1437,7 @@ func Test_server_MultiUpdate(t *testing.T) {
 }
 
 func Test_server_Upsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		vec *payload.Object_Vector
@@ -1371,12 +1446,13 @@ func Test_server_Upsert(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		want *payload.Object_Location
-		err  error
+		wantLoc *payload.Object_Location
+		err     error
 	}
 	type test struct {
 		name       string
@@ -1387,12 +1463,12 @@ func Test_server_Upsert(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *payload.Object_Location, err error) error {
+	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
+			return errors.Errorf("got = %v, want %v", gotLoc, w.wantLoc)
 		}
 		return nil
 	}
@@ -1409,6 +1485,7 @@ func Test_server_Upsert(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1430,6 +1507,7 @@ func Test_server_Upsert(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1442,6 +1520,7 @@ func Test_server_Upsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1456,12 +1535,13 @@ func Test_server_Upsert(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			got, err := s.Upsert(test.args.ctx, test.args.vec)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			gotLoc, err := s.Upsert(test.args.ctx, test.args.vec)
+			if err := test.checkFunc(test.want, gotLoc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -1470,6 +1550,7 @@ func Test_server_Upsert(t *testing.T) {
 }
 
 func Test_server_StreamUpsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamUpsertServer
 	}
@@ -1477,6 +1558,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
@@ -1510,6 +1592,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1530,6 +1613,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1542,6 +1626,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1556,6 +1641,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1570,6 +1656,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 }
 
 func Test_server_MultiUpsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vecs *payload.Object_Vectors
@@ -1578,12 +1665,13 @@ func Test_server_MultiUpsert(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		want *payload.Object_Locations
-		err  error
+		wantLocs *payload.Object_Locations
+		err      error
 	}
 	type test struct {
 		name       string
@@ -1594,12 +1682,12 @@ func Test_server_MultiUpsert(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *payload.Object_Locations, err error) error {
+	defaultCheckFunc := func(w want, gotLocs *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+		if !reflect.DeepEqual(gotLocs, w.wantLocs) {
+			return errors.Errorf("got = %v, want %v", gotLocs, w.wantLocs)
 		}
 		return nil
 	}
@@ -1616,6 +1704,7 @@ func Test_server_MultiUpsert(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1637,6 +1726,7 @@ func Test_server_MultiUpsert(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1649,6 +1739,7 @@ func Test_server_MultiUpsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1663,12 +1754,13 @@ func Test_server_MultiUpsert(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			got, err := s.MultiUpsert(test.args.ctx, test.args.vecs)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			gotLocs, err := s.MultiUpsert(test.args.ctx, test.args.vecs)
+			if err := test.checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -1677,6 +1769,7 @@ func Test_server_MultiUpsert(t *testing.T) {
 }
 
 func Test_server_Remove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		id  *payload.Object_ID
@@ -1685,12 +1778,13 @@ func Test_server_Remove(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		want *payload.Object_Location
-		err  error
+		wantLocs *payload.Object_Location
+		err      error
 	}
 	type test struct {
 		name       string
@@ -1701,12 +1795,12 @@ func Test_server_Remove(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *payload.Object_Location, err error) error {
+	defaultCheckFunc := func(w want, gotLocs *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+		if !reflect.DeepEqual(gotLocs, w.wantLocs) {
+			return errors.Errorf("got = %v, want %v", gotLocs, w.wantLocs)
 		}
 		return nil
 	}
@@ -1723,6 +1817,7 @@ func Test_server_Remove(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1744,6 +1839,7 @@ func Test_server_Remove(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1756,6 +1852,7 @@ func Test_server_Remove(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1770,12 +1867,13 @@ func Test_server_Remove(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			got, err := s.Remove(test.args.ctx, test.args.id)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			gotLocs, err := s.Remove(test.args.ctx, test.args.id)
+			if err := test.checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -1784,6 +1882,7 @@ func Test_server_Remove(t *testing.T) {
 }
 
 func Test_server_StreamRemove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamRemoveServer
 	}
@@ -1791,6 +1890,7 @@ func Test_server_StreamRemove(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
@@ -1824,6 +1924,7 @@ func Test_server_StreamRemove(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1844,6 +1945,7 @@ func Test_server_StreamRemove(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1856,6 +1958,7 @@ func Test_server_StreamRemove(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1870,6 +1973,7 @@ func Test_server_StreamRemove(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -1884,6 +1988,7 @@ func Test_server_StreamRemove(t *testing.T) {
 }
 
 func Test_server_MultiRemove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		ids *payload.Object_IDs
@@ -1892,12 +1997,13 @@ func Test_server_MultiRemove(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Object_Locations
-		err     error
+		wantLocs *payload.Object_Locations
+		err      error
 	}
 	type test struct {
 		name       string
@@ -1908,12 +2014,12 @@ func Test_server_MultiRemove(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
+	defaultCheckFunc := func(w want, gotLocs *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+		if !reflect.DeepEqual(gotLocs, w.wantLocs) {
+			return errors.Errorf("got = %v, want %v", gotLocs, w.wantLocs)
 		}
 		return nil
 	}
@@ -1930,6 +2036,7 @@ func Test_server_MultiRemove(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -1951,6 +2058,7 @@ func Test_server_MultiRemove(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -1963,6 +2071,7 @@ func Test_server_MultiRemove(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1977,12 +2086,13 @@ func Test_server_MultiRemove(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.MultiRemove(test.args.ctx, test.args.ids)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			gotLocs, err := s.MultiRemove(test.args.ctx, test.args.ids)
+			if err := test.checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -1991,6 +2101,7 @@ func Test_server_MultiRemove(t *testing.T) {
 }
 
 func Test_server_GetObject(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		id  *payload.Object_ID
@@ -1999,6 +2110,7 @@ func Test_server_GetObject(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
@@ -2037,6 +2149,7 @@ func Test_server_GetObject(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -2058,6 +2171,7 @@ func Test_server_GetObject(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -2070,6 +2184,7 @@ func Test_server_GetObject(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -2084,6 +2199,7 @@ func Test_server_GetObject(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
@@ -2098,6 +2214,7 @@ func Test_server_GetObject(t *testing.T) {
 }
 
 func Test_server_StreamGetObject(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamGetObjectServer
 	}
@@ -2105,6 +2222,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 		eg                errgroup.Group
 		gateway           service.Gateway
 		timeout           time.Duration
+		strict            bool
 		replica           int
 		streamConcurrency int
 	}
@@ -2138,6 +2256,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		       },
@@ -2158,6 +2277,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 		           eg: nil,
 		           gateway: nil,
 		           timeout: nil,
+		           strict: false,
 		           replica: 0,
 		           streamConcurrency: 0,
 		           },
@@ -2170,6 +2290,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -2184,6 +2305,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 				eg:                test.fields.eg,
 				gateway:           test.fields.gateway,
 				timeout:           test.fields.timeout,
+				strict:            test.fields.strict,
 				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
