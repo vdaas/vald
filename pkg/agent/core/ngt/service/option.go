@@ -66,6 +66,10 @@ func WithEnableInMemoryMode(enabled bool) Option {
 
 func WithIndexPath(path string) Option {
 	return func(n *ngt) error {
+		if path == "" {
+			return nil
+		}
+
 		n.path = filepath.Clean(strings.TrimSuffix(path, "/"))
 
 		return nil
