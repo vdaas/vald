@@ -19,6 +19,7 @@ package worker
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"sync/atomic"
 
@@ -29,8 +30,10 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 )
 
+// JobFunc represent the function of a job that work in the worker.
 type JobFunc func(context.Context) error
 
+// Worker represent the worker interface to execute
 type Worker interface {
 	Start(ctx context.Context) (<-chan error, error)
 	Pause()
@@ -126,17 +129,23 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 	ech := make(chan error, w.limitation)
 
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(ech)
 		eg, ctx := errgroup.New(ctx)
 		eg.Limitation(w.limitation)
+
 		limitation := make(chan struct{}, w.limitation)
 		defer close(limitation)
+
 		for {
 			select {
 			case <-ctx.Done():
+				var egErr error
 				if err = ctx.Err(); err != nil {
-					return errors.Wrap(eg.Wait(), err.Error())
+					egErr = eg.Wait()
+					return errors.Wrap(egErr, err.Error())
 				}
-				return eg.Wait()
+				fmt.Printf("return egerr: %v\n", egErr)
+				return egErr
 			case limitation <- struct{}{}:
 			}
 
@@ -152,9 +161,8 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 
 			if job != nil {
 				eg.Go(safety.RecoverFunc(func() (err error) {
-					defer atomic.AddUint64(&w.completedCount, 1)
-					err = job(ctx)
-					if err != nil {
+					atomic.AddUint64(&w.completedCount, 1)
+					if err = job(ctx); err != nil {
 						log.Debugf("an error occurred while executing a job: %s", err)
 						ech <- err
 					}

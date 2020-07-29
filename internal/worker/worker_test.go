@@ -27,6 +27,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
 )
@@ -235,23 +236,7 @@ func Test_worker_Start(t *testing.T) {
 						v.Store(false)
 						return *v
 					}(),
-					queue: &queue{
-						buffer: 10,
-						eg:     errgroup.Get(),
-						qcdur:  200 * time.Millisecond,
-						qLen: func() atomic.Value {
-							v := new(atomic.Value)
-							v.Store(uint64(0))
-							return *v
-						}(),
-						running: func() atomic.Value {
-							v := new(atomic.Value)
-							v.Store(false)
-							return *v
-						}(),
-						inCh:  make(chan JobFunc, 10),
-						outCh: make(chan JobFunc, 1),
-					},
+					queue: NewQueueMock(),
 				},
 				want: want{
 					want: func() <-chan error {
@@ -279,6 +264,30 @@ func Test_worker_Start(t *testing.T) {
 			},
 			want: want{
 				err: errors.ErrWorkerIsAlreadyRunning("test"),
+			},
+		},
+		{
+			name: "return queue start error",
+			args: args{
+				ctx: context.Background(),
+			},
+			fields: fields{
+				name:       "worker",
+				limitation: 10,
+				eg:         errgroup.Get(),
+				running: func() atomic.Value {
+					v := new(atomic.Value)
+					v.Store(false)
+					return *v
+				}(),
+				queue: &QueueMock{
+					StartFunc: func(context.Context) (<-chan error, error) {
+						return nil, errors.New("error")
+					},
+				},
+			},
+			want: want{
+				err: errors.New("error"),
 			},
 		},
 	}
@@ -342,62 +351,200 @@ func Test_worker_startJobLoop(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got <-chan error) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+		if !comparator.ErrorChannel(w.want, got) {
+			return errors.New("error")
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "start job loop with empty job list",
+				args: args{
+					ctx: ctx,
+				},
+				fields: fields{
+					name:           "test",
+					limitation:     1,
+					running:        atomic.Value{},
+					eg:             errgroup.Get(),
+					queue:          NewQueueMock(),
+					requestedCount: 0,
+					completedCount: 0,
+				},
+				want: want{
+					want: func() <-chan error {
+						ch := make(chan error, 1)
+						close(ch)
+						return ch
+					}(),
+				},
+				checkFunc: func(w want, got <-chan error) error {
+					time.Sleep(time.Millisecond * 200)
+					cancel()
+					time.Sleep(time.Millisecond * 200)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+					return defaultCheckFunc(w, got)
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.New("error")
+			return test{
+				name: "start job loop with queue pop error",
+				args: args{
+					ctx: ctx,
+				},
+				fields: fields{
+					name:       "test",
+					limitation: 1,
+					running:    atomic.Value{},
+					eg:         errgroup.Get(),
+					queue: &QueueMock{
+						StartFunc: DefaultStartFunc,
+						PopFunc: func(context.Context) (JobFunc, error) {
+							return nil, err
+						},
+					},
+					requestedCount: 0,
+					completedCount: 0,
+				},
+				checkFunc: func(w want, got <-chan error) error {
+					time.Sleep(time.Millisecond * 200)
+					cancel()
+					time.Sleep(time.Millisecond * 200)
+
+					if len(got) == 0 {
+						return errors.New("got chan len 0")
+					}
+					for e := range got {
+						if e != err {
+							return errors.New("invalid error")
+						}
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "start job loop with a job",
+				args: args{
+					ctx: ctx,
+				},
+				fields: fields{
+					name:       "test",
+					limitation: 1,
+					running:    atomic.Value{},
+					eg:         errgroup.Get(),
+					queue: &QueueMock{
+						StartFunc: DefaultStartFunc,
+						PopFunc: func(context.Context) (JobFunc, error) {
+							f := JobFunc(func(context.Context) error {
+								return nil
+							})
+							return f, nil
+						},
+					},
+					requestedCount: 0,
+					completedCount: 0,
+				},
+				checkFunc: func(w want, got <-chan error) error {
+					time.Sleep(time.Millisecond * 200)
+					cancel()
+					time.Sleep(time.Millisecond * 200)
+
+					if len(got) != 0 {
+						return errors.New("error returned")
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.New("error")
+			return test{
+				name: "start job loop with a job which return error",
+				args: args{
+					ctx: ctx,
+				},
+				fields: fields{
+					name:       "test",
+					limitation: 1,
+					running:    atomic.Value{},
+					eg:         errgroup.Get(),
+					queue: &QueueMock{
+						StartFunc: DefaultStartFunc,
+						PopFunc: func(context.Context) (JobFunc, error) {
+							f := JobFunc(func(context.Context) error {
+								return err
+							})
+							return f, nil
+						},
+					},
+					requestedCount: 0,
+					completedCount: 0,
+				},
+				checkFunc: func(w want, got <-chan error) error {
+					time.Sleep(time.Millisecond * 200)
+					cancel()
+					time.Sleep(time.Millisecond * 200)
+
+					if len(got) == 0 {
+						return errors.New("got chan len 0")
+					}
+					for e := range got {
+						if e != err {
+							return errors.New("invalid error")
+						}
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "start job loop with queue pop a nil job without error",
+				args: args{
+					ctx: ctx,
+				},
+				fields: fields{
+					name:       "test",
+					limitation: 1,
+					running:    atomic.Value{},
+					eg:         errgroup.Get(),
+					queue: &QueueMock{
+						StartFunc: DefaultStartFunc,
+						PopFunc: func(context.Context) (JobFunc, error) {
+							return nil, nil
+						},
+					},
+					requestedCount: 0,
+					completedCount: 0,
+				},
+				checkFunc: func(w want, got <-chan error) error {
+					time.Sleep(time.Millisecond * 200)
+					cancel()
+					time.Sleep(time.Millisecond * 200)
+
+					if len(got) != 0 {
+						return errors.New("got error")
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
+	log.Init()
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -444,58 +591,35 @@ func Test_worker_Pause(t *testing.T) {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want) error
+		checkFunc  func(want, *worker) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(w want, worker *worker) error {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "Pause success",
+			fields: fields{
+				running: func() atomic.Value {
+					v := &atomic.Value{}
+					v.Store(true)
+					return *v
+				}(),
+			},
+			checkFunc: func(w want, worker *worker) error {
+				if worker.running.Load().(bool) != false {
+					return errors.New("running is not false")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -517,7 +641,7 @@ func Test_worker_Pause(t *testing.T) {
 			}
 
 			w.Pause()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(test.want, w); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -541,58 +665,35 @@ func Test_worker_Resume(t *testing.T) {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want) error
+		checkFunc  func(want, *worker) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(w want, worker *worker) error {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "Resume success",
+			fields: fields{
+				running: func() atomic.Value {
+					v := &atomic.Value{}
+					v.Store(false)
+					return *v
+				}(),
+			},
+			checkFunc: func(w want, worker *worker) error {
+				if worker.running.Load().(bool) != true {
+					return errors.New("running is not false")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -614,7 +715,7 @@ func Test_worker_Resume(t *testing.T) {
 			}
 
 			w.Resume()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(test.want, w); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -650,50 +751,37 @@ func Test_worker_IsRunning(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return true if it is running",
+			fields: fields{
+				running: func() atomic.Value {
+					v := &atomic.Value{}
+					v.Store(true)
+					return *v
+				}(),
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return false if it is not running",
+			fields: fields{
+				running: func() atomic.Value {
+					v := &atomic.Value{}
+					v.Store(false)
+					return *v
+				}(),
+			},
+			want: want{
+				want: false,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -752,50 +840,20 @@ func Test_worker_Name(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return name",
+			fields: fields{
+				name: "testname",
+			},
+			want: want{
+				want: "testname",
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -854,50 +912,24 @@ func Test_worker_Len(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return queue length",
+			fields: fields{
+				queue: &QueueMock{
+					LenFunc: func() uint64 {
+						return uint64(100)
+					},
+				},
+			},
+			want: want{
+				want: uint64(100),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -956,50 +988,20 @@ func Test_worker_TotalRequested(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return total count",
+			fields: fields{
+				requestedCount: 1000,
+			},
+			want: want{
+				want: 1000,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1058,50 +1060,20 @@ func Test_worker_TotalCompleted(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return total count",
+			fields: fields{
+				completedCount: 1000,
+			},
+			want: want{
+				want: 1000,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1154,69 +1126,111 @@ func Test_worker_Dispatch(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(*worker, want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(worker *worker, w want, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           f: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           f: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           limitation: 0,
-		           running: nil,
-		           eg: nil,
-		           queue: nil,
-		           qopts: nil,
-		           requestedCount: 0,
-		           completedCount: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return error if the worker is not started yet",
+			args: args{
+				ctx: context.Background(),
+			},
+			fields: fields{
+				name: "test",
+				running: func() atomic.Value {
+					v := &atomic.Value{}
+					v.Store(false)
+					return *v
+				}(),
+			},
+			want: want{
+				err: errors.ErrWorkerIsNotRunning("test"),
+			},
+		},
+		{
+			name: "return error if the job is failed to push to worker queue",
+			args: args{
+				ctx: context.Background(),
+				f: JobFunc(func(context.Context) error {
+					return nil
+				}),
+			},
+			fields: fields{
+				name: "test",
+				running: func() atomic.Value {
+					v := &atomic.Value{}
+					v.Store(true)
+					return *v
+				}(),
+				queue: &QueueMock{
+					PushFunc: func(context.Context, JobFunc) error {
+						return errors.New("queue push error")
+					},
+				},
+			},
+			want: want{
+				err: errors.New("queue push error"),
+			},
+		},
+		{
+			name: "return nil if the job is nil",
+			args: args{
+				ctx: context.Background(),
+				f:   nil,
+			},
+			fields: fields{
+				name: "test",
+				running: func() atomic.Value {
+					v := &atomic.Value{}
+					v.Store(true)
+					return *v
+				}(),
+				queue: &QueueMock{},
+			},
+			want: want{},
+		},
+		{
+			name: "request count is incremented if the job is pushed",
+			args: args{
+				ctx: context.Background(),
+				f: JobFunc(func(context.Context) error {
+					return nil
+				}),
+			},
+			fields: fields{
+				name: "test",
+				running: func() atomic.Value {
+					v := &atomic.Value{}
+					v.Store(true)
+					return *v
+				}(),
+				queue: &QueueMock{
+					PushFunc: func(context.Context, JobFunc) error {
+						return nil
+					},
+				},
+				requestedCount: uint64(999),
+			},
+			want: want{},
+			checkFunc: func(worker *worker, w want, err error) error {
+				if worker.requestedCount != uint64(1000) {
+					return errors.New("requestedCount is not incremented")
+				}
+				return defaultCheckFunc(worker, w, err)
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1238,7 +1252,7 @@ func Test_worker_Dispatch(t *testing.T) {
 			}
 
 			err := w.Dispatch(test.args.ctx, test.args.f)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(w, test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
