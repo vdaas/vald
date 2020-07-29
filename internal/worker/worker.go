@@ -19,7 +19,6 @@ package worker
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"sync/atomic"
 
@@ -33,7 +32,7 @@ import (
 // JobFunc represent the function of a job that work in the worker.
 type JobFunc func(context.Context) error
 
-// Worker represent the worker interface to execute
+// Worker represent the worker interface to execute jobs.
 type Worker interface {
 	Start(ctx context.Context) (<-chan error, error)
 	Pause()
@@ -57,6 +56,7 @@ type worker struct {
 	completedCount uint64
 }
 
+// New initialize and return the worker, or return initialization error if occurred.
 func New(opts ...WorkerOption) (Worker, error) {
 	w := new(worker)
 	for _, opt := range append(defaultWorkerOpts, opts...) {
@@ -81,6 +81,7 @@ func New(opts ...WorkerOption) (Worker, error) {
 	return w, nil
 }
 
+// Start start execute jobs in the worker queue. It returns the error channel that the job return, and the error if start failed.
 func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 	if w.IsRunning() {
 		return nil, errors.ErrWorkerIsAlreadyRunning(w.Name())
@@ -144,7 +145,6 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 					egErr = eg.Wait()
 					return errors.Wrap(egErr, err.Error())
 				}
-				fmt.Printf("return egerr: %v\n", egErr)
 				return egErr
 			case limitation <- struct{}{}:
 			}
@@ -161,11 +161,11 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 
 			if job != nil {
 				eg.Go(safety.RecoverFunc(func() (err error) {
-					atomic.AddUint64(&w.completedCount, 1)
 					if err = job(ctx); err != nil {
 						log.Debugf("an error occurred while executing a job: %s", err)
 						ech <- err
 					}
+					atomic.AddUint64(&w.completedCount, 1)
 					select {
 					case <-limitation:
 					case <-ctx.Done():
@@ -184,34 +184,44 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 	return ech
 }
 
+// Pause pause the execution of the worker.
 func (w *worker) Pause() {
 	w.running.Store(false)
 }
 
+// Resume resume the execution of the worker.
 func (w *worker) Resume() {
 	w.running.Store(true)
 }
 
+// IsRunning return if the worker is running or not.
 func (w *worker) IsRunning() bool {
 	return w.running.Load().(bool)
 }
 
+// Name return the worker name.
 func (w *worker) Name() string {
 	return w.name
 }
 
+// Len return the length of the worker queue.
 func (w *worker) Len() uint64 {
 	return w.queue.Len()
 }
 
+// TotalRequested return the number of job that dispatched to the worker.
 func (w *worker) TotalRequested() uint64 {
 	return atomic.LoadUint64(&w.requestedCount)
 }
 
+// TotalCompleted return the number of completed job.
 func (w *worker) TotalCompleted() uint64 {
 	return atomic.LoadUint64(&w.completedCount)
 }
 
+// Dispatch dispatch the job to the worker and waiting for worker to process it.
+// The job error is push to the error channel that Start() return.
+// This function will return error if the job cannot be dispatch to the worker queue, or the worker is not running.
 func (w *worker) Dispatch(ctx context.Context, f JobFunc) error {
 	ctx, span := trace.StartSpan(ctx, "vald/internal/worker/Worker.Dispatch")
 	defer func() {
