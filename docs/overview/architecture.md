@@ -129,7 +129,7 @@ When the user delete a vector which is indexed in Vald Agent:
 6. If Vald Meta Gateway gets the UUID(s), Vald Meta Gateway will forward to the request with the UUID(s) to the Vald LB Gateway through the Vald Backup Gateway.
 7. Vald LB Gateway will broadcast the request to the Vald Agent. All pods of Vald Agent check the vector whose UUID is requested one is indexed or not. When idexing data is existing, Vald Agent will delete the vector and the UUID in an onmemory graph index.
 8. If Vald Agent successfully deletes the request data, it will return success to the Vald LB Gateway.
-9. After Vald LB Gateway receives success from the Vald Agents, Vald LB Gateway will return success to the Vald Backup Gateway.
+9. After Vald LB Gateway receives success with location info (e.g. IP address of pod) from the Vald Agent, Vald LB Gateway will return success to the Vald Backup Gateway.
 10. Vald Backup Gateway will forward the request with the UUID to the Vald Compressor.
 11. Vald Compressor will forward the UUID(s) to the Vald Backup Manager.
 12. Vald Backup Manager will delete the data whose UUID is the requested UUID(s).
