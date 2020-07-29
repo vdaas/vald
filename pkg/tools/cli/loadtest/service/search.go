@@ -32,7 +32,7 @@ func searchRequestProvider(dataset assets.Dataset) (func() interface{}, int, err
 	v := dataset.Query()
 	size := len(v)
 	i := 0
-	m := sync.Mutex{}
+	m := &sync.Mutex{}
 	return func() (ret interface{}) {
 		m.Lock()
 		defer m.Unlock()

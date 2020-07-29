@@ -241,7 +241,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 					defer func() {
 						finalize(conn.Close())
 					}()
-					res, err := l.loaderFunc(ctx, conn, r)
+					res, err := l.loaderFunc(egctx, conn, r)
 					f(res, err)
 					if err != nil {
 						finalize(err)
