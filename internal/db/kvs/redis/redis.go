@@ -169,13 +169,15 @@ func (rc *redisClient) ping(ctx context.Context) (r Redis, err error) {
 	for {
 		select {
 		case <-pctx.Done():
-			return nil, errors.Wrap(errors.Wrap(err, errors.ErrRedisConnectionPingFailed.Error()), pctx.Err().Error())
+			err = errors.Wrap(errors.Wrap(err, errors.ErrRedisConnectionPingFailed.Error()), pctx.Err().Error())
+			log.Error(err)
+			return nil, err
 		case <-tick.C:
 			err = rc.client.Ping().Err()
 			if err == nil {
 				return rc.client, nil
 			}
-			log.Error(err)
+			log.Warn(err)
 		}
 	}
 }
