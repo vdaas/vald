@@ -124,7 +124,7 @@ When the user delete a vector which is indexed in Vald Agent:
 1. Vald Ingress receives the delete request from the user. The request includes the vector ID(s) which is specified by the user.
 2. Vald Ingress will forward the request to the Vald Filter Gateway.
 3. Vald Filter Gateway will forward the request to the Vald Meta Gateway. Vald Meta Gateway is used to resolve the internal used UUID of the vector from the Vald Meta.
-4. Vald Meta Gateway will forward the request to the Vald Meta to confirm whether the metadata, which contains the request ID(s), is exist or not.
+4. Vald Meta Gateway will forward the request to the Vald Meta to confirm whether the metadata, which contains the request ID(s), exist or not.
 5. Vald Meta get the UUID(s) by the request ID(s). Return error if no UUID(s) is found, return with the error.
 6. If Vald Meta Gateway gets the UUID(s), Vald Meta Gateway will forward to the request with the UUID(s) to the Vald LB Gateway through the Vald Backup Gateway.
 7. Vald LB Gateway will broadcast the request with UUID(s) to the Vald Agents. Each Vald Agent will delete the vector data and the medatada if the corresponding UUID(s) is found in the onmemory graph index.
