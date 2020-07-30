@@ -29,9 +29,11 @@ import (
 )
 
 var (
+	// Nil is a type alias of redis.Nil.
 	Nil = redis.Nil
 )
 
+// Redis is an interface to manipulate Redis server.
 type Redis interface {
 	TxPipeline() redis.Pipeliner
 	Ping() *StatusCmd
@@ -42,10 +44,16 @@ type Redis interface {
 	Deleter
 }
 
-type Conn = redis.Conn
-type IntCmd = redis.IntCmd
-type StringCmd = redis.StringCmd
-type StatusCmd = redis.StatusCmd
+type (
+	// Conn is a type alias of redis.Conn.
+	Conn = redis.Conn
+	// IntCmd is a type alias of redis.IntCmd.
+	IntCmd = redis.IntCmd
+	// StringCmd is a type alias of redis.StringCmd.
+	StringCmd = redis.StringCmd
+	// StatusCmd is a type alias of redis.StatusCmd.
+	StatusCmd = redis.StatusCmd
+)
 
 type redisClient struct {
 	addrs                []string
@@ -75,8 +83,10 @@ type redisClient struct {
 	routeRandomly        bool
 	tlsConfig            *tls.Config
 	writeTimeout         time.Duration
+	client               Redis
 }
 
+// New returns Redis implementation if no error occurs.
 func New(ctx context.Context, opts ...Option) (rc Redis, err error) {
 	r := new(redisClient)
 	for _, opt := range append(defaultOpts, opts...) {
@@ -84,80 +94,90 @@ func New(ctx context.Context, opts ...Option) (rc Redis, err error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
-	switch len(r.addrs) {
-	case 0:
-		return nil, errors.ErrRedisAddrsNotFound
-	case 1:
-		if len(r.addrs[0]) == 0 {
-			return nil, errors.ErrRedisAddrsNotFound
-		}
-		rc = redis.NewClient(&redis.Options{
-			Addr:               r.addrs[0],
-			Password:           r.password,
-			Dialer:             r.dialer,
-			OnConnect:          r.onConnect,
-			DB:                 r.db,
-			MaxRetries:         r.maxRetries,
-			MinRetryBackoff:    r.minRetryBackoff,
-			MaxRetryBackoff:    r.maxRetryBackoff,
-			DialTimeout:        r.dialTimeout,
-			ReadTimeout:        r.readTimeout,
-			WriteTimeout:       r.writeTimeout,
-			PoolSize:           r.poolSize,
-			MinIdleConns:       r.minIdleConns,
-			MaxConnAge:         r.maxConnAge,
-			PoolTimeout:        r.poolTimeout,
-			IdleTimeout:        r.idleTimeout,
-			IdleCheckFrequency: r.idleCheckFrequency,
-			TLSConfig:          r.tlsConfig,
-		})
-	default:
-		rc = redis.NewClusterClient(&redis.ClusterOptions{
-			Addrs:              r.addrs,
-			Dialer:             r.dialer,
-			MaxRedirects:       r.maxRedirects,
-			ReadOnly:           r.readOnly,
-			RouteByLatency:     r.routeByLatency,
-			RouteRandomly:      r.routeRandomly,
-			ClusterSlots:       r.clusterSlots,
-			OnNewNode:          r.onNewNode,
-			OnConnect:          r.onConnect,
-			Password:           r.password,
-			MaxRetries:         r.maxRetries,
-			MinRetryBackoff:    r.minRetryBackoff,
-			MaxRetryBackoff:    r.maxRetryBackoff,
-			DialTimeout:        r.dialTimeout,
-			ReadTimeout:        r.readTimeout,
-			WriteTimeout:       r.writeTimeout,
-			PoolSize:           r.poolSize,
-			MinIdleConns:       r.minIdleConns,
-			MaxConnAge:         r.maxConnAge,
-			PoolTimeout:        r.poolTimeout,
-			IdleTimeout:        r.idleTimeout,
-			IdleCheckFrequency: r.idleCheckFrequency,
-			TLSConfig:          r.tlsConfig,
-		}).WithContext(ctx)
-	}
 
-	err = func() (err error) {
-		pctx, cancel := context.WithTimeout(ctx, r.initialPingTimeLimit)
-		defer cancel()
-		tick := time.NewTicker(r.initialPingDuration)
-		for {
-			select {
-			case <-pctx.Done():
-				return errors.Wrap(errors.Wrap(err, errors.ErrRedisConnectionPingFailed.Error()), ctx.Err().Error())
-			case <-tick.C:
-				err = rc.Ping().Err()
-				if err == nil {
-					return nil
-				}
-				log.Error(err)
-			}
-		}
-	}()
+	r, err = r.newRedisClient(ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	return r.ping(ctx)
+}
+
+func (rc *redisClient) newRedisClient(ctx context.Context) (*redisClient, error) {
+	switch len(rc.addrs) {
+	case 0:
+		return nil, errors.ErrRedisAddrsNotFound
+	case 1:
+		if len(rc.addrs[0]) == 0 {
+			return nil, errors.ErrRedisAddrsNotFound
+		}
+		rc.client = redis.NewClient(&redis.Options{
+			Addr:               rc.addrs[0],
+			Password:           rc.password,
+			Dialer:             rc.dialer,
+			OnConnect:          rc.onConnect,
+			DB:                 rc.db,
+			MaxRetries:         rc.maxRetries,
+			MinRetryBackoff:    rc.minRetryBackoff,
+			MaxRetryBackoff:    rc.maxRetryBackoff,
+			DialTimeout:        rc.dialTimeout,
+			ReadTimeout:        rc.readTimeout,
+			WriteTimeout:       rc.writeTimeout,
+			PoolSize:           rc.poolSize,
+			MinIdleConns:       rc.minIdleConns,
+			MaxConnAge:         rc.maxConnAge,
+			PoolTimeout:        rc.poolTimeout,
+			IdleTimeout:        rc.idleTimeout,
+			IdleCheckFrequency: rc.idleCheckFrequency,
+			TLSConfig:          rc.tlsConfig,
+		})
+	default:
+		rc.client = redis.NewClusterClient(&redis.ClusterOptions{
+			Addrs:              rc.addrs,
+			Dialer:             rc.dialer,
+			MaxRedirects:       rc.maxRedirects,
+			ReadOnly:           rc.readOnly,
+			RouteByLatency:     rc.routeByLatency,
+			RouteRandomly:      rc.routeRandomly,
+			ClusterSlots:       rc.clusterSlots,
+			OnNewNode:          rc.onNewNode,
+			OnConnect:          rc.onConnect,
+			Password:           rc.password,
+			MaxRetries:         rc.maxRetries,
+			MinRetryBackoff:    rc.minRetryBackoff,
+			MaxRetryBackoff:    rc.maxRetryBackoff,
+			DialTimeout:        rc.dialTimeout,
+			ReadTimeout:        rc.readTimeout,
+			WriteTimeout:       rc.writeTimeout,
+			PoolSize:           rc.poolSize,
+			MinIdleConns:       rc.minIdleConns,
+			MaxConnAge:         rc.maxConnAge,
+			PoolTimeout:        rc.poolTimeout,
+			IdleTimeout:        rc.idleTimeout,
+			IdleCheckFrequency: rc.idleCheckFrequency,
+			TLSConfig:          rc.tlsConfig,
+		}).WithContext(ctx)
+	}
+
 	return rc, nil
+}
+
+func (rc *redisClient) ping(ctx context.Context) (r Redis, err error) {
+	pctx, cancel := context.WithTimeout(ctx, rc.initialPingTimeLimit)
+	defer cancel()
+	tick := time.NewTicker(rc.initialPingDuration)
+	for {
+		select {
+		case <-pctx.Done():
+			err = errors.Wrap(errors.Wrap(err, errors.ErrRedisConnectionPingFailed.Error()), pctx.Err().Error())
+			log.Error(err)
+			return nil, err
+		case <-tick.C:
+			err = rc.client.Ping().Err()
+			if err == nil {
+				return rc.client, nil
+			}
+			log.Warn(err)
+		}
+	}
 }
