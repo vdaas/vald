@@ -28,7 +28,6 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
 )
 
@@ -60,6 +59,12 @@ func TestNew(t *testing.T) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
 
+		egComparator := func(x, y errgroup.Group) bool {
+			return reflect.DeepEqual(x, y)
+		}
+		atomicValueComparator := func(x, y atomic.Value) bool {
+			return reflect.DeepEqual(x.Load(), y.Load())
+		}
 		want := w.want.(*worker)
 
 		queueOpts := []cmp.Option{
@@ -67,17 +72,16 @@ func TestNew(t *testing.T) {
 			cmp.Comparer(func(x, y chan JobFunc) bool {
 				return len(x) == len(y)
 			}),
-			cmp.Comparer(comparator.ErrorGroup),
-			cmp.Comparer(comparator.AtomicValue),
+			cmp.Comparer(egComparator),
+			cmp.Comparer(atomicValueComparator),
 		}
-
 		opts := []cmp.Option{
 			cmp.AllowUnexported(*want),
 			cmp.Comparer(func(x, y Queue) bool {
 				return cmp.Equal(x, y, queueOpts...)
 			}),
-			cmp.Comparer(comparator.ErrorGroup),
-			cmp.Comparer(comparator.AtomicValue),
+			cmp.Comparer(egComparator),
+			cmp.Comparer(atomicValueComparator),
 		}
 		if diff := cmp.Diff(want, got, opts...); diff != "" {
 			return errors.New(diff)
@@ -210,12 +214,24 @@ func Test_worker_Start(t *testing.T) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
 
-		opts := []cmp.Option{
-			cmp.Comparer(comparator.ErrorChannel),
+		ecComparator := func(x, y <-chan error) bool {
+			if x == nil && y == nil {
+				return true
+			}
+			if x == nil || y == nil || len(x) != len(y) {
+				return false
+			}
+
+			for e := range x {
+				if e1 := <-y; !errors.Is(e, e1) {
+					return false
+				}
+			}
+			return true
 		}
 
-		if diff := cmp.Diff(w.want, got, opts...); diff != "" {
-			return errors.New(diff)
+		if !ecComparator(w.want, got) {
+			return errors.New("error")
 		}
 		return nil
 	}
@@ -351,7 +367,23 @@ func Test_worker_startJobLoop(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got <-chan error) error {
-		if !comparator.ErrorChannel(w.want, got) {
+		ecComparator := func(x, y <-chan error) bool {
+			if x == nil && y == nil {
+				return true
+			}
+			if x == nil || y == nil || len(x) != len(y) {
+				return false
+			}
+
+			for e := range x {
+				if e1 := <-y; !errors.Is(e, e1) {
+					return false
+				}
+			}
+			return true
+		}
+
+		if !ecComparator(w.want, got) {
 			return errors.New("error")
 		}
 		return nil
