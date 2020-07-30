@@ -15,9 +15,12 @@ The result may different from you environment due to the network configuration a
 
 ## Benchmark matrix
 
+Under construction...
+
 ### Result
 
-Explain the result.
+Under construction...
 
 ## Benchmarking tools
 
+Under construction...
