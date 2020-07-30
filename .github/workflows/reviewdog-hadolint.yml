@@ -14,29 +14,20 @@
 # limitations under the License.
 #
 
-name: reviewdog
+name: 'reviewdog - Dockerfiles'
 on:
   pull_request:
     paths:
-      - '**.go'
+      - 'dockers/**'
 
 jobs:
-  golangci-lint:
-    name: runner / golangci-lint
+  hadolint:
+    name: runner / hadolint
     runs-on: ubuntu-latest
-    container:
-      image: vdaas/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v1
-      - name: go build
-        run: |
-          go build ./...
-      - name: Run golangci-lint
-        run: |
-          golangci-lint run --config .golangci.yml --issues-exit-code 0
-          golangci-lint run --config .golangci.yml \
-              | reviewdog -f=golangci-lint -name=golangci -reporter=${REPORTER} -level=${LEVEL}
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPORTER: github-pr-review
-          LEVEL: warning
+      - name: hadolint
+        uses: reviewdog/action-hadolint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
