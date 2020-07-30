@@ -159,7 +159,7 @@ When the user updates a vector from Vald:
 13. Vald Backup Gateway will forward the request with the UUID to the Vald Compressor.
 14. Vald Compressor will forward the UUID(s) to the Vald Backup Manager.
 15. Vald Backup Manager will delete the data with the same UUID(s).
-16. The next is the inserting step described in 9. Vald Backup Gateway will forward the request to Vald LB Gateway. Vald LB Gateway will determine which Vald Agent(s) to process the request based on the resource usage of the nodes and pods, and the number of vector replicas.
+16. The next is the insertion step described in 9. Vald Backup Gateway will forward the insertion request to Vald LB Gateway. Vald LB Gateway will determine which Vald Agent(s) to process the request based on the resource usage of the nodes and pods, and the number of vector replicas.
 17. Vald LB Gateway will forward the UUID and the vector data to the selected Vald Agents in parallel. Vald Agent will insert the vector and UUID in an in-memory vector queue. A vector queue will be committed to an ANN graph index by a `CreateIndex` instruction executed by the Vald Index Manager.
 18. If Vald Agent successfully inserts the request data, it will return success (e.g. IP address of pod) to the Vald LB Gateway.
 19. After Vald LB Gateway receives success from the selected Vald Agents, it will return IP addresses of all selected Vald Agents to the Vald Backup Gateway.
