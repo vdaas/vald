@@ -65,6 +65,15 @@ docker/name/agent-sidecar:
 docker/build/agent-sidecar: docker/build/base
 	docker build -f dockers/agent/sidecar/Dockerfile -t $(REPO)/$(AGENT_SIDECAR_IMAGE) .
 
+.PHONY: docker/build/agent-sidecar/debug
+## build agent-sidecar image with debug mode
+docker/build/agent-sidecar/debug: docker/build/base
+	docker build \
+	    -f dockers/agent/sidecar/Dockerfile \
+	    -t $(REPO)/$(AGENT_SIDECAR_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE_NAME=base \
+	    --build-arg DISTROLESS_IMAGE_TAG=debug
+
 .PHONY: docker/name/discoverer-k8s
 docker/name/discoverer-k8s:
 	@echo "$(REPO)/$(DISCOVERER_IMAGE)"
