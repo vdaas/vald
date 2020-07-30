@@ -1,6 +1,6 @@
 # Load Testing
 
-This document describe how to perform the load testing in Vald cluster or Vald agent using Vald Load Testing Tools.
+This document describes how to perform the load testing in Vald cluster or Vald agent using Vald Load Testing Tools.
 
 ## Overview
 
@@ -83,7 +83,7 @@ After the Vald Load Testing tools finished, the following output will be display
 2020-07-13 17:11:05	[WARN]:	daemon stopped
 ```
 
-These lines shows the result of the load test.
+These lines show the result of the load test.
 
 ```bash
 2020-07-13 08:10:45 [DEBG]: start loading: random-786-100000
@@ -94,6 +94,9 @@ These lines shows the result of the load test.
 ```
 
 This means that the `Insert Gateway` mode is used, which means the dataset `random-786-100000` will insert into the Vald Cluster.
+
 The line `result:Gateway  32  100 6060.743248` means that the Gateway mode is used, with `32` concurrent execution and `100` batch size, with the VPS of `6060.743248`.
+
 Which means that is performed the insertion of 6060 vectors into the Vald Cluster per second from the Vald Load Testing tools.
-The result includes all of the network latency, and the filtering latency.
+
+The result includes all the network latency, and the filtering latency.
