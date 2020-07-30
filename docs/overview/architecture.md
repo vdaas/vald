@@ -150,7 +150,7 @@ When the user updates a vector from Vald:
 4. After the request is processed by the user-defined Vald Ingress Filter, the result will return to the Vald Filter Gateway.
 5. Vald Filter Gateway will forward the processed data to the Vald Meta Gateway. Vald Meta Gateway is used to resolve the internal used UUID from Vald Meta to the user inserted vector ID in the Insert Step.
 6. Vald Meta Gateway will forward the request to the Vald Meta to confirm whether the metadata, which contains the request ID(s), exist or not.
-7. Vald Meta gets the UUID(s) by the request ID(s). Return error if no UUID(s) is found, return with the error.
+7. Vald Meta gets the UUID(s) by the request ID(s). It return error if no UUID(s) is found.
 8. If Vald Meta Gateway gets the UUID(s), Vald Meta Gateway will forward to the request with the UUID(s) to the Vald Backup Gateway.
 9. Vald Backup Gateway splits the updating step into the deleting step and the inserting step. The first is the deleting step. Vald Backup Gateway will forward to the request with the UUID(s) to the Vald LB Gateway.
 10. Vald LB Gateway will broadcast the request with UUID(s) to the Vald Agents. Each Vald Agent will delete the vector data and the metadata if the corresponding UUID(s) is found in the in-memory graph index.
