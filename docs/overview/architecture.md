@@ -140,6 +140,8 @@ When the user deletes a vector which is indexed in Vald Agent:
 17. Vald Meta Gateway will return success to the Vald Filter Gateway.
 18. Vald Filter Gateway will return success to the Vald Ingress.
 
+<img src="../../assets/docs/update_flow.png" />
+
 When the user updates a vector from Vald:
 
 1. Vald Ingress receives the request from the user. The request includes the vector and the vector ID.
