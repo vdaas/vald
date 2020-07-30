@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.agent.enabled .Values.agent.sidecar.enabled }}
+{{- $agent := .Values.agent -}}
+{{- if and $agent.enabled $agent.sidecar.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.agent.sidecar.name }}-config
+  name: {{ $agent.sidecar.name }}-config
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
@@ -28,19 +29,19 @@ metadata:
 data:
   config.yaml: |
     ---
-    version: {{ .Values.agent.sidecar.version }}
-    time_zone: {{ default .Values.defaults.time_zone .Values.agent.sidecar.time_zone }}
+    version: {{ $agent.sidecar.version }}
+    time_zone: {{ default .Values.defaults.time_zone $agent.sidecar.time_zone }}
     logging:
-      {{- $logging := dict "Values" .Values.agent.sidecar.logging "default" .Values.defaults.logging }}
+      {{- $logging := dict "Values" $agent.sidecar.logging "default" .Values.defaults.logging }}
       {{- include "vald.logging" $logging | nindent 6 }}
     server_config:
-      {{- $servers := dict "Values" .Values.agent.sidecar.server_config "default" .Values.defaults.server_config }}
+      {{- $servers := dict "Values" $agent.sidecar.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
     observability:
-      {{- $observability := dict "Values" .Values.agent.sidecar.observability "default" .Values.defaults.observability }}
+      {{- $observability := dict "Values" $agent.sidecar.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
     agent_sidecar:
       mode: _VALD_AGENT_SIDECAR_MODE_
-      watch_dir: {{ .Values.agent.ngt.index_path | quote }}
-      {{- toYaml .Values.agent.sidecar.config | nindent 6 }}
+      watch_dir: {{ $agent.ngt.index_path | quote }}
+      {{- toYaml $agent.sidecar.config | nindent 6 }}
 {{- end }}

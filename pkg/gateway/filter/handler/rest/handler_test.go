@@ -22,8 +22,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"go.uber.org/goleak"
 )
 

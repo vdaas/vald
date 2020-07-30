@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.agent.enabled .Values.agent.hpa.enabled }}
+{{- $agent := .Values.agent -}}
+{{- if and $agent.enabled $agent.hpa.enabled }}
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ .Values.agent.name }}
+  name: {{ $agent.name }}
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
@@ -26,12 +27,12 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: agent
 spec:
-  maxReplicas: {{ .Values.agent.maxReplicas }}
-  minReplicas: {{ .Values.agent.minReplicas }}
+  maxReplicas: {{ $agent.maxReplicas }}
+  minReplicas: {{ $agent.minReplicas }}
   scaleTargetRef:
     apiVersion: apps/v1
-    kind: {{ .Values.agent.kind }}
-    name: {{ .Values.agent.name }}
-  targetCPUUtilizationPercentage: {{ .Values.agent.hpa.targetCPUUtilizationPercentage }}
+    kind: {{ $agent.kind }}
+    name: {{ $agent.name }}
+  targetCPUUtilizationPercentage: {{ $agent.hpa.targetCPUUtilizationPercentage }}
 status:
 {{- end }}

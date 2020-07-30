@@ -13,104 +13,105 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.meta.enabled (eq .Values.meta.kind "DaemonSet") }}
+{{- $meta := .Values.meta -}}
+{{- if and $meta.enabled (eq $meta.kind "DaemonSet") }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: {{.Values.meta.name }}
+  name: {{$meta.name }}
   labels:
-    app: {{ .Values.meta.name }}
+    app: {{ $meta.name }}
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: meta
-  {{- if .Values.meta.annotations }}
+  {{- if $meta.annotations }}
   annotations:
-    {{- toYaml .Values.meta.annotations | nindent 4 }}
+    {{- toYaml $meta.annotations | nindent 4 }}
   {{- end }}
 spec:
-  revisionHistoryLimit: {{ .Values.meta.revisionHistoryLimit }}
+  revisionHistoryLimit: {{ $meta.revisionHistoryLimit }}
   selector:
     matchLabels:
-      app: {{ .Values.meta.name }}
+      app: {{ $meta.name }}
   updateStrategy:
     rollingUpdate:
-      maxUnavailable: {{ .Values.meta.rollingUpdate.maxUnavailable }}
+      maxUnavailable: {{ $meta.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: {{ .Values.meta.name }}
+        app: {{ $meta.name }}
         app.kubernetes.io/name: {{ include "vald.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: meta
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/meta/configmap.yaml") . | sha256sum }}
-        {{- if .Values.meta.podAnnotations }}
-        {{- toYaml .Values.meta.podAnnotations | nindent 8 }}
+        {{- if $meta.podAnnotations }}
+        {{- toYaml $meta.podAnnotations | nindent 8 }}
         {{- end }}
     spec:
-      {{- if .Values.meta.initContainers }}
+      {{- if $meta.initContainers }}
       initContainers:
-        {{- $initContainers := dict "initContainers" .Values.meta.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+        {{- $initContainers := dict "initContainers" $meta.initContainers "Values" .Values "namespace" .Release.Namespace -}}
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
       affinity:
-        {{- include "vald.affinity" .Values.meta.affinity | nindent 8 }}
-      {{- if .Values.meta.topologySpreadConstraints }}
+        {{- include "vald.affinity" $meta.affinity | nindent 8 }}
+      {{- if $meta.topologySpreadConstraints }}
       topologySpreadConstraints:
-        {{- toYaml .Values.meta.topologySpreadConstraints | nindent 8 }}
+        {{- toYaml $meta.topologySpreadConstraints | nindent 8 }}
       {{- end }}
       containers:
-        - name: {{ .Values.meta.name }}
-          image: "{{ .Values.meta.image.repository }}:{{ default .Values.defaults.image.tag .Values.meta.image.tag }}"
-          imagePullPolicy: {{ .Values.meta.image.pullPolicy }}
-          {{- $servers := dict "Values" .Values.meta.server_config "default" .Values.defaults.server_config -}}
+        - name: {{ $meta.name }}
+          image: "{{ $meta.image.repository }}:{{ default .Values.defaults.image.tag $meta.image.tag }}"
+          imagePullPolicy: {{ $meta.image.pullPolicy }}
+          {{- $servers := dict "Values" $meta.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
           resources:
-            {{- toYaml .Values.meta.resources | nindent 12 }}
+            {{- toYaml $meta.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-          {{- if .Values.meta.env }}
+          {{- if $meta.env }}
           env:
-            {{- toYaml .Values.meta.env | nindent 12 }}
+            {{- toYaml $meta.env | nindent 12 }}
           {{- end }}
           volumeMounts:
-            - name: {{ .Values.meta.name }}-config
+            - name: {{ $meta.name }}-config
               mountPath: /etc/server/
-            {{- if .Values.meta.volumeMounts }}
-            {{- toYaml .Values.meta.volumeMounts | nindent 12 }}
+            {{- if $meta.volumeMounts }}
+            {{- toYaml $meta.volumeMounts | nindent 12 }}
             {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      terminationGracePeriodSeconds: {{ .Values.meta.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ $meta.terminationGracePeriodSeconds }}
       volumes:
-        - name: {{ .Values.meta.name }}-config
+        - name: {{ $meta.name }}-config
           configMap:
             defaultMode: 420
-            name: {{ .Values.meta.name }}-config
-        {{- if .Values.meta.volumes }}
-        {{- toYaml .Values.meta.volumes | nindent 8 }}
+            name: {{ $meta.name }}-config
+        {{- if $meta.volumes }}
+        {{- toYaml $meta.volumes | nindent 8 }}
         {{- end }}
-      {{- if .Values.meta.nodeName }}
-      nodeName: {{ .Values.meta.nodeName }}
+      {{- if $meta.nodeName }}
+      nodeName: {{ $meta.nodeName }}
       {{- end }}
-      {{- if .Values.meta.nodeSelector }}
+      {{- if $meta.nodeSelector }}
       nodeSelector:
-        {{- toYaml .Values.meta.nodeSelector | nindent 8 }}
+        {{- toYaml $meta.nodeSelector | nindent 8 }}
       {{- end }}
-      {{- if .Values.meta.tolerations }}
+      {{- if $meta.tolerations }}
       tolerations:
-        {{- toYaml .Values.meta.tolerations | nindent 8 }}
+        {{- toYaml $meta.tolerations | nindent 8 }}
       {{- end }}
-      {{- if .Values.meta.podPriority }}
-      {{- if .Values.meta.podPriority.enabled }}
-      priorityClassName: {{ .Values.meta.name }}-priority
+      {{- if $meta.podPriority }}
+      {{- if $meta.podPriority.enabled }}
+      priorityClassName: {{ $meta.name }}-priority
       {{- end }}
       {{- end }}
 status:
