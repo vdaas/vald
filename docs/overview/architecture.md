@@ -135,6 +135,6 @@ When the user delete a vector which is indexed in Vald Agent:
 12. Vald Backup Manager will delete the data with the same UUID(s).
 13. Vald Backup Gateway will return success to the Vald Meta Gateway if the data is successfully deleted from the Vald Backup Manager.
 14. Vald Meta Gateway will forward the UUID(s) to the Vald Meta.
-15. Vald Meta will delete the data from the persistent layer if hte data is successfully deleted from the Vald Agents, and store the deleted UUID(s) and the deletion time in the persistent layer.
+15. Vald Meta will delete the data from the persistent layer if the data is successfully deleted from the Vald Agents, and store the deleted UUID(s) and the deletion time in the persistent layer.
 16. Vald Meta Gateway will return success to the Vald Filter Gateway.
 17. Vald Filter Gateway will return success to the Vald Ingress.
