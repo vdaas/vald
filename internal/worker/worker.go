@@ -184,12 +184,12 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 	return ech
 }
 
-// Pause pause the execution of the worker.
+// Pause stop allowing new job to be dispatched to the worker.
 func (w *worker) Pause() {
 	w.running.Store(false)
 }
 
-// Resume resume the execution of the worker.
+// Resume resume to allow new job to be dispatched to the worker.
 func (w *worker) Resume() {
 	w.running.Store(true)
 }
