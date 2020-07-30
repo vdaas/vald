@@ -151,14 +151,14 @@ When the user updates a vector from Vald:
 7. Vald Meta gets the UUID(s) by the request ID(s). Return error if no UUID(s) is found, return with the error.
 8. If Vald Meta Gateway gets the UUID(s), Vald Meta Gateway will forward to the request with the UUID(s) to the Vald Backup Gateway.
 9. Vald Backup Gateway splits the updating step into the deleting step and the inserting step. The first is the deleting step. Vald Backup Gateway will forward to the request with the UUID(s) to the Vald LB Gateway.
-10. Vald LB Gateway will broadcast the request with UUID(s) to the Vald Agents. Each Vald Agent will delete the vector data and the metadata if the corresponding UUID(s) is found in the on memory graph index.
+10. Vald LB Gateway will broadcast the request with UUID(s) to the Vald Agents. Each Vald Agent will delete the vector data and the metadata if the corresponding UUID(s) is found in the in-memory graph index.
 11. If Vald Agent successfully deletes the request data, it will return success to the Vald LB Gateway.
 12. After Vald LB Gateway receives success with location info (e.g. IP address of pod) from the Vald Agent, Vald LB Gateway will return success to the Vald Backup Gateway.
 13. Vald Backup Gateway will forward the request with the UUID to the Vald Compressor.
 14. Vald Compressor will forward the UUID(s) to the Vald Backup Manager.
 15. Vald Backup Manager will delete the data with the same UUID(s).
 16. The next is the inserting step described in 9. Vald Backup Gateway will forward the request to Vald LB Gateway. Vald LB Gateway will determine which Vald Agent(s) to process the request based on the resource usage of the nodes and pods, and the number of vector replicas.
-17. Vald LB Gateway will forward the UUID and the vector data to the selected Vald Agents in parallel. Vald Agent will insert the vector and UUID in an on memory vector queue. A vector queue will be committed to an ANN graph index by a `CreateIndex` instruction executed by the Vald Index Manager.
+17. Vald LB Gateway will forward the UUID and the vector data to the selected Vald Agents in parallel. Vald Agent will insert the vector and UUID in an in-memory vector queue. A vector queue will be committed to an ANN graph index by a `CreateIndex` instruction executed by the Vald Index Manager.
 18. If Vald Agent successfully inserts the request data, it will return success (e.g. IP address of pod) to the Vald LB Gateway.
 19. After Vald LB Gateway receives success from the selected Vald Agents, it will return IP addresses of all selected Vald Agents to the Vald Backup Gateway.
 20. Vald Backup Gateway returns success to Vald Meta Gateway.
