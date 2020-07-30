@@ -17,7 +17,7 @@ package service
 
 import (
 	"context"
-	"sync"
+	"sync/atomic"
 
 	"github.com/vdaas/vald/apis/grpc/agent/core"
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
@@ -46,18 +46,14 @@ func insertRequestProvider(dataset assets.Dataset, batchSize int) (f func() inte
 func objectVectorProvider(dataset assets.Dataset) (func() interface{}, int) {
 	v := dataset.Train()
 	ids := dataset.IDs()
-	i := 0
+	idx := int32(-1)
 	size := len(v)
-	m := &sync.Mutex{}
 	return func() (ret interface{}) {
-		m.Lock()
-		defer m.Unlock()
-		if i < size {
+		if i := int(atomic.AddInt32(&idx, 1)); i < size {
 			ret = &payload.Object_Vector{
 				Id:     ids[i],
 				Vector: v[i],
 			}
-			i++
 		}
 		return ret
 	}, size
@@ -133,7 +129,7 @@ func (l *loader) newInsert() (f loadFunc, err error) {
 			err = errors.Errorf("undefined service: %s", l.service.String())
 		}
 	default:
-		err = errors.Errorf("batch size must be natural number.")
+		err = errors.New("batch size must be natural number.")
 	}
 	if err != nil {
 		return nil, err

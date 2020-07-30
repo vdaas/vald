@@ -17,7 +17,7 @@ package service
 
 import (
 	"context"
-	"sync"
+	"sync/atomic"
 
 	"github.com/vdaas/vald/apis/grpc/agent/core"
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
@@ -31,16 +31,12 @@ import (
 func searchRequestProvider(dataset assets.Dataset) (func() interface{}, int, error) {
 	v := dataset.Query()
 	size := len(v)
-	i := 0
-	m := &sync.Mutex{}
+	idx := int32(-1)
 	return func() (ret interface{}) {
-		m.Lock()
-		defer m.Unlock()
-		if i < size {
+		if i := int(atomic.AddInt32(&idx, 1)); i < size {
 			ret = &payload.Search_Request{
 				Vector: v[i],
 			}
-			i++
 		}
 		return ret
 	}, size, nil

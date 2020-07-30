@@ -58,7 +58,7 @@ func WithClient(c grpc.Client) Option {
 func WithConcurrency(c int) Option {
 	return func(l *loader) error {
 		if c <= 0 {
-			return errors.Errorf("concurrency must be natural number")
+			return errors.New("concurrency must be natural number")
 		}
 		l.concurrency = c
 		return nil
@@ -69,7 +69,7 @@ func WithConcurrency(c int) Option {
 func WithBatchSize(b int) Option {
 	return func(l *loader) error {
 		if b <= 0 {
-			return errors.Errorf("batch size must be natural number")
+			return errors.New("batch size must be natural number")
 		}
 		l.batchSize = b
 		return nil
