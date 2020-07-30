@@ -59,4 +59,41 @@ docker run -it --rm -v $(pwd):/etc/server vald-load-test
 ```
 
 ## Result
-    explain how to read and interpret the result,
+
+After the Vald Load Testing tools finished, the following output will be displayed.
+
+```bash
+2020-07-13 08:10:45	[INFO]:	maxprocs: Leaving GOMAXPROCS=8: CPU quota undefined
+2020-07-13 08:10:45	[INFO]:	service load test v0.0.0 starting...
+2020-07-13 08:10:45	[INFO]:	executing daemon pre-start function
+2020-07-13 08:10:45	[DEBG]:	start loading: random-786-100000
+2020-07-13 17:10:49	[INFO]:	executing daemon start function
+2020-07-13 17:10:49	[INFO]:	start load test(Gateway, Insert)
+2020-07-13 17:10:52	[INFO]:	progress 177 requests, 5899.977806[vps], error: 0
+2020-07-13 17:10:55	[INFO]:	progress 370 requests, 6166.631312[vps], error: 0
+2020-07-13 17:10:58	[INFO]:	progress 558 requests, 6199.932718[vps], error: 0
+2020-07-13 17:11:01	[INFO]:	progress 727 requests, 6058.303243[vps], error: 0
+2020-07-13 17:11:04	[INFO]:	progress 910 requests, 6066.658704[vps], error: 0
+2020-07-13 17:11:05	[INFO]:	result:Gateway	32	100	6060.743248
+2020-07-13 17:11:05	[WARN]:	terminated signal received daemon will stopping soon...
+2020-07-13 17:11:05	[INFO]:	executing daemon pre-stop function
+2020-07-13 17:11:05	[INFO]:	executing daemon stop function
+2020-07-13 17:11:05	[INFO]:	executing daemon post-stop function
+2020-07-13 17:11:05	[ERR]:	error occured in runner.Wait at load test: context canceled
+2020-07-13 17:11:05	[WARN]:	daemon stopped
+```
+
+These lines shows the result of the load test.
+
+```bash
+2020-07-13 08:10:45 [DEBG]: start loading: random-786-100000
+...
+2020-07-13 17:10:49 [INFO]: start load test(Gateway, Insert)
+...
+2020-07-13 17:11:05	[INFO]:	result:Gateway	32	100	6060.743248
+```
+
+This means that the `Insert Gateway` mode is used, which means the dataset `random-786-100000` will insert into the Vald Cluster.
+The line `result:Gateway  32  100 6060.743248` means that the Gateway mode is used, with `32` concurrent execution and `100` batch size, with the VPS of `6060.743248`.
+Which means that is performed the insertion of 6060 vectors into the Vald Cluster per second from the Vald Load Testing tools.
+The result includes all of the network latency, and the filtering latency.
