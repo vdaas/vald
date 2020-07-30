@@ -39,6 +39,8 @@ NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VER
 NGT_REPO = github.com/yahoojapan/NGT
 
 GO_VERSION := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
+GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
+GOARCH := $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
 GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
 
@@ -47,9 +49,9 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
 KIND_VERSION         ?= v0.8.1
-HELM_VERSION         ?= v3.2.1
+HELM_VERSION         ?= v3.2.4
 HELM_DOCS_VERSION    ?= 0.13.0
-VALDCLI_VERSION      ?= v0.0.38
+VALDCLI_VERSION      ?= v0.0.49.Rev2
 TELEPRESENCE_VERSION ?= 0.105
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
@@ -59,16 +61,13 @@ SWAP_TAG             ?= latest
 BINDIR ?= /usr/local/bin
 
 UNAME := $(eval UNAME := $(shell uname))$(UNAME)
+CPU_INFO_FLAGS := $(eval CPU_INFO_FLAGS := $(shell cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1))$(CPU_INFO_FLAGS)
+GIT_COMMIT := $(eval GIT_COMMIT := $(shell git rev-list -1 HEAD))$(GIT_COMMIT)
 
 MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
 
 ROOTDIR = $(eval ROOTDIR := $(shell git rev-parse --show-toplevel))$(ROOTDIR)
 PROTODIRS := $(eval PROTODIRS := $(shell find apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto"))$(PROTODIRS)
-PBGODIRS = $(PROTODIRS:%=apis/grpc/%)
-SWAGGERDIRS = $(PROTODIRS:%=apis/swagger/%)
-GRAPHQLDIRS = $(PROTODIRS:%=apis/graphql/%)
-PBDOCDIRS = $(PROTODIRS:%=apis/docs/%)
-
 BENCH_DATASET_BASE_DIR = hack/benchmark/assets
 BENCH_DATASET_MD5_DIR_NAME = checksum
 BENCH_DATASET_HDF5_DIR_NAME = dataset
@@ -81,6 +80,9 @@ SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
 GRAPHQLS = $(PROTOS:apis/proto/%.proto=apis/graphql/%.pb.graphqls)
 GQLCODES = $(GRAPHQLS:apis/graphql/%.pb.graphqls=apis/graphql/%.generated.go)
 PBDOCS = $(PROTOS:apis/proto/%.proto=apis/docs/%.md)
+
+CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
+CXXFLAGS ?= $(CFLAGS)
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
 BENCH_DATASETS = $(BENCH_DATASET_MD5S:$(BENCH_DATASET_MD5_DIR)/%.md5=$(BENCH_DATASET_HDF5_DIR)/%.hdf5)
@@ -143,6 +145,14 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		-regex '.*options?\.go' \
 		-not -name '*_test.go' \
 		-not -name 'doc.go'))$(GO_OPTION_SOURCES)
+
+GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
+		./internal \
+		-type f \
+		-name '*.go' \
+		-not -name '*_test.go' \
+		-not -name 'doc.go'))$(GO_SOURCES_INTERNAL)
+
 GO_TEST_SOURCES = $(GO_SOURCES:%.go=%_test.go)
 GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
 
@@ -302,6 +312,7 @@ ngt/install: /usr/local/include/NGT/Capi.h
 	make install -C /tmp/NGT-$(NGT_VERSION)
 	rm -rf v$(NGT_VERSION).tar.gz
 	rm -rf /tmp/NGT-$(NGT_VERSION)
+	ldconfig
 
 .PHONY: tensorflow/install
 ## install TensorFlow for C
@@ -335,6 +346,7 @@ changelog/next/print:
 	@echo "$$BODY"
 
 include Makefile.d/bench.mk
+include Makefile.d/build.mk
 include Makefile.d/docker.mk
 include Makefile.d/git.mk
 include Makefile.d/helm.mk

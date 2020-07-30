@@ -47,6 +47,15 @@ docker/name/agent-ngt:
 docker/build/agent-ngt: docker/build/base
 	docker build -f dockers/agent/core/ngt/Dockerfile -t $(REPO)/$(AGENT_IMAGE) .
 
+.PHONY: docker/build/agent-ngt/debug
+## build agent-ngt image with debug mode
+docker/build/agent-ngt/debug: docker/build/base
+	docker build \
+	    -f dockers/agent/core/ngt/Dockerfile \
+	    -t $(REPO)/$(AGENT_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE_NAME=base \
+	    --build-arg DISTROLESS_IMAGE_TAG=debug
+
 .PHONY: docker/name/agent-sidecar
 docker/name/agent-sidecar:
 	@echo "$(REPO)/$(AGENT_SIDECAR_IMAGE)"
