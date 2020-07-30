@@ -13,29 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.gateway.enabled .Values.gateway.ingress.enabled }}
+{{- $gateway := .Values.gateway.meta -}}
+{{- if and $gateway.enabled $gateway.ingress.enabled }}
 apiVersion: networking.k8s.io/v1beta1
-# apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    {{- toYaml .Values.gateway.ingress.annotations | nindent 4 }}
+    {{- toYaml $gateway.ingress.annotations | nindent 4 }}
   labels:
-    name: {{ .Values.gateway.name }}-ingress
-    app: {{ .Values.gateway.name }}-ingress
+    name: {{ $gateway.name }}-ingress
+    app: {{ $gateway.name }}-ingress
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
-    app.kubernetes.io/component: gateway
-  name: {{ .Values.gateway.name }}-ingress
+    app.kubernetes.io/component: gateway-meta
+  name: {{ $gateway.name }}-ingress
 spec:
   rules:
-    - host: {{ .Values.gateway.ingress.host }}
+    - host: {{ $gateway.ingress.host }}
       http:
         paths:
           - backend:
-              serviceName: {{ .Values.gateway.name }}
-              servicePort: {{ .Values.gateway.ingress.servicePort }}
+              serviceName: {{ $gateway.name }}
+              servicePort: {{ $gateway.ingress.servicePort }}
 {{- end }}

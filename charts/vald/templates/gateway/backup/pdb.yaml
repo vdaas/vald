@@ -13,21 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if .Values.gateway.enabled }}
+{{- $gateway := .Values.gateway.backup -}}
+{{- if $gateway.enabled }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ .Values.gateway.name }}
+  name: {{ $gateway.name }}
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
-    app.kubernetes.io/component: gateway
+    app.kubernetes.io/component: gateway-backup
 spec:
-  maxUnavailable: {{ .Values.gateway.maxUnavailable }}
+  maxUnavailable: {{ $gateway.maxUnavailable }}
   selector:
     matchLabels:
-      app: {{ .Values.gateway.name }}
+      app: {{ $gateway.name }}
 {{- end }}
