@@ -1,7 +1,6 @@
 package comparator
 
 import (
-	"reflect"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errgroup"
@@ -12,6 +11,7 @@ type (
 	errorGroup  = errgroup.Group
 )
 
+/*
 var (
 	AtomicValue = func(x, y atomicValue) bool {
 		return reflect.DeepEqual(x.Load(), y.Load())
@@ -23,25 +23,20 @@ var (
 
 	// channel comparator
 
-	ErrorChannel = func(x, y <-chan error) bool {
-		if x == nil && y == nil {
+		ErrChannel := func(x, y <-chan error) bool {
+			if x == nil && y == nil {
+				return true
+			}
+			if x == nil || y == nil || len(x) != len(y) {
+				return false
+			}
+
+			for e := range x {
+				if e1 := <-y; !errors.Is(e, e1) {
+					return false
+				}
+			}
 			return true
 		}
-		if x == nil || y == nil {
-			return false
-		}
-
-		chanToSlice := func(c <-chan error) []error {
-			s := make([]error, 0)
-			for v := range c {
-				s = append(s, v)
-			}
-			return s
-		}
-
-		s1 := chanToSlice(x)
-		s2 := chanToSlice(y)
-
-		return reflect.DeepEqual(s1, s2)
-	}
 )
+*/
