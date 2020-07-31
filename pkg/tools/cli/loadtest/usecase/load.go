@@ -94,7 +94,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 				}
 			}
 			err = ctx.Err()
-			if err != nil && err != context.Canceled {
+			if err != nil && errors.Is(err, context.Canceled) {
 				errs = errors.Wrap(errs, err.Error())
 			}
 			return errs
