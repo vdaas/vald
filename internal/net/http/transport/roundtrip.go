@@ -51,31 +51,28 @@ func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 		return e.roundTrip(req)
 	}
 
-	var ferr error
-	r, err := e.bo.Do(req.Context(), func() (res interface{}, err error) {
-		res, err = e.roundTrip(req)
-		if err != nil {
+	var boerr error
+	_, err = e.bo.Do(req.Context(), func() (interface{}, error) {
+		r, e := e.roundTrip(req)
+		if e != nil {
 			// if the error is retryable, return the error and let backoff to retry.
-			if errors.Is(err, errors.ErrTransportRetryable) {
-				return nil, err
+			if errors.Is(e, errors.ErrTransportRetryable) {
+				return nil, e
 			}
 			// if the error is not retryable, return nil error to terminate the backoff execution
-			ferr = err
+			boerr = e
 			return nil, nil
 		}
-		return res, nil
+		res = r
+		return r, nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	if ferr != nil {
-		return nil, ferr
+	if boerr != nil {
+		return nil, boerr
 	}
 
-	res, ok := r.(*http.Response)
-	if !ok {
-		return nil, errors.ErrInvalidTypeConversion(r, res)
-	}
 	return res, nil
 }
 
@@ -85,7 +82,7 @@ func (e *ert) roundTrip(req *http.Request) (res *http.Response, err error) {
 		if res != nil { // just in case we check the response as it depends on RoundTrip impl.
 			closeBody(res.Body)
 			if retryable(res) {
-				return nil, errors.ErrTransportRetryable
+				return nil, errors.Wrap(errors.ErrTransportRetryable, err.Error())
 			}
 		}
 		return nil, err

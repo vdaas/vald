@@ -162,14 +162,14 @@ func Test_ert_RoundTrip(t *testing.T) {
 			fields: fields{
 				transport: &roundTripMock{
 					RoundTripFunc: func(*http.Request) (*http.Response, error) {
-						return nil, errors.New("error")
+						return &http.Response{
+							Status: "200",
+						}, nil
 					},
 				},
 				bo: &backoffMock{
 					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
-						return &http.Response{
-							Status: "200",
-						}, nil
+						return fn()
 					},
 				},
 			},
@@ -180,16 +180,21 @@ func Test_ert_RoundTrip(t *testing.T) {
 			},
 		},
 		{
-			name: "return backoff response if backoff is not nil",
+			name: "return default roundtrip response if backoff is not nil",
 			args: args{
 				req: &http.Request{},
 			},
 			fields: fields{
-				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
+				transport: &roundTripMock{
+					RoundTripFunc: func(*http.Request) (*http.Response, error) {
 						return &http.Response{
 							Status: "200",
 						}, nil
+					},
+				},
+				bo: &backoffMock{
+					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
+						return fn()
 					},
 				},
 			},
@@ -241,22 +246,6 @@ func Test_ert_RoundTrip(t *testing.T) {
 			},
 		},
 		{
-			name: "return error when backoff return invalid type result",
-			args: args{
-				req: &http.Request{},
-			},
-			fields: fields{
-				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
-						return struct{}{}, nil
-					},
-				},
-			},
-			want: want{
-				err: errors.ErrInvalidTypeConversion(struct{}{}, &http.Response{}),
-			},
-		},
-		{
 			name: "return default roundtrip error if backoff use the default roundtrip",
 			args: args{
 				req: &http.Request{},
@@ -275,6 +264,27 @@ func Test_ert_RoundTrip(t *testing.T) {
 			},
 			want: want{
 				err: errors.New("error"),
+			},
+		},
+		{
+			name: "return retryable error",
+			args: args{
+				req: &http.Request{},
+			},
+			fields: fields{
+				transport: &roundTripMock{
+					RoundTripFunc: func(*http.Request) (*http.Response, error) {
+						return nil, errors.Wrap(errors.ErrTransportRetryable, "error")
+					},
+				},
+				bo: &backoffMock{
+					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
+						return fn()
+					},
+				},
+			},
+			want: want{
+				err: errors.Wrap(errors.ErrTransportRetryable, "error"),
 			},
 		},
 	}
