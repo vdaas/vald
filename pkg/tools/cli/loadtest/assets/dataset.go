@@ -330,18 +330,18 @@ func gaussian(dim, size int, mean, stdDev float64) func() (Dataset, error) {
 			train[i] = make([]float32, dim)
 			query[i] = make([]float32, dim)
 			for j := range train[i] {
-				train[i][j] = float32(rand.NormFloat64() * stdDev + mean)
-				query[i][j] = float32(rand.NormFloat64() * stdDev + mean)
+				train[i][j] = float32(rand.NormFloat64()*stdDev + mean)
+				query[i][j] = float32(rand.NormFloat64()*stdDev + mean)
 			}
 		}
 		return &dataset{
-			train: train,
-			query: query,
-			ids: ids,
-			name: fmt.Sprintf("gaussian-%d-%d-%f-%f", dim, size, mean, stdDev),
-			dimension: dim,
+			train:        train,
+			query:        query,
+			ids:          ids,
+			name:         fmt.Sprintf("gaussian-%d-%d-%f-%f", dim, size, mean, stdDev),
+			dimension:    dim,
 			distanceType: "l2",
-			objectType: "float",
+			objectType:   "float",
 		}, nil
 	}
 }
