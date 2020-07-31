@@ -64,6 +64,7 @@ func NewQueue(opts ...QueueOption) (Queue, error) {
 	return q, nil
 }
 
+// Start starts queue and returns (<-chan error, error).
 func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 	if q.isRunning() {
 		return nil, errors.ErrQueueIsAlreadyRunning()
@@ -104,10 +105,13 @@ func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
+// isRunning returns true when queue is already running or false when queue is not running.
 func (q *queue) isRunning() bool {
 	return q.running.Load().(bool)
 }
 
+// Push sends JobFunc to q.inCh when JobFunc is not nil and queue is running.
+// If JobFunc is nil or queue is not running, Push returns error.
 func (q *queue) Push(ctx context.Context, job JobFunc) error {
 	if job == nil {
 		return errors.ErrJobFuncIsNil()
@@ -125,6 +129,8 @@ func (q *queue) Push(ctx context.Context, job JobFunc) error {
 	}
 }
 
+// Pop returns (JobFunc, nil) if q.outCh contains JobFunc.
+// If pop returns error, Pos returns (nil, error)
 func (q *queue) Pop(ctx context.Context) (JobFunc, error) {
 	return q.pop(ctx, q.Len())
 }
@@ -151,6 +157,7 @@ func (q *queue) pop(ctx context.Context, retry uint64) (JobFunc, error) {
 	return q.pop(ctx, retry)
 }
 
+// Len returns qLen.
 func (q *queue) Len() uint64 {
 	return q.qLen.Load().(uint64)
 }
