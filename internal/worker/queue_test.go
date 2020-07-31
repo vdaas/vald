@@ -72,7 +72,7 @@ func TestNewQueue(t *testing.T) {
 		func() test {
 			q := new(queue)
 			for _, opt := range defaultQueueOpts {
-				opt(q)
+				_ = opt(q)
 			}
 			q.qLen.Store(uint64(0))
 			q.running.Store(false)
@@ -213,7 +213,7 @@ func Test_queue_Start(t *testing.T) {
 					buffer: 0,
 					eg:     errgroup.Get(),
 					qcdur:  100 * time.Microsecond,
-					inCh:   make(chan JobFunc, 0),
+					inCh:   make(chan JobFunc),
 					outCh:  make(chan JobFunc, 1),
 					qLen: func() atomic.Value {
 						v := new(atomic.Value)
@@ -234,6 +234,7 @@ func Test_queue_Start(t *testing.T) {
 		}(),
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
 			return test{
 				name: "Start failed when ctx.Done before inCh send.",
 				args: args{
@@ -259,21 +260,6 @@ func Test_queue_Start(t *testing.T) {
 				want: want{
 					want: make(chan error, 1),
 				},
-				checkFunc: func(w want, got <-chan error, err error) error {
-					cancel()
-					if !errors.Is(err, w.err) {
-						return errors.Errorf("got error = %v, want %v", err, w.err)
-					}
-					opts := []cmp.Option{
-						cmp.Comparer(func(want, got <-chan error) bool {
-							return (want != nil && got != nil) || (want == nil && got == nil)
-						}),
-					}
-					if diff := cmp.Diff(w.want, got, opts...); diff != "" {
-						return errors.Errorf("got = %v, want %v", got, w.want)
-					}
-					return nil
-				},
 			}
 		}(),
 		func() test {
@@ -293,7 +279,7 @@ func Test_queue_Start(t *testing.T) {
 					eg:     errgroup.Get(),
 					qcdur:  100 * time.Microsecond,
 					inCh:   inCh,
-					outCh:  make(chan JobFunc, 0),
+					outCh:  make(chan JobFunc),
 					qLen: func() atomic.Value {
 						v := new(atomic.Value)
 						v.Store(uint64(0))
@@ -453,7 +439,7 @@ func Test_queue_Push(t *testing.T) {
 					eg:     nil,
 					qcdur:  100 * time.Microsecond,
 					inCh:   make(chan JobFunc, 10),
-					outCh:  make(chan JobFunc, 0),
+					outCh:  make(chan JobFunc),
 					qLen: func() atomic.Value {
 						v := new(atomic.Value)
 						v.Store(uint64(0))
@@ -480,7 +466,7 @@ func Test_queue_Push(t *testing.T) {
 				fields: fields{
 					buffer: 0,
 					eg:     nil,
-					qcdur:  200 * time.Microsecond,
+					qcdur:  100 * time.Microsecond,
 					inCh:   nil,
 					outCh:  nil,
 					qLen: func() atomic.Value {
@@ -511,7 +497,7 @@ func Test_queue_Push(t *testing.T) {
 				fields: fields{
 					buffer: 0,
 					eg:     nil,
-					qcdur:  200 * time.Microsecond,
+					qcdur:  100 * time.Microsecond,
 					inCh:   nil,
 					outCh:  nil,
 					qLen: func() atomic.Value {
