@@ -46,7 +46,7 @@ type queue struct {
 	running atomic.Value
 }
 
-// NewQueue returns Queue if no error is occured.
+// NewQueue returns Queue if no error is occurred.
 func NewQueue(opts ...QueueOption) (Queue, error) {
 	q := new(queue)
 	for _, opt := range append(defaultQueueOpts, opts...) {
