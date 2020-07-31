@@ -24,10 +24,18 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-
 	"go.uber.org/goleak"
+)
+
+var (
+	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+	goleakIgnoreOptions = []goleak.Option{
+		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+		goleak.IgnoreTopFunction("github.com/vdaas/vald/internal/worker.(*queue).Start.func1"),
+	}
 )
 
 func TestNewQueue(t *testing.T) {
@@ -50,42 +58,57 @@ func TestNewQueue(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
+		opts := []cmp.Option{
+			cmp.Comparer(func(want, got Queue) bool {
+				return want != nil && got != nil
+			}),
+		}
+		if diff := cmp.Diff(w.want, got, opts...); diff != "" {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			q := new(queue)
+			for _, opt := range defaultQueueOpts {
+				opt(q)
+			}
+			q.qLen.Store(uint64(0))
+			q.running.Store(false)
+			q.inCh = make(chan JobFunc, q.buffer)
+			q.outCh = make(chan JobFunc, 1)
+			return test{
+				name: "set success",
+				want: want{
+					want: q,
+				},
+			}
+		}(),
+		func() test {
+			q := new(queue)
+			opts := []QueueOption{
+				WithQueueCheckDuration("invalid"),
+			}
+			var err error
+			for _, opt := range opts {
+				err = opt(q)
+			}
+			return test{
+				name: "got error when opts is invalid.",
+				args: args{
+					opts: opts,
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -135,60 +158,163 @@ func Test_queue_Start(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
+		opts := []cmp.Option{
+			cmp.Comparer(func(want, got <-chan error) bool {
+				return (want != nil && got != nil) || (want == nil && got == nil)
+			}),
+		}
+		if diff := cmp.Diff(w.want, got, opts...); diff != "" {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           buffer: 0,
-		           eg: nil,
-		           qcdur: nil,
-		           inCh: nil,
-		           outCh: nil,
-		           qLen: nil,
-		           running: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           buffer: 0,
-		           eg: nil,
-		           qcdur: nil,
-		           inCh: nil,
-		           outCh: nil,
-		           qLen: nil,
-		           running: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			inCh := make(chan JobFunc, 10)
+			for i := 0; i < 10; i++ {
+				inCh <- func(context.Context) error {
+					return nil
+				}
+			}
+			return test{
+				name: "Start success.",
+				args: args{
+					ctx: context.Background(),
+				},
+				fields: fields{
+					buffer: 10,
+					eg:     errgroup.Get(),
+					qcdur:  100 * time.Microsecond,
+					inCh:   inCh,
+					outCh:  make(chan JobFunc, 1),
+					qLen: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(uint64(0))
+						return *v
+					}(),
+					running: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(false)
+						return *v
+					}(),
+				},
+				want: want{
+					want: make(chan error, 1),
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "Start failed when queue is already running.",
+				args: args{
+					ctx: context.Background(),
+				},
+				fields: fields{
+					buffer: 0,
+					eg:     errgroup.Get(),
+					qcdur:  100 * time.Microsecond,
+					inCh:   make(chan JobFunc, 0),
+					outCh:  make(chan JobFunc, 1),
+					qLen: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(uint64(0))
+						return *v
+					}(),
+					running: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(true)
+						return *v
+					}(),
+				},
+				want: want{
+					err: errors.ErrQueueIsAlreadyRunning(),
+				},
+				checkFunc: defaultCheckFunc,
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "Start failed when ctx.Done before inCh send.",
+				args: args{
+					ctx: ctx,
+				},
+				fields: fields{
+					buffer: 10,
+					eg:     errgroup.Get(),
+					qcdur:  100 * time.Microsecond,
+					inCh:   make(chan JobFunc, 10),
+					outCh:  make(chan JobFunc, 1),
+					qLen: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(uint64(0))
+						return *v
+					}(),
+					running: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(false)
+						return *v
+					}(),
+				},
+				want: want{
+					want: make(chan error, 1),
+				},
+				checkFunc: func(w want, got <-chan error, err error) error {
+					cancel()
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got error = %v, want %v", err, w.err)
+					}
+					opts := []cmp.Option{
+						cmp.Comparer(func(want, got <-chan error) bool {
+							return (want != nil && got != nil) || (want == nil && got == nil)
+						}),
+					}
+					if diff := cmp.Diff(w.want, got, opts...); diff != "" {
+						return errors.Errorf("got = %v, want %v", got, w.want)
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			inCh := make(chan JobFunc, 10)
+			inCh <- func(context.Context) error {
+				return nil
+			}
+			cancel()
+			return test{
+				name: "Start failed when ctx.Done after inCh send.",
+				args: args{
+					ctx: ctx,
+				},
+				fields: fields{
+					buffer: 10,
+					eg:     errgroup.Get(),
+					qcdur:  100 * time.Microsecond,
+					inCh:   inCh,
+					outCh:  make(chan JobFunc, 0),
+					qLen: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(uint64(0))
+						return *v
+					}(),
+					running: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(false)
+						return *v
+					}(),
+				},
+				want: want{
+					want: make(chan error, 1),
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -219,12 +345,6 @@ func Test_queue_Start(t *testing.T) {
 
 func Test_queue_isRunning(t *testing.T) {
 	type fields struct {
-		buffer  int
-		eg      errgroup.Group
-		qcdur   time.Duration
-		inCh    chan JobFunc
-		outCh   chan JobFunc
-		qLen    atomic.Value
 		running atomic.Value
 	}
 	type want struct {
@@ -245,48 +365,25 @@ func Test_queue_isRunning(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           buffer: 0,
-		           eg: nil,
-		           qcdur: nil,
-		           inCh: nil,
-		           outCh: nil,
-		           qLen: nil,
-		           running: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           buffer: 0,
-		           eg: nil,
-		           qcdur: nil,
-		           inCh: nil,
-		           outCh: nil,
-		           qLen: nil,
-		           running: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "Get true when queue is running",
+			fields: fields{
+				running: func() atomic.Value {
+					v := new(atomic.Value)
+					v.Store(true)
+					return *v
+				}(),
+			},
+			want: want{
+				want: true,
+			},
+			checkFunc: defaultCheckFunc,
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -297,12 +394,6 @@ func Test_queue_isRunning(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			q := &queue{
-				buffer:  test.fields.buffer,
-				eg:      test.fields.eg,
-				qcdur:   test.fields.qcdur,
-				inCh:    test.fields.inCh,
-				outCh:   test.fields.outCh,
-				qLen:    test.fields.qLen,
 				running: test.fields.running,
 			}
 
@@ -348,56 +439,135 @@ func Test_queue_Push(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           job: nil,
-		       },
-		       fields: fields {
-		           buffer: 0,
-		           eg: nil,
-		           qcdur: nil,
-		           inCh: nil,
-		           outCh: nil,
-		           qLen: nil,
-		           running: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           job: nil,
-		           },
-		           fields: fields {
-		           buffer: 0,
-		           eg: nil,
-		           qcdur: nil,
-		           inCh: nil,
-		           outCh: nil,
-		           qLen: nil,
-		           running: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			return test{
+				name: "return nil when push success.",
+				args: args{
+					ctx: context.Background(),
+					job: func(context.Context) error {
+						return nil
+					},
+				},
+				fields: fields{
+					buffer: 10,
+					eg:     nil,
+					qcdur:  100 * time.Microsecond,
+					inCh:   make(chan JobFunc, 10),
+					outCh:  make(chan JobFunc, 0),
+					qLen: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(uint64(0))
+						return *v
+					}(),
+					running: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(true)
+						return *v
+					}(),
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return error when job is nil.",
+				args: args{
+					ctx: context.Background(),
+					job: nil,
+				},
+				fields: fields{
+					buffer: 0,
+					eg:     nil,
+					qcdur:  200 * time.Microsecond,
+					inCh:   nil,
+					outCh:  nil,
+					qLen: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(uint64(0))
+						return *v
+					}(),
+					running: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(true)
+						return *v
+					}(),
+				},
+				want: want{
+					err: errors.ErrJobFuncIsNil(),
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return error when queue is not running.",
+				args: args{
+					ctx: context.Background(),
+					job: func(context.Context) error {
+						return nil
+					},
+				},
+				fields: fields{
+					buffer: 0,
+					eg:     nil,
+					qcdur:  200 * time.Microsecond,
+					inCh:   nil,
+					outCh:  nil,
+					qLen: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(uint64(0))
+						return *v
+					}(),
+					running: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(false)
+						return *v
+					}(),
+				},
+				want: want{
+					err: errors.ErrQueueIsNotRunning(),
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+			return test{
+				name: "return error when ctx.Done.",
+				args: args{
+					ctx: ctx,
+					job: func(context.Context) error {
+						return nil
+					},
+				},
+				fields: fields{
+					buffer: 1,
+					eg:     errgroup.Get(),
+					qcdur:  100 * time.Microsecond,
+					inCh:   make(chan JobFunc, 1),
+					outCh:  make(chan JobFunc, 0),
+					qLen: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(uint64(0))
+						return *v
+					}(),
+					running: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(true)
+						return *v
+					}(),
+				},
+				want: want{
+					err: context.Canceled,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -456,60 +626,51 @@ func Test_queue_Pop(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
+		if reflect.ValueOf(w.want).Pointer() != reflect.ValueOf(got).Pointer() {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           buffer: 0,
-		           eg: nil,
-		           qcdur: nil,
-		           inCh: nil,
-		           outCh: nil,
-		           qLen: nil,
-		           running: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           buffer: 0,
-		           eg: nil,
-		           qcdur: nil,
-		           inCh: nil,
-		           outCh: nil,
-		           qLen: nil,
-		           running: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			ctx := context.Background()
+			f := JobFunc(func(context.Context) error {
+				return nil
+			})
+			outCh := make(chan JobFunc, 1)
+			outCh <- f
+			return test{
+				name: "return (JobFunc, nil) when pop success.",
+				args: args{
+					ctx: ctx,
+				},
+				fields: fields{
+					buffer: 10,
+					eg:     errgroup.Get(),
+					qcdur:  100 * time.Microsecond,
+					inCh:   make(chan JobFunc, 10),
+					outCh:  outCh,
+					qLen: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(uint64(1))
+						return *v
+					}(),
+					running: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(true)
+						return *v
+					}(),
+				},
+				want: want{
+					want: f,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -569,62 +730,155 @@ func Test_queue_pop(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
+		if reflect.ValueOf(w.want).Pointer() != reflect.ValueOf(got).Pointer() {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           retry: 0,
-		       },
-		       fields: fields {
-		           buffer: 0,
-		           eg: nil,
-		           qcdur: nil,
-		           inCh: nil,
-		           outCh: nil,
-		           qLen: nil,
-		           running: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           retry: 0,
-		           },
-		           fields: fields {
-		           buffer: 0,
-		           eg: nil,
-		           qcdur: nil,
-		           inCh: nil,
-		           outCh: nil,
-		           qLen: nil,
-		           running: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return (nil, error) when queue is not running.",
+			args: args{
+				ctx:   context.Background(),
+				retry: 1,
+			},
+			fields: fields{
+				buffer: 0,
+				eg:     errgroup.Get(),
+				qcdur:  1 * time.Microsecond,
+				inCh:   make(chan JobFunc, 1),
+				outCh:  make(chan JobFunc, 1),
+				qLen: func() atomic.Value {
+					v := new(atomic.Value)
+					v.Store(uint64(0))
+					return *v
+				}(),
+				running: func() atomic.Value {
+					v := new(atomic.Value)
+					v.Store(false)
+					return *v
+				}(),
+			},
+			want: want{
+				want: nil,
+				err:  errors.ErrQueueIsNotRunning(),
+			},
+		},
+		func() test {
+			ctx := context.Background()
+			f := JobFunc(func(context.Context) error {
+				return nil
+			})
+			outCh := make(chan JobFunc, 10)
+			outCh <- nil
+			for i := 0; i < 9; i++ {
+				outCh <- f
+			}
+			return test{
+				name: "return (JobFunc, nil).",
+				args: args{
+					ctx:   ctx,
+					retry: 10,
+				},
+				fields: fields{
+					buffer: 10,
+					eg:     errgroup.Get(),
+					qcdur:  100 * time.Microsecond,
+					inCh:   make(chan JobFunc, 10),
+					outCh:  outCh,
+					qLen: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(uint64(0))
+						return *v
+					}(),
+					running: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(true)
+						return *v
+					}(),
+				},
+				want: want{
+					want: f,
+					err:  nil,
+				},
+			}
+		}(),
+		func() test {
+			ctx := context.Background()
+			f := JobFunc(func(context.Context) error {
+				return nil
+			})
+			outCh := make(chan JobFunc, 10)
+			outCh <- nil
+			for i := 0; i < 9; i++ {
+				outCh <- f
+			}
+			return test{
+				name: "return (nil, error) when retry is 0.",
+				args: args{
+					ctx:   ctx,
+					retry: 0,
+				},
+				fields: fields{
+					buffer: 10,
+					eg:     errgroup.Get(),
+					qcdur:  100 * time.Microsecond,
+					inCh:   make(chan JobFunc, 10),
+					outCh:  outCh,
+					qLen: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(uint64(0))
+						return *v
+					}(),
+					running: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(true)
+						return *v
+					}(),
+				},
+				want: want{
+					want: nil,
+					err:  errors.ErrJobFuncIsNil(),
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+			return test{
+				name: "return (JobFunc, nil).",
+				args: args{
+					ctx:   ctx,
+					retry: 0,
+				},
+				fields: fields{
+					buffer: 10,
+					eg:     errgroup.Get(),
+					qcdur:  100 * time.Microsecond,
+					inCh:   make(chan JobFunc, 10),
+					outCh:  make(chan JobFunc, 0),
+					qLen: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(uint64(0))
+						return *v
+					}(),
+					running: func() atomic.Value {
+						v := new(atomic.Value)
+						v.Store(true)
+						return *v
+					}(),
+				},
+				want: want{
+					want: nil,
+					err:  context.Canceled,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -655,13 +909,7 @@ func Test_queue_pop(t *testing.T) {
 
 func Test_queue_Len(t *testing.T) {
 	type fields struct {
-		buffer  int
-		eg      errgroup.Group
-		qcdur   time.Duration
-		inCh    chan JobFunc
-		outCh   chan JobFunc
-		qLen    atomic.Value
-		running atomic.Value
+		qLen atomic.Value
 	}
 	type want struct {
 		want uint64
@@ -681,48 +929,24 @@ func Test_queue_Len(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           buffer: 0,
-		           eg: nil,
-		           qcdur: nil,
-		           inCh: nil,
-		           outCh: nil,
-		           qLen: nil,
-		           running: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           buffer: 0,
-		           eg: nil,
-		           qcdur: nil,
-		           inCh: nil,
-		           outCh: nil,
-		           qLen: nil,
-		           running: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "Get qLen when qLen is stored.",
+			fields: fields{
+				qLen: func() atomic.Value {
+					v := new(atomic.Value)
+					v.Store(uint64(0))
+					return *v
+				}(),
+			},
+			want: want{
+				want: 0,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -733,20 +957,13 @@ func Test_queue_Len(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			q := &queue{
-				buffer:  test.fields.buffer,
-				eg:      test.fields.eg,
-				qcdur:   test.fields.qcdur,
-				inCh:    test.fields.inCh,
-				outCh:   test.fields.outCh,
-				qLen:    test.fields.qLen,
-				running: test.fields.running,
+				qLen: test.fields.qLen,
 			}
 
 			got := q.Len()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

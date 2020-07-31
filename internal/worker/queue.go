@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 )
 
+// Queue represents the interface of queue.
 type Queue interface {
 	Start(ctx context.Context) (<-chan error, error)
 	Push(ctx context.Context, job JobFunc) error
@@ -45,6 +46,7 @@ type queue struct {
 	running atomic.Value
 }
 
+// NewQueue returns Queue if no error is occured.
 func NewQueue(opts ...QueueOption) (Queue, error) {
 	q := new(queue)
 	for _, opt := range append(defaultQueueOpts, opts...) {
