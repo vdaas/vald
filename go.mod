@@ -25,12 +25,12 @@ replace (
 )
 
 require (
-	cloud.google.com/go v0.61.1-0.20200728180147-901261277e25
+	cloud.google.com/go v0.62.1-0.20200731215012-56cf7d3bc870
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.2.1-0.20200609204449-6bcf6f8577f0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.2
-	github.com/aws/aws-sdk-go v1.33.14
+	github.com/aws/aws-sdk-go v1.33.17
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/cockroachdb/errors v1.5.1-0.20200617111016-cc0024f9c4d3
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
@@ -41,7 +41,7 @@ require (
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
 	github.com/gocraft/dbr/v2 v2.7.1-0.20200218045517-f487ccffc6d0
 	github.com/gogo/protobuf v1.3.1
-	github.com/google/go-cmp v0.5.1
+	github.com/google/go-cmp v0.5.2-0.20200729152727-036ffc7f24c0
 	github.com/google/gofuzz v1.1.0
 	github.com/gorilla/mux v1.7.5-0.20200711200521-98cb6bf42e08
 	github.com/hashicorp/go-version v1.2.1
@@ -61,12 +61,12 @@ require (
 	go.uber.org/automaxprocs v1.3.1-0.20200415073007-b685be8c1c23
 	go.uber.org/goleak v1.1.10
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
-	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae
+	golang.org/x/sys v0.0.0-20200724161237-0e2f3a69832c
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.7.1-0.20200701071522-4260761de856
-	google.golang.org/api v0.29.1-0.20200728133301-9fba589c08a5
-	google.golang.org/genproto v0.0.0-20200728010541-3dc8dca74b7b
-	google.golang.org/grpc v1.32.0-dev.0.20200728194956-1c32b02682df
+	google.golang.org/api v0.29.1-0.20200731210623-4eb9889c539a
+	google.golang.org/genproto v0.0.0-20200731012542-8145dea6a485
+	google.golang.org/grpc v1.32.0-dev.0.20200731180010-8bec2f5d898f
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.18.6
 	k8s.io/apimachinery v0.18.6

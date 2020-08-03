@@ -16,20 +16,23 @@
 
 syntax = "proto3";
 
-package egress_filter;
+package vald;
 
-option go_package = "github.com/vdaas/vald/apis/grpc/filter/egress";
+option go_package = "github.com/vdaas/vald/apis/grpc/vald";
 option java_multiple_files = true;
-option java_package = "org.vdaas.vald.filter.egress";
-option java_outer_classname = "ValdEgressFilter";
+option java_package = "org.vdaas.vald";
+option java_outer_classname = "ValdApi";
 
 import "payload.proto";
 import "google/api/annotations.proto";
 import "pb/gql.proto";
 
-service EgressFilter {
+service Remove {
   option (gql.svc_type) = QUERY;
-  rpc Filter(payload.Object.Distance) returns (payload.Object.Distance) {}
-  rpc StreamFilter(stream payload.Object.Distance)
-      returns (stream payload.Object.Distance) {}
+  rpc Remove(payload.Object.ID) returns (payload.Object.Location) {
+    option (google.api.http).delete = "/remove/{id}";
+    option (gql.rpc_type) = MUTATION;
+  }
+  rpc StreamRemove(stream payload.Object.ID) returns (stream payload.Object.Location) {}
+  rpc MultiRemove(payload.Object.IDs) returns (payload.Object.Locations) {}
 }

@@ -298,27 +298,6 @@
         }
       }
     },
-    "SearchConfig": {
-      "type": "object",
-      "properties": {
-        "num": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "radius": {
-          "type": "number",
-          "format": "float"
-        },
-        "epsilon": {
-          "type": "number",
-          "format": "float"
-        },
-        "timeout": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
     "SearchIDRequest": {
       "type": "object",
       "properties": {
@@ -326,17 +305,31 @@
           "type": "string"
         },
         "config": {
-          "$ref": "#/definitions/SearchConfig"
+          "$ref": "#/definitions/payloadSearchConfig"
         }
       }
     },
     "SearchResponse": {
       "type": "object",
       "properties": {
+        "requestId": {
+          "type": "string"
+        },
         "results": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/ObjectDistance"
+          }
+        }
+      }
+    },
+    "payloadFilterConfig": {
+      "type": "object",
+      "properties": {
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       }
@@ -369,6 +362,33 @@
         }
       }
     },
+    "payloadSearchConfig": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "num": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "radius": {
+          "type": "number",
+          "format": "float"
+        },
+        "epsilon": {
+          "type": "number",
+          "format": "float"
+        },
+        "timeout": {
+          "type": "string",
+          "format": "int64"
+        },
+        "filters": {
+          "$ref": "#/definitions/payloadFilterConfig"
+        }
+      }
+    },
     "payloadSearchRequest": {
       "type": "object",
       "properties": {
@@ -380,7 +400,7 @@
           }
         },
         "config": {
-          "$ref": "#/definitions/SearchConfig"
+          "$ref": "#/definitions/payloadSearchConfig"
         }
       }
     },

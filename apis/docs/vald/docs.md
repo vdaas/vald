@@ -3,17 +3,17 @@
 
 ## Table of Contents
 
-- [egress/egress_filter.proto](#egress/egress_filter.proto)
-    - [EgressFilter](#egress_filter.EgressFilter)
+- [upsert.proto](#upsert.proto)
+    - [Upsert](#vald.Upsert)
   
 - [Scalar Value Types](#scalar-value-types)
 
 
 
-<a name="egress/egress_filter.proto"></a>
+<a name="upsert.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## egress/egress_filter.proto
+## upsert.proto
 
 
  
@@ -23,15 +23,16 @@
  
 
 
-<a name="egress_filter.EgressFilter"></a>
+<a name="vald.Upsert"></a>
 
-### EgressFilter
+### Upsert
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Filter | [.payload.Object.Distance](#payload.Object.Distance) | [.payload.Object.Distance](#payload.Object.Distance) |  |
-| StreamFilter | [.payload.Object.Distance](#payload.Object.Distance) stream | [.payload.Object.Distance](#payload.Object.Distance) stream |  |
+| Upsert | [.payload.Upsert.Request](#payload.Upsert.Request) | [.payload.Object.Location](#payload.Object.Location) |  |
+| StreamUpsert | [.payload.Upsert.Request](#payload.Upsert.Request) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
+| MultiUpsert | [.payload.Update.MultiRequest](#payload.Update.MultiRequest) | [.payload.Object.Locations](#payload.Object.Locations) |  |
 
  
 

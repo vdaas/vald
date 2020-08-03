@@ -26,17 +26,23 @@ option java_outer_classname = "ValdPayload";
 import "validate/validate.proto";
 /*
 import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
- */
+*/
 
 message Search {
   message Request {
     repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
     Config config = 2;
   }
+  message MultiRequest {
+    repeated Request requests = 1;
+  }
 
   message IDRequest {
     string id = 1;
     Config config = 2;
+  }
+  message MultiIDRequest {
+    repeated IDRequest requests = 1;
   }
 
   message ObjectRequest {
@@ -45,13 +51,74 @@ message Search {
   }
 
   message Config {
-    uint32 num = 1 [ (validate.rules).uint32.gte = 1 ];
-    float radius = 2;
-    float epsilon = 3;
-    int64 timeout = 4;
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config filters = 6;
   }
 
-  message Response { repeated Object.Distance results = 1; }
+  message Response { 
+    string request_id = 1;
+    repeated Object.Distance results = 2; 
+  }
+
+  message Responses { 
+    repeated Response responses = 1; 
+  }
+}
+
+message Filter {
+  message Target {
+    string host = 1;
+    uint32 port = 2;
+  }
+  message Config{
+    repeated string targets = 1;
+  }
+}
+
+message Insert {
+  message Request {
+    Object.Vector vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Config config = 2;
+  }
+  message MultiRequest {
+    repeated Request requests = 1;
+  }
+  message Config {
+    bool enable_strict_check = 1;
+    Filter.Config filters = 2;
+  }
+}
+
+message Update {
+  message Request {
+    Object.Vector vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Config config = 2;
+  }
+  message MultiRequest {
+    repeated Request requests = 1;
+  }
+  message Config {
+    bool enable_strict_check = 1;
+    Filter.Config filters = 2;
+  }
+}
+
+message Upsert {
+  message Request {
+    Object.Vector vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Config config = 2;
+  }
+  message MultiRequest {
+    repeated Request requests = 1;
+  }
+  message Config {
+    bool enable_strict_check = 1;
+    Filter.Config filters = 2;
+  }
 }
 
 message Meta {

@@ -28,6 +28,8 @@
     - [Discoverer](#payload.Discoverer)
     - [Discoverer.Request](#payload.Discoverer.Request)
     - [Empty](#payload.Empty)
+    - [Filter](#payload.Filter)
+    - [Filter.Config](#payload.Filter.Config)
     - [Info](#payload.Info)
     - [Info.CPU](#payload.Info.CPU)
     - [Info.IPs](#payload.Info.IPs)
@@ -41,6 +43,10 @@
     - [Info.Nodes](#payload.Info.Nodes)
     - [Info.Pod](#payload.Info.Pod)
     - [Info.Pods](#payload.Info.Pods)
+    - [Insert](#payload.Insert)
+    - [Insert.Config](#payload.Insert.Config)
+    - [Insert.MultiRequest](#payload.Insert.MultiRequest)
+    - [Insert.Request](#payload.Insert.Request)
     - [Meta](#payload.Meta)
     - [Meta.Key](#payload.Meta.Key)
     - [Meta.KeyVal](#payload.Meta.KeyVal)
@@ -64,9 +70,20 @@
     - [Search](#payload.Search)
     - [Search.Config](#payload.Search.Config)
     - [Search.IDRequest](#payload.Search.IDRequest)
+    - [Search.MultiIDRequest](#payload.Search.MultiIDRequest)
+    - [Search.MultiRequest](#payload.Search.MultiRequest)
     - [Search.ObjectRequest](#payload.Search.ObjectRequest)
     - [Search.Request](#payload.Search.Request)
     - [Search.Response](#payload.Search.Response)
+    - [Search.Responses](#payload.Search.Responses)
+    - [Update](#payload.Update)
+    - [Update.Config](#payload.Update.Config)
+    - [Update.MultiRequest](#payload.Update.MultiRequest)
+    - [Update.Request](#payload.Update.Request)
+    - [Upsert](#payload.Upsert)
+    - [Upsert.Config](#payload.Upsert.Config)
+    - [Upsert.MultiRequest](#payload.Upsert.MultiRequest)
+    - [Upsert.Request](#payload.Upsert.Request)
   
 - [Scalar Value Types](#scalar-value-types)
 
@@ -391,6 +408,31 @@
 
 
 
+<a name="payload.Filter"></a>
+
+### Filter
+
+
+
+
+
+
+
+<a name="payload.Filter.Config"></a>
+
+### Filter.Config
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| targets | [string](#string) | repeated |  |
+
+
+
+
+
+
 <a name="payload.Info"></a>
 
 ### Info
@@ -582,6 +624,63 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | pods | [Info.Pod](#payload.Info.Pod) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Insert"></a>
+
+### Insert
+
+
+
+
+
+
+
+<a name="payload.Insert.Config"></a>
+
+### Insert.Config
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| enable_strict_check | [bool](#bool) |  |  |
+| filters | [Filter.Config](#payload.Filter.Config) |  |  |
+
+
+
+
+
+
+<a name="payload.Insert.MultiRequest"></a>
+
+### Insert.MultiRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| requests | [Insert.Request](#payload.Insert.Request) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Insert.Request"></a>
+
+### Insert.Request
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| vector | [Object.Vector](#payload.Object.Vector) |  |  |
+| config | [Insert.Config](#payload.Insert.Config) |  |  |
 
 
 
@@ -900,10 +999,12 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
+| request_id | [string](#string) |  |  |
 | num | [uint32](#uint32) |  |  |
 | radius | [float](#float) |  |  |
 | epsilon | [float](#float) |  |  |
 | timeout | [int64](#int64) |  |  |
+| filters | [Filter.Config](#payload.Filter.Config) |  |  |
 
 
 
@@ -920,6 +1021,36 @@
 | ----- | ---- | ----- | ----------- |
 | id | [string](#string) |  |  |
 | config | [Search.Config](#payload.Search.Config) |  |  |
+
+
+
+
+
+
+<a name="payload.Search.MultiIDRequest"></a>
+
+### Search.MultiIDRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| requests | [Search.IDRequest](#payload.Search.IDRequest) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Search.MultiRequest"></a>
+
+### Search.MultiRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| requests | [Search.Request](#payload.Search.Request) | repeated |  |
 
 
 
@@ -966,7 +1097,137 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
+| request_id | [string](#string) |  |  |
 | results | [Object.Distance](#payload.Object.Distance) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Search.Responses"></a>
+
+### Search.Responses
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| responses | [Search.Response](#payload.Search.Response) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Update"></a>
+
+### Update
+
+
+
+
+
+
+
+<a name="payload.Update.Config"></a>
+
+### Update.Config
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| enable_strict_check | [bool](#bool) |  |  |
+| filters | [Filter.Config](#payload.Filter.Config) |  |  |
+
+
+
+
+
+
+<a name="payload.Update.MultiRequest"></a>
+
+### Update.MultiRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| requests | [Update.Request](#payload.Update.Request) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Update.Request"></a>
+
+### Update.Request
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| vector | [Object.Vector](#payload.Object.Vector) |  |  |
+| config | [Update.Config](#payload.Update.Config) |  |  |
+
+
+
+
+
+
+<a name="payload.Upsert"></a>
+
+### Upsert
+
+
+
+
+
+
+
+<a name="payload.Upsert.Config"></a>
+
+### Upsert.Config
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| enable_strict_check | [bool](#bool) |  |  |
+| filters | [Filter.Config](#payload.Filter.Config) |  |  |
+
+
+
+
+
+
+<a name="payload.Upsert.MultiRequest"></a>
+
+### Upsert.MultiRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| requests | [Upsert.Request](#payload.Upsert.Request) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Upsert.Request"></a>
+
+### Upsert.Request
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| vector | [Object.Vector](#payload.Object.Vector) |  |  |
+| config | [Upsert.Config](#payload.Upsert.Config) |  |  |
 
 
 

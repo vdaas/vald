@@ -97,7 +97,7 @@ type (
 // ObjectType is alias of object type in NGT
 type objectType int
 
-// DistanceType is alias of distance type in NGTErrInvalidVector
+// DistanceType is alias of distance type in NGT
 type distanceType int
 
 const (

@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "egress/egress_filter.proto",
+    "title": "remove.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -10,17 +10,64 @@
   "produces": [
     "application/json"
   ],
-  "paths": {},
+  "paths": {
+    "/remove/{id}": {
+      "delete": {
+        "operationId": "Remove_Remove",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/payloadObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Remove"
+        ]
+      }
+    }
+  },
   "definitions": {
-    "ObjectDistance": {
+    "payloadObjectLocation": {
       "type": "object",
       "properties": {
-        "id": {
+        "name": {
           "type": "string"
         },
-        "distance": {
-          "type": "number",
-          "format": "float"
+        "uuid": {
+          "type": "string"
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "payloadObjectLocations": {
+      "type": "object",
+      "properties": {
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/payloadObjectLocation"
+          }
         }
       }
     },
