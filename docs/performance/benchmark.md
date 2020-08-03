@@ -1,9 +1,12 @@
 # Benchmark
 
-This document will show and explain the benchmark of an approximate nearest neighbor on the Vald cluster, such as [ann-benchmarks](https://github.com/erikbern/ann-benchmarks), and also explain how to perform the ann-benchmark test on you Vald cluster.
+This document will show and explain the benchmark of an approximate nearest neighbor on the Vald cluster, such as [ann-benchmarks](https://github.com/erikbern/ann-benchmarks), and also explain how to perform the ann-benchmark test on your Vald cluster.
 
 If you want to perform load testing on the Vald cluster, please refer to [this document](loadtest.md).
+
+<!--
 We also created a guideline of the unit benchmark testing, please refer to [this document](unit_benchmark.md).
+-->
 
 ## Overview
 
@@ -11,7 +14,8 @@ In this document, we will perform the [ann-benchmarks](https://github.com/erikbe
 
 The test will perform on the whole Vald cluster, which means the request will broadcast to multiple Vald agents instead of single Vald agent, and return the aggreated result.
 
-The result may be different from your environment due to the network configuration and overhead of the Vald cluster. In this document, we will also explain how to perform the ann-benchmark testing on your environment.
+The result may be different from your environment due to the network configuration and overhead of the Vald cluster.
+In this document, we will also explain how to perform the ann-benchmark testing on your environment.
 
 ## Benchmark matrix
 
