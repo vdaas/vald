@@ -26,7 +26,7 @@ docker pull vdaas/vald-loadtest
 
 Please refer to the [Sample configuration file](https://github.com/vdaas/vald/blob/master/cmd/tools/cli/loadtest/sample.yaml) to configure the Vald Load Testing Tools.
 
-Here is the important configurations and following the explaination.
+Here is the important configurations and following the explanation.
 
 | Name        | Description                                                                                                                                                      | Example                                             |
 |-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
