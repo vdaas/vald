@@ -99,4 +99,4 @@ The line `result:Gateway  32  100 6060.743248` means that the Gateway mode is us
 
 Which means that is performed the insertion of 6060 vectors into the Vald Cluster per second from the Vald Load Testing tools.
 
-The result includes all the network latency, and the filtering latency.
+The result includes all the network latency and filtering latency.
