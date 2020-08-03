@@ -13,7 +13,7 @@ You can perform the load test on Vald to test the insert and search performance 
 
     Please refer to [here](https://vald.vdaas.org/docs/tutorial/get-started/) for the installation guide of Vald Cluster or Vald Agent.
 
-- Docker
+- Docker: v19.03 ~
 
 ## Install load test tools
 
