@@ -4,7 +4,8 @@ This document describes how to perform the load testing in Vald cluster or Vald 
 
 ## Overview
 
-We develop our own Load Testing Tools to perform the load testing in Vald cluster or Vald agent. You can perform the load test on Vald to test the insert and search performance in Vald.
+We develop our own Load Testing Tools to perform the load testing in Vald cluster or Vald agent.
+You can perform the load test on Vald to test the insert and search performance in Vald.
 
 ## Prerequisite
 
@@ -16,7 +17,8 @@ We develop our own Load Testing Tools to perform the load testing in Vald cluste
 
 ## Install load test tools
 
-We provide a docker image for the load testing. Please download the image using the below command.
+We provide a docker image for the load testing.
+Please download the image using the below command.
 
 ```bash
 docker pull vdaas/vald-loadtest
@@ -46,7 +48,7 @@ wget https://raw.githubusercontent.com/vdaas/vald/master/cmd/tools/cli/loadtest/
 mv sample.yaml config.yaml
 ```
 
-Please refer to the above section to configure the load testing tool.
+Please refer to the [configure load test tools section](#configure-load-test-tools) to configure the load testing tool.
 
 ```bash
 vi config.yaml
@@ -95,7 +97,7 @@ These lines show the result of the load test.
 
 This means that the `Insert Gateway` mode is used, which means the dataset `random-786-100000` will insert into the Vald Cluster.
 
-The line `result:Gateway  32  100 6060.743248` means that the Gateway mode is used, with `32` concurrent execution and `100` batch size, with the VPS of `6060.743248`.
+The line `result:Gateway  32  100 6060.743248` means that the Gateway mode is used, with `32` concurrent execution and `100` batch size, with the VPS (Vector Per Sec.) of `6060.743248`.
 
 Which means that is performed the insertion of 6060 vectors into the Vald Cluster per second from the Vald Load Testing tools.
 
