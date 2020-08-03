@@ -48,7 +48,7 @@ docker/build/agent-ngt: docker/build/base
 	docker build -f dockers/agent/core/ngt/Dockerfile -t $(REPO)/$(AGENT_IMAGE) .
 
 .PHONY: docker/build/agent-ngt/debug
-## build agent-ngt image with debug mode
+## build agent-ngt image in debug mode
 docker/build/agent-ngt/debug: docker/build/base
 	docker build \
 	    -f dockers/agent/core/ngt/Dockerfile \
@@ -66,7 +66,7 @@ docker/build/agent-sidecar: docker/build/base
 	docker build -f dockers/agent/sidecar/Dockerfile -t $(REPO)/$(AGENT_SIDECAR_IMAGE) .
 
 .PHONY: docker/build/agent-sidecar/debug
-## build agent-sidecar image with debug mode
+## build agent-sidecar image in debug mode
 docker/build/agent-sidecar/debug: docker/build/base
 	docker build \
 	    -f dockers/agent/sidecar/Dockerfile \
@@ -82,6 +82,15 @@ docker/name/discoverer-k8s:
 ## build discoverer-k8s image
 docker/build/discoverer-k8s: docker/build/base
 	docker build -f dockers/discoverer/k8s/Dockerfile -t $(REPO)/$(DISCOVERER_IMAGE) .
+
+.PHONY: docker/build/discoverer-k8s/debug
+## build discoverer-k8s image in debug mode
+docker/build/discoverer-k8s/debug: docker/build/base
+	docker build \
+	    -f dockers/discoverer/k8s/Dockerfile \
+	    -t $(REPO)/$(DISCOVERER_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE_NAME=base \
+	    --build-arg DISTROLESS_IMAGE_TAG=debug
 
 .PHONY: docker/name/gateway-vald
 docker/name/gateway-vald:
