@@ -532,7 +532,7 @@ func Test_queue_Push(t *testing.T) {
 					eg:     errgroup.Get(),
 					qcdur:  100 * time.Microsecond,
 					inCh:   make(chan JobFunc, 1),
-					outCh:  make(chan JobFunc, 0),
+					outCh:  make(chan JobFunc),
 					qLen: func() atomic.Value {
 						v := new(atomic.Value)
 						v.Store(uint64(0))
@@ -842,7 +842,7 @@ func Test_queue_pop(t *testing.T) {
 					eg:     errgroup.Get(),
 					qcdur:  100 * time.Microsecond,
 					inCh:   make(chan JobFunc, 10),
-					outCh:  make(chan JobFunc, 0),
+					outCh:  make(chan JobFunc),
 					qLen: func() atomic.Value {
 						v := new(atomic.Value)
 						v.Store(uint64(0))
