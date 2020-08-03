@@ -59,7 +59,7 @@ func New(opts ...Option) (ds DiscovererServer, err error) {
 		}
 	}
 
-	s.group = singleflight.New(10)
+	s.group = singleflight.New()
 
 	return s, nil
 }
@@ -74,7 +74,7 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 			span.End()
 		}
 	}()
-	res, _, err := s.group.Do(ctx, singleflightKey(podPrefix, req), func() (interface{}, error) {
+	res, err, _ := s.group.Do(ctx, singleflightKey(podPrefix, req), func() (interface{}, error) {
 		return s.dsc.GetPods(req)
 	})
 	if err != nil {
@@ -94,7 +94,7 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 			span.End()
 		}
 	}()
-	res, _, err := s.group.Do(ctx, singleflightKey(nodePrefix, req), func() (interface{}, error) {
+	res, err, _ := s.group.Do(ctx, singleflightKey(nodePrefix, req), func() (interface{}, error) {
 		return s.dsc.GetNodes(req)
 	})
 	if err != nil {
