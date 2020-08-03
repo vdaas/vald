@@ -81,22 +81,22 @@ func (e *ert) roundTrip(req *http.Request) (res *http.Response, err error) {
 	if err != nil {
 		if res != nil { // just in case we check the response as it depends on RoundTrip impl.
 			closeBody(res.Body)
-			if retryable(res) {
+			if retryableStatusCode(res.StatusCode) {
 				return nil, errors.Wrap(errors.ErrTransportRetryable, err.Error())
 			}
 		}
 		return nil, err
 	}
 
-	if res != nil && retryable(res) {
+	if res != nil && retryableStatusCode(res.StatusCode) {
 		closeBody(res.Body)
 		return nil, errors.ErrTransportRetryable
 	}
 	return res, nil
 }
 
-func retryable(res *http.Response) bool {
-	switch res.StatusCode {
+func retryableStatusCode(status int) bool {
+	switch status {
 	case http.StatusTooManyRequests,
 		http.StatusInternalServerError,
 		http.StatusServiceUnavailable,

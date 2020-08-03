@@ -448,9 +448,9 @@ func Test_ert_roundTrip(t *testing.T) {
 	}
 }
 
-func Test_retryable(t *testing.T) {
+func Test_retryableStatusCode(t *testing.T) {
 	type args struct {
-		res *http.Response
+		status int
 	}
 	type want struct {
 		want bool
@@ -473,9 +473,7 @@ func Test_retryable(t *testing.T) {
 		{
 			name: "return true when response status is retryable",
 			args: args{
-				res: &http.Response{
-					StatusCode: http.StatusTooManyRequests,
-				},
+				status: http.StatusTooManyRequests,
 			},
 			want: want{
 				want: true,
@@ -484,9 +482,7 @@ func Test_retryable(t *testing.T) {
 		{
 			name: "return false when response status is not retryable",
 			args: args{
-				res: &http.Response{
-					StatusCode: http.StatusOK,
-				},
+				status: http.StatusOK,
 			},
 			want: want{
 				want: false,
@@ -507,7 +503,7 @@ func Test_retryable(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := retryable(test.args.res)
+			got := retryableStatusCode(test.args.status)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
