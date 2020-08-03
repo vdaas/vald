@@ -51,7 +51,7 @@ func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 		return e.roundTrip(req)
 	}
 
-	var fnerr error
+	var rterr error
 	_, err = e.bo.Do(req.Context(), func() (interface{}, error) {
 		r, e := e.roundTrip(req)
 		if e != nil {
@@ -60,7 +60,7 @@ func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 				return nil, e
 			}
 			// if the error is not retryable, return nil error to terminate the backoff execution
-			fnerr = e
+			rterr = e
 			return nil, nil
 		}
 		res = r
@@ -69,8 +69,8 @@ func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 	if err != nil {
 		return nil, err
 	}
-	if fnerr != nil {
-		return nil, fnerr
+	if rterr != nil {
+		return nil, rterr
 	}
 
 	return res, nil
