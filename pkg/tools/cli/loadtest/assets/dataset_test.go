@@ -1969,3 +1969,85 @@ func Test_float32To64(t *testing.T) {
 		})
 	}
 }
+
+func Test_gaussian(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		dim    int
+		size   int
+		mean   float64
+		stdDev float64
+	}
+	type want struct {
+		want func() (Dataset, error)
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, func() (Dataset, error)) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got func() (Dataset, error)) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           dim: 0,
+		           size: 0,
+		           mean: 0,
+		           stdDev: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           dim: 0,
+		           size: 0,
+		           mean: 0,
+		           stdDev: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := gaussian(test.args.dim, test.args.size, test.args.mean, test.args.stdDev)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}

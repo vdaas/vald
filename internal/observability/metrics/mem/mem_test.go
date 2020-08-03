@@ -24,7 +24,6 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/metrics"
-
 	"go.uber.org/goleak"
 )
 
@@ -69,7 +68,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -106,7 +105,7 @@ func Test_memory_Measurement(t *testing.T) {
 		heapReleased metrics.Int64Measure
 		stackInuse   metrics.Int64Measure
 		stackSys     metrics.Int64Measure
-		pauseTotalMs metrics.Float64Measure
+		pauseTotalMs metrics.Int64Measure
 		numGC        metrics.Int64Measure
 	}
 	type want struct {
@@ -193,7 +192,7 @@ func Test_memory_Measurement(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -246,7 +245,7 @@ func Test_memory_MeasurementWithTags(t *testing.T) {
 		heapReleased metrics.Int64Measure
 		stackInuse   metrics.Int64Measure
 		stackSys     metrics.Int64Measure
-		pauseTotalMs metrics.Float64Measure
+		pauseTotalMs metrics.Int64Measure
 		numGC        metrics.Int64Measure
 	}
 	type want struct {
@@ -333,7 +332,7 @@ func Test_memory_MeasurementWithTags(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -383,7 +382,7 @@ func Test_memory_View(t *testing.T) {
 		heapReleased metrics.Int64Measure
 		stackInuse   metrics.Int64Measure
 		stackSys     metrics.Int64Measure
-		pauseTotalMs metrics.Float64Measure
+		pauseTotalMs metrics.Int64Measure
 		numGC        metrics.Int64Measure
 	}
 	type want struct {
@@ -459,7 +458,7 @@ func Test_memory_View(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

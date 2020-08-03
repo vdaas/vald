@@ -88,37 +88,37 @@ func (n *ngtMetrics) View() []*metrics.View {
 	return []*metrics.View{
 		&metrics.View{
 			Name:        "ngt_index_count",
-			Description: "NGT index count",
+			Description: n.indexCount.Description(),
 			Measure:     &n.indexCount,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "ngt_uncommitted_index_count",
-			Description: "NGT uncommitted index count",
+			Description: n.uncommittedIndexCount.Description(),
 			Measure:     &n.uncommittedIndexCount,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "ngt_insert_vcache_count",
-			Description: "NGT insert vcache count",
+			Description: n.insertVCacheCount.Description(),
 			Measure:     &n.insertVCacheCount,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "ngt_delete_vcache_count",
-			Description: "NGT delete vcache count",
+			Description: n.deleteVCacheCount.Description(),
 			Measure:     &n.deleteVCacheCount,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "ngt_completed_create_index_total",
-			Description: "the cumulative count of completed create index execution",
+			Description: n.completedCreateIndexTotal.Description(),
 			Measure:     &n.completedCreateIndexTotal,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "ngt_is_indexing",
-			Description: "currently indexing or not",
+			Description: n.isIndexing.Description(),
 			Measure:     &n.isIndexing,
 			Aggregation: metrics.LastValue(),
 		},

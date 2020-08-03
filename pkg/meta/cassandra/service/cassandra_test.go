@@ -22,7 +22,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
@@ -31,11 +30,11 @@ import (
 func TestNew(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		cfg *config.Cassandra
+		opts []Option
 	}
 	type want struct {
-		want Cassandra
-		err  error
+		wantCas Cassandra
+		err     error
 	}
 	type test struct {
 		name       string
@@ -45,12 +44,12 @@ func TestNew(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Cassandra, err error) error {
+	defaultCheckFunc := func(w want, gotCas Cassandra, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+		if !reflect.DeepEqual(gotCas, w.wantCas) {
+			return errors.Errorf("got = %v, want %v", gotCas, w.wantCas)
 		}
 		return nil
 	}
@@ -60,7 +59,7 @@ func TestNew(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           cfg: nil,
+		           opts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -73,7 +72,7 @@ func TestNew(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           cfg: nil,
+		           opts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -96,8 +95,8 @@ func TestNew(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got, err := New(test.args.cfg)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			gotCas, err := New(test.args.opts...)
+			if err := test.checkFunc(test.want, gotCas, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
