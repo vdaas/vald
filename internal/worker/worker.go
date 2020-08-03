@@ -81,7 +81,8 @@ func New(opts ...WorkerOption) (Worker, error) {
 	return w, nil
 }
 
-// Start starts execute jobs in the worker queue. It returns the error channel that the job return, and the error if start failed.
+// Start starts execute jobs in the worker queue.
+// It returns the error channel that the job return, and the error if start failed.
 func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 	if w.IsRunning() {
 		return nil, errors.ErrWorkerIsAlreadyRunning(w.Name())
