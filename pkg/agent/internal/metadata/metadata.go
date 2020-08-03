@@ -22,6 +22,7 @@ import (
 
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/log"
 )
 
 const (
@@ -40,6 +41,7 @@ type NGT struct {
 func Load(path string) (*Metadata, error) {
 	f, err := file.Open(path, os.O_RDONLY|os.O_SYNC, os.ModePerm)
 	if err != nil {
+		log.Error("file.Open returns error: ", err)
 		return nil, err
 	}
 	defer f.Close()
@@ -47,6 +49,7 @@ func Load(path string) (*Metadata, error) {
 	var meta Metadata
 	err = json.Decode(f, &meta)
 	if err != nil {
+		log.Error("json.Decode returns error: ", err)
 		return nil, err
 	}
 
