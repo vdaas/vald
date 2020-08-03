@@ -24,7 +24,6 @@ import (
 
 	redis "github.com/go-redis/redis/v7"
 	"github.com/vdaas/vald/internal/net"
-
 	"go.uber.org/goleak"
 )
 

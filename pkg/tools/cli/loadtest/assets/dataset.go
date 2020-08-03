@@ -321,6 +321,31 @@ func random(dim, size int) func() (Dataset, error) {
 	}
 }
 
+func gaussian(dim, size int, mean, stdDev float64) func() (Dataset, error) {
+	return func() (Dataset, error) {
+		ids := CreateRandomIDs(size)
+		train := make([][]float32, size)
+		query := make([][]float32, size)
+		for i := range train {
+			train[i] = make([]float32, dim)
+			query[i] = make([]float32, dim)
+			for j := range train[i] {
+				train[i][j] = float32(rand.NormFloat64()*stdDev + mean)
+				query[i][j] = float32(rand.NormFloat64()*stdDev + mean)
+			}
+		}
+		return &dataset{
+			train:        train,
+			query:        query,
+			ids:          ids,
+			name:         fmt.Sprintf("gaussian-%d-%d-%f-%f", dim, size, mean, stdDev),
+			dimension:    dim,
+			distanceType: "l2",
+			objectType:   "float",
+		}, nil
+	}
+}
+
 func datasetDir() (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -341,6 +366,7 @@ func datasetDir() (string, error) {
 // Data loads specified dataset and returns it.
 func Data(name string) func() (Dataset, error) {
 	log.Debugf("start loading: %s", name)
+	defer log.Debugf("finish loading: %s", name)
 	if strings.HasPrefix(name, "identity-") {
 		l := strings.Split(name, "-")
 		i, _ := strconv.Atoi(l[1])
@@ -352,10 +378,17 @@ func Data(name string) func() (Dataset, error) {
 		s, _ := strconv.Atoi(l[2])
 		return random(d, s)
 	}
+	if strings.HasPrefix(name, "gaussian-") {
+		l := strings.Split(name, "-")
+		d, _ := strconv.Atoi(l[1])
+		s, _ := strconv.Atoi(l[2])
+		m, _ := strconv.ParseFloat(l[3], 64)
+		sd, _ := strconv.ParseFloat(l[4], 64)
+		return gaussian(d, s, m, sd)
+	}
 	if d, ok := data[name]; ok {
 		return d
 	}
-	log.Debugf("finish loading: %s")
 	return nil
 }
 
