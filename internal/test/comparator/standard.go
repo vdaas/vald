@@ -3,12 +3,14 @@ package comparator
 import (
 	"sync/atomic"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/internal/errgroup"
 )
 
 type (
 	atomicValue = atomic.Value
 	errorGroup  = errgroup.Group
+	Option      = cmp.Option
 )
 
 /*
