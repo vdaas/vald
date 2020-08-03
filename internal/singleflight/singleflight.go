@@ -14,66 +14,55 @@
 // limitations under the License.
 //
 
-// Package singleflight represents zero time caching
+// Package singleflight represents zero time caching.
 package singleflight
 
 import (
 	"context"
 	"sync"
+	"sync/atomic"
 )
 
 type call struct {
 	wg   sync.WaitGroup
 	val  interface{}
 	err  error
-	dups int
+	dups uint64
 }
 
-// Group represents interface for zero time cache
+// Group represents interface for zero time cache.
 type Group interface {
-	Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error)
+	Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, err error, shared bool)
 }
 
 type group struct {
-	mu sync.RWMutex
-	m  map[string]*call
+	m sync.Map
 }
 
-// New returns Group imple
-func New(size int) Group {
-	if size < 1 {
-		size = 1
-	}
-	return &group{
-		m: make(map[string]*call, size),
-	}
+// New returns Group implementation.
+func New() Group {
+	return new(group)
 }
 
-// Do returns a set of the cache of the first return value from function
-// as interface{}, shared flg as bool, and err as error
-// when the function is called multiple times in an instant.
-func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error) {
-	g.mu.RLock()
-	if c, ok := g.m[key]; ok {
-		g.mu.RUnlock()
-		c.dups++
+// Do execute the given function and return the result.
+// It makes sure only one execution of the function for each given key.
+// If duplicate comes, the duplicated call with the same key will wait for the first caller return.
+// It returns the result and the error of the given function, and whether the result is shared from the first caller.
+func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, err error, shared bool) {
+	actual, loaded := g.m.LoadOrStore(key, new(call))
+	c := actual.(*call)
+	if loaded {
+		atomic.AddUint64(&c.dups, 1)
 		c.wg.Wait()
-		return c.val, true, c.err
+		v, err = c.val, c.err
+		return v, err, true
 	}
-	g.mu.RUnlock()
 
-	c := new(call)
 	c.wg.Add(1)
-
-	g.mu.Lock()
-	g.m[key] = c
-	g.mu.Unlock()
-
 	c.val, c.err = fn()
 	c.wg.Done()
 
-	g.mu.Lock()
-	delete(g.m, key)
-	g.mu.Unlock()
-	return c.val, c.dups > 0, c.err
+	g.m.Delete(key)
+
+	return c.val, c.err, atomic.LoadUint64(&c.dups) > 0
 }
