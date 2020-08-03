@@ -18,10 +18,11 @@ package service
 
 import (
 	"context"
+	"reflect"
 	"strconv"
 
-	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/model"
 )
 
@@ -54,25 +55,15 @@ type client struct {
 	metaTable string
 }
 
-func New(cfg *config.Cassandra) (Cassandra, error) {
-	opts, err := cfg.Opts()
-	if err != nil {
-		return nil, err
+func New(opts ...Option) (Cassandra, error) {
+	c := new(client)
+	for _, opt := range append(defaultOpts, opts...) {
+		if err := opt(c); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
 	}
 
-	db, err := cassandra.New(opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	if cfg.MetaTable == "" {
-		cfg.MetaTable = "meta_vector"
-	}
-
-	return &client{
-		db:        db,
-		metaTable: cfg.MetaTable,
-	}, nil
+	return c, nil
 }
 
 func (c *client) Connect(ctx context.Context) error {

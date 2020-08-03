@@ -111,7 +111,7 @@ func (v *version) View() []*metrics.View {
 	return []*metrics.View{
 		&metrics.View{
 			Name:        "app_version_info",
-			Description: "app version info",
+			Description: v.info.Description(),
 			TagKeys:     keys,
 			Measure:     &v.info,
 			Aggregation: metrics.LastValue(),

@@ -452,6 +452,46 @@ func WithDisableSkipMetadata(disableSkipMetadata bool) Option {
 	}
 }
 
+func WithQueryObserver(obs QueryObserver) Option {
+	return func(c *client) error {
+		if obs != nil {
+			c.queryObserver = obs
+		}
+
+		return nil
+	}
+}
+
+func WithBatchObserver(obs BatchObserver) Option {
+	return func(c *client) error {
+		if obs != nil {
+			c.batchObserver = obs
+		}
+
+		return nil
+	}
+}
+
+func WithConnectObserver(obs ConnectObserver) Option {
+	return func(c *client) error {
+		if obs != nil {
+			c.connectObserver = obs
+		}
+
+		return nil
+	}
+}
+
+func WithFrameHeaderObserver(obs FrameHeaderObserver) Option {
+	return func(c *client) error {
+		if obs != nil {
+			c.frameHeaderObserver = obs
+		}
+
+		return nil
+	}
+}
+
 func WithDefaultIdempotence(defaultIdempotence bool) Option {
 	return func(c *client) error {
 		c.defaultIdempotence = defaultIdempotence

@@ -85,37 +85,37 @@ func (c *compressorMetrics) View() []*metrics.View {
 	return []*metrics.View{
 		&metrics.View{
 			Name:        "compressor_compressor_buffer",
-			Description: "the current number of compressor compress worker buffer elements",
+			Description: c.compressorBuffer.Description(),
 			Measure:     &c.compressorBuffer,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "compressor_compressor_requested_jobs_total",
-			Description: "the cumulative count of compressor compress worker requested job",
+			Description: c.compressorTotalRequestedJob.Description(),
 			Measure:     &c.compressorTotalRequestedJob,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "compressor_compressor_completed_jobs_total",
-			Description: "the cumulative count of compressor compress worker completed job",
+			Description: c.compressorTotalCompletedJob.Description(),
 			Measure:     &c.compressorTotalCompletedJob,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "compressor_registerer_buffer",
-			Description: "the current number of compressor registerer worker buffer elements",
+			Description: c.registererBuffer.Description(),
 			Measure:     &c.registererBuffer,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "compressor_registerer_requested_jobs_total",
-			Description: "the cumulative count of compressor registerer worker requested job",
+			Description: c.registererTotalRequestedJob.Description(),
 			Measure:     &c.registererTotalRequestedJob,
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
 			Name:        "compressor_registerer_completed_jobs_total",
-			Description: "the cumulative count of compressor registerer worker completed job",
+			Description: c.registererTotalCompletedJob.Description(),
 			Measure:     &c.registererTotalCompletedJob,
 			Aggregation: metrics.LastValue(),
 		},

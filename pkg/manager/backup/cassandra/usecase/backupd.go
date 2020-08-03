@@ -21,10 +21,12 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/manager/backup"
 	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
+	dbmetrics "github.com/vdaas/vald/internal/observability/metrics/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -45,7 +47,33 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	c, err := service.New(cfg.Cassandra)
+	cassandraOpts, err := cfg.Cassandra.Opts()
+	if err != nil {
+		return nil, err
+	}
+
+	var queryObserver dbmetrics.Observer
+	if cfg.Observability.Enabled {
+		queryObserver, err = dbmetrics.New()
+		if err != nil {
+			return nil, err
+		}
+
+		cassandraOpts = append(
+			cassandraOpts,
+			cassandra.WithQueryObserver(queryObserver),
+		)
+	}
+
+	db, err := cassandra.New(cassandraOpts...)
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := service.New(
+		service.WithCassandra(db),
+		service.WithMetaTable(cfg.Cassandra.MetaTable),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +100,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(cfg.Observability)
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			queryObserver,
+		)
 		if err != nil {
 			return nil, err
 		}
