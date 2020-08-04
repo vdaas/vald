@@ -64,7 +64,9 @@ func NewQueue(opts ...QueueOption) (Queue, error) {
 	return q, nil
 }
 
-// Start starts queue and returns (<-chan error, error).
+// Start starts execute queueing if queue is not runnnig.
+// If queue is already reunning, it returns error.
+// It returns the error channel that the queueing job return.
 func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 	if q.isRunning() {
 		return nil, errors.ErrQueueIsAlreadyRunning()
@@ -110,7 +112,7 @@ func (q *queue) isRunning() bool {
 	return q.running.Load().(bool)
 }
 
-// Push sends JobFunc to q.inCh when JobFunc is not nil and queue is running.
+// Push sends JobFunc to channel, which will be used for stock JobFunc, when JobFunc is not nil and queue is running.
 // If JobFunc is nil or queue is not running, Push returns error.
 func (q *queue) Push(ctx context.Context, job JobFunc) error {
 	if job == nil {
@@ -129,7 +131,7 @@ func (q *queue) Push(ctx context.Context, job JobFunc) error {
 	}
 }
 
-// Pop returns (JobFunc, nil) if q.outCh contains JobFunc.
+// Pop returns (JobFunc, nil) if the channnel, which will be used for queuing job, contains JobFunc.
 // If pop returns error, Pos returns (nil, error)
 func (q *queue) Pop(ctx context.Context) (JobFunc, error) {
 	return q.pop(ctx, q.Len())
@@ -157,7 +159,7 @@ func (q *queue) pop(ctx context.Context, retry uint64) (JobFunc, error) {
 	return q.pop(ctx, retry)
 }
 
-// Len returns qLen.
+// Len returns the length of queue.
 func (q *queue) Len() uint64 {
 	return q.qLen.Load().(uint64)
 }

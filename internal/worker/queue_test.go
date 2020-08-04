@@ -19,6 +19,7 @@ package worker
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"sync/atomic"
 	"testing"
@@ -58,30 +59,49 @@ func TestNewQueue(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		opts := []cmp.Option{
-			cmp.Comparer(func(want, got Queue) bool {
-				return want != nil && got != nil
-			}),
-		}
-		if diff := cmp.Diff(w.want, got, opts...); diff != "" {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+		if w.want != nil && got != nil {
+			egComparator := func(want, got errgroup.Group) bool {
+				return reflect.DeepEqual(want, got)
+			}
+			atomicComparator := func(want, got atomic.Value) bool {
+				return reflect.DeepEqual(want.Load(), got.Load())
+			}
+			opts := []cmp.Option{
+				cmp.AllowUnexported(*(w.want).(*queue)),
+				cmp.Comparer(egComparator),
+				cmp.Comparer(atomicComparator),
+				cmp.Comparer(func(want, got chan JobFunc) bool {
+					return len(want) == len(got)
+				}),
+			}
+			if diff := cmp.Diff(w.want, got, opts...); diff != "" {
+				return errors.Errorf("got = %v, want %v", got, w.want)
+			}
 		}
 		return nil
 	}
 	tests := []test{
 		func() test {
-			q := new(queue)
-			for _, opt := range defaultQueueOpts {
-				_ = opt(q)
-			}
-			q.qLen.Store(uint64(0))
-			q.running.Store(false)
-			q.inCh = make(chan JobFunc, q.buffer)
-			q.outCh = make(chan JobFunc, 1)
 			return test{
 				name: "set success",
 				want: want{
-					want: q,
+					want: &queue{
+						buffer: 10,
+						eg:     errgroup.Get(),
+						qcdur:  200 * time.Millisecond,
+						inCh:   make(chan JobFunc, 10),
+						outCh:  make(chan JobFunc, 1),
+						qLen: func() atomic.Value {
+							v := new(atomic.Value)
+							v.Store(uint64(0))
+							return *v
+						}(),
+						running: func() atomic.Value {
+							v := new(atomic.Value)
+							v.Store(false)
+							return *v
+						}(),
+					},
 				},
 			}
 		}(),
@@ -158,13 +178,16 @@ func Test_queue_Start(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		opts := []cmp.Option{
-			cmp.Comparer(func(want, got <-chan error) bool {
-				return (want != nil && got != nil) || (want == nil && got == nil)
-			}),
-		}
-		if diff := cmp.Diff(w.want, got, opts...); diff != "" {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+		if w.want != nil && got != nil {
+			opts := []cmp.Option{
+				cmp.Comparer(func(want, got <-chan error) bool {
+					return (want != nil && got != nil)
+				}),
+			}
+			if diff := cmp.Diff(w.want, got, opts...); diff != "" {
+				fmt.Println(diff)
+				return errors.Errorf("got = %v, want %v", got, w.want)
+			}
 		}
 		return nil
 	}
@@ -187,15 +210,13 @@ func Test_queue_Start(t *testing.T) {
 					qcdur:  100 * time.Microsecond,
 					inCh:   inCh,
 					outCh:  make(chan JobFunc, 1),
-					qLen: func() atomic.Value {
-						v := new(atomic.Value)
+					qLen: func() (v atomic.Value) {
 						v.Store(uint64(0))
-						return *v
+						return v
 					}(),
-					running: func() atomic.Value {
-						v := new(atomic.Value)
+					running: func() (v atomic.Value) {
 						v.Store(false)
-						return *v
+						return v
 					}(),
 				},
 				want: want{
@@ -215,15 +236,13 @@ func Test_queue_Start(t *testing.T) {
 					qcdur:  100 * time.Microsecond,
 					inCh:   make(chan JobFunc),
 					outCh:  make(chan JobFunc, 1),
-					qLen: func() atomic.Value {
-						v := new(atomic.Value)
+					qLen: func() (v atomic.Value) {
 						v.Store(uint64(0))
-						return *v
+						return v
 					}(),
-					running: func() atomic.Value {
-						v := new(atomic.Value)
+					running: func() (v atomic.Value) {
 						v.Store(true)
-						return *v
+						return v
 					}(),
 				},
 				want: want{
@@ -246,15 +265,13 @@ func Test_queue_Start(t *testing.T) {
 					qcdur:  100 * time.Microsecond,
 					inCh:   make(chan JobFunc, 10),
 					outCh:  make(chan JobFunc, 1),
-					qLen: func() atomic.Value {
-						v := new(atomic.Value)
+					qLen: func() (v atomic.Value) {
 						v.Store(uint64(0))
-						return *v
+						return v
 					}(),
-					running: func() atomic.Value {
-						v := new(atomic.Value)
+					running: func() (v atomic.Value) {
 						v.Store(false)
-						return *v
+						return v
 					}(),
 				},
 				want: want{
@@ -280,15 +297,13 @@ func Test_queue_Start(t *testing.T) {
 					qcdur:  100 * time.Microsecond,
 					inCh:   inCh,
 					outCh:  make(chan JobFunc),
-					qLen: func() atomic.Value {
-						v := new(atomic.Value)
+					qLen: func() (v atomic.Value) {
 						v.Store(uint64(0))
-						return *v
+						return v
 					}(),
-					running: func() atomic.Value {
-						v := new(atomic.Value)
+					running: func() (v atomic.Value) {
 						v.Store(false)
-						return *v
+						return v
 					}(),
 				},
 				want: want{
@@ -354,10 +369,9 @@ func Test_queue_isRunning(t *testing.T) {
 		{
 			name: "Get true when queue is running",
 			fields: fields{
-				running: func() atomic.Value {
-					v := new(atomic.Value)
+				running: func() (v atomic.Value) {
 					v.Store(true)
-					return *v
+					return v
 				}(),
 			},
 			want: want{
@@ -440,15 +454,13 @@ func Test_queue_Push(t *testing.T) {
 					qcdur:  100 * time.Microsecond,
 					inCh:   make(chan JobFunc, 10),
 					outCh:  make(chan JobFunc),
-					qLen: func() atomic.Value {
-						v := new(atomic.Value)
+					qLen: func() (v atomic.Value) {
 						v.Store(uint64(0))
-						return *v
+						return v
 					}(),
-					running: func() atomic.Value {
-						v := new(atomic.Value)
+					running: func() (v atomic.Value) {
 						v.Store(true)
-						return *v
+						return v
 					}(),
 				},
 				want: want{
@@ -469,15 +481,13 @@ func Test_queue_Push(t *testing.T) {
 					qcdur:  100 * time.Microsecond,
 					inCh:   nil,
 					outCh:  nil,
-					qLen: func() atomic.Value {
-						v := new(atomic.Value)
+					qLen: func() (v atomic.Value) {
 						v.Store(uint64(0))
-						return *v
+						return v
 					}(),
-					running: func() atomic.Value {
-						v := new(atomic.Value)
+					running: func() (v atomic.Value) {
 						v.Store(true)
-						return *v
+						return v
 					}(),
 				},
 				want: want{
@@ -500,15 +510,13 @@ func Test_queue_Push(t *testing.T) {
 					qcdur:  100 * time.Microsecond,
 					inCh:   nil,
 					outCh:  nil,
-					qLen: func() atomic.Value {
-						v := new(atomic.Value)
+					qLen: func() (v atomic.Value) {
 						v.Store(uint64(0))
-						return *v
+						return v
 					}(),
-					running: func() atomic.Value {
-						v := new(atomic.Value)
+					running: func() (v atomic.Value) {
 						v.Store(false)
-						return *v
+						return v
 					}(),
 				},
 				want: want{
@@ -533,15 +541,13 @@ func Test_queue_Push(t *testing.T) {
 					qcdur:  100 * time.Microsecond,
 					inCh:   make(chan JobFunc, 1),
 					outCh:  make(chan JobFunc),
-					qLen: func() atomic.Value {
-						v := new(atomic.Value)
+					qLen: func() (v atomic.Value) {
 						v.Store(uint64(0))
-						return *v
+						return v
 					}(),
-					running: func() atomic.Value {
-						v := new(atomic.Value)
+					running: func() (v atomic.Value) {
 						v.Store(true)
-						return *v
+						return v
 					}(),
 				},
 				want: want{
@@ -636,15 +642,13 @@ func Test_queue_Pop(t *testing.T) {
 					qcdur:  100 * time.Microsecond,
 					inCh:   make(chan JobFunc, 10),
 					outCh:  outCh,
-					qLen: func() atomic.Value {
-						v := new(atomic.Value)
+					qLen: func() (v atomic.Value) {
 						v.Store(uint64(1))
-						return *v
+						return v
 					}(),
-					running: func() atomic.Value {
-						v := new(atomic.Value)
+					running: func() (v atomic.Value) {
 						v.Store(true)
-						return *v
+						return v
 					}(),
 				},
 				want: want{
@@ -734,15 +738,13 @@ func Test_queue_pop(t *testing.T) {
 				qcdur:  1 * time.Microsecond,
 				inCh:   make(chan JobFunc, 1),
 				outCh:  make(chan JobFunc, 1),
-				qLen: func() atomic.Value {
-					v := new(atomic.Value)
+				qLen: func() (v atomic.Value) {
 					v.Store(uint64(0))
-					return *v
+					return v
 				}(),
-				running: func() atomic.Value {
-					v := new(atomic.Value)
+				running: func() (v atomic.Value) {
 					v.Store(false)
-					return *v
+					return v
 				}(),
 			},
 			want: want{
@@ -772,15 +774,13 @@ func Test_queue_pop(t *testing.T) {
 					qcdur:  100 * time.Microsecond,
 					inCh:   make(chan JobFunc, 10),
 					outCh:  outCh,
-					qLen: func() atomic.Value {
-						v := new(atomic.Value)
+					qLen: func() (v atomic.Value) {
 						v.Store(uint64(0))
-						return *v
+						return v
 					}(),
-					running: func() atomic.Value {
-						v := new(atomic.Value)
+					running: func() (v atomic.Value) {
 						v.Store(true)
-						return *v
+						return v
 					}(),
 				},
 				want: want{
@@ -811,15 +811,13 @@ func Test_queue_pop(t *testing.T) {
 					qcdur:  100 * time.Microsecond,
 					inCh:   make(chan JobFunc, 10),
 					outCh:  outCh,
-					qLen: func() atomic.Value {
-						v := new(atomic.Value)
+					qLen: func() (v atomic.Value) {
 						v.Store(uint64(0))
-						return *v
+						return v
 					}(),
-					running: func() atomic.Value {
-						v := new(atomic.Value)
+					running: func() (v atomic.Value) {
 						v.Store(true)
-						return *v
+						return v
 					}(),
 				},
 				want: want{
@@ -843,15 +841,13 @@ func Test_queue_pop(t *testing.T) {
 					qcdur:  100 * time.Microsecond,
 					inCh:   make(chan JobFunc, 10),
 					outCh:  make(chan JobFunc),
-					qLen: func() atomic.Value {
-						v := new(atomic.Value)
+					qLen: func() (v atomic.Value) {
 						v.Store(uint64(0))
-						return *v
+						return v
 					}(),
-					running: func() atomic.Value {
-						v := new(atomic.Value)
+					running: func() (v atomic.Value) {
 						v.Store(true)
-						return *v
+						return v
 					}(),
 				},
 				want: want{
@@ -918,10 +914,9 @@ func Test_queue_Len(t *testing.T) {
 		{
 			name: "Get qLen when qLen is stored.",
 			fields: fields{
-				qLen: func() atomic.Value {
-					v := new(atomic.Value)
+				qLen: func() (v atomic.Value) {
 					v.Store(uint64(0))
-					return *v
+					return v
 				}(),
 			},
 			want: want{
