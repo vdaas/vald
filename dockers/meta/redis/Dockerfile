@@ -46,8 +46,8 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY Makefile .
 COPY .git .
 
-RUN make REPO=${ORG} NAME=${REPO} cmd/meta/redis/meta \
-    && upx -9 -o "/usr/bin/${APP_NAME}" "cmd/meta/redis/meta"
+RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
+    && upx -9 -o "/usr/bin/${APP_NAME}" "cmd/${PKG}/${APP_NAME}"
 
 FROM gcr.io/distroless/${DISTROLESS_IMAGE_NAME}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer "Vald team <vald@vdaas.org>"

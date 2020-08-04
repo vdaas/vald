@@ -191,6 +191,15 @@ docker/name/manager-compressor:
 docker/build/manager-compressor: docker/build/base
 	docker build -f dockers/manager/compressor/Dockerfile -t $(REPO)/$(MANAGER_COMPRESSOR_IMAGE) .
 
+.PHONY: docker/build/manager-compressor/debug
+## build manager-compressor image in debug mode
+docker/build/manager-compressor/debug: docker/build/base
+	docker build \
+	    -f dockers/manager/compressor/Dockerfile \
+	    -t $(REPO)/$(MANAGER_COMPRESSOR_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE_NAME=base \
+	    --build-arg DISTROLESS_IMAGE_TAG=debug
+
 .PHONY: docker/name/manager-index
 docker/name/manager-index:
 	@echo "$(REPO)/$(MANAGER_INDEX_IMAGE)"

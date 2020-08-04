@@ -50,8 +50,8 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY Makefile .
 COPY .git .
 
-RUN make REPO=${ORG} NAME=${REPO} cmd/agent/core/ngt/ngt \
-    && upx -9 -o "/usr/bin/${APP_NAME}" "cmd/agent/core/ngt/ngt"
+RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
+    && upx -9 -o "/usr/bin/${APP_NAME}" "cmd/${PKG}/${APP_NAME}"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 RUN cp sample.yaml /tmp/config.yaml
