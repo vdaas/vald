@@ -24,10 +24,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/test/comparator"
+
 	"go.uber.org/goleak"
 )
 
@@ -67,23 +68,23 @@ func TestNew(t *testing.T) {
 		}
 		want := w.want.(*worker)
 
-		queueOpts := []cmp.Option{
-			cmp.AllowUnexported(*(want.queue.(*queue))),
-			cmp.Comparer(func(x, y chan JobFunc) bool {
+		queueOpts := []comparator.Option{
+			comparator.AllowUnexported(*(want.queue.(*queue))),
+			comparator.Comparer(func(x, y chan JobFunc) bool {
 				return len(x) == len(y)
 			}),
-			cmp.Comparer(egComparator),
-			cmp.Comparer(atomicValueComparator),
+			comparator.Comparer(egComparator),
+			comparator.Comparer(atomicValueComparator),
 		}
-		opts := []cmp.Option{
-			cmp.AllowUnexported(*want),
-			cmp.Comparer(func(x, y Queue) bool {
-				return cmp.Equal(x, y, queueOpts...)
+		opts := []comparator.Option{
+			comparator.AllowUnexported(*want),
+			comparator.Comparer(func(x, y Queue) bool {
+				return comparator.Equal(x, y, queueOpts...)
 			}),
-			cmp.Comparer(egComparator),
-			cmp.Comparer(atomicValueComparator),
+			comparator.Comparer(egComparator),
+			comparator.Comparer(atomicValueComparator),
 		}
-		if diff := cmp.Diff(want, got, opts...); diff != "" {
+		if diff := comparator.Diff(want, got, opts...); diff != "" {
 			return errors.New(diff)
 		}
 		return nil

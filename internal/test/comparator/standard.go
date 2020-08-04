@@ -10,7 +10,15 @@ import (
 type (
 	atomicValue = atomic.Value
 	errorGroup  = errgroup.Group
-	Option      = cmp.Option
+
+	Option = cmp.Option
+)
+
+var (
+	AllowUnexported = cmp.AllowUnexported
+	Comparer        = cmp.Comparer
+	Diff            = cmp.Diff
+	Equal           = cmp.Equal
 )
 
 /*

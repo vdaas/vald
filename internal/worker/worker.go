@@ -141,12 +141,10 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 		for {
 			select {
 			case <-ctx.Done():
-				var egErr error
 				if err = ctx.Err(); err != nil {
-					egErr = eg.Wait()
-					return errors.Wrap(egErr, err.Error())
+					return errors.Wrap(eg.Wait(), err.Error())
 				}
-				return egErr
+				return eg.Wait()
 			case limitation <- struct{}{}:
 			}
 
@@ -162,11 +160,11 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 
 			if job != nil {
 				eg.Go(safety.RecoverFunc(func() (err error) {
+					defer atomic.AddUint64(&w.completedCount, 1)
 					if err = job(ctx); err != nil {
 						log.Debugf("an error occurred while executing a job: %s", err)
 						ech <- err
 					}
-					atomic.AddUint64(&w.completedCount, 1)
 					select {
 					case <-limitation:
 					case <-ctx.Done():
