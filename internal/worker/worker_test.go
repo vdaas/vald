@@ -215,25 +215,19 @@ func Test_worker_Start(t *testing.T) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
 
-		ecComparator := func(x, y <-chan error) bool {
-			if x == nil && y == nil {
-				return true
-			}
-			if x == nil || y == nil || len(x) != len(y) {
-				return false
-			}
-
-			for e := range x {
-				if e1 := <-y; !errors.Is(e, e1) {
-					return false
-				}
-			}
-			return true
+		if w.want == nil && got == nil {
+			return nil
+		}
+		if w.want == nil || got == nil || len(w.want) != len(got) {
+			return errors.New("want is not equal to got")
 		}
 
-		if !ecComparator(w.want, got) {
-			return errors.New("error")
+		for e := range w.want {
+			if e1 := <-got; !errors.Is(e, e1) {
+				return errors.New("want is not equal to got")
+			}
 		}
+
 		return nil
 	}
 	tests := []test{
@@ -368,24 +362,17 @@ func Test_worker_startJobLoop(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got <-chan error) error {
-		ecComparator := func(x, y <-chan error) bool {
-			if x == nil && y == nil {
-				return true
-			}
-			if x == nil || y == nil || len(x) != len(y) {
-				return false
-			}
-
-			for e := range x {
-				if e1 := <-y; !errors.Is(e, e1) {
-					return false
-				}
-			}
-			return true
+		if w.want == nil && got == nil {
+			return nil
+		}
+		if w.want == nil || got == nil || len(w.want) != len(got) {
+			return errors.New("want is not equal to got")
 		}
 
-		if !ecComparator(w.want, got) {
-			return errors.New("error")
+		for e := range w.want {
+			if e1 := <-got; !errors.Is(e, e1) {
+				return errors.New("want is not equal to got")
+			}
 		}
 		return nil
 	}
