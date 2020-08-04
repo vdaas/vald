@@ -36,8 +36,7 @@ import (
 
 func TestMain(m *testing.M) {
 	log.Init()
-	code := m.Run()
-	os.Exit(code)
+	os.Exit(m.Run())
 }
 
 func TestNewExpBackoff(t *testing.T) {
