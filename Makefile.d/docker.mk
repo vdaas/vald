@@ -101,6 +101,15 @@ docker/name/gateway-vald:
 docker/build/gateway-vald: docker/build/base
 	docker build -f dockers/gateway/vald/Dockerfile -t $(REPO)/$(GATEWAY_IMAGE) .
 
+.PHONY: docker/build/gateway-vald/debug
+## build gateway-vald image in debug mode
+docker/build/gateway-vald/debug: docker/build/base
+	docker build \
+	    -f dockers/gateway/vald/Dockerfile \
+	    -t $(REPO)/$(GATEWAY_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE_NAME=base \
+	    --build-arg DISTROLESS_IMAGE_TAG=debug
+
 .PHONY: docker/name/meta-redis
 docker/name/meta-redis:
 	@echo "$(REPO)/$(META_REDIS_IMAGE)"
