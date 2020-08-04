@@ -17,13 +17,13 @@ package service
 
 import (
 	"context"
+	"github.com/vdaas/vald/apis/grpc/payload"
 	"os"
 	"reflect"
 	"sync/atomic"
 	"syscall"
 	"time"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -116,7 +116,7 @@ func (l *loader) Prepare(context.Context) (err error) {
 // Do operates load test.
 func (l *loader) Do(ctx context.Context) <-chan error {
 	ech := make(chan error, l.dataSize)
-	finalize := func(err error) {
+	finalize := func(ctx context.Context, err error) {
 		select {
 		case <-ctx.Done():
 			ech <- errors.Wrap(err, ctx.Err().Error())
@@ -127,7 +127,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 	// TODO: related to #403.
 	p, err := os.FindProcess(os.Getpid())
 	if err != nil {
-		finalize(err)
+		finalize(ctx, err)
 		return ech
 	}
 
@@ -169,100 +169,16 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 	l.eg.Go(safety.RecoverFunc(func() error {
 		log.Infof("start load test(%s, %s)", l.service.String(), l.operation.String())
 		defer close(ech)
-		eg, egctx := errgroup.New(ctx)
-		switch l.operation {
-		case config.StreamInsert, config.StreamSearch:
-			var newData func() interface{}
-			switch l.operation {
-			case config.StreamInsert:
-				newData = func() interface{} {
-					return new(payload.Empty)
-				}
-			case config.StreamSearch:
-				newData = func() interface{} {
-					return new(payload.Search_Response)
-				}
-			}
-
-			start = time.Now()
-			eg.Go(safety.RecoverFunc(func() error {
-				// TODO: related to #557
-				/*
-					_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-						st, err := l.loaderFunc(ctx, conn, nil, copts...)
-						if err != nil {
-							return nil, err
-						}
-						return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f)
-					})
-				*/
-				conn, err := grpc.Dial(l.addr, grpc.WithInsecure())
-				if err != nil {
-					finalize(err)
-					return nil
-				}
-				defer func() {
-					finalize(conn.Close())
-				}()
-				st, err := l.loaderFunc(egctx, conn, nil)
-				if err != nil {
-					finalize(err)
-					return nil
-				}
-				if err := igrpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f); err != nil {
-					finalize(err)
-				}
-				return nil
-			}))
-			err = eg.Wait()
-			end = time.Now()
-		case config.Insert, config.Search:
-			eg.Limitation(l.concurrency)
-			start = time.Now()
-			for {
-				r := l.dataProvider()
-				if r == nil {
-					break
-				}
-				eg.Go(safety.RecoverFunc(func() error {
-					// TODO: related to #557
-					/*
-						_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-							res, err := l.loaderFunc(ctx, conn, r, copts...)
-							f(res, err)
-							return res, err
-						})
-					*/
-					conn, err := grpc.Dial(l.addr, grpc.WithInsecure())
-					if err != nil {
-						finalize(err)
-						return nil
-					}
-					defer func() {
-						finalize(conn.Close())
-					}()
-					res, err := l.loaderFunc(egctx, conn, r)
-					f(res, err)
-					if err != nil {
-						finalize(err)
-					}
-
-					return nil
-				}))
-			}
-			err = eg.Wait()
-			end = time.Now()
-		default:
-			err = errors.Errorf("undefined type: %s", l.operation.String())
-		}
-		ticker.Stop()
+		defer ticker.Stop()
+		start = time.Now()
+		err := l.do(ctx, f, finalize)
+		end = time.Now()
 
 		if errCnt > 0 {
 			log.Warnf("Error ratio: %.2f%%", float64(errCnt)/float64(pgCnt)*100)
-			err = errors.Errorf("insert failure: %d", errCnt)
 		}
 		if err != nil {
-			finalize(err)
+			finalize(ctx, err)
 			return p.Signal(syscall.SIGKILL) // TODO: #403
 		}
 		log.Infof("result:%s\t%d\t%d\t%f", l.service.String(), l.concurrency, l.batchSize, vps(int(pgCnt)*l.batchSize, start, end))
@@ -270,4 +186,80 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 		return p.Signal(syscall.SIGTERM) // TODO: #403
 	}))
 	return ech
+}
+
+func (l *loader) do(ctx context.Context, f func(res interface{}, err error), notify func(context.Context, error)) (err error) {
+	eg, egctx := errgroup.New(ctx)
+
+	switch l.operation {
+	case config.StreamInsert, config.StreamSearch:
+		var newData func() interface{}
+		switch l.operation {
+		case config.StreamInsert:
+			newData = func() interface{} {
+				return new(payload.Empty)
+			}
+		case config.StreamSearch:
+			newData = func() interface{} {
+				return new(payload.Search_Response)
+			}
+		}
+		eg.Go(safety.RecoverFunc(func() error {
+			// TODO: related to #557
+			/*
+				_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+					st, err := l.loaderFunc(ctx, conn, nil, copts...)
+					if err != nil {
+						return nil, err
+					}
+					return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f)
+				})
+			*/
+			conn, err := grpc.Dial(l.addr, grpc.WithInsecure())
+			if err != nil {
+				notify(egctx, err)
+				return nil
+			}
+			defer notify(egctx, conn.Close())
+			st, err := l.loaderFunc(egctx, conn, nil)
+			if err != nil {
+				notify(egctx, err)
+				return nil
+			}
+			if err := igrpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f); err != nil {
+				notify(egctx, err)
+			}
+			return nil
+		}))
+		err = eg.Wait()
+	case config.Insert, config.Search:
+		eg.Limitation(l.concurrency)
+
+		for {
+			r := l.dataProvider()
+			if r == nil {
+				break
+			}
+
+			eg.Go(safety.RecoverFunc(func() error {
+				conn, err := grpc.Dial(l.addr, grpc.WithInsecure())
+				if err != nil {
+					notify(egctx, err)
+					return nil
+				}
+				defer notify(egctx, conn.Close())
+
+				res, err := l.loaderFunc(egctx, conn, r)
+				f(res, err)
+				if err != nil {
+					notify(egctx, err)
+				}
+				return nil
+			}))
+		}
+		err = eg.Wait()
+	default:
+		err = errors.Errorf("undefined type: %s", l.operation.String())
+	}
+	return
 }
