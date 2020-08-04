@@ -74,6 +74,7 @@ func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 
 	ech := make(chan error, 1)
 	q.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(ech)
 		defer close(q.outCh)
 		defer close(q.inCh)
 		defer q.running.Store(false)

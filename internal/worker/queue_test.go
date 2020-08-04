@@ -19,7 +19,6 @@ package worker
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"sync/atomic"
 	"testing"
@@ -59,24 +58,27 @@ func TestNewQueue(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if w.want != nil && got != nil {
-			egComparator := func(want, got errgroup.Group) bool {
-				return reflect.DeepEqual(want, got)
-			}
-			atomicComparator := func(want, got atomic.Value) bool {
-				return reflect.DeepEqual(want.Load(), got.Load())
-			}
-			opts := []cmp.Option{
-				cmp.AllowUnexported(*(w.want).(*queue)),
-				cmp.Comparer(egComparator),
-				cmp.Comparer(atomicComparator),
-				cmp.Comparer(func(want, got chan JobFunc) bool {
-					return len(want) == len(got)
-				}),
-			}
-			if diff := cmp.Diff(w.want, got, opts...); diff != "" {
-				return errors.Errorf("got = %v, want %v", got, w.want)
-			}
+
+		if w.want == nil && got == nil {
+			return nil
+		}
+
+		egComparator := func(want, got errgroup.Group) bool {
+			return reflect.DeepEqual(want, got)
+		}
+		atomicComparator := func(want, got atomic.Value) bool {
+			return reflect.DeepEqual(want.Load(), got.Load())
+		}
+		opts := []cmp.Option{
+			cmp.AllowUnexported(*(w.want).(*queue)),
+			cmp.Comparer(egComparator),
+			cmp.Comparer(atomicComparator),
+			cmp.Comparer(func(want, got chan JobFunc) bool {
+				return len(want) == len(got)
+			}),
+		}
+		if diff := cmp.Diff(w.want, got, opts...); diff != "" {
+			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
@@ -178,15 +180,14 @@ func Test_queue_Start(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if w.want != nil && got != nil {
-			opts := []cmp.Option{
-				cmp.Comparer(func(want, got <-chan error) bool {
-					return (want != nil && got != nil)
-				}),
-			}
-			if diff := cmp.Diff(w.want, got, opts...); diff != "" {
-				fmt.Println(diff)
-				return errors.Errorf("got = %v, want %v", got, w.want)
+
+		if w.want == nil && got == nil {
+			return nil
+		}
+
+		for e := range w.want {
+			if e1 := <-got; !errors.Is(e, e1) {
+				return errors.New("want is not equal to got")
 			}
 		}
 		return nil
@@ -199,6 +200,8 @@ func Test_queue_Start(t *testing.T) {
 					return nil
 				}
 			}
+			wantC := make(chan error, 1)
+			close(wantC)
 			return test{
 				name: "Start success.",
 				args: args{
@@ -220,7 +223,7 @@ func Test_queue_Start(t *testing.T) {
 					}(),
 				},
 				want: want{
-					want: make(chan error, 1),
+					want: wantC,
 				},
 			}
 		}(),
@@ -254,6 +257,8 @@ func Test_queue_Start(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			cancel()
+			wantC := make(chan error)
+			close(wantC)
 			return test{
 				name: "Start failed when ctx.Done before inCh send.",
 				args: args{
@@ -275,7 +280,7 @@ func Test_queue_Start(t *testing.T) {
 					}(),
 				},
 				want: want{
-					want: make(chan error, 1),
+					want: wantC,
 				},
 			}
 		}(),
@@ -286,6 +291,8 @@ func Test_queue_Start(t *testing.T) {
 				return nil
 			}
 			cancel()
+			wantC := make(chan error)
+			close(wantC)
 			return test{
 				name: "Start failed when ctx.Done after inCh send.",
 				args: args{
@@ -307,7 +314,7 @@ func Test_queue_Start(t *testing.T) {
 					}(),
 				},
 				want: want{
-					want: make(chan error, 1),
+					want: wantC,
 				},
 			}
 		}(),
@@ -475,21 +482,6 @@ func Test_queue_Push(t *testing.T) {
 					ctx: context.Background(),
 					job: nil,
 				},
-				fields: fields{
-					buffer: 0,
-					eg:     nil,
-					qcdur:  100 * time.Microsecond,
-					inCh:   nil,
-					outCh:  nil,
-					qLen: func() (v atomic.Value) {
-						v.Store(uint64(0))
-						return v
-					}(),
-					running: func() (v atomic.Value) {
-						v.Store(true)
-						return v
-					}(),
-				},
 				want: want{
 					err: errors.ErrJobFuncIsNil(),
 				},
@@ -505,15 +497,6 @@ func Test_queue_Push(t *testing.T) {
 					},
 				},
 				fields: fields{
-					buffer: 0,
-					eg:     nil,
-					qcdur:  100 * time.Microsecond,
-					inCh:   nil,
-					outCh:  nil,
-					qLen: func() (v atomic.Value) {
-						v.Store(uint64(0))
-						return v
-					}(),
 					running: func() (v atomic.Value) {
 						v.Store(false)
 						return v
@@ -527,6 +510,7 @@ func Test_queue_Push(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			cancel()
+			time.Sleep(500 * time.Millisecond)
 			return test{
 				name: "return error when ctx.Done.",
 				args: args{
@@ -733,15 +717,6 @@ func Test_queue_pop(t *testing.T) {
 				retry: 1,
 			},
 			fields: fields{
-				buffer: 0,
-				eg:     errgroup.Get(),
-				qcdur:  1 * time.Microsecond,
-				inCh:   make(chan JobFunc, 1),
-				outCh:  make(chan JobFunc, 1),
-				qLen: func() (v atomic.Value) {
-					v.Store(uint64(0))
-					return v
-				}(),
 				running: func() (v atomic.Value) {
 					v.Store(false)
 					return v
@@ -759,11 +734,9 @@ func Test_queue_pop(t *testing.T) {
 			})
 			outCh := make(chan JobFunc, 10)
 			outCh <- nil
-			for i := 0; i < 9; i++ {
-				outCh <- f
-			}
+			outCh <- f
 			return test{
-				name: "return (JobFunc, nil).",
+				name: "return (JobFunc, nil) when first pop is retry.",
 				args: args{
 					ctx:   ctx,
 					retry: 10,
@@ -796,14 +769,13 @@ func Test_queue_pop(t *testing.T) {
 			})
 			outCh := make(chan JobFunc, 10)
 			outCh <- nil
-			for i := 0; i < 9; i++ {
-				outCh <- f
-			}
+			outCh <- nil
+			outCh <- f
 			return test{
-				name: "return (nil, error) when retry is 0.",
+				name: "return (nil, error) when retry is 1 and retry.",
 				args: args{
 					ctx:   ctx,
-					retry: 0,
+					retry: 1,
 				},
 				fields: fields{
 					buffer: 10,
@@ -830,7 +802,7 @@ func Test_queue_pop(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			cancel()
 			return test{
-				name: "return (JobFunc, nil).",
+				name: "return (JobFunc, error) when context canceld.",
 				args: args{
 					ctx:   ctx,
 					retry: 0,
