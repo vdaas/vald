@@ -164,3 +164,27 @@ cmd/meta/cassandra/meta: \
 	    -trimpath \
 	    -o cmd/meta/cassandra/meta \
 	    cmd/meta/cassandra/main.go
+
+cmd/manager/backup/mysql/backup: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find ./cmd/manager/backup/mysql -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/manager/backup/mysql -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	export CGO_ENABLED=1 \
+	    && export GO111MODULE=on \
+	    && go build \
+	    --ldflags "-s -w -linkmode 'external' \
+	    -extldflags '-static' \
+	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+	    -X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+	    -X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)'" \
+	    -a \
+	    -tags netgo \
+	    -installsuffix netgo \
+	    -trimpath \
+	    -o cmd/manager/backup/mysql/backup \
+	    cmd/manager/backup/mysql/main.go

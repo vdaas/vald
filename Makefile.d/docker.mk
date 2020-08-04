@@ -155,6 +155,15 @@ docker/name/backup-manager-mysql:
 docker/build/backup-manager-mysql: docker/build/base
 	docker build -f dockers/manager/backup/mysql/Dockerfile -t $(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE) .
 
+.PHONY: docker/build/backup-manager-mysql/debug
+## build backup-manager-mysql image in debug mode
+docker/build/backup-manager-mysql/debug: docker/build/base
+	docker build \
+	    -f dockers/manager/backup/mysql/Dockerfile \
+	    -t $(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE_NAME=base \
+	    --build-arg DISTROLESS_IMAGE_TAG=debug
+
 .PHONY: docker/name/backup-manager-cassandra
 docker/name/backup-manager-cassandra:
 	@echo "$(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE)"
