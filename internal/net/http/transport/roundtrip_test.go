@@ -29,6 +29,7 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"go.uber.org/goleak"
 )
 
@@ -289,6 +290,7 @@ func Test_ert_RoundTrip(t *testing.T) {
 		},
 	}
 
+	log.Init()
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)

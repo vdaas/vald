@@ -79,6 +79,7 @@ func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 func (e *ert) roundTrip(req *http.Request) (res *http.Response, err error) {
 	res, err = e.transport.RoundTrip(req)
 	if err != nil {
+		log.Error(err)
 		if res != nil { // just in case we check the response as it depends on RoundTrip impl.
 			closeBody(res.Body)
 			if retryableStatusCode(res.StatusCode) {
