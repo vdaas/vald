@@ -36,9 +36,7 @@ import (
 
 func TestMain(m *testing.M) {
 	log.Init()
-
 	code := m.Run()
-
 	os.Exit(code)
 }
 
