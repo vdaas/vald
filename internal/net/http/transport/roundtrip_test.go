@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"reflect"
 	"testing"
 
@@ -33,8 +34,12 @@ import (
 	"go.uber.org/goleak"
 )
 
-func TestMain(t *testing.T) {
+func TestMain(m *testing.M) {
 	log.Init()
+
+	code := m.Run()
+
+	os.Exit(code)
 }
 
 func TestNewExpBackoff(t *testing.T) {
