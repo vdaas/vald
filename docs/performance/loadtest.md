@@ -30,8 +30,8 @@ Please refer to the [Sample configuration file](https://github.com/vdaas/vald/bl
 
 Here are the important configurations and following the explanation.
 
-| Name        | Description                                                                                                                                                      | Example                                             |
-|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
+| Name | Description | Example |
+|:---|:---|:---|
 | service     | By setting the value to gateway, you can test the Vald cluster though the Vald gateway. <br />By setting the value to agent, you can test the Vald agent directly. | gateway or agent                                |
 | operation   | To perform the specific load test action to the Vald cluster.                                                                                                    | insert, streaminsert, search or steamsearch |
 | dataset     | The dataset used in insert and streaminsert operation.                                                                                                       |                                                     |
@@ -48,7 +48,7 @@ wget https://raw.githubusercontent.com/vdaas/vald/master/cmd/tools/cli/loadtest/
 mv sample.yaml config.yaml
 ```
 
-Please refer to the [configure load test tools section](#configure-load-test-tools) to configure the load testing tool.
+Please refer to the [configure load test tools](#configure-load-test-tools) section to configure the load testing tool.
 
 ```bash
 vi config.yaml
