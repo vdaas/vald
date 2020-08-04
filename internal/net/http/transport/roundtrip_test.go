@@ -33,6 +33,10 @@ import (
 	"go.uber.org/goleak"
 )
 
+func TestMain(t *testing.T) {
+	log.Init()
+}
+
 func TestNewExpBackoff(t *testing.T) {
 	type args struct {
 		opts []Option
@@ -290,7 +294,6 @@ func Test_ert_RoundTrip(t *testing.T) {
 		},
 	}
 
-	log.Init()
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
