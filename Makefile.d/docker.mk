@@ -137,6 +137,15 @@ docker/name/meta-cassandra:
 docker/build/meta-cassandra: docker/build/base
 	docker build -f dockers/meta/cassandra/Dockerfile -t $(REPO)/$(META_CASSANDRA_IMAGE) .
 
+.PHONY: docker/build/meta-cassandra/debug
+## build meta-cassandra image in debug mode
+docker/build/meta-cassandra/debug: docker/build/base
+	docker build \
+	    -f dockers/meta/cassandra/Dockerfile \
+	    -t $(REPO)/$(META_CASSANDRA_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE_NAME=base \
+	    --build-arg DISTROLESS_IMAGE_TAG=debug
+
 .PHONY: docker/name/backup-manager-mysql
 docker/name/backup-manager-mysql:
 	@echo "$(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE)"
