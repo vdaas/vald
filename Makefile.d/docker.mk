@@ -173,6 +173,15 @@ docker/name/backup-manager-cassandra:
 docker/build/backup-manager-cassandra: docker/build/base
 	docker build -f dockers/manager/backup/cassandra/Dockerfile -t $(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE) .
 
+.PHONY: docker/build/backup-manager-cassandra/debug
+## build backup-manager-cassandra image in debug mode
+docker/build/backup-manager-cassandra/debug: docker/build/base
+	docker build \
+	    -f dockers/manager/backup/cassandra/Dockerfile \
+	    -t $(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE_NAME=base \
+	    --build-arg DISTROLESS_IMAGE_TAG=debug
+
 .PHONY: docker/name/manager-compressor
 docker/name/manager-compressor:
 	@echo "$(REPO)/$(MANAGER_COMPRESSOR_IMAGE)"
