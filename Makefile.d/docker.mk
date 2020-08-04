@@ -209,6 +209,15 @@ docker/name/manager-index:
 docker/build/manager-index: docker/build/base
 	docker build -f dockers/manager/index/Dockerfile -t $(REPO)/$(MANAGER_INDEX_IMAGE) .
 
+.PHONY: docker/build/manager-index/debug
+## build manager-index image in debug mode
+docker/build/manager-index/debug: docker/build/base
+	docker build \
+	    -f dockers/manager/index/Dockerfile \
+	    -t $(REPO)/$(MANAGER_INDEX_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE_NAME=base \
+	    --build-arg DISTROLESS_IMAGE_TAG=debug
+
 .PHONY: docker/name/ci-container
 docker/name/ci-container:
 	@echo "$(REPO)/$(CI_CONTAINER_IMAGE)"
