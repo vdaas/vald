@@ -119,6 +119,15 @@ docker/name/meta-redis:
 docker/build/meta-redis: docker/build/base
 	docker build -f dockers/meta/redis/Dockerfile -t $(REPO)/$(META_REDIS_IMAGE) .
 
+.PHONY: docker/build/meta-redis/debug
+## build meta-redis image in debug mode
+docker/build/meta-redis/debug: docker/build/base
+	docker build \
+	    -f dockers/meta/redis/Dockerfile \
+	    -t $(REPO)/$(META_REDIS_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE_NAME=base \
+	    --build-arg DISTROLESS_IMAGE_TAG=debug
+
 .PHONY: docker/name/meta-cassandra
 docker/name/meta-cassandra:
 	@echo "$(REPO)/$(META_CASSANDRA_IMAGE)"
