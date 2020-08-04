@@ -97,24 +97,21 @@ func TestNew(t *testing.T) {
 					name:       "worker",
 					limitation: 10,
 					eg:         errgroup.Get(),
-					running: func() atomic.Value {
-						v := new(atomic.Value)
+					running: func() (v atomic.Value) {
 						v.Store(false)
-						return *v
+						return v
 					}(),
 					queue: &queue{
 						buffer: 10,
 						eg:     errgroup.Get(),
 						qcdur:  200 * time.Millisecond,
-						qLen: func() atomic.Value {
-							v := new(atomic.Value)
+						qLen: func() (v atomic.Value) {
 							v.Store(uint64(0))
-							return *v
+							return v
 						}(),
-						running: func() atomic.Value {
-							v := new(atomic.Value)
+						running: func() (v atomic.Value) {
 							v.Store(false)
-							return *v
+							return v
 						}(),
 						inCh:  make(chan JobFunc, 10),
 						outCh: make(chan JobFunc, 1),
@@ -133,25 +130,22 @@ func TestNew(t *testing.T) {
 				want: &worker{
 					name:       "test1",
 					limitation: 10,
-					running: func() atomic.Value {
-						v := new(atomic.Value)
+					running: func() (v atomic.Value) {
 						v.Store(false)
-						return *v
+						return v
 					}(),
 					eg: errgroup.Get(),
 					queue: &queue{
 						buffer: 10,
 						eg:     errgroup.Get(),
 						qcdur:  200 * time.Millisecond,
-						qLen: func() atomic.Value {
-							v := new(atomic.Value)
+						qLen: func() (v atomic.Value) {
 							v.Store(uint64(0))
-							return *v
+							return v
 						}(),
-						running: func() atomic.Value {
-							v := new(atomic.Value)
+						running: func() (v atomic.Value) {
 							v.Store(false)
-							return *v
+							return v
 						}(),
 						inCh:  make(chan JobFunc, 10),
 						outCh: make(chan JobFunc, 1),
@@ -242,10 +236,9 @@ func Test_worker_Start(t *testing.T) {
 					name:       "worker",
 					limitation: 10,
 					eg:         errgroup.Get(),
-					running: func() atomic.Value {
-						v := new(atomic.Value)
+					running: func() (v atomic.Value) {
 						v.Store(false)
-						return *v
+						return v
 					}(),
 					queue: NewQueueMock(),
 				},
@@ -267,10 +260,9 @@ func Test_worker_Start(t *testing.T) {
 			args: args{},
 			fields: fields{
 				name: "test",
-				running: func() atomic.Value {
-					v := new(atomic.Value)
+				running: func() (v atomic.Value) {
 					v.Store(true)
-					return *v
+					return v
 				}(),
 			},
 			want: want{
@@ -286,10 +278,9 @@ func Test_worker_Start(t *testing.T) {
 				name:       "worker",
 				limitation: 10,
 				eg:         errgroup.Get(),
-				running: func() atomic.Value {
-					v := new(atomic.Value)
+				running: func() (v atomic.Value) {
 					v.Store(false)
-					return *v
+					return v
 				}(),
 				queue: &QueueMock{
 					StartFunc: func(context.Context) (<-chan error, error) {
@@ -622,10 +613,9 @@ func Test_worker_Pause(t *testing.T) {
 		{
 			name: "Pause success",
 			fields: fields{
-				running: func() atomic.Value {
-					v := &atomic.Value{}
+				running: func() (v atomic.Value) {
 					v.Store(true)
-					return *v
+					return v
 				}(),
 			},
 			checkFunc: func(w want, worker *worker) error {
@@ -696,10 +686,9 @@ func Test_worker_Resume(t *testing.T) {
 		{
 			name: "Resume success",
 			fields: fields{
-				running: func() atomic.Value {
-					v := &atomic.Value{}
+				running: func() (v atomic.Value) {
 					v.Store(false)
-					return *v
+					return v
 				}(),
 			},
 			checkFunc: func(w want, worker *worker) error {
@@ -774,10 +763,9 @@ func Test_worker_IsRunning(t *testing.T) {
 		{
 			name: "return true if it is running",
 			fields: fields{
-				running: func() atomic.Value {
-					v := &atomic.Value{}
+				running: func() (v atomic.Value) {
 					v.Store(true)
-					return *v
+					return v
 				}(),
 			},
 			want: want{
@@ -787,10 +775,9 @@ func Test_worker_IsRunning(t *testing.T) {
 		{
 			name: "return false if it is not running",
 			fields: fields{
-				running: func() atomic.Value {
-					v := &atomic.Value{}
+				running: func() (v atomic.Value) {
 					v.Store(false)
-					return *v
+					return v
 				}(),
 			},
 			want: want{
@@ -1164,10 +1151,9 @@ func Test_worker_Dispatch(t *testing.T) {
 			},
 			fields: fields{
 				name: "test",
-				running: func() atomic.Value {
-					v := &atomic.Value{}
+				running: func() (v atomic.Value) {
 					v.Store(false)
-					return *v
+					return v
 				}(),
 			},
 			want: want{
@@ -1184,10 +1170,9 @@ func Test_worker_Dispatch(t *testing.T) {
 			},
 			fields: fields{
 				name: "test",
-				running: func() atomic.Value {
-					v := &atomic.Value{}
+				running: func() (v atomic.Value) {
 					v.Store(true)
-					return *v
+					return v
 				}(),
 				queue: &QueueMock{
 					PushFunc: func(context.Context, JobFunc) error {
@@ -1207,10 +1192,9 @@ func Test_worker_Dispatch(t *testing.T) {
 			},
 			fields: fields{
 				name: "test",
-				running: func() atomic.Value {
-					v := &atomic.Value{}
+				running: func() (v atomic.Value) {
 					v.Store(true)
-					return *v
+					return v
 				}(),
 				queue: &QueueMock{},
 			},
@@ -1226,10 +1210,9 @@ func Test_worker_Dispatch(t *testing.T) {
 			},
 			fields: fields{
 				name: "test",
-				running: func() atomic.Value {
-					v := &atomic.Value{}
+				running: func() (v atomic.Value) {
 					v.Store(true)
-					return *v
+					return v
 				}(),
 				queue: &QueueMock{
 					PushFunc: func(context.Context, JobFunc) error {
