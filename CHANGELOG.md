@@ -1,5 +1,41 @@
 # CHANGELOG
 
+## v0.0.50
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.50`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.50`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.50`
+gateway | `docker pull vdaas/vald-gateway:v0.0.50`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.50`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.50`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.50`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.50`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.50`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.50`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.50`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.50)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.50/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.50/charts/vald-helm-operator/README.md)
+
+### Changes
+- Add warn logging messages to agent-sidecar &  ignore io.EOF error when reading metadata.json ([#608](https://github.com/vdaas/vald/pull/608))
+- Add DB metrics: Cassandra ([#587](https://github.com/vdaas/vald/pull/587))
+- :recycle: Improve Singleflight performance ([#580](https://github.com/vdaas/vald/pull/580))
+- [ImgBot] Optimize images ([#607](https://github.com/vdaas/vald/pull/607))
+- :pencil: add delete dataflow in architecture document ([#591](https://github.com/vdaas/vald/pull/591))
+- :recycle: Add gaussian random vector generation ([#595](https://github.com/vdaas/vald/pull/595))
+- :recycle: :white_check_mark: Refactoring `internal/db/kvs/redis` package ([#590](https://github.com/vdaas/vald/pull/590))
+- :green_heart: Add reviewdog - markdown: LanguageTool ([#604](https://github.com/vdaas/vald/pull/604))
+- :green_heart: Add reviewdog - hadolint ([#603](https://github.com/vdaas/vald/pull/603))
+- :robot: Automatically update k8s manifests ([#599](https://github.com/vdaas/vald/pull/599))
+
+
 ## v0.0.49
 
 ### Docker images

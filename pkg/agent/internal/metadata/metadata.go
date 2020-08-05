@@ -18,6 +18,7 @@
 package metadata
 
 import (
+	"io"
 	"os"
 
 	"github.com/vdaas/vald/internal/encoding/json"
@@ -46,7 +47,7 @@ func Load(path string) (*Metadata, error) {
 
 	var meta Metadata
 	err = json.Decode(f, &meta)
-	if err != nil {
+	if err != nil && err != io.EOF {
 		return nil, err
 	}
 

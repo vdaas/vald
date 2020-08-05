@@ -32,6 +32,7 @@ type ert struct {
 	bo        backoff.Backoff
 }
 
+// NewExpBackoff returns the backoff roundtripper implementation
 func NewExpBackoff(opts ...Option) http.RoundTripper {
 	e := new(ert)
 	for _, opt := range append(defaultOpts, opts...) {
@@ -41,50 +42,78 @@ func NewExpBackoff(opts ...Option) http.RoundTripper {
 	return e
 }
 
+// RoundTrip round trip the HTTP request and return the response.
+// If backoff is not set, the default roundTrip implementation will be used.
+// It round trip the request and returns the response, and return any error occurred.
+// It returns errors.ErrTransportRetryable to indicate if the request is consider as retryable.
 func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 	if e.bo == nil {
 		return e.roundTrip(req)
 	}
-	var r interface{}
-	r, err = e.bo.Do(req.Context(), func() (interface{}, error) {
-		return e.roundTrip(req)
+
+	var rterr error
+	_, err = e.bo.Do(req.Context(), func() (interface{}, error) {
+		r, reqerr := e.roundTrip(req)
+		if reqerr != nil {
+			// if the error is retryable, return the error and let backoff to retry.
+			if errors.Is(reqerr, errors.ErrTransportRetryable) {
+				return nil, reqerr
+			}
+			// if the error is not retryable, return nil error to terminate the backoff execution
+			rterr = reqerr
+			return nil, nil
+		}
+		res = r
+		return r, nil
 	})
 	if err != nil {
 		return nil, err
 	}
-
-	var ok bool
-	res, ok = r.(*http.Response)
-	if !ok {
-		return nil, errors.ErrInvalidTypeConversion(r, res)
+	if rterr != nil {
+		return nil, rterr
 	}
+
 	return res, nil
 }
 
 func (e *ert) roundTrip(req *http.Request) (res *http.Response, err error) {
 	res, err = e.transport.RoundTrip(req)
-	if err == nil {
-		return res, nil
-	}
-	if res == nil {
+	if err != nil {
+		log.Error(err)
+		if res != nil { // just in case we check the response as it depends on RoundTrip impl.
+			closeBody(res.Body)
+			if retryableStatusCode(res.StatusCode) {
+				return nil, errors.Wrap(errors.ErrTransportRetryable, err.Error())
+			}
+		}
 		return nil, err
 	}
-	_, err = io.Copy(ioutil.Discard, res.Body)
-	if err != nil {
-		log.Error(err)
+
+	if res != nil && retryableStatusCode(res.StatusCode) {
+		closeBody(res.Body)
+		return nil, errors.ErrTransportRetryable
 	}
-	err = res.Body.Close()
-	if err != nil {
-		log.Error(err)
-	}
-	switch res.StatusCode {
+	return res, nil
+}
+
+func retryableStatusCode(status int) bool {
+	switch status {
 	case http.StatusTooManyRequests,
 		http.StatusInternalServerError,
 		http.StatusServiceUnavailable,
 		http.StatusMovedPermanently,
 		http.StatusBadGateway,
 		http.StatusGatewayTimeout:
-		return nil, errors.ErrTransportRetryable
+		return true
 	}
-	return res, nil
+	return false
+}
+
+func closeBody(rc io.ReadCloser) {
+	if _, err := io.Copy(ioutil.Discard, rc); err != nil {
+		log.Error(err)
+	}
+	if err := rc.Close(); err != nil {
+		log.Error(err)
+	}
 }
