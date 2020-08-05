@@ -16,8 +16,10 @@
 
 ARG DISTROLESS_IMAGE_NAME=static
 ARG DISTROLESS_IMAGE_TAG=latest
+ARG UPX_OPTIONS=-9
 
 FROM vdaas/vald-base:latest AS builder
+ARG UPX_OPTIONS
 
 ENV ORG vdaas
 ENV REPO vald
@@ -51,7 +53,7 @@ COPY Makefile .
 COPY .git .
 
 RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
-    && upx -9 -o "/usr/bin/${APP_NAME}" "cmd/${PKG}/${APP_NAME}"
+    && upx ${UPX_OPTIONS} -o "/usr/bin/${APP_NAME}" "cmd/${PKG}/${APP_NAME}"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 RUN cp sample.yaml /tmp/config.yaml
