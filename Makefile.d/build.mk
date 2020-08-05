@@ -42,8 +42,8 @@ cmd/agent/core/ngt/ngt: \
 	    -tags "cgo netgo" \
 	    -trimpath \
 	    -installsuffix "cgo netgo" \
-	    -o cmd/agent/core/ngt/ngt \
-	    cmd/agent/core/ngt/main.go
+	    -o $@ \
+	    $(dir $@)main.go
 
 cmd/agent/sidecar/sidecar: \
 	$(GO_SOURCES_INTERNAL) \
@@ -66,8 +66,8 @@ cmd/agent/sidecar/sidecar: \
 	    -tags netgo \
 	    -trimpath \
 	    -installsuffix netgo \
-	    -o cmd/agent/sidecar/sidecar \
-	    cmd/agent/sidecar/main.go
+	    -o $@ \
+	    $(dir $@)main.go
 
 cmd/discoverer/k8s/discoverer: \
 	$(GO_SOURCES_INTERNAL) \
@@ -90,8 +90,8 @@ cmd/discoverer/k8s/discoverer: \
 	    -tags netgo \
 	    -installsuffix netgo \
 	    -trimpath \
-	    -o cmd/discoverer/k8s/discoverer \
-	    cmd/discoverer/k8s/main.go
+	    -o $@ \
+	    $(dir $@)main.go
 
 cmd/gateway/vald/vald: \
 	$(GO_SOURCES_INTERNAL) \
@@ -114,8 +114,8 @@ cmd/gateway/vald/vald: \
 	    -tags netgo \
 	    -installsuffix netgo \
 	    -trimpath \
-	    -o cmd/gateway/vald/vald \
-	    cmd/gateway/vald/main.go
+	    -o $@ \
+	    $(dir $@)main.go
 
 cmd/meta/redis/meta: \
 	$(GO_SOURCES_INTERNAL) \
@@ -138,8 +138,8 @@ cmd/meta/redis/meta: \
 	    -tags netgo \
 	    -installsuffix netgo \
 	    -trimpath \
-	    -o cmd/meta/redis/meta \
-	    cmd/meta/redis/main.go
+	    -o $@ \
+	    $(dir $@)main.go
 
 cmd/meta/cassandra/meta: \
 	$(GO_SOURCES_INTERNAL) \
@@ -162,8 +162,8 @@ cmd/meta/cassandra/meta: \
 	    -tags netgo \
 	    -installsuffix netgo \
 	    -trimpath \
-	    -o cmd/meta/cassandra/meta \
-	    cmd/meta/cassandra/main.go
+	    -o $@ \
+	    $(dir $@)main.go
 
 cmd/manager/backup/mysql/backup: \
 	$(GO_SOURCES_INTERNAL) \
@@ -186,8 +186,8 @@ cmd/manager/backup/mysql/backup: \
 	    -tags netgo \
 	    -installsuffix netgo \
 	    -trimpath \
-	    -o cmd/manager/backup/mysql/backup \
-	    cmd/manager/backup/mysql/main.go
+	    -o $@ \
+	    $(dir $@)main.go
 
 cmd/manager/backup/cassandra/backup: \
 	$(GO_SOURCES_INTERNAL) \
@@ -210,8 +210,8 @@ cmd/manager/backup/cassandra/backup: \
 	    -tags netgo \
 	    -installsuffix netgo \
 	    -trimpath \
-	    -o cmd/manager/backup/cassandra/backup \
-	    cmd/manager/backup/cassandra/main.go
+	    -o $@ \
+	    $(dir $@)main.go
 
 cmd/manager/compressor/compressor: \
 	$(GO_SOURCES_INTERNAL) \
@@ -234,8 +234,8 @@ cmd/manager/compressor/compressor: \
 	    -tags netgo \
 	    -trimpath \
 	    -installsuffix netgo \
-	    -o cmd/manager/compressor/compressor \
-	    cmd/manager/compressor/main.go
+	    -o $@ \
+	    $(dir $@)main.go
 
 cmd/manager/index/index: \
 	$(GO_SOURCES_INTERNAL) \
@@ -258,5 +258,53 @@ cmd/manager/index/index: \
 	    -tags netgo \
 	    -trimpath \
 	    -installsuffix netgo \
-	    -o cmd/manager/index/index \
-	    cmd/manager/index/main.go
+	    -o $@ \
+	    $(dir $@)main.go
+
+cmd/manager/replication/agent/agent: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find ./cmd/manager/replication/agent -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/manager/replication/agent -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	export CGO_ENABLED=1 \
+	    && export GO111MODULE=on \
+	    && go build \
+	    --ldflags "-s -w -linkmode 'external' \
+	    -extldflags '-static' \
+	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+	    -X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+	    -X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)'" \
+	    -a \
+	    -tags netgo \
+	    -trimpath \
+	    -installsuffix netgo \
+	    -o $@ \
+	    $(dir $@)main.go
+
+cmd/manager/replication/controller/controller: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find ./cmd/manager/replication/controller -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/manager/replication/controller -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	export CGO_ENABLED=1 \
+	    && export GO111MODULE=on \
+	    && go build \
+	    --ldflags "-s -w -linkmode 'external' \
+	    -extldflags '-static' \
+	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+	    -X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+	    -X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)'" \
+	    -a \
+	    -tags netgo \
+	    -trimpath \
+	    -installsuffix netgo \
+	    -o $@ \
+	    $(dir $@)main.go
