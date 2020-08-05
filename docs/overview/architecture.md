@@ -139,7 +139,7 @@ When the user updates a vector from Vald:
 20. Vald Backup Gateway will asynchronously send all the inserted data (vector(s), vector ID(s), UUID(s) and IP address(es)) to the Vald Compressor. Vald Compressor will compress the vector data asynchronously to reduce the size of the vector data.
 21. Vald Compressor will forward the data (compressed vector(s), vector ID(s), UUID(s) and IP address(es)) to the Vald Backup Manager.
 22. Vald Backup Manager will store all of the data to the persistent layer such as MySQL, Cassandra, etc., to prevent the data lost in Vald.
-23. Vald Backup Gateway returns success to Vald Meta Gateway.
+23. Vald Backup Gateway returns success to the Vald Meta Gateway.
 24. Vald Meta Gateway will return success to the Vald Filter Gateway.
 25. Vald Filter Gateway will return success to the Vald Ingress.
 
