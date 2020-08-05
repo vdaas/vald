@@ -806,7 +806,7 @@ func Test_queue_pop(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			cancel()
 			return test{
-				name: "return (JobFunc, error) when context canceld.",
+				name: "return (JobFunc, error) when context canceled.",
 				args: args{
 					ctx:   ctx,
 					retry: 0,

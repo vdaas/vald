@@ -133,7 +133,7 @@ func (q *queue) Push(ctx context.Context, job JobFunc) error {
 }
 
 // Pop returns (JobFunc, nil) if the channnel, which will be used for queuing job, contains JobFunc.
-// If pop returns error, Pos returns (nil, error)
+// It returns (nil ,error) if it failed to pop from the job queue.
 func (q *queue) Pop(ctx context.Context) (JobFunc, error) {
 	return q.pop(ctx, q.Len())
 }
