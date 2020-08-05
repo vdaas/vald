@@ -117,7 +117,7 @@ When the user searches a vector from Vald:
 
 When the user updates a vector from Vald:
 
-1. Vald Ingress receives the request from the user. The request includes the new vector(s) and the vector ID(s) to be updated.
+1. Vald Ingress receives the request from the user. The request includes the the vector ID(s) and the vector(s) to be updated.
 2. Vald Ingress will forward the request to the Vald Filter Gateway to pre-process the request data.
 3. Vald Filter Gateway will forward the request to the user-defined Vald Ingress Filter. After the Vald Ingress Filter received the request, it will perform the pre-processing logic defined by the user, for example, padding the vector to match the vector dimension in Vald.
 4. After the request is processed by the user-defined Vald Ingress Filter, the result will return to the Vald Filter Gateway.
