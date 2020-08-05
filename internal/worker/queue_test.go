@@ -63,6 +63,10 @@ func TestNewQueue(t *testing.T) {
 			return nil
 		}
 
+		if (w.want == nil && got != nil) || (w.want != nil && got == nil) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+
 		egComparator := func(want, got errgroup.Group) bool {
 			return reflect.DeepEqual(want, got)
 		}
@@ -78,7 +82,7 @@ func TestNewQueue(t *testing.T) {
 			}),
 		}
 		if diff := cmp.Diff(w.want, got, opts...); diff != "" {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("diff = %s", diff)
 		}
 		return nil
 	}
