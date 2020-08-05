@@ -127,7 +127,7 @@ When the user updates a vector from Vald:
 8. If Vald Meta Gateway gets the UUID(s), Vald Meta Gateway will forward the request with the UUID(s) to the Vald Backup Gateway.
 9. Vald Backup Gateway splits the updation step into the deletion and insertion step. First is the deletion step. Vald Backup Gateway will forward to the deletion request with the UUID(s) to the Vald LB Gateway.
 10. Vald LB Gateway will broadcast the request with UUID(s) to the Vald Agents. Each Vald Agent will delete the vector data and the metadata if the corresponding UUID(s) is found in the in-memory graph index.
-11. If Vald Agent successfully deletes the request data, it will return success to the Vald LB Gateway.
+11. If each Vald Agent successfully deletes the request data, it will return success to the Vald LB Gateway.
 12. After Vald LB Gateway receives success with the location info (e.g. IP address of pod) from the Vald Agent, Vald LB Gateway will return success to the Vald Backup Gateway.
 13. Vald Backup Gateway will forward the request with the UUID to the Vald Compressor.
 14. Vald Compressor will forward the UUID(s) to the Vald Backup Manager.
