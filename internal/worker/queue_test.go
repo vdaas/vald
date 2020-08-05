@@ -199,11 +199,6 @@ func Test_queue_Start(t *testing.T) {
 	tests := []test{
 		func() test {
 			inCh := make(chan JobFunc, 10)
-			for i := 0; i < 10; i++ {
-				inCh <- func(context.Context) error {
-					return nil
-				}
-			}
 			wantC := make(chan error, 1)
 			close(wantC)
 			return test{
@@ -228,6 +223,13 @@ func Test_queue_Start(t *testing.T) {
 				},
 				want: want{
 					want: wantC,
+				},
+				beforeFunc: func(args) {
+					for i := 0; i < 10; i++ {
+						inCh <- func(context.Context) error {
+							return nil
+						}
+					}
 				},
 			}
 		}(),
@@ -260,7 +262,6 @@ func Test_queue_Start(t *testing.T) {
 		}(),
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
-			cancel()
 			wantC := make(chan error)
 			close(wantC)
 			return test{
@@ -286,15 +287,17 @@ func Test_queue_Start(t *testing.T) {
 				want: want{
 					want: wantC,
 				},
+				beforeFunc: func(args) {
+					go func() {
+						time.Sleep(time.Millisecond * 50)
+						cancel()
+					}()
+				},
 			}
 		}(),
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			inCh := make(chan JobFunc, 10)
-			inCh <- func(context.Context) error {
-				return nil
-			}
-			cancel()
 			wantC := make(chan error)
 			close(wantC)
 			return test{
@@ -319,6 +322,17 @@ func Test_queue_Start(t *testing.T) {
 				},
 				want: want{
 					want: wantC,
+				},
+				beforeFunc: func(args) {
+					for i := 0; i < 10; i++ {
+						inCh <- func(context.Context) error {
+							return nil
+						}
+					}
+					go func() {
+						time.Sleep(time.Microsecond * 50)
+						cancel()
+					}()
 				},
 			}
 		}(),
@@ -513,8 +527,7 @@ func Test_queue_Push(t *testing.T) {
 		}(),
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
-			cancel()
-			time.Sleep(500 * time.Millisecond)
+			inCh := make(chan JobFunc, 1)
 			return test{
 				name: "return error when ctx.Done.",
 				args: args{
@@ -527,7 +540,7 @@ func Test_queue_Push(t *testing.T) {
 					buffer: 1,
 					eg:     errgroup.Get(),
 					qcdur:  100 * time.Microsecond,
-					inCh:   make(chan JobFunc, 1),
+					inCh:   inCh,
 					outCh:  make(chan JobFunc),
 					qLen: func() (v atomic.Value) {
 						v.Store(uint64(0))
@@ -540,6 +553,15 @@ func Test_queue_Push(t *testing.T) {
 				},
 				want: want{
 					err: context.Canceled,
+				},
+				beforeFunc: func(args) {
+					inCh <- func(context.Context) error {
+						return nil
+					}
+					go func() {
+						time.Sleep(time.Millisecond * 50)
+						cancel()
+					}()
 				},
 			}
 		}(),
@@ -571,7 +593,6 @@ func Test_queue_Push(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -618,7 +639,6 @@ func Test_queue_Pop(t *testing.T) {
 				return nil
 			})
 			outCh := make(chan JobFunc, 1)
-			outCh <- f
 			return test{
 				name: "return (JobFunc, nil) when pop success.",
 				args: args{
@@ -641,6 +661,9 @@ func Test_queue_Pop(t *testing.T) {
 				},
 				want: want{
 					want: f,
+				},
+				beforeFunc: func(args) {
+					outCh <- f
 				},
 			}
 		}(),
@@ -737,8 +760,6 @@ func Test_queue_pop(t *testing.T) {
 				return nil
 			})
 			outCh := make(chan JobFunc, 10)
-			outCh <- nil
-			outCh <- f
 			return test{
 				name: "return (JobFunc, nil) when first pop is retry.",
 				args: args{
@@ -764,6 +785,10 @@ func Test_queue_pop(t *testing.T) {
 					want: f,
 					err:  nil,
 				},
+				beforeFunc: func(args) {
+					outCh <- nil
+					outCh <- f
+				},
 			}
 		}(),
 		func() test {
@@ -772,9 +797,6 @@ func Test_queue_pop(t *testing.T) {
 				return nil
 			})
 			outCh := make(chan JobFunc, 10)
-			outCh <- nil
-			outCh <- nil
-			outCh <- f
 			return test{
 				name: "return (nil, error) when retry is 1 and retry.",
 				args: args{
@@ -800,11 +822,15 @@ func Test_queue_pop(t *testing.T) {
 					want: nil,
 					err:  errors.ErrJobFuncIsNil(),
 				},
+				beforeFunc: func(args) {
+					outCh <- nil
+					outCh <- nil
+					outCh <- f
+				},
 			}
 		}(),
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
-			cancel()
 			return test{
 				name: "return (JobFunc, error) when context canceled.",
 				args: args{
@@ -829,6 +855,12 @@ func Test_queue_pop(t *testing.T) {
 				want: want{
 					want: nil,
 					err:  context.Canceled,
+				},
+				beforeFunc: func(args) {
+					go func() {
+						time.Sleep(time.Millisecond * 50)
+						cancel()
+					}()
 				},
 			}
 		}(),
