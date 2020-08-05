@@ -188,7 +188,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (l *loader) do(ctx context.Context, f func(res interface{}, err error), notify func(context.Context, error)) (err error) {
+func (l *loader) do(ctx context.Context, f func(interface{}, error), notify func(context.Context, error)) (err error) {
 	eg, egctx := errgroup.New(ctx)
 
 	switch l.operation {
@@ -204,7 +204,13 @@ func (l *loader) do(ctx context.Context, f func(res interface{}, err error), not
 				return new(payload.Search_Response)
 			}
 		}
-		eg.Go(safety.RecoverFunc(func() error {
+		eg.Go(safety.RecoverFunc(func() (err error) {
+			defer func() {
+				if err != nil {
+					notify(egctx, err)
+					err = nil
+				}
+			}()
 			// TODO: related to #557
 			/*
 				_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
@@ -217,17 +223,15 @@ func (l *loader) do(ctx context.Context, f func(res interface{}, err error), not
 			*/
 			conn, err := grpc.Dial(l.addr, grpc.WithInsecure())
 			if err != nil {
-				notify(egctx, err)
-				return nil
+				return err
 			}
 			defer notify(egctx, conn.Close())
 			st, err := l.loaderFunc(egctx, conn, nil)
 			if err != nil {
-				notify(egctx, err)
-				return nil
+				return err
 			}
 			if err := igrpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f); err != nil {
-				notify(egctx, err)
+				return err
 			}
 			return nil
 		}))
@@ -241,18 +245,21 @@ func (l *loader) do(ctx context.Context, f func(res interface{}, err error), not
 				break
 			}
 
-			eg.Go(safety.RecoverFunc(func() error {
+			eg.Go(safety.RecoverFunc(func() (err error) {
+				defer func() {
+					notify(egctx, err)
+					err = nil
+				}()
 				conn, err := grpc.Dial(l.addr, grpc.WithInsecure())
 				if err != nil {
-					notify(egctx, err)
-					return nil
+					return err
 				}
 				defer notify(egctx, conn.Close())
 
 				res, err := l.loaderFunc(egctx, conn, r)
 				f(res, err)
 				if err != nil {
-					notify(egctx, err)
+					return err
 				}
 				return nil
 			}))
