@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-ARG DISTROLESS_IMAGE_NAME=static
-ARG DISTROLESS_IMAGE_TAG=latest
+ARG DISTROLESS_IMAGE=gcr.io/distroless/static
+ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG UPX_OPTIONS=-9
 
 FROM vdaas/vald-base:latest AS builder
@@ -51,11 +51,13 @@ COPY .git .
 RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && upx ${UPX_OPTIONS} -o "/usr/bin/${APP_NAME}" "cmd/${PKG}/${APP_NAME}"
 
-FROM gcr.io/distroless/${DISTROLESS_IMAGE_NAME}:${DISTROLESS_IMAGE_TAG}
+FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer "Vald team <vald@vdaas.org>"
 
 ENV APP_NAME compressor
 
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
+
+USER nonroot:nonroot
 
 ENTRYPOINT ["/go/bin/compressor"]

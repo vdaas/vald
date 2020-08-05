@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-ARG DISTROLESS_IMAGE_NAME=static
-ARG DISTROLESS_IMAGE_TAG=latest
+ARG DISTROLESS_IMAGE=gcr.io/distroless/static
+ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG UPX_OPTIONS=-9
 
 FROM vdaas/vald-base:latest AS builder
@@ -58,12 +58,14 @@ RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 RUN cp sample.yaml /tmp/config.yaml
 
-FROM gcr.io/distroless/${DISTROLESS_IMAGE_NAME}:${DISTROLESS_IMAGE_TAG}
+FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer "Vald team <vald@vdaas.org>"
 
 ENV APP_NAME ngt
 
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 COPY --from=builder /tmp/config.yaml /etc/server/config.yaml
+
+USER nonroot:nonroot
 
 ENTRYPOINT ["/go/bin/ngt"]

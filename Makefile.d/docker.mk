@@ -48,7 +48,7 @@ docker/build/agent-ngt: docker/build/base
 	docker build \
 	    -f dockers/agent/core/ngt/Dockerfile \
 	    -t $(REPO)/$(AGENT_IMAGE) . \
-	    --build-arg DISTROLESS_IMAGE_NAME=$(DISTROLESS_IMAGE_NAME) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
@@ -62,7 +62,7 @@ docker/build/agent-sidecar: docker/build/base
 	docker build \
 	    -f dockers/agent/sidecar/Dockerfile \
 	    -t $(REPO)/$(AGENT_SIDECAR_IMAGE) . \
-	    --build-arg DISTROLESS_IMAGE_NAME=$(DISTROLESS_IMAGE_NAME) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
@@ -76,7 +76,7 @@ docker/build/discoverer-k8s: docker/build/base
 	docker build \
 	    -f dockers/discoverer/k8s/Dockerfile \
 	    -t $(REPO)/$(DISCOVERER_IMAGE) . \
-	    --build-arg DISTROLESS_IMAGE_NAME=$(DISTROLESS_IMAGE_NAME) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
@@ -90,7 +90,7 @@ docker/build/gateway-vald: docker/build/base
 	docker build \
 	    -f dockers/gateway/vald/Dockerfile \
 	    -t $(REPO)/$(GATEWAY_IMAGE) . \
-	    --build-arg DISTROLESS_IMAGE_NAME=$(DISTROLESS_IMAGE_NAME) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
@@ -104,7 +104,7 @@ docker/build/meta-redis: docker/build/base
 	docker build \
 	    -f dockers/meta/redis/Dockerfile \
 	    -t $(REPO)/$(META_REDIS_IMAGE) . \
-	    --build-arg DISTROLESS_IMAGE_NAME=$(DISTROLESS_IMAGE_NAME) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
@@ -118,7 +118,7 @@ docker/build/meta-cassandra: docker/build/base
 	docker build \
 	    -f dockers/meta/cassandra/Dockerfile \
 	    -t $(REPO)/$(META_CASSANDRA_IMAGE) . \
-	    --build-arg DISTROLESS_IMAGE_NAME=$(DISTROLESS_IMAGE_NAME) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
@@ -132,7 +132,7 @@ docker/build/backup-manager-mysql: docker/build/base
 	docker build \
 	    -f dockers/manager/backup/mysql/Dockerfile \
 	    -t $(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE) . \
-	    --build-arg DISTROLESS_IMAGE_NAME=$(DISTROLESS_IMAGE_NAME) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
@@ -146,7 +146,7 @@ docker/build/backup-manager-cassandra: docker/build/base
 	docker build \
 	    -f dockers/manager/backup/cassandra/Dockerfile \
 	    -t $(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE) . \
-	    --build-arg DISTROLESS_IMAGE_NAME=$(DISTROLESS_IMAGE_NAME) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
@@ -160,7 +160,7 @@ docker/build/manager-compressor: docker/build/base
 	docker build \
 	    -f dockers/manager/compressor/Dockerfile \
 	    -t $(REPO)/$(MANAGER_COMPRESSOR_IMAGE) . \
-	    --build-arg DISTROLESS_IMAGE_NAME=$(DISTROLESS_IMAGE_NAME) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
@@ -174,7 +174,7 @@ docker/build/manager-index: docker/build/base
 	docker build \
 	    -f dockers/manager/index/Dockerfile \
 	    -t $(REPO)/$(MANAGER_INDEX_IMAGE) . \
-	    --build-arg DISTROLESS_IMAGE_NAME=$(DISTROLESS_IMAGE_NAME) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
