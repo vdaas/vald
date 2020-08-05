@@ -225,7 +225,7 @@ func Test_datasetDir(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got, err := datasetDir()
+			got, err := smallDatasetDir()
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

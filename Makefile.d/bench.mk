@@ -24,6 +24,24 @@ $(BENCH_DATASET_HDF5_DIR):
 	$(call mkdir, $@)
 	$(call rm, -rf, $@/*)
 
+%.large_dataset_dir:
+	@test -f $* || mkdir -p $*
+
+$(SIFT1B_BASE_FILE) $(SIFT1B_LEARN_FILE) $(SIFT1B_QUERY_FILE): | $(SIFT1B_ROOT_DIR).large_dataset_dir
+	test -f $@ || curl -fsSL $(SIFT1B_BASE_URL)$(subst $(SIFT1B_ROOT_DIR)/,,$@).gz | gunzip -d > $@
+
+$(SIFT1B_GROUNDTRUTH_DIR): | $(SIFT1B_ROOT_DIR).large_dataset_dir
+	test -f $@ || curl -fsSL $(SIFT1B_BASE_URL)bigann_gnd.tar.gz | tar -C $(SIFT1B_ROOT_DIR) -zx
+
+$(DEEP1B_GROUNDTRUTH_FILE) $(DEEP1B_QUERY_FILE) $(DEEP1B_BASE_CHUNK_FILES) $(DEEP1B_LEARN_CHUNK_FILES): | $(DEEP1B_ROOT_DIR).large_dataset_dir
+	test -f $@ || curl -fsSL "$(shell curl -fsSL "$(DEEP1B_API_URL)$(subst $(DEEP1B_ROOT_DIR),,$@)" | sed -e 's/^{\(.*\)}$$/\1/' | tr ',' '\n' | grep href | cut -d ':' -f 2- | tr -d '"')" -o $@
+
+$(DEEP1B_BASE_FILE): | $(DEEP1B_BASE_DIR).large_dataset_dir $(DEEP1B_BASE_CHUNK_FILES)
+	cat $(DEEP1B_BASE_CHUNK_FILES) > $@
+
+$(DEEP1B_LEARN_FILE): | $(DEEP1B_LEARN_DIR).large_dataset_dir $(DEEP1B_LEARN_CHUNK_FILES)
+	cat $(DEEP1B_LEARN_CHUNK_FILES) > $@
+
 .PHONY: bench/datasets
 ## fetch datasets for benchmark
 bench/datasets: $(BENCH_DATASETS)
@@ -44,6 +62,28 @@ bench/datasets/md5dir/print:
 .PHONY: bench/datasets/hdf5dir/print
 bench/datasets/hdf5dir/print:
 	@echo $(BENCH_DATASET_HDF5_DIR)
+
+.PHONY: bench/dataset/large
+## fetch large dataset for benchmark
+bench/dataset/large: \
+	bench/dataset/large/sift1b \
+	bench/dataset/large/deep1b
+
+.PHONY: bench/dataset/large/sift1b
+## fetch sift1b dataset for benchmark
+bench/dataset/large/sift1b: \
+	$(SIFT1B_BASE_FILE) \
+	$(SIFT1B_LEARN_FILE) \
+	$(SIFT1B_QUERY_FILE) \
+	$(SIFT1B_GROUNDTRUTH_DIR)
+
+.PHONY: bench/dataset/large/deep1b
+## fetch deep1b dataset for benchmark
+bench/dataset/large/deep1b: \
+	$(DEEP1B_BASE_FILE) \
+	$(DEEP1B_LEARN_FILE) \
+	$(DEEP1B_QUERY_FILE) \
+	$(DEEP1B_GROUNDTRUTH_FILE)
 
 .PHONY: bench
 ## run all benchmarks
