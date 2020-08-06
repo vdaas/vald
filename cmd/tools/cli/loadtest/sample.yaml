@@ -19,12 +19,15 @@ version: v0.0.0
 time_zone: JST
 logging:
   logger: glg
-  level: debug
-  format: json
-method: insert
+  level: info
+  format: raw
+service: agent
+operation: insert
 dataset: fashion-mnist
 concurrency: 100
-addr: "localhost:8081"
+batch_size: 10
+progress_duration: 3s
+addr: "localhost:8082"
 client:
   addrs: []
   health_check_duration: 1s

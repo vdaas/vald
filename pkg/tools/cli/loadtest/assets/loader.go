@@ -20,7 +20,6 @@ import (
 
 	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
 	"gonum.org/v1/hdf5"
 )
 
@@ -84,23 +83,20 @@ func loadDataset(file *hdf5.File, name string, f loaderFunc) (dim int, vec inter
 func Load(path string) (train, test, distances [][]float32, neighbors [][]int, dim int, err error) {
 	f, err := hdf5.OpenFile(path, hdf5.F_ACC_RDONLY)
 	if err != nil {
-		log.Errorf("couldn't open file %s: %s", path, err)
-		return nil, nil, nil, nil, 0, err
+		return nil, nil, nil, nil, 0, errors.Wrapf(err, "couldn't open file %s", path)
 	}
 	defer func() {
 		err = f.Close()
 	}()
 	trainDim, v1, err := loadDataset(f, "train", loadFloat32)
 	if err != nil {
-		log.Error("couldn't load train dataset for path %s: %s", path, err)
-		return nil, nil, nil, nil, 0, err
+		return nil, nil, nil, nil, 0, errors.Wrapf(err, "couldn't load train dataset for path %s", path)
 	}
 	train = v1.([][]float32)
 	dim = trainDim
 	testDim, v2, err := loadDataset(f, "test", loadFloat32)
 	if err != nil {
-		log.Error("couldn't load test dataset for path %s: %s", path, err)
-		return train, nil, nil, nil, dim, err
+		return train, nil, nil, nil, dim, errors.Wrapf(err, "couldn't load test dataset for path %s", path)
 	}
 	test = v2.([][]float32)
 	if dim != testDim {
@@ -108,15 +104,13 @@ func Load(path string) (train, test, distances [][]float32, neighbors [][]int, d
 	}
 	distancesDim, v3, err := loadDataset(f, "distances", loadFloat32)
 	if err != nil {
-		log.Error("couldn't load distances dataset for path %s: %s", path, err)
-		return train, test, nil, nil, dim, err
+		return train, test, nil, nil, dim, errors.Wrapf(err, "couldn't load distances dataset for path %s", path)
 	}
 	distances = v3.([][]float32)
 
 	neighborsDim, v4, err := loadDataset(f, "neighbors", loadInt)
 	if err != nil {
-		log.Error("couldn't load neighbors dataset for path %s: %s", path, err)
-		return train, test, distances, nil, trainDim, err
+		return train, test, distances, nil, trainDim, errors.Wrapf(err, "couldn't load neighbors dataset for path %s", path)
 	}
 	neighbors = v4.([][]int)
 	if distancesDim != neighborsDim {

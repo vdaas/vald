@@ -26,37 +26,81 @@ import (
 // GlobalConfig is type alias of config.GlobalConfig.
 type GlobalConfig = config.GlobalConfig
 
-// Operation is type of implemented load test.
+// Operation is operation type of implemented load test.
 type Operation uint8
 
-// Operation method.
+// Operation method definition.
 const (
-	Unknown Operation = iota
+	UnknownOperation Operation = iota
 	Insert
+	StreamInsert
 	Search
+	StreamSearch
 )
 
-// OperationMethod convert string to Operation.
+// OperationMethod converts string to Operation.
 func OperationMethod(s string) Operation {
 	switch strings.ToLower(s) {
 	case "insert":
 		return Insert
+	case "streaminsert":
+		return StreamInsert
 	case "search":
 		return Search
+	case "streamsearch":
+		return StreamSearch
 	default:
-		return Unknown
+		return UnknownOperation
 	}
 }
 
-// String convert Operation to string.
+// String converts Operation to string.
 func (o Operation) String() string {
 	switch o {
 	case Insert:
-		return "insert"
+		return "Insert"
+	case StreamInsert:
+		return "StreamInsert"
 	case Search:
-		return "search"
+		return "Search"
+	case StreamSearch:
+		return "StreamSearch"
 	default:
-		return "unknown operation"
+		return "Unknown operation"
+	}
+}
+
+// Service is service type of implemented load test.
+type Service uint8
+
+// Service definitions.
+const (
+	UnknownService Service = iota
+	Agent
+	Gateway
+)
+
+// ServiceMethod converts string to Service.
+func ServiceMethod(s string) Service {
+	switch strings.ToLower(s) {
+	case "agent":
+		return Agent
+	case "gateway":
+		return Gateway
+	default:
+		return UnknownService
+	}
+}
+
+// String converts Service to string.
+func (s Service) String() string {
+	switch s {
+	case Agent:
+		return "Agent"
+	case Gateway:
+		return "Gateway"
+	default:
+		return "Unknown service"
 	}
 }
 
@@ -65,9 +109,11 @@ func (o Operation) String() string {
 type Data struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`
 	Addr                string             `json:"addr" yaml:"addr"`
-	Method              string             `json:"method" yaml:"method"`
+	Service             string             `json:"service" yaml:"service"`
+	Operation           string             `json:"operation" yaml:"operation"`
 	Dataset             string             `json:"dataset" yaml:"dataset"`
 	Concurrency         int                `json:"concurrency" yaml:"concurrency"`
+	BatchSize           int                `json:"batch_size" yaml:"batch_size"`
 	ProgressDuration    string             `json:"progress_duration" yaml:"progress_duration"`
 	Client              *config.GRPCClient `json:"client" yaml:"client"`
 }
@@ -88,9 +134,10 @@ func NewConfig(path string) (cfg *Data, err error) {
 	}
 
 	cfg.Addr = config.GetActualValue(cfg.Addr)
-	cfg.Method = config.GetActualValue(cfg.Method)
+	cfg.Operation = config.GetActualValue(cfg.Operation)
 	cfg.Dataset = config.GetActualValue(cfg.Dataset)
 	cfg.ProgressDuration = config.GetActualValue(cfg.ProgressDuration)
+	cfg.Service = config.GetActualValue(cfg.Service)
 
 	return cfg, nil
 }
