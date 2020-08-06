@@ -269,7 +269,7 @@ func (s *something) SetSignedTok(st string) {
 An unused variable may increase the complexity of the source code, it may confuse the developer hence introduce a new bug.
 So please delete the unused variable.
 
-Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error. 
+Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error.
 This is an example of the unused variable declaration that does not cause a compilation error.
 
 ```golang
@@ -296,6 +296,51 @@ if err := srv.Run(); err != nil {
 All errors should define in [internal/errors package](https://github.com/vdaas/vald/blob/master/internal/errors). All errors should be start with `Err` prefix, and all errors should be handle if possible.
 
 Please use [internal/errgroup](https://github.com/vdaas/vald/blob/master/internal/errgroup) for synchronized error handling on multi-goroutine processing.
+
+### Error checking
+
+All functions returns `error` if the function have possiblility to fail. It is very important to ensure the error checking is performed.
+To reduce human mistake that missing the error checking, please check the error using the following style:
+
+```golang
+// good
+if err := fn(); err != nil {
+    // handle error
+}
+```
+
+Instead of this style.
+
+```golang
+// bad
+err := fn()
+if err != nil {
+    // handle error
+}
+```
+
+If you need the value outside the if statement, please use the following style:
+
+```golang
+// good
+conn, err := net.Dial("tcp", "localhost:80")
+if err != nil {
+    // handle error
+}
+
+// use the conn
+```
+
+Instead of this style.
+
+```golang
+// bad
+if conn, err := net.Dial("tcp", "localhost:80");  err != nil {
+    // handle error
+} else {
+    // use the conn
+}
+```
 
 ### Logging
 
