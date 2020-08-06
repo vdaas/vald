@@ -299,7 +299,7 @@ Please use [internal/errgroup](https://github.com/vdaas/vald/blob/master/interna
 
 ### Error checking
 
-All functions returns `error` if the function have possiblility to fail. It is very important to ensure the error checking is performed.
+All functions return `error` if the function can fail. It is very important to ensure the error checking is performed.
 To reduce human mistake that missing the error checking, please check the error using the following style:
 
 ```golang
