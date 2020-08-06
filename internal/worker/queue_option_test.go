@@ -202,7 +202,7 @@ func TestWithQueueCheckDuration(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set success when dur is 0.",
+			name: "set success when dur is empty.",
 			args: args{
 				dur: "",
 			},
