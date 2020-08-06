@@ -27,7 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
-// Option represent the functional option for redisClient.
+// Option represents the functional option for redisClient.
 type Option func(*redisClient) error
 
 var (
