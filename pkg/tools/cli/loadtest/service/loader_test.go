@@ -23,7 +23,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/grpc"
+	igrpc "github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 	"go.uber.org/goleak"
 )
@@ -83,7 +83,7 @@ func TestNewLoader(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -109,14 +109,16 @@ func Test_loader_Prepare(t *testing.T) {
 	}
 	type fields struct {
 		eg               errgroup.Group
-		client           grpc.Client
+		client           igrpc.Client
 		addr             string
 		concurrency      int
+		batchSize        int
 		dataset          string
-		requests         []interface{}
 		progressDuration time.Duration
-		requestsFunc     requestFunc
 		loaderFunc       loadFunc
+		dataProvider     func() interface{}
+		dataSize         int
+		service          config.Service
 		operation        config.Operation
 	}
 	type want struct {
@@ -150,11 +152,13 @@ func Test_loader_Prepare(t *testing.T) {
 		           client: nil,
 		           addr: "",
 		           concurrency: 0,
+		           batchSize: 0,
 		           dataset: "",
-		           requests: nil,
 		           progressDuration: nil,
-		           requestsFunc: nil,
-		           loadFunc: nil,
+		           loaderFunc: nil,
+		           dataProvider: nil,
+		           dataSize: 0,
+		           service: nil,
 		           operation: nil,
 		       },
 		       want: want{},
@@ -175,11 +179,13 @@ func Test_loader_Prepare(t *testing.T) {
 		           client: nil,
 		           addr: "",
 		           concurrency: 0,
+		           batchSize: 0,
 		           dataset: "",
-		           requests: nil,
 		           progressDuration: nil,
-		           requestsFunc: nil,
-		           loadFunc: nil,
+		           loaderFunc: nil,
+		           dataProvider: nil,
+		           dataSize: 0,
+		           service: nil,
 		           operation: nil,
 		           },
 		           want: want{},
@@ -191,7 +197,7 @@ func Test_loader_Prepare(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -206,11 +212,13 @@ func Test_loader_Prepare(t *testing.T) {
 				client:           test.fields.client,
 				addr:             test.fields.addr,
 				concurrency:      test.fields.concurrency,
+				batchSize:        test.fields.batchSize,
 				dataset:          test.fields.dataset,
-				requests:         test.fields.requests,
 				progressDuration: test.fields.progressDuration,
-				requestsFunc:     test.fields.requestsFunc,
 				loaderFunc:       test.fields.loaderFunc,
+				dataProvider:     test.fields.dataProvider,
+				dataSize:         test.fields.dataSize,
+				service:          test.fields.service,
 				operation:        test.fields.operation,
 			}
 
@@ -229,14 +237,16 @@ func Test_loader_Do(t *testing.T) {
 	}
 	type fields struct {
 		eg               errgroup.Group
-		client           grpc.Client
+		client           igrpc.Client
 		addr             string
 		concurrency      int
+		batchSize        int
 		dataset          string
-		requests         []interface{}
 		progressDuration time.Duration
-		requestsFunc     requestFunc
 		loaderFunc       loadFunc
+		dataProvider     func() interface{}
+		dataSize         int
+		service          config.Service
 		operation        config.Operation
 	}
 	type want struct {
@@ -270,11 +280,13 @@ func Test_loader_Do(t *testing.T) {
 		           client: nil,
 		           addr: "",
 		           concurrency: 0,
+		           batchSize: 0,
 		           dataset: "",
-		           requests: nil,
 		           progressDuration: nil,
-		           requestsFunc: nil,
-		           loadFunc: nil,
+		           loaderFunc: nil,
+		           dataProvider: nil,
+		           dataSize: 0,
+		           service: nil,
 		           operation: nil,
 		       },
 		       want: want{},
@@ -295,11 +307,13 @@ func Test_loader_Do(t *testing.T) {
 		           client: nil,
 		           addr: "",
 		           concurrency: 0,
+		           batchSize: 0,
 		           dataset: "",
-		           requests: nil,
 		           progressDuration: nil,
-		           requestsFunc: nil,
-		           loadFunc: nil,
+		           loaderFunc: nil,
+		           dataProvider: nil,
+		           dataSize: 0,
+		           service: nil,
 		           operation: nil,
 		           },
 		           want: want{},
@@ -311,7 +325,7 @@ func Test_loader_Do(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -326,16 +340,152 @@ func Test_loader_Do(t *testing.T) {
 				client:           test.fields.client,
 				addr:             test.fields.addr,
 				concurrency:      test.fields.concurrency,
+				batchSize:        test.fields.batchSize,
 				dataset:          test.fields.dataset,
-				requests:         test.fields.requests,
 				progressDuration: test.fields.progressDuration,
-				requestsFunc:     test.fields.requestsFunc,
 				loaderFunc:       test.fields.loaderFunc,
+				dataProvider:     test.fields.dataProvider,
+				dataSize:         test.fields.dataSize,
+				service:          test.fields.service,
 				operation:        test.fields.operation,
 			}
 
 			got := l.Do(test.args.ctx)
 			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_loader_do(t *testing.T) {
+	type args struct {
+		ctx    context.Context
+		f      func(interface{}, error)
+		notify func(context.Context, error)
+	}
+	type fields struct {
+		eg               errgroup.Group
+		client           igrpc.Client
+		addr             string
+		concurrency      int
+		batchSize        int
+		dataset          string
+		progressDuration time.Duration
+		loaderFunc       loadFunc
+		dataProvider     func() interface{}
+		dataSize         int
+		service          config.Service
+		operation        config.Operation
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           f: nil,
+		           notify: nil,
+		       },
+		       fields: fields {
+		           eg: nil,
+		           client: nil,
+		           addr: "",
+		           concurrency: 0,
+		           batchSize: 0,
+		           dataset: "",
+		           progressDuration: nil,
+		           loaderFunc: nil,
+		           dataProvider: nil,
+		           dataSize: 0,
+		           service: nil,
+		           operation: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           f: nil,
+		           notify: nil,
+		           },
+		           fields: fields {
+		           eg: nil,
+		           client: nil,
+		           addr: "",
+		           concurrency: 0,
+		           batchSize: 0,
+		           dataset: "",
+		           progressDuration: nil,
+		           loaderFunc: nil,
+		           dataProvider: nil,
+		           dataSize: 0,
+		           service: nil,
+		           operation: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			l := &loader{
+				eg:               test.fields.eg,
+				client:           test.fields.client,
+				addr:             test.fields.addr,
+				concurrency:      test.fields.concurrency,
+				batchSize:        test.fields.batchSize,
+				dataset:          test.fields.dataset,
+				progressDuration: test.fields.progressDuration,
+				loaderFunc:       test.fields.loaderFunc,
+				dataProvider:     test.fields.dataProvider,
+				dataSize:         test.fields.dataSize,
+				service:          test.fields.service,
+				operation:        test.fields.operation,
+			}
+
+			err := l.do(test.args.ctx, test.args.f, test.args.notify)
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
