@@ -14,6 +14,20 @@
 # limitations under the License.
 #
 
+.PHONY: binary/build
+## build all binaries
+binary/build: \
+	cmd/agent/core/ngt/ngt \
+	cmd/agent/sidecar/sidecar \
+	cmd/discoverer/k8s/discoverer \
+	cmd/gateway/vald/vald \
+	cmd/meta/redis/meta \
+	cmd/meta/cassandra/meta \
+	cmd/manager/backup/mysql/backup \
+	cmd/manager/backup/cassandra/backup \
+	cmd/manager/compressor/compressor \
+	cmd/manager/index/index
+
 cmd/agent/core/ngt/ngt: \
 	ngt/install \
 	$(GO_SOURCES_INTERNAL) \
@@ -308,3 +322,57 @@ cmd/manager/replication/controller/controller: \
 	    -installsuffix netgo \
 	    -o $@ \
 	    $(dir $@)main.go
+
+.PHONY: binary/build/zip
+## build all binaries and zip them
+binary/build/zip: \
+	artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-agent-sidecar-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-gateway-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-meta-redis-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-meta-cassandra-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-manager-backup-mysql-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-manager-backup-cassandra-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-manager-compressor-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip
+
+artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip: cmd/agent/core/ngt/ngt
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-agent-sidecar-$(GOOS)-$(GOARCH).zip: cmd/agent/sidecar/sidecar
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip: cmd/discoverer/k8s/discoverer
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/vald/vald
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-meta-redis-$(GOOS)-$(GOARCH).zip: cmd/meta/redis/meta
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-meta-cassandra-$(GOOS)-$(GOARCH).zip: cmd/meta/cassandra/meta
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-manager-backup-mysql-$(GOOS)-$(GOARCH).zip: cmd/manager/backup/mysql/backup
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-manager-backup-cassandra-$(GOOS)-$(GOARCH).zip: cmd/manager/backup/cassandra/backup
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-manager-compressor-$(GOOS)-$(GOARCH).zip: cmd/manager/compressor/compressor
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip: cmd/manager/index/index
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<

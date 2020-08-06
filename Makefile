@@ -262,7 +262,7 @@ format/yaml:
 deps: \
 	proto/deps \
 	goimports/install \
-	prettier/install \
+	prettier/install
 	go mod tidy
 
 .PHONY: goimports/install
