@@ -17,12 +17,13 @@ package service
 
 import (
 	"context"
-	"github.com/vdaas/vald/apis/grpc/payload"
 	"os"
 	"reflect"
 	"sync/atomic"
 	"syscall"
 	"time"
+
+	"github.com/vdaas/vald/apis/grpc/payload"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
