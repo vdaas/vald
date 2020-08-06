@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
+// Option represents the functional option for redisClient.
 type Option func(*redisClient) error
 
 var (
@@ -36,6 +37,7 @@ var (
 	}
 )
 
+// WithDialer returns the option to set the dialer.
 func WithDialer(der func(ctx context.Context, addr, port string) (net.Conn, error)) Option {
 	return func(r *redisClient) error {
 		if der != nil {
@@ -45,6 +47,7 @@ func WithDialer(der func(ctx context.Context, addr, port string) (net.Conn, erro
 	}
 }
 
+// WithAddrs returns the option to set the addrs.
 func WithAddrs(addrs ...string) Option {
 	return func(r *redisClient) error {
 		if len(addrs) == 0 {
@@ -59,6 +62,7 @@ func WithAddrs(addrs ...string) Option {
 	}
 }
 
+// WithDB returns the option to set the db.
 func WithDB(db int) Option {
 	return func(r *redisClient) error {
 		r.db = db
@@ -66,6 +70,7 @@ func WithDB(db int) Option {
 	}
 }
 
+// WithClusterSlots returns the option to set the clusterSlots.
 func WithClusterSlots(f func() ([]redis.ClusterSlot, error)) Option {
 	return func(r *redisClient) error {
 		if f != nil {
@@ -75,6 +80,7 @@ func WithClusterSlots(f func() ([]redis.ClusterSlot, error)) Option {
 	}
 }
 
+// WithDialTimeout returns the option to set the dialTimeout.
 func WithDialTimeout(dur string) Option {
 	return func(r *redisClient) error {
 		if dur == "" {
@@ -89,6 +95,7 @@ func WithDialTimeout(dur string) Option {
 	}
 }
 
+// WithIdleCheckFrequency returns the option to set the idleCheckFrequency.
 func WithIdleCheckFrequency(dur string) Option {
 	return func(r *redisClient) error {
 		if dur == "" {
@@ -103,6 +110,7 @@ func WithIdleCheckFrequency(dur string) Option {
 	}
 }
 
+// WithIdleTimeout returns the option to set the idleTimeout.
 func WithIdleTimeout(dur string) Option {
 	return func(r *redisClient) error {
 		if dur == "" {
@@ -117,6 +125,7 @@ func WithIdleTimeout(dur string) Option {
 	}
 }
 
+// WithKeyPrefix returns the option to set the keyPref.
 func WithKeyPrefix(prefix string) Option {
 	return func(r *redisClient) error {
 		if prefix != "" {
@@ -126,6 +135,7 @@ func WithKeyPrefix(prefix string) Option {
 	}
 }
 
+// WithMaximumConnectionAge returns the option to set the maxConnAge.
 func WithMaximumConnectionAge(dur string) Option {
 	return func(r *redisClient) error {
 		if dur == "" {
@@ -140,6 +150,7 @@ func WithMaximumConnectionAge(dur string) Option {
 	}
 }
 
+// WithRedirectLimit returns the option to set the maxRedirects.
 func WithRedirectLimit(maxRedirects int) Option {
 	return func(r *redisClient) error {
 		r.maxRedirects = maxRedirects
@@ -147,6 +158,7 @@ func WithRedirectLimit(maxRedirects int) Option {
 	}
 }
 
+// WithRetryLimit returns the option to set the maxRetries.
 func WithRetryLimit(maxRetries int) Option {
 	return func(r *redisClient) error {
 		r.maxRetries = maxRetries
@@ -154,6 +166,7 @@ func WithRetryLimit(maxRetries int) Option {
 	}
 }
 
+// WithMaximumRetryBackoff returns the option to set the maxRetryBackoff.
 func WithMaximumRetryBackoff(dur string) Option {
 	return func(r *redisClient) error {
 		if dur == "" {
@@ -168,6 +181,7 @@ func WithMaximumRetryBackoff(dur string) Option {
 	}
 }
 
+// WithMinimumIdleConnection returns the option to set the minIdleConns.
 func WithMinimumIdleConnection(minIdleConns int) Option {
 	return func(r *redisClient) error {
 		r.minIdleConns = minIdleConns
@@ -175,6 +189,7 @@ func WithMinimumIdleConnection(minIdleConns int) Option {
 	}
 }
 
+// WithMinimumRetryBackoff returns the option to set the minRetryBackoff.
 func WithMinimumRetryBackoff(dur string) Option {
 	return func(r *redisClient) error {
 		if dur == "" {
@@ -189,6 +204,7 @@ func WithMinimumRetryBackoff(dur string) Option {
 	}
 }
 
+// WithOnConnectFunction returns the option to set the onConnect.
 func WithOnConnectFunction(f func(*redis.Conn) error) Option {
 	return func(r *redisClient) error {
 		if f != nil {
@@ -198,6 +214,7 @@ func WithOnConnectFunction(f func(*redis.Conn) error) Option {
 	}
 }
 
+// WithOnNewNodeFunction returns the option to set the onNewNode.
 func WithOnNewNodeFunction(f func(*redis.Client)) Option {
 	return func(r *redisClient) error {
 		if f != nil {
@@ -207,6 +224,7 @@ func WithOnNewNodeFunction(f func(*redis.Client)) Option {
 	}
 }
 
+// WithPassword returns the option to set the password.
 func WithPassword(password string) Option {
 	return func(r *redisClient) error {
 		if password != "" {
@@ -216,6 +234,7 @@ func WithPassword(password string) Option {
 	}
 }
 
+// WithPoolSize returns the option to set the poolSize.
 func WithPoolSize(poolSize int) Option {
 	return func(r *redisClient) error {
 		r.poolSize = poolSize
@@ -223,6 +242,7 @@ func WithPoolSize(poolSize int) Option {
 	}
 }
 
+// WithPoolTimeout returns the option to set the poolTimeout.
 func WithPoolTimeout(dur string) Option {
 	return func(r *redisClient) error {
 		if dur == "" {
@@ -237,6 +257,7 @@ func WithPoolTimeout(dur string) Option {
 	}
 }
 
+// WithReadOnlyFlag returns the option to set the readOnly.
 func WithReadOnlyFlag(readOnly bool) Option {
 	return func(r *redisClient) error {
 		r.readOnly = readOnly
@@ -244,6 +265,7 @@ func WithReadOnlyFlag(readOnly bool) Option {
 	}
 }
 
+// WithReadTimeout returns the option to set the readTimeout.
 func WithReadTimeout(dur string) Option {
 	return func(r *redisClient) error {
 		if dur == "" {
@@ -258,6 +280,7 @@ func WithReadTimeout(dur string) Option {
 	}
 }
 
+// WithRouteByLatencyFlag returns the option to set the routeByLatency.
 func WithRouteByLatencyFlag(routeByLatency bool) Option {
 	return func(r *redisClient) error {
 		r.routeByLatency = routeByLatency
@@ -265,6 +288,7 @@ func WithRouteByLatencyFlag(routeByLatency bool) Option {
 	}
 }
 
+// WithRouteRandomlyFlag returns the option to set the routeRandomly.
 func WithRouteRandomlyFlag(routeRandomly bool) Option {
 	return func(r *redisClient) error {
 		r.routeRandomly = routeRandomly
@@ -272,6 +296,7 @@ func WithRouteRandomlyFlag(routeRandomly bool) Option {
 	}
 }
 
+// WithTLSConfig returns the option to set the tlsConfig.
 func WithTLSConfig(cfg *tls.Config) Option {
 	return func(r *redisClient) error {
 		if cfg != nil {
@@ -281,6 +306,7 @@ func WithTLSConfig(cfg *tls.Config) Option {
 	}
 }
 
+// WithWriteTimeout returns the option to set the writeTimeout.
 func WithWriteTimeout(dur string) Option {
 	return func(r *redisClient) error {
 		if dur == "" {
@@ -295,6 +321,7 @@ func WithWriteTimeout(dur string) Option {
 	}
 }
 
+// WithInitialPingTimeLimit returns the option to set the initialPingTimeLimit.
 func WithInitialPingTimeLimit(lim string) Option {
 	return func(r *redisClient) error {
 		if lim == "" {
@@ -309,6 +336,7 @@ func WithInitialPingTimeLimit(lim string) Option {
 	}
 }
 
+// WithInitialPingDuration returns the option to set the initialPingDuration.
 func WithInitialPingDuration(dur string) Option {
 	return func(r *redisClient) error {
 		if dur == "" {
