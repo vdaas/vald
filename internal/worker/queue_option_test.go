@@ -211,7 +211,7 @@ func TestWithQueueCheckDuration(t *testing.T) {
 			},
 		},
 		{
-			name: "set success when dur is vald string.",
+			name: "set success when dur is 100ms.",
 			args: args{
 				dur: "100ms",
 			},
