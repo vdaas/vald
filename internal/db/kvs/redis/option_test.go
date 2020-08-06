@@ -509,7 +509,7 @@ func TestWithIdleCheckFrequency(t *testing.T) {
 		{
 			name: "default value set success when dur is `invalid`",
 			args: args{
-				dur: "invlid",
+				dur: "invalid",
 			},
 			want: want{
 				obj: &T{
