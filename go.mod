@@ -55,13 +55,14 @@ require (
 	github.com/pierrec/lz4/v3 v3.3.2
 	github.com/scylladb/gocqlx v1.5.1-0.20200423154401-507391a34cf0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
+	github.com/vdaas/vald-client-go v0.0.50 // indirect
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20200424071638-9872bbae3700
 	go.opencensus.io v0.22.5-0.20200719225510-d7677d6af595
 	go.uber.org/automaxprocs v1.3.1-0.20200415073007-b685be8c1c23
 	go.uber.org/goleak v1.1.10
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
-	golang.org/x/sys v0.0.0-20200724161237-0e2f3a69832c
+	golang.org/x/sys v0.0.0-20200802091954-4b90ce9b60b3
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.7.1-0.20200701071522-4260761de856
 	google.golang.org/api v0.29.1-0.20200731210623-4eb9889c539a

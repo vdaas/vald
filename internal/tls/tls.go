@@ -18,9 +18,11 @@
 package tls
 
 import (
+	"bytes"
 	"crypto/tls"
 	"crypto/x509"
 	"io/ioutil"
+	"os"
 	"reflect"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -105,6 +107,17 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 func NewX509CertPool(path string) (*x509.CertPool, error) {
 	var pool *x509.CertPool
 	c, err := ioutil.ReadFile(path)
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	var n int64 = bytes.MinRead
+	if fi, err := f.Stat(); err == nil {
+			if size := fi.Size() + bytes.MinRead; size > n {
+			n = size
+		}
+	}
 	if err == nil && c != nil {
 		pool, err = x509.SystemCertPool()
 		if err != nil || pool == nil {

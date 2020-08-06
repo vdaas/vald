@@ -147,7 +147,7 @@ func dirwalk(dir string) []string {
 	return paths
 }
 func readAndRewrite(path string) error {
-	f, err := os.Open(path)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_SYNC, os.ModePerm)
 	if err != nil {
 		return errors.Errorf("filepath %s, could not open", path)
 	}

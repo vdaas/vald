@@ -477,7 +477,7 @@ func (o *observer) backup(ctx context.Context) error {
 			}
 
 			return func() error {
-				data, err := os.Open(file)
+				data, err := os.OpenFile(file, os.O_RDONLY, os.ModePerm)
 				if err != nil {
 					return err
 				}
