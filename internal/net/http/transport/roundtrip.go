@@ -51,26 +51,18 @@ func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 		return e.roundTrip(req)
 	}
 
-	var rterr error
-	_, err = e.bo.Do(req.Context(), func() (interface{}, error) {
-		r, reqerr := e.roundTrip(req)
-		if reqerr != nil {
+	_, err = e.bo.Do(req.Context(), func() (interface{}, bool, error) {
+		r, err := e.roundTrip(req)
+		if err != nil {
 			// if the error is retryable, return the error and let backoff to retry.
-			if errors.Is(reqerr, errors.ErrTransportRetryable) {
-				return nil, reqerr
-			}
 			// if the error is not retryable, return nil error to terminate the backoff execution
-			rterr = reqerr
-			return nil, nil
+			return nil, errors.Is(err, errors.ErrTransportRetryable), err
 		}
 		res = r
-		return r, nil
+		return r, false, nil
 	})
 	if err != nil {
 		return nil, err
-	}
-	if rterr != nil {
-		return nil, rterr
 	}
 
 	return res, nil

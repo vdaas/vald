@@ -114,7 +114,7 @@ func NewX509CertPool(path string) (*x509.CertPool, error) {
 	defer f.Close()
 	var n int64 = bytes.MinRead
 	if fi, err := f.Stat(); err == nil {
-			if size := fi.Size() + bytes.MinRead; size > n {
+		if size := fi.Size() + bytes.MinRead; size > n {
 			n = size
 		}
 	}

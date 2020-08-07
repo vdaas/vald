@@ -204,13 +204,14 @@ func (g *gRPCClient) Range(ctx context.Context,
 		default:
 			var err error
 			if g.bo != nil {
-				_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-					return nil, p.Do(func(conn *ClientConn) (err error) {
+				_, err = g.bo.Do(ctx, func() (r interface{}, ret bool, err error) {
+					err = p.Do(func(conn *ClientConn) (err error) {
 						if conn == nil {
 							return errors.ErrGRPCClientConnNotFound(addr)
 						}
 						return f(ctx, addr, conn, g.copts...)
 					})
+					return nil, err != nil, err
 				})
 			} else {
 				err = p.Do(func(conn *ClientConn) (err error) {
@@ -244,13 +245,14 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 				return nil
 			default:
 				if g.bo != nil {
-					_, err = g.bo.Do(egctx, func() (r interface{}, err error) {
-						return nil, p.Do(func(conn *ClientConn) (err error) {
+					_, err = g.bo.Do(ctx, func() (r interface{}, ret bool, err error) {
+						err = p.Do(func(conn *ClientConn) (err error) {
 							if conn == nil {
 								return errors.ErrGRPCClientConnNotFound(addr)
 							}
 							return f(egctx, addr, conn, g.copts...)
 						})
+						return nil, err != nil, err
 					})
 				} else {
 					err = p.Do(func(conn *ClientConn) (err error) {
@@ -290,13 +292,14 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 			p, ok := g.conns.Load(addr)
 			if ok {
 				if g.bo != nil {
-					_, err = g.bo.Do(ctx, func() (r interface{}, err error) {
-						return nil, p.Do(func(conn *ClientConn) (err error) {
+					_, err = g.bo.Do(ctx, func() (r interface{}, ret bool, err error) {
+						err = p.Do(func(conn *ClientConn) (err error) {
 							if conn == nil {
 								return errors.ErrGRPCClientConnNotFound(addr)
 							}
 							return f(ctx, addr, conn, g.copts...)
 						})
+						return nil, err != nil, err
 					})
 				} else {
 					err = p.Do(func(conn *ClientConn) (err error) {
@@ -340,13 +343,14 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 					return nil
 				default:
 					if g.bo != nil {
-						_, err = g.bo.Do(egctx, func() (r interface{}, err error) {
-							return nil, p.Do(func(conn *ClientConn) (err error) {
+						_, err = g.bo.Do(ctx, func() (r interface{}, ret bool, err error) {
+							err = p.Do(func(conn *ClientConn) (err error) {
 								if conn == nil {
 									return errors.ErrGRPCClientConnNotFound(addr)
 								}
 								return f(egctx, addr, conn, g.copts...)
 							})
+							return nil, err != nil, err
 						})
 					} else {
 						err = p.Do(func(conn *ClientConn) (err error) {
@@ -380,7 +384,7 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 		return nil, errors.ErrGRPCClientConnNotFound(addr)
 	}
 	if g.bo != nil {
-		data, err = g.bo.Do(ctx, func() (r interface{}, err error) {
+		data, err = g.bo.Do(ctx, func() (r interface{}, ret bool, err error) {
 			err = p.Do(func(conn *ClientConn) (err error) {
 				if conn == nil {
 					return errors.ErrGRPCClientConnNotFound(addr)
@@ -389,9 +393,9 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 				return err
 			})
 			if err != nil {
-				return nil, err
+				return nil, err != nil, err
 			}
-			return r, err
+			return r, false, nil
 		})
 	} else {
 		err = p.Do(func(conn *ClientConn) (err error) {

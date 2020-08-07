@@ -30,6 +30,7 @@
     - [Empty](#payload.Empty)
     - [Filter](#payload.Filter)
     - [Filter.Config](#payload.Filter.Config)
+    - [Filter.Target](#payload.Filter.Target)
     - [Info](#payload.Info)
     - [Info.CPU](#payload.Info.CPU)
     - [Info.IPs](#payload.Info.IPs)
@@ -427,6 +428,22 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | targets | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="payload.Filter.Target"></a>
+
+### Filter.Target
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| host | [string](#string) |  |  |
+| port | [uint32](#uint32) |  |  |
 
 
 

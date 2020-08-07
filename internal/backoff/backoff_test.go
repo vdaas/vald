@@ -26,7 +26,6 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-
 	"go.uber.org/goleak"
 )
 
@@ -76,7 +75,7 @@ func TestNew(t *testing.T) {
 
 func TestDo(t *testing.T) {
 	type args struct {
-		fn   func() (interface{}, error)
+		fn   func() (interface{}, bool, error)
 		opts []Option
 	}
 
@@ -91,9 +90,9 @@ func TestDo(t *testing.T) {
 	tests := []test{
 		func() test {
 			cnt := 0
-			fn := func() (interface{}, error) {
+			fn := func() (interface{}, bool, error) {
 				cnt++
-				return nil, nil
+				return nil, false, nil
 			}
 
 			return test{
@@ -124,12 +123,12 @@ func TestDo(t *testing.T) {
 
 		func() test {
 			cnt := 0
-			fn := func() (interface{}, error) {
+			fn := func() (interface{}, bool, error) {
 				cnt++
 				if cnt == 2 {
-					return nil, nil
+					return nil, false, nil
 				}
-				return nil, errors.Errorf("error (%d)", cnt)
+				return nil, true, errors.Errorf("error (%d)", cnt)
 			}
 
 			return test{
@@ -161,9 +160,44 @@ func TestDo(t *testing.T) {
 
 		func() test {
 			cnt := 0
-			fn := func() (interface{}, error) {
+			err := errors.New("not retryable error")
+			fn := func() (interface{}, bool, error) {
 				cnt++
-				return nil, errors.Errorf("error (%d)", cnt)
+				return nil, false, err
+			}
+
+			return test{
+				name: "returns error when retryable is false",
+				args: args{
+					fn: fn,
+					opts: []Option{
+						WithDisableErrorLog(),
+						WithRetryCount(6),
+					},
+				},
+				ctxFn: func() (context.Context, context.CancelFunc) {
+					return context.WithCancel(context.Background())
+				},
+				checkFunc: func(got, want error) error {
+					if cnt != 1 {
+						return errors.Errorf("error count is wrong, want: %v, got: %v", 1, cnt)
+					}
+
+					if !errors.Is(want, got) {
+						return errors.Errorf("not equals. want: %v, got: %v", want, got)
+					}
+
+					return nil
+				},
+				want: err,
+			}
+		}(),
+
+		func() test {
+			cnt := 0
+			fn := func() (interface{}, bool, error) {
+				cnt++
+				return nil, true, errors.Errorf("error (%d)", cnt)
 			}
 
 			return test{
@@ -196,12 +230,12 @@ func TestDo(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 
 			cnt := 0
-			fn := func() (interface{}, error) {
+			fn := func() (interface{}, bool, error) {
 				cnt++
 				if cnt == 2 {
 					cancel()
 				}
-				return nil, errors.Errorf("error (%d)", cnt)
+				return nil, true, errors.Errorf("error (%d)", cnt)
 			}
 
 			return test{
@@ -233,8 +267,8 @@ func TestDo(t *testing.T) {
 
 		func() test {
 			err := errors.New("error")
-			fn := func() (interface{}, error) {
-				return nil, err
+			fn := func() (interface{}, bool, error) {
+				return nil, true, err
 			}
 
 			return test{
@@ -266,7 +300,6 @@ func TestDo(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel := tt.ctxFn()
 			defer cancel()
-
 			_, err := New(tt.args.opts...).Do(ctx, tt.args.fn)
 			if tt.want == nil && err != nil {
 				t.Errorf("Do return err: %v", err)
@@ -302,9 +335,10 @@ func TestClose(t *testing.T) {
 }
 
 func Test_backoff_Do(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
-		f   func() (interface{}, error)
+		f   func() (val interface{}, retryable bool, err error)
 	}
 	type fields struct {
 		wg                    sync.WaitGroup
@@ -396,7 +430,8 @@ func Test_backoff_Do(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -429,6 +464,7 @@ func Test_backoff_Do(t *testing.T) {
 }
 
 func Test_backoff_addJitter(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		dur float64
 	}
@@ -516,7 +552,8 @@ func Test_backoff_addJitter(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -549,6 +586,7 @@ func Test_backoff_addJitter(t *testing.T) {
 }
 
 func Test_backoff_Close(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		wg                    sync.WaitGroup
 		backoffFactor         float64
@@ -622,7 +660,8 @@ func Test_backoff_Close(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

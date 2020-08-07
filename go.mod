@@ -25,7 +25,7 @@ replace (
 )
 
 require (
-	cloud.google.com/go v0.62.1-0.20200731215012-56cf7d3bc870
+	cloud.google.com/go v0.63.1-0.20200807180406-35668fda9a15
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.2.1-0.20200609204449-6bcf6f8577f0
@@ -45,7 +45,7 @@ require (
 	github.com/google/gofuzz v1.1.0
 	github.com/gorilla/mux v1.7.5-0.20200711200521-98cb6bf42e08
 	github.com/hashicorp/go-version v1.2.1
-	github.com/json-iterator/go v1.1.11-0.20200721090723-5bce16d299eb
+	github.com/json-iterator/go v1.1.11-0.20200806011408-6821bec9fa5c
 	github.com/klauspost/compress v1.10.11-0.20200722091917-f5e4a2eee1f8
 	github.com/kpango/fastime v1.0.17-0.20200719090826-d1de9e8e3c85
 	github.com/kpango/fuid v0.0.0-20190507064958-80435564606b
@@ -55,19 +55,19 @@ require (
 	github.com/pierrec/lz4/v3 v3.3.2
 	github.com/scylladb/gocqlx v1.5.1-0.20200423154401-507391a34cf0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
-	github.com/vdaas/vald-client-go v0.0.50 // indirect
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20200424071638-9872bbae3700
 	go.opencensus.io v0.22.5-0.20200719225510-d7677d6af595
 	go.uber.org/automaxprocs v1.3.1-0.20200415073007-b685be8c1c23
 	go.uber.org/goleak v1.1.10
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
-	golang.org/x/sys v0.0.0-20200802091954-4b90ce9b60b3
+	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
+	golang.org/x/sys v0.0.0-20200803210538-64077c9b5642
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
-	gonum.org/v1/plot v0.7.1-0.20200701071522-4260761de856
-	google.golang.org/api v0.29.1-0.20200731210623-4eb9889c539a
-	google.golang.org/genproto v0.0.0-20200731012542-8145dea6a485
-	google.golang.org/grpc v1.32.0-dev.0.20200731180010-8bec2f5d898f
+	gonum.org/v1/plot v0.7.1-0.20200803120916-6a037fda5e90
+	google.golang.org/api v0.30.1-0.20200807143518-2b3a10692f85
+	google.golang.org/genproto v0.0.0-20200806141610-86f49bd18e98
+	google.golang.org/grpc v1.32.0-dev.0.20200807164945-d3e3e7a46f57
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.18.6
 	k8s.io/apimachinery v0.18.6
