@@ -36,7 +36,7 @@ import (
 type Storage interface {
 	Start(ctx context.Context) (<-chan error, error)
 	Stop(ctx context.Context) error
-	Reader(ctx context.Context) (io.Reader, error)
+	Reader(ctx context.Context) (io.ReadCloser, error)
 	Writer(ctx context.Context) (io.WriteCloser, error)
 }
 
