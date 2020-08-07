@@ -123,7 +123,7 @@ func (b *bs) initBucket(ctx context.Context) (err error) {
 		if err != nil {
 			return err
 		}
-	case config.CloudStrage:
+	case config.CloudStorage:
 		uoi, err := urlopener.New(b.cloudStorageURLOpenerOpts...)
 		if err != nil {
 			return err
