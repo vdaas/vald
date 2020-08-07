@@ -63,23 +63,23 @@ bench/datasets/md5dir/print:
 bench/datasets/hdf5dir/print:
 	@echo $(BENCH_DATASET_HDF5_DIR)
 
-.PHONY: bench/dataset/large
-## fetch large dataset for benchmark
-bench/dataset/large: \
-	bench/dataset/large/sift1b \
-	bench/dataset/large/deep1b
+.PHONY: bench/datasets/large
+## fetch large datasets for benchmark
+bench/datasets/large: \
+	bench/datasets/large/sift1b \
+	bench/datasets/large/deep1b
 
-.PHONY: bench/dataset/large/sift1b
+.PHONY: bench/datasets/large/sift1b
 ## fetch sift1b dataset for benchmark
-bench/dataset/large/sift1b: \
+bench/datasets/large/sift1b: \
 	$(SIFT1B_BASE_FILE) \
 	$(SIFT1B_LEARN_FILE) \
 	$(SIFT1B_QUERY_FILE) \
 	$(SIFT1B_GROUNDTRUTH_DIR)
 
-.PHONY: bench/dataset/large/deep1b
+.PHONY: bench/datasets/large/deep1b
 ## fetch deep1b dataset for benchmark
-bench/dataset/large/deep1b: \
+bench/datasets/large/deep1b: \
 	$(DEEP1B_BASE_FILE) \
 	$(DEEP1B_LEARN_FILE) \
 	$(DEEP1B_QUERY_FILE) \
