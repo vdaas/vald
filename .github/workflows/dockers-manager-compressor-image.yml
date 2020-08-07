@@ -35,7 +35,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' || startsWith( github.ref, 'refs/tags/')
     steps:
     - uses: actions/checkout@v1
       with:
@@ -55,6 +54,13 @@ jobs:
         imagename=`make docker/name/manager-compressor`
         docker tag ${imagename} ${imagename}:nightly
         docker push ${imagename}:nightly
+    - name: push to DockerHub (pull request)
+      if: github.event_name == 'pull_request'
+      run: |
+        imagename=`make docker/name/manager-compressor`
+        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+        docker tag ${imagename} ${imagename}:pr-${pr_num}
+        docker push ${imagename}:pr-${pr_num}
     - name: push to DockerHub (tags)
       if: startsWith( github.ref, 'refs/tags/')
       id: push_to_dockerhub_tags
@@ -107,27 +113,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
-  build-pr:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 10
-    - name: Build the Docker image
-      run: |
-        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-        echo "PR-${pr_num}" > versions/VALD_VERSION
-        make docker/build/manager-compressor
-    - name: login to DockerHub
-      run: |
-        echo ${DOCKERHUB_PASS} | docker login --username ${DOCKERHUB_USER} --password-stdin
-      env:
-        DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
-        DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-    - name: push to DockerHub (pull request)
-      run: |
-        imagename=`make docker/name/manager-compressor`
-        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-        docker tag ${imagename} ${imagename}:pr-${pr_num}
-        docker push ${imagename}:pr-${pr_num}
