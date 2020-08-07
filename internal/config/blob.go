@@ -23,13 +23,15 @@ type BlobStorageType uint8
 
 const (
 	S3 BlobStorageType = 1 + iota
-	CloudStrage
+	CloudStorage
 )
 
 func (bst BlobStorageType) String() string {
 	switch bst {
 	case S3:
 		return "s3"
+	case CloudStorage:
+		return "cloud_storage"
 	}
 	return "unknown"
 }
@@ -38,6 +40,8 @@ func AtoBST(bst string) BlobStorageType {
 	switch strings.ToLower(bst) {
 	case S3.String():
 		return S3
+	case CloudStorage.String():
+		return CloudStorage
 	}
 	return 0
 }
@@ -52,8 +56,8 @@ type Blob struct {
 	// S3 represents S3 config
 	S3 *S3Config `json:"s3" yaml:"s3"`
 
-	// CloudStrage represents CloudStrage config
-	CloudStrage *CloudStrageConfig `json:"cloud_strage" yaml:"cloud_strage"`
+	// CloudStorage represents CloudStorage config
+	CloudStorage *CloudStorageConfig `json:"cloud_storage" yaml:"cloud_storage"`
 }
 
 type S3Config struct {
@@ -79,7 +83,7 @@ type S3Config struct {
 	MaxChunkSize string `json:"max_chunk_size" yaml:"max_chunk_size"`
 }
 
-type CloudStrageConfig struct {
+type CloudStorageConfig struct {
 	URL string `json:"url" yaml:"url"`
 
 	Client struct {
@@ -107,10 +111,10 @@ func (b *Blob) Bind() *Blob {
 		b.S3 = new(S3Config)
 	}
 
-	if b.CloudStrage != nil {
-		b.CloudStrage = b.CloudStrage.Bind()
+	if b.CloudStorage != nil {
+		b.CloudStorage = b.CloudStorage.Bind()
 	} else {
-		b.CloudStrage = new(CloudStrageConfig)
+		b.CloudStorage = new(CloudStorageConfig)
 	}
 
 	return b
@@ -128,7 +132,7 @@ func (s *S3Config) Bind() *S3Config {
 	return s
 }
 
-func (c *CloudStrageConfig) Bind() *CloudStrageConfig {
+func (c *CloudStorageConfig) Bind() *CloudStorageConfig {
 	c.URL = GetActualValue(c.URL)
 
 	c.Client.GoogleAccessID = GetActualValue(c.Client.GoogleAccessID)
