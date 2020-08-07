@@ -46,6 +46,7 @@ cmd/agent/core/ngt/ngt: \
 	    -extldflags '-static -fPIC -m64 -pthread -fopenmp -std=c++17 -lstdc++ -lm' \
 	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
 	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
@@ -71,6 +72,7 @@ cmd/agent/sidecar/sidecar: \
 	    -extldflags '-static' \
 	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
 	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
@@ -95,6 +97,7 @@ cmd/discoverer/k8s/discoverer: \
 	    -extldflags '-static' \
 	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
 	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
@@ -119,6 +122,7 @@ cmd/gateway/vald/vald: \
 	    -extldflags '-static' \
 	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
 	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
@@ -143,6 +147,7 @@ cmd/meta/redis/meta: \
 	    -extldflags '-static' \
 	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
 	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
@@ -167,6 +172,7 @@ cmd/meta/cassandra/meta: \
 	    -extldflags '-static' \
 	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
 	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
@@ -191,6 +197,7 @@ cmd/manager/backup/mysql/backup: \
 	    -extldflags '-static' \
 	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
 	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
@@ -215,6 +222,7 @@ cmd/manager/backup/cassandra/backup: \
 	    -extldflags '-static' \
 	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
 	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
@@ -239,6 +247,7 @@ cmd/manager/compressor/compressor: \
 	    -extldflags '-static' \
 	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
 	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
@@ -263,6 +272,7 @@ cmd/manager/index/index: \
 	    -extldflags '-static' \
 	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
 	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
@@ -287,6 +297,7 @@ cmd/manager/replication/agent/agent: \
 	    -extldflags '-static' \
 	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
 	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
@@ -311,6 +322,7 @@ cmd/manager/replication/controller/controller: \
 	    -extldflags '-static' \
 	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
 	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
