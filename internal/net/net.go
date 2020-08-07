@@ -27,6 +27,8 @@ import (
 	"syscall"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 )
 
 const (
@@ -36,30 +38,38 @@ const (
 	defaultPort = 80
 )
 
-type Conn = net.Conn
-type Dialer = net.Dialer
-type ListenConfig = net.ListenConfig
-type Listener = net.Listener
-type Resolver = net.Resolver
+type (
+	Conn         = net.Conn
+	Dialer       = net.Dialer
+	ListenConfig = net.ListenConfig
+	Listener     = net.Listener
+	Resolver     = net.Resolver
+)
 
 var (
 	DefaultResolver = net.DefaultResolver
 )
 
+// Listen is a wrapper function of the net.Listen function.
 func Listen(network, address string) (Listener, error) {
 	return net.Listen(network, address)
 }
 
+// IsLocal returns if the host is the localhost address.
 func IsLocal(host string) bool {
 	return host == localHost ||
 		host == localIPv4 ||
 		host == localIPv6
 }
 
+// Dial is a wrapper function of the net.Dial function.
 func Dial(network string, addr string) (conn Conn, err error) {
 	return net.Dial(network, addr)
 }
 
+// Parse parses the hostname, IPv4 or IPv6 address and return the hostname/IP, port number,
+// whether the address is IP, and any parsing error occurred.
+// The address should contains the port number, otherwise an error will return.
 func Parse(addr string) (host string, port uint16, isIP bool, err error) {
 	host, port, err = SplitHostPort(addr)
 	isIP = IsIPv6(host) || IsIPv4(host)
@@ -69,18 +79,22 @@ func Parse(addr string) (host string, port uint16, isIP bool, err error) {
 	return host, port, isIP, err
 }
 
+// IsIPv6 returns weather the address is IPv6 address.
 func IsIPv6(addr string) bool {
 	return net.ParseIP(addr) != nil && strings.Count(addr, ":") >= 2
 }
 
+// IsIPv4 returns weather the address is IPv4 address.
 func IsIPv4(addr string) bool {
 	return net.ParseIP(addr) != nil && strings.Count(addr, ":") < 2
 }
 
+// SplitHostPort splits the address, and return the host/IP address and the port number,
+// and any error occurred.
 func SplitHostPort(hostport string) (host string, port uint16, err error) {
 	switch {
 	case strings.HasPrefix(hostport, "::"):
-		hostport = localIPv6 + hostport
+		hostport = localIPv6 + hostport[2:]
 	case strings.HasPrefix(hostport, ":"):
 		hostport = localIPv4 + hostport
 	}
@@ -98,16 +112,22 @@ func SplitHostPort(hostport string) (host string, port uint16, err error) {
 	return host, port, err
 }
 
+// ScanPorts scans the given range of port numbers from the host (inclusively),
+// and return the list of ports that can be connected through TCP, or any error occurred.
 func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uint16, err error) {
+	if start > end {
+		start, end = end, start
+	}
+
 	var rl syscall.Rlimit
-	err = syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rl)
-	if err != nil {
+	if err = syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rl); err != nil {
 		return nil, err
 	}
 	eg, egctx := errgroup.New(ctx)
 	eg.Limitation(int(rl.Max) / 2)
+
 	var mu sync.Mutex
-	for i := start; i <= end; i++ {
+	for i := start; i >= start && i <= end; i++ {
 		port := i
 		eg.Go(func() error {
 			select {
@@ -116,18 +136,28 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 			default:
 				conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", host, port))
 				if err != nil {
-					return err
+					log.Warn(err)
+					return nil
 				}
+
 				mu.Lock()
 				ports = append(ports, port)
 				mu.Unlock()
-				return conn.Close()
+
+				if err = conn.Close(); err != nil {
+					log.Warn(err)
+				}
+				return nil
 			}
 		})
 	}
-	err = eg.Wait()
-	if err != nil {
+
+	if err = eg.Wait(); err != nil {
 		return nil, err
+	}
+
+	if len(ports) == 0 {
+		return nil, errors.ErrNoPortAvailiable
 	}
 
 	return ports, nil
