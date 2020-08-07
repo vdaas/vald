@@ -173,7 +173,7 @@ func (b *bs) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (b *bs) Reader(ctx context.Context) (r io.Reader, err error) {
+func (b *bs) Reader(ctx context.Context) (r io.ReadCloser, err error) {
 	r, err = b.bucket.Reader(ctx, b.filename+b.suffix)
 	if err != nil {
 		return nil, err
