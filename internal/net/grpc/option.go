@@ -41,6 +41,7 @@ var (
 		WithConnectionPoolRebalanceDuration("1h"),
 		WithErrGroup(errgroup.Get()),
 		WithHealthCheckDuration("10s"),
+		WithResolveDNS(true),
 	}
 )
 
@@ -77,6 +78,12 @@ func WithConnectionPoolRebalanceDuration(dur string) Option {
 			d = time.Hour
 		}
 		g.prDur = d
+	}
+}
+
+func WithResolveDNS(flg bool) Option {
+	return func(g *gRPCClient) {
+		g.resolveDNS = flg
 	}
 }
 

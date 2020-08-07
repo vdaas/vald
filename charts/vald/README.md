@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.44`
+Current chart version is `v0.0.50`
 
 Table of Contents
 ---
@@ -86,11 +86,17 @@ Configuration
 | agent.ngt.auto_save_index_duration | string | `"35m"` | duration of automatic save index |
 | agent.ngt.bulk_insert_chunk_size | int | `10` | bulk insert chunk size |
 | agent.ngt.creation_edge_size | int | `20` | creation edge size |
+| agent.ngt.default_epsilon | float | `0.01` | default epsilon used for search |
+| agent.ngt.default_pool_size | int | `10000` | default create index batch pool size |
+| agent.ngt.default_radius | float | `-1` | default radius used for search |
 | agent.ngt.dimension | int | `4096` | vector dimension |
 | agent.ngt.distance_type | string | `"l2"` | distance type. it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `normalizedangle` or `normalizedcosine`. for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference |
 | agent.ngt.enable_in_memory_mode | bool | `true` | in-memory mode enabled |
 | agent.ngt.index_path | string | `""` | path to index data |
 | agent.ngt.initial_delay_max_duration | string | `"3m"` | maximum duration for initial delay |
+| agent.ngt.load_index_timeout_factor | string | `"1ms"` | a factor of load index timeout. timeout duration will be calculated by (index count to be loaded) * (factor). |
+| agent.ngt.max_load_index_timeout | string | `"10m"` | maximum duration of load index timeout |
+| agent.ngt.min_load_index_timeout | string | `"3m"` | minimum duration of load index timeout |
 | agent.ngt.object_type | string | `"float"` | object type. it should be `float` or `uint8`. for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference |
 | agent.ngt.search_edge_size | int | `10` | search edge size |
 | agent.nodeName | string | `""` | node name |
@@ -114,7 +120,8 @@ Configuration
 | agent.service.annotations | object | `{}` | service annotations |
 | agent.service.labels | object | `{}` | service labels |
 | agent.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
-| agent.sidecar.config.auto_backup_duration | string | `"10m"` | auto backup duration |
+| agent.sidecar.config.auto_backup_duration | string | `"24h"` | auto backup duration |
+| agent.sidecar.config.auto_backup_enabled | bool | `true` | auto backup triggered by timer is enabled |
 | agent.sidecar.config.blob_storage.bucket | string | `""` | bucket name |
 | agent.sidecar.config.blob_storage.s3.access_key | string | `"_AWS_ACCESS_KEY_"` | s3 access key |
 | agent.sidecar.config.blob_storage.s3.enable_100_continue | bool | `true` | enable AWS SDK adding the 'Expect: 100-Continue' header to PUT requests over 2MB of content. |
@@ -167,7 +174,7 @@ Configuration
 | agent.sidecar.config.compress.compression_level | int | `-1` | compression level. value range relies on which algorithm is used. `gob`: level will be ignored. `gzip`: -1 (default compression), 0 (no compression), or 1 (best speed) to 9 (best compression). `lz4`: >= 0, higher is better compression. `zstd`: 1 (fastest) to 22 (best), however implementation relies on klauspost/compress. |
 | agent.sidecar.config.filename | string | `"_MY_POD_NAME_"` | backup filename |
 | agent.sidecar.config.filename_suffix | string | `".tar.gz"` | suffix for backup filename |
-| agent.sidecar.config.post_stop_timeout | string | `"20s"` | timeout duration for file changing during post stop |
+| agent.sidecar.config.post_stop_timeout | string | `"2m"` | timeout for observing file changes during post stop |
 | agent.sidecar.config.restore_backoff.backoff_factor | float | `1.2` | restore backoff factor |
 | agent.sidecar.config.restore_backoff.backoff_time_limit | string | `"30m"` | restore backoff time limit |
 | agent.sidecar.config.restore_backoff.enable_error_log | bool | `true` | restore backoff log enabled |
@@ -176,6 +183,7 @@ Configuration
 | agent.sidecar.config.restore_backoff.maximum_duration | string | `"1m"` | restore backoff maximum duration |
 | agent.sidecar.config.restore_backoff.retry_count | int | `100` | restore backoff retry count |
 | agent.sidecar.config.restore_backoff_enabled | bool | `false` | restore backoff enabled |
+| agent.sidecar.config.watch_enabled | bool | `true` | auto backup triggered by file changes is enabled |
 | agent.sidecar.enabled | bool | `false` | sidecar enabled |
 | agent.sidecar.env | list | `[{"name":"MY_POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"AWS_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"access-key","name":"aws-secret"}}},{"name":"AWS_SECRET_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"secret-access-key","name":"aws-secret"}}}]` | environment variables |
 | agent.sidecar.image.pullPolicy | string | `"Always"` | image pull policy |
@@ -385,6 +393,7 @@ Configuration
 | defaults.grpc.client.call_option.max_retry_rpc_buffer_size | int | `0` | gRPC client call option max retry rpc buffer size |
 | defaults.grpc.client.call_option.max_send_msg_size | int | `0` | gRPC client call option max send message size |
 | defaults.grpc.client.call_option.wait_for_ready | bool | `true` | gRPC client call option wait for ready |
+| defaults.grpc.client.connection_pool.enable_dns_resolver | bool | `true` | enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance |
 | defaults.grpc.client.connection_pool.enable_rebalance | bool | `true` | enables gRPC client connection pool rebalance |
 | defaults.grpc.client.connection_pool.old_conn_close_duration | string | `"3s"` | makes delay before gRPC client connection closing during connection pool rebalance |
 | defaults.grpc.client.connection_pool.rebalance_duration | string | `"30m"` | gRPC client connection pool rebalance duration |
@@ -416,7 +425,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.44"` | docker image tag |
+| defaults.image.tag | string | `"v0.0.50"` | docker image tag |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
 | defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg`. |

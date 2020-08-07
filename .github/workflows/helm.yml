@@ -1,22 +1,11 @@
 name: 'Update Helm charts'
 on:
   push:
-    branches:
-      - master
     tags:
        - '*.*.*'
        - 'v*.*.*'
        - '*.*.*-*'
        - 'v*.*.*-*'
-    paths:
-      - 'charts/vald/README.md.gotmpl'
-      - 'charts/vald/Chart.yaml'
-      - 'charts/vald/values.yaml'
-      - 'charts/vald/templates/**'
-      - 'charts/vald-helm-operator/README.md.gotmpl'
-      - 'charts/vald-helm-operator/Chart.yaml'
-      - 'charts/vald-helm-operator/values.yaml'
-      - 'charts/vald-helm-operator/templates/**'
 
 jobs:
   update-k8s-manifest:
@@ -77,7 +66,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: vdaas/vald-ci-container:nightly
-    if: startsWith( github.ref, 'refs/tags/')
     steps:
       - name: Check out code.
         uses: actions/checkout@v1

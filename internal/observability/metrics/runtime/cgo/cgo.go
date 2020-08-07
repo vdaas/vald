@@ -48,7 +48,7 @@ func (c *cgo) View() []*metrics.View {
 	return []*metrics.View{
 		&metrics.View{
 			Name:        "cgo_call_count",
-			Description: "number of cgo call",
+			Description: c.count.Description(),
 			Measure:     &c.count,
 			Aggregation: metrics.LastValue(),
 		},

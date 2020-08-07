@@ -49,12 +49,14 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	run.client = grpc.New(clientOpts...)
 
 	run.loader, err = service.NewLoader(
-		service.WithOperation(cfg.Method),
+		service.WithOperation(cfg.Operation),
 		service.WithAddr(cfg.Addr),
+		service.WithBatchSize(cfg.BatchSize),
 		service.WithDataset(cfg.Dataset),
 		service.WithClient(run.client),
 		service.WithConcurrency(cfg.Concurrency),
 		service.WithProgressDuration(cfg.ProgressDuration),
+		service.WithService(cfg.Service),
 	)
 	if err != nil {
 		return nil, err
@@ -70,11 +72,16 @@ func (r *run) PreStart(ctx context.Context) (err error) {
 
 // Start runs load test and returns error if occurred.
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	rech, err := r.client.StartConnectionMonitor(ctx)
-	if err != nil {
-		return nil, err
-	}
+	// TODO: related to #557
+	/*
+		rech, err := r.client.StartConnectionMonitor(ctx)
+		if err != nil {
+			return nil, err
+		}
+	*/
+
 	lech := r.loader.Do(ctx)
+
 	ech := make(chan error, 1000) // TODO: fix magic number
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
@@ -87,7 +94,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 				}
 			}
 			err = ctx.Err()
-			if err != nil && err != context.Canceled {
+			if err != nil && !errors.Is(err, context.Canceled) {
 				errs = errors.Wrap(errs, err.Error())
 			}
 			return errs
@@ -96,7 +103,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				return finalize()
-			case err = <-rech:
+			//case err = <-rech: // TODO: related to #557
 			case err = <-lech:
 			}
 			if err != nil {

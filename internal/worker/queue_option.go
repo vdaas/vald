@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
+// QueueOption represents the functional option for queue.
 type QueueOption func(q *queue) error
 
 var (
@@ -32,6 +33,7 @@ var (
 	}
 )
 
+// WithQueueBuffer returns the option to set the buffer for queue.
 func WithQueueBuffer(buffer int) QueueOption {
 	return func(q *queue) error {
 		if buffer > 0 {
@@ -41,6 +43,7 @@ func WithQueueBuffer(buffer int) QueueOption {
 	}
 }
 
+// WithQueueErrGroup returns the options to set the eg for queue.
 func WithQueueErrGroup(eg errgroup.Group) QueueOption {
 	return func(q *queue) error {
 		if eg != nil {
@@ -50,6 +53,8 @@ func WithQueueErrGroup(eg errgroup.Group) QueueOption {
 	}
 }
 
+// WithQueueCheckDuration returns the option to set the qcdur for queue.
+// If dur is invalid string, it returns errror.
 func WithQueueCheckDuration(dur string) QueueOption {
 	return func(q *queue) error {
 		if len(dur) == 0 {

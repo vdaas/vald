@@ -15,6 +15,9 @@
 #
 
 if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then
+    rm /tmp/go.mod /tmp/go.sum
+    cp go.mod /tmp
+    cp go.sum /tmp
     # goimports
     echo "Run goimports..."
     find ./ -type f -regex ".*\.go" | xargs goimports -w
@@ -31,4 +34,6 @@ if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then
         golangci-lint run --fast --disable=gochecknoglobals --fix --color always -j 16 --skip-dirs apis/grpc --exclude-use-default=false ./...
         echo "golangci-lint finished."
     fi
+    mv -f /tmp/go.mod .
+    mv -f /tmp/go.sum .
 fi

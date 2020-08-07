@@ -112,6 +112,10 @@ type client struct {
 	disableTopologyEvents    bool
 	disableSchemaEvents      bool
 	disableSkipMetadata      bool
+	queryObserver            QueryObserver
+	batchObserver            BatchObserver
+	connectObserver          ConnectObserver
+	frameHeaderObserver      FrameHeaderObserver
 	defaultIdempotence       bool
 	dialer                   gocql.Dialer
 	writeCoalesceWaitTime    time.Duration
@@ -225,11 +229,11 @@ func New(opts ...Option) (Cassandra, error) {
 			DisableTopologyEvents:   c.disableTopologyEvents,
 			DisableSchemaEvents:     c.disableSchemaEvents,
 		},
-		DisableSkipMetadata: c.disableSkipMetadata,
-		// QueryObserver
-		// BatchObserver
-		// ConnectObserver
-		// FrameHeaderObserver
+		DisableSkipMetadata:   c.disableSkipMetadata,
+		QueryObserver:         c.queryObserver,
+		BatchObserver:         c.batchObserver,
+		ConnectObserver:       c.connectObserver,
+		FrameHeaderObserver:   c.frameHeaderObserver,
 		DefaultIdempotence:    c.defaultIdempotence,
 		WriteCoalesceWaitTime: c.writeCoalesceWaitTime,
 		SslOpts: func() *gocql.SslOptions {

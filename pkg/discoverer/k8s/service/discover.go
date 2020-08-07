@@ -281,7 +281,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				})
 				var wg sync.WaitGroup
 				wg.Add(1)
-				d.eg.Go(func() error {
+				d.eg.Go(safety.RecoverFunc(func() error {
 					defer wg.Done()
 					for nodeName := range podsByNode {
 						for namespace := range podsByNode[nodeName] {
@@ -290,19 +290,35 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 									return p[i].GetMemory().GetUsage() < p[j].GetMemory().GetUsage()
 								})
 								podsByNode[nodeName][namespace][appName] = p
-								nodeByName[nodeName].Pods.Pods = append(nodeByName[nodeName].Pods.Pods, p...)
+								nn, ok := nodeByName[nodeName]
+								if !ok {
+									nodeByName[nodeName] = new(payload.Info_Node)
+								}
+								if nn.Pods == nil {
+									nodeByName[nodeName].Pods = new(payload.Info_Pods)
+								}
+								if nn.Pods.Pods == nil {
+									nodeByName[nodeName].Pods.Pods = make([]*payload.Info_Pod, 0, len(p))
+								}
+								nn, ok = nodeByName[nodeName]
+								if ok && nn.Pods != nil && nn.Pods.Pods != nil {
+									nodeByName[nodeName].Pods.Pods = append(nodeByName[nodeName].Pods.Pods, p...)
+								}
 							}
 						}
-						p := nodeByName[nodeName].Pods.Pods
-						sort.Slice(p, func(i, j int) bool {
-							return p[i].GetMemory().GetUsage() < p[j].GetMemory().GetUsage()
-						})
-						nodeByName[nodeName].Pods.Pods = p
+						nn, ok := nodeByName[nodeName]
+						if ok && nn.Pods != nil && nn.Pods.Pods != nil {
+							p := nn.Pods.Pods
+							sort.Slice(p, func(i, j int) bool {
+								return p[i].GetMemory().GetUsage() < p[j].GetMemory().GetUsage()
+							})
+							nodeByName[nodeName].Pods.Pods = p
+						}
 					}
 					return nil
-				})
+				}))
 				wg.Add(1)
-				d.eg.Go(func() error {
+				d.eg.Go(safety.RecoverFunc(func() error {
 					defer wg.Done()
 					for namespace := range podsByNamespace {
 						for appName, p := range podsByNamespace[namespace] {
@@ -313,9 +329,9 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						}
 					}
 					return nil
-				})
+				}))
 				wg.Add(1)
-				d.eg.Go(func() error {
+				d.eg.Go(safety.RecoverFunc(func() error {
 					defer wg.Done()
 					for appName, p := range podsByName {
 						sort.Slice(p, func(i, j int) bool {
@@ -324,7 +340,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						podsByName[appName] = p
 					}
 					return nil
-				})
+				}))
 				wg.Wait()
 
 				d.podsByNode.Store(podsByNode)
