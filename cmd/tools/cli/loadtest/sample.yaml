@@ -21,12 +21,13 @@ logging:
   logger: glg
   level: info
   format: raw
-service: agent
+service: gateway
 operation: insert
 dataset: fashion-mnist
 concurrency: 100
 batch_size: 10
 progress_duration: 3s
+resolve_dns: false
 addr: "localhost:8082"
 client:
   addrs: []

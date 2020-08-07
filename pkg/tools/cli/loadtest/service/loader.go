@@ -27,12 +27,10 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	igrpc "github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
-
-	"google.golang.org/grpc" // TODO: related to #557
 )
 
 // Loader is representation of load test
@@ -47,7 +45,7 @@ type (
 
 type loader struct {
 	eg               errgroup.Group
-	client           igrpc.Client
+	client           grpc.Client
 	addr             string
 	concurrency      int
 	batchSize        int
@@ -211,29 +209,14 @@ func (l *loader) do(ctx context.Context, f func(interface{}, error), notify func
 					err = nil
 				}
 			}()
-			// TODO: related to #557
-			/*
-				_, err := l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-					st, err := l.loaderFunc(ctx, conn, nil, copts...)
-					if err != nil {
-						return nil, err
-					}
-					return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f)
-				})
-			*/
-			conn, err := grpc.Dial(l.addr, grpc.WithInsecure())
-			if err != nil {
-				return err
-			}
-			defer notify(egctx, conn.Close())
-			st, err := l.loaderFunc(egctx, conn, nil)
-			if err != nil {
-				return err
-			}
-			if err := igrpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f); err != nil {
-				return err
-			}
-			return nil
+			_, err = l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+				st, err := l.loaderFunc(ctx, conn, nil, copts...)
+				if err != nil {
+					return nil, err
+				}
+				return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f)
+			})
+			return err
 		}))
 		err = eg.Wait()
 	case config.Insert, config.Search:
@@ -250,18 +233,13 @@ func (l *loader) do(ctx context.Context, f func(interface{}, error), notify func
 					notify(egctx, err)
 					err = nil
 				}()
-				conn, err := grpc.Dial(l.addr, grpc.WithInsecure())
-				if err != nil {
-					return err
-				}
-				defer notify(egctx, conn.Close())
+				_, err = l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+					res, err := l.loaderFunc(egctx, conn, r)
+					f(res, err)
+					return res, err
+				})
 
-				res, err := l.loaderFunc(egctx, conn, r)
-				f(res, err)
-				if err != nil {
-					return err
-				}
-				return nil
+				return err
 			}))
 		}
 		err = eg.Wait()

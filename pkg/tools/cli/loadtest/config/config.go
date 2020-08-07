@@ -115,6 +115,7 @@ type Data struct {
 	Concurrency         int                `json:"concurrency" yaml:"concurrency"`
 	BatchSize           int                `json:"batch_size" yaml:"batch_size"`
 	ProgressDuration    string             `json:"progress_duration" yaml:"progress_duration"`
+	ResolveDNS          bool               `json:"resolve_dns" yaml:"resolve_dns"`
 	Client              *config.GRPCClient `json:"client" yaml:"client"`
 }
 
