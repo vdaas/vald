@@ -39,6 +39,11 @@ jobs:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 10
+    - name: Overwrite version name
+      if: github.event_name == 'pull_request'
+      run: |
+        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+        echo "PR-${pr_num}" > versions/VALD_VERSION
     - name: Build the Docker image
       run: |
         make docker/build/manager-compressor
