@@ -4,7 +4,7 @@ go 1.14
 
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go master
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.33.21
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/cockroachdb/errors => github.com/cockroachdb/errors v1.5.1-0.20200617111016-cc0024f9c4d3
 	github.com/coreos/etcd => go.etcd.io/etcd v0.5.0-alpha.5.0.20200425165423-262c93980547
