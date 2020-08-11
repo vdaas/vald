@@ -21,6 +21,7 @@ import (
 	"github.com/klauspost/compress/zstd"
 )
 
+// ZstdOption represents the functional option for zstdCompressor
 type ZstdOption func(c *zstdCompressor) error
 
 var (
@@ -30,6 +31,7 @@ var (
 	}
 )
 
+// WithZstdGob represents the option to set the GobOption to initialize Gob.
 func WithZstdGob(opts ...GobOption) ZstdOption {
 	return func(c *zstdCompressor) error {
 		gobc, err := NewGob(opts...)
@@ -41,6 +43,7 @@ func WithZstdGob(opts ...GobOption) ZstdOption {
 	}
 }
 
+// WithZstdCompressionLevel represents the option to set the compress level for zstd.
 func WithZstdCompressionLevel(level int) ZstdOption {
 	return func(c *zstdCompressor) error {
 		c.eoptions = append(c.eoptions, zstd.WithEncoderLevel(zstd.EncoderLevelFromZstd(level)))
