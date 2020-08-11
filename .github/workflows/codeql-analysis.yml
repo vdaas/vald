@@ -14,7 +14,7 @@ on:
       - '.github/workflows/codeql-analysis.yml'
       - '**.go'
   schedule:
-    - cron: '0 1 * * 2'
+    - cron: '0 1 * * *'
 
 jobs:
   CodeQL-Build:
