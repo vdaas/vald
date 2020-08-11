@@ -64,7 +64,7 @@ require (
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
 	golang.org/x/sys v0.0.0-20200810151505-1b9f1253b3ed
-	golang.org/x/tools v0.0.0-20200811032001-fd80f4dbb3ea // indirect
+	golang.org/x/tools v0.0.0-20200811153730-74512f09e4b0 // indirect
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.7.1-0.20200803120916-6a037fda5e90
 	google.golang.org/api v0.30.1-0.20200811142409-9e2b1a1ddef6

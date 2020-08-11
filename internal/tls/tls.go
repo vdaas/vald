@@ -23,7 +23,7 @@ import (
 	"reflect"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/io/ioutil"
 )
 
 type Config = tls.Config
@@ -103,7 +103,7 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 // NewX509CertPool returns *x509.CertPool struct or error.
 // The CertPool will read the certificate from the path, and append the content to the system certificate pool, and return.
 func NewX509CertPool(path string) (pool *x509.CertPool, err error) {
-	c, err := io.ReadFile(path)
+	c, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
