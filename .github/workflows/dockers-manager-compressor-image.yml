@@ -39,6 +39,11 @@ jobs:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 10
+    - name: Overwrite version name
+      if: github.event_name == 'pull_request'
+      run: |
+        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+        echo "PR-${pr_num}" > versions/VALD_VERSION
     - name: Build the Docker image
       run: |
         make docker/build/manager-compressor
@@ -63,6 +68,7 @@ jobs:
         docker push ${imagename}:pr-${pr_num}
     - name: push to DockerHub (tags)
       if: startsWith( github.ref, 'refs/tags/')
+      id: push_to_dockerhub_tags
       run: |
         imagename=`make docker/name/manager-compressor`
         docker push ${imagename}:latest
@@ -71,6 +77,30 @@ jobs:
         docker push ${imagename}:${tag_name}
         docker tag ${imagename} ${imagename}:nightly
         docker push ${imagename}:nightly
+        echo "::set-output name=IMAGE_NAME::${imagename}"
+        echo "::set-output name=TAG_NAME::${tag_name}"
+    - name: Initialize CodeQL
+      if: startsWith( github.ref, 'refs/tags/')
+      uses: github/codeql-action/init@v1
+    - name: Run vulnerability scanner (table)
+      if: startsWith( github.ref, 'refs/tags/')
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: "${{ steps.push_to_dockerhub_tags.outputs.IMAGE_NAME }}:${{ steps.push_to_dockerhub_tags.outputs.TAG_NAME }}"
+        format: 'table'
+    - name: Run vulnerability scanner (sarif)
+      if: startsWith( github.ref, 'refs/tags/')
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: "${{ steps.push_to_dockerhub_tags.outputs.IMAGE_NAME }}:${{ steps.push_to_dockerhub_tags.outputs.TAG_NAME }}"
+        format: 'template'
+        template: '@/contrib/sarif.tpl'
+        output: 'trivy-results.sarif'
+    - name: Upload Trivy scan results to Security tab
+      if: startsWith( github.ref, 'refs/tags/')
+      uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: 'trivy-results.sarif'
   slack:
     name: Slack notification
     needs: build

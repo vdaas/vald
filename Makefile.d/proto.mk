@@ -68,7 +68,8 @@ proto/deps: \
 	$(GOPATH)/bin/swagger \
 	$(GOPATH)/src/google.golang.org/genproto \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
-	$(GOPATH)/src/github.com/googleapis/googleapis
+	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 
 $(GOPATH)/src/github.com/protocolbuffers/protobuf:
 	git clone \
@@ -81,6 +82,12 @@ $(GOPATH)/src/github.com/googleapis/googleapis:
 		--depth 1 \
 		https://github.com/googleapis/googleapis \
 		$(GOPATH)/src/github.com/googleapis/googleapis
+
+$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate:
+	git clone \
+		--depth 1 \
+		https://github.com/envoyproxy/protoc-gen-validate \
+		$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 
 $(GOPATH)/src/google.golang.org/genproto:
 	$(call go-get, google.golang.org/genproto/...)
@@ -119,7 +126,7 @@ $(GOPATH)/bin/protoc-gen-gqlgencfg:
 	$(call go-get-no-mod, github.com/danielvladco/go-proto-gql/protoc-gen-gqlgencfg)
 
 $(GOPATH)/bin/protoc-gen-validate:
-	$(call go-get-no-mod, github.com/envoyproxy/protoc-gen-validate)
+	$(call go-get, github.com/envoyproxy/protoc-gen-validate)
 
 $(GOPATH)/bin/prototool:
 	$(call go-get, github.com/uber/prototool/cmd/prototool)
@@ -128,49 +135,134 @@ $(GOPATH)/bin/protoc-gen-doc:
 	$(call go-get, github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc)
 
 $(GOPATH)/bin/swagger:
-	$(call go-get-no-mod, github.com/go-swagger/go-swagger/cmd/swagger)
+	$(call go-get, github.com/go-swagger/go-swagger/cmd/swagger)
 
 $(GOPATH)/bin/gqlgen:
 	$(call go-get, github.com/99designs/gqlgen)
 
-$(PBGODIRS):
-	$(call mkdir, $@)
-	$(call rm, -rf, $@/*)
-
-$(SWAGGERDIRS):
-	$(call mkdir, $@)
-	$(call rm, -rf, $@/*)
-
-$(GRAPHQLDIRS):
-	$(call mkdir, $@)
-	$(call rm, -rf, $@/*)
-
-$(PBDOCDIRS):
-	$(call mkdir, $@)
-	$(call rm, -rf, $@/*)
-
-$(PBPYDIRS):
-	$(call mkdir, $@)
-	$(call rm, -rf, $@/*)
-
-$(PBGOS): proto/deps $(PBGODIRS)
+$(PBGOS): \
+	$(PROTOS) \
+	$(GOPATH)/bin/gqlgen \
+	$(GOPATH)/bin/protoc-gen-doc \
+	$(GOPATH)/bin/protoc-gen-go \
+	$(GOPATH)/bin/protoc-gen-gogo \
+	$(GOPATH)/bin/protoc-gen-gofast \
+	$(GOPATH)/bin/protoc-gen-gogofast \
+	$(GOPATH)/bin/protoc-gen-gogofaster \
+	$(GOPATH)/bin/protoc-gen-gogoslick \
+	$(GOPATH)/bin/protoc-gen-gogqlgen \
+	$(GOPATH)/bin/protoc-gen-gql \
+	$(GOPATH)/bin/protoc-gen-gqlgencfg \
+	$(GOPATH)/bin/protoc-gen-grpc-gateway \
+	$(GOPATH)/bin/protoc-gen-swagger \
+	$(GOPATH)/bin/protoc-gen-validate \
+	$(GOPATH)/bin/swagger \
+	$(GOPATH)/src/google.golang.org/genproto \
+	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
+	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 	@$(call green, "generating pb.go files...")
+	$(call mkdir, $(dir $@))
 	$(call protoc-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@), --gogofast_out=plugins=grpc:$(GOPATH)/src)
 	# we have to enable validate after https://github.com/envoyproxy/protoc-gen-validate/pull/257 is merged
 	# $(call protoc-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@), --gogofast_out=plugins=grpc:$(GOPATH)/src --validate_out=lang=gogo:$(GOPATH)/src)
 
-$(SWAGGERS): proto/deps $(SWAGGERDIRS)
+$(SWAGGERS): \
+	$(PROTOS) \
+	$(GOPATH)/bin/gqlgen \
+	$(GOPATH)/bin/protoc-gen-doc \
+	$(GOPATH)/bin/protoc-gen-go \
+	$(GOPATH)/bin/protoc-gen-gogo \
+	$(GOPATH)/bin/protoc-gen-gofast \
+	$(GOPATH)/bin/protoc-gen-gogofast \
+	$(GOPATH)/bin/protoc-gen-gogofaster \
+	$(GOPATH)/bin/protoc-gen-gogoslick \
+	$(GOPATH)/bin/protoc-gen-gogqlgen \
+	$(GOPATH)/bin/protoc-gen-gql \
+	$(GOPATH)/bin/protoc-gen-gqlgencfg \
+	$(GOPATH)/bin/protoc-gen-grpc-gateway \
+	$(GOPATH)/bin/protoc-gen-swagger \
+	$(GOPATH)/bin/protoc-gen-validate \
+	$(GOPATH)/bin/swagger \
+	$(GOPATH)/src/google.golang.org/genproto \
+	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
+	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 	@$(call green, "generating swagger.json files...")
+	$(call mkdir, $(dir $@))
 	$(call protoc-gen, $(patsubst apis/swagger/%.swagger.json,apis/proto/%.proto,$@), --swagger_out=json_names_for_fields=true:$(dir $@))
 
-$(GRAPHQLS): proto/deps $(GRAPHQLDIRS)
+$(GRAPHQLS): \
+	$(PROTOS) \
+	$(GOPATH)/bin/gqlgen \
+	$(GOPATH)/bin/protoc-gen-doc \
+	$(GOPATH)/bin/protoc-gen-go \
+	$(GOPATH)/bin/protoc-gen-gogo \
+	$(GOPATH)/bin/protoc-gen-gofast \
+	$(GOPATH)/bin/protoc-gen-gogofast \
+	$(GOPATH)/bin/protoc-gen-gogofaster \
+	$(GOPATH)/bin/protoc-gen-gogoslick \
+	$(GOPATH)/bin/protoc-gen-gogqlgen \
+	$(GOPATH)/bin/protoc-gen-gql \
+	$(GOPATH)/bin/protoc-gen-gqlgencfg \
+	$(GOPATH)/bin/protoc-gen-grpc-gateway \
+	$(GOPATH)/bin/protoc-gen-swagger \
+	$(GOPATH)/bin/protoc-gen-validate \
+	$(GOPATH)/bin/swagger \
+	$(GOPATH)/src/google.golang.org/genproto \
+	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
+	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 	@$(call green, "generating pb.graphqls files...")
+	$(call mkdir, $(dir $@))
 	$(call protoc-gen, $(patsubst apis/graphql/%.pb.graphqls,apis/proto/%.proto,$@), --gql_out=paths=source_relative:$(dir $@))
 
-$(GQLCODES): proto/deps $(GRAPHQLS)
+$(GQLCODES): \
+	$(PROTOS) \
+	$(GOPATH)/bin/gqlgen \
+	$(GOPATH)/bin/protoc-gen-doc \
+	$(GOPATH)/bin/protoc-gen-go \
+	$(GOPATH)/bin/protoc-gen-gogo \
+	$(GOPATH)/bin/protoc-gen-gofast \
+	$(GOPATH)/bin/protoc-gen-gogofast \
+	$(GOPATH)/bin/protoc-gen-gogofaster \
+	$(GOPATH)/bin/protoc-gen-gogoslick \
+	$(GOPATH)/bin/protoc-gen-gogqlgen \
+	$(GOPATH)/bin/protoc-gen-gql \
+	$(GOPATH)/bin/protoc-gen-gqlgencfg \
+	$(GOPATH)/bin/protoc-gen-grpc-gateway \
+	$(GOPATH)/bin/protoc-gen-swagger \
+	$(GOPATH)/bin/protoc-gen-validate \
+	$(GOPATH)/bin/swagger \
+	$(GOPATH)/src/google.golang.org/genproto \
+	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
+	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 	@$(call green, "generating graphql generated.go files...")
+	$(call mkdir, $(dir $@))
 	sh hack/graphql/gqlgen.sh $(dir $@) $(patsubst apis/graphql/%.generated.go,apis/graphql/%.pb.graphqls,$@) $@
 
-$(PBDOCS): proto/deps $(PBDOCDIRS)
+$(PBDOCS): \
+	$(PROTOS) \
+	$(GOPATH)/bin/gqlgen \
+	$(GOPATH)/bin/protoc-gen-doc \
+	$(GOPATH)/bin/protoc-gen-go \
+	$(GOPATH)/bin/protoc-gen-gogo \
+	$(GOPATH)/bin/protoc-gen-gofast \
+	$(GOPATH)/bin/protoc-gen-gogofast \
+	$(GOPATH)/bin/protoc-gen-gogofaster \
+	$(GOPATH)/bin/protoc-gen-gogoslick \
+	$(GOPATH)/bin/protoc-gen-gogqlgen \
+	$(GOPATH)/bin/protoc-gen-gql \
+	$(GOPATH)/bin/protoc-gen-gqlgencfg \
+	$(GOPATH)/bin/protoc-gen-grpc-gateway \
+	$(GOPATH)/bin/protoc-gen-swagger \
+	$(GOPATH)/bin/protoc-gen-validate \
+	$(GOPATH)/bin/swagger \
+	$(GOPATH)/src/google.golang.org/genproto \
+	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
+	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 	@$(call green, "generating documents...")
+	$(call mkdir, $(dir $@))
 	$(call protoc-gen, $(patsubst apis/docs/%.md,apis/proto/%.proto,$@), --plugin=protoc-gen-doc=$(GOPATH)/bin/protoc-gen-doc --doc_opt=markdown$(COMMA)docs.md --doc_out=$(dir $@))

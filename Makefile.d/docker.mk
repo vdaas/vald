@@ -45,7 +45,12 @@ docker/name/agent-ngt:
 .PHONY: docker/build/agent-ngt
 ## build agent-ngt image
 docker/build/agent-ngt: docker/build/base
-	docker build -f dockers/agent/core/ngt/Dockerfile -t $(REPO)/$(AGENT_IMAGE) .
+	docker build \
+	    -f dockers/agent/core/ngt/Dockerfile \
+	    -t $(REPO)/$(AGENT_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/agent-sidecar
 docker/name/agent-sidecar:
@@ -54,7 +59,12 @@ docker/name/agent-sidecar:
 .PHONY: docker/build/agent-sidecar
 ## build agent-sidecar image
 docker/build/agent-sidecar: docker/build/base
-	docker build -f dockers/agent/sidecar/Dockerfile -t $(REPO)/$(AGENT_SIDECAR_IMAGE) .
+	docker build \
+	    -f dockers/agent/sidecar/Dockerfile \
+	    -t $(REPO)/$(AGENT_SIDECAR_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/discoverer-k8s
 docker/name/discoverer-k8s:
@@ -63,7 +73,12 @@ docker/name/discoverer-k8s:
 .PHONY: docker/build/discoverer-k8s
 ## build discoverer-k8s image
 docker/build/discoverer-k8s: docker/build/base
-	docker build -f dockers/discoverer/k8s/Dockerfile -t $(REPO)/$(DISCOVERER_IMAGE) .
+	docker build \
+	    -f dockers/discoverer/k8s/Dockerfile \
+	    -t $(REPO)/$(DISCOVERER_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/gateway-vald
 docker/name/gateway-vald:
@@ -72,7 +87,12 @@ docker/name/gateway-vald:
 .PHONY: docker/build/gateway-vald
 ## build gateway-vald image
 docker/build/gateway-vald: docker/build/base
-	docker build -f dockers/gateway/vald/Dockerfile -t $(REPO)/$(GATEWAY_IMAGE) .
+	docker build \
+	    -f dockers/gateway/vald/Dockerfile \
+	    -t $(REPO)/$(GATEWAY_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/gateway-meta
 docker/name/gateway-meta:
@@ -117,7 +137,12 @@ docker/name/meta-redis:
 .PHONY: docker/build/meta-redis
 ## build meta-redis image
 docker/build/meta-redis: docker/build/base
-	docker build -f dockers/meta/redis/Dockerfile -t $(REPO)/$(META_REDIS_IMAGE) .
+	docker build \
+	    -f dockers/meta/redis/Dockerfile \
+	    -t $(REPO)/$(META_REDIS_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/meta-cassandra
 docker/name/meta-cassandra:
@@ -126,7 +151,12 @@ docker/name/meta-cassandra:
 .PHONY: docker/build/meta-cassandra
 ## build meta-cassandra image
 docker/build/meta-cassandra: docker/build/base
-	docker build -f dockers/meta/cassandra/Dockerfile -t $(REPO)/$(META_CASSANDRA_IMAGE) .
+	docker build \
+	    -f dockers/meta/cassandra/Dockerfile \
+	    -t $(REPO)/$(META_CASSANDRA_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/backup-manager-mysql
 docker/name/backup-manager-mysql:
@@ -135,7 +165,12 @@ docker/name/backup-manager-mysql:
 .PHONY: docker/build/backup-manager-mysql
 ## build backup-manager-mysql image
 docker/build/backup-manager-mysql: docker/build/base
-	docker build -f dockers/manager/backup/mysql/Dockerfile -t $(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE) .
+	docker build \
+	    -f dockers/manager/backup/mysql/Dockerfile \
+	    -t $(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/backup-manager-cassandra
 docker/name/backup-manager-cassandra:
@@ -144,7 +179,12 @@ docker/name/backup-manager-cassandra:
 .PHONY: docker/build/backup-manager-cassandra
 ## build backup-manager-cassandra image
 docker/build/backup-manager-cassandra: docker/build/base
-	docker build -f dockers/manager/backup/cassandra/Dockerfile -t $(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE) .
+	docker build \
+	    -f dockers/manager/backup/cassandra/Dockerfile \
+	    -t $(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/manager-compressor
 docker/name/manager-compressor:
@@ -153,7 +193,12 @@ docker/name/manager-compressor:
 .PHONY: docker/build/manager-compressor
 ## build manager-compressor image
 docker/build/manager-compressor: docker/build/base
-	docker build -f dockers/manager/compressor/Dockerfile -t $(REPO)/$(MANAGER_COMPRESSOR_IMAGE) .
+	docker build \
+	    -f dockers/manager/compressor/Dockerfile \
+	    -t $(REPO)/$(MANAGER_COMPRESSOR_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/manager-index
 docker/name/manager-index:
@@ -162,7 +207,12 @@ docker/name/manager-index:
 .PHONY: docker/build/manager-index
 ## build manager-index image
 docker/build/manager-index: docker/build/base
-	docker build -f dockers/manager/index/Dockerfile -t $(REPO)/$(MANAGER_INDEX_IMAGE) .
+	docker build \
+	    -f dockers/manager/index/Dockerfile \
+	    -t $(REPO)/$(MANAGER_INDEX_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/ci-container
 docker/name/ci-container:

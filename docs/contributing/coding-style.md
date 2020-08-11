@@ -221,7 +221,7 @@ ErrInvalidCacherType = New("invalid cacher type")
 
 ### Methods
 
-The method name should be named as:
+In this section, rules also apply to the `function` (without receiver). The method name should be named as:
 
 - Use MixedCaps.
 
@@ -236,6 +236,7 @@ func (s *something) some_method() {}
 func (s *something) someMethod() {}
 ```
 
+- Avoid using long function name.
 - Do not use short form unless the function name is too long.
 
 ```go
@@ -269,10 +270,10 @@ func (s *something) SetSignedTok(st string) {
 An unused variable may increase the complexity of the source code, it may confuse the developer hence introduce a new bug.
 So please delete the unused variable.
 
-Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error. 
+Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error.
 This is an example of the unused variable declaration that does not cause a compilation error.
 
-```golang
+```go
 // In this case, this example are not using `port` field, but dose not cause a compilation error.
 // So please delete `port` field of `server`.
 
@@ -296,6 +297,51 @@ if err := srv.Run(); err != nil {
 All errors should define in [internal/errors package](https://github.com/vdaas/vald/blob/master/internal/errors). All errors should be start with `Err` prefix, and all errors should be handle if possible.
 
 Please use [internal/errgroup](https://github.com/vdaas/vald/blob/master/internal/errgroup) for synchronized error handling on multi-goroutine processing.
+
+### Error checking
+
+All functions return `error` if the function can fail. It is very important to ensure the error checking is performed.
+To reduce human mistake that missing the error checking, please check the error using the following style:
+
+```go
+// good
+if err := fn(); err != nil {
+    // handle error
+}
+```
+
+Instead of this style.
+
+```go
+// bad
+err := fn()
+if err != nil {
+    // handle error
+}
+```
+
+If you need the value outside the if statement, please use the following style:
+
+```go
+// good
+conn, err := net.Dial("tcp", "localhost:80")
+if err != nil {
+    // handle error
+}
+
+// use the conn
+```
+
+Instead of this style.
+
+```go
+// bad
+if conn, err := net.Dial("tcp", "localhost:80");  err != nil {
+    // handle error
+} else {
+    // use the conn
+}
+```
 
 ### Logging
 
@@ -567,7 +613,7 @@ We do not suggest to modify the generated code other than the `tests` variable, 
     For example, Vald uses [glg](https://github.com/kpango/glg) library for logging by default, if the logger is not initialized before the test, the nil pointer error may be thrown during the test is running.
     You may need to implement `init()` function like:
 
-    ```golang
+    ```go
     func init() {
         log.Init()
     }
@@ -581,7 +627,7 @@ We do not suggest to modify the generated code other than the `tests` variable, 
     Sometimes you may want to skip the detection, for example, Vald uses [fastime](https://github.com/kpango/fastime) library but the internal Goroutine is not closed due to the needs of the library. 
     To skip the goleak detection we need to create the following variable to store the ignore function.
 
-    ```golang
+    ```go
     var (
         // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
         goleakIgnoreOptions = []goleak.Option{
@@ -592,7 +638,7 @@ We do not suggest to modify the generated code other than the `tests` variable, 
 
     And modify the generated test code.
 
-    ```golang
+    ```go
     // before
     for _, test := range tests {
         t.Run(test.name, func(tt *testing.T) {
@@ -612,7 +658,7 @@ We do not suggest to modify the generated code other than the `tests` variable, 
 
     For example:
 
-    ```golang
+    ```go
     for _, test := range tests {
       t.Run(test.name, func(tt *testing.T) {
         defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
@@ -633,11 +679,11 @@ We do not suggest to modify the generated code other than the `tests` variable, 
 
 1. Unused fields
 
-    By default, the template provides `fields` structure to initialize object of the test target. 
+    By default, the template provides `fields` structure to initialize object of the test target.
     But in some cases, not all `fields` are needed, so please delete the unnecessary fields.
     For example, the following struct and the corresponding function:
-    
-    ```golang
+
+    ```go
     type server struct {
         addr string
         port int
@@ -648,7 +694,8 @@ We do not suggest to modify the generated code other than the `tests` variable, 
     ```
 
     And the generated test code is:
-    ```golang
+
+    ```go
     func Test_server_Addr(t *testing.T) {
         type fields struct {
             addr string
@@ -659,7 +706,8 @@ We do not suggest to modify the generated code other than the `tests` variable, 
     ```
 
     Since the `port` variable is not used in this test case, you can delete the `port` definition in the test case.
-    ```golang
+
+    ```go
     func Test_server_Addr(t *testing.T) {
         type fields struct {
             addr string
