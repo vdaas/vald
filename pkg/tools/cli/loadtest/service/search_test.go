@@ -29,7 +29,7 @@ import (
 )
 
 func Test_searchRequestProvider(t *testing.T) {
-  t.Parallel()
+	t.Parallel()
 	type args struct {
 		dataset assets.Dataset
 	}

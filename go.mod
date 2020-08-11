@@ -11,7 +11,7 @@ replace (
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.4.0
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.1-0.20200720071143-73dc904a9ece
 	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200624222514-34081eda590e
-	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
+	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2-0.20200807193113-deb6fe8ca7c6
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.12.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.7.5-0.20200711200521-98cb6bf42e08
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
@@ -25,7 +25,7 @@ replace (
 )
 
 require (
-	cloud.google.com/go v0.63.1-0.20200807180406-35668fda9a15
+	cloud.google.com/go v0.63.1-0.20200810190638-6b447de85572
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.2.1-0.20200609204449-6bcf6f8577f0
@@ -34,13 +34,13 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/cockroachdb/errors v1.5.1-0.20200617111016-cc0024f9c4d3
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
-	github.com/envoyproxy/protoc-gen-validate v0.4.1-0.20200715145404-de7329c341d6
+	github.com/envoyproxy/protoc-gen-validate v0.4.1-0.20200810204539-e020f3aef8ae
 	github.com/fsnotify/fsnotify v1.4.10-0.20200417215612-7f4cf4dd2b52
 	github.com/go-redis/redis/v7 v7.2.1-0.20200519055202-64bb0b7f3af4
 	github.com/go-sql-driver/mysql v1.5.1-0.20200720071143-73dc904a9ece
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
 	github.com/gocraft/dbr/v2 v2.7.1-0.20200218045517-f487ccffc6d0
-	github.com/gogo/protobuf v1.3.1
+	github.com/gogo/protobuf v1.3.2-0.20200807193113-deb6fe8ca7c6
 	github.com/google/go-cmp v0.5.2-0.20200729152727-036ffc7f24c0
 	github.com/google/gofuzz v1.1.0
 	github.com/gorilla/mux v1.7.5-0.20200711200521-98cb6bf42e08
@@ -62,12 +62,12 @@ require (
 	go.uber.org/goleak v1.1.10
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-	golang.org/x/sys v0.0.0-20200803210538-64077c9b5642
+	golang.org/x/sys v0.0.0-20200808120158-1030fc2bf1d9
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.7.1-0.20200803120916-6a037fda5e90
-	google.golang.org/api v0.30.1-0.20200807143518-2b3a10692f85
-	google.golang.org/genproto v0.0.0-20200806141610-86f49bd18e98
-	google.golang.org/grpc v1.32.0-dev.0.20200807164945-d3e3e7a46f57
+	google.golang.org/api v0.30.1-0.20200810144343-5ffa8742e4cb
+	google.golang.org/genproto v0.0.0-20200808173500-a06252235341
+	google.golang.org/grpc v1.32.0-dev.0.20200810225334-2983360ff4e7
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.18.6
 	k8s.io/apimachinery v0.18.6

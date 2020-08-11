@@ -89,10 +89,14 @@ func (b *backoff) Do(ctx context.Context, f func() (val interface{}, retryable b
 				timer.Reset(time.Duration(jdur))
 				select {
 				case <-ctx.Done():
-					if ctx.Err() == context.DeadlineExceeded {
+					switch ctx.Err() {
+					case context.DeadlineExceeded:
 						return nil, errors.ErrBackoffTimeout(err)
+					case context.Canceled:
+						return nil, err
+					default:
+						return nil, errors.Wrap(ctx.Err(), err.Error())
 					}
-					return nil, errors.Wrap(ctx.Err(), err.Error())
 				case <-timer.C:
 					if dur >= b.durationLimit {
 						dur = b.maxDuration
@@ -105,7 +109,7 @@ func (b *backoff) Do(ctx context.Context, f func() (val interface{}, retryable b
 				}
 			}
 		}
-		return res, nil
+		return res, err
 	}
 	return res, err
 }
