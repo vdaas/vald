@@ -121,39 +121,33 @@ func TestWithLZ4CompressionLevel(t *testing.T) {
 	}
 
 	tests := []test{
-		func() test {
-			return test{
-				name: "set success when level is less than 0.",
-				args: args{
-					level: -1,
+		{
+			name: "set success when level is less than 0.",
+			args: args{
+				level: -1,
+			},
+			want: want{
+				obj: &T{
+					compressionLevel: -1,
 				},
-				want: want{
-					obj: &T{
-						compressionLevel: -1,
-					},
-				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "set success when level is nil.",
-				want: want{
-					obj: new(T),
-				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "return error when level is more than 1.",
-				args: args{
-					level: 1,
-				},
-				want: want{
-					obj: new(T),
-					err: errors.ErrInvalidCompressionLevel(1),
-				},
-			}
-		}(),
+			},
+		},
+		{
+			name: "set success when level is nil.",
+			want: want{
+				obj: new(T),
+			},
+		},
+		{
+			name: "return error when level is more than 1.",
+			args: args{
+				level: 1,
+			},
+			want: want{
+				obj: new(T),
+				err: errors.ErrInvalidCompressionLevel(1),
+			},
+		},
 	}
 
 	for _, test := range tests {
