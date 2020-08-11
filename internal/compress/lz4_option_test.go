@@ -144,7 +144,6 @@ func TestWithLZ4CompressionLevel(t *testing.T) {
 				level: 1,
 			},
 			want: want{
-				obj: new(T),
 				err: errors.ErrInvalidCompressionLevel(1),
 			},
 		},
