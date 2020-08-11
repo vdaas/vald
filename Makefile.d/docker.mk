@@ -187,6 +187,15 @@ docker/name/ci-container:
 docker/build/ci-container: docker/build/base
 	docker build -f dockers/ci/base/Dockerfile -t $(REPO)/$(CI_CONTAINER_IMAGE) .
 
+.PHONY: docker/name/dev-container
+docker/name/dev-container:
+	@echo "$(REPO)/$(DEV_CONTAINER_IMAGE)"
+
+.PHONY: docker/build/dev-container
+## build dev-container image
+docker/build/dev-container: docker/build/ci-container
+	docker build -f dockers/dev/base/Dockerfile -t $(REPO)/$(DEV_CONTAINER_IMAGE) .
+
 .PHONY: docker/name/operator/helm
 docker/name/operator/helm:
 	@echo "$(REPO)/$(HELM_OPERATOR_IMAGE)"
