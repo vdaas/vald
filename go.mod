@@ -22,7 +22,7 @@ replace (
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.6
 	k8s.io/apimachinery => k8s.io/apimachinery v0.18.6
 	k8s.io/client-go => k8s.io/client-go v0.18.6
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.6.1
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.6.2
 )
 
 require (
@@ -30,7 +30,7 @@ require (
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.2.1-0.20200609204449-6bcf6f8577f0
-	contrib.go.opencensus.io/exporter/stackdriver v0.13.2
+	contrib.go.opencensus.io/exporter/stackdriver v0.13.3-0.20200811013819-19b2ae76216d
 	github.com/aws/aws-sdk-go v1.33.17
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/cockroachdb/errors v1.5.1-0.20200617111016-cc0024f9c4d3
@@ -47,7 +47,7 @@ require (
 	github.com/gorilla/mux v1.7.5-0.20200711200521-98cb6bf42e08
 	github.com/hashicorp/go-version v1.2.1
 	github.com/json-iterator/go v1.1.11-0.20200806011408-6821bec9fa5c
-	github.com/klauspost/compress v1.10.11-0.20200722091917-f5e4a2eee1f8
+	github.com/klauspost/compress v1.10.11-0.20200811083703-3fdfbd5997ec
 	github.com/kpango/fastime v1.0.17-0.20200719090826-d1de9e8e3c85
 	github.com/kpango/fuid v0.0.0-20190507064958-80435564606b
 	github.com/kpango/gache v1.2.2-0.20200709224359-34beea72198c
@@ -63,12 +63,13 @@ require (
 	go.uber.org/goleak v1.1.10
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-	golang.org/x/sys v0.0.0-20200808120158-1030fc2bf1d9
+	golang.org/x/sys v0.0.0-20200810151505-1b9f1253b3ed
+	golang.org/x/tools v0.0.0-20200811032001-fd80f4dbb3ea // indirect
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.7.1-0.20200803120916-6a037fda5e90
-	google.golang.org/api v0.30.1-0.20200810144343-5ffa8742e4cb
+	google.golang.org/api v0.30.1-0.20200811142409-9e2b1a1ddef6
 	google.golang.org/genproto v0.0.0-20200808173500-a06252235341
-	google.golang.org/grpc v1.32.0-dev.0.20200810225334-2983360ff4e7
+	google.golang.org/grpc v1.32.0-dev.0.20200811135751-6aaac03d175a
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.18.6
 	k8s.io/apimachinery v0.18.6
