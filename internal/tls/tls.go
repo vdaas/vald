@@ -18,14 +18,12 @@
 package tls
 
 import (
-	"bytes"
 	"crypto/tls"
 	"crypto/x509"
-	"os"
 	"reflect"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/io"
 )
 
 type Config = tls.Config
@@ -105,28 +103,10 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 // NewX509CertPool returns *x509.CertPool struct or error.
 // The CertPool will read the certificate from the path, and append the content to the system certificate pool, and return.
 func NewX509CertPool(path string) (pool *x509.CertPool, err error) {
-	f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	c, err := io.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
-
-	var n int64 = bytes.MinRead
-	if fi, err := f.Stat(); err == nil {
-		if size := fi.Size() + bytes.MinRead; size > n {
-			n = size
-		}
-	}
-
-	buf := bytes.NewBuffer(make([]byte, 0, n))
-	err = safety.RecoverFunc(func() (err error) {
-		_, err = buf.ReadFrom(f)
-		return err
-	})()
-	if err != nil {
-		return nil, err
-	}
-	c := buf.Bytes()
 	if err == nil && c != nil {
 		pool, err = x509.SystemCertPool()
 		if err != nil || pool == nil {

@@ -29,6 +29,7 @@ import (
 )
 
 func TestNewReaderWithContext(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		r   io.Reader
@@ -86,6 +87,7 @@ func TestNewReaderWithContext(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -107,6 +109,7 @@ func TestNewReaderWithContext(t *testing.T) {
 }
 
 func TestNewReadCloserWithContext(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		r   io.ReadCloser
@@ -164,6 +167,7 @@ func TestNewReadCloserWithContext(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -185,6 +189,7 @@ func TestNewReadCloserWithContext(t *testing.T) {
 }
 
 func Test_ctxReader_Read(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		p []byte
 	}
@@ -252,6 +257,7 @@ func Test_ctxReader_Read(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -277,6 +283,7 @@ func Test_ctxReader_Read(t *testing.T) {
 }
 
 func Test_ctxReader_Close(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		ctx context.Context
 		r   io.Reader
@@ -330,6 +337,7 @@ func Test_ctxReader_Close(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -355,6 +363,7 @@ func Test_ctxReader_Close(t *testing.T) {
 }
 
 func TestNewWriterWithContext(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -413,6 +422,7 @@ func TestNewWriterWithContext(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -435,6 +445,7 @@ func TestNewWriterWithContext(t *testing.T) {
 }
 
 func TestNewWriteCloserWithContext(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		w   io.WriteCloser
@@ -492,6 +503,7 @@ func TestNewWriteCloserWithContext(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -513,6 +525,7 @@ func TestNewWriteCloserWithContext(t *testing.T) {
 }
 
 func Test_ctxWriter_Write(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		p []byte
 	}
@@ -580,6 +593,7 @@ func Test_ctxWriter_Write(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -605,6 +619,7 @@ func Test_ctxWriter_Write(t *testing.T) {
 }
 
 func Test_ctxWriter_Close(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		ctx context.Context
 		w   io.Writer
@@ -658,6 +673,7 @@ func Test_ctxWriter_Close(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -675,6 +691,83 @@ func Test_ctxWriter_Close(t *testing.T) {
 
 			err := w.Close()
 			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func TestReadFile(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		path string
+	}
+	type want struct {
+		want []byte
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, []byte, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got []byte, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           path: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           path: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got, err := ReadFile(test.args.path)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 

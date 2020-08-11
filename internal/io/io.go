@@ -18,10 +18,13 @@
 package io
 
 import (
+	"bytes"
 	"context"
 	"io"
+	"os"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/safety"
 )
 
 type ctxReader struct {
@@ -138,4 +141,31 @@ func (w *ctxWriter) Close() error {
 	}
 
 	return nil
+}
+
+func ReadFile(path string) ([]byte, error) {
+	f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var n int64 = bytes.MinRead
+	if fi, err := f.Stat(); err == nil {
+		if size := fi.Size() + bytes.MinRead; size > n {
+			n = size
+		}
+	}
+
+	buf := bytes.NewBuffer(make([]byte, 0, n))
+
+	err = safety.RecoverFunc(func() (err error) {
+		_, err = buf.ReadFrom(f)
+		return err
+	})()
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
