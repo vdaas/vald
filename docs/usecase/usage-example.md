@@ -11,7 +11,7 @@
 
 ## Image and video processing
 
-  ![Image and video processing](../../assets/docs/usecase_image.png)
+  <img src="../../assets/docs/usecase_image.png" />
 
   You can use Vald as the image/video processing engine to search the similar image/video or analyze the image/video for your use case.
 
@@ -27,7 +27,7 @@
 
 ## Audio processing
 
-  ![Audio processing](../../assets/docs/usecase_audio.png)
+  <img src="../../assets/docs/usecase_audio.png" />
 
   Audio processing is important for personal assistant implementation.
 
@@ -41,7 +41,7 @@
 
 ## Text processing
 
-  ![Text processing](../../assets/docs/usecase_text.png)
+  <img src="../../assets/docs/usecase_text.png" />
 
   Using a text vectorizing model like BERT, you can process your text data in Vald.
 
@@ -54,7 +54,7 @@
 
 ## Data analysis
 
-  ![Data analysis](../../assets/docs/usecase_data.png)
+  <img src="../../assets/docs/usecase_data.png" />
 
   Vald can process the vector data, you can analyze every data you can vectorize.
 
