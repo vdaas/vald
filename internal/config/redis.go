@@ -17,6 +17,11 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+import (
+	"github.com/vdaas/vald/internal/db/kvs/redis"
+	"github.com/vdaas/vald/internal/tls"
+)
+
 type Redis struct {
 	Addrs                []string `json:"addrs" yaml:"addrs"`
 	DB                   int      `json:"db" yaml:"db"`
@@ -78,4 +83,57 @@ func (r *Redis) Bind() *Redis {
 	r.InitialPingTimeLimit = GetActualValue(r.InitialPingTimeLimit)
 	r.InitialPingDuration = GetActualValue(r.InitialPingDuration)
 	return r
+}
+
+func (r *Redis) Opts() (opts []redis.Option, err error) {
+	opts = []redis.Option{
+		redis.WithAddrs(r.Addrs...),
+		redis.WithDialTimeout(r.DialTimeout),
+		redis.WithIdleCheckFrequency(r.IdleCheckFrequency),
+		redis.WithIdleTimeout(r.IdleTimeout),
+		redis.WithKeyPrefix(r.KeyPref),
+		redis.WithMaximumConnectionAge(r.MaxConnAge),
+		redis.WithRetryLimit(r.MaxRetries),
+		redis.WithMaximumRetryBackoff(r.MaxRetryBackoff),
+		redis.WithMinimumIdleConnection(r.MinIdleConns),
+		redis.WithMinimumRetryBackoff(r.MinRetryBackoff),
+		redis.WithOnConnectFunction(func(conn *redis.Conn) error {
+			return nil
+		}),
+		// redis.WithOnNewNodeFunction(f func(*redis.Client)) ,
+		redis.WithPassword(r.Password),
+		redis.WithPoolSize(r.PoolSize),
+		redis.WithPoolTimeout(r.PoolTimeout),
+		// redis.WithReadOnlyFlag(readOnly bool) ,
+		redis.WithReadTimeout(r.ReadTimeout),
+		redis.WithRouteByLatencyFlag(r.RouteByLatency),
+		redis.WithRouteRandomlyFlag(r.RouteRandomly),
+		redis.WithWriteTimeout(r.WriteTimeout),
+		redis.WithInitialPingDuration(r.InitialPingDuration),
+		redis.WithInitialPingTimeLimit(r.InitialPingTimeLimit),
+	}
+
+	if r.TLS != nil && r.TLS.Enabled {
+		tcfg, err := tls.New(
+			tls.WithCert(r.TLS.Cert),
+			tls.WithKey(r.TLS.Key),
+			tls.WithCa(r.TLS.CA),
+		)
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, redis.WithTLSConfig(tcfg))
+	}
+
+	if len(r.Addrs) > 1 {
+		opts = append(opts,
+			redis.WithRedirectLimit(r.MaxRedirects),
+		)
+	} else {
+		opts = append(opts,
+			redis.WithDB(r.DB),
+		)
+	}
+
+	return opts, nil
 }

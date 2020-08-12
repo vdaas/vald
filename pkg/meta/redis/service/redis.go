@@ -19,12 +19,10 @@ package service
 
 import (
 	"context"
+	"reflect"
 
-	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/kvs/redis"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/tcp"
-	"github.com/vdaas/vald/internal/tls"
 )
 
 type Redis interface {
@@ -43,113 +41,19 @@ type Redis interface {
 }
 
 type client struct {
+	builder         redis.Builder
 	db              redis.Redis
-	opts            []redis.Option
-	topts           []tcp.DialerOption
 	kvPrefix        string
 	vkPrefix        string
 	prefixDelimiter string
 }
 
-func New(cfg *config.Redis) (Redis, error) {
-	c := &client{
-		kvPrefix:        cfg.KVPrefix,
-		vkPrefix:        cfg.VKPrefix,
-		prefixDelimiter: cfg.PrefixDelimiter,
-	}
-
-	if c.kvPrefix == "" {
-		c.kvPrefix = "kv"
-	}
-	if c.vkPrefix == "" {
-		c.vkPrefix = "vk"
-	}
-	if c.kvPrefix == c.vkPrefix {
-		return nil, errors.ErrRedisInvalidKVVKPrefix(c.kvPrefix, c.vkPrefix)
-	}
-	if c.prefixDelimiter == "" {
-		c.prefixDelimiter = "-"
-	}
-
-	c.topts = make([]tcp.DialerOption, 0, 8)
-	if cfg.TCP != nil {
-		if cfg.TCP.DNS != nil && cfg.TCP.DNS.CacheEnabled {
-			c.topts = append(c.topts,
-				tcp.WithEnableDNSCache(),
-				tcp.WithDNSCacheExpiration(cfg.TCP.DNS.CacheExpiration),
-				tcp.WithDNSRefreshDuration(cfg.TCP.DNS.RefreshDuration),
-			)
+func New(opts ...Option) (Redis, error) {
+	c := new(client)
+	for _, opt := range append(defaultOpts, opts...) {
+		if err := opt(c); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
-		if cfg.TCP.Dialer != nil && cfg.TCP.Dialer.DualStackEnabled {
-			c.topts = append(c.topts, tcp.WithEnableDialerDualStack())
-		} else {
-			c.topts = append(c.topts, tcp.WithDisableDialerDualStack())
-		}
-		if cfg.TCP.TLS != nil && cfg.TCP.TLS.Enabled {
-			tcfg, err := tls.New(
-				tls.WithCert(cfg.TCP.TLS.Cert),
-				tls.WithKey(cfg.TCP.TLS.Key),
-				tls.WithCa(cfg.TCP.TLS.CA),
-			)
-			if err != nil {
-				return nil, err
-			}
-			c.topts = append(c.topts, tcp.WithTLS(tcfg))
-		}
-		c.topts = append(c.topts,
-			tcp.WithDialerKeepAlive(cfg.TCP.Dialer.KeepAlive),
-			tcp.WithDialerTimeout(cfg.TCP.Dialer.Timeout),
-		)
-	}
-
-	c.opts = make([]redis.Option, 0, 25)
-	c.opts = append(c.opts,
-		redis.WithAddrs(cfg.Addrs...),
-		redis.WithDialTimeout(cfg.DialTimeout),
-		redis.WithIdleCheckFrequency(cfg.IdleCheckFrequency),
-		redis.WithIdleTimeout(cfg.IdleTimeout),
-		redis.WithKeyPrefix(cfg.KeyPref),
-		redis.WithMaximumConnectionAge(cfg.MaxConnAge),
-		redis.WithRetryLimit(cfg.MaxRetries),
-		redis.WithMaximumRetryBackoff(cfg.MaxRetryBackoff),
-		redis.WithMinimumIdleConnection(cfg.MinIdleConns),
-		redis.WithMinimumRetryBackoff(cfg.MinRetryBackoff),
-		redis.WithOnConnectFunction(func(conn *redis.Conn) error {
-			return nil
-		}),
-		// redis.WithOnNewNodeFunction(f func(*redis.Client)) ,
-		redis.WithPassword(cfg.Password),
-		redis.WithPoolSize(cfg.PoolSize),
-		redis.WithPoolTimeout(cfg.PoolTimeout),
-		// redis.WithReadOnlyFlag(readOnly bool) ,
-		redis.WithReadTimeout(cfg.ReadTimeout),
-		redis.WithRouteByLatencyFlag(cfg.RouteByLatency),
-		redis.WithRouteRandomlyFlag(cfg.RouteRandomly),
-		redis.WithWriteTimeout(cfg.WriteTimeout),
-		redis.WithInitialPingDuration(cfg.InitialPingDuration),
-		redis.WithInitialPingTimeLimit(cfg.InitialPingTimeLimit),
-	)
-
-	if cfg.TLS != nil && cfg.TLS.Enabled {
-		tcfg, err := tls.New(
-			tls.WithCert(cfg.TLS.Cert),
-			tls.WithKey(cfg.TLS.Key),
-			tls.WithCa(cfg.TLS.CA),
-		)
-		if err != nil {
-			return nil, err
-		}
-		c.opts = append(c.opts, redis.WithTLSConfig(tcfg))
-	}
-
-	if len(cfg.Addrs) > 1 {
-		c.opts = append(c.opts,
-			redis.WithRedirectLimit(cfg.MaxRedirects),
-		)
-	} else {
-		c.opts = append(c.opts,
-			redis.WithDB(cfg.DB),
-		)
 	}
 
 	return c, nil
@@ -159,20 +63,13 @@ func (c *client) Disconnect() error {
 	return c.db.Close()
 }
 
-func (c *client) Connect(ctx context.Context) error {
-	der, err := tcp.NewDialer(c.topts...)
-	if err != nil {
-		return err
+func (c *client) Connect(ctx context.Context) (err error) {
+	if c.builder != nil {
+		c.db, err = c.builder.Connect(ctx)
+		if err != nil {
+			return err
+		}
 	}
-	der.StartDialerCache(ctx)
-	r, err := redis.New(ctx, append(c.opts,
-		redis.WithDialer(der.GetDialer()),
-	)...)
-
-	if err != nil {
-		return err
-	}
-	c.db = r
 
 	return nil
 }

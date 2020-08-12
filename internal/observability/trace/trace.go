@@ -25,6 +25,11 @@ import (
 
 var (
 	enabled bool
+
+	BoolAttribute    = trace.BoolAttribute
+	Float64Attribute = trace.Float64Attribute
+	Int64Attribute   = trace.Int64Attribute
+	StringAttribute  = trace.StringAttribute
 )
 
 type Span = trace.Span

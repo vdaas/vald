@@ -21,10 +21,13 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/meta"
 	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/db/kvs/redis"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
+	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/observability"
+	dbmetrics "github.com/vdaas/vald/internal/observability/metrics/db/kvs/redis"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -45,7 +48,45 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	rd, err := service.New(cfg.Redis)
+	redisOpts, err := cfg.Redis.Opts()
+	if err != nil {
+		return nil, err
+	}
+
+	var metricsHook dbmetrics.MetricsHook
+	if cfg.Observability.Enabled {
+		metricsHook, err = dbmetrics.New()
+		if err != nil {
+			return nil, err
+		}
+
+		redisOpts = append(
+			redisOpts,
+			redis.WithHooks(metricsHook),
+		)
+	}
+
+	dialer, err := tcp.NewDialer(cfg.Redis.TCP.Opts()...)
+	if err != nil {
+		return nil, err
+	}
+
+	builder, err := redis.New(
+		append(
+			redisOpts,
+			redis.WithDialer(dialer),
+		)...,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	rd, err := service.New(
+		service.WithRedisClientBuilder(builder),
+		service.WithKVPrefix(cfg.Redis.KVPrefix),
+		service.WithVKPrefix(cfg.Redis.VKPrefix),
+		service.WithPrefixDelimiter(cfg.Redis.PrefixDelimiter),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +113,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(cfg.Observability)
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			metricsHook,
+		)
 		if err != nil {
 			return nil, err
 		}
