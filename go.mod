@@ -1,6 +1,6 @@
 module github.com/vdaas/vald
 
-go 1.14
+go 1.15
 
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
@@ -35,7 +35,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/cockroachdb/errors v1.5.1-0.20200617111016-cc0024f9c4d3
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
-	github.com/envoyproxy/protoc-gen-validate v0.4.1-0.20200810204539-e020f3aef8ae
+	github.com/envoyproxy/protoc-gen-validate v0.4.1
 	github.com/fsnotify/fsnotify v1.4.10-0.20200417215612-7f4cf4dd2b52
 	github.com/go-redis/redis/v7 v7.2.1-0.20200519055202-64bb0b7f3af4
 	github.com/go-sql-driver/mysql v1.5.1-0.20200720071143-73dc904a9ece
@@ -64,12 +64,12 @@ require (
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
 	golang.org/x/sys v0.0.0-20200810151505-1b9f1253b3ed
-	golang.org/x/tools v0.0.0-20200811153730-74512f09e4b0 // indirect
+	golang.org/x/tools v0.0.0-20200811215021-48a8ffc5b207 // indirect
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.7.1-0.20200803120916-6a037fda5e90
 	google.golang.org/api v0.30.1-0.20200811142409-9e2b1a1ddef6
 	google.golang.org/genproto v0.0.0-20200808173500-a06252235341
-	google.golang.org/grpc v1.32.0-dev.0.20200811135751-6aaac03d175a
+	google.golang.org/grpc v1.32.0-dev.0.20200812000924-b54ea173dcf1
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.18.6
 	k8s.io/apimachinery v0.18.6
