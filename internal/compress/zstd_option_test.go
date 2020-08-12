@@ -62,11 +62,9 @@ func TestWithZstdGob(t *testing.T) {
 				opts: nil,
 			},
 			want: want{
-				obj: func() *zstdCompressor {
-					c := new(T)
-					c.gobc = new(gobCompressor)
-					return c
-				}(),
+				obj: &T{
+					gobc: new(gobCompressor),
+				},
 			},
 		},
 	}
