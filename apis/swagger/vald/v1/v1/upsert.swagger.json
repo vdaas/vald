@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "object.proto",
+    "title": "v1/upsert.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -11,14 +11,14 @@
     "application/json"
   ],
   "paths": {
-    "/exists/{id}": {
-      "get": {
-        "operationId": "Object_Exists",
+    "/upsert": {
+      "post": {
+        "operationId": "Upsert_Upsert",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/ObjectID"
+              "$ref": "#/definitions/payloadObjectLocation"
             }
           },
           "default": {
@@ -30,57 +30,21 @@
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string"
+            "schema": {
+              "$ref": "#/definitions/payloadUpsertRequest"
+            }
           }
         ],
         "tags": [
-          "Object"
-        ]
-      }
-    },
-    "/object/{id}": {
-      "get": {
-        "operationId": "Object_GetObject",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/ObjectVector"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "Object"
+          "Upsert"
         ]
       }
     }
   },
   "definitions": {
-    "ObjectID": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      }
-    },
     "ObjectVector": {
       "type": "object",
       "properties": {
@@ -93,6 +57,91 @@
             "type": "number",
             "format": "float"
           }
+        }
+      }
+    },
+    "payloadFilterConfig": {
+      "type": "object",
+      "properties": {
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "payloadObjectLocation": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "uuid": {
+          "type": "string"
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "payloadObjectLocations": {
+      "type": "object",
+      "properties": {
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/payloadObjectLocation"
+          }
+        }
+      }
+    },
+    "payloadUpdateConfig": {
+      "type": "object",
+      "properties": {
+        "enableStrictCheck": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "filters": {
+          "$ref": "#/definitions/payloadFilterConfig"
+        }
+      }
+    },
+    "payloadUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/ObjectVector"
+        },
+        "config": {
+          "$ref": "#/definitions/payloadUpdateConfig"
+        }
+      }
+    },
+    "payloadUpsertConfig": {
+      "type": "object",
+      "properties": {
+        "enableStrictCheck": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "filters": {
+          "$ref": "#/definitions/payloadFilterConfig"
+        }
+      }
+    },
+    "payloadUpsertRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/ObjectVector"
+        },
+        "config": {
+          "$ref": "#/definitions/payloadUpsertConfig"
         }
       }
     },

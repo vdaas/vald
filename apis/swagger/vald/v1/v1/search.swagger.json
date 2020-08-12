@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "upsert.proto",
+    "title": "v1/search.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -11,14 +11,14 @@
     "application/json"
   ],
   "paths": {
-    "/upsert": {
+    "/search": {
       "post": {
-        "operationId": "Upsert_Upsert",
+        "operationId": "Search_Search",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadObjectLocation"
+              "$ref": "#/definitions/SearchResponse"
             }
           },
           "default": {
@@ -34,28 +34,93 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/payloadUpsertRequest"
+              "$ref": "#/definitions/payloadSearchRequest"
             }
           }
         ],
         "tags": [
-          "Upsert"
+          "Search"
+        ]
+      }
+    },
+    "/search/id": {
+      "post": {
+        "operationId": "Search_SearchByID",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SearchResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SearchIDRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Search"
         ]
       }
     }
   },
   "definitions": {
-    "ObjectVector": {
+    "ObjectDistance": {
       "type": "object",
       "properties": {
         "id": {
           "type": "string"
         },
-        "vector": {
+        "distance": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "SearchIDRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/definitions/payloadSearchConfig"
+        }
+      }
+    },
+    "SearchResponse": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "results": {
           "type": "array",
           "items": {
-            "type": "number",
-            "format": "float"
+            "$ref": "#/definitions/ObjectDistance"
+          }
+        }
+      }
+    },
+    "SearchResponses": {
+      "type": "object",
+      "properties": {
+        "responses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SearchResponse"
           }
         }
       }
@@ -71,77 +136,45 @@
         }
       }
     },
-    "payloadObjectLocation": {
+    "payloadSearchConfig": {
       "type": "object",
       "properties": {
-        "name": {
+        "requestId": {
           "type": "string"
         },
-        "uuid": {
-          "type": "string"
+        "num": {
+          "type": "integer",
+          "format": "int64"
         },
-        "ips": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "payloadObjectLocations": {
-      "type": "object",
-      "properties": {
-        "locations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/payloadObjectLocation"
-          }
-        }
-      }
-    },
-    "payloadUpdateConfig": {
-      "type": "object",
-      "properties": {
-        "enableStrictCheck": {
-          "type": "boolean",
-          "format": "boolean"
+        "radius": {
+          "type": "number",
+          "format": "float"
+        },
+        "epsilon": {
+          "type": "number",
+          "format": "float"
+        },
+        "timeout": {
+          "type": "string",
+          "format": "int64"
         },
         "filters": {
           "$ref": "#/definitions/payloadFilterConfig"
         }
       }
     },
-    "payloadUpdateRequest": {
+    "payloadSearchRequest": {
       "type": "object",
       "properties": {
         "vector": {
-          "$ref": "#/definitions/ObjectVector"
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          }
         },
         "config": {
-          "$ref": "#/definitions/payloadUpdateConfig"
-        }
-      }
-    },
-    "payloadUpsertConfig": {
-      "type": "object",
-      "properties": {
-        "enableStrictCheck": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "filters": {
-          "$ref": "#/definitions/payloadFilterConfig"
-        }
-      }
-    },
-    "payloadUpsertRequest": {
-      "type": "object",
-      "properties": {
-        "vector": {
-          "$ref": "#/definitions/ObjectVector"
-        },
-        "config": {
-          "$ref": "#/definitions/payloadUpsertConfig"
+          "$ref": "#/definitions/payloadSearchConfig"
         }
       }
     },

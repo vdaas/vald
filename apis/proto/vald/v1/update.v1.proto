@@ -18,21 +18,25 @@ syntax = "proto3";
 
 package vald;
 
-option go_package = "github.com/vdaas/vald/apis/grpc/vald";
+option go_package = "github.com/vdaas/vald/apis/grpc/vald/v1/vald";
 option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api";
-option java_outer_classname = "Remove";
+option java_outer_classname = "Update";
 
-import "payload.proto";
+import "payload.v1.proto";
 import "google/api/annotations.proto";
 import "pb/gql.proto";
 
-service Remove {
+service Update {
   option (gql.svc_type) = QUERY;
-  rpc Remove(payload.Object.ID) returns (payload.Object.Location) {
-    option (google.api.http).delete = "/remove/{id}";
+  rpc Update(payload.Update.Request) returns (payload.Object.Location) {
+    option (google.api.http) = {
+      post : "/update"
+      body : "*"
+    };
     option (gql.rpc_type) = MUTATION;
   }
-  rpc StreamRemove(stream payload.Object.ID) returns (stream payload.Object.Location) {}
-  rpc MultiRemove(payload.Object.IDs) returns (payload.Object.Locations) {}
+  rpc StreamUpdate(stream payload.Update.Request)
+      returns (stream payload.Object.Location) {}
+  rpc MultiUpdate(payload.Update.MultiRequest) returns (payload.Object.Locations) {}
 }

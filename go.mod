@@ -9,7 +9,7 @@ replace (
 	github.com/cockroachdb/errors => github.com/cockroachdb/errors v1.5.1-0.20200617111016-cc0024f9c4d3
 	github.com/coreos/etcd => go.etcd.io/etcd v0.5.0-alpha.5.0.20200425165423-262c93980547
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
-	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.4.0
+	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.4.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.1-0.20200720071143-73dc904a9ece
 	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200624222514-34081eda590e
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2-0.20200807193113-deb6fe8ca7c6

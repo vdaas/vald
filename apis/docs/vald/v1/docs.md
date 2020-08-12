@@ -3,17 +3,17 @@
 
 ## Table of Contents
 
-- [upsert.proto](#upsert.proto)
+- [v1/upsert.proto](#v1/upsert.proto)
     - [Upsert](#vald.Upsert)
   
 - [Scalar Value Types](#scalar-value-types)
 
 
 
-<a name="upsert.proto"></a>
+<a name="v1/upsert.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## upsert.proto
+## v1/upsert.proto
 
 
  

@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "insert.proto",
+    "title": "v1/update.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -11,9 +11,9 @@
     "application/json"
   ],
   "paths": {
-    "/insert": {
+    "/update": {
       "post": {
-        "operationId": "Insert_Insert",
+        "operationId": "Update_Update",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -34,12 +34,12 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/payloadInsertRequest"
+              "$ref": "#/definitions/payloadUpdateRequest"
             }
           }
         ],
         "tags": [
-          "Insert"
+          "Update"
         ]
       }
     }
@@ -71,29 +71,6 @@
         }
       }
     },
-    "payloadInsertConfig": {
-      "type": "object",
-      "properties": {
-        "enableStrictCheck": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "filters": {
-          "$ref": "#/definitions/payloadFilterConfig"
-        }
-      }
-    },
-    "payloadInsertRequest": {
-      "type": "object",
-      "properties": {
-        "vector": {
-          "$ref": "#/definitions/ObjectVector"
-        },
-        "config": {
-          "$ref": "#/definitions/payloadInsertConfig"
-        }
-      }
-    },
     "payloadObjectLocation": {
       "type": "object",
       "properties": {
@@ -119,6 +96,29 @@
           "items": {
             "$ref": "#/definitions/payloadObjectLocation"
           }
+        }
+      }
+    },
+    "payloadUpdateConfig": {
+      "type": "object",
+      "properties": {
+        "enableStrictCheck": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "filters": {
+          "$ref": "#/definitions/payloadFilterConfig"
+        }
+      }
+    },
+    "payloadUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/ObjectVector"
+        },
+        "config": {
+          "$ref": "#/definitions/payloadUpdateConfig"
         }
       }
     },

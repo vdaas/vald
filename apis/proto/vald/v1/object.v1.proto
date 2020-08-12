@@ -18,25 +18,23 @@ syntax = "proto3";
 
 package vald;
 
-option go_package = "github.com/vdaas/vald/apis/grpc/vald";
+option go_package = "github.com/vdaas/vald/apis/grpc/vald/v1/vald";
 option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api";
-option java_outer_classname = "Insert";
+option java_outer_classname = "Object";
 
-import "payload.proto";
+import "payload.v1.proto";
 import "google/api/annotations.proto";
 import "pb/gql.proto";
 
-service Insert {
+service Object {
   option (gql.svc_type) = QUERY;
-  rpc Insert(payload.Insert.Request) returns (payload.Object.Location) {
-    option (google.api.http) = {
-      post : "/insert"
-      body : "*"
-    };
-    option (gql.rpc_type) = MUTATION;
+  rpc Exists(payload.Object.ID) returns (payload.Object.ID) {
+    option (google.api.http).get = "/exists/{id}";
   }
-  rpc StreamInsert(stream payload.Insert.Request)
-      returns (stream payload.Object.Location) {}
-  rpc MultiInsert(payload.Insert.MultiRequest) returns (payload.Object.Locations) {}
+  rpc GetObject(payload.Object.ID) returns (payload.Object.Vector) {
+    option (google.api.http).get = "/object/{id}";
+  }
+  rpc StreamGetObject(stream payload.Object.ID)
+      returns (stream payload.Object.Vector) {}
 }

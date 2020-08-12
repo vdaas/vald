@@ -18,25 +18,36 @@ syntax = "proto3";
 
 package vald;
 
-option go_package = "github.com/vdaas/vald/apis/grpc/vald";
+option go_package = "github.com/vdaas/vald/apis/grpc/vald/v1/vald";
 option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api";
-option java_outer_classname = "Upsert";
+option java_outer_classname = "Search";
 
-import "payload.proto";
+import "payload.v1.proto";
 import "google/api/annotations.proto";
 import "pb/gql.proto";
 
-service Upsert {
+service Search {
   option (gql.svc_type) = QUERY;
-  rpc Upsert(payload.Upsert.Request) returns (payload.Object.Location) {
+  rpc Search(payload.Search.Request) returns (payload.Search.Response) {
     option (google.api.http) = {
-      post : "/upsert"
+      post : "/search"
       body : "*"
     };
-    option (gql.rpc_type) = MUTATION;
   }
-  rpc StreamUpsert(stream payload.Upsert.Request)
-      returns (stream payload.Object.Location) {}
-  rpc MultiUpsert(payload.Update.MultiRequest) returns (payload.Object.Locations) {}
+  rpc SearchByID(payload.Search.IDRequest) returns (payload.Search.Response) {
+    option (google.api.http) = {
+      post : "/search/id"
+      body : "*"
+    };
+  }
+  rpc StreamSearch(stream payload.Search.Request)
+      returns (stream payload.Search.Response) {}
+  rpc StreamSearchByID(stream payload.Search.IDRequest)
+      returns (stream payload.Search.Response) {}
+  rpc MultiSearch(stream payload.Search.MultiRequest)
+      returns (payload.Search.Responses) {}
+  rpc MultiSearchByID(stream payload.Search.MultiIDRequest)
+      returns (payload.Search.Responses) {}
+
 }

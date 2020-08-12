@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "remove.proto",
+    "title": "v1/object.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -11,14 +11,14 @@
     "application/json"
   ],
   "paths": {
-    "/remove/{id}": {
-      "delete": {
-        "operationId": "Remove_Remove",
+    "/exists/{id}": {
+      "get": {
+        "operationId": "Object_Exists",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadObjectLocation"
+              "$ref": "#/definitions/ObjectID"
             }
           },
           "default": {
@@ -37,36 +37,61 @@
           }
         ],
         "tags": [
-          "Remove"
+          "Object"
+        ]
+      }
+    },
+    "/object/{id}": {
+      "get": {
+        "operationId": "Object_GetObject",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ObjectVector"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Object"
         ]
       }
     }
   },
   "definitions": {
-    "payloadObjectLocation": {
+    "ObjectID": {
       "type": "object",
       "properties": {
-        "name": {
+        "id": {
           "type": "string"
-        },
-        "uuid": {
-          "type": "string"
-        },
-        "ips": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         }
       }
     },
-    "payloadObjectLocations": {
+    "ObjectVector": {
       "type": "object",
       "properties": {
-        "locations": {
+        "id": {
+          "type": "string"
+        },
+        "vector": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/payloadObjectLocation"
+            "type": "number",
+            "format": "float"
           }
         }
       }
