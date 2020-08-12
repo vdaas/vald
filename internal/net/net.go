@@ -94,7 +94,7 @@ func IsIPv4(addr string) bool {
 func SplitHostPort(hostport string) (host string, port uint16, err error) {
 	switch {
 	case strings.HasPrefix(hostport, "::"):
-		hostport = localIPv6 + hostport[2:]
+		hostport = localIPv6 + hostport
 	case strings.HasPrefix(hostport, ":"):
 		hostport = localIPv4 + hostport
 	}
