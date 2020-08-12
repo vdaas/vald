@@ -2,19 +2,19 @@ package gzip
 
 import "io"
 
-// MockReaderWriter represents mock struct of ReaderWriter.
-type MockReaderWriter struct {
+// MockBuilder represents mock struct of ReaderWriter.
+type MockBuilder struct {
 	NewWriterLevelFunc func(w io.Writer, level int) (Writer, error)
 	NewReaderFunc      func(r io.Reader) (Reader, error)
 }
 
 // NewWriterLevel calls NewWriterLevelFunc.
-func (m *MockReaderWriter) NewWriterLevel(w io.Writer, level int) (Writer, error) {
+func (m *MockBuilder) NewWriterLevel(w io.Writer, level int) (Writer, error) {
 	return m.NewWriterLevelFunc(w, level)
 }
 
 // NewReader calls NewReaderFunc.
-func (m *MockReaderWriter) NewReader(r io.Reader) (Reader, error) {
+func (m *MockBuilder) NewReader(r io.Reader) (Reader, error) {
 	return m.NewReaderFunc(r)
 }
 
