@@ -46,6 +46,7 @@ func NewGzip(opts ...GzipOption) (Compressor, error) {
 	return c, nil
 }
 
+// CompressVector Compress the data and returns an error if compression fails
 func (g *gzipCompressor) CompressVector(vector []float32) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	gw, err := g.readerWreiter.NewWriterLevel(buf, g.compressionLevel)
@@ -71,6 +72,7 @@ func (g *gzipCompressor) CompressVector(vector []float32) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// CompressVector Decompress the compressed data and returns an error if decompression fails
 func (g *gzipCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	buf := new(bytes.Buffer)
 	gr, err := g.readerWreiter.NewReader(bytes.NewBuffer(bs))
@@ -91,6 +93,7 @@ func (g *gzipCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	return vec, nil
 }
 
+// Reader returns io.ReadCloser implementation.
 func (g *gzipCompressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
 	r, err := g.readerWreiter.NewReader(src)
 	if err != nil {
@@ -103,6 +106,7 @@ func (g *gzipCompressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
 	}, nil
 }
 
+// Writer returns io.WriteCloser implementation.
 func (g *gzipCompressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
 	w, err := g.readerWreiter.NewWriterLevel(dst, g.compressionLevel)
 	if err != nil {
@@ -120,10 +124,14 @@ type gzipReader struct {
 	r   io.ReadCloser
 }
 
+// Reader is the interface that wraps the basic Read method.
+// Read reads up to len(p) bytes into p.
 func (g *gzipReader) Read(p []byte) (n int, err error) {
 	return g.r.Read(p)
 }
 
+// Closer is the interface that wraps the basic Close method.
+// Close closes src and r.
 func (g *gzipReader) Close() (err error) {
 	err = g.r.Close()
 	if err != nil {
@@ -138,10 +146,14 @@ type gzipWriter struct {
 	w   io.WriteCloser
 }
 
+// Writer is the interface that wraps the basic Write method.
+// Write writes len(p) bytes from p
 func (g *gzipWriter) Write(p []byte) (n int, err error) {
 	return g.w.Write(p)
 }
 
+// Closer is the interface that wraps the basic Close method.
+// Close closes dst and w.
 func (g *gzipWriter) Close() (err error) {
 	err = g.w.Close()
 	if err != nil {
