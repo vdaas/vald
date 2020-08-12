@@ -22,12 +22,10 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	igrpc "github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 	"go.uber.org/goleak"
-
-	"google.golang.org/grpc" // TODO: related to #557
 )
 
 func Test_insertRequestProvider(t *testing.T) {
@@ -552,7 +550,7 @@ func Test_bulkInsert(t *testing.T) {
 func Test_loader_newInsert(t *testing.T) {
 	type fields struct {
 		eg               errgroup.Group
-		client           igrpc.Client
+		client           grpc.Client
 		addr             string
 		concurrency      int
 		batchSize        int
@@ -674,7 +672,7 @@ func Test_loader_newInsert(t *testing.T) {
 func Test_loader_newStreamInsert(t *testing.T) {
 	type fields struct {
 		eg               errgroup.Group
-		client           igrpc.Client
+		client           grpc.Client
 		addr             string
 		concurrency      int
 		batchSize        int
