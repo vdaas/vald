@@ -443,7 +443,7 @@ func TestIsIPv6(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return true if it is IPv6 adress",
+			name: "return true if it is IPv6 address",
 			args: args{
 				addr: "2001:db8::1",
 			},
@@ -452,7 +452,7 @@ func TestIsIPv6(t *testing.T) {
 			},
 		},
 		{
-			name: "return false if it is not IPv6 adress",
+			name: "return false if it is not IPv6 address",
 			args: args{
 				addr: "localhost",
 			},
@@ -507,7 +507,7 @@ func TestIsIPv4(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return true if it is IPv4 adress",
+			name: "return true if it is IPv4 address",
 			args: args{
 				addr: "192.168.1.1",
 			},
@@ -516,7 +516,7 @@ func TestIsIPv4(t *testing.T) {
 			},
 		},
 		{
-			name: "return false if it is not IPv4 adress",
+			name: "return false if it is not IPv4 address",
 			args: args{
 				addr: "localhost",
 			},
@@ -649,17 +649,6 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "127.0.0.1",
 				wantPort: uint16(8080),
-			},
-		},
-		{
-			name: "parse success with default IPv6 address",
-			args: args{
-				hostport: "::",
-			},
-			want: want{
-				wantHost: "::1",
-				wantPort: uint16(80),
-				err:      &strconv.NumError{"Atoi", "", strconv.ErrSyntax},
 			},
 		},
 	}
@@ -858,7 +847,7 @@ func TestScanPorts(t *testing.T) {
 			}
 		}(),
 		{
-			name: "return no port availiable if no port is scanned",
+			name: "return no port available if no port is scanned",
 			args: args{
 				ctx:   context.Background(),
 				host:  "localhost",
@@ -866,7 +855,7 @@ func TestScanPorts(t *testing.T) {
 				end:   65535,
 			},
 			want: want{
-				err: errors.ErrNoPortAvailiable,
+				err: errors.ErrNoPortAvailable,
 			},
 		},
 	}

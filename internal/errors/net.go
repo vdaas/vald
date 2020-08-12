@@ -31,6 +31,6 @@ var (
 
 	// net
 
-	// ErrNoPortAvailiable defines no port availiable error
-	ErrNoPortAvailiable = New("no port availiable")
+	// ErrNoPortAvailiable defines no port available error
+	ErrNoPortAvailable = New("no port available")
 )

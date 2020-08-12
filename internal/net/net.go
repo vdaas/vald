@@ -161,7 +161,7 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 	}
 
 	if len(ports) == 0 {
-		return nil, errors.ErrNoPortAvailiable
+		return nil, errors.ErrNoPortAvailable
 	}
 
 	return ports, nil
