@@ -27,45 +27,6 @@ import (
 	"go.uber.org/goleak"
 )
 
-func TestGzipCompressVector(t *testing.T) {
-	tests := []struct {
-		vector []float32
-	}{
-		{
-			vector: []float32{0.1, 0.2, 0.3},
-		},
-		{
-			vector: []float32{0.4, 0.2, 0.3, 0.1},
-		},
-		{
-			vector: []float32{0.1, 0.5, 0.12, 0.13, 1.0},
-		},
-	}
-
-	for _, tc := range tests {
-		gzipc, err := NewGzip()
-		if err != nil {
-			t.Fatalf("initialize failed: %s", err)
-		}
-
-		compressed, err := gzipc.CompressVector(tc.vector)
-		if err != nil {
-			t.Fatalf("Compress failed: %s", err)
-		}
-
-		decompressed, err := gzipc.DecompressVector(compressed)
-		if err != nil {
-			t.Fatalf("Decompress failed: %s", err)
-		}
-		t.Logf("converted: origin %+v, compressed -> decompressed %+v", tc.vector, decompressed)
-		for i := range tc.vector {
-			if tc.vector[i] != decompressed[i] {
-				t.Fatalf("Invalid convert: origin %+v, compressed -> decompressed %+v", tc.vector, decompressed)
-			}
-		}
-	}
-}
-
 func TestNewGzip(t *testing.T) {
 	type args struct {
 		opts []GzipOption
@@ -142,7 +103,6 @@ func TestNewGzip(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -198,7 +158,7 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 						}, nil
 					},
 				},
-				gobc: &mockCompressor{
+				gobc: &MockCompressor{
 					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
 						return []byte("vdaas/vald"), nil
 					},
@@ -241,7 +201,7 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 						return new(gzip.MockWriter), nil
 					},
 				},
-				gobc: &mockCompressor{
+				gobc: &MockCompressor{
 					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
 						return nil, errors.New("err")
 					},
@@ -269,7 +229,7 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 						}, nil
 					},
 				},
-				gobc: &mockCompressor{
+				gobc: &MockCompressor{
 					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
 						return []byte{}, nil
 					},
@@ -300,7 +260,7 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 						}, nil
 					},
 				},
-				gobc: &mockCompressor{
+				gobc: &MockCompressor{
 					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
 						return []byte{}, nil
 					},
@@ -330,6 +290,78 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 				gobc:             test.fields.gobc,
 				compressionLevel: test.fields.compressionLevel,
 				readerWreiter:    test.fields.readerWriter,
+			}
+
+			got, err := g.CompressVector(test.args.vector)
+			if err := test.checkFunc(test.want, got, err, g); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_E2E_gzipCompressor_CompressVector(t *testing.T) {
+	type args struct {
+		vector []float32
+	}
+	type want struct {
+		want []float32
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, []byte, error, Compressor) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got []byte, err error, g Compressor) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		decompressed, err := g.DecompressVector(got)
+		if err != nil {
+			return errors.Errorf("decompress error: %v", err)
+		}
+		if !reflect.DeepEqual(decompressed, w.want) {
+			return errors.Errorf("decompressed got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "compression success",
+			args: args{
+				vector: []float32{
+					0.1, 0.2, 0.3, 0.4,
+				},
+			},
+			want: want{
+				want: []float32{
+					0.1, 0.2, 0.3, 0.4,
+				},
+				err: nil,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			g, err := NewGzip()
+			if err != nil {
+				t.Fatal(err)
 			}
 
 			got, err := g.CompressVector(test.args.vector)
@@ -383,7 +415,7 @@ func Test_gzipCompressor_DecompressVector(t *testing.T) {
 						}, nil
 					},
 				},
-				gobc: &mockCompressor{
+				gobc: &MockCompressor{
 					DecompressVectorFunc: func(bytes []byte) (vector []float32, err error) {
 						return []float32{1, 2, 3}, nil
 					},
@@ -441,7 +473,7 @@ func Test_gzipCompressor_DecompressVector(t *testing.T) {
 						}, nil
 					},
 				},
-				gobc: &mockCompressor{
+				gobc: &MockCompressor{
 					DecompressVectorFunc: func(bytes []byte) (vector []float32, err error) {
 						return nil, errors.New("err")
 					},
@@ -473,6 +505,85 @@ func Test_gzipCompressor_DecompressVector(t *testing.T) {
 
 			got, err := g.DecompressVector(test.args.bs)
 			if err := test.checkFunc(test.want, got, err, g); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_E2E_gzipCompressor_DecompressVector(t *testing.T) {
+	type args struct {
+		bs []byte
+	}
+	type want struct {
+		want []float32
+		err  error
+	}
+	type test struct {
+		name       string
+		argsFunc   func(*testing.T, Compressor) args
+		want       want
+		checkFunc  func(want, []float32, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got []float32, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "decompression success",
+			argsFunc: func(t *testing.T, c Compressor) args {
+				t.Helper()
+
+				bs, err := c.CompressVector([]float32{
+					0.1, 0.2, 0.3,
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+				return args{
+					bs: bs,
+				}
+			},
+			want: want{
+				want: []float32{
+					0.1, 0.2, 0.3,
+				},
+				err: nil,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+
+			g, err := NewGzip()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			args := test.argsFunc(tt, g)
+
+			if test.beforeFunc != nil {
+				test.beforeFunc(args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got, err := g.DecompressVector(args.bs)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -722,7 +833,7 @@ func Test_gzipReader_Read(t *testing.T) {
 				p: []byte{},
 			},
 			fields: fields{
-				r: &mockReadCloser{
+				r: &MockReadCloser{
 					ReadFunc: func(p []byte) (n int, err error) {
 						return 10, nil
 					},
@@ -787,12 +898,12 @@ func Test_gzipReader_Close(t *testing.T) {
 		{
 			name: "returns nil when close success",
 			fields: fields{
-				src: &mockReadCloser{
+				src: &MockReadCloser{
 					CloseFunc: func() error {
 						return nil
 					},
 				},
-				r: &mockReadCloser{
+				r: &MockReadCloser{
 					CloseFunc: func() error {
 						return nil
 					},
@@ -806,12 +917,12 @@ func Test_gzipReader_Close(t *testing.T) {
 		{
 			name: "returns error when close fails",
 			fields: fields{
-				src: &mockReadCloser{
+				src: &MockReadCloser{
 					CloseFunc: func() error {
 						return errors.New("serr")
 					},
 				},
-				r: &mockReadCloser{
+				r: &MockReadCloser{
 					CloseFunc: func() error {
 						return errors.New("rerr")
 					},
@@ -825,12 +936,12 @@ func Test_gzipReader_Close(t *testing.T) {
 		{
 			name: "returns error when close of r fails",
 			fields: fields{
-				src: &mockReadCloser{
+				src: &MockReadCloser{
 					CloseFunc: func() error {
 						return nil
 					},
 				},
-				r: &mockReadCloser{
+				r: &MockReadCloser{
 					CloseFunc: func() error {
 						return errors.New("rerr")
 					},
@@ -844,12 +955,12 @@ func Test_gzipReader_Close(t *testing.T) {
 		{
 			name: "returns error when close of src fails",
 			fields: fields{
-				src: &mockReadCloser{
+				src: &MockReadCloser{
 					CloseFunc: func() error {
 						return errors.New("serr")
 					},
 				},
-				r: &mockReadCloser{
+				r: &MockReadCloser{
 					CloseFunc: func() error {
 						return nil
 					},
@@ -924,7 +1035,7 @@ func Test_gzipWriter_Write(t *testing.T) {
 				p: []byte{},
 			},
 			fields: fields{
-				w: &mockWriteCloser{
+				w: &MockWriteCloser{
 					WriteFunc: func(p []byte) (n int, err error) {
 						return 10, nil
 					},
@@ -989,12 +1100,12 @@ func Test_gzipWriter_Close(t *testing.T) {
 		{
 			name: "returns nil when close success",
 			fields: fields{
-				dst: &mockWriteCloser{
+				dst: &MockWriteCloser{
 					CloseFunc: func() error {
 						return nil
 					},
 				},
-				w: &mockWriteCloser{
+				w: &MockWriteCloser{
 					CloseFunc: func() error {
 						return nil
 					},
@@ -1008,12 +1119,12 @@ func Test_gzipWriter_Close(t *testing.T) {
 		{
 			name: "returns error when close fails",
 			fields: fields{
-				dst: &mockWriteCloser{
+				dst: &MockWriteCloser{
 					CloseFunc: func() error {
 						return errors.New("derr")
 					},
 				},
-				w: &mockWriteCloser{
+				w: &MockWriteCloser{
 					CloseFunc: func() error {
 						return errors.New("werr")
 					},
@@ -1027,12 +1138,12 @@ func Test_gzipWriter_Close(t *testing.T) {
 		{
 			name: "returns error when close of w fails",
 			fields: fields{
-				dst: &mockWriteCloser{
+				dst: &MockWriteCloser{
 					CloseFunc: func() error {
 						return nil
 					},
 				},
-				w: &mockWriteCloser{
+				w: &MockWriteCloser{
 					CloseFunc: func() error {
 						return errors.New("werr")
 					},
@@ -1046,12 +1157,12 @@ func Test_gzipWriter_Close(t *testing.T) {
 		{
 			name: "returns error when close of dst fails",
 			fields: fields{
-				dst: &mockWriteCloser{
+				dst: &MockWriteCloser{
 					CloseFunc: func() error {
 						return errors.New("derr")
 					},
 				},
-				w: &mockWriteCloser{
+				w: &MockWriteCloser{
 					CloseFunc: func() error {
 						return nil
 					},
