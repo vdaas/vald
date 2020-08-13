@@ -15,25 +15,25 @@ type Decoder interface {
 	Decode(e interface{}) error
 }
 
-// Builder an interface to create Encoder and Decoder implementation.
-type Builder interface {
+// Transporter an interface to create Encoder and Decoder implementation.
+type Transporter interface {
 	NewEncoder(w io.Writer) Encoder
 	NewDecoder(r io.Reader) Decoder
 }
 
-type builder struct{}
+type transporter struct{}
 
-// NewBuilder returns Builder implementation.
-func NewBuilder() Builder {
-	return new(builder)
+// NewTransporter returns Transporter implementation.
+func NewTransporter() Transporter {
+	return new(transporter)
 }
 
 // NewEncoder returns Encoder implementation.
-func (*builder) NewEncoder(w io.Writer) Encoder {
+func (*transporter) NewEncoder(w io.Writer) Encoder {
 	return gob.NewEncoder(w)
 }
 
 // NewDecoder returns Decoder implementation.
-func (*builder) NewDecoder(r io.Reader) Decoder {
+func (*transporter) NewDecoder(r io.Reader) Decoder {
 	return gob.NewDecoder(r)
 }

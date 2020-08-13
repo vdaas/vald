@@ -30,25 +30,25 @@ type Writer interface {
 	Flush() error
 }
 
-// Builder an interface to create Writer and Reader implementation.
-type Builder interface {
+// Transporter an interface to create Writer and Reader implementation.
+type Transporter interface {
 	NewReader(r io.Reader) (Reader, error)
 	NewWriterLevel(w io.Writer, level int) (Writer, error)
 }
 
-type builder struct{}
+type transporter struct{}
 
-// NewBuilder returns Builder implementation.
-func NewBuilder() Builder {
-	return new(builder)
+// NewTransporter returns Transporter implementation.
+func NewTransporter() Transporter {
+	return new(transporter)
 }
 
 // NewWriterLevel returns Writer implementation.
-func (*builder) NewWriterLevel(w io.Writer, level int) (Writer, error) {
+func (*transporter) NewWriterLevel(w io.Writer, level int) (Writer, error) {
 	return gzip.NewWriterLevel(w, level)
 }
 
 // NewReader returns Reader implementation.
-func (*builder) NewReader(r io.Reader) (Reader, error) {
+func (*transporter) NewReader(r io.Reader) (Reader, error) {
 	return gzip.NewReader(r)
 }

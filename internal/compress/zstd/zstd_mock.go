@@ -50,18 +50,18 @@ func (m *MockDecoder) WriteTo(w io.Writer) (int64, error) {
 	return m.WriteToFunc(w)
 }
 
-// MockBuilder represents mock struct of Builder.
-type MockBuilder struct {
+// MockTransporter represents mock struct of Transporter.
+type MockTransporter struct {
 	NewWriterFunc func(w io.Writer, opts ...zstd.EOption) (Encoder, error)
 	NewReaderFunc func(r io.Reader, opts ...zstd.DOption) (Decoder, error)
 }
 
 // NewWriter calls NewWriterFunc.
-func (m *MockBuilder) NewWriter(w io.Writer, opts ...zstd.EOption) (Encoder, error) {
+func (m *MockTransporter) NewWriter(w io.Writer, opts ...zstd.EOption) (Encoder, error) {
 	return m.NewWriterFunc(w, opts...)
 }
 
 // NewReader calls NewReader.
-func (m *MockBuilder) NewReader(r io.Reader, opts ...zstd.DOption) (Decoder, error) {
+func (m *MockTransporter) NewReader(r io.Reader, opts ...zstd.DOption) (Decoder, error) {
 	return m.NewReaderFunc(r, opts...)
 }
