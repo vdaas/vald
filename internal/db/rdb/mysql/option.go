@@ -187,7 +187,6 @@ func WithMaxOpenConns(conns int) Option {
 	}
 }
 
-
 // WithTLSConfig returns the option to set the tlsConfig.
 func WithTLSConfig(cfg *tls.Config) Option {
 	return func(m *mySQLClient) error {
