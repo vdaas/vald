@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/db/kvs/redis"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/observability/trace"
 )
@@ -159,6 +160,10 @@ func (rm *redisMetrics) BeforeProcess(ctx context.Context, cmd redis.Cmder) (con
 func (rm *redisMetrics) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
 	span := trace.FromContext(ctx)
 	if span != nil {
+		if err := cmd.Err(); err != nil {
+			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
+		}
+
 		span.End()
 	}
 
@@ -207,6 +212,17 @@ func (rm *redisMetrics) BeforeProcessPipeline(ctx context.Context, cmds []redis.
 func (rm *redisMetrics) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
 	span := trace.FromContext(ctx)
 	if span != nil {
+		var errs error
+		for _, cmd := range cmds {
+			if err := cmd.Err(); err != nil {
+				errs = errors.Wrap(err, errs.Error())
+			}
+		}
+
+		if errs != nil {
+			span.SetStatus(trace.StatusCodeUnknown(errs.Error()))
+		}
+
 		span.End()
 	}
 
