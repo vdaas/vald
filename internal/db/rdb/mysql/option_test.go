@@ -811,7 +811,7 @@ func TestWithConnectionLifeTimeLimit(t *testing.T) {
 			},
 		},
 		{
-			name: "set success when dur is invalid",
+			name: "set success with default value when dur is invalid",
 			args: args{
 				dur: "invalid",
 			},
