@@ -369,7 +369,11 @@ func TestParse(t *testing.T) {
 			want: want{
 				wantHost: "dummy",
 				wantPort: uint16(80),
-				err:      &strconv.NumError{"Atoi", "", strconv.ErrSyntax},
+				err: &strconv.NumError{
+					Func: "Atoi",
+					Num:  "",
+					Err:  strconv.ErrSyntax,
+				},
 			},
 		},
 		{
@@ -381,7 +385,11 @@ func TestParse(t *testing.T) {
 				wantHost: "192.168.1.1",
 				wantPort: uint16(80),
 				wantIsIP: true,
-				err:      &strconv.NumError{"Atoi", "", strconv.ErrSyntax},
+				err: &strconv.NumError{
+					Func: "Atoi",
+					Num:  "",
+					Err:  strconv.ErrSyntax,
+				},
 			},
 		},
 		{
@@ -393,7 +401,11 @@ func TestParse(t *testing.T) {
 				wantHost: "2001:db8::1",
 				wantPort: uint16(80),
 				wantIsIP: true,
-				err:      &strconv.NumError{"Atoi", "", strconv.ErrSyntax},
+				err: &strconv.NumError{
+					Func: "Atoi",
+					Num:  "",
+					Err:  strconv.ErrSyntax,
+				},
 			},
 		},
 	}
