@@ -20,6 +20,7 @@ package redis
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -37,12 +38,10 @@ type redisMetrics struct {
 	pipelineLatency metrics.Float64Measure
 
 	cmdNameKey metrics.Key
+	numCmdKey  metrics.Key
 
 	mu sync.Mutex
-	ms []metrics.Measurement
-
-	mut sync.Mutex
-	mst []metrics.MeasurementWithTags
+	ms []metrics.MeasurementWithTags
 }
 
 type MetricsHook interface {
@@ -85,35 +84,37 @@ func New() (o MetricsHook, err error) {
 		return nil, err
 	}
 
-	rms.ms = make([]metrics.Measurement, 0)
-	rms.mst = make([]metrics.MeasurementWithTags, 0)
+	rms.numCmdKey, err = metrics.NewKey("redis_num_cmd")
+	if err != nil {
+		return nil, err
+	}
+
+	rms.ms = make([]metrics.MeasurementWithTags, 0)
 
 	return rms, nil
 }
 
 func (rm *redisMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
+	return []metrics.Measurement{}, nil
+}
+
+func (rm *redisMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
 	rm.mu.Lock()
 	defer func() {
-		rm.ms = make([]metrics.Measurement, 0)
+		rm.ms = make([]metrics.MeasurementWithTags, 0)
 		rm.mu.Unlock()
 	}()
 
 	return rm.ms, nil
 }
 
-func (rm *redisMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
-	rm.mut.Lock()
-	defer func() {
-		rm.mst = make([]metrics.MeasurementWithTags, 0)
-		rm.mut.Unlock()
-	}()
-
-	return rm.mst, nil
-}
-
 func (rm *redisMetrics) View() []*metrics.View {
 	queryKeys := []metrics.Key{
 		rm.cmdNameKey,
+	}
+
+	pipelineKeys := []metrics.Key{
+		rm.numCmdKey,
 	}
 
 	return []*metrics.View{
@@ -134,12 +135,14 @@ func (rm *redisMetrics) View() []*metrics.View {
 		&metrics.View{
 			Name:        "db_kvs_redis_completed_pipeline_total",
 			Description: rm.pipelineTotal.Description(),
+			TagKeys:     pipelineKeys,
 			Measure:     &rm.pipelineTotal,
 			Aggregation: metrics.Count(),
 		},
 		&metrics.View{
 			Name:        "db_kvs_redis_pipeline_latency",
 			Description: rm.pipelineLatency.Description(),
+			TagKeys:     pipelineKeys,
 			Measure:     &rm.pipelineLatency,
 			Aggregation: metrics.DefaultMillisecondsDistribution,
 		},
@@ -174,11 +177,11 @@ func (rm *redisMetrics) AfterProcess(ctx context.Context, cmd redis.Cmder) error
 		rm.cmdNameKey: cmd.Name(),
 	}
 
-	rm.mut.Lock()
-	defer rm.mut.Unlock()
+	rm.mu.Lock()
+	defer rm.mu.Unlock()
 
-	rm.mst = append(
-		rm.mst,
+	rm.ms = append(
+		rm.ms,
 		metrics.MeasurementWithTags{
 			Measurement: rm.queryTotal.M(1),
 			Tags:        tags,
@@ -229,13 +232,23 @@ func (rm *redisMetrics) AfterProcessPipeline(ctx context.Context, cmds []redis.C
 	startTime, _ := ctx.Value(pipelineStartTimeKey{}).(time.Time)
 	latencyMillis := float64(time.Since(startTime)) / float64(time.Millisecond)
 
+	tags := map[metrics.Key]string{
+		rm.numCmdKey: strconv.Itoa(len(cmds)),
+	}
+
 	rm.mu.Lock()
 	defer rm.mu.Unlock()
 
 	rm.ms = append(
 		rm.ms,
-		rm.pipelineTotal.M(1),
-		rm.pipelineLatency.M(latencyMillis),
+		metrics.MeasurementWithTags{
+			Measurement: rm.pipelineTotal.M(1),
+			Tags:        tags,
+		},
+		metrics.MeasurementWithTags{
+			Measurement: rm.pipelineLatency.M(latencyMillis),
+			Tags:        tags,
+		},
 	)
 
 	return nil
