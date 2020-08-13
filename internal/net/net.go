@@ -39,14 +39,24 @@ const (
 )
 
 type (
-	Conn         = net.Conn
-	Dialer       = net.Dialer
+	// Conn is an alias of net.Conn
+	Conn = net.Conn
+
+	// Dialer is an alias of net.Dialer
+	Dialer = net.Dialer
+
+	// ListenConfig is an alias of net.ListenConfig
 	ListenConfig = net.ListenConfig
-	Listener     = net.Listener
-	Resolver     = net.Resolver
+
+	// Listener is an alias of net.Listener
+	Listener = net.Listener
+
+	// Resolver is an alias of net.Resolver
+	Resolver = net.Resolver
 )
 
 var (
+	// DefaultResolver is an alias of net.DefaultResolver
 	DefaultResolver = net.DefaultResolver
 )
 
