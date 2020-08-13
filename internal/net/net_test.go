@@ -86,11 +86,7 @@ func TestListen(t *testing.T) {
 					return errors.Errorf("got error = %v, want %v", err, w.err)
 				}
 
-				if err := got.Close(); err != nil {
-					return err
-				}
-
-				return nil
+				return got.Close()
 			},
 		},
 	}

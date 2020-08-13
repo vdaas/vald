@@ -63,7 +63,7 @@ func IsLocal(host string) bool {
 }
 
 // Dial is a wrapper function of the net.Dial function.
-func Dial(network string, addr string) (conn Conn, err error) {
+func Dial(network, addr string) (conn Conn, err error) {
 	return net.Dial(network, addr)
 }
 
