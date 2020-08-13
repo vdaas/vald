@@ -7,7 +7,7 @@ type MockReader struct {
 	ReadFunc func(p []byte) (n int, err error)
 }
 
-// Read calls ReadFunc
+// Read calls ReadFunc.
 func (m *MockReader) Read(p []byte) (n int, err error) {
 	return m.ReadFunc(p)
 }

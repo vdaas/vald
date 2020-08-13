@@ -6,7 +6,7 @@ import (
 	"github.com/klauspost/compress/gzip"
 )
 
-// These constants are copied from the gzip package
+// These constants are copied from the gzip package.
 const (
 	NoCompression       = gzip.NoCompression
 	BestSpeed           = gzip.BestSpeed

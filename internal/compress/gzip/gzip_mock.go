@@ -2,7 +2,7 @@ package gzip
 
 import "io"
 
-// MockReader represents mock of Reader
+// MockReader represents mock of Reader.
 type MockReader struct {
 	ReadFunc        func(p []byte) (n int, err error)
 	CloseFunc       func() error

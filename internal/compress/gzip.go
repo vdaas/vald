@@ -46,7 +46,7 @@ func NewGzip(opts ...GzipOption) (Compressor, error) {
 	return c, nil
 }
 
-// CompressVector Compress the data and returns an error if compression fails
+// CompressVector Compress the data and returns an error if compression fails.
 func (g *gzipCompressor) CompressVector(vector []float32) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	gw, err := g.builder.NewWriterLevel(buf, g.compressionLevel)
@@ -72,7 +72,7 @@ func (g *gzipCompressor) CompressVector(vector []float32) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// CompressVector Decompress the compressed data and returns an error if decompression fails
+// CompressVector Decompress the compressed data and returns an error if decompression fails.
 func (g *gzipCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	buf := new(bytes.Buffer)
 	gr, err := g.builder.NewReader(bytes.NewBuffer(bs))
