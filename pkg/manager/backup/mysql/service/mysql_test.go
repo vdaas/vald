@@ -21,18 +21,16 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/rdb/mysql"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/pkg/manager/backup/mysql/model"
-
 	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
 	type args struct {
-		cfg *config.MySQL
+		opts []Option
 	}
 	type want struct {
 		wantMs MySQL
@@ -61,7 +59,7 @@ func TestNew(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           cfg: nil,
+		           opts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -74,7 +72,7 @@ func TestNew(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           cfg: nil,
+		           opts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -85,7 +83,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -96,7 +94,7 @@ func TestNew(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			gotMs, err := New(test.args.cfg)
+			gotMs, err := New(test.args.opts...)
 			if err := test.checkFunc(test.want, gotMs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -169,7 +167,7 @@ func Test_client_Connect(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -257,7 +255,7 @@ func Test_client_Close(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -352,7 +350,7 @@ func Test_client_GetMeta(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -447,7 +445,7 @@ func Test_client_GetIPs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -538,7 +536,7 @@ func Test_client_SetMeta(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -629,7 +627,7 @@ func Test_client_SetMetas(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -720,7 +718,7 @@ func Test_client_DeleteMeta(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -811,7 +809,7 @@ func Test_client_DeleteMetas(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -905,7 +903,7 @@ func Test_client_SetIPs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -996,7 +994,7 @@ func Test_client_RemoveIPs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
