@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-// Package cassandra provides cassandra metrics functions
-package cassandra
+// Package redis provides redis metrics functions
+package redis
 
 import (
 	"context"
