@@ -30,7 +30,7 @@ func (w *writer) Header() *Header {
 	return &w.Writer.Header
 }
 
-// Transporter an interface to create Writer and Reader implementation.
+// Transporter is an interface to create Writer and Reader implementation.
 type Transporter interface {
 	NewWriter(w io.Writer) Writer
 	NewReader(r io.Reader) Reader

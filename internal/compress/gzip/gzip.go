@@ -30,7 +30,7 @@ type Writer interface {
 	Flush() error
 }
 
-// Transporter an interface to create Writer and Reader implementation.
+// Transporter is an interface to create Writer and Reader implementation.
 type Transporter interface {
 	NewReader(r io.Reader) (Reader, error)
 	NewWriterLevel(w io.Writer, level int) (Writer, error)

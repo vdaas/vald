@@ -22,7 +22,7 @@ type Decoder interface {
 	WriteTo(w io.Writer) (int64, error)
 }
 
-// Transporter an interface to create Writer and Reader implementation.
+// Transporter is an interface to create Writer and Reader implementation.
 type Transporter interface {
 	NewWriter(w io.Writer, opts ...zstd.EOption) (Encoder, error)
 	NewReader(r io.Reader, opts ...zstd.DOption) (Decoder, error)
