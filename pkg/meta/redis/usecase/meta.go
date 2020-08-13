@@ -25,7 +25,6 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/observability"
 	dbmetrics "github.com/vdaas/vald/internal/observability/metrics/db/kvs/redis"
 	"github.com/vdaas/vald/internal/runner"
@@ -66,17 +65,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		)
 	}
 
-	dialer, err := tcp.NewDialer(cfg.Redis.TCP.Opts()...)
-	if err != nil {
-		return nil, err
-	}
-
-	builder, err := redis.New(
-		append(
-			redisOpts,
-			redis.WithDialer(dialer),
-		)...,
-	)
+	builder, err := redis.New(redisOpts...)
 	if err != nil {
 		return nil, err
 	}

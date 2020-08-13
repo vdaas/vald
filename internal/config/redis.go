@@ -19,6 +19,7 @@ package config
 
 import (
 	"github.com/vdaas/vald/internal/db/kvs/redis"
+	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/tls"
 )
 
@@ -123,6 +124,14 @@ func (r *Redis) Opts() (opts []redis.Option, err error) {
 			return nil, err
 		}
 		opts = append(opts, redis.WithTLSConfig(tcfg))
+	}
+
+	if r.TCP != nil {
+		dialer, err := tcp.NewDialer(r.TCP.Opts()...)
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, redis.WithDialer(dialer))
 	}
 
 	if len(r.Addrs) > 1 {
