@@ -25,6 +25,7 @@ type writer struct {
 	*lz4.Writer
 }
 
+// Header returns lz4.Writer.Header object.
 func (w *writer) Header() *Header {
 	return &w.Writer.Header
 }
