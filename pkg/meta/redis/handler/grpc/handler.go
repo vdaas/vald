@@ -51,7 +51,7 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 			span.End()
 		}
 	}()
-	val, err := s.redis.Get(key.GetKey())
+	val, err := s.redis.Get(ctx, key.GetKey())
 	if err != nil {
 		if errors.IsErrRedisNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[GetMeta]\tnot found\t%v\t%s", key.GetKey(), err.Error())
@@ -79,7 +79,7 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 		}
 	}()
 	mv = new(payload.Meta_Vals)
-	mv.Vals, err = s.redis.GetMultiple(keys.GetKeys()...)
+	mv.Vals, err = s.redis.GetMultiple(ctx, keys.GetKeys()...)
 	if err != nil {
 		if errors.IsErrRedisNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[GetMetas]\tnot found\t%v\t%s", keys.GetKeys(), err.Error())
@@ -104,7 +104,7 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 			span.End()
 		}
 	}()
-	key, err := s.redis.GetInverse(val.GetVal())
+	key, err := s.redis.GetInverse(ctx, val.GetVal())
 	if err != nil {
 		if errors.IsErrRedisNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[GetMetaInverse]\tnot found\t%v\t%s", val.GetVal(), err.Error())
@@ -132,7 +132,7 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 		}
 	}()
 	mk = new(payload.Meta_Keys)
-	mk.Keys, err = s.redis.GetInverseMultiple(vals.GetVals()...)
+	mk.Keys, err = s.redis.GetInverseMultiple(ctx, vals.GetVals()...)
 	if err != nil {
 		if errors.IsErrRedisNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[GetMetasInverse]\tnot found\t%v\t%s", vals.GetVals(), err.Error())
@@ -157,7 +157,7 @@ func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *paylo
 			span.End()
 		}
 	}()
-	err = s.redis.Set(kv.GetKey(), kv.GetVal())
+	err = s.redis.Set(ctx, kv.GetKey(), kv.GetVal())
 	if err != nil {
 		log.Errorf("[SetMeta]\tunknown error\t%+v", err)
 		if span != nil {
@@ -179,7 +179,7 @@ func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *pa
 	for _, kv := range kvs.GetKvs() {
 		query[kv.GetKey()] = kv.GetVal()
 	}
-	err = s.redis.SetMultiple(query)
+	err = s.redis.SetMultiple(ctx, query)
 	if err != nil {
 		log.Errorf("[SetMetas]\tunknown error\t%+v", err)
 		if span != nil {
@@ -197,7 +197,7 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 			span.End()
 		}
 	}()
-	val, err := s.redis.Delete(key.GetKey())
+	val, err := s.redis.Delete(ctx, key.GetKey())
 	if err != nil {
 		if errors.IsErrRedisNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[DeleteMeta]\tnot found\t%v\t%s", key.GetKey(), err.Error())
@@ -225,7 +225,7 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 		}
 	}()
 	mv = new(payload.Meta_Vals)
-	mv.Vals, err = s.redis.DeleteMultiple(keys.GetKeys()...)
+	mv.Vals, err = s.redis.DeleteMultiple(ctx, keys.GetKeys()...)
 	if err != nil {
 		if errors.IsErrRedisNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[DeleteMetas]\tnot found\t%v\t%s", keys.GetKeys(), err.Error())
@@ -250,7 +250,7 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 			span.End()
 		}
 	}()
-	key, err := s.redis.DeleteInverse(val.GetVal())
+	key, err := s.redis.DeleteInverse(ctx, val.GetVal())
 	if err != nil {
 		if errors.IsErrRedisNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[DeleteMetaInverse]\tnot found\t%v\t%s", val.GetVal(), err.Error())
@@ -278,7 +278,7 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 		}
 	}()
 	mk = new(payload.Meta_Keys)
-	mk.Keys, err = s.redis.DeleteInverseMultiple(vals.GetVals()...)
+	mk.Keys, err = s.redis.DeleteInverseMultiple(ctx, vals.GetVals()...)
 	if err != nil {
 		if errors.IsErrRedisNotFound(errors.UnWrapAll(err)) {
 			log.Warnf("[DeleteMetasInverse]\tnot found\t%v\t%s", vals.GetVals(), err.Error())

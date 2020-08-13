@@ -294,6 +294,7 @@ func Test_client_Connect(t *testing.T) {
 
 func Test_client_Get(t *testing.T) {
 	type args struct {
+		ctx context.Context
 		key string
 	}
 	type fields struct {
@@ -331,6 +332,7 @@ func Test_client_Get(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           key: "",
 		       },
 		       fields: fields {
@@ -351,6 +353,7 @@ func Test_client_Get(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           key: "",
 		           },
 		           fields: fields {
@@ -387,7 +390,7 @@ func Test_client_Get(t *testing.T) {
 				prefixDelimiter: test.fields.prefixDelimiter,
 			}
 
-			got, err := c.Get(test.args.key)
+			got, err := c.Get(test.args.ctx, test.args.key)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -398,6 +401,7 @@ func Test_client_Get(t *testing.T) {
 
 func Test_client_GetMultiple(t *testing.T) {
 	type args struct {
+		ctx  context.Context
 		keys []string
 	}
 	type fields struct {
@@ -435,6 +439,7 @@ func Test_client_GetMultiple(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           keys: nil,
 		       },
 		       fields: fields {
@@ -455,6 +460,7 @@ func Test_client_GetMultiple(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           keys: nil,
 		           },
 		           fields: fields {
@@ -491,7 +497,7 @@ func Test_client_GetMultiple(t *testing.T) {
 				prefixDelimiter: test.fields.prefixDelimiter,
 			}
 
-			gotVals, err := c.GetMultiple(test.args.keys...)
+			gotVals, err := c.GetMultiple(test.args.ctx, test.args.keys...)
 			if err := test.checkFunc(test.want, gotVals, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -502,6 +508,7 @@ func Test_client_GetMultiple(t *testing.T) {
 
 func Test_client_GetInverse(t *testing.T) {
 	type args struct {
+		ctx context.Context
 		val string
 	}
 	type fields struct {
@@ -539,6 +546,7 @@ func Test_client_GetInverse(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           val: "",
 		       },
 		       fields: fields {
@@ -559,6 +567,7 @@ func Test_client_GetInverse(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           val: "",
 		           },
 		           fields: fields {
@@ -595,7 +604,7 @@ func Test_client_GetInverse(t *testing.T) {
 				prefixDelimiter: test.fields.prefixDelimiter,
 			}
 
-			got, err := c.GetInverse(test.args.val)
+			got, err := c.GetInverse(test.args.ctx, test.args.val)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -606,6 +615,7 @@ func Test_client_GetInverse(t *testing.T) {
 
 func Test_client_GetInverseMultiple(t *testing.T) {
 	type args struct {
+		ctx  context.Context
 		vals []string
 	}
 	type fields struct {
@@ -643,6 +653,7 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           vals: nil,
 		       },
 		       fields: fields {
@@ -663,6 +674,7 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           vals: nil,
 		           },
 		           fields: fields {
@@ -699,7 +711,7 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 				prefixDelimiter: test.fields.prefixDelimiter,
 			}
 
-			got, err := c.GetInverseMultiple(test.args.vals...)
+			got, err := c.GetInverseMultiple(test.args.ctx, test.args.vals...)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -813,6 +825,7 @@ func Test_client_appendPrefix(t *testing.T) {
 
 func Test_client_get(t *testing.T) {
 	type args struct {
+		ctx    context.Context
 		prefix string
 		key    string
 	}
@@ -851,6 +864,7 @@ func Test_client_get(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           prefix: "",
 		           key: "",
 		       },
@@ -872,6 +886,7 @@ func Test_client_get(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           prefix: "",
 		           key: "",
 		           },
@@ -909,7 +924,7 @@ func Test_client_get(t *testing.T) {
 				prefixDelimiter: test.fields.prefixDelimiter,
 			}
 
-			gotVal, err := c.get(test.args.prefix, test.args.key)
+			gotVal, err := c.get(test.args.ctx, test.args.prefix, test.args.key)
 			if err := test.checkFunc(test.want, gotVal, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -920,6 +935,7 @@ func Test_client_get(t *testing.T) {
 
 func Test_client_getMulti(t *testing.T) {
 	type args struct {
+		ctx    context.Context
 		prefix string
 		keys   []string
 	}
@@ -958,6 +974,7 @@ func Test_client_getMulti(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           prefix: "",
 		           keys: nil,
 		       },
@@ -979,6 +996,7 @@ func Test_client_getMulti(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           prefix: "",
 		           keys: nil,
 		           },
@@ -1016,7 +1034,7 @@ func Test_client_getMulti(t *testing.T) {
 				prefixDelimiter: test.fields.prefixDelimiter,
 			}
 
-			gotVals, err := c.getMulti(test.args.prefix, test.args.keys...)
+			gotVals, err := c.getMulti(test.args.ctx, test.args.prefix, test.args.keys...)
 			if err := test.checkFunc(test.want, gotVals, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1027,6 +1045,7 @@ func Test_client_getMulti(t *testing.T) {
 
 func Test_client_Set(t *testing.T) {
 	type args struct {
+		ctx context.Context
 		key string
 		val string
 	}
@@ -1061,6 +1080,7 @@ func Test_client_Set(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           key: "",
 		           val: "",
 		       },
@@ -1082,6 +1102,7 @@ func Test_client_Set(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           key: "",
 		           val: "",
 		           },
@@ -1119,7 +1140,7 @@ func Test_client_Set(t *testing.T) {
 				prefixDelimiter: test.fields.prefixDelimiter,
 			}
 
-			err := c.Set(test.args.key, test.args.val)
+			err := c.Set(test.args.ctx, test.args.key, test.args.val)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1130,6 +1151,7 @@ func Test_client_Set(t *testing.T) {
 
 func Test_client_SetMultiple(t *testing.T) {
 	type args struct {
+		ctx context.Context
 		kvs map[string]string
 	}
 	type fields struct {
@@ -1163,6 +1185,7 @@ func Test_client_SetMultiple(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           kvs: nil,
 		       },
 		       fields: fields {
@@ -1183,6 +1206,7 @@ func Test_client_SetMultiple(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           kvs: nil,
 		           },
 		           fields: fields {
@@ -1219,7 +1243,7 @@ func Test_client_SetMultiple(t *testing.T) {
 				prefixDelimiter: test.fields.prefixDelimiter,
 			}
 
-			err := c.SetMultiple(test.args.kvs)
+			err := c.SetMultiple(test.args.ctx, test.args.kvs)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1230,6 +1254,7 @@ func Test_client_SetMultiple(t *testing.T) {
 
 func Test_client_Delete(t *testing.T) {
 	type args struct {
+		ctx context.Context
 		key string
 	}
 	type fields struct {
@@ -1267,6 +1292,7 @@ func Test_client_Delete(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           key: "",
 		       },
 		       fields: fields {
@@ -1287,6 +1313,7 @@ func Test_client_Delete(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           key: "",
 		           },
 		           fields: fields {
@@ -1323,7 +1350,7 @@ func Test_client_Delete(t *testing.T) {
 				prefixDelimiter: test.fields.prefixDelimiter,
 			}
 
-			got, err := c.Delete(test.args.key)
+			got, err := c.Delete(test.args.ctx, test.args.key)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1334,6 +1361,7 @@ func Test_client_Delete(t *testing.T) {
 
 func Test_client_DeleteMultiple(t *testing.T) {
 	type args struct {
+		ctx  context.Context
 		keys []string
 	}
 	type fields struct {
@@ -1371,6 +1399,7 @@ func Test_client_DeleteMultiple(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           keys: nil,
 		       },
 		       fields: fields {
@@ -1391,6 +1420,7 @@ func Test_client_DeleteMultiple(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           keys: nil,
 		           },
 		           fields: fields {
@@ -1427,7 +1457,7 @@ func Test_client_DeleteMultiple(t *testing.T) {
 				prefixDelimiter: test.fields.prefixDelimiter,
 			}
 
-			got, err := c.DeleteMultiple(test.args.keys...)
+			got, err := c.DeleteMultiple(test.args.ctx, test.args.keys...)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1438,6 +1468,7 @@ func Test_client_DeleteMultiple(t *testing.T) {
 
 func Test_client_DeleteInverse(t *testing.T) {
 	type args struct {
+		ctx context.Context
 		val string
 	}
 	type fields struct {
@@ -1475,6 +1506,7 @@ func Test_client_DeleteInverse(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           val: "",
 		       },
 		       fields: fields {
@@ -1495,6 +1527,7 @@ func Test_client_DeleteInverse(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           val: "",
 		           },
 		           fields: fields {
@@ -1531,7 +1564,7 @@ func Test_client_DeleteInverse(t *testing.T) {
 				prefixDelimiter: test.fields.prefixDelimiter,
 			}
 
-			got, err := c.DeleteInverse(test.args.val)
+			got, err := c.DeleteInverse(test.args.ctx, test.args.val)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1542,6 +1575,7 @@ func Test_client_DeleteInverse(t *testing.T) {
 
 func Test_client_DeleteInverseMultiple(t *testing.T) {
 	type args struct {
+		ctx  context.Context
 		vals []string
 	}
 	type fields struct {
@@ -1579,6 +1613,7 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           vals: nil,
 		       },
 		       fields: fields {
@@ -1599,6 +1634,7 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           vals: nil,
 		           },
 		           fields: fields {
@@ -1635,7 +1671,7 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 				prefixDelimiter: test.fields.prefixDelimiter,
 			}
 
-			got, err := c.DeleteInverseMultiple(test.args.vals...)
+			got, err := c.DeleteInverseMultiple(test.args.ctx, test.args.vals...)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1646,6 +1682,7 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 
 func Test_client_delete(t *testing.T) {
 	type args struct {
+		ctx    context.Context
 		pfx    string
 		pfxInv string
 		key    string
@@ -1685,6 +1722,7 @@ func Test_client_delete(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           pfx: "",
 		           pfxInv: "",
 		           key: "",
@@ -1707,6 +1745,7 @@ func Test_client_delete(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           pfx: "",
 		           pfxInv: "",
 		           key: "",
@@ -1745,7 +1784,7 @@ func Test_client_delete(t *testing.T) {
 				prefixDelimiter: test.fields.prefixDelimiter,
 			}
 
-			gotVal, err := c.delete(test.args.pfx, test.args.pfxInv, test.args.key)
+			gotVal, err := c.delete(test.args.ctx, test.args.pfx, test.args.pfxInv, test.args.key)
 			if err := test.checkFunc(test.want, gotVal, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1756,6 +1795,7 @@ func Test_client_delete(t *testing.T) {
 
 func Test_client_deleteMulti(t *testing.T) {
 	type args struct {
+		ctx    context.Context
 		pfx    string
 		pfxInv string
 		keys   []string
@@ -1795,6 +1835,7 @@ func Test_client_deleteMulti(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           pfx: "",
 		           pfxInv: "",
 		           keys: nil,
@@ -1817,6 +1858,7 @@ func Test_client_deleteMulti(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           pfx: "",
 		           pfxInv: "",
 		           keys: nil,
@@ -1855,7 +1897,7 @@ func Test_client_deleteMulti(t *testing.T) {
 				prefixDelimiter: test.fields.prefixDelimiter,
 			}
 
-			gotVals, err := c.deleteMulti(test.args.pfx, test.args.pfxInv, test.args.keys...)
+			gotVals, err := c.deleteMulti(test.args.ctx, test.args.pfx, test.args.pfxInv, test.args.keys...)
 			if err := test.checkFunc(test.want, gotVals, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
