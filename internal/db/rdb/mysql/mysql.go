@@ -67,6 +67,7 @@ type mySQLClient struct {
 	maxIdleConns         int
 	session              *dbr.Session
 	connected            atomic.Value
+	eventReceiver        EventReceiver
 }
 
 func New(opts ...Option) (MySQL, error) {
@@ -82,25 +83,34 @@ func New(opts ...Option) (MySQL, error) {
 
 func (m *mySQLClient) Open(ctx context.Context) error {
 	var addParam string
+
 	network := "tcp"
+
 	if m.dialer != nil {
 		mysql.RegisterDialContext(network, func(ctx context.Context, addr string) (net.Conn, error) {
 			return m.dialer(ctx, network, addr)
 		})
 	}
+
 	if m.tlsConfig != nil {
 		tlsConfName := "tls"
 		mysql.RegisterTLSConfig(tlsConfName, m.tlsConfig)
 		addParam += "&tls=" + tlsConfName
 	}
 
-	conn, err := dbr.Open(m.db,
-		fmt.Sprintf("%s:%s@%s(%s:%d)/%s?charset=%s&parseTime=true&loc=%s%s",
+	conn, err := dbr.Open(
+		m.db,
+		fmt.Sprintf(
+			"%s:%s@%s(%s:%d)/%s?charset=%s&parseTime=true&loc=%s%s",
 			m.user, m.pass, network, m.host, m.port, m.name,
-			m.charset, m.timezone, addParam), nil)
+			m.charset, m.timezone, addParam,
+		),
+		m.eventReceiver,
+	)
 	if err != nil {
 		return err
 	}
+
 	conn.SetConnMaxLifetime(m.connMaxLifeTime)
 	conn.SetMaxIdleConns(m.maxIdleConns)
 	conn.SetMaxOpenConns(m.maxOpenConns)

@@ -206,3 +206,13 @@ func WithDialer(der func(ctx context.Context, addr, port string) (net.Conn, erro
 		return nil
 	}
 }
+
+func WithEventReceiver(er EventReceiver) Option {
+	return func(m *mySQLClient) error {
+		if er != nil {
+			m.eventReceiver = er
+		}
+
+		return nil
+	}
+}

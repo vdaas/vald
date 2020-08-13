@@ -18,11 +18,11 @@ package service
 
 import (
 	"context"
+	"reflect"
 
-	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/rdb/mysql"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/tcp"
-	"github.com/vdaas/vald/internal/tls"
 	"github.com/vdaas/vald/pkg/manager/backup/mysql/model"
 )
 
@@ -44,81 +44,13 @@ type client struct {
 	der tcp.Dialer
 }
 
-func New(cfg *config.MySQL) (ms MySQL, err error) {
+func New(opts ...Option) (ms MySQL, err error) {
 	c := new(client)
-
-	opts := append(make([]mysql.Option, 0, 13),
-		mysql.WithDB(cfg.DB),
-		mysql.WithHost(cfg.Host),
-		mysql.WithPort(cfg.Port),
-		mysql.WithUser(cfg.User),
-		mysql.WithPass(cfg.Pass),
-		mysql.WithName(cfg.Name),
-		mysql.WithCharset(cfg.Charset),
-		mysql.WithTimezone(cfg.Timezone),
-		mysql.WithInitialPingTimeLimit(cfg.InitialPingTimeLimit),
-		mysql.WithInitialPingDuration(cfg.InitialPingDuration),
-		mysql.WithConnectionLifeTimeLimit(cfg.ConnMaxLifeTime),
-		mysql.WithMaxIdleConns(cfg.MaxIdleConns),
-		mysql.WithMaxOpenConns(cfg.MaxOpenConns),
-	)
-
-	if cfg.TLS != nil && cfg.TLS.Enabled {
-		tcfg, err := tls.New(
-			tls.WithCert(cfg.TLS.Cert),
-			tls.WithKey(cfg.TLS.Key),
-			tls.WithCa(cfg.TLS.CA),
-		)
-		if err != nil {
-			return nil, err
+	for _, opt := range append(defaultOpts, opts...) {
+		if err := opt(c); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
-		opts = append(opts, mysql.WithTLSConfig(tcfg))
 	}
-
-	if cfg.TCP != nil {
-		topts := make([]tcp.DialerOption, 0, 8)
-		if cfg.TCP.DNS != nil && cfg.TCP.DNS.CacheEnabled {
-			topts = append(topts,
-				tcp.WithEnableDNSCache(),
-				tcp.WithDNSCacheExpiration(cfg.TCP.DNS.CacheExpiration),
-				tcp.WithDNSRefreshDuration(cfg.TCP.DNS.RefreshDuration),
-			)
-		}
-
-		if cfg.TCP.Dialer != nil && cfg.TCP.Dialer.DualStackEnabled {
-			topts = append(topts, tcp.WithEnableDialerDualStack())
-		} else {
-			topts = append(topts, tcp.WithDisableDialerDualStack())
-		}
-
-		if cfg.TCP.TLS != nil && cfg.TCP.TLS.Enabled {
-			tcfg, err := tls.New(
-				tls.WithCert(cfg.TCP.TLS.Cert),
-				tls.WithKey(cfg.TCP.TLS.Key),
-				tls.WithCa(cfg.TCP.TLS.CA),
-			)
-			if err != nil {
-				return nil, err
-			}
-			topts = append(topts, tcp.WithTLS(tcfg))
-		}
-		c.der, err = tcp.NewDialer(append(topts,
-			tcp.WithDialerKeepAlive(cfg.TCP.Dialer.KeepAlive),
-			tcp.WithDialerTimeout(cfg.TCP.Dialer.Timeout),
-		)...)
-		if err != nil {
-			return nil, err
-		}
-		opts = append(opts, mysql.WithDialer(c.der.GetDialer()))
-	}
-
-	m, err := mysql.New(opts...)
-
-	if err != nil {
-		return nil, err
-	}
-
-	c.db = m
 
 	return c, nil
 }
