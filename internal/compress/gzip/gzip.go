@@ -32,31 +32,23 @@ type Writer interface {
 
 // Builder an interface to create Writer and Reader implementation.
 type Builder interface {
-	NewWriterLevel(w io.Writer, level int) (Writer, error)
 	NewReader(r io.Reader) (Reader, error)
+	NewWriterLevel(w io.Writer, level int) (Writer, error)
 }
 
 type builder struct{}
 
-// NewBuilder returns ReaderWriter implementation.
+// NewBuilder returns Builder implementation.
 func NewBuilder() Builder {
 	return new(builder)
 }
 
 // NewWriterLevel returns Writer implementation.
 func (*builder) NewWriterLevel(w io.Writer, level int) (Writer, error) {
-	gw, err := gzip.NewWriterLevel(w, level)
-	if err != nil {
-		return nil, err
-	}
-	return gw, nil
+	return gzip.NewWriterLevel(w, level)
 }
 
 // NewReader returns Reader implementation.
 func (*builder) NewReader(r io.Reader) (Reader, error) {
-	gr, err := gzip.NewReader(r)
-	if err != nil {
-		return nil, err
-	}
-	return gr, nil
+	return gzip.NewReader(r)
 }

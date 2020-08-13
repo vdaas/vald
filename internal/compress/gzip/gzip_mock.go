@@ -2,20 +2,32 @@ package gzip
 
 import "io"
 
-// MockBuilder represents mock struct of ReaderWriter.
-type MockBuilder struct {
-	NewWriterLevelFunc func(w io.Writer, level int) (Writer, error)
-	NewReaderFunc      func(r io.Reader) (Reader, error)
+// MockReader represents mock of Reader
+type MockReader struct {
+	ReadFunc        func(p []byte) (n int, err error)
+	CloseFunc       func() error
+	ResetFunc       func(r io.Reader) error
+	MultistreamFunc func(ok bool)
 }
 
-// NewWriterLevel calls NewWriterLevelFunc.
-func (m *MockBuilder) NewWriterLevel(w io.Writer, level int) (Writer, error) {
-	return m.NewWriterLevelFunc(w, level)
+// Read calls ReadFunc.
+func (m *MockReader) Read(p []byte) (n int, err error) {
+	return m.ReadFunc(p)
 }
 
-// NewReader calls NewReaderFunc.
-func (m *MockBuilder) NewReader(r io.Reader) (Reader, error) {
-	return m.NewReaderFunc(r)
+// Close calls CloseFunc.
+func (m *MockReader) Close() error {
+	return m.CloseFunc()
+}
+
+// Reset calls ResetFunc.
+func (m *MockReader) Reset(r io.Reader) error {
+	return m.ResetFunc(r)
+}
+
+// Multistream calls MultistreamFunc.
+func (m *MockReader) Multistream(ok bool) {
+	m.MultistreamFunc(ok)
 }
 
 // MockWriter represents mock of Writer.
@@ -46,30 +58,18 @@ func (m *MockWriter) Flush() error {
 	return m.FlushFunc()
 }
 
-// MockReader represents mock of Reader
-type MockReader struct {
-	ReadFunc        func(p []byte) (n int, err error)
-	CloseFunc       func() error
-	ResetFunc       func(r io.Reader) error
-	MultistreamFunc func(ok bool)
+// MockBuilder represents mock struct of Builder.
+type MockBuilder struct {
+	NewWriterLevelFunc func(w io.Writer, level int) (Writer, error)
+	NewReaderFunc      func(r io.Reader) (Reader, error)
 }
 
-// Read calls ReadFunc.
-func (m *MockReader) Read(p []byte) (n int, err error) {
-	return m.ReadFunc(p)
+// NewWriterLevel calls NewWriterLevelFunc.
+func (m *MockBuilder) NewWriterLevel(w io.Writer, level int) (Writer, error) {
+	return m.NewWriterLevelFunc(w, level)
 }
 
-// Close calls CloseFunc.
-func (m *MockReader) Close() error {
-	return m.CloseFunc()
-}
-
-// Reset calls ResetFunc.
-func (m *MockReader) Reset(r io.Reader) error {
-	return m.ResetFunc(r)
-}
-
-// Multistream calls MultistreamFunc.
-func (m *MockReader) Multistream(ok bool) {
-	m.MultistreamFunc(ok)
+// NewReader calls NewReaderFunc.
+func (m *MockBuilder) NewReader(r io.Reader) (Reader, error) {
+	return m.NewReaderFunc(r)
 }

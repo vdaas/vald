@@ -19,18 +19,21 @@ package compress
 
 import (
 	"bytes"
-	"encoding/gob"
 	"io"
 	"reflect"
 
+	"github.com/vdaas/vald/internal/compress/gob"
 	"github.com/vdaas/vald/internal/errors"
 )
 
 type gobCompressor struct {
+	builder gob.Builder
 }
 
 func NewGob(opts ...GobOption) (Compressor, error) {
-	c := new(gobCompressor)
+	c := &gobCompressor{
+		builder: gob.NewBuilder(),
+	}
 	for _, opt := range append(defaultGobOpts, opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
@@ -42,7 +45,7 @@ func NewGob(opts ...GobOption) (Compressor, error) {
 
 func (g *gobCompressor) CompressVector(vector []float32) ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := gob.NewEncoder(buf).Encode(vector)
+	err := g.builder.NewEncoder(buf).Encode(vector)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +55,7 @@ func (g *gobCompressor) CompressVector(vector []float32) ([]byte, error) {
 
 func (g *gobCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	var vector []float32
-	err := gob.NewDecoder(bytes.NewBuffer(bs)).Decode(&vector)
+	err := g.builder.NewDecoder(bytes.NewBuffer(bs)).Decode(&vector)
 	if err != nil {
 		return nil, err
 	}
@@ -63,20 +66,20 @@ func (g *gobCompressor) DecompressVector(bs []byte) ([]float32, error) {
 func (g *gobCompressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
 	return &gobReader{
 		src:     src,
-		decoder: gob.NewDecoder(src),
+		decoder: g.builder.NewDecoder(src),
 	}, nil
 }
 
 func (g *gobCompressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
 	return &gobWriter{
 		dst:     dst,
-		encoder: gob.NewEncoder(dst),
+		encoder: g.builder.NewEncoder(dst),
 	}, nil
 }
 
 type gobReader struct {
 	src     io.ReadCloser
-	decoder *gob.Decoder
+	decoder gob.Decoder
 }
 
 func (gr *gobReader) Read(p []byte) (n int, err error) {
@@ -94,7 +97,7 @@ func (gr *gobReader) Close() error {
 
 type gobWriter struct {
 	dst     io.WriteCloser
-	encoder *gob.Encoder
+	encoder gob.Encoder
 }
 
 func (gw *gobWriter) Write(p []byte) (n int, err error) {
