@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
+// Option represents the functional option for mySQLClient.
 type Option func(*mySQLClient) error
 
 var (
@@ -39,6 +40,7 @@ var (
 	}
 )
 
+// WithTimezone returns the option to set the timezone.
 func WithTimezone(tz string) Option {
 	return func(m *mySQLClient) error {
 		if tz != "" {
@@ -48,6 +50,7 @@ func WithTimezone(tz string) Option {
 	}
 }
 
+// WithCharset returns the option to set the charset.
 func WithCharset(cs string) Option {
 	return func(m *mySQLClient) error {
 		if cs != "" {
@@ -57,6 +60,7 @@ func WithCharset(cs string) Option {
 	}
 }
 
+// WithDB returns the option to set the db.
 func WithDB(db string) Option {
 	return func(m *mySQLClient) error {
 		if db != "" {
@@ -66,6 +70,7 @@ func WithDB(db string) Option {
 	}
 }
 
+// WithHost returns the option to set the host.
 func WithHost(host string) Option {
 	return func(m *mySQLClient) error {
 		if host != "" {
@@ -75,6 +80,7 @@ func WithHost(host string) Option {
 	}
 }
 
+// WithPort returns the option to set the port.
 func WithPort(port int) Option {
 	return func(m *mySQLClient) error {
 		m.port = port
@@ -82,6 +88,7 @@ func WithPort(port int) Option {
 	}
 }
 
+// WithUser returns the option to set the user.
 func WithUser(user string) Option {
 	return func(m *mySQLClient) error {
 		if user != "" {
@@ -91,6 +98,7 @@ func WithUser(user string) Option {
 	}
 }
 
+// WithPass returns the option to set the pass.
 func WithPass(pass string) Option {
 	return func(m *mySQLClient) error {
 		if pass != "" {
@@ -100,6 +108,7 @@ func WithPass(pass string) Option {
 	}
 }
 
+// WithName returns the option to sst the name.
 func WithName(name string) Option {
 	return func(m *mySQLClient) error {
 		if name != "" {
@@ -109,6 +118,7 @@ func WithName(name string) Option {
 	}
 }
 
+// WithInitialPingTimeLimit returns the option to set the initialPingTimeLimit.
 func WithInitialPingTimeLimit(lim string) Option {
 	return func(m *mySQLClient) error {
 		if lim == "" {
@@ -123,6 +133,7 @@ func WithInitialPingTimeLimit(lim string) Option {
 	}
 }
 
+// WithInitialPingDuration returns the option to set the initialPingDuration.
 func WithInitialPingDuration(dur string) Option {
 	return func(m *mySQLClient) error {
 		if dur == "" {
@@ -137,6 +148,7 @@ func WithInitialPingDuration(dur string) Option {
 	}
 }
 
+// WithConnectionLifeTimeLimit returns the option to set the connMaxLifeTime.
 func WithConnectionLifeTimeLimit(dur string) Option {
 	return func(m *mySQLClient) error {
 		if dur == "" {
@@ -151,6 +163,9 @@ func WithConnectionLifeTimeLimit(dur string) Option {
 	}
 }
 
+// WithMaxIdleConns returns the option to set the maxIdleConns.
+// If conns is negative numner, no idle connections are retained.
+// ref: https://golang.org/src/database/sql/sql.go?s=24983:25019#L879
 func WithMaxIdleConns(conns int) Option {
 	return func(m *mySQLClient) error {
 		if conns != 0 {
@@ -160,6 +175,9 @@ func WithMaxIdleConns(conns int) Option {
 	}
 }
 
+// WithMaxOpenConns returns the option to set the maxOpenConns.
+// If conns is negative numner, no limit on the number of open connections.
+// ref: https://golang.org/src/database/sql/sql.go?s=24983:25019#L923
 func WithMaxOpenConns(conns int) Option {
 	return func(m *mySQLClient) error {
 		if conns != 0 {
@@ -169,6 +187,8 @@ func WithMaxOpenConns(conns int) Option {
 	}
 }
 
+
+// WithTLSConfig returns the option to set the tlsConfig.
 func WithTLSConfig(cfg *tls.Config) Option {
 	return func(m *mySQLClient) error {
 		if cfg != nil {
@@ -178,6 +198,7 @@ func WithTLSConfig(cfg *tls.Config) Option {
 	}
 }
 
+// WithDialer returns the option to set the dialer.
 func WithDialer(der func(ctx context.Context, addr, port string) (net.Conn, error)) Option {
 	return func(m *mySQLClient) error {
 		if der != nil {
