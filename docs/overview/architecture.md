@@ -154,10 +154,10 @@ When the user upsert a vector to Vald:
 2. Vald Ingress will forward the request to the Vald Filter Gateway to pre-process the request data.
 3. Vald Filter Gateway will forward the request to the user-defined Vald Ingress Filter. After the Vald Ingress Filter received the request, it will perform the pre-processing logic defined by the user, for example, padding the vector to match the vector dimension in Vald.
 4. After the request is processed by the user-defined Vald Ingress Filter, the result will return to the Vald Filter Gateway.
-5. Vald Filter Gateway will forward the processed data to the Vald Meta Gateway. Vald Meta Gateway is used to check if the same vector with the same vector ID exists in Vald cluster..
+5. Vald Filter Gateway will forward the processed data to the Vald Meta Gateway. Vald Meta Gateway is used to check if the same vector with the same vector ID exists in Vald cluster.
 6. Vald Meta Gateway will forward the request to the Vald Meta to check if the metadata, which contains the vector ID(s), exists or not.
 7. Vald Meta gets the UUID(s) by vector ID(s). It returns an error if no UUID(s) is found.
-8. If the vector with the same vector ID exists, Vald Meta Gateway will process the Update flow from step 5 to step 25. If the vector do not exists, Vald Meta Gateway will process the insert flow from step 5 to step 18.
+8. If the vector with the same vector ID exist, Vald Meta Gateway will process the Update flow from step 5 to step 25. If the vector do not exist, Vald Meta Gateway will process the insert flow from step 5 to step 18.
 
 ### Delete
 
