@@ -163,7 +163,7 @@ func (rm *redisMetrics) AfterProcess(ctx context.Context, cmd redis.Cmder) error
 	}
 
 	startTime, _ := ctx.Value(startTimeKey{}).(time.Time)
-	latencyMillis := float64(time.Now().Sub(startTime)) / float64(time.Millisecond)
+	latencyMillis := float64(time.Since(startTime)) / float64(time.Millisecond)
 
 	tags := map[metrics.Key]string{
 		rm.cmdNameKey: cmd.Name(),
@@ -211,7 +211,7 @@ func (rm *redisMetrics) AfterProcessPipeline(ctx context.Context, cmds []redis.C
 	}
 
 	startTime, _ := ctx.Value(pipelineStartTimeKey{}).(time.Time)
-	latencyMillis := float64(time.Now().Sub(startTime)) / float64(time.Millisecond)
+	latencyMillis := float64(time.Since(startTime)) / float64(time.Millisecond)
 
 	rm.mu.Lock()
 	defer rm.mu.Unlock()
