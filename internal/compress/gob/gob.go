@@ -15,7 +15,7 @@ type Decoder interface {
 	Decode(e interface{}) error
 }
 
-// Transporter an interface to create Encoder and Decoder implementation.
+// Transporter is an interface to create Encoder and Decoder implementation.
 type Transporter interface {
 	NewEncoder(w io.Writer) Encoder
 	NewDecoder(r io.Reader) Decoder
