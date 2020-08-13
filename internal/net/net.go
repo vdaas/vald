@@ -142,6 +142,7 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 	eg.Limitation(int(rl.Max) / 2)
 
 	var mu sync.Mutex
+
 	for i := start; i >= start && i <= end; i++ {
 		port := i
 		eg.Go(func() error {
