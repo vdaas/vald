@@ -23,6 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
+// GzipOption represents the functional option for gzipCompressor.
 type GzipOption func(c *gzipCompressor) error
 
 var (
@@ -32,6 +33,7 @@ var (
 	}
 )
 
+// WithGzipGob represents the option to set the GobOption to initialize Gob.
 func WithGzipGob(opts ...GobOption) GzipOption {
 	return func(c *gzipCompressor) error {
 		gobc, err := NewGob(opts...)
@@ -43,6 +45,7 @@ func WithGzipGob(opts ...GobOption) GzipOption {
 	}
 }
 
+// WithGzipCompressionLevel represents the option to set the compress level for gzip.
 func WithGzipCompressionLevel(level int) GzipOption {
 	return func(c *gzipCompressor) error {
 		if level < gzip.HuffmanOnly || level > gzip.BestCompression {
