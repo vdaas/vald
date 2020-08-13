@@ -158,6 +158,10 @@ func (rc *redisClient) newSentinelClient() (*redis.Client, error) {
 }
 
 func (rc *redisClient) newClusterClient(ctx context.Context) (*redis.ClusterClient, error) {
+	if len(rc.addrs[0]) == 0 {
+		return nil, errors.ErrRedisAddrsNotFound
+	}
+
 	c := redis.NewClusterClient(&redis.ClusterOptions{
 		Addrs:              rc.addrs,
 		Dialer:             rc.dialerFunc,

@@ -25,7 +25,7 @@ import (
 
 	"github.com/vdaas/vald/internal/db/kvs/redis"
 	"github.com/vdaas/vald/internal/observability/metrics"
-	"go.opencensus.io/trace"
+	"github.com/vdaas/vald/internal/observability/trace"
 )
 
 type redisMetrics struct {

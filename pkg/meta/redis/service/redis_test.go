@@ -22,17 +22,14 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/kvs/redis"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/tcp"
-
 	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
 	type args struct {
-		cfg *config.Redis
+		opts []Option
 	}
 	type want struct {
 		want Redis
@@ -61,7 +58,7 @@ func TestNew(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           cfg: nil,
+		           opts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -74,7 +71,7 @@ func TestNew(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           cfg: nil,
+		           opts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -85,7 +82,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -96,7 +93,7 @@ func TestNew(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got, err := New(test.args.cfg)
+			got, err := New(test.args.opts...)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -107,9 +104,8 @@ func TestNew(t *testing.T) {
 
 func Test_client_Disconnect(t *testing.T) {
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -137,9 +133,8 @@ func Test_client_Disconnect(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -155,9 +150,8 @@ func Test_client_Disconnect(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -171,7 +165,7 @@ func Test_client_Disconnect(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -182,9 +176,8 @@ func Test_client_Disconnect(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
@@ -204,9 +197,8 @@ func Test_client_Connect(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -238,9 +230,8 @@ func Test_client_Connect(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -259,9 +250,8 @@ func Test_client_Connect(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -275,7 +265,7 @@ func Test_client_Connect(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -286,9 +276,8 @@ func Test_client_Connect(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
@@ -308,9 +297,8 @@ func Test_client_Get(t *testing.T) {
 		key string
 	}
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -346,9 +334,8 @@ func Test_client_Get(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -367,9 +354,8 @@ func Test_client_Get(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -383,7 +369,7 @@ func Test_client_Get(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -394,9 +380,8 @@ func Test_client_Get(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
@@ -416,9 +401,8 @@ func Test_client_GetMultiple(t *testing.T) {
 		keys []string
 	}
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -454,9 +438,8 @@ func Test_client_GetMultiple(t *testing.T) {
 		           keys: nil,
 		       },
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -475,9 +458,8 @@ func Test_client_GetMultiple(t *testing.T) {
 		           keys: nil,
 		           },
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -491,7 +473,7 @@ func Test_client_GetMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -502,9 +484,8 @@ func Test_client_GetMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
@@ -524,9 +505,8 @@ func Test_client_GetInverse(t *testing.T) {
 		val string
 	}
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -562,9 +542,8 @@ func Test_client_GetInverse(t *testing.T) {
 		           val: "",
 		       },
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -583,9 +562,8 @@ func Test_client_GetInverse(t *testing.T) {
 		           val: "",
 		           },
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -599,7 +577,7 @@ func Test_client_GetInverse(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -610,9 +588,8 @@ func Test_client_GetInverse(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
@@ -632,9 +609,8 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 		vals []string
 	}
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -670,9 +646,8 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 		           vals: nil,
 		       },
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -691,9 +666,8 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 		           vals: nil,
 		           },
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -707,7 +681,7 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -718,9 +692,8 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
@@ -741,9 +714,8 @@ func Test_client_appendPrefix(t *testing.T) {
 		key    string
 	}
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -776,9 +748,8 @@ func Test_client_appendPrefix(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -798,9 +769,8 @@ func Test_client_appendPrefix(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -814,7 +784,7 @@ func Test_client_appendPrefix(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -825,9 +795,8 @@ func Test_client_appendPrefix(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
@@ -848,9 +817,8 @@ func Test_client_get(t *testing.T) {
 		key    string
 	}
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -887,9 +855,8 @@ func Test_client_get(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -909,9 +876,8 @@ func Test_client_get(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -925,7 +891,7 @@ func Test_client_get(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -936,9 +902,8 @@ func Test_client_get(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
@@ -959,9 +924,8 @@ func Test_client_getMulti(t *testing.T) {
 		keys   []string
 	}
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -998,9 +962,8 @@ func Test_client_getMulti(t *testing.T) {
 		           keys: nil,
 		       },
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1020,9 +983,8 @@ func Test_client_getMulti(t *testing.T) {
 		           keys: nil,
 		           },
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1036,7 +998,7 @@ func Test_client_getMulti(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1047,9 +1009,8 @@ func Test_client_getMulti(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
@@ -1070,9 +1031,8 @@ func Test_client_Set(t *testing.T) {
 		val string
 	}
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -1105,9 +1065,8 @@ func Test_client_Set(t *testing.T) {
 		           val: "",
 		       },
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1127,9 +1086,8 @@ func Test_client_Set(t *testing.T) {
 		           val: "",
 		           },
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1143,7 +1101,7 @@ func Test_client_Set(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1154,9 +1112,8 @@ func Test_client_Set(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
@@ -1176,9 +1133,8 @@ func Test_client_SetMultiple(t *testing.T) {
 		kvs map[string]string
 	}
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -1210,9 +1166,8 @@ func Test_client_SetMultiple(t *testing.T) {
 		           kvs: nil,
 		       },
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1231,9 +1186,8 @@ func Test_client_SetMultiple(t *testing.T) {
 		           kvs: nil,
 		           },
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1247,7 +1201,7 @@ func Test_client_SetMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1258,9 +1212,8 @@ func Test_client_SetMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
@@ -1280,9 +1233,8 @@ func Test_client_Delete(t *testing.T) {
 		key string
 	}
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -1318,9 +1270,8 @@ func Test_client_Delete(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1339,9 +1290,8 @@ func Test_client_Delete(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1355,7 +1305,7 @@ func Test_client_Delete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1366,9 +1316,8 @@ func Test_client_Delete(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
@@ -1388,9 +1337,8 @@ func Test_client_DeleteMultiple(t *testing.T) {
 		keys []string
 	}
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -1426,9 +1374,8 @@ func Test_client_DeleteMultiple(t *testing.T) {
 		           keys: nil,
 		       },
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1447,9 +1394,8 @@ func Test_client_DeleteMultiple(t *testing.T) {
 		           keys: nil,
 		           },
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1463,7 +1409,7 @@ func Test_client_DeleteMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1474,9 +1420,8 @@ func Test_client_DeleteMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
@@ -1496,9 +1441,8 @@ func Test_client_DeleteInverse(t *testing.T) {
 		val string
 	}
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -1534,9 +1478,8 @@ func Test_client_DeleteInverse(t *testing.T) {
 		           val: "",
 		       },
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1555,9 +1498,8 @@ func Test_client_DeleteInverse(t *testing.T) {
 		           val: "",
 		           },
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1571,7 +1513,7 @@ func Test_client_DeleteInverse(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1582,9 +1524,8 @@ func Test_client_DeleteInverse(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
@@ -1604,9 +1545,8 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 		vals []string
 	}
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -1642,9 +1582,8 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 		           vals: nil,
 		       },
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1663,9 +1602,8 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 		           vals: nil,
 		           },
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1679,7 +1617,7 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1690,9 +1628,8 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
@@ -1714,9 +1651,8 @@ func Test_client_delete(t *testing.T) {
 		key    string
 	}
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -1754,9 +1690,8 @@ func Test_client_delete(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1777,9 +1712,8 @@ func Test_client_delete(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1793,7 +1727,7 @@ func Test_client_delete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1804,9 +1738,8 @@ func Test_client_delete(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
@@ -1828,9 +1761,8 @@ func Test_client_deleteMulti(t *testing.T) {
 		keys   []string
 	}
 	type fields struct {
+		builder         redis.Builder
 		db              redis.Redis
-		opts            []redis.Option
-		topts           []tcp.DialerOption
 		kvPrefix        string
 		vkPrefix        string
 		prefixDelimiter string
@@ -1868,9 +1800,8 @@ func Test_client_deleteMulti(t *testing.T) {
 		           keys: nil,
 		       },
 		       fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1891,9 +1822,8 @@ func Test_client_deleteMulti(t *testing.T) {
 		           keys: nil,
 		           },
 		           fields: fields {
+		           builder: nil,
 		           db: nil,
-		           opts: nil,
-		           topts: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
 		           prefixDelimiter: "",
@@ -1907,7 +1837,7 @@ func Test_client_deleteMulti(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1918,9 +1848,8 @@ func Test_client_deleteMulti(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
+				builder:         test.fields.builder,
 				db:              test.fields.db,
-				opts:            test.fields.opts,
-				topts:           test.fields.topts,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
 				prefixDelimiter: test.fields.prefixDelimiter,
