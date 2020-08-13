@@ -647,7 +647,7 @@ func TestWithInitialPingTimeLimit(t *testing.T) {
 			},
 		},
 		{
-			name: "set success when lim is invalid",
+			name: "set success with default value when lim is invalid",
 			args: args{
 				lim: "invalid",
 			},
