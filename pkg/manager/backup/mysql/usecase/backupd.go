@@ -25,14 +25,12 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/observability"
 	dbmetrics "github.com/vdaas/vald/internal/observability/metrics/db/rdb/mysql"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
-	"github.com/vdaas/vald/internal/tls"
 	"github.com/vdaas/vald/pkg/manager/backup/mysql/config"
 	handler "github.com/vdaas/vald/pkg/manager/backup/mysql/handler/grpc"
 	"github.com/vdaas/vald/pkg/manager/backup/mysql/handler/rest"
@@ -49,35 +47,10 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	mysqlOpts := []mysql.Option{
-		mysql.WithDB(cfg.MySQL.DB),
-		mysql.WithHost(cfg.MySQL.Host),
-		mysql.WithPort(cfg.MySQL.Port),
-		mysql.WithUser(cfg.MySQL.User),
-		mysql.WithPass(cfg.MySQL.Pass),
-		mysql.WithName(cfg.MySQL.Name),
-		mysql.WithCharset(cfg.MySQL.Charset),
-		mysql.WithTimezone(cfg.MySQL.Timezone),
-		mysql.WithInitialPingTimeLimit(cfg.MySQL.InitialPingTimeLimit),
-		mysql.WithInitialPingDuration(cfg.MySQL.InitialPingDuration),
-		mysql.WithConnectionLifeTimeLimit(cfg.MySQL.ConnMaxLifeTime),
-		mysql.WithMaxIdleConns(cfg.MySQL.MaxIdleConns),
-		mysql.WithMaxOpenConns(cfg.MySQL.MaxOpenConns),
-	}
-
-	if cfg.MySQL.TLS.Enabled {
-		tlscfg, err := tls.New(cfg.MySQL.TLS.Opts()...)
-		if err != nil {
-			return nil, err
-		}
-		mysqlOpts = append(mysqlOpts, mysql.WithTLSConfig(tlscfg))
-	}
-
-	dialer, err := tcp.NewDialer(cfg.MySQL.TCP.Opts()...)
+	mysqlOpts, err := cfg.MySQL.Opts()
 	if err != nil {
 		return nil, err
 	}
-	mysqlOpts = append(mysqlOpts, mysql.WithDialer(dialer.GetDialer()))
 
 	var eventReceiver dbmetrics.EventReceiver
 	if cfg.Observability.Enabled {
@@ -94,13 +67,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	m, err := service.New(
-		service.WithMySQLClient(mysqlClient),
-		service.WithDialer(dialer),
-	)
+	m, err := service.New(service.WithMySQLClient(mysqlClient))
 	if err != nil {
 		return nil, err
 	}
+
 	g := handler.New(handler.WithMySQL(m))
 	eg := errgroup.Get()
 

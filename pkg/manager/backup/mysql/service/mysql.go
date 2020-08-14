@@ -22,7 +22,6 @@ import (
 
 	"github.com/vdaas/vald/internal/db/rdb/mysql"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/pkg/manager/backup/mysql/model"
 )
 
@@ -40,8 +39,7 @@ type MySQL interface {
 }
 
 type client struct {
-	db  mysql.MySQL
-	der tcp.Dialer
+	db mysql.MySQL
 }
 
 func New(opts ...Option) (ms MySQL, err error) {
@@ -56,9 +54,6 @@ func New(opts ...Option) (ms MySQL, err error) {
 }
 
 func (c *client) Connect(ctx context.Context) error {
-	if c.der != nil {
-		c.der.StartDialerCache(ctx)
-	}
 	return c.db.Open(ctx)
 }
 

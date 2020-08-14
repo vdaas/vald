@@ -19,7 +19,6 @@ package service
 
 import (
 	"github.com/vdaas/vald/internal/db/rdb/mysql"
-	"github.com/vdaas/vald/internal/net/tcp"
 )
 
 type Option func(*client) error
@@ -32,16 +31,6 @@ func WithMySQLClient(m mysql.MySQL) Option {
 	return func(c *client) error {
 		if m != nil {
 			c.db = m
-		}
-
-		return nil
-	}
-}
-
-func WithDialer(der tcp.Dialer) Option {
-	return func(c *client) error {
-		if der != nil {
-			c.der = der
 		}
 
 		return nil

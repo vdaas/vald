@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/tcp"
 )
 
 const (
@@ -61,7 +62,8 @@ type mySQLClient struct {
 	initialPingTimeLimit time.Duration
 	initialPingDuration  time.Duration
 	connMaxLifeTime      time.Duration
-	dialer               func(ctx context.Context, network, addr string) (net.Conn, error)
+	dialer               tcp.Dialer
+	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 	tlsConfig            *tls.Config
 	maxOpenConns         int
 	maxIdleConns         int
@@ -82,13 +84,18 @@ func New(opts ...Option) (MySQL, error) {
 }
 
 func (m *mySQLClient) Open(ctx context.Context) error {
+	if m.dialer != nil {
+		m.dialer.StartDialerCache(ctx)
+		m.dialerFunc = m.dialer.GetDialer()
+	}
+
 	var addParam string
 
 	network := "tcp"
 
-	if m.dialer != nil {
+	if m.dialerFunc != nil {
 		mysql.RegisterDialContext(network, func(ctx context.Context, addr string) (net.Conn, error) {
-			return m.dialer(ctx, network, addr)
+			return m.dialerFunc(ctx, network, addr)
 		})
 	}
 

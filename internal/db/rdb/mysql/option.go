@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
@@ -198,7 +199,7 @@ func WithTLSConfig(cfg *tls.Config) Option {
 }
 
 // WithDialer returns the option to set the dialer.
-func WithDialer(der func(ctx context.Context, addr, port string) (net.Conn, error)) Option {
+func WithDialer(der tcp.Dialer) Option {
 	return func(m *mySQLClient) error {
 		if der != nil {
 			m.dialer = der
@@ -207,6 +208,17 @@ func WithDialer(der func(ctx context.Context, addr, port string) (net.Conn, erro
 	}
 }
 
+// WithDialerFunc returns the option to set the dialer function.
+func WithDialerFunc(der func(ctx context.Context, addr, port string) (net.Conn, error)) Option {
+	return func(m *mySQLClient) error {
+		if der != nil {
+			m.dialerFunc = der
+		}
+		return nil
+	}
+}
+
+// WithEventReceiver returns the option to set the eventReceiver.
 func WithEventReceiver(er EventReceiver) Option {
 	return func(m *mySQLClient) error {
 		if er != nil {
