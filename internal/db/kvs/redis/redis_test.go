@@ -62,11 +62,11 @@ func TestNew(t *testing.T) {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Builder, error) error
+		checkFunc  func(want, Connector, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRc Builder, err error) error {
+	defaultCheckFunc := func(w want, gotRc Connector, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -79,7 +79,7 @@ func TestNew(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "returns Builder instance",
+			name: "returns Connector instance",
 			args: args{},
 			want: want{
 				wantRc: &redisClient{
@@ -103,7 +103,7 @@ func TestNew(t *testing.T) {
 					wantRc: nil,
 					err:    errors.ErrOptionFailed(dummyErr, reflect.ValueOf(dummyWithFunc(dummyErr))),
 				},
-				checkFunc: func(w want, gotRc Builder, err error) error {
+				checkFunc: func(w want, gotRc Connector, err error) error {
 					if !errors.Is(err, w.err) {
 						return errors.Errorf("got error = %v, want %v", err, w.err)
 					}

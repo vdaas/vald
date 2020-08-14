@@ -34,11 +34,12 @@ var (
 	Nil = redis.Nil
 )
 
-type Builder interface {
+// Connector is an interface to connect to Redis servers.
+type Connector interface {
 	Connect(ctx context.Context) (Redis, error)
 }
 
-// Redis is an interface to communicate with Redis server.
+// Redis is an interface to communicate with Redis servers.
 type Redis interface {
 	TxPipeline() redis.Pipeliner
 	Ping() *StatusCmd
@@ -93,8 +94,8 @@ type redisClient struct {
 	hooks                []Hook
 }
 
-// New returns Redis implementation if no error occurs.
-func New(opts ...Option) (b Builder, err error) {
+// New returns Connector if no error occurs.
+func New(opts ...Option) (c Connector, err error) {
 	r := new(redisClient)
 	for _, opt := range append(defaultOpts, opts...) {
 		if err = opt(r); err != nil {
@@ -195,6 +196,7 @@ func (rc *redisClient) newClusterClient(ctx context.Context) (*redis.ClusterClie
 	return c, nil
 }
 
+// Connect returns Redis instance that has connection to servers.
 func (rc *redisClient) Connect(ctx context.Context) (Redis, error) {
 	if rc.dialer != nil {
 		rc.dialer.StartDialerCache(ctx)

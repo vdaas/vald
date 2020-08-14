@@ -104,7 +104,7 @@ func TestNew(t *testing.T) {
 
 func Test_client_Disconnect(t *testing.T) {
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -133,7 +133,7 @@ func Test_client_Disconnect(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -150,7 +150,7 @@ func Test_client_Disconnect(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -176,7 +176,7 @@ func Test_client_Disconnect(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
@@ -197,7 +197,7 @@ func Test_client_Connect(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -230,7 +230,7 @@ func Test_client_Connect(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -250,7 +250,7 @@ func Test_client_Connect(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -276,7 +276,7 @@ func Test_client_Connect(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
@@ -298,7 +298,7 @@ func Test_client_Get(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -336,7 +336,7 @@ func Test_client_Get(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -357,7 +357,7 @@ func Test_client_Get(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -383,7 +383,7 @@ func Test_client_Get(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
@@ -405,7 +405,7 @@ func Test_client_GetMultiple(t *testing.T) {
 		keys []string
 	}
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -443,7 +443,7 @@ func Test_client_GetMultiple(t *testing.T) {
 		           keys: nil,
 		       },
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -464,7 +464,7 @@ func Test_client_GetMultiple(t *testing.T) {
 		           keys: nil,
 		           },
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -490,7 +490,7 @@ func Test_client_GetMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
@@ -512,7 +512,7 @@ func Test_client_GetInverse(t *testing.T) {
 		val string
 	}
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -550,7 +550,7 @@ func Test_client_GetInverse(t *testing.T) {
 		           val: "",
 		       },
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -571,7 +571,7 @@ func Test_client_GetInverse(t *testing.T) {
 		           val: "",
 		           },
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -597,7 +597,7 @@ func Test_client_GetInverse(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
@@ -619,7 +619,7 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 		vals []string
 	}
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -657,7 +657,7 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 		           vals: nil,
 		       },
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -678,7 +678,7 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 		           vals: nil,
 		           },
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -704,7 +704,7 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
@@ -726,7 +726,7 @@ func Test_client_appendPrefix(t *testing.T) {
 		key    string
 	}
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -760,7 +760,7 @@ func Test_client_appendPrefix(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -781,7 +781,7 @@ func Test_client_appendPrefix(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -807,7 +807,7 @@ func Test_client_appendPrefix(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
@@ -830,7 +830,7 @@ func Test_client_get(t *testing.T) {
 		key    string
 	}
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -869,7 +869,7 @@ func Test_client_get(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -891,7 +891,7 @@ func Test_client_get(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -917,7 +917,7 @@ func Test_client_get(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
@@ -940,7 +940,7 @@ func Test_client_getMulti(t *testing.T) {
 		keys   []string
 	}
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -979,7 +979,7 @@ func Test_client_getMulti(t *testing.T) {
 		           keys: nil,
 		       },
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1001,7 +1001,7 @@ func Test_client_getMulti(t *testing.T) {
 		           keys: nil,
 		           },
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1027,7 +1027,7 @@ func Test_client_getMulti(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
@@ -1050,7 +1050,7 @@ func Test_client_Set(t *testing.T) {
 		val string
 	}
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -1085,7 +1085,7 @@ func Test_client_Set(t *testing.T) {
 		           val: "",
 		       },
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1107,7 +1107,7 @@ func Test_client_Set(t *testing.T) {
 		           val: "",
 		           },
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1133,7 +1133,7 @@ func Test_client_Set(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
@@ -1155,7 +1155,7 @@ func Test_client_SetMultiple(t *testing.T) {
 		kvs map[string]string
 	}
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -1189,7 +1189,7 @@ func Test_client_SetMultiple(t *testing.T) {
 		           kvs: nil,
 		       },
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1210,7 +1210,7 @@ func Test_client_SetMultiple(t *testing.T) {
 		           kvs: nil,
 		           },
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1236,7 +1236,7 @@ func Test_client_SetMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
@@ -1258,7 +1258,7 @@ func Test_client_Delete(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -1296,7 +1296,7 @@ func Test_client_Delete(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1317,7 +1317,7 @@ func Test_client_Delete(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1343,7 +1343,7 @@ func Test_client_Delete(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
@@ -1365,7 +1365,7 @@ func Test_client_DeleteMultiple(t *testing.T) {
 		keys []string
 	}
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -1403,7 +1403,7 @@ func Test_client_DeleteMultiple(t *testing.T) {
 		           keys: nil,
 		       },
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1424,7 +1424,7 @@ func Test_client_DeleteMultiple(t *testing.T) {
 		           keys: nil,
 		           },
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1450,7 +1450,7 @@ func Test_client_DeleteMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
@@ -1472,7 +1472,7 @@ func Test_client_DeleteInverse(t *testing.T) {
 		val string
 	}
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -1510,7 +1510,7 @@ func Test_client_DeleteInverse(t *testing.T) {
 		           val: "",
 		       },
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1531,7 +1531,7 @@ func Test_client_DeleteInverse(t *testing.T) {
 		           val: "",
 		           },
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1557,7 +1557,7 @@ func Test_client_DeleteInverse(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
@@ -1579,7 +1579,7 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 		vals []string
 	}
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -1617,7 +1617,7 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 		           vals: nil,
 		       },
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1638,7 +1638,7 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 		           vals: nil,
 		           },
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1664,7 +1664,7 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
@@ -1688,7 +1688,7 @@ func Test_client_delete(t *testing.T) {
 		key    string
 	}
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -1728,7 +1728,7 @@ func Test_client_delete(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1751,7 +1751,7 @@ func Test_client_delete(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1777,7 +1777,7 @@ func Test_client_delete(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,
@@ -1801,7 +1801,7 @@ func Test_client_deleteMulti(t *testing.T) {
 		keys   []string
 	}
 	type fields struct {
-		builder         redis.Builder
+		connector       redis.Connector
 		db              redis.Redis
 		kvPrefix        string
 		vkPrefix        string
@@ -1841,7 +1841,7 @@ func Test_client_deleteMulti(t *testing.T) {
 		           keys: nil,
 		       },
 		       fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1864,7 +1864,7 @@ func Test_client_deleteMulti(t *testing.T) {
 		           keys: nil,
 		           },
 		           fields: fields {
-		           builder: nil,
+		           connector: nil,
 		           db: nil,
 		           kvPrefix: "",
 		           vkPrefix: "",
@@ -1890,7 +1890,7 @@ func Test_client_deleteMulti(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				builder:         test.fields.builder,
+				connector:       test.fields.connector,
 				db:              test.fields.db,
 				kvPrefix:        test.fields.kvPrefix,
 				vkPrefix:        test.fields.vkPrefix,

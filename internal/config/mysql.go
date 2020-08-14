@@ -91,6 +91,7 @@ func (m *MySQL) Opts() ([]mysql.Option, error) {
 		}
 		opts = append(opts, mysql.WithTLSConfig(tls))
 	}
+
 	if m.TCP != nil {
 		dialer, err := tcp.NewDialer(m.TCP.Opts()...)
 		if err != nil {
@@ -98,5 +99,6 @@ func (m *MySQL) Opts() ([]mysql.Option, error) {
 		}
 		opts = append(opts, mysql.WithDialer(dialer))
 	}
+
 	return opts, nil
 }

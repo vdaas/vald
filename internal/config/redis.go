@@ -115,15 +115,11 @@ func (r *Redis) Opts() (opts []redis.Option, err error) {
 	}
 
 	if r.TLS != nil && r.TLS.Enabled {
-		tcfg, err := tls.New(
-			tls.WithCert(r.TLS.Cert),
-			tls.WithKey(r.TLS.Key),
-			tls.WithCa(r.TLS.CA),
-		)
+		tls, err := tls.New(r.TLS.Opts()...)
 		if err != nil {
 			return nil, err
 		}
-		opts = append(opts, redis.WithTLSConfig(tcfg))
+		opts = append(opts, redis.WithTLSConfig(tls))
 	}
 
 	if r.TCP != nil {

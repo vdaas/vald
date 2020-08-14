@@ -41,10 +41,10 @@ func WithRedisClient(r redis.Redis) Option {
 	}
 }
 
-func WithRedisClientBuilder(b redis.Builder) Option {
+func WithRedisClientConnector(connector redis.Connector) Option {
 	return func(c *client) error {
-		if b != nil {
-			c.builder = b
+		if connector != nil {
+			c.connector = connector
 		}
 
 		return nil

@@ -41,7 +41,7 @@ type Redis interface {
 }
 
 type client struct {
-	builder         redis.Builder
+	connector       redis.Connector
 	db              redis.Redis
 	kvPrefix        string
 	vkPrefix        string
@@ -64,8 +64,8 @@ func (c *client) Disconnect() error {
 }
 
 func (c *client) Connect(ctx context.Context) (err error) {
-	if c.builder != nil {
-		c.db, err = c.builder.Connect(ctx)
+	if c.connector != nil {
+		c.db, err = c.connector.Connect(ctx)
 		if err != nil {
 			return err
 		}
