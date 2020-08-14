@@ -147,7 +147,7 @@ When the user updates a vector from Vald:
 
 <img src="../../assets/docs/upsert_flow.png" />
 
-Upsert request update the existing vector if the same vector with the same vector ID exists, or insert the vector into Vald.
+Upsert request update the existing vector if the same vector ID exists, or insert the vector into Vald.
 When the user upsert a vector to Vald:
 
 1. Vald Ingress receives the request from the user. The request includes the vector ID(s) and the vector(s).
@@ -157,7 +157,7 @@ When the user upsert a vector to Vald:
 5. Vald Filter Gateway will forward the processed data to the Vald Meta Gateway. Vald Meta Gateway is used to check if the same vector with the same vector ID exists in Vald cluster.
 6. Vald Meta Gateway will forward the request to the Vald Meta to check if the metadata, which contains the vector ID(s), exists or not.
 7. Vald Meta gets the UUID(s) by vector ID(s). It returns an error if no UUID(s) is found.
-8. If the vector with the same vector ID exist, Vald Meta Gateway will process the Update flow from step 5 to step 25. If the vector do not exist, Vald Meta Gateway will process the insert flow from step 5 to step 18.
+8. If the vector with the same vector ID exists, Vald Meta Gateway will process the Update flow from step 5 to step 25. If the vector does not exist, Vald Meta Gateway will process the insert flow from step 5 to step 18.
 
 ### Delete
 
