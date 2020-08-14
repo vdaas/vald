@@ -15,8 +15,8 @@ import (
 type client struct {
 	url *url.URL
 
-	urlOpner *gcsblob.URLOpener
-	bucket   *blob.Bucket
+	urlOpener *gcsblob.URLOpener
+	bucket    *blob.Bucket
 
 	readerOpts *blob.ReaderOptions
 	writerOpts *blob.WriterOptions
@@ -35,7 +35,7 @@ func New(opts ...Option) (iblob.Bucket, error) {
 }
 
 func (c *client) Open(ctx context.Context) (err error) {
-	c.bucket, err = c.urlOpner.OpenBucketURL(ctx, c.url)
+	c.bucket, err = c.urlOpener.OpenBucketURL(ctx, c.url)
 	if err != nil {
 		return err
 	}

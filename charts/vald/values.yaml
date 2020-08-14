@@ -1480,12 +1480,6 @@ agent:
           url: ""
           # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.client", "type": "object"}
           client:
-            # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.client.google_access_id", "type": "string"}
-            # agent.sidecar.config.blob_storage.cloud_storage.client.google_access_id -- google access id
-            google_access_id: ""
-            # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.client.private_key", "type": "string"}
-            # agent.sidecar.config.blob_storage.cloud_storage.client.private_key -- private key
-            private_key: ""
             # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.client.credentials_file_path", "type": "string"}
             # agent.sidecar.config.blob_storage.cloud_storage.client.credentials_file_path -- credentials file path
             credentials_file_path: ""

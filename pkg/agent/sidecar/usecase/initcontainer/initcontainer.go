@@ -126,9 +126,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			s3.WithReaderBackoff(cfg.AgentSidecar.RestoreBackoffEnabled),
 			s3.WithReaderBackoffOpts(cfg.AgentSidecar.RestoreBackoff.Opts()...),
 		),
-		storage.WithCloudStorageURLOpnerOpts(
-			urlopener.WithGoogleAccessID(cfg.AgentSidecar.BlobStorage.CloudStorage.Client.GoogleAccessID),
-			urlopener.WithPrivateKey(cfg.AgentSidecar.BlobStorage.CloudStorage.Client.PrivateKey),
+		storage.WithCloudStorageURLOpenerOpts(
 			urlopener.WithCredentialsFile(cfg.AgentSidecar.BlobStorage.CloudStorage.Client.CredentialsFilePath),
 			urlopener.WithCredentialsJSON(cfg.AgentSidecar.BlobStorage.CloudStorage.Client.CredentialsJSON),
 			urlopener.WithHTTPClient(client),

@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"unsafe"
 
+	"cloud.google.com/go/storage"
 	"github.com/vdaas/vald/internal/errors"
 	"gocloud.dev/blob/gcsblob"
 	"gocloud.dev/gcp"
@@ -19,11 +20,6 @@ type URLOpener interface {
 }
 
 type urlOpener struct {
-	googleAccessID string
-	privateKey     []byte
-	signBytes      func([]byte) ([]byte, error)
-	makeSignBytes  func(requestCtx context.Context) gcsblob.SignBytesFunc
-
 	credentialsFilePath string
 	credentialsJSON     string
 
@@ -67,6 +63,11 @@ func (uo *urlOpener) URLOpener(ctx context.Context) (guo *gcsblob.URLOpener, err
 		}
 	}
 
+	cfg, err := google.JWTConfigFromJSON(creds.JSON, storage.ScopeFullControl)
+	if err != nil {
+		return nil, err
+	}
+
 	client, err := gcp.NewHTTPClient(
 		uo.client.Transport,
 		gcp.CredentialsTokenSource(creds),
@@ -78,10 +79,8 @@ func (uo *urlOpener) URLOpener(ctx context.Context) (guo *gcsblob.URLOpener, err
 	return &gcsblob.URLOpener{
 		Client: client,
 		Options: gcsblob.Options{
-			GoogleAccessID: uo.googleAccessID,
-			PrivateKey:     uo.privateKey,
-			SignBytes:      uo.signBytes,
-			MakeSignBytes:  uo.makeSignBytes,
+			GoogleAccessID: cfg.Email,
+			PrivateKey:     cfg.PrivateKey,
 		},
 	}, nil
 }

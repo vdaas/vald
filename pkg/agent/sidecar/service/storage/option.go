@@ -109,7 +109,7 @@ func WithCloudStorageOpts(opts ...cloudstorage.Option) Option {
 	}
 }
 
-func WithCloudStorageURLOpnerOpts(opts ...urlopener.Option) Option {
+func WithCloudStorageURLOpenerOpts(opts ...urlopener.Option) Option {
 	return func(b *bs) error {
 		if b.cloudStorageURLOpenerOpts == nil {
 			b.cloudStorageURLOpenerOpts = opts

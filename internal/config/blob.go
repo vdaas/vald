@@ -87,8 +87,6 @@ type CloudStorageConfig struct {
 	URL string `json:"url" yaml:"url"`
 
 	Client struct {
-		GoogleAccessID      string `json:"google_access_id" yaml:"google_access_id"`
-		PrivateKey          string `json:"private_key" yaml:"private_key"`
 		CredentialsFilePath string `json:"credentials_file_path" yaml:"credentials_file_path"`
 		CredentialsJSON     string `json:"credentials_json" yaml:"credentials_json"`
 	} `json:"client" yaml:"client"`
@@ -135,8 +133,6 @@ func (s *S3Config) Bind() *S3Config {
 func (c *CloudStorageConfig) Bind() *CloudStorageConfig {
 	c.URL = GetActualValue(c.URL)
 
-	c.Client.GoogleAccessID = GetActualValue(c.Client.GoogleAccessID)
-	c.Client.PrivateKey = GetActualValue(c.Client.PrivateKey)
 	c.Client.CredentialsFilePath = GetActualValue(c.Client.CredentialsFilePath)
 	c.Client.CredentialsJSON = GetActualValue(c.Client.CredentialsJSON)
 
