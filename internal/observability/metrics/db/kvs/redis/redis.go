@@ -218,7 +218,7 @@ func (rm *redisMetrics) AfterProcessPipeline(ctx context.Context, cmds []redis.C
 		var errs error
 		for _, cmd := range cmds {
 			if err := cmd.Err(); err != nil {
-				errs = errors.Wrap(err, errs.Error())
+				errs = errors.Wrap(errs, err.Error())
 			}
 		}
 
