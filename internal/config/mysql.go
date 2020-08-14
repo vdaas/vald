@@ -84,19 +84,19 @@ func (m *MySQL) Opts() ([]mysql.Option, error) {
 		mysql.WithMaxOpenConns(m.MaxOpenConns),
 	}
 
-	if m.TLS.Enabled {
+	if m.TLS != nil && m.TLS.Enabled {
 		tls, err := tls.New(m.TLS.Opts()...)
 		if err != nil {
 			return nil, err
 		}
 		opts = append(opts, mysql.WithTLSConfig(tls))
 	}
-
-	dialer, err := tcp.NewDialer(m.TCP.Opts()...)
-	if err != nil {
-		return nil, err
+	if m.TCP != nil {
+		dialer, err := tcp.NewDialer(m.TCP.Opts()...)
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, mysql.WithDialer(dialer))
 	}
-	opts = append(opts, mysql.WithDialer(dialer))
-
 	return opts, nil
 }
