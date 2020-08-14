@@ -28,4 +28,9 @@ var (
 	ErrInvalidDNSConfig = func(dnsRefreshDur, dnsCacheExp time.Duration) error {
 		return Errorf("dnsRefreshDuration  > dnsCacheExp, %s, %s", dnsRefreshDur, dnsCacheExp)
 	}
+
+	// net
+
+	// ErrNoPortAvailiable defines no port available error
+	ErrNoPortAvailable = New("no port available")
 )

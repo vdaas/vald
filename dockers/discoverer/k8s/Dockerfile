@@ -14,7 +14,12 @@
 # limitations under the License.
 #
 
+ARG DISTROLESS_IMAGE=gcr.io/distroless/static
+ARG DISTROLESS_IMAGE_TAG=nonroot
+ARG UPX_OPTIONS=-9
+
 FROM vdaas/vald-base:latest AS builder
+ARG UPX_OPTIONS
 
 ENV ORG vdaas
 ENV REPO vald
@@ -33,49 +38,26 @@ COPY pkg/${PKG} .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 COPY cmd/${PKG} .
 
-WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-COPY versions/GO_VERSION .
-COPY versions/VALD_VERSION .
-COPY .git .
-RUN GO_VERSION="$(cat GO_VERSION)" \
-    && VALD_VERSION="$(cat VALD_VERSION)" \
-    && GIT_COMMIT="$(git rev-list -1 HEAD)" \
-    && CPU_INFO_FLAGS="$(cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1)" \
-    && GOOS="$(go env GOOS)" \
-    && GOARCH="$(go env GOARCH)" \
-    && CGO_ENABLED=0 \
-    && GO111MODULE=on \
-    go build \
-    --ldflags "-s -w -linkmode 'external' \
-    -extldflags '-static' \
-    -X 'github.com/${ORG}/${REPO}/internal/info.Version=${VALD_VERSION}' \
-    -X 'github.com/${ORG}/${REPO}/internal/info.GitCommit=${GIT_COMMIT}' \
-    -X 'github.com/${ORG}/${REPO}/internal/info.GoVersion=${GO_VERSION}' \
-    -X 'github.com/${ORG}/${REPO}/internal/info.GoOS=${GOOS}' \
-    -X 'github.com/${ORG}/${REPO}/internal/info.GoArch=${GOARCH}' \
-    -X 'github.com/${ORG}/${REPO}/internal/info.CGOEnabled=${CGO_ENABLED}' \
-    -X 'github.com/${ORG}/${REPO}/internal/info.BuildCPUInfoFlags=${CPU_INFO_FLAGS}'" \
-    -a \
-    -tags netgo \
-    -installsuffix netgo \
-    -trimpath \
-    -o "${APP_NAME}" \
-    "cmd/${PKG}/main.go" \
-    && upx -9 -o "/usr/bin/${APP_NAME}" "${APP_NAME}"
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/versions
+COPY versions .
 
-# Start From Scratch For Running Environment
-FROM scratch
-# Start From Alpine For Debug Environment
-# FROM alpine:latest
-LABEL maintainer "kpango <i.can.feel.gravity@gmail.com>"
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
+COPY Makefile.d .
+
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
+COPY Makefile .
+COPY .git .
+
+RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
+    && upx ${UPX_OPTIONS} -o "/usr/bin/${APP_NAME}" "cmd/${PKG}/${APP_NAME}"
+
+FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
+LABEL maintainer "Vald team <vald@vdaas.org>"
 
 ENV APP_NAME discoverer
 
-# Copy certificates for SSL/TLS
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-# Copy permissions
-COPY --from=builder /etc/passwd /etc/passwd
-# Copy our static executable
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
+
+USER nonroot:nonroot
 
 ENTRYPOINT ["/go/bin/discoverer"]

@@ -25,7 +25,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/vdaas/vald/internal/log"
 )
@@ -59,7 +58,7 @@ var (
 	GitCommit    = "master"
 	Organization = "vdaas"
 	Repository   = "vald"
-	BuildTime    = time.Now().Format(time.RFC1123)
+	BuildTime    = ""
 
 	GoVersion  string
 	GoOS       string
