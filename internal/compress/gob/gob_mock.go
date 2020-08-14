@@ -22,18 +22,18 @@ func (m *MockDecoder) Decode(e interface{}) error {
 	return m.DecodeFunc(e)
 }
 
-// MockTransporter represents mock struct of Transporter.
-type MockTransporter struct {
+// MockTranscoder represents mock struct of Transcoder.
+type MockTranscoder struct {
 	NewEncoderFunc func(w io.Writer) Encoder
 	NewDecoderFunc func(r io.Reader) Decoder
 }
 
 // NewEncoder calls NewEncoderFunc.
-func (m *MockTransporter) NewEncoder(w io.Writer) Encoder {
+func (m *MockTranscoder) NewEncoder(w io.Writer) Encoder {
 	return m.NewEncoderFunc(w)
 }
 
 // NewDecoder calls NewEncoderFunc.
-func (m *MockTransporter) NewDecoder(r io.Reader) Decoder {
+func (m *MockTranscoder) NewDecoder(r io.Reader) Decoder {
 	return m.NewDecoder(r)
 }

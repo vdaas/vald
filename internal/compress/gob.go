@@ -27,12 +27,12 @@ import (
 )
 
 type gobCompressor struct {
-	transporter gob.Transporter
+	transcoder gob.Transcoder
 }
 
 func NewGob(opts ...GobOption) (Compressor, error) {
 	c := &gobCompressor{
-		transporter: gob.NewTransporter(),
+		transcoder: gob.New(),
 	}
 	for _, opt := range append(defaultGobOpts, opts...) {
 		if err := opt(c); err != nil {
@@ -45,7 +45,7 @@ func NewGob(opts ...GobOption) (Compressor, error) {
 
 func (g *gobCompressor) CompressVector(vector []float32) ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := g.transporter.NewEncoder(buf).Encode(vector)
+	err := g.transcoder.NewEncoder(buf).Encode(vector)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (g *gobCompressor) CompressVector(vector []float32) ([]byte, error) {
 
 func (g *gobCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	var vector []float32
-	err := g.transporter.NewDecoder(bytes.NewBuffer(bs)).Decode(&vector)
+	err := g.transcoder.NewDecoder(bytes.NewBuffer(bs)).Decode(&vector)
 	if err != nil {
 		return nil, err
 	}
@@ -66,14 +66,14 @@ func (g *gobCompressor) DecompressVector(bs []byte) ([]float32, error) {
 func (g *gobCompressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
 	return &gobReader{
 		src:     src,
-		decoder: g.transporter.NewDecoder(src),
+		decoder: g.transcoder.NewDecoder(src),
 	}, nil
 }
 
 func (g *gobCompressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
 	return &gobWriter{
 		dst:     dst,
-		encoder: g.transporter.NewEncoder(dst),
+		encoder: g.transcoder.NewEncoder(dst),
 	}, nil
 }
 

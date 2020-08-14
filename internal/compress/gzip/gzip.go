@@ -30,25 +30,25 @@ type Writer interface {
 	Flush() error
 }
 
-// Transporter is an interface to create Writer and Reader implementation.
-type Transporter interface {
+// Io is an interface to create Writer and Reader implementation.
+type Io interface {
 	NewReader(r io.Reader) (Reader, error)
 	NewWriterLevel(w io.Writer, level int) (Writer, error)
 }
 
-type transporter struct{}
+type gzipIo struct{}
 
-// NewTransporter returns Transporter implementation.
-func NewTransporter() Transporter {
-	return new(transporter)
+// New returns Io implementation.
+func New() Io {
+	return new(gzipIo)
 }
 
 // NewWriterLevel returns Writer implementation.
-func (*transporter) NewWriterLevel(w io.Writer, level int) (Writer, error) {
+func (*gzipIo) NewWriterLevel(w io.Writer, level int) (Writer, error) {
 	return gzip.NewWriterLevel(w, level)
 }
 
 // NewReader returns Reader implementation.
-func (*transporter) NewReader(r io.Reader) (Reader, error) {
+func (*gzipIo) NewReader(r io.Reader) (Reader, error) {
 	return gzip.NewReader(r)
 }

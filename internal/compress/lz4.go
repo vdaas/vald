@@ -29,12 +29,12 @@ import (
 type lz4Compressor struct {
 	gobc             Compressor
 	compressionLevel int
-	transporter      lz4.Transporter
+	io               lz4.Io
 }
 
 func NewLZ4(opts ...LZ4Option) (Compressor, error) {
 	c := &lz4Compressor{
-		transporter: lz4.NewTransporter(),
+		io: lz4.New(),
 	}
 	for _, opt := range append(defaultLZ4Opts, opts...) {
 		if err := opt(c); err != nil {
@@ -52,7 +52,7 @@ func (l *lz4Compressor) CompressVector(vector []float32) ([]byte, error) {
 	}
 
 	buf := new(bytes.Buffer)
-	zw := l.transporter.NewWriter(buf)
+	zw := l.io.NewWriter(buf)
 	zw.Header().CompressionLevel = l.compressionLevel
 	defer func() {
 		cerr := zw.Close()
@@ -76,7 +76,7 @@ func (l *lz4Compressor) CompressVector(vector []float32) ([]byte, error) {
 
 func (l *lz4Compressor) DecompressVector(bs []byte) ([]float32, error) {
 	buf := new(bytes.Buffer)
-	zr := l.transporter.NewReader(bytes.NewReader(bs))
+	zr := l.io.NewReader(bytes.NewReader(bs))
 	_, err := io.Copy(buf, zr)
 	if err != nil {
 		return nil, err
@@ -93,14 +93,14 @@ func (l *lz4Compressor) DecompressVector(bs []byte) ([]float32, error) {
 func (l *lz4Compressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
 	return &lz4Reader{
 		src: src,
-		r:   l.transporter.NewReader(src),
+		r:   l.io.NewReader(src),
 	}, nil
 }
 
 func (l *lz4Compressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
 	return &lz4Writer{
 		dst: dst,
-		w:   l.transporter.NewWriter(dst),
+		w:   l.io.NewWriter(dst),
 	}, nil
 }
 

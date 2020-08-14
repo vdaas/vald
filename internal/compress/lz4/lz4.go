@@ -30,27 +30,27 @@ func (w *writer) Header() *Header {
 	return &w.Writer.Header
 }
 
-// Transporter is an interface to create Writer and Reader implementation.
-type Transporter interface {
+// Io is an interface to create Writer and Reader implementation.
+type Io interface {
 	NewWriter(w io.Writer) Writer
 	NewReader(r io.Reader) Reader
 }
 
-type transporter struct{}
+type lz4Io struct{}
 
-// NewTransporter returns Transporter implementation.
-func NewTransporter() Transporter {
-	return new(transporter)
+// New returns Io implementation.
+func New() Io {
+	return new(lz4Io)
 }
 
 // NewWriter returns Writer implementation.
-func (*transporter) NewWriter(w io.Writer) Writer {
+func (*lz4Io) NewWriter(w io.Writer) Writer {
 	return &writer{
 		Writer: lz4.NewWriter(w),
 	}
 }
 
 // NewReader returns Reader implementation.
-func (*transporter) NewReader(r io.Reader) Reader {
+func (*lz4Io) NewReader(r io.Reader) Reader {
 	return lz4.NewReader(r)
 }

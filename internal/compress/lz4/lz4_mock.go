@@ -40,18 +40,18 @@ func (m *MockWriter) Flush() error {
 	return m.FlushFunc()
 }
 
-// MockTransporter represents mock struct of Transporter.
-type MockTransporter struct {
+// MockIo represents mock struct of Io.
+type MockIo struct {
 	NewWriterFunc func(w io.Writer) Writer
 	NewReaderFunc func(r io.Reader) Reader
 }
 
 // NewWriter calls NewWriterFunc.
-func (m *MockTransporter) NewWriter(w io.Writer) Writer {
+func (m *MockIo) NewWriter(w io.Writer) Writer {
 	return m.NewWriterFunc(w)
 }
 
 // NewReader calls NewReader.
-func (m *MockTransporter) NewReader(r io.Reader) Reader {
+func (m *MockIo) NewReader(r io.Reader) Reader {
 	return m.NewReaderFunc(r)
 }
