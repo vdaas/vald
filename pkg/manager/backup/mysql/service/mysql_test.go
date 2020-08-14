@@ -23,7 +23,6 @@ import (
 
 	"github.com/vdaas/vald/internal/db/rdb/mysql"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/pkg/manager/backup/mysql/model"
 	"go.uber.org/goleak"
 )
@@ -108,8 +107,7 @@ func Test_client_Connect(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		db  mysql.MySQL
-		der tcp.Dialer
+		db mysql.MySQL
 	}
 	type want struct {
 		err error
@@ -139,7 +137,6 @@ func Test_client_Connect(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           der: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -156,7 +153,6 @@ func Test_client_Connect(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           der: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -178,8 +174,7 @@ func Test_client_Connect(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:  test.fields.db,
-				der: test.fields.der,
+				db: test.fields.db,
 			}
 
 			err := c.Connect(test.args.ctx)
@@ -196,8 +191,7 @@ func Test_client_Close(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		db  mysql.MySQL
-		der tcp.Dialer
+		db mysql.MySQL
 	}
 	type want struct {
 		err error
@@ -227,7 +221,6 @@ func Test_client_Close(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           der: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -244,7 +237,6 @@ func Test_client_Close(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           der: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -266,8 +258,7 @@ func Test_client_Close(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:  test.fields.db,
-				der: test.fields.der,
+				db: test.fields.db,
 			}
 
 			err := c.Close(test.args.ctx)
@@ -285,8 +276,7 @@ func Test_client_GetMeta(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		db  mysql.MySQL
-		der tcp.Dialer
+		db mysql.MySQL
 	}
 	type want struct {
 		want *model.MetaVector
@@ -321,7 +311,6 @@ func Test_client_GetMeta(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           der: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -339,7 +328,6 @@ func Test_client_GetMeta(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           der: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -361,8 +349,7 @@ func Test_client_GetMeta(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:  test.fields.db,
-				der: test.fields.der,
+				db: test.fields.db,
 			}
 
 			got, err := c.GetMeta(test.args.ctx, test.args.uuid)
@@ -380,8 +367,7 @@ func Test_client_GetIPs(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		db  mysql.MySQL
-		der tcp.Dialer
+		db mysql.MySQL
 	}
 	type want struct {
 		want []string
@@ -416,7 +402,6 @@ func Test_client_GetIPs(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           der: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -434,7 +419,6 @@ func Test_client_GetIPs(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           der: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -456,8 +440,7 @@ func Test_client_GetIPs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:  test.fields.db,
-				der: test.fields.der,
+				db: test.fields.db,
 			}
 
 			got, err := c.GetIPs(test.args.ctx, test.args.uuid)
@@ -475,8 +458,7 @@ func Test_client_SetMeta(t *testing.T) {
 		meta *model.MetaVector
 	}
 	type fields struct {
-		db  mysql.MySQL
-		der tcp.Dialer
+		db mysql.MySQL
 	}
 	type want struct {
 		err error
@@ -507,7 +489,6 @@ func Test_client_SetMeta(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           der: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -525,7 +506,6 @@ func Test_client_SetMeta(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           der: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -547,8 +527,7 @@ func Test_client_SetMeta(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:  test.fields.db,
-				der: test.fields.der,
+				db: test.fields.db,
 			}
 
 			err := c.SetMeta(test.args.ctx, test.args.meta)
@@ -566,8 +545,7 @@ func Test_client_SetMetas(t *testing.T) {
 		metas []*model.MetaVector
 	}
 	type fields struct {
-		db  mysql.MySQL
-		der tcp.Dialer
+		db mysql.MySQL
 	}
 	type want struct {
 		err error
@@ -598,7 +576,6 @@ func Test_client_SetMetas(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           der: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -616,7 +593,6 @@ func Test_client_SetMetas(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           der: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -638,8 +614,7 @@ func Test_client_SetMetas(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:  test.fields.db,
-				der: test.fields.der,
+				db: test.fields.db,
 			}
 
 			err := c.SetMetas(test.args.ctx, test.args.metas...)
@@ -657,8 +632,7 @@ func Test_client_DeleteMeta(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		db  mysql.MySQL
-		der tcp.Dialer
+		db mysql.MySQL
 	}
 	type want struct {
 		err error
@@ -689,7 +663,6 @@ func Test_client_DeleteMeta(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           der: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -707,7 +680,6 @@ func Test_client_DeleteMeta(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           der: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -729,8 +701,7 @@ func Test_client_DeleteMeta(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:  test.fields.db,
-				der: test.fields.der,
+				db: test.fields.db,
 			}
 
 			err := c.DeleteMeta(test.args.ctx, test.args.uuid)
@@ -748,8 +719,7 @@ func Test_client_DeleteMetas(t *testing.T) {
 		uuids []string
 	}
 	type fields struct {
-		db  mysql.MySQL
-		der tcp.Dialer
+		db mysql.MySQL
 	}
 	type want struct {
 		err error
@@ -780,7 +750,6 @@ func Test_client_DeleteMetas(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           der: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -798,7 +767,6 @@ func Test_client_DeleteMetas(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           der: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -820,8 +788,7 @@ func Test_client_DeleteMetas(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:  test.fields.db,
-				der: test.fields.der,
+				db: test.fields.db,
 			}
 
 			err := c.DeleteMetas(test.args.ctx, test.args.uuids...)
@@ -840,8 +807,7 @@ func Test_client_SetIPs(t *testing.T) {
 		ips  []string
 	}
 	type fields struct {
-		db  mysql.MySQL
-		der tcp.Dialer
+		db mysql.MySQL
 	}
 	type want struct {
 		err error
@@ -873,7 +839,6 @@ func Test_client_SetIPs(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           der: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -892,7 +857,6 @@ func Test_client_SetIPs(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           der: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -914,8 +878,7 @@ func Test_client_SetIPs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:  test.fields.db,
-				der: test.fields.der,
+				db: test.fields.db,
 			}
 
 			err := c.SetIPs(test.args.ctx, test.args.uuid, test.args.ips...)
@@ -933,8 +896,7 @@ func Test_client_RemoveIPs(t *testing.T) {
 		ips []string
 	}
 	type fields struct {
-		db  mysql.MySQL
-		der tcp.Dialer
+		db mysql.MySQL
 	}
 	type want struct {
 		err error
@@ -965,7 +927,6 @@ func Test_client_RemoveIPs(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           der: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -983,7 +944,6 @@ func Test_client_RemoveIPs(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           der: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1005,8 +965,7 @@ func Test_client_RemoveIPs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				db:  test.fields.db,
-				der: test.fields.der,
+				db: test.fields.db,
 			}
 
 			err := c.RemoveIPs(test.args.ctx, test.args.ips...)
