@@ -147,7 +147,7 @@ When the user updates a vector from Vald:
 
 <img src="../../assets/docs/upsert_flow.png" />
 
-Upsert request update the existing vector if the same vector ID exists, or insert the vector into Vald.
+Upsert request updates the existing vector if the same vector ID exists, or insert the vector into Vald.
 When the user upsert a vector to Vald:
 
 1. Vald Ingress receives the request from the user. The request includes the vector ID(s) and the vector(s).
