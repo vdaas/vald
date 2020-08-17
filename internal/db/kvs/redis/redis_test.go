@@ -303,8 +303,7 @@ func Test_redisClient_setClient(t *testing.T) {
 	tests := []test{
 		{
 			name: "returns error when addrs not specified",
-			args: args{
-			},
+			args: args{},
 			want: want{
 				err: errors.ErrRedisAddrsNotFound,
 			},
