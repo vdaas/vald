@@ -1,6 +1,6 @@
 # Configurations
 
-This page introduces best practices to set up values for Vald Helm Chart.
+This page introduces best practices for setting up values for Vald Helm Chart.
 
 Table of Contents
 ---

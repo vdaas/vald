@@ -1,6 +1,6 @@
 # Operations
 
-This page introduces best practices to operate a Vald cluster.
+This page introduces best practices for operating a Vald cluster.
 
 Table of Contents
 ---
