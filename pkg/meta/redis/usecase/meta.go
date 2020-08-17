@@ -65,13 +65,13 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		)
 	}
 
-	builder, err := redis.New(redisOpts...)
+	connector, err := redis.New(redisOpts...)
 	if err != nil {
 		return nil, err
 	}
 
 	rd, err := service.New(
-		service.WithRedisClientBuilder(builder),
+		service.WithRedisClientConnector(connector),
 		service.WithKVPrefix(cfg.Redis.KVPrefix),
 		service.WithVKPrefix(cfg.Redis.VKPrefix),
 		service.WithPrefixDelimiter(cfg.Redis.PrefixDelimiter),
