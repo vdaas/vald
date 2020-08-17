@@ -173,14 +173,8 @@ func TestWithDialerFunc(t *testing.T) {
 		func() test {
 			return test{
 				name: "set nothing when der is nil",
-				args: args{
-					der: nil,
-				},
 				want: want{
-					obj: &T{
-						dialerFunc: nil,
-					},
-					err: nil,
+					obj: new(T),
 				},
 			}
 		}(),

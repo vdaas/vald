@@ -242,7 +242,6 @@ func Test_redisClient_ping(t *testing.T) {
 			if err := test.checkFunc(test.want, gotR, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -305,10 +304,6 @@ func Test_redisClient_setClient(t *testing.T) {
 		{
 			name: "returns error when addrs not specified",
 			args: args{
-				ctx: nil,
-			},
-			fields: fields{
-				addrs: nil,
 			},
 			want: want{
 				err: errors.ErrRedisAddrsNotFound,
@@ -317,9 +312,6 @@ func Test_redisClient_setClient(t *testing.T) {
 		},
 		{
 			name: "returns error when addrs is empty",
-			args: args{
-				ctx: nil,
-			},
 			fields: fields{
 				addrs: []string{},
 			},
@@ -330,9 +322,6 @@ func Test_redisClient_setClient(t *testing.T) {
 		},
 		{
 			name: "returns nil when addrs is single addr",
-			args: args{
-				ctx: nil,
-			},
 			fields: fields{
 				addrs: []string{"127.0.0.1:6379"},
 			},
@@ -341,9 +330,6 @@ func Test_redisClient_setClient(t *testing.T) {
 		},
 		{
 			name: "returns nil when addrs is single addr and it is empty string",
-			args: args{
-				ctx: nil,
-			},
 			fields: fields{
 				addrs: []string{""},
 			},
@@ -368,9 +354,6 @@ func Test_redisClient_setClient(t *testing.T) {
 		},
 		{
 			name: "returns error when addrs is multiple addrs and it has empty string",
-			args: args{
-				ctx: nil,
-			},
 			fields: fields{
 				addrs: []string{
 					"",
@@ -433,7 +416,6 @@ func Test_redisClient_setClient(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
