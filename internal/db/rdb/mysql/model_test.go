@@ -139,7 +139,6 @@ func Test_metaVector_GetVector(t *testing.T) {
 				want: want{
 					want: nil,
 				},
-				checkFunc: defaultCheckFunc,
 			}
 		}(),
 	}
