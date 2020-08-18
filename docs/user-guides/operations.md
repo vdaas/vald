@@ -118,13 +118,21 @@ Please read the [CHANGELOG][CHANGELOG] before upgrading.
 
 ### In case of manual deploy
 
+In case of manual deploy, generally, it is required to update your configmaps first.
+After that, please update the image tags of Vald components in your deployments.
 
 ### In case of using Helm
 
+In case of using Helm and Vald's chart, please update `defaults.image.tag` field and install it.
 
 ### In case of using Vald-Helm-Operator
 
+In case of using Vald-Helm-Operator, please update the operator first.
+If you're using `valdhelmoperatorrelease` (or `vhor`) resource, please update the `spec.image.tag` field of it.
+On the other hand, please update the operator's deployment manually.
 
+After that, please update `image.tag` field in your valdrelease (or `vr`) resource.
+The operator will automatically detect the changes and update the deployed Vald cluster.
 
 
 
