@@ -46,11 +46,14 @@ type podIP struct {
 }
 
 // GetUUID returns UUID of metaVector.
-func (m *metaVector) GetUUID() string   { return m.meta.UUID }
+func (m *metaVector) GetUUID() string { return m.meta.UUID }
+
 // GetVector returns Vector of metaVector.
 func (m *metaVector) GetVector() []byte { return m.meta.Vector }
+
 // GetMeta returns meta.String of metaVector.
-func (m *metaVector) GetMeta() string   { return m.meta.Meta.String }
+func (m *metaVector) GetMeta() string { return m.meta.Meta.String }
+
 // GetIPs returns all podIPs which are Vald Agent Pods' IP indexed meta's vector.
 func (m *metaVector) GetIPs() []string {
 	ips := make([]string, 0, len(m.podIPs))
