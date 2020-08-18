@@ -139,6 +139,11 @@ The operator will automatically detect the changes and update the deployed Vald 
 
 ### References
 
+- [vald-helm-chart](vald-helm-chart)
+- [vald-helm-operator-chart](vald-helm-operator-chart)
+- [CHANGELOG](CHANGELOG)
+
+
 [vald-helm-chart]: https://github.com/vdaas/vald/tree/master/charts/vald
 [vald-helm-operator-chart]: https://github.com/vdaas/vald/tree/master/charts/vald-helm-operator
 [CHANGELOG]: https://vald.vdaas.org/docs/release/changelog/
