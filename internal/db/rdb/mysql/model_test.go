@@ -58,7 +58,6 @@ func Test_metaVector_GetUUID(t *testing.T) {
 			want: want{
 				want: "vald-vector-01",
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
 			name: "returns UUID when UUID of meta is empty string",
