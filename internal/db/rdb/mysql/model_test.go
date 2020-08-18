@@ -209,7 +209,6 @@ func Test_metaVector_GetMeta(t *testing.T) {
 			want: want{
 				want: "vdaas/vald",
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
 			name: "returns MetaString when MetaString is empty",
