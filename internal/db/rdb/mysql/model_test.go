@@ -17,16 +17,18 @@
 package mysql
 
 import (
+	"database/sql"
 	"reflect"
 	"testing"
 
+	dbr "github.com/gocraft/dbr/v2"
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func Test_metaVector_GetUUID(t *testing.T) {
 	type fields struct {
-		meta   meta
-		podIPs []podIP
+		meta meta
 	}
 	type want struct {
 		want string
@@ -46,37 +48,33 @@ func Test_metaVector_GetUUID(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           meta: meta{},
-		           podIPs: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           meta: meta{},
-		           podIPs: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns UUID when UUID of meta is not empty",
+			fields: fields{
+				meta: meta{
+					UUID: "vald-vector-01",
+				},
+			},
+			want: want{
+				want: "vald-vector-01",
+			},
+		},
+		{
+			name: "returns UUID when UUID of meta is empty string",
+			fields: fields{
+				meta: meta{
+					UUID: "",
+				},
+			},
+			want: want{
+				want: "",
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -87,8 +85,7 @@ func Test_metaVector_GetUUID(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &metaVector{
-				meta:   test.fields.meta,
-				podIPs: test.fields.podIPs,
+				meta: test.fields.meta,
 			}
 
 			got := m.GetUUID()
@@ -102,8 +99,7 @@ func Test_metaVector_GetUUID(t *testing.T) {
 
 func Test_metaVector_GetVector(t *testing.T) {
 	type fields struct {
-		meta   meta
-		podIPs []podIP
+		meta meta
 	}
 	type want struct {
 		want []byte
@@ -123,37 +119,33 @@ func Test_metaVector_GetVector(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           meta: meta{},
-		           podIPs: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           meta: meta{},
-		           podIPs: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			v := []byte("vdaas/vald")
+			return test{
+				name: "returns Vector when Vector of meta is not empty",
+				fields: fields{
+					meta: meta{
+						Vector: v,
+					},
+				},
+				want: want{
+					want: v,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "returns Vector when Vector of meta is empty",
+				want: want{
+					want: nil,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -164,8 +156,7 @@ func Test_metaVector_GetVector(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &metaVector{
-				meta:   test.fields.meta,
-				podIPs: test.fields.podIPs,
+				meta: test.fields.meta,
 			}
 
 			got := m.GetVector()
@@ -179,8 +170,7 @@ func Test_metaVector_GetVector(t *testing.T) {
 
 func Test_metaVector_GetMeta(t *testing.T) {
 	type fields struct {
-		meta   meta
-		podIPs []podIP
+		meta meta
 	}
 	type want struct {
 		want string
@@ -200,37 +190,33 @@ func Test_metaVector_GetMeta(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           meta: meta{},
-		           podIPs: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           meta: meta{},
-		           podIPs: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns MetaString when MetaString is not empty",
+			fields: fields{
+				meta: meta{
+					Meta: dbr.NullString{
+						sql.NullString{
+							String: "vdaas/vald",
+							Valid:  false,
+						},
+					},
+				},
+			},
+			want: want{
+				want: "vdaas/vald",
+			},
+		},
+		{
+			name: "returns MetaString when MetaString is empty",
+			want: want{
+				want: "",
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -241,8 +227,7 @@ func Test_metaVector_GetMeta(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &metaVector{
-				meta:   test.fields.meta,
-				podIPs: test.fields.podIPs,
+				meta: test.fields.meta,
 			}
 
 			got := m.GetMeta()
@@ -256,7 +241,6 @@ func Test_metaVector_GetMeta(t *testing.T) {
 
 func Test_metaVector_GetIPs(t *testing.T) {
 	type fields struct {
-		meta   meta
 		podIPs []podIP
 	}
 	type want struct {
@@ -277,37 +261,38 @@ func Test_metaVector_GetIPs(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           meta: meta{},
-		           podIPs: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           meta: meta{},
-		           podIPs: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns ips when podIP is not nil",
+			fields: fields{
+				podIPs: []podIP{
+					{
+						ID: 1,
+						IP: "192.168.1.1",
+					},
+					{
+						ID: 2,
+						IP: "192.168.1.2",
+					},
+				},
+			},
+			want: want{
+				want: []string{
+					"192.168.1.1",
+					"192.168.1.2",
+				},
+			},
+		},
+		{
+			name: "returns empty array when podIP is nil",
+			want: want{
+				want: []string{},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -318,7 +303,6 @@ func Test_metaVector_GetIPs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &metaVector{
-				meta:   test.fields.meta,
 				podIPs: test.fields.podIPs,
 			}
 
