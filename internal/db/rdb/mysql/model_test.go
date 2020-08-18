@@ -288,7 +288,6 @@ func Test_metaVector_GetIPs(t *testing.T) {
 			want: want{
 				want: []string{},
 			},
-			checkFunc: defaultCheckFunc,
 		},
 	}
 
