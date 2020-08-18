@@ -215,7 +215,6 @@ func Test_metaVector_GetMeta(t *testing.T) {
 			want: want{
 				want: "",
 			},
-			checkFunc: defaultCheckFunc,
 		},
 	}
 
