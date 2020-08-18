@@ -281,7 +281,6 @@ func Test_metaVector_GetIPs(t *testing.T) {
 					"192.168.1.2",
 				},
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
 			name: "returns empty array when podIP is nil",
