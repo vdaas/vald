@@ -69,7 +69,6 @@ func Test_metaVector_GetUUID(t *testing.T) {
 			want: want{
 				want: "",
 			},
-			checkFunc: defaultCheckFunc,
 		},
 	}
 
