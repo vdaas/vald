@@ -17,7 +17,6 @@
 package reader
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -474,7 +473,6 @@ func TestWithBackoffOpts(t *testing.T) {
 			}),
 		}
 		if diff := cmp.Diff(w.obj, got, opts...); diff != "" {
-			fmt.Println(diff)
 			return errors.Errorf("got = %v, want %v", got, w.obj)
 		}
 		return nil
