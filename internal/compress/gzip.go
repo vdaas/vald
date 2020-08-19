@@ -124,13 +124,11 @@ type gzipReader struct {
 	r   io.ReadCloser
 }
 
-// Reader is the interface that wraps the basic Read method.
 // Read reads up to len(p) bytes into p.
 func (g *gzipReader) Read(p []byte) (n int, err error) {
 	return g.r.Read(p)
 }
 
-// Closer is the interface that wraps the basic Close method.
 // Close closes src and r.
 func (g *gzipReader) Close() (err error) {
 	err = g.r.Close()
@@ -146,13 +144,11 @@ type gzipWriter struct {
 	w   io.WriteCloser
 }
 
-// Writer is the interface that wraps the basic Write method.
 // Write writes len(p) bytes from p
 func (g *gzipWriter) Write(p []byte) (n int, err error) {
 	return g.w.Write(p)
 }
 
-// Closer is the interface that wraps the basic Close method.
 // Close closes dst and w.
 func (g *gzipWriter) Close() (err error) {
 	err = g.w.Close()

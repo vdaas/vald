@@ -30,6 +30,7 @@ type gobCompressor struct {
 	transcoder gob.Transcoder
 }
 
+// NewGob returns a Compressor implemented using gob.
 func NewGob(opts ...GobOption) (Compressor, error) {
 	c := &gobCompressor{
 		transcoder: gob.New(),
