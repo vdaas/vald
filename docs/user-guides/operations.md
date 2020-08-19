@@ -2,22 +2,6 @@
 
 This page introduces best practices for operating a Vald cluster.
 
-Table of Contents
----
-
-- [Deployment](#deployment)
-    - [Kubernetes cluster](#kubernetes-cluster)
-    - [On multi-tenant cluster](#on-multi-tenant-cluster)
-- [Monitoring](#monitoring)
-    - [Logging](#logging)
-    - [Observability features of Vald](#observability-features-of-vald)
-    - [Enabling observability feature](#enabling-observability-feature)
-    - [Monitoring Vald cluster using Prometheus and Grafana](#monitoring-vald-cluster-using-prometheus-and-grafana)
-- [Upgrading](#upgrading)
-    - [In case of manual deploy](#in-case-of-manual-deploy)
-    - [In case of using Helm](#in-case-of-using-helm)
-    - [In case of using Vald-Helm-Operator](#in-case-of-using-vald-helm-operator)
-- [References](#references)
 
 
 ## Deployment
@@ -107,7 +91,7 @@ It is required to set your Prometheus to a data source.
 Now you can construct your own Grafana dashboard to monitor Vald metrics.
 This is an example of a custom dashboard. It is based on [our standard dashboard settings][vald-grafana-dashboards].
 
-[![Grafana dashboard example](../../assets/docs/guides/operations/grafana-example.png)](../../assets/docs/guides/operations/grafana-example.png)
+<img src="../../assets/docs/guides/operations/grafana-example.png" />
 
 
 ## Upgrading
