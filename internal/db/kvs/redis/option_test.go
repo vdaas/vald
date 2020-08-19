@@ -2299,6 +2299,17 @@ func TestWithHooks(t *testing.T) {
 
 	tests := []test{
 		func() test {
+			return test{
+				name: "do nothing when the passed hooks is nil",
+				args: args{
+					hooks: nil,
+				},
+				want: want{
+					obj: new(T),
+				},
+			}
+		}(),
+		func() test {
 			dhs := []redis.Hook{
 				&dummyHook{},
 			}

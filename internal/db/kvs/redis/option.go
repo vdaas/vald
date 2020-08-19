@@ -365,6 +365,10 @@ func WithInitialPingDuration(dur string) Option {
 // WithHooks returns the option to add hooks
 func WithHooks(hooks ...Hook) Option {
 	return func(r *redisClient) error {
+		if hooks == nil {
+			return nil
+		}
+
 		if r.hooks != nil {
 			r.hooks = append(r.hooks, hooks...)
 			return nil
