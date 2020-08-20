@@ -25,7 +25,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
-
+	"github.com/vdaas/vald/internal/net/tcp"
 	"go.uber.org/goleak"
 )
 
@@ -1070,7 +1070,7 @@ func TestWithTLSConfig(t *testing.T) {
 	}
 }
 
-func TestWithDialer(t *testing.T) {
+func TestWithDialerFunc(t *testing.T) {
 	type T = mySQLClient
 	type args struct {
 		der func(ctx context.Context, addr, port string) (net.Conn, error)
@@ -1092,8 +1092,8 @@ func TestWithDialer(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if reflect.ValueOf(w.obj.dialer).Pointer() != reflect.ValueOf(obj.dialer).Pointer() {
-			return errors.Errorf("got dialer = %p, want %p", obj.dialer, w.obj.dialer)
+		if reflect.ValueOf(w.obj.dialerFunc).Pointer() != reflect.ValueOf(obj.dialerFunc).Pointer() {
+			return errors.Errorf("got dialerFunc = %p, want %p", obj.dialerFunc, w.obj.dialerFunc)
 		}
 		return nil
 	}
@@ -1110,7 +1110,7 @@ func TestWithDialer(t *testing.T) {
 				},
 				want: want{
 					obj: &T{
-						dialer: der,
+						dialerFunc: der,
 					},
 				},
 			}
@@ -1139,7 +1139,160 @@ func TestWithDialer(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
+			got := WithDialerFunc(test.args.der)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithDialer(t *testing.T) {
+	type T = mySQLClient
+	type args struct {
+		der tcp.Dialer
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
+		}
+		return nil
+	}
+
+	tests := []test{
+		func() test {
+			dialer, err := tcp.NewDialer()
+			if err != nil {
+				panic(err)
+			}
+
+			return test{
+				name: "successfully set when der is not nil",
+				args: args{
+					der: dialer,
+				},
+				want: want{
+					obj: &T{
+						dialer: dialer,
+					},
+				},
+			}
+		}(),
+		{
+			name: "just returns nil when der is nil",
+			want: want{
+				obj: new(T),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
 			got := WithDialer(test.args.der)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithEventReceiver(t *testing.T) {
+	type T = mySQLClient
+	type args struct {
+		er EventReceiver
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got = %v, want %v", obj, w.obj)
+		}
+		return nil
+	}
+
+	tests := []test{
+		func() test {
+			er := &NullEventReceiver{}
+
+			return test{
+				name: "successfully set er when er is not nil",
+				args: args{
+					er: er,
+				},
+				want: want{
+					obj: &T{
+						eventReceiver: er,
+					},
+				},
+			}
+		}(),
+		{
+			name: "just returns nil when er is nil",
+			want: want{
+				obj: new(T),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithEventReceiver(test.args.er)
 			obj := new(T)
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
