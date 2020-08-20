@@ -14,23 +14,25 @@
 // limitations under the License.
 //
 
-// Package errors provides error types and function
-package errors
+// Package service manages the main logic of server.
+package service
 
-import "time"
+import (
+	"github.com/vdaas/vald/internal/db/rdb/mysql"
+)
+
+type Option func(*client) error
 
 var (
-	// tcp
-
-	// ErrFailedInitDialer defines the init dialer error
-	ErrFailedInitDialer = New("failed to init dialer")
-	// ErrInvalidDNSConfig defines the invalid DNS config error
-	ErrInvalidDNSConfig = func(dnsRefreshDur, dnsCacheExp time.Duration) error {
-		return Errorf("dnsRefreshDuration  > dnsCacheExp, %s, %s", dnsRefreshDur, dnsCacheExp)
-	}
-
-	// net
-
-	// ErrNoPortAvailiable defines no port available error
-	ErrNoPortAvailable = New("no port available")
+	defaultOpts = []Option{}
 )
+
+func WithMySQLClient(m mysql.MySQL) Option {
+	return func(c *client) error {
+		if m != nil {
+			c.db = m
+		}
+
+		return nil
+	}
+}

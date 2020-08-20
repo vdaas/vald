@@ -27,7 +27,7 @@ import (
 	dbr "github.com/gocraft/dbr/v2"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
-
+	"github.com/vdaas/vald/internal/net/tcp"
 	"go.uber.org/goleak"
 )
 
@@ -86,7 +86,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -122,12 +122,14 @@ func Test_mySQLClient_Open(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer               tcp.Dialer
+		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
 		session              *dbr.Session
 		connected            atomic.Value
+		eventReceiver        EventReceiver
 	}
 	type want struct {
 		err error
@@ -168,11 +170,13 @@ func Test_mySQLClient_Open(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -200,11 +204,13 @@ func Test_mySQLClient_Open(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -215,7 +221,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -238,11 +244,13 @@ func Test_mySQLClient_Open(t *testing.T) {
 				initialPingDuration:  test.fields.initialPingDuration,
 				connMaxLifeTime:      test.fields.connMaxLifeTime,
 				dialer:               test.fields.dialer,
+				dialerFunc:           test.fields.dialerFunc,
 				tlsConfig:            test.fields.tlsConfig,
 				maxOpenConns:         test.fields.maxOpenConns,
 				maxIdleConns:         test.fields.maxIdleConns,
 				session:              test.fields.session,
 				connected:            test.fields.connected,
+				eventReceiver:        test.fields.eventReceiver,
 			}
 
 			err := m.Open(test.args.ctx)
@@ -270,12 +278,14 @@ func Test_mySQLClient_Ping(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer               tcp.Dialer
+		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
 		session              *dbr.Session
 		connected            atomic.Value
+		eventReceiver        EventReceiver
 	}
 	type want struct {
 		err error
@@ -316,11 +326,13 @@ func Test_mySQLClient_Ping(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -348,11 +360,13 @@ func Test_mySQLClient_Ping(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -363,7 +377,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -386,11 +400,13 @@ func Test_mySQLClient_Ping(t *testing.T) {
 				initialPingDuration:  test.fields.initialPingDuration,
 				connMaxLifeTime:      test.fields.connMaxLifeTime,
 				dialer:               test.fields.dialer,
+				dialerFunc:           test.fields.dialerFunc,
 				tlsConfig:            test.fields.tlsConfig,
 				maxOpenConns:         test.fields.maxOpenConns,
 				maxIdleConns:         test.fields.maxIdleConns,
 				session:              test.fields.session,
 				connected:            test.fields.connected,
+				eventReceiver:        test.fields.eventReceiver,
 			}
 
 			err := m.Ping(test.args.ctx)
@@ -418,12 +434,14 @@ func Test_mySQLClient_Close(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer               tcp.Dialer
+		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
 		session              *dbr.Session
 		connected            atomic.Value
+		eventReceiver        EventReceiver
 	}
 	type want struct {
 		err error
@@ -464,11 +482,13 @@ func Test_mySQLClient_Close(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -496,11 +516,13 @@ func Test_mySQLClient_Close(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -511,7 +533,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -534,11 +556,13 @@ func Test_mySQLClient_Close(t *testing.T) {
 				initialPingDuration:  test.fields.initialPingDuration,
 				connMaxLifeTime:      test.fields.connMaxLifeTime,
 				dialer:               test.fields.dialer,
+				dialerFunc:           test.fields.dialerFunc,
 				tlsConfig:            test.fields.tlsConfig,
 				maxOpenConns:         test.fields.maxOpenConns,
 				maxIdleConns:         test.fields.maxIdleConns,
 				session:              test.fields.session,
 				connected:            test.fields.connected,
+				eventReceiver:        test.fields.eventReceiver,
 			}
 
 			err := m.Close(test.args.ctx)
@@ -567,12 +591,14 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer               tcp.Dialer
+		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
 		session              *dbr.Session
 		connected            atomic.Value
+		eventReceiver        EventReceiver
 	}
 	type want struct {
 		want MetaVector
@@ -618,11 +644,13 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -651,11 +679,13 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -666,7 +696,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -689,11 +719,13 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 				initialPingDuration:  test.fields.initialPingDuration,
 				connMaxLifeTime:      test.fields.connMaxLifeTime,
 				dialer:               test.fields.dialer,
+				dialerFunc:           test.fields.dialerFunc,
 				tlsConfig:            test.fields.tlsConfig,
 				maxOpenConns:         test.fields.maxOpenConns,
 				maxIdleConns:         test.fields.maxIdleConns,
 				session:              test.fields.session,
 				connected:            test.fields.connected,
+				eventReceiver:        test.fields.eventReceiver,
 			}
 
 			got, err := m.GetMeta(test.args.ctx, test.args.uuid)
@@ -722,12 +754,14 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer               tcp.Dialer
+		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
 		session              *dbr.Session
 		connected            atomic.Value
+		eventReceiver        EventReceiver
 	}
 	type want struct {
 		want []string
@@ -773,11 +807,13 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -806,11 +842,13 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -821,7 +859,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -844,11 +882,13 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 				initialPingDuration:  test.fields.initialPingDuration,
 				connMaxLifeTime:      test.fields.connMaxLifeTime,
 				dialer:               test.fields.dialer,
+				dialerFunc:           test.fields.dialerFunc,
 				tlsConfig:            test.fields.tlsConfig,
 				maxOpenConns:         test.fields.maxOpenConns,
 				maxIdleConns:         test.fields.maxIdleConns,
 				session:              test.fields.session,
 				connected:            test.fields.connected,
+				eventReceiver:        test.fields.eventReceiver,
 			}
 
 			got, err := m.GetIPs(test.args.ctx, test.args.uuid)
@@ -911,7 +951,7 @@ func Test_validateMeta(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -948,12 +988,14 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer               tcp.Dialer
+		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
 		session              *dbr.Session
 		connected            atomic.Value
+		eventReceiver        EventReceiver
 	}
 	type want struct {
 		err error
@@ -995,11 +1037,13 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1028,11 +1072,13 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1043,7 +1089,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1066,11 +1112,13 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 				initialPingDuration:  test.fields.initialPingDuration,
 				connMaxLifeTime:      test.fields.connMaxLifeTime,
 				dialer:               test.fields.dialer,
+				dialerFunc:           test.fields.dialerFunc,
 				tlsConfig:            test.fields.tlsConfig,
 				maxOpenConns:         test.fields.maxOpenConns,
 				maxIdleConns:         test.fields.maxIdleConns,
 				session:              test.fields.session,
 				connected:            test.fields.connected,
+				eventReceiver:        test.fields.eventReceiver,
 			}
 
 			err := m.SetMeta(test.args.ctx, test.args.mv)
@@ -1099,12 +1147,14 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer               tcp.Dialer
+		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
 		session              *dbr.Session
 		connected            atomic.Value
+		eventReceiver        EventReceiver
 	}
 	type want struct {
 		err error
@@ -1146,11 +1196,13 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1179,11 +1231,13 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1194,7 +1248,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1217,11 +1271,13 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 				initialPingDuration:  test.fields.initialPingDuration,
 				connMaxLifeTime:      test.fields.connMaxLifeTime,
 				dialer:               test.fields.dialer,
+				dialerFunc:           test.fields.dialerFunc,
 				tlsConfig:            test.fields.tlsConfig,
 				maxOpenConns:         test.fields.maxOpenConns,
 				maxIdleConns:         test.fields.maxIdleConns,
 				session:              test.fields.session,
 				connected:            test.fields.connected,
+				eventReceiver:        test.fields.eventReceiver,
 			}
 
 			err := m.SetMetas(test.args.ctx, test.args.metas...)
@@ -1290,7 +1346,7 @@ func Test_deleteMetaWithTx(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1327,12 +1383,14 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer               tcp.Dialer
+		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
 		session              *dbr.Session
 		connected            atomic.Value
+		eventReceiver        EventReceiver
 	}
 	type want struct {
 		err error
@@ -1374,11 +1432,13 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1407,11 +1467,13 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1422,7 +1484,7 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1445,11 +1507,13 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 				initialPingDuration:  test.fields.initialPingDuration,
 				connMaxLifeTime:      test.fields.connMaxLifeTime,
 				dialer:               test.fields.dialer,
+				dialerFunc:           test.fields.dialerFunc,
 				tlsConfig:            test.fields.tlsConfig,
 				maxOpenConns:         test.fields.maxOpenConns,
 				maxIdleConns:         test.fields.maxIdleConns,
 				session:              test.fields.session,
 				connected:            test.fields.connected,
+				eventReceiver:        test.fields.eventReceiver,
 			}
 
 			err := m.DeleteMeta(test.args.ctx, test.args.uuid)
@@ -1478,12 +1542,14 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer               tcp.Dialer
+		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
 		session              *dbr.Session
 		connected            atomic.Value
+		eventReceiver        EventReceiver
 	}
 	type want struct {
 		err error
@@ -1525,11 +1591,13 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1558,11 +1626,13 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1573,7 +1643,7 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1596,11 +1666,13 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 				initialPingDuration:  test.fields.initialPingDuration,
 				connMaxLifeTime:      test.fields.connMaxLifeTime,
 				dialer:               test.fields.dialer,
+				dialerFunc:           test.fields.dialerFunc,
 				tlsConfig:            test.fields.tlsConfig,
 				maxOpenConns:         test.fields.maxOpenConns,
 				maxIdleConns:         test.fields.maxIdleConns,
 				session:              test.fields.session,
 				connected:            test.fields.connected,
+				eventReceiver:        test.fields.eventReceiver,
 			}
 
 			err := m.DeleteMetas(test.args.ctx, test.args.uuids...)
@@ -1630,12 +1702,14 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer               tcp.Dialer
+		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
 		session              *dbr.Session
 		connected            atomic.Value
+		eventReceiver        EventReceiver
 	}
 	type want struct {
 		err error
@@ -1678,11 +1752,13 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1712,11 +1788,13 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1727,7 +1805,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1750,11 +1828,13 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 				initialPingDuration:  test.fields.initialPingDuration,
 				connMaxLifeTime:      test.fields.connMaxLifeTime,
 				dialer:               test.fields.dialer,
+				dialerFunc:           test.fields.dialerFunc,
 				tlsConfig:            test.fields.tlsConfig,
 				maxOpenConns:         test.fields.maxOpenConns,
 				maxIdleConns:         test.fields.maxIdleConns,
 				session:              test.fields.session,
 				connected:            test.fields.connected,
+				eventReceiver:        test.fields.eventReceiver,
 			}
 
 			err := m.SetIPs(test.args.ctx, test.args.uuid, test.args.ips...)
@@ -1783,12 +1863,14 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer               tcp.Dialer
+		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
 		session              *dbr.Session
 		connected            atomic.Value
+		eventReceiver        EventReceiver
 	}
 	type want struct {
 		err error
@@ -1830,11 +1912,13 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1863,11 +1947,13 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 		           initialPingDuration: nil,
 		           connMaxLifeTime: nil,
 		           dialer: nil,
+		           dialerFunc: nil,
 		           tlsConfig: nil,
 		           maxOpenConns: 0,
 		           maxIdleConns: 0,
 		           session: nil,
 		           connected: nil,
+		           eventReceiver: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1878,7 +1964,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1901,11 +1987,13 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 				initialPingDuration:  test.fields.initialPingDuration,
 				connMaxLifeTime:      test.fields.connMaxLifeTime,
 				dialer:               test.fields.dialer,
+				dialerFunc:           test.fields.dialerFunc,
 				tlsConfig:            test.fields.tlsConfig,
 				maxOpenConns:         test.fields.maxOpenConns,
 				maxIdleConns:         test.fields.maxIdleConns,
 				session:              test.fields.session,
 				connected:            test.fields.connected,
+				eventReceiver:        test.fields.eventReceiver,
 			}
 
 			err := m.RemoveIPs(test.args.ctx, test.args.ips...)

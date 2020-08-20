@@ -22,8 +22,6 @@ jobs:
       with:
         image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
         format: 'table'
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -31,6 +29,7 @@ jobs:
         format: 'template'
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results.sarif'
+        severity: 'HIGH,CRITICAL'
     - name: Upload Trivy scan results to Security tab
       uses: github/codeql-action/upload-sarif@v1
       with:
@@ -53,8 +52,6 @@ jobs:
       with:
         image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
         format: 'table'
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -62,6 +59,7 @@ jobs:
         format: 'template'
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results.sarif'
+        severity: 'HIGH,CRITICAL'
     - name: Upload Trivy scan results to Security tab
       uses: github/codeql-action/upload-sarif@v1
       with:
@@ -84,8 +82,6 @@ jobs:
       with:
         image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
         format: 'table'
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -93,6 +89,7 @@ jobs:
         format: 'template'
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results.sarif'
+        severity: 'HIGH,CRITICAL'
     - name: Upload Trivy scan results to Security tab
       uses: github/codeql-action/upload-sarif@v1
       with:
@@ -115,8 +112,6 @@ jobs:
       with:
         image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
         format: 'table'
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -124,6 +119,7 @@ jobs:
         format: 'template'
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results.sarif'
+        severity: 'HIGH,CRITICAL'
     - name: Upload Trivy scan results to Security tab
       uses: github/codeql-action/upload-sarif@v1
       with:
@@ -146,8 +142,6 @@ jobs:
       with:
         image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
         format: 'table'
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -155,6 +149,7 @@ jobs:
         format: 'template'
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results.sarif'
+        severity: 'HIGH,CRITICAL'
     - name: Upload Trivy scan results to Security tab
       uses: github/codeql-action/upload-sarif@v1
       with:
@@ -177,8 +172,6 @@ jobs:
       with:
         image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
         format: 'table'
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -186,6 +179,7 @@ jobs:
         format: 'template'
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results.sarif'
+        severity: 'HIGH,CRITICAL'
     - name: Upload Trivy scan results to Security tab
       uses: github/codeql-action/upload-sarif@v1
       with:
@@ -208,8 +202,6 @@ jobs:
       with:
         image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
         format: 'table'
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -217,6 +209,7 @@ jobs:
         format: 'template'
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results.sarif'
+        severity: 'HIGH,CRITICAL'
     - name: Upload Trivy scan results to Security tab
       uses: github/codeql-action/upload-sarif@v1
       with:
@@ -239,8 +232,6 @@ jobs:
       with:
         image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
         format: 'table'
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -248,6 +239,7 @@ jobs:
         format: 'template'
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results.sarif'
+        severity: 'HIGH,CRITICAL'
     - name: Upload Trivy scan results to Security tab
       uses: github/codeql-action/upload-sarif@v1
       with:
@@ -270,8 +262,6 @@ jobs:
       with:
         image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
         format: 'table'
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -279,6 +269,7 @@ jobs:
         format: 'template'
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results.sarif'
+        severity: 'HIGH,CRITICAL'
     - name: Upload Trivy scan results to Security tab
       uses: github/codeql-action/upload-sarif@v1
       with:
@@ -301,8 +292,6 @@ jobs:
       with:
         image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
         format: 'table'
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -310,6 +299,7 @@ jobs:
         format: 'template'
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results.sarif'
+        severity: 'HIGH,CRITICAL'
     - name: Upload Trivy scan results to Security tab
       uses: github/codeql-action/upload-sarif@v1
       with:
@@ -332,8 +322,6 @@ jobs:
       with:
         image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
         format: 'table'
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -341,6 +329,7 @@ jobs:
         format: 'template'
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results.sarif'
+        severity: 'HIGH,CRITICAL'
     - name: Upload Trivy scan results to Security tab
       uses: github/codeql-action/upload-sarif@v1
       with:
@@ -363,8 +352,6 @@ jobs:
       with:
         image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
         format: 'table'
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -372,6 +359,7 @@ jobs:
         format: 'template'
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results.sarif'
+        severity: 'HIGH,CRITICAL'
     - name: Upload Trivy scan results to Security tab
       uses: github/codeql-action/upload-sarif@v1
       with:

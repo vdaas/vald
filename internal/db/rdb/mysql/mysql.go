@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/tcp"
 )
 
 const (
@@ -61,12 +62,14 @@ type mySQLClient struct {
 	initialPingTimeLimit time.Duration
 	initialPingDuration  time.Duration
 	connMaxLifeTime      time.Duration
-	dialer               func(ctx context.Context, network, addr string) (net.Conn, error)
+	dialer               tcp.Dialer
+	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 	tlsConfig            *tls.Config
 	maxOpenConns         int
 	maxIdleConns         int
 	session              *dbr.Session
 	connected            atomic.Value
+	eventReceiver        EventReceiver
 }
 
 func New(opts ...Option) (MySQL, error) {
@@ -81,26 +84,40 @@ func New(opts ...Option) (MySQL, error) {
 }
 
 func (m *mySQLClient) Open(ctx context.Context) error {
-	var addParam string
-	network := "tcp"
 	if m.dialer != nil {
+		m.dialer.StartDialerCache(ctx)
+		m.dialerFunc = m.dialer.GetDialer()
+	}
+
+	var addParam string
+
+	network := "tcp"
+
+	if m.dialerFunc != nil {
 		mysql.RegisterDialContext(network, func(ctx context.Context, addr string) (net.Conn, error) {
-			return m.dialer(ctx, network, addr)
+			return m.dialerFunc(ctx, network, addr)
 		})
 	}
+
 	if m.tlsConfig != nil {
 		tlsConfName := "tls"
 		mysql.RegisterTLSConfig(tlsConfName, m.tlsConfig)
 		addParam += "&tls=" + tlsConfName
 	}
 
-	conn, err := dbr.Open(m.db,
-		fmt.Sprintf("%s:%s@%s(%s:%d)/%s?charset=%s&parseTime=true&loc=%s%s",
+	conn, err := dbr.Open(
+		m.db,
+		fmt.Sprintf(
+			"%s:%s@%s(%s:%d)/%s?charset=%s&parseTime=true&loc=%s%s",
 			m.user, m.pass, network, m.host, m.port, m.name,
-			m.charset, m.timezone, addParam), nil)
+			m.charset, m.timezone, addParam,
+		),
+		m.eventReceiver,
+	)
 	if err != nil {
 		return err
 	}
+
 	conn.SetConnMaxLifetime(m.connMaxLifeTime)
 	conn.SetMaxIdleConns(m.maxIdleConns)
 	conn.SetMaxOpenConns(m.maxOpenConns)

@@ -14,23 +14,11 @@
 // limitations under the License.
 //
 
-// Package errors provides error types and function
-package errors
+package redis
 
-import "time"
-
-var (
-	// tcp
-
-	// ErrFailedInitDialer defines the init dialer error
-	ErrFailedInitDialer = New("failed to init dialer")
-	// ErrInvalidDNSConfig defines the invalid DNS config error
-	ErrInvalidDNSConfig = func(dnsRefreshDur, dnsCacheExp time.Duration) error {
-		return Errorf("dnsRefreshDuration  > dnsCacheExp, %s, %s", dnsRefreshDur, dnsCacheExp)
-	}
-
-	// net
-
-	// ErrNoPortAvailiable defines no port available error
-	ErrNoPortAvailable = New("no port available")
+import (
+	redis "github.com/go-redis/redis/v7"
 )
+
+type Hook = redis.Hook
+type Cmder = redis.Cmder

@@ -14,23 +14,13 @@
 // limitations under the License.
 //
 
-// Package errors provides error types and function
-package errors
+package mysql
 
-import "time"
-
-var (
-	// tcp
-
-	// ErrFailedInitDialer defines the init dialer error
-	ErrFailedInitDialer = New("failed to init dialer")
-	// ErrInvalidDNSConfig defines the invalid DNS config error
-	ErrInvalidDNSConfig = func(dnsRefreshDur, dnsCacheExp time.Duration) error {
-		return Errorf("dnsRefreshDuration  > dnsCacheExp, %s, %s", dnsRefreshDur, dnsCacheExp)
-	}
-
-	// net
-
-	// ErrNoPortAvailiable defines no port available error
-	ErrNoPortAvailable = New("no port available")
+import (
+	dbr "github.com/gocraft/dbr/v2"
 )
+
+type EventReceiver = dbr.EventReceiver
+type TracingEventReceiver = dbr.TracingEventReceiver
+
+type NullEventReceiver = dbr.NullEventReceiver
