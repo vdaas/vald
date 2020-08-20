@@ -126,7 +126,7 @@ func (rc *redisClient) setClient(ctx context.Context) (err error) {
 }
 
 func (rc *redisClient) newSentinelClient() (*redis.Client, error) {
-	if len(rc.addrs[0]) == 0 {
+	if len(rc.addrs) == 0 || len(rc.addrs[0]) == 0 {
 		return nil, errors.ErrRedisAddrsNotFound
 	}
 
@@ -159,7 +159,7 @@ func (rc *redisClient) newSentinelClient() (*redis.Client, error) {
 }
 
 func (rc *redisClient) newClusterClient(ctx context.Context) (*redis.ClusterClient, error) {
-	if len(rc.addrs[0]) == 0 {
+	if len(rc.addrs) == 0 || len(rc.addrs[0]) == 0 {
 		return nil, errors.ErrRedisAddrsNotFound
 	}
 
