@@ -333,7 +333,6 @@ func TestWithMaxChunkSize(t *testing.T) {
 					maxChunkSize: 10,
 				},
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
 			name: "set success when size is negative number",
@@ -345,14 +344,12 @@ func TestWithMaxChunkSize(t *testing.T) {
 					maxChunkSize: -10,
 				},
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
 			name: "set success when size is zero",
 			want: want{
 				obj: new(T),
 			},
-			checkFunc: defaultCheckFunc,
 		},
 	}
 
@@ -412,14 +409,12 @@ func TestWithBackoff(t *testing.T) {
 					backoffEnabled: true,
 				},
 			},
-			checkFunc: defaultCheckFunc,
 		},
 		{
 			name: "set success when backoff enabled is false",
 			want: want{
 				obj: new(T),
 			},
-			checkFunc: defaultCheckFunc,
 		},
 	}
 
@@ -469,7 +464,10 @@ func TestWithBackoffOpts(t *testing.T) {
 			cmp.AllowUnexported(*got),
 			cmp.AllowUnexported(*w.obj),
 			cmp.Comparer(func(want, got []backoff.Option) bool {
-				return reflect.DeepEqual(want, got) || (got != nil && want != nil)
+				return len(got) == len(want)
+			}),
+			cmp.Comparer(func(want, got backoff.Option) bool {
+				return reflect.ValueOf(got).Pointer() == reflect.ValueOf(want).Pointer()
 			}),
 		}
 		if diff := cmp.Diff(w.obj, got, opts...); diff != "" {
@@ -492,7 +490,6 @@ func TestWithBackoffOpts(t *testing.T) {
 						backoffOpts: opts,
 					},
 				},
-				checkFunc: defaultCheckFunc,
 			}
 		}(),
 		func() test {
@@ -514,16 +511,16 @@ func TestWithBackoffOpts(t *testing.T) {
 				beforeFunc: func(args args, r *T) {
 					r.backoffOpts = args.defaultOpts
 				},
-				checkFunc: defaultCheckFunc,
 			}
 		}(),
-		{
-			name: "set success when opts is nil",
-			want: want{
-				obj: new(T),
-			},
-			checkFunc: defaultCheckFunc,
-		},
+		func() test {
+			return test{
+				name: "set success when opts is nil",
+				want: want{
+					obj: new(T),
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
