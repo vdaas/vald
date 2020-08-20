@@ -16,7 +16,7 @@ However, to maximize the efficiency of search operations, it is better to have a
 
 We recommend to have more than 3 worker nodes with enough memory for the workload.
 It is better to deploy 2 or 3 Vald agent pods to each worker node.
-If you want to store 100 million vectors with 128 dimensions, `8bytes(64bit float) x 128(dimension) x 100 million x N replicas`, so a total of 100GB x N memory space is needed.
+If you want to store 100 million vectors with 128 dimensions, `8 bytes (64bit float) x 128 (dimension) x 100 million x N replicas`, so a total of 100 GB x N memory space is needed.
 If the number of replicas of the index is three, which means N=3, the total amount of memory space for the whole cluster will be 300 GB at least.
 
 For example:
