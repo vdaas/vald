@@ -35,5 +35,5 @@ jobs:
           patterns: '**/*.md **/*.md.gotmpl'
           level: warning
           language: en-US
-          disabled_rules: 'DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY'
-          disabled_categories: ''
+          disabled_rules: 'DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE'
+          disabled_categories: 'TYPOS'
