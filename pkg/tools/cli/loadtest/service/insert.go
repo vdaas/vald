@@ -19,6 +19,7 @@ import (
 	"context"
 	"sync/atomic"
 
+	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/apis/grpc/agent/core"
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
@@ -44,15 +45,17 @@ func insertRequestProvider(dataset assets.Dataset, batchSize int) (f func() inte
 }
 
 func objectVectorProvider(dataset assets.Dataset) (func() interface{}, int) {
-	v := dataset.Train()
-	ids := dataset.IDs()
 	idx := int32(-1)
-	size := len(v)
+	size := dataset.TrainSize()
 	return func() (ret interface{}) {
 		if i := int(atomic.AddInt32(&idx, 1)); i < size {
+			v, err := dataset.Train(i)
+			if err != nil {
+				return nil
+			}
 			ret = &payload.Object_Vector{
-				Id:     ids[i],
-				Vector: v[i],
+				Id:     fuid.String(),
+				Vector: v.([]float32),
 			}
 		}
 		return ret

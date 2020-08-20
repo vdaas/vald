@@ -4,10 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"path/filepath"
-	"strconv"
-	"strings"
-
-	"github.com/vdaas/vald/internal/log"
 )
 
 type smallDataset struct {
@@ -30,7 +26,7 @@ func loadSmallData(fileName, datasetName, distanceType, objectType string) func(
 		}
 
 		return &smallDataset{
-			dataset: &dataset {
+			dataset: &dataset{
 				name:         datasetName,
 				dimension:    dim,
 				distanceType: distanceType,
@@ -114,64 +110,17 @@ func gaussian(dim, size int, mean, stdDev float64) func() (Dataset, error) {
 	}
 }
 
-// Data loads specified dataset and returns it.
-func Data(name string) func() (Dataset, error) {
-	log.Debugf("start loading: %s", name)
-	defer log.Debugf("finish loading: %s", name)
-	if strings.HasPrefix(name, "identity-") {
-		l := strings.Split(name, "-")
-		i, _ := strconv.Atoi(l[1])
-		return identity(i)
-	}
-	if strings.HasPrefix(name, "random-") {
-		l := strings.Split(name, "-")
-		d, _ := strconv.Atoi(l[1])
-		s, _ := strconv.Atoi(l[2])
-		return random(d, s)
-	}
-	if strings.HasPrefix(name, "gaussian-") {
-		l := strings.Split(name, "-")
-		d, _ := strconv.Atoi(l[1])
-		s, _ := strconv.Atoi(l[2])
-		m, _ := strconv.ParseFloat(l[3], 64)
-		sd, _ := strconv.ParseFloat(l[4], 64)
-		return gaussian(d, s, m, sd)
-	}
-	switch name {
-	case "fashion-mnist":
-		return loadSmallData("fashion-mnist-784-euclidean.hdf5", name, "l2", "float")
-	case "mnist":
-		return loadSmallData("mnist-784-euclidean.hdf5", name, "l2", "float")
-	case "glove-25":
-		return loadSmallData("glove-25-angular.hdf5", name, "cosine", "float")
-	case "glove-50":
-		return loadSmallData("glove-50-angular.hdf5", name, "cosine", "float")
-	case "glove-100":
-		return loadSmallData("glove-100-angular.hdf5", name, "cosine", "float")
-	case "glove-200":
-		return loadSmallData("glove-200-angular.hdf5", name, "cosine", "float")
-	case "nytimes":
-		return loadSmallData("nytimes-256-angular.hdf5", name, "cosine", "float")
-	case "sift":
-		return loadSmallData("sift-128-euclidean.hdf5", name, "l2", "float")
-	case "gist":
-		return loadSmallData("gist-960-euclidean.hdf5", name, "l2", "float")
-	case "kosarak":
-		return loadSmallData("kosarak-jaccard.hdf5", name, "jaccard", "float")
-	case "sift1b":
-		return loadLargeData("bigann_base.bvecs", "bigann_query.bvecs", "gnd/idx_1000M.ivecs", "gnd/dis_1000M.fvecs", name, "l2", "uint8")
-	case "deep1b":
-		return loadLargeData("deep1B_base.fvecs", "deep1B_query.fvecs", "deep1B_groundtruth.ivecs", "", name, "l2", "float")
-	}
-	return nil
-}
-
 // Train returns vectors for train.
 func (s *smallDataset) Train(i int) (interface{}, error) {
 	if i >= len(s.train) {
 		return nil, ErrOutOfBounds
 	}
 	return s.train[i], nil
+}
+
+// TrainSize return size of vectors for train.
+func (s *smallDataset) TrainSize() int {
+	return len(s.train)
 }
 
 // Query returns vectors for test.
@@ -182,12 +131,22 @@ func (s *smallDataset) Query(i int) (interface{}, error) {
 	return s.query[i], nil
 }
 
+// QuerySize return size of vectors for query.
+func (s *smallDataset) QuerySize() int {
+	return len(s.query)
+}
+
 // Distance returns distances between queries and answers.
 func (s *smallDataset) Distance(i int) ([]float32, error) {
 	if i >= len(s.distances) {
 		return nil, ErrOutOfBounds
 	}
 	return s.distances[i], nil
+}
+
+// DistanceSize returns size of distances
+func (s *smallDataset) DistanceSize() int {
+	return len(s.distances)
 }
 
 // Neighbors returns nearest vectors from queries.
@@ -198,14 +157,7 @@ func (s *smallDataset) Neighbor(i int) ([]int, error) {
 	return s.neighbors[i], nil
 }
 
-func float32To64(x [][]float32) (y [][]float64) {
-	y = make([][]float64, len(x))
-	for i, z := range x {
-		y[i] = make([]float64, len(z))
-		for j, a := range z {
-			y[i][j] = float64(a)
-		}
-	}
-	return y
+// NeighborSize returns size of neighbors.
+func (s *smallDataset) NeighborSize() int {
+	return len(s.neighbors)
 }
-

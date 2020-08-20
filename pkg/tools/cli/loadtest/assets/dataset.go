@@ -18,7 +18,10 @@ package assets
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+
+	"github.com/vdaas/vald/internal/log"
 
 	"github.com/vdaas/vald/hack/benchmark/assets/x1b"
 )
@@ -30,9 +33,13 @@ var (
 // Dataset is representation of train and test dataset.
 type Dataset interface {
 	Train(i int) (interface{}, error)
+	TrainSize() int
 	Query(i int) (interface{}, error)
+	QuerySize() int
 	Distance(i int) ([]float32, error)
+	DistanceSize() int
 	Neighbor(i int) ([]int, error)
+	NeighborSize() int
 	Name() string
 	Dimension() int
 	DistanceType() string
@@ -81,4 +88,56 @@ func findDir(path string) (string, error) {
 		}
 	}(wd)
 	return filepath.Join(root, path) + "/", nil
+}
+
+// Data loads specified dataset and returns it.
+func Data(name string) func() (Dataset, error) {
+	log.Debugf("start loading: %s", name)
+	defer log.Debugf("finish loading: %s", name)
+	if strings.HasPrefix(name, "identity-") {
+		l := strings.Split(name, "-")
+		i, _ := strconv.Atoi(l[1])
+		return identity(i)
+	}
+	if strings.HasPrefix(name, "random-") {
+		l := strings.Split(name, "-")
+		d, _ := strconv.Atoi(l[1])
+		s, _ := strconv.Atoi(l[2])
+		return random(d, s)
+	}
+	if strings.HasPrefix(name, "gaussian-") {
+		l := strings.Split(name, "-")
+		d, _ := strconv.Atoi(l[1])
+		s, _ := strconv.Atoi(l[2])
+		m, _ := strconv.ParseFloat(l[3], 64)
+		sd, _ := strconv.ParseFloat(l[4], 64)
+		return gaussian(d, s, m, sd)
+	}
+	switch name {
+	case "fashion-mnist":
+		return loadSmallData("fashion-mnist-784-euclidean.hdf5", name, "l2", "float")
+	case "mnist":
+		return loadSmallData("mnist-784-euclidean.hdf5", name, "l2", "float")
+	case "glove-25":
+		return loadSmallData("glove-25-angular.hdf5", name, "cosine", "float")
+	case "glove-50":
+		return loadSmallData("glove-50-angular.hdf5", name, "cosine", "float")
+	case "glove-100":
+		return loadSmallData("glove-100-angular.hdf5", name, "cosine", "float")
+	case "glove-200":
+		return loadSmallData("glove-200-angular.hdf5", name, "cosine", "float")
+	case "nytimes":
+		return loadSmallData("nytimes-256-angular.hdf5", name, "cosine", "float")
+	case "sift":
+		return loadSmallData("sift-128-euclidean.hdf5", name, "l2", "float")
+	case "gist":
+		return loadSmallData("gist-960-euclidean.hdf5", name, "l2", "float")
+	case "kosarak":
+		return loadSmallData("kosarak-jaccard.hdf5", name, "jaccard", "float")
+	case "sift1b":
+		return loadLargeData("bigann_base.bvecs", "bigann_query.bvecs", "gnd/idx_1000M.ivecs", "gnd/dis_1000M.fvecs", name, "l2", "uint8")
+	case "deep1b":
+		return loadLargeData("deep1B_base.fvecs", "deep1B_query.fvecs", "deep1B_groundtruth.ivecs", "", name, "l2", "float")
+	}
+	return nil
 }

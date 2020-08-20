@@ -19,6 +19,7 @@ package strategy
 
 import (
 	"context"
+	"fmt"
 	"sync/atomic"
 	"testing"
 
@@ -38,8 +39,6 @@ func NewStreamRemove(opts ...StreamRemoveOption) e2e.Strategy {
 }
 
 func (sr *streamRemove) dataProvider(total *uint32, b *testing.B, dataset assets.Dataset) func() *client.ObjectID {
-	ids := dataset.IDs()
-
 	var cnt uint32
 
 	b.StopTimer()
@@ -56,7 +55,7 @@ func (sr *streamRemove) dataProvider(total *uint32, b *testing.B, dataset assets
 
 		total := int(atomic.AddUint32(total, 1)) - 1
 		return &client.ObjectID{
-			Id: ids[total%len(ids)],
+			Id: fmt.Sprint(total%dataset.TrainSize()),
 		}
 	}
 }

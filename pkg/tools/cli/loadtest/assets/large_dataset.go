@@ -24,10 +24,10 @@ import (
 
 type largeDataset struct {
 	*dataset
-	train x1b.X1b
-	query x1b.X1b
+	train       x1b.X1b
+	query       x1b.X1b
 	groundTruth [][]int
-	distances x1b.Fvecs
+	distances   x1b.Fvecs
 }
 
 func loadLargeData(trainFileName, queryFileName, groundTruthFileName, distanceFileName, name, distanceType, objectType string) func() (Dataset, error) {
@@ -51,7 +51,7 @@ func loadLargeData(trainFileName, queryFileName, groundTruthFileName, distanceFi
 		}
 		iv, err := x1b.NewIVecs(filepath.Join(dir, groundTruthFileName))
 		if err != nil {
-			return nil, er
+			return nil, err
 		}
 		groundTruth := make([][]int, 0, iv.Size())
 		for i := 0; ; i++ {
@@ -62,7 +62,7 @@ func loadLargeData(trainFileName, queryFileName, groundTruthFileName, distanceFi
 				}
 			}
 			gt := make([]int, 0, len(gt32))
-			for _, v := range gt32{
+			for _, v := range gt32 {
 				gt = append(gt, int(v))
 			}
 			groundTruth = append(groundTruth, gt)
@@ -79,10 +79,10 @@ func loadLargeData(trainFileName, queryFileName, groundTruthFileName, distanceFi
 				distanceType: distanceType,
 				objectType:   objectType,
 			},
-			train: train,
-			query: query,
+			train:       train,
+			query:       query,
 			groundTruth: groundTruth,
-			distances: distances,
+			distances:   distances,
 		}, nil
 
 	}
@@ -92,12 +92,24 @@ func (d *largeDataset) Train(i int) (interface{}, error) {
 	return d.train.Load(i)
 }
 
+func (d *largeDataset) TrainSize() int {
+	return d.train.Size()
+}
+
 func (d *largeDataset) Query(i int) (interface{}, error) {
 	return d.query.Load(i)
 }
 
+func (d *largeDataset) QuerySize() int {
+	return d.query.Size()
+}
+
 func (d *largeDataset) Distance(i int) ([]float32, error) {
 	return d.distances.LoadFloat32(i)
+}
+
+func (d *largeDataset) DistanceSize() int {
+	return d.distances.Size()
 }
 
 func (d *largeDataset) Neighbor(i int) ([]int, error) {
@@ -105,6 +117,10 @@ func (d *largeDataset) Neighbor(i int) ([]int, error) {
 		return nil, ErrOutOfBounds
 	}
 	return d.groundTruth[i], nil
+}
+
+func (d *largeDataset) NeighborSize() int {
+	return len(d.groundTruth)
 }
 
 func (d *largeDataset) Dimension() int {

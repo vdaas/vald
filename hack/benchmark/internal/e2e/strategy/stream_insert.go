@@ -19,6 +19,7 @@ package strategy
 
 import (
 	"context"
+	"fmt"
 	"sync/atomic"
 	"testing"
 
@@ -38,8 +39,6 @@ func NewStreamInsert(opts ...StreamInsertOption) e2e.Strategy {
 }
 
 func (sisrt *streamInsert) dataProvider(total *uint32, b *testing.B, dataset assets.Dataset) func() *client.ObjectVector {
-	ids, trains := dataset.IDs(), dataset.Train()
-
 	var cnt uint32
 
 	b.StopTimer()
@@ -54,9 +53,13 @@ func (sisrt *streamInsert) dataProvider(total *uint32, b *testing.B, dataset ass
 		}
 
 		total := int(atomic.AddUint32(total, 1)) - 1
+		v, err := dataset.Train(total % dataset.TrainSize())
+		if err != nil {
+			return nil
+		}
 		return &client.ObjectVector{
-			Id:     ids[total%len(ids)],
-			Vector: trains[total%len(trains)],
+			Id:     fmt.Sprint(n),
+			Vector: v.([]float32),
 		}
 	}
 }

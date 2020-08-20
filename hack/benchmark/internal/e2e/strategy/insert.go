@@ -19,6 +19,7 @@ package strategy
 
 import (
 	"context"
+	"fmt"
 	"sync/atomic"
 	"testing"
 
@@ -50,14 +51,17 @@ func (isrt *insert) Run(ctx context.Context, b *testing.B, c client.Client, data
 func (isrt *insert) run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
 	cnt := 0
 	b.Run("Insert", func(bb *testing.B) {
-		ids, train := dataset.IDs(), dataset.Train()
-
 		bb.StopTimer()
 		bb.ReportAllocs()
 		bb.ResetTimer()
 		bb.StartTimer()
 		for i := 0; i < bb.N; i++ {
-			isrt.do(ctx, bb, c, ids[cnt%len(ids)], train[cnt%len(train)])
+			v, err := dataset.Train(cnt % dataset.TrainSize())
+			if err != nil {
+				cnt = 0
+				break
+			}
+			isrt.do(ctx, bb, c, fmt.Sprint(cnt), v.([]float32))
 			cnt++
 		}
 		bb.StopTimer()
@@ -67,8 +71,6 @@ func (isrt *insert) run(ctx context.Context, b *testing.B, c client.Client, data
 func (isrt *insert) runParallel(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
 	var cnt int64
 	b.Run("ParallelInsert", func(bb *testing.B) {
-		ids, train := dataset.IDs(), dataset.Train()
-
 		bb.StopTimer()
 		bb.ReportAllocs()
 		bb.ResetTimer()
@@ -76,7 +78,13 @@ func (isrt *insert) runParallel(ctx context.Context, b *testing.B, c client.Clie
 		bb.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				n := int(atomic.AddInt64(&cnt, 1)) - 1
-				isrt.do(ctx, bb, c, ids[n%len(ids)], train[n%len(train)])
+				v, err := dataset.Train(n % dataset.TrainSize())
+				if err != nil {
+					cnt = 0
+					break
+				}
+
+				isrt.do(ctx, bb, c, fmt.Sprint(cnt), v.([]float32))
 			}
 		})
 		bb.StopTimer()

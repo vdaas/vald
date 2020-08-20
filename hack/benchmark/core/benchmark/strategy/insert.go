@@ -32,14 +32,20 @@ func NewInsert(opts ...StrategyOption) benchmark.Strategy {
 		WithPropName("Insert"),
 		WithProp32(
 			func(ctx context.Context, b *testing.B, c core.Core32, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
-				train := dataset.Train()
-				return c.Insert(train[int(atomic.LoadUint64(cnt))%len(train)])
+				v, err := dataset.Train(int(atomic.LoadUint64(cnt)) % dataset.TrainSize())
+				if err != nil {
+					return nil, err
+				}
+				return c.Insert(v.([]float32))
 			},
 		),
 		WithProp64(
 			func(ctx context.Context, b *testing.B, c core.Core64, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
-				train := dataset.TrainAsFloat64()
-				return c.Insert(train[int(atomic.LoadUint64(cnt))%len(train)])
+				v, err := dataset.Train(int(atomic.LoadUint64(cnt)) % dataset.TrainSize())
+				if err != nil {
+					return nil, err
+				}
+				return c.Insert(float32To64(v.([]float32)))
 			},
 		),
 	}, opts...)...)

@@ -37,8 +37,11 @@ func NewSearch(size int, epsilon, radius float32, opts ...StrategyOption) benchm
 		),
 		WithProp32(
 			func(ctx context.Context, b *testing.B, c core.Core32, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
-				query := dataset.Query()
-				return c.Search(query[int(atomic.LoadUint64(cnt))%len(query)], size, epsilon, radius)
+				v, err := dataset.Query(int(atomic.LoadUint64(cnt)) % dataset.TrainSize())
+				if err != nil {
+					return nil, err
+				}
+				return c.Search(v.([]float32), size, epsilon, radius)
 			},
 		),
 		WithPreProp64(
@@ -48,8 +51,11 @@ func NewSearch(size int, epsilon, radius float32, opts ...StrategyOption) benchm
 		),
 		WithProp64(
 			func(ctx context.Context, b *testing.B, c core.Core64, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
-				query := dataset.QueryAsFloat64()
-				return c.Search(query[int(atomic.LoadUint64(cnt))%len(query)], size, epsilon, radius)
+				v, err := dataset.Train(int(atomic.LoadUint64(cnt)) % dataset.TrainSize())
+				if err != nil {
+					return nil, err
+				}
+				return c.Search(float32To64(v.([]float32)), size, epsilon, radius)
 			},
 		),
 	}, opts...)...)

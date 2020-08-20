@@ -29,7 +29,7 @@ const (
 )
 
 var (
-	ErrOutOfBounds = errors.New("out of bounds")
+	ErrOutOfBounds         = errors.New("out of bounds")
 	ErrUnsupportedFileType = errors.New("unsupported file type")
 )
 
@@ -92,7 +92,7 @@ func open(fname string, elementSize int) (f *file, err error) {
 	}
 
 	dim := int(*(*int32)(unsafe.Pointer(&mem[0])))
-	block := headerSize + dim * elementSize
+	block := headerSize + dim*elementSize
 	return &file{
 		mem:   mem,
 		dim:   dim,
@@ -110,7 +110,7 @@ func (f *file) load(i int) ([]byte, error) {
 		return nil, ErrOutOfBounds
 	}
 
-	return f.mem[i*f.block+headerSize:(i+1)*f.block], nil
+	return f.mem[i*f.block+headerSize : (i+1)*f.block], nil
 }
 
 func (f *file) Dimension() int {

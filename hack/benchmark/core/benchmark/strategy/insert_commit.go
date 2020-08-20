@@ -32,14 +32,20 @@ func NewInsertCommit(poolSize uint32, opts ...StrategyOption) benchmark.Strategy
 		WithPropName("InsertCommit"),
 		WithProp32(
 			func(ctx context.Context, b *testing.B, c core.Core32, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
-				train := dataset.Train()
-				return c.InsertCommit(train[int(atomic.LoadUint64(cnt))%len(train)], poolSize)
+				v, err := dataset.Train(int(atomic.LoadUint64(cnt)) % dataset.TrainSize())
+				if err != nil {
+					return nil, err
+				}
+				return c.InsertCommit(v.([]float32), poolSize)
 			},
 		),
 		WithProp64(
 			func(ctx context.Context, b *testing.B, c core.Core64, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
-				train := dataset.TrainAsFloat64()
-				return c.InsertCommit(train[int(atomic.LoadUint64(cnt))%len(train)], poolSize)
+				v, err := dataset.Train(int(atomic.LoadUint64(cnt)) % dataset.TrainSize())
+				if err != nil {
+					return nil, err
+				}
+				return c.InsertCommit(float32To64(v.([]float32)), poolSize)
 			},
 		),
 	}, opts...)...)
