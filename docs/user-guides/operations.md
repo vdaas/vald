@@ -8,14 +8,16 @@ This page introduces best practices for operating a Vald cluster.
 
 ### Kubernetes cluster
 
-Since Vald agents hold vector data on their memory, unexpected disruption or eviction of agents may cause loss of indices.
+Since Vald agents stores vector data on their memory space, unexpected disruption or eviction of agents may cause loss of indices.
 Also, disruption or deletion of worker nodes that have Vald agents may cause loss of indices.
-To minimize the loss of indices, it is better to increase number of nodes and pods.
+If you need to prevent low accuracy effects caused by indices loss, it is better to increase the number of nodes and pods.
 
 However, to maximize the efficiency of search operations, it is better to have a certain amount of vectors in each NGT vector space.
 
-It is recommended to have more than 3 worker nodes with larger than 16 GB RAM.
+We recommend to have more than 3 worker nodes with enough memory for the workload.
 It is better to deploy 2 or 3 Vald agent pods to each worker node.
+If you want to store 100 million vectors with 128 dimensions, `8bytes(64bit float) x 128(dimension) x 100 million x N replicas`, so a total of 100GB x N memory space is needed.
+If the number of replicas of the index is three, which means N=3, the total amount of memory space for the whole cluster will be 300 GB at least.
 
 For example:
 
@@ -31,7 +33,7 @@ If you're going to deploy Vald on multi-tenant cluster, please take care about t
     - If you are using [the Vald chart][vald-helm-chart], PriorityClasses are defined by default.
 - It is recommended to define unique namespaces for each Vald and the other apps.
 - Then, please define ResourceQuotas for the namespace for the other apps to limit the memory usage of them.
-    - For more info, please visit tha page [Resource Quotas][resource-quota].
+    - For more info, please visit this page [Resource Quotas][resource-quota].
 
 ## Monitoring
 
@@ -44,24 +46,24 @@ The levels are defined in [the Coding Style document][coding-style-logging].
 ### Observability features of Vald
 
 The observability features are useful for monitoring Vald components.
-Vald has various types of exporters, such as Prometheus, Jaeger or Stackdriver.
+Vald has various types of exporters, such as Prometheus, Jaeger, or Stackdriver.
 Using this feature, you can observe and visualize the internal stats or the events like the number of NGT index, when to create index, or the number of RPCs.
 
 ### Enabling observability feature
 
-By setting `defaults.observability.enabled` (or `[component].observability.enabled`) in the Helm Chart values to the value `true`, the observability features become enabled.
+By setting `defaults.observability.enabled` (or `[component].observability.enabled`) in the Helm Chart value set to `true`, the observability features become enabled.
 If observability features are enabled, the metrics will be collected periodically.
 The duration can be set on `observability.collector.duration`.
 
-If you'd like to use tracing feature, you should enable it by setting `observability.trace.enabled` to the value `true`. The sampling rate can be configured with `observability.trace.sampling_rate`
+If you'd like to use the tracing feature, you should enable it by setting `observability.trace.enabled` set to `true`. The sampling rate can be configured with `observability.trace.sampling_rate`
 
 ### Monitoring Vald cluster using Prometheus and Grafana
 
-In this section, an example of monitoring Vald cluster using [Prometheus][prometheus-io] and [Grafana][grafana] will be shown.
+In this section, an example of monitoring the Vald cluster using [Prometheus][prometheus-io] and [Grafana][grafana] will be shown.
 
 #### Vald configuration
 
-To use Prometheus exporter, you should enable it by setting both `observability.prometheus.enabled` and `server_config.metrics.prometheus.enabled` to the value `true`.
+To use the Prometheus exporter, you should enable it by setting both `observability.prometheus.enabled` and `server_config.metrics.prometheus.enabled` set to `true`.
 The exporter port and endpoint are specified in each `server_config.metrics.prometheus.port` and `observability.prometheus.endpoint`.
 
 Now it's ready to scrape Vald metrics.
@@ -69,7 +71,7 @@ Please deploy Prometheus and Grafana to your cluster.
 
 #### Deploy Prometheus
 
-Prometheus can be installed using one of the followings.
+Prometheus can be installed using one of the following.
 
 - [Prometheus Operator][prometheus-operator]
 - [Prometheus deployments in Vald repository][vald-prometheus]
@@ -79,7 +81,7 @@ It is recommended to use the endpoints role of the service discovery.
 
 #### Deploy Grafana
 
-Grafana can be installed using one of the followings.
+Grafana can be installed using one of the following.
 
 - [Grafana Operator][grafana-operator]
 - [Grafana deployments in Vald repository][vald-grafana]
@@ -97,7 +99,7 @@ This is an example of a custom dashboard. It is based on [our standard dashboard
 ## Upgrading
 
 Our versioning strategy is based on [Semantic Versioning][semver].
-Upgrading to new minor or major version may require you to change your configurations.
+Upgrading to new vesion such as minor or major may require you to change your configurations.
 Please read the [CHANGELOG][CHANGELOG] before upgrading.
 
 ### In case of manual deploy
