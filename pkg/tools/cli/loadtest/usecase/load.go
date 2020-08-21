@@ -45,7 +45,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		cfg.Client.Opts(),
 		grpc.WithAddrs(cfg.Addr),
 		grpc.WithErrGroup(run.eg),
-		grpc.WithResolveDNS(cfg.ResolveDNS),
 	)
 	run.client = grpc.New(clientOpts...)
 
