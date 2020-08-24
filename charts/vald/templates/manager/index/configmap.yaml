@@ -59,4 +59,5 @@ data:
       auto_index_duration_limit: {{ .Values.indexManager.indexer.auto_index_duration_limit }}
       auto_index_check_duration: {{ .Values.indexManager.indexer.auto_index_check_duration }}
       auto_index_length: {{ .Values.indexManager.indexer.auto_index_length }}
+      creation_pool_size: {{ .Values.indexManager.indexer.creation_pool_size }}
 {{- end }}
