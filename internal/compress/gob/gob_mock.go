@@ -50,5 +50,5 @@ func (m *MockTranscoder) NewEncoder(w io.Writer) Encoder {
 
 // NewDecoder calls NewEncoderFunc.
 func (m *MockTranscoder) NewDecoder(r io.Reader) Decoder {
-	return m.NewDecoder(r)
+	return m.NewDecoderFunc(r)
 }

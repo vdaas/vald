@@ -42,7 +42,7 @@ func (m *MockWriter) Write(p []byte) (n int, err error) {
 
 // Close calls CloseFunc.
 func (m *MockWriter) Close() error {
-	return m.Close()
+	return m.CloseFunc()
 }
 
 // Header calls HeaderFunc.
