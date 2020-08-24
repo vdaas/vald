@@ -22,17 +22,20 @@ import (
 	"io"
 	"reflect"
 
-	lz4 "github.com/pierrec/lz4/v3"
+	"github.com/vdaas/vald/internal/compress/lz4"
 	"github.com/vdaas/vald/internal/errors"
 )
 
 type lz4Compressor struct {
 	gobc             Compressor
 	compressionLevel int
+	lz4              lz4.LZ4
 }
 
 func NewLZ4(opts ...LZ4Option) (Compressor, error) {
-	c := new(lz4Compressor)
+	c := &lz4Compressor{
+		lz4: lz4.New(),
+	}
 	for _, opt := range append(defaultLZ4Opts, opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
@@ -49,8 +52,7 @@ func (l *lz4Compressor) CompressVector(vector []float32) ([]byte, error) {
 	}
 
 	buf := new(bytes.Buffer)
-	zw := lz4.NewWriter(buf)
-	zw.Header.CompressionLevel = l.compressionLevel
+	zw := l.lz4.NewWriterLevel(buf, l.compressionLevel)
 	defer func() {
 		cerr := zw.Close()
 		if cerr != nil {
@@ -73,7 +75,7 @@ func (l *lz4Compressor) CompressVector(vector []float32) ([]byte, error) {
 
 func (l *lz4Compressor) DecompressVector(bs []byte) ([]float32, error) {
 	buf := new(bytes.Buffer)
-	zr := lz4.NewReader(bytes.NewReader(bs))
+	zr := l.lz4.NewReader(bytes.NewReader(bs))
 	_, err := io.Copy(buf, zr)
 	if err != nil {
 		return nil, err
@@ -90,14 +92,14 @@ func (l *lz4Compressor) DecompressVector(bs []byte) ([]float32, error) {
 func (l *lz4Compressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
 	return &lz4Reader{
 		src: src,
-		r:   lz4.NewReader(src),
+		r:   l.lz4.NewReader(src),
 	}, nil
 }
 
 func (l *lz4Compressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
 	return &lz4Writer{
 		dst: dst,
-		w:   lz4.NewWriter(dst),
+		w:   l.lz4.NewWriter(dst),
 	}, nil
 }
 

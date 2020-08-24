@@ -22,48 +22,10 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/compress/gzip"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
-
-func TestGzipCompressVector(t *testing.T) {
-	tests := []struct {
-		vector []float32
-	}{
-		{
-			vector: []float32{0.1, 0.2, 0.3},
-		},
-		{
-			vector: []float32{0.4, 0.2, 0.3, 0.1},
-		},
-		{
-			vector: []float32{0.1, 0.5, 0.12, 0.13, 1.0},
-		},
-	}
-
-	for _, tc := range tests {
-		gzipc, err := NewGzip()
-		if err != nil {
-			t.Fatalf("initialize failed: %s", err)
-		}
-
-		compressed, err := gzipc.CompressVector(tc.vector)
-		if err != nil {
-			t.Fatalf("Compress failed: %s", err)
-		}
-
-		decompressed, err := gzipc.DecompressVector(compressed)
-		if err != nil {
-			t.Fatalf("Decompress failed: %s", err)
-		}
-		t.Logf("converted: origin %+v, compressed -> decompressed %+v", tc.vector, decompressed)
-		for i := range tc.vector {
-			if tc.vector[i] != decompressed[i] {
-				t.Fatalf("Invalid convert: origin %+v, compressed -> decompressed %+v", tc.vector, decompressed)
-			}
-		}
-	}
-}
 
 func TestNewGzip(t *testing.T) {
 	type args struct {
@@ -91,31 +53,37 @@ func TestNewGzip(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns (Compressor, nil) when option is empty",
+			args: args{
+				opts: nil,
+			},
+			want: want{
+				want: &gzipCompressor{
+					gobc: func() (gob Compressor) {
+						gob, _ = NewGob()
+						return
+					}(),
+					compressionLevel: gzip.DefaultCompression,
+					gzip:             gzip.New(),
+				},
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns (nil, error) when option apply fails",
+			args: args{
+				opts: []GzipOption{
+					func(*gzipCompressor) error {
+						return errors.New("err")
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -135,7 +103,6 @@ func TestNewGzip(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -147,6 +114,7 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 	type fields struct {
 		gobc             Compressor
 		compressionLevel int
+		gzip             gzip.Gzip
 	}
 	type want struct {
 		want []byte
@@ -157,11 +125,11 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, []byte, error) error
+		checkFunc  func(want, []byte, error, *gzipCompressor) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got []byte, err error) error {
+	defaultCheckFunc := func(w want, got []byte, err error, _ *gzipCompressor) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -171,39 +139,138 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           vector: nil,
-		       },
-		       fields: fields {
-		           gobc: nil,
-		           compressionLevel: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns ([]byte, nil) when no error occurs",
+			args: args{
+				vector: []float32{1, 2},
+			},
+			fields: fields{
+				compressionLevel: gzip.DefaultCompression,
+				gzip: &gzip.MockGzip{
+					NewWriterLevelFunc: func(w io.Writer, level int) (gzip.Writer, error) {
+						return &gzip.MockWriter{
+							WriteFunc: func(p []byte) (n int, err error) {
+								return w.Write(p)
+							},
+							CloseFunc: func() error {
+								return nil
+							},
+						}, nil
+					},
+				},
+				gobc: &MockCompressor{
+					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
+						return []byte("vdaas/vald"), nil
+					},
+				},
+			},
+			want: want{
+				want: []byte("vdaas/vald"),
+				err:  nil,
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           vector: nil,
-		           },
-		           fields: fields {
-		           gobc: nil,
-		           compressionLevel: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns (nil, error) when initialize writer level fails",
+			args: args{
+				vector: []float32{1, 2},
+			},
+			fields: fields{
+				compressionLevel: gzip.DefaultCompression,
+				gzip: &gzip.MockGzip{
+					NewWriterLevelFunc: func(w io.Writer, level int) (gzip.Writer, error) {
+						return nil, errors.New("err")
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("err"),
+			},
+		},
+
+		{
+			name: "returns (nil, error) when compress vector fails",
+			args: args{
+				vector: []float32{1, 2},
+			},
+			fields: fields{
+				compressionLevel: gzip.DefaultCompression,
+				gzip: &gzip.MockGzip{
+					NewWriterLevelFunc: func(w io.Writer, level int) (gzip.Writer, error) {
+						return new(gzip.MockWriter), nil
+					},
+				},
+				gobc: &MockCompressor{
+					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
+						return nil, errors.New("err")
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("err"),
+			},
+		},
+
+		{
+			name: "returns (nil, error) when write fails",
+			args: args{
+				vector: []float32{1, 2},
+			},
+			fields: fields{
+				compressionLevel: gzip.DefaultCompression,
+				gzip: &gzip.MockGzip{
+					NewWriterLevelFunc: func(w io.Writer, level int) (gzip.Writer, error) {
+						return &gzip.MockWriter{
+							WriteFunc: func(p []byte) (n int, err error) {
+								return 0, errors.New("err")
+							},
+						}, nil
+					},
+				},
+				gobc: &MockCompressor{
+					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
+						return []byte{}, nil
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("err"),
+			},
+		},
+
+		{
+			name: "returns (nil, error) when close fails",
+			args: args{
+				vector: []float32{1, 2},
+			},
+			fields: fields{
+				compressionLevel: gzip.DefaultCompression,
+				gzip: &gzip.MockGzip{
+					NewWriterLevelFunc: func(w io.Writer, level int) (gzip.Writer, error) {
+						return &gzip.MockWriter{
+							WriteFunc: func(p []byte) (n int, err error) {
+								return 10, nil
+							},
+							CloseFunc: func() error {
+								return errors.New("err")
+							},
+						}, nil
+					},
+				},
+				gobc: &MockCompressor{
+					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
+						return []byte{}, nil
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -218,16 +285,89 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+
 			g := &gzipCompressor{
 				gobc:             test.fields.gobc,
 				compressionLevel: test.fields.compressionLevel,
+				gzip:             test.fields.gzip,
 			}
 
 			got, err := g.CompressVector(test.args.vector)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := test.checkFunc(test.want, got, err, g); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+		})
+	}
+}
 
+func Test_E2E_gzipCompressor_CompressVector(t *testing.T) {
+	type args struct {
+		vector []float32
+	}
+	type want struct {
+		want []float32
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, []byte, error, Compressor) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got []byte, err error, g Compressor) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		decompressed, err := g.DecompressVector(got)
+		if err != nil {
+			return errors.Errorf("decompress error: %v", err)
+		}
+		if !reflect.DeepEqual(decompressed, w.want) {
+			return errors.Errorf("decompressed got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "compression success",
+			args: args{
+				vector: []float32{
+					0.1, 0.2, 0.3, 0.4,
+				},
+			},
+			want: want{
+				want: []float32{
+					0.1, 0.2, 0.3, 0.4,
+				},
+				err: nil,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			g, err := NewGzip()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got, err := g.CompressVector(test.args.vector)
+			if err := test.checkFunc(test.want, got, err, g); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }
@@ -237,8 +377,8 @@ func Test_gzipCompressor_DecompressVector(t *testing.T) {
 		bs []byte
 	}
 	type fields struct {
-		gobc             Compressor
-		compressionLevel int
+		gobc Compressor
+		gzip gzip.Gzip
 	}
 	type want struct {
 		want []float32
@@ -249,11 +389,11 @@ func Test_gzipCompressor_DecompressVector(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, []float32, error) error
+		checkFunc  func(want, []float32, error, *gzipCompressor) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got []float32, err error) error {
+	defaultCheckFunc := func(w want, got []float32, err error, _ *gzipCompressor) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -263,39 +403,87 @@ func Test_gzipCompressor_DecompressVector(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           bs: nil,
-		       },
-		       fields: fields {
-		           gobc: nil,
-		           compressionLevel: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "return ([]float32, nil) when no error occurs internally",
+			fields: fields{
+				gzip: &gzip.MockGzip{
+					NewReaderFunc: func(r io.Reader) (gzip.Reader, error) {
+						return &gzip.MockReader{
+							ReadFunc: func(p []byte) (n int, err error) {
+								return 10, io.EOF
+							},
+						}, nil
+					},
+				},
+				gobc: &MockCompressor{
+					DecompressVectorFunc: func(bytes []byte) (vector []float32, err error) {
+						return []float32{1, 2, 3}, nil
+					},
+				},
+			},
+			want: want{
+				want: []float32{1, 2, 3},
+				err:  nil,
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           bs: nil,
-		           },
-		           fields: fields {
-		           gobc: nil,
-		           compressionLevel: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return (nil, error) when initialize reader fails",
+			fields: fields{
+				gzip: &gzip.MockGzip{
+					NewReaderFunc: func(r io.Reader) (gzip.Reader, error) {
+						return nil, errors.New("err")
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("err"),
+			},
+		},
+
+		{
+			name: "return (nil, error) when copy fails",
+			fields: fields{
+				gzip: &gzip.MockGzip{
+					NewReaderFunc: func(r io.Reader) (gzip.Reader, error) {
+						return &gzip.MockReader{
+							ReadFunc: func(p []byte) (n int, err error) {
+								return 0, errors.New("err")
+							},
+						}, nil
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("err"),
+			},
+		},
+
+		{
+			name: "return (nil, error) when decompress vector fails",
+			fields: fields{
+				gzip: &gzip.MockGzip{
+					NewReaderFunc: func(r io.Reader) (gzip.Reader, error) {
+						return &gzip.MockReader{
+							ReadFunc: func(p []byte) (n int, err error) {
+								return 10, io.EOF
+							},
+						}, nil
+					},
+				},
+				gobc: &MockCompressor{
+					DecompressVectorFunc: func(bytes []byte) (vector []float32, err error) {
+						return nil, errors.New("err")
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -311,15 +499,14 @@ func Test_gzipCompressor_DecompressVector(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			g := &gzipCompressor{
-				gobc:             test.fields.gobc,
-				compressionLevel: test.fields.compressionLevel,
+				gobc: test.fields.gobc,
+				gzip: test.fields.gzip,
 			}
 
 			got, err := g.DecompressVector(test.args.bs)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := test.checkFunc(test.want, got, err, g); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -329,8 +516,7 @@ func Test_gzipCompressor_Reader(t *testing.T) {
 		src io.ReadCloser
 	}
 	type fields struct {
-		gobc             Compressor
-		compressionLevel int
+		gzip gzip.Gzip
 	}
 	type want struct {
 		want io.ReadCloser
@@ -355,39 +541,52 @@ func Test_gzipCompressor_Reader(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           src: nil,
-		       },
-		       fields: fields {
-		           gobc: nil,
-		           compressionLevel: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			var (
+				src = new(gzip.MockReader)
+				r   = new(gzip.MockReader)
+			)
+			return test{
+				name: "returns (io.ReadCloser, nil) when no error occurs internally",
+				args: args{
+					src: src,
+				},
+				fields: fields{
+					gzip: &gzip.MockGzip{
+						NewReaderFunc: func(io.Reader) (gzip.Reader, error) {
+							return r, nil
+						},
+					},
+				},
+				want: want{
+					want: &gzipReader{
+						src: src,
+						r:   r,
+					},
+				},
+			}
+		}(),
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           src: nil,
-		           },
-		           fields: fields {
-		           gobc: nil,
-		           compressionLevel: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			src := new(gzip.MockReader)
+			return test{
+				name: "returns (io.ReadCloser, nil) when no error occurs internally",
+				args: args{
+					src: src,
+				},
+				fields: fields{
+					gzip: &gzip.MockGzip{
+						NewReaderFunc: func(io.Reader) (gzip.Reader, error) {
+							return nil, errors.New("err")
+						},
+					},
+				},
+				want: want{
+					want: nil,
+					err:  errors.New("err"),
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -403,15 +602,13 @@ func Test_gzipCompressor_Reader(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			g := &gzipCompressor{
-				gobc:             test.fields.gobc,
-				compressionLevel: test.fields.compressionLevel,
+				gzip: test.fields.gzip,
 			}
 
 			got, err := g.Reader(test.args.src)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -421,8 +618,8 @@ func Test_gzipCompressor_Writer(t *testing.T) {
 		dst io.WriteCloser
 	}
 	type fields struct {
-		gobc             Compressor
 		compressionLevel int
+		gzip             gzip.Gzip
 	}
 	type want struct {
 		want io.WriteCloser
@@ -447,39 +644,52 @@ func Test_gzipCompressor_Writer(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dst: nil,
-		       },
-		       fields: fields {
-		           gobc: nil,
-		           compressionLevel: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			var (
+				dst = new(gzip.MockWriter)
+				w   = new(gzip.MockWriter)
+			)
+			return test{
+				name: "returns (io.WriteCloser, nil) when no error occurs internally",
+				args: args{
+					dst: dst,
+				},
+				fields: fields{
+					gzip: &gzip.MockGzip{
+						NewWriterLevelFunc: func(io.Writer, int) (gzip.Writer, error) {
+							return w, nil
+						},
+					},
+				},
+				want: want{
+					want: &gzipWriter{
+						dst: dst,
+						w:   w,
+					},
+					err: nil,
+				},
+			}
+		}(),
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dst: nil,
-		           },
-		           fields: fields {
-		           gobc: nil,
-		           compressionLevel: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			return test{
+				name: "returns (io.WriteCloser, nil) when no error occurs internally",
+				args: args{
+					dst: new(gzip.MockWriter),
+				},
+				fields: fields{
+					gzip: &gzip.MockGzip{
+						NewWriterLevelFunc: func(io.Writer, int) (gzip.Writer, error) {
+							return nil, errors.New("err")
+						},
+					},
+				},
+				want: want{
+					want: nil,
+					err:  errors.New("err"),
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -495,15 +705,14 @@ func Test_gzipCompressor_Writer(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			g := &gzipCompressor{
-				gobc:             test.fields.gobc,
 				compressionLevel: test.fields.compressionLevel,
+				gzip:             test.fields.gzip,
 			}
 
 			got, err := g.Writer(test.args.dst)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -539,39 +748,23 @@ func Test_gzipReader_Read(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           p: nil,
-		       },
-		       fields: fields {
-		           src: nil,
-		           r: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           p: nil,
-		           },
-		           fields: fields {
-		           src: nil,
-		           r: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns nil when read success",
+			args: args{
+				p: []byte{},
+			},
+			fields: fields{
+				r: &MockReadCloser{
+					ReadFunc: func(p []byte) (n int, err error) {
+						return 10, nil
+					},
+				},
+			},
+			want: want{
+				wantN: 10,
+				err:   nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -623,33 +816,81 @@ func Test_gzipReader_Close(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           src: nil,
-		           r: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns nil when close success",
+			fields: fields{
+				src: &MockReadCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+				r: &MockReadCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+			},
+			want: want{
+				err: nil,
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           src: nil,
-		           r: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns error when close fails",
+			fields: fields{
+				src: &MockReadCloser{
+					CloseFunc: func() error {
+						return errors.New("serr")
+					},
+				},
+				r: &MockReadCloser{
+					CloseFunc: func() error {
+						return errors.New("rerr")
+					},
+				},
+			},
+			want: want{
+				err: errors.Wrap(errors.New("serr"), errors.New("rerr").Error()),
+			},
+		},
+
+		{
+			name: "returns error when close of r fails",
+			fields: fields{
+				src: &MockReadCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+				r: &MockReadCloser{
+					CloseFunc: func() error {
+						return errors.New("rerr")
+					},
+				},
+			},
+			want: want{
+				err: errors.Wrap(nil, errors.New("rerr").Error()),
+			},
+		},
+
+		{
+			name: "returns error when close of src fails",
+			fields: fields{
+				src: &MockReadCloser{
+					CloseFunc: func() error {
+						return errors.New("serr")
+					},
+				},
+				r: &MockReadCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+			},
+			want: want{
+				err: errors.New("serr"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -709,39 +950,23 @@ func Test_gzipWriter_Write(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           p: nil,
-		       },
-		       fields: fields {
-		           dst: nil,
-		           w: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           p: nil,
-		           },
-		           fields: fields {
-		           dst: nil,
-		           w: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns nil when write success",
+			args: args{
+				p: []byte{},
+			},
+			fields: fields{
+				w: &MockWriteCloser{
+					WriteFunc: func(p []byte) (n int, err error) {
+						return 10, nil
+					},
+				},
+			},
+			want: want{
+				wantN: 10,
+				err:   nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -793,33 +1018,81 @@ func Test_gzipWriter_Close(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           dst: nil,
-		           w: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns nil when close success",
+			fields: fields{
+				dst: &MockWriteCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+				w: &MockWriteCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+			},
+			want: want{
+				err: nil,
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           dst: nil,
-		           w: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns error when close fails",
+			fields: fields{
+				dst: &MockWriteCloser{
+					CloseFunc: func() error {
+						return errors.New("derr")
+					},
+				},
+				w: &MockWriteCloser{
+					CloseFunc: func() error {
+						return errors.New("werr")
+					},
+				},
+			},
+			want: want{
+				err: errors.Wrap(errors.New("derr"), errors.New("werr").Error()),
+			},
+		},
+
+		{
+			name: "returns error when close of w fails",
+			fields: fields{
+				dst: &MockWriteCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+				w: &MockWriteCloser{
+					CloseFunc: func() error {
+						return errors.New("werr")
+					},
+				},
+			},
+			want: want{
+				err: errors.Wrap(nil, errors.New("werr").Error()),
+			},
+		},
+
+		{
+			name: "returns error when close of dst fails",
+			fields: fields{
+				dst: &MockWriteCloser{
+					CloseFunc: func() error {
+						return errors.New("derr")
+					},
+				},
+				w: &MockWriteCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+			},
+			want: want{
+				err: errors.New("derr"),
+			},
+		},
 	}
 
 	for _, test := range tests {

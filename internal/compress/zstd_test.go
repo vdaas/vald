@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/klauspost/compress/zstd"
+	"github.com/vdaas/vald/internal/compress/zstd"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
