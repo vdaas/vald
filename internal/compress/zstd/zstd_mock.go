@@ -65,18 +65,18 @@ func (m *MockDecoder) WriteTo(w io.Writer) (int64, error) {
 	return m.WriteToFunc(w)
 }
 
-// MockTranscoder represents mock struct of Transcoder.
-type MockTranscoder struct {
+// MockZstd represents mock struct of Zstd.
+type MockZstd struct {
 	NewWriterFunc func(w io.Writer, opts ...zstd.EOption) (Encoder, error)
 	NewReaderFunc func(r io.Reader, opts ...zstd.DOption) (Decoder, error)
 }
 
 // NewWriter calls NewWriterFunc.
-func (m *MockTranscoder) NewWriter(w io.Writer, opts ...zstd.EOption) (Encoder, error) {
+func (m *MockZstd) NewWriter(w io.Writer, opts ...zstd.EOption) (Encoder, error) {
 	return m.NewWriterFunc(w, opts...)
 }
 
 // NewReader calls NewReader.
-func (m *MockTranscoder) NewReader(r io.Reader, opts ...zstd.DOption) (Decoder, error) {
+func (m *MockZstd) NewReader(r io.Reader, opts ...zstd.DOption) (Decoder, error) {
 	return m.NewReaderFunc(r, opts...)
 }

@@ -65,7 +65,7 @@ func TestNewGzip(t *testing.T) {
 						return
 					}(),
 					compressionLevel: gzip.DefaultCompression,
-					io:               gzip.New(),
+					gzip:             gzip.New(),
 				},
 			},
 		},
@@ -114,7 +114,7 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 	type fields struct {
 		gobc             Compressor
 		compressionLevel int
-		io               gzip.Io
+		gzip             gzip.Gzip
 	}
 	type want struct {
 		want []byte
@@ -146,7 +146,7 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 			},
 			fields: fields{
 				compressionLevel: gzip.DefaultCompression,
-				io: &gzip.MockIo{
+				gzip: &gzip.MockGzip{
 					NewWriterLevelFunc: func(w io.Writer, level int) (gzip.Writer, error) {
 						return &gzip.MockWriter{
 							WriteFunc: func(p []byte) (n int, err error) {
@@ -177,7 +177,7 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 			},
 			fields: fields{
 				compressionLevel: gzip.DefaultCompression,
-				io: &gzip.MockIo{
+				gzip: &gzip.MockGzip{
 					NewWriterLevelFunc: func(w io.Writer, level int) (gzip.Writer, error) {
 						return nil, errors.New("err")
 					},
@@ -196,7 +196,7 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 			},
 			fields: fields{
 				compressionLevel: gzip.DefaultCompression,
-				io: &gzip.MockIo{
+				gzip: &gzip.MockGzip{
 					NewWriterLevelFunc: func(w io.Writer, level int) (gzip.Writer, error) {
 						return new(gzip.MockWriter), nil
 					},
@@ -220,7 +220,7 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 			},
 			fields: fields{
 				compressionLevel: gzip.DefaultCompression,
-				io: &gzip.MockIo{
+				gzip: &gzip.MockGzip{
 					NewWriterLevelFunc: func(w io.Writer, level int) (gzip.Writer, error) {
 						return &gzip.MockWriter{
 							WriteFunc: func(p []byte) (n int, err error) {
@@ -248,7 +248,7 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 			},
 			fields: fields{
 				compressionLevel: gzip.DefaultCompression,
-				io: &gzip.MockIo{
+				gzip: &gzip.MockGzip{
 					NewWriterLevelFunc: func(w io.Writer, level int) (gzip.Writer, error) {
 						return &gzip.MockWriter{
 							WriteFunc: func(p []byte) (n int, err error) {
@@ -289,7 +289,7 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 			g := &gzipCompressor{
 				gobc:             test.fields.gobc,
 				compressionLevel: test.fields.compressionLevel,
-				io:               test.fields.io,
+				gzip:             test.fields.gzip,
 			}
 
 			got, err := g.CompressVector(test.args.vector)
@@ -378,7 +378,7 @@ func Test_gzipCompressor_DecompressVector(t *testing.T) {
 	}
 	type fields struct {
 		gobc Compressor
-		io   gzip.Io
+		gzip gzip.Gzip
 	}
 	type want struct {
 		want []float32
@@ -404,9 +404,9 @@ func Test_gzipCompressor_DecompressVector(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ([]float32, nil) when no error occurs internaly",
+			name: "return ([]float32, nil) when no error occurs internally",
 			fields: fields{
-				io: &gzip.MockIo{
+				gzip: &gzip.MockGzip{
 					NewReaderFunc: func(r io.Reader) (gzip.Reader, error) {
 						return &gzip.MockReader{
 							ReadFunc: func(p []byte) (n int, err error) {
@@ -430,7 +430,7 @@ func Test_gzipCompressor_DecompressVector(t *testing.T) {
 		{
 			name: "return (nil, error) when initialize reader fails",
 			fields: fields{
-				io: &gzip.MockIo{
+				gzip: &gzip.MockGzip{
 					NewReaderFunc: func(r io.Reader) (gzip.Reader, error) {
 						return nil, errors.New("err")
 					},
@@ -445,7 +445,7 @@ func Test_gzipCompressor_DecompressVector(t *testing.T) {
 		{
 			name: "return (nil, error) when copy fails",
 			fields: fields{
-				io: &gzip.MockIo{
+				gzip: &gzip.MockGzip{
 					NewReaderFunc: func(r io.Reader) (gzip.Reader, error) {
 						return &gzip.MockReader{
 							ReadFunc: func(p []byte) (n int, err error) {
@@ -464,7 +464,7 @@ func Test_gzipCompressor_DecompressVector(t *testing.T) {
 		{
 			name: "return (nil, error) when decompress vector fails",
 			fields: fields{
-				io: &gzip.MockIo{
+				gzip: &gzip.MockGzip{
 					NewReaderFunc: func(r io.Reader) (gzip.Reader, error) {
 						return &gzip.MockReader{
 							ReadFunc: func(p []byte) (n int, err error) {
@@ -500,90 +500,11 @@ func Test_gzipCompressor_DecompressVector(t *testing.T) {
 			}
 			g := &gzipCompressor{
 				gobc: test.fields.gobc,
-				io:   test.fields.io,
+				gzip: test.fields.gzip,
 			}
 
 			got, err := g.DecompressVector(test.args.bs)
 			if err := test.checkFunc(test.want, got, err, g); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_E2E_gzipCompressor_DecompressVector(t *testing.T) {
-	type args struct {
-		bs []byte
-	}
-	type want struct {
-		want []float32
-		err  error
-	}
-	type test struct {
-		name       string
-		argsFunc   func(*testing.T, Compressor) args
-		want       want
-		checkFunc  func(want, []float32, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got []float32, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		{
-			name: "decompression success",
-			argsFunc: func(t *testing.T, c Compressor) args {
-				t.Helper()
-
-				bs, err := c.CompressVector([]float32{
-					0.1, 0.2, 0.3,
-				})
-				if err != nil {
-					t.Fatal(err)
-				}
-				return args{
-					bs: bs,
-				}
-			},
-			want: want{
-				want: []float32{
-					0.1, 0.2, 0.3,
-				},
-				err: nil,
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-
-			g, err := NewGzip()
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			args := test.argsFunc(tt, g)
-
-			if test.beforeFunc != nil {
-				test.beforeFunc(args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got, err := g.DecompressVector(args.bs)
-			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -595,7 +516,7 @@ func Test_gzipCompressor_Reader(t *testing.T) {
 		src io.ReadCloser
 	}
 	type fields struct {
-		io gzip.Io
+		gzip gzip.Gzip
 	}
 	type want struct {
 		want io.ReadCloser
@@ -626,12 +547,12 @@ func Test_gzipCompressor_Reader(t *testing.T) {
 				r   = new(gzip.MockReader)
 			)
 			return test{
-				name: "returns (io.ReadCloser, nil) when no error occurs internaly",
+				name: "returns (io.ReadCloser, nil) when no error occurs internally",
 				args: args{
 					src: src,
 				},
 				fields: fields{
-					io: &gzip.MockIo{
+					gzip: &gzip.MockGzip{
 						NewReaderFunc: func(io.Reader) (gzip.Reader, error) {
 							return r, nil
 						},
@@ -649,12 +570,12 @@ func Test_gzipCompressor_Reader(t *testing.T) {
 		func() test {
 			src := new(gzip.MockReader)
 			return test{
-				name: "returns (io.ReadCloser, nil) when no error occurs internaly",
+				name: "returns (io.ReadCloser, nil) when no error occurs internally",
 				args: args{
 					src: src,
 				},
 				fields: fields{
-					io: &gzip.MockIo{
+					gzip: &gzip.MockGzip{
 						NewReaderFunc: func(io.Reader) (gzip.Reader, error) {
 							return nil, errors.New("err")
 						},
@@ -681,7 +602,7 @@ func Test_gzipCompressor_Reader(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			g := &gzipCompressor{
-				io: test.fields.io,
+				gzip: test.fields.gzip,
 			}
 
 			got, err := g.Reader(test.args.src)
@@ -698,7 +619,7 @@ func Test_gzipCompressor_Writer(t *testing.T) {
 	}
 	type fields struct {
 		compressionLevel int
-		io               gzip.Io
+		gzip             gzip.Gzip
 	}
 	type want struct {
 		want io.WriteCloser
@@ -729,12 +650,12 @@ func Test_gzipCompressor_Writer(t *testing.T) {
 				w   = new(gzip.MockWriter)
 			)
 			return test{
-				name: "returns (io.WriteCloser, nil) when no error occurs internaly",
+				name: "returns (io.WriteCloser, nil) when no error occurs internally",
 				args: args{
 					dst: dst,
 				},
 				fields: fields{
-					io: &gzip.MockIo{
+					gzip: &gzip.MockGzip{
 						NewWriterLevelFunc: func(io.Writer, int) (gzip.Writer, error) {
 							return w, nil
 						},
@@ -752,12 +673,12 @@ func Test_gzipCompressor_Writer(t *testing.T) {
 
 		func() test {
 			return test{
-				name: "returns (io.WriteCloser, nil) when no error occurs internaly",
+				name: "returns (io.WriteCloser, nil) when no error occurs internally",
 				args: args{
 					dst: new(gzip.MockWriter),
 				},
 				fields: fields{
-					io: &gzip.MockIo{
+					gzip: &gzip.MockGzip{
 						NewWriterLevelFunc: func(io.Writer, int) (gzip.Writer, error) {
 							return nil, errors.New("err")
 						},
@@ -785,7 +706,7 @@ func Test_gzipCompressor_Writer(t *testing.T) {
 			}
 			g := &gzipCompressor{
 				compressionLevel: test.fields.compressionLevel,
-				io:               test.fields.io,
+				gzip:             test.fields.gzip,
 			}
 
 			got, err := g.Writer(test.args.dst)

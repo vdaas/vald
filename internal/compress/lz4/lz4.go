@@ -45,27 +45,37 @@ func (w *writer) Header() *Header {
 	return &w.Writer.Header
 }
 
-// Io is an interface to create Writer and Reader implementation.
-type Io interface {
+// LZ4 is an interface to create Writer and Reader implementation.
+type LZ4 interface {
+	NewWriterLevel(w io.Writer, level int) Writer
 	NewWriter(w io.Writer) Writer
 	NewReader(r io.Reader) Reader
 }
 
-type lz4Io struct{}
+type compress struct{}
 
-// New returns Io implementation.
-func New() Io {
-	return new(lz4Io)
+// New returns LZ4 implementation.
+func New() LZ4 {
+	return new(compress)
+}
+
+// NewWriterLevel returns Writer implementation.
+func (*compress) NewWriterLevel(w io.Writer, level int) Writer {
+	lw := lz4.NewWriter(w)
+	lw.Header.CompressionLevel = level
+	return &writer{
+		Writer: lw,
+	}
 }
 
 // NewWriter returns Writer implementation.
-func (*lz4Io) NewWriter(w io.Writer) Writer {
+func (*compress) NewWriter(w io.Writer) Writer {
 	return &writer{
 		Writer: lz4.NewWriter(w),
 	}
 }
 
 // NewReader returns Reader implementation.
-func (*lz4Io) NewReader(r io.Reader) Reader {
+func (*compress) NewReader(r io.Reader) Reader {
 	return lz4.NewReader(r)
 }

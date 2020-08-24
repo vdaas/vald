@@ -45,25 +45,25 @@ type Writer interface {
 	Flush() error
 }
 
-// Io is an interface to create Writer and Reader implementation.
-type Io interface {
+// Gzip is an interface to create Writer and Reader implementation.
+type Gzip interface {
 	NewReader(r io.Reader) (Reader, error)
 	NewWriterLevel(w io.Writer, level int) (Writer, error)
 }
 
-type gzipIo struct{}
+type compress struct{}
 
-// New returns Io implementation.
-func New() Io {
-	return new(gzipIo)
+// New returns Gzip implementation.
+func New() Gzip {
+	return new(compress)
 }
 
 // NewWriterLevel returns Writer implementation.
-func (*gzipIo) NewWriterLevel(w io.Writer, level int) (Writer, error) {
+func (*compress) NewWriterLevel(w io.Writer, level int) (Writer, error) {
 	return gzip.NewWriterLevel(w, level)
 }
 
 // NewReader returns Reader implementation.
-func (*gzipIo) NewReader(r io.Reader) (Reader, error) {
+func (*compress) NewReader(r io.Reader) (Reader, error) {
 	return gzip.NewReader(r)
 }

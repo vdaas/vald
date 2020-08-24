@@ -55,18 +55,24 @@ func (m *MockWriter) Flush() error {
 	return m.FlushFunc()
 }
 
-// MockIo represents mock struct of Io.
-type MockIo struct {
-	NewWriterFunc func(w io.Writer) Writer
-	NewReaderFunc func(r io.Reader) Reader
+// MockLZ4 represents mock struct of LZ4.
+type MockLZ4 struct {
+	NewWriterFunc      func(w io.Writer) Writer
+	NewWriterLevelFunc func(w io.Writer, level int) Writer
+	NewReaderFunc      func(r io.Reader) Reader
 }
 
 // NewWriter calls NewWriterFunc.
-func (m *MockIo) NewWriter(w io.Writer) Writer {
+func (m *MockLZ4) NewWriter(w io.Writer) Writer {
 	return m.NewWriterFunc(w)
 }
 
+// NewWriterLevel calls NewWriterLevelFunc.
+func (m *MockLZ4) NewWriterLevel(w io.Writer, level int) Writer {
+	return m.NewWriterLevelFunc(w, level)
+}
+
 // NewReader calls NewReader.
-func (m *MockIo) NewReader(r io.Reader) Reader {
+func (m *MockLZ4) NewReader(r io.Reader) Reader {
 	return m.NewReaderFunc(r)
 }

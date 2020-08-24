@@ -37,25 +37,25 @@ type Decoder interface {
 	WriteTo(w io.Writer) (int64, error)
 }
 
-// Transcoder is an interface to create Writer and Reader implementation.
-type Transcoder interface {
+// Zstd is an interface to create Writer and Reader implementation.
+type Zstd interface {
 	NewWriter(w io.Writer, opts ...zstd.EOption) (Encoder, error)
 	NewReader(r io.Reader, opts ...zstd.DOption) (Decoder, error)
 }
 
-type transcoder struct{}
+type compress struct{}
 
-// New returns Transcoder implementation.
-func New() Transcoder {
-	return new(transcoder)
+// New returns Zstd implementation.
+func New() Zstd {
+	return new(compress)
 }
 
 // NewWriter returns Encoder implementation.
-func (*transcoder) NewWriter(w io.Writer, opts ...zstd.EOption) (Encoder, error) {
+func (*compress) NewWriter(w io.Writer, opts ...zstd.EOption) (Encoder, error) {
 	return zstd.NewWriter(w, opts...)
 }
 
 // NewReader returns Decoder implementation.
-func (*transcoder) NewReader(r io.Reader, opts ...zstd.DOption) (Decoder, error) {
+func (*compress) NewReader(r io.Reader, opts ...zstd.DOption) (Decoder, error) {
 	return zstd.NewReader(r, opts...)
 }

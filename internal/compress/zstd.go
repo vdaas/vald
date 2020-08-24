@@ -27,14 +27,14 @@ import (
 )
 
 type zstdCompressor struct {
-	gobc       Compressor
-	eoptions   []zstd.EOption
-	transcoder zstd.Transcoder
+	gobc     Compressor
+	eoptions []zstd.EOption
+	zstd     zstd.Zstd
 }
 
 func NewZstd(opts ...ZstdOption) (Compressor, error) {
 	c := &zstdCompressor{
-		transcoder: zstd.New(),
+		zstd: zstd.New(),
 	}
 	for _, opt := range append(defaultZstdOpts, opts...) {
 		if err := opt(c); err != nil {
@@ -52,7 +52,7 @@ func (z *zstdCompressor) CompressVector(vector []float32) ([]byte, error) {
 	}
 
 	buf := new(bytes.Buffer)
-	zw, err := z.transcoder.NewWriter(buf, z.eoptions...)
+	zw, err := z.zstd.NewWriter(buf, z.eoptions...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (z *zstdCompressor) CompressVector(vector []float32) ([]byte, error) {
 
 func (z *zstdCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	buf := new(bytes.Buffer)
-	zr, err := z.transcoder.NewReader(bytes.NewReader(bs))
+	zr, err := z.zstd.NewReader(bytes.NewReader(bs))
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (z *zstdCompressor) DecompressVector(bs []byte) ([]float32, error) {
 }
 
 func (z *zstdCompressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
-	r, err := z.transcoder.NewReader(src)
+	r, err := z.zstd.NewReader(src)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (z *zstdCompressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
 }
 
 func (z *zstdCompressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
-	w, err := z.transcoder.NewWriter(dst, z.eoptions...)
+	w, err := z.zstd.NewWriter(dst, z.eoptions...)
 	if err != nil {
 		return nil, err
 	}
