@@ -21,9 +21,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vdaas/vald/internal/log"
-
 	"github.com/vdaas/vald/hack/benchmark/assets/x1b"
+	"github.com/vdaas/vald/internal/log"
 )
 
 var (

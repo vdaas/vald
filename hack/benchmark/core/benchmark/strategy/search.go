@@ -41,6 +41,8 @@ func NewSearch(size int, epsilon, radius float32, opts ...StrategyOption) benchm
 				if err != nil {
 					return nil, err
 				}
+				b.StartTimer()
+				defer b.StopTimer()
 				return c.Search(v.([]float32), size, epsilon, radius)
 			},
 		),
@@ -55,6 +57,8 @@ func NewSearch(size int, epsilon, radius float32, opts ...StrategyOption) benchm
 				if err != nil {
 					return nil, err
 				}
+				b.StartTimer()
+				defer b.StopTimer()
 				return c.Search(float32To64(v.([]float32)), size, epsilon, radius)
 			},
 		),

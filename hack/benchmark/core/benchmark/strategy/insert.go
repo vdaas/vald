@@ -36,6 +36,8 @@ func NewInsert(opts ...StrategyOption) benchmark.Strategy {
 				if err != nil {
 					return nil, err
 				}
+				b.StartTimer()
+				defer b.StopTimer()
 				return c.Insert(v.([]float32))
 			},
 		),
@@ -45,6 +47,8 @@ func NewInsert(opts ...StrategyOption) benchmark.Strategy {
 				if err != nil {
 					return nil, err
 				}
+				b.StartTimer()
+				defer b.StopTimer()
 				return c.Insert(float32To64(v.([]float32)))
 			},
 		),

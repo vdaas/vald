@@ -55,7 +55,7 @@ func (sr *streamRemove) dataProvider(total *uint32, b *testing.B, dataset assets
 
 		total := int(atomic.AddUint32(total, 1)) - 1
 		return &client.ObjectID{
-			Id: fmt.Sprint(total%dataset.TrainSize()),
+			Id: fmt.Sprint(total % dataset.TrainSize()),
 		}
 	}
 }

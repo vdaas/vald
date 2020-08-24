@@ -36,6 +36,8 @@ func NewInsertCommit(poolSize uint32, opts ...StrategyOption) benchmark.Strategy
 				if err != nil {
 					return nil, err
 				}
+				b.StartTimer()
+				defer b.StopTimer()
 				return c.InsertCommit(v.([]float32), poolSize)
 			},
 		),
@@ -45,6 +47,8 @@ func NewInsertCommit(poolSize uint32, opts ...StrategyOption) benchmark.Strategy
 				if err != nil {
 					return nil, err
 				}
+				b.StartTimer()
+				defer b.StopTimer()
 				return c.InsertCommit(float32To64(v.([]float32)), poolSize)
 			},
 		),
