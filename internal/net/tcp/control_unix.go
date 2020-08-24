@@ -56,5 +56,5 @@ func Control(network, address string, c syscall.RawConn) (err error) {
 		return errors.Wrap(err, cerr.Error())
 	}
 
-	return nil
+	return
 }

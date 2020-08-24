@@ -26,26 +26,34 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+// TCP_FASTOPEN represents TCP_FASTOPEN.
 const TCP_FASTOPEN int = 0x17
 
+// Control controls raw network connection.
+// And Control calls c.Control invokes f on the underlying connection's file
+// descriptor or handle.
 func Control(network, address string, c syscall.RawConn) (err error) {
-	return c.Control(func(fd uintptr) {
+	errfn := func(errs ...error) (err error) {
+		for _, ierr := range errs {
+			if ierr != nil {
+				err = errors.Wrap(err, ierr.Error())
+			}
+		}
+		return err
+	}
+
+	cerr := c.Control(func(fd uintptr) {
 		f := int(fd)
-		ierr := syscall.SetsockoptInt(f, syscall.SOL_SOCKET, unix.SO_REUSEPORT, 1)
-		if ierr != nil {
-			err = errors.Wrap(err, ierr.Error())
-		}
-		ierr = syscall.SetsockoptInt(f, syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1)
-		if ierr != nil {
-			err = errors.Wrap(err, ierr.Error())
-		}
-		ierr = syscall.SetsockoptInt(f, syscall.IPPROTO_TCP, TCP_FASTOPEN, 1)
-		if ierr != nil {
-			err = errors.Wrap(err, ierr.Error())
-		}
-		ierr = syscall.SetsockoptInt(f, syscall.IPPROTO_TCP, syscall.TCP_NODELAY, 1)
-		if ierr != nil {
-			err = errors.Wrap(err, ierr.Error())
-		}
+		err = errfn(
+			syscall.SetsockoptInt(f, syscall.SOL_SOCKET, unix.SO_REUSEPORT, 1),
+			syscall.SetsockoptInt(f, syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1),
+			syscall.SetsockoptInt(f, syscall.IPPROTO_TCP, TCP_FASTOPEN, 1),
+			syscall.SetsockoptInt(f, syscall.IPPROTO_TCP, syscall.TCP_NODELAY, 1),
+		)
 	})
+	if cerr != nil {
+		return errors.Wrap(err, cerr.Error())
+	}
+
+	return
 }

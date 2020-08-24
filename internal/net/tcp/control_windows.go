@@ -22,11 +22,19 @@ package tcp
 import (
 	"syscall"
 
+	"github.com/vdaas/vald/internal/errors"
 	"golang.org/x/sys/windows"
 )
 
+// Control controls raw network connection.
+// And Control calls c.Control invokes f on the underlying connection's file
+// descriptor or handle.
 func Control(network, address string, c syscall.RawConn) (err error) {
-	return c.Control(func(fd uintptr) {
+	cerr := c.Control(func(fd uintptr) {
 		err = windows.SetsockoptInt(windows.Handle(fd), windows.SOL_SOCKET, windows.SO_REUSEADDR, 1)
 	})
+	if cerr != nil {
+		return errors.Wrap(err, cerr.Error())
+	}
+	return
 }

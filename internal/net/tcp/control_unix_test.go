@@ -20,6 +20,7 @@
 package tcp
 
 import (
+	"net"
 	"syscall"
 	"testing"
 
@@ -39,7 +40,7 @@ func TestControl(t *testing.T) {
 	}
 	type test struct {
 		name       string
-		args       args
+		argsFunc   func(*testing.T) args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
@@ -52,51 +53,52 @@ func TestControl(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           network: "",
-		           address: "",
-		           c: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns nil when no error occurs internally",
+			argsFunc: func(t *testing.T) args {
+				t.Helper()
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           network: "",
-		           address: "",
-		           c: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+				addr, err := net.ResolveTCPAddr("tcp", "127.0.0.1:1234")
+				if err != nil {
+					t.Fatal(err)
+				}
+				ls, err := net.ListenTCP("tcp", addr)
+				if err != nil {
+					t.Fatal(err)
+				}
+				c, err := ls.SyscallConn()
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				return args{
+					network: "tcp",
+					address: "127.0.0.1:1234",
+					c:       c,
+				}
+			},
+			want: want{
+				err: nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+
+			args := test.argsFunc(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			err := Control(test.args.network, test.args.address, test.args.c)
+			err := Control(args.network, args.address, args.c)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
