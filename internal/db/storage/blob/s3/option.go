@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/unit"
 )
 
+// Option represents the functional option for client.
 type Option func(c *client) error
 
 var (
@@ -32,6 +33,7 @@ var (
 	}
 )
 
+// WithErrGroup returns the option to set the eg.
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(c *client) error {
 		if eg != nil {
@@ -41,6 +43,7 @@ func WithErrGroup(eg errgroup.Group) Option {
 	}
 }
 
+// WithSession returns the option to set the session.
 func WithSession(sess *session.Session) Option {
 	return func(c *client) error {
 		if sess != nil {
@@ -50,6 +53,7 @@ func WithSession(sess *session.Session) Option {
 	}
 }
 
+// WithBucket returns the option to set bucket.
 func WithBucket(bucket string) Option {
 	return func(c *client) error {
 		c.bucket = bucket
@@ -57,6 +61,7 @@ func WithBucket(bucket string) Option {
 	}
 }
 
+// WithMaxPartSize returns the option to set maxPartSize.
 func WithMaxPartSize(size string) Option {
 	return func(c *client) error {
 		b, err := unit.ParseBytes(size)
@@ -72,6 +77,7 @@ func WithMaxPartSize(size string) Option {
 	}
 }
 
+// WithMaxChunkSize returns the option to set maxChunkSize.
 func WithMaxChunkSize(size string) Option {
 	return func(c *client) error {
 		b, err := unit.ParseBytes(size)
@@ -87,6 +93,7 @@ func WithMaxChunkSize(size string) Option {
 	}
 }
 
+// WithReaderBackoff returns the option to set readerBackoffEnabled.
 func WithReaderBackoff(enabled bool) Option {
 	return func(c *client) error {
 		c.readerBackoffEnabled = enabled
@@ -94,13 +101,18 @@ func WithReaderBackoff(enabled bool) Option {
 	}
 }
 
+// WithReaderBackoffOpts returns the option to set readerBackoffOpts.
 func WithReaderBackoffOpts(opts ...backoff.Option) Option {
 	return func(c *client) error {
-		if c.readerBackoffOpts == nil {
-			c.readerBackoffOpts = opts
+		if opts == nil {
+			return nil
+		}
+		if c.readerBackoffOpts != nil {
+			c.readerBackoffOpts = append(c.readerBackoffOpts, opts...)
+			return nil
 		}
 
-		c.readerBackoffOpts = append(c.readerBackoffOpts, opts...)
+		c.readerBackoffOpts = opts
 
 		return nil
 	}
