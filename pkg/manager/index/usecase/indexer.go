@@ -26,7 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
-	indexermetrics "github.com/vdaas/vald/internal/observability/metrics/manager/index"
+	metrics "github.com/vdaas/vald/internal/observability/metrics/manager/index"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -109,7 +109,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
-			indexermetrics.New(indexer),
+			metrics.New(indexer),
 		)
 		if err != nil {
 			return nil, err
