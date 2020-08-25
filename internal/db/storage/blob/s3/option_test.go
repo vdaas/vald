@@ -319,7 +319,7 @@ func TestWithMaxPartSize(t *testing.T) {
 		},
 
 		{
-			name: "set nothing when size is `a`",
+			name: "set default and returns error when size given with invalid string",
 			args: args{
 				size: "a",
 			},
