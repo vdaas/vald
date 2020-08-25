@@ -27,17 +27,17 @@ const (
 
 func BenchmarkBVecs(b *testing.B) {
 	bv, err := NewBVecs(bvecsFile)
+	if err != nil {
+		b.Fatal(err)
+	}
 	defer func() {
 		if err := bv.Close(); err != nil {
 			b.Fatal(err)
 		}
 	}()
-	if err != nil {
-		b.Fatal(err)
-	}
 
 	i := 0
-	b.Run("", func(bb *testing.B) {
+	b.Run(bvecsFile, func(bb *testing.B) {
 		bb.ReportAllocs()
 		bb.ResetTimer()
 		for n := 0; n < b.N; n++ {
@@ -63,17 +63,17 @@ func BenchmarkBVecs(b *testing.B) {
 
 func BenchmarkFVecs(b *testing.B) {
 	fv, err := NewFVecs(fvecsFile)
+	if err != nil {
+		b.Fatal(err)
+	}
 	defer func() {
 		if err := fv.Close(); err != nil {
 			b.Fatal(err)
 		}
 	}()
-	if err != nil {
-		b.Fatal(err)
-	}
 
 	i := 0
-	b.Run("", func(bb *testing.B) {
+	b.Run(fvecsFile, func(bb *testing.B) {
 		bb.ReportAllocs()
 		bb.ResetTimer()
 		for n := 0; n < b.N; n++ {
@@ -99,18 +99,17 @@ func BenchmarkFVecs(b *testing.B) {
 
 func BenchmarkIVecs(b *testing.B) {
 	iv, err := NewIVecs(ivecsFile)
+	if err != nil {
+		b.Fatal(err)
+	}
 	defer func() {
 		if err := iv.Close(); err != nil {
 			b.Fatal(err)
 		}
 	}()
 
-	if err != nil {
-		b.Fatal(err)
-	}
-
 	i := 0
-	b.Run("", func(bb *testing.B) {
+	b.Run(ivecsFile, func(bb *testing.B) {
 		bb.ReportAllocs()
 		bb.ResetTimer()
 		for n := 0; n < b.N; n++ {

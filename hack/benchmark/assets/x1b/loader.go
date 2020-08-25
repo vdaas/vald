@@ -78,7 +78,7 @@ func open(fname string, elementSize int) (f *file, err error) {
 		return nil, err
 	}
 	defer func() {
-		err = fp.Close()
+		err = errors.Wrap(err, fp.Close().Error())
 	}()
 
 	fi, err := fp.Stat()
