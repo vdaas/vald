@@ -419,7 +419,7 @@ In Vald, the functional option pattern is widely used in Vald. You can refer to 
 We suggest the following implementation to set the value to the target.
 
 ```go
-func WithVersion(version string) Option { d
+func WithVersion(version string) Option {
     return func(c *client) error {
         if len(version) != 0 {
             c.version = version
@@ -439,7 +439,7 @@ func WithTimeout(dur string) Option {
         }
         d, err := timeutil.Parse(dur)
         if err != nil {
-        return err
+            return err
         }
         c.timeout = d
         return nil
