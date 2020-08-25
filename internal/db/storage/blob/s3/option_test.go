@@ -240,6 +240,18 @@ func TestWithBucket(t *testing.T) {
 				},
 			},
 		},
+
+		{
+			name: "set success when bucket is empty",
+			args: args{
+				bucket: "",
+			},
+			want: want{
+				obj: &T{
+					bucket: "",
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
