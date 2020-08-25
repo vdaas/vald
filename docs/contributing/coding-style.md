@@ -92,11 +92,11 @@ package cache
 
 ### General style
 
-This section describe the general guideline for the Vald programming style, every Vald contributor should keep these general guidelines in mind while working on the implementation of Vald.
+This section describes the general guideline for the Vald programming style, every Vald contributor should keep these general guidelines in mind while working on the implementation of Vald.
 
 #### Order of declaration
 
-Put the higher priority or frequently used declaration on the top of other declaration. It makes Vald easier to read and easier to search the target source code in Vald.
+Put the higher priority or frequently used declaration on the top of other declaration. It makes Vald easier to read and search the target source code in Vald.
 
 For example, the interface declaration should have higher priority then struct or function declaration, hence it should be put above other declaration.
 
@@ -410,7 +410,7 @@ We defined the following logging levels.
 
 ## Implementation
 
-This section includes some examples of general implementation which is widely used in Vald. The implementation may differ base on your use case.
+This section includes some examples of general implementation which is widely used in Vald. The implementation may differ based on your use case.
 
 ### Functional Option
 
@@ -421,7 +421,9 @@ We suggest the following implementation to set the value to the target.
 ```go
 func WithVersion(version string) Option { d
     return func(c *client) error {
-        c.version = version
+        if len(version) != 0 {
+            c.version = version
+        }
         return nil
     }
 }
