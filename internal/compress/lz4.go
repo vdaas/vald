@@ -32,6 +32,7 @@ type lz4Compressor struct {
 	lz4              lz4.LZ4
 }
 
+// NewLZ4 returns Compressor implementation.
 func NewLZ4(opts ...LZ4Option) (Compressor, error) {
 	c := &lz4Compressor{
 		lz4: lz4.New(),
@@ -45,7 +46,9 @@ func NewLZ4(opts ...LZ4Option) (Compressor, error) {
 	return c, nil
 }
 
-func (l *lz4Compressor) CompressVector(vector []float32) ([]byte, error) {
+// CompressVector compresses the data given and returns the compressed data.
+// If CompressVector fails, it will return an error.
+func (l *lz4Compressor) CompressVector(vector []float32) (b []byte, err error) {
 	gob, err := l.gobc.CompressVector(vector)
 	if err != nil {
 		return nil, err
@@ -56,6 +59,7 @@ func (l *lz4Compressor) CompressVector(vector []float32) ([]byte, error) {
 	defer func() {
 		cerr := zw.Close()
 		if cerr != nil {
+			b = nil
 			err = errors.Wrap(err, cerr.Error())
 		}
 	}()
@@ -73,6 +77,8 @@ func (l *lz4Compressor) CompressVector(vector []float32) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// DecompressVector decompresses the compressed data and returns the data.
+// If decompress fails, it will return an error.
 func (l *lz4Compressor) DecompressVector(bs []byte) ([]float32, error) {
 	buf := new(bytes.Buffer)
 	zr := l.lz4.NewReader(bytes.NewReader(bs))
@@ -89,6 +95,7 @@ func (l *lz4Compressor) DecompressVector(bs []byte) ([]float32, error) {
 	return vec, nil
 }
 
+// Reader returns io.ReadCloser implementation.
 func (l *lz4Compressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
 	return &lz4Reader{
 		src: src,
@@ -96,6 +103,7 @@ func (l *lz4Compressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
 	}, nil
 }
 
+// Writer returns io.WriteCloser implementation.
 func (l *lz4Compressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
 	return &lz4Writer{
 		dst: dst,
@@ -108,10 +116,13 @@ type lz4Reader struct {
 	r   io.Reader
 }
 
+// Read returns the number of bytes for read p (0 <= n <= len(p)).
+// If any errors occurs, it will return an error.
 func (l *lz4Reader) Read(p []byte) (n int, err error) {
 	return l.r.Read(p)
 }
 
+// Close closes src and r.
 func (l *lz4Reader) Close() (err error) {
 	return l.src.Close()
 }
@@ -121,10 +132,13 @@ type lz4Writer struct {
 	w   io.WriteCloser
 }
 
+// Write returns the number of bytes written from p (0 <= n <= len(p)).
+// If any errors occurs, it will return an error.
 func (l *lz4Writer) Write(p []byte) (n int, err error) {
 	return l.w.Write(p)
 }
 
+// Close closes dst and w.
 func (l *lz4Writer) Close() (err error) {
 	err = l.w.Close()
 	if err != nil {
