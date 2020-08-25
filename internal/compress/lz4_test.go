@@ -154,7 +154,7 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 				lz4: &lz4.MockLZ4{
 					NewWriterLevelFunc: func(w io.Writer, level int) lz4.Writer {
 						return &lz4.MockWriter{
-							WriteFunc: func(p []byte) (n int, err error) {
+							WriteFunc: func(p []byte) (int, error) {
 								return w.Write(p)
 							},
 							FlushFunc: func() error {
@@ -186,7 +186,7 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 				lz4: &lz4.MockLZ4{
 					NewWriterLevelFunc: func(w io.Writer, level int) lz4.Writer {
 						return &lz4.MockWriter{
-							WriteFunc: func(p []byte) (n int, err error) {
+							WriteFunc: func(p []byte) (int, error) {
 								return w.Write(p)
 							},
 							FlushFunc: func() error {
@@ -219,7 +219,7 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 				lz4: &lz4.MockLZ4{
 					NewWriterLevelFunc: func(w io.Writer, level int) lz4.Writer {
 						return &lz4.MockWriter{
-							WriteFunc: func(p []byte) (n int, err error) {
+							WriteFunc: func(p []byte) (int, error) {
 								return 0, errors.New("write err")
 							},
 							FlushFunc: func() error {
@@ -252,7 +252,7 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 				lz4: &lz4.MockLZ4{
 					NewWriterLevelFunc: func(w io.Writer, level int) lz4.Writer {
 						return &lz4.MockWriter{
-							WriteFunc: func(p []byte) (n int, err error) {
+							WriteFunc: func(p []byte) (int, error) {
 								return w.Write(p)
 							},
 							FlushFunc: func() error {
@@ -285,7 +285,7 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 				lz4: &lz4.MockLZ4{
 					NewWriterLevelFunc: func(w io.Writer, level int) lz4.Writer {
 						return &lz4.MockWriter{
-							WriteFunc: func(p []byte) (n int, err error) {
+							WriteFunc: func(p []byte) (int, error) {
 								return w.Write(p)
 							},
 							FlushFunc: func() error {
@@ -379,7 +379,7 @@ func Test_lz4Compressor_DecompressVector(t *testing.T) {
 				lz4: &lz4.MockLZ4{
 					NewReaderFunc: func(r io.Reader) lz4.Reader {
 						return &lz4.MockReader{
-							ReadFunc: func(p []byte) (n int, err error) {
+							ReadFunc: func(p []byte) (int, error) {
 								return r.Read(p)
 							},
 						}
@@ -405,7 +405,7 @@ func Test_lz4Compressor_DecompressVector(t *testing.T) {
 				lz4: &lz4.MockLZ4{
 					NewReaderFunc: func(r io.Reader) lz4.Reader {
 						return &lz4.MockReader{
-							ReadFunc: func(p []byte) (n int, err error) {
+							ReadFunc: func(p []byte) (int, error) {
 								return 0, errors.New("copy err")
 							},
 						}
@@ -432,7 +432,7 @@ func Test_lz4Compressor_DecompressVector(t *testing.T) {
 				lz4: &lz4.MockLZ4{
 					NewReaderFunc: func(r io.Reader) lz4.Reader {
 						return &lz4.MockReader{
-							ReadFunc: func(p []byte) (n int, err error) {
+							ReadFunc: func(p []byte) (int, error) {
 								return r.Read(p)
 							},
 						}
@@ -683,7 +683,7 @@ func Test_lz4Reader_Read(t *testing.T) {
 			},
 			fields: fields{
 				r: &MockReadCloser{
-					ReadFunc: func(p []byte) (n int, err error) {
+					ReadFunc: func(p []byte) (int, error) {
 						return 10, nil
 					},
 				},
@@ -828,7 +828,7 @@ func Test_lz4Writer_Write(t *testing.T) {
 			},
 			fields: fields{
 				w: &MockWriteCloser{
-					WriteFunc: func(p []byte) (n int, err error) {
+					WriteFunc: func(p []byte) (int, error) {
 						return 10, nil
 					},
 				},
