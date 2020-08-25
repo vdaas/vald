@@ -441,7 +441,7 @@ func WithTimeout(dur string) Option {
         if err != nil {
         return err
         }
-        c.timeout = d        d
+        c.timeout = d
         return nil
     }
 }
