@@ -415,7 +415,7 @@ func TestWithMaxChunkSize(t *testing.T) {
 		},
 
 		{
-			name: "set nothing when size is `a`",
+			name: "returns error when size is `a`",
 			args: args{
 				size: "a",
 			},
