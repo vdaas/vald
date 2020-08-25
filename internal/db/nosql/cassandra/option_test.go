@@ -37,7 +37,7 @@ var (
 	}
 
 	// default comparator option for client
-	clientOpts = []comparator.Option{
+	clientComparatorOpts = []comparator.Option{
 		comparator.AllowUnexported(client{}),
 		comparator.Comparer(func(x, y retryPolicy) bool {
 			return reflect.DeepEqual(x, y)
@@ -76,7 +76,7 @@ func TestWithHosts(t *testing.T) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
 
-		if diff := comparator.Diff(obj, w.obj, clientOpts...); diff != "" {
+		if diff := comparator.Diff(obj, w.obj, clientComparatorOpts...); diff != "" {
 			return errors.New(diff)
 		}
 		return nil
@@ -183,7 +183,7 @@ func TestWithDialer(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if diff := comparator.Diff(obj, w.obj, clientOpts...); diff != "" {
+		if diff := comparator.Diff(obj, w.obj, clientComparatorOpts...); diff != "" {
 			return errors.New(diff)
 		}
 		return nil
@@ -258,7 +258,7 @@ func TestWithCQLVersion(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if diff := comparator.Diff(obj, w.obj, clientOpts...); diff != "" {
+		if diff := comparator.Diff(obj, w.obj, clientComparatorOpts...); diff != "" {
 			return errors.New(diff)
 		}
 		return nil
@@ -321,7 +321,7 @@ func TestWithProtoVersion(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if diff := comparator.Diff(obj, w.obj, clientOpts...); diff != "" {
+		if diff := comparator.Diff(obj, w.obj, clientComparatorOpts...); diff != "" {
 			return errors.New(diff)
 		}
 		return nil
@@ -384,7 +384,7 @@ func TestWithTimeout(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if diff := comparator.Diff(obj, w.obj, clientOpts...); diff != "" {
+		if diff := comparator.Diff(obj, w.obj, clientComparatorOpts...); diff != "" {
 			return errors.New(diff)
 		}
 		return nil
@@ -414,7 +414,7 @@ func TestWithTimeout(t *testing.T) {
 			},
 		},
 		{
-			name: "set timeout success if the time is nil",
+			name: "set timeout success if the time is empty",
 			args: args{
 				dur: "",
 			},
@@ -469,7 +469,7 @@ func TestWithConnectTimeout(t *testing.T) {
 			err != nil && w.err.Error() != err.Error() {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if diff := comparator.Diff(obj, w.obj, clientOpts...); diff != "" {
+		if diff := comparator.Diff(obj, w.obj, clientComparatorOpts...); diff != "" {
 			return errors.New(diff)
 		}
 		return nil
@@ -552,7 +552,7 @@ func TestWithPort(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if diff := comparator.Diff(obj, w.obj, clientOpts...); diff != "" {
+		if diff := comparator.Diff(obj, w.obj, clientComparatorOpts...); diff != "" {
 			return errors.New(diff)
 		}
 		return nil
@@ -615,7 +615,7 @@ func TestWithKeyspace(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if diff := comparator.Diff(obj, w.obj, clientOpts...); diff != "" {
+		if diff := comparator.Diff(obj, w.obj, clientComparatorOpts...); diff != "" {
 			return errors.New(diff)
 		}
 		return nil
@@ -678,7 +678,7 @@ func TestWithNumConns(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
-		if diff := comparator.Diff(obj, w.obj, clientOpts...); diff != "" {
+		if diff := comparator.Diff(obj, w.obj, clientComparatorOpts...); diff != "" {
 			return errors.New(diff)
 		}
 		return nil

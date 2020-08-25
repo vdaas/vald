@@ -44,6 +44,12 @@ var (
 	ErrHostQueryFailed      = gocql.ErrHostQueryFailed
 )
 
+type Cassandra interface {
+	Open(ctx context.Context) error
+	Close(ctx context.Context) error
+	Query(stmt string, names []string) *Queryx
+}
+
 type (
 	Session       = gocql.Session
 	Cmp           = qb.Cmp
@@ -52,13 +58,9 @@ type (
 	DeleteBuilder = qb.DeleteBuilder
 	UpdateBuilder = qb.UpdateBuilder
 	Queryx        = gocqlx.Queryx
+)
 
-	Cassandra interface {
-		Open(ctx context.Context) error
-		Close(ctx context.Context) error
-		Query(stmt string, names []string) *Queryx
-	}
-
+type (
 	retryPolicy struct {
 		numRetries  int
 		minDuration time.Duration
