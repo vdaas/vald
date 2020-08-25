@@ -27,45 +27,6 @@ import (
 	"go.uber.org/goleak"
 )
 
-// func TestLZ4CompressVector(t *testing.T) {
-// 	tests := []struct {
-// 		vector []float32
-// 	}{
-// 		{
-// 			vector: []float32{0.1, 0.2, 0.3},
-// 		},
-// 		{
-// 			vector: []float32{0.4, 0.2, 0.3, 0.1},
-// 		},
-// 		{
-// 			vector: []float32{0.1, 0.5, 0.12, 0.13, 1.0},
-// 		},
-// 	}
-//
-// 	for _, tc := range tests {
-// 		lz4c, err := NewLZ4()
-// 		if err != nil {
-// 			t.Fatalf("initialize failed: %s", err)
-// 		}
-//
-// 		compressed, err := lz4c.CompressVector(tc.vector)
-// 		if err != nil {
-// 			t.Fatalf("Compress failed: %s", err)
-// 		}
-//
-// 		decompressed, err := lz4c.DecompressVector(compressed)
-// 		if err != nil {
-// 			t.Fatalf("Decompress failed: %s", err)
-// 		}
-// 		t.Logf("converted: origin %+v, compressed -> decompressed %+v", tc.vector, decompressed)
-// 		for i := range tc.vector {
-// 			if tc.vector[i] != decompressed[i] {
-// 				t.Fatalf("Invalid convert: origin %+v, compressed -> decompressed %+v", tc.vector, decompressed)
-// 			}
-// 		}
-// 	}
-// }
-
 func TestNewLZ4(t *testing.T) {
 	type args struct {
 		opts []LZ4Option
