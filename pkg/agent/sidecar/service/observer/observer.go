@@ -60,6 +60,8 @@ type observer struct {
 	storage storage.Storage
 
 	ch chan struct{}
+
+	hooks []Hook
 }
 
 func New(opts ...Option) (so StorageObserver, err error) {
@@ -392,8 +394,27 @@ func (o *observer) requestBackup(ctx context.Context) error {
 	return nil
 }
 
-func (o *observer) backup(ctx context.Context) error {
+func (o *observer) backup(ctx context.Context) (err error) {
+	bi := &BackupInfo{
+		StorageInfo: o.storage.StorageInfo(),
+	}
+	bi.StartTime = time.Now()
+
+	for _, hook := range o.hooks {
+		ctx, err = hook.BeforeProcess(ctx, bi)
+		if err != nil {
+			return err
+		}
+	}
+
 	ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/observer/StorageObserver.backup")
+	if span != nil {
+		span.AddAttributes(
+			trace.StringAttribute("storage_type", bi.StorageInfo.Type),
+			trace.StringAttribute("bucket_name", bi.BucketName),
+			trace.StringAttribute("filename", bi.Filename),
+		)
+	}
 	defer func() {
 		if span != nil {
 			span.End()
@@ -505,12 +526,20 @@ func (o *observer) backup(ctx context.Context) error {
 		return err
 	}
 
-	_, err = io.Copy(sw, prr)
+	bi.Bytes, err = io.Copy(sw, prr)
 	if err != nil {
 		return err
 	}
 
 	wg.Wait()
+
+	bi.EndTime = time.Now()
+	for _, hook := range o.hooks {
+		err = hook.AfterProcess(ctx, bi)
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
