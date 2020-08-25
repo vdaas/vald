@@ -389,7 +389,7 @@ func TestWithMaxChunkSize(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set nothing when size is `100G`",
+			name: "set success when size is `100G`",
 			args: args{
 				size: "100G",
 			},
