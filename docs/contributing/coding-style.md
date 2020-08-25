@@ -90,9 +90,61 @@ All packages should contain `doc.go` file under the package to describe what is 
 package cache
 ````
 
+### General style
+
+This section describe the general guideline for the Vald programming style, every Vald contributor should keep these general guidelines in mind while working on the implementation of Vald.
+
+#### Order of declaration
+
+Put the higher priority or frequently used declaration on the top of other declaration. It makes Vald easier to read and easier to search the target source code in Vald.
+
+For example, the interface declaration should have higher priority then struct or function declaration, hence it should be put above other declaration.
+
+```go
+// bad
+type S struct {}
+
+func (s *S) fn() {}
+
+type I interface {}
+
+// good
+type I interface {}
+
+type S struct {}
+
+func (s *S) fn() {}
+```
+
+#### Group simliar definition
+
+Group similar definitions such as struct or interface declaration. We should not group interface and struct declaration in the same block, for example:
+
+```go
+// bad
+type (
+    I interface {}
+    I2 interface {}
+
+    s struct {}
+    s2 struct {}
+)
+
+// good
+type (
+    I interface {}
+    I2 interface {}
+)
+
+type (
+    s struct {}
+    s2 struct {}
+)
+```
+
 ### Interfaces
 
-Interface defines the program interface for usability and future extendability.
+The interface defines the program interface for usability and future extendability.
 Unlike other languages like Java, Go supports implicit interface implementation. The type implements do not need to specify the interface name; to "implements" the interface the structs only need to defined the methods the same as the interface, so please be careful to define the method name inside the interface.
 
 The interface should be named as:
@@ -355,6 +407,61 @@ We defined the following logging levels.
 | WARN      | The message that indicates the application may having the issue or occurring unusual situation,<br>but does not affect the application behavior.<br>Someone should investigate the warning later.                                              | Failed to insert entry into the the database, but success with the retry.<br>Failed to update the cache, and the cache is not important.           | User 1 is successfully inserted into the database with retry,<br>retry count: 1, error: ErrMsg1, retry count: 2, error: ErrMsg2                                                                                        |
 | ERROR     | The message that indicates the application is having a serious issue or,<br>represent the failure of some important going on in the application.<br>It does not cause the application to go down.<br>Someone must investigate the error later. | Failed to insert an entry into the database, with retry count exceeded.<br>Failed to update the cache, and the cache is not important.             | User 1 is failed to insert in the database, errors:<br>retry count: 1, error: ErrMsg1, retry count: 2, error: ErrMsg2, ....                                                                                            |
 | FATAL     | Message that indicate the application is corrupting or having serious issue.<br>The application will go down after logging the fatal error. <br>Someone must investigate and resolve the fatal as soon as possible.                            | Failed to init the required cache during the application start.                                                                                    |                                                                                                                                                                                                                        |
+
+## Implementation
+
+This section includes some examples of general implementation which is widely used in Vald. The implementation may differ base on your use case.
+
+### Functional Option
+
+In Vald, the functional option pattern is widely used in Vald. You can refer to [this section](#Struct-initialization) for more details of the use case of this pattern.
+
+We suggest the following implementation to set the value to the target.
+
+```go
+func WithVersion(version string) Option { d
+    return func(c *client) error {
+        c.version = version
+        return nil
+    }
+}
+```
+
+We suggest the following implementation to parse the time string and set the time to the target struct.
+
+```go
+func WithTimeout(dur string) Option {
+    func(c *client) error {
+        if dur == "" {
+            return nil
+        }
+        d, err := timeutil.Parse(dur)
+        if err != nil {
+        return err
+        }
+        c.timeout = d        d
+        return nil
+    }
+}
+```
+
+We suggest the following implementation to append the value to the slice if the value is not nil.
+
+```go
+func WithHosts(hosts ...string) Option {
+    return func(c *client) error {
+        if len(hosts) == 0 {
+            return nil
+        }
+        if c.hosts == nil {
+            c.hosts = hosts
+        } else {
+            c.hosts = append(c.hosts, hosts...)
+        }
+        return nil
+    }
+}
+```
 
 ## Program comments
 
