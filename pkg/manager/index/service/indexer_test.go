@@ -122,8 +122,6 @@ func Test_index_Start(t *testing.T) {
 		minUncommitted        uint32
 		uuidsCount            uint32
 		uncommittedUUIDsCount uint32
-		uncommittedUUIDs      atomic.Value
-		uuids                 atomic.Value
 	}
 	type want struct {
 		want <-chan error
@@ -167,8 +165,6 @@ func Test_index_Start(t *testing.T) {
 		           minUncommitted: 0,
 		           uuidsCount: 0,
 		           uncommittedUUIDsCount: 0,
-		           uncommittedUUIDs: nil,
-		           uuids: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -195,8 +191,6 @@ func Test_index_Start(t *testing.T) {
 		           minUncommitted: 0,
 		           uuidsCount: 0,
 		           uncommittedUUIDsCount: 0,
-		           uncommittedUUIDs: nil,
-		           uuids: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -229,8 +223,6 @@ func Test_index_Start(t *testing.T) {
 				minUncommitted:        test.fields.minUncommitted,
 				uuidsCount:            test.fields.uuidsCount,
 				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
-				uncommittedUUIDs:      test.fields.uncommittedUUIDs,
-				uuids:                 test.fields.uuids,
 			}
 
 			got, err := idx.Start(test.args.ctx)
@@ -259,8 +251,6 @@ func Test_index_execute(t *testing.T) {
 		minUncommitted        uint32
 		uuidsCount            uint32
 		uncommittedUUIDsCount uint32
-		uncommittedUUIDs      atomic.Value
-		uuids                 atomic.Value
 	}
 	type want struct {
 		err error
@@ -301,8 +291,6 @@ func Test_index_execute(t *testing.T) {
 		           minUncommitted: 0,
 		           uuidsCount: 0,
 		           uncommittedUUIDsCount: 0,
-		           uncommittedUUIDs: nil,
-		           uuids: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -330,8 +318,6 @@ func Test_index_execute(t *testing.T) {
 		           minUncommitted: 0,
 		           uuidsCount: 0,
 		           uncommittedUUIDsCount: 0,
-		           uncommittedUUIDs: nil,
-		           uuids: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -364,8 +350,6 @@ func Test_index_execute(t *testing.T) {
 				minUncommitted:        test.fields.minUncommitted,
 				uuidsCount:            test.fields.uuidsCount,
 				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
-				uncommittedUUIDs:      test.fields.uncommittedUUIDs,
-				uuids:                 test.fields.uuids,
 			}
 
 			err := idx.execute(test.args.ctx, test.args.enableLowIndexSkip)
@@ -393,8 +377,6 @@ func Test_index_loadInfos(t *testing.T) {
 		minUncommitted        uint32
 		uuidsCount            uint32
 		uncommittedUUIDsCount uint32
-		uncommittedUUIDs      atomic.Value
-		uuids                 atomic.Value
 	}
 	type want struct {
 		err error
@@ -434,8 +416,6 @@ func Test_index_loadInfos(t *testing.T) {
 		           minUncommitted: 0,
 		           uuidsCount: 0,
 		           uncommittedUUIDsCount: 0,
-		           uncommittedUUIDs: nil,
-		           uuids: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -462,8 +442,6 @@ func Test_index_loadInfos(t *testing.T) {
 		           minUncommitted: 0,
 		           uuidsCount: 0,
 		           uncommittedUUIDsCount: 0,
-		           uncommittedUUIDs: nil,
-		           uuids: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -496,8 +474,6 @@ func Test_index_loadInfos(t *testing.T) {
 				minUncommitted:        test.fields.minUncommitted,
 				uuidsCount:            test.fields.uuidsCount,
 				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
-				uncommittedUUIDs:      test.fields.uncommittedUUIDs,
-				uuids:                 test.fields.uuids,
 			}
 
 			err := idx.loadInfos(test.args.ctx)
@@ -522,8 +498,6 @@ func Test_index_IsIndexing(t *testing.T) {
 		minUncommitted        uint32
 		uuidsCount            uint32
 		uncommittedUUIDsCount uint32
-		uncommittedUUIDs      atomic.Value
-		uuids                 atomic.Value
 	}
 	type want struct {
 		want bool
@@ -559,8 +533,6 @@ func Test_index_IsIndexing(t *testing.T) {
 		           minUncommitted: 0,
 		           uuidsCount: 0,
 		           uncommittedUUIDsCount: 0,
-		           uncommittedUUIDs: nil,
-		           uuids: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -584,8 +556,6 @@ func Test_index_IsIndexing(t *testing.T) {
 		           minUncommitted: 0,
 		           uuidsCount: 0,
 		           uncommittedUUIDsCount: 0,
-		           uncommittedUUIDs: nil,
-		           uuids: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -618,8 +588,6 @@ func Test_index_IsIndexing(t *testing.T) {
 				minUncommitted:        test.fields.minUncommitted,
 				uuidsCount:            test.fields.uuidsCount,
 				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
-				uncommittedUUIDs:      test.fields.uncommittedUUIDs,
-				uuids:                 test.fields.uuids,
 			}
 
 			got := idx.IsIndexing()
@@ -644,8 +612,6 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 		minUncommitted        uint32
 		uuidsCount            uint32
 		uncommittedUUIDsCount uint32
-		uncommittedUUIDs      atomic.Value
-		uuids                 atomic.Value
 	}
 	type want struct {
 		want uint32
@@ -681,8 +647,6 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 		           minUncommitted: 0,
 		           uuidsCount: 0,
 		           uncommittedUUIDsCount: 0,
-		           uncommittedUUIDs: nil,
-		           uuids: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -706,8 +670,6 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 		           minUncommitted: 0,
 		           uuidsCount: 0,
 		           uncommittedUUIDsCount: 0,
-		           uncommittedUUIDs: nil,
-		           uuids: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -740,8 +702,6 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 				minUncommitted:        test.fields.minUncommitted,
 				uuidsCount:            test.fields.uuidsCount,
 				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
-				uncommittedUUIDs:      test.fields.uncommittedUUIDs,
-				uuids:                 test.fields.uuids,
 			}
 
 			got := idx.NumberOfUUIDs()
@@ -766,8 +726,6 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 		minUncommitted        uint32
 		uuidsCount            uint32
 		uncommittedUUIDsCount uint32
-		uncommittedUUIDs      atomic.Value
-		uuids                 atomic.Value
 	}
 	type want struct {
 		want uint32
@@ -803,8 +761,6 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 		           minUncommitted: 0,
 		           uuidsCount: 0,
 		           uncommittedUUIDsCount: 0,
-		           uncommittedUUIDs: nil,
-		           uuids: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -828,8 +784,6 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 		           minUncommitted: 0,
 		           uuidsCount: 0,
 		           uncommittedUUIDsCount: 0,
-		           uncommittedUUIDs: nil,
-		           uuids: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -862,8 +816,6 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 				minUncommitted:        test.fields.minUncommitted,
 				uuidsCount:            test.fields.uuidsCount,
 				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
-				uncommittedUUIDs:      test.fields.uncommittedUUIDs,
-				uuids:                 test.fields.uuids,
 			}
 
 			got := idx.NumberOfUncommittedUUIDs()
