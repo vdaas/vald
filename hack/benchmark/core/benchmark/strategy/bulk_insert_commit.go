@@ -46,8 +46,11 @@ func NewBulkInsertCommit(poolSize uint32, opts ...StrategyOption) benchmark.Stra
 					}
 					v = append(v, arr.([]float32))
 				}
+
+				b.StopTimer()
+				b.ReportAllocs()
+				b.ResetTimer()
 				b.StartTimer()
-				defer b.StopTimer()
 				ids, errs := c.BulkInsertCommit(v, poolSize)
 				return ids, wrapErrors(errs)
 			},
@@ -69,8 +72,11 @@ func NewBulkInsertCommit(poolSize uint32, opts ...StrategyOption) benchmark.Stra
 					}
 					v = append(v, float32To64(arr.([]float32)))
 				}
+
+				b.StopTimer()
+				b.ReportAllocs()
+				b.ResetTimer()
 				b.StartTimer()
-				defer b.StopTimer()
 				ids, errs := c.BulkInsertCommit(v, poolSize)
 				return ids, wrapErrors(errs)
 			},

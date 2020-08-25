@@ -50,8 +50,11 @@ func NewBulkInsert(opts ...StrategyOption) benchmark.Strategy {
 					}
 					v = append(v, arr.([]float32))
 				}
+
+				b.StopTimer()
+				b.ReportAllocs()
+				b.ResetTimer()
 				b.StartTimer()
-				defer b.StopTimer()
 				ids, errs := c.BulkInsert(v)
 				return ids, wrapErrors(errs)
 			},
@@ -73,8 +76,11 @@ func NewBulkInsert(opts ...StrategyOption) benchmark.Strategy {
 					}
 					v = append(v, float32To64(arr.([]float32)))
 				}
+
+				b.StopTimer()
+				b.ReportAllocs()
+				b.ResetTimer()
 				b.StartTimer()
-				defer b.StopTimer()
 				ids, errs := c.BulkInsert(v)
 				return ids, wrapErrors(errs)
 			},
