@@ -124,7 +124,7 @@ func (sm *sidecarMetrics) View() []*metrics.View {
 			Description: sm.uploadLatency.Description(),
 			TagKeys:     uploadKeys,
 			Measure:     &sm.uploadLatency,
-			Aggregation: metrics.DefaultMillisecondsDistribution,
+			Aggregation: metrics.RoughMillisecondsDistribution,
 		},
 	}
 }
