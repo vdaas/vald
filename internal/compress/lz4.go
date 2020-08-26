@@ -122,7 +122,7 @@ func (l *lz4Reader) Read(p []byte) (n int, err error) {
 	return l.r.Read(p)
 }
 
-// Close closes src and r.
+// Close closes the reader.
 func (l *lz4Reader) Close() (err error) {
 	return l.src.Close()
 }
