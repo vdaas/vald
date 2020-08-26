@@ -362,11 +362,7 @@ To reduce human mistake that missing the error checking, please check the error 
 if err := fn(); err != nil {
     // handle error
 }
-```
 
-Instead of this style.
-
-```go
 // bad
 err := fn()
 if err != nil {
@@ -382,13 +378,9 @@ conn, err := net.Dial("tcp", "localhost:80")
 if err != nil {
     // handle error
 }
-
 // use the conn
-```
+addr := conn.LocalAddr()
 
-Instead of this style.
-
-```go
 // bad
 if conn, err := net.Dial("tcp", "localhost:80");  err != nil {
     // handle error
