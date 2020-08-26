@@ -154,9 +154,7 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 				lz4: &lz4.MockLZ4{
 					NewWriterLevelFunc: func(w io.Writer, level int) lz4.Writer {
 						return &lz4.MockWriter{
-							WriteFunc: func(p []byte) (int, error) {
-								return w.Write(p)
-							},
+							WriteFunc: w.Write,
 							FlushFunc: func() error {
 								return nil
 							},
@@ -186,9 +184,7 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 				lz4: &lz4.MockLZ4{
 					NewWriterLevelFunc: func(w io.Writer, level int) lz4.Writer {
 						return &lz4.MockWriter{
-							WriteFunc: func(p []byte) (int, error) {
-								return w.Write(p)
-							},
+							WriteFunc: w.Write,
 							FlushFunc: func() error {
 								return nil
 							},
@@ -252,9 +248,7 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 				lz4: &lz4.MockLZ4{
 					NewWriterLevelFunc: func(w io.Writer, level int) lz4.Writer {
 						return &lz4.MockWriter{
-							WriteFunc: func(p []byte) (int, error) {
-								return w.Write(p)
-							},
+							WriteFunc: w.Write,
 							FlushFunc: func() error {
 								return errors.New("flush err")
 							},
@@ -285,9 +279,7 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 				lz4: &lz4.MockLZ4{
 					NewWriterLevelFunc: func(w io.Writer, level int) lz4.Writer {
 						return &lz4.MockWriter{
-							WriteFunc: func(p []byte) (int, error) {
-								return w.Write(p)
-							},
+							WriteFunc: w.Write,
 							FlushFunc: func() error {
 								return nil
 							},
@@ -379,9 +371,7 @@ func Test_lz4Compressor_DecompressVector(t *testing.T) {
 				lz4: &lz4.MockLZ4{
 					NewReaderFunc: func(r io.Reader) lz4.Reader {
 						return &lz4.MockReader{
-							ReadFunc: func(p []byte) (int, error) {
-								return r.Read(p)
-							},
+							ReadFunc: r.Read,
 						}
 					},
 				},
@@ -432,9 +422,7 @@ func Test_lz4Compressor_DecompressVector(t *testing.T) {
 				lz4: &lz4.MockLZ4{
 					NewReaderFunc: func(r io.Reader) lz4.Reader {
 						return &lz4.MockReader{
-							ReadFunc: func(p []byte) (int, error) {
-								return r.Read(p)
-							},
+							ReadFunc: r.Read,
 						}
 					},
 				},
