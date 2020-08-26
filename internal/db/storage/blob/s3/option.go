@@ -64,6 +64,7 @@ func WithBucket(bucket string) Option {
 }
 
 // WithMaxPartSize returns the option to set maxPartSize.
+// The value is set when the value exceeds the s3manager.MinUploadPartSize(1024 * 1024 * 5).
 func WithMaxPartSize(size string) Option {
 	return func(c *client) error {
 		b, err := unit.ParseBytes(size)
@@ -80,6 +81,7 @@ func WithMaxPartSize(size string) Option {
 }
 
 // WithMaxChunkSize returns the option to set maxChunkSize.
+// The value is set when the value exceeds the s3manager.MinUploadPartSize(1024 * 1024 * 5).
 func WithMaxChunkSize(size string) Option {
 	return func(c *client) error {
 		b, err := unit.ParseBytes(size)
