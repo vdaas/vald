@@ -117,7 +117,7 @@ type S struct {}
 func (s *S) fn() {}
 ```
 
-#### Group simliar definition
+#### Group similar definition
 
 Group similar definitions such as struct or interface declaration.
 We should not group interface and struct declaration in the same block, for example:
