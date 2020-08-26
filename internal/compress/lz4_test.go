@@ -325,6 +325,73 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 	}
 }
 
+func Test_E2E_lz4Compressor_CompressVector(t *testing.T) {
+	type args struct {
+		vector []float32
+	}
+	type want struct {
+		want []float32
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, []byte, error, Compressor) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got []byte, err error, l Compressor) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		decompressed, err := l.DecompressVector(got)
+		if err != nil {
+			return errors.Errorf("decompress error: %v", err)
+		}
+		if !reflect.DeepEqual(decompressed, w.want) {
+			return errors.Errorf("got = %v, want %v", decompressed, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns ([]byte, nil) when no error occurs",
+			args: args{
+				vector: []float32{0.1, 0.2, 0.3},
+			},
+			want: want{
+				want: []float32{0.1, 0.2, 0.3},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			l, err := NewLZ4()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got, err := l.CompressVector(test.args.vector)
+			if err := test.checkFunc(test.want, got, err, l); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
 func Test_lz4Compressor_DecompressVector(t *testing.T) {
 	type args struct {
 		bs []byte
