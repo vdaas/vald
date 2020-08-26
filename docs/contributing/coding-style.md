@@ -420,7 +420,7 @@ The implementation may differ based on your use case.
 In Vald, the functional option pattern is widely used in Vald.
 You can refer to [this section](#Struct-initialization) for more details of the use case of this pattern.
 
-We strongly recommend the following implementation to set the value using functional option.
+We strongly recommend using the following implementation to set the value using functional option.
 
 ```go
 func WithVersion(version string) Option {
@@ -433,7 +433,7 @@ func WithVersion(version string) Option {
 }
 ```
 
-We suggest the following implementation to parse the time string and set the time to the target struct.
+We recommend using the following implementation to parse the time string and set the time to the target struct.
 
 ```go
 func WithTimeout(dur string) Option {
@@ -451,7 +451,7 @@ func WithTimeout(dur string) Option {
 }
 ```
 
-We suggest the following implementation to append the value to the slice if the value is not nil.
+We recommend the following implementation to append the value to the slice if the value is not nil.
 
 ```go
 func WithHosts(hosts ...string) Option {
