@@ -70,6 +70,24 @@ func TestNewLZ4(t *testing.T) {
 			},
 		},
 		{
+			name: "returns (Compressor, nil) when option is not empty",
+			args: args{
+				opts: []LZ4Option{
+					WithLZ4CompressionLevel(-1),
+				},
+			},
+			want: want{
+				want: &lz4Compressor{
+					gobc: func() (gob Compressor) {
+						gob, _ = NewGob()
+						return
+					}(),
+					compressionLevel: -1,
+					lz4:              lz4.New(),
+				},
+			},
+		},
+		{
 			name: "returns (nil, error) when option apply fails",
 			args: args{
 				opts: []LZ4Option{
