@@ -96,9 +96,10 @@ This section describes the general guideline for the Vald programming style, eve
 
 #### Order of declaration
 
-Put the higher priority or frequently used declaration on the top of other declaration. It makes Vald easier to read and search the target source code in Vald.
+Put the higher priority or frequently used declaration on the top of other declaration.
+It makes Vald easier to read and search the target source code in Vald.
 
-For example, the interface declaration should have higher priority then struct or function declaration, hence it should be put above other declaration.
+For example, the interface declaration should have higher priority than struct or function declaration, hence it should be put above other declaration.
 
 ```go
 // bad
@@ -118,7 +119,8 @@ func (s *S) fn() {}
 
 #### Group simliar definition
 
-Group similar definitions such as struct or interface declaration. We should not group interface and struct declaration in the same block, for example:
+Group similar definitions such as struct or interface declaration.
+We should not group interface and struct declaration in the same block, for example:
 
 ```go
 // bad
@@ -410,13 +412,15 @@ We defined the following logging levels.
 
 ## Implementation
 
-This section includes some examples of general implementation which is widely used in Vald. The implementation may differ based on your use case.
+This section includes some examples of general implementation which is widely used in Vald.
+The implementation may differ based on your use case.
 
 ### Functional Option
 
-In Vald, the functional option pattern is widely used in Vald. You can refer to [this section](#Struct-initialization) for more details of the use case of this pattern.
+In Vald, the functional option pattern is widely used in Vald.
+You can refer to [this section](#Struct-initialization) for more details of the use case of this pattern.
 
-We suggest the following implementation to set the value to the target.
+We strongly recommend the following implementation to set the value using functional option.
 
 ```go
 func WithVersion(version string) Option {
