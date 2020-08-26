@@ -198,20 +198,6 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 						return nil, errors.New("compress err")
 					},
 				},
-				compressionLevel: 0,
-				lz4: &lz4.MockLZ4{
-					NewWriterLevelFunc: func(w io.Writer, level int) lz4.Writer {
-						return &lz4.MockWriter{
-							WriteFunc: w.Write,
-							FlushFunc: func() error {
-								return nil
-							},
-							CloseFunc: func() error {
-								return nil
-							},
-						}
-					},
-				},
 			},
 			want: want{
 				want: nil,
@@ -235,9 +221,6 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 						return &lz4.MockWriter{
 							WriteFunc: func(p []byte) (int, error) {
 								return 0, errors.New("write err")
-							},
-							FlushFunc: func() error {
-								return nil
 							},
 							CloseFunc: func() error {
 								return nil
