@@ -138,7 +138,7 @@ func (l *lz4Writer) Write(p []byte) (n int, err error) {
 	return l.w.Write(p)
 }
 
-// Close closes dst and w.
+// Close closes the writer.
 func (l *lz4Writer) Close() (err error) {
 	err = l.w.Close()
 	if err != nil {
