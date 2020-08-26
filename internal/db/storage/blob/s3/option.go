@@ -56,7 +56,9 @@ func WithSession(sess *session.Session) Option {
 // WithBucket returns the option to set bucket.
 func WithBucket(bucket string) Option {
 	return func(c *client) error {
-		c.bucket = bucket
+		if len(bucket) != 0 {
+			c.bucket = bucket
+		}
 		return nil
 	}
 }

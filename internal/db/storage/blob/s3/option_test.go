@@ -247,9 +247,7 @@ func TestWithBucket(t *testing.T) {
 				bucket: "",
 			},
 			want: want{
-				obj: &T{
-					bucket: "",
-				},
+				obj: new(T),
 			},
 		},
 	}
