@@ -155,7 +155,6 @@ type (
 </td><td>
 
 ```go
-// good
 type (
     I interface {}
     I2 interface {}
