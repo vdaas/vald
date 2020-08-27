@@ -39,6 +39,9 @@ COPY pkg/${PKG} .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 COPY cmd/${PKG} .
 
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/hack/benchmark/assets/x1b
+COPY hack/benchmark/assets/x1b .
+
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY versions/GO_VERSION .
 COPY versions/VALD_VERSION .
