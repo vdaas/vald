@@ -466,7 +466,7 @@ func TestWithConnectTimeout(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if (w.err == nil && err != nil) || (w.err != nil && err == nil) ||
-			err != nil && w.err.Error() != err.Error() {
+			(err != nil && w.err.Error() != err.Error()) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
 		if diff := comparator.Diff(obj, w.obj, clientComparatorOpts...); diff != "" {
