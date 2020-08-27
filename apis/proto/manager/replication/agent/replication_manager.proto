@@ -23,9 +23,9 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.manager.replication.agent";
 option java_outer_classname = "ValdReplicationManagerAgent";
 
-import "payload/payload.proto";
+import "github.com/vdaas/vald/apis/proto/payload/payload.proto";
 import "google/api/annotations.proto";
-import "pb/gql.proto";
+
 
 service Replication {
   option (gql.svc_type) = QUERY;

@@ -23,9 +23,9 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.discoverer";
 option java_outer_classname = "Discoverer";
 
-import "payload/payload.proto";
+import "github.com/vdaas/vald/apis/proto/payload/payload.proto";
 import "google/api/annotations.proto";
-import "pb/gql.proto";
+
 
 service Discoverer {
   option (gql.svc_type) = QUERY;

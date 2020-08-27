@@ -24,7 +24,6 @@ option java_package = "org.vdaas.vald.agent.sidecar";
 option java_outer_classname = "ValdAgentSidecar";
 
 import "github.com/vdaas/vald/apis/proto/payload/payload.proto";
-import "github.com/danielvladco/go-proto-gql/pb/gql.proto";
 import "google/api/annotations.proto";
 
 service Sidecar {

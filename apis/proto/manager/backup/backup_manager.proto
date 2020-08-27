@@ -23,9 +23,9 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.manager.backup";
 option java_outer_classname = "ValdBackupManager";
 
-import "payload/payload.proto";
+import "github.com/vdaas/vald/apis/proto/payload/payload.proto";
 import "google/api/annotations.proto";
-import "pb/gql.proto";
+
 
 service Backup {
   option (gql.svc_type) = QUERY;

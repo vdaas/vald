@@ -23,10 +23,7 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.errors";
 option java_outer_classname = "ValdErrors";
 
-import "validate/validate.proto";
-/*
 import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
- */
 
 message Errors {
   message RPC {

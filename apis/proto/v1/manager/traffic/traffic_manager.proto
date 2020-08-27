@@ -21,4 +21,4 @@ package traffic_manager;
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/manager/traffic";
 
 import "google/api/annotations.proto";
-import "pb/gql.proto";
+
