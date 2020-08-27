@@ -104,12 +104,8 @@ NUMPANES  ?= 4
 BODY = ""
 
 PROTO_PATHS = \
-	$(PROTODIRS:%=./apis/proto/%) \
-	$(GOPATH)/src/github.com/protocolbuffers/protobuf/src \
-	$(GOPATH)/src/github.com/gogo/protobuf/protobuf \
-	$(GOPATH)/src/github.com/googleapis/googleapis \
-	$(GOPATH)/src/github.com/danielvladco/go-proto-gql \
-	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
+	$(GOPATH)/srg/$(GOPKG) \
+	$(GOPATH)/src/github.com/googleapis/googleapis
 
 GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		./cmd \

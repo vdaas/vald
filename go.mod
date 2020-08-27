@@ -84,6 +84,7 @@ require (
 	github.com/spf13/viper v1.7.1 // indirect
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
 	github.com/urfave/cli/v2 v2.2.0 // indirect
+	github.com/vdaas/vald/apis v0.0.0-20191116110024-e4d8aeefc026
 	github.com/vektah/dataloaden v0.3.0 // indirect
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20200424071638-9872bbae3700
