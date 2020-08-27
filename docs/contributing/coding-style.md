@@ -381,18 +381,26 @@ Please use [internal/errgroup](https://github.com/vdaas/vald/blob/master/interna
 All functions return `error` if the function can fail. It is very important to ensure the error checking is performed.
 To reduce human mistake that missing the error checking, please check the error using the following style:
 
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody><tr><td>
+
 ```go
-// good
 if err := fn(); err != nil {
     // handle error
 }
+```
 
-// bad
+</td><td>
+
+```go
 err := fn()
 if err != nil {
     // handle error
 }
 ```
+
+</td></tr></tbody></table>
 
 If you need the value outside the if statement, please use the following style:
 
