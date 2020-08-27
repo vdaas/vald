@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/tcp"
 )
 
 var (
@@ -33,7 +34,12 @@ var (
 	Nil = redis.Nil
 )
 
-// Redis is an interface to manipulate Redis server.
+// Connector is an interface to connect to Redis servers.
+type Connector interface {
+	Connect(ctx context.Context) (Redis, error)
+}
+
+// Redis is an interface to communicate with Redis servers.
 type Redis interface {
 	TxPipeline() redis.Pipeliner
 	Ping() *StatusCmd
@@ -60,7 +66,8 @@ type redisClient struct {
 	clusterSlots         func() ([]redis.ClusterSlot, error)
 	db                   int
 	dialTimeout          time.Duration
-	dialer               func(ctx context.Context, network, addr string) (net.Conn, error)
+	dialer               tcp.Dialer
+	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 	idleCheckFrequency   time.Duration
 	idleTimeout          time.Duration
 	initialPingDuration  time.Duration
@@ -84,10 +91,11 @@ type redisClient struct {
 	tlsConfig            *tls.Config
 	writeTimeout         time.Duration
 	client               Redis
+	hooks                []Hook
 }
 
-// New returns Redis implementation if no error occurs.
-func New(ctx context.Context, opts ...Option) (rc Redis, err error) {
+// New returns Connector if no error occurs.
+func New(opts ...Option) (c Connector, err error) {
 	r := new(redisClient)
 	for _, opt := range append(defaultOpts, opts...) {
 		if err = opt(r); err != nil {
@@ -95,71 +103,111 @@ func New(ctx context.Context, opts ...Option) (rc Redis, err error) {
 		}
 	}
 
-	r, err = r.newRedisClient(ctx)
-	if err != nil {
+	return r, nil
+}
+
+func (rc *redisClient) setClient(ctx context.Context) (err error) {
+	switch len(rc.addrs) {
+	case 0:
+		return errors.ErrRedisAddrsNotFound
+	case 1:
+		rc.client, err = rc.newSentinelClient()
+		if err != nil {
+			return err
+		}
+	default:
+		rc.client, err = rc.newClusterClient(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (rc *redisClient) newSentinelClient() (*redis.Client, error) {
+	if len(rc.addrs) == 0 || len(rc.addrs[0]) == 0 {
+		return nil, errors.ErrRedisAddrsNotFound
+	}
+
+	c := redis.NewClient(&redis.Options{
+		Addr:               rc.addrs[0],
+		Password:           rc.password,
+		Dialer:             rc.dialerFunc,
+		OnConnect:          rc.onConnect,
+		DB:                 rc.db,
+		MaxRetries:         rc.maxRetries,
+		MinRetryBackoff:    rc.minRetryBackoff,
+		MaxRetryBackoff:    rc.maxRetryBackoff,
+		DialTimeout:        rc.dialTimeout,
+		ReadTimeout:        rc.readTimeout,
+		WriteTimeout:       rc.writeTimeout,
+		PoolSize:           rc.poolSize,
+		MinIdleConns:       rc.minIdleConns,
+		MaxConnAge:         rc.maxConnAge,
+		PoolTimeout:        rc.poolTimeout,
+		IdleTimeout:        rc.idleTimeout,
+		IdleCheckFrequency: rc.idleCheckFrequency,
+		TLSConfig:          rc.tlsConfig,
+	})
+
+	for _, hk := range rc.hooks {
+		c.AddHook(hk)
+	}
+
+	return c, nil
+}
+
+func (rc *redisClient) newClusterClient(ctx context.Context) (*redis.ClusterClient, error) {
+	if len(rc.addrs) == 0 || len(rc.addrs[0]) == 0 {
+		return nil, errors.ErrRedisAddrsNotFound
+	}
+
+	c := redis.NewClusterClient(&redis.ClusterOptions{
+		Addrs:              rc.addrs,
+		Dialer:             rc.dialerFunc,
+		MaxRedirects:       rc.maxRedirects,
+		ReadOnly:           rc.readOnly,
+		RouteByLatency:     rc.routeByLatency,
+		RouteRandomly:      rc.routeRandomly,
+		ClusterSlots:       rc.clusterSlots,
+		OnNewNode:          rc.onNewNode,
+		OnConnect:          rc.onConnect,
+		Password:           rc.password,
+		MaxRetries:         rc.maxRetries,
+		MinRetryBackoff:    rc.minRetryBackoff,
+		MaxRetryBackoff:    rc.maxRetryBackoff,
+		DialTimeout:        rc.dialTimeout,
+		ReadTimeout:        rc.readTimeout,
+		WriteTimeout:       rc.writeTimeout,
+		PoolSize:           rc.poolSize,
+		MinIdleConns:       rc.minIdleConns,
+		MaxConnAge:         rc.maxConnAge,
+		PoolTimeout:        rc.poolTimeout,
+		IdleTimeout:        rc.idleTimeout,
+		IdleCheckFrequency: rc.idleCheckFrequency,
+		TLSConfig:          rc.tlsConfig,
+	}).WithContext(ctx)
+
+	for _, hk := range rc.hooks {
+		c.AddHook(hk)
+	}
+
+	return c, nil
+}
+
+// Connect returns Redis instance that has connection to servers.
+func (rc *redisClient) Connect(ctx context.Context) (Redis, error) {
+	if rc.dialer != nil {
+		rc.dialer.StartDialerCache(ctx)
+		rc.dialerFunc = rc.dialer.GetDialer()
+	}
+
+	if err := rc.setClient(ctx); err != nil {
 		return nil, err
 	}
 
-	return r.ping(ctx)
-}
-
-func (rc *redisClient) newRedisClient(ctx context.Context) (*redisClient, error) {
-	switch len(rc.addrs) {
-	case 0:
-		return nil, errors.ErrRedisAddrsNotFound
-	case 1:
-		if len(rc.addrs[0]) == 0 {
-			return nil, errors.ErrRedisAddrsNotFound
-		}
-		rc.client = redis.NewClient(&redis.Options{
-			Addr:               rc.addrs[0],
-			Password:           rc.password,
-			Dialer:             rc.dialer,
-			OnConnect:          rc.onConnect,
-			DB:                 rc.db,
-			MaxRetries:         rc.maxRetries,
-			MinRetryBackoff:    rc.minRetryBackoff,
-			MaxRetryBackoff:    rc.maxRetryBackoff,
-			DialTimeout:        rc.dialTimeout,
-			ReadTimeout:        rc.readTimeout,
-			WriteTimeout:       rc.writeTimeout,
-			PoolSize:           rc.poolSize,
-			MinIdleConns:       rc.minIdleConns,
-			MaxConnAge:         rc.maxConnAge,
-			PoolTimeout:        rc.poolTimeout,
-			IdleTimeout:        rc.idleTimeout,
-			IdleCheckFrequency: rc.idleCheckFrequency,
-			TLSConfig:          rc.tlsConfig,
-		})
-	default:
-		rc.client = redis.NewClusterClient(&redis.ClusterOptions{
-			Addrs:              rc.addrs,
-			Dialer:             rc.dialer,
-			MaxRedirects:       rc.maxRedirects,
-			ReadOnly:           rc.readOnly,
-			RouteByLatency:     rc.routeByLatency,
-			RouteRandomly:      rc.routeRandomly,
-			ClusterSlots:       rc.clusterSlots,
-			OnNewNode:          rc.onNewNode,
-			OnConnect:          rc.onConnect,
-			Password:           rc.password,
-			MaxRetries:         rc.maxRetries,
-			MinRetryBackoff:    rc.minRetryBackoff,
-			MaxRetryBackoff:    rc.maxRetryBackoff,
-			DialTimeout:        rc.dialTimeout,
-			ReadTimeout:        rc.readTimeout,
-			WriteTimeout:       rc.writeTimeout,
-			PoolSize:           rc.poolSize,
-			MinIdleConns:       rc.minIdleConns,
-			MaxConnAge:         rc.maxConnAge,
-			PoolTimeout:        rc.poolTimeout,
-			IdleTimeout:        rc.idleTimeout,
-			IdleCheckFrequency: rc.idleCheckFrequency,
-			TLSConfig:          rc.tlsConfig,
-		}).WithContext(ctx)
-	}
-
-	return rc, nil
+	return rc.ping(ctx)
 }
 
 func (rc *redisClient) ping(ctx context.Context) (r Redis, err error) {
